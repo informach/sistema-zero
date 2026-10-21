@@ -87,59 +87,27 @@ try {
   page.on('request', (r) => {
     if (r.url().endsWith('/api/analytics/events')) events.push(...r.postDataJSON().events)
   })
-  for (const variant of ['', '/tempo-de-tela', '/iniciacao-tecnologica']) {
-    const response = await page.goto(
-      `${origin}${base}/oferta${variant}?utm_source=qa_farol&email=nao-levar@example.test`,
-    )
-    assert.equal(response?.status(), 200)
-    assert.match(response?.headers()['cache-control'] ?? '', /no-store/)
-    await consent(page)
-    await page.evaluate(() =>
-      document.querySelectorAll('img').forEach((img) => {
-        img.loading = 'eager'
-      }),
-    )
-    await page.waitForFunction(() =>
-      Array.from(document.images).every(
-        (img) => !img.getAttribute('src') || (img.complete && img.naturalWidth > 0),
-      ),
-    )
-    await noOverflow(page)
-    assert.equal(await page.locator('#duvidas details').count(), 19)
-    const how = await page
-      .locator('[data-analytics-id="desafio-experiencia-plataforma"]')
-      .getAttribute('href')
-    assert.ok(how?.includes('utm_source=qa_farol'))
-    assert.ok(!how?.includes('email'))
-    const id = variant.slice(1) || 'primeiro-jogo'
-    await page.screenshot({ path: `${output}/${id}-desktop.png` })
-    await page.setViewportSize({ width: 390, height: 844 })
-    await noOverflow(page)
-    await page.screenshot({ path: `${output}/${id}-mobile.png` })
-    await page.locator('footer').scrollIntoViewIfNeeded()
-    assert.ok(
-      (await page.locator('footer img').boundingBox())!.height < 30,
-      'Footer logo keeps shared proportions',
-    )
-    await page.screenshot({ path: `${output}/footer-mobile.png` })
-    await page.setViewportSize({ width: 1440, height: 1000 })
-  }
-  await page.locator('#duvida-5 summary').click()
-  await page.locator('#duvida-5 a[data-zoom]').first().click()
-  await page.getByRole('dialog', { name: 'Imagem ampliada' }).waitFor()
-  await page.keyboard.press('Escape')
-  await page.locator('[data-analytics-id="desafio-hero-comprar"]').click()
+  // As três páginas de oferta (21/10/2026) são conferidas em detalhe por desafio-ofertas.ts; aqui
+  // basta a página de 9 a 17 que o resultado abre, sem levar o e-mail da URL adiante.
+  const response = await page.goto(
+    `${origin}${base}/oferta?utm_source=qa_farol&email=nao-levar@example.test`,
+  )
+  assert.equal(response?.status(), 200)
+  assert.match(response?.headers()['cache-control'] ?? '', /no-store/)
+  await consent(page)
+  await noOverflow(page)
+  await page.screenshot({ path: `${output}/oferta-9a17-desktop.png` })
+  await page.locator('[data-checkout-cta]').first().click()
   await page.getByRole('textbox', { name: 'Nome do responsável', exact: true }).waitFor()
   await page.getByRole('button', { name: 'Fechar', exact: true }).click()
-  await page.goto(`${origin}${base}/oferta?cupom=QA10`)
-  if (process.env.DESAFIO_QA_FIXTURE === '1')
-    assert.match(await page.locator('.df-price').innerText(), /57/)
-  const alias = await context.request.get(
-    `${origin}${base}/oferta/primeiro-jogo?utm_source=qa_farol`,
-    { maxRedirects: 0 },
-  )
-  assert.equal(alias.status(), 301)
-  assert.ok(alias.headers().location?.includes('utm_source=qa_farol'))
+  for (const antiga of ['primeiro-jogo', 'tempo-de-tela', 'iniciacao-tecnologica']) {
+    const alias = await context.request.get(
+      `${origin}${base}/oferta/${antiga}?utm_source=qa_farol`,
+      { maxRedirects: 0 },
+    )
+    assert.equal(alias.status(), 301)
+    assert.equal(alias.headers().location, `${base}/oferta?utm_source=qa_farol`)
+  }
   assert.equal(
     (await context.request.get(`${origin}${base}/oferta/expressao-visual`)).status(),
     404,
@@ -206,9 +174,9 @@ try {
     {
       id: 'prioridade-A',
       override: { motivos: ['A', 'C'], prioridade: ['A'], interesses: ['inventa_historias'] },
-      route: '/tempo-de-tela',
+      route: '/oferta?',
     },
-    { id: 'iniciacao-D', override: { motivos: ['D'] }, route: '/iniciacao-tecnologica' },
+    { id: 'iniciacao-D', override: { motivos: ['D'] }, route: '/oferta?' },
     {
       id: 'empate',
       override: { motivos: ['A', 'C'], prioridade: ['iguais'] },
@@ -277,8 +245,8 @@ try {
       // O catálogo compartilhado tem cache visual de 60s; a cotação de cupom é
       // autoritativa e deve corrigir tanto preço cheio quanto final imediatamente.
       await tab.goto(`${origin}${base}/oferta?cupom=QA10`)
-      assert.match(await tab.locator('.df-price').innerText(), /67/)
-      assert.match(await tab.locator('.df-price-card s').innerText(), /77/)
+      assert.match(await tab.locator('#oferta .c9-plano__preco').innerText(), /67/)
+      assert.match(await tab.locator('#oferta .d9-cheio').innerText(), /77/)
       await mode('unavailable')
       await tab.goto(`${origin}${base}/quiz`)
       assert.ok(
@@ -291,7 +259,7 @@ try {
     }
   }
   console.log(
-    'Passed: three offers, mobile/desktop, 19 FAQs, screenshots/zoom, footer, pre-checkout, coupon, attribution, quiz result, network recovery, restart, age, A/D routing, ties, device restriction, refusal and result analytics without personal text.',
+    'Passed: offer and old-variant redirects, pre-checkout, coupon, attribution, quiz result, network recovery, restart, age, A/D routing to the single offer, ties, device restriction, refusal and result analytics without personal text.',
   )
 } finally {
   await browser.close()

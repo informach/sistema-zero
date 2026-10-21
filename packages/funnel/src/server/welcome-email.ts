@@ -156,6 +156,9 @@ async function resolveChallengeAccess(
   repo: Pick<FunnelRepo, 'paymentContext'>,
   lead: Lead,
 ): Promise<{ expiresAtLabel: string } | null> {
+  // Só o Desafio Kids: o template `challenge-access-approved` fala de Adicionar criança e Autorizar
+  // aparelho. O Desafio adulto (21/10/2026) recebe o `welcome`/`new-access` de sempre; a data final
+  // aparece na /obrigado e na área de membros.
   if (lead.funnel !== 'kids/desafio-primeiro-jogo' || !lead.paymentId || !lead.paidAt) {
     return null
   }

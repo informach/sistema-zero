@@ -1,0 +1,531 @@
+/*
+ * desafio-917.css: as peças próprias da página do Desafio para 9 a 17 anos (proposta aprovada de
+ * 21/10/2026, quadro Desafio917). Body: `Desafio917Body.astro`; copy: `desafio-primeiro-jogo/
+ * oferta/pagina-9a17.ts`. O resto do desenho vem de comunidade-917.css (`.c917`).
+ *
+ * Mesma regra das páginas da Comunidade: tudo sob `.c917`, sem cor própria, só os aliases `--kof-*`
+ * e as tintas de `.c917` por `color-mix(in oklab, ...)`. As ilustrações em SVG pintam pelas classes
+ * `.d9-f-*` (preenchimento) e `.d9-s-*` (traço), para nenhuma cor ficar escrita no markup.
+ */
+
+/* ── Herói: a captura do Farol com a faixa dos 30 dias ──────────────────────── */
+.c917 .d9-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 22px;
+  margin-top: 4px;
+}
+.c917 .d9-link {
+  border-radius: 6px;
+  color: var(--c9-tinta);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.c917 .c9-sec--azul .d9-link,
+.c917 .c9-sec--navy .d9-link {
+  color: var(--kof-carta);
+}
+.c917 .d9-condicoes {
+  margin: 0;
+  color: var(--c9-suave);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.c917 .d9-heroi__visual {
+  position: relative;
+  flex: 1 1 420px;
+  min-width: 0;
+  padding: 18px 18px 0 0;
+}
+.c917 .d9-heroi__tela {
+  box-shadow: 8px 8px 0 var(--c9-tinta);
+}
+.c917 .d9-heroi__tela img {
+  aspect-ratio: 4 / 3;
+}
+.c917 .d9-heroi__tela figcaption {
+  padding: 10px 4px 2px;
+  color: var(--c9-suave);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.c917 .d9-faixa {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 18px;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  background: var(--c9-verde);
+  font-family: var(--kof-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  box-shadow: 3px 3px 0 var(--c9-tinta);
+  transform: rotate(6deg);
+}
+
+/* ── Dois jeitos de usar a tela ─────────────────────────────────────────────── */
+.c917 .d9-jeitos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 24px;
+}
+.c917 .d9-jeito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border: 3px solid var(--kof-tinta-suave);
+  border-radius: 22px;
+  background: var(--kof-navy-2);
+  color: var(--kof-navy-texto);
+  text-align: center;
+}
+.c917 .d9-jeito p {
+  margin: 0;
+}
+.c917 .d9-jeito--fazer {
+  border-color: var(--c9-amarelo);
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+  box-shadow: 6px 6px 0 var(--c9-amarelo);
+}
+.c917 .d9-jeito__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.c917 .d9-jeito--fazer .d9-jeito__titulo {
+  color: var(--c9-azul);
+}
+.c917 .d9-ilustra {
+  display: block;
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+.c917 .d9-frase {
+  align-self: flex-start;
+  margin: 0;
+  padding: 12px 22px;
+  border: 3px solid var(--kof-carta);
+  border-radius: 14px;
+  background: var(--c9-amarelo);
+  color: var(--c9-tinta);
+  font-size: 1.375rem;
+  font-weight: 800;
+}
+
+/* Tintas das ilustrações (só tokens). */
+.c917 .d9-f-cinza {
+  fill: color-mix(in oklab, var(--kof-tinta-suave) 70%, var(--kof-carta));
+}
+.c917 .d9-f-cinza-escuro {
+  fill: color-mix(in oklab, var(--kof-tinta) 75%, var(--kof-carta));
+}
+.c917 .d9-f-claro {
+  fill: color-mix(in oklab, var(--kof-carta) 85%, var(--kof-tinta-suave));
+}
+.c917 .d9-s-claro {
+  stroke: color-mix(in oklab, var(--kof-carta) 85%, var(--kof-tinta-suave));
+}
+.c917 .d9-f-azul {
+  fill: var(--c9-azul);
+}
+.c917 .d9-f-azul-claro {
+  fill: var(--c9-azul-claro);
+}
+.c917 .d9-f-tela {
+  fill: var(--kof-azul-fundo);
+}
+.c917 .d9-f-tinta {
+  fill: var(--c9-tinta);
+}
+.c917 .d9-s-tinta {
+  stroke: var(--c9-tinta);
+}
+.c917 .d9-f-rosa {
+  fill: var(--c9-rosa);
+}
+.c917 .d9-f-amarelo {
+  fill: var(--c9-amarelo);
+}
+.c917 .d9-s-amarelo {
+  stroke: var(--c9-amarelo);
+}
+.c917 .d9-f-pele {
+  fill: color-mix(in oklab, var(--kof-laranja) 35%, var(--kof-carta));
+}
+.c917 .d9-s-pele {
+  stroke: color-mix(in oklab, var(--kof-laranja) 35%, var(--kof-carta));
+}
+.c917 .d9-f-cabelo {
+  fill: color-mix(in oklab, var(--kof-tinta) 70%, var(--kof-laranja));
+}
+
+/* ── A trilha das 3 etapas e do certificado ─────────────────────────────────── */
+.c917 .d9-trilha {
+  position: relative;
+  padding: 32px 24px;
+  border: var(--c9-borda);
+  border-radius: 26px;
+  background-color: var(--kof-chao);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--c9-tinta) 8%, var(--kof-chao)) 1.5px,
+    var(--kof-chao) 1.5px
+  );
+  background-size: 22px 22px;
+}
+.c917 .d9-trilha__linha {
+  position: absolute;
+  top: 82px;
+  right: 12%;
+  left: 12%;
+  border-top: 6px dashed var(--c9-verde);
+}
+.c917 .d9-trilha__paradas {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 28px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.c917 .d9-parada {
+  display: flex;
+  flex: 1 1 200px;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  text-align: center;
+}
+.c917 .d9-parada__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border: 4px solid var(--c9-tinta);
+  border-radius: 50%;
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+  box-shadow: 4px 4px 0 var(--c9-tinta);
+}
+.c917 .d9-parada--fim .d9-parada__icone {
+  background: var(--c9-amarelo);
+}
+.c917 .d9-parada__rotulo {
+  padding: 0 12px;
+  border: var(--c9-borda);
+  border-radius: 10px;
+  background: var(--c9-cor);
+  font-family: var(--kof-display);
+  font-size: 1.0625rem;
+  font-weight: 800;
+}
+.c917 .d9-parada__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.c917 .d9-parada__texto {
+  max-width: 240px;
+  margin: 0;
+  color: var(--c9-suave);
+}
+.c917 .d9-blocos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 32px;
+  padding: 24px;
+  border: var(--c9-borda);
+  border-radius: 24px;
+  background: var(--kof-azul-fundo);
+}
+.c917 .d9-blocos img {
+  flex: 1 1 340px;
+  min-width: 0;
+  max-width: 460px;
+  height: auto;
+  border: var(--c9-borda);
+  border-radius: 16px;
+  background: var(--kof-carta);
+}
+.c917 .d9-blocos > div {
+  flex: 1 1 320px;
+  min-width: 0;
+}
+
+/* ── Os passos da aula: telas de proporções diferentes, mesma altura ───────── */
+.c917 .d9-passos .c9-passo img {
+  height: 170px;
+}
+
+/* ── O que ele treina: cartões deitados, com o ícone ao lado ───────────────── */
+.c917 .d9-habilidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr));
+  gap: 18px;
+}
+.c917 .d9-habilidade {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 4px 18px;
+  padding: 20px 22px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-chao);
+  box-shadow: 4px 4px 0 var(--c9-tinta);
+}
+.c917 .d9-habilidade__icone {
+  display: flex;
+  grid-row: span 2;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border: var(--c9-borda);
+  border-radius: 18px;
+  background: var(--c9-cor);
+  color: var(--c9-tinta);
+}
+.c917 .d9-habilidade__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.c917 .d9-habilidade__texto {
+  margin: 0;
+  color: var(--c9-suave);
+}
+.c917 .d9-faixa-navy {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 28px;
+  border-radius: 24px;
+  background: var(--kof-navy);
+  color: var(--kof-carta);
+}
+.c917 .d9-faixa-navy__itens {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.c917 .d9-faixa-navy__itens li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--kof-navy-texto);
+}
+.c917 .d9-faixa-navy__itens strong {
+  display: block;
+  color: var(--kof-carta);
+}
+.c917 .d9-faixa-navy__icone {
+  display: flex;
+  flex: none;
+  color: var(--c9-amarelo);
+}
+
+/* ── Para o responsável ─────────────────────────────────────────────────────── */
+.c917 .d9-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.c917 .d9-lista li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.c917 .d9-lista__icone {
+  display: flex;
+  flex: none;
+  color: var(--c9-azul);
+}
+.c917 .d9-telas {
+  display: flex;
+  flex: 1 1 420px;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.c917 .d9-caderno {
+  margin: 0;
+  padding: 8px;
+  border: var(--c9-borda);
+  border-radius: 16px;
+  background: var(--kof-carta);
+  box-shadow: 5px 5px 0 var(--c9-tinta);
+}
+.c917 .d9-caderno img {
+  display: block;
+  width: 100%;
+  height: 240px;
+  border-radius: 10px;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* ── O relato em destaque (fala grande, cartão amarelo) ─────────────────────── */
+.c917 .d9-destaque {
+  display: flex;
+  flex: 1 1 320px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  min-width: 0;
+  margin: 0;
+  padding: 28px;
+  border: var(--c9-borda);
+  border-radius: 24px;
+  background: var(--c9-amarelo);
+  box-shadow: 6px 6px 0 var(--c9-tinta);
+  transform: rotate(-1deg);
+}
+.c917 .d9-destaque blockquote,
+.c917 .d9-destaque blockquote p {
+  margin: 0;
+}
+.c917 .d9-destaque blockquote p {
+  font-family: var(--kof-display);
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  font-weight: 800;
+  line-height: 1.15;
+}
+.c917 .d9-destaque figcaption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.c917 .d9-destaque figcaption img {
+  width: 56px;
+  height: 56px;
+  border: var(--c9-borda);
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ── A oferta: um plano só, com a garantia embaixo do botão ────────────────── */
+.c917 .d9-plano {
+  flex: 1 1 380px;
+}
+.c917 .d9-cheio {
+  margin-right: 12px;
+  color: var(--c9-suave);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.c917 .d9-plano__btn {
+  background: var(--c9-azul);
+  color: var(--kof-carta);
+  box-shadow: 4px 4px 0 var(--c9-tinta);
+}
+.c917 .d9-plano__garantia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--c9-suave);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.c917 .d9-plano__garantia svg {
+  flex: none;
+  color: var(--kof-verde);
+}
+.c917 .d9-ja-tem {
+  margin: 0;
+  color: var(--kof-sobre-acao-suave);
+  font-size: 1rem;
+}
+.c917 .d9-ja-tem a {
+  color: var(--kof-carta);
+  font-weight: 800;
+}
+
+/* ── O caminho depois do Desafio ────────────────────────────────────────────── */
+.c917 .d9-caminho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.c917 .d9-caminho__passo {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 20px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-chao);
+  text-align: center;
+  box-shadow: 4px 4px 0 var(--c9-tinta);
+}
+.c917 .d9-caminho__passo strong {
+  font-family: var(--kof-display);
+  font-size: 1.375rem;
+  line-height: 1.15;
+}
+.c917 .d9-caminho__passo > span:last-child {
+  color: var(--c9-suave);
+  font-size: 1.0625rem;
+}
+.c917 .d9-caminho__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border: var(--c9-borda);
+  border-radius: 18px;
+  background: var(--c9-cor);
+  color: var(--c9-tinta);
+}
+
+.c917 .d9-fim__texto {
+  margin: 0;
+  color: var(--kof-lilas);
+}
+
+@media (max-width: 760px) {
+  .c917 .d9-trilha__linha {
+    display: none;
+  }
+  .c917 .d9-habilidade__icone {
+    width: 60px;
+    height: 60px;
+  }
+}

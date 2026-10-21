@@ -3,15 +3,18 @@ import { COMUNIDADE_ADULTO } from '../../funnels/comunidade-adulto'
 import type { ComunidadeAdultoSubpagina } from '../../funnels/comunidade-adulto/oferta'
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import type { ComunidadeOfertaId } from '../../funnels/comunidade-dos-criadores/oferta/types'
+import { DESAFIO_ADULTO } from '../../funnels/desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../funnels/desafio-primeiro-jogo'
-import type { DesafioOfferId } from '../../funnels/desafio-primeiro-jogo/offer'
+import type { DesafioPagina } from '../../funnels/desafio-primeiro-jogo/offer'
 import type { OfferPageData } from '../../server/offer-page'
 import Comunidade917Body from './oferta/Comunidade917Body.astro'
 import ComunidadeAdultoContinuarBody from './oferta/ComunidadeAdultoContinuarBody.astro'
 import ComunidadeAdultoOfertaBody from './oferta/ComunidadeAdultoOfertaBody.astro'
 import ComunidadeContinuarBody from './oferta/ComunidadeContinuarBody.astro'
 import ComunidadeMenor9Body from './oferta/ComunidadeMenor9Body.astro'
-import DesafioOfertaBody from './oferta/DesafioOfertaBody.astro'
+import Desafio917Body from './oferta/Desafio917Body.astro'
+import DesafioAdultoBody from './oferta/DesafioAdultoBody.astro'
+import DesafioMenor9Body from './oferta/DesafioMenor9Body.astro'
 import NoComandoOfertaBody from './oferta/NoComandoOfertaBody.astro'
 
 // Cada funil tem o seu corpo de oferta, escolhido pela CHAVE do funil (nunca por exclusão: um funil
@@ -21,14 +24,15 @@ interface Props extends OfferPageData {
   comunidadePage?: ComunidadeOfertaId
   /** Comunidade adulta: a continuidade (`/oferta/continuar`); sem valor, a página principal. */
   comunidadeAdultoPage?: ComunidadeAdultoSubpagina
-  desafioProfile?: DesafioOfferId
+  /** Desafio Kids: a página de 9 a 17 (`/oferta`) ou a "criar junto" do menor de 9. */
+  desafioPage?: DesafioPagina
 }
 const {
   bodyProps,
   plans,
   comunidadePage = '9a17',
   comunidadeAdultoPage,
-  desafioProfile = 'primeiro-jogo',
+  desafioPage = '9a17',
 } = Astro.props
 const { f } = bodyProps
 const corpo = f.content.sales
@@ -39,7 +43,9 @@ const corpo = f.content.sales
       ? 'comunidade-adulto'
       : f.key === DESAFIO_PRIMEIRO_JOGO.key
         ? 'desafio'
-        : null
+        : f.key === DESAFIO_ADULTO.key
+          ? 'desafio-adulto'
+          : null
 if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 ---
 
@@ -60,7 +66,11 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
     ) : (
       <ComunidadeAdultoOfertaBody {...bodyProps} plans={plans} />
     )
+  ) : corpo === 'desafio-adulto' ? (
+    <DesafioAdultoBody {...bodyProps} />
+  ) : desafioPage === 'criar-junto' ? (
+    <DesafioMenor9Body {...bodyProps} />
   ) : (
-    <DesafioOfertaBody {...bodyProps} profile={desafioProfile} />
+    <Desafio917Body {...bodyProps} />
   )
 }

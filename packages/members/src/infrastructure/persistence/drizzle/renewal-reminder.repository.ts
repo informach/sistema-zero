@@ -18,6 +18,8 @@ import {
 import type { Database } from './db'
 import { entitlementLifecycleMessagesSent, entitlements, renewalRemindersSent } from './schema'
 
+// Só o Desafio Kids: os avisos `challenge-*` falam com o responsável (a criança, a Área dos pais).
+// O Desafio adulto (`desafio-primeiro-jogo-adulto`, 21/10/2026) fica de fora até ter os seus.
 const CHALLENGE_COURSE_REF = 'desafio-primeiro-jogo'
 
 /**

@@ -36,6 +36,7 @@ export const MODULOS_ESPELHO: Record<string, { arquivo: string; modulo: object }
 /** Chaves técnicas do módulo que não são texto da página. */
 const CHAVES_TECNICAS = new Set([
   'file',
+  'src',
   'arquivo',
   'capa',
   'width',
@@ -51,7 +52,7 @@ const CHAVES_TECNICAS = new Set([
  * O Markdown de uma página de corpo próprio: cada texto do módulo, na ordem, com o caminho da chave
  * para quem revisa achar onde ele está. Imagens aparecem pelo texto alternativo.
  */
-export function espelhoDoModulo(modulo: object): string {
+export function espelhoDoModulo(modulo: object, cabecalho = CABECALHO): string {
   const b: string[] = []
   const visita = (valor: unknown, caminho: string) => {
     if (typeof valor === 'string') {
@@ -71,7 +72,7 @@ export function espelhoDoModulo(modulo: object): string {
       }
   }
   visita(modulo, '')
-  return `${CABECALHO}\n\n${b.join('\n\n')}\n`
+  return `${cabecalho}\n\n${b.join('\n\n')}\n`
 }
 
 const CABECALHO =

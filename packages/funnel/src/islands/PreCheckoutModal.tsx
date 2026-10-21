@@ -52,7 +52,8 @@ export default function PreCheckoutModal({
   // (audience ∈ {pro, kids}) — ver registry. Deixar isso explícito evita o pai
   // preencher os dados da criança aqui.
   const isKids = funnel.startsWith('kids/')
-  const isChallenge = funnel === 'kids/desafio-primeiro-jogo'
+  // O Desafio do Primeiro Jogo, Kids ou adulto (a mesma oferta de 30 dias; a ilha não lê o registry).
+  const isChallenge = funnel.endsWith('/desafio-primeiro-jogo')
   const isCommunity = funnel === 'kids/comunidade-dos-criadores'
   const isSubscription = isCommunity || assinatura
 
@@ -239,7 +240,7 @@ export default function PreCheckoutModal({
                 </h2>
                 <p className="mt-1 text-sm text-muted">
                   {isChallenge
-                    ? 'Confirme os dados do responsável. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.'
+                    ? `${isKids ? 'Confirme os dados do responsável' : 'Confirme seus dados'}. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.`
                     : isSubscription
                       ? 'Na próxima tela, você confere o plano escolhido, o valor e como funciona a renovação antes de pagar.'
                       : isKids

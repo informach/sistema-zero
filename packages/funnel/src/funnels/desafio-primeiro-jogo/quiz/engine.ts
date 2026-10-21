@@ -1,7 +1,7 @@
 import type { QuizAnswers, QuizAnswerValue } from '../../../lib/quiz-types'
 import { DESAFIO_QUESTIONS, type DesafioQuestion } from './questions'
 
-export const DESAFIO_QUIZ_VERSION = 'desafio-farol-v3'
+export const DESAFIO_QUIZ_VERSION = 'desafio-farol-v4'
 export const DESAFIO_BASE = '/kids/desafio-primeiro-jogo'
 export const DESAFIO_PROFILE_IDS = {
   A: 'tempo-de-tela',
@@ -32,9 +32,12 @@ export const answerList = (value: QuizAnswerValue | undefined): string[] =>
   Array.isArray(value) ? value : []
 export const quizRevision = (answers: QuizAnswers): number =>
   typeof answers._quiz_revision === 'number' ? answers._quiz_revision : 0
+// Desde 21/10/2026 (v4) o Desafio Kids vai de 9 a 17 anos. Menos de 9 tem a página "criar junto"
+// e 18 ou mais o Desafio adulto: o quiz não orienta essas faixas, mas a tela de idade aponta a página.
 export const isOutsideDesafioAge = (answers: QuizAnswers) =>
-  answers.idade === 'menos_9' || answers.idade === '15_mais'
-const inRange = (answers: QuizAnswers) => answers.idade === '9_11' || answers.idade === '12_14'
+  answers.idade === 'menos_9' || answers.idade === '18_mais'
+const inRange = (answers: QuizAnswers) =>
+  answers.idade === '9_11' || answers.idade === '12_14' || answers.idade === '15_17'
 const isProfile = (value: string): value is DesafioProfile =>
   Object.hasOwn(DESAFIO_PROFILE_IDS, value)
 
@@ -133,8 +136,6 @@ export function desafioDecision(answers: QuizAnswers): DesafioDecision | null {
           : answers.experiencia === 'interrompida'
             ? 'retomar_com_apoio'
             : 'conhecer_projeto'
-  const suffix =
-    principal === 'A' ? '/tempo-de-tela' : principal === 'D' ? '/iniciacao-tecnologica' : ''
   return {
     version: DESAFIO_QUIZ_VERSION,
     principal,
@@ -149,6 +150,7 @@ export function desafioDecision(answers: QuizAnswers): DesafioDecision | null {
         ? 'precisa_conferir'
         : 'sem_incompatibilidade_declarada',
     next,
-    offerPath: `${DESAFIO_BASE}/oferta${suffix}`,
+    // Uma página só para 9 a 17 desde 21/10/2026 (as variantes por motivo viraram 301 para ela).
+    offerPath: `${DESAFIO_BASE}/oferta`,
   }
 }

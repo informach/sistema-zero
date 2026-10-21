@@ -20,6 +20,7 @@ export type { QuizAnswers } from '../lib/quiz-types'
 
 import { COMUNIDADE_ADULTO } from './comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
+import { DESAFIO_ADULTO } from './desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
 import { NO_COMANDO_DA_IA } from './no-comando-da-ia'
 
@@ -276,6 +277,10 @@ export const FUNNELS: Record<string, FunnelDef> = {
   [NO_COMANDO_DA_IA.key]: NO_COMANDO_DA_IA,
   // DEPOIS do NCI: a landing /pro redireciona ao PRIMEIRO funil pro do map.
   [COMUNIDADE_ADULTO.key]: COMUNIDADE_ADULTO,
+  // O Desafio adulto (`DESAFIO_ADULTO`, 21/10/2026, pronto em `./desafio-adulto`) entra AQUI, depois
+  // da Comunidade adulta (o `/pro` segue no NCI), quando a env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`
+  // existir no Railway de staging e de produção: registrado sem ela, o funil não sobe. Ao registrar,
+  // declare o nome em `.railway/variables.ts` e ponha a oferta e o Termo no sitemap.
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
   // DEPOIS do Desafio: a landing /kids redireciona ao PRIMEIRO funil kids do map
   // ([audience]/index.astro) — a ordem preserva o destino atual do tráfego.
@@ -305,6 +310,15 @@ export function getFunnel(
 export function getFunnelByKey(key: string | null | undefined): FunnelDef | null {
   if (!key) return null
   return FUNNELS[key] ?? null
+}
+
+/**
+ * True para os dois funis do Desafio do Primeiro Jogo (Kids e adulto): a mesma oferta de 30 dias,
+ * com a capa do checkout e a /obrigado que informa a data final. O e-mail com a data
+ * (`challenge-access-approved`) segue só no Kids (ver `welcome-email.ts`).
+ */
+export function isDesafioFunnel(key: string | null | undefined): boolean {
+  return key === DESAFIO_PRIMEIRO_JOGO.key || key === DESAFIO_ADULTO.key
 }
 
 /** True se `value` é uma chave de funil conhecida (validação de entrada do cliente). */

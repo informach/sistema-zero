@@ -11,11 +11,9 @@ import { join } from 'node:path'
 
 const SRC = join(import.meta.dir, '..', '..', 'src')
 const receitas = readFileSync(join(SRC, 'styles', 'kids-oferta.css'), 'utf8')
-// A oferta do Desafio é a página que hoje veste o layout `.cdc` (as páginas da Comunidade têm o seu).
-const body = readFileSync(
-  join(SRC, 'components', 'funnel', 'oferta', 'DesafioOfertaBody.astro'),
-  'utf8',
-)
+// O layout `.cdc` hoje veste as páginas do programa (presente e embaixadores): as ofertas da
+// Comunidade e, desde 21/10/2026, as do Desafio têm o seu.
+const body = readFileSync(join(SRC, 'components', 'referrals', 'ProgramaLayout.astro'), 'utf8')
 // O layout saiu do <style> do body para um arquivo próprio (01/10/2026): continua prefixado por `.cdc`.
 const layoutCss = readFileSync(join(SRC, 'styles', 'comunidade-oferta.css'), 'utf8')
 const semComentarios = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
@@ -39,6 +37,10 @@ const novos = {
   'presente-kids.css': '.c917',
   'presente-adulto.css': '.cda',
   'embaixador.css': '.emb',
+  // As três páginas do Desafio (21/10/2026) vestem o layout da Comunidade do mesmo público.
+  'desafio-917.css': '.c917',
+  'desafio-menor9.css': '.cm9',
+  'desafio-adulto.css': '.cda',
 } as const
 const novosCss = Object.fromEntries(
   Object.keys(novos).map((nome) => [nome, readFileSync(join(SRC, 'styles', nome), 'utf8')]),
@@ -104,8 +106,8 @@ describe('Comunidade: o CSS da oferta só fala por tokens', () => {
   })
 
   test('o body importa as receitas e o layout carrega a Baloo 800 (os títulos são 800)', () => {
-    expect(body).toContain("import '../../../styles/kids-oferta.css'")
-    expect(body).toContain("import '../../../styles/comunidade-oferta.css'")
+    expect(body).toContain("import '../../styles/kids-oferta.css'")
+    expect(body).toContain("import '../../styles/comunidade-oferta.css'")
     expect(body).not.toContain('<style')
     // A comparação de acessos é desenhada no layout (par de cartas, por token), sem CSS próprio.
     const comparacao = readFileSync(

@@ -27,8 +27,12 @@ export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
         label: 'De 12 a 14 anos.',
       },
       {
-        value: '15_mais',
-        label: '15 anos ou mais.',
+        value: '15_17',
+        label: 'De 15 a 17 anos.',
+      },
+      {
+        value: '18_mais',
+        label: '18 anos ou mais.',
       },
     ],
     id: 1,

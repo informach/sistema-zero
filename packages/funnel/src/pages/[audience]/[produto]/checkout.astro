@@ -1,7 +1,7 @@
 ---
 import Footer from '../../../components/Footer.astro'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
-import { getFunnel } from '../../../funnels/registry'
+import { getFunnel, isDesafioFunnel } from '../../../funnels/registry'
 import CheckoutForm from '../../../islands/CheckoutForm'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import {
@@ -205,7 +205,7 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
         height="80"
         class:list={[
           'size-16 shrink-0 rounded-lg border border-line/60 sm:size-20',
-          f.key === 'kids/desafio-primeiro-jogo' ? 'object-contain bg-[#94d5f5]' : 'object-cover',
+          isDesafioFunnel(f.key) ? 'object-contain bg-[#94d5f5]' : 'object-cover',
         ]}
         decoding="async"
       />

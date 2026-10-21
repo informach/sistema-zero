@@ -71,6 +71,11 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > compareAt R$ 1.164), `altOffer` nos dois sentidos, garantia 7 dias, SEM `maxProfiles`/cupom/parcelas
 > — a MENSAL é a oferta do funil `/pro/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`). Preço inicial igual ao Kids (decisão da dona).
+> **Desafio do Primeiro Jogo ADULTO** (`desafio-primeiro-jogo-adulto`, 21/10/2026 — `kind:'course'`,
+> courseRef `desafio-primeiro-jogo-adulto`) **+ oferta ATIVA `desafio-primeiro-jogo-adulto-30-dias`**, a
+> MESMA do Kids (R$ 67, `one_time`/`fixed`/30 dias, garantia 7, `allowsCoupon`) com o Mural ADULTO
+> completo como item — a oferta do funil `/pro/desafio-primeiro-jogo`
+> (env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`). O members concede o Mural adulto visitante depois do prazo.
 > A compra adulta não amplia direito Kids e vice-versa; a jornada adulta (Admin → Professor →
 > Jornada adulta) decide quando cada ferramenta abre. ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
 > `community_gated` do servidor homônimo no hub e com o `/members/access`. **`tool` é só TAXONOMIA do

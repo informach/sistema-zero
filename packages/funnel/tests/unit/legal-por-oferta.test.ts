@@ -15,7 +15,7 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
   })
 
   test('a versão gravada na compra vem do funil do lead', () => {
-    expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-10-20')
+    expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-10-21')
     expect(termsVersionForFunnel('kids/comunidade-dos-criadores')).toBe(
       'comunidade-kids-2026-10-20b',
     )
