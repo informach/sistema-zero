@@ -96,6 +96,31 @@ Cada parte é feita pelo caminho canônico do produto:
   - Pro, Ponte e Python não chegam aos clientes: na política real eles vêm em etapas mais
     adiante.
 
+## Resultado do ponta a ponta (21/10/2026, `studio-e2e.mjs`)
+
+O teste cobre criar, editar, executar, "Guardado na sua conta", recarregar, reabrir e reabrir num
+navegador limpo.
+
+- **Adulto, Python Clássico/Pro, admin e superadmin:** passa em tudo, com saída real do Pyodide
+  servido pelo runtime local. Python Pro publicado → `/jogar` anônimo executa o programa.
+- **Adulto, JS Clássico e JS Pro, admin:** passa. O JS Pro roda no WebContainer, que baixa os
+  pacotes do npm. JS Clássico publicado → `/jogar` anônimo funciona.
+- **Adulto, staff:** passa em JS e não vê a opção Python.
+- **Adulto, cliente (`qa.adulto`):** passa no JS Clássico (edição por blocos, porque ainda não tem
+  Ponte) e o `/jogar` anônimo funciona. Não vê Python nem Pro, como manda a política.
+- **Kids, JS Clássico e Python Clássico, perfis da equipe:** passa; Python Clássico publicado →
+  `/jogar` anônimo funciona.
+- **Kids, criança (`Crianca QA`):** passa no JS Clássico por blocos e o `/jogar` anônimo funciona.
+  Não vê Python nem Pro.
+- **Kids, perfil do staff:** não vê Python.
+- **Kids, Pro (JS ou Python) da equipe:** **não abre**. O Members dá a prévia da equipe também ao
+  perfil da conta da equipe (`get-gamification.service.ts`), e o `/estudio` livre oferece "Pro".
+  Mas `/estudio/pro/[id]` recusa a prévia com perfil ativo (`resolveStudioProAccess`, teste
+  `studio-pro-access.test.ts`). Sem perfil, o proxy manda a conta para `/pais`. O projeto Pro é
+  criado e o editor volta para a lista.
+- **Publicar JS Pro:** não funciona ("Não foi possível compilar o projeto agora."), porque precisa
+  do `/v1/build` (contêiner).
+
 ## O que continua fora do local
 
 - **Docker:**
