@@ -53,14 +53,17 @@ export function createStudioRuntimeHosts(catalog: StudioRuntimeCatalog, raw: unk
       project: Pick<StudioRuntimeSubject, 'runtime'>,
     ): readonly StudioOperationAvailability[] {
       if (!frame(project)) return []
-      // Browser implementation exists for these operations. The manifest and context narrow
-      // them further; installing packages and shell access are deliberately absent.
+      // Browser implementation exists for the interpreter operations; publication and Zappy
+      // assistance are implemented by the BFF for any hosted Python release. The manifest and
+      // context narrow them further; installing packages and shell access are deliberately absent.
       const capabilities: readonly StudioProjectCapability[] = [
         'edit',
         'execute',
         'pause',
+        'publish',
         'export-source',
         'python-repl',
+        'assist',
       ]
       return capabilities.map((capability) => ({ capability, state: 'available' }))
     },

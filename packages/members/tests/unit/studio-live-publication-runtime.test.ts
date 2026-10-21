@@ -3,14 +3,15 @@ import {
   type StudioLivePublicationRuntimeRequest,
   StudioLivePublicationRuntimeRequestSchema,
 } from '@sistemazero/core/studio/runtime-authorization'
+import type { StudioProjectCapability } from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { AuthorizeLivePublicationRuntimeService } from '../../src/application/studio/authorize-live-publication-runtime.service'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
 
-async function setup(kind: 'classic' | 'pro') {
-  const f = await authoringFixture('python', kind)
+async function setup(kind: 'classic' | 'pro', capabilities?: readonly StudioProjectCapability[]) {
+  const f = await authoringFixture('python', kind, capabilities)
   const actor = {
     id: crypto.randomUUID(),
     accountId: crypto.randomUUID(),
@@ -52,13 +53,20 @@ for (const kind of ['classic', 'pro'] as const)
     const decision = await f.service.execute(f.actor, f.request)
     expect(decision.context).toEqual(f.request.context)
     expect(decision.actor).toEqual({ userId: f.actor.id, accountId: f.actor.accountId })
-    expect(decision.capabilities).toEqual(['execute'])
+    expect(decision.capabilities).toEqual(['execute', 'publish'])
     expect(decision.blockIds).toEqual([])
     expect(decision.expiresAt - decision.issuedAt).toBe(30_000)
     f.state.allowed = false
     await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('not eligible')
     expect(f.state.calls).toBe(2)
   })
+
+test('saved live publication reports publish only when the exact release declares it', async () => {
+  const f = await setup('classic', ['edit', 'execute', 'export-source', 'python-repl'])
+  const decision = await f.service.execute(f.actor, f.request)
+  // Execution remains available for the published player; publication is not inferred.
+  expect(decision.capabilities).toEqual(['execute'])
+})
 
 test('live publishing rejects stale revision, substituted metadata/extensions/requirements and non-execution operations', async () => {
   const f = await setup('pro')

@@ -54,7 +54,16 @@ export class AuthorizeFreeRuntimeService {
       project: request.subject,
       operation: request.operation,
       curation,
-      grantedCapabilities: ['edit', 'execute', 'pause', 'export-source', 'python-repl'],
+      // Publication and Zappy remain absent unless the selected release declares them.
+      grantedCapabilities: [
+        'edit',
+        'execute',
+        'pause',
+        'publish',
+        'export-source',
+        'python-repl',
+        'assist',
+      ],
     })
     const issuedAt = this.clock()
     return StudioFreeRuntimeDecisionSchema.parse({

@@ -61,8 +61,17 @@ export class AuthorizeLessonRuntimeService {
       operation: request.operation,
       curation,
       // A published Pro lesson grants its scoped editor. This does not grant the free Pro app,
-      // publishing, installation, a terminal, or access to any other lesson/project.
-      grantedCapabilities: ['edit', 'execute', 'pause', 'export-source', 'python-repl'],
+      // installation, a terminal, or access to any other lesson/project. `publish` and `assist`
+      // survive only when the release declares them; the Mural still checks showcase eligibility.
+      grantedCapabilities: [
+        'edit',
+        'execute',
+        'pause',
+        'publish',
+        'export-source',
+        'python-repl',
+        'assist',
+      ],
     })
     const issuedAt = this.clock()
     return StudioLessonRuntimeDecisionSchema.parse({

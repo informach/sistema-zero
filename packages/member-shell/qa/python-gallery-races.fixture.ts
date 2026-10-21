@@ -102,17 +102,24 @@ test('late CopyObject of a concurrent retry cannot overwrite the accepted destin
       }),
     )
   }
+  // Search a same-size, different program. Fixture metadata (such as the inert release hash)
+  // shifts the compressed size, so try a periodic and a deterministic high-entropy filler.
   let matched = false
-  for (let n = 0; n < 256; n++) {
-    lateProgram.tree['main.py'] = {
-      kind: 'file',
-      content: `pass\n#${Array.from({ length: n }, (_, i) => String.fromCharCode(33 + (i % 90))).join('')}\n`,
+  const fillers = [
+    (i: number) => 33 + (i % 90),
+    (i: number) => 33 + ((i * 7919 + ((i * i) % 89)) % 90),
+  ]
+  search: for (const filler of fillers)
+    for (let n = 0; n < 256; n++) {
+      lateProgram.tree['main.py'] = {
+        kind: 'file',
+        content: `pass\n#${Array.from({ length: n }, (_, i) => String.fromCharCode(filler(i))).join('')}\n`,
+      }
+      if (encode(lateProgram).byteLength === encode(winningProgram).byteLength) {
+        matched = true
+        break search
+      }
     }
-    if (encode(lateProgram).byteLength === encode(winningProgram).byteLength) {
-      matched = true
-      break
-    }
-  }
   expect(matched).toBe(true)
   expect(encode(lateProgram).byteLength).toBe(encode(winningProgram).byteLength)
   let current = lateProgram,

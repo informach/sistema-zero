@@ -92,11 +92,16 @@ export async function createStudioRuntimePolicy(
       const frame = hosts.frame(project)
       if (!frame) throw new AccessDeniedError('O ambiente de execução ainda não está disponível.')
       return {
+        // `assist` is reported, never inferred: the BFF requires it before Zappy answers.
+        // A read-only observer may keep assistance, but never editing or execution rights.
         capabilities: allowReadOnlyAnalysis
-          ? []
+          ? result.capabilities.filter((capability) => capability === 'assist')
           : operation === 'analyze'
             ? result.capabilities.filter(
-                (capability) => capability === 'edit' || capability === 'export-source',
+                (capability) =>
+                  capability === 'edit' ||
+                  capability === 'export-source' ||
+                  capability === 'assist',
               )
             : result.capabilities,
         grantedExtensionIds: result.grantedExtensionIds,

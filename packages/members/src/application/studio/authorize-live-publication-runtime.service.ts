@@ -42,7 +42,8 @@ export class AuthorizeLivePublicationRuntimeService {
       project: request.subject,
       operation: 'execute',
       curation,
-      grantedCapabilities: ['execute', 'pause'],
+      // `publish` survives only when the selected release declares it; the BFF requires it.
+      grantedCapabilities: ['execute', 'pause', 'publish'],
     })
     const issuedAt = this.clock()
     return StudioLivePublicationRuntimeDecisionSchema.parse({
@@ -56,7 +57,8 @@ export class AuthorizeLivePublicationRuntimeService {
       operation: 'execute',
       ...resolved,
       capabilities: resolved.capabilities.filter(
-        (capability) => capability === 'execute' || capability === 'pause',
+        (capability) =>
+          capability === 'execute' || capability === 'pause' || capability === 'publish',
       ),
       blockIds: [],
       curation,

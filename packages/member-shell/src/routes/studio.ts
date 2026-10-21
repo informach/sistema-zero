@@ -103,7 +103,12 @@ function publicationError(error: unknown): NextResponse {
   if (error instanceof InvalidJsonBodyError) return invalid()
   if (error instanceof StudioPublicationError || error instanceof StudioProRuntimeInputError)
     return NextResponse.json(
-      { error: { code: 'PRO_PUBLICATION_FAILED', message: error.message } },
+      {
+        error: {
+          code: (error instanceof StudioPublicationError && error.code) || 'PRO_PUBLICATION_FAILED',
+          message: error.message,
+        },
+      },
       { status: error.status },
     )
   if (error instanceof StudioProRuntimeUpstreamError)

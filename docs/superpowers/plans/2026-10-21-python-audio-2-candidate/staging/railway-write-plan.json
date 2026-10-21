@@ -1,0 +1,67 @@
+{
+  "state": "public-delta-prepared-not-applied",
+  "beforePresenceRequiresFreshConfirmation": true,
+  "sourcePlanSha256": "88a4e71c0e8d3d33bbe667fae71f6e7be397e529b181d5b50a298292ac414ea2",
+  "freshBaselineRequired": true,
+  "historicalAbsenceOnly": true,
+  "operations": [
+    {
+      "key": "STUDIO_AUTHORING_POLICY_JSON",
+      "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "environmentId": "f634cff6-aafb-4804-8b69-172fad4e946e",
+      "historicalBefore": {
+        "present": false
+      },
+      "inputFile": "staging/members-authoring-policy.json",
+      "skipDeploys": true,
+      "argv": [
+        "variable",
+        "set",
+        "STUDIO_AUTHORING_POLICY_JSON",
+        "--stdin",
+        "--skip-deploys",
+        "--project",
+        "415d5a1c-5f75-432c-8445-b395d0977ce3",
+        "--environment",
+        "f634cff6-aafb-4804-8b69-172fad4e946e",
+        "--service",
+        "aa282801-ffba-477c-af6d-394b2f4f9af9",
+        "--json"
+      ],
+      "inputIsPublicButCommandOutputStillPrivateRam": true
+    },
+    {
+      "key": "STUDIO_RUNTIME_HOSTS_JSON",
+      "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "environmentId": "f634cff6-aafb-4804-8b69-172fad4e946e",
+      "historicalBefore": {
+        "present": false
+      },
+      "inputFile": "staging/members-runtime-hosts.json",
+      "skipDeploys": true,
+      "argv": [
+        "variable",
+        "set",
+        "STUDIO_RUNTIME_HOSTS_JSON",
+        "--stdin",
+        "--skip-deploys",
+        "--project",
+        "415d5a1c-5f75-432c-8445-b395d0977ce3",
+        "--environment",
+        "f634cff6-aafb-4804-8b69-172fad4e946e",
+        "--service",
+        "aa282801-ffba-477c-af6d-394b2f4f9af9",
+        "--json"
+      ],
+      "inputIsPublicButCommandOutputStillPrivateRam": true
+    }
+  ],
+  "noOps": [
+    "Auth credentials",
+    "Members runtime URL/token",
+    "all three app frame-origin lists",
+    "all Language URLs/tokens"
+  ],
+  "runHold": "Railway paused; do not apply or deploy until reviewed fresh state and safe rollback/deploy gate",
+  "supersedesUnappliedPilotDelta": "1bd48fb4b8dca1f50da4dd2090f548bbb838f13adbcdbfc0c1d6ddad02aab180"
+}

@@ -11,6 +11,7 @@ import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python
 import type { StudioFreeRuntimeRequest } from '@sistemazero/core/studio/runtime-authorization'
 import {
   createStudioRuntimeRelease,
+  type StudioProjectCapability,
   type StudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
@@ -26,8 +27,12 @@ import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
 
-async function setup(kind: 'classic' | 'pro' = 'classic', provided?: StudioRuntimeRelease) {
-  const fixture = await authoringFixture('python', kind)
+async function setup(
+  kind: 'classic' | 'pro' = 'classic',
+  provided?: StudioRuntimeRelease,
+  capabilities?: readonly StudioProjectCapability[],
+) {
+  const fixture = await authoringFixture('python', kind, capabilities)
   if (provided) {
     const runtime = {
       profileId: provided.profileId,
@@ -159,7 +164,7 @@ test('free Classic uses account ownership and profile achievement, without trans
   expect(decision.subjectSha256).toBe(await sha256Hex(canonicalJson(f.request.subject)))
   expect(decision.revision).toBe(f.request.revision)
   expect(decision.blockIds).toEqual(['py_print'])
-  expect(decision.capabilities).toEqual(['edit', 'execute', 'export-source'])
+  expect(decision.capabilities).toEqual(['edit', 'execute', 'publish', 'export-source', 'assist'])
   expect(decision.expiresAt - decision.issuedAt).toBe(30_000)
   expect(
     f.state.reads
@@ -172,6 +177,29 @@ test('free Classic uses account ownership and profile achievement, without trans
       .every(({ id, audience }) => id === f.actor.userId && audience === 'kids'),
   ).toBe(true)
   expect(f.project).toEqual(before)
+})
+
+test('free publication and Zappy appear only when the exact Python release declares them', async () => {
+  const declared = await setup('classic')
+  const analysis = await declared.service.execute(declared.actor, {
+    ...declared.request,
+    operation: 'analyze',
+  })
+  expect(analysis.capabilities).toEqual(['edit', 'export-source', 'assist'])
+
+  const pilot = await setup('classic', undefined, [
+    'edit',
+    'export-source',
+    'execute',
+    'python-repl',
+  ])
+  const execution = await pilot.service.execute(pilot.actor, pilot.request)
+  expect(execution.capabilities).toEqual(['edit', 'execute', 'export-source'])
+  const pilotAnalysis = await pilot.service.execute(pilot.actor, {
+    ...pilot.request,
+    operation: 'analyze',
+  })
+  expect(pilotAnalysis.capabilities).toEqual(['edit', 'export-source'])
 })
 
 test('each operation rechecks product, persisted capabilities and known current or frozen palette', async () => {

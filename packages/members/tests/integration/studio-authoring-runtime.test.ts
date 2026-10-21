@@ -93,7 +93,7 @@ test('active authors execute an unsaved Python candidate against their current u
   const decision = StudioAuthoringRuntimeDecisionSchema.parse(await response.json())
   expect(decision.context).toEqual(f.body.context)
   expect(decision.actor.userId).toBe(authorId)
-  expect(decision.capabilities).toEqual(['edit', 'execute', 'export-source'])
+  expect(decision.capabilities).toEqual(['edit', 'execute', 'export-source', 'assist'])
   expect(decision.projectId).toBe(f.body.subject.id)
   expect(decision.expiresAt - decision.issuedAt).toBe(30_000)
   expect(f.drafts.drafts.get(f.draft.lessonId)).toEqual(before)

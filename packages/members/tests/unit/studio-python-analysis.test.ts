@@ -62,7 +62,10 @@ test('analysis HTTP keeps the real live writer/observer policy, revision and sou
     },
   )
   expect(observed.status).toBe(200)
-  expect(StudioLiveRuntimeDecisionSchema.parse(await observed.json()).capabilities).toEqual([])
+  // An observer never edits or executes; Zappy stays available only when the release declares it.
+  expect(StudioLiveRuntimeDecisionSchema.parse(await observed.json()).capabilities).toEqual([
+    'assist',
+  ])
   expect(f.records.records.get(f.claimed.id)).toEqual(before)
   expect(f.records.revisions.size).toBe(0)
 })
@@ -92,5 +95,7 @@ test('analysis HTTP rejects untrusted transport, support, foreign context, execu
   f.advance(35_000)
   const afterLease = await f.request()
   expect(afterLease.status).toBe(200)
-  expect(StudioLiveRuntimeDecisionSchema.parse(await afterLease.json()).capabilities).toEqual([])
+  expect(StudioLiveRuntimeDecisionSchema.parse(await afterLease.json()).capabilities).toEqual([
+    'assist',
+  ])
 })

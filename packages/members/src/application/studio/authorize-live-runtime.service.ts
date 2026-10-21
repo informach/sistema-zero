@@ -65,9 +65,11 @@ export class AuthorizeLiveRuntimeService {
       project: request.subject,
       operation: request.operation,
       curation,
+      // Publication uses the separate live-publication context; Zappy needs the release's
+      // `assist`, which a read-only observer may keep without any editing right.
       grantedCapabilities: snapshot.author
-        ? ['edit', 'execute', 'pause', 'export-source', 'python-repl']
-        : [],
+        ? ['edit', 'execute', 'pause', 'export-source', 'python-repl', 'assist']
+        : ['assist'],
       allowReadOnlyAnalysis: !snapshot.author,
     })
     const issuedAt = this.clock()
