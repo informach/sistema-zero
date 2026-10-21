@@ -2,7 +2,7 @@ import { defineConfig, devices } from '@playwright/test'
 
 /**
  * Homologação local do Estúdio Completo Pro: WebContainer real, `npm install`,
- * Vite, HMR, terminal e reabertura. Fica fora do CI porque baixa o runtime do
+ * Vite, edição sem reiniciar o dev-server, terminal e reabertura. Fica fora do CI porque baixa o runtime do
  * WebContainer e os pacotes npm a cada execução (minutos e rede externa); roda
  * sob demanda antes de liberar gravações:
  *
