@@ -31,6 +31,12 @@ export const RUNTIME_PERSIST = join(STACK_DIR, 'wrangler')
 
 const DEFAULT_DISTRIBUTION =
   'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a'
+/** Buckets locais dos apps: UGC (criações), privado (snapshots /jogar) e público (capas). */
+const APP_BUCKETS = {
+  LOCAL_UGC: 'sz-local-ugc',
+  LOCAL_PRIVATE: 'sz-local-private',
+  LOCAL_PUBLIC: 'sz-local-public',
+}
 const DEFAULT_PLAN = join(
   ROOT,
   'docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json',
@@ -56,6 +62,10 @@ if (import.meta.main) {
     manifestSha256: plan.configuration.hosts[0].runtime.manifestSha256,
   }
 
+  const s3Credentials = {
+    accessKeyId: secrets.R2_LOCAL_ACCESS_KEY_ID,
+    secretAccessKey: secrets.R2_LOCAL_SECRET_ACCESS_KEY,
+  }
   const runtimeSrc = join(ROOT, 'packages/studio-runtime/src')
   const { storePythonRuntimeDistribution } = await import(
     join(runtimeSrc, 'python-distributions.ts')
@@ -78,10 +88,20 @@ if (import.meta.main) {
     main,
     compatibility_date: '2026-07-01',
     compatibility_flags: ['nodejs_compat'],
-    r2_buckets: ['PRO_ARTIFACTS', 'PYTHON_INPUTS', 'PYTHON_PREVIEWS'].map((binding) => ({
-      binding,
-      bucket_name: 'sistemazero-studio-artifacts-local',
-    })),
+    r2_buckets: [
+      ...['PRO_ARTIFACTS', 'PYTHON_INPUTS', 'PYTHON_PREVIEWS'].map((binding) => ({
+        binding,
+        bucket_name: 'sistemazero-studio-artifacts-local',
+      })),
+      // Buckets dos apps (criações, snapshots publicados, capas) servidos pelo endpoint S3
+      // local do Miniflare em /cdn-cgi/local/r2/s3/<bucket> (SigV4 + URLs pré-assinadas,
+      // CORS aberto). O Worker não usa estes bindings; eles só existem para o endpoint.
+      ...Object.entries(APP_BUCKETS).map(([binding, bucket_name]) => ({
+        binding,
+        bucket_name,
+        local_dev: { experimental_s3_credentials: s3Credentials },
+      })),
+    ],
     durable_objects: {
       bindings: [
         { class_name: 'ProBuildSandbox', name: 'ProBuildSandbox' },
@@ -151,14 +171,30 @@ if (import.meta.main) {
     await proxy.dispose()
   }
 
+  // Adulto e Kids: R2 local (R2_S3_ENDPOINT aceita HTTP só em loopback) e o Worker para
+  // publicar/resolver projetos Python e Pro. A origem do Worker já está nas origens de frame,
+  // então o CSP connect-src libera os PUT/GET pré-assinados do navegador.
+  const memberApp = {
+    STUDIO_PYTHON_FRAME_ORIGINS: JSON.stringify([RUNTIME_ORIGIN]),
+    STUDIO_PRO_RUNTIME_URL: RUNTIME_ORIGIN,
+    STUDIO_PRO_RUNTIME_TOKEN: secrets.STUDIO_PRO_RUNTIME_TOKEN,
+    R2_ACCOUNT_ID: 'local',
+    R2_ACCESS_KEY_ID: s3Credentials.accessKeyId,
+    R2_SECRET_ACCESS_KEY: s3Credentials.secretAccessKey,
+    R2_S3_ENDPOINT: `${RUNTIME_ORIGIN}/cdn-cgi/local/r2/s3`,
+    R2_UGC_BUCKET: APP_BUCKETS.LOCAL_UGC,
+    R2_PRIVATE_BUCKET: APP_BUCKETS.LOCAL_PRIVATE,
+    R2_BUCKET: APP_BUCKETS.LOCAL_PUBLIC,
+    R2_PUBLIC_URL: `${RUNTIME_ORIGIN}/cdn-cgi/local/r2/public/${APP_BUCKETS.LOCAL_PUBLIC}`,
+  }
   const studioEnv = {
     members: {
       STUDIO_AUTHORING_POLICY_JSON: JSON.stringify(plan.configuration.members),
       STUDIO_RUNTIME_HOSTS_JSON: JSON.stringify([{ runtime, origin: RUNTIME_ORIGIN }]),
     },
     admin: { STUDIO_PYTHON_FRAME_ORIGINS: JSON.stringify([RUNTIME_ORIGIN]) },
-    community: { STUDIO_PYTHON_FRAME_ORIGINS: JSON.stringify([RUNTIME_ORIGIN]) },
-    kids: { STUDIO_PYTHON_FRAME_ORIGINS: JSON.stringify([RUNTIME_ORIGIN]) },
+    community: memberApp,
+    kids: memberApp,
   }
   fs.writeFileSync(STUDIO_ENV_FILE, `${JSON.stringify(studioEnv, null, 2)}\n`)
   console.log(`✓ distribuição ${runtime.manifestSha256} e config ${descriptor.sha256} no R2 local`)
