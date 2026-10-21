@@ -68,10 +68,10 @@ for (const kind of ['classic', 'pro'] as const)
       await expect(player.getByRole('log')).toContainText('Você ganhou! 42')
       expect(await anonymous.cookies()).toEqual([])
       expect(
-        requests.some((url) =>
+        requests.filter((url) =>
           /monaco|webcontainer|analysis-worker|python-language|ruff/i.test(url),
         ),
-      ).toBe(false)
+      ).toEqual([])
       const second = 'print("Versão nova")\n'
       await page.evaluate((source) => studioPublicAuthorProbe.source(source), second)
       await player.reload()
