@@ -2,7 +2,7 @@ import type { RelatoId } from './types'
 
 // Página para responsáveis de crianças menores de 9 anos, que criam o jogo JUNTO com o adulto.
 // Desenho aprovado: docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/
-// PaginaMenor9.html. A copy é a do desenho, palavra por palavra; a criança é "ela" do começo ao fim.
+// PaginaMenor9.html. A copy é a do desenho, palavra por palavra; a criança é "seu filho" e "ele", como na página de 9 a 17 (decisão da dona em 21/10/2026: a página serve a meninos e meninas, e a maioria dos alunos são meninos).
 // Preços nunca entram escritos: os marcadores abaixo são preenchidos pelo body com os planos ao vivo.
 //   {{preco_mensal}}              mensalidade
 //   {{preco_anual}}               valor do anual
@@ -167,7 +167,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   seoTitle:
     'Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero',
   description:
-    'Os jogos dela, um depois do outro, feitos com você do lado. Ela decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
+    'Os jogos do seu filho, um depois do outro, feitos com você do lado. Ele decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
   capa: 'checkout-capa.webp',
   topo: {
     pular: 'Ir para o conteúdo',
@@ -179,13 +179,13 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
   },
   heroi: {
     selo: 'Para crianças menores de 9 anos, com um adulto ao lado',
-    titulo: 'Os jogos dela, um depois do outro, feitos com você do lado.',
+    titulo: 'Os jogos do seu filho, um depois do outro, feitos com você do lado.',
     enfase: 'com você do lado.',
     texto:
-      'Imagine a cara dela quando o personagem que ela escolheu aparece na tela e faz exatamente o que ela mandou. Ela decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ela inventar.',
+      'Imagine a cara dele quando o personagem que ele escolheu aparece na tela e faz exatamente o que ele mandou. Ele decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ele inventar.',
     beneficios: [
-      'Tela junto com você, e não sozinha no tablet',
-      'A ideia dela na tela, do jeito que ela inventou',
+      'Tela junto com você, e não sozinho no tablet',
+      'A ideia dele na tela, do jeito que ele inventou',
       'Um jogo depois do outro',
     ],
     cta: CTA_PLANOS,
@@ -201,15 +201,15 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     zappy: { arquivo: 'zappy-fala.webp', alt: '', largura: 360, altura: 458 },
   },
   problema: {
-    titulo: 'Ela inventa cada brincadeira. E no tablet, só joga joguinho pronto',
+    titulo: 'Ele inventa cada brincadeira. E no tablet, só joga joguinho pronto',
     texto:
-      'Ela inventa regra para o pega-pega, cria personagem, conta fase inteira que só existe na cabeça dela. Aí pega o tablet e fica no joguinho que outra pessoa fez. Você procura alguma coisa melhor e só acha curso para criança maior, que pede leitura, ou aplicativo de passar o tempo. E fica a dúvida de sentar junto para fazer o quê.',
+      'Ele inventa regra para o pega-pega, cria personagem, conta fase inteira que só existe na cabeça dele. Aí pega o tablet e fica no joguinho que outra pessoa fez. Você procura alguma coisa melhor e só acha curso para criança maior, que pede leitura, ou aplicativo de passar o tempo. E fica a dúvida de sentar junto para fazer o quê.',
     destaque:
-      'Muitos cursos e aplicativos foram pensados para a criança usar sozinha, e nessa idade ela ainda precisa de alguém do lado. Aqui, esse alguém é você.',
+      'Muitos cursos e aplicativos foram pensados para a criança usar sozinha. Nessa idade, seu filho ainda precisa de alguém do lado. Aqui, esse alguém é você.',
   },
   juntos: {
     titulo: 'Quando vocês sentam juntos para criar, a tela vira um tempo de vocês dois',
-    texto: 'Veja o que cada sessão traz para ela e para você.',
+    texto: 'Veja o que cada sessão traz para ele e para você.',
     cartas: [
       {
         titulo: 'Um tempo de tela que vocês dividem',
@@ -217,38 +217,38 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
           'Lado a lado, conversando, rindo do teste que deu errado e comemorando quando funciona.',
       },
       {
-        titulo: 'Ela diz: fui eu que fiz',
+        titulo: 'Ele diz: fui eu que fiz',
         texto:
-          'Quando o personagem que ela escolheu aparece na tela, a ideia vira coisa feita por ela.',
+          'Quando o personagem que ele escolheu aparece na tela, a ideia vira coisa feita por ele.',
       },
       {
         titulo: 'Um jogo para mostrar à família',
         texto:
-          'Ela esconde os bichinhos no jardim e chama você para achar. Depois, vocês mandam o link para os avós, os tios e os amigos.',
+          'Ele esconde os bichinhos no jardim e chama você para achar. Depois, vocês mandam o link para os avós, os tios e os amigos.',
       },
       {
-        titulo: 'Ela aprende sem perceber',
-        texto: 'Se tocar, some. Se achar, conta mais um. Ela vê na tela o que cada escolha faz.',
+        titulo: 'Ele aprende sem perceber',
+        texto: 'Se tocar, some. Se achar, conta mais um. Ele vê na tela o que cada escolha faz.',
       },
       {
-        titulo: 'Quando dá errado, ela tenta de novo',
+        titulo: 'Quando dá errado, ele tenta de novo',
         texto:
           'Errar vira parte da brincadeira: testa, vê o que aconteceu e tenta outra vez, em vez de desistir.',
       },
       {
-        titulo: 'Você entende como ela pensa',
+        titulo: 'Você entende como ele pensa',
         texto:
-          'Ao explicar o que quer que o jogo faça, ela mostra o raciocínio dela, e você acompanha de perto.',
+          'Ao explicar o que quer que o jogo faça, ele mostra o raciocínio dele, e você acompanha de perto.',
       },
     ],
   },
   papeis: {
-    titulo: 'E ela consegue, porque já entende regra de jogo melhor do que parece',
+    titulo: 'E ele consegue, porque já entende regra de jogo melhor do que parece',
     texto:
-      'Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ela inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ela fazer sozinha é a leitura e o mouse, e isso você empresta enquanto ela decide. É como aprender a falar antes de escrever: nessa fase, ela monta a lógica com blocos, quase sem digitar. Cada um fica com uma parte.',
+      'Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ele inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ele fazer sozinho é a leitura e o mouse, e isso você empresta enquanto ele decide. É como aprender a falar antes de escrever: nessa fase, ele monta a lógica com blocos, quase sem digitar. Cada um fica com uma parte.',
     cartas: [
       {
-        titulo: 'Ela decide',
+        titulo: 'Ele decide',
         texto: 'Quem se esconde, onde se esconde, o que acontece no toque e a mensagem do final.',
       },
       {
@@ -270,17 +270,17 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     passos: [
       {
         destaque: 'Vocês assistem ao vídeo juntos.',
-        texto: 'Se ela quiser ouvir a explicação do Zappy de novo, é só apertar Ouvir.',
+        texto: 'Se ele quiser ouvir a explicação do Zappy de novo, é só apertar Ouvir.',
       },
       { destaque: 'Depois jogam a versão pronta', texto: 'e acham todo mundo.' },
       {
         destaque: 'Então montam juntos:',
         texto:
-          'o esconderijo some com um toque e o jogo conta quem foi achado. Você lê o bloco, ela escolhe.',
+          'o esconderijo some com um toque e o jogo conta quem foi achado. Você lê o bloco, ele escolhe.',
       },
       {
         destaque: 'Apertam para testar.',
-        texto: 'Se não saiu como ela queria, descobrem juntos o porquê e testam de novo.',
+        texto: 'Se não saiu como ele queria, descobrem juntos o porquê e testam de novo.',
       },
       {
         destaque: 'E guardam para amanhã.',
@@ -325,44 +325,44 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     garantia: GARANTIA_CURTA,
   },
   seuPapel: {
-    titulo: 'O seu papel é mais simples do que parece: ler, perguntar e deixar a escolha com ela',
+    titulo: 'O seu papel é mais simples do que parece: ler, perguntar e deixar a escolha com ele',
     texto:
-      'Jogar o que ela criou já é um jeito de participar, para qualquer adulto. E quatro cuidados ajudam a sessão a render.',
+      'Jogar o que ele criou já é um jeito de participar, para qualquer adulto. E quatro cuidados ajudam a sessão a render.',
     cuidados: [
       {
         titulo: 'Pergunte antes de clicar',
-        texto: 'Um "e agora, o que acontece?" deixa a próxima decisão com ela.',
+        texto: 'Um "e agora, o que acontece?" deixa a próxima decisão com ele.',
       },
-      { titulo: 'Siga a ideia dela', texto: 'Até a ideia mais estranha vira um teste divertido.' },
+      { titulo: 'Siga a ideia dele', texto: 'Até a ideia mais estranha vira um teste divertido.' },
       {
         titulo: 'Pare no melhor momento',
         texto: 'Encerrem enquanto ainda está gostoso, porque o projeto espera por vocês.',
       },
       {
         titulo: 'Comemore o teste',
-        texto: 'Cada vez que ela aperta para testar, descobre alguma coisa nova.',
+        texto: 'Cada vez que ele aperta para testar, descobre alguma coisa nova.',
       },
     ],
   },
   pecas: {
-    titulo: 'Cada aula que vocês terminam deixa peças para o jogo que ela inventar',
+    titulo: 'Cada aula que vocês terminam deixa peças para o jogo que ele inventar',
     texto:
-      'Ela não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ela aprende de verdade, em vez de só apertar o que aparece.',
+      'Ele não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ele aprende de verdade, em vez de só apertar o que aparece.',
     cartas: [
       {
-        titulo: 'Nas aulas, ela aprende com um jogo pronto',
+        titulo: 'Nas aulas, ele aprende com um jogo pronto',
         texto:
-          'O jardim, o farol, a nave. Em cada um, ela escolhe personagem, cor e regra, e ganha as peças daquela aula: o toque que faz aparecer, a contagem, a chave que acende o farol.',
+          'O jardim, o farol, a nave. Em cada um, ele escolhe personagem, cor e regra, e ganha as peças daquela aula: o toque que faz aparecer, a contagem, a chave que acende o farol.',
       },
       {
-        titulo: 'Ao publicar A Chave do Farol, o Estúdio dela abre',
+        titulo: 'Ao publicar A Chave do Farol, o Estúdio dele abre',
         texto:
-          'Depois de A Chave do Farol, vocês ganham um lugar para começar um jogo do zero, com as peças que ela já conhece. É aqui que a brincadeira que ela inventou vira jogo.',
+          'Depois de A Chave do Farol, vocês ganham um lugar para começar um jogo do zero, com as peças que ele já conhece. É aqui que a brincadeira que ele inventou vira jogo.',
       },
       {
         titulo: 'Cada aula nova, uma peça nova',
         texto:
-          'Quanto mais aulas, mais peças e jogos maiores. Ela nunca fica diante de um bloco que não entende, e o desenho dela vira personagem no Pinta.',
+          'Quanto mais aulas, mais peças e jogos maiores. Ele nunca fica diante de um bloco que não entende, e o desenho dele vira personagem no Pinta.',
       },
     ],
     jornada: {
@@ -374,14 +374,14 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
         altura: 387,
       },
       legenda: {
-        destaque: 'Está escrito na tela dela.',
+        destaque: 'Está escrito na tela dele.',
         texto:
-          'No posto Construtor, ela cria os seus jogos com as ferramentas dos cursos que terminou. Tela do perfil de teste da equipe.',
+          'No posto Construtor, ele cria os seus jogos com as ferramentas dos cursos que terminou. Tela do perfil de teste da equipe.',
       },
     },
     proximos: {
-      destaque: 'Depois do jardim, vêm o farol, a nave, o jogo do jeito dela e o dino,',
-      texto: 'e cada um ensina peças novas para os próximos jogos dela:',
+      destaque: 'Depois do jardim, vêm o farol, a nave, o jogo do jeito dele e o dino,',
+      texto: 'e cada um ensina peças novas para os próximos jogos dele:',
     },
     jogos: [
       {
@@ -413,9 +413,9 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
       },
     ],
     continuidade: {
-      destaque: 'E esse começo continua com ela quando crescer.',
+      destaque: 'E esse começo continua com ele quando crescer.',
       texto:
-        'Quando começar a ler sozinha, passa a criar por conta própria no mesmo perfil, com os jogos e o progresso guardados. Mais adiante chegam o Pensa, o Molda para criar em 3D, a Ponte e o código. Se tiver um irmão mais velho, ele usa o segundo perfil.',
+        'Quando começar a ler sozinho, passa a criar por conta própria no mesmo perfil, com os jogos e o progresso guardados. Mais adiante chegam o Pensa, o Molda para criar em 3D, a Ponte e o código. Se ele tiver um irmão mais velho, o irmão usa o segundo perfil.',
     },
     fundadores: {
       imagem: {
@@ -429,12 +429,12 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     },
   },
   seguranca: {
-    titulo: 'Você também vai querer saber onde ela está criando',
+    titulo: 'Você também vai querer saber onde ele está criando',
     texto: 'Por isso, as regras são simples.',
     regras: [
       { titulo: 'O perfil público começa desligado', texto: 'Só você pode ligar.' },
       {
-        titulo: 'O jogo público não mostra o nome dela',
+        titulo: 'O jogo público não mostra o nome dele',
         texto: 'A página do jogo mostra só o jogo e o título.',
       },
       {
@@ -452,7 +452,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     texto:
       'Os dois planos dão acesso a tudo. Vocês têm as aulas dos cursos publicados e dos que forem lançados, o Estúdio e as ferramentas que a Jornada vai abrindo. Têm também o Mural e o Clube com moderação, as dúvidas respondidas pela equipe nos Recados e a área do responsável. A diferença está só na forma de pagar.',
     destaque:
-      'Uma assinatura, dois perfis: ela cria junto com você hoje e sozinha quando crescer, e o irmão mais velho usa o outro perfil.',
+      'Uma assinatura, dois perfis: ele cria junto com você hoje e sozinho quando crescer, e o irmão mais velho usa o outro perfil.',
     mensal: {
       nome: 'Mensal',
       preco: '{{preco_mensal}}',
@@ -475,7 +475,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     depois: {
       titulo: 'O que acontece depois de assinar',
       passos: [
-        'Você cria o perfil dela na sua área, com nome e data de nascimento.',
+        'Você cria o perfil dele na sua área, com nome e data de nascimento.',
         'Autoriza o computador que vocês vão usar.',
         'Entram com um código que você gera, válido por 10 minutos.',
         'A primeira aula abre com o jogo pronto, e vocês já começam a brincar.',
@@ -490,17 +490,17 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     titulo: 'Algumas dúvidas de quem quer criar junto',
     itens: [
       {
-        pergunta: 'Ela ainda não lê. Dá certo?',
+        pergunta: 'Ele ainda não lê. Dá certo?',
         resposta:
           'Dá, com você lendo. O botão Ouvir lê as falas do Zappy, as perguntas e as instruções. Os blocos e os botões do Estúdio continuam em texto, e é aí que você entra.',
       },
       {
-        pergunta: 'Ela pode inventar o jogo dela, ou só faz o do curso?',
+        pergunta: 'Ele pode inventar o jogo dele, ou só faz o do curso?',
         resposta:
-          'Os dois, nessa ordem. Nas aulas, ela cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ela inventou com as peças que ela já conhece. Cada curso novo ensina peças novas, e os jogos dela ficam maiores.',
+          'Os dois, nessa ordem. Nas aulas, ele cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ele inventou com as peças que ele já conhece. Cada curso novo ensina peças novas, e os jogos dele ficam maiores.',
       },
       {
-        pergunta: 'E se ela perder o interesse?',
+        pergunta: 'E se ele perder o interesse?',
         resposta:
           'As sessões têm o tamanho que vocês quiserem, e dá para parar por semanas e voltar do mesmo ponto. Se não fizer mais sentido, você cancela na sua área, sem multa, e o acesso segue até o fim do período pago.',
       },
@@ -512,22 +512,22 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
       {
         pergunta: 'Funciona no tablet?',
         resposta:
-          'Não. Precisa de computador com mouse e teclado, e pode ser o da família. Você conduz o mouse, e ela aponta na tela o que quer.',
+          'Não. Precisa de computador com mouse e teclado, e pode ser o da família. Você conduz o mouse, e ele aponta na tela o que quer.',
       },
       {
         pergunta: 'Vale assinar para uma criança tão pequena?',
         resposta:
-          'A assinatura tem 2 perfis, então serve também para um irmão mais velho e continua com ela quando crescer. E vocês têm 7 dias para testar juntos.',
+          'A assinatura tem 2 perfis, então serve também para um irmão mais velho e continua com ele quando crescer. E vocês têm 7 dias para testar juntos.',
       },
       {
-        pergunta: 'Ela tem 5 anos. É cedo?',
+        pergunta: 'Ele tem 5 anos. É cedo?',
         resposta:
-          'Depende mais de ela gostar de inventar brincadeira do que da idade. Com você lendo e conduzindo, as sessões ficam curtas e cada uma termina com alguma coisa na tela. Os 7 dias servem para vocês testarem.',
+          'Depende mais de ele gostar de inventar brincadeira do que da idade. Com você lendo e conduzindo, as sessões ficam curtas e cada uma termina com alguma coisa na tela. Os 7 dias servem para vocês testarem.',
       },
       {
         pergunta: 'Tem app grátis para isso. Qual é a diferença?',
         resposta:
-          'O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui, cada projeto é guiado, com aula em português e você no papel de ler e conduzir. Junto vêm o Estúdio e as ferramentas que vão abrindo, o Mural para mostrar o jogo à família e as dúvidas respondidas pela equipe nos Recados. E a conta continua com ela quando crescer, no mesmo perfil.',
+          'O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui, cada projeto é guiado, com aula em português e você no papel de ler e conduzir. Junto vêm o Estúdio e as ferramentas que vão abrindo, o Mural para mostrar o jogo à família e as dúvidas respondidas pela equipe nos Recados. E a conta continua com ele quando crescer, no mesmo perfil.',
       },
       {
         pergunta: 'Como cancelo?',
@@ -537,7 +537,7 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
     ],
   },
   fechamento: {
-    titulo: 'A próxima brincadeira que ela inventar pode virar um jogo de vocês',
+    titulo: 'A próxima brincadeira que ele inventar pode virar um jogo de vocês',
     cta: CTA_PLANOS,
     garantia: GARANTIA_CURTA,
     zappy: { arquivo: 'zappy-festa.webp', alt: '', largura: 640, altura: 640 },
