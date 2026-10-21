@@ -1696,7 +1696,10 @@ ASSINATURA cancelada/expirada → funil → POST /members/webhooks/subscription 
   `/progresso`; concluiu e expirou → `accessEndedLink(funnelUrl, 'adult', 'desafio-concluido' |
   'desafio-encerrado')` (continuidade adulta do funil, com UTM). Sem `COMMUNITY_URL`, os avisos que levam
   ao app não saem nem são marcados (log `challenge_lifecycle.adult_url_missing` /
-  `renewal_reminder.adult_url_missing`, nova tentativa no ciclo seguinte); os que levam ao funil saem.
+  `renewal_reminder.adult_url_missing`, nova tentativa no ciclo seguinte; o de 7 dias se perde quando a
+  matrícula passa para a faixa dos 3 dias); os que levam ao funil saem. O lote do ciclo comportamental
+  não inclui quem já recebeu o aviso de conclusão, e um Desafio sem o curso importado no ambiente gera
+  `challenge_lifecycle.course_missing`.
 - **Retenção de `processed_webhooks` roda SOZINHA** (06/2026): `setInterval` no
   composition-root (`RETENTION_CLEANUP_INTERVAL_MS`, default 6h, + um ciclo ~15 s após o boot,
   antes dos avisos de fim do acesso) chama

@@ -549,7 +549,7 @@ export async function createApplication(env: Env): Promise<Application> {
     env.FUNNEL_URL &&
     env.KIDS_COMMUNITY_URL
       ? new SendChallengeLifecycleService(
-          new DrizzleChallengeLifecycleRepository(db),
+          new DrizzleChallengeLifecycleRepository(db, logger),
           authGateway,
           createGatewayMessagingClient({
             gatewayUrl: env.GATEWAY_URL,

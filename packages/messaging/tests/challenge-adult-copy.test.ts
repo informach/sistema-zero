@@ -90,7 +90,7 @@ describe('Desafio do Primeiro Jogo para adultos (21/10/2026)', () => {
     for (const key of Object.keys(CONTRACTS)) {
       const text = readable(key)
       expect(text).not.toMatch(/criança|filh[oa]|responsável|Área dos pais|família|vocês/i)
-      expect(text).toMatch(/\b(você|sua|seu)\b/i)
+      expect(text).toMatch(/(?<!\p{L})(você|sua|seu)(?!\p{L})/iu)
     }
   })
 

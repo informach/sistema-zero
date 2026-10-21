@@ -1,3 +1,4 @@
+import type { Logger } from '@sistemazero/core/logging'
 import { and, asc, eq, gt, inArray, isNull, sql } from 'drizzle-orm'
 import {
   CHALLENGE_COURSE_REFS,
@@ -35,7 +36,10 @@ type OwnerRow = { userId: string; accountId: string }
  * `lesson_completions` só entram depois que essa posse foi provada.
  */
 export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly logger?: Pick<Logger, 'warn'>,
+  ) {}
 
   async listCandidates(now: Date, limit: number): Promise<ChallengeLifecycleCandidate[]> {
     const rows = await this.db
@@ -57,6 +61,15 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'mode' = 'fixed'`,
           sql`${entitlements.snapshot} -> 'accessPolicy' ->> 'durationUnit' = 'days'`,
           gt(entitlements.expiresAt, now),
+          // A conclusão é o último aviso: quem já o recebeu não ocupa vaga do lote, senão as compras
+          // novas (as dos avisos de 24h e 48h) ficam atrás das antigas quando o lote enche.
+          sql`not exists (
+            select 1
+              from members.entitlement_lifecycle_messages_sent sent
+             where sent.entitlement_id = ${entitlements.id}
+               and sent.expires_on = (${entitlements.expiresAt} at time zone 'UTC')::date
+               and sent.message_kind = 'completed'
+          )`,
           sql`not exists (
             select 1
               from members.entitlements stronger
@@ -119,7 +132,16 @@ export class DrizzleChallengeLifecycleRepository implements ChallengeLifecycleRe
       .from(courses)
       .where(and(eq(courses.slug, courseRef), eq(courses.audience, audience)))
       .limit(1)
-    if (!course) return []
+    if (!course) {
+      // Compra ativa de um Desafio cujo curso não está importado no ambiente: sem ele não há
+      // progresso nem aviso, e o log diz por quê.
+      this.logger?.warn('challenge_lifecycle.course_missing', {
+        courseRef,
+        audience,
+        candidates: candidates.length,
+      })
+      return []
+    }
 
     const lessonRows = await this.db
       .select({ id: lessons.id })

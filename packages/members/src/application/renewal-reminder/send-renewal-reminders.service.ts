@@ -155,7 +155,8 @@ export class SendRenewalRemindersService {
     )
     const fixedGroups = new Map<string, typeof fixedRows>()
     for (const row of fixedRows) {
-      const key = `${row.userId}|${row.offerSlug ?? ''}|${expiresOnKey(row.expiresAt)}|${row.messageKind}`
+      // O curso entra na chave: o template (Kids ou adulto) sai da primeira linha do grupo.
+      const key = `${row.userId}|${row.offerSlug ?? ''}|${row.courseRef}|${expiresOnKey(row.expiresAt)}|${row.messageKind}`
       const list = fixedGroups.get(key)
       if (list) list.push(row)
       else fixedGroups.set(key, [row])

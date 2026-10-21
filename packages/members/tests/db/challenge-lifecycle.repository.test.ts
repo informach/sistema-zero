@@ -154,6 +154,16 @@ describe.skipIf(!testDatabaseUrl)('DrizzleChallengeLifecycleRepository no Postgr
       expect.objectContaining({ audience: 'adult', courseRef: 'desafio-primeiro-jogo-adulto' }),
     ])
 
+    // Quem já recebeu o aviso de conclusão sai do lote (não ocupa a vaga das compras novas).
+    await conn.sql`
+      insert into members.entitlement_lifecycle_messages_sent (entitlement_id, expires_on, message_kind, sent_at)
+      values (${entitlementId}, '2026-10-16', 'completed', now())
+    `
+    expect(await meus()).toHaveLength(0)
+    await conn.sql`
+      delete from members.entitlement_lifecycle_messages_sent where entitlement_id = ${entitlementId}
+    `
+
     // A chave do Kids não cobre o curso adulto; a assinatura adulta (mesmo vencimento) cobre.
     await insert(kidsMasterId, 'all_kids_courses', null)
     expect(await meus()).toHaveLength(1)
