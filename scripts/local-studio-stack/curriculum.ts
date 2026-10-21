@@ -136,6 +136,8 @@ async function authorCourse(token: string, spec: CourseSpec, blocks: string[]) {
     `/members/admin/lessons/${lessonId}/draft`,
     token,
   )
+  // Só republica a aula se este run alterou o rascunho (ou se o curso ainda não está publicado).
+  let changed = false
   const patch = async (change: unknown) => {
     const r = await must<{ revision: string }>(
       'PATCH',
@@ -148,6 +150,7 @@ async function authorCourse(token: string, spec: CourseSpec, blocks: string[]) {
       },
     )
     draft = { ...draft, revision: r.revision }
+    changed = true
   }
   let sectionId = draft.document.sections?.[0]?.id
   if (!sectionId) {
@@ -188,9 +191,20 @@ async function authorCourse(token: string, spec: CourseSpec, blocks: string[]) {
     const id = idOf(String(content.kind))
     const current = blocksNow.find((b) => b.id === id)
     if (current && JSON.stringify(current.content) === JSON.stringify(content)) continue
+    // O Members normaliza o projeto inicial (id do bloco, datas): o bloco Estúdio já gravado com
+    // um Project completo e a vitrine ligada conta como em dia.
+    const saved = current?.content as
+      | { initialProject?: { createdAt?: unknown }; showcase?: { enabled?: boolean } }
+      | undefined
+    if (
+      content.kind === 'studio' &&
+      typeof saved?.initialProject?.createdAt === 'number' &&
+      saved.showcase?.enabled === true
+    )
+      continue
     await patch({ type: 'block', sectionId, block: { id, content } })
   }
-  if (existing?.status === 'published' && !(await draftDiffers(token, lessonId))) {
+  if (existing?.status === 'published' && !changed) {
     console.log(`• curso ${spec.slug} já publicado e em dia (${existing.id})`)
     return existing.id
   }
@@ -207,17 +221,6 @@ async function authorCourse(token: string, spec: CourseSpec, blocks: string[]) {
   })
   console.log(`✓ curso ${spec.slug} publicado (${course.id}), aula ${lessonId}`)
   return course.id
-}
-
-/** O rascunho difere do publicado? (o editor do Admin usa a mesma rota para "alterações"). */
-async function draftDiffers(token: string, lessonId: string) {
-  const [draft, published] = await Promise.all([
-    must<{ document: unknown }>('GET', `/members/admin/lessons/${lessonId}/draft`, token),
-    api<{ document?: unknown }>('GET', `/members/admin/lessons/${lessonId}/draft/published`, token),
-  ])
-  if (published.status !== 200) return true
-  const blocks = (doc: unknown) => JSON.stringify((doc as { blocks?: unknown }).blocks ?? null)
-  return blocks(draft.document) !== blocks(published.data.document)
 }
 
 const ADULT: CourseSpec = {
@@ -238,8 +241,46 @@ const KIDS: CourseSpec = {
   studio: true,
 }
 
+/**
+ * Mural ADULTO (`mural-dos-criadores-adulto` + canal `parede`) pela API de estrutura do hub, a
+ * mesma do painel. O seed do hub só cria os servidores Kids; a chave é a do produto adulto.
+ */
+async function ensureAdultMural(token: string) {
+  const slug = 'mural-dos-criadores-adulto'
+  const list = await must<{ items?: { id: string; slug: string }[] }>(
+    'GET',
+    `/hub/admin/spaces?q=${slug}&audience=adult`,
+    token,
+  )
+  let space = list.items?.find((s) => s.slug === slug)
+  if (!space) {
+    space = await must<{ id: string; slug: string }>('POST', '/hub/admin/spaces', token, {
+      slug,
+      name: 'Mural dos Criadores',
+      description: 'A vitrine dos projetos da comunidade adulta.',
+      iconUrl: null,
+      audience: 'adult',
+      accessConfig: {
+        visibility: 'community_gated',
+        courses: [],
+        communities: ['adult-mural-dos-criadores'],
+        roles: [],
+      },
+      teaserWhenLocked: true,
+    })
+    await must('POST', `/hub/admin/spaces/${space.id}/channels`, token, {
+      slug: 'parede',
+      name: 'Parede',
+      topic: null,
+      postingPolicy: 'staff_only',
+    })
+    console.log(`✓ Mural adulto criado (${space.id})`)
+  } else console.log(`• Mural adulto já existe (${space.id})`)
+}
+
 if (step === 'author' || step === 'all') {
   const admin = await login('admin')
+  await ensureAdultMural(admin)
   const blocks = await unlockBlocks()
   await authorCourse(admin, ADULT, blocks)
   await authorCourse(admin, KIDS, blocks)
