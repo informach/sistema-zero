@@ -27,7 +27,8 @@
       "!docs/marketing/comunidade-dos-criadores/proposta-2026-10-19",
       "!**/.agents",
       "!**/.claude",
-      "!.audits"
+      "!.audits",
+      "!docs/superpowers/plans/2026-10-21-python-audio-2-candidate"
     ]
   },
   "formatter": {

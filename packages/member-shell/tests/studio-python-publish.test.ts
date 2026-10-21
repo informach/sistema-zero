@@ -7,6 +7,7 @@ import type {
   StudioLivePublicationRuntimeRequest,
   StudioPublicRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
+import type { StudioProjectCapability } from '@sistemazero/core/studio/runtime-catalog'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import sharp from 'sharp'
 import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
@@ -48,8 +49,9 @@ async function fixture(
   language: 'python' | 'javascript' = 'python',
   identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
   runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
+  releaseCapabilities?: readonly StudioProjectCapability[],
 ) {
-  const f = await authoringFixture(language, kind)
+  const f = await authoringFixture(language, kind, releaseCapabilities)
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
   const userId = identity?.userId ?? crypto.randomUUID()
   const actor = {
@@ -635,6 +637,45 @@ test('revoked Python release cannot publish; retired existing release stays play
   })
   expect(playable.status).toBe(200)
 })
+
+const PILOT_CAPABILITIES = ['edit', 'export-source', 'execute', 'python-repl'] as const
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  test(`${context} Python publication requires the exact release to declare publish`, async () => {
+    const f = await fixture('classic', context, 'kids', 'python', undefined, 'active', [
+      ...PILOT_CAPABILITIES,
+    ])
+    const refused = await f.publish()
+    expect(refused.status).toBe(403)
+    expect((await refused.json()).error.code).toBe('RUNTIME_PUBLISH_NOT_ALLOWED')
+    expect(f.state.calls).toContain(`authorize-${context}`)
+    expect(f.state.calls).not.toContain('promote-python')
+    expect([...f.objects.keys()].every((key) => key.startsWith('studio/publication-owners/'))).toBe(
+      true,
+    )
+    expect(f.publicObjects.size).toBe(0)
+
+    const declared = await fixture('classic', context, 'kids', 'python', undefined, 'active', [
+      ...PILOT_CAPABILITIES,
+      'publish',
+    ])
+    const published = await declared.publish()
+    expect(published.status).toBe(200)
+    expect(declared.state.calls).toContain('promote-python')
+  })
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  test(`${context} JavaScript Classic publication is unchanged by release publish declarations`, async () => {
+    // JavaScript publication never consults Python release capabilities.
+    const f = await fixture('classic', context, 'kids', 'javascript', undefined, 'active', [
+      'edit',
+      'execute',
+      'export-source',
+    ])
+    const published = await f.publish()
+    expect(published.status).toBe(200)
+    expect(f.state.calls).not.toContain(`authorize-${context}`)
+  })
 
 test('a Python project cannot publish a Turtle extension absent from its approved release', async () => {
   const f = await fixture('classic', 'free')

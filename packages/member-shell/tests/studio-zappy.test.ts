@@ -353,6 +353,19 @@ describe('adendo Pro — seleção e intenção atravessam cliente, rota e respo
 })
 
 describe('política normal e Pro em todas as respostas', () => {
+  test('JavaScript Zappy is unchanged: no Python release or assist decision is consulted', async () => {
+    const authorizePythonAnalysis = mock(async () => {
+      throw new Error('JavaScript must not request a Python runtime decision')
+    })
+    const routes = createStudioZappyRoutes({
+      members: members({ authorizePythonAnalysis }) as never,
+      session: { getSession: async () => STAFF } as never,
+    })
+    const response = await routes.studioZappyMessage.POST(request('Abra o Pensa'))
+    expect(response.status).toBe(200)
+    expect(authorizePythonAnalysis).not.toHaveBeenCalled()
+  })
+
   test('Pro bypasses unavailable block unlocks, while classic still requires them', async () => {
     const unlocks = mock(async () => ({ status: 503 }))
     const routes = createStudioZappyRoutes({

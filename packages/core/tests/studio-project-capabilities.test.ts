@@ -197,6 +197,63 @@ describe('shared capability resolution', () => {
     expect(revoked.capabilities).not.toContain('publish')
   })
 
+  test('publish and assist need the release declaration, a contextual grant and a host', async () => {
+    const state = (input: StudioCapabilityResolutionInput, capability: 'publish' | 'assist') =>
+      resolveStudioProjectCapabilities(input).operations.find(
+        (operation) => operation.capability === capability,
+      )
+    for (const capability of ['publish', 'assist'] as const) {
+      expect(state(base, capability)).toEqual({ capability, state: 'available' })
+      expect(
+        state(
+          {
+            ...base,
+            grantedCapabilities: base.grantedCapabilities.filter((item) => item !== capability),
+          },
+          capability,
+        )?.reasonCode,
+      ).toBe('capability-not-granted')
+      expect(
+        state(
+          {
+            ...base,
+            hostOperations: base.hostOperations.filter((item) => item.capability !== capability),
+          },
+          capability,
+        )?.reasonCode,
+      ).toBe('host-operation-missing')
+    }
+    // An immutable pilot without the declarations cannot be widened by grants or hosts.
+    const pilot = await createStudioRuntimeRelease({
+      ...base.release.manifest,
+      releaseId: 'python-pilot',
+      capabilities: ['edit', 'export-source', 'execute', 'python-repl'],
+    })
+    const pilotInput: StudioCapabilityResolutionInput = {
+      ...base,
+      project: {
+        ...base.project,
+        runtime: {
+          profileId: pilot.profileId,
+          releaseId: pilot.releaseId,
+          manifestSha256: pilot.manifestSha256,
+        },
+      },
+      profile: {
+        ...base.profile,
+        releases: [{ id: pilot.releaseId, manifestSha256: pilot.manifestSha256 }],
+      },
+      release: pilot,
+    }
+    expect(resolveStudioProjectCapabilities(pilotInput).capabilities).toEqual([
+      'edit',
+      'execute',
+      'export-source',
+    ])
+    for (const capability of ['publish', 'assist'] as const)
+      expect(state(pilotInput, capability)?.reasonCode).toBe('not-implemented')
+  })
+
   test('conflicting host entries never choose the more permissive first match', () => {
     const result = resolveStudioProjectCapabilities({
       ...base,

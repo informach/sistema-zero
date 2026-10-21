@@ -57,6 +57,8 @@ function friendlyError(error: unknown): string {
     return 'Ainda estou terminando essa resposta. Tente novamente em instantes.'
   if (code === 'IMPERSONATION_READONLY') return 'O Zappy não conversa durante o acesso de suporte.'
   if (code === 'ZAPPY_NOT_ENABLED') return 'O Zappy ainda não está liberado para esta conta.'
+  if (code === 'RUNTIME_ASSIST_NOT_ALLOWED')
+    return 'O Zappy ainda não está disponível para este ambiente Python.'
   return 'O Zappy foi tomar um lanchinho. Tenta de novo em instantes!'
 }
 

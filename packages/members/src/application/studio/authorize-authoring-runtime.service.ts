@@ -46,7 +46,8 @@ export class AuthorizeAuthoringRuntimeService {
       project: request.subject,
       operation: request.operation,
       curation,
-      grantedCapabilities: ['edit', 'execute', 'pause', 'export-source', 'python-repl'],
+      // Drafts are never published from authoring; Zappy needs the release's `assist`.
+      grantedCapabilities: ['edit', 'execute', 'pause', 'export-source', 'python-repl', 'assist'],
     })
     if (resolved.releaseStatus !== 'active')
       throw new AccessDeniedError('Escolha um ambiente ativo para a autoria desta aula.')
