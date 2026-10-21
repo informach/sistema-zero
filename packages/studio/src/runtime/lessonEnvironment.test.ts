@@ -82,6 +82,9 @@ async function setup() {
 test('lesson environment verifies catalog and grants only the actual execution snapshot for a bounded duration', async () => {
   const f = await setup()
   const environment = await createLessonRuntimeEnvironment(f.options)
+  // Editor hosts receive code analysis through the contextual wrapper.
+  expect(typeof environment.createPythonLanguage).toBe('function')
+  expect(typeof environment.requestPythonAssistance).toBe('function')
   expect(f.calls.length).toBe(1)
   expect(f.calls[0]!.operation).toBe('analyze')
   expect(JSON.stringify(f.calls[0]).length).toBeLessThan(2500)

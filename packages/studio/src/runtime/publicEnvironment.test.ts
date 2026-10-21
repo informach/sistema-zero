@@ -68,6 +68,8 @@ async function setup() {
 test('public environment requests only publication identity, never editor source/actor, and grants no authoring/REPL', async () => {
   const f = await setup()
   const environment = await createPublicPythonRuntimeEnvironment(f.options)
+  expect(environment.createPythonLanguage).toBeUndefined()
+  expect(environment.requestPythonAssistance).toBeUndefined()
   expect(f.calls).toEqual([
     { playId: f.options.playId, publicationRevision: f.options.publicationRevision },
   ])
