@@ -1000,8 +1000,8 @@ export const avatarInventory = members.table(
 
 // ── Blocos do Estúdio liberados por CURSO (currículo, 08/2026) ──────────────
 // A paleta do Estúdio livre deixou de ser fixa por NÍVEL e passou a ser a UNIÃO dos
-// blocos dos cursos elegíveis do aluno (`metadata.studioUnlockBlocks`): bônus Kids concluído;
-// curso com posição e curso Adult concluído + publicado no Mural. Esta tabela é o
+// blocos dos cursos elegíveis do aluno (`metadata.studioUnlockBlocks`): gravado Kids com posição
+// concluído + Mural; bônus Kids e Adult concluído; oficina com `live_course_complete`. Esta tabela é o
 // **SNAPSHOT congelado** do que cada curso deu ao aluno quando ele recebeu a ferramenta.
 //
 // ⚠️ Ela existe por UMA razão: **bloco liberado não é revogado**. A união calculada ao

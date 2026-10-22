@@ -215,7 +215,13 @@ export function buildApp(
   const room = new InMemoryRoomRepository()
   const studioUnlocks = new InMemoryStudioUnlockRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
-  const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
+  const gamification = new InMemoryGamificationRepository({
+    entitlements,
+    courses,
+    avatar,
+    room,
+    studioUnlocks,
+  })
   const adultProfileRepository = new InMemoryAdultProfileRepository()
   const adultJourneyRepository = new InMemoryAdultJourneyRepository(gamification)
   const adultJourney = new AdultJourneyService(adultJourneyRepository, courses, clock)
@@ -953,6 +959,7 @@ export function buildApp(
     certificates,
     gamification,
     avatar,
+    studioUnlocks,
     room,
     pensa,
     creations,

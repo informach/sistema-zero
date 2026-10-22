@@ -114,8 +114,6 @@ export interface CloneCourseOverrides {
   audience: CourseAudience
   /** Modalidade do clone (o service resolve: ausente no pedido = a da origem). */
   modality: CourseModality
-  /** `studioUnlockBlocks` é conceito kids — clone p/ adulto não o carrega. */
-  dropStudioUnlockBlocks: boolean
 }
 
 /**

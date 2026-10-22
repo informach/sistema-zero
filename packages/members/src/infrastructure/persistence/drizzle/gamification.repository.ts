@@ -90,7 +90,10 @@ import {
   xpEvents,
 } from './schema'
 import { DrizzleStudioUnlockRepository } from './studio-unlock.repository'
-import { eligibleStudioGrants } from './studio-unlock-eligibility'
+import {
+  eligibleStudioGrants,
+  studioGrantCompletionMatchesCourse,
+} from './studio-unlock-eligibility'
 
 type CoinSourceTypeValue = (typeof coinEvents.sourceType.enumValues)[number]
 
@@ -114,13 +117,12 @@ function entitlementInAudience(audience: CourseAudience) {
   return and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
 }
 
-function publishedCourseSourceInAudience(audience: CourseAudience) {
+function publishedStudioGrantSourceInAudience(audience: CourseAudience) {
   return and(
     eq(courses.id, xpEvents.sourceId),
     eq(courses.audience, audience),
     eq(courses.status, 'published'),
-    // Curso ao vivo não libera bloco do Estúdio (mesma régua do `eligibleStudioGrants`).
-    eq(courses.modality, 'recorded'),
+    studioGrantCompletionMatchesCourse(),
   )
 }
 
@@ -238,6 +240,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           ),
       )
       const courseMarcoIds = requestedMarcoIds.filter((id) => !liveCourseIds.has(id))
+      // Curriculum rewards are independent from recorded-course journey milestones and product access.
+      const curriculumIds = [
+        ...new Set([
+          ...courseMarcoIds,
+          ...input.events
+            .filter((event) => event.sourceType === 'live_course_complete')
+            .map((event) => event.sourceId),
+        ]),
+      ]
 
       // Account/owner and gamification locks are already held before every read above.
       // Add the shared Kids policy only for recorded-course milestones; ordinary XP,
@@ -281,8 +292,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
 
       // Freeze the earned curriculum in the SAME transaction as its milestone.
       // Retried events also reconcile existing qualifying courses; no first GET is required.
-      if (courseMarcoIds.length > 0) {
-        const grants = await eligibleStudioGrants(tx, input.userId, input.audience, courseMarcoIds)
+      if (curriculumIds.length > 0) {
+        const grants = await eligibleStudioGrants(tx, input.userId, input.audience, curriculumIds)
         await new DrizzleStudioUnlockRepository(tx).saveGrants(input.userId, input.audience, grants)
       }
 
@@ -1122,9 +1133,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   }
 
   /**
-   * Blocos liberados pelos cursos ELEGÍVEIS: bônus Kids precisa só de
-   * `course_complete`; curso Kids com posição e curso Adult precisam também de
-   * `course_showcased`. Lê `courses.metadata.studioUnlockBlocks`.
+   * Recorded Kids courses with a position need completion + Mural; bonus Kids and Adult
+   * need completion. Live courses need their own live_course_complete, without Mural.
    * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingJourneySlots`, que usa LEFT):
    * aqui o dado vem do curso VIVO, então curso apagado simplesmente não contribui —
    * quem impede a perda é o snapshot em `studio_block_grants`. Bônus e `lenda` CONTAM
@@ -1141,7 +1151,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const showcased = alias(xpEvents, 'studio_revision_sc')
     const eligible =
       audience === 'kids'
-        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
+        ? and(
+            isNotNull(courses.id),
+            or(eq(courses.modality, 'live'), isNull(courses.careerSlot), isNotNull(showcased.id)),
+          )
         : isNotNull(courses.id)
     const rows = await this.db
       .select({
@@ -1151,9 +1164,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         courseUpdatedAt: courses.updatedAt,
         liveCourseId: courses.id,
         careerSlot: courses.careerSlot,
+        modality: courses.modality,
       })
       .from(xpEvents)
-      .leftJoin(courses, publishedCourseSourceInAudience(audience))
+      .leftJoin(courses, publishedStudioGrantSourceInAudience(audience))
       .leftJoin(
         showcased,
         and(
@@ -1163,21 +1177,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(showcased.sourceId, xpEvents.sourceId),
         ),
       )
-      .where(
-        and(
-          eq(xpEvents.userId, userId),
-          eq(xpEvents.audience, audience),
-          eq(xpEvents.sourceType, 'course_complete'),
-          eligible,
-        ),
-      )
+      .where(and(eq(xpEvents.userId, userId), eq(xpEvents.audience, audience), eligible))
 
     return studioUnlockRevision(
       rows.map((row) => ({
         courseId: row.courseId,
         completedAt: row.completedAt,
         showcasedAt:
-          (audience === 'adult' || row.careerSlot === null) && row.liveCourseId !== null
+          (audience === 'adult' || row.modality === 'live' || row.careerSlot === null) &&
+          row.liveCourseId !== null
             ? null
             : row.showcasedAt,
         courseUpdatedAt: row.courseUpdatedAt,

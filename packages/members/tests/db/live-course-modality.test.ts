@@ -5,7 +5,10 @@ import type { LiveCohort, LiveEnrollment, LiveProgram, LiveSession } from '@sist
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
 import { eq, sql as query } from 'drizzle-orm'
 import { readMigrationFiles } from 'drizzle-orm/migrator'
+import { GetStudioUnlocksService } from '../../src/application/studio-unlocks/get-studio-unlocks.service'
 import { CourseModalityLockedError } from '../../src/domain/course/course.errors'
+import { studioUnlockRevision } from '../../src/domain/gamification/studio-unlock-revision'
+import type { AwardXpEventInput } from '../../src/domain/ports/gamification-repository.port'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
@@ -14,6 +17,9 @@ import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persisten
 import { DrizzleLiveLessonAccessRepository } from '../../src/infrastructure/persistence/drizzle/live-lesson-access.repository'
 import {
   courses,
+  entitlements,
+  gamificationProfiles,
+  kidsJourneyEarned,
   lessonBlocks,
   lessons,
   liveAccessGrants,
@@ -27,16 +33,19 @@ import {
   xpEvents,
   zappyKnowledgeSources,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { DrizzleStudioUnlockRepository } from '../../src/infrastructure/persistence/drizzle/studio-unlock.repository'
 import { eligibleStudioGrants } from '../../src/infrastructure/persistence/drizzle/studio-unlock-eligibility'
 import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
+import { silentLogger } from '../fakes/in-memory'
 import { publishKidsSeedForTest } from './kids-journey-seed-fixture'
 
 /**
  * Cursos AO VIVO (14/10/2026) no PostgreSQL REAL, com as migrations de verdade (inclusive a
  * `0113`, provada aqui num banco descartável): a coluna `modality` e os dois CHECKs, os marcos
  * novos do ledger, as consultas que tiram o curso ao vivo das listagens, da Jornada, da
- * liberação de blocos e da base do Zappy, e a leitura das vagas das oficinas.
+ * base do Zappy e a leitura das vagas das oficinas. A conclusão da oficina concede somente
+ * os blocos configurados, com o mesmo ledger congelado; não concede produto nem Jornada.
  *
  * Mesmo banco descartável dos outros arquivos que migram do zero (`LEARNING_QA_DATABASE_URL`,
  * `sz_aulas_qa_*`), com a mesma limpeza no começo.
@@ -471,6 +480,179 @@ describe.skipIf(!url)('Cursos ao vivo — PostgreSQL', () => {
         })
       const grants = await eligibleStudioGrants(db, userId, 'kids')
       expect(grants).toEqual([{ courseId: recorded.id, blocks: ['bloco_gravado'] }])
+    },
+    SLOW,
+  )
+
+  for (const audience of ['kids', 'adult'] as const) {
+    test(
+      `LIVE ${audience}: freezes in award and replay before GET, without product or Kids journey`,
+      async () => {
+        const { db } = get()
+        const course = await insertCourse({
+          modality: 'live',
+          audience,
+          metadata: { studioUnlockBlocks: ['sz_py_pass'] },
+        })
+        const userId = randomUUID()
+        const accountId = audience === 'adult' ? userId : randomUUID()
+        const repo = new DrizzleGamificationRepository(db)
+        const unlocks = new DrizzleStudioUnlockRepository(db)
+        const service = new GetStudioUnlocksService(repo, unlocks, silentLogger)
+        const input = {
+          userId,
+          accountId,
+          audience,
+          now: NOW,
+          today: '2026-11-07',
+          privileged: false,
+          events: [
+            { sourceType: 'live_course_complete', sourceId: course.id, amount: 0 },
+          ] satisfies AwardXpEventInput[],
+        }
+        const before = await repo.getStudioUnlockRevision(userId, audience)
+        await repo.award(input)
+        expect(await unlocks.listGrants(userId, audience)).toEqual([
+          { courseId: course.id, blocks: ['sz_py_pass'] },
+        ])
+        expect(await repo.getStudioUnlockRevision(userId, audience)).not.toBe(before)
+        expect(await unlocks.listGrants(randomUUID(), audience)).toEqual([])
+        expect(await unlocks.listGrants(userId, audience === 'kids' ? 'adult' : 'kids')).toEqual([])
+        const blocks = ['sz_py_pass', 'sz_g2d_create_ship']
+        await db
+          .update(courses)
+          .set({ metadata: { studioUnlockBlocks: blocks } })
+          .where(eq(courses.id, course.id))
+        await repo.award(input)
+        expect(await unlocks.listGrants(userId, audience)).toEqual([
+          { courseId: course.id, blocks },
+        ])
+        const events = await db.select().from(xpEvents).where(eq(xpEvents.userId, userId))
+        expect(events).toHaveLength(1)
+        expect(events[0]).toMatchObject({
+          sourceType: 'live_course_complete',
+          amount: 0,
+          sourceLevel: null,
+          sourceTrack: null,
+          sourceCareerSlot: null,
+        })
+        expect(
+          await db.select().from(kidsJourneyEarned).where(eq(kidsJourneyEarned.userId, userId)),
+        ).toEqual([])
+        expect(
+          await db.select().from(entitlements).where(eq(entitlements.userId, accountId)),
+        ).toEqual([])
+        await db
+          .update(courses)
+          .set({ status: 'archived', metadata: { studioUnlockBlocks: [] } })
+          .where(eq(courses.id, course.id))
+        expect(await eligibleStudioGrants(db, userId, audience)).toEqual([])
+        expect(await service.execute(userId, audience, accountId)).toEqual({ blocks })
+        await db.delete(courses).where(eq(courses.id, course.id))
+        expect(await service.execute(userId, audience, accountId)).toEqual({ blocks })
+      },
+      SLOW,
+    )
+  }
+
+  test(
+    'LIVE grants roll back with the completion event and profile in the same transaction',
+    async () => {
+      const { db } = get()
+      const course = await insertCourse({
+        modality: 'live',
+        metadata: { studioUnlockBlocks: ['sz_py_pass'] },
+      })
+      const userId = randomUUID()
+      const repo = new DrizzleGamificationRepository(db)
+      const failure = new Error('Rollback after award')
+      const result = await db
+        .transaction(async (tx) => {
+          await repo.awardInTransaction(tx, {
+            userId,
+            accountId: randomUUID(),
+            audience: 'kids',
+            now: NOW,
+            today: '2026-11-07',
+            privileged: false,
+            events: [{ sourceType: 'live_course_complete', sourceId: course.id, amount: 0 }],
+          })
+          expect(
+            await new DrizzleStudioUnlockRepository(tx).listGrants(userId, 'kids'),
+          ).toHaveLength(1)
+          throw failure
+        })
+        .then(
+          () => null,
+          (error: unknown) => error,
+        )
+      expect(result).toBe(failure)
+      expect(await db.select().from(xpEvents).where(eq(xpEvents.userId, userId))).toEqual([])
+      expect(await new DrizzleStudioUnlockRepository(db).listGrants(userId, 'kids')).toEqual([])
+      expect(
+        await db.select().from(gamificationProfiles).where(eq(gamificationProfiles.userId, userId)),
+      ).toEqual([])
+    },
+    SLOW,
+  )
+
+  test(
+    'LIVE eligibility pairs modality, audience, owner and publication; presence is not completion',
+    async () => {
+      const { db } = get()
+      const live = await insertCourse({
+        modality: 'live',
+        metadata: { studioUnlockBlocks: ['sz_py_pass'] },
+      })
+      const recorded = await insertCourse({
+        metadata: { studioUnlockBlocks: ['sz_g2d_create_ship'] },
+      })
+      const draft = await insertCourse({
+        modality: 'live',
+        status: 'draft',
+        metadata: { studioUnlockBlocks: ['sz_py_pass'] },
+      })
+      const adult = await insertCourse({
+        modality: 'live',
+        audience: 'adult',
+        metadata: { studioUnlockBlocks: ['sz_py_pass'] },
+      })
+      const userId = randomUUID()
+      const events: AwardXpEventInput[] = [
+        { sourceType: 'course_complete', sourceId: live.id, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: live.id, amount: 0 },
+        { sourceType: 'live_encounter', sourceId: live.id, amount: 0 },
+        { sourceType: 'live_course_complete', sourceId: recorded.id, amount: 0 },
+        { sourceType: 'live_course_complete', sourceId: draft.id, amount: 0 },
+        { sourceType: 'live_course_complete', sourceId: adult.id, amount: 0 },
+      ]
+      await db.insert(xpEvents).values(
+        events.map((event) => ({
+          ...event,
+          id: randomUUID(),
+          userId,
+          audience: 'kids' as const,
+          createdAt: NOW,
+        })),
+      )
+      const repo = new DrizzleGamificationRepository(db)
+      expect(await eligibleStudioGrants(db, userId, 'kids')).toEqual([])
+      expect(await eligibleStudioGrants(db, userId, 'adult')).toEqual([])
+      expect(await repo.getStudioUnlockRevision(userId, 'kids')).toBe(studioUnlockRevision([]))
+      await db.insert(xpEvents).values({
+        id: randomUUID(),
+        userId,
+        audience: 'kids',
+        sourceType: 'live_course_complete',
+        sourceId: live.id,
+        amount: 0,
+        createdAt: NOW,
+      })
+      expect(await eligibleStudioGrants(db, userId, 'kids')).toEqual([
+        { courseId: live.id, blocks: ['sz_py_pass'] },
+      ])
+      expect(await eligibleStudioGrants(db, randomUUID(), 'kids')).toEqual([])
+      expect(await repo.getStudioUnlockRevision(userId, 'kids')).not.toBe(studioUnlockRevision([]))
     },
     SLOW,
   )

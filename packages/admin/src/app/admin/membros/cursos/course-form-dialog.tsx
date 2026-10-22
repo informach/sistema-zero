@@ -51,7 +51,7 @@ interface FormState {
   salesPageUrl: string
   status: string
   audience: string
-  /** Gravado ou ao vivo. Ao vivo não ocupa posição na Jornada nem libera blocos do Estúdio. */
+  /** Gravado ou ao vivo. Ao vivo não ocupa posição na Jornada. */
   modality: CourseModality
   level: string
   track: string
@@ -213,13 +213,15 @@ export function CourseFormDialog({
   }, [open, journeyCourses, refreshOccupancy])
 
   const isKids = form.audience === 'kids'
-  // Curso ao vivo não entra na Jornada: sem posição, sem liberação de blocos, sem trava de aula.
+  // Curso ao vivo não entra na Jornada: sem posição e sem trava sequencial de aula.
   const isLive = form.modality === 'live'
-  const studioUnlockRule = !isKids
-    ? 'O aluno adulto recebe estes blocos ao concluir o curso. A criação livre também verifica a etapa e a licença da ferramenta.'
-    : form.journeyRole === 'positioned'
-      ? 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
-      : 'A criança recebe as ferramentas quando conclui todas as aulas.'
+  const studioUnlockRule = isLive
+    ? 'A conclusão da oficina concede estes blocos, sem exigir publicação no Mural. O uso no Estúdio Completo depende do acesso ao produto.'
+    : !isKids
+      ? 'O aluno adulto recebe estes blocos ao concluir o curso. A criação livre também verifica a etapa e a licença da ferramenta.'
+      : form.journeyRole === 'positioned'
+        ? 'Curso da jornada: a criança recebe as ferramentas quando conclui o curso e publica no Mural.'
+        : 'A criança recebe as ferramentas quando conclui todas as aulas.'
   const maxSlot = slotsForTier(form.level, form.track)
   const occupantBySlot = new Map<number, CourseView>()
   for (const c of kidsCourses) {
@@ -285,7 +287,7 @@ export function CourseFormDialog({
 
   async function save() {
     const rewardIssue = pythonCourseUnlockIssue(form.studioUnlockBlocks)
-    if (!isLive && rewardIssue) {
+    if (rewardIssue) {
       toast.error(rewardIssue)
       return
     }
@@ -622,45 +624,41 @@ export function CourseFormDialog({
             blocks={form.studioUnlockBlocks.length}
           />
         ) : null}
-        {/* Currículo do Estúdio livre (08/2026): a paleta é a UNIÃO dos blocos dos
-            cursos elegíveis. Bônus Kids exige conclusão; curso com posição exige também
-            o Mural. É o MESMO formato da aula (`allowBlocks`), então o picker e a
-            importação por JSON já recusam id inexistente ou repetido. */}
-        {!isLive && (
-          <Field
-            label="Ferramentas que este curso libera no Estúdio"
-            tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ${isKids ? 'ela' : 'o aluno'} já conquistou, sem repetir.`}
-          >
-            <StudioCourseBlocksPicker
-              key={editing ? `${editing.id}:${editing.version}` : 'new-course'}
-              value={form.studioUnlockBlocks}
-              onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
-            />
-            <p className="mt-1.5 text-muted-foreground text-xs">{studioUnlockRule}</p>
-            <p className="mt-1 text-muted-foreground text-xs">
-              {form.studioUnlockBlocks.length === 0
-                ? isKids
-                  ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
-                  : 'Nenhum bloco: este curso não acrescenta ferramentas à paleta do aluno.'
-                : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
-            </p>
-            {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
+        {/* Cursos e oficinas concedem os IDs configurados. A conclusão ao vivo não
+            exige Mural nem altera a elegibilidade dos cursos gravados. */}
+        <Field
+          label="Ferramentas que este curso libera no Estúdio"
+          tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ${isKids ? 'ela' : 'o aluno'} já conquistou, sem repetir.`}
+        >
+          <StudioCourseBlocksPicker
+            key={editing ? `${editing.id}:${editing.version}` : 'new-course'}
+            value={form.studioUnlockBlocks}
+            onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
+          />
+          <p className="mt-1.5 text-muted-foreground text-xs">{studioUnlockRule}</p>
+          <p className="mt-1 text-muted-foreground text-xs">
+            {form.studioUnlockBlocks.length === 0
+              ? isKids
+                ? 'Nenhum bloco: este curso não muda a caixa de ferramentas da criança.'
+                : 'Nenhum bloco: este curso não acrescenta ferramentas à paleta do aluno.'
+              : `${form.studioUnlockBlocks.length} ${form.studioUnlockBlocks.length === 1 ? 'bloco' : 'blocos'}. As extensões saem sozinhas dos blocos escolhidos.`}
+          </p>
+          {/* O fluxo real da autora é subir a lista de blocos USADOS no curso, então a
                 repetição dos fundamentos é o normal, não um erro. A paleta deduplica e a
                 comemoração compara com o que a CRIANÇA tem: ela só festeja o que é novo
                 para ela. */}
-            <p className="mt-1 text-muted-foreground text-xs">
-              {isKids
-                ? 'Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda não tem.'
-                : 'Pode repetir blocos de outros cursos: o aluno recebe apenas os que ainda não tem.'}
-            </p>
-            {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
+          <p className="mt-1 text-muted-foreground text-xs">
+            {isKids
+              ? 'Pode repetir blocos de outros cursos sem problema: a criança recebe só os que ainda não tem.'
+              : 'Pode repetir blocos de outros cursos: o aluno recebe apenas os que ainda não tem.'}
+          </p>
+          {/* A garantia pedida pela usuária, dita ao operador: tirar um bloco daqui muda o
                 que recebe quem ainda não ganhou a ferramenta, nunca revoga um grant existente. */}
-            <p className="mt-1 text-muted-foreground text-xs">
-              Tirar um bloco daqui vale para quem ainda não recebeu a ferramenta. Quem já recebeu
-              não perde.
-            </p>
-          </Field>
-        )}
+          <p className="mt-1 text-muted-foreground text-xs">
+            Tirar um bloco daqui vale para quem ainda não recebeu a ferramenta. Quem já recebeu não
+            perde.
+          </p>
+        </Field>
         {/* No curso ao vivo a aula abre pela vaga na turma e pela data do encontro: a trava
             sequencial e o "vídeo antes da atividade" (não há bloco de vídeo) não se aplicam. */}
         {isLive ? null : (

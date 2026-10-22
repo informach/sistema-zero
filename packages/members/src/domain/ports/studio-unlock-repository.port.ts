@@ -11,8 +11,8 @@ export interface StudioBlockGrant {
  * SNAPSHOT dos blocos que cada curso já entregou ao aluno.
  *
  * ⚠️ Existe por uma regra só: **bloco liberado não é revogado**. A paleta é a união dos
- * cursos elegíveis segundo a regra atual (bônus Kids: conclusão; demais: conclusão +
- * Mural), e essa união é calculada AO VIVO sobre o `metadata.studioUnlockBlocks` de cada
+ * cursos elegíveis (gravado Kids com posição: conclusão + Mural; bônus Kids e Adult:
+ * conclusão; oficina: `live_course_complete`). A união lê o `metadata.studioUnlockBlocks` de cada
  * curso — o que faz um bloco ACRESCENTADO ao JSON chegar sozinho em quem já atende ao
  * critério (desejado), mas também faria um bloco REMOVIDO (ou um curso despublicado/
  * apagado) sumir da mão de quem já o tinha, inclusive de projetos que já o usam. O

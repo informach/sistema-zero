@@ -6,8 +6,15 @@ import { courses, xpEvents } from './schema'
 
 /**
  * Same eligibility during earning and later reads, including bonus courses and legacy metadata.
- * Curso AO VIVO (14/10/2026) nunca libera bloco do Estúdio pelo currículo: só o gravado entra.
+ * The completion event must match its modality. Live rewards do not require Mural.
  */
+export function studioGrantCompletionMatchesCourse() {
+  return or(
+    and(eq(courses.modality, 'recorded'), eq(xpEvents.sourceType, 'course_complete')),
+    and(eq(courses.modality, 'live'), eq(xpEvents.sourceType, 'live_course_complete')),
+  )
+}
+
 export async function eligibleStudioGrants(
   db: Pick<Database, 'select'>,
   userId: string,
@@ -25,7 +32,7 @@ export async function eligibleStudioGrants(
         eq(courses.id, xpEvents.sourceId),
         eq(courses.audience, audience),
         eq(courses.status, 'published'),
-        eq(courses.modality, 'recorded'),
+        studioGrantCompletionMatchesCourse(),
       ),
     )
     .leftJoin(
@@ -41,8 +48,9 @@ export async function eligibleStudioGrants(
       and(
         eq(xpEvents.userId, userId),
         eq(xpEvents.audience, audience),
-        eq(xpEvents.sourceType, 'course_complete'),
-        audience === 'kids' ? or(isNull(courses.careerSlot), isNotNull(showcased.id)) : undefined,
+        audience === 'kids'
+          ? or(eq(courses.modality, 'live'), isNull(courses.careerSlot), isNotNull(showcased.id))
+          : undefined,
         courseIds ? inArray(courses.id, courseIds) : undefined,
       ),
     )

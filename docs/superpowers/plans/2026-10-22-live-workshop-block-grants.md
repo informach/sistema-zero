@@ -23,27 +23,29 @@
 
 **Files:** `packages/members/src/infrastructure/persistence/drizzle/{studio-unlock-eligibility,gamification.repository}.ts`, `application/content-admin/content-admin.service.ts` e testes unitários/HTTP/DB adjacentes.
 
-- [ ] Reproduzir recusa atual de recompensa ao vivo após conclusão válida.
-- [ ] Estender a elegibilidade com pares corretos de evento/modalidade e sem Mural para live.
-- [ ] Congelar recompensas de oficina na transação do evento e nos replays.
-- [ ] Preservar recompensas ao clonar curso gravado para ao vivo.
-- [ ] Cobrir perfil/público, eventos errados, idempotência e conquista sem licença.
-- [ ] Revisar o lote sem alterar marcos da Jornada ou direitos de produto.
+- [x] Reproduzir recusa atual de recompensa ao vivo após conclusão válida.
+- [x] Estender a elegibilidade com pares corretos de evento/modalidade e sem Mural para live.
+- [x] Congelar recompensas de oficina na transação do evento e nos replays.
+- [x] Preservar recompensas ao clonar curso gravado para ao vivo.
+- [x] Cobrir perfil/público, eventos errados, idempotência e conquista sem licença.
+- [x] Revisar o lote sem alterar marcos da Jornada ou direitos de produto.
 
 ## Lote 2 — Configuração no Admin
 
 **Files:** `packages/admin/src/app/admin/membros/cursos/course-form-dialog.tsx`, `components/admin/adult-course-access-contract.tsx` e testes adjacentes.
 
-- [ ] Reproduzir seletor ausente em curso ao vivo.
-- [ ] Expor recompensas e validação Python, com texto de conclusão da oficina.
-- [ ] Testar seleção, preservação JS/Python, envio e recusa de conjunto inválido.
-- [ ] Preservar cursos gravados, aulas/salas e comportamento de inscrição/vagas.
-- [ ] Revisar o lote.
+- [x] Reproduzir seletor ausente em curso ao vivo.
+- [x] Expor recompensas e validação Python, com texto de conclusão da oficina.
+- [x] Testar seleção, preservação JS/Python, envio e recusa de conjunto inválido.
+- [x] Preservar cursos gravados, aulas/salas e comportamento de inscrição/vagas.
+- [x] Revisar o lote.
 
 ## Lote 3 — Review integrado e entrega
 
-- [ ] Reexecutar testes afetados e prova SQL em banco descartável.
-- [ ] Verificar conquista sem licença e acesso posterior pelo produto independente.
-- [ ] Rodar tipagem/Biome, revisar diff e corrigir achados concretos.
+- [x] Reexecutar testes afetados e prova SQL em banco descartável.
+- [x] Verificar conquista sem licença e acesso posterior pelo produto independente.
+- [x] Rodar tipagem/Biome, revisar diff e corrigir achados concretos.
 - [ ] Conciliar staging recente, commit/merge/push autorizado e acompanhar CI.
 - [ ] Registrar evidências e pendências sem herdar aceite de execução não realizada.
+
+Validação local e limites: [recibo de 22/10](../../continuity/2026-10-22-live-workshop-block-grants.md).

@@ -1094,7 +1094,6 @@ describe.skipIf(!url)(
         modality: 'recorded',
         slug: 'learning-qa-clone',
         title: 'Clone',
-        dropStudioUnlockBlocks: true,
       })
       if (!clone) throw new Error('Missing clone')
       const [clonedLesson] = await db.select().from(lessons).where(eq(lessons.courseId, clone.id))

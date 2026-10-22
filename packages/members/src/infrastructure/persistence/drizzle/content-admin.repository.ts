@@ -398,7 +398,6 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         ...((src.metadata as Record<string, unknown> | null) ?? {}),
         clonedFrom: src.slug,
       }
-      if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
 
       const row = {
         id: randomUUID(),
