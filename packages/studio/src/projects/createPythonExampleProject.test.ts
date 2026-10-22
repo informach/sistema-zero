@@ -9,6 +9,7 @@ import {
 } from '@sistemazero/core/studio/runtime-catalog'
 import { IDBFactory } from 'fake-indexeddb'
 import { unzipSync } from 'fflate'
+import { VISUAL_REFERENCE_GAMES } from '../examples/python/visualReferenceGames.manifest'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../examples/pythonCatalog'
 import { exportProjectSource } from '../export/sourceExport'
@@ -451,23 +452,20 @@ test('module compatibility never substitutes the fresh host authorization', asyn
     expect(await listAllProjects()).toEqual([])
   }))
 
+const visualKeys = VISUAL_REFERENCE_GAMES.flatMap(({ key }) => [
+  `python:${key}:blocks`,
+  `python:${key}:code`,
+])
+
 test('the Python catalog keeps the original race and adds the separately licensed maze', () => {
   expect(PYTHON_EXAMPLE_SUMMARIES.map(({ key }) => key)).toEqual([
     'python:turtle-race-original',
     'python:maze-lights',
-    'python:pacman-visual:blocks',
-    'python:pacman-visual:code',
-    'python:space-arena-visual:blocks',
-    'python:space-arena-visual:code',
+    ...visualKeys,
   ])
 })
 
-for (const key of [
-  'python:pacman-visual:blocks',
-  'python:pacman-visual:code',
-  'python:space-arena-visual:blocks',
-  'python:space-arena-visual:code',
-])
+for (const key of visualKeys)
   test(`${key} creates, reopens and exports its entire authored program and native audio dependency`, async () => {
     const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
     if (!entry) throw new Error(`Missing reference game ${key}`)

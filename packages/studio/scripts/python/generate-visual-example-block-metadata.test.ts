@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { VISUAL_REFERENCE_GAMES } from '../../src/examples/python/visualReferenceGames.manifest'
 import {
   decodeVisualExampleSource,
   readVisualExampleBlockMetadata,
@@ -36,10 +37,11 @@ test('metadata contains only exact current-source identity and sorted required b
     sourceSha256: receipt().sourceSha256,
     blockIds: ['sz_py_integer', 'sz_py_variable'],
   })
-  const generated = visualExampleBlockMetadataSource({
-    'pacman-visual': metadata,
-    'space-arena-visual': metadata,
-  })
+  const generated = visualExampleBlockMetadataSource(
+    Object.fromEntries(VISUAL_REFERENCE_GAMES.map(({ key }) => [key, metadata])) as Parameters<
+      typeof visualExampleBlockMetadataSource
+    >[0],
+  )
   expect(generated).toContain('export const VISUAL_REFERENCE_GAME_BLOCKS =')
   expect(generated).not.toContain('referencedBlocks')
   expect(generated).not.toContain('x = 1')

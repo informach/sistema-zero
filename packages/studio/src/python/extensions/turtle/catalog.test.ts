@@ -145,6 +145,64 @@ test('custom modules, reassigned objects and unavailable official modules stay g
   expect(types(unavailable.body).some((id) => id.startsWith('sz_py_turtle_'))).toBe(false)
 })
 
+test('object state keeps specialized blocks; replacing an official name or a dunder does not', () => {
+  const base = [imported(), assigned('t', call(attribute(name('turtle'), 'Turtle')))]
+  const command = expression(call(attribute(name('t'), 'forward'), [integer('10')]))
+  const store = (target: ReturnType<typeof attribute>, value = name('outra')) =>
+    node('Assign', { targets: [withTargetContext(target, 'Store')], value, type_comment: null })
+  const project = (body: ReturnType<typeof node>[]) =>
+    types(
+      pythonASTToVisual(moduleNode(body), { codecs, officialModules: new Set(['turtle']) }).body,
+    )
+  // Ordinary object state and super().__init__() are not API replacements.
+  const state = project([
+    ...base,
+    store(attribute(name('self'), 'velocidade'), integer('3')),
+    expression(call(attribute(call(name('super')), '__init__'))),
+    command,
+    expression(call(name('print'), [text('oi')])),
+  ])
+  expect(state).toContain('sz_py_turtle_turtle_forward')
+  expect(state).toContain('sz_py_print')
+  for (const body of [
+    [...base, store(attribute(name('t'), 'forward')), command],
+    [...base, store(attribute(name('jogador'), 'forward')), command],
+    [...base, store(attribute(name('self'), '__class__')), command],
+    [
+      ...base,
+      expression(
+        call(attribute(name('object'), '__setattr__'), [name('t'), text('forward'), name('f')]),
+      ),
+      command,
+    ],
+    [
+      ...base,
+      node('Assign', {
+        targets: [
+          withTargetContext(
+            node('Subscript', {
+              value: attribute(name('t'), '__dict__'),
+              slice: text('forward'),
+              ctx: node('Load'),
+            }),
+            'Store',
+          ),
+        ],
+        value: name('f'),
+        type_comment: null,
+      }),
+      command,
+    ],
+  ])
+    expect(project(body)).not.toContain('sz_py_turtle_turtle_forward')
+  const builtins = project([
+    node('Import', { names: [node('alias', { name: 'builtins', asname: null })] }),
+    store(attribute(name('builtins'), 'print')),
+    expression(call(name('print'), [text('oi')])),
+  ])
+  expect(builtins).not.toContain('sz_py_print')
+})
+
 test('official compound shapes keep their receiver, Python API and feature gate through Blockly', () => {
   const component = expression(
     call(attribute(name('desenho'), 'addcomponent'), [

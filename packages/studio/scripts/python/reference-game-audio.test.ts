@@ -1,9 +1,12 @@
 import { expect, test } from 'bun:test'
+import { VISUAL_REFERENCE_GAMES } from '../../src/examples/python/visualReferenceGames.manifest'
 import { readPythonAudioWav } from '../../src/runtime/python/audio/wav'
 import { REFERENCE_GAME_SOUNDS, renderReferenceSound } from './reference-game-audio'
 
-test('all nine original sounds are deterministic, audible PCM16 material within runtime limits', () => {
-  expect(REFERENCE_GAME_SOUNDS).toHaveLength(9)
+test('every original sound is deterministic, audible PCM16 material within runtime limits', () => {
+  expect(REFERENCE_GAME_SOUNDS).toHaveLength(
+    VISUAL_REFERENCE_GAMES.reduce((total, game) => total + game.sounds.length, 0),
+  )
   for (const sound of REFERENCE_GAME_SOUNDS) {
     const first = renderReferenceSound(sound)
     expect(first).toEqual(renderReferenceSound(sound))
@@ -14,8 +17,12 @@ test('all nine original sounds are deterministic, audible PCM16 material within 
       0,
     )
   }
-  expect(REFERENCE_GAME_SOUNDS.filter(({ game }) => game === 'pacman-visual')).toHaveLength(4)
-  expect(REFERENCE_GAME_SOUNDS.filter(({ game }) => game === 'space-arena-visual')).toHaveLength(5)
+  for (const game of VISUAL_REFERENCE_GAMES) {
+    const paths = game.sounds.map(({ path }) => path)
+    expect(game.sounds.length).toBeGreaterThan(0)
+    expect(new Set(paths).size).toBe(paths.length)
+    for (const path of paths) expect(path).toMatch(/^[a-z][a-z0-9_]*\.wav$/)
+  }
 })
 
 test('invalid scores fail explicitly instead of generating silence or excessive material', () => {

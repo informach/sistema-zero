@@ -1,55 +1,18 @@
+import {
+  VISUAL_REFERENCE_GAMES,
+  type VisualReferenceGameKey,
+  type VisualReferenceSound,
+} from '../../src/examples/python/visualReferenceGames.manifest'
+
 /** Original procedural PCM16 sounds. Integer oscillators keep generation reproducible. */
-export interface ReferenceSound {
-  game: 'pacman-visual' | 'space-arena-visual'
-  path: string
-  notes: readonly number[]
-  noteMilliseconds: number
-  noise?: boolean
+export interface ReferenceSound extends VisualReferenceSound {
+  game: VisualReferenceGameKey
 }
 
-export const REFERENCE_GAME_SOUNDS: readonly ReferenceSound[] = [
-  {
-    game: 'pacman-visual',
-    path: 'opening.wav',
-    notes: [262, 330, 392, 523],
-    noteMilliseconds: 120,
-  },
-  { game: 'pacman-visual', path: 'collect.wav', notes: [660, 880], noteMilliseconds: 40 },
-  { game: 'pacman-visual', path: 'power.wav', notes: [392, 523, 659], noteMilliseconds: 90 },
-  { game: 'pacman-visual', path: 'collision.wav', notes: [330, 220, 110], noteMilliseconds: 110 },
-  {
-    game: 'space-arena-visual',
-    path: 'bgm.wav',
-    notes: [131, 196, 262, 196, 147, 220, 294, 220, 165, 247, 330, 247, 147, 220, 294, 196],
-    noteMilliseconds: 250,
-  },
-  {
-    game: 'space-arena-visual',
-    path: 'explosion.wav',
-    notes: [100, 70, 40],
-    noteMilliseconds: 90,
-    noise: true,
-  },
-  {
-    game: 'space-arena-visual',
-    path: 'missile_fire.wav',
-    notes: [1200, 800, 400],
-    noteMilliseconds: 35,
-  },
-  {
-    game: 'space-arena-visual',
-    path: 'powerup.wav',
-    notes: [440, 554, 659, 880],
-    noteMilliseconds: 70,
-  },
-  {
-    game: 'space-arena-visual',
-    path: 'thruster.wav',
-    notes: [65, 66, 65, 64],
-    noteMilliseconds: 75,
-    noise: true,
-  },
-]
+/** Every score lives with its game in the manifest. */
+export const REFERENCE_GAME_SOUNDS: readonly ReferenceSound[] = VISUAL_REFERENCE_GAMES.flatMap(
+  (game) => game.sounds.map((sound) => ({ ...sound, game: game.key })),
+)
 
 export function renderReferenceSound(sound: ReferenceSound): Uint8Array {
   if (

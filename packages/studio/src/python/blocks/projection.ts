@@ -38,6 +38,32 @@ export interface PythonBlockProjection {
   typeIgnores: PythonNode[]
 }
 
+const guardedByCodecs = new WeakMap<readonly PythonBlockCodec[], ReadonlySet<string>>()
+/** Names that bound codecs resolve through: replacing one would change an official API. */
+function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<string> {
+  let names = guardedByCodecs.get(codecs)
+  if (names) return names
+  const found = new Set<string>()
+  for (const codec of codecs) {
+    if (!codec.binding && !codec.bindingFor) continue
+    if (codec.binding) found.add(codec.binding.root)
+    if (codec.binding?.member) found.add(codec.binding.member)
+    const template = codec.defaultNode()
+    let path: PythonNode | undefined =
+      template.kind === 'Call' && isNode(template.fields.func) ? template.fields.func : template
+    while (path?.kind === 'Attribute') {
+      if (typeof path.fields.attr === 'string') found.add(path.fields.attr)
+      path = isNode(path.fields.value) ? path.fields.value : undefined
+    }
+    // A method template's receiver is only a sample variable, not an API name.
+    if (!codec.bindingFor && path?.kind === 'Name' && typeof path.fields.id === 'string')
+      found.add(path.fields.id)
+  }
+  names = found
+  guardedByCodecs.set(codecs, names)
+  return names
+}
+
 export function pythonASTToVisual(
   tree: PythonNode,
   options: { codecs?: readonly PythonBlockCodec[]; officialModules?: ReadonlySet<string> } = {},
@@ -45,7 +71,7 @@ export function pythonASTToVisual(
   if (tree.kind !== 'Module' || !nodes(tree.fields.body) || !nodes(tree.fields.type_ignores))
     throw new Error('O programa Python precisa de um módulo completo.')
   const codecs = options.codecs ?? PYTHON_PROGRAMMING_CODECS
-  const resolves = pythonBindingResolver(tree, options.officialModules)
+  const resolves = pythonBindingResolver(tree, options.officialModules, guardedAttributes(codecs))
   let count = 0
   function project(value: PythonNode, role: PythonBlockRole, depth = 0): PythonVisualNode {
     if (++count > 20_000 || depth > 80) throw new Error('O programa excede o limite visual.')

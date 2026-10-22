@@ -354,7 +354,7 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
       3,
       'statement',
       'class',
-      'Define uma classe simples. Use __init__ para iniciar a instância e self para seus atributos e métodos.',
+      'Define uma classe. Use __init__ para iniciar a instância e self para seus atributos e métodos. Em herda de, a classe-mãe empresta os métodos; super().__init__() chama o __init__ dela.',
     ),
     defaultNode: () =>
       node('ClassDef', {
@@ -365,7 +365,24 @@ export const PYTHON_ADVANCED_BLOCK_CODECS: readonly PythonBlockCodec[] = [
         decorator_list: [],
         type_params: [],
       }),
-    slots: [textSlot('name', 'nome'), bodySlot('body', 'métodos e atributos')],
+    slots: [
+      textSlot('name', 'nome'),
+      listSlot('bases', 'herda de'),
+      bodySlot('body', 'métodos e atributos'),
+    ],
+  }),
+  structuralCodec({
+    ...metadata(
+      'lambda',
+      'função rápida',
+      'Funções',
+      3,
+      'value',
+      'lambda a, b=valor: resultado',
+      'Cria uma função sem nome que devolve o valor da expressão. Útil em callbacks curtos, como tela.onkey(lambda: virar(90), "Up"). Valores padrão são calculados quando ela é criada.',
+    ),
+    defaultNode: () => node('Lambda', { args: argumentsNode(), body: name('valor') }),
+    slots: [valueSlot('args', 'parâmetros', false, 'parameters'), valueSlot('body', 'devolve')],
   }),
   structuralCodec({
     ...metadata(

@@ -2,8 +2,11 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import {
+  VISUAL_REFERENCE_GAMES,
+  type VisualReferenceGameKey,
+} from '../../src/examples/python/visualReferenceGames.manifest'
 
-const games = ['pacman-visual', 'space-arena-visual'] as const
 const sha256 = (text: string) => createHash('sha256').update(text).digest('hex')
 const record = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -57,10 +60,9 @@ export function readVisualExampleBlockMetadata(receipt: unknown, source: string)
   return { sourceSha256, blockIds: [...ids].sort() }
 }
 
-export function visualExampleBlockMetadataSource(input: {
-  'pacman-visual': ReturnType<typeof readVisualExampleBlockMetadata>
-  'space-arena-visual': ReturnType<typeof readVisualExampleBlockMetadata>
-}) {
+export function visualExampleBlockMetadataSource(
+  input: Record<VisualReferenceGameKey, ReturnType<typeof readVisualExampleBlockMetadata>>,
+) {
   return (
     '// Gerado por scripts/python/generate-visual-example-block-metadata.ts. Não edite.\n' +
     '// Evidência de autoria visual; disponibilidade e autorização continuam pertencendo ao host.\n' +
@@ -72,33 +74,33 @@ if (import.meta.main) {
   const studio = resolve(import.meta.dirname, '../..')
   const root = resolve(studio, '../..')
   const args = process.argv.slice(2)
-  const argument = (name: string, fallback: string) => {
-    const index = args.indexOf(`--${name}`)
-    if (index < 0) return resolve(root, fallback)
-    const value = args[index + 1]
-    assert.ok(value && !value.startsWith('--'), `Missing --${name} path`)
-    return resolve(root, value)
-  }
-  const evidence = 'docs/continuity/2026-10-22-python-reference-games-visual-evidence'
-  const receipts = {
-    'pacman-visual': argument('pacman-receipt', `${evidence}/pacman-visual-r4.json.snapshot`),
-    'space-arena-visual': argument(
-      'space-receipt',
-      `${evidence}/space-arena-visual-r4.json.snapshot`,
-    ),
-  }
-  const inputs = []
-  for (const game of games) {
-    const receipt: unknown = JSON.parse(await readFile(receipts[game], 'utf8'))
-    const source = decodeVisualExampleSource(
-      await readFile(resolve(studio, `src/examples/python/${game}/main.py`)),
-    )
-    inputs.push(readVisualExampleBlockMetadata(receipt, source))
-  }
-  const raw = visualExampleBlockMetadataSource({
-    'pacman-visual': inputs[0]!,
-    'space-arena-visual': inputs[1]!,
+  // --receipt <game>=<path> replaces the versioned receipt of one game.
+  const overrides = new Map<string, string>()
+  args.forEach((value, index) => {
+    if (value !== '--receipt') return
+    const [game, path] = (args[index + 1] ?? '').split('=')
+    assert.ok(game && path, 'Use --receipt <jogo>=<caminho>')
+    overrides.set(game, resolve(root, path))
   })
+  for (const game of overrides.keys())
+    assert.ok(
+      VISUAL_REFERENCE_GAMES.some(({ key }) => key === game),
+      `Jogo desconhecido: ${game}`,
+    )
+  const evidence = 'docs/continuity/2026-10-22-python-reference-games-visual-evidence'
+  const metadata = {} as Record<
+    VisualReferenceGameKey,
+    ReturnType<typeof readVisualExampleBlockMetadata>
+  >
+  for (const game of VISUAL_REFERENCE_GAMES) {
+    const path = overrides.get(game.key) ?? resolve(root, evidence, game.receipt)
+    const receipt: unknown = JSON.parse(await readFile(path, 'utf8'))
+    const source = decodeVisualExampleSource(
+      await readFile(resolve(studio, `src/examples/python/${game.key}/main.py`)),
+    )
+    metadata[game.key] = readVisualExampleBlockMetadata(receipt, source)
+  }
+  const raw = visualExampleBlockMetadataSource(metadata)
   const outputName = 'src/examples/python/visualReferenceGames.blocks.generated.ts'
   const formatter = Bun.spawn(
     [

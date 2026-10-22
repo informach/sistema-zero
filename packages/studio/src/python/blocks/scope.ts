@@ -21,11 +21,14 @@ const eachChild = (value: PythonNode) => Object.values(value.fields).flatMap(chi
 export function pythonBindingResolver(
   tree: PythonNode,
   officialModules: ReadonlySet<string> = new Set(),
+  guardedAttributes: ReadonlySet<string> = new Set(),
 ) {
   const scopes = new WeakMap<PythonNode, Scope>()
   const constructors: { scope: Scope; target: string; call: PythonNode }[] = []
   // Attribute writes can mutate imported modules (including builtins) through
-  // aliases. Do not promise official behavior when that alias graph is unknown.
+  // aliases. The alias graph is unknown, so a write to any name an official block
+  // resolves through (or to a dunder) withdraws every specialized label. Ordinary
+  // object state such as self.velocidade cannot replace official behavior.
   let hasAttributeWrites = false
   let hasDynamicBindings = false
   function assign(scope: Scope, key: string, binding: Binding) {
@@ -55,12 +58,16 @@ export function pythonBindingResolver(
       fields.value.kind === 'Call'
     )
       constructors.push({ scope, target: fields.targets[0]!.fields.id, call: fields.value })
-    if (
-      value.kind === 'Attribute' &&
-      isNode(fields.ctx) &&
-      ['Store', 'Del'].includes(fields.ctx.kind)
-    )
-      hasAttributeWrites = true
+    if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
+      const dunder = fields.attr.startsWith('__') && fields.attr.endsWith('__')
+      if (
+        ['Store', 'Del'].includes(fields.ctx.kind) &&
+        (dunder || guardedAttributes.has(fields.attr))
+      )
+        hasAttributeWrites = true
+      // object.__setattr__, __dict__ and __class__ reach the same mutation indirectly.
+      else if (dunder && fields.attr !== '__init__') hasDynamicBindings = true
+    }
     if (['MatchAs', 'MatchStar'].includes(value.kind) && typeof fields.name === 'string')
       assign(scope, fields.name, { kind: 'other' })
     if (value.kind === 'MatchMapping' && typeof fields.rest === 'string')

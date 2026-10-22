@@ -1,8 +1,8 @@
 import { expect, test } from 'bun:test'
 import * as Blockly from 'blockly/core'
 import { pythonVisualToWorkspace, pythonWorkspaceToVisual } from './blockly'
-import { expression, integer, moduleNode } from './nodes'
-import { pythonASTToVisual } from './projection'
+import { expression, integer, moduleNode, node, pass } from './nodes'
+import { pythonASTToVisual, pythonVisualToAST } from './projection'
 import { readPythonWorkspaceState } from './readWorkspaceState'
 
 test('recovery refuses foreign block initializers and serializers before Blockly sees them', () => {
@@ -95,5 +95,37 @@ test('disabled Python blocks cannot silently produce executable source', () => {
     }
   } finally {
     workspace.dispose()
+  }
+})
+
+test('a class draft saved before inheritance existed fails safely instead of changing the class', () => {
+  const workspace = new Blockly.Workspace(),
+    restored = new Blockly.Workspace()
+  try {
+    const original = moduleNode([
+      node('ClassDef', {
+        name: 'Alvo',
+        bases: [],
+        keywords: [],
+        body: [pass()],
+        decorator_list: [],
+        type_params: [],
+      }),
+    ])
+    const roots = pythonVisualToWorkspace(pythonASTToVisual(original), workspace)
+    const saved = Blockly.serialization.workspaces.save(workspace)
+    const serialized = JSON.stringify(saved)
+    expect(serialized).toContain('bases:count')
+    // The draft shape from before the "herda de" slot: no count for the new list.
+    const legacy = JSON.parse(serialized.replace(/"bases:count":0,?/, ''))
+    expect(JSON.stringify(legacy)).not.toContain('bases:count')
+    expect(() => {
+      readPythonWorkspaceState(legacy)
+      Blockly.serialization.workspaces.load(legacy, restored)
+      pythonVisualToAST(pythonWorkspaceToVisual(restored, roots))
+    }).toThrow()
+  } finally {
+    workspace.dispose()
+    restored.dispose()
   }
 })

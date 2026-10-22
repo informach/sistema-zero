@@ -4,11 +4,9 @@ import { readFile } from 'node:fs/promises'
 import { readPythonAudioWav } from '../../runtime/python/audio/wav'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../pythonCatalog'
 import { VISUAL_REFERENCE_GAME_BLOCKS } from './visualReferenceGames.blocks.generated'
+import { VISUAL_REFERENCE_GAMES } from './visualReferenceGames.manifest'
 
-for (const [game, soundCount] of [
-  ['pacman-visual', 4],
-  ['space-arena-visual', 5],
-] as const)
+for (const { key: game, sounds } of VISUAL_REFERENCE_GAMES)
   test(`${game} offers the same complete editable program in Blocks and Code with portable original sounds`, async () => {
     const blocks = PYTHON_EXAMPLE_SUMMARIES.find(({ key }) => key === `python:${game}:blocks`)
     const code = PYTHON_EXAMPLE_SUMMARIES.find(({ key }) => key === `python:${game}:code`)
@@ -42,9 +40,9 @@ for (const [game, soundCount] of [
       )
     expect(blockPayload.files['requirements.txt']).toBe('')
     expect(blockPayload.files.LICENSE).toContain('Copyright (c) 2026 Sistema Zero')
-    expect(blockPayload.assets).toHaveLength(soundCount)
+    expect(blockPayload.assets).toHaveLength(sounds.length)
     expect(blocks.requiredProvidedModules).toEqual([{ importName: 'sz_audio', version: '1.0.0' }])
-    expect(new Set(blockPayload.assets?.map(({ id }) => id)).size).toBe(soundCount)
+    expect(new Set(blockPayload.assets?.map(({ id }) => id)).size).toBe(sounds.length)
     for (const asset of blockPayload.assets ?? []) {
       if (!asset.proPath) throw new Error('Portable sound path required')
       const bytes = new Uint8Array(Buffer.from(asset.dataUrl.split(',')[1]!, 'base64'))
