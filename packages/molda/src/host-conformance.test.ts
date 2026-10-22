@@ -1,11 +1,12 @@
 /**
  * Conformidade com o HOST: o que precisa existir fora deste pacote para o
- * Molda chegar em staging/prod. Lê os arquivos do monorepo por texto (sem
- * importar nada de outro pacote).
+ * Molda chegar em staging/prod. Lê configurações e definições puras do catálogo,
+ * sem executar CLIs ou inicializar serviços de outro pacote.
  */
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { CATALOG_SEED_PRODUCTS } from '../../catalog/scripts/catalog-seed-definitions'
 
 const ROOT = resolve(import.meta.dir, '../../..')
 
@@ -97,7 +98,14 @@ describe('member-shell e catálogo', () => {
   })
 
   test('seed do catálogo tem o produto molda', () => {
-    expect(read('packages/catalog/scripts/seed.ts')).toContain("MOLDA_SKU = 'molda'")
+    const products = CATALOG_SEED_PRODUCTS.filter((product) => product.sku === 'molda')
+    expect(products).toHaveLength(1)
+    expect(products[0]).toMatchObject({
+      slug: 'molda',
+      kind: 'tool',
+      status: 'active',
+      fulfillment: { accessType: 'community', courseRef: 'molda' },
+    })
   })
 })
 
