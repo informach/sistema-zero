@@ -67,6 +67,36 @@ test('optional Turtle draws actual Python geometry and Tk colors in the protecte
   expect(page.frames()).toHaveLength(1)
 })
 
+test('turtle.dot paints a filled disc, like Tk, although canvas prunes zero-length strokes', async ({
+  page,
+}) => {
+  await prepare(page, 'turtleDot')
+  await completed(page)
+  expect(await output(page)).toBe('dot-ready\n')
+  const frame = page.frames().find((value) => value.url().includes('/frame.html'))!
+  const pixels = await frame.evaluate(() => {
+    const context = document.querySelector('canvas')!.getContext('2d')!
+    const at = (x: number, y: number) => [...context.getImageData(x, y, 1, 1).data]
+    // Turtle (0, 0) is canvas (200, 150); y grows downward on the canvas.
+    return {
+      redCenter: at(100, 150),
+      redEdge: at(100 + 17, 150),
+      outsideRed: at(100 + 24, 150),
+      // dot() without a size uses max(pensize + 4, 2 * pensize) = 60 for pensize 30.
+      blueEdge: at(300, 150 - 27),
+      outsideBlue: at(300, 150 - 33),
+    }
+  })
+  expect(pixels).toEqual({
+    redCenter: [255, 0, 0, 255],
+    redEdge: [255, 0, 0, 255],
+    outsideRed: [255, 255, 255, 255],
+    blueEdge: [0, 0, 255, 255],
+    outsideBlue: [255, 255, 255, 255],
+  })
+  await page.evaluate(() => globalThis.providerProbe.dispose('turtle'))
+})
+
 test('keyboard and turtle/screen clicks dispatch inside Python; Stop revokes the scene', async ({
   page,
 }, testInfo) => {

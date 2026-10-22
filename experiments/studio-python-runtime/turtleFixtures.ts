@@ -117,6 +117,23 @@ t.forward(80)
 s.update()
 print('drawing-ready', t.position(), t.heading())
 `,
+  turtleDot: `import turtle
+s = turtle.Screen()
+s.setup(400, 300)
+s.bgcolor('white')
+s.tracer(0)
+t = turtle.Turtle()
+t.hideturtle()
+t.penup()
+t.goto(-100, 0)
+t.dot(40, 'red')
+t.goto(100, 0)
+t.pensize(30)
+t.pencolor('blue')
+t.dot()
+s.update()
+print('dot-ready')
+`,
   turtleEvents: `import turtle
 s = turtle.Screen()
 s.setup(400, 300)

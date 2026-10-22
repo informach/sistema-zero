@@ -17,10 +17,19 @@ Python não ativada precisa ser explícita, mantendo JavaScript e a origem do
 runtime. Nenhuma variável, chave, release ou namespace remoto foi alterado por
 essas consultas. O plano abaixo continua offline até essa conciliação.
 
-- Distribuição: `e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9`.
-- Release: `python-browser/2026-10-22-visual-games-2`.
-- Manifesto: `40bff8eb23206550da4599132bd6a56d42f13dcb8e0d83d7c1d189609cfa30d5`.
-- Plano: `c68ac70261508f989f29cd886243583c079303b80df02254101d19031c845756`.
+- Distribuição: `476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c`.
+- Release: `python-browser/2026-10-22-visual-games-3`.
+- Manifesto: `bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80`.
+- Plano: `57e25c2c3fd303e4ede148d211f8bb1942d7c3a37b507869f6628e37837487b5`.
+- Paleta de autoria: 256 IDs (os 255 da candidata anterior mais `sz_py_lambda`).
+
+Em relação à candidata anterior (`e3188c84…`, release `-2`), mudou um arquivo
+da distribuição: `turtle-renderer.mjs` (com sua cópia gzip e o `distribution.json`
+que lista os hashes). O canvas descarta traços de comprimento zero, então
+`turtle.dot()` não pintava nada no navegador; o renderizador agora pinta o disco,
+como o Tk. A construção foi reproduzida duas vezes com o mesmo hash a partir dos
+inputs fixados. A release nova também carrega a paleta com herança no bloco de
+classe e o bloco de função rápida (`lambda`).
 - 41 arquivos; CPython 3.14.2/Pyodide 314.0.7, Turtle com formas compostas e
   módulo portátil `sz_audio` explícito. As versões efetivas são verificadas pelo
   builder e pelo protocolo de análise.

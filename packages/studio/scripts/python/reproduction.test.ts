@@ -56,7 +56,7 @@ test('the committed descriptor is the fixed 41-file current candidate, independe
   const distribution = await expectedPythonDistribution()
   expect(distribution.files).toHaveLength(41)
   expect(PYTHON_REPRODUCTION_SHA256).toBe(
-    'e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9',
+    '476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c',
   )
   expect('directory' in distribution).toBe(false)
 })
