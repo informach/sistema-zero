@@ -2,6 +2,7 @@
 
 import { createProToolchainPreparer } from '../../lib/pro-toolchain'
 import { sessionFetch } from '../../lib/session-fetch'
+import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
 import '@sistemazero/studio/styles.css'
 import type {
   EditableStudioProject as Project,
@@ -163,6 +164,12 @@ function StudioProEditorSession({
         namespace: storageNamespace,
         projectId,
         prepare: prepareProject,
+        authorize: freeRuntime
+          ? async (loaded, signal) => {
+              if (loaded.kind === 'pro' && loaded.programmingLanguage !== 'python')
+                await authorizeJavaScriptCreation('pro', signal)
+            }
+          : undefined,
         active: () => active,
         signal: lifetime.signal,
         onOpening: (owner) => {
@@ -202,7 +209,7 @@ function StudioProEditorSession({
       lifetime.abort()
       opening?.release()
     }
-  }, [storageNamespace, projectId, loadAttempt, prepareProject, proRuntime])
+  }, [storageNamespace, projectId, loadAttempt, prepareProject, proRuntime, freeRuntime])
 
   if (state.kind === 'pensa-refused') {
     return (

@@ -113,6 +113,7 @@ test('HTTP keeps JS achievements separate from Python and never authorizes the e
   const discovery = await f.options()
   expect(discovery.status).toBe(200)
   const options = StudioFreeOptionsSchema.parse(await discovery.json())
+  expect(options.canCreateJavaScript).toBe(true)
   expect(options.canCreatePython).toBe(false)
   expect(options.catalog?.releases[0]?.blockIds).toEqual([])
   expect(options.pythonGrantedExtensionIds).toEqual([])
@@ -127,6 +128,7 @@ test('HTTP course union preserves earned Python after curriculum removal', async
   expect((await f.options()).status).toBe(200)
   for (const course of f.courses.courses) course.metadata = { studioUnlockBlocks: [] }
   const discovery = StudioFreeOptionsSchema.parse(await (await f.options()).json())
+  expect(discovery.canCreateJavaScript).toBe(false)
   expect(discovery.canCreatePython).toBe(true)
   expect(discovery.catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
   expect((await f.request()).status).toBe(200)

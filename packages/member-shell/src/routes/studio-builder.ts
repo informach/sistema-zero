@@ -21,6 +21,10 @@ import { kidsJourneyAccess } from '../lib/kids-journey-access'
 import { learnerIdentity } from '../lib/learner-identity'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { MembersClient } from '../server/clients'
+import {
+  assertFreeStudioLanguageAccess,
+  FreeStudioLanguageAccessError,
+} from '../server/free-studio-language-access'
 import { pensaSynthesisModel } from '../server/pensa-llm'
 import type { SessionModule } from '../server/session'
 import {
@@ -28,7 +32,10 @@ import {
   sanitizeStudioAssistanceRequest,
   studioAssistanceMission,
 } from '../server/studio-assistance'
-import { refreshStudioBuilderPreview } from '../server/studio-builder'
+import {
+  assertJavaScriptBuilderAccess,
+  refreshStudioBuilderPreview,
+} from '../server/studio-builder'
 import {
   studioBuilderRuntimeAvailable,
   studioBuilderRuntimeOptions,
@@ -144,7 +151,11 @@ export function createStudioBuilderRoutes(deps: {
         if (!parsed.success) return error('Solicitação de construção inválida.', 400)
         const input = parsed.data
         // A revoked builder capability must not prevent owner-scoped cleanup of old jobs.
-        if (input.operation !== 'remove-project') {
+        if (
+          !['get', 'latest', 'list', 'cancel', 'discard', 'remove-project'].includes(
+            input.operation,
+          )
+        ) {
           const [access, gamification] = await Promise.all([
             deps.members.checkStudioAccess(),
             deps.members.getGamification(),
@@ -324,6 +335,12 @@ export function createStudioBuilderRoutes(deps: {
                 reason =
                   'O acesso ao ambiente Python mudou. Prepare uma nova proposta antes de aplicar.'
             }
+            if (
+              !reason &&
+              job &&
+              !(job.base.version === 2 && job.base.configuration.programmingLanguage === 'python')
+            )
+              await assertJavaScriptBuilderAccess(deps.members, actor, job, request.signal)
             return NextResponse.json(
               { allowed: !reason, ...(reason ? { reason } : {}) },
               { headers: { 'Cache-Control': 'no-store' } },
@@ -416,6 +433,7 @@ export function createStudioBuilderRoutes(deps: {
               const { runtimeUrl, runtimeToken } = runtimeOptions
               if (!runtimeUrl || !runtimeToken)
                 return error('O ambiente de verificação ainda não está configurado.', 503)
+              await assertFreeStudioLanguageAccess(deps.members, 'javascript', true, request.signal)
               await (deps.preflight ?? preflightStudioProBuild)({
                 files: base.files,
                 binaries: input.binaries,
@@ -459,6 +477,8 @@ export function createStudioBuilderRoutes(deps: {
             { headers: { 'Cache-Control': 'no-store' } },
           )
         } catch (cause) {
+          if (cause instanceof FreeStudioLanguageAccessError)
+            return error(cause.message, cause.status)
           if (cause instanceof StudioAssistanceContextError)
             return error(cause.message, cause.status)
           if (cause instanceof StudioProRuntimeInputError) return error(cause.message, cause.status)

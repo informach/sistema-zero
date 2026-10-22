@@ -86,12 +86,16 @@ async function fixture() {
     cost: null,
     notes: [],
   }
+  let onDispatch = () => {}
+  let authorization = true
   let token: string | null = null
   const usage: (StudioAiUsageAction | { operation: 'costs' })[] = []
   const commands: StudioProBuilderCommand[] = []
   const members: Members = {
     async studioBuilder(_actor, command) {
       commands.push(command)
+      if (command.operation === 'authorize-javascript' && !authorization)
+        return { status: 403, body: { state: null } }
       if (command.operation === 'claim') {
         if (!token && ['queued', 'validating'].includes(job.phase)) {
           token = crypto.randomUUID()
@@ -174,11 +178,13 @@ async function fixture() {
             },
           },
         }
-      if (action.operation === 'dispatch')
+      if (action.operation === 'dispatch') {
+        onDispatch()
         return {
           status: 200,
           body: { dispatch: { source: 'openrouter', apiKey: 'adult-test-key' } },
         }
+      }
       return { status: 200, body: { ok: true } }
     },
   }
@@ -193,6 +199,12 @@ async function fixture() {
   }
   return {
     input,
+    revoke: () => {
+      authorization = false
+    },
+    onDispatch(fn: () => void) {
+      onDispatch = fn
+    },
     usage,
     commands,
     job: () => job,
@@ -409,4 +421,51 @@ describe('recusa da reserva em frase de gente', () => {
       'Não foi possível começar a construção. As ideias deste mês acabaram. Peça ao responsável para conferir os limites e a conexão na área da família.',
     )
   })
+})
+
+test('revocation after claim prevents JavaScript inference and releases the job without a provider call', async () => {
+  const f = await fixture()
+  f.onDispatch(f.revoke)
+  let externalCalls = 0
+  network(async () => {
+    externalCalls++
+    throw new Error('must not dispatch')
+  })
+  expect((await f.advance())?.phase).toBe('failed')
+  expect(externalCalls).toBe(0)
+  expect(f.usage.filter((action) => action.operation === 'dispatch')).toHaveLength(1)
+  expect(f.usage.filter((action) => action.operation === 'settle')).toEqual([
+    { operation: 'settle', runId: f.job().id, settlement: { attempt: 1, status: 'rejected' } },
+  ])
+  expect(f.commands.some((c) => c.operation === 'authorize-javascript')).toBe(true)
+  expect(f.usage.at(-1)?.operation).toBe('finish')
+})
+
+test('revocation after a saved proposal prevents both validation and preview dispatch', async () => {
+  const f = await fixture()
+  let builds = 0
+  network(async (url) => {
+    if (url.includes('openrouter')) return provider(proposal(f.hash))
+    builds++
+    return validated()
+  })
+  await f.advance()
+  f.revoke()
+  expect((await f.advance())?.phase).toBe('failed')
+  expect(builds).toBe(0)
+  const preview = await fixture()
+  network(async (url) => {
+    if (url.includes('openrouter')) return provider(proposal(preview.hash))
+    builds++
+    return validated()
+  })
+  await preview.advance()
+  await preview.advance()
+  expect(builds).toBe(1)
+  const previous = preview.job().result?.preview
+  preview.revoke()
+  await expect(refreshStudioBuilderPreview(preview.input)).rejects.toThrow('autorização JavaScript')
+  expect(builds).toBe(1)
+  expect(preview.job().result?.preview).toEqual(previous)
+  expect(preview.commands.at(-1)?.operation).toBe('preview-release')
 })

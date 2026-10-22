@@ -4,6 +4,7 @@ import {
   type KidsJourneyAccess,
 } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
+import { hasStudioLanguageAchievement } from '@sistemazero/studio/course-language-access'
 
 interface StudioProSession {
   role: string
@@ -19,6 +20,8 @@ export type StudioProAccessDecision =
         | 'STUDIO_ACCESS_REQUIRED'
         | 'STUDIO_PRO_TIER_REQUIRED'
         | 'JOURNEY_UNAVAILABLE'
+        | 'CURRICULUM_UNAVAILABLE'
+        | 'STUDIO_LANGUAGE_REQUIRED'
     }
 
 /**
@@ -37,10 +40,15 @@ export function resolveStudioProAccess({
   session,
   studioAccess,
   journey,
+  blocks,
+  language,
 }: {
   session: StudioProSession | null
   studioAccess: boolean
   journey: KidsJourneyAccess | null
+  blocks: readonly string[] | null
+  /** Shared page has not loaded its document yet; JS dependencies already know their language. */
+  language: 'javascript' | 'any'
 }): StudioProAccessDecision {
   if (!session?.activeProfile) return { allowed: false, code: 'PROFILE_SESSION_REQUIRED' }
   if (!studioAccess) return { allowed: false, code: 'STUDIO_ACCESS_REQUIRED' }
@@ -50,6 +58,14 @@ export function resolveStudioProAccess({
     return { allowed: false, code: 'STUDIO_PRO_TIER_REQUIRED' }
   if (!hasKidsCapability(journey, 'studio') || !hasKidsCapability(journey, 'pro')) {
     return { allowed: false, code: 'STUDIO_PRO_TIER_REQUIRED' }
+  }
+  if (!isKidsStaffPreview(journey)) {
+    if (blocks === null) return { allowed: false, code: 'CURRICULUM_UNAVAILABLE' }
+    if (
+      !hasStudioLanguageAchievement('javascript', blocks) &&
+      !(language === 'any' && hasStudioLanguageAchievement('python', blocks))
+    )
+      return { allowed: false, code: 'STUDIO_LANGUAGE_REQUIRED' }
   }
   return { allowed: true }
 }

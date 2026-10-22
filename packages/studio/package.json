@@ -20,6 +20,7 @@
     "./python-language": "./src/python/language/httpProvider.ts",
     "./python-authoring": "./src/python/blocks/authoring.ts",
     "./python-course-unlocks": "./src/python/course-unlocks.ts",
+    "./course-language-access": "./src/core/courseLanguageAccess.ts",
     "./python-activity": "./src/activity/python.ts",
     "./lesson-runtime": "./src/runtime/lessonEnvironment.ts",
     "./contextual-runtime": "./src/runtime/contextEnvironment.ts",

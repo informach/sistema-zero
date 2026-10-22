@@ -478,34 +478,51 @@ export function KitGallery({
   pythonCreation,
   pythonDiscovery,
   professional = false,
+  javascriptAvailable = true,
+  authorizeJavaScript,
 }: {
   onOpenProject: (projectId: string) => void
   pythonCreation?: PythonExampleCreationPort
   pythonDiscovery?: { loading: boolean; unavailable: boolean; error?: string; retry(): void }
   professional?: boolean
+  javascriptAvailable?: boolean
+  authorizeJavaScript?: (kind: 'classic' | 'pro', signal?: AbortSignal) => Promise<void>
 }): JSX.Element {
   const t = useT()
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [groups, setGroups] = useState<KitGroup<GalleryEntry>[] | null>(null)
   const [selectedLanguage, setProgrammingLanguage] = useState<'javascript' | 'python'>('javascript')
-  // A oferta de Python é decisão do host (admin/superadmin). Sem ela, a galeria
-  // nem mostra o seletor: staff com exemplos liberados continua só em JavaScript.
+  // The host independently supplies each language's creation eligibility.
   const pythonOffered = Boolean(pythonCreation || pythonDiscovery)
-  const programmingLanguage = pythonOffered ? selectedLanguage : 'javascript'
+  const programmingLanguage = !javascriptAvailable
+    ? 'python'
+    : pythonOffered
+      ? selectedLanguage
+      : 'javascript'
   // Se a oferta voltar, a galeria recomeça em JavaScript, não na escolha antiga.
   useEffect(() => {
     if (!pythonOffered) setProgrammingLanguage('javascript')
   }, [pythonOffered])
   const attempt = useRef<AbortController | null>(null)
   const lifetime = useMemo(
-    () => ({ programmingLanguage, professional, signal: pythonCreation?.signal }),
-    [programmingLanguage, professional, pythonCreation?.signal],
+    () => ({
+      programmingLanguage,
+      professional,
+      javascriptAvailable,
+      signal: pythonCreation?.signal,
+    }),
+    [programmingLanguage, professional, javascriptAvailable, pythonCreation?.signal],
   )
   const currentLifetime = useRef(lifetime)
-  const authority = useRef({ pythonCreation, professional })
+  const authority = useRef({
+    pythonCreation,
+    professional,
+    javascriptAvailable,
+    authorizeJavaScript,
+  })
   useLayoutEffect(() => {
-    authority.current = { pythonCreation, professional }
+    authority.current = { pythonCreation, professional, javascriptAvailable, authorizeJavaScript }
   })
   useLayoutEffect(() => {
     currentLifetime.current = lifetime
@@ -592,6 +609,7 @@ export function KitGallery({
       attempt.current === controller &&
       currentLifetime.current === lifetime &&
       !controller.signal.aborted &&
+      (entry.programmingLanguage === 'python' || authority.current.javascriptAvailable) &&
       captureProjectStorageScope() === scope &&
       !scope.signal?.aborted
     setCreating(entry.key)
@@ -611,7 +629,11 @@ export function KitGallery({
             (entry.kind !== 'pro' || authority.current.professional) &&
             Boolean(authority.current.pythonCreation),
         })
-      } else project = await createProjectFromExample(entry, scope, current)
+      } else {
+        await authority.current.authorizeJavaScript?.('classic', controller.signal)
+        if (!current()) return
+        project = await createProjectFromExample(entry, scope, current)
+      }
       if (current()) onOpenProject(project.id)
     } catch (cause) {
       if (current()) {
@@ -646,7 +668,7 @@ export function KitGallery({
             }
             className="sz-touch-target h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm"
           >
-            <option value="javascript">JavaScript</option>
+            {javascriptAvailable && <option value="javascript">JavaScript</option>}
             <option value="python">Python</option>
           </select>
         </label>

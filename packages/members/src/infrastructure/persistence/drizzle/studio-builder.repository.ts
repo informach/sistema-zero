@@ -498,6 +498,8 @@ export class DrizzleStudioBuilderRepository implements StudioProBuilderRepositor
       if (!found) return null
       // Authorization is strictly read-only, even for an expired generation. Keep
       // this before the expiry transition, which intentionally persists failures.
+      if (command.operation === 'authorize-javascript')
+        return { job: await view(tx, found), token: null }
       if (command.operation === 'authorize-generation') {
         if (
           found.phase !== 'generating' ||

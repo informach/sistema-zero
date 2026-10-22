@@ -2,6 +2,7 @@ import {
   isDocumentRecord,
   ProjectDocumentError,
   ProjectTooLargeError,
+  SUPPORTED_PROJECT_FORMAT_VERSION,
 } from '../../core/projectDocument'
 
 /**
@@ -33,7 +34,12 @@ export class ImportTooBigError extends Error {
  * `prepareProjectDocument`; só serve para escolher a frase, quem recusa é ele.
  */
 export function looksLikeStudioProject(value: unknown): boolean {
-  return isDocumentRecord(value) && typeof value.name === 'string' && isDocumentRecord(value.files)
+  if (!isDocumentRecord(value) || typeof value.name !== 'string') return false
+  const pythonPro =
+    value.formatVersion === SUPPORTED_PROJECT_FORMAT_VERSION &&
+    value.programmingLanguage === 'python' &&
+    value.kind === 'pro'
+  return isDocumentRecord(pythonPro ? value.tree : value.files)
 }
 
 export function importRefusalKey(err: unknown): ImportRefusalKey {

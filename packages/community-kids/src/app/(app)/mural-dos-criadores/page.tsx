@@ -56,7 +56,12 @@ export default async function MuralPage() {
   }
   const remixTier: RemixTier | null =
     tier?.freeStudio === true && tier.hasPalette
-      ? { pro: tier.pro, allowedExtensions: [...tier.allowedExtensions], python }
+      ? {
+          pro: tier.pro,
+          javascript: tier.allowBlocks === undefined || tier.allowBlocks.length > 0,
+          allowedExtensions: [...tier.allowedExtensions],
+          python,
+        }
       : null
   const challenge =
     challengeRes?.status === 200 && challengeRes.body

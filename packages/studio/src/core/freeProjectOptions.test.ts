@@ -10,6 +10,7 @@ async function discovery(pro = false) {
   return {
     legacyJavaScript: true,
     canCreatePro: pro,
+    canCreateJavaScript: true,
     canCreatePython: true,
     pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {

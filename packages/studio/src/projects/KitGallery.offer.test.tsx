@@ -8,16 +8,25 @@ afterEach(cleanup)
 const discovery = { loading: false, unavailable: false, retry() {} }
 const languageSelect = () => document.querySelector('select[name="kit-language"]')
 
-test('without a host Python offer (staff, customer) the gallery shows no language choice', () => {
+test('without a host Python offer the gallery shows no language choice', () => {
   render(<KitGallery onOpenProject={() => {}} professional />)
   expect(languageSelect()).toBeNull()
   expect(screen.queryByRole('option', { name: 'Python' })).toBeNull()
 })
 
-test('a host Python offer (admin, superadmin) shows the choice with JavaScript as default', () => {
+test('both host language rights show the choice with JavaScript as default', () => {
   render(<KitGallery onOpenProject={() => {}} professional pythonDiscovery={discovery} />)
   expect((languageSelect() as HTMLSelectElement | null)?.value).toBe('javascript')
   expect(screen.getByRole('option', { name: 'Python' })).toBeDefined()
+})
+
+test('Python-only achievements never offer JavaScript examples', () => {
+  render(
+    <KitGallery onOpenProject={() => {}} javascriptAvailable={false} pythonDiscovery={discovery} />,
+  )
+  expect((languageSelect() as HTMLSelectElement).value).toBe('python')
+  expect(screen.queryByRole('option', { name: 'JavaScript' }) === null).toBe(true)
+  expect(screen.getByText(/Python ainda não está disponível/).textContent).toBeTruthy()
 })
 
 test('losing the offer after choosing Python falls back to JavaScript', () => {

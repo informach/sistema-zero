@@ -98,6 +98,12 @@ export function ShowcaseCard({
             return decision.json()
           },
         })
+      } else {
+        const { authorizeJavaScriptCreation } = await import(
+          '@sistemazero/member-shell/lib/studio-javascript-creation'
+        )
+        signal.throwIfAborted()
+        await authorizeJavaScriptCreation(requirement.pro ? 'pro' : 'classic', signal)
       }
       signal.throwIfAborted()
       const projectId = await importCreatorRemix(snapshot, {

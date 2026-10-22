@@ -89,6 +89,8 @@ export function createStudioAiTransport(input: {
   signal?: AbortSignal
   /** Durable builder resumes at the next ledger attempt, never dispatching attempt 1 again. */
   completedAttempts?: number
+  /** Optional current authority check after credit dispatch, before any provider request. */
+  beforeProviderDispatch?: () => Promise<void>
 }): { transport: PensaJsonTransport; finish: () => Promise<void> } {
   let attempt = input.completedAttempts ?? 0
   if (!Number.isSafeInteger(attempt) || attempt < 0 || attempt >= input.request.maxAttempts)
@@ -132,6 +134,16 @@ export function createStudioAiTransport(input: {
     if (caller?.aborted) {
       await settle({ attempt, status: 'rejected' })
       throw new PensaLlmError('Operação cancelada antes da chamada', undefined, false)
+    }
+    if (input.beforeProviderDispatch) {
+      try {
+        await input.beforeProviderDispatch()
+        caller?.throwIfAborted()
+      } catch (cause) {
+        // No provider request has started: settle this reserved attempt as rejected.
+        await settle({ attempt, status: 'rejected' })
+        throw cause
+      }
     }
     const controller = new AbortController()
     const abort = () => controller.abort()

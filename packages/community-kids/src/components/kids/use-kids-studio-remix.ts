@@ -108,6 +108,12 @@ export function useKidsStudioRemix({
             request: (input) =>
               apiSend('/api/studio/free-runtime', 'POST', input, undefined, { signal }),
           })
+        } else {
+          const { authorizeJavaScriptCreation } = await import(
+            '@sistemazero/member-shell/lib/studio-javascript-creation'
+          )
+          if (!isCurrent()) return
+          await authorizeJavaScriptCreation(requirement.pro ? 'pro' : 'classic', signal)
         }
         if (!isCurrent()) return
         const studio = await import('@sistemazero/studio/project-import')

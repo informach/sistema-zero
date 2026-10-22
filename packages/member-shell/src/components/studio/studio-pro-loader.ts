@@ -12,6 +12,8 @@ export async function loadPreparedStudioProProject(options: {
   namespace: string
   projectId: string
   prepare?: () => Promise<void>
+  /** Check the real loaded document before handing its opening to the editor. */
+  authorize?: (project: Studio.EditableStudioProject, signal?: AbortSignal) => Promise<void>
   active: () => boolean
   signal?: AbortSignal
   onOpening?: (opening: {
@@ -24,14 +26,22 @@ export async function loadPreparedStudioProProject(options: {
   options.module.setStudioStorageNamespace(options.namespace)
   // The adapter captures its namespace before asynchronous reconciliation.
   const persistence = options.module.createLocalPersistenceAdapter({ namespace: options.namespace })
-  const release =
+  const releaseOpening =
     persistence.beginOpening?.(options.projectId, { signal: options.signal }) ?? (() => {})
+  let released = false
+  const release = () => {
+    if (released) return
+    released = true
+    releaseOpening()
+  }
   let transferred = false
   try {
     options.onOpening?.({ release, persistence })
     await options.prepare?.()
     if (!current()) return null
     const project = await persistence.load(options.projectId)
+    if (!current()) return null
+    if (project) await options.authorize?.(project, options.signal)
     transferred = current() && project !== null && options.onOpening !== undefined
     return current() ? project : null
   } finally {

@@ -46,6 +46,40 @@ function javaScriptRuntime(input: StudioBuilderRuntimeOptions) {
   return { runtimeUrl: input.runtimeUrl, runtimeToken: input.runtimeToken }
 }
 
+/** Recheck the saved job through the S2S authority immediately before external work. */
+export async function assertJavaScriptBuilderAccess(
+  members: Pick<MembersClient, 'studioBuilder'>,
+  actor: StudioAiActor,
+  job: StudioProBuilderJob,
+  signal?: AbortSignal,
+) {
+  signal?.throwIfAborted()
+  const response = await members.studioBuilder(
+    actor,
+    { operation: 'authorize-javascript', id: job.id, projectId: job.projectId },
+    signal,
+  )
+  signal?.throwIfAborted()
+  const fresh = response.body?.state?.job
+  if (
+    response.status !== 200 ||
+    !fresh ||
+    fresh.id !== job.id ||
+    fresh.projectId !== job.projectId ||
+    fresh.base.hash !== job.base.hash ||
+    fresh.version !== job.version ||
+    fresh.phase !== job.phase ||
+    fresh.result?.revisionHash !== job.result?.revisionHash ||
+    fresh.leaseUntil !== job.leaseUntil ||
+    fresh.deadlineAt !== job.deadlineAt ||
+    fresh.expiresAt !== job.expiresAt ||
+    (fresh.base.version === 2 && fresh.base.configuration.programmingLanguage !== 'javascript')
+  )
+    throw new Error(
+      'A autorização JavaScript desta proposta foi retirada. Seu projeto foi preservado.',
+    )
+}
+
 const RESERVATION_DENIED: Record<StudioAiDenial, (adult: boolean) => string> = {
   // Na tela da criança os créditos se chamam ideias (o medidor do core); no adulto, créditos.
   day: (adult) => (adult ? 'Os créditos de hoje acabaram.' : 'As ideias de hoje acabaram.'),
@@ -264,6 +298,9 @@ export async function advanceStudioBuilder(
         request,
         reservation,
         completedAttempts: job.modelCalls - 1,
+        beforeProviderDispatch: python
+          ? undefined
+          : () => assertJavaScriptBuilderAccess(input.members, input.actor, job, signal),
         signal,
       })
       const context = await prepareStudioBuilderContext(job, policy)
@@ -303,13 +340,15 @@ export async function advanceStudioBuilder(
         answer,
         python
           ? undefined
-          : (packageJson) =>
-              prepareStudioProDependencies({
+          : async (packageJson) => {
+              await assertJavaScriptBuilderAccess(input.members, input.actor, job, signal)
+              return prepareStudioProDependencies({
                 packageJson,
                 executionId: `builder-${job.id.replaceAll('-', '')}`,
                 ...javaScriptRuntime(input),
                 signal,
-              }),
+              })
+            },
       )
       const scopeIssue = studioProChangeScopeIssue(
         job.assistance?.request,
@@ -368,6 +407,7 @@ export async function advanceStudioBuilder(
       )
     }
     if (!isStudioProTemplateId(job.base.templateId)) throw new Error('Modelo JavaScript inválido.')
+    await assertJavaScriptBuilderAccess(input.members, input.actor, job, signal)
     const built = await requestStudioProBuild({
       files: revision.files,
       binaries: claimed.binaries,
@@ -495,6 +535,7 @@ export async function refreshStudioBuilderPreview(
       throw new Error(validated.outcome.detail)
     }
     if (!isStudioProTemplateId(job.base.templateId)) throw new Error('Modelo JavaScript inválido.')
+    await assertJavaScriptBuilderAccess(input.members, input.actor, job, signal)
     const built = await requestStudioProBuild({
       files: revision.files,
       binaries,

@@ -39,16 +39,6 @@ export function studioBuilderRoutes(deps: {
       async ({ body, set }) => {
         set.headers['Cache-Control'] = 'no-store'
         if (!deps.service) throw new StudioAiUnavailableError()
-        if (body.actor.audience === 'adult')
-          await assertAdultCreativeAccess(deps, body.actor, 'studio', true, true)
-        if (!body.actor.privileged && body.actor.audience !== 'adult') {
-          const access = await deps.accessCheck.execute(body.actor.accountId, ['estudio-completo'])
-          if (
-            !access.grants.includes('estudio-completo') &&
-            !access.communities.includes('estudio-completo')
-          )
-            throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
-        }
         return {
           ...(body.actor.audience === 'adult' ? { audience: 'adult' as const } : {}),
           page: await deps.service.list(body.actor, body.query),
@@ -71,14 +61,20 @@ export function studioBuilderRoutes(deps: {
       async ({ body, set, request }) => {
         set.headers['Cache-Control'] = 'no-store'
         if (!deps.service) throw new StudioAiUnavailableError()
-        const removingProject =
+        const retainingWork =
           body.command !== null &&
           typeof body.command === 'object' &&
           'operation' in body.command &&
-          body.command.operation === 'remove-project'
-        if (body.actor.audience === 'adult' && !removingProject)
+          typeof body.command.operation === 'string' &&
+          (['get', 'latest', 'cancel', 'discard', 'preview-release', 'remove-project'].includes(
+            body.command.operation,
+          ) ||
+            (body.command.operation === 'checkpoint' &&
+              'phase' in body.command &&
+              body.command.phase === 'failed'))
+        if (body.actor.audience === 'adult' && !retainingWork)
           await assertAdultCreativeAccess(deps, body.actor, 'studio', true, true)
-        if (!body.actor.privileged && !removingProject && body.actor.audience !== 'adult') {
+        if (!body.actor.privileged && !retainingWork && body.actor.audience !== 'adult') {
           const access = await deps.accessCheck.execute(body.actor.accountId, ['estudio-completo'])
           if (
             !access.grants.includes('estudio-completo') &&

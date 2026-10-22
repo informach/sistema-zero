@@ -31,9 +31,11 @@ export interface NewProjectModalProps {
   onCreate: (name: string, opts?: NewProjectCreateOptions) => void | Promise<void>
   /** Quando true, mostra a opção de criar um projeto profissional. */
   professionalAvailable?: boolean
+  /** Host-resolved language eligibility; other authoring contexts keep JavaScript enabled. */
+  javascriptAvailable?: boolean
   /** Templates profissionais oferecidos (quando `professionalAvailable`). */
   templates?: ProTemplate[]
-  /** Verified host discovery; Python is optional and never changes the JS default. */
+  /** Verified host discovery; JavaScript remains the default when that language is available. */
   pythonEnvironments?: readonly PythonProjectCreationEnvironment[]
   pythonDiscovery?: {
     loading: boolean
@@ -51,6 +53,7 @@ export function NewProjectModal({
   onClose,
   onCreate,
   professionalAvailable = false,
+  javascriptAvailable = true,
   templates = [],
   pythonEnvironments = [],
   pythonDiscovery,
@@ -75,9 +78,12 @@ export function NewProjectModal({
   useEffect(() => {
     if (open && !openedRef.current) {
       setName(defaultName)
-      setKind('basic')
-      setLanguage('javascript')
-      setPythonEnvironmentKey('')
+      const initialPython =
+        pythonEnvironments.find(({ kind }) => kind === 'classic') ??
+        (professionalAvailable ? pythonEnvironments.find(({ kind }) => kind === 'pro') : undefined)
+      setKind(!javascriptAvailable && initialPython?.kind === 'pro' ? 'pro' : 'basic')
+      setLanguage(javascriptAvailable ? 'javascript' : 'python')
+      setPythonEnvironmentKey(javascriptAvailable ? '' : (initialPython?.key ?? ''))
       setTemplateId(templates[0]?.id ?? '')
       setCreationError(null)
       setCategory('all')
@@ -129,7 +135,9 @@ export function NewProjectModal({
             environment.key === pythonEnvironmentKey &&
             environment.kind === (kind === 'pro' ? 'pro' : 'classic'),
         )
-      : professionalAvailable && templates.some((template) => template.id === templateId)
+      : javascriptAvailable &&
+        professionalAvailable &&
+        templates.some((template) => template.id === templateId)
   const pythonChoices = pythonEnvironments.filter(
     (environment) => environment.kind === (kind === 'pro' ? 'pro' : 'classic'),
   )
@@ -149,8 +157,9 @@ export function NewProjectModal({
     !duplicate &&
     (language === 'python'
       ? selectedAvailable
-      : kind === 'basic' ||
-        (selectedAvailable && visibleTemplates.some((template) => template.id === templateId)))
+      : javascriptAvailable &&
+        (kind === 'basic' ||
+          (selectedAvailable && visibleTemplates.some((template) => template.id === templateId))))
 
   return (
     <Modal
@@ -226,7 +235,8 @@ export function NewProjectModal({
             )}
           </div>
         )}
-      {(language === 'python' || kind === 'pro') && !selectedAvailable && (
+      {(((language === 'python' || kind === 'pro') && !selectedAvailable) ||
+        (language === 'javascript' && !javascriptAvailable)) && (
         <p role="status" className="mt-2 text-sm text-sz-fg-soft">
           Este ambiente deixou de estar disponível para novos projetos. Seu nome foi preservado;
           escolha outro modelo ou reabra esta janela.
@@ -238,15 +248,17 @@ export function NewProjectModal({
           <legend className="text-xs font-semibold uppercase text-sz-fg-mute">
             Linguagem do projeto
           </legend>
-          <label className="flex items-center gap-2 text-sm text-sz-fg-soft">
-            <input
-              type="radio"
-              name="project-language"
-              checked={language === 'javascript'}
-              onChange={() => setLanguage('javascript')}
-            />
-            JavaScript (padrão)
-          </label>
+          {javascriptAvailable && (
+            <label className="flex items-center gap-2 text-sm text-sz-fg-soft">
+              <input
+                type="radio"
+                name="project-language"
+                checked={language === 'javascript'}
+                onChange={() => setLanguage('javascript')}
+              />
+              JavaScript (padrão)
+            </label>
+          )}
           <label className="flex items-center gap-2 text-sm text-sz-fg-soft">
             <input
               type="radio"
@@ -339,79 +351,82 @@ export function NewProjectModal({
             </span>
           </label>
 
-          {language === 'javascript' && kind === 'pro' && templates.length > 0 && (
-            <div className="mt-3 space-y-3">
-              <p className="font-medium text-sm">O que você quer criar?</p>
-              <div className="flex flex-wrap gap-2">
-                {(['all', '2d', '3d', 'web'] as const).map((choice) => (
-                  <button
-                    type="button"
-                    key={choice}
-                    aria-pressed={category === choice}
-                    className="min-h-10 rounded-lg border border-sz-border px-3 text-sm aria-pressed:bg-sz-accent/15"
-                    onClick={() => {
-                      setCategory(choice)
-                      const first = templates.find(
-                        (template) => choice === 'all' || categoryOf(template) === choice,
-                      )
-                      if (
-                        first &&
-                        (!selectedTemplate ||
-                          (choice !== 'all' && categoryOf(selectedTemplate) !== choice))
-                      )
-                        setTemplateId(first.id)
-                    }}
-                  >
-                    {choice === 'all'
-                      ? 'Todos'
-                      : choice === '2d'
-                        ? 'Jogos 2D'
-                        : choice === '3d'
-                          ? 'Mundos 3D'
-                          : 'Páginas e aplicativos'}
-                  </button>
-                ))}
-              </div>
-              <label className="block text-sm text-sz-fg-soft">
-                Escolha um ponto de partida
-                <select
-                  name="project-template"
-                  value={templateId}
-                  onChange={(e) => setTemplateId(e.target.value)}
-                  className="mt-1 w-full rounded border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
-                >
-                  {!selectedAvailable && (
-                    <option value={templateId} disabled>
-                      Modelo indisponível
-                    </option>
-                  )}
-                  {visibleTemplates.map((tpl) => (
-                    <option key={tpl.id} value={tpl.id}>
-                      {friendlyName(tpl)}
-                    </option>
+          {javascriptAvailable &&
+            language === 'javascript' &&
+            kind === 'pro' &&
+            templates.length > 0 && (
+              <div className="mt-3 space-y-3">
+                <p className="font-medium text-sm">O que você quer criar?</p>
+                <div className="flex flex-wrap gap-2">
+                  {(['all', '2d', '3d', 'web'] as const).map((choice) => (
+                    <button
+                      type="button"
+                      key={choice}
+                      aria-pressed={category === choice}
+                      className="min-h-10 rounded-lg border border-sz-border px-3 text-sm aria-pressed:bg-sz-accent/15"
+                      onClick={() => {
+                        setCategory(choice)
+                        const first = templates.find(
+                          (template) => choice === 'all' || categoryOf(template) === choice,
+                        )
+                        if (
+                          first &&
+                          (!selectedTemplate ||
+                            (choice !== 'all' && categoryOf(selectedTemplate) !== choice))
+                        )
+                          setTemplateId(first.id)
+                      }}
+                    >
+                      {choice === 'all'
+                        ? 'Todos'
+                        : choice === '2d'
+                          ? 'Jogos 2D'
+                          : choice === '3d'
+                            ? 'Mundos 3D'
+                            : 'Páginas e aplicativos'}
+                    </button>
                   ))}
-                </select>
-                {templates.find((tpl) => tpl.id === templateId)?.description && (
-                  <span className="mt-1 block text-xs text-sz-fg-mute">
-                    {templates.find((tpl) => tpl.id === templateId)?.description}
-                  </span>
+                </div>
+                <label className="block text-sm text-sz-fg-soft">
+                  Escolha um ponto de partida
+                  <select
+                    name="project-template"
+                    value={templateId}
+                    onChange={(e) => setTemplateId(e.target.value)}
+                    className="mt-1 w-full rounded border border-sz-border bg-sz-bg px-3 py-2 text-sm text-sz-fg outline-none focus:border-sz-accent"
+                  >
+                    {!selectedAvailable && (
+                      <option value={templateId} disabled>
+                        Modelo indisponível
+                      </option>
+                    )}
+                    {visibleTemplates.map((tpl) => (
+                      <option key={tpl.id} value={tpl.id}>
+                        {friendlyName(tpl)}
+                      </option>
+                    ))}
+                  </select>
+                  {templates.find((tpl) => tpl.id === templateId)?.description && (
+                    <span className="mt-1 block text-xs text-sz-fg-mute">
+                      {templates.find((tpl) => tpl.id === templateId)?.description}
+                    </span>
+                  )}
+                </label>
+                {selectedTemplate && (
+                  <details className="text-xs text-sz-fg-mute">
+                    <summary className="cursor-pointer py-1">Ferramentas deste projeto</summary>
+                    <p>
+                      {selectedTemplate.name} · {selectedTemplate.engine}
+                    </p>
+                  </details>
                 )}
-              </label>
-              {selectedTemplate && (
-                <details className="text-xs text-sz-fg-mute">
-                  <summary className="cursor-pointer py-1">Ferramentas deste projeto</summary>
-                  <p>
-                    {selectedTemplate.name} · {selectedTemplate.engine}
+                {!visibleTemplates.length && (
+                  <p role="status" className="text-sm">
+                    Não há modelos dessa categoria disponíveis aqui.
                   </p>
-                </details>
-              )}
-              {!visibleTemplates.length && (
-                <p role="status" className="text-sm">
-                  Não há modelos dessa categoria disponíveis aqui.
-                </p>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
         </fieldset>
       )}
     </Modal>

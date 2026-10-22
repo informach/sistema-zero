@@ -95,6 +95,15 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     ).toBe(false)
     expect(
       studioTierCoversRemix(resolveStudioTier('god', undefined), { pro: true, extensions: [] }),
+    ).toBe(false)
+    expect(
+      studioTierCoversRemix(
+        resolveStudioTier('god', undefined, {
+          blocks: ['sz_js_array_push'],
+          extensions: [],
+        }),
+        { pro: true, extensions: [] },
+      ),
     ).toBe(true)
     expect(
       studioTierCoversRemix(resolveStudioTier('noob', 'admin'), { pro: true, extensions: [] }),

@@ -30,6 +30,132 @@ describe('ImportButton', () => {
     cleanup()
   })
 
+  for (const kind of ['classic', 'pro'] as const) {
+    it(`Python ${kind} v3 reaches its document validator without requiring JavaScript rights`, async () => {
+      const { pythonEnvironmentFixture } = await import('../../state/fixtures/pythonEnvironment')
+      const { project } = await pythonEnvironmentFixture(kind)
+      const { useProjectStore } = await import('../../state/projectStore')
+      const original = useProjectStore.getState().importProjectFromJSON
+      const importProject = mock(async () => ({ project, warnings: [] }))
+      const authorize = mock(async () => {
+        throw new Error('Python must not request JavaScript rights')
+      })
+      const onImported = mock((_id: string) => {})
+      const warn = spyOn(console, 'warn').mockImplementation(() => {})
+      useProjectStore.setState({
+        importProjectFromJSON: importProject as unknown as typeof original,
+      })
+      try {
+        const view = render(
+          <ImportButton
+            onImported={onImported}
+            javascriptAvailable={false}
+            authorizeJavaScript={authorize}
+          />,
+        )
+        await chooseFile(fileInput(view.container), jsonFile(JSON.stringify(project)))
+        expect(importProject.mock.calls.length).toBe(1)
+        expect(authorize).not.toHaveBeenCalled()
+        expect(onImported).toHaveBeenCalledWith(project.id)
+      } finally {
+        useProjectStore.setState({ importProjectFromJSON: original })
+        warn.mockRestore()
+      }
+    })
+  }
+
+  it('a denied or revoked free Python import preserves the file and never persists; an approved retry can import', async () => {
+    const { pythonEnvironmentFixture } = await import('../../state/fixtures/pythonEnvironment')
+    const { project } = await pythonEnvironmentFixture('pro')
+    if (project.kind !== 'pro') throw new Error('Expected Pro fixture')
+    project.tree['requirements.txt'] = { kind: 'file', content: '# Dependências em edição\n' }
+    const source = JSON.stringify(project)
+    const file = jsonFile(source)
+    const { useProjectStore } = await import('../../state/projectStore')
+    const original = useProjectStore.getState().importProjectFromJSON
+    const importProject = mock(async () => ({ project, warnings: [] }))
+    useProjectStore.setState({ importProjectFromJSON: importProject as unknown as typeof original })
+    let allowed = false
+    const authorizePython = mock(async (snapshot: unknown) => {
+      expect(snapshot).toEqual(project)
+      if (!allowed) throw new Error('Conquista Python indisponível')
+    })
+    const onImported = mock((_id: string) => {})
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const view = render(
+        <ImportButton
+          onImported={onImported}
+          javascriptAvailable={false}
+          authorizePython={authorizePython}
+        />,
+      )
+      await chooseFile(fileInput(view.container), file)
+      expect(importProject).not.toHaveBeenCalled()
+      expect(onImported).not.toHaveBeenCalled()
+      expect(await file.text()).toBe(source)
+      allowed = true
+      await chooseFile(fileInput(view.container), file)
+      expect(importProject).toHaveBeenCalledTimes(1)
+      expect(onImported).toHaveBeenCalledTimes(1)
+      allowed = false
+      await chooseFile(fileInput(view.container), file)
+      expect(importProject).toHaveBeenCalledTimes(1)
+      expect(onImported).toHaveBeenCalledTimes(1)
+      expect(await file.text()).toBe(source)
+    } finally {
+      useProjectStore.setState({ importProjectFromJSON: original })
+      warn.mockRestore()
+    }
+  })
+
+  it('JavaScript imports recheck the host before persistence, including older documents claiming Python', async () => {
+    const { useProjectStore } = await import('../../state/projectStore')
+    const original = useProjectStore.getState().importProjectFromJSON
+    const importProject = mock(async () => ({
+      project: { id: 'imported', installedExtensions: [] },
+      warnings: [],
+    }))
+    useProjectStore.setState({ importProjectFromJSON: importProject as unknown as typeof original })
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const authorized: string[] = []
+      let allow = false
+      const onImported = mock((_id: string) => {})
+      const props = {
+        onImported,
+        authorizeJavaScript: async (kind: 'classic' | 'pro') => {
+          authorized.push(kind)
+          if (!allow) throw new Error('Sem conquista JavaScript')
+        },
+      }
+      const view = render(<ImportButton {...props} />)
+      const project = {
+        name: 'Arena',
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        kind: 'pro',
+      }
+      await chooseFile(fileInput(view.container), jsonFile(JSON.stringify(project)))
+      expect(authorized).toEqual(['pro'])
+      expect(importProject).not.toHaveBeenCalled()
+      expect(onImported).not.toHaveBeenCalled()
+      allow = true
+      await chooseFile(fileInput(view.container), jsonFile(JSON.stringify(project)))
+      expect(importProject).toHaveBeenCalledTimes(1)
+      expect(onImported).toHaveBeenCalledWith('imported')
+      view.rerender(<ImportButton {...props} javascriptAvailable={false} />)
+      await chooseFile(
+        fileInput(view.container),
+        jsonFile(JSON.stringify({ ...project, programmingLanguage: 'python' })),
+      )
+      expect(importProject).toHaveBeenCalledTimes(1)
+      expect(authorized).toEqual(['pro', 'pro'])
+    } finally {
+      useProjectStore.setState({ importProjectFromJSON: original })
+      warn.mockRestore()
+    }
+  })
+
   it('mostra mensagem amigável em PT quando o arquivo não é JSON válido', async () => {
     const { container } = render(<ImportButton onImported={() => undefined} />)
     // Conteúdo que não é JSON (ex.: uma imagem/txt) → JSON.parse lança SyntaxError.

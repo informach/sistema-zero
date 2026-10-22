@@ -11,6 +11,45 @@ function nameInput(): HTMLInputElement {
 
 const noop = () => undefined
 
+it('Python-only creation never offers JavaScript and blocks a revoked JavaScript selection', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  const environments: PythonProjectCreationEnvironment[] = [
+    {
+      kind: 'classic',
+      key: fixture.project.runtime.manifestSha256,
+      label: 'Python',
+      context: {
+        catalog: fixture.environment.catalog,
+        runtime: fixture.project.runtime,
+        releaseStatus: 'active',
+      },
+    },
+  ]
+  const created: unknown[] = []
+  const props = {
+    open: true,
+    defaultName: 'Meu projeto',
+    onClose: noop,
+    onCreate: (_name: string, options?: unknown) => {
+      created.push(options)
+    },
+    pythonEnvironments: environments,
+  }
+  const view = render(<NewProjectModal {...props} javascriptAvailable={false} />)
+  expect(screen.queryByRole('radio', { name: 'JavaScript (padrão)' }) === null).toBe(true)
+  await act(async () => fireEvent.click(screen.getByText('Criar e abrir')))
+  expect(created).toEqual([
+    { programmingLanguage: 'python', kind: 'classic', environmentKey: environments[0]!.key },
+  ])
+  view.unmount()
+  const stale = render(<NewProjectModal {...props} javascriptAvailable />)
+  stale.rerender(<NewProjectModal {...props} javascriptAvailable={false} />)
+  expect((screen.getByText('Criar e abrir') as HTMLButtonElement).disabled).toBe(true)
+  await act(async () => fireEvent.keyDown(nameInput(), { key: 'Enter' }))
+  expect(created).toHaveLength(1)
+  stale.unmount()
+})
+
 it('JavaScript remains default; Python selects an exact environment and its own Pro starter', async () => {
   const fixture = await pythonEnvironmentFixture('classic')
   const environments: PythonProjectCreationEnvironment[] = (['classic', 'pro'] as const).map(

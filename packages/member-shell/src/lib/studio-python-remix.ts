@@ -43,23 +43,26 @@ export async function pythonRemixCapabilities(
 }
 
 /** Preflight for a new private copy, never a reusable execution grant. */
-export async function authorizePythonPrivateCopy({
-  snapshot: rawSnapshot,
-  viewerId,
-  audience,
-  options,
-  request,
-  signal,
-  authoringRequirements,
-}: {
-  snapshot: unknown
-  viewerId: string
-  audience: 'kids' | 'adult'
-  options: unknown
-  request: (request: StudioFreeRuntimeRequest) => Promise<unknown>
-  signal: AbortSignal
-  authoringRequirements?: PythonCopyAuthoringRequirements
-}) {
+async function authorizePythonCopy(
+  {
+    snapshot: rawSnapshot,
+    viewerId,
+    audience,
+    options,
+    request,
+    signal,
+    authoringRequirements,
+  }: {
+    snapshot: unknown
+    viewerId: string
+    audience: 'kids' | 'adult'
+    options: unknown
+    request: (request: StudioFreeRuntimeRequest) => Promise<unknown>
+    signal: AbortSignal
+    authoringRequirements?: PythonCopyAuthoringRequirements
+  },
+  revisionKind: 'document' | 'execution',
+) {
   const required = authoringRequirements && structuredClone(authoringRequirements)
   signal.throwIfAborted()
   const project = await refinePythonProjectDocument(rawSnapshot)
@@ -68,13 +71,18 @@ export async function authorizePythonPrivateCopy({
   signal.throwIfAborted()
   if (
     !studioRemixCovered(
-      { pro: true, allowedExtensions: [], python },
+      { pro: true, javascript: false, allowedExtensions: [], python },
       remixRequirementFromSnapshot(project),
     )
   )
     throw new Error('Este ambiente Python ainda não está disponível para criar sua versão.')
   const subject = studioRuntimeSubject(project)
-  const snapshot = await preparePythonExecutionSnapshot(project)
+  // Import preserves editable drafts and source/lock differences. Its approval
+  // binds this document only; Run still prepares and authorizes execution itself.
+  const revision =
+    revisionKind === 'document'
+      ? await sha256Hex(canonicalJson(project))
+      : (await preparePythonExecutionSnapshot(project)).revision
   const context = { kind: 'free' as const, audience, projectId: project.id }
   signal.throwIfAborted()
   const decision = StudioFreeRuntimeDecisionSchema.parse(
@@ -82,7 +90,7 @@ export async function authorizePythonPrivateCopy({
       context,
       operation: 'analyze',
       subject,
-      revision: snapshot.revision,
+      revision,
     }),
   )
   signal.throwIfAborted()
@@ -94,7 +102,7 @@ export async function authorizePythonPrivateCopy({
     canonicalJson(decision.context) !== canonicalJson(context) ||
     decision.operation !== 'analyze' ||
     decision.projectId !== project.id ||
-    decision.revision !== snapshot.revision ||
+    decision.revision !== revision ||
     decision.subjectSha256 !== subjectSha256 ||
     canonicalJson(decision.runtime) !== canonicalJson(project.runtime) ||
     decision.releaseStatus !== 'active' ||
@@ -149,7 +157,18 @@ export async function authorizePythonPrivateCopy({
   return project
 }
 
+export function authorizePythonPrivateCopy(input: Parameters<typeof authorizePythonCopy>[0]) {
+  return authorizePythonCopy(input, 'execution')
+}
+
 /** Existing Mural callers keep the same owner/revision-bound preflight. */
 export function authorizePythonRemix(input: Parameters<typeof authorizePythonPrivateCopy>[0]) {
   return authorizePythonPrivateCopy(input)
+}
+
+/** Import is an editing operation; neither settles drafts nor updates a dependency lock. */
+export function authorizePythonImport(
+  input: Omit<Parameters<typeof authorizePythonCopy>[0], 'authoringRequirements'>,
+) {
+  return authorizePythonCopy(input, 'document')
 }

@@ -6,6 +6,7 @@ import {
   STUDIO_PRO_BUILDER_LIMITS as limits,
 } from '@sistemazero/core/studio'
 import { StudioBuilderService } from '../../src/application/studio-pro/studio-builder.service'
+import { AccessDeniedError } from '../../src/domain/entitlement/entitlement.errors'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleStudioAiUsageRepository } from '../../src/infrastructure/persistence/drizzle/studio-ai-usage.repository'
 import { DrizzleStudioBuilderRepository } from '../../src/infrastructure/persistence/drizzle/studio-builder.repository'
@@ -18,6 +19,11 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
   const accountId = randomUUID(),
     userId = randomUUID(),
     actor = { accountId, userId, privileged: false }
+  const dispatchActor = {
+    accountId: randomUUID(),
+    userId: randomUUID(),
+    privileged: false,
+  }
   beforeAll(async () => {
     connection = await openStudioReviewDatabase(url!)
     service = new StudioBuilderService(
@@ -25,18 +31,22 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
       () => now,
       true,
       true,
+      undefined,
+      async () => {},
     )
   })
   afterAll(async () => {
     if (!connection) return
-    await connection.sql`delete from members.studio_builder_jobs where account_id = ${accountId}`
-    await connection.sql`delete from members.studio_builder_project_deletions where account_id = ${accountId}`
-    await connection.sql`delete from members.adult_studio_builder_project_deletions where account_id = ${accountId}`
-    await connection.sql`delete from members.account_deletion_fences where account_id = ${accountId}`
-    await connection.sql`delete from members.studio_ai_accounts where account_id = ${accountId}`
+    for (const cleanupAccountId of [accountId, dispatchActor.accountId]) {
+      await connection.sql`delete from members.studio_builder_jobs where account_id = ${cleanupAccountId}`
+      await connection.sql`delete from members.studio_builder_project_deletions where account_id = ${cleanupAccountId}`
+      await connection.sql`delete from members.adult_studio_builder_project_deletions where account_id = ${cleanupAccountId}`
+      await connection.sql`delete from members.account_deletion_fences where account_id = ${cleanupAccountId}`
+      await connection.sql`delete from members.studio_ai_accounts where account_id = ${cleanupAccountId}`
+    }
     await connection.close()
   })
-  async function create(projectId = randomUUID()) {
+  async function create(projectId = randomUUID(), owner = actor) {
     const base = await createStudioProRevision({
       projectId,
       templateId: 'vanilla-vite',
@@ -55,7 +65,7 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
       binaries: {},
       base,
     }
-    return { command, state: (await service.execute(actor, command))! }
+    return { command, state: (await service.execute(owner, command))! }
   }
   test('execution context is immutable, private and rediscovered after a repository restart', async () => {
     const { command, state } = await create()
@@ -655,5 +665,65 @@ describe.skipIf(!url)('Studio builder — durable concurrency in Postgres', () =
     ).toBeNull()
     await connection.sql`delete from members.studio_builder_jobs where account_id = ${isolatedAccountId}`
     await connection.sql`delete from members.adult_studio_builder_project_deletions where account_id = ${isolatedAccountId}`
+  })
+  test('JavaScript dispatch policy uses persisted ownership and never mutates a lease or an expired generation', async () => {
+    // The deadline test deliberately fences its account; this policy proof owns another one.
+    const actor = dispatchActor
+    const { command } = await create(randomUUID(), actor)
+    const repo = new DrizzleStudioBuilderRepository(connection.db)
+    let allowed = true,
+      checked = 0,
+      policyNow = now
+    const guarded = new StudioBuilderService(
+      repo,
+      () => policyNow,
+      true,
+      true,
+      undefined,
+      async () => {
+        checked++
+        if (!allowed) throw new AccessDeniedError('O acesso JavaScript foi retirado.')
+      },
+    )
+    const claim = await guarded.execute(actor, {
+      operation: 'claim',
+      id: command.id,
+      projectId: command.base.projectId,
+    })
+    if (!claim?.token) throw new Error('Missing owned claim')
+    const authorize = {
+      operation: 'authorize-javascript' as const,
+      id: command.id,
+      projectId: command.base.projectId,
+    }
+    const original = structuredClone(claim.job)
+    expect(await guarded.execute(actor, authorize)).toEqual({ job: original, token: null })
+    expect((await repo.execute(actor, authorize, policyNow))?.job).toEqual(original)
+    const previousChecks = checked
+    expect(await guarded.execute({ ...actor, userId: randomUUID() }, authorize)).toBeNull()
+    expect(await guarded.execute({ ...actor, audience: 'adult' }, authorize)).toBeNull()
+    expect(checked).toBe(previousChecks)
+    allowed = false
+    const denied = await guarded.execute(actor, authorize).then(
+      () => false,
+      (error) => error instanceof AccessDeniedError,
+    )
+    expect(denied).toBe(true)
+    expect((await guarded.execute(actor, { ...authorize, operation: 'get' }))?.job).toEqual(
+      original,
+    )
+    allowed = true
+    policyNow = new Date(Date.parse(original.deadlineAt) + 1)
+    const expired = await guarded.execute(actor, authorize).then(
+      () => false,
+      () => true,
+    )
+    expect(expired).toBe(true)
+    expect((await repo.execute(actor, authorize, policyNow))?.job).toEqual(original)
+    policyNow = now
+    allowed = false
+    expect((await guarded.execute(actor, { ...authorize, operation: 'cancel' }))?.job.phase).toBe(
+      'cancelled',
+    )
   })
 })

@@ -12,6 +12,7 @@ import {
   selectStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
 import { StudioTutorEnvironmentSchema } from '@sistemazero/core/studio/tutor-environment'
+import { hasStudioLanguageAchievement } from '@sistemazero/studio/course-language-access'
 import type { PythonCatalogEntry } from '@sistemazero/studio/python-authoring'
 import { studioTutorContextHint } from '@sistemazero/studio/tutor-mode'
 import { NextResponse } from 'next/server'
@@ -469,9 +470,7 @@ export function createStudioZappyRoutes(deps: {
       const [studioAccess, gamification, unlocks] = await Promise.all([
         python ? true : hasStudioAccess(members),
         members.getGamification(),
-        python || audience === 'kids' || privileged || context.kind === 'pro'
-          ? null
-          : members.getStudioUnlocks(),
+        python || audience === 'kids' || privileged ? null : members.getStudioUnlocks(),
       ])
       if (!studioAccess) return error('FORBIDDEN', 403)
       const safeQuestion = redactZappySensitiveText(parsed.data.question)
@@ -493,7 +492,7 @@ export function createStudioZappyRoutes(deps: {
       let unlockedBlocks: readonly string[] = []
       const fullPalette =
         audience === 'adult' ? privileged : Boolean(kids && isKidsStaffPreview(kids))
-      if (!python && !fullPalette && context.kind !== 'pro') {
+      if (!python && !fullPalette) {
         // This GET may reconcile curriculum grants. Never call it for staff preview.
         const curriculum =
           audience === 'adult' ? unlocks : await members.getStudioUnlocks().catch(() => null)
@@ -510,13 +509,13 @@ export function createStudioZappyRoutes(deps: {
             : null
       if (!tier) return error('ZAPPY_UNAVAILABLE', 503)
       if (context.kind === 'pro' && context.mode !== 'code') return error('INVALID_INPUT', 400)
-      if (!python && context.kind !== 'pro' && !tier.hasPalette)
+      if (!python && !fullPalette && !hasStudioLanguageAchievement('javascript', unlockedBlocks))
         return error('ZAPPY_NOT_ENABLED', 403)
       // allowedModes descreve as visualizações CLÁSSICAS. Pro tem capacidade própria.
       if (!python && context.kind !== 'pro' && !tier.allowedModes.includes(context.mode))
         return error('FORBIDDEN_MODE', 403)
       if (!python && context.kind === 'pro' && !tier.pro) return error('FORBIDDEN_MODE', 403)
-      // O projeto Pro é liberado pelo nível (modo Código), não pelos blocos dos cursos.
+      // Pro still has its own capability; installed extensions retain their existing policy.
       if (
         !python &&
         context.kind !== 'pro' &&

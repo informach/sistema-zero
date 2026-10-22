@@ -2,12 +2,22 @@ import { describe, expect, test } from 'bun:test'
 import type { AdultJourneyView } from '@sistemazero/core/journey'
 import {
   adultStudioTier,
+  canShowJavaScriptCreation,
   canShowPythonCreation,
   drawerSnapshotsForBlocks,
   drawersForBlocks,
   extensionsForBlocks,
   groupDrawersByFamily,
 } from '../src/server/studio-unlocks'
+
+test('JavaScript creation requires known JavaScript achievements, independently of Python', () => {
+  for (const blocks of [[], ['sz_py_pass'], ['sz_js_unknown']])
+    expect(canShowJavaScriptCreation('member', blocks)).toBe(false)
+  for (const blocks of [['sz_js_array_push'], ['sz_py_pass', 'sz_html_ul']])
+    expect(canShowJavaScriptCreation('member', blocks)).toBe(true)
+  for (const role of ['staff', 'admin', 'superadmin'])
+    expect(canShowJavaScriptCreation(role, [])).toBe(true)
+})
 
 describe('Python creation offer follows earned language', () => {
   test('does not offer Python for absent, JavaScript-only or unknown grants', () => {

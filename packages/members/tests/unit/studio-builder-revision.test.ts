@@ -148,7 +148,14 @@ test.each([
 
 test('JavaScript v1 remains admissible without a Python host authorizer', async () => {
   const repo = repository(),
-    service = new StudioBuilderService(repo.port, () => new Date(), true)
+    service = new StudioBuilderService(
+      repo.port,
+      () => new Date(),
+      true,
+      false,
+      undefined,
+      async () => {},
+    )
   const base = await createStudioProRevision({
     projectId: 'legacy',
     templateId: 'vanilla-vite',

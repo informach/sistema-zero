@@ -69,6 +69,9 @@ export interface ProjectListProps {
   onOpenProject: (projectId: string) => void
   /** Habilita a criação de projetos profissionais (host com COOP/COEP). */
   professional?: boolean
+  javascriptAvailable?: boolean
+  authorizeJavaScript?: (kind: 'classic' | 'pro', signal?: AbortSignal) => Promise<void>
+  authorizePythonImport?: (snapshot: unknown, signal?: AbortSignal) => Promise<void>
   pythonDiscovery?: NewProjectModalProps['pythonDiscovery']
   pythonCreation?: {
     environments: readonly PythonProjectCreationEnvironment[]
@@ -166,6 +169,9 @@ function HostStatusPill({ status }: { status: StudioHostChromeStatus }): JSX.Ele
 export function ProjectList({
   onOpenProject,
   professional = false,
+  javascriptAvailable = true,
+  authorizeJavaScript,
+  authorizePythonImport,
   pythonCreation,
   pythonDiscovery,
   initialExtensions,
@@ -380,6 +386,10 @@ export function ProjectList({
   creationPython.current = pythonCreation
   const creationProAvailable = useRef(professional)
   creationProAvailable.current = professional
+  const creationJavaScriptAvailable = useRef(javascriptAvailable)
+  creationJavaScriptAvailable.current = javascriptAvailable
+  const javaScriptAuthorization = useRef(authorizeJavaScript)
+  javaScriptAuthorization.current = authorizeJavaScript
 
   const creationSequence = useRef(0)
   const creationMounted = useRef(true)
@@ -408,14 +418,22 @@ export function ProjectList({
                 environment.key === python.environmentKey && environment.kind === python.kind,
             ),
           )
-        : !opts ||
-          !('templateId' in opts) ||
-          Boolean(creationTemplates.current?.some((template) => template.id === opts.templateId)))
+        : creationJavaScriptAvailable.current &&
+          (!opts ||
+            !('templateId' in opts) ||
+            Boolean(
+              creationTemplates.current?.some((template) => template.id === opts.templateId),
+            )))
     try {
       const { useProjectStore } = await import('../state/projectStore')
       if (!current()) return
       const { createProject, createProProject, createPythonProject } = useProjectStore.getState()
       const environment = python ? await creationPython.current!.prepare(python) : null
+      if (!python)
+        await javaScriptAuthorization.current?.(
+          opts && 'templateId' in opts ? 'pro' : 'classic',
+          scope.signal,
+        )
       if (!current()) return
       const created =
         python && environment
@@ -546,6 +564,9 @@ export function ProjectList({
                     {themeProp === undefined && <ThemeToggle className="sz-tool-icon-btn" />}
                     <ImportButton
                       ref={importRef}
+                      javascriptAvailable={javascriptAvailable}
+                      authorizeJavaScript={authorizeJavaScript}
+                      authorizePython={authorizePythonImport}
                       onImported={handleImported}
                       allowedExtensions={allowedExtensions}
                     />
@@ -654,6 +675,8 @@ export function ProjectList({
                     >
                       <LazyKitGallery
                         onOpenProject={onOpenProject}
+                        javascriptAvailable={javascriptAvailable}
+                        authorizeJavaScript={authorizeJavaScript}
                         professional={professional}
                         pythonCreation={
                           pythonCreation?.authorizeExample
@@ -698,6 +721,8 @@ export function ProjectList({
                         >
                           <LazyKitGallery
                             onOpenProject={onOpenProject}
+                            javascriptAvailable={javascriptAvailable}
+                            authorizeJavaScript={authorizeJavaScript}
                             professional={professional}
                             pythonCreation={
                               pythonCreation?.authorizeExample
@@ -839,6 +864,7 @@ export function ProjectList({
           onClose={() => setModalOpen(false)}
           onCreate={handleCreate}
           professionalAvailable={professional}
+          javascriptAvailable={javascriptAvailable}
           pythonEnvironments={pythonCreation?.environments}
           pythonDiscovery={pythonDiscovery}
           templates={templates}

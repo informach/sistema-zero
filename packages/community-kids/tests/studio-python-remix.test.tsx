@@ -44,6 +44,7 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
   const options = {
     legacyJavaScript: true,
     canCreatePro: true,
+    canCreateJavaScript: true,
     canCreatePython: true,
     pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {
@@ -167,7 +168,12 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
     }),
     { preconnect: originalFetch.preconnect },
   )
-  const tier = { pro: true, allowedExtensions: [], python: await pythonRemixCapabilities(options) }
+  const tier = {
+    javascript: true,
+    pro: true,
+    allowedExtensions: [],
+    python: await pythonRemixCapabilities(options),
+  }
   const props = { slug: 'mural', viewerId, mode: 'wall' as const, remixTier: tier }
   return {
     ...f,
@@ -245,8 +251,22 @@ test('legacy JavaScript remix keeps its source and does not request a Python per
   expect(copies).toHaveLength(1)
   const copy = await loadSanitizedProjectById(copies[0]!.id, getProjectStorageScope(f.viewerId))
   expect(copy?.files).toEqual(source.files)
-  expect(f.requests).not.toContain('/api/studio/free-options')
+  expect(f.requests).toContain('/api/studio/free-options')
   expect(f.requests).not.toContain('/api/studio/free-runtime')
+})
+
+test('JavaScript remix rechecks a revoked language achievement before importing', async () => {
+  const f = await setup()
+  f.play(async () => Response.json(createEmptyProject('javascript-game', 'Jogo')))
+  f.discovery(async () => Response.json({ ...f.options, canCreateJavaScript: false }))
+  const error = spyOn(toast, 'error')
+  render(<KidsSpaceViewClient {...f.props} />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Fazer a minha versão' }))
+  await waitFor(() => expect(error).toHaveBeenCalledTimes(1))
+  expect(f.requests).toContain('/api/studio/free-options')
+  expect(f.requests).not.toContain('/api/studio/free-runtime')
+  expect(await listAllProjects(getProjectStorageScope(f.viewerId))).toEqual([])
+  expect(push).not.toHaveBeenCalled()
 })
 
 test('profile A→B→A during download cancels the old copy even if the transport returns later', async () => {

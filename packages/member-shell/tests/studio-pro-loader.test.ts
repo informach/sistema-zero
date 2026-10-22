@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { buildProProject } from '../../studio/src/core/proProject'
 import {
   loadPreparedStudioProProject,
   loadStudioProModule,
@@ -83,3 +84,56 @@ describe('loadStudioProModule', () => {
     ).rejects.toThrow('nuvem indisponível')
   })
 })
+
+for (const result of ['allowed', 'denied', 'cancelled'] as const) {
+  test(`Pro document authority ${result} is resolved after loading and before transferring the opening`, async () => {
+    const project = buildProProject(
+      'real-document',
+      'Arena',
+      { 'src/main.ts': { kind: 'file', content: '' } },
+      'dev',
+      'canvas-survival',
+    )
+    const controller = new AbortController()
+    let releaseCount = 0
+    let releaseOwner = () => {}
+    const calls: string[] = []
+    const pending = loadPreparedStudioProProject({
+      module: {
+        setStudioStorageNamespace() {},
+        createLocalPersistenceAdapter: () => ({
+          beginOpening: () => () => {
+            releaseCount++
+          },
+          load: async () => {
+            calls.push('load')
+            return project
+          },
+          save: async () => {},
+        }),
+      },
+      namespace: 'viewer',
+      projectId: project.id,
+      active: () => !controller.signal.aborted,
+      signal: controller.signal,
+      onOpening: ({ release }) => {
+        releaseOwner = release
+      },
+      authorize: async (loaded, signal) => {
+        expect(loaded).toBe(project)
+        expect(signal).toBe(controller.signal)
+        expect(releaseCount).toBe(0)
+        calls.push('authorize')
+        if (result === 'denied') throw new Error('JavaScript no longer earned')
+        if (result === 'cancelled') controller.abort()
+      },
+    })
+    if (result === 'denied') await expect(pending).rejects.toThrow('JavaScript no longer earned')
+    else expect(await pending).toBe(result === 'allowed' ? project : null)
+    expect(calls).toEqual(['load', 'authorize'])
+    expect(releaseCount).toBe(result === 'allowed' ? 0 : 1)
+    releaseOwner()
+    releaseOwner()
+    expect(releaseCount).toBe(1)
+  })
+}

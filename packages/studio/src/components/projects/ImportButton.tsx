@@ -1,7 +1,12 @@
 import type { JSX, Ref } from 'react'
 import { useImperativeHandle, useRef, useState } from 'react'
 import { Button, IconUpload, Modal } from '#ui'
+import {
+  projectFormatVersion,
+  SUPPORTED_PROJECT_FORMAT_VERSION,
+} from '../../core/projectDocumentGuards'
 import { MAX_PROJECT_IMPORT_CHARS } from '../../state/projectLimits'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useT } from '../../studio/i18n'
 import {
   ImportTooBigError,
@@ -23,16 +28,24 @@ export interface ImportButtonProps {
   onImported: (id: string) => void
   /** IDs conquistados na jornada; projeto não é destruído, mas incompatibilidades são avisadas. */
   allowedExtensions?: readonly string[]
+  javascriptAvailable?: boolean
+  authorizeJavaScript?: (kind: 'classic' | 'pro', signal?: AbortSignal) => Promise<void>
+  authorizePython?: (snapshot: unknown, signal?: AbortSignal) => Promise<void>
   ref?: Ref<ImportButtonHandle>
 }
 
 export function ImportButton({
   onImported,
   allowedExtensions,
+  javascriptAvailable = true,
+  authorizeJavaScript,
+  authorizePython,
   ref,
 }: ImportButtonProps): JSX.Element {
   const t = useT()
   const inputRef = useRef<HTMLInputElement | null>(null)
+  const authority = useRef({ javascriptAvailable, authorizeJavaScript, authorizePython })
+  authority.current = { javascriptAvailable, authorizeJavaScript, authorizePython }
   useImperativeHandle(ref, () => ({ open: () => inputRef.current?.click() }), [])
   const [error, setError] = useState<string | null>(null)
   // Avisos não-fatais do import (cota/permissão/bloco desconhecido): o projeto FOI
@@ -43,6 +56,8 @@ export function ImportButton({
   const [pendingId, setPendingId] = useState<string | null>(null)
 
   const handleFile = async (file: File) => {
+    const scope = captureProjectStorageScope()
+    const current = () => captureProjectStorageScope() === scope && !scope.signal?.aborted
     try {
       // `file.size` é em BYTES; o limite real é em CARACTERES (checado abaixo
       // com `text.length`). Aqui é só um teto anti-DoS para não ler arquivos
@@ -75,10 +90,30 @@ export function ImportButton({
         setError(t('projects.importNotJson'))
         return
       }
+      const environment = parsed as { programmingLanguage?: unknown; kind?: unknown }
+      const isPython =
+        projectFormatVersion(parsed) === SUPPORTED_PROJECT_FORMAT_VERSION &&
+        environment.programmingLanguage === 'python'
+      if (isPython) {
+        await authority.current.authorizePython?.(parsed, scope.signal)
+        if (!current()) return
+      } else {
+        if (!authority.current.javascriptAvailable)
+          throw new Error('JavaScript ainda não foi conquistado.')
+        await authority.current.authorizeJavaScript?.(
+          environment.kind === 'pro' ? 'pro' : 'classic',
+          scope.signal,
+        )
+        if (!current() || !authority.current.javascriptAvailable) return
+      }
       const { useProjectStore, extensionDisplayName } = await import('../../state/projectStore')
+      if (!current() || (!isPython && !authority.current.javascriptAvailable)) return
       const { project, warnings: importWarnings } = await useProjectStore
         .getState()
-        .importProjectFromJSON(parsed)
+        .importProjectFromJSON(parsed, {
+          storageScope: scope,
+          isCurrent: () => current() && (isPython || authority.current.javascriptAvailable),
+        })
       // ⚠️ Daqui em diante o projeto JÁ está gravado e aparece na lista: nenhum tropeço pode
       // cair no catch de baixo, que diria à criança "Nada mudou na sua lista".
       const warns = [...importWarnings]

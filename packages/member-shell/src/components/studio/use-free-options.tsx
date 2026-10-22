@@ -1,7 +1,6 @@
 'use client'
 
 import type { prepareStudioFreeOptions } from '@sistemazero/studio/free-project-options'
-import type { PythonProjectDocument } from '@sistemazero/studio/python-project-validation'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { apiGet, apiSend } from '../../lib/api'
 import type { PythonCopyAuthoringRequirements } from '../../lib/studio-python-remix'
@@ -74,25 +73,29 @@ export function useFreeStudioOptions(
     [owner],
   )
   const current = state?.owner === owner ? state : null
-  const authorizeExample = useCallback(
+  const authorizeCopy = useCallback(
     async (
-      project: PythonProjectDocument,
-      signal: AbortSignal,
+      purpose: 'import' | 'example',
+      project: unknown,
+      signal?: AbortSignal,
       requirements?: PythonCopyAuthoringRequirements,
     ) => {
       const authoringRequirements = requirements && structuredClone(requirements)
       const active = authority.current
       if (!owner.viewerId || currentOwner.current !== owner || active?.owner !== owner)
         throw new Error('O perfil mudou. Reabra a criação do projeto.')
-      const lifetime = AbortSignal.any([signal, active.controller.signal])
+      const lifetime = AbortSignal.any([...(signal ? [signal] : []), active.controller.signal])
       lifetime.throwIfAborted()
       const prepared = await readOptions(lifetime)
       lifetime.throwIfAborted()
       if (currentOwner.current !== owner)
         throw new Error('O perfil mudou. Reabra a criação do projeto.')
-      const { authorizePythonPrivateCopy } = await import('../../lib/studio-python-remix')
+      const { authorizePythonImport, authorizePythonPrivateCopy } = await import(
+        '../../lib/studio-python-remix'
+      )
       lifetime.throwIfAborted()
-      await authorizePythonPrivateCopy({
+      const authorize = purpose === 'import' ? authorizePythonImport : authorizePythonPrivateCopy
+      await authorize({
         snapshot: project,
         viewerId: owner.viewerId,
         audience: owner.audience,
@@ -108,7 +111,18 @@ export function useFreeStudioOptions(
     },
     [owner],
   )
+  const authorizeExample = useCallback(
+    (project: unknown, signal?: AbortSignal, requirements?: PythonCopyAuthoringRequirements) =>
+      authorizeCopy('example', project, signal, requirements),
+    [authorizeCopy],
+  )
+  const authorizeImport = useCallback(
+    (project: unknown, signal?: AbortSignal) => authorizeCopy('import', project, signal),
+    [authorizeCopy],
+  )
   return {
+    // Always provide this port, including disabled/missing discovery: free imports fail closed.
+    authorizeImport,
     creation: current?.prepared
       ? {
           environments: current.prepared.environments,

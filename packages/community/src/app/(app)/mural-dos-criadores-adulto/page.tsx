@@ -115,7 +115,12 @@ export default async function AdultShowcasePage({
           showcase
           remixCapability={
             state.kind === 'ready' && state.studioAvailable
-              ? { pro: state.tier.pro, allowedExtensions: state.tier.allowedExtensions, python }
+              ? {
+                  pro: state.tier.pro,
+                  javascript: state.showJavaScriptCreation,
+                  allowedExtensions: state.tier.allowedExtensions,
+                  python,
+                }
               : null
           }
         />

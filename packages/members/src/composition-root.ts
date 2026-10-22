@@ -345,8 +345,14 @@ export async function createApplication(env: Env): Promise<Application> {
   const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
   const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
+  const freeStudioAccess = new FreeStudioAccessService(
+    accessCheck,
+    getStudioUnlocks,
+    kidsJourneyQuery,
+    adultJourney,
+  )
   const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
-    new FreeStudioAccessService(accessCheck, getStudioUnlocks, kidsJourneyQuery, adultJourney),
+    freeStudioAccess,
     studioRuntimePolicy,
     studioAuthoringPolicy,
   )
@@ -385,6 +391,15 @@ export async function createApplication(env: Env): Promise<Application> {
     Boolean(env.STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
     Boolean(env.ADULT_STUDIO_BUILDER_EXECUTOR_URL && env.STUDIO_BUILDER_EXECUTOR_SECRET),
     (...args) => pythonBuilderPolicy.execute(...args),
+    async (actor, signal) => {
+      signal.throwIfAborted()
+      await freeStudioAccess.execute(
+        { ...actor, audience: actor.audience ?? 'kids', readOnly: false },
+        'existing-pro',
+        'javascript',
+      )
+      signal.throwIfAborted()
+    },
   )
   const studioAiUsage = new StudioAiUsageService({
     repository: studioAiUsageRepo,

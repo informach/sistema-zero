@@ -33,6 +33,7 @@ import {
 } from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
+import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
@@ -758,6 +759,11 @@ export function StudioFullClient({
                   onOpenProject={openProject}
                   theme={studioTheme}
                   professional={proAvailable}
+                  javascriptAvailable={
+                    tier.allowBlocks === undefined || tier.allowBlocks.length > 0
+                  }
+                  authorizeJavaScript={authorizeJavaScriptCreation}
+                  authorizePythonImport={freeOptions.authorizeImport}
                   pythonCreation={pythonCreationVisible ? freeOptions.creation : undefined}
                   pythonDiscovery={pythonCreationVisible ? freeOptions : undefined}
                   initialExtensions={tier.initialExtensions}

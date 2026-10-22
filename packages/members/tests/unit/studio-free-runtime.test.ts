@@ -314,6 +314,27 @@ test('free Pro keeps its own capability gate and does not inherit contextual Pro
   expect((await f.service.execute(f.actor, f.request)).curation.allowedModes).toEqual(['code'])
 })
 
+test('Python Pro requires one known Python achievement as well as the product and Pro capability', async () => {
+  const f = await setup('pro')
+  f.state.capabilities = ['studio', 'pro']
+  f.state.blocks = ['sz_py_pass']
+  const options = await f.service.options(f.actor)
+  expect(options.canCreatePython).toBe(true)
+  expect(options.canCreatePro).toBe(true)
+  expect((await f.service.execute(f.actor, f.request)).curation.allowedModes).toEqual(['code'])
+  f.state.owned = false
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('acesso')
+  f.state.owned = true
+  f.state.capabilities = ['studio']
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Pro')
+  f.state.capabilities = ['studio', 'pro']
+  for (const blocks of [[], [SERVER_BLOCK_CATALOG[0]!.type], ['sz_py_unknown']]) {
+    f.state.blocks = blocks
+    f.state.frozen = []
+    await expect(f.service.execute(f.actor, f.request)).rejects.toThrow()
+  }
+})
+
 test('Python course eligibility also admits a Pro code-only release without granting Classic tools', async () => {
   const f = await setup('pro', undefined, undefined, [])
   f.state.capabilities = ['studio', 'pro']
@@ -468,12 +489,28 @@ test('active staff bypasses achievement gates, while support cannot execute even
   )
 })
 
-test('Python Pro requires earned Python tools while the existing JavaScript Pro gate is preserved', async () => {
+test('each Classic and Pro language requires its own known achievement while discovery remains mixed', async () => {
+  const js = SERVER_BLOCK_CATALOG[0]!.type
+  for (const purpose of ['creation', 'existing-pro'] as const) {
+    for (const language of ['javascript', 'python'] as const) {
+      const f = await setup('pro')
+      f.state.capabilities = ['studio', 'bridge', 'pro']
+      f.state.blocks = language === 'javascript' ? ['sz_py_pass'] : [js]
+      await expect(f.access.execute(f.actor, purpose, language)).rejects.toThrow('curso')
+      const options = await f.service.options(f.actor)
+      expect(options.canCreateJavaScript).toBe(language === 'python')
+      expect(options.canCreatePython).toBe(language === 'javascript')
+      f.state.blocks = [language === 'javascript' ? js : 'sz_py_pass']
+      expect((await f.access.execute(f.actor, purpose, language)).pro).toBe(true)
+    }
+  }
+})
+
+test('unknown identifiers and Pro capability alone never substitute for course achievements', async () => {
   const f = await setup('pro')
   f.state.capabilities = ['studio', 'bridge', 'pro']
-  f.state.blocks = ['removed-legacy-block']
-  expect((await f.access.execute(f.actor, 'existing-pro')).pro).toBe(true)
-  expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
+  f.state.blocks = ['removed-legacy-block', 'sz_py_unknown', 'sz_js_unknown']
+  await expect(f.access.execute(f.actor, 'existing-pro', 'javascript')).rejects.toThrow('curso')
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('curso')
   await expect(f.service.options(f.actor)).rejects.toThrow('curso')
   f.state.capabilities = ['studio']

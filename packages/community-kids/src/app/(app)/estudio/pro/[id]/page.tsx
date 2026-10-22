@@ -5,7 +5,11 @@ import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable
 import { StudioProClient } from '@/components/kids/studio-pro-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
-import { checkCreativeToolsAccessReadonly, getGamificationReadonly } from '@/server/members'
+import {
+  checkCreativeToolsAccessReadonly,
+  getGamificationReadonly,
+  getStudioUnlocksReadonly,
+} from '@/server/members'
 import { getSession } from '@/server/session'
 import { resolveStudioProAccess } from '@/server/studio-pro-access'
 import { prepareStudioServices } from '@/server/studio-services'
@@ -39,10 +43,11 @@ export default async function EstudioProPage({
   if (!ID_RE.test(id)) redirect('/estudio')
 
   const readServices = prepareStudioServices()
-  const [res, session, gam] = await Promise.all([
+  const [res, session, gam, unlocks] = await Promise.all([
     checkCreativeToolsAccessReadonly(),
     getSession(),
     getGamificationReadonly({ withRanking: true }).catch(() => null),
+    getStudioUnlocksReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200 || gam?.status !== 200) {
@@ -51,11 +56,16 @@ export default async function EstudioProPage({
   const journey = kidsJourneyAccess(gam.body)
   if (!journey) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const access = resolveStudioProAccess({
+    language: 'any',
     session,
     studioAccess: res.body?.access?.['estudio-completo'] === true,
     journey,
+    blocks: unlocks?.status === 200 && unlocks.body ? unlocks.body.blocks : null,
   })
-  if (!access.allowed && access.code === 'JOURNEY_UNAVAILABLE')
+  if (
+    !access.allowed &&
+    (access.code === 'JOURNEY_UNAVAILABLE' || access.code === 'CURRICULUM_UNAVAILABLE')
+  )
     return <ToolRouteRecado screen={KidsStudioUnavailable} />
   if (!access.allowed && access.code === 'STUDIO_ACCESS_REQUIRED') {
     const opensAt = toolOpensAtLevel('estudio-completo', journey)

@@ -1,13 +1,11 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
-import { isPythonCourseBlock } from '@sistemazero/studio/python-course-unlocks'
-import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
+import { hasStudioLanguageAchievement } from '@sistemazero/studio/course-language-access'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
 import type { GetStudioUnlocksService } from '../studio-unlocks/get-studio-unlocks.service'
 
-const knownJavaScriptBlocks = new Set(SERVER_BLOCK_CATALOG.map(({ type }) => type))
 export interface FreeStudioActor {
   audience: 'kids' | 'adult'
   userId: string
@@ -27,7 +25,7 @@ export class FreeStudioAccessService {
 
   async execute(
     inputActor: FreeStudioActor,
-    purpose: 'creation' | 'existing-pro' = 'creation',
+    purpose: 'discovery' | 'creation' | 'existing-pro' = 'creation',
     programmingLanguage: 'javascript' | 'python' = 'javascript',
   ) {
     const actor = { ...inputActor }
@@ -82,7 +80,7 @@ export class FreeStudioAccessService {
     }
     if (!capabilities.includes('studio'))
       throw new AccessDeniedError('Seu nível ainda não libera o Estúdio Completo.')
-    // The Pro capability is independent of the curriculum; Python still needs its earned tools.
+    // Pro capability and an achievement in the selected language are independent requirements.
     if (purpose === 'existing-pro') {
       if (!reward.pro)
         throw new AccessDeniedError('Seu nível ainda não libera projetos Pro no Estúdio Completo.')
@@ -93,15 +91,22 @@ export class FreeStudioAccessService {
 
   private async palette(
     actor: FreeStudioActor,
-    purpose: 'creation' | 'existing-pro',
+    purpose: 'discovery' | 'creation' | 'existing-pro',
     programmingLanguage: 'javascript' | 'python',
   ): Promise<readonly string[] | null> {
     if (actor.privileged) return null
-    // Preserve the existing JavaScript Pro gate; Python explicitly requests its own curriculum.
-    if (purpose === 'existing-pro' && programmingLanguage === 'javascript') return []
     const { blocks } = await this.unlocks.execute(actor.userId, actor.audience, actor.accountId)
-    if (!blocks.some((id) => knownJavaScriptBlocks.has(id) || isPythonCourseBlock(id)))
-      throw new AccessDeniedError('Conclua um curso para liberar a criação no Estúdio Completo.')
+    const earned =
+      purpose === 'discovery'
+        ? hasStudioLanguageAchievement('javascript', blocks) ||
+          hasStudioLanguageAchievement('python', blocks)
+        : hasStudioLanguageAchievement(programmingLanguage, blocks)
+    if (!earned)
+      throw new AccessDeniedError(
+        purpose === 'discovery'
+          ? 'Conclua um curso para liberar a criação no Estúdio Completo.'
+          : `Conclua um curso ${programmingLanguage === 'python' ? 'Python' : 'JavaScript'} para liberar a criação no Estúdio Completo.`,
+      )
     return [...blocks]
   }
 }

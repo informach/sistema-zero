@@ -24,6 +24,7 @@ import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/pytho
 import type { StudioPythonExecutionMetadata } from '@sistemazero/core/studio/python-execution-content'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
 import { z } from 'zod'
+import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 
 const id = z.string().uuid(),
   projectId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/),
@@ -246,8 +247,8 @@ const commandSchema = z.discriminatedUnion('operation', [
       request: assistanceRequest.optional(),
     })
     .strict(),
-  ...(['get', 'cancel', 'claim', 'preview-claim'] as const).map((operation) =>
-    z.object({ operation: z.literal(operation), id, projectId }).strict(),
+  ...(['get', 'cancel', 'claim', 'preview-claim', 'authorize-javascript'] as const).map(
+    (operation) => z.object({ operation: z.literal(operation), id, projectId }).strict(),
   ),
   z.object({ operation: z.literal('latest'), projectId }).strict(),
   z.object({ operation: z.literal('remove-project'), projectId }).strict(),
@@ -315,6 +316,10 @@ export class StudioBuilderService {
       operation: 'analyze' | 'execute',
       signal: AbortSignal,
     ) => Promise<StudioPythonBuilderPolicyResult>,
+    private readonly authorizeJavaScriptAccess?: (
+      actor: StudioAiActor,
+      signal: AbortSignal,
+    ) => Promise<void>,
   ) {}
   purgeExpired() {
     return this.repository.purgeExpired(this.clock())
@@ -328,6 +333,7 @@ export class StudioBuilderService {
     return this.repository.list(actor, parsed.data, this.clock())
   }
   async execute(actor: StudioAiActor, input: unknown, callerSignal?: AbortSignal) {
+    actor = { ...actor }
     callerSignal?.throwIfAborted()
     if (new TextEncoder().encode(JSON.stringify(input)).byteLength > limits.maxPayloadBytes)
       throw new ValidationError('Revisão grande demais.')
@@ -416,6 +422,49 @@ export class StudioBuilderService {
         )
         await createPythonBuilderPolicyResult(policy, metadata.configuration.runtime)
         signal.throwIfAborted()
+      } else {
+        await this.assertJavaScriptAccess(actor, callerSignal)
+      }
+    }
+    if (
+      command.operation === 'authorize-javascript' ||
+      command.operation === 'claim' ||
+      command.operation === 'preview-claim' ||
+      command.operation === 'preview-checkpoint' ||
+      (command.operation === 'checkpoint' && command.phase !== 'failed')
+    ) {
+      const read: StudioProBuilderCommand = {
+        operation: 'authorize-javascript',
+        id: command.id,
+        projectId: command.projectId,
+      }
+      const current = await this.repository.execute(actor, read, this.clock(), callerSignal)
+      callerSignal?.throwIfAborted()
+      if (!current) return null
+      const python =
+        current.job.base.version === 2 &&
+        current.job.base.configuration.programmingLanguage === 'python'
+      if (python && command.operation === 'authorize-javascript')
+        throw new ValidationError('A proposta salva não pertence ao ambiente JavaScript.')
+      if (!python) {
+        await this.assertJavaScriptAccess(actor, callerSignal)
+        if (command.operation === 'authorize-javascript') {
+          const fresh = await this.repository.execute(actor, read, this.clock(), callerSignal)
+          callerSignal?.throwIfAborted()
+          if (
+            !fresh ||
+            fresh.job.base.hash !== current.job.base.hash ||
+            fresh.job.version !== current.job.version ||
+            fresh.job.phase !== current.job.phase ||
+            ['failed', 'cancelled'].includes(fresh.job.phase) ||
+            fresh.job.assistance?.disposition === 'discarded' ||
+            (fresh.job.phase !== 'review' &&
+              Date.parse(fresh.job.deadlineAt) <= this.clock().getTime()) ||
+            Date.parse(fresh.job.expiresAt) <= this.clock().getTime()
+          )
+            throw new ValidationError('A autorização desta proposta foi retirada.')
+          return { job: fresh.job, token: null }
+        }
       }
     }
     if (
@@ -553,5 +602,15 @@ export class StudioBuilderService {
       : await this.repository.execute(actor, command, this.clock())
     callerSignal?.throwIfAborted()
     return accepted
+  }
+  private async assertJavaScriptAccess(actor: StudioAiActor, callerSignal?: AbortSignal) {
+    const authorize = this.authorizeJavaScriptAccess
+    if (!authorize) throw new AccessDeniedError('A autorização JavaScript está indisponível.')
+    const signal = AbortSignal.any([
+      ...(callerSignal ? [callerSignal] : []),
+      AbortSignal.timeout(15000),
+    ])
+    await awaitWithSignal(() => authorize({ ...actor }, signal), signal)
+    signal.throwIfAborted()
   }
 }

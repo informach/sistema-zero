@@ -4,6 +4,7 @@ import {
   StudioFreeRuntimeDecisionSchema,
   type StudioFreeRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
+import { hasStudioLanguageAchievement } from '@sistemazero/studio/course-language-access'
 import { pythonCourseUnlockIssue } from '@sistemazero/studio/python-course-unlocks'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { StudioAuthoringPolicy } from '../../domain/studio/authoring-policy'
@@ -23,7 +24,7 @@ export class AuthorizeFreeRuntimeService {
   ) {}
 
   async options(actor: FreeStudioActor) {
-    const reward = await this.access.execute(actor)
+    const reward = await this.access.execute(actor, 'discovery')
     const catalog = this.catalog?.describe() ?? null
     const releases = new Map(
       (catalog?.catalog.releases ?? []).map((release) => [release.manifestSha256, release]),
@@ -44,6 +45,8 @@ export class AuthorizeFreeRuntimeService {
       legacyJavaScript: true,
       catalog,
       canCreatePro: reward.pro,
+      canCreateJavaScript:
+        reward.blocks === null || hasStudioLanguageAchievement('javascript', reward.blocks),
       canCreatePython: hasPythonCourseAccess(reward.blocks),
       pythonGrantedExtensionIds: [...pythonGrantedExtensionIds],
       pythonCuration: { pythonLevel: 3, allowedModes: reward.modes, allowLevelReveal: false },

@@ -366,8 +366,13 @@ describe('política normal e Pro em todas as respostas', () => {
     expect(authorizePythonAnalysis).not.toHaveBeenCalled()
   })
 
-  test('Pro bypasses unavailable block unlocks, while classic still requires them', async () => {
-    const unlocks = mock(async () => ({ status: 503 }))
+  test('Pro and Classic require readable JavaScript achievements before tutoring', async () => {
+    let curriculumAvailable = false
+    const unlocks = mock(async () =>
+      curriculumAvailable
+        ? { status: 200, body: { blocks: ['sz_js_array_push'] } }
+        : { status: 503 },
+    )
     const routes = createStudioZappyRoutes({
       members: members({
         getStudioUnlocks: unlocks,
@@ -394,10 +399,15 @@ describe('política normal e Pro em todas as respostas', () => {
         }),
       }),
     )
-    expect(pro.status).toBe(200)
-    expect(unlocks).not.toHaveBeenCalled()
-    expect((await routes.studioZappyMessage.POST(request('Abra o Pensa'))).status).toBe(503)
+    expect(pro.status).toBe(503)
     expect(unlocks).toHaveBeenCalledTimes(1)
+    expect((await routes.studioZappyMessage.POST(request('Abra o Pensa'))).status).toBe(503)
+    expect(unlocks).toHaveBeenCalledTimes(2)
+    curriculumAvailable = true
+    expect((await routes.studioZappyMessage.POST(request('Abra o Pensa', [], 'pro'))).status).toBe(
+      200,
+    )
+    expect(unlocks).toHaveBeenCalledTimes(3)
   })
   const proContext = {
     projectId: PROJECT_ID,
@@ -670,7 +680,7 @@ describe('Acesso ao Zappy', () => {
   })
 })
 
-function request(question: string, extensions: string[] = []) {
+function request(question: string, extensions: string[] = [], kind: 'classic' | 'pro' = 'classic') {
   return new Request('https://kids.test/api/studio/zappy/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -680,8 +690,8 @@ function request(question: string, extensions: string[] = []) {
       question,
       context: {
         projectId: PROJECT_ID,
-        mode: 'blocks',
-        kind: 'classic',
+        mode: kind === 'pro' ? 'code' : 'blocks',
+        kind,
         blocks: [],
         installedExtensions: extensions,
         selectedBlockId: null,
@@ -1339,6 +1349,34 @@ describe('BFF do Zappy', () => {
         kidsJourney: pensaKidsJourney('hacker', ['studio', 'pinta', 'ai', 'pensa']),
       },
     }),
+  }
+
+  for (const kind of ['classic', 'pro'] as const) {
+    test(`${kind} JavaScript tutoring rejects missing, Python-only and unknown grants before quota`, async () => {
+      let reserved = 0
+      for (const blocks of [[], ['sz_py_pass'], ['sz_js_unknown']]) {
+        const routes = createStudioZappyRoutes({
+          session: { getSession: async () => INVENTOR },
+          members: members({
+            getGamification: async () => ({
+              status: 200,
+              body: {
+                kidsJourney: pensaKidsJourney('god', ['studio', 'ai', 'pro']),
+              },
+            }),
+            getStudioUnlocks: async () => ({ status: 200, body: { blocks } }),
+            zappyReserveQuestion: async () => {
+              reserved++
+              throw new Error('Must not reserve')
+            },
+          }),
+        } as never)
+        const response = await routes.studioZappyMessage.POST(request('Dúvida', [], kind))
+        expect(response.status).toBe(403)
+        expect(await response.json()).toMatchObject({ error: { code: 'ZAPPY_NOT_ENABLED' } })
+      }
+      expect(reserved).toBe(0)
+    })
   }
 
   test('extensão conquistada acima do nível do posto é aceita (a mesma régua da paleta)', async () => {

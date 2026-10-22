@@ -384,6 +384,35 @@ it('offers the complete Pro catalog without host release configuration', async (
   ).toEqual(STUDIO_PRO_TEMPLATE_IDS)
 })
 
+for (const outcome of ['denied', 'revoked', 'allowed'] as const) {
+  it(`JavaScript creation ${outcome}: fresh host authorization precedes persistence`, async () => {
+    const gate = deferred<void>()
+    const started = deferred<void>()
+    const onOpen = mock((_id: string) => {})
+    const authorize = mock(async (kind: 'classic' | 'pro') => {
+      expect(kind).toBe('classic')
+      started.resolve()
+      await gate.promise
+    })
+    const props = { onOpenProject: onOpen, authorizeJavaScript: authorize, theme: 'light' as const }
+    const view = render(<ProjectList {...props} />)
+    await screen.findByText(t('projects.empty'))
+    fireEvent.click(screen.getByRole('button', { name: '+ Novo projeto' }))
+    fireEvent.click(screen.getByRole('button', { name: t('projects.newModal.create') }))
+    await started.promise
+    expect(fakeIdbWrites()).toHaveLength(0)
+    if (outcome === 'revoked') view.rerender(<ProjectList {...props} javascriptAvailable={false} />)
+    await act(async () => {
+      if (outcome === 'denied') gate.reject(new Error('Conquista JavaScript revogada'))
+      else gate.resolve()
+    })
+    await waitFor(() => expect(screen.queryByText('Criando…') === null).toBe(true))
+    expect(authorize).toHaveBeenCalledTimes(1)
+    expect(fakeIdbWrites()).toHaveLength(outcome === 'allowed' ? 1 : 0)
+    expect(onOpen.mock.calls.length).toBe(outcome === 'allowed' ? 1 : 0)
+  })
+}
+
 it('revoking Pro access during a factory prevents persistence and navigation', async () => {
   const loader = slowTemplate()
   const onOpen = mock((_id: string) => {})

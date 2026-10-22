@@ -50,6 +50,7 @@ export interface StudioRemixRequirement {
  * foi exigido ao montá-la (sem Estúdio livre o remix nem aparece).
  */
 export interface StudioRemixCapability {
+  javascript: boolean
   pro: boolean
   allowedExtensions: readonly string[]
   python?: readonly {
@@ -79,12 +80,18 @@ export function studioRemixCovered(
       ) === true
     )
   }
-  return req.extensions.every((id) => cap.allowedExtensions.includes(id))
+  return cap.javascript === true && req.extensions.every((id) => cap.allowedExtensions.includes(id))
 }
 
 /** O degrau atual cobre as ferramentas do jogo? (Estúdio livre + Pro + extensões.) */
 export function studioTierCoversRemix(tier: StudioTier, req: StudioRemixRequirement): boolean {
-  return tier.freeStudio && studioRemixCovered(tier, req)
+  return (
+    tier.freeStudio &&
+    studioRemixCovered(
+      { ...tier, javascript: tier.allowBlocks === undefined || tier.allowBlocks.length > 0 },
+      req,
+    )
+  )
 }
 
 /**

@@ -115,6 +115,7 @@ test('20 cards do Mural adulto, Python e JavaScript, não montam iframe nem embu
             item.id === 't0'
               ? null
               : {
+                  javascript: true,
                   pro: true,
                   allowedExtensions: [],
                   python: [{ kind: 'classic', runtime, allowedExtensions: [] }],

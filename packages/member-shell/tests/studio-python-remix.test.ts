@@ -5,8 +5,14 @@ import {
   type StudioFreeRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
 import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
+import {
+  createPythonWorkspaceDraft,
+  updatePythonWorkspaceDraft,
+} from '../../studio/src/python/blocks/workspaceDraft'
+import { preparePythonExecutionSnapshot } from '../../studio/src/runtime/python/snapshot'
 import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
 import {
+  authorizePythonImport,
   authorizePythonPrivateCopy,
   authorizePythonRemix,
   pythonRemixCapabilities,
@@ -19,6 +25,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
   const options = {
     legacyJavaScript: true,
     canCreatePro: true,
+    canCreateJavaScript: true,
     canCreatePython: true,
     pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {
@@ -80,6 +87,74 @@ test('Python copy discovery uses earned extensions, not every extension in the r
   ])
 })
 
+test('Python Pro private import uses its own earned right; JavaScript grants never substitute for it', async () => {
+  const f = await fixture('pro')
+  const source = structuredClone(f.project)
+  const input = {
+    snapshot: f.project,
+    viewerId: f.viewerId,
+    audience: 'kids' as const,
+    signal: f.signal,
+    request: f.decision,
+  }
+  await expect(
+    authorizePythonImport({ ...input, options: { ...f.options, canCreatePython: false } }),
+  ).rejects.toThrow()
+  expect(f.requests).toHaveLength(0)
+  expect(f.project).toEqual(source)
+  expect(
+    await authorizePythonImport({
+      ...input,
+      options: { ...f.options, canCreateJavaScript: false },
+    }),
+  ).toEqual(source)
+  expect(f.requests).toHaveLength(1)
+  expect(f.project).toEqual(source)
+})
+
+for (const kind of ['classic', 'pro'] as const)
+  test(`Python ${kind} imports editable work without pretending it is executable`, async () => {
+    const f = await fixture(kind)
+    const project = structuredClone(f.project)
+    if (project.kind === 'classic') {
+      const draft = createPythonWorkspaceDraft(
+        project,
+        project.python.entrypoint,
+        { blocks: { languageVersion: 0, blocks: [] } },
+        [],
+      )
+      project.blocksState = updatePythonWorkspaceDraft(project, draft.path, draft)
+    } else {
+      project.tree['requirements.txt'] = {
+        kind: 'file',
+        content: '# Ainda estou editando as dependências\n',
+      }
+    }
+    const original = structuredClone(project)
+    const input = {
+      snapshot: project,
+      viewerId: f.viewerId,
+      audience: 'kids' as const,
+      signal: f.signal,
+      options: f.options,
+      request: f.decision,
+    }
+    const imported = await authorizePythonImport(input)
+    expect(imported).toEqual(original)
+    expect(project).toEqual(original)
+    expect(f.requests).toHaveLength(1)
+    expect(f.requests[0]?.revision).toBe(await sha256Hex(canonicalJson(imported)))
+    await expect(preparePythonExecutionSnapshot(imported)).rejects.toThrow()
+    await expect(authorizePythonPrivateCopy(input)).rejects.toThrow()
+    await expect(
+      authorizePythonImport({
+        ...input,
+        request: async (request) => ({ ...(await f.decision(request)), expiresAt: 1 }),
+      }),
+    ).rejects.toThrow()
+    expect(project).toEqual(original)
+  })
+
 for (const kind of ['classic', 'pro'] as const)
   test(`Python ${kind} remix validates the real source recipe and binds fresh authoring approval`, async () => {
     const f = await fixture(kind)
@@ -87,13 +162,13 @@ for (const kind of ['classic', 'pro'] as const)
     const python = await pythonRemixCapabilities(f.options)
     expect(
       studioRemixCovered(
-        { pro: true, allowedExtensions: ['game-2d'], python },
+        { javascript: true, pro: true, allowedExtensions: ['game-2d'], python },
         remixRequirementFromSnapshot(f.project),
       ),
     ).toBe(true)
     expect(
       studioRemixCovered(
-        { pro: true, allowedExtensions: ['python-turtle'] },
+        { javascript: true, pro: true, allowedExtensions: ['python-turtle'] },
         remixRequirementFromSnapshot(f.project),
       ),
     ).toBe(false)
@@ -187,7 +262,12 @@ test('new Python remix refuses retired, revoked, missing and mismatched environm
   })
   expect(
     studioRemixCovered(
-      { pro: true, allowedExtensions: [], python: await pythonRemixCapabilities(f.options) },
+      {
+        javascript: true,
+        pro: true,
+        allowedExtensions: [],
+        python: await pythonRemixCapabilities(f.options),
+      },
       requirement,
     ),
   ).toBe(false)

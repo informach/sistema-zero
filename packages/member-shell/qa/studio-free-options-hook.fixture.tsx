@@ -48,6 +48,7 @@ async function options() {
   return {
     legacyJavaScript: true,
     canCreatePro: true,
+    canCreateJavaScript: true,
     canCreatePython: true,
     pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {
@@ -87,6 +88,10 @@ test('disabled Python discovery makes no request or offer, including retry and p
     expect(view.current().loading).toBe(false)
     expect(view.current().error).toBeUndefined()
     expect(view.current().unavailable).toBe(false)
+    await expect(view.current().authorizeImport({}, new AbortController().signal)).rejects.toThrow(
+      'perfil',
+    )
+    expect(fetch).not.toHaveBeenCalled()
 
     await view.render('admin', true)
     await settle(() => !!view.current().creation)
@@ -105,6 +110,28 @@ test('disabled Python discovery makes no request or offer, including retry and p
     expect(view.current().loading).toBe(false)
     expect(view.current().error).toBeUndefined()
     expect(view.current().unavailable).toBe(false)
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+  }
+})
+
+test('free import rechecks Python eligibility even after initial discovery allowed creation', async () => {
+  const raw = await options()
+  const fixture = await pythonEnvironmentFixture('pro')
+  const original = globalThis.fetch
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(async () => Response.json(raw), { preconnect: original.preconnect }),
+  )
+  const view = mount()
+  try {
+    await view.render(crypto.randomUUID())
+    await settle(() => !!view.current().creation)
+    raw.canCreatePython = false
+    await expect(
+      view.current().authorizeImport(fixture.project, new AbortController().signal),
+    ).rejects.toThrow('Python')
+    expect(fetch).toHaveBeenCalledTimes(2)
   } finally {
     await view.close()
     fetch.mockRestore()
@@ -307,11 +334,24 @@ test('example port performs fresh authenticated Pro/Turtle approval and preserve
     await port.authorizeExample(candidate, new AbortController().signal)
     expect(approvals).toBe(2)
     expect(reads).toBe(3)
+    if (candidate.kind !== 'pro') throw new Error('Expected Pro fixture')
+    const editing = {
+      ...candidate,
+      tree: {
+        ...candidate.tree,
+        'requirements.txt': { kind: 'file' as const, content: '# Em edição\n' },
+      },
+    }
+    const original = structuredClone(editing)
+    await view.current().authorizeImport(editing, new AbortController().signal)
+    expect(approvals).toBe(3)
+    expect(reads).toBe(4)
+    expect(editing).toEqual(original)
     await view.render(crypto.randomUUID())
     await expect(port.authorizeExample(candidate, new AbortController().signal)).rejects.toThrow(
       'perfil',
     )
-    expect(approvals).toBe(2)
+    expect(approvals).toBe(3)
   } finally {
     await view.close()
     fetch.mockRestore()

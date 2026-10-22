@@ -205,6 +205,7 @@ export type StudioProBuilderCommand =
       parentOrigin: string
     }
   | { operation: 'get'; id: string; projectId: string }
+  | { operation: 'authorize-javascript'; id: string; projectId: string }
   | { operation: 'cancel'; id: string; projectId: string }
   | { operation: 'latest'; projectId: string }
   | { operation: 'remove-project'; projectId: string }

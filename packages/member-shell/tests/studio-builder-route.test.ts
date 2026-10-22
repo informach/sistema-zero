@@ -55,6 +55,7 @@ async function fixture(
     level?: string
     finishFails?: boolean
     pensaStatus?: number
+    canCreateJavaScript?: boolean
     preflightFails?: boolean
     authorization?: StudioProBuilderClaim['authorization']
     authorizationStatus?: number
@@ -89,7 +90,24 @@ async function fixture(
     notes: ['PRIVATE TOOL NOTE'],
   }
   const commands: { actor: unknown; command: StudioProBuilderCommand }[] = []
+  let preflightCalls = 0
   const members = {
+    studioFreeOptions: async () => ({
+      status: 200,
+      body: {
+        legacyJavaScript: true,
+        catalog: null,
+        canCreateJavaScript: options.canCreateJavaScript ?? true,
+        canCreatePython: false,
+        canCreatePro: true,
+        pythonGrantedExtensionIds: [],
+        pythonCuration: {
+          pythonLevel: 3,
+          allowedModes: ['blocks', 'bridge'],
+          allowLevelReveal: false,
+        },
+      },
+    }),
     studioBuilderAvailability: async () => ({ status: 200, body: { available: true } }),
     checkStudioAccess: async () => ({
       status: 200,
@@ -132,6 +150,7 @@ async function fixture(
   const route = createStudioBuilderRoutes({
     members,
     preflight: async () => {
+      preflightCalls++
       if (options.preflightFails)
         throw new StudioProRuntimeInputError(
           413,
@@ -159,7 +178,15 @@ async function fixture(
         body: JSON.stringify(body),
       }),
     )
-  return { job, input, commands, post }
+  return {
+    job,
+    input,
+    commands,
+    post,
+    get preflightCalls() {
+      return preflightCalls
+    },
+  }
 }
 
 async function pythonProposal() {
@@ -325,6 +352,7 @@ test('a browser cannot supply a preview URL, executor token or private authoriza
     { ...f.previewInput, token: crypto.randomUUID() },
     { ...f.previewInput, operation: 'authorize-proposal', purpose: 'preview' },
     { ...f.previewInput, operation: 'authorize-generation', token: crypto.randomUUID() },
+    { operation: 'authorize-javascript', id: f.job.id, projectId: f.job.projectId },
     { ...f.previewInput, policy: {} },
     { ...f.previewInput, runtimeRelease: {} },
   ])
@@ -549,4 +577,12 @@ test.each(
   })
   expect((await f.post()).status).toBe(200)
   expect(f.commands.map((entry) => entry.command.operation)).toEqual(['create'])
+})
+
+test('JavaScript Builder admission refuses a missing language achievement before runtime preflight', async () => {
+  const f = await fixture({ canCreateJavaScript: false })
+  const result = await f.post()
+  expect(result.status).toBe(403)
+  expect(f.preflightCalls).toBe(0)
+  expect(f.commands).toEqual([])
 })

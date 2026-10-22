@@ -1,4 +1,5 @@
 import type { AdultJourneyView } from '@sistemazero/core/journey'
+import { hasStudioLanguageAchievement } from '@sistemazero/studio/course-language-access'
 import { isPythonCourseBlock } from '@sistemazero/studio/python-course-unlocks'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import {
@@ -48,7 +49,12 @@ export function canShowPythonCreation(
   role: string | undefined,
   blocks: readonly string[],
 ): boolean {
-  return isPrivilegedRole(role) || blocks.some(isPythonCourseBlock)
+  return isPrivilegedRole(role) || hasStudioLanguageAchievement('python', blocks)
+}
+
+/** JavaScript creation has the same language-specific requirement as Python. */
+export function canShowJavaScriptCreation(role: string | undefined, blocks: readonly string[]) {
+  return isPrivilegedRole(role) || hasStudioLanguageAchievement('javascript', blocks)
 }
 
 /** Modos adultos vêm da política adulta; a paleta vem dos cursos, sem usar rank Kids. */
