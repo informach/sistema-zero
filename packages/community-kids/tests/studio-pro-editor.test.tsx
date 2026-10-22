@@ -1,6 +1,7 @@
 import { afterAll, afterEach, expect, mock, spyOn, test } from 'bun:test'
+import { StudioFreeOptionsSchema } from '@sistemazero/core/studio/authoring-catalog'
 import type { Project, StudioEditorProps, StudioPersistenceAdapter } from '@sistemazero/studio'
-import { act, cleanup, render, renderHook, waitFor } from '@testing-library/react'
+import { act, cleanup, render, renderHook, screen, waitFor } from '@testing-library/react'
 import { IDBFactory } from 'fake-indexeddb'
 import { handoffFixture, projectFixture } from '../../pensa/src/components/pensa.fixture'
 import {
@@ -58,6 +59,15 @@ mock.module('../../member-shell/src/components/studio/studio-pro-loader', () => 
 }))
 const { StudioProClient } = await import('../src/components/kids/studio-pro-client')
 const originalFetch = globalThis.fetch
+const freeOptions = StudioFreeOptionsSchema.parse({
+  legacyJavaScript: true,
+  catalog: null,
+  canCreateJavaScript: true,
+  canCreatePython: false,
+  canCreatePro: true,
+  pythonGrantedExtensionIds: [],
+  pythonCuration: { pythonLevel: 1, allowedModes: ['blocks'], allowLevelReveal: false },
+})
 afterEach(() => {
   cleanup()
   for (const opening of openings)
@@ -76,6 +86,7 @@ test('the actual Kids Pro host carries publishing, credits, tutor, errors and da
   globalThis.fetch = Object.assign(
     async (input: RequestInfo | URL) => {
       calls.push(String(input))
+      if (String(input) === '/api/studio/free-options') return Response.json(freeOptions)
       return Response.json({ ok: true })
     },
     { preconnect: originalFetch.preconnect },
@@ -103,15 +114,30 @@ test('the actual Kids Pro host carries publishing, credits, tutor, errors and da
   await act(async () => {
     captured?.onChange?.(project, { reason: 'flush' })
   })
-  expect(calls).toEqual([])
+  expect(calls).toEqual(['/api/studio/free-options'])
   await act(async () => {
     captured?.onChange?.(project, { reason: 'autosave' })
     captured?.onChange?.(project, { reason: 'autosave' })
   })
-  expect(calls).toEqual(['/api/studio/activity'])
+  expect(calls).toEqual(['/api/studio/free-options', '/api/studio/activity'])
   expect(router.refresh).not.toHaveBeenCalled()
   view.unmount()
   expect(router.refresh).not.toHaveBeenCalled()
+})
+
+test('the actual Kids Pro host still refuses JavaScript when only Python eligibility is granted', async () => {
+  const requests: string[] = []
+  globalThis.fetch = Object.assign(
+    async (input: RequestInfo | URL) => {
+      requests.push(String(input))
+      return Response.json({ ...freeOptions, canCreateJavaScript: false, canCreatePython: true })
+    },
+    { preconnect: originalFetch.preconnect },
+  )
+  render(<StudioProClient viewerId={null} projectId={project.id} />)
+  await screen.findByRole('button', { name: 'Tentar novamente' })
+  expect(captured).toBeUndefined()
+  expect(requests).toEqual(['/api/studio/free-options'])
 })
 
 test('the shared tutor supplies authorized narration and voice input in either host', () => {
@@ -152,6 +178,7 @@ test('leaving a bound Pro mission returns to its Pensa plan by full navigation',
     async (input: RequestInfo | URL) => {
       const path = input instanceof Request ? input.url : String(input)
       requests.push(path)
+      if (path === '/api/studio/free-options') return Response.json(freeOptions)
       if (path === `/api/pensa/missions/${handoff.mission.id}/handoff`)
         return Response.json(handoff)
       if (path === '/api/creations/studio') return Response.json({ items: [], nextCursor: null })

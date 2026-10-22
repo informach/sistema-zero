@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { CATALOG_SEED_OFFERS } from '../../catalog/scripts/catalog-seed-definitions'
 import {
   COMUNIDADE_MAX_PROFILES,
   canAddProfile,
@@ -50,10 +49,13 @@ describe('o convite para ampliar o acesso', () => {
   })
 
   it('o teto da Comunidade é o mesmo das duas ofertas do catálogo', () => {
-    const seed = readFileSync(join(import.meta.dir, '../../catalog/scripts/seed.ts'), 'utf8')
-    const tetos = [...seed.matchAll(/^\s*maxProfiles:\s*(\d+),/gm)].map((m) => Number(m[1]))
-    // Só as propriedades (o comentário do seed também cita o campo). Anti-vácuo: as duas ofertas.
-    expect(tetos.length).toBe(2)
-    expect(tetos.every((teto) => teto === COMUNIDADE_MAX_PROFILES)).toBe(true)
+    const offers = CATALOG_SEED_OFFERS.filter((offer) =>
+      ['comunidade-mensal', 'comunidade-anual'].includes(offer.code),
+    )
+    expect(offers.map((offer) => offer.code).sort()).toEqual([
+      'comunidade-anual',
+      'comunidade-mensal',
+    ])
+    for (const offer of offers) expect(offer.content?.maxProfiles).toBe(COMUNIDADE_MAX_PROFILES)
   })
 })

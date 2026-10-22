@@ -10,6 +10,7 @@
 import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { CATALOG_SEED_PRODUCTS } from '../../catalog/scripts/catalog-seed-definitions'
 import {
   CREATION_ACCESS_REF,
   CREATION_TOOLS,
@@ -116,7 +117,10 @@ describe('os espelhos fora do members', () => {
     expect(wrapper).toContain('sz:creations-synced:molda:')
     expect(read('community-kids/src/proxy.ts')).toContain("'/molda'")
     expect(read('member-shell/src/lib/embedded-app-path.ts')).toContain("'/molda'")
-    expect(read('catalog/scripts/seed.ts')).toContain("'molda'")
+    expect(CATALOG_SEED_PRODUCTS.find((product) => product.sku === 'molda')).toMatchObject({
+      kind: 'tool',
+      fulfillment: { accessType: 'community', courseRef: 'molda' },
+    })
   })
 })
 
