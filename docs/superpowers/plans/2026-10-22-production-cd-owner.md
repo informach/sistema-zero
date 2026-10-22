@@ -80,3 +80,18 @@ Referências primárias: [Wait for CI](https://docs.railway.com/deployments/gith
 espera a conclusão dos workflows; o [SDK IaC](https://docs.railway.com/infrastructure-as-code/reference#sources)
 declara origem e branch, não expõe toggle de autodeploy. O schema incluído no SDK
 3.11.0 fornece a consulta `serviceInstanceAutoDeployStatus` usada pelo gate.
+
+## Conciliação operacional observada em 22/10
+
+O desligamento oficial `serviceInstanceAutoDeployUpdate(enabled:false)` do Admin
+recebeu ACK false; a leitura posterior confirmou `enabled=false`, nenhum trigger
+e o mesmo deployment. A operação também removeu `source.checkSuites` e mudou o
+ETag da configuração. O primeiro operador parou após esse único ACK; nenhum
+outro serviço foi alterado por aquela tentativa e o recibo parcial foi preservado.
+
+A declaração anterior de `checkSuites:true` conflitava com esse estado real.
+A definição e o validador passaram a manter `branch:main` sem o campo, recusando
+sua reintrodução tanto true quanto false. Isso não transforma metadados de
+origem em toggle: `serviceInstanceAutoDeployStatus.enabled=false` continua
+obrigatório para todos os serviços e antes dos POSTs. Os 16 alvos restantes
+exigem novo plano e leitura própria; não repetir a operação já confirmada do Admin.

@@ -64,13 +64,14 @@ export default defineRailway((ctx) => {
         deploy: DeployConfig
       }
       return service(name, {
-        // Branch/checkSuites são metadados de origem, NÃO o toggle de autodeploy.
+        // Branch não substitui a conferência do toggle de autodeploy.
         // Produção usa o dispatch canônico e exige enabled=false observado antes
-        // de IaC/deploy. A ativação operacional desliga os triggers no Railway.
+        // de IaC/deploy. O toggle oficial remove checkSuites; não o redeclarar
+        // aqui, pois isso cria drift contra o estado de publicação manual.
         source: github('informach/sistema-zero', {
           ...(rootServices.has(name) ? { rootDirectory: '/' } : {}),
           ...(!production ? { branch: 'staging' } : {}),
-          ...(production && name !== 'fiscal' ? { branch: 'main', checkSuites: true } : {}),
+          ...(production && name !== 'fiscal' ? { branch: 'main' } : {}),
         }),
         build: config.build,
         deploy: config.deploy,

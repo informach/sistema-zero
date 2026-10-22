@@ -13,12 +13,12 @@ O Railway usa `ON_FAILURE` como política padrão de reinício. O importador omi
 
 1. Integrar o trabalho em staging. O CI executa todos os testes, aplica a configuração de staging e publica os serviços afetados.
 2. Abrir PR de staging para main. Além dos testes, `railway-config-plan` salva o plano de produção, vinculado ao SHA da pasta `.railway/` e ao estado remoto.
-3. Antes da primeira promoção, desligar os triggers nativos de produção e conferir `enabled=false` para todos os serviços. Branch e `checkSuites` na definição não substituem esse toggle. Congelar operações externas durante a onda.
+3. Antes da primeira promoção, desligar os triggers nativos de produção e conferir `enabled=false` para todos os serviços. A mutação oficial remove `source.checkSuites`; a definição mantém `branch: main` sem redeclarar esse campo. Ausência de `checkSuites` não substitui a leitura do toggle. Congelar operações externas durante a onda.
 4. Fazer merge commit. O workflow de configuração somente confere o plano salvo e a deriva, sem apply. Um plano real não vazio exige uma onda operacional de configuração por fase; não está resolvido automaticamente por este lote.
 5. Executar `Deploy produção` na ref `main`, com o SHA completo e CSV explícito. O controlador confere os nove jobs da mesma tentativa CI do PR, igualdade da árvore promovida, plano aprovado e triggers desligados. Publica Members/Auth na ordem canônica e só libera os aplicativos após V1. Selecione Members e Auth juntos quando houver mudança de backend.
 6. Conferir os deployments e os fluxos reais. O recibo preserva checkpoints e ACKs; falha parcial não autoriza repetir POST desconhecido nem presumir rollback.
 
-Não usar Wait for CI como barreira de dados: ele aguarda workflows completos e pode esperar o próprio job que aguarda os deployments. Fiscal mantém seleção deliberada e validação do certificado; nenhum serviço sem deployment saudável será estreado por esse controlador.
+Não usar Wait for CI como barreira de dados: ele aguarda workflows completos e pode esperar o próprio job que aguarda os deployments. Fiscal mantém seleção deliberada e validação do certificado. A primeira implantação do gravador existente exige `initialize_recorder=true` e sua seleção no CSV; UUID, ausência de ativos/pendentes e barreira V1 são conferidos. Os demais serviços exigem deployment anterior saudável.
 
 O [plano do dono único de CD](../docs/superpowers/plans/2026-10-22-production-cd-owner.md) registra as tarefas pendentes da primeira promoção, inclusive aplicação de configuração por fases com adoção dos ACKs iniciados pelo apply. O gate atual recusa essas mudanças antes de qualquer apply. Não há alegação de configuração conciliada ou produção pronta apenas porque um plano vazio passou.
 

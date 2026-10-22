@@ -189,15 +189,17 @@ describe('gate do plano Railway', () => {
       )
     }
   })
-  test('produção exige main e Wait for CI; staging e Fiscal mantêm publicação controlada', () => {
+  test('produção mantém main sem rearmar Wait for CI; staging e Fiscal mantêm publicação controlada', () => {
     const source = {
       ...build,
       field: 'source',
-      after: { type: 'github', repo: 'informach/sistema-zero', branch: 'main', checkSuites: true },
+      after: { type: 'github', repo: 'informach/sistema-zero', branch: 'main' },
     }
     expect(validatePinnedPlan(plan([source]), 'production', tree)).toBe(1)
     for (const after of [
       { ...source.after, branch: 'staging' },
+      { ...source.after, branch: undefined },
+      { ...source.after, checkSuites: true },
       { ...source.after, checkSuites: false },
     ]) {
       expect(() => validatePinnedPlan(plan([{ ...source, after }]), 'production', tree)).toThrow(
