@@ -1,0 +1,672 @@
+{
+  "kind": "studio.python.current-candidate-local-ui",
+  "sourceBaseCommit": "9c9c913b9b00731ac85b1c90b423d1ea1b692743",
+  "sourceChanges": [
+    {
+      "path": "packages/studio/e2e-python-editor/visual-reference-games.spec.ts",
+      "sha256": "00d9be135ab514448957b68426b9e530e9f377feb03ba1ea8d47068ac22b7e5c",
+      "purpose": "Tiles gesture follows its presented empty-square row; product source unchanged"
+    }
+  ],
+  "hostedAcceptance": false,
+  "audioAudibilityAccepted": false,
+  "referenceMachineAcceptance": false,
+  "runs": [
+    {
+      "run": "staging-turtle-476-r1",
+      "reportSha256": "d6a94aacc5b03dab8de715690f3daa6343555a4b98c60e742052d2c94ed4b965",
+      "stats": {
+        "startTime": "2026-10-22T15:22:31.324Z",
+        "duration": 56667.138999999996,
+        "expected": 24,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 24,
+      "tests": [
+        {
+          "title": "optional Turtle draws actual Python geometry and Tk colors in the protected frame",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1763,
+          "errorCount": 0
+        },
+        {
+          "title": "turtle.dot paints a filled disc, like Tk, although canvas prunes zero-length strokes",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1412,
+          "errorCount": 0
+        },
+        {
+          "title": "keyboard and turtle/screen clicks dispatch inside Python; Stop revokes the scene",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1964,
+          "errorCount": 0
+        },
+        {
+          "title": "GIF shape uses unchanged virtual asset and keeps official heading semantics",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1386,
+          "errorCount": 0
+        },
+        {
+          "title": "author turtle.py shadows the extension and private module names do not execute author code during prepare",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1273,
+          "errorCount": 0
+        },
+        {
+          "title": "plain Python never loads the optional Turtle renderer or module",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1179,
+          "errorCount": 0
+        },
+        {
+          "title": "Turtle hit testing respects occlusion and outline-only shapes",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2112,
+          "errorCount": 0
+        },
+        {
+          "title": "multiline Turtle text occupies two lines and preserves the right anchor for move",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1465,
+          "errorCount": 0
+        },
+        {
+          "title": "an idle mainloop requests no animation frames and wakes for input and timers",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2270,
+          "errorCount": 0
+        },
+        {
+          "title": "Screen can reopen after bye in the same Python execution",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1395,
+          "errorCount": 0
+        },
+        {
+          "title": "a corrupt image raises a catchable Python error and a later valid image still loads",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1396,
+          "errorCount": 0
+        },
+        {
+          "title": "input queued during Python sleep survives a catchable image error",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2402,
+          "errorCount": 0
+        },
+        {
+          "title": "optional Turtle draws actual Python geometry and Tk colors in the protected frame",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1964,
+          "errorCount": 0
+        },
+        {
+          "title": "turtle.dot paints a filled disc, like Tk, although canvas prunes zero-length strokes",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1593,
+          "errorCount": 0
+        },
+        {
+          "title": "keyboard and turtle/screen clicks dispatch inside Python; Stop revokes the scene",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2018,
+          "errorCount": 0
+        },
+        {
+          "title": "GIF shape uses unchanged virtual asset and keeps official heading semantics",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1427,
+          "errorCount": 0
+        },
+        {
+          "title": "author turtle.py shadows the extension and private module names do not execute author code during prepare",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1303,
+          "errorCount": 0
+        },
+        {
+          "title": "plain Python never loads the optional Turtle renderer or module",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1210,
+          "errorCount": 0
+        },
+        {
+          "title": "Turtle hit testing respects occlusion and outline-only shapes",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2277,
+          "errorCount": 0
+        },
+        {
+          "title": "multiline Turtle text occupies two lines and preserves the right anchor for move",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1501,
+          "errorCount": 0
+        },
+        {
+          "title": "an idle mainloop requests no animation frames and wakes for input and timers",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2323,
+          "errorCount": 0
+        },
+        {
+          "title": "Screen can reopen after bye in the same Python execution",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1505,
+          "errorCount": 0
+        },
+        {
+          "title": "a corrupt image raises a catchable Python error and a later valid image still loads",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 1434,
+          "errorCount": 0
+        },
+        {
+          "title": "input queued during Python sleep survives a catchable image error",
+          "project": "edge",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 2741,
+          "errorCount": 0
+        }
+      ],
+      "cleanupConfirmed": true,
+      "startedAt": "2026-10-22T15:22:29.8306701Z",
+      "elapsedMs": 58533,
+      "node": "24.22.0",
+      "bun": "1.4.3",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "exitCode": 0,
+      "deadline": false
+    },
+    {
+      "run": "staging-games-476-r1",
+      "reportSha256": "8e6f5cb612c60d5809e561b4d04416e9139b2273d6082d6b76ee875f7857c9e1",
+      "stats": {
+        "startTime": "2026-10-22T15:23:56.211Z",
+        "duration": 124487.672,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 6,
+      "tests": [
+        {
+          "title": "Pac-Man classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 28854,
+          "errorCount": 0
+        },
+        {
+          "title": "Pac-Man pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 13515,
+          "errorCount": 0
+        },
+        {
+          "title": "Space Arena classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 36604,
+          "errorCount": 0
+        },
+        {
+          "title": "Space Arena pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 10547,
+          "errorCount": 0
+        },
+        {
+          "title": "Cobrinha classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 15706,
+          "errorCount": 0
+        },
+        {
+          "title": "Cobrinha pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6336,
+          "errorCount": 0
+        }
+      ],
+      "cleanupConfirmed": true,
+      "startedAt": "2026-10-22T15:23:55.4008997Z",
+      "elapsedMs": 127150,
+      "node": "24.22.0",
+      "bun": "1.4.3",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "exitCode": 0,
+      "deadline": false
+    },
+    {
+      "run": "staging-new-games-476-r1",
+      "reportSha256": "d711186299c380779881122e4eab1b37588f96636a817e3fd4d7527d13d7be90",
+      "stats": {
+        "startTime": "2026-10-22T15:26:13.461Z",
+        "duration": 106616.198,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 8,
+      "tests": [
+        {
+          "title": "Pong classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 17345,
+          "errorCount": 0
+        },
+        {
+          "title": "Pong pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7334,
+          "errorCount": 0
+        },
+        {
+          "title": "Tron classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 17558,
+          "errorCount": 0
+        },
+        {
+          "title": "Tron pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 9883,
+          "errorCount": 0
+        },
+        {
+          "title": "Flappy classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 15120,
+          "errorCount": 0
+        },
+        {
+          "title": "Flappy pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6945,
+          "errorCount": 0
+        },
+        {
+          "title": "Spinner classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 13269,
+          "errorCount": 0
+        },
+        {
+          "title": "Spinner pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7227,
+          "errorCount": 0
+        }
+      ],
+      "cleanupConfirmed": true,
+      "startedAt": "2026-10-22T15:26:12.6927047Z",
+      "elapsedMs": 108293,
+      "node": "24.22.0",
+      "bun": "1.4.3",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "exitCode": 0,
+      "deadline": false
+    },
+    {
+      "run": "staging-new-games-476-r2",
+      "reportSha256": "755c9ad88301a631aeadbdbf6007a0d3b4787a831dab6dd4b232f792905cca27",
+      "stats": {
+        "startTime": "2026-10-22T15:28:50.703Z",
+        "duration": 138411.09100000001,
+        "expected": 10,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 10,
+      "tests": [
+        {
+          "title": "Jogo da Velha classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 19882,
+          "errorCount": 0
+        },
+        {
+          "title": "Jogo da Velha pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7004,
+          "errorCount": 0
+        },
+        {
+          "title": "Ligue 4 classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16337,
+          "errorCount": 0
+        },
+        {
+          "title": "Ligue 4 pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6333,
+          "errorCount": 0
+        },
+        {
+          "title": "Quebra-cabeça de 15 classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16669,
+          "errorCount": 0
+        },
+        {
+          "title": "Quebra-cabeça de 15 pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7639,
+          "errorCount": 0
+        },
+        {
+          "title": "Jogo da Memória classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16785,
+          "errorCount": 0
+        },
+        {
+          "title": "Jogo da Memória pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7388,
+          "errorCount": 0
+        },
+        {
+          "title": "Genius classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 18437,
+          "errorCount": 0
+        },
+        {
+          "title": "Genius pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 9147,
+          "errorCount": 0
+        }
+      ],
+      "cleanupConfirmed": true,
+      "startedAt": "2026-10-22T15:28:49.9425231Z",
+      "elapsedMs": 140749,
+      "node": "24.22.0",
+      "bun": "1.4.3",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "exitCode": 0,
+      "deadline": false
+    },
+    {
+      "run": "staging-new-games-476-r3",
+      "reportSha256": "f4757fb8b966bfbd1c716779f2ca5de02c786b5099f0cf179ed634891f0e1252",
+      "stats": {
+        "startTime": "2026-10-22T15:34:51.077Z",
+        "duration": 107001.31999999999,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 8,
+      "tests": [
+        {
+          "title": "Bolhas no Fundo do Mar classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16121,
+          "errorCount": 0
+        },
+        {
+          "title": "Bolhas no Fundo do Mar pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6525,
+          "errorCount": 0
+        },
+        {
+          "title": "Pega-Ovos classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16589,
+          "errorCount": 0
+        },
+        {
+          "title": "Pega-Ovos pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6899,
+          "errorCount": 0
+        },
+        {
+          "title": "Macaco e Morcego classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 18286,
+          "errorCount": 0
+        },
+        {
+          "title": "Macaco e Morcego pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6360,
+          "errorCount": 0
+        },
+        {
+          "title": "Canhão classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 17809,
+          "errorCount": 0
+        },
+        {
+          "title": "Canhão pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6868,
+          "errorCount": 0
+        }
+      ],
+      "cleanupConfirmed": true,
+      "startedAt": "2026-10-22T15:34:50.3631293Z",
+      "elapsedMs": 109307,
+      "node": "24.22.0",
+      "bun": "1.4.3",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "exitCode": 0,
+      "deadline": false
+    },
+    {
+      "run": "staging-new-games-476-r4",
+      "reportSha256": "10f201bd6cb8cf14f98bf76483c94a838b7e1c544cbdecb176bdc0474ed0fb3c",
+      "stats": {
+        "startTime": "2026-10-22T15:37:44.659Z",
+        "duration": 100234.934,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "testCount": 8,
+      "tests": [
+        {
+          "title": "Jogo da Vida classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16649,
+          "errorCount": 0
+        },
+        {
+          "title": "Jogo da Vida pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7114,
+          "errorCount": 0
+        },
+        {
+          "title": "Céu Estrelado classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 13986,
+          "errorCount": 0
+        },
+        {
+          "title": "Céu Estrelado pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6369,
+          "errorCount": 0
+        },
+        {
+          "title": "Vidente classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 14265,
+          "errorCount": 0
+        },
+        {
+          "title": "Vidente pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 6644,
+          "errorCount": 0
+        },
+        {
+          "title": "Corrida com Aposta classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 16418,
+          "errorCount": 0
+        },
+        {
+          "title": "Corrida com Aposta pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+          "project": "chrome",
+          "expectedStatus": "passed",
+          "status": "passed",
+          "durationMs": 7166,
+          "errorCount": 0
+        }
+      ],
+      "cleanupConfirmed": true,
+      "startedAt": "2026-10-22T15:37:43.8857041Z",
+      "elapsedMs": 102377,
+      "node": "24.22.0",
+      "bun": "1.4.3",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "exitCode": 0,
+      "deadline": false
+    }
+  ]
+}

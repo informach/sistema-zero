@@ -17,10 +17,10 @@ offline de baseline vazio representa o estado remoto.
 ## Sequência
 
 1. Exigir CI verde do código a implantar. Lote de oficinas e reparo do teste Zappy publicados em `862308ac2`; acompanhar run `39795005373`. Conciliar qualquer avanço remoto antes da ativação.
-2. Construir a imagem atual e qualificar JavaScript sem rede. O perfil `bee4799c5e9ef6bd8f1838273234c6db0a37b61156c3966b30873d64a379efbc` é independente da distribuição browser `e3188c84…`. Não trocar tags de imagens de outras sessões para executar QA: os smokes aceitam a imagem como primeiro argumento.
+2. Construir a imagem atual e qualificar JavaScript sem rede. O perfil `bee4799c5e9ef6bd8f1838273234c6db0a37b61156c3966b30873d64a379efbc` é independente da distribuição browser `476d32…`. Não trocar tags de imagens de outras sessões para executar QA: os smokes aceitam a imagem como primeiro argumento.
 3. Executar `build:server` do language service antes da imagem. Qualificar a imagem real, RPC/Pyright, cancelamento e cleanup; não reutilizar o bundle remoto antigo.
 4. Registrar a retirada explícita da referência Python antiga do runtime, preservando JavaScript, origens, secrets e todos os objetos R2. Só depois da ausência confirmada usar `baseline.worker: null` no promotor. Não converter o catálogo antigo para o contrato atual.
-5. Preparar um novo plano canônico com as configurações públicas realmente preservadas (`previewOrigin`, frame origins e ausência confirmada de Members/hosts). Usar a distribuição atual verificada e a release `python-browser/2026-10-22-visual-games-2`. O SHA do plano pode diferir do offline `c68ac702…`.
+5. Preparar um novo plano canônico com as configurações públicas realmente preservadas (`previewOrigin`, frame origins e ausência confirmada de Members/hosts). Usar a distribuição atual verificada e a release `python-browser/2026-10-22-visual-games-3`, manifesto `bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80`. O SHA do plano pode diferir do offline `57e25c2c…`.
 6. Upload pelo promotor canônico e readback dos objetos/marker/catálogo. Upload não é ativação. Uma falha não autoriza converter checksums, usar S3 como se fosse R2 nativo ou trocar a distribuição por bytes não qualificados.
 7. Conferir callers pausados, fechar sessões antigas conhecidas e comprovar zero containers vivos/pendentes da aplicação exata. Aplicar a migração create `PythonLanguageSessions`/delete `PythonLanguageOwner` conforme `packages/studio-language-service/DEPLOYMENT.md`; nunca renomear nem transferir o namespace antigo.
 8. Implantar runtime/imagens atuais, SHA novo do catálogo, origem de preview e regras de lifecycle prefixadas. Registrar versões, namespaces e digest das imagens reais; preservar JavaScript.
@@ -77,6 +77,28 @@ Verificação independente inicial: 55 testes/1292 asserts da autoria/galeria,
 5 testes/93 asserts dos geradores e 9 testes nativos do modelo Cobrinha.
 Essas provas não substituem os percursos gráficos hospedados.
 
+Os commits `7974d9796` e `dd8dc807a` foram conciliados no merge `9c9c913b9`.
+Acrescentam a correção de `turtle.dot()` e 17 exemplos, levando a 20 jogos com
+variantes Classic/Pro. Os inputs das duas imagens e o fingerprint não mudaram;
+a distribuição mudou para `476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c`.
+O serviço de linguagem foi requalificado com o bootstrap/manifesto `bc5710…`:
+os três casos reais `empty`, `provided` e `forged` passaram, com os containers
+removidos e ausência confirmada. O recibo atual é
+[language-image-476-r1](../../continuity/2026-10-22-python-reference-games-visual-evidence/language-image-476-r1.json.snapshot),
+SHA256 `548b037a9ad14168483e9603a8a0f10bfb2eb3fd3145845212414e7f4b4988d1`.
+O recibo e318 acima permanece somente histórico.
+
+A qualificação gráfica local atual passou em seis lotes seriais: 24 testes
+Turtle em Chrome/Edge e 40 percursos dos 20 jogos no Chrome. Cada jogo foi aberto
+pela galeria em Classic e Pro, editado, salvo/reaberto e executado com entrada
+causal verificada em pixels; Classic também conferiu a fonte da Ponte. Zero
+falhas/skips/retries, limpeza de processos/portas confirmada em cada lote. O
+[recibo conjunto](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-local-ui-r1.json.snapshot)
+contém os hashes dos relatórios. Os 204 testes de modelo nativo dos 20 jogos,
+46 testes locais de renderer/galeria/reprodução/metadados, geradores e tipagem
+completa do Studio também passaram. Esta evidência não inclui áudio audível,
+máquina de 8 GB, autenticação hospedada nem aceite de desempenho remoto.
+
 ## CI e preparação de mídia
 
 O run `39795005373` de `862308ac2` teve oito jobs de interface aprovados, mas o job
@@ -91,3 +113,14 @@ de modelos de voz/GPU não utilizadas. Os testes de mídia, navegador, AppArmor 
 o limite de 45 minutos continuam iguais. Os 97 testes de contrato do pipeline
 passaram, com 234 asserts; YAML foi analisado. O ganho e o pipeline completo
 somente poderão ser afirmados após a nova execução remota.
+
+O run `39802574396`, de `fa2ed1219`, avançou pela preparação de mídia e executou
+os testes de gravação real com FFmpeg, mas falhou em um cenário de permissões
+Adult/Kids. O cenário retirava metadata Adult depois da conclusão do curso e
+esperava perder uma conquista já congelada. O fake passou a reproduzir o freeze
+transacional que a produção já fazia para cursos gravados. A correção preserva
+as negativas 403 de produto/paleta Kids no contexto Adult e acrescenta o positivo
+de preservação do ledger após retirada da metadata. Foram 61 testes/211 asserts
+verificados novamente pelo root, sem falhas. Não houve alteração de autorização
+em produção. O commit `41c552349` foi publicado em staging local/remoto e iniciou
+o run `39805510567`; seu resultado não deve ser presumido.

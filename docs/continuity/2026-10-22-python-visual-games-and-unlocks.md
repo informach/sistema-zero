@@ -45,12 +45,25 @@ registry ou documento.
 ## Evidências e checagens
 
 Os [recibos dos jogos e da distribuição](2026-10-22-python-reference-games-visual-evidence/)
-são imutáveis. `ui-r12` comprova os quatro percursos gráficos na candidata final
-do motor: galeria, edição, Ponte, salvar/reabrir, revisão exata, entrada causal em
+são imutáveis. `ui-r12` comprova os quatro percursos gráficos na candidata daquela
+rodada (`e3188c84…`): galeria, edição, Ponte, salvar/reabrir, revisão exata, entrada causal em
 pixels e Stop. A rodada `ui-r13`, executada sobre `1e8dd0e87` após as regras de
 conquista e a correção de hidratação, repetiu os quatro percursos com sucesso:
 zero skips, retries, falhas ou erros de página/console da aplicação, em 90,2 s.
 O supervisor confirmou saída normal e nenhum processo/porta de teste restante.
+
+Após a conciliação de `dd8dc807a`, a candidata passou a `476d32…`, release
+`visual-games-3`, manifesto `bc5710…`, com a correção de `turtle.dot()` e 20 jogos.
+Não herda a homologação gráfica anterior. A verificação fresca deste corte
+conferiu a distribuição, 24 testes Turtle Chrome/Edge, seis percursos gráficos
+Chrome de Pac-Man/Space Arena/Cobrinha, 204 testes nativos dos 20 modelos e os
+geradores de fontes/sons/metadados. A sequência dos outros 17 jogos também passou:
+40 percursos gráficos no total, além dos 24 testes Turtle Chrome/Edge, sem falhas,
+skips ou retries. Cada lote encerrou seus processos e portas. O
+[recibo atual](2026-10-22-python-reference-games-visual-evidence/current-476-local-ui-r1.json.snapshot)
+registra os resultados e hashes dos relatórios completos. A tipagem completa do
+Studio passou sobre este corte. O reparo de Tiles altera somente o teste:
+escolhe um movimento legal pelos pixels do vazio, sem controlar o estado do jogo.
 
 Checagens locais executadas neste lote, sem somar wrappers e seus casos internos:
 
@@ -91,5 +104,6 @@ ausência do catálogo Members em staging e um catálogo antigo no Worker. Nenhu
 chave, variável ou namespace remoto foi alterado por essas consultas. A ativação
 exige conciliação explícita, imagem atual e os gates de drenagem do serviço de
 linguagem; não haverá leitor de metadados Python antigos para acomodar a configuração.
-O daemon Docker local não respondeu nesta sessão; o CI já contém construção da
-imagem e smoke sem rede. A rotação das chaves Railway pertence a outra sessão.
+O Docker local voltou a responder e as imagens atuais passaram nas provas
+isoladas descritas no [plano de ativação](../superpowers/plans/2026-10-22-python-staging-activation.md).
+A rotação das chaves Railway pertence a outra sessão.

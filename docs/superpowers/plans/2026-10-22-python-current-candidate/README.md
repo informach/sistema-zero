@@ -86,15 +86,27 @@ falhas de deploy.
 ## Evidências e limites
 
 [Os recibos versionados](../../../continuity/2026-10-22-python-reference-games-visual-evidence/)
-incluem a reprodução byte a byte, a qualificação R4 com o loader real de autoria
-e os quatro cenários gráficos no Chrome. Os dois jogos passaram por edição,
-salvamento, reabertura, execução, controles causais em pixels e Stop.
+distinguem autoria, execução gráfica e isolamento. Os 20 recibos de autoria
+vigentes usam a distribuição `476d32…` e o manifesto `bc5710…`, sem blocos opacos,
+com roundtrip do workspace e reanálise da fonte. Explicitamente não certificam
+execução nem capacidades do runtime.
 
-Uma terceira reprodução, após as regras de conquista por linguagem, manteve o
-mesmo hash e os 41 arquivos. O qualificador de autoria configurado com esse
-artefato passou nos dez casos, sem skips. Após a atualização reativa de permissões,
-`ui-r13` repetiu os quatro percursos gráficos sobre `1e8dd0e87`, sem retries,
-skips, falhas ou erros da aplicação e com limpeza de processos/portas confirmada.
+Na conciliação de `dd8dc807a` com o lote de oficinas e CI, a distribuição atual
+foi conferida novamente. O Turtle passou nos 24 testes de Chrome e Edge, sem
+skips, falhas ou retries. Pac-Man, Space Arena e Cobrinha passaram nos seis
+percursos Classic/Pro do Chrome: edição, Ponte no Classic, salvar/reabrir,
+revisão exata, entrada causal em pixels e Stop. A sequência serial dos outros 17
+exemplos também passou: no total, 40 percursos gráficos dos 20 jogos, sem falhas,
+skips ou retries. Os processos e portas próprios foram encerrados em cada lote.
+Os 204 testes nativos dos modelos dos 20 jogos também passaram, assim como a
+tipagem completa do Studio e a conferência dos geradores. O
+[recibo local atual](../../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-local-ui-r1.json.snapshot)
+registra os 64 testes gráficos com os hashes dos relatórios originais.
+
+`ui-r13`, a qualificação R4 e as reproduções de `e3188c84…` são provas históricas
+da release anterior. Não qualificam o renderizador `476d32…`. A rodada parcial
+dos jogos novos em `e3188c84…` teve três passes, uma falha de pixels em Spinner e
+cinco skips; não é aceite gráfico da candidata atual.
 
 Essas provas usam um host local controlado. Não substituem autenticação real,
 isolamento de containers no provedor, medição F1/F3, áudio audível, teste no

@@ -606,28 +606,36 @@ async function play(page: Page, game: Game, release: string) {
     .toBeGreaterThan(5)
   expect(before.x).not.toBeNull()
   expect(before.y).not.toBeNull()
+  // Tiles shuffles legally, so its empty square can start on any row. Its presented
+  // centers are y=210/310/410/510: below 260 it is on the top row and cannot move up.
+  // ArrowUp moves a tile up, so the empty square moves down.
+  // Select only from the measured pixels; keep the signed-distance oracle unchanged.
+  const move: Probe['move'] =
+    game.directory === 'tiles-visual' && before.y! < 260
+      ? { ...game.move, key: 'ArrowUp', sign: 1 }
+      : game.move
   let after = before
   const moved = (point: typeof before) => {
-    const axis = game.move.axis
+    const axis = move.axis
     const start = before[axis]
     const end = point[axis]
-    return point.count > 5 && start !== null && end !== null ? (end - start) * game.move.sign : 0
+    return point.count > 5 && start !== null && end !== null ? (end - start) * move.sign : 0
   }
-  if (game.move.mode === 'retry') {
+  if (move.mode === 'retry') {
     // During opening countdowns direction requests are deliberately ignored. Each retry
     // is another real key gesture; the actor is stationary until one is accepted.
     await expect
       .poll(
         async () => {
-          await canvas.press(game.move.key)
+          await canvas.press(move.key)
           after = await actor(canvas, game)
           return moved(after)
         },
         { timeout: 10_000, intervals: [100, 150, 200] },
       )
-      .toBeGreaterThan(game.move.minimum)
+      .toBeGreaterThan(move.minimum)
   } else {
-    await page.keyboard.down(game.move.key)
+    await page.keyboard.down(move.key)
     try {
       await expect
         .poll(
@@ -637,9 +645,9 @@ async function play(page: Page, game: Game, release: string) {
           },
           { timeout: 5_000, intervals: [100, 150, 200] },
         )
-        .toBeGreaterThan(game.move.minimum)
+        .toBeGreaterThan(move.minimum)
     } finally {
-      await page.keyboard.up(game.move.key)
+      await page.keyboard.up(move.key)
     }
   }
   if (game.fire) {
@@ -658,6 +666,7 @@ async function play(page: Page, game: Game, release: string) {
   return {
     before,
     after,
+    gesture: move,
     execution: { projectId: saved.id, expectedRevision, observedRevision },
   }
 }
