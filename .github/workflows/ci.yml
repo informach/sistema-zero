@@ -142,8 +142,12 @@ jobs:
       - name: Preparar testes de mídia das oficinas
         working-directory: packages/live-recorder
         run: |
+          # The Azure mirror exhausted the 45-minute job downloading 94 MB.
+          # Keep Ubuntu's signed packages, using the official HTTPS archive.
+          sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|https://archive.ubuntu.com/ubuntu|g' /etc/apt/apt-mirrors.txt
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          # Speech models and GPU driver recommendations are not used by these tests.
+          sudo apt-get install -y --no-install-recommends ffmpeg
           bunx playwright install --with-deps chromium
           # Ubuntu 24 restringe user namespaces de binários fora dos perfis do sistema.
           # Autorizar somente o Chromium instalado pelo Playwright mantém seu sandbox ativo.

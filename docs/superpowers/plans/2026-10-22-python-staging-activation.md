@@ -40,6 +40,20 @@ e captura PNG real, executando como UID 1000.
 
 Nenhuma configuração remota foi alterada por este checkpoint de preparação.
 
+Os uploads das duas imagens ao registro gerenciado foram concluídos, sem trocar
+as aplicações ativas. Referências imutáveis:
+
+- `registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sz-studio-runtime-qa@sha256:7bcc39cd5182804602636fdc4481829d94cf3d738cf758f8c251364e2ce06048`
+- `registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sz-python-language-qa@sha256:b64cb8e24ac10eaeb2e0d298e9e3e7ec809b1aeea7778c145941e65cf0578320`
+
+Os dois bundles operacionais passaram em `wrangler deploy --dry-run`, com os nomes
+exatos das aplicações staging existentes e essas imagens. A configuração de
+retirada não contém a referência antiga de catálogo; a de linguagem preserva o
+Sandbox e descreve somente a troca de Owner por Sessions já prevista. Dry-run não
+aplicou migração nem alterou variável/namespace remoto. Os arquivos operacionais
+locais são derivados da configuração versionada; caminhos devem ser relativos
+ao arquivo para o Wrangler no Windows.
+
 Imagem language construída depois de `build:server`: índice OCI
 `ba7fa9ef40bdad0996f6db0cf9c6f7e8bded823389a30ba08571aa8ac2c3300a`, plataforma
 amd64 `b64cb8e24ac10eaeb2e0d298e9e3e7ec809b1aeea7778c145941e65cf0578320`, bundle
@@ -62,3 +76,18 @@ implantação precisa ser regenerado com os codecs atuais, incluindo `sz_py_lamb
 Verificação independente inicial: 55 testes/1292 asserts da autoria/galeria,
 5 testes/93 asserts dos geradores e 9 testes nativos do modelo Cobrinha.
 Essas provas não substituem os percursos gráficos hospedados.
+
+## CI e preparação de mídia
+
+O run `39795005373` de `862308ac2` teve oito jobs de interface aprovados, mas o job
+geral excedeu 45 minutos. O log comprova que a instalação de FFmpeg baixava
+99 pacotes/94,1 MB pelo mirror Azure. Às 15:01:33 UTC ainda iniciava o modelo de
+voz opcional `pocketsphinx-en-us` de 27,4 MB; cancelou às 15:07:06, sem chegar ao
+restante dos testes. Não é evidência de regressão Python nem CI verde.
+
+A correção de preparação mantém os pacotes oficiais assinados, usa o arquivo
+Ubuntu HTTPS no lugar do mirror Azure HTTP e instala FFmpeg sem recomendações
+de modelos de voz/GPU não utilizadas. Os testes de mídia, navegador, AppArmor e
+o limite de 45 minutos continuam iguais. Os 97 testes de contrato do pipeline
+passaram, com 234 asserts; YAML foi analisado. O ganho e o pipeline completo
+somente poderão ser afirmados após a nova execução remota.
