@@ -78,8 +78,13 @@ if (import.meta.main) {
   const overrides = new Map<string, string>()
   args.forEach((value, index) => {
     if (value !== '--receipt') return
-    const [game, path] = (args[index + 1] ?? '').split('=')
-    assert.ok(game && path, 'Use --receipt <jogo>=<caminho>')
+    const argument = args[index + 1] ?? ''
+    // Only the first '=' separates the game; a path may contain '=' itself.
+    const separator = argument.indexOf('=')
+    const game = argument.slice(0, separator)
+    const path = argument.slice(separator + 1)
+    assert.ok(!argument.startsWith('--') && separator > 0 && path, 'Use --receipt <jogo>=<caminho>')
+    assert.ok(!overrides.has(game), `Recibo repetido para ${game}`)
     overrides.set(game, resolve(root, path))
   })
   for (const game of overrides.keys())

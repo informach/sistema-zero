@@ -17,6 +17,22 @@ const children = (value: PythonValue): PythonNode[] =>
   Array.isArray(value) ? value.flatMap(children) : isNode(value) ? [value] : []
 const eachChild = (value: PythonNode) => Object.values(value.fields).flatMap(children)
 
+/** Reads that hand out an object's namespace or attribute machinery. Reading __name__ or
+ * __class__ replaces nothing by itself; a write through them is still an attribute Store. */
+const MUTATING_DUNDERS = new Set([
+  '__dict__',
+  '__setattr__',
+  '__delattr__',
+  '__getattribute__',
+  '__builtins__',
+  '__globals__',
+  '__code__',
+  '__closure__',
+  '__defaults__',
+  '__kwdefaults__',
+  '__func__',
+])
+
 /** Conservative lexical resolution. Ambiguous or rebound names keep the generic call block. */
 export function pythonBindingResolver(
   tree: PythonNode,
@@ -31,6 +47,20 @@ export function pythonBindingResolver(
   // object state such as self.velocidade cannot replace official behavior.
   let hasAttributeWrites = false
   let hasDynamicBindings = false
+  // Private internals (turtle.Turtle._goto, random._inst) implement the official API too.
+  const replacesOfficialName = (attr: string) => attr.startsWith('_') || guardedAttributes.has(attr)
+  // getattr(obj, 'velocidade') only reads. A computed, private or setattr-like name may
+  // return the machinery that replaces official behavior.
+  const harmlessGetattr = (args: PythonValue | undefined) => {
+    if (!nodes(args) || args.length < 2) return false
+    const name = args[1]!
+    if (name.kind !== 'Constant' || typeof name.fields.value !== 'string') return false
+    return (
+      !replacesOfficialName(name.fields.value) &&
+      !MUTATING_DUNDERS.has(name.fields.value) &&
+      !['setattr', 'delattr'].includes(name.fields.value)
+    )
+  }
   function assign(scope: Scope, key: string, binding: Binding) {
     scope.writes.set(key, (scope.writes.get(key) ?? 0) + 1)
     const previous = scope.bindings.get(key)
@@ -59,14 +89,10 @@ export function pythonBindingResolver(
     )
       constructors.push({ scope, target: fields.targets[0]!.fields.id, call: fields.value })
     if (value.kind === 'Attribute' && isNode(fields.ctx) && typeof fields.attr === 'string') {
-      const dunder = fields.attr.startsWith('__') && fields.attr.endsWith('__')
-      if (
-        ['Store', 'Del'].includes(fields.ctx.kind) &&
-        (dunder || guardedAttributes.has(fields.attr))
-      )
+      if (['Store', 'Del'].includes(fields.ctx.kind) && replacesOfficialName(fields.attr))
         hasAttributeWrites = true
-      // object.__setattr__, __dict__ and __class__ reach the same mutation indirectly.
-      else if (dunder && fields.attr !== '__init__') hasDynamicBindings = true
+      // object.__setattr__ and __dict__ reach the same mutation without an attribute Store.
+      else if (MUTATING_DUNDERS.has(fields.attr)) hasDynamicBindings = true
     }
     if (['MatchAs', 'MatchStar'].includes(value.kind) && typeof fields.name === 'string')
       assign(scope, fields.name, { kind: 'other' })
@@ -117,9 +143,10 @@ export function pythonBindingResolver(
       value.kind === 'Call' &&
       isNode(fields.func) &&
       fields.func.kind === 'Name' &&
-      ['exec', 'eval', 'globals', 'locals', 'vars', 'setattr', 'delattr'].includes(
+      (['exec', 'eval', 'globals', 'locals', 'vars', 'setattr', 'delattr'].includes(
         String(fields.func.fields.id),
-      )
+      ) ||
+        (fields.func.fields.id === 'getattr' && !harmlessGetattr(fields.args)))
     ) {
       scope.uncertain = true
       hasDynamicBindings = true

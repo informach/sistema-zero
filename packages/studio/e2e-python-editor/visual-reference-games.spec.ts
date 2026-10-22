@@ -32,7 +32,8 @@ interface Probe {
   move: { key: string; mode: 'retry' | 'hold'; axis: 'x' | 'y'; sign: 1 | -1; minimum: number }
   /** Optional held key that must make a second, differently colored object appear. */
   fire?: { key: string; color: readonly [number, number, number] }
-  pauseKey: string
+  /** Real pause binding; omitted when the game has nothing that runs on its own. */
+  pauseKey?: string
 }
 const probes = {
   'pacman-visual': {
@@ -162,7 +163,6 @@ const probes = {
       sign: 1,
       minimum: 20,
     },
-    pauseKey: 'p',
   },
   'connect-four-visual': {
     variable: 'QUEDA',
@@ -181,7 +181,6 @@ const probes = {
       sign: 1,
       minimum: 20,
     },
-    pauseKey: 'p',
   },
   'tiles-visual': {
     variable: 'EMBARALHAR',
@@ -660,7 +659,7 @@ async function play(page: Page, game: Game, release: string) {
       await page.keyboard.up(game.fire.key)
     }
   }
-  await canvas.press(game.pauseKey)
+  if (game.pauseKey) await canvas.press(game.pauseKey)
   await page.getByRole('button', { name: 'Parar', exact: true }).click()
   await expect(frame).toHaveCount(0)
   return {

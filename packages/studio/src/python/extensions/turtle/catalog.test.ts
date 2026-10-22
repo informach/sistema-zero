@@ -164,7 +164,30 @@ test('object state keeps specialized blocks; replacing an official name or a dun
   ])
   expect(state).toContain('sz_py_turtle_turtle_forward')
   expect(state).toContain('sz_py_print')
+  // Introspection and plain getattr only read; they cannot replace official behavior.
+  const reads = project([
+    ...base,
+    expression(
+      call(name('print'), [
+        attribute(call(name('type'), [name('t')]), '__name__'),
+        attribute(attribute(name('t'), '__class__'), '__name__'),
+        call(name('getattr'), [name('t'), text('velocidade')]),
+      ]),
+    ),
+    command,
+  ])
+  expect(reads).toContain('sz_py_turtle_turtle_forward')
+  expect(reads).toContain('sz_py_print')
   for (const body of [
+    // Private internals implement the official API as well.
+    [...base, store(attribute(attribute(name('turtle'), 'Turtle'), '_goto')), command],
+    // getattr can hand out the attribute machinery without an attribute Store.
+    ...['__setattr__', 'setattr', '_goto'].map((attr) => [
+      ...base,
+      expression(call(call(name('getattr'), [name('object'), text(attr)]), [name('t')])),
+      command,
+    ]),
+    [...base, expression(call(name('getattr'), [name('t'), name('nome_calculado')])), command],
     [...base, store(attribute(name('t'), 'forward')), command],
     [...base, store(attribute(name('jogador'), 'forward')), command],
     [...base, store(attribute(name('self'), '__class__')), command],
