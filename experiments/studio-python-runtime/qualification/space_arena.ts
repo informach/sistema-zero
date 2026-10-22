@@ -9,7 +9,10 @@ import { refinePythonProjectDocument } from '../../../packages/studio/src/state/
 export const spaceDigest = (value: string | Uint8Array) =>
   createHash('sha256').update(value).digest('hex')
 export const spaceScenarios = ['Q02', 'Q03', 'Q04', 'Q05', 'Q06', 'Q07'] as const
-export type SpaceScenario = (typeof spaceScenarios)[number] | 'input-lifecycle'
+export type SpaceScenario =
+  | (typeof spaceScenarios)[number]
+  | 'input-lifecycle'
+  | 'performance-input'
 
 interface Http {
   get(path: string): Promise<{ ok(): boolean; json(): Promise<unknown> }>
@@ -89,9 +92,13 @@ export async function prepareSpaceScenario(
   project: PythonProProjectDocument,
   scenario: SpaceScenario,
 ) {
-  assert(scenario === 'input-lifecycle' || spaceScenarios.includes(scenario))
+  assert(
+    scenario === 'input-lifecycle' ||
+      scenario === 'performance-input' ||
+      spaceScenarios.includes(scenario),
+  )
   const observer = await readFile(resolve(import.meta.dirname, 'space_arena_observer.py'), 'utf8')
-  const input = scenario === 'input-lifecycle'
+  const input = scenario === 'input-lifecycle' || scenario === 'performance-input'
   const driver = await readFile(
     resolve(import.meta.dirname, input ? 'space_arena_input.py' : 'space_arena_browser.py'),
     'utf8',
@@ -100,11 +107,27 @@ export async function prepareSpaceScenario(
     ? 'CONFIG = {"scenario": "input-lifecycle", "seed": 2026}'
     : 'CONFIG = {"scenario": "Q02", "seed": 2026}'
   assert.equal(driver.split(marker).length, 2)
-  const entry = driver.replace(marker, `CONFIG = ${JSON.stringify({ scenario, seed: 2026 })}`)
+  const configuration =
+    scenario === 'performance-input'
+      ? { scenario: 'input-lifecycle', seed: 2026, causalPresentation: true }
+      : { scenario, seed: 2026 }
+  const entry = driver.replace(
+    marker,
+    `CONFIG = ${JSON.stringify(configuration).replace(':true', ':True')}`,
+  )
   const candidate = structuredClone(project)
   assert(!candidate.tree['_qa_space_observer.py'] && !candidate.tree['qa_space_entry.py'])
   candidate.tree['_qa_space_observer.py'] = { kind: 'file', content: observer }
   candidate.tree['qa_space_entry.py'] = { kind: 'file', content: entry }
+  let presentationSource: string | undefined
+  if (scenario === 'performance-input') {
+    assert(!candidate.tree['_qa_input_presentation.py'])
+    presentationSource = await readFile(
+      resolve(import.meta.dirname, 'input_presentation.py'),
+      'utf8',
+    )
+    candidate.tree['_qa_input_presentation.py'] = { kind: 'file', content: presentationSource }
+  }
   candidate.python.entrypoint = 'qa_space_entry.py'
   await preparePythonExecutionSnapshot(candidate)
   return {
@@ -113,6 +136,8 @@ export async function prepareSpaceScenario(
       scenario,
       observerSha256: spaceDigest(observer),
       driverSha256: spaceDigest(entry),
+      presentationSha256:
+        presentationSource === undefined ? undefined : spaceDigest(presentationSource),
       scope: input
         ? 'No state injection or QA key invocation; browser input and real Stop required, not full game or physical-device acceptance'
         : 'Declared causal fixtures/QA binding invocation, not physical input, full game or Tk canvas parity',

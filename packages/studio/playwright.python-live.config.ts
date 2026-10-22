@@ -9,7 +9,14 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   timeout: 90000,
-  reporter: [['list'], ['json', { outputFile: `${directory}/report.json` }]],
+  reporter: [
+    ['list'],
+    ['json', { outputFile: `${directory}/report.json` }],
+    // Discovery collects no samples and must not pretend to run the budget gate.
+    ...(process.env.PYTHON_LIVE_WORKLOAD === 'f1' && !process.argv.includes('--list')
+      ? ([['./e2e-python-editor/f1AcceptanceReporter.ts']] as [string][])
+      : []),
+  ],
   use: { baseURL: 'http://127.0.0.1:5298', trace: 'retain-on-failure' },
   projects: ['chrome', 'msedge'].map((channel) => ({
     name: channel,

@@ -12,6 +12,7 @@ from _qa_space_observer import state
 
 CONFIG = {"scenario": "input-lifecycle", "seed": 2026}
 namespace = None
+presentation = None
 simulation_calls = 0
 first_playing = False
 pause_started = None
@@ -50,9 +51,15 @@ def binding(callback, key, release):
 
     def delivered(*args):
         global pause_started, pause_frozen, pause_calls, pause_proved
+        before = state(namespace['player']) if namespace is not None else None
         callback(*args)
         if namespace is None:
             return
+        if presentation is not None and not release and key in ('Left', 'Right', 'Up'):
+            player = namespace['player']
+            enabled = (player.da > 0 if key == 'Left' else
+                       player.da < 0 if key == 'Right' else player.thrust > before['thrust'])
+            presentation.begin(key, before, enabled)
         if key in ('p', 'P') and not release:
             if namespace['game'].state == 'paused':
                 pause_started = time.monotonic()
@@ -83,7 +90,7 @@ def release(self, callback, key=None):
 
 
 def update(self):
-    global namespace, simulation_calls, first_playing, pause_proved
+    global namespace, presentation, simulation_calls, first_playing, pause_proved
     n = sys._getframe(1).f_globals
     result = real_update(self)
     if 'game' not in n or 'exhaust' not in n:
@@ -98,6 +105,26 @@ def update(self):
             return original(*args, **kwargs)
 
         n['Sprite'].update = counted
+        if CONFIG.get('causalPresentation'):
+            from _qa_input_presentation import InputPresentation
+            presentation = InputPresentation(self)
+            player = n['player']
+            original_render = player.render
+
+            def rendered(pen, x_offset=0, y_offset=0):
+                before = len(pen.stampItems)
+                result = original_render(pen, x_offset, y_offset)
+                # Pinned Player.render stamps the ship; an early return, inactive
+                # player or camera-culled actor is not a presented gameplay effect.
+                visible = (len(pen.stampItems) > before and
+                           n['Sprite'].is_on_screen(player, n['SCREEN_WIDTH'],
+                                                   n['SCREEN_HEIGHT'], x_offset, y_offset))
+                presentation.rendered(state(player), visible=visible,
+                                      active=player.state == 'active',
+                                      playing=n['game'].state == 'playing')
+                return result
+
+            player.render = rendered
         emit('input-ready', gameState=n['game'].state, player=state(n['player']), pools=pools(), injectedState=False)
     if not first_playing and n['game'].state == 'playing' and simulation_calls > 0:
         first_playing = True

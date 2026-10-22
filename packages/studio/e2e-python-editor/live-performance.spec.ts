@@ -47,11 +47,13 @@ for (const kind of ['classic', 'pro'] as const)
       kind,
       workload: f1 ? 'F1: 2 turtles, 200 movement calls, no external assets' : 'small drawing',
       repetition: testInfo.repeatEachIndex,
+      cpuProfiling: process.env.PYTHON_LIVE_PROFILE === '1',
       scope:
         'Diagnostic: trusted DOM click to first useful bitmap sampled by read-only rAF in the fresh frame (not GPU/compositor time). Automation dispatch and observer latency recorded separately; Playwright DOM tracing off, optional CPU trace overhead remains when enabled. Edited source accepted before clicking. Real room editor/runtime, controlled actors/storage; one sample per phase per repetition. F1 clears HTTP cache and only the tested runtime CacheStorage generation before cold click after editor/parser preparation; response shaping recorded when enabled, not full upload/RTT/NIC emulation. No video or reference-PC qualification.',
       distribution: await (await request.get('http://127.0.0.1:5297/distribution')).json(),
       preparation: [{ step: 'distribution received', elapsedMs: 0 }],
       failure: undefined as unknown,
+      httpCacheReset: false,
       coldCacheReset: undefined as { name: string; existed: boolean; removed: boolean } | undefined,
       samples: [] as {
         phase: string
@@ -60,7 +62,7 @@ for (const kind of ['classic', 'pro'] as const)
         dispatchMilliseconds: number
         targetMs: number
         passed: boolean
-        network?: { deliveredBytes: number; bytesPerSecond: number; responseDelayMs: number }
+        network: { deliveredBytes: number; bytesPerSecond: number; responseDelayMs: number } | null
         networkError?: string
         runtimeResponses?: {
           path: string
@@ -188,6 +190,7 @@ for (const kind of ['classic', 'pro'] as const)
         try {
           await session.send('Network.enable')
           await session.send('Network.clearBrowserCache')
+          evidence.httpCacheReset = true
         } finally {
           await session.detach()
         }
@@ -295,6 +298,7 @@ for (const kind of ['classic', 'pro'] as const)
             dispatchMilliseconds,
             targetMs,
             passed: milliseconds <= targetMs,
+            network: null,
           }
           // A secondary counter must never erase an already measured interval.
           evidence.samples.push(sample)
@@ -321,6 +325,8 @@ for (const kind of ['classic', 'pro'] as const)
                 }
               : undefined
           if (network) sample.network = network
+          else if (networkBefore !== null || networkAfter !== null)
+            throw new Error('Missing or inconsistent diagnostic network profile.')
           expect(responseErrors).toEqual([])
           if (f1) {
             await expect(page.getByText('f1-ready 60.0 60.0', { exact: true })).toHaveCount(1)

@@ -60,17 +60,19 @@ Medir no ambiente de referência. Para ações curtas, ao menos 30 amostras apó
 | Parar — efeitos e interação | p95 ≤ 250 ms para confirmar; invalidar geração, renderer, entrada e áudio antes do ACK, sem efeitos posteriores da geração | F5, incluindo saídas tardias e promises |
 | Parar — liberação nativa | workers do perfil protegido destruídos em até 3 s na carga de qualificação; medir separadamente da resposta da interface | Target específico e CPU do processo; caso com SIGINT ignorado; bloqueio de criação de workers filhos obrigatório |
 | Resposta a teclado/mouse no jogo | p95 ≤ 100 ms | Entrada confiável até apresentação em F3 |
-| Renderização durante animação F3 | p95 de intervalo entre frames ≤ 33 ms | Sem exigir 60 FPS em desenho sem movimento |
+| Renderização durante animação F3 | p95 de intervalo entre frames ≤ dois quadros da referência de 60 Hz (aproximadamente 33,33 ms) | Decisão do usuário em 21/10/2026; sem exigir 60 FPS em desenho sem movimento |
 | Trabalho gráfico na thread principal | fatias de no máximo 8 ms; nenhuma tarefa do renderer > 50 ms na carga contratada | Trace do browser, não apenas FPS |
 | Diagnóstico Python após pausa na digitação | p95 ≤ 1 s em F4 | Hash/revisão correspondentes, fila cancelada |
 | Completion quente | p95 ≤ 300 ms com RTT de referência | Separar catálogo local e análise semântica |
 | Mudança para próximo aluno | p95 ≤ 1 s para editor disponível; execução inicia sob demanda | Sem iniciar todos os runtimes da turma |
 | Handoff com rede de referência | p95 ≤ 2 s após pré-condição de gravação segura, até snapshot confirmado e nova autoria | Medir pausa da gravação e tempo total percebido separadamente; buffers/grants/revisão reais |
-| Player público | F1: p95 ≤ 12 s frio e ≤ 3 s cache; F3: entrada ≤ 100 ms e intervalo entre frames ≤ 33 ms | F8 em cada dispositivo homologado; não agregar celular lento ao desktop para esconder falha |
+| Player público | F1: p95 ≤ 12 s frio e ≤ 3 s cache; F3: entrada ≤ 100 ms e intervalo entre frames ≤ dois quadros da referência de 60 Hz | F8 em cada dispositivo homologado; não agregar celular lento ao desktop para esconder falha |
 | Payload do player Python | nenhum editor/analisador Python nem editor/renderer Pinta/Molda | Tráfego e grafo do subpath de player; carregar só runtime, extensão e materiais publicados |
 | Programação Python sem Turtle | p95 ≤ 12 s frio e ≤ 3 s cache até primeira saída/pergunta; ≤ 1,5 s ao executar após pequena edição; 0 bytes de adapter gráfico/paleta/renderer Turtle | F10 com fontes sem espera proposital; distinguir descritor leve de implementação gráfica; medir entrada/Parar pelas metas comuns |
 
 Handoff sem confirmação de persistência em 10 s entra em estado pendente recuperável: não concede o novo escritor e mantém o rascunho. Esse prazo não substitui expiração/renovação do lease. Ao reconectar, consultar o recibo/revisão antes de repetir. Parar continua disponível imediatamente, mesmo durante persistência pendente.
+
+Conciliação de 22/10: o entendimento de dois quadros, aprovado em 21/10, usa a referência de 60 Hz (pelo menos 30 FPS), sem uma nova exigência dependente da taxa máxima do monitor. O instrumento registra a margem de quantização de 1 ms que já usava ao classificar intervalos e exige no máximo 1% acima desse limite; essa margem não se aplica à entrada ou à pintura. F3 continua exigindo dez minutos. Janelas menores ficam explicitamente como diagnóstico. Isso não reclassifica os recibos anteriores nem fecha o aceite que ainda precisa de medição causal: entrada confiável até o efeito correspondente apresentado. Ver [instrumentos de QA e limites](../../packages/studio/e2e-runtime/PERFORMANCE.md).
 
 Revisão técnica de16/10: a meta original de liberação física em1s foi reprovada por medição nativa. Chromium mantém um loop ocupado por cerca de2s após terminate. O contrato acima separa interrupção de efeitos e liberação do recurso; não acrescenta uma espera à interface. A topologia que permitia workers filhos foi rejeitada (um filho ocupado ampliou o prazo para4s). Razões, alternativas descartadas e provas estão no [ADR001](../../.compozy/tasks/estudio-python-l0/adrs/001-worker-stop.md). A aceleração oficial por SAB é opcional e não modifica headers das aulas.
 
