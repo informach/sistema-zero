@@ -94,7 +94,7 @@ async function fixture(runtimeRelease?: StudioRuntimeRelease) {
                 job,
                 token: null,
                 authorization: {
-                  policy: runtimeRelease ? { runtimeRelease } : {},
+                  policy: { runtimeRelease: network.runtimeRelease },
                   revisionHash: revision.hash,
                   executionRevision: metadata.revision,
                   parentOrigin: 'https://kids.test',

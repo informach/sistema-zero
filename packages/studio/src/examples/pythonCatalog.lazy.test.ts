@@ -32,6 +32,8 @@ console.log(JSON.stringify({ initial, javascript, metadata, selected: loaded() }
   const metadata = [
     'examples/python/mazeLights.ts',
     'examples/python/turtleRace.ts',
+    'examples/python/visualReferenceGames.ts',
+    'examples/python/visualReferenceGames.blocks.generated.ts',
     'examples/pythonCatalog.ts',
   ].sort()
   expect(result.metadata).toEqual(metadata)

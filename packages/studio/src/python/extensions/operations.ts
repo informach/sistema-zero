@@ -65,7 +65,9 @@ export async function changePythonExtension(options: {
   assertCurrent?(): void
 }): Promise<void> {
   const { store, expected, extension, action } = options
-  const removalPolicy = action === 'remove' ? options.policy() : null
+  const initialPolicy = options.policy()
+  const initialAuthority = initialPolicy.environment?.authority?.getSnapshot()
+  const removalPolicy = action === 'remove' ? initialPolicy : null
   let retired = false
   const unsubscribe =
     action === 'remove'
@@ -75,6 +77,13 @@ export async function changePythonExtension(options: {
       : () => {}
   function current() {
     options.assertCurrent?.()
+    const latestPolicy = options.policy()
+    if (
+      initialAuthority &&
+      (latestPolicy.environment !== initialPolicy.environment ||
+        latestPolicy.environment?.authority?.getSnapshot() !== initialAuthority)
+    )
+      throw new Error('A autorização mudou. Tente novamente; seu código foi preservado.')
     if (retired || store.getState().project !== expected)
       throw new Error('O projeto mudou. Tente novamente.')
     if (store.getState().editingAccess !== 'author')
@@ -105,6 +114,8 @@ export async function changePythonExtension(options: {
     // Host policy callbacks may synchronously replace the project or its writer.
     if (
       retired ||
+      (initialAuthority &&
+        initialPolicy.environment?.authority?.getSnapshot() !== initialAuthority) ||
       store.getState().project !== expected ||
       store.getState().editingAccess !== 'author'
     )

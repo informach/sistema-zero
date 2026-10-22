@@ -92,6 +92,7 @@ class TurtleScreenBase:
         self._operations = []
         self._queued_bytes = self._queued_points = self._queued_text = 0
         self._items = {}
+        self._point_count = 0
         self._next_item = 0
         self._next_image = 0
         self._bindings = {}
@@ -151,8 +152,67 @@ class TurtleScreenBase:
             raise RuntimeError('Limite de 128 tartarugas atingido neste perfil')
         # Reserve the whole construction before upstream publishes its instance
         # into screen._turtles. Otherwise a caught quota error leaves a partial turtle.
+        self._check_item_capacity(items)
+
+    def _check_item_capacity(self, items):
         if len(self._items) + items > MAX_ITEMS:
             raise RuntimeError('Limite de objetos Turtle atingido; apague desenhos antigos')
+
+    def _shape_item_count(self, name):
+        shape = self._shapes[name]
+        return len(shape._data) if shape._type == 'compound' else 1
+
+    def _check_point_capacity(self, points, previous=()):
+        released = sum(len(self._items.get(identifier, {}).get('points', ())) for identifier in previous)
+        if self._point_count + points - released > MAX_POINTS:
+            raise RuntimeError('Limite de pontos Turtle atingido')
+
+    def _validated_points(self, coordinates):
+        points = [(float(x) * self.xscale, -float(y) * self.yscale) for x, y in coordinates]
+        if len(points) > MAX_POINTS or not all(math.isfinite(n) and abs(n) <= 10_000_000 for point in points for n in point):
+            raise ValueError('Coordenadas Turtle inválidas ou numerosas demais')
+        return points
+
+    def _validate_polygon(self, coordinates, fill, outline, width=1):
+        points = self._validated_points(coordinates)
+        # Reserve the largest legal identifier before any component is allocated.
+        patch = {'op': 'patch', 'id': 9007199254740991, 'points': points}
+        for key, value in [('fill', fill), ('outline', outline)]:
+            if value is not None:
+                patch[key] = color(value)
+        if width is not None:
+            width = float(width)
+            if not math.isfinite(width) or not 0 <= width <= 4096:
+                raise ValueError('Contorno Turtle inválido ou acima do limite')
+            patch['width'] = width
+        if len(_encode(patch)) + 1 > MAX_QUEUE_BYTES:
+            raise RuntimeError('Uma operação Turtle excedeu o limite do perfil')
+        return len(points)
+
+    def _check_draw_plan(self, draws, removed=()):
+        # Simulate known polygon/line patches in their real order, without
+        # allocating IDs, consuming the update counter or sending operations.
+        # Future items use unique object() tokens; deleted canvas IDs stay no-ops.
+        counts = {identifier: 0 for identifier in removed}
+        total = self._point_count - sum(
+            len(self._items.get(identifier, {}).get('points', ())) for identifier in removed)
+        for identifier, geometry in draws:
+            if isinstance(identifier, int) and (identifier in removed or identifier not in self._items):
+                continue
+            count = self._validate_polygon(*geometry)
+            previous = counts.get(identifier)
+            if previous is None:
+                previous = len(self._items.get(identifier, {}).get('points', ()))
+            total += count - previous
+            if total > MAX_POINTS:
+                raise RuntimeError('Limite de pontos Turtle atingido')
+            counts[identifier] = count
+
+    def _check_shape_capacity(self, name, previous):
+        # Check before replacing the visible shape or allocating any component.
+        # IDs already deleted by clearscreen do not provide spare capacity.
+        released = sum(identifier in self._items for identifier in previous)
+        self._check_item_capacity(self._shape_item_count(name) - released)
 
     def _createpoly(self):
         return self._create('polygon')
@@ -168,17 +228,20 @@ class TurtleScreenBase:
             return
         patch = {'op': 'patch', 'id': identifier}
         if coordinates is not None:
-            points = [(float(x) * self.xscale, -float(y) * self.yscale) for x, y in coordinates]
-            if len(points) > MAX_POINTS or not all(math.isfinite(n) for point in points for n in point):
-                raise ValueError('Coordenadas Turtle inválidas ou numerosas demais')
-            item['points'] = points
+            points = self._validated_points(coordinates)
+            self._check_point_capacity(len(points), (identifier,))
             patch['points'] = points
         for key, value in [('fill', fill), ('outline', outline)]:
             if value is not None:
                 patch[key] = color(value)
         if width is not None:
             patch['width'] = float(width)
+            if not math.isfinite(patch['width']) or not 0 <= patch['width'] <= 4096:
+                raise ValueError('Contorno Turtle inválido ou acima do limite')
         self._queue(patch)
+        if coordinates is not None:
+            self._point_count += len(points) - len(item['points'])
+            item['points'] = points
         if top:
             self._queue({'op': 'raise', 'id': identifier})
 
@@ -191,8 +254,10 @@ class TurtleScreenBase:
     def _delete(self, item):
         if item == 'all':
             self._items.clear()
+            self._point_count = 0
             self._bindings = {key: value for key, value in self._bindings.items() if key[0] == 'screen'}
         else:
+            self._point_count -= len(self._items.get(item, {}).get('points', ()))
             self._items.pop(item, None)
             self._bindings = {key: value for key, value in self._bindings.items() if key[0] != item}
         self._queue({'op': 'delete', 'id': item})
@@ -293,6 +358,12 @@ class TurtleScreenBase:
         return item, response['value']['right'] - 1
 
     def _bind(self, target, event, discriminator, fun, add=None):
+        # Tk interprets a compound item's list as one Tcl tag, not a fan-out.
+        # A single ID addresses its polygon; empty/multiple IDs match no item.
+        if isinstance(target, (list, tuple)):
+            if len(target) != 1:
+                return
+            target = target[0]
         if target != 'screen' and target not in self._items:
             raise TclError(f'item "{target}" doesn\'t exist')
         key = (target, event, discriminator)

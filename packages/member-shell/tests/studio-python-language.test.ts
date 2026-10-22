@@ -194,7 +194,11 @@ it('freshly authorizes reservation/start/commands; revocation blocks work but ke
   ).toBe(200)
   expect(f.state.checks).toBe(3)
   const binding = await studioPythonAnalysisBinding(pythonLanguageOwner(learner), f.authorization)
-  expect(JSON.parse(String(f.calls[0]!.init!.body))).toEqual({ projectId: f.project.id, binding })
+  expect(JSON.parse(String(f.calls[0]!.init!.body))).toEqual({
+    projectId: f.project.id,
+    binding,
+    runtimeRelease: f.configuration.catalog.releases[0],
+  })
   expect(JSON.parse(String(f.calls[1]!.init!.body))).toEqual({ binding })
   expect(JSON.parse(String(f.calls[2]!.init!.body))).toEqual(command)
   expect(new Headers(f.calls[2]!.init?.headers).get('x-studio-python-operation')).toBe('sync')

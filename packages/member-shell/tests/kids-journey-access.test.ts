@@ -97,6 +97,17 @@ test('actual empty capabilities remain a valid child; absence and unavailable po
   ).toBeNull()
 })
 
+test('Python-only course grants admit Full Studio without entering the JavaScript palette', () => {
+  const journey = child('noob', ['studio', 'bridge'])
+  const tier = kidsStudioTier(journey, ['sz_py_print', 'sz_py_turtle_turtle_forward'])
+  expect(tier).toMatchObject({ freeStudio: true, hasPalette: true, allowBlocks: [] })
+  expect(tier.allowedExtensions).toEqual([])
+  expect(kidsStudioTier(journey, ['sz_py_not_a_real_block']).hasPalette).toBe(false)
+  const mixed = kidsStudioTier(journey, ['sz_py_print', 'sz_g2d_create_ship'])
+  expect(mixed.allowBlocks).toEqual(['sz_g2d_create_ship'])
+  expect(mixed.allowedExtensions).toEqual(['game-2d'])
+})
+
 test('only explicit persisted staff preview exposes the full curriculum catalog, without a virtual rank', () => {
   expect(kidsJourneyAccess({ kidsPreview: preview })).toBe(preview)
   const tier = kidsStudioTier(preview, [])

@@ -989,6 +989,24 @@ describe('Zappy do Studio — limites determinísticos', () => {
     expect(prompt.catalog.map((entry) => entry.type)).toContain('sz_g3d_sky_photo')
   })
 
+  test('a Full Studio admission with only Python grants cannot reopen the JavaScript tutor catalog', () => {
+    const tier = { ...earnedStudioTier('coder', 'student', []), hasPalette: true }
+    const prompt = buildStudioZappyPrompt({
+      question: 'Como faço uma função?',
+      context: {
+        projectId: PROJECT_ID,
+        mode: 'blocks',
+        kind: 'classic',
+        blocks: [{ id: 'existing', type: 'sz_js_class', topLevel: true }],
+        installedExtensions: [],
+        selectedBlockId: 'existing',
+        lastError: null,
+      },
+      tier,
+    })
+    expect(prompt.catalog).toEqual([])
+  })
+
   test('o manual não leva ao tutor o NOME de um bloco que a criança ainda não tem', () => {
     // O manual do Jogo 2D cita "Descrever o jogo para leitor de tela" pelo rótulo, e a redação
     // de ids `sz_*` não alcança nome em prosa.

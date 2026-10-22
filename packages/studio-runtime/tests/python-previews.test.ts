@@ -6,7 +6,6 @@ import { STUDIO_PYTHON_PREVIEW_LIMITS } from '@sistemazero/core/studio/python-pr
 import {
   studioPythonDeploymentRoute,
   studioPythonRuntimeRoute,
-  verifyStudioPythonDeployment,
 } from '@sistemazero/core/studio/python-runtime-distribution'
 import { StudioPythonValidationReportSchema } from '@sistemazero/core/studio/python-validation'
 import { sha256 } from '../src/artifacts'
@@ -22,9 +21,9 @@ import {
 import { pythonDistributionFixture } from './python-distribution-fixture'
 import { pythonInputFixture } from './python-input-fixture'
 
-async function fixture(hostAudio = true) {
+async function fixture() {
   const input = await pythonInputFixture()
-  const runtime = await pythonDistributionFixture({ standalone: true, hostAudio })
+  const runtime = await pythonDistributionFixture({ standalone: true })
   await runtime.store()
   let active = true
   const registry = await createPythonDistributionRegistry({
@@ -158,49 +157,18 @@ async function fixture(hostAudio = true) {
   }
 }
 
-test('legacy launcher cannot create a preview before any preview PUT or project read', async () => {
-  const f = await fixture(false)
-  let reads = 0
-  await expect(
-    storePythonPreview({
-      ...f.options,
-      readProject: async (path) => {
-        reads++
-        return f.options.readProject(path)
-      },
-    }),
-  ).rejects.toThrow('controle de som')
-  expect(reads).toBe(0)
-  expect(f.writes).toEqual([])
-})
-
-test('serving admission rejects unsupported approved distribution even with a forged reference claim', async () => {
+test('preview registries reject malformed current deployment metadata before any write', async () => {
   const f = await fixture()
-  const reference = await storePythonPreview(f.options)
-  const { previewHostAudioVersion: _version, ...legacyDistribution } =
-    f.runtime.deployment.distribution
-  const legacy = await verifyStudioPythonDeployment({
-    release: f.runtime.deployment.release,
-    distribution: legacyDistribution,
-  })
-  // Make the runtime marker genuinely match the unsupported declaration; rejection must
-  // not be an incidental marker mismatch. No old real distribution is relabelled.
-  const marker = new TextEncoder().encode(legacy.marker)
-  f.runtime.objects.set(`${f.runtime.prefix}complete.json`, {
-    bytes: marker,
-    hash: await crypto.subtle.digest('SHA-256', marker),
-  })
-  const registry = await createPythonDistributionRegistry({
-    approvedDeployments: [{ release: legacy.release, distribution: legacy.distribution }],
-    parentOrigins: ['https://app.example'],
-    status: () => 'active',
-  })
-  const response = await servePythonPreview(
-    new Request({ ...reference, previewHostAudioVersion: 1 }.url),
-    { ...f.serving, registry },
-  )
-  expect(response.status).toBe(404)
-  expect(await response.text()).not.toContain('<html')
+  const distribution = { ...f.runtime.deployment.distribution }
+  Reflect.deleteProperty(distribution, 'previewHostAudioVersion')
+  await expect(
+    createPythonDistributionRegistry({
+      approvedDeployments: [{ release: f.runtime.deployment.release, distribution }],
+      parentOrigins: ['https://app.example'],
+      status: () => 'active',
+    }),
+  ).rejects.toThrow()
+  expect(f.writes).toEqual([])
 })
 
 test('preview streams exact project bytes, commits last, shares runtime and keeps authored files inert', async () => {

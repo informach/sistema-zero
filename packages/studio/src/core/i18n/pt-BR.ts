@@ -242,7 +242,7 @@ export const ptBR: Record<string, string> = {
   'kits.filter.difficulty': 'Dificuldade',
   'kits.filter.language': 'Linguagem',
   'kits.python.loading': 'Consultando os ambientes Python…',
-  'kits.python.unavailable': 'Python Pro ainda não está disponível neste ambiente.',
+  'kits.python.unavailable': 'Python ainda não está disponível neste ambiente.',
   'kits.filter.experience': 'Tipo',
   'kits.filter.all': 'Todos',
   'kits.difficulty.beginner': 'Primeiros passos',

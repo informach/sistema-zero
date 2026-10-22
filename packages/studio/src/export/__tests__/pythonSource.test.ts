@@ -15,7 +15,7 @@ import { buildSourceFiles, exportProjectSource } from '../sourceExport'
 
 async function runtimeContext(
   raw: ReturnType<typeof documentFixture>,
-  descriptor: typeof SZ_AUDIO_MODULE_DESCRIPTOR | 'absent' | 'empty' = SZ_AUDIO_MODULE_DESCRIPTOR,
+  descriptor: typeof SZ_AUDIO_MODULE_DESCRIPTOR | 'empty' = SZ_AUDIO_MODULE_DESCRIPTOR,
 ) {
   if (raw.programmingLanguage !== 'python') throw new Error('fixture')
   const worker = { path: 'worker.mjs', sha256: 'b'.repeat(64) }
@@ -52,7 +52,8 @@ async function runtimeContext(
     python: {
       version: '3.14.2',
       packages: [],
-      ...(descriptor === 'absent' ? {} : { providedModules: modules }),
+      providedModules: modules,
+      features: [],
     },
   })
   raw.runtime.manifestSha256 = release.manifestSha256
@@ -72,7 +73,7 @@ async function runtimeContext(
   })
 }
 
-for (const metadata of ['absent', 'empty'] as const)
+for (const metadata of ['empty'] as const)
   test(`a known release with ${metadata} provided modules does not invent a native audio package`, async () => {
     const raw = documentFixture('python', 'classic')
     raw.assets = []
@@ -109,7 +110,7 @@ test('an unresolved or different runtime preserves a downloadable snapshot witho
   }
 })
 
-test('an unavailable historical implementation is never replaced with the current native audio package', async () => {
+test('a declared module version without a bundled implementation is never replaced by another version', async () => {
   const raw = documentFixture('python', 'pro')
   raw.assets = []
   const descriptor = { ...SZ_AUDIO_MODULE_DESCRIPTOR, version: '0.9.0' }

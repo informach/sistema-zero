@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import {
-  legacyPythonRelease,
+  currentPythonRelease,
   providedPythonRelease,
 } from '../../tests/fixtures/python-provided-release'
 import {
@@ -16,10 +16,13 @@ const selection = (release: Awaited<ReturnType<typeof providedPythonRelease>>) =
   manifestSha256: release.manifestSha256,
 })
 
-test('mandatory policy distinguishes verified legacy absence from unavailable or old responses', async () => {
-  const runtime = selection(legacyPythonRelease())
-  expect(await createPythonBuilderPolicyResult({}, runtime)).toEqual({})
-  for (const raw of [undefined, null, [], { providedModules: [] }])
+test('mandatory policy requires the exact verified release, including an empty module profile', async () => {
+  const release = await currentPythonRelease()
+  const runtime = selection(release)
+  expect(await createPythonBuilderPolicyResult({ runtimeRelease: release }, runtime)).toEqual({
+    runtimeRelease: release,
+  })
+  for (const raw of [undefined, null, [], {}, { providedModules: [] }])
     await expect(createPythonBuilderPolicyResult(raw, runtime)).rejects.toThrow()
   const links = {
     revisionHash: 'a'.repeat(64),
@@ -27,9 +30,14 @@ test('mandatory policy distinguishes verified legacy absence from unavailable or
     parentOrigin: 'https://kids.test',
   }
   expect(StudioPythonBuilderAuthorizationSchema.safeParse(links).success).toBe(false)
-  expect(StudioPythonBuilderAuthorizationSchema.parse({ ...links, policy: {} })).toEqual({
+  expect(StudioPythonBuilderAuthorizationSchema.safeParse({ ...links, policy: {} }).success).toBe(
+    false,
+  )
+  expect(
+    StudioPythonBuilderAuthorizationSchema.parse({ ...links, policy: { runtimeRelease: release } }),
+  ).toEqual({
     ...links,
-    policy: {},
+    policy: { runtimeRelease: StudioRuntimeReleaseSchema.parse(release) },
   })
 })
 
@@ -41,8 +49,8 @@ test('exact release metadata is snapshotted before await; declared empty remains
   raw.runtimeRelease.manifest.python!.providedModules = []
   runtime.manifestSha256 = '0'.repeat(64)
   const verified = await pending
-  expect(verified.runtimeRelease?.manifest.python?.providedModules).toHaveLength(1)
-  expect(Object.isFrozen(verified.runtimeRelease?.manifest.python?.providedModules)).toBe(true)
+  expect(verified.runtimeRelease.manifest.python?.providedModules).toHaveLength(1)
+  expect(Object.isFrozen(verified.runtimeRelease.manifest.python?.providedModules)).toBe(true)
   const empty = await createStudioRuntimeRelease({
     ...release.manifest,
     python: { ...release.manifest.python!, providedModules: [] },
@@ -53,7 +61,7 @@ test('exact release metadata is snapshotted before await; declared empty remains
   ).toEqual(empty)
 })
 
-test('forged bytes, wrong selection and legacy release disguised as configured are rejected', async () => {
+test('forged bytes, wrong selection and omitted module metadata are rejected', async () => {
   const release = await providedPythonRelease()
   for (const field of ['profileId', 'releaseId', 'manifestSha256'] as const) {
     const wrong = {
@@ -80,21 +88,20 @@ test('forged bytes, wrong selection and legacy release disguised as configured a
   await expect(
     createPythonBuilderPolicyResult({ runtimeRelease: forged }, selection(release)),
   ).rejects.toThrow()
-  const legacy = legacyPythonRelease()
+  const incomplete = structuredClone(release)
+  Reflect.deleteProperty(incomplete.manifest.python!, 'providedModules')
   await expect(
-    createPythonBuilderPolicyResult({ runtimeRelease: legacy }, selection(legacy)),
+    createPythonBuilderPolicyResult({ runtimeRelease: incomplete }, selection(release)),
   ).rejects.toThrow()
 })
 
-test('one attempt fences both metadata withdrawal and late introduction', async () => {
+test('one attempt never accepts an absent or different release', async () => {
   const release = await providedPythonRelease()
   const configured = pythonBuilderPolicyFence(selection(release))
   await configured({ runtimeRelease: release })
-  await expect(configured({})).rejects.toThrow('mudou')
+  await expect(configured({})).rejects.toThrow()
   expect(await configured({ runtimeRelease: release })).toEqual({ runtimeRelease: release })
-  const legacy = pythonBuilderPolicyFence(selection(release))
-  await legacy({})
-  await expect(legacy({ runtimeRelease: release })).rejects.toThrow('mudou')
+  await expect(configured({ runtimeRelease: await currentPythonRelease() })).rejects.toThrow()
 })
 
 test('a structurally valid release beyond the shared byte ceiling is refused', async () => {

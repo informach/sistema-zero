@@ -98,7 +98,14 @@ test('metadata separates Programação and installed Turtle and never falls back
     { ...project, installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }] },
     prepared,
   )
-  expect(turtle.blocks.length).toBe(blockIds.length)
+  const features = environment.catalog.releases[0]!.manifest.python!.features
+  const availableTurtle = PYTHON_TURTLE_CODECS.filter((codec) =>
+    (codec.requiredRuntimeFeatures ?? []).every((feature) => features.includes(feature)),
+  )
+  expect(turtle.blocks.length).toBe(PYTHON_PROGRAMMING_CODECS.length + availableTurtle.length)
+  expect(turtle.blocks.map((entry) => entry.type).sort()).toEqual(
+    [...PYTHON_PROGRAMMING_CODECS, ...availableTurtle].map((codec) => codec.id).sort(),
+  )
   expect(turtle.blocks.some((entry) => entry.category.startsWith('Turtle / '))).toBe(true)
   expect(
     turtle.categories.every((category) => ['Variáveis', 'Movimento'].includes(category.value)),

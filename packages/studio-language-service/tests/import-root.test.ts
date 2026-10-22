@@ -13,6 +13,7 @@ async function fixture(entrypoint: string, files: Record<string, string>) {
   )
   await mkdir(root, { recursive: true })
   const session = new PythonLanguageSession({
+    providedModules: [],
     root,
     nodePath: Bun.which('node')!,
     serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),

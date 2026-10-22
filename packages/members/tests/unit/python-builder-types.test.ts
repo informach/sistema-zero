@@ -18,7 +18,9 @@ function gate() {
   return { promise, resolve }
 }
 async function fixture(helperSource?: string) {
-  const { project } = await authoringFixture('python', 'pro')
+  const { project, configuration } = await authoringFixture('python', 'pro')
+  const runtimeRelease = configuration.catalog.releases[0]
+  if (!runtimeRelease) throw new Error('Missing fixture release')
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
     throw new Error('Python Pro expected')
   project.tree['src/main.py'] = {
@@ -27,7 +29,7 @@ async function fixture(helperSource?: string) {
   }
   if (helperSource !== undefined)
     project.tree['src/helper.py'] = { kind: 'file', content: helperSource }
-  return capturePythonProRevisionPayload(project)
+  return { ...(await capturePythonProRevisionPayload(project)), runtimeRelease }
 }
 const diagnostic = {
   path: 'src/main.py',
@@ -109,7 +111,7 @@ async function service(
     signal: new AbortController().signal,
     async authorize() {
       checks++
-      return {}
+      return { runtimeRelease: f.runtimeRelease }
     },
     cleanupFailed(error: Error) {
       cleanupErrors.push(error)
@@ -329,7 +331,7 @@ test('fresh authorization refusal prevents the next operation and still releases
       ...f.options,
       async authorize() {
         if (++count === 3) throw new Error('revoked')
-        return {}
+        return f.options.authorize()
       },
     }).then(
       () => null,
@@ -459,6 +461,7 @@ test.each([
     const nodePath = Bun.which('node')
     if (!nodePath) throw new Error('Node is required for the real Pyright test')
     const session = new PythonLanguageSession({
+      providedModules: [],
       root,
       nodePath,
       serverPath: createRequire(

@@ -46,10 +46,7 @@ afterEach(() => {
   cleanup()
   setProjectStorageNamespace('')
 })
-async function fixture(
-  authorize?: StudioProBuilderAdapter['authorizePythonPreview'],
-  hostAudio = true,
-) {
+async function fixture(authorize?: StudioProBuilderAdapter['authorizePythonPreview']) {
   const f = await pythonEnvironmentFixture('pro'),
     stores = createStudioStores({ persistence: 'none' }),
     lifetime = new AbortController()
@@ -61,7 +58,7 @@ async function fixture(
       projectId: f.project.id,
       revision: 'b'.repeat(64),
       runtimeManifestSha256: f.project.runtime.manifestSha256,
-      ...(hostAudio ? { previewHostAudioVersion: 1 as const } : {}),
+      previewHostAudioVersion: 1 as const,
       sha256: 'c'.repeat(64),
       url: `https://python.test/v1/python-previews/${'a'.repeat(64)}/index.html`,
       expiresAt: Date.now() + 60000,
@@ -146,26 +143,6 @@ async function fixture(
     frame: () => view.container.querySelector<HTMLIFrameElement>('iframe[title="Proposta Python"]'),
   }
 }
-
-test('legacy selected preview cannot invoke authorization or attach an old launcher', async () => {
-  const f = await fixture(undefined, false)
-  expect(f.frame() === null).toBe(true)
-  expect(f.calls()).toBe(0)
-  expect(f.stores.project.getState().project).toBe(f.f.project)
-  expect(screen.getByRole('status').textContent).toContain('Continue em Jogo atual')
-  expect(screen.getByRole('status').textContent).toContain('peça ajuda à equipe')
-})
-
-test('forged selected support cannot mount an authorized historical reference', async () => {
-  const pending = Promise.withResolvers<StudioPythonPreviewReference>()
-  const f = await fixture(() => pending.promise)
-  const { previewHostAudioVersion: _version, ...legacy } = f.reference
-  await act(async () => pending.resolve(legacy))
-  expect(f.calls()).toBe(1)
-  expect(f.frame() === null).toBe(true)
-  expect(f.stores.project.getState().project).toBe(f.f.project)
-  expect(screen.getByRole('status').textContent).toContain('Seu código está preservado')
-})
 
 test('proposal audio handshake sends latest host preference only to exact launcher and updates without restarting', async () => {
   const f = await fixture(),

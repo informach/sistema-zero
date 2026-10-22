@@ -43,20 +43,17 @@ export const StudioPythonValidationOperationSchema = z.strictObject({
 export const StudioPythonValidationRequestSchema = z.strictObject({
   version: z.literal(1),
   input: StudioPythonInputReferenceSchema,
-  structure: z.boolean().default(false),
+  structure: z.boolean(),
   recipe: StudioPythonPlaytestRecipeSchema,
   preview: StudioPythonPreviewRequestSchema.optional(),
 })
 
-/** Legacy compile-only requests keep their wire format; structural inspection is explicit. */
-export const StudioPythonInspectionRequestSchema = z.union([
-  StudioPythonInputReferenceSchema.transform((input) => ({ input, structure: false })),
-  z.strictObject({
-    version: z.literal(1),
-    input: StudioPythonInputReferenceSchema,
-    structure: z.literal(true),
-  }),
-])
+/** Compilation and structural inspection share one explicit current request envelope. */
+export const StudioPythonInspectionRequestSchema = z.strictObject({
+  version: z.literal(1),
+  input: StudioPythonInputReferenceSchema,
+  structure: z.boolean(),
+})
 export const StudioPythonInputStateSchema = StudioPythonInputOpenSchema.extend({
   inputId: StudioPythonInputIdSchema,
   generation: z.uuid(),

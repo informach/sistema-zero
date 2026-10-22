@@ -16,13 +16,7 @@ import {
 } from '../src/python-distributions'
 
 export async function pythonDistributionFixture(
-  options: {
-    playtest?: boolean
-    standalone?: boolean
-    boot?: boolean
-    compressed?: boolean
-    hostAudio?: boolean
-  } = {},
+  options: { playtest?: boolean; standalone?: boolean; boot?: boolean; compressed?: boolean } = {},
 ) {
   const contents = new Map<string, Uint8Array<ArrayBuffer>>()
   for (const path of [
@@ -45,7 +39,7 @@ export async function pythonDistributionFixture(
   ])
     contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   // Synthetic storage-contract fixture, never native launcher qualification.
-  if (options.hostAudio)
+  if (options.standalone)
     contents.set('standalone.mjs', new TextEncoder().encode('fixture:standalone:host-audio-v1'))
   const httpRepresentations: { path: string; encoding: 'gzip'; artifactPath: string }[] = []
   if (options.compressed) {
@@ -58,7 +52,9 @@ export async function pythonDistributionFixture(
     version: 1,
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
-    ...(options.hostAudio ? { previewHostAudioVersion: 1 } : {}),
+    providedModules: [],
+    features: [],
+    previewHostAudioVersion: 1,
     ...(httpRepresentations.length ? { httpRepresentations } : {}),
     files: await Promise.all(
       [...contents].map(async ([path, bytes]) => ({
@@ -80,7 +76,12 @@ export async function pythonDistributionFixture(
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
     artifacts: distribution.files.map(({ path, sha256 }) => ({ path, sha256 })),
-    python: { version: distribution.pythonVersion, packages: [] },
+    python: {
+      version: distribution.pythonVersion,
+      packages: [],
+      providedModules: [],
+      features: [],
+    },
   })
   const deployment = { release, distribution }
   const objects = new Map<string, { bytes: Uint8Array<ArrayBuffer>; hash?: ArrayBuffer }>()

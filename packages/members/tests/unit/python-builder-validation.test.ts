@@ -10,10 +10,10 @@ test('provided metadata cannot disappear between type analysis and execution', a
   const authorize = f.options.authorize
   f.options.authorize = async (base, metadata, operation) => {
     const result = await authorize(base, metadata, operation)
-    return operation === 'execute' ? {} : result
+    return operation === 'execute' ? JSON.parse('{}') : result
   }
   try {
-    await expect(validateStudioPythonBuilderCandidate(f.options)).rejects.toThrow('mudou')
+    await expect(validateStudioPythonBuilderCandidate(f.options)).rejects.toThrow()
     expect(f.operations).toContain('analyze')
     expect(f.operations).toContain('execute')
     expect(f.requests.some((path) => path.startsWith('DELETE /v1/python-language/'))).toBe(true)
@@ -114,7 +114,7 @@ test.each([
   const initialAuthorize = f.options.authorize
   let scheduled = false
   f.options.authorize = async (base, metadata, operation) => {
-    await initialAuthorize(base, metadata, operation)
+    const policy = await initialAuthorize(base, metadata, operation)
     if (
       !scheduled &&
       operation === 'execute' &&
@@ -131,7 +131,7 @@ test.each([
       }
       queueMicrotask(tick)
     }
-    return {}
+    return policy
   }
   try {
     const outcome = await validateStudioPythonBuilderCandidate(f.options).then(

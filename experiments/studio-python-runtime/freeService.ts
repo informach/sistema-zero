@@ -78,13 +78,9 @@ export async function createFreeRuntimeProbe(release: StudioRuntimeRelease, orig
         },
       },
       {
-        async listStudioUnlocksByCourse() {
-          return [{ courseId: 'local-fixture', blocks: ['sz_g2d_create_ship'] }]
-        },
-      },
-      {
-        async listGrants() {
-          return []
+        async execute() {
+          // Controlled course achievements for this QA owner; never an equivalence from JS.
+          return { blocks: codecs.map(({ id }) => id) }
         },
       },
       new KidsJourneyQueryService({

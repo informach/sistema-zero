@@ -87,10 +87,10 @@ export class PythonLanguageSession {
     root: string
     serverPath: string
     nodePath: string
-    providedModules?: readonly ProvidedModuleRoot[]
+    providedModules: readonly ProvidedModuleRoot[]
   }) {
     this.root = resolve(input.root)
-    this.providedModules = (input.providedModules ?? []).map((item) => Object.freeze({ ...item }))
+    this.providedModules = input.providedModules.map((item) => Object.freeze({ ...item }))
     // Never inherit gateway secrets, NODE_OPTIONS, PYTHONPATH or author configuration.
     this.child = spawn(input.nodePath, ['--max-old-space-size=192', input.serverPath, '--stdio'], {
       cwd: this.root,

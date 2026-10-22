@@ -130,7 +130,12 @@ test('catalog wait cannot admit an SDK after digest/bucket withdrawal or cancell
       throw new Error('Withdrawn configuration cannot invoke the handler')
     }
     try {
-      const pending = f.job.validate({ version: 1, input: f.input, recipe: { version: 1 } })
+      const pending = f.job.validate({
+        version: 1,
+        input: f.input,
+        structure: false,
+        recipe: { version: 1 },
+      })
       await entered.promise
       if (change === 'digest') f.job.env.STUDIO_PYTHON_DISTRIBUTIONS_SHA256 = 'e'.repeat(64)
       if (change === 'bucket') f.job.env.PRO_ARTIFACTS = {}
@@ -160,7 +165,7 @@ test('validation admission captures immutable recipe and rejects mode/recipe cha
   const f = fixture()
   const recipe = { version: 1, stdin: ['Lia'] }
   const preview = { parentOrigin: 'https://app.example' }
-  const work = f.job.validate({ version: 1, input: f.input, recipe, preview })
+  const work = f.job.validate({ version: 1, input: f.input, structure: false, recipe, preview })
   recipe.stdin[0] = 'mutated'
   preview.parentOrigin = 'https://mutated.example'
   try {
@@ -172,6 +177,7 @@ test('validation admission captures immutable recipe and rejects mode/recipe cha
     const identical = {
       version: 1,
       input: f.input,
+      structure: false,
       recipe: { version: 1, stdin: ['Lia'] },
       preview: { parentOrigin: 'https://app.example' },
     }
@@ -190,7 +196,10 @@ test('validation admission captures immutable recipe and rejects mode/recipe cha
         ).bodyJson,
       ).code,
     ).toBe('JOB_SCOPE_CHANGED')
-    expect(JSON.parse((await f.job.inspect(f.input)).bodyJson).code).toBe('JOB_SCOPE_CHANGED')
+    expect(
+      JSON.parse((await f.job.inspect({ version: 1, input: f.input, structure: false })).bodyJson)
+        .code,
+    ).toBe('JOB_SCOPE_CHANGED')
     expect(f.creates).toBe(1)
     f.destroyGate.resolve()
     reply.resolve()
@@ -258,13 +267,27 @@ test('a withdrawn owner fence after SDK creation still confirms cleanup and bloc
   try {
     f.destroyGate.resolve()
     expect(
-      (await f.job.validate({ version: 1, input: f.input, recipe: { version: 1 } })).status,
+      (
+        await f.job.validate({
+          version: 1,
+          input: f.input,
+          structure: false,
+          recipe: { version: 1 },
+        })
+      ).status,
     ).toBe(503)
     expect(f.store.read().status).toBe('failed')
     expect(f.store.read().cleanupConfirmed).toBe(true)
     expect(f.destroys).toBe(1)
     expect(
-      (await f.job.validate({ version: 1, input: f.input, recipe: { version: 1 } })).status,
+      (
+        await f.job.validate({
+          version: 1,
+          input: f.input,
+          structure: false,
+          recipe: { version: 1 },
+        })
+      ).status,
     ).toBe(410)
   } finally {
     f.db.close()
@@ -275,7 +298,7 @@ test('pre-start cancellation persists a terminal fence and never admits an SDK o
   const f = fixture()
   try {
     expect(await f.job.cancel(f.input)).toEqual({ retired: true, cleanupConfirmed: true })
-    expect((await f.job.inspect(f.input)).status).toBe(410)
+    expect((await f.job.inspect({ version: 1, input: f.input, structure: false })).status).toBe(410)
     expect(f.creates).toBe(0)
   } finally {
     f.db.close()
@@ -293,7 +316,7 @@ test('cancellation waits for destruction acknowledgement and denies a late succe
   }
   const f = fixture()
   try {
-    const work = f.job.inspect(f.input)
+    const work = f.job.inspect({ version: 1, input: f.input, structure: false })
     await started.promise
     let ack = false
     const cancel = f.job.cancel(f.input).then((value) => {
@@ -330,7 +353,7 @@ test('expiry preserves the terminal state while its cancelled response is still 
   const f = fixture(1000)
   const originalNow = Date.now
   try {
-    const work = f.job.inspect(f.input)
+    const work = f.job.inspect({ version: 1, input: f.input, structure: false })
     void work.catch(() => {})
     await started.promise
     Date.now = () => f.input.expiresAt + 1

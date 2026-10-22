@@ -35,7 +35,9 @@ beforeAll(async () => {
             sha256: await sha256Hex('Structural factory fixture; not executable.'),
           },
         ],
-        ...(language === 'python' ? { python: { version: '3.14.2', packages: [] } } : {}),
+        ...(language === 'python'
+          ? { python: { version: '3.14.2', packages: [], providedModules: [], features: [] } }
+          : {}),
       })
       const catalog = await createStudioRuntimeCatalog({
         releases: [release],

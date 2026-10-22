@@ -6,7 +6,9 @@ import {
   type StudioFreeRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
+import { pythonCourseBlockClosure } from '@sistemazero/studio/python-course-unlocks'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
+import { createStudioAuthoringPolicy } from '../../src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
@@ -17,8 +19,13 @@ const ACCOUNT = '22222222-2222-4222-8222-222222222222'
 const SIBLING = '33333333-3333-4333-8333-333333333333'
 const NOW = new Date('2026-10-17T12:00:00Z')
 
-async function setup(kind: 'classic' | 'pro' = 'classic') {
+async function setup(kind: 'classic' | 'pro' = 'classic', earnedBlocks: string[] = ['sz_py_pass']) {
   const fixture = await authoringFixture('python', kind)
+  fixture.configuration.releases[0]!.blockIds = [
+    'sz_py_pass',
+    ...pythonCourseBlockClosure(['sz_py_print']),
+  ]
+  fixture.policy = await createStudioAuthoringPolicy(fixture.configuration)
   if (kind === 'classic') fixture.project.mode = 'blocks'
   const env = buildApp({
     now: NOW,
@@ -47,7 +54,7 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
         slot,
       )
       env.courses.courses.find(({ id }) => id === course.courseId)!.metadata = {
-        studioUnlockBlocks: [SERVER_BLOCK_CATALOG[0]!.type],
+        studioUnlockBlocks: [...earnedBlocks],
       }
       await env.gamification.award({
         userId: USER,
@@ -100,6 +107,30 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
     )
   return { ...env, fixture, grant, body, request, options }
 }
+
+test('HTTP keeps JS achievements separate from Python and never authorizes the empty Python ceiling', async () => {
+  const f = await setup('classic', [SERVER_BLOCK_CATALOG[0]!.type])
+  const discovery = await f.options()
+  expect(discovery.status).toBe(200)
+  const options = StudioFreeOptionsSchema.parse(await discovery.json())
+  expect(options.canCreatePython).toBe(false)
+  expect(options.catalog?.releases[0]?.blockIds).toEqual([])
+  expect(options.pythonGrantedExtensionIds).toEqual([])
+  expect((await f.request()).status).toBe(403)
+  expect((await f.request({ ...f.body, operation: 'analyze' }, {}, 'python-analysis')).status).toBe(
+    403,
+  )
+})
+
+test('HTTP course union preserves earned Python after curriculum removal', async () => {
+  const f = await setup()
+  expect((await f.options()).status).toBe(200)
+  for (const course of f.courses.courses) course.metadata = { studioUnlockBlocks: [] }
+  const discovery = StudioFreeOptionsSchema.parse(await (await f.options()).json())
+  expect(discovery.canCreatePython).toBe(true)
+  expect(discovery.catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
+  expect((await f.request()).status).toBe(200)
+})
 
 test('analysis HTTP reuses Complete Studio ownership and achievement without granting free Pro', async () => {
   const f = await setup()
@@ -203,6 +234,11 @@ test('HTTP revalidates product loss and forbids client-injected rights and conte
 
 async function adultSetup(kind: 'classic' | 'pro' = 'classic') {
   const fixture = await authoringFixture('python', kind)
+  fixture.configuration.releases[0]!.blockIds = [
+    'sz_py_pass',
+    ...pythonCourseBlockClosure(['sz_py_print']),
+  ]
+  fixture.policy = await createStudioAuthoringPolicy(fixture.configuration)
   const env = buildApp({
     now: NOW,
     studioAuthoringPolicy: fixture.policy,
@@ -220,7 +256,7 @@ async function adultSetup(kind: 'classic' | 'pro' = 'classic') {
   env.adultJourneyRepository.grants.set(ACCOUNT, new Set(['studio']))
   const course = seedSampleCourse(env.courses, 'adult-python-palette', 'published', 'adult')
   env.courses.courses.find(({ id }) => id === course.courseId)!.metadata = {
-    studioUnlockBlocks: [SERVER_BLOCK_CATALOG[0]!.type],
+    studioUnlockBlocks: ['sz_py_pass'],
   }
   await env.gamification.award({
     userId: ACCOUNT,
@@ -260,6 +296,7 @@ test('adult discovery, execution and analysis use adult journey/product/palette 
   const options = await f.request('free-options')
   expect(options.status).toBe(200)
   const discovery = StudioFreeOptionsSchema.parse(await options.json())
+  expect(discovery.canCreatePython).toBe(true)
   expect(discovery.canCreatePro).toBe(false)
   expect(discovery.pythonCuration.allowedModes).toEqual(['blocks'])
   f.adultJourneyRepository.grants.get(ACCOUNT)!.add('bridge')
@@ -303,6 +340,7 @@ test('adult staff opens and runs the free Studio with no license, no grants and 
     const options = await f.request('free-options', f.body, staff)
     expect(options.status).toBe(200)
     const discovery = StudioFreeOptionsSchema.parse(await options.json())
+    expect(discovery.canCreatePython).toBe(true)
     expect(discovery.canCreatePro).toBe(true)
     expect(discovery.pythonCuration.allowedModes).toEqual(['blocks', 'bridge'])
     for (const path of ['free-runtime', 'python-analysis']) {

@@ -36,7 +36,9 @@ export async function materializePythonProvidedModules(
 ) {
   const bootstrap = await createPythonLanguageBootstrap(raw)
   signal.throwIfAborted()
-  const modules = bootstrap.runtimeRelease?.manifest.python?.providedModules ?? []
+  const python = bootstrap.runtimeRelease.manifest.python
+  if (!python) throw new Error('Language configuration requires a Python release')
+  const modules = python.providedModules
   if (!modules.length) return { roots: [] as readonly ProvidedModuleRoot[], async dispose() {} }
   const info = await lstat(parent)
   if (!info.isDirectory() || info.isSymbolicLink())

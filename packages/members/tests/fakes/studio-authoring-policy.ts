@@ -33,7 +33,9 @@ export async function authoringFixture(
     sourceTargets: ['browser'],
     requiredBrowserFeatures: [],
     artifacts: [{ path: 'inert.txt', sha256: 'a'.repeat(64) }],
-    ...(language === 'python' ? { python: { version: '3.14.2', packages: [] } } : {}),
+    ...(language === 'python'
+      ? { python: { version: '3.14.2', packages: [], providedModules: [], features: [] } }
+      : {}),
   })
   const runtime = {
     profileId: release.profileId,

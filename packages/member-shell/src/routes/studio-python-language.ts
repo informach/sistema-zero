@@ -19,7 +19,6 @@ import {
 import { assertPythonLanguageBootstrapSize } from '@sistemazero/core/studio/python-language-bootstrap'
 import {
   createStudioRuntimeCatalog,
-  type StudioRuntimeRelease,
   selectStudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
 import { NextResponse } from 'next/server'
@@ -142,25 +141,17 @@ export function createStudioPythonLanguageRoutes(
             accountId: user.activeProfile?.accountId ?? user.id,
           })
           if (!decision) return unavailable()
-          let runtimeRelease: StudioRuntimeRelease | undefined
-          if (!sessionId) {
-            const catalog = await createStudioRuntimeCatalog(decision.catalog)
-            const release = selectStudioRuntimeRelease(catalog, decision.runtime)
-            if (!release) return unavailable()
-            if (release.manifest.python?.providedModules !== undefined) runtimeRelease = release
-          }
           request.signal.throwIfAborted()
           binding = await studioPythonAnalysisBinding(pythonLanguageOwner(user), authorization)
-          body = JSON.stringify(
-            start
-              ? { binding }
-              : (command ?? {
-                  projectId: authorization.subject.id,
-                  binding,
-                  ...(runtimeRelease ? { runtimeRelease } : {}),
-                }),
-          )
-          if (!sessionId) assertPythonLanguageBootstrapSize(body)
+          if (start) body = JSON.stringify({ binding })
+          else if (command) body = JSON.stringify(command)
+          else {
+            const catalog = await createStudioRuntimeCatalog(decision.catalog)
+            const runtimeRelease = selectStudioRuntimeRelease(catalog, decision.runtime)
+            if (!runtimeRelease) return unavailable()
+            body = JSON.stringify({ projectId: authorization.subject.id, binding, runtimeRelease })
+            assertPythonLanguageBootstrapSize(body)
+          }
         }
       }
     } catch (error) {

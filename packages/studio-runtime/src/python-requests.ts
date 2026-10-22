@@ -40,8 +40,8 @@ import { discardStoredPythonPreview, storePythonPreview } from './python-preview
 
 export interface PythonInspectionJobs {
   inspect(request: unknown): Promise<{ status: number; body: unknown }>
-  validate?(request: unknown): Promise<{ status: number; body: unknown }>
-  discardPreview?(
+  validate(request: unknown): Promise<{ status: number; body: unknown }>
+  discardPreview(
     reference: StudioPythonInputReference,
   ): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
   cancel(reference: StudioPythonInputReference): Promise<{
@@ -159,7 +159,7 @@ export async function handlePythonRequest(
     )
   const signal = AbortSignal.any([request.signal, AbortSignal.timeout(120_000)])
   const previewConfiguration = options.preview
-  const discardPreview = options.jobs?.discardPreview
+  const jobs = options.jobs
   let previewOwner: StudioPythonInputReference | undefined
   let producedPreview: { reference: StudioPythonPreviewReference; jobId: string } | undefined
   let accepted = false
@@ -268,15 +268,13 @@ export async function handlePythonRequest(
     if (!parsed.success) throw new PythonInputError(400, 'Referência do input Python inválida.')
     const reference = parsed.data
     if (previewRequest) previewOwner = reference
-    if (previewRequest && options.jobs && !discardPreview)
-      return reply({ ok: false, code: 'PYTHON_PREVIEW_UNAVAILABLE' }, 503)
     if (
       !(await limit(reference.owner, file || url.pathname.endsWith('/remove') ? 'transfer' : 'job'))
     )
       return reply({ ok: false, code: 'RATE_LIMITED' }, 429)
     if (url.pathname.endsWith('/remove')) {
-      if (options.jobs) {
-        const cancelled = await inputAwait(options.jobs.cancel(reference), signal)
+      if (jobs) {
+        const cancelled = await inputAwait(jobs.cancel(reference), signal)
         check()
         if (!cancelled.retired || !cancelled.cleanupConfirmed)
           return reply({ ok: false, code: 'PYTHON_CLEANUP_PENDING' }, 503)
@@ -288,8 +286,6 @@ export async function handlePythonRequest(
     const input = await store.resolve(reference, signal)
     check()
     const deployment = await approve(input.snapshot)
-    if (previewRequest && deployment.distribution.previewHostAudioVersion !== 1)
-      return reply({ ok: false, code: 'PYTHON_PREVIEW_UNAVAILABLE' }, 503)
     if (validation && !deployment.distribution.files.some((file) => file.path === 'playtest.mjs'))
       throw new PythonInputError(409, 'O ambiente Python não oferece execução protegida aprovada.')
     if (file) {
@@ -301,14 +297,10 @@ export async function handlePythonRequest(
       await approve(input.snapshot)
       return reply({ ok: true, file: result })
     }
-    if (options.jobs) {
-      const validate = options.jobs.validate
-      if (validation && !validate)
-        return reply({ ok: false, code: 'PYTHON_VALIDATION_UNAVAILABLE' }, 503)
-      const result = await inputAwait(
-        validation && validate ? validate(raw) : options.jobs.inspect(raw),
-        signal,
-      )
+    if (!operation?.success)
+      throw new PythonInputError(400, 'Solicitação de operação Python inválida.')
+    if (jobs) {
+      const result = await inputAwait(validation ? jobs.validate(raw) : jobs.inspect(raw), signal)
       check()
       if (result.status !== 200) return reply(result.body, result.status)
       if (!result.body || typeof result.body !== 'object' || !('report' in result.body))
@@ -348,7 +340,7 @@ export async function handlePythonRequest(
       return response
     }
     const preparation = {
-      structure: operation?.success ? operation.data.structure : false,
+      structure: operation.data.structure,
       snapshot: input.snapshot,
       approvedDeployment: { release: deployment.release, distribution: deployment.distribution },
       signal,
@@ -473,9 +465,9 @@ export async function handlePythonRequest(
       500,
     )
   } finally {
-    if (!accepted && previewOwner && discardPreview) {
+    if (!accepted && previewOwner && jobs) {
       try {
-        await inputAwait(discardPreview(previewOwner), AbortSignal.timeout(5000))
+        await inputAwait(jobs.discardPreview(previewOwner), AbortSignal.timeout(5000))
       } catch {
         console.error('[studio-python] preview retirement pending')
       }

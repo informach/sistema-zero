@@ -20,8 +20,7 @@ async function fixture() {
     identity: { ...identity },
     diagnostics: [],
   })
-  let compile: NonNullable<PythonAnalysisSession['compileBytes']> = async (identity) =>
-    result(identity)
+  let compile: PythonAnalysisSession['compileBytes'] = async (identity) => result(identity)
   let interpreter: PythonAnalysisSession['interpreter'] = {
     pythonVersion: PYTHON_VERSION,
     pyodideVersion: PYODIDE_VERSION,
@@ -79,9 +78,9 @@ test('structure is explicitly requested, preserved for all modules and cannot si
     definedFunctions: [],
     callTargets: [],
   }
-  const requests: (boolean | undefined)[] = []
+  const requests: boolean[] = []
   f.setCompile(async (identity, _bytes, _signal, options) => {
-    requests.push(options?.structure)
+    requests.push(options.structure)
     return { ...f.result(identity), structure }
   })
   const report = await inspectPythonSnapshot({
@@ -108,6 +107,7 @@ test('inspection captures verified buffers, asks actual compilation for every Py
   const f = await fixture()
   const original = structuredClone(f.snapshot)
   const pending = inspectPythonSnapshot({
+    structure: false,
     snapshot: f.snapshot,
     signal: new AbortController().signal,
     createSession: f.createSession,
@@ -123,6 +123,20 @@ test('inspection captures verified buffers, asks actual compilation for every Py
   expect(f.counts()).toEqual({ opened: 1, disposed: 1 })
 })
 
+test('inspection refuses an omitted structure mode before opening its compiler', async () => {
+  const f = await fixture()
+  await expect(
+    Reflect.apply(inspectPythonSnapshot, undefined, [
+      {
+        snapshot: f.snapshot,
+        signal: new AbortController().signal,
+        createSession: f.createSession,
+      },
+    ]),
+  ).rejects.toThrow('escolha explícita')
+  expect(f.counts()).toEqual({ opened: 0, disposed: 0 })
+})
+
 test('a compilation diagnostic fails the aggregate while preserving the complete file report', async () => {
   const f = await fixture()
   f.setCompile(async (identity) =>
@@ -134,6 +148,7 @@ test('a compilation diagnostic fails the aggregate while preserving the complete
       : f.result(identity),
   )
   const report = await inspectPythonSnapshot({
+    structure: false,
     snapshot: f.snapshot,
     signal: new AbortController().signal,
     createSession: f.createSession,
@@ -151,6 +166,7 @@ test('forged content or revision is refused before opening any analysis worker',
     else f.snapshot.configuration.python.dependencyLock.pythonVersion = '3.13.0'
     await expect(
       inspectPythonSnapshot({
+        structure: false,
         snapshot: f.snapshot,
         signal: new AbortController().signal,
         createSession: f.createSession,
@@ -165,6 +181,7 @@ test('wrong-document analysis cannot become compilation evidence and still dispo
   f.setCompile(async (identity) => f.result({ ...identity, revision: 'f'.repeat(64) }))
   await expect(
     inspectPythonSnapshot({
+      structure: false,
       snapshot: f.snapshot,
       signal: new AbortController().signal,
       createSession: f.createSession,
@@ -196,6 +213,7 @@ for (const phase of ['opening', 'parsing'] as const)
       })
     const controller = new AbortController()
     const pending = inspectPythonSnapshot({
+      structure: false,
       snapshot: f.snapshot,
       signal: controller.signal,
       createSession: f.createSession,
@@ -209,7 +227,6 @@ for (const phase of ['opening', 'parsing'] as const)
 
 test('inspection requires effective compiler versions even for otherwise valid reports', async () => {
   for (const interpreter of [
-    undefined,
     { pythonVersion: '3.13.0', pyodideVersion: PYODIDE_VERSION },
     { pythonVersion: PYTHON_VERSION, pyodideVersion: '0.0.0' },
   ]) {
@@ -217,6 +234,7 @@ test('inspection requires effective compiler versions even for otherwise valid r
     f.setInterpreter(interpreter)
     await expect(
       inspectPythonSnapshot({
+        structure: false,
         snapshot: f.snapshot,
         signal: new AbortController().signal,
         createSession: f.createSession,
@@ -243,6 +261,7 @@ test('oversized Python modules reject before opening a compiler', async () => {
   })
   await expect(
     inspectPythonSnapshot({
+      structure: false,
       snapshot: f.snapshot,
       signal: new AbortController().signal,
       createSession: f.createSession,

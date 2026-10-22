@@ -217,7 +217,7 @@ export function preparedPythonBrowserOptions(project: PreparedPythonProject) {
 
 export async function inspectPreparedPythonProject(
   project: PreparedPythonProject,
-  structureRequested = false,
+  structureRequested: boolean,
 ) {
   const { sandbox, cwd, snapshot, step, check } = project
   check()
@@ -258,11 +258,13 @@ export async function inspectPreparedPythonProject(
   return report
 }
 
-/** Legacy compile-only operation retains its report and owns its complete lifecycle. */
+/** Explicit compilation or structural inspection owns its complete isolated lifecycle. */
 export async function runIsolatedPythonInspection(
-  options: PythonProjectPreparationOptions & { structure?: boolean },
+  options: PythonProjectPreparationOptions & { structure: boolean },
 ) {
-  const structure = options.structure === true
+  if (typeof options.structure !== 'boolean')
+    throw new Error('A inspeção exige uma escolha explícita de estrutura.')
+  const structure = options.structure
   return withIsolatedPythonProject(options, (project) =>
     inspectPreparedPythonProject(project, structure),
   )

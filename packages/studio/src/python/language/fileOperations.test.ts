@@ -41,6 +41,10 @@ async function fixture() {
     },
     prepareSession: async () => ({
       closed: false,
+      interpreter: { pythonVersion: '3.14.2', pyodideVersion: '314.0.7' },
+      async compileBytes() {
+        throw new Error('File-operation fixture does not compile bytes')
+      },
       parse(identity, source) {
         requested.resolve({ identity, source })
         return response.promise

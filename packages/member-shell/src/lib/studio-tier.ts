@@ -10,8 +10,8 @@ export interface StudioTier {
   level: BlockLevel
   /**
    * Os blocos que a criança conquistou nos cursos: a paleta inteira dela. Ausente só para a
-   * EQUIPE, que vê tudo pelo `level`. ⚠️ Pode vir VAZIA, e o Estúdio lê lista vazia como
-   * "sem restrição": quem decide se o editor abre é o `hasPalette`.
+   * EQUIPE, que vê tudo pelo `level`. Pode vir VAZIA para conquistas só Python:
+   * o host também a passa como `grantedBlockIds`, cujo vazio não oferece blocos JS.
    */
   allowBlocks?: readonly string[]
   allowedExtensions: readonly string[]

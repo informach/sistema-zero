@@ -72,8 +72,7 @@ function ProtectedPythonCandidate({
     container = useRef<HTMLDivElement>(null),
     [status, setStatus] = useState<'loading' | 'ready' | 'expired' | 'unavailable'>('loading')
   const { projectId, jobId, revisionHash, version, reference } = candidate,
-    { id, sha256, expiresAt, revision, runtimeManifestSha256, previewHostAudioVersion } = reference
-  const [incompatible, setIncompatible] = useState(false)
+    { id, sha256, expiresAt, revision, runtimeManifestSha256 } = reference
   const execution = useStudioExecution()
   const muted = useRef(execution.muted)
   const audioSender = useRef<(() => void) | null>(null)
@@ -123,7 +122,6 @@ function ProtectedPythonCandidate({
     })
     lifetime.addEventListener('abort', retire, { once: true })
     setStatus('loading')
-    setIncompatible(false)
     const sendAudio = () => {
       if (!valid() || !frame || !audioRequest) return
       frame.contentWindow?.postMessage(
@@ -167,10 +165,7 @@ function ProtectedPythonCandidate({
       update(parsed.data.status)
     }
     window.addEventListener('message', message)
-    if (previewHostAudioVersion !== 1) {
-      setIncompatible(true)
-      update('unavailable')
-    } else if (!authorize || !host || !valid()) {
+    if (!authorize || !host || !valid()) {
       if (!lifetime.aborted) update('unavailable')
     } else if (expiresAt <= Date.now()) update('expired')
     else {
@@ -190,11 +185,6 @@ function ProtectedPythonCandidate({
             approved.runtimeManifestSha256 !== runtimeManifestSha256
           )
             throw new Error('A prévia autorizada mudou.')
-          if (approved.previewHostAudioVersion !== 1) {
-            setIncompatible(true)
-            update('unavailable')
-            return
-          }
           if (approved.expiresAt <= Date.now()) {
             update('expired')
             return
@@ -244,7 +234,6 @@ function ProtectedPythonCandidate({
     expiresAt,
     revision,
     runtimeManifestSha256,
-    previewHostAudioVersion,
   ])
   return (
     <div className="relative h-full min-h-0">
@@ -258,9 +247,7 @@ function ProtectedPythonCandidate({
             ? 'Abrindo proposta Python…'
             : status === 'expired'
               ? 'A prévia venceu. Renove a prévia na proposta.'
-              : incompatible
-                ? 'Esta prévia precisa ser atualizada. Continue em Jogo atual ou peça ajuda à equipe. Seu código está preservado.'
-                : 'Não foi possível abrir esta prévia. Consulte a proposta e tente novamente.'}
+              : 'Não foi possível abrir esta prévia. Consulte a proposta e tente novamente.'}
         </p>
       )}
     </div>

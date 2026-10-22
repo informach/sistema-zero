@@ -16,9 +16,11 @@ export async function inspectPythonSnapshot(options: {
   snapshot: PythonExecutionSnapshot
   signal: AbortSignal
   createSession(signal: AbortSignal): Promise<PythonAnalysisSession>
-  structure?: boolean
+  structure: boolean
 }): Promise<StudioPythonInspectionReport> {
-  const structureRequested = options.structure === true
+  if (typeof options.structure !== 'boolean')
+    throw new Error('A inspeção exige uma escolha explícita de estrutura.')
+  const structureRequested = options.structure
   const signal = AbortSignal.any([
     options.signal,
     AbortSignal.timeout(STUDIO_PYTHON_INSPECTION_LIMITS.deadlineMs),
@@ -47,7 +49,7 @@ export async function inspectPythonSnapshot(options: {
   const session = await options.createSession(signal)
   try {
     signal.throwIfAborted()
-    const interpreter = session.interpreter && { ...session.interpreter }
+    const interpreter = { ...session.interpreter }
     if (
       !interpreter ||
       interpreter.pythonVersion !== PYTHON_VERSION ||

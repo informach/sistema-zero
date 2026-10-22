@@ -11,6 +11,7 @@ import {
 } from '@sistemazero/core/studio'
 import { StudioPythonBuilderPreviewSchema } from '@sistemazero/core/studio/python-builder-preview'
 import { prepareStudioPythonProExecution } from '@sistemazero/core/studio/python-pro-execution'
+import { currentPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import { controlledPythonBuilderReport } from '../../members/tests/fakes/python-builder-report'
 import { pensaKidsJourney } from './pensa-fixtures'
 
@@ -165,6 +166,7 @@ async function pythonProposal() {
   const options: Parameters<typeof fixture>[0] = {},
     f = await fixture(options)
   configurePython()
+  const runtimeRelease = await currentPythonRelease()
   const base = await createStudioProRevision({
       version: 2,
       projectId: f.job.projectId,
@@ -176,14 +178,18 @@ async function pythonProposal() {
       configuration: {
         programmingLanguage: 'python',
         extensions: [],
-        runtime: { profileId: 'python-test', releaseId: 'test-1', manifestSha256: 'a'.repeat(64) },
+        runtime: {
+          profileId: runtimeRelease.profileId,
+          releaseId: runtimeRelease.releaseId,
+          manifestSha256: runtimeRelease.manifestSha256,
+        },
         python: {
           entrypoint: 'main.py',
           dependencyLock: {
             lockVersion: 1,
             target: 'browser',
             pythonVersion: '3.14.2',
-            runtimeManifestSha256: 'a'.repeat(64),
+            runtimeManifestSha256: runtimeRelease.manifestSha256,
             requirementsSha256: await studioProDigest(''),
             packages: [],
           },
@@ -208,6 +214,7 @@ async function pythonProposal() {
       revisionHash: revision.hash,
       reference: {
         kind: 'python-preview',
+        previewHostAudioVersion: 1,
         version: 1,
         id: 'c'.repeat(64),
         sha256: 'd'.repeat(64),
@@ -235,7 +242,7 @@ async function pythonProposal() {
   f.job.version = 4
   f.job.result = { change, revisionHash: revision.hash, preview, evidence: [], plan: ['Editar'] }
   options.authorization = {
-    policy: {},
+    policy: { runtimeRelease },
     revisionHash: revision.hash,
     executionRevision: snapshot.revision,
     parentOrigin: 'https://kids.test',

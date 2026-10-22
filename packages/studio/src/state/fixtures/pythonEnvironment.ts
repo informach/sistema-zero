@@ -22,7 +22,7 @@ export async function pythonEnvironmentFixture(kind: 'classic' | 'pro') {
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: [],
     artifacts: [{ path: 'test.txt', sha256: 'a'.repeat(64) }],
-    python: { version: '3.14.2', packages: [] },
+    python: { version: '3.14.2', packages: [], providedModules: [], features: [] },
   })
   const catalog = await createStudioRuntimeCatalog({
     releases: [release],

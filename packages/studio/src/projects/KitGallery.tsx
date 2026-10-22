@@ -430,7 +430,10 @@ function KitCard({
         <span className="flex flex-wrap justify-end gap-1">
           {entry.programmingLanguage === 'python' ? (
             <span className="rounded-full px-2 py-0.5 text-[10px] font-bold">
-              Python · Pro
+              Python ·{' '}
+              {entry.kind === 'pro'
+                ? 'Pro'
+                : t(entry.mode === 'blocks' ? 'mode.blocks' : 'mode.bridge')}
               {entry.extensions.some((extension) => extension.id === 'python-turtle')
                 ? ' · Turtle'
                 : ''}
@@ -597,14 +600,15 @@ export function KitGallery({
       let project: EditableStudioProject
       if (entry.programmingLanguage === 'python') {
         const port = authority.current.pythonCreation
-        if (!port || !authority.current.professional) throw new Error('Python Pro indisponível.')
+        if (!port || (entry.kind === 'pro' && !authority.current.professional))
+          throw new Error('Este ambiente Python está indisponível.')
         const { createPythonExampleProject } = await import('./createPythonExampleProject')
         if (!current()) return
         project = await createPythonExampleProject(entry, port, {
           signal: controller.signal,
           isCurrent: () =>
             current() &&
-            authority.current.professional &&
+            (entry.kind !== 'pro' || authority.current.professional) &&
             Boolean(authority.current.pythonCreation),
         })
       } else project = await createProjectFromExample(entry, scope, current)
@@ -647,7 +651,7 @@ export function KitGallery({
           </select>
         </label>
       ) : null}
-      {programmingLanguage === 'python' && (!professional || !pythonCreation) ? (
+      {programmingLanguage === 'python' && !pythonCreation ? (
         <div role={pythonDiscovery?.error ? 'alert' : 'status'} className="text-sm text-sz-fg-soft">
           {pythonDiscovery?.error ??
             t(pythonDiscovery?.loading ? 'kits.python.loading' : 'kits.python.unavailable')}
@@ -777,7 +781,18 @@ export function KitGallery({
                 entry={entry}
                 creating={creating}
                 unavailable={
-                  entry.programmingLanguage === 'python' && (!professional || !pythonCreation)
+                  entry.programmingLanguage === 'python' &&
+                  (!pythonCreation ||
+                    (entry.kind === 'pro' && !professional) ||
+                    !pythonCreation.environments.some(
+                      ({ kind, context }) =>
+                        kind === entry.kind &&
+                        entry.extensions.every(
+                          ({ id }) =>
+                            context.grantedExtensionIds === undefined ||
+                            context.grantedExtensionIds.includes(id),
+                        ),
+                    ))
                 }
                 onPick={(picked) => void handlePick(picked)}
               />

@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { isPythonProject } from '../../core/editableProject'
+import { createStudioRuntimeAuthority } from '../../runtime/authority'
 import { TURTLE_EXTENSION } from '../../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { createProjectStore } from '../../state/projectStore'
@@ -36,6 +37,77 @@ function removalAnalysis(tree: PythonNode | null = { kind: 'Module', fields: { b
 }
 
 describe('Python extension actions', () => {
+  for (const kind of ['classic', 'pro'] as const) {
+    test(`${kind}: changed authority in the same environment fences installation before React observes it`, async () => {
+      const { project, environment } = await pythonEnvironmentFixture(kind)
+      const store = createProjectStore()
+      store.getState().setProject(project)
+      const state = {
+        available: true,
+        pythonAuthoring: [],
+        grantedExtensionIds: [TURTLE_EXTENSION.id],
+        capabilities: ['edit' as const],
+        curation: null,
+        releaseStatus: 'active' as const,
+      }
+      const authority = createStudioRuntimeAuthority(state)
+      environment.authority = authority.authority
+      const pending = changePythonExtension({
+        store,
+        expected: project,
+        policy: () => ({ environment }),
+        extension: TURTLE_EXTENSION,
+        action: 'install',
+      }).catch((error: unknown) => error)
+      authority.update({ ...state, grantedExtensionIds: [] })
+      expect(await pending).toBeInstanceOf(Error)
+      expect(store.getState().project).toBe(project)
+      expect(listProSessionApplications(store, project.id)).toEqual([])
+    })
+
+    test(`${kind}: changed authority during removal analysis preserves installed extension and source`, async () => {
+      const { project, environment } = await pythonEnvironmentFixture(kind)
+      const store = createProjectStore()
+      const expected = {
+        ...project,
+        installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }],
+      }
+      store.getState().setProject(expected)
+      const state = {
+        available: true,
+        pythonAuthoring: [],
+        grantedExtensionIds: [TURTLE_EXTENSION.id],
+        capabilities: ['edit' as const],
+        curation: null,
+        releaseStatus: 'active' as const,
+      }
+      const authority = createStudioRuntimeAuthority(state)
+      environment.authority = authority.authority
+      const entered = Promise.withResolvers<void>()
+      const gate = Promise.withResolvers<void>()
+      const base = removalAnalysis()
+      const pending = changePythonExtension({
+        store,
+        expected,
+        policy: () => ({ environment }),
+        extension: TURTLE_EXTENSION,
+        action: 'remove',
+        analysis: {
+          async run(input) {
+            entered.resolve()
+            await gate.promise
+            return base.run(input)
+          },
+        },
+      }).catch((error: unknown) => error)
+      await entered.promise
+      authority.update({ ...state, curation: { pythonLevel: 1 } })
+      gate.resolve()
+      expect(await pending).toBeInstanceOf(Error)
+      expect(store.getState().project).toBe(expected)
+      expect(listProSessionApplications(store, project.id)).toEqual([])
+    })
+  }
   for (const kind of ['classic', 'pro'] as const) {
     test(`${kind}: install/remove preserve canonical source and runtime; source stays editable`, async () => {
       const { project, environment } = await pythonEnvironmentFixture(kind)

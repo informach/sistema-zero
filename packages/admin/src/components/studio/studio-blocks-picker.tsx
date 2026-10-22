@@ -16,11 +16,14 @@ import { parseStudioBlocksImport } from '@/lib/lesson-block-import'
 export function StudioBlocksPicker({
   value,
   onChange,
+  onImport,
   catalog: suppliedCatalog,
   error,
 }: {
   value: string[]
   onChange: (next: string[]) => void
+  /** Course rewards close their dependencies when replacing the imported selection. */
+  onImport?: (next: string[]) => void
   /** Undefined keeps the standalone JS course picker; null means host metadata is loading. */
   catalog?: readonly BlockCatalogEntry[] | null
   error?: string | null
@@ -195,7 +198,7 @@ export function StudioBlocksPicker({
               )
             }}
             onApply={(imported) => {
-              onChange(imported.blocks)
+              ;(onImport ?? onChange)(imported.blocks)
               setMode('manual')
             }}
           />

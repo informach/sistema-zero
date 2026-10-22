@@ -17,16 +17,16 @@ import {
 } from '../src/python-distributions'
 import { pythonDistributionFixture as fixture } from './python-distribution-fixture'
 
-test('adding a preview audio declaration cannot repin an existing immutable runtime marker', async () => {
+test('current distribution metadata cannot repin an existing immutable runtime marker', async () => {
   const f = await fixture({ standalone: true })
   await f.store()
   const marker = f.objects.get(`${f.prefix}complete.json`)
-  if (!marker) throw new Error('Missing legacy marker')
+  if (!marker) throw new Error('Missing current marker')
   const before = new Uint8Array(marker.bytes)
-  // A declaration alone is not a valid upgrade of an already stored old launcher.
+  // A metadata-only variant is still a different immutable distribution.
   const distribution = StudioPythonDistributionSchema.parse({
     ...f.deployment.distribution,
-    previewHostAudioVersion: 1,
+    pyodideVersion: '314.0.8',
   })
   await expect(
     storePythonRuntimeDistribution({

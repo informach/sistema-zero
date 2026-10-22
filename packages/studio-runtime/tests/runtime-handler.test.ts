@@ -371,6 +371,15 @@ test('default Python input handler uses approved config, private storage and sta
         async inspect() {
           throw new Error('Input-only test must not start an inspection')
         },
+        async validate() {
+          throw new Error('Input-only test must not start a validation')
+        },
+        async previewAvailable() {
+          throw new Error('Input-only test must not authorize a preview')
+        },
+        async discardPreview() {
+          throw new Error('Input removal must cancel the complete job')
+        },
         async cancel(input) {
           cancelled.push(input)
           return { retired: true, cleanupConfirmed: true }

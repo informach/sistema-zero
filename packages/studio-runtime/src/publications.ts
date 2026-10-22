@@ -20,7 +20,6 @@ import {
   StudioPythonPublicationManifestSchema,
   StudioPythonPublicationSchema,
   type StudioPythonPublishedRevision,
-  studioPythonPublicationLegacyRecipeText,
   studioPythonPublicationRecipeText,
   studioPythonRecipeMatchesProject,
   validStudioArtifactPath,
@@ -486,15 +485,10 @@ async function promotePythonPublication(
     throw new PublicationError(409, 'O pacote pertence a outro projeto.')
   const parentOrigin = origin(input.parentOrigin)
   const sourceHash = await sha256(sourceBytes)
-  // New revisions retain recipe v2. A request first committed as v1 before this
-  // version shipped is still recognized by its exact legacy bytes on replay.
   const manifestText = studioPythonPublicationRecipeText(
     createStudioPythonPublicationRecipe({ project, sourceHash, approval }),
   )
   const artifactHash = await sha256(new TextEncoder().encode(manifestText))
-  const legacyArtifactHash = await sha256(
-    new TextEncoder().encode(studioPythonPublicationLegacyRecipeText({ sourceHash, approval })),
-  )
   if (saved) {
     if (
       !saved.state.python ||
@@ -508,10 +502,7 @@ async function promotePythonPublication(
       (revision) => revision.requestId === input.requestId,
     )
     if (previous) {
-      if (
-        previous.sourceHash !== sourceHash ||
-        (previous.artifactHash !== artifactHash && previous.artifactHash !== legacyArtifactHash)
-      )
+      if (previous.sourceHash !== sourceHash || previous.artifactHash !== artifactHash)
         throw new PublicationError(409, 'Esta operação já foi usada com outro conteúdo.')
       return view(saved.state)
     }
@@ -678,9 +669,9 @@ function ownedKeys(objects: readonly { key: string }[], prefix: string) {
 /**
  * Retention closure of one publication record (R13). Every retained revision stays
  * restorable through `activate`, so history counts even while disabled or inactive.
- * Each Python revision, v1 or v2, also pins its runtime release
+ * Each Python revision also pins its runtime release
  * (`runtimes/<manifestSha256>/`, which closes over the release artifacts and extension
- * versions); the v2 recipe and the revision approval must agree on it when read.
+ * versions); the current recipe and revision approval must agree on it when read.
  * A tombstone (moderation or reservation retirement) retains nothing.
  */
 export function publicationRetention(revisions: readonly StudioPublishedRevision[]) {
@@ -773,7 +764,7 @@ async function readSource(
     throw new PublicationError(409, 'Fonte inválida.')
   if ('approval' in revision) {
     const stored = await bucket.get(`${publishedRevisionPrefix(playId, revision.id)}manifest.json`)
-    if (!stored || stored.size > STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS.v2Bytes)
+    if (!stored || stored.size > STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS.maxBytes)
       throw new PublicationError(409, 'Pacote Python incompleto.')
     const manifestText = await stored.text()
     let raw: unknown
@@ -785,10 +776,7 @@ async function readSource(
     const parsed = StudioPythonPublicationManifestSchema.safeParse(raw)
     if (
       !parsed.success ||
-      // v1 bytes stay legacy-hashed as written; v2 must also be its own canonical form.
-      (parsed.data.version === 1
-        ? stored.size > STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS.v1Bytes
-        : studioPythonPublicationRecipeText(parsed.data) !== manifestText) ||
+      studioPythonPublicationRecipeText(parsed.data) !== manifestText ||
       (await sha256(new TextEncoder().encode(manifestText))) !== revision.artifactHash ||
       parsed.data.sourceHash !== revision.sourceHash ||
       parsed.data.approval.kind !== revision.approval.kind ||

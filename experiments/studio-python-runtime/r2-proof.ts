@@ -56,9 +56,8 @@ try {
     python: {
       version: distribution.pythonVersion,
       packages: [],
-      ...(distribution.providedModules === undefined
-        ? {}
-        : { providedModules: distribution.providedModules }),
+      providedModules: distribution.providedModules,
+      features: distribution.features,
     },
   })
   const deployment = { release, distribution }

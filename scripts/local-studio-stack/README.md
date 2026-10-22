@@ -74,16 +74,14 @@ no-op.
    novo é usado na mesma transação.
 3. Roda os seeds canônicos: catálogo (`catalog/scripts/seed.ts`) e servidores Kids do hub
    (`hub/scripts/seed-community-spaces.ts`).
-4. Roda `python-local.ts`, que parte da candidata **`python-browser/2026-10-21-audio-2`**
-   (`docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json`). Usa a
-   distribuição `65c9bffd…` (runtime Turtle de `f81fd9ae2` e `e1c5fb092`), com as
-   capacidades `publish` e `assist`, que o Members exige desde 896c3a1c3. A cópia local da
+4. Roda `python-local.ts`, que parte da candidata atual
+   (`docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json`). A cópia local da
    distribuição é escolhida pelo SHA fixado no plano, dentro **desta worktree**, em
    `.cache/studio-python-runtime/distributions/<sha256>/` (o output padrão do builder).
    `--distribution <dir>` escolhe outra cópia; `--plan <arquivo>` escolhe outro plano. O setup
    também mantém `STUDIO_PYTHON_DISTRIBUTION` como alternativa explícita do terminal. O diretório
    deve conter `distribution.json` e todos os artefatos verificados. O caminho de outra máquina
-   registrado no plano histórico não é usado. Ausência ou divergência interrompe a execução;
+   registrado no plano não é usado. Ausência ou divergência interrompe a execução;
    não há download automático de runtime nem continuação silenciosa como se Python estivesse pronto.
    `--without-python` omite essa preparação; não desativa uma configuração Python local existente.
    O script

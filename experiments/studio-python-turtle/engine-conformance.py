@@ -46,7 +46,7 @@ def child(mode, fixture):
         turtle.Screen().getcanvas().winfo_toplevel().withdraw()
     if fixture == 'signatures':
         api = json.loads((ENGINE / 'api-reference.json').read_text(encoding='utf-8'))
-        owners = {'turtle': turtle, 'Turtle': turtle.Turtle, 'Screen': turtle._Screen}
+        owners = {'turtle': turtle, 'Turtle': turtle.Turtle, 'Screen': turtle._Screen, 'Shape': turtle.Shape}
         result = []
         for entry in api['entries']:
             signature = inspect.signature(getattr(owners[entry['owner']], entry['name']))

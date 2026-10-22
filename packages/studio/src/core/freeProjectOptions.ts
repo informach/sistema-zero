@@ -17,11 +17,22 @@ export async function prepareStudioFreeOptions(raw: unknown) {
     catalog: options.catalog,
   })
   const environments: PythonProjectCreationEnvironment[] = []
-  if (prepared.catalog) {
+  if (prepared.catalog && options.canCreatePython) {
     for (const kind of ['classic', 'pro'] as const) {
       if (kind === 'pro' && !options.canCreatePro) continue
       for (const choice of studioAuthoringChoices(prepared, kind)) {
         if (choice.language !== 'python' || !choice.policy) continue
+        if (kind === 'classic' && choice.policy.blockIds.length === 0) continue
+        if (kind === 'classic') {
+          const { isPythonCourseBlock, pythonCourseUnlockIssue } = await import(
+            '../python/course-unlocks'
+          )
+          if (
+            !choice.policy.blockIds.every(isPythonCourseBlock) ||
+            pythonCourseUnlockIssue(choice.policy.blockIds)
+          )
+            continue
+        }
         environments.push({
           key: choice.key,
           label: 'Python',
@@ -30,6 +41,9 @@ export async function prepareStudioFreeOptions(raw: unknown) {
             catalog: prepared.catalog,
             runtime: choice.policy.runtime,
             releaseStatus: choice.policy.status,
+            authoringBlockIds: [...choice.policy.blockIds],
+            authoringCuration: structuredClone(options.pythonCuration),
+            grantedExtensionIds: [...options.pythonGrantedExtensionIds],
           },
         })
       }

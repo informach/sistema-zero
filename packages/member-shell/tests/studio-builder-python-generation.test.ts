@@ -7,7 +7,7 @@ import {
   studioProDigest,
 } from '@sistemazero/core/studio'
 import {
-  legacyPythonRelease,
+  currentPythonRelease,
   providedPythonRelease,
 } from '../../core/tests/fixtures/python-provided-release'
 
@@ -17,7 +17,7 @@ const { advanceStudioBuilder } = await import('../src/server/studio-builder')
 afterEach(() => mock.restore())
 
 async function fixture(provided = true, repair = false) {
-  const release = provided ? await providedPythonRelease() : legacyPythonRelease()
+  const release = provided ? await providedPythonRelease() : await currentPythonRelease()
   const base = await createStudioProRevision({
     version: 2,
     projectId: 'generation-python',
@@ -86,7 +86,7 @@ async function fixture(provided = true, repair = false) {
     job: structuredClone(job),
     token: null,
     authorization: {
-      policy: provided ? { runtimeRelease: release } : {},
+      policy: { runtimeRelease: release },
       revisionHash: workingRevision.hash,
       executionRevision: 'e'.repeat(64),
       parentOrigin: 'https://kids.test',
@@ -280,7 +280,7 @@ test.each([
     f.response({ ...response, authorization: old })
   } else {
     if (mode === 'foreign-release')
-      response.authorization.policy = { runtimeRelease: legacyPythonRelease() }
+      response.authorization.policy = { runtimeRelease: await currentPythonRelease() }
     if (mode === 'revision') response.authorization.revisionHash = 'f'.repeat(64)
     if (mode === 'origin') response.authorization.parentOrigin = 'https://foreign.test'
     if (mode === 'version') response.job.version++

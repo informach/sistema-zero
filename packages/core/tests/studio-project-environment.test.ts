@@ -45,7 +45,7 @@ function manifest(): StudioRuntimeManifest {
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
     artifacts: [{ path: 'runtime/bootstrap.mjs', sha256: digest }],
-    python: { version: '3.14.2', packages: [] },
+    python: { version: '3.14.2', packages: [], providedModules: [], features: [] },
   }
 }
 

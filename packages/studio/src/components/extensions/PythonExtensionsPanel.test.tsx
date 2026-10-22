@@ -1,6 +1,7 @@
 import { afterEach, expect, test } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { createEmptyProject } from '#core'
+import { createStudioRuntimeAuthority } from '../../runtime/authority'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
@@ -9,6 +10,60 @@ import { StudioRuntimeEnvironmentProvider } from '../../studio/runtime-environme
 import { ExtensionsPanel } from './ExtensionsPanel'
 
 afterEach(cleanup)
+
+test('same environment updates installation availability and cancels an older pending operation', async () => {
+  const { project, environment } = await pythonEnvironmentFixture('classic')
+  const initial = {
+    available: true,
+    pythonAuthoring: [],
+    grantedExtensionIds: ['python-turtle'],
+    capabilities: ['edit' as const],
+    curation: null,
+    releaseStatus: 'active' as const,
+  }
+  const authority = createStudioRuntimeAuthority(initial)
+  const dynamic = {
+    ...environment,
+    authority: authority.authority,
+    access: () => ({
+      ...environment.access(project),
+      grantedExtensionIds: [...authority.authority.getSnapshot().grantedExtensionIds],
+    }),
+  }
+  const stores = createStudioStores({ persistence: 'none' })
+  stores.project.getState().setProject(project)
+  const gate = Promise.withResolvers<void>()
+  const entered = Promise.withResolvers<void>()
+  const apply = stores.project.getState().applyPythonExtensions
+  stores.project.setState({
+    applyPythonExtensions: async (...args) => {
+      entered.resolve()
+      await gate.promise
+      return apply(...args)
+    },
+  })
+  render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioRuntimeEnvironmentProvider value={dynamic}>
+        <ExtensionsPanel open onClose={() => {}} />
+      </StudioRuntimeEnvironmentProvider>
+    </StudioStoresContext.Provider>,
+  )
+  const install = await screen.findByRole('button', { name: 'Instalar' })
+  expect(install.hasAttribute('disabled')).toBe(false)
+  fireEvent.click(install)
+  await entered.promise
+  await act(async () => authority.update({ ...initial, grantedExtensionIds: [] }))
+  expect(screen.getByRole('button', { name: 'Instalar' }).hasAttribute('disabled')).toBe(true)
+  await act(async () => {
+    gate.resolve()
+    await gate.promise
+  })
+  expect(stores.project.getState().project).toBe(project)
+  expect(project.installedExtensions).toEqual([])
+  await act(async () => authority.update(initial))
+  expect(screen.getByRole('button', { name: 'Instalar' }).hasAttribute('disabled')).toBe(false)
+})
 
 for (const revoked of ['environment', 'curation'] as const)
   test(`a committed ${revoked} change during installation is checked at publication`, async () => {

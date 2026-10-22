@@ -8,10 +8,10 @@ import {
 import { type StudioRuntimeRelease, StudioRuntimeReleaseSchema } from './runtime-catalog'
 
 export const StudioPythonBuilderPolicyResultSchema = z.strictObject({
-  runtimeRelease: StudioRuntimeReleaseSchema.optional(),
+  runtimeRelease: StudioRuntimeReleaseSchema,
 })
 export type StudioPythonBuilderPolicyResult = Readonly<{
-  runtimeRelease?: StudioRuntimeRelease
+  runtimeRelease: StudioRuntimeRelease
 }>
 
 /** Private Members response, never browser input, persisted evidence or a bearer grant. */
@@ -32,27 +32,18 @@ export async function createPythonBuilderPolicyResult(
   assertPythonLanguageBootstrapSize(canonicalJson(snapshot))
   const bootstrap = await createPythonLanguageBootstrap({ protocolVersion: 1, ...snapshot })
   const release = bootstrap.runtimeRelease
-  if (!release) return Object.freeze({})
   if (
     release.profileId !== selection.profileId ||
     release.releaseId !== selection.releaseId ||
-    release.manifestSha256 !== selection.manifestSha256 ||
-    release.manifest.python?.providedModules === undefined
+    release.manifestSha256 !== selection.manifestSha256
   )
     throw new Error('A autorização não corresponde à release Python da revisão.')
   return Object.freeze({ runtimeRelease: release })
 }
 
-/** One attempt may never downgrade a configured session to legacy after a fresh policy read. */
+/** Every policy read belongs to the exact selection captured for this attempt. */
 export function pythonBuilderPolicyFence(runtime: unknown) {
   const selection = StudioRuntimeSelectionSchema.parse(runtime)
-  let identity: string | undefined
-  return async (raw: unknown): Promise<StudioPythonBuilderPolicyResult> => {
-    const verified = await createPythonBuilderPolicyResult(raw, selection)
-    const next = verified.runtimeRelease?.manifestSha256 ?? 'legacy'
-    if (identity !== undefined && identity !== next)
-      throw new Error('A configuração Python mudou durante a autorização.')
-    identity = next
-    return verified
-  }
+  return (raw: unknown): Promise<StudioPythonBuilderPolicyResult> =>
+    createPythonBuilderPolicyResult(raw, selection)
 }

@@ -18,12 +18,10 @@ const same = (a: PythonNode, b: PythonNode) =>
 function makeCodec(entry: TurtleAPI): PythonBlockCodec {
   const procedural = entry.owner === 'turtle'
   const receiver = procedural ? entry.receiver : entry.owner
+  const receiverLabel =
+    entry.owner === 'Screen' ? 'tela' : entry.owner === 'Shape' ? 'forma' : 'tartaruga'
   const teaching = turtleTeachingLabel(entry.canonical, receiver)
-  const target = () =>
-    attribute(
-      name(procedural ? 'turtle' : entry.owner === 'Screen' ? 'tela' : 'tartaruga'),
-      entry.name,
-    )
+  const target = () => attribute(name(procedural ? 'turtle' : receiverLabel), entry.name)
   const codec = structuralCodec({
     id: `sz_py_turtle_${procedural ? 'module' : entry.owner.toLowerCase()}_${entry.name}`,
     owner: 'python-turtle',
@@ -85,11 +83,14 @@ function makeCodec(entry: TurtleAPI): PythonBlockCodec {
     return {
       root: func.fields.value.fields.id,
       module: 'turtle',
-      ...(procedural ? {} : { instance: entry.owner as 'Turtle' | 'Screen' }),
+      ...(procedural ? {} : { instance: entry.owner as 'Turtle' | 'Screen' | 'Shape' }),
     }
   }
   return {
     ...codec,
+    ...(['Shape', 'addcomponent'].includes(entry.canonical)
+      ? { requiredRuntimeFeatures: ['turtle-compound-shapes'] as const }
+      : {}),
     binding: { root: 'turtle', module: 'turtle' },
     bindingFor,
     decode(value) {
@@ -138,7 +139,7 @@ function makeCodec(entry: TurtleAPI): PythonBlockCodec {
       if (object)
         shape.inputs.unshift({
           name: 'receiver',
-          label: entry.owner === 'Screen' ? 'tela' : 'tartaruga',
+          label: receiverLabel,
           role: 'value',
           nodes: [object],
         })
@@ -159,7 +160,7 @@ function makeCodec(entry: TurtleAPI): PythonBlockCodec {
       } else {
         const object = shape.inputs.find((input) => input.name === 'receiver')
         if (style !== 'method' || object?.nodes.length !== 1)
-          throw new Error('Escolha a tartaruga ou tela que vai receber o comando.')
+          throw new Error('Escolha a tartaruga, tela ou forma que vai receber o comando.')
         value.fields.func = attribute(object.nodes[0]!, entry.name)
       }
       return value

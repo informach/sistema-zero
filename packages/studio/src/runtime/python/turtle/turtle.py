@@ -105,8 +105,6 @@ class Shape(object):
     """
 
     def __init__(self, type_, data=None):
-        if type_ == 'compound':
-            raise NotImplementedError('Formas compostas não estão disponíveis neste perfil Turtle')
         self._type = type_
         if type_ == 'polygon':
             if isinstance(data, list):
@@ -1684,6 +1682,14 @@ class _TurtleImage(object):
 
     def _setshape(self, shapeIndex):
         screen = self.screen
+        kind = screen._shapes[shapeIndex]._type
+        if self._type != kind or kind not in ('polygon', 'image'):
+            previous = ()
+            if self._type == 'compound':
+                previous = self._item
+            elif self._type in ('polygon', 'image'):
+                previous = (self._item,)
+            screen._check_shape_capacity(shapeIndex, previous)
         self.shapeIndex = shapeIndex
         if self._type == 'polygon' == screen._shapes[shapeIndex]._type:
             return
@@ -1719,9 +1725,9 @@ class RawTurtle(TPen, TNavigator):
         else:
             raise TurtleGraphicsError('bad canvas argument %s' % canvas)
         screen = self.screen
-        screen._check_turtle_capacity()
         TNavigator.__init__(self, screen.mode())
         TPen.__init__(self)
+        self._preflight_shape_operation('construct', shape, visible)
         screen._turtles.append(self)
         self.drawingLineItem = screen._createline()
         self.turtle = _TurtleImage(screen, shape)
@@ -1950,7 +1956,7 @@ class RawTurtle(TPen, TNavigator):
         mick = Turtle()
         joe = mick.clone()
         """
-        self.screen._check_turtle_capacity(3 + (len(self.currentLine) > 1))
+        self._preflight_shape_operation('clone', self.turtle.shapeIndex)
         screen = self.screen
         self._newLine(self._drawing)
         turtle = self.turtle
@@ -1997,6 +2003,7 @@ class RawTurtle(TPen, TNavigator):
             return self.turtle.shapeIndex
         if not name in self.screen.getshapes():
             raise TurtleGraphicsError('There is no shape named %s' % name)
+        self._preflight_shape_operation('shape', name)
         self.turtle._setshape(name)
         self._update()
 
@@ -2144,6 +2151,7 @@ class RawTurtle(TPen, TNavigator):
         13
         >>> turtle.fd(50)
         """
+        self._preflight_shape_operation('stamp', self.turtle.shapeIndex)
         screen = self.screen
         shape = screen._shapes[self.turtle.shapeIndex]
         ttype = shape._type
@@ -2712,6 +2720,74 @@ class RawTurtle(TPen, TNavigator):
     def undo(self):
         raise NotImplementedError('Esta API Turtle não está disponível no navegador: undo')
     turtlesize = shapesize
+
+    def _shape_polygons(self, name):
+        shape = self.screen._shapes[name]
+        if shape._type == 'polygon':
+            width = 1 if self._resizemode == 'noresize' else self._pensize if self._resizemode == 'auto' else self._outlinewidth
+            coordinates = self._polytrafo(self._getshapepoly(shape._data))
+            return [(coordinates, self._fillcolor, self._pencolor, width)]
+        if shape._type == 'compound':
+            return [(self._polytrafo(self._getshapepoly(polygon, True)), self._cc(fill), self._cc(outline), self._outlinewidth) for polygon, fill, outline in shape._data]
+        return []
+
+    def _shape_item_ids(self):
+        return self.turtle._item if self.turtle._type == 'compound' else (self.turtle._item,)
+
+    def _shape_draw_plan(self, name, items, shown, hidden):
+        if shown:
+            return list(zip(items, self._shape_polygons(name)))
+        if hidden or self.screen._shapes[name]._type == 'image':
+            return []
+        return [(item, (((0, 0),) * 3, '', '', None)) for item in items]
+
+    def _preflight_shape_operation(self, operation, name, visible=None):
+        screen = self.screen
+        count = screen._shape_item_count(name)
+        removed = ()
+        reuse_items = False
+        if operation == 'construct':
+            screen._check_turtle_capacity(2 + count)
+        elif operation == 'clone':
+            screen._check_turtle_capacity(2 * count + 1 + (len(self.currentLine) > 1))
+        elif operation == 'stamp':
+            screen._check_item_capacity(count)
+        else:
+            previous = self._shape_item_ids()
+            kind = screen._shapes[name]._type
+            reuse_items = kind == self.turtle._type and kind in ('polygon', 'image')
+            if not reuse_items:
+                screen._check_shape_capacity(name, previous)
+                removed = previous
+        if reuse_items:
+            items = self._shape_item_ids()
+        else:
+            items = tuple((object() for _ in range(count)))
+        polygons = self._shape_polygons(name)
+        if operation == 'stamp':
+            screen._check_draw_plan(zip(items, polygons))
+            return
+        for geometry in polygons:
+            screen._validate_polygon(*geometry)
+        draws = []
+        if operation == 'clone' and len(self.currentLine) > 1:
+            draws.append((self.currentLineItem, (self.currentLine, self._pencolor, None, self._pensize)))
+        tracing = screen._tracing
+        redraw = tracing > 0 and (screen._updatecounter + 1) % tracing == 0
+        if redraw:
+            if operation == 'shape' and len(self.currentLine) > 1:
+                draws.append((self.currentLineItem, (self.currentLine, self._pencolor, None, self._pensize)))
+            actors = screen.turtles() if tracing != 1 else []
+            for actor in actors:
+                if actor is self and operation == 'shape':
+                    draws.extend(self._shape_draw_plan(name, items, self._shown, self._hidden_from_screen))
+                else:
+                    draws.extend(actor._shape_draw_plan(actor.turtle.shapeIndex, actor._shape_item_ids(), actor._shown, actor._hidden_from_screen))
+            if operation in ('construct', 'clone') or tracing == 1:
+                shown = visible if operation == 'construct' else self._shown
+                hidden = False if operation == 'construct' else self._hidden_from_screen
+                draws.extend(self._shape_draw_plan(name, items, shown, hidden))
+        screen._check_draw_plan(draws, removed)
 
 def Screen():
     """Return the singleton screen object.
@@ -3459,4 +3535,4 @@ def ycor():
 done = mainloop
 Pen = Turtle
 RawPen = RawTurtle
-__all__ = ['Screen', 'Terminator', 'Turtle', 'Vec2D', 'addshape', 'back', 'backward', 'begin_fill', 'bgcolor', 'bgpic', 'bk', 'bye', 'circle', 'clear', 'clearscreen', 'clearstamp', 'clearstamps', 'clone', 'color', 'colormode', 'delay', 'distance', 'done', 'dot', 'down', 'end_fill', 'exitonclick', 'fd', 'fillcolor', 'filling', 'forward', 'getscreen', 'getshapes', 'goto', 'heading', 'hideturtle', 'home', 'ht', 'isdown', 'isvisible', 'left', 'listen', 'lt', 'mainloop', 'onclick', 'ondrag', 'onkey', 'onkeypress', 'onkeyrelease', 'onrelease', 'onscreenclick', 'ontimer', 'pd', 'pencolor', 'pendown', 'pensize', 'penup', 'pos', 'position', 'pu', 'register_shape', 'reset', 'resetscreen', 'right', 'rt', 'seth', 'setheading', 'setpos', 'setposition', 'setup', 'setx', 'sety', 'shape', 'shapesize', 'showturtle', 'speed', 'st', 'stamp', 'title', 'towards', 'tracer', 'turtles', 'turtlesize', 'up', 'update', 'width', 'window_height', 'window_width', 'write', 'xcor', 'ycor']
+__all__ = ['Screen', 'Shape', 'Terminator', 'Turtle', 'Vec2D', 'addshape', 'back', 'backward', 'begin_fill', 'bgcolor', 'bgpic', 'bk', 'bye', 'circle', 'clear', 'clearscreen', 'clearstamp', 'clearstamps', 'clone', 'color', 'colormode', 'delay', 'distance', 'done', 'dot', 'down', 'end_fill', 'exitonclick', 'fd', 'fillcolor', 'filling', 'forward', 'getscreen', 'getshapes', 'goto', 'heading', 'hideturtle', 'home', 'ht', 'isdown', 'isvisible', 'left', 'listen', 'lt', 'mainloop', 'onclick', 'ondrag', 'onkey', 'onkeypress', 'onkeyrelease', 'onrelease', 'onscreenclick', 'ontimer', 'pd', 'pencolor', 'pendown', 'pensize', 'penup', 'pos', 'position', 'pu', 'register_shape', 'reset', 'resetscreen', 'right', 'rt', 'seth', 'setheading', 'setpos', 'setposition', 'setup', 'setx', 'sety', 'shape', 'shapesize', 'showturtle', 'speed', 'st', 'stamp', 'title', 'towards', 'tracer', 'turtles', 'turtlesize', 'up', 'update', 'width', 'window_height', 'window_width', 'write', 'xcor', 'ycor']

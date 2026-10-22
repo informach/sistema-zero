@@ -14,6 +14,7 @@ it('preserves ordered syncs and queries for the new revision while cancelling ob
   )
   await mkdir(root, { recursive: true })
   const session = new PythonLanguageSession({
+    providedModules: [],
     root,
     nodePath: Bun.which('node')!,
     serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),
@@ -104,6 +105,7 @@ it('releases cancelled boot and queue waiters without killing shared initializat
     String.raw`let buf=Buffer.alloc(0);process.stdin.on('data',x=>{buf=Buffer.concat([buf,x]);for(;;){const p=buf.indexOf('\r\n\r\n');if(p<0)return;const n=Number(/Content-Length: (\d+)/i.exec(buf.subarray(0,p).toString())[1]);if(buf.length<p+4+n)return;const q=JSON.parse(buf.subarray(p+4,p+4+n).toString());buf=buf.subarray(p+4+n);if(q.id!==undefined){const result=q.method==='initialize'?{capabilities:{completionProvider:{}}}:[];setTimeout(()=>{const b=JSON.stringify({jsonrpc:'2.0',id:q.id,result});process.stdout.write('Content-Length: '+Buffer.byteLength(b)+'\r\n\r\n'+b);},q.method==='initialize'?900:0)}}});`,
   )
   const session = new PythonLanguageSession({
+    providedModules: [],
     root,
     nodePath: Bun.which('node')!,
     serverPath: runtime,
@@ -219,6 +221,7 @@ it('counts physically queued updates until they drain even after their callers c
   )
   await mkdir(root, { recursive: true })
   const session = new PythonLanguageSession({
+    providedModules: [],
     root,
     nodePath: Bun.which('node')!,
     serverPath: createRequire(import.meta.url).resolve('pyright/langserver.index.js'),

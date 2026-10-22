@@ -9,6 +9,11 @@ autorizou criar/ajustar blocos quando a mudança melhorar o motor de forma geral
 Essa decisão substitui, para os novos exemplos educacionais, a antiga ausência de
 compromisso com conversão visual integral dos programas de referência.
 
+O usuário também esclareceu que Python nunca foi ativado. A entrega é uma
+implantação inicial: remover leitores, formatos, inicializações e fallbacks
+Python anteriores, mantendo apenas os contratos atuais. Não criar migrações ou
+implementações paralelas. Essa limpeza não se aplica ao JavaScript já utilizado.
+
 Construir um jogo não significa chamar um bloco que executa uma biblioteca com o
 jogo escondido. Toda a lógica da partida deve ser representada por blocos Python
 editáveis, com valores, condições, coleções, funções e chamadas Turtle normais.
@@ -23,9 +28,12 @@ originais evitam dependência dos GIFs/sons de terceiros. O Python emitido usa
 incluindo o módulo desktop e seus requisitos pelo exportador canônico.
 
 As duas entradas de galeria de cada jogo compartilham exatamente os mesmos fontes
-e assets, criando projetos Clássicos que começam em Blocos ou Código. Ambos
-permitem alternar para Ponte e para os outros modos. Os exemplos Pro existentes
-continuam disponíveis. A factory da galeria passa a respeitar kind/mode declarados,
+e assets: uma cria projeto Clássico em Blocos, com Ponte e fonte editável; a outra
+cria projeto Pro em Código. Isso respeita o contrato atual dos documentos:
+Clássico aceita Blocos/Ponte e Pro aceita Código. A promoção existente de Clássico
+para Pro continua disponível; não introduzir demotion ou novo formato para esses
+exemplos. Os exemplos Pro existentes continuam disponíveis. A factory da galeria
+passa a respeitar kind/mode declarados,
 sem modificar a oferta administrativa de Python, o padrão JavaScript, autorização
 de criação ou a escrita única após validação e autorização.
 
@@ -56,6 +64,21 @@ Se faltar representação de um construto, o ajuste será em um codec geral com
 semântica Python preservada, testes positivos/negativos e regressão existente.
 Nenhum ID de bloco ou autorização será acrescentado silenciosamente a uma release
 imutável. Uma alteração que exija nova aprovação de host será tratada explicitamente.
+
+O motor passa a oferecer `Shape("compound")` e `addcomponent`, incluindo reserva
+integral de itens e validação antes de alocar componentes. A extensão instalada
+continua `python-turtle@1.0.0`; a distribuição atual declara a feature geral
+`turtle-compound-shapes`, também na release. Distribuição/release devem concordar
+exatamente. Metadados atuais são explícitos e obrigatórios, sem preenchimento
+silencioso de dados antigos. Os blocos aparecem quando o perfil tem essa
+feature e a aprovação de autoria os autoriza; o exemplo que precisa dela recusa
+criação em perfil sem essa capacidade, inclusive no Pro.
+
+As entradas Clássicas também declaram os IDs de todos os blocos efetivamente
+necessários, gerados da qualificação e vinculados ao SHA da fonte. A criação
+confere a aprovação e a curadoria frescas do host antes de persistir; não presume
+que uma API executável esteja necessariamente disponível na paleta. Isso não
+bloqueia a apresentação Pro por falta de blocos nem altera exemplos antigos.
 
 Um qualificador reutilizável usa o analisador CPython pinado, exige zero nós opacos,
 passa pelo Blockly real, salva/reabre e compara a árvore semântica. Em seguida

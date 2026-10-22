@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { isPythonProject } from '../../core/editableProject'
-import { loadPythonAuthoring, pythonOfficialModules } from '../../python/blocks/authoring'
-import { selectPythonPalette } from '../../python/blocks/selection'
+import {
+  loadPythonAuthoring,
+  pythonOfficialModules,
+  selectCurrentPythonPalette,
+} from '../../python/blocks/authoring'
 import { resolvePythonLearningLevel } from '../../python/learning'
 import { useProjectStore } from '../../state/projectStore'
 import { useSettingsStore } from '../../state/settingsStore'
@@ -18,6 +21,7 @@ export function PythonClassicMode({ mode }: { mode: 'blocks' | 'bridge' }) {
 function PythonClassicProjectMode({ mode }: { mode: 'blocks' | 'bridge' }) {
   const project = useProjectStore((state) => state.project)
   const environment = useStudioRuntimeEnvironment()
+  const authority = environment?.authority?.getSnapshot()
   const { learning } = useStudioConfig()
   const revealed = useSettingsStore((state) => state.revealAdvanced)
   const python = project && isPythonProject(project) ? project : null
@@ -61,17 +65,17 @@ function PythonClassicProjectMode({ mode }: { mode: 'blocks' | 'bridge' }) {
     [officialNames],
   )
   const selection = useMemo(() => {
-    if (!owner?.value) return null
+    if (!owner?.value || !environment || !runtime) return null
+    const curation = authority ? authority.curation : learning
     try {
       return {
-        palette: selectPythonPalette({
-          ...owner.value,
+        palette: selectCurrentPythonPalette(owner.value, runtime, environment, {
           level:
-            learning.allowLevelReveal && revealed
+            curation?.allowLevelReveal && revealed
               ? 3
-              : resolvePythonLearningLevel(learning.pythonLevel),
-          allowBlocks: learning.allowBlocks,
-          allowCategories: learning.allowCategories,
+              : resolvePythonLearningLevel(curation?.pythonLevel),
+          allowBlocks: curation?.allowBlocks,
+          allowCategories: curation?.allowCategories,
         }),
       }
     } catch (error) {
@@ -82,7 +86,7 @@ function PythonClassicProjectMode({ mode }: { mode: 'blocks' | 'bridge' }) {
             : 'A seleção de blocos desta tarefa está indisponível.',
       }
     }
-  }, [owner?.value, learning, revealed])
+  }, [owner?.value, environment, runtime, authority, learning, revealed])
   if (python?.kind !== 'classic') return null
   const error = owner?.error ?? selection?.error
   const unavailable =

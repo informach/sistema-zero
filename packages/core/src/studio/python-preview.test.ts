@@ -105,6 +105,7 @@ async function fixture() {
     projectId: snapshot.projectId,
     revision: snapshot.revision,
     runtimeManifestSha256: 'a'.repeat(64),
+    previewHostAudioVersion: 1,
     url: `https://runtime.example/v1/python-previews/${manifest.id}/index.html`,
     sha256: await sha256Hex(canonicalJson(manifest)),
     expiresAt: manifest.expiresAt,
@@ -144,19 +145,16 @@ test('preview references bind revision, exact service route, distinct origins an
     expect(StudioPythonPreviewReferenceSchema.safeParse({ ...ref, url }).success).toBe(false)
 })
 
-test('historical preview reader preserves missing audio contract without inventing executable support', async () => {
+test('preview references require the current audio contract without defaults', async () => {
   const { ref } = await fixture()
-  expect(
-    Object.hasOwn(StudioPythonPreviewReferenceSchema.parse(ref), 'previewHostAudioVersion'),
-  ).toBe(false)
-  expect(
-    StudioPythonPreviewReferenceSchema.parse({ ...ref, previewHostAudioVersion: 1 })
-      .previewHostAudioVersion,
-  ).toBe(1)
-  for (const previewHostAudioVersion of [0, 2, '1', true])
+  expect(StudioPythonPreviewReferenceSchema.parse(ref).previewHostAudioVersion).toBe(1)
+  for (const previewHostAudioVersion of [undefined, null, 0, 2, '1', true])
     expect(
       StudioPythonPreviewReferenceSchema.safeParse({ ...ref, previewHostAudioVersion }).success,
     ).toBe(false)
+  const missing = { ...ref }
+  Reflect.deleteProperty(missing, 'previewHostAudioVersion')
+  expect(StudioPythonPreviewReferenceSchema.safeParse(missing).success).toBe(false)
 })
 
 test('preview accepts only exact generated paths and a portable nonoverlapping project tree', async () => {

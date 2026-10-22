@@ -31,6 +31,9 @@ async function fixture(label = 'immutable public fixture') {
   const distribution = StudioPythonDistributionSchema.parse({
     version: 1,
     pythonVersion: '3.14.2',
+    features: [],
+    providedModules: [],
+    previewHostAudioVersion: 1,
     pyodideVersion: '314.0.7',
     files: names.map((path) => ({ path, bytes: bytes.length, sha256 })),
   })

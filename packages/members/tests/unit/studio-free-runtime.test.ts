@@ -15,24 +15,36 @@ import {
   type StudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
+import { pythonCourseBlockClosure } from '@sistemazero/studio/python-course-unlocks'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import { providedPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { capturePythonProRevisionPayload } from '../../../studio/src/state/pythonProRevision'
 import { AuthorizeFreeRuntimeService } from '../../src/application/studio/authorize-free-runtime.service'
 import { FreeStudioAccessService } from '../../src/application/studio/free-studio-access.service'
 import { StudioPythonBuilderPolicy } from '../../src/application/studio-pro/python-builder-policy'
+import { GetStudioUnlocksService } from '../../src/application/studio-unlocks/get-studio-unlocks.service'
 import { KidsJourneyUnavailableError } from '../../src/domain/kids-journey/kids-journey.errors'
 import { createStudioAuthoringPolicy } from '../../src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../src/domain/studio/runtime-policy'
+import {
+  InMemoryGamificationRepository,
+  InMemoryStudioUnlockRepository,
+  silentLogger,
+} from '../fakes/in-memory'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
+
+const APPROVED_BLOCK_IDS = ['sz_py_pass', ...pythonCourseBlockClosure(['sz_py_print'])]
 
 async function setup(
   kind: 'classic' | 'pro' = 'classic',
   provided?: StudioRuntimeRelease,
   capabilities?: readonly StudioProjectCapability[],
+  blockIds: string[] = [...APPROVED_BLOCK_IDS],
 ) {
   const fixture = await authoringFixture('python', kind, capabilities)
+  fixture.configuration.releases[0]!.blockIds = blockIds
+  fixture.policy = await createStudioAuthoringPolicy(fixture.configuration)
   if (provided) {
     const runtime = {
       profileId: provided.profileId,
@@ -70,10 +82,25 @@ async function setup(
     owned: true,
     capabilities: ['studio'] as KidsCreatorCapability[],
     policyAvailable: true,
-    blocks: [SERVER_BLOCK_CATALOG[0]!.type],
+    blocks: ['sz_py_pass'],
     frozen: [] as string[],
     reads: [] as { port: string; id: string; audience?: string }[],
     now: 1_790_000_000_000,
+  }
+  const gamification = new InMemoryGamificationRepository()
+  gamification.listStudioUnlocksByCourse = async (id, audience) => {
+    state.reads.push({ port: 'palette', id, audience })
+    return [{ courseId: 'current', blocks: [...state.blocks] }]
+  }
+  const unlocks = new InMemoryStudioUnlockRepository()
+  unlocks.listGrants = async (id, audience) => {
+    state.reads.push({ port: 'frozen', id, audience })
+    return [{ courseId: 'current', blocks: [...state.frozen] }]
+  }
+  unlocks.freezeGrants = async (owner, audience, grants) => {
+    expect(owner).toEqual({ userId: actor.userId, accountId: actor.accountId })
+    expect(audience).toBe(actor.audience)
+    state.frozen = grants.flatMap(({ blocks }) => blocks)
   }
   const access = new FreeStudioAccessService(
     {
@@ -88,18 +115,7 @@ async function setup(
         }
       },
     },
-    {
-      async listStudioUnlocksByCourse(id, audience) {
-        state.reads.push({ port: 'palette', id, audience })
-        return [{ courseId: 'current', blocks: state.blocks }]
-      },
-    },
-    {
-      async listGrants(id, audience) {
-        state.reads.push({ port: 'frozen', id, audience })
-        return [{ courseId: 'old', blocks: state.frozen }]
-      },
-    },
+    new GetStudioUnlocksService(gamification, unlocks, silentLogger),
     {
       async get(owner) {
         state.reads.push({ port: 'journey', id: owner.userId, audience: 'kids' })
@@ -147,10 +163,80 @@ async function setup(
   return { ...fixture, actor, state, access, service, runtime, request }
 }
 
+test.each([
+  'classic',
+  'pro',
+] as const)('JavaScript-only achievements never authorize Python %s', async (kind) => {
+  const f = await setup(kind)
+  f.state.capabilities = ['studio', 'bridge', 'pro']
+  f.state.blocks = [SERVER_BLOCK_CATALOG[0]!.type]
+  const discovery = await f.service.options(f.actor)
+  expect(discovery.canCreatePython).toBe(false)
+  expect(discovery.catalog?.releases[0]?.blockIds).toEqual([])
+  expect(discovery.pythonGrantedExtensionIds).toEqual([])
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Python')
+})
+
+test('discovery and execution preserve frozen Python achievements without exposing unearned or unknown IDs', async () => {
+  const f = await setup()
+  f.state.blocks.push(SERVER_BLOCK_CATALOG[0]!.type, 'sz_py_unknown')
+  expect((await f.service.options(f.actor)).catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
+  f.state.blocks = []
+  const decision = await f.service.execute(f.actor, f.request)
+  expect(decision.blockIds).toEqual(['sz_py_pass'])
+  expect(f.policy.describe().releases[0]?.blockIds).toEqual(APPROVED_BLOCK_IDS)
+})
+
+test('removing release approval after discovery never recreates a grant from level three', async () => {
+  const f = await setup()
+  expect((await f.service.options(f.actor)).catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
+  f.configuration.releases[0]!.blockIds = ['sz_py_print']
+  const changed = new AuthorizeFreeRuntimeService(
+    f.access,
+    await createStudioRuntimePolicy(
+      f.configuration,
+      createStudioRuntimeHosts(f.configuration.catalog, [
+        { runtime: f.project.runtime, origin: 'https://runtime.example.test' },
+      ]),
+    ),
+    await createStudioAuthoringPolicy(f.configuration),
+  )
+  expect((await changed.options(f.actor)).catalog?.releases[0]?.blockIds).toEqual([])
+  await expect(changed.execute(f.actor, f.request)).rejects.toThrow('Python')
+})
+
+test('Turtle installation cannot grant itself; earned block owners gate discovery and runtime extensions', async () => {
+  const original = await authoringFixture('python', 'classic')
+  const release = await createStudioRuntimeRelease({
+    ...original.configuration.catalog.releases[0]!.manifest,
+    extensions: [{ id: 'python-turtle', versions: ['1.0.0'] }],
+  })
+  const turtle = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+  const f = await setup('classic', release, undefined, ['sz_py_pass', ...turtle])
+  f.request.subject.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
+  expect((await f.service.options(f.actor)).pythonGrantedExtensionIds).toEqual([])
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('extensão')
+  f.state.blocks = turtle
+  const options = await f.service.options(f.actor)
+  const decision = await f.service.execute(f.actor, f.request)
+  expect(options.pythonGrantedExtensionIds).toEqual(['python-turtle'])
+  expect(decision.grantedExtensionIds).toEqual(options.pythonGrantedExtensionIds)
+  const approval = options.catalog?.releases[0]
+  if (!approval) throw new Error('Expected the approved Python release')
+  expect(decision.blockIds).toEqual(approval.blockIds)
+  expect(decision.blockIds).toEqual(['sz_py_pass', ...turtle])
+  f.state.blocks = []
+  f.state.frozen = []
+  const staff = { ...f.actor, privileged: true }
+  expect((await f.service.options(staff)).pythonGrantedExtensionIds).toEqual(['python-turtle'])
+  expect((await f.service.execute(staff, f.request)).blockIds).toEqual(['sz_py_pass', ...turtle])
+})
+
 test('free Classic uses account ownership and profile achievement, without translating JS block IDs', async () => {
   const f = await setup()
   const before = structuredClone(f.project)
   const options = await f.service.options(f.actor)
+  expect(options.canCreatePython).toBe(true)
   expect(options.canCreatePro).toBe(false)
   expect(options.pythonCuration).toEqual({
     pythonLevel: 3,
@@ -163,7 +249,9 @@ test('free Classic uses account ownership and profile achievement, without trans
   expect(decision.context).toEqual(f.request.context)
   expect(decision.subjectSha256).toBe(await sha256Hex(canonicalJson(f.request.subject)))
   expect(decision.revision).toBe(f.request.revision)
-  expect(decision.blockIds).toEqual(['py_print'])
+  expect(decision.blockIds).toEqual(['sz_py_pass'])
+  expect(options.catalog?.releases[0]?.blockIds).toEqual(decision.blockIds)
+  expect(options.pythonGrantedExtensionIds).toEqual([])
   expect(decision.capabilities).toEqual(['edit', 'execute', 'publish', 'export-source', 'assist'])
   expect(decision.expiresAt - decision.issuedAt).toBe(30_000)
   expect(
@@ -212,8 +300,9 @@ test('each operation rechecks product, persisted capabilities and known current 
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('nível')
   f.state.capabilities = ['studio']
   f.state.blocks = ['unknown-js', 'py_print']
+  f.state.frozen = []
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('curso')
-  f.state.frozen = [SERVER_BLOCK_CATALOG[0]!.type]
+  f.state.frozen = ['sz_py_pass']
   expect((await f.service.execute(f.actor, f.request)).operation).toBe('execute')
 })
 
@@ -223,6 +312,47 @@ test('free Pro keeps its own capability gate and does not inherit contextual Pro
   f.state.capabilities = ['studio', 'bridge', 'pro']
   expect((await f.service.options(f.actor)).canCreatePro).toBe(true)
   expect((await f.service.execute(f.actor, f.request)).curation.allowedModes).toEqual(['code'])
+})
+
+test('Python course eligibility also admits a Pro code-only release without granting Classic tools', async () => {
+  const f = await setup('pro', undefined, undefined, [])
+  f.state.capabilities = ['studio', 'pro']
+  const options = await f.service.options(f.actor)
+  expect(options.canCreatePython).toBe(true)
+  expect(options.catalog?.releases[0]?.blockIds).toEqual([])
+  expect((await f.service.execute(f.actor, f.request)).blockIds).toEqual([])
+  const classic = await setup('classic', undefined, undefined, [])
+  expect((await classic.service.options(classic.actor)).canCreatePython).toBe(true)
+  await expect(classic.service.execute(classic.actor, classic.request)).rejects.toThrow('Python')
+})
+
+test('Classic refuses an approved intersection missing dependencies without expanding its grants', async () => {
+  const f = await setup('classic', undefined, undefined, ['sz_py_print'])
+  f.state.blocks = pythonCourseBlockClosure(['sz_py_print'])
+  const options = await f.service.options(f.actor)
+  expect(options.catalog?.releases[0]?.blockIds).toEqual(['sz_py_print'])
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Python')
+  await expect(f.service.execute({ ...f.actor, privileged: true }, f.request)).rejects.toThrow(
+    'Python',
+  )
+})
+
+test('a Pro code-only profile retains earned extension owners without a Classic palette', async () => {
+  const original = await authoringFixture('python', 'pro')
+  const release = await createStudioRuntimeRelease({
+    ...original.configuration.catalog.releases[0]!.manifest,
+    extensions: [{ id: 'python-turtle', versions: ['1.0.0'] }],
+  })
+  const f = await setup('pro', release, undefined, [])
+  f.state.capabilities = ['studio', 'pro']
+  f.state.blocks = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+  f.request.subject.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
+  const options = await f.service.options(f.actor)
+  expect(options.pythonGrantedExtensionIds).toEqual(['python-turtle'])
+  expect(options.catalog?.releases[0]?.blockIds).toEqual([])
+  const decision = await f.service.execute(f.actor, f.request)
+  expect(decision.grantedExtensionIds).toEqual(['python-turtle'])
+  expect(decision.blockIds).toEqual([])
 })
 
 test('builder Python shares fresh Complete Studio product/Pro capability/catalog policy for analysis and execution', async () => {
@@ -235,11 +365,11 @@ test('builder Python shares fresh Complete Studio product/Pro capability/catalog
     signal = new AbortController().signal
   expect(
     await policy.execute(f.actor, prepared.base, prepared.metadata, 'analyze', signal),
-  ).toEqual({})
+  ).toEqual({ runtimeRelease: f.configuration.catalog.releases[0]! })
   await policy.execute(f.actor, prepared.base, prepared.metadata, 'execute', signal)
   expect(f.state.reads.filter(({ port }) => port === 'product')).toHaveLength(2)
   expect(f.state.reads.filter(({ port }) => port === 'journey')).toHaveLength(2)
-  expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
+  expect(f.state.reads.filter(({ port }) => port === 'palette')).toHaveLength(2)
   f.state.owned = false
   await expect(
     policy.execute(f.actor, prepared.base, prepared.metadata, 'execute', signal),
@@ -319,6 +449,8 @@ test('active staff bypasses achievement gates, while support cannot execute even
   const f = await setup('pro')
   f.state.owned = false
   const staff = { ...f.actor, userId: f.actor.accountId, privileged: true }
+  expect((await f.service.options(staff)).canCreatePython).toBe(true)
+  f.state.reads.length = 0
   expect((await f.service.execute(staff, f.request)).projectId).toBe(f.project.id)
   expect(f.state.reads.map(({ port }) => port)).toEqual(['staff-preview'])
   await expect(f.service.execute({ ...staff, readOnly: true }, f.request)).rejects.toThrow(
@@ -336,12 +468,13 @@ test('active staff bypasses achievement gates, while support cannot execute even
   )
 })
 
-test('resuming an eligible Pro retains its existing gate even without a known curriculum palette', async () => {
+test('Python Pro requires earned Python tools while the existing JavaScript Pro gate is preserved', async () => {
   const f = await setup('pro')
   f.state.capabilities = ['studio', 'bridge', 'pro']
   f.state.blocks = ['removed-legacy-block']
-  expect((await f.service.execute(f.actor, f.request)).projectId).toBe(f.project.id)
+  expect((await f.access.execute(f.actor, 'existing-pro')).pro).toBe(true)
   expect(f.state.reads.some(({ port }) => port === 'palette' || port === 'frozen')).toBe(false)
+  await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('curso')
   await expect(f.service.options(f.actor)).rejects.toThrow('curso')
   f.state.capabilities = ['studio']
   await expect(f.service.execute(f.actor, f.request)).rejects.toThrow('Pro')

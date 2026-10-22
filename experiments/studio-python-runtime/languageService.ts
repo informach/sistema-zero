@@ -70,6 +70,7 @@ export function createEditorLanguageProbe() {
         if (sessions.get(id) !== session)
           return Response.json({ error: 'expired' }, { status: 410 })
         session.language ??= new PythonLanguageSession({
+          providedModules: [],
           root,
           serverPath: createRequire(
             resolve(import.meta.dirname, '../../packages/studio-language-service/package.json'),

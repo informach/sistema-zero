@@ -1,3 +1,4 @@
+import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
 import type { PythonNode } from '../language/types'
 
 export const PYTHON_CATEGORIES = [
@@ -52,6 +53,8 @@ export interface PythonBlockCodec {
   help: string
   api: string
   dependencies?: readonly string[]
+  /** API availability is release-owned; an installed extension alone cannot add engine support. */
+  requiredRuntimeFeatures?: readonly StudioPythonRuntimeFeature[]
   /** Extension-owned first palette; does not bypass host approval or installation. */
   starter?: boolean
   /** A specialized label is valid only when this root resolves to the official binding. */
@@ -78,5 +81,5 @@ export interface PythonBlockBinding {
   root: string
   module?: string
   member?: string
-  instance?: 'Turtle' | 'Screen'
+  instance?: 'Turtle' | 'Screen' | 'Shape'
 }

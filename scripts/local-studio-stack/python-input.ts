@@ -8,7 +8,7 @@ import { verifyPythonDistributionFiles } from '../../packages/studio-runtime/scr
 import { assertLocalStackIsolation, ROOT } from './isolation.mjs'
 
 export const DEFAULT_PLAN_RELATIVE =
-  'docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json'
+  'docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json'
 export const RUNTIME_ORIGIN = 'http://127.0.0.1:8791'
 
 export function option(name: string, args = process.argv.slice(2)) {
@@ -33,7 +33,7 @@ export async function readLocalPythonInput(
   }
   try {
     const text = fs.readFileSync(planFile, 'utf8')
-    raw = JSON.parse(text.slice(text.indexOf('{')))
+    raw = JSON.parse(text)
   } catch {
     throw new Error(
       `Plano Python local ausente ou inválido: ${planFile}. Informe --plan <arquivo>.`,
@@ -62,7 +62,7 @@ export async function readLocalPythonInput(
       { cause: error },
     )
   }
-  // The historical plan's hosted URLs and machine-specific input directory are never used.
+  // Local execution uses its own origin and verified artifact directory.
   return {
     planFile,
     distribution,

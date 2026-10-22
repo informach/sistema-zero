@@ -159,9 +159,8 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
       python: {
         version: distribution.pythonVersion,
         packages: [],
-        ...(distribution.providedModules === undefined
-          ? {}
-          : { providedModules: distribution.providedModules }),
+        providedModules: distribution.providedModules,
+        features: distribution.features,
       },
     }),
   )
@@ -204,7 +203,13 @@ export async function preparePythonPromotion(raw: unknown, baseDirectory = proce
     (entry) => entry.runtime.manifestSha256 === release.manifestSha256,
   )
   const status = existingPolicy?.status ?? existingDeployment?.status ?? 'active'
-  const catalog = describePythonCatalog([...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS])
+  // Approval follows these immutable bytes, not every codec in the current editor.
+  const codecs = [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].filter((codec) =>
+    (codec.requiredRuntimeFeatures ?? []).every((feature) =>
+      distribution.features.includes(feature),
+    ),
+  )
+  const catalog = describePythonCatalog(codecs)
   const policy = {
     runtime,
     status,

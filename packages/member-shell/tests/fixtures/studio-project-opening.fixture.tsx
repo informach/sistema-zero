@@ -4,9 +4,12 @@ import type {
   EditableStudioProject,
   StudioEditorProps,
   StudioPersistenceAdapter,
+  StudioRuntimeEnvironment,
 } from '@sistemazero/studio'
 import { createEmptyProject } from '../../../studio/src/core/project'
+import { createStudioRuntimeAuthority } from '../../../studio/src/runtime/authority'
 import { documentFixture } from '../../../studio/src/state/fixtures/projectDocuments'
+import { pythonEnvironmentFixture } from '../../../studio/src/state/fixtures/pythonEnvironment'
 import { beginProjectOpening, isProjectOpening } from '../../../studio/src/state/projectOpening'
 import { refinePythonProjectDocument } from '../../../studio/src/state/pythonProjectValidation'
 import type { StudioTier } from '../../src/lib/studio-tier'
@@ -49,6 +52,7 @@ async function waitFor(assertion: () => void) {
 }
 let namespace = 'host-opening'
 let editorProps: StudioEditorProps | undefined
+let runtimeEnvironment: StudioRuntimeEnvironment | undefined
 const loads: Array<{
   scope: string
   id: string
@@ -84,7 +88,7 @@ mock.module('@sistemazero/studio', () => ({
   },
 }))
 mock.module('../../src/components/studio/use-free-runtime', () => ({
-  useFreeStudioRuntime: () => ({ loading: false, error: null }),
+  useFreeStudioRuntime: () => ({ loading: false, error: null, environment: runtimeEnvironment }),
 }))
 mock.module('../../src/components/creator/focus-mode', () => ({
   useFocusMode: () => ({ setWorkspaceActive: () => {} }),
@@ -161,6 +165,8 @@ async function project(kind: 'classic' | 'pro', language: 'javascript' | 'python
 beforeEach(() => {
   namespace = 'host-opening'
   editorProps = undefined
+  runtimeEnvironment = undefined
+  delete tier.allowBlocks
   loads.length = 0
   acquired.length = 0
 })
@@ -176,13 +182,47 @@ for (const kind of ['classic', 'pro'] as const)
   for (const language of ['javascript', 'python'] as const) {
     test(`${kind}/${language}: host owns read and React handoff until the matching Core settlement`, async () => {
       const value = await project(kind, language)
-      render(ui(kind, value.id))
+      if (kind === 'classic' && language === 'javascript') tier.allowBlocks = []
+      const view = render(ui(kind, value.id))
       await waitFor(() => expect(loads.length).toBe(1))
       expect(isProjectOpening({ identity: namespace }, value.id)).toBe(true)
       await act(async () => loads[0]?.gate.resolve(value))
       await waitFor(() => expect(editorProps?.initialProject.id).toBe(value.id))
       expect(isProjectOpening({ identity: namespace }, value.id)).toBe(true)
       expect(typeof editorProps?.persistence).toBe('object')
+      if (kind === 'classic' && language === 'python') {
+        expect(editorProps?.allowExtensions).toEqual([])
+        expect(editorProps?.allowBlocks).toBeUndefined()
+        expect(editorProps?.grantedBlockIds).toBeUndefined()
+        const fixture = await pythonEnvironmentFixture('classic')
+        runtimeEnvironment = fixture.environment
+        view.rerender(ui(kind, value.id))
+        expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+        runtimeEnvironment = {
+          ...fixture.environment,
+          access: (project) => ({
+            ...fixture.environment.access(project),
+            grantedExtensionIds: [],
+          }),
+        }
+        view.rerender(ui(kind, value.id))
+        expect(editorProps?.allowExtensions).toEqual([])
+      } else if (kind === 'classic') {
+        expect(editorProps?.allowExtensions).toEqual(tier.allowedExtensions)
+        expect(editorProps?.allowBlocks).toBeUndefined()
+        expect(editorProps?.grantedBlockIds).toEqual([])
+        tier.allowBlocks = ['sz_js_if_else']
+        view.rerender(ui(kind, value.id))
+        expect(editorProps?.allowBlocks).toBeUndefined()
+        expect(editorProps?.grantedBlockIds).toEqual(['sz_js_if_else'])
+        tier.allowBlocks = ['sz_js_if_else', 'sz_val_number']
+        view.rerender(ui(kind, value.id))
+        expect(editorProps?.allowBlocks).toBeUndefined()
+        expect(editorProps?.grantedBlockIds).toEqual(['sz_js_if_else', 'sz_val_number'])
+        tier.allowBlocks = []
+        view.rerender(ui(kind, value.id))
+        expect(editorProps?.grantedBlockIds).toEqual([])
+      }
       editorProps?.onProjectOpeningSettled?.({ projectId: value.id, status: 'ready' })
       expect(isProjectOpening({ identity: namespace }, value.id)).toBe(false)
     })
@@ -257,4 +297,42 @@ test('Pro profile replacement cancels the captured namespace without releasing t
   await act(async () => loads[0]?.gate.resolve(value))
   editorProps?.onProjectOpeningSettled?.({ projectId: value.id, status: 'ready' })
   expect(isProjectOpening({ identity: namespace }, value.id)).toBe(false)
+})
+
+test('Full editor observes authority in the same environment without reopening its document', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  const initial = {
+    available: true,
+    pythonAuthoring: [],
+    grantedExtensionIds: ['python-turtle'],
+    capabilities: ['edit' as const],
+    releaseStatus: 'active' as const,
+    curation: null,
+  }
+  const authority = createStudioRuntimeAuthority(initial)
+  const environment = {
+    ...fixture.environment,
+    authority: authority.authority,
+    access: () => ({
+      ...fixture.environment.access(fixture.project),
+      grantedExtensionIds: [...authority.authority.getSnapshot().grantedExtensionIds],
+    }),
+  }
+  runtimeEnvironment = environment
+  render(ui('classic', fixture.project.id))
+  await waitFor(() => expect(loads.length).toBe(1))
+  await act(async () => loads[0]?.gate.resolve(fixture.project))
+  expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+  const first = editorProps
+  await act(async () => authority.update({ ...initial }))
+  expect(editorProps).toBe(first)
+  await act(async () => authority.update({ ...initial, grantedExtensionIds: [] }))
+  expect(editorProps?.allowExtensions).toEqual([])
+  expect(editorProps?.initialProject).toBe(fixture.project)
+  expect(editorProps?.runtimeEnvironment).toBe(environment)
+  expect(loads).toHaveLength(1)
+  await act(async () => authority.update(initial))
+  expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+  expect(editorProps?.initialProject).toBe(fixture.project)
+  expect(loads).toHaveLength(1)
 })

@@ -15,7 +15,10 @@ import {
   createStudioRuntimeRelease,
   type StudioRuntimeRelease,
 } from '@sistemazero/core/studio/runtime-catalog'
-import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
+import {
+  currentPythonRelease,
+  providedPythonRelease,
+} from '../../core/tests/fixtures/python-provided-release'
 
 mock.module('server-only', () => ({}))
 const {
@@ -25,18 +28,18 @@ const {
   studioBuilderSystem,
 } = await import('../src/server/studio-builder-tools')
 type Answer = import('../src/server/studio-builder-tools').StudioBuilderAnswer
+const currentRelease = await currentPythonRelease()
+const currentPolicy = { runtimeRelease: currentRelease }
 
 async function fixture(
   extra: Record<string, string> = {},
-  release?: StudioRuntimeRelease,
+  release: StudioRuntimeRelease = currentRelease,
 ): Promise<StudioProBuilderJob> {
-  const runtime = release
-    ? {
-        profileId: release.profileId,
-        releaseId: release.releaseId,
-        manifestSha256: release.manifestSha256,
-      }
-    : { profileId: 'python-test', releaseId: 'test-1', manifestSha256: 'a'.repeat(64) }
+  const runtime = {
+    profileId: release.profileId,
+    releaseId: release.releaseId,
+    manifestSha256: release.manifestSha256,
+  }
   const base = await createStudioProRevision({
     version: 2,
     projectId: 'python-builder',
@@ -283,12 +286,12 @@ test('an approved reference exceeding the existing context budget fails without 
 
 test('Python builder context and dependencies use the pinned revision without JavaScript recipes or grants', async () => {
   const job = await fixture()
-  const prompt = studioBuilderSystem(job.base, {})
+  const prompt = studioBuilderSystem(job.base, currentPolicy)
   expect(prompt).toContain('modo Pro Python')
   expect(prompt).toContain('CPython do perfil')
   expect(prompt).toContain('não estão disponíveis neste ambiente Python')
   expect(prompt).not.toContain('edite somente package.json')
-  const context = await prepareStudioBuilderContext(job, {})
+  const context = await prepareStudioBuilderContext(job, currentPolicy)
   expect(context.programmingLanguage).toBe('python')
   expect(context.environment).toMatchObject({
     entrypoint: 'src/main.py',
@@ -304,7 +307,7 @@ test('Python builder context and dependencies use the pinned revision without Ja
       action: 'inspect',
       inspections: [{ tool: 'dependencies', path: null, query: null, startLine: null }],
     },
-    {},
+    currentPolicy,
   )
   expect(note).toContain('requirements')
   expect(note).not.toContain('package.json')
@@ -357,7 +360,9 @@ for (const path of ['requirements.txt', 'package.json', 'package-lock.json'])
 test('Python private source is neither exposed nor edited by builder tools', async () => {
   const source = 'api_key: str = """private\nkey"""\n'
   const job = await fixture({ 'src/private.py': source })
-  expect(JSON.stringify(await prepareStudioBuilderContext(job, {}))).not.toContain('private\\nkey')
+  expect(JSON.stringify(await prepareStudioBuilderContext(job, currentPolicy))).not.toContain(
+    'private\\nkey',
+  )
   const note = await inspectStudioBuilder(
     job,
     {
@@ -365,7 +370,7 @@ test('Python private source is neither exposed nor edited by builder tools', asy
       action: 'inspect',
       inspections: [{ tool: 'read', path: 'src/private.py', startLine: 1, query: null }],
     },
-    {},
+    currentPolicy,
   )
   expect(note).toContain('protegido')
   await expect(
@@ -394,7 +399,7 @@ for (const path of [
   test(`builder respects the shared sensitive-path policy for ${path}`, async () => {
     const source = 'values = ["family-private-builder-marker"]\n'
     const job = await fixture({ [path]: source })
-    expect(JSON.stringify(await prepareStudioBuilderContext(job, {}))).not.toContain(
+    expect(JSON.stringify(await prepareStudioBuilderContext(job, currentPolicy))).not.toContain(
       'family-private-builder-marker',
     )
     const note = await inspectStudioBuilder(
@@ -404,7 +409,7 @@ for (const path of [
         action: 'inspect',
         inspections: [{ tool: 'read', path, startLine: 1, query: null }],
       },
-      {},
+      currentPolicy,
     )
     expect(note).not.toContain('family-private-builder-marker')
     expect(note).toContain('protegido')
@@ -442,7 +447,7 @@ for (const path of [
           { tool: 'search', path, query: 'marker', startLine: null },
         ],
       },
-      {},
+      currentPolicy,
     )
     expect(note).toContain('marker = 42')
     expect(note).toContain(await studioProDigest(job.base.files[path]!))
@@ -454,7 +459,7 @@ for (const path of [
           action: 'inspect',
           inspections: [{ tool: 'read', path: '../escape.py', query: null, startLine: 1 }],
         },
-        {},
+        currentPolicy,
       ),
     ).rejects.toThrow('Caminho de consulta inválido')
   })

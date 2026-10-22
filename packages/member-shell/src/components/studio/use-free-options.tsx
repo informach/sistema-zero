@@ -4,6 +4,7 @@ import type { prepareStudioFreeOptions } from '@sistemazero/studio/free-project-
 import type { PythonProjectDocument } from '@sistemazero/studio/python-project-validation'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { apiGet, apiSend } from '../../lib/api'
+import type { PythonCopyAuthoringRequirements } from '../../lib/studio-python-remix'
 
 type Prepared = Awaited<ReturnType<typeof prepareStudioFreeOptions>>
 
@@ -74,7 +75,12 @@ export function useFreeStudioOptions(
   )
   const current = state?.owner === owner ? state : null
   const authorizeExample = useCallback(
-    async (project: PythonProjectDocument, signal: AbortSignal) => {
+    async (
+      project: PythonProjectDocument,
+      signal: AbortSignal,
+      requirements?: PythonCopyAuthoringRequirements,
+    ) => {
+      const authoringRequirements = requirements && structuredClone(requirements)
       const active = authority.current
       if (!owner.viewerId || currentOwner.current !== owner || active?.owner !== owner)
         throw new Error('O perfil mudou. Reabra a criação do projeto.')
@@ -92,6 +98,7 @@ export function useFreeStudioOptions(
         audience: owner.audience,
         options: prepared.options,
         signal: lifetime,
+        authoringRequirements,
         request: (request) =>
           apiSend('/api/studio/free-runtime', 'POST', request, undefined, { signal: lifetime }),
       })

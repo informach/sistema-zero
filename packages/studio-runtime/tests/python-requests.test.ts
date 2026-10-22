@@ -17,9 +17,7 @@ import {
 import { pythonDistributionFixture } from './python-distribution-fixture'
 import { pythonInputFixture } from './python-input-fixture'
 
-async function fixture(
-  fixtureOptions: { playtest?: boolean; standalone?: boolean; hostAudio?: boolean } = {},
-) {
+async function fixture(fixtureOptions: { playtest?: boolean; standalone?: boolean } = {}) {
   const f = await pythonInputFixture()
   const runtime = await pythonDistributionFixture(fixtureOptions)
   await runtime.store()
@@ -212,14 +210,19 @@ test('validation checks configuration, release and input generation before start
         for (const key of x.runtime.objects.keys())
           if (key.endsWith('/complete.json')) x.runtime.objects.delete(key)
     })
-    const response = await x.send('validate', { version: 1, input: reference, recipe: x.recipe })
+    const response = await x.send('validate', {
+      version: 1,
+      input: reference,
+      structure: false,
+      recipe: x.recipe,
+    })
     expect(response.status).toBe(withdraw === 'input' ? 410 : 409)
     expect(x.counts()).toEqual({ created: 1, destroyed: 1, executed: 1 })
   }
 })
 
 test('protected preview is generated only after both phases and confirmed sandbox destruction', async () => {
-  const x = await fixture({ playtest: true, standalone: true, hostAudio: true })
+  const x = await fixture({ playtest: true, standalone: true })
   const preview = await pythonInputFixture()
   const put = preview.bucket.put.bind(preview.bucket)
   preview.bucket.put = async (...args) => {
@@ -236,6 +239,7 @@ test('protected preview is generated only after both phases and confirmed sandbo
   const response = await x.send('validate', {
     version: 1,
     input: reference,
+    structure: false,
     recipe: x.recipe,
     preview: { parentOrigin: 'https://app.example' },
   })
@@ -248,59 +252,6 @@ test('protected preview is generated only after both phases and confirmed sandbo
   expect([...preview.objects.keys()].some((key) => key.endsWith('/complete.json'))).toBe(true)
 })
 
-test('legacy preview environments return unavailable before Sandbox or job without changing authored input', async () => {
-  for (const delegated of [false, true]) {
-    const x = await fixture({ playtest: true, standalone: true })
-    const preview = await pythonInputFixture()
-    x.options.preview = {
-      bucket: preview.bucket,
-      serviceOrigin: 'https://runtime.example',
-      validation: { profileVersion: 1, runtimeFingerprint: 'e'.repeat(64) },
-    }
-    const reference = await x.open()
-    expect((await x.upload(reference)).status).toBe(200)
-    const originalRequest = structuredClone(x.request)
-    const originalObjects = structuredClone(x.f.objects)
-    let jobs = 0
-    const retired: unknown[] = []
-    if (delegated)
-      x.options.jobs = {
-        async inspect() {
-          jobs++
-          throw new Error('Legacy environment cannot start inspection')
-        },
-        async validate() {
-          jobs++
-          throw new Error('Legacy environment cannot start validation')
-        },
-        async cancel() {
-          throw new Error('No job was started')
-        },
-        async discardPreview(owner) {
-          retired.push(owner)
-          return { retired: true, cleanupConfirmed: true }
-        },
-      }
-    const response = await x.send('validate', {
-      version: 1,
-      input: reference,
-      recipe: x.recipe,
-      preview: { parentOrigin: 'https://app.example' },
-    })
-    expect(response.status).toBe(503)
-    expect(await response.json()).toEqual({ ok: false, code: 'PYTHON_PREVIEW_UNAVAILABLE' })
-    expect(x.counts()).toEqual({ created: 0, destroyed: 0, executed: 0 })
-    expect(jobs).toBe(0)
-    expect(retired).toEqual(delegated ? [reference] : [])
-    expect(x.request).toEqual(originalRequest)
-    expect(x.f.objects).toEqual(originalObjects)
-    expect(preview.objects.size).toBe(0)
-    expect((await x.store.resolve(reference, new AbortController().signal)).snapshot).toEqual(
-      originalRequest.snapshot,
-    )
-  }
-})
-
 test('unconfigured or unapproved previews fail before creating a sandbox', async () => {
   const x = await fixture({ playtest: true, standalone: true })
   const reference = await x.open()
@@ -308,6 +259,7 @@ test('unconfigured or unapproved previews fail before creating a sandbox', async
   const request = {
     version: 1,
     input: reference,
+    structure: false,
     recipe: x.recipe,
     preview: { parentOrigin: 'https://app.example' },
   }
@@ -323,37 +275,64 @@ test('unconfigured or unapproved previews fail before creating a sandbox', async
   expect(x.counts().created).toBe(0)
 })
 
-test('validation rechecks a delegated complete report and requires a capable coordinator', async () => {
+test('validation delegates its exact request and rechecks the complete report', async () => {
   const x = await fixture({ playtest: true })
   const reference = await x.open()
   expect((await x.upload(reference)).status).toBe(200)
-  const operation = { version: 1, input: reference, recipe: x.recipe }
+  const operation = { version: 1, input: reference, structure: false, recipe: x.recipe }
+  const seen: unknown[] = []
   x.options.jobs = {
     async inspect() {
       throw new Error('Validation cannot delegate to compile-only admission')
+    },
+    async validate(raw) {
+      seen.push(raw)
+      return {
+        status: 200,
+        body: {
+          report: {
+            version: 1,
+            projectId: x.request.snapshot.projectId,
+            recipe: x.recipe,
+            status: 'passed',
+            inspection: x.report,
+            execution: x.execution,
+          },
+        },
+      }
+    },
+    async discardPreview() {
+      throw new Error('Validation without a preview must not discard a preview')
     },
     async cancel() {
       return { retired: true, cleanupConfirmed: true }
     },
   }
-  expect((await x.send('validate', operation)).status).toBe(503)
-  x.options.jobs.validate = async () => ({
-    status: 200,
-    body: {
-      report: {
-        version: 1,
-        projectId: x.request.snapshot.projectId,
-        recipe: x.recipe,
-        status: 'passed',
-        inspection: x.report,
-        execution: x.execution,
-      },
-    },
-  })
   expect((await x.send('validate', operation)).status).toBe(200)
+  expect(seen).toEqual([operation])
   x.execution.revision = 'f'.repeat(64)
   expect((await x.send('validate', operation)).status).toBe(500)
+  expect(seen).toEqual([operation, operation])
   expect(x.counts().created).toBe(0)
+})
+
+test('inspect and validate refuse bare references and omitted modes before admitting any job', async () => {
+  const x = await fixture({ playtest: true })
+  const reference = await x.open()
+  expect((await x.upload(reference)).status).toBe(200)
+  const original = structuredClone(x.request)
+  for (const operation of ['inspect', 'validate']) {
+    const recipe = operation === 'validate' ? { recipe: x.recipe } : {}
+    for (const body of [
+      reference,
+      { version: 1, input: reference, ...recipe },
+      { version: 1, input: reference, structure: 'false', ...recipe },
+      { version: 1, input: reference, structure: false, extra: true, ...recipe },
+    ])
+      expect((await x.send(operation, body)).status).toBe(400)
+  }
+  expect(x.counts()).toEqual({ created: 0, destroyed: 0, executed: 0 })
+  expect(x.request).toEqual(original)
 })
 
 test('private Python protocol opens idempotently, streams original bytes and inspects only the captured revision', async () => {
@@ -362,7 +341,7 @@ test('private Python protocol opens idempotently, streams original bytes and ins
   expect(await x.open()).toEqual(reference)
   expect(x.counts().created).toBe(0)
   expect((await x.upload(reference)).status).toBe(200)
-  const response = await x.send('inspect', reference)
+  const response = await x.send('inspect', { version: 1, input: reference, structure: false })
   expect(response.status).toBe(200)
   const body: unknown = await response.json()
   expect(body).toEqual({ ok: true, report: x.report })
@@ -373,7 +352,9 @@ test('private Python protocol opens idempotently, streams original bytes and ins
   expect(x.limits.every((limit) => limit.owner === x.request.owner)).toBe(true)
   expect(x.limits.map((limit) => limit.operation)).toEqual(['job', 'job', 'transfer', 'job'])
   expect((await x.send('inputs/remove', reference)).status).toBe(200)
-  expect((await x.send('inspect', reference)).status).toBe(410)
+  expect((await x.send('inspect', { version: 1, input: reference, structure: false })).status).toBe(
+    410,
+  )
 })
 
 test('registry resolves exact configured identity, returns copies and reflects revocation', async () => {
@@ -459,7 +440,7 @@ for (const retirement of ['configuration', 'runtime', 'input'] as const) {
       else if (retirement === 'runtime') x.setStatus('revoked')
       else await x.store.remove(reference, new AbortController().signal)
     })
-    const response = await x.send('inspect', reference)
+    const response = await x.send('inspect', { version: 1, input: reference, structure: false })
     expect(response.status).toBe(retirement === 'input' ? 410 : 409)
     expect(await response.json()).not.toHaveProperty('report')
     expect(x.counts()).toEqual({ created: 1, destroyed: 1, executed: 1 })
@@ -470,9 +451,19 @@ test('an incomplete input cannot execute code and forged references cannot start
   const x = await fixture()
   const reference = await x.open()
   // The coordinator owns and destroys its sandbox if a registered source is missing.
-  expect((await x.send('inspect', { ...reference, projectId: 'other-project' })).status).toBe(409)
+  expect(
+    (
+      await x.send('inspect', {
+        version: 1,
+        input: { ...reference, projectId: 'other-project' },
+        structure: false,
+      })
+    ).status,
+  ).toBe(409)
   expect(x.counts().created).toBe(0)
-  expect((await x.send('inspect', reference)).status).toBe(409)
+  expect((await x.send('inspect', { version: 1, input: reference, structure: false })).status).toBe(
+    409,
+  )
   expect(x.counts()).toEqual({ created: 1, destroyed: 1, executed: 0 })
 })
 
@@ -493,7 +484,7 @@ test('input closure during the final runtime marker check rejects a late report'
     }
     return get(key)
   }
-  const response = await x.send('inspect', reference)
+  const response = await x.send('inspect', { version: 1, input: reference, structure: false })
   expect(closed).toBe(true)
   expect(response.status).toBe(410)
   expect(await response.json()).not.toHaveProperty('report')
@@ -510,19 +501,25 @@ test('ingress delegates inspection without creating an unowned sandbox and reval
       seen.push(raw)
       return { status: 200, body: { ok: true, report: x.report } }
     },
+    async validate() {
+      throw new Error('Inspection must not validate')
+    },
+    async discardPreview() {
+      throw new Error('Inspection must not discard a preview')
+    },
     async cancel() {
       return { retired: true, cleanupConfirmed: true }
     },
   }
   x.options.jobs = jobs
-  const response = await x.send('inspect', reference)
+  const response = await x.send('inspect', { version: 1, input: reference, structure: false })
   expect(response.status).toBe(200)
   const body: unknown = await response.json()
   expect(body).toEqual({ ok: true, report: x.report })
-  expect(seen).toEqual([reference])
+  expect(seen).toEqual([{ version: 1, input: reference, structure: false }])
   expect(x.counts()).toEqual({ created: 0, destroyed: 0, executed: 0 })
   x.report.revision = 'f'.repeat(64)
-  const stale = await x.send('inspect', reference)
+  const stale = await x.send('inspect', { version: 1, input: reference, structure: false })
   expect(stale.status).toBe(500)
   expect(await stale.json()).not.toHaveProperty('report')
 })
@@ -535,6 +532,12 @@ test('ingress cancels owned execution before closing its input and does not ackn
   x.options.jobs = {
     async inspect() {
       throw new Error('Removal must not inspect')
+    },
+    async validate() {
+      throw new Error('Removal must not validate')
+    },
+    async discardPreview() {
+      throw new Error('Input removal must cancel the complete job')
     },
     async cancel(raw) {
       calls++
@@ -560,11 +563,17 @@ test('ingress refuses a delegated report when its input is closed during the job
       await x.store.remove(reference, new AbortController().signal)
       return { status: 200, body: { ok: true, report: x.report } }
     },
+    async validate() {
+      throw new Error('Inspection must not validate')
+    },
+    async discardPreview() {
+      throw new Error('Inspection must not discard a preview')
+    },
     async cancel() {
       return { retired: true, cleanupConfirmed: true }
     },
   }
-  const response = await x.send('inspect', reference)
+  const response = await x.send('inspect', { version: 1, input: reference, structure: false })
   expect(response.status).toBe(410)
   expect(await response.json()).not.toHaveProperty('report')
   expect(x.counts().created).toBe(0)

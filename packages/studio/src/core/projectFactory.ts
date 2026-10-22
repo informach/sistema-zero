@@ -1,4 +1,5 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import type { StudioProjectCuration } from '@sistemazero/core/studio/project-capabilities'
 import {
   type StudioProjectDocument,
   StudioProjectDocumentSchema,
@@ -58,6 +59,11 @@ export interface StudioProjectFactoryContext {
   catalog: StudioRuntimeCatalog
   runtime: StudioRuntimeSelection
   releaseStatus: StudioRuntimeReleaseStatus
+  /** Fresh host authoring metadata, never inferred from the example or project. */
+  authoringBlockIds?: readonly string[]
+  authoringCuration?: StudioProjectCuration
+  /** Contextual grants; omission preserves non-free host creation contracts. */
+  grantedExtensionIds?: readonly string[]
 }
 
 /**

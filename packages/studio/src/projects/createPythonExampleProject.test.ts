@@ -1,6 +1,7 @@
 import { expect, test } from 'bun:test'
 import { buildPythonProvidedModuleMetadata } from '@sistemazero/core/studio/python-provided-modules-render'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
+import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeCatalog,
   createStudioRuntimeRelease,
@@ -11,6 +12,8 @@ import { unzipSync } from 'fflate'
 import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { PYTHON_EXAMPLE_SUMMARIES } from '../examples/pythonCatalog'
 import { exportProjectSource } from '../export/sourceExport'
+import { PYTHON_PROGRAMMING_CODECS } from '../python/blocks/catalog'
+import { PYTHON_TURTLE_CODECS } from '../python/extensions/turtle/catalog'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../state/fixtures/pythonEnvironment'
 import { listAllProjects, loadProjectById } from '../state/persistence'
@@ -38,20 +41,30 @@ const fixtureEntry = (
   load,
 })
 
-async function fixture(run: (port: PythonExampleCreationPort) => Promise<void>) {
+async function fixture(
+  run: (port: PythonExampleCreationPort) => Promise<void>,
+  kind: 'classic' | 'pro' = 'pro',
+) {
   const oldIdb = Object.getOwnPropertyDescriptor(globalThis, 'indexedDB')
   const oldScope = captureProjectStorageScope()
   Object.defineProperty(globalThis, 'indexedDB', { value: new IDBFactory(), configurable: true })
   setProjectStorageNamespace(`python-example-${crypto.randomUUID()}`)
   try {
-    const f = await pythonEnvironmentFixture('pro')
+    const f = await pythonEnvironmentFixture(kind)
     const context = {
       catalog: f.environment.catalog,
       runtime: f.project.runtime,
       releaseStatus: 'active' as const,
+      authoringBlockIds: [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].map(
+        ({ id }) => id,
+      ),
+      authoringCuration: {
+        pythonLevel: 3 as const,
+        allowedModes: ['blocks', 'bridge', 'code'] as ('blocks' | 'bridge' | 'code')[],
+      },
     }
     await run({
-      environments: [{ key: 'approved', label: 'Python', kind: 'pro', context }],
+      environments: [{ key: 'approved', label: 'Python', kind, context }],
       prepare: async () => context,
       authorizeExample: async () => {},
     })
@@ -64,8 +77,67 @@ async function fixture(run: (port: PythonExampleCreationPort) => Promise<void>) 
 
 const options = () => ({ signal: new AbortController().signal, isCurrent: () => true })
 
+test('free examples require earned extension grants at discovery and after fresh preparation', async () =>
+  fixture(async (port) => {
+    let loads = 0
+    const entry = fixtureEntry(async () => {
+      loads++
+      return { entrypoint: 'main.py', files: { 'main.py': 'import turtle' } }
+    })
+    const context = port.environments[0]!.context
+    context.grantedExtensionIds = []
+    await expect(createPythonExampleProject(entry, port, options())).rejects.toThrow()
+    expect(loads).toBe(0)
+    expect(await listAllProjects()).toEqual([])
+    context.grantedExtensionIds = ['python-turtle']
+    port.prepare = async () => ({ ...context, grantedExtensionIds: [] })
+    await expect(createPythonExampleProject(entry, port, options())).rejects.toThrow()
+    expect(loads).toBe(1)
+    expect(await listAllProjects()).toEqual([])
+  }))
+
+for (const mode of ['blocks', 'bridge'] as const)
+  test(`a Classic Python example starts in ${mode} and persists its editable source intact`, async () =>
+    fixture(async (port) => {
+      const source = 'import turtle\nvelocidade = 3\nturtle.forward(velocidade)\n'
+      const entry = {
+        ...fixtureEntry(async () => ({
+          entrypoint: 'main.py',
+          files: { 'main.py': source, 'README.md': 'Um jogo editável nos três modos.' },
+          assets: [],
+        })),
+        kind: 'classic' as const,
+        mode,
+      }
+      const selections: unknown[] = []
+      const prepare = port.prepare
+      port.prepare = async (selection) => {
+        selections.push(selection)
+        return prepare(selection)
+      }
+      const project = await createPythonExampleProject(entry, port, options())
+      expect(project.kind).toBe('classic')
+      expect(project.mode).toBe(mode)
+      if (project.kind !== 'classic') throw new Error('Classic project required')
+      expect(project.files['main.py']).toBe(source)
+      expect(project).not.toHaveProperty('tree')
+      expect(selections).toEqual([{ kind: 'classic', environmentKey: 'approved' }])
+      const reopened = await loadSanitizedProjectById(project.id)
+      expect(reopened?.programmingLanguage).toBe('python')
+      expect(reopened?.kind).toBe('classic')
+      expect(reopened?.mode).toBe(mode)
+      if (reopened?.programmingLanguage !== 'python' || reopened.kind !== 'classic')
+        throw new Error('Saved Classic Python project required')
+      expect(reopened.files).toEqual(project.files)
+      expect(reopened.installedExtensions).toEqual(project.installedExtensions)
+    }, 'classic'))
+
 /** Real catalog validation, inert artifact hashes: this fixture never executes Python. */
-async function withAudio(port: PythonExampleCreationPort, version = '1.0.0') {
+async function withAudio(
+  port: PythonExampleCreationPort,
+  version = '1.0.0',
+  features: readonly StudioPythonRuntimeFeature[] = [],
+) {
   const initial = port.environments[0]!
   const previous = selectStudioRuntimeRelease(initial.context.catalog, initial.context.runtime)
   if (!previous?.manifest.python) throw new Error('Python fixture required')
@@ -87,7 +159,11 @@ async function withAudio(port: PythonExampleCreationPort, version = '1.0.0') {
     ...previous.manifest,
     releaseId: `provided-${version}`,
     artifacts: [worker, module.descriptorArtifact, module.typingArtifact],
-    python: { ...previous.manifest.python, providedModules: [module] },
+    python: {
+      ...previous.manifest.python,
+      providedModules: [module],
+      features,
+    },
   })
   const catalog = await createStudioRuntimeCatalog({
     releases: [release],
@@ -99,6 +175,7 @@ async function withAudio(port: PythonExampleCreationPort, version = '1.0.0') {
     ],
   })
   const context = {
+    ...initial.context,
     catalog,
     runtime: {
       profileId: release.profileId,
@@ -113,6 +190,118 @@ async function withAudio(port: PythonExampleCreationPort, version = '1.0.0') {
     prepare: async () => context,
   }
 }
+
+test('a new Classic example needs fresh host block approval and effective palette, while Pro source does not', async () =>
+  fixture(async (port) => {
+    let loaded = 0
+    const entry = {
+      ...fixtureEntry(async () => {
+        loaded++
+        return { entrypoint: 'main.py', files: { 'main.py': 'x = 1\n' } }
+      }),
+      kind: 'classic' as const,
+      mode: 'blocks' as const,
+      requiredBlockIds: ['sz_py_class'],
+    }
+    const original = port.environments[0]!
+    for (const context of [
+      { ...original.context, authoringBlockIds: undefined },
+      { ...original.context, authoringBlockIds: [] },
+      { ...original.context, authoringCuration: { pythonLevel: 1 as const } },
+      {
+        ...original.context,
+        authoringCuration: { pythonLevel: 1 as const, allowLevelReveal: true },
+      },
+    ])
+      await expect(
+        createPythonExampleProject(
+          entry,
+          {
+            ...port,
+            environments: [{ ...original, context }],
+            prepare: async () => context,
+          },
+          options(),
+        ),
+      ).rejects.toThrow()
+    expect(loaded).toBe(0)
+    expect(await listAllProjects()).toEqual([])
+    await expect(
+      createPythonExampleProject(
+        entry,
+        {
+          ...port,
+          prepare: async () => ({ ...original.context, authoringBlockIds: [] }),
+        },
+        options(),
+      ),
+    ).rejects.toThrow('compatível')
+    expect(loaded).toBe(1)
+    expect(await listAllProjects()).toEqual([])
+    port.authorizeExample = async (_project, _signal, requirements) => {
+      expect(requirements).toEqual({
+        requiredBlockIds: ['sz_py_class'],
+        requiredModes: ['blocks', 'bridge'],
+      })
+      throw new Error('A aprovação final foi retirada')
+    }
+    await expect(createPythonExampleProject(entry, port, options())).rejects.toThrow(
+      'aprovação final',
+    )
+    expect(await listAllProjects()).toEqual([])
+    port.authorizeExample = async () => {}
+    const fresh = await createPythonExampleProject(entry, port, options())
+    expect(fresh.kind).toBe('classic')
+  }, 'classic'))
+
+test('Pro examples do not depend on classic block approval or curations', async () =>
+  fixture(async (port) => {
+    const original = port.environments[0]!
+    const context = {
+      ...original.context,
+      authoringBlockIds: [],
+      authoringCuration: { pythonLevel: 1 as const },
+    }
+    const project = await createPythonExampleProject(
+      {
+        ...fixtureEntry(),
+        requiredBlockIds: ['sz_py_class'],
+      },
+      { ...port, environments: [{ ...original, context }], prepare: async () => context },
+      options(),
+    )
+    expect(project.kind).toBe('pro')
+  }))
+
+test('required engine features are checked before loading and again after fresh preparation', async () =>
+  fixture(async (port) => {
+    const old = await withAudio(port)
+    const capable = await withAudio(port, '1.0.0', ['turtle-compound-shapes'])
+    let loads = 0
+    const requiredPythonFeatures: StudioPythonRuntimeFeature[] = ['turtle-compound-shapes']
+    const entry = {
+      ...fixtureEntry(async () => {
+        loads++
+        requiredPythonFeatures.length = 0
+        return { entrypoint: 'main.py', files: { 'main.py': 'import turtle\n' } }
+      }),
+      requiredPythonFeatures,
+    }
+    await expect(createPythonExampleProject(entry, old, options())).rejects.toThrow('compatível')
+    expect(loads).toBe(0)
+    await expect(
+      createPythonExampleProject(
+        entry,
+        {
+          ...capable,
+          prepare: old.prepare,
+        },
+        options(),
+      ),
+    ).rejects.toThrow('compatível')
+    expect(loads).toBe(1)
+    expect(await listAllProjects()).toEqual([])
+  }))
 
 test('a required provided module must exist at its exact version before loading the payload', async () =>
   fixture(async (port) => {
@@ -266,8 +455,51 @@ test('the Python catalog keeps the original race and adds the separately license
   expect(PYTHON_EXAMPLE_SUMMARIES.map(({ key }) => key)).toEqual([
     'python:turtle-race-original',
     'python:maze-lights',
+    'python:pacman-visual:blocks',
+    'python:pacman-visual:code',
+    'python:space-arena-visual:blocks',
+    'python:space-arena-visual:code',
   ])
 })
+
+for (const key of [
+  'python:pacman-visual:blocks',
+  'python:pacman-visual:code',
+  'python:space-arena-visual:blocks',
+  'python:space-arena-visual:code',
+])
+  test(`${key} creates, reopens and exports its entire authored program and native audio dependency`, async () => {
+    const entry = PYTHON_EXAMPLE_SUMMARIES.find((candidate) => candidate.key === key)
+    if (!entry) throw new Error(`Missing reference game ${key}`)
+    await fixture(async (port) => {
+      const compatible = await withAudio(port, '1.0.0', entry.requiredPythonFeatures)
+      const payload = await entry.load()
+      const saved = await createPythonExampleProject(entry, compatible, options())
+      expect(saved.kind).toBe(entry.kind)
+      expect(saved.mode).toBe(entry.mode ?? (entry.kind === 'pro' ? 'code' : 'blocks'))
+      const reopened = await loadSanitizedProjectById(saved.id)
+      if (reopened?.programmingLanguage !== 'python') throw new Error('Saved Python game required')
+      expect(reopened.kind).toBe(entry.kind)
+      expect(reopened.mode).toBe(saved.mode)
+      expect(reopened.assets).toEqual(payload.assets ? [...payload.assets] : undefined)
+      const exported = await exportProjectSource(reopened, {
+        runtimeCatalog: compatible.environments[0]!.context.catalog,
+      })
+      expect(exported.warnings).toEqual([])
+      const files = unzipSync(new Uint8Array(await exported.blob.arrayBuffer()))
+      for (const [path, text] of Object.entries(payload.files))
+        expect(files[path]).toEqual(new TextEncoder().encode(text))
+      for (const asset of payload.assets ?? []) {
+        if (!asset.proPath) throw new Error('Sound path required')
+        expect(files[asset.proPath]).toEqual(
+          new Uint8Array(Buffer.from(asset.dataUrl.split(',')[1]!, 'base64')),
+        )
+      }
+      expect(files['.sistemazero/python-audio/sz_audio/__init__.py']).toBeInstanceOf(Uint8Array)
+      expect(files['turtle.py']).toBeUndefined()
+      expect(files['index.html']).toBeUndefined()
+    }, entry.kind)
+  })
 
 test('the real maze saves fresh projects and exports all source, credits, three sounds and the exact native audio package', async () =>
   fixture(async (port) => {

@@ -135,6 +135,7 @@ function StudioCoreBody({
   level,
   pythonLevel,
   allowBlocks,
+  grantedBlockIds,
   allowExtensions,
   allowCategories,
   allowLevelReveal,
@@ -224,7 +225,7 @@ function StudioCoreBody({
   // render do host (o que re-sanitizaria/re-hidrataria o projeto — ver acima).
   const [previewSecurity] = useState(() => resolvePreviewSecurity(limits))
   // Perfil de aprendizado também é estático por instância (fixado pelo professor).
-  const [learning] = useState(() =>
+  const [curation] = useState(() =>
     resolveLearning({
       level,
       pythonLevel,
@@ -233,6 +234,12 @@ function StudioCoreBody({
       allowCategories,
       allowLevelReveal,
     }),
+  )
+  // Course/extension authority can change without replacing the learner's document.
+  // Lesson level and curation keep their existing per-instance lifetime.
+  const learning = useMemo(
+    () => ({ ...curation, grantedBlockIds, allowExtensions }),
+    [curation, grantedBlockIds, allowExtensions],
   )
   // `previewSecurity`/`learning` saem de fora do BaseStudioConfig de propósito
   // (ver config.ts) e são anexados SÓ aqui — a anotação ResolvedStudioConfig
@@ -452,6 +459,17 @@ function StudioCoreBody({
     ],
   )
 
+  // Document lifetime belongs to its preparation, never to mutable authority/curation.
+  // A denied first opening can hydrate later; a loaded document survives revocation.
+  const hydratedPreparation = useRef<typeof prepared>(null)
+  useEffect(() => {
+    if (!prepared || prepared.source !== sourceProject) return
+    return () => {
+      hydratedPreparation.current = null
+      unloadProject()
+    }
+  }, [prepared, sourceProject, unloadProject])
+
   useEffect(() => {
     if (
       !sanitized ||
@@ -461,10 +479,21 @@ function StudioCoreBody({
       return
     try {
       if (projectAccessBlocked) {
+        setPreviewRunning(false)
         prepared.settleOpening('blocked')
         return
       }
+      if (hydratedPreparation.current === prepared) {
+        const current = projectStoreApi.getState().project
+        if (current) {
+          const curated = projectInAllowedMode(current, config.allowedModes)
+          if (curated !== current) projectStoreApi.setState({ project: curated })
+        }
+        setPreviewRunning(autoRun && projectStoreApi.getState().editingAccess === 'author')
+        return
+      }
       hydrateProject(sanitized)
+      hydratedPreparation.current = prepared
       // Projeto trocado pelo HOST (`handle.replaceProject`, o "Trazer o que eu enviei" da aula) é a
       // versão que deve ficar guardada: entra como edição, e o autosave grava por cima do rascunho
       // do aparelho. Antes isso acontecia por acaso, na regravação que o editor fazia ao abrir, e
@@ -486,14 +515,10 @@ function StudioCoreBody({
       // Release this preparation, even for same-id replacements. onReady is only an id latch.
       prepared.settleOpening('ready')
     }
-    return () => {
-      unloadProject()
-    }
   }, [
     sanitized,
     projectAccessBlocked,
     hydrateProject,
-    unloadProject,
     setPreviewRunning,
     persistence,
     replacedProject,
@@ -501,6 +526,7 @@ function StudioCoreBody({
     autoRun,
     prepared,
     sourceProject,
+    config.allowedModes,
   ])
 
   useEffect(() => {

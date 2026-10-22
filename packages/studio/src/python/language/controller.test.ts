@@ -59,6 +59,10 @@ async function fixture() {
     prepareSession: async ({ signal }) => {
       let closed = false
       const session: PythonAnalysisSession = {
+        interpreter: { pythonVersion: '3.14.2', pyodideVersion: '314.0.7' },
+        async compileBytes() {
+          throw new Error('Parse-controller fixture does not compile bytes')
+        },
         get closed() {
           return closed
         },
@@ -223,6 +227,10 @@ test('a hung resolver cannot block a new owner and late boot is disposed', async
   })
   const parser: PythonAnalysisSession = {
     closed: false,
+    interpreter: { pythonVersion: '3.14.2', pyodideVersion: '314.0.7' },
+    async compileBytes() {
+      throw new Error('Parse-controller fixture does not compile bytes')
+    },
     parse: async (_id, source) => parsed(source),
     render: async () => '',
     dispose: () => {

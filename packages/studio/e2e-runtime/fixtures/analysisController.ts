@@ -90,6 +90,9 @@ export async function createAnalysisControllerProbe() {
         get closed() {
           return parser.closed
         },
+        interpreter: parser.interpreter,
+        compileBytes: (identity, bytes, signal, options) =>
+          parser.compileBytes(identity, bytes, signal, options),
         parse: (identity, source, signal) => {
           requests.push(source)
           return parser.parse(identity, source, signal)

@@ -114,6 +114,7 @@ async function fixture(fixtureOptions: { playtest?: boolean; compressed?: boolea
   }
   const controller = new AbortController()
   const input = {
+    structure: false,
     snapshot,
     approvedDeployment: runtime.deployment,
     signal: controller.signal,

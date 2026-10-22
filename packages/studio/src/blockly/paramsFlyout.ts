@@ -1,10 +1,5 @@
 import * as Blockly from 'blockly/core'
-import {
-  FULL_LEARNING_PROFILE,
-  isBlockTypeAllowed,
-  type LearningProfile,
-  projectEditingBlockTypes,
-} from '#core'
+import { FULL_LEARNING_PROFILE, isBlockTypeAllowed, type LearningProfile } from '#core'
 import { resolveBlockLevel } from './blockLevels'
 import { getParamNames } from './blocks/paramsMutator'
 import { socketInputsFor } from './blocks/valueSockets'
@@ -47,11 +42,7 @@ function dynamicBlockAllowed(
   category: 'Funções' | 'Classes',
   profile: LearningProfile,
 ): boolean {
-  if (profile.allowBlocks && profile.allowBlocks.length > 0) {
-    return profile.allowBlocks.includes(type) || projectEditingBlockTypes(profile).includes(type)
-  }
-  if (profile.allowCategories?.includes(category)) return true
-  return isBlockTypeAllowed(type, resolveBlockLevel(type), profile)
+  return isBlockTypeAllowed(type, resolveBlockLevel(type), profile, category)
 }
 
 function staticEntries(profile: LearningProfile): FlyoutItem[] {

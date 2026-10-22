@@ -21,6 +21,7 @@ import type {
   createContextualPythonLanguageProvider,
   createPythonAnalysisAuthorization,
 } from '../python/language/contextProvider'
+import { createStudioRuntimeAuthority } from './authority'
 import type { StudioRuntimeEnvironment } from './environment'
 import { createStudioRuntimeRegistry } from './registry'
 
@@ -78,6 +79,22 @@ export async function createContextualRuntimeEnvironmentCore(
   let executions = new WeakMap<StudioProjectDocument, Receipt>()
   let lastExecution: Receipt | undefined
   let initialPublicExecution: Receipt | undefined
+  let authorityStore: ReturnType<typeof createStudioRuntimeAuthority> | undefined
+
+  function authoritySnapshot(receipt: Receipt) {
+    const available = !scopeSignal.aborted && !inaccessible
+    const decision = receipt.decision
+    return {
+      available,
+      pythonAuthoring: [
+        { runtime: decision.runtime, blockIds: available ? decision.blockIds : [] },
+      ],
+      grantedExtensionIds: available ? decision.grantedExtensionIds : [],
+      capabilities: available ? decision.capabilities : [],
+      releaseStatus: decision.releaseStatus,
+      curation: decision.curation,
+    }
+  }
 
   async function authorize(
     project: StudioProjectDocument,
@@ -145,17 +162,19 @@ export async function createContextualRuntimeEnvironmentCore(
         (base && decision.frame.url !== base.decision.frame.url)
       )
         throw new Error('O ambiente Python mudou. Reabra o Estúdio para continuar.')
-      if (turn <= denialSequence) throw cancelled()
+      if (turn <= denialSequence || turn < installedSequence) throw cancelled()
       const receipt = { decision, deadline: started + lifetime }
       if (turn > installedSequence) {
         installedSequence = turn
         base = receipt
         inaccessible = false
+        if (operation !== 'analyze') {
+          executions.set(project, receipt)
+          lastExecution = receipt
+        }
+        authorityStore?.update(authoritySnapshot(receipt))
       }
-      if (operation !== 'analyze') {
-        executions.set(project, receipt)
-        lastExecution = receipt
-      }
+      joined.throwIfAborted()
       return receipt
     } catch (error) {
       if (!joined.aborted && denied(error) && turn >= installedSequence) {
@@ -194,6 +213,15 @@ export async function createContextualRuntimeEnvironmentCore(
       })
   )
     throw new Error('O catálogo não corresponde ao ambiente autorizado.')
+  const currentAuthority = createStudioRuntimeAuthority(authoritySnapshot(bootstrap))
+  authorityStore = currentAuthority
+  scopeSignal.addEventListener(
+    'abort',
+    () => {
+      authorityStore?.update(authoritySnapshot(base ?? bootstrap))
+    },
+    { once: true },
+  )
   const providerId = 'context-python-browser'
   const analysisContext =
     options.language?.context ??
@@ -204,6 +232,7 @@ export async function createContextualRuntimeEnvironmentCore(
     })
   const environment: StudioRuntimeEnvironment = {
     signal: scopeSignal,
+    authority: currentAuthority.authority,
     ...(analysis && !publicPlay && (scope.context.kind !== 'live' || options.language)
       ? {
           createPythonLanguage: (project: () => StudioProjectDocument | null) =>
@@ -251,9 +280,9 @@ export async function createContextualRuntimeEnvironmentCore(
           },
         }
       : {}),
-    pythonAuthoring: [
-      { runtime: bootstrap.decision.runtime, blockIds: bootstrap.decision.blockIds },
-    ],
+    get pythonAuthoring() {
+      return currentAuthority.authority.getSnapshot().pythonAuthoring
+    },
     registry: createStudioRuntimeRegistry([
       {
         id: providerId,

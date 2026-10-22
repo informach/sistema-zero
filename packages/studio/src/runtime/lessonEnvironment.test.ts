@@ -257,3 +257,123 @@ test('web export asks fresh permission for its exact snapshot and refuses loss o
   await expect(environment.resolvePythonWebExport!(input)).rejects.toThrow()
   expect(f.calls.length).toBe(before)
 })
+
+test('fresh receipts publish effective authority, not TTL or revision changes, and denial revokes it', async () => {
+  const f = await setup()
+  const environment = await createLessonRuntimeEnvironment(f.options)
+  const registry = environment.registry
+  const authority = environment.authority!
+  const first = authority.getSnapshot()
+  let notices = 0
+  authority.subscribe(() => notices++)
+  await environment.authorize!({
+    project: f.project,
+    operation: 'analyze',
+    revision: 'c'.repeat(64),
+    signal: f.controller.signal,
+  })
+  expect(authority.getSnapshot()).toBe(first)
+  expect(notices).toBe(0)
+  f.respond(async (input) => ({
+    ...(await f.response(input)),
+    blockIds: ['sz_py_pass'],
+    grantedExtensionIds: [],
+    curation: { pythonLevel: 1, allowBlocks: ['sz_py_pass'] },
+    releaseStatus: 'retired',
+  }))
+  await environment.authorize!({
+    project: f.project,
+    operation: 'analyze',
+    revision: 'd'.repeat(64),
+    signal: f.controller.signal,
+  })
+  expect(environment.pythonAuthoring?.[0]?.blockIds).toEqual(['sz_py_pass'])
+  expect(authority.getSnapshot().curation).toMatchObject({
+    pythonLevel: 1,
+    allowBlocks: ['sz_py_pass'],
+  })
+  expect(authority.getSnapshot().grantedExtensionIds).toEqual([])
+  expect(authority.getSnapshot().releaseStatus).toBe('retired')
+  expect(notices).toBe(1)
+  expect(environment.registry).toBe(registry)
+  f.respond(async () => {
+    throw Object.assign(new Error('revogado'), { status: 403 })
+  })
+  await expect(
+    environment.authorize!({
+      project: f.project,
+      operation: 'analyze',
+      revision: 'e'.repeat(64),
+      signal: f.controller.signal,
+    }),
+  ).rejects.toThrow('revogado')
+  expect(authority.getSnapshot().available).toBe(false)
+  expect(authority.getSnapshot().pythonAuthoring[0]?.blockIds).toEqual([])
+  expect(authority.getSnapshot().capabilities).toEqual([])
+  expect(notices).toBe(2)
+})
+
+test('an older successful receipt cannot restore a newer reduced authority or execution grant', async () => {
+  const f = await setup()
+  const environment = await createLessonRuntimeEnvironment(f.options)
+  let release!: () => void
+  let entered!: () => void
+  const gate = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const started = new Promise<void>((resolve) => {
+    entered = resolve
+  })
+  f.respond(async (input) => {
+    if (input.operation === 'execute') {
+      entered()
+      await gate
+    }
+    return {
+      ...(await f.response(input)),
+      blockIds: input.operation === 'execute' ? ['sz_py_integer'] : ['sz_py_pass'],
+    }
+  })
+  const old = environment.authorize!({
+    project: f.project,
+    operation: 'execute',
+    revision: 'a'.repeat(64),
+    signal: f.controller.signal,
+  })
+  await started
+  await environment.authorize!({
+    project: f.project,
+    operation: 'analyze',
+    revision: 'b'.repeat(64),
+    signal: f.controller.signal,
+  })
+  const latest = environment.authority!.getSnapshot()
+  release()
+  await expect(old).rejects.toThrow()
+  expect(environment.authority!.getSnapshot()).toBe(latest)
+  expect(environment.pythonAuthoring?.[0]?.blockIds).toEqual(['sz_py_pass'])
+  expect(environment.access(f.project).grantedCapabilities).not.toContain('execute')
+})
+
+test('authority subscribers see installed execution state and can retire it before dispatch', async () => {
+  const f = await setup()
+  const environment = await createLessonRuntimeEnvironment(f.options)
+  const seen: boolean[] = []
+  environment.authority!.subscribe(() => {
+    const snapshot = environment.authority!.getSnapshot()
+    if (!snapshot.available) return
+    seen.push(environment.access(f.project).grantedCapabilities?.includes('execute') ?? false)
+    f.controller.abort()
+  })
+  await expect(
+    environment.authorize!({
+      project: f.project,
+      operation: 'execute',
+      revision: 'a'.repeat(64),
+      signal: f.controller.signal,
+    }),
+  ).rejects.toThrow()
+  expect(seen).toEqual([true])
+  expect(environment.authority!.getSnapshot().available).toBe(false)
+  expect(environment.access(f.project).grantedCapabilities).toEqual([])
+})

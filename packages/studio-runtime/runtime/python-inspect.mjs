@@ -12,6 +12,7 @@ const root = process.cwd()
 const optionsBytes = await fs.readFile(path.join(root, 'python-inspection-options.json'))
 if (optionsBytes.length > 2_000_000) throw new Error('Inspection options exceed the limit')
 const options = JSON.parse(optionsBytes.toString('utf8'))
+if (typeof options.structure !== 'boolean') throw new Error('Inspection structure mode is required')
 const resourceConfiguration = await createPythonBrowserResources(root, options)
 const { resources, parent, runtime, runtimePrefix } = resourceConfiguration
 if (
@@ -25,7 +26,7 @@ resources.set(`${parent}/payload.json`, {
 })
 resources.set(`${parent}/`, {
   bytes: Buffer.from(
-    `<!doctype html><html data-python-structure="${options.structure === true}"><head><meta charset="utf-8"><title>Python inspection</title><script type="module" src="${runtime}${runtimePrefix}inspect.mjs"></script></head><body></body></html>`,
+    `<!doctype html><html data-python-structure="${options.structure}"><head><meta charset="utf-8"><title>Python inspection</title><script type="module" src="${runtime}${runtimePrefix}inspect.mjs"></script></head><body></body></html>`,
   ),
   type: 'text/html; charset=utf-8',
 })

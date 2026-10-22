@@ -52,11 +52,11 @@ test('import is inert; explicit CLI parsing rejects ambiguous or unknown command
     expect(() => parsePythonReproductionCommand(args)).toThrow()
 })
 
-test('the committed descriptor is the fixed 41-file candidate, independent of its old path', async () => {
+test('the committed descriptor is the fixed 41-file current candidate, independent of its build path', async () => {
   const distribution = await expectedPythonDistribution()
   expect(distribution.files).toHaveLength(41)
   expect(PYTHON_REPRODUCTION_SHA256).toBe(
-    '65c9bffd3e97d71e22bbaaf2f2dd29fbf10ee80759ad56423c0e3e4b82af022c',
+    'e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9',
   )
   expect('directory' in distribution).toBe(false)
 })

@@ -3,7 +3,10 @@ import { mkdtemp, readdir, readFile, rm, symlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 import { renderPythonProvidedModuleStub } from '@sistemazero/core/studio/python-provided-modules-render'
-import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
+import {
+  currentPythonRelease,
+  providedPythonRelease,
+} from '../../core/tests/fixtures/python-provided-release'
 import {
   materializePythonProvidedModules,
   visibleProvidedModuleRoots,
@@ -26,12 +29,12 @@ test('writes exact verified declarations outside the author snapshot and cleans 
     )
     await modules.dispose()
     expect(await readdir(parent)).toEqual([])
-    const legacy = await materializePythonProvidedModules(
-      { protocolVersion: 1 },
+    const empty = await materializePythonProvidedModules(
+      { protocolVersion: 1, runtimeRelease: await currentPythonRelease() },
       parent,
       new AbortController().signal,
     )
-    expect(legacy.roots).toEqual([])
+    expect(empty.roots).toEqual([])
     expect(await readdir(parent)).toEqual([])
   } finally {
     await rm(parent, { recursive: true, force: true })
@@ -42,6 +45,14 @@ test('rejects forged metadata, cancellation and symlink parent before materializ
   const parent = await mkdtemp(resolve(tmpdir(), 'sz-language-module-'))
   const runtimeRelease = await providedPythonRelease()
   try {
+    await expect(
+      materializePythonProvidedModules(
+        { protocolVersion: 1 },
+        parent,
+        new AbortController().signal,
+      ),
+    ).rejects.toThrow()
+    expect(await readdir(parent)).toEqual([])
     await expect(
       materializePythonProvidedModules(
         {

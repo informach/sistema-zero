@@ -1,10 +1,31 @@
 import { describe, expect, test } from 'bun:test'
+import type { AdultJourneyView } from '@sistemazero/core/journey'
 import {
+  adultStudioTier,
   drawerSnapshotsForBlocks,
   drawersForBlocks,
   extensionsForBlocks,
   groupDrawersByFamily,
 } from '../src/server/studio-unlocks'
+
+test('adult Python course access does not grant JavaScript blocks, extensions or Pro', () => {
+  const journey: AdultJourneyView = {
+    audience: 'adult',
+    policyVersion: 1,
+    configured: true,
+    capabilities: ['studio'],
+    stages: [],
+  }
+  const tier = adultStudioTier(journey, 'user', ['sz_py_print'])
+  expect(tier).toMatchObject({ freeStudio: true, hasPalette: true, allowBlocks: [], pro: false })
+  expect(tier.allowedExtensions).toEqual([])
+  expect(adultStudioTier(journey, 'user', ['sz_py_unknown']).hasPalette).toBe(false)
+  expect(adultStudioTier(journey, 'admin', [])).toMatchObject({
+    hasPalette: true,
+    freeStudio: true,
+    pro: true,
+  })
+})
 
 /**
  * Blocos REAIS do catálogo cujo nome de gaveta COLIDE entre famílias: os dois moram numa

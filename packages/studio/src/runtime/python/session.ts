@@ -327,11 +327,10 @@ export function preparePythonFrameSession(options: {
         message.challenge !== challenge
       )
         return
-      if ('bootResources' in message && message.bootResources !== 1) {
+      if (!('bootResources' in message) || message.bootResources !== 1) {
         fail('Protocolo de carregamento Python incompatível.')
         return
       }
-      const useBootResources = 'bootResources' in message
       window.removeEventListener('message', initialize)
       const channel = new MessageChannel()
       port = channel.port1
@@ -340,24 +339,22 @@ export function preparePythonFrameSession(options: {
       port.start()
       let resourcePort: MessagePort | undefined
       try {
-        if (useBootResources) {
-          const result = await bootPreparation
-          if (!result.ok) throw result.error
-          const host = result.host
-          if (!active || closed || bootSignal.aborted) {
-            channel.port2.close()
-            return
-          }
-          const resources = new MessageChannel()
-          resourcePort = resources.port2
-          bootBroker = createPythonBootResourceBroker({
-            port: resources.port1,
-            manifest: host.manifest,
-            store: host.store,
-            signal: bootSignal,
-            onError: (error) => fail(error.message),
-          })
+        const result = await bootPreparation
+        if (!result.ok) throw result.error
+        const host = result.host
+        if (!active || closed || bootSignal.aborted) {
+          channel.port2.close()
+          return
         }
+        const resources = new MessageChannel()
+        resourcePort = resources.port2
+        bootBroker = createPythonBootResourceBroker({
+          port: resources.port1,
+          manifest: host.manifest,
+          store: host.store,
+          signal: bootSignal,
+          onError: (error) => fail(error.message),
+        })
         frame.contentWindow!.postMessage(
           {
             type: 'python-frame-init',
@@ -366,10 +363,10 @@ export function preparePythonFrameSession(options: {
             identity,
             snapshot: options.snapshot,
             ...(activity ? { activity } : {}),
-            ...(useBootResources ? { bootResources: 1 } : {}),
+            bootResources: 1,
           },
           '*',
-          resourcePort ? [channel.port2, resourcePort] : [channel.port2],
+          [channel.port2, resourcePort],
         )
       } catch {
         channel.port2.close()

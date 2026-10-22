@@ -14,6 +14,7 @@ import { StudioPythonLanguageOpenSchema } from '@sistemazero/core/studio/python-
 import { verifyStudioPythonPreviewManifest } from '@sistemazero/core/studio/python-preview'
 import { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-runtime-distribution'
 import { createStudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import { pythonCourseBlockClosure } from '@sistemazero/studio/python-course-unlocks'
 import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
 import { AuthorizeFreeRuntimeService } from '../../members/src/application/studio/authorize-free-runtime.service'
 import { FreeStudioAccessService } from '../../members/src/application/studio/free-studio-access.service'
@@ -112,7 +113,7 @@ export async function runStudioPythonBuilderSdkProof(input: {
           runtime,
           status: 'active',
           proTemplateIds: ['python-blank'],
-          blockIds: ['py_print'],
+          blockIds: ['sz_py_pass', ...pythonCourseBlockClosure(['sz_py_turtle_module_forward'])],
           categoryIds: ['python-basics'],
         },
       ],
@@ -142,9 +143,8 @@ export async function runStudioPythonBuilderSdkProof(input: {
         }),
       },
       {
-        listStudioUnlocksByCourse: async () => [],
+        execute: async () => ({ blocks: [...configuration.releases[0]!.blockIds] }),
       },
-      { listGrants: async () => [] },
       new KidsJourneyQueryService({
         async readSnapshot(owners): Promise<KidsJourneySnapshot> {
           return {
@@ -234,6 +234,7 @@ export async function runStudioPythonBuilderSdkProof(input: {
           root = path.join(input.evidence, 'builder-language', sessionId)
         await mkdir(root, { recursive: true })
         const session = new PythonLanguageSession({
+          providedModules: [],
           root,
           nodePath: process.execPath,
           serverPath: createRequire(path.join(process.cwd(), 'package.json')).resolve(

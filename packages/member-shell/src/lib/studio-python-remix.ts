@@ -1,9 +1,14 @@
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import type { StudioProjectMode } from '@sistemazero/core/studio/project-environment'
+import { resolvePythonLearningLevel } from '@sistemazero/core/studio/python-learning'
 import {
   StudioFreeRuntimeDecisionSchema,
   type StudioFreeRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
-import { selectStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
+import {
+  createStudioRuntimeCatalog,
+  selectStudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { prepareStudioFreeOptions } from '@sistemazero/studio/free-project-options'
 import { refinePythonProjectDocument } from '@sistemazero/studio/python-project-validation'
@@ -13,6 +18,11 @@ import {
   type StudioRemixCapability,
   studioRemixCovered,
 } from './studio-tier'
+
+export interface PythonCopyAuthoringRequirements {
+  requiredBlockIds: readonly string[]
+  requiredModes: readonly StudioProjectMode[]
+}
 
 /** Active authoring discovery only. Existing retired public games remain playable. */
 export async function pythonRemixCapabilities(
@@ -25,7 +35,9 @@ export async function pythonRemixCapabilities(
     return {
       kind,
       runtime: context.runtime,
-      allowedExtensions: release.manifest.extensions.map((extension) => extension.id),
+      allowedExtensions: release.manifest.extensions
+        .map((extension) => extension.id)
+        .filter((id) => context.grantedExtensionIds?.includes(id)),
     }
   })
 }
@@ -38,6 +50,7 @@ export async function authorizePythonPrivateCopy({
   options,
   request,
   signal,
+  authoringRequirements,
 }: {
   snapshot: unknown
   viewerId: string
@@ -45,7 +58,9 @@ export async function authorizePythonPrivateCopy({
   options: unknown
   request: (request: StudioFreeRuntimeRequest) => Promise<unknown>
   signal: AbortSignal
+  authoringRequirements?: PythonCopyAuthoringRequirements
 }) {
+  const required = authoringRequirements && structuredClone(authoringRequirements)
   signal.throwIfAborted()
   const project = await refinePythonProjectDocument(rawSnapshot)
   signal.throwIfAborted()
@@ -92,6 +107,45 @@ export async function authorizePythonPrivateCopy({
     decision.expiresAt - decision.issuedAt > 30_000
   )
     throw new Error('O acesso mudou. Reabra a criação do projeto.')
+  if (required) {
+    // The final decision may revoke blocks or modes after discovery/preparation.
+    // Its exact verified release and curation are the authority for this copy.
+    const catalog = await createStudioRuntimeCatalog(decision.catalog)
+    signal.throwIfAborted()
+    const release = selectStudioRuntimeRelease(catalog, project.runtime)
+    if (
+      !release ||
+      required.requiredModes.some(
+        (mode) =>
+          !release.manifest.modes.includes(mode) ||
+          (decision.curation.allowedModes && !decision.curation.allowedModes.includes(mode)),
+      )
+    )
+      throw new Error('A autoria deste exemplo mudou. Reabra a criação do projeto.')
+    if (project.kind === 'classic' && required.requiredBlockIds.length) {
+      const { loadPythonAuthoring, selectPythonPalette } = await import(
+        '@sistemazero/studio/python-authoring'
+      )
+      signal.throwIfAborted()
+      const authoring = await loadPythonAuthoring(project, {
+        catalog,
+        pythonAuthoring: [{ runtime: decision.runtime, blockIds: decision.blockIds }],
+      })
+      signal.throwIfAborted()
+      const palette = selectPythonPalette({
+        ...authoring,
+        level: resolvePythonLearningLevel(decision.curation.pythonLevel),
+        allowBlocks: decision.curation.allowBlocks,
+        allowCategories: decision.curation.allowCategories,
+      })
+      const available = new Set(palette.entries.map(({ id }) => id))
+      if (required.requiredBlockIds.some((id) => !available.has(id)))
+        throw new Error('A autoria deste exemplo mudou. Reabra a criação do projeto.')
+    }
+    signal.throwIfAborted()
+    if (decision.expiresAt <= Date.now())
+      throw new Error('O acesso mudou. Reabra a criação do projeto.')
+  }
   return project
 }
 

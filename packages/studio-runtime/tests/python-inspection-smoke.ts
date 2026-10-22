@@ -25,9 +25,8 @@ const release = await createStudioRuntimeRelease({
   python: {
     version: build.manifest.pythonVersion,
     packages: [],
-    ...(build.manifest.providedModules === undefined
-      ? {}
-      : { providedModules: build.manifest.providedModules }),
+    providedModules: build.manifest.providedModules,
+    features: build.manifest.features,
   },
 })
 const runId = crypto.randomUUID().replaceAll('-', '')
@@ -192,6 +191,7 @@ for (const [scenario, source, expected] of [
   }
   const started = performance.now()
   const report = await runIsolatedPythonInspection({
+    structure: false,
     snapshot,
     approvedDeployment: { release, distribution: build.manifest },
     signal: new AbortController().signal,

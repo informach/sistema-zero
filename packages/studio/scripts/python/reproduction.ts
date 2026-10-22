@@ -12,12 +12,12 @@ import vendor from '../../src/runtime/python/vendor-manifest.json'
 import standardLibrary from './stdlib-manifest.json'
 
 export const PYTHON_REPRODUCTION_SHA256 =
-  '65c9bffd3e97d71e22bbaaf2f2dd29fbf10ee80759ad56423c0e3e4b82af022c'
+  'e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9'
 export const PYTHON_REPRODUCTION_BUN_VERSION = '1.3.11'
 export const repositoryRoot = resolve(import.meta.dirname, '../../../..')
 const planPath = resolve(
   repositoryRoot,
-  'docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json',
+  'docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json',
 )
 const digest = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex')
 const missing = (error: unknown) =>
@@ -31,7 +31,7 @@ export function assertPinnedBytes(
     throw new Error(`Integridade inválida do input ${pin.path}.`)
 }
 
-/** Reads only the committed expected descriptor, never the historical machine's absolute path. */
+/** Reads the committed current descriptor, independent of the build machine's path. */
 export async function expectedPythonDistribution() {
   const { deployment } = z
     .object({ deployment: z.object({ distribution: StudioPythonDistributionSchema }) })

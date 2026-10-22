@@ -10,6 +10,7 @@ import {
   StudioPythonValidationRequestSchema,
 } from '@sistemazero/core/studio/python-validation-input'
 import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
+import { currentPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { capturePythonProRevisionPayload } from '../../../studio/src/state/pythonProRevision'
 import { PNG } from './gallery-python-source'
 import { controlledPythonBuilderReport } from './python-builder-report'
@@ -26,17 +27,16 @@ export async function pythonBuilderNetworkFixture(
   mode: Mode,
   runtimeRelease?: StudioRuntimeRelease,
 ) {
+  const release = runtimeRelease ?? (await currentPythonRelease())
   const { project } = await authoringFixture('python', 'pro')
   if (project.programmingLanguage !== 'python' || project.kind !== 'pro')
     throw new Error('Python Pro expected')
-  if (runtimeRelease) {
-    project.runtime = {
-      profileId: runtimeRelease.profileId,
-      releaseId: runtimeRelease.releaseId,
-      manifestSha256: runtimeRelease.manifestSha256,
-    }
-    project.python.dependencyLock.runtimeManifestSha256 = runtimeRelease.manifestSha256
+  project.runtime = {
+    profileId: release.profileId,
+    releaseId: release.releaseId,
+    manifestSha256: release.manifestSha256,
   }
+  project.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
   project.tree['src/main.py'] = {
     kind: 'file',
     content: 'from helper import n\nprint("ação", n)\n',
@@ -143,6 +143,7 @@ export async function pythonBuilderNetworkFixture(
             : {
                 preview: {
                   kind: 'python-preview',
+                  previewHostAudioVersion: 1,
                   version: 1,
                   id: previewId,
                   projectId: snapshot.projectId,
@@ -186,7 +187,7 @@ export async function pythonBuilderNetworkFixture(
       expect(candidate.hash).toBe(base.hash)
       expect(metadata.revision).not.toBe(base.hash)
       operations.push(operation)
-      return runtimeRelease ? { runtimeRelease } : {}
+      return { runtimeRelease: release }
     },
     cleanupFailed() {
       cleanup.push('analysis')
@@ -195,5 +196,14 @@ export async function pythonBuilderNetworkFixture(
       cleanup.push('execution')
     },
   }
-  return { options, requests, opened, uploaded, operations, cleanup, stop: () => server.stop(true) }
+  return {
+    options,
+    requests,
+    opened,
+    uploaded,
+    operations,
+    cleanup,
+    runtimeRelease: release,
+    stop: () => server.stop(true),
+  }
 }

@@ -224,9 +224,7 @@ export class PythonInspectionJob extends DurableObject<Env> {
                   recipe: validation.recipe,
                   ...(validation.preview ? { preview: validation.preview } : {}),
                 }
-              : state.structure
-                ? { version: 1, input: state.input, structure: true }
-                : state.input,
+              : { version: 1, input: state.input, structure: state.structure },
           ),
         }),
         {

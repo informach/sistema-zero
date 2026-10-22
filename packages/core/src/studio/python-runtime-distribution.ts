@@ -5,6 +5,7 @@ import {
   StudioPythonProvidedModulesSchema,
   studioPythonProvidedModuleArtifactIssue,
 } from './python-provided-modules'
+import { StudioPythonRuntimeFeaturesSchema } from './python-runtime-features'
 import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
@@ -26,9 +27,10 @@ export const StudioPythonDistributionSchema = z
     version: z.literal(1),
     pyodideVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
     pythonVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
-    providedModules: StudioPythonProvidedModulesSchema.optional(),
+    providedModules: StudioPythonProvidedModulesSchema,
+    features: StudioPythonRuntimeFeaturesSchema,
     /** Trusted launcher can wait for and enforce the editor's host audio preference. */
-    previewHostAudioVersion: z.literal(1).optional(),
+    previewHostAudioVersion: z.literal(1),
     files: z
       .array(
         z.strictObject({
@@ -68,7 +70,7 @@ export const StudioPythonDistributionSchema = z
       })
     const paths = new Set(value.files.map((file) => file.path))
     const files = new Map(value.files.map((file) => [file.path, file]))
-    for (const [index, module] of (value.providedModules ?? []).entries()) {
+    for (const [index, module] of value.providedModules.entries()) {
       const issue = studioPythonProvidedModuleArtifactIssue(module, value.files)
       if (issue)
         context.addIssue({ code: 'custom', path: ['providedModules', index], message: issue })
@@ -168,11 +170,12 @@ export const StudioPythonRuntimeConfigurationSchema = z.strictObject({
 export async function verifyStudioPythonDeployment(input: unknown) {
   // Parse/copy before awaiting: callers cannot swap a manifest during digest verification.
   const { release: candidate, distribution } = deploymentSchema.parse(input)
-  const releaseModules = candidate.manifest.python?.providedModules
-  if (
-    (releaseModules === undefined) !== (distribution.providedModules === undefined) ||
-    canonicalJson(releaseModules ?? null) !== canonicalJson(distribution.providedModules ?? null)
-  )
+  const python = candidate.manifest.python
+  if (candidate.manifest.programmingLanguage !== 'python' || !python)
+    throw new Error('A distribuição não corresponde à release Python.')
+  if (canonicalJson(python.features) !== canonicalJson(distribution.features))
+    throw new Error('Os recursos Python da distribuição diferem da release.')
+  if (canonicalJson(python.providedModules) !== canonicalJson(distribution.providedModules))
     throw new Error('Os módulos fornecidos da distribuição diferem da release.')
   const release = await createStudioRuntimeRelease(candidate.manifest)
   if (
@@ -196,6 +199,7 @@ export async function verifyStudioPythonDeployment(input: unknown) {
   const markerSha256 = await sha256Hex(marker)
   for (const file of distribution.files) Object.freeze(file)
   Object.freeze(distribution.files)
+  Object.freeze(distribution.features)
   if (distribution.httpRepresentations) {
     for (const representation of distribution.httpRepresentations) Object.freeze(representation)
     Object.freeze(distribution.httpRepresentations)

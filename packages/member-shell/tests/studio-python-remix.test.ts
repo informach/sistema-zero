@@ -4,8 +4,13 @@ import {
   StudioFreeRuntimeDecisionSchema,
   type StudioFreeRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
+import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
-import { authorizePythonRemix, pythonRemixCapabilities } from '../src/lib/studio-python-remix'
+import {
+  authorizePythonPrivateCopy,
+  authorizePythonRemix,
+  pythonRemixCapabilities,
+} from '../src/lib/studio-python-remix'
 import { remixRequirementFromSnapshot, studioRemixCovered } from '../src/lib/studio-tier'
 
 async function fixture(kind: 'classic' | 'pro' = 'classic') {
@@ -14,6 +19,8 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
   const options = {
     legacyJavaScript: true,
     canCreatePro: true,
+    canCreatePython: true,
+    pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {
       pythonLevel: 3,
       allowedModes: ['blocks', 'bridge', 'code'],
@@ -27,7 +34,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
           runtime: f.project.runtime,
           status: 'active',
           proTemplateIds: ['python-blank'],
-          blockIds: ['py_print'],
+          blockIds: ['sz_py_pass'],
           categoryIds: ['python-basics'],
         },
       ],
@@ -50,7 +57,7 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
       capabilities: ['edit', 'execute'],
       grantedExtensionIds: ['python-turtle'],
       catalog: f.environment.catalog,
-      blockIds: ['py_print'],
+      blockIds: ['sz_py_pass'],
       curation: options.pythonCuration,
       frame: { url: 'https://runtime.test/frame.html', allowedOrigins: ['https://runtime.test'] },
       issuedAt: now,
@@ -60,6 +67,18 @@ async function fixture(kind: 'classic' | 'pro' = 'classic') {
   const signal = new AbortController().signal
   return { ...f, viewerId, options, requests, decision, signal }
 }
+
+test('Python copy discovery uses earned extensions, not every extension in the release', async () => {
+  const f = await fixture()
+  f.options.pythonGrantedExtensionIds = []
+  const capabilities = await pythonRemixCapabilities(f.options)
+  expect(capabilities).toHaveLength(2)
+  expect(capabilities.every(({ allowedExtensions }) => allowedExtensions.length === 0)).toBe(true)
+  f.options.pythonGrantedExtensionIds = ['python-turtle', 'unqualified-extension']
+  expect((await pythonRemixCapabilities(f.options))[0]?.allowedExtensions).toEqual([
+    'python-turtle',
+  ])
+})
 
 for (const kind of ['classic', 'pro'] as const)
   test(`Python ${kind} remix validates the real source recipe and binds fresh authoring approval`, async () => {
@@ -232,4 +251,126 @@ test('an authorization denial or cancellation never yields an importable Python 
       },
     }),
   ).rejects.toThrow()
+})
+
+const authoringBlockIds = PYTHON_PROGRAMMING_CODECS.map(({ id }) => id)
+
+for (const [name, change] of [
+  ['required block removed', { blockIds: authoringBlockIds.filter((id) => id !== 'sz_py_class') }],
+  ['Ponte removed', { curation: { pythonLevel: 3, allowedModes: ['blocks'] } }],
+  [
+    'level lowered with reveal merely permitted',
+    { curation: { pythonLevel: 1, allowLevelReveal: true } },
+  ],
+  [
+    'explicit curation excludes the block',
+    { curation: { pythonLevel: 3, allowBlocks: ['sz_py_print'] } },
+  ],
+] as const)
+  test(`example authoring rejects a final decision with ${name}, despite approved discovery`, async () => {
+    const f = await fixture()
+    f.options.catalog.releases[0]!.blockIds = [...authoringBlockIds]
+    await expect(
+      authorizePythonPrivateCopy({
+        snapshot: f.project,
+        viewerId: f.viewerId,
+        audience: 'kids',
+        options: f.options,
+        signal: f.signal,
+        authoringRequirements: {
+          requiredBlockIds: ['sz_py_class'],
+          requiredModes: ['blocks', 'bridge'],
+        },
+        request: async (request) => {
+          const admitted = { ...(await f.decision(request)), blockIds: authoringBlockIds }
+          return { ...admitted, ...change }
+        },
+      }),
+    ).rejects.toThrow('autoria')
+    expect(f.requests).toHaveLength(1)
+  })
+
+test('example authoring uses explicit final curation and preserves the existing copy return contract', async () => {
+  const f = await fixture()
+  const project = await authorizePythonPrivateCopy({
+    snapshot: f.project,
+    viewerId: f.viewerId,
+    audience: 'kids',
+    options: f.options,
+    signal: f.signal,
+    authoringRequirements: {
+      requiredBlockIds: ['sz_py_class'],
+      requiredModes: ['blocks', 'bridge'],
+    },
+    request: async (request) => ({
+      ...(await f.decision(request)),
+      blockIds: authoringBlockIds,
+      curation: {
+        pythonLevel: 1,
+        allowLevelReveal: false,
+        allowBlocks: ['sz_py_class'],
+        allowedModes: ['blocks', 'bridge'],
+      },
+    }),
+  })
+  expect(project).toEqual(f.project)
+})
+
+test('example authoring captures requirements before asynchronous preparation can mutate them', async () => {
+  const f = await fixture()
+  const authoringRequirements = {
+    requiredBlockIds: ['sz_py_class'],
+    requiredModes: ['blocks', 'bridge'] as ('blocks' | 'bridge')[],
+  }
+  await expect(
+    authorizePythonPrivateCopy({
+      snapshot: f.project,
+      viewerId: f.viewerId,
+      audience: 'kids',
+      options: f.options,
+      signal: f.signal,
+      authoringRequirements,
+      request: async (request) => {
+        authoringRequirements.requiredBlockIds.length = 0
+        authoringRequirements.requiredModes.length = 0
+        return {
+          ...(await f.decision(request)),
+          blockIds: [],
+          curation: { allowedModes: ['blocks'] },
+        }
+      },
+    }),
+  ).rejects.toThrow('autoria')
+})
+
+test('Pro example authorization needs its final code mode but no Classic palette', async () => {
+  const f = await fixture('pro')
+  const args = {
+    snapshot: f.project,
+    viewerId: f.viewerId,
+    audience: 'kids' as const,
+    options: f.options,
+    signal: f.signal,
+    authoringRequirements: { requiredBlockIds: [], requiredModes: ['code'] as const },
+  }
+  expect(
+    await authorizePythonPrivateCopy({
+      ...args,
+      request: async (request) => ({
+        ...(await f.decision(request)),
+        blockIds: [],
+        curation: { allowedModes: ['code'] },
+      }),
+    }),
+  ).toEqual(f.project)
+  await expect(
+    authorizePythonPrivateCopy({
+      ...args,
+      request: async (request) => ({
+        ...(await f.decision(request)),
+        blockIds: [],
+        curation: { allowedModes: ['blocks'] },
+      }),
+    }),
+  ).rejects.toThrow('autoria')
 })

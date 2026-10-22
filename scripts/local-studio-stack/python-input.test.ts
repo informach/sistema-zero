@@ -89,11 +89,20 @@ async function fixture() {
   return { root, directory, planFile, plan, runtime }
 }
 
-test('default portátil verifica a distribuição, ignora caminhos históricos e não escreve configuração', async () => {
+test('default portátil verifica a distribuição e não escreve configuração', async () => {
   const input = await fixture()
   const result = await readLocalPythonInput({ root: input.root })
   expect(result.distribution).toBe(input.directory)
   expect(result.runtime).toEqual(input.runtime)
+  expect(fs.existsSync(join(input.root, '.cache/local-stack'))).toBe(false)
+})
+
+test('plano exige JSON puro antes de qualquer configuração local', async () => {
+  const input = await fixture()
+  fs.writeFileSync(input.planFile, `build output\n${JSON.stringify(input.plan)}`)
+  await expect(readLocalPythonInput({ root: input.root })).rejects.toThrow(
+    'Plano Python local ausente ou inválido',
+  )
   expect(fs.existsSync(join(input.root, '.cache/local-stack'))).toBe(false)
 })
 

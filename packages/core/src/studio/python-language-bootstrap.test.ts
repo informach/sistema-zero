@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test'
 import {
-  legacyPythonRelease,
+  currentPythonRelease,
   providedPythonRelease,
 } from '../../tests/fixtures/python-provided-release'
 import { canonicalJson } from '../creations/content-fingerprint'
@@ -12,17 +12,16 @@ import {
 } from './python-language-bootstrap'
 import { StudioRuntimeReleaseSchema } from './runtime-catalog'
 
-test('legacy Open and bootstrap preserve absence; declared metadata remains bound to its exact release', async () => {
+test('Open and bootstrap require a release; declared metadata remains bound to its exact release', async () => {
   expect(
-    StudioPythonLanguageOpenSchema.parse({ projectId: 'project', binding: 'a'.repeat(64) }),
-  ).toEqual({ projectId: 'project', binding: 'a'.repeat(64) })
-  expect(await createPythonLanguageBootstrap({ protocolVersion: 1 })).toEqual({
-    protocolVersion: 1,
-  })
-  const legacy = legacyPythonRelease()
-  const old = await createPythonLanguageBootstrap({ protocolVersion: 1, runtimeRelease: legacy })
-  expect(canonicalJson(old.runtimeRelease)).toBe(canonicalJson(legacy))
-  expect(Object.hasOwn(old.runtimeRelease!.manifest.python!, 'providedModules')).toBe(false)
+    StudioPythonLanguageOpenSchema.safeParse({ projectId: 'project', binding: 'a'.repeat(64) })
+      .success,
+  ).toBe(false)
+  await expect(createPythonLanguageBootstrap({ protocolVersion: 1 })).rejects.toThrow()
+  const current = await currentPythonRelease()
+  const empty = await createPythonLanguageBootstrap({ protocolVersion: 1, runtimeRelease: current })
+  expect(canonicalJson(empty.runtimeRelease)).toBe(canonicalJson(current))
+  expect(empty.runtimeRelease!.manifest.python!.providedModules).toEqual([])
   const release = await providedPythonRelease()
   const input = { protocolVersion: 1, runtimeRelease: StudioRuntimeReleaseSchema.parse(release) }
   const pending = createPythonLanguageBootstrap(input)

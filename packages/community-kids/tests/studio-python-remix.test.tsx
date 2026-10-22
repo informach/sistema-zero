@@ -44,6 +44,8 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
   const options = {
     legacyJavaScript: true,
     canCreatePro: true,
+    canCreatePython: true,
+    pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {
       pythonLevel: 3,
       allowedModes: ['blocks', 'bridge', 'code'],
@@ -57,7 +59,7 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
           runtime: f.project.runtime,
           status: 'active',
           proTemplateIds: ['python-blank'],
-          blockIds: ['py_print'],
+          blockIds: ['sz_py_pass'],
           categoryIds: ['python-basics'],
         },
       ],
@@ -116,7 +118,7 @@ async function setup(kind: 'classic' | 'pro' = 'classic') {
       capabilities: ['edit', 'execute'],
       grantedExtensionIds: ['python-turtle'],
       catalog: f.environment.catalog,
-      blockIds: ['py_print'],
+      blockIds: ['sz_py_pass'],
       curation: options.pythonCuration,
       frame: { url: 'https://runtime.test/frame.html', allowedOrigins: ['https://runtime.test'] },
       issuedAt: now,

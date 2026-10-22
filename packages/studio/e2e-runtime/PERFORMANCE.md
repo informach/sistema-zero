@@ -44,7 +44,8 @@ browser/kind/distribution/network identity and cold-reset evidence. The reporter
 the complete positive/negative series before returning failed when evidence is incomplete,
 mixed, duplicated, failed, or its phase p95 exceeds 12,000/3,000/1,500 ms.
 The full deployment must match the explicit distribution pin (default: the versioned
-`65c9bffd…` candidate). A selected release pin is also enforced. HTTP and boot-generation
+candidate in `docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json`).
+A selected release pin is also enforced. HTTP and boot-generation
 cache resets are required. Unshaped network is recorded explicitly as `null`; shaped
 responses must identify 20 Mbps / 80 ms. CPU-profiled runs are diagnostic and cannot
 approve this normal budget. Receipt paths resolve from the Studio config directory.

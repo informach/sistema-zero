@@ -4,10 +4,13 @@ import type { StudioPythonAnalysisAuthorization } from '@sistemazero/core/studio
 import type { PythonLanguageProvider } from '@sistemazero/core/studio/python-language-results'
 import type { StudioRuntimeOperation } from '@sistemazero/core/studio/runtime-authorization'
 import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import type { StudioRuntimeAuthority } from './authority'
 import type { StudioRuntimeLoadInput, StudioRuntimeRegistry } from './registry'
 
 /** Supplied by the host, independently of the learner's editable document. */
 export interface StudioRuntimeEnvironment {
+  /** Reactive host policy; omitted only by hosts whose authority is static for their lifetime. */
+  authority?: StudioRuntimeAuthority
   /** Context lifetime. Revocation or host disposal closes parsers and running sessions. */
   signal?: AbortSignal
   pythonLanguage?: PythonLanguageProvider

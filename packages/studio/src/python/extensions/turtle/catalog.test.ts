@@ -40,7 +40,7 @@ function types(values: PythonVisualNode[]): string[] {
 }
 
 test('all Turtle owners and aliases have distinct lossless blocks and serializable Blockly layouts', () => {
-  expect(PYTHON_TURTLE_CODECS).toHaveLength(178)
+  expect(PYTHON_TURTLE_CODECS).toHaveLength(180)
   expect(new Set(codecs.map((codec) => codec.id)).size).toBe(codecs.length)
   registerPythonBlocks(codecs)
   const workspace = new Blockly.Workspace()
@@ -143,6 +143,59 @@ test('custom modules, reassigned objects and unavailable official modules stay g
   }
   const unavailable = pythonASTToVisual(moduleNode([...base, command]), { codecs })
   expect(types(unavailable.body).some((id) => id.startsWith('sz_py_turtle_'))).toBe(false)
+})
+
+test('official compound shapes keep their receiver, Python API and feature gate through Blockly', () => {
+  const component = expression(
+    call(attribute(name('desenho'), 'addcomponent'), [
+      node('Tuple', {
+        elts: [node('Tuple', { elts: [integer('0'), integer('10')], ctx: node('Load') })],
+        ctx: node('Load'),
+      }),
+      text('red'),
+    ]),
+  )
+  const original = moduleNode([
+    node('ImportFrom', {
+      module: 'turtle',
+      level: { literal: 'int', value: '0' },
+      names: [node('alias', { name: 'Shape', asname: 'Formato' })],
+    }),
+    assigned('desenho', call(name('Formato'), [text('compound')])),
+    component,
+  ])
+  const visual = pythonASTToVisual(original, { codecs, officialModules: new Set(['turtle']) })
+  expect(types(visual.body)).toContain('sz_py_turtle_module_Shape')
+  expect(types(visual.body)).toContain('sz_py_turtle_shape_addcomponent')
+  for (const id of ['sz_py_turtle_module_Shape', 'sz_py_turtle_shape_addcomponent']) {
+    const codec = PYTHON_TURTLE_CODECS.find((entry) => entry.id === id)!
+    expect(codec.requiredRuntimeFeatures).toEqual(['turtle-compound-shapes'])
+    expect(codec.title).toContain(id.endsWith('Shape') ? 'criar forma composta' : 'adicionar parte')
+  }
+  const workspace = new Blockly.Workspace()
+  try {
+    const roots = pythonVisualToWorkspace(visual, workspace, codecs)
+    expect(
+      pythonSemanticTree(
+        pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots, [], codecs), codecs),
+      ),
+    ).toEqual(pythonSemanticTree(original))
+  } finally {
+    workspace.dispose()
+  }
+  for (const assignment of [
+    assigned('desenho', call(name('OutraForma'))),
+    assigned('desenho', call(attribute(name('turtle'), 'Shape'), [text('compound')])),
+  ]) {
+    // A second write prevents claiming that an arbitrary object has the Turtle API.
+    const rebound = moduleNode([
+      ...(original.fields.body as ReturnType<typeof node>[]),
+      assignment,
+      component,
+    ])
+    const projected = pythonASTToVisual(rebound, { codecs, officialModules: new Set(['turtle']) })
+    expect(types(projected.body)).not.toContain('sz_py_turtle_shape_addcomponent')
+  }
 })
 
 test('event, animation and fill selections include their operational partners', () => {

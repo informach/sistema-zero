@@ -129,6 +129,7 @@ export async function validateStudioPythonBuilderCandidate(
     }
   }
   const built = await buildStudioPythonRevision({
+    structure: false,
     snapshot: prepared.metadata,
     projectId: prepared.base.projectId,
     owner,

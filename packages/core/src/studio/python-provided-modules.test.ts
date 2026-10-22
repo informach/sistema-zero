@@ -1,6 +1,5 @@
 import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { z } from 'zod'
 import { canonicalJson } from '../creations/content-fingerprint'
 import {
   pythonProvidedModuleArtifactPaths,
@@ -98,18 +97,10 @@ test('validated metadata is detached and frozen through nested lists and records
     expect(Object.isFrozen(value)).toBe(true)
 })
 
-test('an optional providedModules field never materializes a default for old records', () => {
-  const envelope = z.strictObject({
-    version: z.literal(1),
-    providedModules: StudioPythonProvidedModulesSchema.optional(),
-  })
-  const legacy = { version: 1 }
-  const before = canonicalJson(legacy)
-  const parsed = envelope.parse(legacy)
-  expect(Object.hasOwn(parsed, 'providedModules')).toBe(false)
-  expect(canonicalJson(parsed)).toBe(before)
-  expect(digest(canonicalJson(parsed))).toBe(digest(before))
-  expect(envelope.safeParse({ version: 1, providedModules: null }).success).toBe(false)
+test('provided module arrays are explicit and never supplied by a default', () => {
+  expect(StudioPythonProvidedModulesSchema.parse([])).toEqual([])
+  for (const value of [undefined, null, 'sz_audio', {}])
+    expect(StudioPythonProvidedModulesSchema.safeParse(value).success).toBe(false)
 })
 
 test('descriptor rejects unsupported formats, over-budget data and inconsistent limits', () => {

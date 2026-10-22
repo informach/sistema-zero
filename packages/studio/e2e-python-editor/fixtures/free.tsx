@@ -1,3 +1,4 @@
+import * as Blockly from 'blockly/core'
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js'
 import { useEffect, useState } from 'react'
 import type { Root } from 'react-dom/client'
@@ -14,6 +15,20 @@ export function createFreeProbe(root: Root) {
   let currentProjectId: string | null = null
   let viewerId = ''
   let includePintaAsset = false
+  let includeExamples = false
+  function visualWorkspace() {
+    const workspaces = Blockly.common
+      .getAllWorkspaces()
+      .filter(
+        (workspace): workspace is Blockly.WorkspaceSvg =>
+          workspace instanceof Blockly.WorkspaceSvg &&
+          !workspace.isFlyout &&
+          workspace.getParentSvg()?.isConnected === true,
+      )
+    if (workspaces.length !== 1)
+      throw new Error(`Expected one live Blockly workspace, got ${workspaces.length}`)
+    return workspaces[0]!
+  }
   function Classic({ project, close }: { project: EditableStudioProject; close(): void }) {
     const runtime = useFreeStudioRuntime({ project, viewerId })
     return (
@@ -102,6 +117,7 @@ export function createFreeProbe(root: Root) {
         )}
         <ProjectList
           professional
+          showExamples={includeExamples}
           onOpenProject={(id) => void open(id)}
           pythonCreation={options.creation}
           pythonDiscovery={options}
@@ -111,8 +127,9 @@ export function createFreeProbe(root: Root) {
     )
   }
   return {
-    async create(failure = false, pintaAsset = false) {
+    async create(failure = false, pintaAsset = false, examples = false) {
       includePintaAsset = pintaAsset
+      includeExamples = examples
       const setup = await (await fetch(`/free-probe/setup?failure=${failure ? 1 : 0}`)).json()
       viewerId = setup.viewerId
       Studio.setStudioStorageNamespace(viewerId)
@@ -120,6 +137,35 @@ export function createFreeProbe(root: Root) {
     },
     async saved() {
       return currentProjectId ? Studio.createLocalPersistenceAdapter().load(currentProjectId) : null
+    },
+    workspace() {
+      const workspace = visualWorkspace()
+      const blocks = workspace.getAllBlocks(false)
+      return {
+        id: workspace.id,
+        count: blocks.length,
+        opaque: blocks
+          .filter((block) => block.type.startsWith('sz_py_source_'))
+          .map((block) => block.id),
+        types: [...new Set(blocks.map((block) => block.type))].sort(),
+      }
+    },
+    /** Navigation only: Playwright types into the actual Blockly field afterward. */
+    focusAssignmentField(variable: string, fieldName: string) {
+      const workspace = visualWorkspace()
+      const assignments = workspace
+        .getAllBlocks(false)
+        .filter(
+          (block) =>
+            block.type === 'sz_py_assign' &&
+            block.getInputTargetBlock('TARGET')?.getFieldValue('NAME') === variable,
+        )
+      if (assignments.length !== 1) throw new Error(`Expected one assignment to ${variable}`)
+      const value = assignments[0]!.getInputTargetBlock('VALUE')
+      const field = value?.getField(fieldName)
+      if (!value || !field) throw new Error(`Missing editable field ${variable}.${fieldName}`)
+      workspace.centerOnBlock(value.id)
+      return { blockId: value.id, value: field.getValue() }
     },
     source(value: string) {
       const editor = monaco.editor
@@ -131,8 +177,12 @@ export function createFreeProbe(root: Root) {
     },
     read: () =>
       monaco.editor
-        .getModels()
-        .find((model) => model.uri.path.endsWith('/main.py'))
+        .getEditors()
+        .find(
+          (editor) =>
+            editor.getDomNode()?.isConnected && editor.getModel()?.uri.path.endsWith('/main.py'),
+        )
+        ?.getModel()
         ?.getValue(),
     close: () => root.unmount(),
   }

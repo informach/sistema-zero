@@ -1,18 +1,16 @@
 #!/usr/bin/env -S bun --no-env-file
 import './preflight.mjs'
 /**
- * Prepara o Studio Python LOCAL a partir da distribuição da candidata (65c9bffd…), sem nada
+ * Prepara o Studio Python LOCAL a partir da distribuição da candidata atual, sem nada
  * hospedado:
  *
  *  1. Lê um plano canônico já gerado pelo promotor (offline, versionado no repo):
  *     `deployment` (release + distribuição) e `configuration.members` (a política de autoria).
- *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (distribuição 65c9bffd…, com o
- *     runtime Turtle de f81fd9ae2 e e1c5fb092 e as capacidades `publish` e `assist`, exigidas
- *     desde 896c3a1c3 para publicar e para o Zappy). A distribuição padrão é a cópia em
- *     .cache/studio-python-runtime/distributions com o SHA fixado no plano;
+ *     Padrão: docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json.
+ *     A distribuição padrão é a cópia em .cache/studio-python-runtime/distributions
+ *     com o SHA fixado no plano;
  *     `--distribution <dir>` a substitui.
- *     `--plan <arquivo>` escolhe outro (ex.: o piloto audio-1 em
- *     docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot).
+ *     `--plan <arquivo>` escolhe outro plano validado com o contrato atual.
  *  2. Gera a config do Worker @sistemazero/studio-runtime para `wrangler dev --local`
  *     (.cache/local-stack/studio-runtime/wrangler.jsonc): mesmos bindings R2/DO, SEM contêiner
  *     e SEM cron; origens de app = localhost.

@@ -1,18 +1,28 @@
 import { expect, test } from 'bun:test'
 import { canonicalJson } from '../src/creations/content-fingerprint'
-import type { StudioPythonClassicDocument } from '../src/studio/project-document'
+import { StudioProjectDocumentSchema } from '../src/studio/project-document'
 import {
   createStudioPythonPublicationRecipe,
   StudioPythonPublicationManifestSchema,
-  studioPythonPublicationLegacyRecipeText,
   studioPythonPublicationRecipeText,
   studioPythonRecipeMatchesProject,
 } from '../src/studio/python-publication'
 
 const runtime = { profileId: 'python-browser', releaseId: '1.0.0', manifestSha256: 'a'.repeat(64) }
 const approval = { kind: 'python-browser' as const, runtime, snapshotSha256: 'c'.repeat(64) }
-const project = {
+const project = StudioProjectDocumentSchema.parse({
+  formatVersion: 3,
+  programmingLanguage: 'python',
   kind: 'classic',
+  id: 'python-publication-current',
+  name: 'Publicação Python',
+  createdAt: 1,
+  updatedAt: 1,
+  mode: 'blocks',
+  runtime,
+  files: { 'main.py': 'print(1)\n', 'requirements.txt': '' },
+  ir: null,
+  blocksState: null,
   installedExtensions: [
     { id: 'python-turtle', version: '1.0.0', installedAt: 5 },
     { id: 'python-audio', version: '2.0.0', installedAt: 9 },
@@ -22,13 +32,15 @@ const project = {
     dependencyLock: {
       lockVersion: 1,
       target: 'browser',
-      pythonVersion: '3.13.2',
+      pythonVersion: '3.14.2',
       runtimeManifestSha256: runtime.manifestSha256,
       requirementsSha256: 'e'.repeat(64),
       packages: [],
     },
   },
-} as unknown as StudioPythonClassicDocument
+})
+if (project.programmingLanguage !== 'python' || project.kind !== 'classic')
+  throw new Error('The publication fixture must be a current Python Classic document')
 
 test('v2 recipe pins runtime, enabled extension versions, entrypoint and lock in one canonical form', () => {
   const recipe = createStudioPythonPublicationRecipe({
@@ -45,21 +57,17 @@ test('v2 recipe pins runtime, enabled extension versions, entrypoint and lock in
   expect(StudioPythonPublicationManifestSchema.parse(JSON.parse(text))).toEqual(recipe)
   expect(studioPythonRecipeMatchesProject(recipe, project)).toBe(true)
   const other = { ...project, python: { ...project.python, entrypoint: 'jogo.py' } }
-  expect(studioPythonRecipeMatchesProject(recipe, other as typeof project)).toBe(false)
+  expect(studioPythonRecipeMatchesProject(recipe, other)).toBe(false)
 })
 
-test('v1 recipes stay readable with their exact legacy bytes; malformed v2 and future versions are refused', () => {
-  const legacy = studioPythonPublicationLegacyRecipeText({ sourceHash: 'b'.repeat(64), approval })
-  expect(legacy).toBe(JSON.stringify({ version: 1, sourceHash: 'b'.repeat(64), approval }))
-  const v1 = StudioPythonPublicationManifestSchema.parse(JSON.parse(legacy))
-  expect(v1.version).toBe(1)
-  expect(studioPythonRecipeMatchesProject(v1, project)).toBe(true)
+test('old, malformed and unknown Python recipes are refused explicitly', () => {
   const recipe = createStudioPythonPublicationRecipe({
     project,
     sourceHash: 'b'.repeat(64),
     approval,
   })
   for (const candidate of [
+    { version: 1, sourceHash: 'b'.repeat(64), approval },
     { ...recipe, extensions: [...recipe.extensions].reverse() },
     { ...recipe, extensions: [recipe.extensions[0], recipe.extensions[0]] },
     {

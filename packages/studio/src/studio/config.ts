@@ -92,6 +92,7 @@ export interface LearningConfig {
   level: BlockLevel
   /** Tipos de bloco sempre visíveis (allowlist da aula). */
   allowBlocks?: readonly string[]
+  grantedBlockIds?: readonly string[]
   /** IDs de extensões que podem ser oferecidas para instalação. */
   allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis. */
@@ -105,6 +106,7 @@ export interface LearningConfigInput {
   /** Aceita a escala LEGADA de 3 níveis (jsonb de aulas antigas, embutidores antigos). */
   level?: AnyBlockLevel
   allowBlocks?: readonly string[]
+  grantedBlockIds?: readonly string[]
   allowExtensions?: readonly string[]
   allowCategories?: readonly string[]
   allowLevelReveal?: boolean
@@ -121,6 +123,7 @@ export function resolveLearning(input?: LearningConfigInput): LearningConfig {
     pythonLevel: resolvePythonLearningLevel(input?.pythonLevel),
     level: normalizeBlockLevel(input?.level) ?? DEFAULT_LEARNING_LEVEL,
     allowBlocks: input?.allowBlocks,
+    grantedBlockIds: input?.grantedBlockIds,
     allowExtensions: input?.allowExtensions,
     allowCategories: input?.allowCategories,
     allowLevelReveal: input?.allowLevelReveal ?? true,

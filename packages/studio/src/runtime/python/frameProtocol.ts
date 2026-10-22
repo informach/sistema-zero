@@ -67,7 +67,7 @@ export interface PythonFrameInitialization {
   identity: StudioExecutionIdentity
   snapshot: PythonExecutionSnapshot
   activity?: StudioPythonActivity
-  bootResources?: 1
+  bootResources: 1
 }
 export type PythonFrameCommand = {
   protocol: 1

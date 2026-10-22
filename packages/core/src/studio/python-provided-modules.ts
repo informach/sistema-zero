@@ -60,7 +60,7 @@ export const StudioPythonProvidedAudioPolicySchema = z
 /**
  * Data about the first provided-module family. This is neither stdlib, an installed
  * extension nor an authorization. Future families need their own explicit contract.
- * No default/transform: an absent field in an old release must remain absent.
+ * No default/transform: descriptors are explicit current metadata.
  */
 export const StudioPythonProvidedModuleDescriptorSchema = z
   .strictObject({

@@ -11,6 +11,7 @@ import type {
   StudioTeamLibraryAdapter,
   StudioTutorConfig,
 } from '@sistemazero/studio'
+import { useStudioRuntimeAuthority } from '@sistemazero/studio/runtime-authority'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react'
 import {
   assertPensaJavaScriptProject,
@@ -89,6 +90,7 @@ export function StudioFullEditor({
     audience,
     enabled: state.status === 'ready' && state.project.kind !== 'pro' && !taskSession,
   })
+  useStudioRuntimeAuthority(runtime.environment ?? null)
   const { setWorkspaceActive } = useFocusMode()
   const workspaceActive = state.status === 'ready' && state.project.kind !== 'pro'
   useLayoutEffect(() => {
@@ -211,12 +213,14 @@ export function StudioFullEditor({
           tutor={tutor}
           theme={theme}
           level={tier.level}
-          allowBlocks={
+          grantedBlockIds={
             state.project.programmingLanguage === 'python' ? undefined : tier.allowBlocks
           }
           pythonLevel={state.project.programmingLanguage === 'python' ? 3 : undefined}
           allowExtensions={
-            state.project.programmingLanguage === 'python' ? undefined : tier.allowedExtensions
+            state.project.programmingLanguage === 'python'
+              ? (runtime.environment?.access(state.project).grantedExtensionIds ?? [])
+              : tier.allowedExtensions
           }
           runtimeEnvironment={runtime.environment}
           allowedModes={tier.allowedModes}

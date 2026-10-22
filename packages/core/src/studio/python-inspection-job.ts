@@ -45,7 +45,7 @@ export const StudioPythonInspectionJobStateSchema = z
     jobId: StudioSha256Schema,
     input: StudioPythonInputReferenceSchema,
     structure: z.boolean(),
-    /** Absent in legacy compile-only jobs and pre-admission cancellation tombstones. */
+    /** Only validation jobs carry a playtest operation; compilation and cancellation omit it. */
     operation: StudioPythonValidationOperationSchema.optional(),
     status: z.enum(['running', 'succeeded', 'failed', 'cancelled']),
     createdAt: z.number().int().nonnegative(),

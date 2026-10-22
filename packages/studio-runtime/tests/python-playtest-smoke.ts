@@ -67,9 +67,8 @@ const release = await createStudioRuntimeRelease({
   python: {
     version: build.manifest.pythonVersion,
     packages: [],
-    ...(build.manifest.providedModules === undefined
-      ? {}
-      : { providedModules: build.manifest.providedModules }),
+    providedModules: build.manifest.providedModules,
+    features: build.manifest.features,
   },
 })
 const evidence = path.join(

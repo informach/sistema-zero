@@ -1,8 +1,9 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, render, waitFor } from '@testing-library/react'
 import { createRef, StrictMode, useEffect } from 'react'
-import { createEmptyProject } from '#core'
+import { createEmptyProject, isBlockTypeAllowed } from '#core'
 import { fakeUseStore } from '../../testing/fakeIdbStore'
+import { useStudioConfig } from '../config'
 import { useT } from '../i18n'
 import type { StudioHandle } from '../types'
 
@@ -30,12 +31,12 @@ mock.module('idb-keyval', () => ({
   setMany: mock(async () => undefined),
 }))
 
-const { useProjectStore, sanitizeProjectForHost, PROJECT_FILE_LIMITS } = await import(
-  '../../state/projectStore'
-)
+const { useProjectStore, useProjectStoreApi, sanitizeProjectForHost, PROJECT_FILE_LIMITS } =
+  await import('../../state/projectStore')
 const { useUIStore } = await import('../../state/uiStore')
 const { usePendingEditorEdits } = await import('../../state/studioStores')
 
+let observedProjectStore: ReturnType<typeof useProjectStoreApi> | undefined
 let pendingEditorCode: string | null = null
 let pendingEditorRegistered = false
 
@@ -43,7 +44,9 @@ let pendingEditorRegistered = false
 // os hooks aqui leem as stores POR INSTÂNCIA (as estáticas useXStore.getState
 // leem a default — não servem para inspecionar um <Studio>).
 function ShellProbe(): React.JSX.Element {
+  observedProjectStore = useProjectStoreApi()
   const t = useT()
+  const { learning } = useStudioConfig()
   const projectId = useProjectStore((s) => s.project?.id ?? '')
   const mode = useProjectStore((s) => s.project?.mode ?? '')
   const isDirty = useProjectStore((s) => s.isDirty)
@@ -68,6 +71,13 @@ function ShellProbe(): React.JSX.Element {
       data-dirty={String(isDirty)}
       data-preview={String(previewRunning)}
       data-blocks-label={t('mode.blocks')}
+      data-granted-blocks={JSON.stringify(learning.grantedBlockIds)}
+      data-granted-extensions={JSON.stringify(learning.allowExtensions)}
+      data-offered-course-check={JSON.stringify(
+        ['sz_js_if_else', 'sz_val_number'].filter((id) =>
+          isBlockTypeAllowed(id, 'iniciante-2d', learning),
+        ),
+      )}
     />
   )
 }
@@ -86,6 +96,7 @@ afterAll(() => {
 
 describe('Studio', () => {
   beforeEach(() => {
+    observedProjectStore = undefined
     pendingEditorCode = null
     pendingEditorRegistered = false
     // A store DEFAULT é compartilhada pela suíte inteira (singleton de módulo):
@@ -113,6 +124,174 @@ describe('Studio', () => {
     // A store default (fora de qualquer Studio) permanece intocada — prova do
     // isolamento por instância.
     expect(useProjectStore.getState().project).toBeNull()
+  })
+
+  it('course and extension grants change without replacing source or lesson curation', async () => {
+    const project = createEmptyProject('course-grants', 'Curso Python')
+    const handle = createRef<StudioHandle>()
+    const view = render(
+      <Studio
+        ref={handle}
+        initialProject={project}
+        persistence="none"
+        grantedBlockIds={['sz_js_if_else']}
+        allowExtensions={[]}
+      />,
+    )
+    await waitFor(() => expect(view.getByTestId('editor-shell').dataset.project).toBe(project.id))
+    expect(view.getByTestId('editor-shell').dataset.offeredCourseCheck).toBe('["sz_js_if_else"]')
+    view.rerender(
+      <Studio
+        ref={handle}
+        initialProject={project}
+        persistence="none"
+        grantedBlockIds={['sz_js_if_else', 'sz_val_number']}
+        allowExtensions={['game-2d']}
+      />,
+    )
+    await waitFor(() =>
+      expect(view.getByTestId('editor-shell').dataset.offeredCourseCheck).toBe(
+        '["sz_js_if_else","sz_val_number"]',
+      ),
+    )
+    expect(view.getByTestId('editor-shell').dataset.grantedExtensions).toBe('["game-2d"]')
+    expect(handle.current?.getProject()?.files).toEqual(project.files)
+    view.rerender(
+      <Studio ref={handle} initialProject={project} persistence="none" grantedBlockIds={[]} />,
+    )
+    expect(view.getByTestId('editor-shell').dataset.grantedBlocks).toBe('[]')
+    expect(view.getByTestId('editor-shell').dataset.offeredCourseCheck).toBe('[]')
+    expect(handle.current?.getProject()?.files).toEqual(project.files)
+  })
+
+  it.each([
+    'javascript',
+    'python',
+  ] as const)('revoking and restoring %s extensions preserves the open source and visual draft', async (language) => {
+    const fixture =
+      language === 'python'
+        ? await (await import('../../state/fixtures/pythonEnvironment')).pythonEnvironmentFixture(
+            'classic',
+          )
+        : null
+    const project = fixture?.project ?? createEmptyProject('authority-lifecycle', 'Meu jogo')
+    const extensionId = language === 'python' ? 'turtle' : 'game-2d'
+    project.installedExtensions = [{ id: extensionId, version: '1.0.0', installedAt: 1 }]
+    const handle = createRef<StudioHandle>()
+    const onReady = mock(() => {})
+    const props = {
+      ref: handle,
+      initialProject: project,
+      persistence: 'none' as const,
+      autoRun: false,
+      onReady,
+      runtimeEnvironment: fixture?.environment,
+    }
+    const view = render(<Studio {...props} allowExtensions={[extensionId]} />)
+    await waitFor(() => expect(view.getByTestId('editor-shell').dataset.project).toBe(project.id))
+    const store = observedProjectStore
+    if (!store) throw new Error('Missing instance store')
+    await act(async () => {
+      if (language === 'python') {
+        expect(store.getState().setPythonFile('main.py', 'speed = 7\n')).toBeNull()
+        const current = store.getState().project
+        if (current?.programmingLanguage !== 'python' || current.kind !== 'classic')
+          throw new Error('Missing Python document')
+        const { createPythonWorkspaceDraft, updatePythonWorkspaceDraft } = await import(
+          '../../python/blocks/workspaceDraft'
+        )
+        const draft = createPythonWorkspaceDraft(
+          current,
+          'main.py',
+          { blocks: { languageVersion: 0, blocks: [] } },
+          [],
+        )
+        expect(
+          store
+            .getState()
+            .applyPythonSourceFiles(
+              current,
+              current.files,
+              updatePythonWorkspaceDraft(current, 'main.py', draft),
+            ),
+        ).toBeNull()
+      } else {
+        store.getState().setFile('script.js', 'const speed = 7;')
+        store.getState().setBlocksState({
+          blocks: {
+            languageVersion: 0,
+            blocks: [{ type: 'sz_val_number', id: 'edited', fields: { NUM: 7 } }],
+          },
+        })
+      }
+    })
+    const edited = store.getState().project
+    expect(edited?.files).not.toEqual(project.files)
+    expect(edited?.blocksState).toBeTruthy()
+    view.rerender(<Studio {...props} allowExtensions={[]} />)
+    await waitFor(() => expect(view.queryByTestId('editor-shell')).toBeNull())
+    expect(
+      view.getByText(/Este projeto usa ferramentas que você ainda vai conquistar/),
+    ).toBeTruthy()
+    expect(store.getState().project).toBe(edited)
+    expect(handle.current?.getProject()?.blocksState).toEqual(edited?.blocksState)
+    view.rerender(<Studio {...props} allowExtensions={[extensionId]} />)
+    await waitFor(() => expect(view.getByTestId('editor-shell').dataset.project).toBe(project.id))
+    expect(store.getState().project).toBe(edited)
+    expect(handle.current?.getProject()?.files).toEqual(edited?.files)
+    expect(handle.current?.getProject()?.blocksState).toEqual(edited?.blocksState)
+    expect(onReady).toHaveBeenCalledTimes(1)
+    const dirty = store.getState().isDirty
+    view.rerender(<Studio {...props} allowExtensions={[extensionId]} allowedModes={['bridge']} />)
+    await waitFor(() => expect(view.getByTestId('editor-shell').dataset.mode).toBe('bridge'))
+    expect(store.getState().project?.files).toBe(edited?.files)
+    expect(store.getState().project?.blocksState).toBe(edited?.blocksState)
+    expect(store.getState().isDirty).toBe(dirty)
+    view.rerender(
+      <Studio {...props} allowExtensions={[extensionId]} allowedModes={['blocks', 'bridge']} />,
+    )
+    expect(store.getState().project?.mode).toBe('bridge')
+    expect(store.getState().project?.files).toBe(edited?.files)
+    expect(store.getState().project?.blocksState).toBe(edited?.blocksState)
+    expect(onReady).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    'javascript',
+    'python',
+  ] as const)('a blocked initial %s document opens once when its extension is granted', async (language) => {
+    const fixture =
+      language === 'python'
+        ? await (await import('../../state/fixtures/pythonEnvironment')).pythonEnvironmentFixture(
+            'classic',
+          )
+        : null
+    const project = fixture?.project ?? createEmptyProject('initial-locked', 'Meu jogo')
+    const extensionId = language === 'python' ? 'turtle' : 'game-2d'
+    project.installedExtensions = [{ id: extensionId, version: '1.0.0', installedAt: 1 }]
+    const ref = createRef<StudioHandle>()
+    const onReady = mock(() => {})
+    const props = {
+      ref,
+      initialProject: project,
+      persistence: 'none' as const,
+      autoRun: false,
+      onReady,
+      runtimeEnvironment: fixture?.environment,
+    }
+    const view = render(<Studio {...props} allowExtensions={[]} />)
+    await waitFor(() =>
+      expect(
+        view.getByText(/Este projeto usa ferramentas que você ainda vai conquistar/),
+      ).toBeTruthy(),
+    )
+    expect(view.queryByTestId('editor-shell')).toBeNull()
+    expect(ref.current?.getProject()).toBeNull()
+    expect(onReady).not.toHaveBeenCalled()
+    view.rerender(<Studio {...props} allowExtensions={[extensionId]} />)
+    await waitFor(() => expect(view.getByTestId('editor-shell').dataset.project).toBe(project.id))
+    expect(ref.current?.getProject()?.files).toEqual(project.files)
+    expect(onReady).toHaveBeenCalledTimes(1)
   })
 
   it('duas instâncias na mesma página não compartilham estado', async () => {

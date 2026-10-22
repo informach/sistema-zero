@@ -55,7 +55,7 @@ export type StudioPythonAnalysisAuthorization = z.infer<
 export const StudioPythonLanguageOpenSchema = z.strictObject({
   projectId: StudioProjectIdSchema,
   binding: StudioSha256Schema,
-  runtimeRelease: StudioRuntimeReleaseSchema.optional(),
+  runtimeRelease: StudioRuntimeReleaseSchema,
 })
 export const StudioPythonLanguageStartSchema = z.strictObject({ binding: StudioSha256Schema })
 

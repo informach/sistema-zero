@@ -36,6 +36,9 @@ async function fixture() {
     version: 1,
     pythonVersion: '3.14.2',
     pyodideVersion: '314.0.7',
+    features: [],
+    providedModules: [],
+    previewHostAudioVersion: 1,
     files: [
       'frame.html',
       'frame.mjs',
@@ -233,7 +236,7 @@ async function fixture() {
 test('routes audio over the authenticated session channel and correlates its response', async () => {
   const value = await fixture()
   value.complete()
-  value.hello(false)
+  value.hello()
   await value.admitted()
   const transfer = value.transfers[0]!
   const initialization = transfer.data as PythonFrameInitialization
@@ -301,19 +304,15 @@ test('prepares pinned public metadata in parallel but transfers nothing before a
   await f.prepared()
 })
 
-test('early metadata rejection is observed but a legacy hello remains independent of it', async () => {
+test('a hello without the current boot protocol is refused before any channel transfer', async () => {
   const f = await fixture()
-  await tick()
-  f.deny(new Error('Metadata offline'))
-  await tick()
-  expect(f.settled()).toBe(false)
-  expect(f.transfers).toEqual([])
+  f.complete()
   f.hello(false)
-  await f.admitted()
-  expect(f.transfers[0]?.ports).toHaveLength(1)
-  await f.prepared()
-  expect(f.calls).toHaveLength(1)
+  const result = await f.preparation
+  expect(result.error).toMatchObject({ reasonCode: 'python-frame-failed' })
+  expect(f.transfers).toEqual([])
   expect(f.opens()).toBe(0)
+  expect(f.frame.src).toBe('about:blank')
 })
 
 test('metadata failure only fails a session after its valid hello negotiates boot resources', async () => {

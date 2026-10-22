@@ -7,6 +7,7 @@ import {
   StudioPythonInputReferenceSchema,
   StudioPythonInputStateSchema,
   StudioPythonInspectionRequestSchema,
+  StudioPythonValidationRequestSchema,
 } from './python-validation-input'
 
 async function fixture() {
@@ -72,7 +73,7 @@ test('input contracts contain detached metadata and service-generated references
     revision: state.snapshot.revision,
     expiresAt: state.expiresAt,
   }
-  expect(StudioPythonInspectionRequestSchema.parse(reference).structure).toBe(false)
+  expect(StudioPythonInspectionRequestSchema.safeParse(reference).success).toBe(false)
   expect(
     StudioPythonInspectionRequestSchema.parse({ version: 1, input: reference, structure: true })
       .structure,
@@ -83,6 +84,23 @@ test('input contracts contain detached metadata and service-generated references
       input: reference,
       structure: false,
     }).success,
+  ).toBe(true)
+  for (const structure of [undefined, null, 'false', 0]) {
+    expect(
+      StudioPythonInspectionRequestSchema.safeParse({ version: 1, input: reference, structure })
+        .success,
+    ).toBe(false)
+    expect(
+      StudioPythonValidationRequestSchema.safeParse({
+        version: 1,
+        input: reference,
+        structure,
+        recipe: { version: 1 },
+      }).success,
+    ).toBe(false)
+  }
+  expect(
+    StudioPythonInspectionRequestSchema.safeParse({ version: 1, input: reference }).success,
   ).toBe(false)
   expect(
     StudioPythonInputReferenceSchema.parse({

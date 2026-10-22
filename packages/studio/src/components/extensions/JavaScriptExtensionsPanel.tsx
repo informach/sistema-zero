@@ -81,6 +81,7 @@ export function JavaScriptExtensionsPanel({ open, onClose }: ExtensionsPanelProp
       level: learning.level,
       revealed: learning.allowLevelReveal && revealAdvanced,
       allowBlocks: learning.allowBlocks,
+      grantedBlockIds: learning.grantedBlockIds,
       allowCategories: learning.allowCategories,
     }),
     [learning, revealAdvanced],

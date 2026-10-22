@@ -22,7 +22,7 @@ beforeAll(async () => {
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
     artifacts: [{ path: 'runtime/worker.mjs', sha256: 'a'.repeat(64) }],
-    python: { version: '3.14.2', packages: [] },
+    python: { version: '3.14.2', packages: [], providedModules: [], features: [] },
   })
   const profile = {
     id: 'python-browser',

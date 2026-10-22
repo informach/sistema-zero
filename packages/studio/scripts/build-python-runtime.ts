@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 import { canonicalJson } from '@sistemazero/core/creations'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import { StudioPythonDistributionSchema } from '@sistemazero/core/studio/python-runtime-distribution'
-import { TURTLE_MODULE_FILES } from '../src/runtime/python/turtle/contract'
+import { TURTLE_MODULE_FILES, TURTLE_RUNTIME_FEATURES } from '../src/runtime/python/turtle/contract'
 import vendor from '../src/runtime/python/vendor-manifest.json'
 import { PYODIDE_VERSION, PYTHON_VERSION } from '../src/runtime/python/versions'
 import { checkPythonAudioMetadata } from './python/audio-metadata'
@@ -161,6 +161,7 @@ export async function buildPythonRuntimeDistribution(
     pyodideVersion: vendor.pyodideVersion,
     pythonVersion: vendor.pythonVersion,
     providedModules: provided.modules,
+    features: TURTLE_RUNTIME_FEATURES,
     previewHostAudioVersion: 1,
     ...(http.representations.length ? { httpRepresentations: http.representations } : {}),
     files: [...contents]

@@ -8,7 +8,6 @@ import type {
   StudioPublicRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
 import type { StudioProjectCapability } from '@sistemazero/core/studio/runtime-catalog'
-import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import sharp from 'sharp'
 import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
 import { AuthorizeFreeRuntimeService } from '../../members/src/application/studio/authorize-free-runtime.service'
@@ -19,6 +18,7 @@ import { FreeStudioAccessService } from '../../members/src/application/studio/fr
 import { InvalidContentCommandError } from '../../members/src/domain/course/course.errors'
 import { AccessDeniedError } from '../../members/src/domain/entitlement/entitlement.errors'
 import type { KidsJourneySnapshot } from '../../members/src/domain/ports/kids-journey-repository.port'
+import { createStudioAuthoringPolicy } from '../../members/src/domain/studio/authoring-policy'
 import { createStudioRuntimeHosts } from '../../members/src/domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from '../../members/src/domain/studio/runtime-policy'
 import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
@@ -53,6 +53,10 @@ async function fixture(
 ) {
   const f = await authoringFixture(language, kind, releaseCapabilities)
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
+  if (language === 'python') {
+    f.configuration.releases[0]!.blockIds = ['sz_py_pass']
+    f.policy = await createStudioAuthoringPolicy(f.configuration)
+  }
   const userId = identity?.userId ?? crypto.randomUUID()
   const actor = {
     audience,
@@ -138,13 +142,8 @@ async function fixture(
         },
       },
       {
-        async listStudioUnlocksByCourse() {
-          return [{ courseId: 'course', blocks: [SERVER_BLOCK_CATALOG[0]!.type] }]
-        },
-      },
-      {
-        async listGrants() {
-          return []
+        async execute() {
+          return { blocks: ['sz_py_pass'] }
         },
       },
       kidsJourney,

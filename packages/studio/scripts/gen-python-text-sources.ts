@@ -41,6 +41,32 @@ const bundles = [
     exportName: 'MAZE_LIGHTS_AUDIO',
     mime: 'audio/wav',
   },
+  {
+    directory: 'src/examples/python/pacman-visual',
+    paths: ['main.py', 'README.md', 'NOTICE.md', 'LICENSE', 'requirements.txt'],
+    output: 'src/examples/python/pacmanVisual.sources.generated.ts',
+    exportName: 'PACMAN_VISUAL_SOURCES',
+  },
+  {
+    directory: 'src/examples/python/pacman-visual',
+    paths: ['opening.wav', 'collect.wav', 'power.wav', 'collision.wav'],
+    output: 'src/examples/python/pacmanVisual.audio.generated.ts',
+    exportName: 'PACMAN_VISUAL_AUDIO',
+    mime: 'audio/wav',
+  },
+  {
+    directory: 'src/examples/python/space-arena-visual',
+    paths: ['main.py', 'README.md', 'NOTICE.md', 'LICENSE', 'requirements.txt'],
+    output: 'src/examples/python/spaceArenaVisual.sources.generated.ts',
+    exportName: 'SPACE_ARENA_VISUAL_SOURCES',
+  },
+  {
+    directory: 'src/examples/python/space-arena-visual',
+    paths: ['bgm.wav', 'explosion.wav', 'missile_fire.wav', 'powerup.wav', 'thruster.wav'],
+    output: 'src/examples/python/spaceArenaVisual.audio.generated.ts',
+    exportName: 'SPACE_ARENA_VISUAL_AUDIO',
+    mime: 'audio/wav',
+  },
 ] as const
 
 // Studio is consumed as TypeScript source by Next, Vite and Bun. Serialize the
@@ -67,7 +93,15 @@ for (const bundle of bundles) {
     revisions.map((revision) => `// ${revision}\n`).join('') +
     `export const ${bundle.exportName} = ${JSON.stringify(sources, null, 2)} as const\n`
   const formatter = Bun.spawn(
-    ['bunx', '--no-install', 'biome', 'format', `--stdin-file-path=${bundle.output}`],
+    [
+      process.execPath,
+      '--no-env-file',
+      'x',
+      '--no-install',
+      'biome',
+      'format',
+      `--stdin-file-path=${bundle.output}`,
+    ],
     { cwd: studio, stdin: new Blob([raw]), stdout: 'pipe', stderr: 'pipe' },
   )
   const [code, generated, errors] = await Promise.all([

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { canonicalJson } from '@sistemazero/core/creations'
 import {
   isStudioPythonPublication,
-  StudioPythonPublicationManifestV2Schema,
+  StudioPythonPublicationManifestSchema,
   studioPythonPublicationRecipeText,
 } from '@sistemazero/core/studio'
 import { sha256 } from '../src/artifacts'
@@ -19,7 +19,7 @@ import {
 } from '../src/publications'
 import { memoryArtifactBucket } from './artifact-bucket'
 
-/** Stored objects written by the v1 recipe code (commit 46318c9e7), byte for byte. */
+/** Archived QA objects: unsupported recipes must be rejected without rewriting them. */
 const V1 = JSON.parse(
   readFileSync(new URL('./fixtures/python-publication-v1.json', import.meta.url), 'utf8'),
 ) as {
@@ -32,11 +32,6 @@ const HOURS_72 = 72 * 60 * 60 * 1000
 async function loadV1(storage = memoryArtifactBucket()) {
   for (const [key, text] of Object.entries(V1.objects)) await storage.bucket.put(key, text)
   return storage
-}
-function v1Bytes(storage: ReturnType<typeof memoryArtifactBucket>) {
-  return Object.fromEntries(
-    Object.keys(V1.objects).map((key) => [key, new TextDecoder().decode(storage.objects.get(key))]),
-  )
 }
 function age(storage: ReturnType<typeof memoryArtifactBucket>) {
   for (const key of storage.objects.keys()) storage.uploaded.set(key, new Date(0))
@@ -124,7 +119,7 @@ for (const kind of ['classic', 'pro'] as const) {
     const f = await pythonFixture(kind)
     const state = await f.publish()
     const text = await storedRecipe(f.bucket, state.playId, state.activeRevision)
-    const recipe = StudioPythonPublicationManifestV2Schema.parse(JSON.parse(text))
+    const recipe = StudioPythonPublicationManifestSchema.parse(JSON.parse(text))
     expect(JSON.parse(text)).toEqual({
       version: 2,
       programmingLanguage: 'python',
@@ -180,73 +175,76 @@ test('a v2 recipe is rejected when not canonical, not bound to the source, or re
   }
 })
 
-test('a real v1 publication keeps playing, replays idempotently and is never rewritten by later v2 revisions', async () => {
+test('an unsupported Python recipe is rejected on read and replay without rewriting stored objects', async () => {
   const storage = await loadV1()
-  const playId = V1.input.playId
-  const original = await currentPublishedSource(storage.bucket, playId)
-  expect(original?.source).toBe(V1.input.source)
-  const v1Revision = original!.publication.activeRevision
-  const v1Recipe = JSON.parse(await storedRecipe(storage.bucket, playId, v1Revision))
-  expect(v1Recipe.version).toBe(1)
-
-  // The original request's lost response: same input, still recognized after v2 shipped.
-  const replay = await publicationCommand(storage.bucket, V1.input, 300)
-  expect(replay).toEqual(original!.publication)
+  await expect(currentPublishedSource(storage.bucket, V1.input.playId)).rejects.toThrow(
+    'Receita Python inválida',
+  )
+  await expect(publicationCommand(storage.bucket, V1.input, 300)).rejects.toThrow('outro conteúdo')
   expect(storage.objects.size).toBe(Object.keys(V1.objects).length)
+  for (const [key, text] of Object.entries(V1.objects))
+    expect(await (await storage.bucket.get(key))?.text()).toBe(text)
+})
+
+test('current revisions replay idempotently and retain their bytes through update, disable, restore and collection', async () => {
+  const storage = memoryArtifactBucket()
+  const f = await pythonFixture('classic', storage)
+  const original = await f.publish()
+  const firstRevision = original.activeRevision
+  const before = new Map(storage.objects)
+  expect(await f.publish()).toEqual(original)
+  expect(storage.objects.size).toBe(before.size)
   await expect(
-    publicationCommand(storage.bucket, {
-      ...V1.input,
-      approval: { ...(V1.input.approval as object), snapshotSha256: 'e'.repeat(64) },
+    f.publish({
+      approval: { ...f.input.approval, snapshotSha256: 'e'.repeat(64) },
     }),
   ).rejects.toThrow('outro conteúdo')
-
-  // A new revision of the same publication is v2; the v1 objects stay byte-identical.
-  const source = JSON.stringify({ ...JSON.parse(V1.input.source), name: 'Corrida Turtle v2' })
-  const updated = await publicationCommand(
-    storage.bucket,
-    { ...V1.input, source, requestId: crypto.randomUUID(), expectedVersion: 1 },
-    400,
-  )
-  if (!isStudioPythonPublication(updated)) throw new Error('Missing Python publication')
+  const updated = await f.publish({
+    source: JSON.stringify({ ...f.project, name: 'Corrida Turtle revisada' }),
+    requestId: crypto.randomUUID(),
+    expectedVersion: 1,
+  })
   expect(updated.revisions).toHaveLength(2)
-  const nextRecipe = JSON.parse(await storedRecipe(storage.bucket, playId, updated.activeRevision))
-  expect(nextRecipe.version).toBe(2)
-  const v1Keys = Object.keys(V1.objects).filter((key) => key.startsWith('published/'))
-  expect(Object.fromEntries(v1Keys.map((key) => [key, v1Bytes(storage)[key]]))).toEqual(
-    Object.fromEntries(v1Keys.map((key) => [key, V1.objects[key]])),
+  const nextRecipe = JSON.parse(
+    await storedRecipe(storage.bucket, original.playId, updated.activeRevision),
   )
-
-  // Explicit disable/restore of the legacy revision keeps its semantics.
+  expect(nextRecipe.version).toBe(2)
+  const firstKeys = [...before.keys()].filter((key) => key.startsWith('published/'))
+  for (const key of firstKeys) expect(storage.objects.get(key)).toEqual(before.get(key))
   const disabled = await publicationCommand(storage.bucket, {
-    ...V1.input,
+    ...f.input,
     operation: 'activate',
     requestId: crypto.randomUUID(),
     expectedVersion: 2,
-    revision: v1Revision,
+    revision: firstRevision,
     disabled: true,
   })
-  expect(disabled).toMatchObject({ disabled: true, activeRevision: v1Revision })
-  expect(await currentPublishedSource(storage.bucket, playId)).toBeNull()
+  expect(disabled).toMatchObject({ disabled: true, activeRevision: firstRevision })
+  expect(await currentPublishedSource(storage.bucket, original.playId)).toBeNull()
   await publicationCommand(storage.bucket, {
-    ...V1.input,
+    ...f.input,
     operation: 'activate',
     requestId: crypto.randomUUID(),
     expectedVersion: 3,
-    revision: v1Revision,
+    revision: firstRevision,
     disabled: false,
   })
-  expect((await currentPublishedSource(storage.bucket, playId))?.source).toBe(V1.input.source)
-
-  // Both recipe versions and the shared runtime survive collection.
-  const runtime = storeRuntime(storage, 'a'.repeat(64))
+  expect((await currentPublishedSource(storage.bucket, original.playId))?.source).toBe(
+    f.input.source,
+  )
+  const runtime = storeRuntime(storage, f.project.runtime.manifestSha256)
   age(storage)
   expect(await collectPublicationGarbage(storage.bucket, HOURS_72)).toMatchObject({ removed: 0 })
-  for (const key of [...v1Keys, ...runtime]) expect(storage.objects.has(key)).toBe(true)
-  expect((await currentPublishedSource(storage.bucket, playId))?.source).toBe(V1.input.source)
+  for (const key of [...firstKeys, ...runtime]) expect(storage.objects.has(key)).toBe(true)
+  expect((await currentPublishedSource(storage.bucket, original.playId))?.source).toBe(
+    f.input.source,
+  )
 })
 
-test('GC keeps runtimes referenced by v1/v2 revisions, history and disabled publications, removing only orphan revisions', async () => {
-  const storage = await loadV1()
+test('GC keeps runtimes referenced by current revisions, history and disabled publications, removing only orphan revisions', async () => {
+  const storage = memoryArtifactBucket()
+  const classic = await pythonFixture('classic', storage, 'a'.repeat(64))
+  const classicState = await classic.publish()
   // Listing that ignores its prefix: shared runtime bytes must still be untouchable.
   const unfiltered = {
     ...storage.bucket,
@@ -254,15 +252,15 @@ test('GC keeps runtimes referenced by v1/v2 revisions, history and disabled publ
       return storage.bucket.list({ ...options, prefix: '' })
     },
   } satisfies PublicationBucket
-  const v2 = await pythonFixture('pro', storage, 'd'.repeat(64))
-  const first = await v2.publish()
-  await v2.publish({
+  const pro = await pythonFixture('pro', storage, 'd'.repeat(64))
+  const first = await pro.publish()
+  await pro.publish({
     requestId: crypto.randomUUID(),
     expectedVersion: 1,
-    source: JSON.stringify({ ...v2.project, name: 'Outra' }),
+    source: JSON.stringify({ ...pro.project, name: 'Outra' }),
   })
   await publicationCommand(storage.bucket, {
-    ...v2.input,
+    ...pro.input,
     operation: 'activate',
     requestId: crypto.randomUUID(),
     expectedVersion: 2,
@@ -299,23 +297,25 @@ test('GC keeps runtimes referenced by v1/v2 revisions, history and disabled publ
   // Moderation keeps its tombstone semantics and removes only that publication's revisions.
   await purgePublication(unfiltered, first.playId)
   expect(await currentPublishedSource(storage.bucket, first.playId)).toBeNull()
-  await expect(v2.publish({ requestId: crypto.randomUUID() })).rejects.toThrow('mudou')
+  await expect(pro.publish({ requestId: crypto.randomUUID() })).rejects.toThrow('mudou')
   expect(
     [...storage.objects.keys()].some((key) => key.startsWith(`published/${first.playId}/`)),
   ).toBe(false)
   for (const key of [...referenced, ...unreferenced]) expect(storage.objects.has(key)).toBe(true)
-  expect((await currentPublishedSource(storage.bucket, V1.input.playId))?.source).toBe(
-    V1.input.source,
+  expect((await currentPublishedSource(storage.bucket, classicState.playId))?.source).toBe(
+    classic.input.source,
   )
 })
 
 test('GC failure mid-page is safe: nothing referenced is lost, the cursor is not advanced and a rerun completes', async () => {
-  const storage = await loadV1()
+  const storage = memoryArtifactBucket()
+  const other = await pythonFixture('pro', storage)
+  const otherState = await other.publish()
   const f = await pythonFixture('classic', storage)
   const state = await f.publish()
   const orphans = [
     `${publishedRevisionPrefix(state.playId, 'e'.repeat(64))}source.json`,
-    `${publishedRevisionPrefix(V1.input.playId, 'e'.repeat(64))}source.json`,
+    `${publishedRevisionPrefix(otherState.playId, 'e'.repeat(64))}source.json`,
   ]
   for (const key of orphans) await storage.bucket.put(key, 'orphan')
   const runtime = storeRuntime(storage, 'd'.repeat(64))
@@ -336,29 +336,31 @@ test('GC failure mid-page is safe: nothing referenced is lost, the cursor is not
   for (const key of retained) expect(storage.objects.has(key)).toBe(true)
   for (const key of runtime) expect(storage.objects.has(key)).toBe(true)
   expect((await currentPublishedSource(storage.bucket, state.playId))?.source).toBe(f.input.source)
-  expect((await currentPublishedSource(storage.bucket, V1.input.playId))?.source).toBe(
-    V1.input.source,
+  expect((await currentPublishedSource(storage.bucket, otherState.playId))?.source).toBe(
+    other.input.source,
   )
 })
 
 test('an unreadable publication record retains all of its objects without stalling collection of others', async () => {
-  const storage = await loadV1()
+  const storage = memoryArtifactBucket()
+  const other = await pythonFixture('pro', storage)
+  const otherState = await other.publish()
   const f = await pythonFixture('classic', storage)
   const state = await f.publish()
-  const v1Orphan = `${publishedRevisionPrefix(V1.input.playId, 'e'.repeat(64))}source.json`
+  const unknownOrphan = `${publishedRevisionPrefix(otherState.playId, 'e'.repeat(64))}source.json`
   const otherOrphan = `${publishedRevisionPrefix(state.playId, 'e'.repeat(64))}source.json`
-  await storage.bucket.put(v1Orphan, 'unknown')
+  await storage.bucket.put(unknownOrphan, 'unknown')
   await storage.bucket.put(otherOrphan, 'orphan')
-  await storage.bucket.put(publicationKey(V1.input.playId), '{"truncated":')
+  await storage.bucket.put(publicationKey(otherState.playId), '{"truncated":')
   age(storage)
-  const v1Published = [...storage.objects.keys()].filter((key) =>
-    key.startsWith(`published/${V1.input.playId}/`),
+  const unknownPublished = [...storage.objects.keys()].filter((key) =>
+    key.startsWith(`published/${otherState.playId}/`),
   )
   expect(await collectPublicationGarbage(storage.bucket, HOURS_72)).toMatchObject({
     removed: 1,
     unreadable: 1,
   })
-  for (const key of v1Published) expect(storage.objects.has(key)).toBe(true)
+  for (const key of unknownPublished) expect(storage.objects.has(key)).toBe(true)
   expect(storage.objects.has(otherOrphan)).toBe(false)
   expect(
     JSON.parse(await (await storage.bucket.get('maintenance/publications-cursor.json'))!.text()),

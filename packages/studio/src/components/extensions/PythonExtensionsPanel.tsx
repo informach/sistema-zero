@@ -18,14 +18,21 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
   const editingAccess = useProjectStore((state) => state.editingAccess)
   const store = useProjectStoreApi()
   const environment = useStudioRuntimeEnvironment()
+  const authority = environment?.authority?.getSnapshot()
   const allowedIds = useStudioConfig().learning.allowExtensions
   const execution = useStudioExecution()
   const mount = useRef<HTMLDivElement>(null)
   const operation = useRef<{ cancelled: boolean; dispose(): void } | null>(null)
-  const policyRef = useRef({ environment, allowedIds, writerEpoch: execution.writerEpoch })
+  const policyRef = useRef({
+    environment,
+    authority,
+    allowedIds,
+    writerEpoch: execution.writerEpoch,
+  })
   useLayoutEffect(() => {
     policyRef.current = {
       environment: open && execution.editingAccess === 'author' ? environment : null,
+      authority,
       allowedIds,
       writerEpoch: execution.writerEpoch,
     }
@@ -37,9 +44,14 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
         operation.current.dispose()
         operation.current = null
       }
-      policyRef.current = { environment: null, allowedIds: [], writerEpoch: execution.writerEpoch }
+      policyRef.current = {
+        environment: null,
+        authority: undefined,
+        allowedIds: [],
+        writerEpoch: execution.writerEpoch,
+      }
     }
-  }, [environment, allowedIds, execution.writerEpoch, execution.editingAccess, open])
+  }, [environment, authority, allowedIds, execution.writerEpoch, execution.editingAccess, open])
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [removal, setRemoval] = useState<{
@@ -68,6 +80,7 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
     const owner = { cancelled: false, dispose() {} }
     operation.current = owner
     const policy = policyRef.current
+    const initialAuthority = policy.authority
     let unsubscribe = () => {}
     setPending(true)
     setError(null)
@@ -82,6 +95,7 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
           project: () =>
             !owner.cancelled &&
             policyRef.current.environment === policy.environment &&
+            policy.environment?.authority?.getSnapshot() === initialAuthority &&
             store.getState().editingAccess === 'author' &&
             store.getState().project === expected
               ? expected
@@ -114,7 +128,11 @@ export function PythonExtensionsPanel({ open, onClose }: ExtensionsPanelProps) {
         policy: () => policyRef.current,
         analysis,
         assertCurrent() {
-          if (operation.current !== owner || owner.cancelled)
+          if (
+            operation.current !== owner ||
+            owner.cancelled ||
+            policy.environment?.authority?.getSnapshot() !== initialAuthority
+          )
             throw new Error(
               'O contexto da análise mudou. Tente novamente; seu código foi preservado.',
             )

@@ -10,11 +10,11 @@ import {
 export const STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES = 1_048_576
 export const StudioPythonLanguageBootstrapSchema = z.strictObject({
   protocolVersion: z.literal(1),
-  runtimeRelease: StudioRuntimeReleaseSchema.optional(),
+  runtimeRelease: StudioRuntimeReleaseSchema,
 })
 export type StudioPythonLanguageBootstrap = Readonly<{
   protocolVersion: 1
-  runtimeRelease?: StudioRuntimeRelease
+  runtimeRelease: StudioRuntimeRelease
 }>
 
 export function assertPythonLanguageBootstrapSize(text: string) {
@@ -26,10 +26,9 @@ export function assertPythonLanguageBootstrapSize(text: string) {
 export async function createPythonLanguageBootstrap(
   raw: unknown,
 ): Promise<StudioPythonLanguageBootstrap> {
-  // Parse takes a deep snapshot before the first await. No optional default is materialized.
+  // Parse takes a deep snapshot before the first await.
   const snapshot = StudioPythonLanguageBootstrapSchema.parse(raw)
   assertPythonLanguageBootstrapSize(canonicalJson(snapshot))
-  if (!snapshot.runtimeRelease) return Object.freeze({ protocolVersion: 1 })
   const received = snapshot.runtimeRelease
   if (received.manifest.programmingLanguage !== 'python')
     throw new Error('Language configuration requires a Python release')

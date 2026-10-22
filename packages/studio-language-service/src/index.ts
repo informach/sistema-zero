@@ -53,7 +53,7 @@ interface RateLimitBinding {
 }
 export interface Env {
   PythonLanguageSandbox: DurableObjectNamespace<PythonLanguageSandbox>
-  PythonLanguageOwner: DurableObjectNamespace<PythonLanguageOwner>
+  PythonLanguageSessions: DurableObjectNamespace<PythonLanguageSessions>
   LANGUAGE_OPEN_LIMIT: RateLimitBinding
   LANGUAGE_COMMAND_LIMIT: RateLimitBinding
   INTERNAL_TOKEN: string
@@ -66,8 +66,8 @@ type Lease = {
   used_ms: number
   phase: string
   cleanup_ms: number
-  binding: string | null
-  bootstrap: string | null
+  binding: string
+  bootstrap: string
 }
 const secret = (bytes: number) =>
   [...crypto.getRandomValues(new Uint8Array(bytes))]
@@ -82,7 +82,7 @@ const expired = () =>
   json({ error: 'expired', message: 'A análise Python precisa ser reconectada.' }, 410)
 
 /** One owner coordinates at most two private, ephemeral language processes. No source is persisted. */
-export class PythonLanguageOwner extends DurableObject<Env> {
+export class PythonLanguageSessions extends DurableObject<Env> {
   private boots = new Map<string, Promise<void>>()
   private cleanups = new Map<string, Promise<void>>()
   private requests = new Map<
@@ -94,13 +94,9 @@ export class PythonLanguageOwner extends DurableObject<Env> {
     ctx.blockConcurrencyWhile(async () => {
       ctx.storage.sql.exec(`CREATE TABLE IF NOT EXISTS leases (
         id TEXT PRIMARY KEY, project_id TEXT NOT NULL, token TEXT NOT NULL,
-        created_ms INTEGER NOT NULL, used_ms INTEGER NOT NULL, phase TEXT NOT NULL, cleanup_ms INTEGER NOT NULL
+        created_ms INTEGER NOT NULL, used_ms INTEGER NOT NULL, phase TEXT NOT NULL, cleanup_ms INTEGER NOT NULL,
+        binding TEXT NOT NULL, bootstrap TEXT NOT NULL
       )`)
-      const columns = ctx.storage.sql.exec<{ name: string }>('PRAGMA table_info(leases)').toArray()
-      if (!columns.some((column) => column.name === 'binding'))
-        ctx.storage.sql.exec('ALTER TABLE leases ADD COLUMN binding TEXT')
-      if (!columns.some((column) => column.name === 'bootstrap'))
-        ctx.storage.sql.exec('ALTER TABLE leases ADD COLUMN bootstrap TEXT')
     })
   }
   private lease(id: string) {
@@ -186,22 +182,22 @@ export class PythonLanguageOwner extends DurableObject<Env> {
   async open(
     projectId: string,
     binding: string,
-    runtimeRelease?: StudioRuntimeRelease,
+    runtimeRelease: StudioRuntimeRelease,
   ): Promise<Response> {
     const parsed = StudioPythonLanguageOpenSchema.safeParse({
       projectId,
       binding,
-      ...(runtimeRelease ? { runtimeRelease } : {}),
+      runtimeRelease,
     })
     if (!parsed.success) return json({ error: 'invalid-project' }, 400)
-    let bootstrap: string | null = null
+    let bootstrap: string
     try {
       assertPythonLanguageBootstrapSize(canonicalJson(parsed.data))
       const validated = await createPythonLanguageBootstrap({
         protocolVersion: 1,
-        ...(parsed.data.runtimeRelease ? { runtimeRelease: parsed.data.runtimeRelease } : {}),
+        runtimeRelease: parsed.data.runtimeRelease,
       })
-      if (validated.runtimeRelease) bootstrap = canonicalJson(validated)
+      bootstrap = canonicalJson(validated)
     } catch {
       return json({ error: 'invalid-configuration' }, 400)
     }
@@ -245,7 +241,7 @@ export class PythonLanguageOwner extends DurableObject<Env> {
     const initial = assertOpening()
     let stage: 'sandbox' | 'process' | 'port' | 'configure' | 'health' = 'sandbox'
     try {
-      const metadata = initial.bootstrap ?? '{"protocolVersion":1}'
+      const metadata = initial.bootstrap
       assertPythonLanguageBootstrapSize(metadata)
       const bootstrap = canonicalJson(await createPythonLanguageBootstrap(JSON.parse(metadata)))
       assertOpening()
@@ -309,8 +305,13 @@ export class PythonLanguageOwner extends DurableObject<Env> {
   }
   async start(id: string, binding: string): Promise<Response> {
     const row = this.lease(id)
-    if (!row?.binding || row.binding !== binding) return expired()
-    if (!row || row.phase === 'closing' || this.deadline(row) <= Date.now()) return expired()
+    if (
+      !row ||
+      row.binding !== binding ||
+      row.phase === 'closing' ||
+      this.deadline(row) <= Date.now()
+    )
+      return expired()
     if (row.phase === 'ready') return json({ ready: true })
     let boot = this.boots.get(id)
     if (!boot) {
@@ -368,9 +369,9 @@ export class PythonLanguageOwner extends DurableObject<Env> {
     const lease = this.lease(id),
       now = Date.now()
     if (
-      !lease?.binding ||
+      !lease ||
       lease.binding !== binding ||
-      lease?.phase !== 'ready' ||
+      lease.phase !== 'ready' ||
       lease.created_ms + PYTHON_LANGUAGE_LIMITS.maxLifetimeMs <= now ||
       lease.used_ms + PYTHON_LANGUAGE_LIMITS.idleTtlMs <= now
     ) {
@@ -468,7 +469,7 @@ export default {
     if (!route || url.search) return json({ error: 'not-found' }, 404)
     const owner = route[1]!,
       session = route[2]!
-    const stub = env.PythonLanguageOwner.getByName(owner)
+    const stub = env.PythonLanguageSessions.getByName(owner)
     if (route[3]) {
       if (session === 'open' || request.method !== 'POST')
         return json({ error: 'invalid-request' }, 400)

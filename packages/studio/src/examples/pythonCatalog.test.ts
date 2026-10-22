@@ -13,7 +13,7 @@ const qualifiedSources = {
 }
 
 test('the original race advertises Pro and the exact Turtle extension without embedding a runtime', () => {
-  expect(PYTHON_EXAMPLE_SUMMARIES).toHaveLength(2)
+  expect(PYTHON_EXAMPLE_SUMMARIES).toHaveLength(6)
   const entry = PYTHON_EXAMPLE_SUMMARIES[0]!
   expect(entry).toMatchObject({
     programmingLanguage: 'python',

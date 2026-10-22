@@ -75,6 +75,8 @@ unsupported = {
     'RawTurtle': {'undo', 'shapetransform', 'shearfactor', 'tilt', 'tiltangle'},
 }
 quota_checks = 0
+shape_checks = 0
+component_checks = 0
 activity_turns = 0
 internal_updates = 0
 class InternalScreenUpdates(ast.NodeTransformer):
@@ -87,6 +89,89 @@ class InternalScreenUpdates(ast.NodeTransformer):
         return self.generic_visit(node)
 
 for cls in engine.body:
+    if cls.name == 'RawTurtle':
+        cls.body.extend(ast.parse('''
+def _shape_polygons(self, name):
+    # The same pose, resize and pen rules as CPython's _drawturtle and stamp.
+    shape = self.screen._shapes[name]
+    if shape._type == 'polygon':
+        width = (1 if self._resizemode == 'noresize' else
+                 self._pensize if self._resizemode == 'auto' else self._outlinewidth)
+        coordinates = self._polytrafo(self._getshapepoly(shape._data))
+        return [(coordinates, self._fillcolor, self._pencolor, width)]
+    if shape._type == 'compound':
+        return [(self._polytrafo(self._getshapepoly(polygon, True)),
+                 self._cc(fill), self._cc(outline), self._outlinewidth)
+                for polygon, fill, outline in shape._data]
+    return []
+
+def _shape_item_ids(self):
+    return self.turtle._item if self.turtle._type == 'compound' else (self.turtle._item,)
+
+def _shape_draw_plan(self, name, items, shown, hidden):
+    # Called only for a draw at counter zero. Hidden shapes use three dummy
+    # points per component, unless upstream already marked the actor hidden.
+    if shown:
+        return list(zip(items, self._shape_polygons(name)))
+    if hidden or self.screen._shapes[name]._type == 'image':
+        return []
+    return [(item, (((0, 0),) * 3, '', '', None)) for item in items]
+
+def _preflight_shape_operation(self, operation, name, visible=None):
+    screen = self.screen
+    count = screen._shape_item_count(name)
+    removed = ()
+    reuse_items = False
+    if operation == 'construct':
+        screen._check_turtle_capacity(2 + count)
+    elif operation == 'clone':
+        # Upstream clone allocates a temporary shape and then its final shape.
+        screen._check_turtle_capacity(2 * count + 1 + (len(self.currentLine) > 1))
+    elif operation == 'stamp':
+        screen._check_item_capacity(count)
+    else:
+        previous = self._shape_item_ids()
+        kind = screen._shapes[name]._type
+        reuse_items = kind == self.turtle._type and kind in ('polygon', 'image')
+        if not reuse_items:
+            screen._check_shape_capacity(name, previous)
+            removed = previous
+    if reuse_items:
+        items = self._shape_item_ids()
+    else:
+        items = tuple(object() for _ in range(count))
+    polygons = self._shape_polygons(name)
+    if operation == 'stamp':
+        screen._check_draw_plan(zip(items, polygons))
+        return
+    # Validate the selected shape even if tracing postpones its first draw.
+    # Capacity is based on the actual draw below, never on raw polygon length.
+    for geometry in polygons:
+        screen._validate_polygon(*geometry)
+    draws = []
+    if operation == 'clone' and len(self.currentLine) > 1:
+        # _newLine closes this line before clone allocates/publishes anything.
+        draws.append((self.currentLineItem, (self.currentLine, self._pencolor, None, self._pensize)))
+    tracing = screen._tracing
+    redraw = tracing > 0 and (screen._updatecounter + 1) % tracing == 0
+    if redraw:
+        if operation == 'shape' and len(self.currentLine) > 1:
+            draws.append((self.currentLineItem, (self.currentLine, self._pencolor, None, self._pensize)))
+        # _update_data draws only the caller's line. At tracer(N)'s boundary,
+        # _update then draws every actor's shape in screen registration order.
+        actors = screen.turtles() if tracing != 1 else []
+        for actor in actors:
+            if actor is self and operation == 'shape':
+                draws.extend(self._shape_draw_plan(name, items, self._shown, self._hidden_from_screen))
+            else:
+                draws.extend(actor._shape_draw_plan(actor.turtle.shapeIndex,
+                    actor._shape_item_ids(), actor._shown, actor._hidden_from_screen))
+        if operation in ('construct', 'clone') or tracing == 1:
+            shown = visible if operation == 'construct' else self._shown
+            hidden = False if operation == 'construct' else self._hidden_from_screen
+            draws.extend(self._shape_draw_plan(name, items, shown, hidden))
+    screen._check_draw_plan(draws, removed)
+''').body)
     if cls.name == 'TurtleScreen':
         cls = InternalScreenUpdates().visit(cls)
         public_update = None
@@ -98,22 +183,45 @@ for cls in engine.body:
         if public_update is not None:
             cls.body.append(public_update)
     for item in getattr(cls, 'body', []):
-        if cls.name == 'Shape' and isinstance(item, ast.FunctionDef) and item.name == '__init__':
-            item.body[:0] = ast.parse("if type_ == 'compound':\n    raise NotImplementedError('Formas compostas não estão disponíveis neste perfil Turtle')").body
+        if cls.name == '_TurtleImage' and isinstance(item, ast.FunctionDef) and item.name == '_setshape':
+            index = next(index for index, statement in enumerate(item.body)
+                         if ast.unparse(statement) == 'screen = self.screen')
+            item.body[index+1:index+1] = ast.parse(
+                "kind = screen._shapes[shapeIndex]._type\n"
+                "if self._type != kind or kind not in ('polygon', 'image'):\n"
+                "    previous = ()\n"
+                "    if self._type == 'compound':\n        previous = self._item\n"
+                "    elif self._type in ('polygon', 'image'):\n        previous = (self._item,)\n"
+                "    screen._check_shape_capacity(shapeIndex, previous)").body
+            shape_checks += 1
         if isinstance(item, ast.FunctionDef) and item.name in unsupported.get(cls.name, set()):
             item.body = ast.parse(
                 "raise NotImplementedError('Esta API Turtle não está disponível no navegador: "
                 + item.name + "')").body
         if cls.name == 'RawTurtle' and isinstance(item, ast.FunctionDef):
             if item.name == 'clone':
-                item.body[1:1] = ast.parse('self.screen._check_turtle_capacity(3 + (len(self.currentLine) > 1))').body
+                item.body[1:1] = ast.parse(
+                    "self._preflight_shape_operation('clone', self.turtle.shapeIndex)").body
                 quota_checks += 1
+                component_checks += 1
             if item.name == '__init__':
                 index = next(index for index, statement in enumerate(item.body)
-                             if ast.unparse(statement) == 'screen = self.screen')
-                item.body[index+1:index+1] = ast.parse('screen._check_turtle_capacity()').body
+                             if ast.unparse(statement) == 'screen._turtles.append(self)')
+                item.body[index:index] = ast.parse("self._preflight_shape_operation('construct', shape, visible)").body
                 quota_checks += 1
+            if item.name == 'stamp':
+                item.body[1:1] = ast.parse(
+                    "self._preflight_shape_operation('stamp', self.turtle.shapeIndex)").body
+                shape_checks += 1
+                component_checks += 1
+            if item.name == 'shape':
+                index = next(index for index, statement in enumerate(item.body)
+                             if ast.unparse(statement) == 'self.turtle._setshape(name)')
+                item.body[index:index] = ast.parse("self._preflight_shape_operation('shape', name)").body
+                component_checks += 1
 require(quota_checks == 2, 'Turtle quota insertion points changed')
+require(shape_checks == 2, 'Shape quota insertion points changed')
+require(component_checks == 3, 'Compound validation insertion points changed')
 require(activity_turns == 1, 'Activity turn insertion point changed')
 require(internal_updates == 2, 'Internal screen update insertion points changed')
 
@@ -129,7 +237,8 @@ turtle_names = set('forward fd backward back bk left lt right rt goto setpos set
                   'getscreen onclick onrelease ondrag'.split())
 entries = []
 for owner, cls, names in [('Screen', reference._Screen, screen_names | window_names),
-                           ('Turtle', reference.Turtle, turtle_names)]:
+                           ('Turtle', reference.Turtle, turtle_names),
+                           ('Shape', reference.Shape, {'addcomponent'})]:
     for name in sorted(names):
         method = getattr(cls, name)
         signature = inspect.signature(method)
@@ -165,7 +274,7 @@ for owner, names, upstream in [('Screen', screen_names | window_names, reference
 
 # Public constructors and mainloop's official module alias are part of the same
 # contract. Constructor signatures come from CPython, never a hand-written copy.
-for name in ['Screen', 'Turtle', 'done']:
+for name in ['Screen', 'Turtle', 'Shape', 'done']:
     entries.append({'owner': 'turtle', 'name': name,
                     'signature': str(inspect.signature(getattr(reference, name))),
                     'canonical': 'mainloop' if name == 'done' else name,

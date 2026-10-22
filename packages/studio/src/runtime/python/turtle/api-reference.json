@@ -629,6 +629,13 @@
       "fixtureFamily": null
     },
     {
+      "owner": "Shape",
+      "name": "addcomponent",
+      "signature": "(poly, fill, outline=None)",
+      "canonical": "addcomponent",
+      "fixtureFamily": null
+    },
+    {
       "owner": "turtle",
       "name": "addshape",
       "signature": "(name, shape=None)",
@@ -1329,6 +1336,14 @@
       "name": "Turtle",
       "signature": "(shape='classic', undobuffersize=1000, visible=True)",
       "canonical": "Turtle",
+      "receiver": null,
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "Shape",
+      "signature": "(type_, data=None)",
+      "canonical": "Shape",
       "receiver": null,
       "fixtureFamily": null
     },

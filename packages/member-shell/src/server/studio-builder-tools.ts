@@ -98,18 +98,17 @@ function pythonEnvironment(revision: StudioProRevision, policy?: StudioPythonBui
   if (!policy) throw new Error('A autorização Python da geração está ausente.')
   const release = policy.runtimeRelease
   if (
-    release &&
-    (release.profileId !== configuration.runtime.profileId ||
-      release.releaseId !== configuration.runtime.releaseId ||
-      release.manifestSha256 !== configuration.runtime.manifestSha256 ||
-      release.manifest.python?.providedModules === undefined)
+    release.profileId !== configuration.runtime.profileId ||
+    release.releaseId !== configuration.runtime.releaseId ||
+    release.manifestSha256 !== configuration.runtime.manifestSha256 ||
+    !release.manifest.python
   )
     throw new Error('A autorização Python não corresponde à revisão de trabalho.')
   const entrypoint = configuration.python.entrypoint
   const prefix = entrypoint.includes('/')
     ? entrypoint.slice(0, entrypoint.lastIndexOf('/') + 1)
     : ''
-  const modules = release?.manifest.python?.providedModules ?? []
+  const modules = release.manifest.python.providedModules
   // Inspect the complete immutable working tree, including protected/non-excerpted
   // paths. A namespace without __init__ does not shadow a regular provided package.
   const shadowedProvidedModules = modules

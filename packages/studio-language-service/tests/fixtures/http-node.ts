@@ -2,8 +2,12 @@ import assert from 'node:assert/strict'
 import { type ClientRequest, request } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { it } from 'node:test'
+import { currentPythonRelease } from '../../../core/tests/fixtures/python-provided-release'
 import { createPythonLanguageServer } from '../../runtime/http'
 import type { PythonLanguageSession } from '../../runtime/pyright'
+
+const currentBootstrap = { protocolVersion: 1, runtimeRelease: await currentPythonRelease() }
+const currentBootstrapText = JSON.stringify(currentBootstrap)
 
 function testServer(
   input: Omit<Parameters<typeof createPythonLanguageServer>[0], 'createSession'> & {
@@ -19,7 +23,7 @@ async function configure(server: ReturnType<typeof createPythonLanguageServer>, 
     {
       method: 'POST',
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ protocolVersion: 1 }),
+      body: currentBootstrapText,
     },
   )
   assert.equal(response.status, 200)
@@ -41,7 +45,7 @@ it('configuration is private, single-use and required before health or source di
     onExpired() {},
     async createSession(bootstrap) {
       calls++
-      assert.deepEqual(bootstrap, { protocolVersion: 1 })
+      assert.deepEqual(bootstrap, currentBootstrap)
       entered()
       await gate
       return {
@@ -67,9 +71,9 @@ it('configuration is private, single-use and required before health or source di
     const unauthorized = await fetch(`${base}/configure`, { method: 'POST', body: '{}' })
     assert.equal(unauthorized.status, 401)
     await unauthorized.arrayBuffer()
-    const configured = post('configure', '{"protocolVersion":1}')
+    const configured = post('configure', currentBootstrapText)
     await began
-    const concurrent = await post('configure', '{"protocolVersion":1}')
+    const concurrent = await post('configure', currentBootstrapText)
     assert.equal(concurrent.status, 409)
     await concurrent.arrayBuffer()
     const waiting = await fetch(`${base}/healthz`, { headers })
@@ -79,7 +83,7 @@ it('configuration is private, single-use and required before health or source di
     assert.equal((await configured).status, 200)
     const ready = await fetch(`${base}/healthz`, { headers })
     assert.deepEqual(await ready.json(), { ready: true })
-    const repeated = await post('configure', '{"protocolVersion":1}')
+    const repeated = await post('configure', currentBootstrapText)
     assert.equal(repeated.status, 409)
     await repeated.arrayBuffer()
     assert.equal(calls, 1)
@@ -132,7 +136,7 @@ it('disconnect during configuration drains creation, disposes its late result an
   const pending = fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/configure`, {
     method: 'POST',
     headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: '{"protocolVersion":1}',
+    body: currentBootstrapText,
     signal: controller.signal,
   }).catch(() => null)
   try {
@@ -151,8 +155,9 @@ it('disconnect during configuration drains creation, disposes its late result an
   }
 })
 
-it('invalid configuration never constructs a legacy session and enforces the global byte ceiling', async () => {
+it('missing or invalid configuration never constructs a session and enforces the global byte ceiling', async () => {
   for (const [body, expected] of [
+    ['{"protocolVersion":1}', 400],
     ['{"protocolVersion":1,"extraPaths":["/author"]}', 400],
     ['{"protocolVersion":1,"runtimeRelease":null}', 400],
     [' '.repeat(1_048_577), 413],

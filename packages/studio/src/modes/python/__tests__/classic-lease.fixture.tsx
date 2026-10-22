@@ -3,7 +3,15 @@ import { act, fireEvent, render } from '@testing-library/react'
 import { type ReactNode, useState } from 'react'
 import type { PythonBlocklyEditorProps } from '../../../components/blocks/PythonBlocklyEditor'
 import type { PythonSourceEditorProps } from '../../../components/code/PythonSourceEditor'
+import { loadPythonAuthoring } from '../../../python/blocks/authoring'
 import { PYTHON_PROGRAMMING_CODECS } from '../../../python/blocks/catalog'
+import {
+  createPythonWorkspaceDraft,
+  updatePythonWorkspaceDraft,
+} from '../../../python/blocks/workspaceDraft'
+import { PYTHON_TURTLE_CODECS } from '../../../python/extensions/turtle/catalog'
+import { createStudioRuntimeAuthority } from '../../../runtime/authority'
+import { TURTLE_EXTENSION } from '../../../runtime/python/turtle/contract'
 import { pythonEnvironmentFixture } from '../../../state/fixtures/pythonEnvironment'
 import { StudioStoresContext } from '../../../state/storesContext'
 import { createStudioStores } from '../../../state/studioStores'
@@ -198,4 +206,91 @@ test('blocks source recovery opens non-Python files while qualified blocks stay 
   expect(view.getByRole('combobox', { name: 'Arquivo Python' }).textContent).not.toContain(
     'config.json',
   )
+})
+
+test('same environment refreshes curation and grants without replacing the source, draft or visual instance', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  if (fixture.project.kind !== 'classic') throw new Error('Expected a classic fixture')
+  const draft = createPythonWorkspaceDraft(
+    fixture.project,
+    'main.py',
+    { blocks: { blocks: [] } },
+    [],
+  )
+  const project = {
+    ...fixture.project,
+    blocksState: updatePythonWorkspaceDraft(fixture.project, 'main.py', draft),
+    installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }],
+  }
+  const stores = createStudioStores({ persistence: 'none' })
+  stores.project.setState({ project })
+  stores.ui.setState({ showPreview: false })
+  const initial = {
+    available: true,
+    pythonAuthoring: [
+      {
+        runtime: project.runtime,
+        blockIds: [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS].map((item) => item.id),
+      },
+    ],
+    capabilities: ['edit' as const],
+    grantedExtensionIds: [TURTLE_EXTENSION.id],
+    curation: { pythonLevel: 3 as const },
+    releaseStatus: 'active' as const,
+  }
+  const current = createStudioRuntimeAuthority(initial)
+  const environment = {
+    ...fixture.environment,
+    pythonAuthoring: initial.pythonAuthoring,
+    authority: current.authority,
+  }
+  const loaded = await loadPythonAuthoring(project, environment)
+  const view = render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioRuntimeEnvironmentProvider value={environment}>
+        <PythonClassicMode mode="bridge" />
+      </StudioRuntimeEnvironmentProvider>
+    </StudioStoresContext.Provider>,
+  )
+  const blocks = await view.findByTestId('qualified-blocks')
+  const source = await view.findByRole('textbox', { name: 'Fonte da instância' })
+  if (!(source instanceof HTMLTextAreaElement)) throw new Error('Expected a source buffer')
+  fireEvent.change(source, { target: { value: 'buffer ainda não salvo' } })
+  expect(blocks.getAttribute('data-blocks')).toContain('sz_py_turtle_module_forward')
+  expect(blocks.getAttribute('data-blocks')).toContain('sz_py_integer')
+  const stored = stores.project.getState().project
+  await act(async () =>
+    current.update({ ...initial, curation: { pythonLevel: 1, allowBlocks: ['sz_py_pass'] } }),
+  )
+  expect(blocks.getAttribute('data-blocks')).toBe('sz_py_pass')
+  expect(view.getByTestId('qualified-blocks')).toBe(blocks)
+  await act(async () => current.update({ ...initial, grantedExtensionIds: [] }))
+  expect(blocks.getAttribute('data-blocks')).toContain('sz_py_integer')
+  expect(blocks.getAttribute('data-blocks')).not.toContain('sz_py_turtle_')
+  await act(async () =>
+    current.update({
+      ...initial,
+      grantedExtensionIds: [],
+      curation: { pythonLevel: 3, allowBlocks: ['sz_py_turtle_module_forward'] },
+    }),
+  )
+  expect(blocks.getAttribute('data-blocks')).toBe('')
+  expect(view.getByTestId('qualified-blocks')).toBe(blocks)
+  // Codecs remain loaded for saved installed blocks; only the offer changes.
+  expect(loaded.codecs.some((codec) => codec.id === 'sz_py_turtle_module_forward')).toBe(true)
+  expect(stores.project.getState().project).toBe(stored)
+  expect(project.installedExtensions).toEqual([{ ...TURTLE_EXTENSION, installedAt: 1 }])
+  await act(async () =>
+    current.update({
+      ...initial,
+      pythonAuthoring: [{ runtime: project.runtime, blockIds: ['sz_py_pass'] }],
+    }),
+  )
+  expect(blocks.getAttribute('data-blocks')).toBe('sz_py_pass')
+  await act(async () => current.update({ ...initial, available: false }))
+  expect(blocks.getAttribute('data-blocks')).toBe('')
+  expect(view.getByTestId('qualified-blocks')).toBe(blocks)
+  expect(view.getByRole('textbox', { name: 'Fonte da instância' })).toBe(source)
+  expect(source.value).toBe('buffer ainda não salvo')
+  expect(stores.project.getState().project).toBe(stored)
 })

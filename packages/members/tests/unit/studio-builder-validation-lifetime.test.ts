@@ -16,7 +16,9 @@ test.each([
   'review-after-deadline',
   'abort-final-gap',
 ])('fresh lease fence covers %s', async (mode) => {
-  const { project } = await authoringFixture('python', 'pro')
+  const { project, configuration } = await authoringFixture('python', 'pro')
+  const runtimeRelease = configuration.catalog.releases[0]
+  if (!runtimeRelease) throw new Error('Missing fixture release')
   const payload = await capturePythonProRevisionPayload(project)
   const change = {
     baseHash: payload.base.hash,
@@ -92,7 +94,7 @@ test.each([
     false,
     async () => {
       policies++
-      return {}
+      return { runtimeRelease }
     },
   )
   const pending = service

@@ -41,6 +41,9 @@ export type StudioAuthoringOptions = z.infer<typeof StudioAuthoringOptionsSchema
 /** Free creation rights are checked independently from lesson/live/admin context. */
 export const StudioFreeOptionsSchema = StudioAuthoringOptionsSchema.extend({
   canCreatePro: z.boolean(),
+  canCreatePython: z.boolean(),
   pythonCuration: StudioProjectCurationSchema,
+  /** Server-resolved course grants, independent of extension installation. */
+  pythonGrantedExtensionIds: ids(256),
 })
 export type StudioFreeOptions = z.infer<typeof StudioFreeOptionsSchema>

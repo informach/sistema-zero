@@ -1,11 +1,11 @@
 import { creativeToolAccessRef } from '@sistemazero/core/creations'
+import { isPythonCourseBlock } from '@sistemazero/studio/python-course-unlocks'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
-import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
-import type { StudioUnlockRepository } from '../../domain/ports/studio-unlock-repository.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
 import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { KidsJourneyQueryService } from '../kids-journey/kids-journey-query.service'
+import type { GetStudioUnlocksService } from '../studio-unlocks/get-studio-unlocks.service'
 
 const knownJavaScriptBlocks = new Set(SERVER_BLOCK_CATALOG.map(({ type }) => type))
 export interface FreeStudioActor {
@@ -16,17 +16,20 @@ export interface FreeStudioActor {
   readOnly: boolean
 }
 
-/** The existing Complete Studio gate, read afresh without freezing grants or changing progress. */
+/** Product/mode rights and the same durable course union exposed by the unlocks endpoint. */
 export class FreeStudioAccessService {
   constructor(
     private readonly access: Pick<AccessCheckService, 'execute'>,
-    private readonly gamification: Pick<GamificationRepository, 'listStudioUnlocksByCourse'>,
-    private readonly unlocks: Pick<StudioUnlockRepository, 'listGrants'>,
+    private readonly unlocks: Pick<GetStudioUnlocksService, 'execute'>,
     private readonly kidsJourney: Pick<KidsJourneyQueryService, 'get' | 'staffPreview'>,
     private readonly adultJourney?: Pick<AdultJourneyService, 'get'>,
   ) {}
 
-  async execute(inputActor: FreeStudioActor, purpose: 'creation' | 'existing-pro' = 'creation') {
+  async execute(
+    inputActor: FreeStudioActor,
+    purpose: 'creation' | 'existing-pro' = 'creation',
+    programmingLanguage: 'javascript' | 'python' = 'javascript',
+  ) {
     const actor = { ...inputActor }
     if (actor.readOnly)
       throw new AccessDeniedError('A sessão de suporte não pode executar projetos.')
@@ -44,11 +47,10 @@ export class FreeStudioAccessService {
         const owned = await this.access.execute(actor.accountId, [ref])
         if (!owned.grants.includes(ref) && !owned.communities.includes(ref))
           throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo adulto.')
-        if (purpose === 'creation') await this.assertPalette(actor, 'adult')
       }
       const modes: ('blocks' | 'bridge')[] = ['blocks']
       if (journey.capabilities.includes('bridge')) modes.push('bridge')
-      return { pro, modes }
+      return { pro, modes, blocks: await this.palette(actor, purpose, programmingLanguage) }
     }
     if (actor.audience !== 'kids') throw new AccessDeniedError('Público inválido.')
     // Team preview admitted by `resolveStudioFreeActor` → `resolveKidsStaffPreviewActor`: the
@@ -57,6 +59,7 @@ export class FreeStudioAccessService {
     if (actor.privileged) {
       const preview = await this.kidsJourney.staffPreview()
       return {
+        blocks: null,
         pro: preview.capabilities.includes('pro'),
         modes: preview.capabilities.includes('bridge')
           ? ['blocks' as const, 'bridge' as const]
@@ -79,27 +82,26 @@ export class FreeStudioAccessService {
     }
     if (!capabilities.includes('studio'))
       throw new AccessDeniedError('Seu nível ainda não libera o Estúdio Completo.')
-    // The existing Pro route is gated by product + Pro level, independently of the
-    // curriculum palette required by the project-creation gallery.
+    // The Pro capability is independent of the curriculum; Python still needs its earned tools.
     if (purpose === 'existing-pro') {
       if (!reward.pro)
         throw new AccessDeniedError('Seu nível ainda não libera projetos Pro no Estúdio Completo.')
-      return reward
+      return { ...reward, blocks: await this.palette(actor, purpose, programmingLanguage) }
     }
-    await this.assertPalette(actor, 'kids')
-    return reward
+    return { ...reward, blocks: await this.palette(actor, purpose, programmingLanguage) }
   }
 
-  private async assertPalette(actor: FreeStudioActor, audience: 'kids' | 'adult') {
-    const [current, frozen] = await Promise.all([
-      this.gamification.listStudioUnlocksByCourse(actor.userId, audience),
-      this.unlocks.listGrants(actor.userId, audience),
-    ])
-    if (
-      ![...current, ...frozen].some(({ blocks }) =>
-        blocks.some((id) => knownJavaScriptBlocks.has(id)),
-      )
-    )
+  private async palette(
+    actor: FreeStudioActor,
+    purpose: 'creation' | 'existing-pro',
+    programmingLanguage: 'javascript' | 'python',
+  ): Promise<readonly string[] | null> {
+    if (actor.privileged) return null
+    // Preserve the existing JavaScript Pro gate; Python explicitly requests its own curriculum.
+    if (purpose === 'existing-pro' && programmingLanguage === 'javascript') return []
+    const { blocks } = await this.unlocks.execute(actor.userId, actor.audience, actor.accountId)
+    if (!blocks.some((id) => knownJavaScriptBlocks.has(id) || isPythonCourseBlock(id)))
       throw new AccessDeniedError('Conclua um curso para liberar a criação no Estúdio Completo.')
+    return [...blocks]
   }
 }

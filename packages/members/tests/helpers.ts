@@ -445,14 +445,9 @@ export function buildApp(
     drafts,
     opts.studioRuntimePolicy,
   )
+  const getStudioUnlocks = new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger)
   const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
-    new FreeStudioAccessService(
-      accessCheck,
-      gamification,
-      studioUnlocks,
-      kidsJourneyQuery,
-      adultJourney,
-    ),
+    new FreeStudioAccessService(accessCheck, getStudioUnlocks, kidsJourneyQuery, adultJourney),
     opts.studioRuntimePolicy,
     opts.studioAuthoringPolicy,
     () => clock().getTime(),
@@ -646,7 +641,7 @@ export function buildApp(
         adultJourney,
       ),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
-      getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
+      getStudioUnlocks,
       getMissions,
       claimMission: new ClaimMissionService(
         gamification,

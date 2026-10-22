@@ -29,6 +29,7 @@ async function fixture(excludedSource = false) {
     reference: {
       kind: 'python-preview',
       version: 1,
+      previewHostAudioVersion: 1,
       id: 'c'.repeat(64),
       projectId: base.projectId,
       revision: snapshot.revision,

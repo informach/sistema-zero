@@ -13,8 +13,7 @@ export const StudioPythonPreviewReferenceSchema = z
     projectId: StudioProjectIdSchema,
     revision: StudioSha256Schema,
     runtimeManifestSha256: StudioSha256Schema,
-    /** Optional only for historical metadata; executable hosts must require version1. */
-    previewHostAudioVersion: z.literal(1).optional(),
+    previewHostAudioVersion: z.literal(1),
     url: z.string().max(4096),
     sha256: StudioSha256Schema,
     expiresAt: z.number().int().nonnegative(),

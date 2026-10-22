@@ -4,7 +4,7 @@ import { isNode, nodes } from './nodes'
 
 type Binding =
   | { kind: 'module'; module: string; member?: string }
-  | { kind: 'instance'; module: string; instance: 'Turtle' | 'Screen' }
+  | { kind: 'instance'; module: string; instance: 'Turtle' | 'Screen' | 'Shape' }
   | { kind: 'other' }
 type Scope = {
   parent?: Scope
@@ -199,7 +199,7 @@ export function pythonBindingResolver(
     if (
       found?.kind === 'module' &&
       found.module === 'turtle' &&
-      (member === 'Turtle' || member === 'Screen')
+      (member === 'Turtle' || member === 'Screen' || member === 'Shape')
     )
       candidate.scope.bindings.set(candidate.target, {
         kind: 'instance',

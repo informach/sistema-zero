@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { createPythonLanguageBootstrap } from '@sistemazero/core/studio/python-language-bootstrap'
 import { renderPythonProvidedModuleStub } from '@sistemazero/core/studio/python-provided-modules-render'
+import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 
 /** QA only. Pin both the addressable OCI source and its selected platform identity. */
 export function parseContainerVerificationOptions(args: readonly string[]) {
@@ -180,7 +181,7 @@ async function main({token,wrongToken,bootstrap,mode,bundleSha256,stubSha256}){
   let reachable=false;try{await request('/healthz');reachable=true}catch{}assert.equal(reachable,false);
   console.log(JSON.stringify({mode,node:process.version,pyrightVersion,uid:process.getuid(),healthBefore:503,invalidConfiguration:400,noLegacyFallback:true,serverExit:exited,metadataRemoved:true}));return;
  }
- const configure=await request('/configure',mode==='legacy'?{protocolVersion:1}:bootstrap);
+ const configure=await request('/configure',bootstrap);
  assert.equal(configure.status,200);assert.deepEqual(await configure.json(),{protocolVersion:1,ready:true});
  const ready=await request('/healthz');assert.equal(ready.status,200);assert.deepEqual(await ready.json(),{ready:true});
  assert.equal((await request('/configure',{protocolVersion:1})).status,409);
@@ -194,7 +195,8 @@ async function main({token,wrongToken,bootstrap,mode,bundleSha256,stubSha256}){
  const query=(method,offset)=>send({kind:'query',method,path:entrypoint,revision,documentVersion:versions.get(entrypoint),...(offset===undefined?{}:{offset})});
  const diagnostics=async()=>{const reply=await query('diagnostics');assert.equal(reply.kind,'result');return reply.result};
  const began=performance.now();let completionCount=0;const assertions=[];
- if(mode==='legacy'){
+ if(mode==='empty'){
+  assert.deepEqual(bootstrap.runtimeRelease.manifest.python.providedModules,[]);assert.deepEqual(roots(),[]);
   await sync('from pathlib import Path\nPath("/tmp/source-executed").touch()\nfrom helper import value\nimport turtle\npen = turtle.Turtle()\npen.forward\n',{'helper.py':'value="ROOT"\n','src/helper.py':'value="SRC"\n','sitecustomize.py':'from pathlib import Path\nPath("/tmp/hook-executed").touch()\n'});
   const result=await query('completions',source.lastIndexOf('pen.')+4);assert.equal(result.kind,'result');assert.ok(result.result.some(item=>item.name==='forward'));completionCount=result.result.length;
   const definition=await query('definitions',source.indexOf('value')+1);assert.equal(definition.kind,'result');assert.equal(definition.result[0].path,'src/helper.py');
@@ -286,7 +288,9 @@ export async function verifyLanguageContainer(args: readonly string[]) {
     const bootstrap = await createPythonLanguageBootstrap(
       JSON.parse(bootstrapBytes.toString('utf8')),
     )
-    const modules = bootstrap.runtimeRelease?.manifest.python?.providedModules
+    const python = bootstrap.runtimeRelease.manifest.python
+    assert.ok(python, 'Gate requires a Python release')
+    const modules = python.providedModules
     assert.ok(
       modules && modules.length === 1 && modules[0]?.descriptor.importName === 'sz_audio',
       'Gate requires the exact sz_audio QA release',
@@ -295,7 +299,14 @@ export async function verifyLanguageContainer(args: readonly string[]) {
       .update(renderPythonProvidedModuleStub(modules[0].descriptor))
       .digest('hex')
     evidence.bootstrapSha256 = createHash('sha256').update(bootstrapBytes).digest('hex')
-    evidence.releaseSha256 = bootstrap.runtimeRelease?.manifestSha256
+    evidence.releaseSha256 = bootstrap.runtimeRelease.manifestSha256
+    const emptyBootstrap = await createPythonLanguageBootstrap({
+      protocolVersion: 1,
+      runtimeRelease: await createStudioRuntimeRelease({
+        ...bootstrap.runtimeRelease.manifest,
+        python: { ...python, providedModules: [] },
+      }),
+    })
     evidence.stubSha256 = stubSha256
     const sourceImages = JSON.parse(command(['image', 'inspect', options.sourceImageRef]))
     assert.ok(Array.isArray(sourceImages) && sourceImages.length === 1)
@@ -343,7 +354,7 @@ export async function verifyLanguageContainer(args: readonly string[]) {
       os: image.Os,
       rootFS: image.RootFS,
     }
-    for (const mode of ['legacy', 'provided', 'forged']) {
+    for (const mode of ['empty', 'provided', 'forged']) {
       const name = `sz-language22-${options.run}-${mode}`
       const owner = crypto.randomUUID()
       const cidFile = resolve(directory, `${mode}.cid`)
@@ -437,7 +448,7 @@ export async function verifyLanguageContainer(args: readonly string[]) {
             token,
             wrongToken,
             secrets: [token, wrongToken],
-            bootstrap,
+            bootstrap: mode === 'empty' ? emptyBootstrap : bootstrap,
             mode,
             bundleSha256: options.bundleSha256,
             stubSha256,

@@ -1,6 +1,7 @@
 'use client'
 
 import { type CourseModality, courseModalityOf } from '@sistemazero/core/course/modality'
+import { pythonCourseUnlockIssue } from '@sistemazero/studio/python-course-unlocks'
 import { Button } from '@sistemazero/ui/button'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
@@ -15,7 +16,7 @@ import { toast } from 'sonner'
 import { AdultCourseAccessContract } from '@/components/admin/adult-course-access-contract'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
-import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
+import { StudioCourseBlocksPicker } from '@/components/studio/studio-course-blocks-picker'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { courseSaveError } from '@/lib/course-errors'
 import { LIVE_MODALITY_HINT, modalityChangeWarning } from '@/lib/course-modality'
@@ -283,6 +284,11 @@ export function CourseFormDialog({
   }
 
   async function save() {
+    const rewardIssue = pythonCourseUnlockIssue(form.studioUnlockBlocks)
+    if (!isLive && rewardIssue) {
+      toast.error(rewardIssue)
+      return
+    }
     if (!form.title.trim() || !form.slug.trim()) {
       toast.error('Preencha slug e título.')
       return
@@ -625,7 +631,8 @@ export function CourseFormDialog({
             label="Ferramentas que este curso libera no Estúdio"
             tooltip={`Liste os blocos que este curso usa, inclusive os fundamentos que já apareceram em cursos anteriores. ${studioUnlockRule} A caixa de ferramentas soma tudo que ${isKids ? 'ela' : 'o aluno'} já conquistou, sem repetir.`}
           >
-            <StudioBlocksPicker
+            <StudioCourseBlocksPicker
+              key={editing ? `${editing.id}:${editing.version}` : 'new-course'}
               value={form.studioUnlockBlocks}
               onChange={(next) => setForm((f) => ({ ...f, studioUnlockBlocks: next }))}
             />

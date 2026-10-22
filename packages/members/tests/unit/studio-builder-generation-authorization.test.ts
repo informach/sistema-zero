@@ -11,7 +11,9 @@ import { StudioBuilderService } from '../../src/application/studio-pro/studio-bu
 import { authoringFixture } from '../fakes/studio-authoring-policy'
 
 async function fixture(repair = false) {
-  const { project } = await authoringFixture('python', 'pro')
+  const { project, configuration } = await authoringFixture('python', 'pro')
+  const runtimeRelease = configuration.catalog.releases[0]
+  if (!runtimeRelease) throw new Error('Missing fixture release')
   const payload = await capturePythonProRevisionPayload(project)
   const change = {
     baseHash: payload.base.hash,
@@ -84,7 +86,7 @@ async function fixture(repair = false) {
         (await prepareStudioPythonProExecution(revision, payload.binaries)).metadata.configuration,
       )
       onPolicy()
-      return {}
+      return { runtimeRelease }
     },
   )
   return {
@@ -94,6 +96,7 @@ async function fixture(repair = false) {
     claim,
     revision,
     payload,
+    runtimeRelease,
     events,
     read(fn: typeof onRead) {
       onRead = fn
@@ -117,7 +120,7 @@ test.each([
   const result = await f.service.execute(f.actor, f.command)
   expect(f.events).toEqual(['sql', 'policy', 'sql'])
   expect(result?.authorization).toEqual({
-    policy: {},
+    policy: { runtimeRelease: f.runtimeRelease },
     revisionHash: f.revision.hash,
     executionRevision: expected.metadata.revision,
     parentOrigin: 'https://kids.test',

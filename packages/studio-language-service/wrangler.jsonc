@@ -15,11 +15,16 @@
   "durable_objects": {
     "bindings": [
       { "class_name": "PythonLanguageSandbox", "name": "PythonLanguageSandbox" },
-      { "class_name": "PythonLanguageOwner", "name": "PythonLanguageOwner" }
+      { "class_name": "PythonLanguageSessions", "name": "PythonLanguageSessions" }
     ]
   },
   "migrations": [
-    { "new_sqlite_classes": ["PythonLanguageSandbox", "PythonLanguageOwner"], "tag": "v1" }
+    { "new_sqlite_classes": ["PythonLanguageSandbox", "PythonLanguageOwner"], "tag": "v1" },
+    {
+      "tag": "language-sessions-initial",
+      "new_sqlite_classes": ["PythonLanguageSessions"],
+      "deleted_classes": ["PythonLanguageOwner"]
+    }
   ],
   "ratelimits": [
     {
@@ -47,7 +52,7 @@
       "durable_objects": {
         "bindings": [
           { "class_name": "PythonLanguageSandbox", "name": "PythonLanguageSandbox" },
-          { "class_name": "PythonLanguageOwner", "name": "PythonLanguageOwner" }
+          { "class_name": "PythonLanguageSessions", "name": "PythonLanguageSessions" }
         ]
       },
       "ratelimits": [

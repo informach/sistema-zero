@@ -6,11 +6,15 @@ import {
   studioPythonAnalysisBinding,
 } from '@sistemazero/core/studio/python-language-authorization'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
-import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
+import {
+  currentPythonRelease,
+  providedPythonRelease,
+} from '../../core/tests/fixtures/python-provided-release'
 import { createPythonLanguageHttpProvider } from '../../studio/src/python/language/httpProvider'
 import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
 const binding = 'b'.repeat(64)
+const currentRelease = await currentPythonRelease()
 function analysisAuthorization(projectId: string): StudioPythonAnalysisAuthorization {
   const project = documentFixture('python', 'pro')
   project.id = projectId
@@ -140,7 +144,7 @@ mock.module('@cloudflare/sandbox', () => ({
 const { checkPythonLanguageHealth, PythonLanguageCommand } = await import(
   '../src/language-transport'
 )
-const { PythonLanguageOwner, default: worker } = await import('../src/index')
+const { PythonLanguageSessions, default: worker } = await import('../src/index')
 
 it('health rejects invalid credentials before I/O and reports success or denial after local drain', async () => {
   let sends = 0
@@ -308,19 +312,11 @@ it('cancels an oversized response instead of passing or retaining an unbounded b
   expect(cancelled).toBe(1)
 })
 
-function fixture(stage: Stage = 'none', legacy = false) {
+function fixture(stage: Stage = 'none') {
   const probe = sandboxProbe(stage),
     database = new Database(':memory:'),
     background: Promise<unknown>[] = [],
     tasks: Promise<Response>[] = []
-  if (legacy) {
-    database.exec(
-      'CREATE TABLE leases (id TEXT PRIMARY KEY, project_id TEXT NOT NULL, token TEXT NOT NULL, created_ms INTEGER NOT NULL, used_ms INTEGER NOT NULL, phase TEXT NOT NULL, cleanup_ms INTEGER NOT NULL)',
-    )
-    database
-      .query("INSERT INTO leases VALUES (?, 'old-project', 'old-token', ?, ?, 'reserved', 0)")
-      .run('c'.repeat(32), Date.now(), Date.now())
-  }
   const ctx = {
     storage: {
       sql: {
@@ -342,8 +338,8 @@ function fixture(stage: Stage = 'none', legacy = false) {
   const env = {
     INTERNAL_TOKEN: 'test-private-token',
     PythonLanguageSandbox: { sandbox: probe.sandbox },
-    PythonLanguageOwner: {
-      getByName: (_name: string): InstanceType<typeof PythonLanguageOwner> => owner,
+    PythonLanguageSessions: {
+      getByName: (_name: string): InstanceType<typeof PythonLanguageSessions> => owner,
     },
     LANGUAGE_OPEN_LIMIT: {
       async limit() {
@@ -356,9 +352,9 @@ function fixture(stage: Stage = 'none', legacy = false) {
       },
     },
   }
-  const owner = new PythonLanguageOwner(
-    ctx as unknown as ConstructorParameters<typeof PythonLanguageOwner>[0],
-    env as unknown as ConstructorParameters<typeof PythonLanguageOwner>[1],
+  const owner = new PythonLanguageSessions(
+    ctx as unknown as ConstructorParameters<typeof PythonLanguageSessions>[0],
+    env as unknown as ConstructorParameters<typeof PythonLanguageSessions>[1],
   )
   const calls: string[] = []
   let reservationGate: ReturnType<typeof deferred<void>> | undefined
@@ -385,7 +381,11 @@ function fixture(stage: Stage = 'none', legacy = false) {
           body: inputBody
             ? JSON.stringify(
                 suffix === '/open'
-                  ? { projectId: inputBody.authorization.subject.id, binding: trustedBinding }
+                  ? {
+                      projectId: inputBody.authorization.subject.id,
+                      binding: trustedBinding,
+                      runtimeRelease: currentRelease,
+                    }
                   : suffix.endsWith('/start')
                     ? { binding: trustedBinding }
                     : inputBody.command,
@@ -429,9 +429,9 @@ function fixture(stage: Stage = 'none', legacy = false) {
     reserved,
     database,
     rehydrate() {
-      return new PythonLanguageOwner(
-        ctx as unknown as ConstructorParameters<typeof PythonLanguageOwner>[0],
-        env as unknown as ConstructorParameters<typeof PythonLanguageOwner>[1],
+      return new PythonLanguageSessions(
+        ctx as unknown as ConstructorParameters<typeof PythonLanguageSessions>[0],
+        env as unknown as ConstructorParameters<typeof PythonLanguageSessions>[1],
       )
     },
     rows: () =>
@@ -458,7 +458,7 @@ it('classifies startup failure for operations while hiding SDK environment and p
     })
   }
   try {
-    const reservation = await env.owner.open('project', binding)
+    const reservation = await env.owner.open('project', binding, currentRelease)
     const payload = await reservation.json()
     if (
       !payload ||
@@ -540,7 +540,9 @@ for (const stage of ['startProcess', 'port', 'configure', 'configure-create', 'h
 it('coalesces duplicate startup and cleanup without resurrecting a closed session', async () => {
   const env = fixture('port')
   try {
-    const { sessionId } = (await (await env.owner.open('project', binding)).json()) as {
+    const { sessionId } = (await (
+      await env.owner.open('project', binding, currentRelease)
+    ).json()) as {
       sessionId: string
     }
     const first = env.owner.start(sessionId, binding),
@@ -562,7 +564,9 @@ it('coalesces duplicate startup and cleanup without resurrecting a closed sessio
 it('aborts and drains an in-flight SDK command before final destruction and rejects its late response', async () => {
   const env = fixture('command')
   try {
-    const { sessionId } = (await (await env.owner.open('project', binding)).json()) as {
+    const { sessionId } = (await (
+      await env.owner.open('project', binding, currentRelease)
+    ).json()) as {
       sessionId: string
     }
     expect((await env.owner.start(sessionId, binding)).status).toBe(200)
@@ -605,7 +609,7 @@ it('rejects a late success when Owner cancellation reaches RPC after the respons
     return handle
   }
   try {
-    const payload = await (await env.owner.open('project', binding)).json()
+    const payload = await (await env.owner.open('project', binding, currentRelease)).json()
     if (
       !payload ||
       typeof payload !== 'object' ||
@@ -638,7 +642,7 @@ it('rejects a late success when Owner cancellation reaches RPC after the respons
 it('drains handle creation during close and never runs the late command', async () => {
   const env = fixture('create')
   try {
-    const payload = await (await env.owner.open('project', binding)).json()
+    const payload = await (await env.owner.open('project', binding, currentRelease)).json()
     if (
       !payload ||
       typeof payload !== 'object' ||
@@ -676,7 +680,7 @@ it('drains handle creation during close and never runs the late command', async 
 it('expires a lost reservation in thirty seconds without a paid container', async () => {
   const env = fixture()
   try {
-    await env.owner.open('lost-response', binding)
+    await env.owner.open('lost-response', binding, currentRelease)
     databaseExpire(env.database)
     await env.owner.alarm()
     expect(env.rows()).toEqual([])
@@ -692,7 +696,9 @@ function databaseExpire(database: Database) {
 it('persists context binding across owner restarts and rejects a different context before startup or source transfer', async () => {
   const f = fixture()
   try {
-    const { sessionId } = (await (await f.owner.open('project', binding)).json()) as {
+    const { sessionId } = (await (
+      await f.owner.open('project', binding, currentRelease)
+    ).json()) as {
       sessionId: string
     }
     const owner = f.rehydrate()
@@ -734,31 +740,16 @@ it('persists context binding across owner restarts and rejects a different conte
   }
 })
 
-it('migrates legacy SQLite leases additively and idempotently; unbound leases only close or expire', async () => {
-  const f = fixture('none', true)
+it('creates the current lease schema with mandatory binding and bootstrap and can rehydrate it', async () => {
+  const f = fixture()
   try {
     const owner = f.rehydrate()
-    expect(f.database.query('SELECT binding FROM leases').get()).toEqual({ binding: null })
-    expect(f.database.query('SELECT bootstrap FROM leases').get()).toEqual({ bootstrap: null })
-    expect((await owner.start('c'.repeat(32), binding)).status).toBe(410)
-    expect(
-      (
-        await owner.command(
-          'c'.repeat(32),
-          new Request('https://private/command', {
-            method: 'POST',
-            headers: { 'x-studio-python-operation': 'query' },
-            body: '{}',
-          }),
-          binding,
-        )
-      ).status,
-    ).toBe(410)
-    expect(f.probe.trace).toEqual([])
-    expect((await owner.close('c'.repeat(32))).status).toBe(200)
+    const schema = f.database.query('PRAGMA table_info(leases)').all()
+    expect(schema).toContainEqual(expect.objectContaining({ name: 'binding', notnull: 1 }))
+    expect(schema).toContainEqual(expect.objectContaining({ name: 'bootstrap', notnull: 1 }))
     expect(f.rows()).toEqual([])
-    expect((await owner.open('new-project', binding)).status).toBe(200)
-    expect((await owner.open('spoofed', '')).status).toBe(400)
+    expect((await owner.open('new-project', binding, currentRelease)).status).toBe(200)
+    expect((await owner.open('spoofed', '', currentRelease)).status).toBe(400)
     expect(f.probe.trace).toEqual([])
   } finally {
     await f.finish()
@@ -785,11 +776,15 @@ it('pins verified metadata in the lease across restart and refuses a forged rele
     expect(f.probe.configurations).toEqual([{ protocolVersion: 1, runtimeRelease: release }])
     expect(f.probe.trace).toEqual(['startProcess', 'port', 'configure', 'health'])
     await owner.close(opened.sessionId)
-    const legacy = (await (await owner.open('legacy', binding)).json()) as { sessionId: string }
-    expect(f.database.query('SELECT bootstrap FROM leases').get()).toEqual({ bootstrap: null })
-    expect((await owner.start(legacy.sessionId, binding)).status).toBe(200)
-    expect(f.probe.configurations.at(-1)).toEqual({ protocolVersion: 1 })
-    await owner.close(legacy.sessionId)
+    const empty = (await (await owner.open('empty-profile', binding, currentRelease)).json()) as {
+      sessionId: string
+    }
+    expect((await owner.start(empty.sessionId, binding)).status).toBe(200)
+    expect(f.probe.configurations.at(-1)).toEqual({
+      protocolVersion: 1,
+      runtimeRelease: currentRelease,
+    })
+    await owner.close(empty.sessionId)
   } finally {
     await f.finish()
   }
@@ -798,7 +793,9 @@ it('pins verified metadata in the lease across restart and refuses a forged rele
 it('cancellation can reduce existing work after policy loss without renewing the paid lease', async () => {
   const f = fixture()
   try {
-    const { sessionId } = (await (await f.owner.open('project', binding)).json()) as {
+    const { sessionId } = (await (
+      await f.owner.open('project', binding, currentRelease)
+    ).json()) as {
       sessionId: string
     }
     await f.owner.start(sessionId, binding)

@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { gzipSync } from 'node:zlib'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
 import {
   createStudioRuntimeRelease,
   StudioRuntimeReleaseSchema,
@@ -27,7 +28,10 @@ afterEach(async () => {
   }
 })
 
-async function fixture(environment: 'staging' | 'production' = 'staging') {
+async function fixture(
+  environment: 'staging' | 'production' = 'staging',
+  features: readonly StudioPythonRuntimeFeature[] = ['turtle-compound-shapes'],
+) {
   const bucketName: PythonPromotionInput['target']['bucketName'] =
     environment === 'staging'
       ? 'sistemazero-studio-artifacts-staging'
@@ -53,6 +57,7 @@ async function fixture(environment: 'staging' | 'production' = 'staging') {
     storage.contents.set(path, new TextEncoder().encode(`fixture:${path}`))
   const distribution = {
     ...storage.deployment.distribution,
+    features,
     files: await Promise.all(
       [...storage.contents].map(async ([path, bytes]) => ({
         path,
@@ -125,6 +130,34 @@ test('offline plan is deterministic, binds distinct hashes and registers real Py
   expect(await verifyPythonPromotionPlan(first, first.planSha256)).toEqual(first)
 })
 
+test('promotion selects APIs from an explicit current-format implementation feature array', async () => {
+  for (const features of [[], ['turtle-compound-shapes']] as const) {
+    const f = await fixture('staging', features)
+    const plan = await preparePythonPromotion(f.input)
+    const blockIds = plan.configuration.members.releases[0]!.blockIds
+    for (const id of ['sz_py_turtle_module_Shape', 'sz_py_turtle_shape_addcomponent'])
+      expect(blockIds.includes(id)).toBe(
+        features.some((feature) => feature === 'turtle-compound-shapes'),
+      )
+    expect(plan.deployment.distribution.features).toEqual([...features])
+    expect(plan.deployment.release.manifest.python?.features).toEqual([...features])
+    expect(await verifyPythonPromotionPlan(plan, plan.planSha256)).toEqual(plan)
+  }
+})
+
+test('repeating the current deployment preserves its exact approved policy and plan identity', async () => {
+  const f = await fixture()
+  const previous = await preparePythonPromotion(f.input)
+  const policy = previous.configuration.members.releases[0]!
+  expect(policy.blockIds.filter((id) => id.startsWith('sz_py_turtle_'))).toHaveLength(180)
+  const baseline = structuredClone(previous.configuration)
+  const next = await preparePythonPromotion({ ...f.input, baseline })
+  expect(next.configuration.members.releases).toEqual(baseline.members.releases)
+  expect(next.configuration.worker.deployments).toEqual(baseline.worker.deployments)
+  expect(next.deployment).toEqual(previous.deployment)
+  expect(await verifyPythonPromotionPlan(next, next.planSha256)).toEqual(next)
+})
+
 test('production reuses immutable release bytes with its own origins and catalog', async () => {
   const f = await fixture()
   const staging = await preparePythonPromotion(f.input)
@@ -157,7 +190,7 @@ test('production reuses immutable release bytes with its own origins and catalog
 test.each([
   'staging',
   'production',
-] as const)('existing JS/retired Python metadata and origins survive merge in %s', async (environment) => {
+] as const)('existing JS and current-format Python statuses and origins survive merge in %s', async (environment) => {
   const f = await fixture(environment)
   const first = await preparePythonPromotion(f.input)
   first.configuration.worker.deployments[0]!.status = 'retired'

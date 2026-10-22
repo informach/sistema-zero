@@ -20,7 +20,13 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
   let connection: DbConnection
   const actor = { accountId: randomUUID(), userId: randomUUID(), privileged: false }
   let now = new Date('2026-10-18T13:00:00Z')
-  let policy: NonNullable<ConstructorParameters<typeof StudioBuilderService>[4]> = async () => ({})
+  async function currentPolicy() {
+    const { configuration } = await authoringFixture('python', 'pro')
+    const runtimeRelease = configuration.catalog.releases[0]
+    if (!runtimeRelease) throw new Error('Missing fixture release')
+    return { runtimeRelease }
+  }
+  let policy: NonNullable<ConstructorParameters<typeof StudioBuilderService>[4]> = currentPolicy
   let service: StudioBuilderService
   beforeAll(() => {
     if (!url)
@@ -44,7 +50,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     if (!connection) return
     await connection.sql`delete from members.studio_builder_jobs where account_id = ${actor.accountId}`
     await connection.sql`delete from members.studio_ai_accounts where account_id = ${actor.accountId}`
-    policy = async () => ({})
+    policy = currentPolicy
     now = new Date('2026-10-18T13:00:00Z')
   })
   afterAll(async () => {
@@ -129,12 +135,12 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
       expect(base.hash).toBe(f.command.revisionHash)
       expect(metadata.revision).toBe(prepared.metadata.revision)
       expect(operation).toBe('analyze')
-      return {}
+      return currentPolicy()
     }
     const accepted = await service.execute(actor, f.command)
     expect(calls).toBe(1)
     expect(accepted?.authorization).toEqual({
-      policy: {},
+      policy: await currentPolicy(),
       revisionHash: f.revision.hash,
       executionRevision: prepared.metadata.revision,
       parentOrigin: 'https://kids.test',
@@ -151,7 +157,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let calls = 0
     policy = async () => {
       calls++
-      return {}
+      return currentPolicy()
     }
     for (const [owner, command] of [
       [{ ...actor, accountId: randomUUID() }, f.command],
@@ -216,7 +222,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let calls = 0
     policy = async () => {
       calls++
-      return {}
+      return currentPolicy()
     }
     const error = await service.execute(actor, f.command).then(
       () => null,
@@ -232,7 +238,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
       before = await wholeJob(f.command.id)
     policy = async () => {
       now = new Date(Date.parse(f.job.leaseUntil!) + 1)
-      return {}
+      return currentPolicy()
     }
     const error = await service.execute(actor, f.command).then(
       () => null,
@@ -249,7 +255,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     policy = async () => {
       entered.resolve()
       await released.promise
-      return {}
+      return currentPolicy()
     }
     const pending = service.execute(actor, f.command).then(
       () => null,
@@ -340,6 +346,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
       revisionHash: f.revision.hash,
       reference: {
         kind: 'python-preview',
+        previewHostAudioVersion: 1,
         version: 1,
         id: 'c'.repeat(64),
         projectId: f.revision.projectId,
@@ -391,7 +398,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let policyCalls = 0
     policy = async () => {
       policyCalls++
-      return {}
+      return currentPolicy()
     }
     const reviewed = await service.execute(actor, command)
     expect(reviewed?.job.phase).toBe('review')
@@ -488,7 +495,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let policies = 0
     policy = async () => {
       policies++
-      return {}
+      return currentPolicy()
     }
     const authorized = await service.execute(actor, f.command)
     expect(authorized?.authorization).toMatchObject({
@@ -531,7 +538,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let policies = 0
     policy = async () => {
       policies++
-      return {}
+      return currentPolicy()
     }
     const error = await service.execute(actor, command).then(
       () => null,
@@ -563,7 +570,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
           projectId: f.command.projectId,
           version: f.command.version,
         })
-      return {}
+      return currentPolicy()
     }
     const error = await service.execute(actor, f.command).then(
       () => null,
@@ -684,12 +691,12 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
       expect(base.hash).toBe(f.revision.hash)
       expect(metadata).toEqual(prepared.metadata)
       calls.push(operation)
-      return {}
+      return currentPolicy()
     }
     for (const runtimeOperation of ['analyze', 'execute'] as const) {
       const accepted = await service.execute(actor, { ...f.command, runtimeOperation })
       expect(accepted?.authorization).toEqual({
-        policy: {},
+        policy: await currentPolicy(),
         revisionHash: f.revision.hash,
         executionRevision: prepared.metadata.revision,
         parentOrigin: 'https://kids.test',
@@ -709,7 +716,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     let calls = 0
     policy = async () => {
       calls++
-      return {}
+      return currentPolicy()
     }
     for (const [owner, command] of [
       [{ ...actor, accountId: randomUUID() }, f.command],
@@ -734,7 +741,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     policy = async () => {
       entered.resolve()
       await released.promise
-      return {}
+      return currentPolicy()
     }
     const pending = service.execute(actor, f.command).then(
       () => null,
@@ -760,7 +767,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     const f = await validation()
     policy = async () => {
       now = new Date(now.getTime() + 150001)
-      return {}
+      return currentPolicy()
     }
     const error = await service.execute(actor, f.command).then(
       () => null,
@@ -781,7 +788,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
         await releaseLock.promise
       })
       await lockAcquired.promise
-      return {}
+      return currentPolicy()
     }
     const pending = service.execute(actor, f.command).then(
       () => null,
@@ -821,7 +828,7 @@ describe.skipIf(!url)('Python builder acceptance in the disposable full-schema d
     policy = async () => {
       entered.resolve()
       await released.promise
-      return {}
+      return currentPolicy()
     }
     const pending = service.execute(actor, f.command, controller.signal).then(
       () => null,

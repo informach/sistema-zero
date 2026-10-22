@@ -115,9 +115,8 @@ async function prepareRelease() {
     python: {
       version: distribution.manifest.pythonVersion,
       packages: [],
-      ...(distribution.manifest.providedModules === undefined
-        ? {}
-        : { providedModules: distribution.manifest.providedModules }),
+      providedModules: distribution.manifest.providedModules,
+      features: distribution.manifest.features,
     },
   })
 }

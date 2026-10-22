@@ -12,7 +12,7 @@ const candidate = JSON.parse(
   await readFile(
     resolve(
       import.meta.dir,
-      '../../../docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json',
+      '../../../docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json',
     ),
     'utf8',
   ),

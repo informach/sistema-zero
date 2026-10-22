@@ -21,6 +21,24 @@ const label = (
 
 /** Teaching text only. Python names and signatures come from the pinned CPython manifest. */
 const common: Record<string, TurtleTeachingLabel> = {
+  Shape: label(
+    'criar forma composta',
+    'Aparência e imagens',
+    3,
+    'Cria uma forma feita de partes coloridas. Guarde em uma variável, adicione partes e registre a forma na tela.',
+    [text('compound')],
+  ),
+  addcomponent: label(
+    'adicionar parte à forma',
+    'Aparência e imagens',
+    3,
+    'Adiciona um polígono com cor de preenchimento e contorno à forma composta. Os pontos são pares de coordenadas Python.',
+    [
+      node('Tuple', { elts: [pair(0, 10), pair(10, 0), pair(0, -10)], ctx: node('Load') }),
+      text('red'),
+      text('black'),
+    ],
+  ),
   Turtle: label(
     'criar tartaruga',
     'Tartarugas',

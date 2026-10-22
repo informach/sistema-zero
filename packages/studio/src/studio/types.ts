@@ -261,6 +261,8 @@ export interface StudioLearningProps {
   level?: AnyBlockLevel
   /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
   allowBlocks?: readonly string[]
+  /** Course-grant ceiling for offered JavaScript blocks; [] is explicitly empty. */
+  grantedBlockIds?: readonly string[]
   /** IDs de extensões que a jornada/aula permite oferecer para instalação. */
   allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis, independente do nível. */

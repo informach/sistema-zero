@@ -19,13 +19,12 @@ const cancelled = () => new DOMException('Análise cancelada.', 'AbortError')
 
 export interface PythonAnalysisSession {
   readonly closed: boolean
-  /** Missing on older approved editor releases; inspection requires an effective-version ACK. */
-  readonly interpreter?: Readonly<{ pythonVersion: string; pyodideVersion: string }>
-  compileBytes?(
+  readonly interpreter: Readonly<{ pythonVersion: string; pyodideVersion: string }>
+  compileBytes(
     identity: PythonAnalysisIdentity,
     bytes: Uint8Array,
-    signal?: AbortSignal,
-    options?: { structure?: boolean },
+    signal: AbortSignal | undefined,
+    options: { structure: boolean },
   ): Promise<PythonByteCompilation>
   parse(
     identity: PythonAnalysisIdentity,
@@ -43,8 +42,8 @@ export function preparePythonAnalysisSession(options: {
   /** URL resolved from the host's approved distribution, never a source import. */
   url: string
   allowedOrigins: readonly string[]
-  /** Host-captured pin; required by new frames that advertise the private boot protocol. */
-  runtimeManifestSha256?: string
+  /** Host-captured pin for the private boot protocol. */
+  runtimeManifestSha256: string
   signal: AbortSignal
 }): Promise<PythonAnalysisSession> {
   const { frame, signal } = options
@@ -54,6 +53,7 @@ export function preparePythonAnalysisSession(options: {
   try {
     url = new URL(options.url)
     if (
+      !/^[a-f0-9]{64}$/.test(runtimeHash) ||
       !options.allowedOrigins.includes(url.origin) ||
       url.origin === location.origin ||
       url.username ||
@@ -83,7 +83,6 @@ export function preparePythonAnalysisSession(options: {
   let closed = false
   let ready = false
   let sequence = 0
-  let interpreter: PythonAnalysisSession['interpreter']
   let pending:
     | {
         id: number
@@ -160,11 +159,14 @@ export function preparePythonAnalysisSession(options: {
       get closed() {
         return closed
       },
-      get interpreter() {
-        return interpreter
-      },
+      interpreter: Object.freeze({
+        pythonVersion: PYTHON_VERSION,
+        pyodideVersion: PYODIDE_VERSION,
+      }),
       async compileBytes(identity, bytes, operationSignal, options) {
-        const structureRequested = options?.structure === true
+        if (typeof options?.structure !== 'boolean')
+          throw new Error('A compilação exige uma escolha explícita de estrutura.')
+        const structureRequested = options.structure
         const captured = { ...identity }
         if (
           !isStudioProjectId(captured.projectId) ||
@@ -253,11 +255,10 @@ export function preparePythonAnalysisSession(options: {
         value.challenge !== challenge
       )
         return
-      if ('bootResources' in value && (value.bootResources !== 1 || !runtimeHash)) {
+      if (!('bootResources' in value) || value.bootResources !== 1) {
         close(new Error('Protocolo ou pin de carregamento Python incompatível.'))
         return
       }
-      const useBootResources = 'bootResources' in value
       removeEventListener('message', initialize)
       const channel = new MessageChannel()
       port = channel.port1
@@ -270,22 +271,16 @@ export function preparePythonAnalysisSession(options: {
           return
         }
         if (value.type === 'ready' && !ready) {
-          if ('pythonVersion' in value || 'pyodideVersion' in value) {
-            if (
-              !('pythonVersion' in value) ||
-              value.pythonVersion !== PYTHON_VERSION ||
-              !('pyodideVersion' in value) ||
-              value.pyodideVersion !== PYODIDE_VERSION
-            ) {
-              close(
-                new Error('A versão efetiva do compilador Python não corresponde à distribuição.'),
-              )
-              return
-            }
-            interpreter = Object.freeze({
-              pythonVersion: value.pythonVersion,
-              pyodideVersion: value.pyodideVersion,
-            })
+          if (
+            !('pythonVersion' in value) ||
+            value.pythonVersion !== PYTHON_VERSION ||
+            !('pyodideVersion' in value) ||
+            value.pyodideVersion !== PYODIDE_VERSION
+          ) {
+            close(
+              new Error('A versão efetiva do compilador Python não corresponde à distribuição.'),
+            )
+            return
           }
           clearTimeout(bootTimer)
           ready = true
@@ -312,35 +307,32 @@ export function preparePythonAnalysisSession(options: {
       port.start()
       let resourcePort: MessagePort | undefined
       try {
-        if (useBootResources) {
-          if (!runtimeHash) throw new Error('Pin de análise Python ausente.')
-          const host = await preparePythonBootResourceHost({
-            frameURL: new URL('analysis.html', url),
-            runtimeManifestSha256: runtimeHash,
-            signal: bootSignal,
-          })
-          if (closed || bootSignal.aborted) {
-            channel.port2.close()
-            return
-          }
-          const resources = new MessageChannel()
-          resourcePort = resources.port2
-          bootBroker = createPythonBootResourceBroker({
-            port: resources.port1,
-            manifest: host.manifest,
-            store: host.store,
-            signal: bootSignal,
-            onError: (error) => close(error),
-          })
+        const host = await preparePythonBootResourceHost({
+          frameURL: new URL('analysis.html', url),
+          runtimeManifestSha256: runtimeHash,
+          signal: bootSignal,
+        })
+        if (closed || bootSignal.aborted) {
+          channel.port2.close()
+          return
         }
+        const resources = new MessageChannel()
+        resourcePort = resources.port2
+        bootBroker = createPythonBootResourceBroker({
+          port: resources.port1,
+          manifest: host.manifest,
+          store: host.store,
+          signal: bootSignal,
+          onError: (error) => close(error),
+        })
         frame.contentWindow!.postMessage(
           {
             type: 'python-analysis-init',
             challenge,
-            ...(useBootResources ? { bootResources: 1 } : {}),
+            bootResources: 1,
           },
           '*',
-          resourcePort ? [channel.port2, resourcePort] : [channel.port2],
+          [channel.port2, resourcePort],
         )
       } catch (error) {
         channel.port2.close()

@@ -44,6 +44,9 @@ async function fixture(kind: 'classic' | 'pro' = 'classic', launcher = true) {
     version: 1,
     pyodideVersion: '314.0.7',
     pythonVersion: '3.14.2',
+    features: [],
+    providedModules: [],
+    previewHostAudioVersion: 1,
     files: await Promise.all(
       [...contents].map(async ([path, bytes]) => ({
         path,
@@ -156,7 +159,7 @@ test('corrupt runtime bytes or a mismatched release cannot produce a web package
   ).rejects.toThrow('artefatos')
 })
 
-test('old runtime without launcher remains valid metadata but cannot pretend to support this export format', async () => {
+test('an explicit runtime missing a web launcher cannot claim support for this export format', async () => {
   const f = await fixture('classic', false)
   await expect(
     buildPythonWebFiles(f.project, f.environment, new AbortController().signal),

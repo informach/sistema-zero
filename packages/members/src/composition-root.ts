@@ -344,14 +344,9 @@ export async function createApplication(env: Env): Promise<Application> {
   )
   const kidsProfileAdmission = new KidsProfileAdmissionService(kidsJourneyRepo)
   const studioUnlockRepo = new DrizzleStudioUnlockRepository(db)
+  const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
   const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
-    new FreeStudioAccessService(
-      accessCheck,
-      gamificationRepo,
-      studioUnlockRepo,
-      kidsJourneyQuery,
-      adultJourney,
-    ),
+    new FreeStudioAccessService(accessCheck, getStudioUnlocks, kidsJourneyQuery, adultJourney),
     studioRuntimePolicy,
     studioAuthoringPolicy,
   )
@@ -847,8 +842,6 @@ export async function createApplication(env: Env): Promise<Application> {
     adultJourney,
   )
   const getChallenge = new GetChallengeService(gamificationRepo, challengeConfigRepo, clock)
-  // Paleta do Estúdio livre pelo CURRÍCULO (união dos cursos concluídos+publicados).
-  const getStudioUnlocks = new GetStudioUnlocksService(gamificationRepo, studioUnlockRepo, logger)
   const challengeAdmin = new ChallengeAdminService(challengeConfigRepo, clock)
   // A missão das oficinas ao vivo (`live_encounter`) entra só para quem tem vaga ativa.
   const getMissions = new GetMissionsService(

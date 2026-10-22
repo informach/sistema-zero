@@ -57,6 +57,10 @@ async function fixture() {
       await gate
       return {
         closed: false,
+        interpreter: { pythonVersion: '3.14.2', pyodideVersion: '314.0.7' },
+        async compileBytes() {
+          throw new Error('Workspace gesture fixture does not compile bytes')
+        },
         parse: async (identity, source) => ({ ...document, source, identity, tree }),
         render: async () => 'print("Oi")',
         dispose() {},

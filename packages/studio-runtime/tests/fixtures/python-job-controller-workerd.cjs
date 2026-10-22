@@ -42,22 +42,22 @@ async function main() {
     assert.equal(tombstone.status, 'cancelled')
     assert.equal(tombstone.sandboxCreated, false)
     assert.equal(tombstone.cleanupConfirmed, true)
-    await send('prestart', 'inspect', input, 410)
+    await send('prestart', 'inspect', { version: 1, input, structure: false }, 410)
     await send('prestart', 'restart', {}, 409)
     assert.deepEqual((await send('prestart', 'read')).result, tombstone)
-    await send('prestart', 'inspect', input, 410)
+    await send('prestart', 'inspect', { version: 1, input, structure: false }, 410)
     assert.deepEqual((await send('prestart', 'cancel', input)).result, prestart.result)
     await send('prestart', 'cancel', { ...input, generation: crypto.randomUUID() }, 409)
     assert.deepEqual((await send('prestart', 'read')).result, tombstone)
 
     // No configured distribution/bucket: terminal failure must still close its
     // ownership and reject duplicate starts, without touching the SDK at all.
-    await send('unconfigured', 'inspect', input, 503)
+    await send('unconfigured', 'inspect', { version: 1, input, structure: false }, 503)
     const failed = (await send('unconfigured', 'read')).result
     assert.equal(failed.status, 'failed')
     assert.equal(failed.sandboxCreated, false)
     assert.equal(failed.cleanupConfirmed, true)
-    await send('unconfigured', 'inspect', input, 410)
+    await send('unconfigured', 'inspect', { version: 1, input, structure: false }, 410)
     await send('unconfigured', 'alarm')
     assert.deepEqual((await send('unconfigured', 'read')).result, failed)
     await send('unconfigured', 'restart', {}, 409)
@@ -67,7 +67,7 @@ async function main() {
       Array.from({ length: 8 }, async () => {
         const response = await fetch(`${origin}/inspect?probe=duplicates`, {
           method: 'POST',
-          body: JSON.stringify(input),
+          body: JSON.stringify({ version: 1, input, structure: false }),
           signal: AbortSignal.timeout(5000),
         })
         await response.text()
@@ -77,11 +77,16 @@ async function main() {
     assert.equal(duplicates.filter((status) => status === 503).length, 1)
     assert.ok(duplicates.every((status) => [409, 410, 503].includes(status)))
     const expired = { ...input, expiresAt: Date.now() - 1 }
-    await send('expired', 'inspect', expired, 410)
+    await send('expired', 'inspect', { version: 1, input: expired, structure: false }, 410)
     assert.equal((await send('expired', 'read')).result, undefined)
     assert.deepEqual((await send('expired', 'cancel', expired)).result, prestart.result)
     assert.equal((await send('expired', 'read')).result, undefined)
-    await send('invalid', 'inspect', { ...input, jobId: 'f'.repeat(64) }, 409)
+    await send(
+      'invalid',
+      'inspect',
+      { version: 1, input: { ...input, jobId: 'f'.repeat(64) }, structure: false },
+      409,
+    )
     assert.equal((await send('invalid', 'read')).result, undefined)
     // Seeded terminal state qualifies real SQLite/RPC/retention decisions, not SDK execution.
     const now = Date.now()

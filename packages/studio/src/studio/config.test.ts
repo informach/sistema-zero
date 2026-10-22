@@ -2,9 +2,15 @@ import { describe, expect, it } from 'bun:test'
 import { MockAIProvider } from '#ai'
 import {
   DEFAULT_TERMINAL_PROCESS_TIMEOUT_MS,
+  resolveLearning,
   resolvePreviewSecurity,
   resolveStudioConfig,
 } from './config'
+
+it('an explicit empty course ceiling remains distinct from an unrestricted lesson', () => {
+  expect(resolveLearning({ allowBlocks: [] }).grantedBlockIds).toBeUndefined()
+  expect(resolveLearning({ allowBlocks: [], grantedBlockIds: [] }).grantedBlockIds).toEqual([])
+})
 
 describe('resolveStudioConfig — modo profissional', () => {
   it('professional força terminal:true e mantém a allowlist do host (D2: modos por kind)', () => {

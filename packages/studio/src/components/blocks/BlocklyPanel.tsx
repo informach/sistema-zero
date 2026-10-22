@@ -428,6 +428,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       level: learning.level,
       revealed: learning.allowLevelReveal && revealAdvanced,
       allowBlocks: learning.allowBlocks,
+      grantedBlockIds: learning.grantedBlockIds,
       projectTools,
       currentBlockTypes: currentBlockTypesKey ? currentBlockTypesKey.split('\n') : [],
       allowCategories: learning.allowCategories,

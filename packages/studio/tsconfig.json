@@ -34,6 +34,7 @@
     "e2e-pro-full",
     "scripts/project-migrations",
     "scripts/build-python-runtime.ts",
+    "scripts/generate-visual-reference-games.ts",
     "scripts/python",
     "scripts/gen-pro-kit-*.ts",
     "scripts/verify-canvas-*.ts",

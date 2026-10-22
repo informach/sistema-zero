@@ -11,20 +11,32 @@ import { captureProjectStorageScope } from '../state/projectStorageRuntime'
 
 function supportsExample(
   context: StudioProjectFactoryContext,
+  kind: PythonExampleEntry['kind'],
   extensions: PythonExampleEntry['extensions'],
   requiredModules: PythonExampleEntry['requiredProvidedModules'],
+  requiredFeatures: PythonExampleEntry['requiredPythonFeatures'],
+  requiredBlocks: readonly string[],
 ) {
   const release = selectStudioRuntimeRelease(context.catalog, context.runtime)
   return (
     context.releaseStatus === 'active' &&
     release?.manifest.programmingLanguage === 'python' &&
-    release.manifest.kinds.includes('pro') &&
-    release.manifest.modes.includes('code') &&
-    extensions.every((extension) =>
-      release.manifest.extensions.some(
-        (available) =>
-          available.id === extension.id && available.versions.includes(extension.version),
-      ),
+    release.manifest.kinds.includes(kind) &&
+    (kind !== 'classic' || requiredBlocks.every((id) => context.authoringBlockIds?.includes(id))) &&
+    (requiredFeatures ?? []).every((feature) =>
+      release.manifest.python?.features.includes(feature),
+    ) &&
+    (kind === 'classic' ? (['blocks', 'bridge'] as const) : (['code'] as const)).every((mode) =>
+      release.manifest.modes.includes(mode),
+    ) &&
+    extensions.every(
+      (extension) =>
+        (context.grantedExtensionIds === undefined ||
+          context.grantedExtensionIds.includes(extension.id)) &&
+        release.manifest.extensions.some(
+          (available) =>
+            available.id === extension.id && available.versions.includes(extension.version),
+        ),
     ) &&
     (requiredModules ?? []).every((required) =>
       release.manifest.python?.providedModules?.some(
@@ -35,6 +47,40 @@ function supportsExample(
   )
 }
 
+async function assertExamplePalette(
+  context: StudioProjectFactoryContext,
+  kind: PythonExampleEntry['kind'],
+  extensions: PythonExampleEntry['extensions'],
+  requiredBlocks: readonly string[],
+) {
+  if (kind !== 'classic' || !requiredBlocks.length) return
+  const { loadPythonAuthoring, selectPythonPalette } = await import('../python/blocks/authoring')
+  const { resolvePythonLearningLevel } = await import('../python/learning')
+  const authoring = await loadPythonAuthoring(
+    { runtime: context.runtime, installedExtensions: extensions },
+    {
+      catalog: context.catalog,
+      pythonAuthoring: [
+        { runtime: context.runtime, blockIds: [...(context.authoringBlockIds ?? [])] },
+      ],
+    },
+  )
+  const curation = context.authoringCuration
+  const palette = selectPythonPalette({
+    ...authoring,
+    level: resolvePythonLearningLevel(curation?.pythonLevel),
+    allowBlocks: curation?.allowBlocks,
+    allowCategories: curation?.allowCategories,
+  })
+  const available = new Set(palette.entries.map(({ id }) => id))
+  const allowedModes = curation?.allowedModes
+  if (
+    requiredBlocks.some((id) => !available.has(id)) ||
+    (allowedModes && !(['blocks', 'bridge'] as const).every((mode) => allowedModes.includes(mode)))
+  )
+    throw new Error('Este exemplo precisa de blocos e do modo Ponte disponíveis neste ambiente.')
+}
+
 /** A detached candidate is authorized and validated before its only storage write. */
 export async function createPythonExampleProject(
   entry: PythonExampleEntry,
@@ -42,7 +88,9 @@ export async function createPythonExampleProject(
   options: { signal: AbortSignal; isCurrent(): boolean },
 ) {
   const scope = captureProjectStorageScope()
-  const { name, load } = entry
+  const { name, load, kind } = entry
+  const mode = entry.mode ?? (kind === 'pro' ? 'code' : 'blocks')
+  const environmentName = kind === 'pro' ? 'Python Pro' : 'Python Clássico'
   const { prepare, authorizeExample } = port
   const { isCurrent } = options
   const extensions = entry.extensions.map(({ id, version }) => ({ id, version }))
@@ -50,6 +98,10 @@ export async function createPythonExampleProject(
     importName,
     version,
   }))
+  const requiredFeatures = entry.requiredPythonFeatures
+    ? [...entry.requiredPythonFeatures]
+    : undefined
+  const requiredBlocks = [...(entry.requiredBlockIds ?? [])]
   const signal = AbortSignal.any([
     options.signal,
     ...(port.signal ? [port.signal] : []),
@@ -62,25 +114,41 @@ export async function createPythonExampleProject(
   }
   current()
   const selected = port.environments.find(
-    ({ kind, context }) => kind === 'pro' && supportsExample(context, extensions, requiredModules),
+    (environment) =>
+      environment.kind === kind &&
+      supportsExample(
+        environment.context,
+        kind,
+        extensions,
+        requiredModules,
+        requiredFeatures,
+        requiredBlocks,
+      ),
   )
-  if (!selected) throw new Error('Este exemplo precisa de um ambiente Python Pro compatível.')
+  if (!selected)
+    throw new Error(`Este exemplo precisa de um ambiente ${environmentName} compatível.`)
   const environmentKey = selected.key
+  await assertExamplePalette(structuredClone(selected.context), kind, extensions, requiredBlocks)
+  current()
   const payload = structuredClone(await load())
   current()
-  const context = structuredClone(await prepare({ kind: 'pro', environmentKey }))
+  const context = structuredClone(await prepare({ kind, environmentKey }))
   current()
-  if (!supportsExample(context, extensions, requiredModules))
-    throw new Error('O ambiente Python Pro atualizado não é compatível com este exemplo.')
+  if (
+    !supportsExample(context, kind, extensions, requiredModules, requiredFeatures, requiredBlocks)
+  )
+    throw new Error(`O ambiente ${environmentName} atualizado não é compatível com este exemplo.`)
+  await assertExamplePalette(context, kind, extensions, requiredBlocks)
+  current()
   const { createEditableStudioProject } = await import('../core/projectFactory')
   current()
   const base = await createEditableStudioProject(
-    { id: ulid(), name, programmingLanguage: 'python', kind: 'pro' },
+    { id: ulid(), name, programmingLanguage: 'python', kind },
     context,
   )
   current()
-  if (base.programmingLanguage !== 'python' || base.kind !== 'pro')
-    throw new Error('Projeto Python Pro inválido.')
+  if (base.programmingLanguage !== 'python' || base.kind !== kind)
+    throw new Error(`Projeto ${environmentName} inválido.`)
   const files = { ...payload.files }
   if (
     Object.keys(files).some((path) => !isStudioPortablePath(path)) ||
@@ -96,8 +164,9 @@ export async function createPythonExampleProject(
   current()
   const project = await refinePythonProjectDocument({
     ...base,
+    mode,
     python: { ...base.python, entrypoint: payload.entrypoint },
-    tree: pythonFilesToTree(files),
+    ...(base.kind === 'pro' ? { tree: pythonFilesToTree(files) } : { files }),
     assets: payload.assets ?? [],
     installedExtensions: extensions.map((extension) => ({ ...extension, installedAt: Date.now() })),
   })
@@ -114,7 +183,16 @@ export async function createPythonExampleProject(
         : [],
   })
   current()
-  await authorizeExample(structuredClone(project), signal)
+  await authorizeExample(
+    structuredClone(project),
+    signal,
+    kind === 'classic' && requiredBlocks.length
+      ? {
+          requiredBlockIds: requiredBlocks,
+          requiredModes: ['blocks', 'bridge'],
+        }
+      : undefined,
+  )
   current()
   await persistProject(project, {}, scope)
   current()

@@ -22,18 +22,8 @@ export const StudioPythonPublicationApprovalSchema = z.strictObject({
   snapshotSha256: StudioSha256Schema,
 })
 
-/**
- * Legacy retained recipe. Already published revisions keep these exact stored bytes
- * (hashed as written, `JSON.stringify` key order); they are read, never rewritten.
- */
-export const StudioPythonPublicationManifestV1Schema = z.strictObject({
-  version: z.literal(1),
-  sourceHash: StudioSha256Schema,
-  approval: StudioPythonPublicationApprovalSchema,
-})
-
-/** Bytes, not semantics: v2 recipes are stored as canonical JSON and hashed as stored. */
-export const STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS = { v1Bytes: 4096, v2Bytes: 65_536 } as const
+/** Recipes are stored as canonical JSON and hashed as stored. */
+export const STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS = { maxBytes: 65_536 } as const
 
 /**
  * Reproducible recipe written for new Python revisions. It contains no runtime URL or
@@ -43,7 +33,7 @@ export const STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS = { v1Bytes: 4096, v2Bytes:
  * enables, `dependencyLock` the resolved packages, and `sourceHash`/`snapshotSha256` the
  * exact retained file set and execution snapshot. A catalog update cannot change it.
  */
-export const StudioPythonPublicationManifestV2Schema = z
+export const StudioPythonPublicationManifestSchema = z
   .strictObject({
     version: z.literal(2),
     programmingLanguage: z.literal('python'),
@@ -72,15 +62,6 @@ export const StudioPythonPublicationManifestV2Schema = z
         message: 'O lock pertence a outro ambiente Python.',
       })
   })
-export type StudioPythonPublicationManifestV2 = z.infer<
-  typeof StudioPythonPublicationManifestV2Schema
->
-
-/** Both versions stay readable; only v2 is produced for new revisions. */
-export const StudioPythonPublicationManifestSchema = z.discriminatedUnion('version', [
-  StudioPythonPublicationManifestV1Schema,
-  StudioPythonPublicationManifestV2Schema,
-])
 export type StudioPythonPublicationManifest = z.infer<typeof StudioPythonPublicationManifestSchema>
 
 type PythonPublicationProject = StudioPythonClassicDocument | StudioPythonProDocument
@@ -90,8 +71,8 @@ export function createStudioPythonPublicationRecipe(input: {
   project: PythonPublicationProject
   sourceHash: string
   approval: z.infer<typeof StudioPythonPublicationApprovalSchema>
-}): StudioPythonPublicationManifestV2 {
-  return StudioPythonPublicationManifestV2Schema.parse({
+}): StudioPythonPublicationManifest {
+  return StudioPythonPublicationManifestSchema.parse({
     version: 2,
     programmingLanguage: 'python',
     kind: input.project.kind,
@@ -107,33 +88,15 @@ export function createStudioPythonPublicationRecipe(input: {
 }
 
 /** The exact bytes stored and hashed for a v2 recipe. */
-export function studioPythonPublicationRecipeText(recipe: StudioPythonPublicationManifestV2) {
+export function studioPythonPublicationRecipeText(recipe: StudioPythonPublicationManifest) {
   return canonicalJson(recipe)
 }
 
-/** The exact legacy bytes a v1 revision stored for the same input (lost-response replay). */
-export function studioPythonPublicationLegacyRecipeText(input: {
-  sourceHash: string
-  approval: z.infer<typeof StudioPythonPublicationApprovalSchema>
-}) {
-  return JSON.stringify(
-    StudioPythonPublicationManifestV1Schema.parse({
-      version: 1,
-      sourceHash: input.sourceHash,
-      approval: input.approval,
-    }),
-  )
-}
-
-/**
- * True when the stored recipe was produced from this document. A v1 recipe predates
- * these fields: its document remains bound only by sourceHash and the approval.
- */
+/** True when the stored recipe was produced from this document. */
 export function studioPythonRecipeMatchesProject(
   recipe: StudioPythonPublicationManifest,
   project: PythonPublicationProject,
 ) {
-  if (recipe.version === 1) return true
   const expected = createStudioPythonPublicationRecipe({
     project,
     sourceHash: recipe.sourceHash,

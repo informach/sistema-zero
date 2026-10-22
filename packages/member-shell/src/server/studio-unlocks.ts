@@ -1,4 +1,5 @@
 import type { AdultJourneyView } from '@sistemazero/core/journey'
+import { isPythonCourseBlock } from '@sistemazero/studio/python-course-unlocks'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import {
   hasKidsCapability,
@@ -49,7 +50,7 @@ export function adultStudioTier(
   const has = (capability: 'studio' | 'bridge' | 'pro') =>
     privileged || journey.capabilities.includes(capability)
   const palette = [...new Set(blocks.filter((type) => KNOWN_BLOCKS.has(type)))]
-  const hasPalette = privileged || palette.length > 0
+  const hasPalette = privileged || palette.length > 0 || blocks.some(isPythonCourseBlock)
   const bridge = has('bridge')
   const pro = has('pro')
   return {
@@ -85,7 +86,7 @@ export function kidsStudioTier(view: KidsJourneyAccess, blocks: readonly string[
     freeStudio: studio,
     level: 'avancado-3d',
     ...(preview ? {} : { allowBlocks: palette }),
-    hasPalette: preview || palette.length > 0,
+    hasPalette: preview || palette.length > 0 || blocks.some(isPythonCourseBlock),
     allowedExtensions: preview
       ? [...new Set(EXTENSION_BY_BLOCK.values())]
       : extensionsForBlocks(palette),

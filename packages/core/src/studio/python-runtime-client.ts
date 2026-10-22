@@ -76,8 +76,8 @@ export interface StudioPythonRuntimeClientOptions {
   authorize(snapshot: StudioPythonExecutionMetadata, signal: AbortSignal): Promise<void>
   fetchImpl?: (url: string | URL | Request, init?: RequestInit) => Promise<Response>
   cleanupFailed?(): void
-  /** Required for structural grading; old compile-only distributions cannot silently approve it. */
-  structure?: boolean
+  /** Explicit operation mode: compilation alone or compilation with structural evidence. */
+  structure: boolean
 }
 
 async function runPythonRevision(
@@ -91,7 +91,9 @@ async function runPythonRevision(
     previewInput === undefined ? undefined : StudioPythonPreviewRequestSchema.parse(previewInput)
   if (previewRequest && !recipe)
     throw new StudioPythonRuntimeError(400, 'O preview exige validação completa.')
-  const structureRequested = options.structure === true
+  if (typeof options.structure !== 'boolean')
+    throw new Error('A operação Python exige uma escolha explícita de estrutura.')
+  const structureRequested = options.structure
   const {
     projectId,
     owner,
@@ -283,9 +285,7 @@ async function runPythonRevision(
                 recipe,
                 ...(previewRequest ? { preview: previewRequest } : {}),
               }
-            : structureRequested
-              ? { version: 1, input: reference, structure: true }
-              : reference,
+            : { version: 1, input: reference, structure: structureRequested },
         ),
         recipe ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes : 2 * 1024 * 1024,
       )
@@ -348,7 +348,7 @@ async function runPythonRevision(
   }
 }
 
-/** Legacy compilation retains its exact request shape and independent final authorization fence. */
+/** Compilation uses the current request envelope and an independent final authorization fence. */
 export async function inspectStudioPythonRevision(options: StudioPythonRuntimeClientOptions) {
   return StudioPythonInspectionReportSchema.parse((await runPythonRevision(options)).report)
 }

@@ -3,6 +3,7 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { PYTHON_PROGRAMMING_CODECS } from '../../studio/src/python/blocks/catalog'
 import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
 import { useFreeStudioOptions } from '../src/components/studio/use-free-options'
 
@@ -20,14 +21,22 @@ function mount() {
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container)
-  function Probe({ id, enabled }: { id: string | null; enabled: boolean }) {
-    current = useFreeStudioOptions(id, enabled)
+  function Probe({
+    id,
+    enabled,
+    audience,
+  }: {
+    id: string | null
+    enabled: boolean
+    audience: 'kids' | 'adult'
+  }) {
+    current = useFreeStudioOptions(id, enabled, audience)
     return null
   }
   return {
     current: () => current!,
-    render: (id: string | null, enabled = true) =>
-      act(async () => root.render(<Probe id={id} enabled={enabled} />)),
+    render: (id: string | null, enabled = true, audience: 'kids' | 'adult' = 'kids') =>
+      act(async () => root.render(<Probe id={id} enabled={enabled} audience={audience} />)),
     close: async () => {
       await act(async () => root.unmount())
       container.remove()
@@ -39,6 +48,8 @@ async function options() {
   return {
     legacyJavaScript: true,
     canCreatePro: true,
+    canCreatePython: true,
+    pythonGrantedExtensionIds: ['python-turtle'],
     pythonCuration: {
       pythonLevel: 3,
       allowedModes: ['blocks', 'bridge', 'code'],
@@ -52,7 +63,7 @@ async function options() {
           runtime: fixture.project.runtime,
           status: 'active',
           proTemplateIds: ['python-blank'],
-          blockIds: ['py_print'],
+          blockIds: ['sz_py_pass'],
           categoryIds: ['python-basics'],
         },
       ],
@@ -185,6 +196,48 @@ test('failed discovery exposes an explicit retry and then restores Python choice
   }
 })
 
+test('course grants are discarded on profile and audience changes, including late replies', async () => {
+  const granted = await options()
+  const empty = structuredClone(granted)
+  empty.pythonGrantedExtensionIds = []
+  empty.catalog.releases[0]!.blockIds = []
+  const pending: { signal: AbortSignal; resolve(response: Response): void }[] = []
+  const original = globalThis.fetch
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      (_url: RequestInfo | URL, init?: RequestInit) =>
+        new Promise<Response>((resolve) => pending.push({ signal: init!.signal!, resolve })),
+      { preconnect: original.preconnect },
+    ),
+  )
+  const view = mount()
+  try {
+    await view.render('first')
+    await settle(() => pending.length === 1)
+    await act(async () => pending[0]!.resolve(Response.json(granted)))
+    await settle(() => !!view.current().creation)
+    expect(view.current().creation?.environments[0]?.context.grantedExtensionIds).toEqual([
+      'python-turtle',
+    ])
+    await view.render('second')
+    await settle(() => pending.length === 2)
+    expect(view.current().creation).toBeUndefined()
+    await view.render('second', true, 'adult')
+    await settle(() => pending.length === 3)
+    expect(pending[1]!.signal.aborted).toBe(true)
+    await act(async () => pending[1]!.resolve(Response.json(granted)))
+    expect(view.current().creation).toBeUndefined()
+    await act(async () => pending[2]!.resolve(Response.json(empty)))
+    await settle(() => !!view.current().creation)
+    const context = view.current().creation?.environments[0]?.context
+    expect(context?.grantedExtensionIds).toEqual([])
+    expect(context?.authoringBlockIds).toEqual([])
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+  }
+})
+
 test('example port performs fresh authenticated Pro/Turtle approval and preserves the exact owner/subject', async () => {
   const raw = await options()
   const fixture = await pythonEnvironmentFixture('pro')
@@ -229,7 +282,7 @@ test('example port performs fresh authenticated Pro/Turtle approval and preserve
           capabilities: ['edit'],
           grantedExtensionIds: allowTurtle ? ['python-turtle'] : [],
           catalog: fixture.environment.catalog,
-          blockIds: ['py_print'],
+          blockIds: ['sz_py_pass'],
           curation: raw.pythonCuration,
           frame: {
             url: 'https://runtime.test/frame.html',
@@ -258,6 +311,82 @@ test('example port performs fresh authenticated Pro/Turtle approval and preserve
     await expect(port.authorizeExample(candidate, new AbortController().signal)).rejects.toThrow(
       'perfil',
     )
+    expect(approvals).toBe(2)
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+  }
+})
+
+test('example port forwards captured authoring requirements to the final Classic decision', async () => {
+  const raw = await options()
+  const fixture = await pythonEnvironmentFixture('classic')
+  const approved = PYTHON_PROGRAMMING_CODECS.map(({ id }) => id)
+  raw.catalog.releases[0]!.blockIds = [...approved]
+  const viewerId = crypto.randomUUID()
+  const accountId = crypto.randomUUID()
+  const requirements = {
+    requiredBlockIds: ['sz_py_class'],
+    requiredModes: ['blocks', 'bridge'] as ('blocks' | 'bridge')[],
+  }
+  let revoke = true
+  let approvals = 0
+  const original = globalThis.fetch
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        if (url.toString() === '/api/studio/free-options') {
+          // Revocation does not change this older discovery response. A caller's
+          // mutable requirements cannot change during its asynchronous fetch.
+          requirements.requiredBlockIds.length = 0
+          return Response.json(raw)
+        }
+        expect(url.toString()).toBe('/api/studio/free-runtime')
+        const request = JSON.parse(String(init?.body))
+        expect(request.subject.kind).toBe('classic')
+        approvals++
+        const now = Date.now()
+        return Response.json({
+          version: 1,
+          actor: { userId: viewerId, accountId },
+          context: request.context,
+          projectId: request.subject.id,
+          revision: request.revision,
+          subjectSha256: await sha256Hex(canonicalJson(request.subject)),
+          runtime: request.subject.runtime,
+          releaseStatus: 'active',
+          operation: request.operation,
+          capabilities: ['edit'],
+          grantedExtensionIds: [],
+          catalog: fixture.environment.catalog,
+          blockIds: revoke ? approved.filter((id) => id !== 'sz_py_class') : approved,
+          curation: raw.pythonCuration,
+          frame: {
+            url: 'https://runtime.test/frame.html',
+            allowedOrigins: ['https://runtime.test'],
+          },
+          issuedAt: now,
+          expiresAt: now + 30_000,
+        })
+      },
+      { preconnect: original.preconnect },
+    ),
+  )
+  const view = mount()
+  try {
+    await view.render(viewerId)
+    await settle(() => !!view.current().creation)
+    requirements.requiredBlockIds.push('sz_py_class')
+    const port = view.current().creation!
+    await expect(
+      port.authorizeExample(fixture.project, new AbortController().signal, requirements),
+    ).rejects.toThrow('autoria')
+    expect(requirements.requiredBlockIds).toEqual([])
+    revoke = false
+    await port.authorizeExample(fixture.project, new AbortController().signal, {
+      requiredBlockIds: ['sz_py_class'],
+      requiredModes: ['blocks', 'bridge'],
+    })
     expect(approvals).toBe(2)
   } finally {
     await view.close()

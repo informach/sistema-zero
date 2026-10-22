@@ -11,6 +11,8 @@ import { PNG } from '../fakes/gallery-python-source'
 import { authoringFixture } from '../fakes/studio-authoring-policy'
 
 const actor = { userId: randomUUID(), accountId: randomUUID(), privileged: false }
+const runtimeRelease = (await authoringFixture('python', 'pro')).configuration.catalog.releases[0]
+if (!runtimeRelease) throw new Error('Missing fixture release')
 function repository() {
   const commands: StudioProBuilderCommand[] = []
   const port: StudioProBuilderRepository = {
@@ -67,7 +69,7 @@ test.each([
       authorizations++
       expect(owner).toEqual(actor)
       expect(base).toEqual(payload.base)
-      return {}
+      return { runtimeRelease }
     },
   )
   expect(Object.keys(payload.binaries)).toHaveLength(1)
@@ -132,7 +134,7 @@ test.each([
     false,
     async () => {
       authorizations++
-      return {}
+      return { runtimeRelease }
     },
   )
   const outcome = await service.execute(actor, command(payload)).then(

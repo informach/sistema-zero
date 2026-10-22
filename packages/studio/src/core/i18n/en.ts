@@ -203,7 +203,7 @@ export const en: Record<string, string> = {
   'kits.filter.difficulty': 'Difficulty',
   'kits.filter.language': 'Language',
   'kits.python.loading': 'Checking Python environments…',
-  'kits.python.unavailable': 'Python Pro is not available in this environment yet.',
+  'kits.python.unavailable': 'Python is not available in this environment yet.',
   'kits.filter.experience': 'Type',
   'kits.filter.all': 'All',
   'kits.difficulty.beginner': 'First steps',

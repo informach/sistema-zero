@@ -89,8 +89,6 @@ export async function storePythonPreview(options: {
       !registry.allowsParentOrigin(preview.parentOrigin)
     )
       throw new Error('O ambiente ou a origem do preview Python foi retirado.')
-    if (deployment.distribution.previewHostAudioVersion !== 1)
-      throw new Error('A prévia exige um ambiente compatível com o controle de som do editor.')
   }
   if (!isStudioPythonWebOrigin(origin) || origin === preview.parentOrigin)
     throw new Error('O preview Python exige uma origem de serviço distinta do aplicativo.')
@@ -392,7 +390,7 @@ export async function servePythonPreview(
       manifest.expiresAt > (now?.() ?? Date.now()) &&
       manifest.parentOrigin !== url.origin &&
       registry.allowsParentOrigin(manifest.parentOrigin) &&
-      registry.resolve(manifest.runtime)?.distribution.previewHostAudioVersion === 1
+      registry.resolve(manifest.runtime) !== undefined
     if (!valid()) return unavailableArtifact()
     if (!(await inputAwait(authorize(structuredClone(manifest)), signal)))
       return unavailableArtifact()

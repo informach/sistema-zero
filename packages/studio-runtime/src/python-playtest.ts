@@ -74,13 +74,15 @@ export async function playtestPreparedPythonProject(
 /** One immutable validation operation; never starts execution when compilation failed. */
 export async function runIsolatedPythonValidation(
   options: PythonProjectPreparationOptions & {
-    structure?: boolean
+    structure: boolean
     recipe: unknown
     beforeExecution?(): Promise<void>
   },
 ) {
   const recipe = StudioPythonPlaytestRecipeSchema.parse(options.recipe)
-  const structure = options.structure === true
+  if (typeof options.structure !== 'boolean')
+    throw new Error('A validação exige uma escolha explícita de estrutura.')
+  const structure = options.structure
   const beforeExecution = options.beforeExecution
   return withIsolatedPythonProject(options, async (project) => {
     const inspection = await inspectPreparedPythonProject(project, structure)

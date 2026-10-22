@@ -14,7 +14,10 @@ async function inspect() {
     AbortSignal.timeout(STUDIO_PYTHON_INSPECTION_LIMITS.deadlineMs),
   ])
   const directory = new URL('./', location.href)
-  const structure = document.documentElement.dataset.pythonStructure === 'true'
+  const requestedStructure = document.documentElement.dataset.pythonStructure
+  if (requestedStructure !== 'true' && requestedStructure !== 'false')
+    throw new Error('A inspeção exige uma escolha explícita de estrutura.')
+  const structure = requestedStructure === 'true'
   const { snapshot } = await loadPythonWebPayload(directory, signal)
   // The module URL belongs to the validator's verified distribution. The project supplies no URL.
   const runtimeDirectory = new URL('./', import.meta.url)

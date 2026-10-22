@@ -1,0 +1,130 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+
+const games = ['pacman-visual', 'space-arena-visual'] as const
+const sha256 = (text: string) => createHash('sha256').update(text).digest('hex')
+const record = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value)
+
+export const decodeVisualExampleSource = (bytes: Uint8Array) =>
+  new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(bytes)
+
+/** Consumes authoring evidence only; neither generates nor approves runtime capabilities. */
+export function readVisualExampleBlockMetadata(receipt: unknown, source: string) {
+  assert.ok(record(receipt), 'Invalid visual qualification receipt')
+  assert.equal(receipt.kind, 'python-visual-authoring', 'Wrong qualification kind')
+  assert.equal(
+    receipt.authoringLoader,
+    'loadPythonAuthoring',
+    'Receipt must use the real authoring loader',
+  )
+  assert.equal(receipt.opaqueCount, 0, 'Opaque source cannot qualify block metadata')
+  assert.equal(receipt.fullWorkspaceRoundtrip, true, 'Full workspace roundtrip is required')
+  assert.equal(receipt.canonicalRenderReanalysis, true, 'Canonical rendering must be reanalyzed')
+  const sourceSha256 = sha256(source)
+  assert.equal(
+    receipt.sourceSha256,
+    sourceSha256,
+    'Qualification source differs from current main.py',
+  )
+  assert.ok(
+    Array.isArray(receipt.referencedBlocks) &&
+      receipt.referencedBlocks.length > 0 &&
+      receipt.referencedBlocks.length <= 10_000,
+    'Invalid referenced block list',
+  )
+  const ids = new Set<string>()
+  let count = 0
+  for (const block of receipt.referencedBlocks) {
+    assert.ok(
+      record(block) && typeof block.id === 'string' && /^sz_py_[A-Za-z0-9_]{1,120}$/.test(block.id),
+      'Invalid Python block identity',
+    )
+    assert.ok(!ids.has(block.id), 'Duplicate referenced block')
+    assert.ok(
+      typeof block.count === 'number' &&
+        Number.isSafeInteger(block.count) &&
+        block.count > 0 &&
+        block.count <= 20_000,
+      'Invalid block count',
+    )
+    ids.add(block.id)
+    count += block.count
+  }
+  assert.ok(count <= 20_000 && count === receipt.blockCount, 'Incomplete block inventory')
+  return { sourceSha256, blockIds: [...ids].sort() }
+}
+
+export function visualExampleBlockMetadataSource(input: {
+  'pacman-visual': ReturnType<typeof readVisualExampleBlockMetadata>
+  'space-arena-visual': ReturnType<typeof readVisualExampleBlockMetadata>
+}) {
+  return (
+    '// Gerado por scripts/python/generate-visual-example-block-metadata.ts. Não edite.\n' +
+    '// Evidência de autoria visual; disponibilidade e autorização continuam pertencendo ao host.\n' +
+    `export const VISUAL_REFERENCE_GAME_BLOCKS = ${JSON.stringify(input, null, 2)} as const\n`
+  )
+}
+
+if (import.meta.main) {
+  const studio = resolve(import.meta.dirname, '../..')
+  const root = resolve(studio, '../..')
+  const args = process.argv.slice(2)
+  const argument = (name: string, fallback: string) => {
+    const index = args.indexOf(`--${name}`)
+    if (index < 0) return resolve(root, fallback)
+    const value = args[index + 1]
+    assert.ok(value && !value.startsWith('--'), `Missing --${name} path`)
+    return resolve(root, value)
+  }
+  const evidence = 'docs/continuity/2026-10-22-python-reference-games-visual-evidence'
+  const receipts = {
+    'pacman-visual': argument('pacman-receipt', `${evidence}/pacman-visual-r4.json.snapshot`),
+    'space-arena-visual': argument(
+      'space-receipt',
+      `${evidence}/space-arena-visual-r4.json.snapshot`,
+    ),
+  }
+  const inputs = []
+  for (const game of games) {
+    const receipt: unknown = JSON.parse(await readFile(receipts[game], 'utf8'))
+    const source = decodeVisualExampleSource(
+      await readFile(resolve(studio, `src/examples/python/${game}/main.py`)),
+    )
+    inputs.push(readVisualExampleBlockMetadata(receipt, source))
+  }
+  const raw = visualExampleBlockMetadataSource({
+    'pacman-visual': inputs[0]!,
+    'space-arena-visual': inputs[1]!,
+  })
+  const outputName = 'src/examples/python/visualReferenceGames.blocks.generated.ts'
+  const formatter = Bun.spawn(
+    [
+      process.execPath,
+      '--no-env-file',
+      'x',
+      '--no-install',
+      'biome',
+      'format',
+      `--stdin-file-path=${outputName}`,
+    ],
+    { cwd: studio, stdin: new Blob([raw]), stdout: 'pipe', stderr: 'pipe' },
+  )
+  const [code, formatted, errors] = await Promise.all([
+    formatter.exited,
+    new Response(formatter.stdout).text(),
+    new Response(formatter.stderr).text(),
+  ])
+  assert.equal(code, 0, `Failed to format block metadata: ${errors}`)
+  const output = resolve(studio, outputName)
+  if (args.includes('--check')) {
+    const actual = await readFile(output, 'utf8')
+    assert.equal(actual.replaceAll('\r\n', '\n'), formatted, 'Visual block metadata is stale')
+    console.log(`Conferido ${outputName}`)
+  } else {
+    await writeFile(output, formatted, 'utf8')
+    console.log(`Gerado ${outputName}`)
+  }
+}

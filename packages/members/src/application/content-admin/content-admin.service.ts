@@ -19,6 +19,7 @@ import { isStudioProTemplateId, STUDIO_PROJECT_FORMAT_VERSION } from '@sistemaze
 import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import { STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION } from '@sistemazero/core/studio/project-format'
 import { pintaAssetFromWire, pintaAssetToWire } from '@sistemazero/pinta/assets'
+import { pythonCourseUnlockIssue } from '@sistemazero/studio/python-course-unlocks'
 import type { CourseAudience } from '../../domain/course/course'
 import {
   CloneSameAudienceError,
@@ -167,6 +168,8 @@ export class CourseAdminService {
   }
 
   async create(fields: CourseFields): Promise<CourseView> {
+    fields = structuredClone(fields)
+    assertPythonCourseUnlocks(fields.studioUnlockBlocks)
     // Curso novo nasce sem aulas → nunca pode nascer `published`.
     if (fields.status === 'published') throw new NoPublishedLessonError()
     // Audiência ausente → `adult`; trava sequencial ausente → `true` (padrão LIGADO).
@@ -194,6 +197,8 @@ export class CourseAdminService {
   }
 
   async update(id: string, fields: CourseFields): Promise<CourseView> {
+    fields = structuredClone(fields)
+    assertPythonCourseUnlocks(fields.studioUnlockBlocks)
     const existing = await this.courses.findCourseById(id)
     if (!existing) throw new CourseNotFoundError()
     if (fields.version === undefined || fields.version !== existing.version) {
@@ -389,6 +394,12 @@ function withCourseMetadata(
 }
 
 /** Tira repetido e vazio, preservando a ordem em que o professor montou a lista. */
+function assertPythonCourseUnlocks(blocks: readonly string[] | null | undefined): void {
+  if (!blocks) return
+  const issue = pythonCourseUnlockIssue(blocks)
+  if (issue) throw new InvalidContentCommandError(issue)
+}
+
 function normalizeUnlockBlocks(blocks: string[] | null): string[] {
   if (!blocks) return []
   const seen = new Set<string>()

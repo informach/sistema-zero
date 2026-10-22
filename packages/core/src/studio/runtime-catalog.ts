@@ -20,6 +20,7 @@ import {
   studioPythonProvidedModuleArtifactIssue,
 } from './python-provided-modules'
 import { verifyPythonProvidedModuleArtifacts } from './python-provided-modules-render'
+import { StudioPythonRuntimeFeaturesSchema } from './python-runtime-features'
 
 export const STUDIO_PROJECT_CAPABILITIES = [
   'edit',
@@ -66,7 +67,8 @@ export const StudioRuntimeManifestSchema = z
       .strictObject({
         version: z.string().regex(/^\d+\.\d+\.\d+$/),
         packages: StudioDependencyResolutionsSchema,
-        providedModules: StudioPythonProvidedModulesSchema.optional(),
+        providedModules: StudioPythonProvidedModulesSchema,
+        features: StudioPythonRuntimeFeaturesSchema,
       })
       .optional(),
   })

@@ -111,6 +111,8 @@ export interface LearningProfile {
    * Vazia/ausente = curadoria normal por nível.
    */
   allowBlocks?: readonly string[]
+  /** Independent course-grant ceiling. Undefined is unrestricted; [] offers no blocks. */
+  grantedBlockIds?: readonly string[]
   /** Nomes de categoria SEMPRE visíveis, independente do nível. */
   allowCategories?: readonly string[]
 }
@@ -140,10 +142,14 @@ export function isBlockTypeAllowed(
   blockType: string,
   blockLevel: BlockLevel,
   profile: LearningProfile,
+  categoryName?: string,
 ): boolean {
+  if (profile.grantedBlockIds !== undefined && !profile.grantedBlockIds.includes(blockType))
+    return false
   if (projectEditingBlockTypes(profile).includes(blockType)) return true
   const only = profile.allowBlocks
   if (only && only.length > 0) return only.includes(blockType)
+  if (categoryName && profile.allowCategories?.includes(categoryName)) return true
   return isLevelWithin(blockLevel, profile)
 }
 
@@ -157,6 +163,7 @@ export function isCategoryAllowed(
   categoryLevel: BlockLevel,
   profile: LearningProfile,
 ): boolean {
+  if (profile.grantedBlockIds?.length === 0) return false
   if (projectEditingBlockTypes(profile).length) return true
   if (profile.allowBlocks && profile.allowBlocks.length > 0) return true
   if (profile.allowCategories?.includes(categoryName)) return true

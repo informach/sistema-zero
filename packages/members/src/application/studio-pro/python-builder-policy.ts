@@ -98,7 +98,7 @@ export class StudioPythonBuilderPolicy {
     const release = selectStudioRuntimeRelease(catalog, configuration.runtime)
     if (!release) throw new ValidationError('A release Python autorizada está ausente.')
     const result = await createPythonBuilderPolicyResult(
-      release.manifest.python?.providedModules === undefined ? {} : { runtimeRelease: release },
+      { runtimeRelease: release },
       configuration.runtime,
     )
     signal.throwIfAborted()

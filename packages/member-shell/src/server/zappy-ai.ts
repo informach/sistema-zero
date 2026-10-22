@@ -14,6 +14,7 @@ import type { StudioPythonProvidedModuleDescriptor } from '@sistemazero/core/stu
 import type { StudioTutorEnvironment } from '@sistemazero/core/studio/tutor-environment'
 import type { PythonCatalogEntry } from '@sistemazero/studio/python-authoring'
 import {
+  isBlockTypeAllowed,
   SERVER_BLOCK_CATALOG,
   type ServerBlockCatalogEntry,
 } from '@sistemazero/studio/server-catalog'
@@ -74,14 +75,6 @@ export type ZappyTutorCatalogEntry = Pick<
   ServerBlockCatalogEntry,
   'type' | 'label' | 'category' | 'subcategory' | 'palettePath'
 > & { area: string }
-const LEVEL_RANK: Record<string, number> = {
-  'iniciante-2d': 0,
-  'iniciante-3d': 1,
-  'intermediario-2d': 2,
-  'intermediario-3d': 3,
-  'avancado-2d': 4,
-  'avancado-3d': 5,
-}
 
 export interface ZappyContextInput {
   environment?: StudioTutorEnvironment
@@ -382,25 +375,17 @@ export function deterministicZappySafetyReply(
   return null
 }
 
-const ALLOWED_BLOCK_SETS = new WeakMap<readonly string[], ReadonlySet<string>>()
-
-function allowedBlockSet(blocks: readonly string[]): ReadonlySet<string> {
-  let set = ALLOWED_BLOCK_SETS.get(blocks)
-  if (!set) {
-    set = new Set(blocks)
-    ALLOWED_BLOCK_SETS.set(blocks, set)
-  }
-  return set
-}
-
 /**
  * O que o Zappy pode recomendar é o que a paleta oferece: com a lista de blocos conquistados
  * (criança), só ela, sem corte pelo nível do posto; sem lista (equipe), o nível.
  */
 function catalogAllowed(entry: ServerBlockCatalogEntry, tier: StudioTier): boolean {
   if (entry.extension !== null && !tier.allowedExtensions.includes(entry.extension)) return false
-  if (tier.allowBlocks) return allowedBlockSet(tier.allowBlocks).has(entry.type)
-  return (LEVEL_RANK[entry.level] ?? 99) <= (LEVEL_RANK[tier.level] ?? -1)
+  return isBlockTypeAllowed(entry.type, entry.level, {
+    level: tier.level,
+    allowBlocks: tier.allowBlocks,
+    grantedBlockIds: tier.allowBlocks,
+  })
 }
 
 function allowedCatalog(

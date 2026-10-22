@@ -87,9 +87,9 @@ interface RateLimitBinding {
 export interface PythonInspectionJobNamespace {
   getByName(name: string): {
     inspect(raw: unknown): Promise<PythonInspectionJobResponse>
-    validate?(raw: unknown): Promise<PythonInspectionJobResponse>
-    previewAvailable?(raw: unknown): Promise<boolean>
-    discardPreview?(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
+    validate(raw: unknown): Promise<PythonInspectionJobResponse>
+    previewAvailable(raw: unknown): Promise<boolean>
+    discardPreview(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
     cancel(raw: unknown): Promise<{ retired: boolean; cleanupConfirmed: boolean }>
   }
 }
@@ -198,7 +198,6 @@ export function createStudioRuntimeHandler(
             async authorize(manifest) {
               assertCurrent()
               const stub = jobs.getByName(manifest.jobId)
-              if (!stub.previewAvailable) return false
               const allowed = await stub.previewAvailable({
                 jobId: manifest.jobId,
                 projectId: manifest.projectId,
@@ -284,7 +283,6 @@ export function createStudioRuntimeHandler(
               assertCurrent()
               const stub = jobs.getByName(jobId)
               if (!previewOnly) return stub.cancel(reference)
-              if (!stub.discardPreview) return { retired: false, cleanupConfirmed: false }
               return stub.discardPreview(reference)
             },
           })
@@ -330,12 +328,7 @@ export function createStudioRuntimeHandler(
             const jobId = await studioPythonInspectionJobId(input)
             assertCurrent()
             const stub = jobs.getByName(jobId)
-            if (mode === 'validate' && !stub.validate)
-              return { status: 503, body: { ok: false, code: 'PYTHON_VALIDATION_UNAVAILABLE' } }
-            const result =
-              mode === 'validate' && stub.validate
-                ? await stub.validate(raw)
-                : await stub.inspect(raw)
+            const result = mode === 'validate' ? await stub.validate(raw) : await stub.inspect(raw)
             assertCurrent()
             const maximum =
               mode === 'validate' ? STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes : 2 * 1024 * 1024
@@ -377,7 +370,6 @@ export function createStudioRuntimeHandler(
                 if (env.INTERNAL_TOKEN !== token || env.PythonInspectionJobs !== jobs)
                   throw new Error('O proprietário do descarte Python mudou.')
                 const stub = jobs.getByName(jobId)
-                if (!stub.discardPreview) return { retired: false, cleanupConfirmed: false }
                 return stub.discardPreview(input)
               },
               async cancel(input) {
