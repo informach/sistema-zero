@@ -87,8 +87,7 @@ try {
       .some((e) => e.name === 'quiz_question_view' && e.quizDefinitionId && e.quizAttemptId),
   )
   await page.goto(`${origin}/kids/desafio-primeiro-jogo/quiz`)
-  const desafioStart = page.locator('.cq-intro button.kof-btn')
-  if (await desafioStart.isVisible()) await desafioStart.click()
+  // Desafio v5 (21/10/2026): a entrada também já é a primeira pergunta (filho ou filha).
   await page.locator('[data-analytics-question]').waitFor()
   await page.waitForTimeout(5500)
   const questions = batches.flatMap((b) => b.events).filter((e) => e.name === 'quiz_question_view')

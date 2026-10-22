@@ -21,6 +21,8 @@ interface Props {
   restartLabel?: string
 }
 const { resultado: r, quizPath, revision, sessionToken, restartLabel } = Astro.props
+/** A linha abaixo do botão nas ofertas de assinatura (a Comunidade); o Desafio traz a sua. */
+const NOTA_PADRAO = 'O preço e os planos aparecem na próxima página.'
 const logo =
   r.tema === 'adulto'
     ? { src: '/logo_dark.svg', alt: 'Sistema Zero', largura: 211, altura: 18 }
@@ -73,7 +75,7 @@ const logo =
                 {b.rotulo}
               </a>
             </div>
-            <span class="rc-cta-nota">O preço e os planos aparecem na próxima página.</span>
+            <span class="rc-cta-nota">{b.nota ?? NOTA_PADRAO}</span>
           </div>
         ),
       )

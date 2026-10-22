@@ -12,7 +12,8 @@ Comece pela [proposta do funil](proposta-funil-2026-10-03.md), que apresenta as 
 | [Pesquisa e diagnóstico](pesquisa-2026-10-03.md) | Fontes externas, concorrentes, critérios das famílias, limites da evidência e problemas no funil local. |
 | [Pesquisa aprofundada da versão 2](pesquisa-aprofundada-v2-2026-10-03.md) | Dez novas referências, interesse do filho versus decisão do responsável, diferenciação, aprendizagem e avaliação da continuidade. |
 | [Revisão e decisões da versão 2](revisao-v2.md) | Problemas encontrados na primeira proposta, correções, alternativas e pontos que ainda precisam de validação. |
-| [Quiz e resultados](quiz-e-resultados.md) | Oito perguntas principais, até duas ramificações, regras de adequação, encaminhamento e exemplos de orientação pessoal. |
+| [Quizzes em conversa (21/10/2026)](quiz-2026-10-21.md) | O quiz Kids v5 e o quiz adulto v1, vigentes: perguntas, cartas, admin e decisões. |
+| [Quiz e resultados](quiz-e-resultados.md) (histórico, v3 e v4) | Oito perguntas principais, até duas ramificações, regras de adequação, encaminhamento e exemplos de orientação pessoal. |
 | [Copy proposta](copy-proposta.md) | Oferta base, aberturas e desenvolvimento por motivo, respostas práticas e mensagens da jornada. |
 | [Provas e validação](provas-e-validacao.md) | Argumentos, roteiro de capturas, reaproveitamento de prints, escopo da migração e critérios de conferência. |
 

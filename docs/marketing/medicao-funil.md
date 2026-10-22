@@ -9,7 +9,7 @@ Implementada no pacote `packages/funnel`, com relatórios em **/admin → Métri
 - Sessões e navegadores medidos, origem e campanha, páginas e versões visitadas.
 - Seções vistas, botões vistos/clicados, abertura de dúvidas e recursos, ampliação de imagens e vídeos HTML nativos.
 - Prints da página pública, pontos de clique sobre os elementos e recorte de seção ou botão.
-- Perguntas vistas e respostas salvas, separadas por produto e versão: Comunidade, Desafio e demais quizzes registrados.
+- Perguntas vistas e respostas salvas, separadas por produto e versão: Comunidade, Desafio e demais quizzes registrados. Desde 21/10/2026 o Desafio tem dois quizzes em conversa, o Kids (`desafio-farol-v5`, com ramos) e o adulto (`desafio-adulto-v1`); ver [quiz-2026-10-21.md](kids/desafio-primeiro-jogo/quiz-2026-10-21.md).
 - Sessões com contato salvo, encaminhamento ao checkout, compra confirmada e receita inicial identificada.
 - Conferência das compras sem vínculo de navegação. Recusa, bloqueadores, outra máquina e histórico anterior podem deixar compras sem vínculo.
 

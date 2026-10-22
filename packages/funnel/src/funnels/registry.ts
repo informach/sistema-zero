@@ -45,7 +45,7 @@ export interface FunnelLanding {
 }
 export interface FunnelQuiz {
   version?: string
-  presentation?: 'comunidade' | 'comunidade-adulto' | 'desafio'
+  presentation?: 'comunidade' | 'comunidade-adulto' | 'desafio-kids' | 'desafio-adulto'
   steps: QuizStep[]
   total: number
   /** Validação do valor por chave (server-side). Chaves fora daqui são rejeitadas. */
@@ -78,7 +78,7 @@ export interface FunnelQuiz {
    */
   branchOf?: (answers: QuizAnswers) => string | null
   /**
-   * O resultado em conversa (Comunidade Kids e adulta): a carta montada pelas respostas, ou null
+   * O resultado em conversa (Comunidade e Desafio, Kids e adulto): a carta montada pelas respostas, ou null
    * quando o quiz não tem resultado para elas. A /resultado desenha com `ResultadoConversa`.
    */
   conversa?: (answers: QuizAnswers) => ResultadoConversa | null

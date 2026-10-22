@@ -1,73 +1,43 @@
 import assert from 'node:assert/strict'
 import { mkdir } from 'node:fs/promises'
 import { chromium, type Page } from 'playwright'
+import { DESAFIO_QUESTIONS } from '../../src/funnels/desafio-primeiro-jogo/quiz/questions'
 
-// Execute contra um funil local. O catálogo precisa estar disponível ou usar a
-// fixture isolada descrita em docs/marketing/kids/desafio-primeiro-jogo/implementacao.md.
-// Nenhum contato é enviado e nenhum pagamento é criado.
+// O resultado em carta do quiz Kids do Desafio (v5, 21/10/2026): a carta inteira a 390 e 1440 px,
+// "Esse resultado parece com você?", rever e mudar uma resposta (a carta nova abre na hora) e responder
+// pensando em outra criança (lead novo, quiz do começo). Rode contra o funil local com banco
+// (`DESAFIO_QA_URL`, padrão http://127.0.0.1:4347); `QA_CHROMIUM_PATH` usa um Chromium já
+// instalado. Nenhum contato é enviado e nenhum pagamento é criado.
 const origin = process.env.DESAFIO_QA_URL ?? 'http://127.0.0.1:4347'
 assert.ok(['localhost', '127.0.0.1'].includes(new URL(origin).hostname))
+const base = '/kids/desafio-primeiro-jogo'
 const output = '../../tmp/desafio-qa'
 await mkdir(output, { recursive: true })
-const browser = await chromium.launch({ channel: 'chrome' })
-const base = '/kids/desafio-primeiro-jogo'
+const browser = await chromium.launch(
+  process.env.QA_CHROMIUM_PATH ? { executablePath: process.env.QA_CHROMIUM_PATH } : {},
+)
 const errors: string[] = []
-const answers: Record<string, string[]> = {
-  idade: ['9_11'],
-  equipamento: ['disponivel'],
-  interesses: ['joga'],
-  experiencia: ['primeira_vez'],
-  motivos: ['B'],
-  duvida: ['ajuda'],
-  formato: ['gravado'],
-  abertura_criacao: ['conhecer'],
-}
-async function consent(page: Page, accept = false) {
-  if (!(await page.locator('#sz-metrics-notice').isVisible()))
-    await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
-  const button = page.getByRole('button', {
-    name: accept ? 'Ativar métricas' : 'Desativar métricas',
-    exact: true,
-  })
-  if (await button.isVisible()) await button.click()
-  else await page.locator('#sz-metrics-close').click()
-}
-async function answer(page: Page, key: string, values: string[]) {
-  await page.locator(`[data-analytics-question="${key}"]`).waitFor()
-  for (const value of values) await page.locator(`label:has(input[value="${value}"])`).click()
-  const response = page.waitForResponse(
+const respostas: [string, string][] = [
+  ['idade', '9_12'],
+  ['tempo_tela', 'mais_4'],
+  ['computador', 'celular_tablet'],
+  ['cena', 'A'],
+  ['trava', 'desiste'],
+  ['cena_desejada', 'A'],
+  ['garantia', 'tempo_tela'],
+  ['sintese', 'A'],
+]
+const label = (key: string, value: string) =>
+  DESAFIO_QUESTIONS.find((s) => s.key === key)!.opcoes.find((o) => o.value === value)!.label
+async function answer(page: Page, key: string, value: string) {
+  await page.locator(`main[data-analytics-question="${key}"]`).waitFor()
+  const saved = page.waitForResponse(
     (r) => r.url().endsWith('/api/leads') && r.request().method() === 'PATCH',
   )
-  await page.locator('.cq-continue').click()
-  assert.equal((await response).status(), 200, `Save ${key}`)
-}
-async function start(page: Page, accept = false) {
-  await page.goto(`${origin}${base}/quiz?utm_source=qa_farol&utm_campaign=implementacao`)
-  await consent(page, accept)
-  await page.locator('[data-analytics-id="desafio-quiz-iniciar"]').click()
-  await page.locator('[data-analytics-question="idade"]').waitFor()
-}
-async function complete(page: Page, overrides: Record<string, string[]> = {}) {
-  const sequence = { ...answers, ...overrides }
-  for (const key of [
-    'idade',
-    'equipamento',
-    'interesses',
-    'experiencia',
-    'motivos',
-    'prioridade',
-    'duvida',
-    'formato',
-    'abertura_criacao',
-    'desencontro',
-  ]) {
-    if (!sequence[key]) continue
-    await answer(page, key, sequence[key]!)
-    if (key === 'equipamento' && sequence[key]![0] === 'sem_computador')
-      await page.getByRole('button', { name: 'Continuar a orientação', exact: true }).click()
-  }
-  await page.waitForURL(`**${base}/resultado**`)
-  await page.locator('#resultado-title').waitFor()
+  await page
+    .locator(`main .qz-opcao:has(span:text-is(${JSON.stringify(label(key, value))}))`)
+    .click()
+  assert.equal((await saved).status(), 200, key)
 }
 async function noOverflow(page: Page) {
   assert.equal(
@@ -76,191 +46,67 @@ async function noOverflow(page: Page) {
     `Horizontal overflow ${page.url()}`,
   )
 }
+
 try {
   const context = await browser.newContext({
-    viewport: { width: 1440, height: 1000 },
+    viewport: { width: 390, height: 900 },
     reducedMotion: 'reduce',
   })
   const page = await context.newPage()
   page.on('pageerror', (e) => errors.push(e.message))
-  const events: Array<Record<string, unknown>> = []
-  page.on('request', (r) => {
-    if (r.url().endsWith('/api/analytics/events')) events.push(...r.postDataJSON().events)
-  })
-  // As três páginas de oferta (21/10/2026) são conferidas em detalhe por desafio-ofertas.ts; aqui
-  // basta a página de 9 a 17 que o resultado abre, sem levar o e-mail da URL adiante.
-  const response = await page.goto(
-    `${origin}${base}/oferta?utm_source=qa_farol&email=nao-levar@example.test`,
-  )
-  assert.equal(response?.status(), 200)
-  assert.match(response?.headers()['cache-control'] ?? '', /no-store/)
-  await consent(page)
-  await noOverflow(page)
-  await page.screenshot({ path: `${output}/oferta-9a17-desktop.png` })
-  await page.locator('[data-checkout-cta]').first().click()
-  await page.getByRole('textbox', { name: 'Nome do responsável', exact: true }).waitFor()
-  await page.getByRole('button', { name: 'Fechar', exact: true }).click()
-  for (const antiga of ['primeiro-jogo', 'tempo-de-tela', 'iniciacao-tecnologica']) {
-    const alias = await context.request.get(
-      `${origin}${base}/oferta/${antiga}?utm_source=qa_farol`,
-      { maxRedirects: 0 },
-    )
-    assert.equal(alias.status(), 301)
-    assert.equal(alias.headers().location, `${base}/oferta?utm_source=qa_farol`)
-  }
+  await page.goto(`${origin}${base}/quiz?utm_source=qa_farol`)
+  await page.locator('.qz-carta-genero--filho').click()
+  for (const [key, value] of respostas) await answer(page, key, value)
+  await page.waitForURL(`**${base}/resultado**`)
+  await page.locator('.rc-titulo').waitFor()
+
+  // A carta: título do perfil A, 4 títulos, a tela do jogo, o relato e o botão das dúvidas (só
+  // celular ou tablet não atende).
   assert.equal(
-    (await context.request.get(`${origin}${base}/oferta/expressao-visual`)).status(),
-    404,
+    await page.locator('.rc-titulo').innerText(),
+    'O tempo que seu filho passa no jogo pode virar um jogo feito por ele',
+  )
+  assert.equal(await page.locator('.rc-h').count(), 4)
+  assert.equal(await page.locator('.rc-tela img[src$="farol-jogo.png"]').count(), 1)
+  assert.equal(await page.locator('.rc-relato').count(), 1)
+  assert.ok((await page.locator('mark').count()) >= 4)
+  const botao = page.locator('[data-analytics-id="resultado-oferta"]')
+  assert.equal(await botao.innerText(), 'Ver os requisitos e como funciona')
+  assert.equal(await botao.getAttribute('href'), `${base}/oferta#duvidas`)
+  await noOverflow(page)
+  await page.screenshot({ path: `${output}/resultado-390.png`, fullPage: true })
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await noOverflow(page)
+  await page.screenshot({ path: `${output}/resultado-1440.png`, fullPage: true })
+
+  // "Esse resultado parece com você?" grava uma vez.
+  // A ilha é `client:visible`: só responde ao clique depois de hidratar (o Astro tira o `ssr`).
+  const sim = page.getByRole('button', { name: 'Sim', exact: true })
+  await sim.scrollIntoViewIfNeeded()
+  await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'))
+  const feedback = page.waitForResponse((r) => r.url().includes('/api/leads/quiz-feedback'))
+  await sim.click()
+  assert.equal((await feedback).status(), 201)
+
+  // Rever: mudar o computador troca o botão da carta para o do perfil.
+  await page.getByRole('link', { name: 'Rever as respostas' }).click()
+  await page.getByRole('heading', { name: 'Suas respostas' }).waitFor()
+  await page.getByRole('button', { name: /^Mudar: Ele tem um computador/ }).click()
+  // Com o quiz completo, a resposta mudada leva direto à carta nova.
+  await answer(page, 'computador', 'so_dele')
+  await page.waitForURL(`**${base}/resultado**`)
+  await page.locator('.rc-titulo').waitFor()
+  assert.equal(
+    await page.locator('[data-analytics-id="resultado-oferta"]').innerText(),
+    'Ver como ele faz o primeiro jogo',
   )
 
-  // Sem respostas, nunca há um resultado presumido; a atribuição precisa sobreviver ao retorno.
-  await page.goto(`${origin}${base}/resultado?utm_source=qa_farol`)
-  assert.ok(new URL(page.url()).pathname.endsWith('/quiz'))
-  assert.equal(new URL(page.url()).searchParams.get('utm_source'), 'qa_farol')
-  await start(page)
-  // Falha de rede conserva a seleção e permite repetir sem duplicar revisão.
-  let failOnce = true
-  await page.route('**/api/leads', async (route) => {
-    if (failOnce && route.request().method() === 'PATCH') {
-      failOnce = false
-      await route.abort()
-      return
-    }
-    await route.continue()
-  })
-  await page.locator('label:has(input[value="9_11"])').click()
-  await page.locator('.cq-continue').click()
-  await page.getByRole('alert').waitFor()
-  assert.equal(await page.locator('input[value="9_11"]').isChecked(), true)
-  await page.unroute('**/api/leads')
-  await complete(page)
-  await noOverflow(page)
-  const cta = page.locator('[data-analytics-id="desafio-resultado-oferta"]')
-  assert.match((await cta.getAttribute('href'))!, /\/oferta\?utm_source=qa_farol/)
-  assert.ok(!(await cta.getAttribute('href'))!.includes('perfil='))
-  await page.screenshot({ path: `${output}/resultado-desktop.png` })
-  await page.setViewportSize({ width: 390, height: 844 })
-  await noOverflow(page)
-  await page.screenshot({ path: `${output}/resultado-mobile.png` })
-  // Métricas: o resultado mede o destino, sem copiar texto personalizado.
-  await page.getByRole('button', { name: 'Privacidade', exact: true }).click()
-  const analyticsReady = page.waitForResponse(
-    (r) => r.url().endsWith('/api/analytics/events') && r.ok(),
-  )
-  await consent(page, true)
-  await analyticsReady
-  await cta.click()
-  await page.waitForURL(`**${base}/oferta**`)
-  await page.waitForTimeout(6000)
-  assert.ok(events.some((e) => e.name === 'click' && e.elementId === 'desafio-resultado-oferta'))
-  assert.ok(events.filter((e) => String(e.path).includes('/resultado')).every((e) => !e.label))
-  await page.goto(`${origin}${base}/quiz#rever`)
-  await page
-    .getByRole('button', { name: /^Editar: .*além|^Editar:/ })
-    .first()
-    .waitFor()
-  const before = (await context.cookies()).find((c) => c.name === 'funil_lead')?.value
-  await page.getByRole('button', { name: 'Responder pensando em outro filho', exact: true }).click()
-  await page.locator('[data-analytics-question="idade"]').waitFor()
-  const after = (await context.cookies()).find((c) => c.name === 'funil_lead')?.value
-  assert.ok(before && after)
-  assert.notEqual(before, after)
-  await answer(page, 'idade', ['menos_9'])
-  await page.getByRole('heading', { name: /Esta orientação foi pensada/ }).waitFor()
-  assert.equal(await page.locator('[data-checkout-cta]').count(), 0)
+  // Outra criança: lead novo, quiz do começo.
+  await page.getByRole('link', { name: 'Responder pensando em outra criança' }).click()
+  await page.locator('[data-analytics-question="genero"] .qz-carta-genero').first().waitFor()
   await context.close()
-
-  for (const scenario of [
-    {
-      id: 'prioridade-A',
-      override: { motivos: ['A', 'C'], prioridade: ['A'], interesses: ['inventa_historias'] },
-      route: '/oferta?',
-    },
-    { id: 'iniciacao-D', override: { motivos: ['D'] }, route: '/oferta?' },
-    {
-      id: 'empate',
-      override: { motivos: ['A', 'C'], prioridade: ['iguais'] },
-      text: 'Você deu o mesmo peso',
-    },
-    {
-      id: 'sem-computador',
-      override: { equipamento: ['sem_computador'] },
-      text: 'Hoje vocês têm celular ou tablet',
-    },
-    {
-      id: 'recusa-desenho',
-      override: {
-        motivos: ['C'],
-        interesses: ['desenha'],
-        abertura_criacao: ['outra_atividade'],
-        desencontro: ['desenho'],
-      },
-      text: 'Vocês procuram uma atividade centrada em desenhar',
-    },
-  ] as Array<{ id: string; override: Record<string, string[]>; route?: string; text?: string }>) {
-    const cx = await browser.newContext({
-      viewport: { width: 390, height: 844 },
-      reducedMotion: 'reduce',
-    })
-    const tab = await cx.newPage()
-    tab.on('pageerror', (e) => errors.push(e.message))
-    await start(tab)
-    await complete(tab, scenario.override)
-    await noOverflow(tab)
-    if (scenario.route)
-      assert.ok(
-        (
-          await tab.locator('[data-analytics-id="desafio-resultado-oferta"]').getAttribute('href')
-        )?.includes(scenario.route),
-      )
-    if (scenario.text) assert.ok((await tab.locator('main').innerText()).includes(scenario.text))
-    if (scenario.id === 'sem-computador' || scenario.id === 'recusa-desenho') {
-      assert.equal(await tab.locator('[data-analytics-id="desafio-resultado-oferta"]').count(), 0)
-      assert.equal(
-        await tab.locator('[data-analytics-id="desafio-resultado-experiencia"]').count(),
-        0,
-      )
-    }
-    if (scenario.id === 'recusa-desenho')
-      assert.ok(
-        !(await tab.locator('#convite-para-conversar').innerText()).includes(
-          'Mostre a cena do jogo',
-        ),
-      )
-    await tab.screenshot({ path: `${output}/${scenario.id}.png` })
-    await cx.close()
-  }
   assert.deepEqual(errors, [])
-  if (process.env.DESAFIO_QA_FIXTURE === '1') {
-    const cx = await browser.newContext()
-    const mode = async (value: string) => {
-      const res = await cx.request.post('http://127.0.0.1:3347/__qa/catalog', {
-        data: { mode: value },
-      })
-      assert.equal(res.status(), 200)
-    }
-    try {
-      await mode('changed_price')
-      const tab = await cx.newPage()
-      // O catálogo compartilhado tem cache visual de 60s; a cotação de cupom é
-      // autoritativa e deve corrigir tanto preço cheio quanto final imediatamente.
-      await tab.goto(`${origin}${base}/oferta?cupom=QA10`)
-      assert.match(await tab.locator('#oferta .c9-plano__preco').innerText(), /67/)
-      assert.match(await tab.locator('#oferta .d9-cheio').innerText(), /77/)
-      await mode('unavailable')
-      await tab.goto(`${origin}${base}/quiz`)
-      assert.ok(
-        await tab.locator('[data-analytics-id="desafio-quiz-iniciar"]').isVisible(),
-        'Orientation remains available without catalog',
-      )
-    } finally {
-      await mode('available')
-      await cx.close()
-    }
-  }
-  console.log(
-    'Passed: offer and old-variant redirects, pre-checkout, coupon, attribution, quiz result, network recovery, restart, age, A/D routing to the single offer, ties, device restriction, refusal and result analytics without personal text.',
-  )
+  console.log('PASS resultado Kids: carta, feedback, rever e outra criança; nenhum erro de página')
 } finally {
   await browser.close()
 }

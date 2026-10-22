@@ -170,6 +170,64 @@ describe('adminFunnel', () => {
     // O resultado compara com o fim dos dois ramos com perguntas (2 + 1), sem a saída.
     expect(step('viu_resultado').fromPrev).toBeCloseTo(2 / 3)
   })
+  test('Desafio v5: os ramos do Kids no /admin e o quiz adulto sem ramos', async () => {
+    const { repo, fg, deps, quizVersions } = setup()
+    const funnel = 'kids/desafio-primeiro-jogo'
+    quizVersions.set('def-desafio-v5', 'desafio-farol-v5')
+    const lead = async (f: string, def: string, eventos: string[]) => {
+      const { id } = await repo.createLead(f, null, def)
+      for (const e of ['entrou_landing', ...eventos]) await repo.insertEvent(id, e)
+    }
+    const entrada = ['respondeu_desafio_v5_genero', 'respondeu_desafio_v5_idade']
+    await lead(funnel, 'def-desafio-v5', [
+      ...entrada,
+      'entrou_ramo_9a17',
+      'respondeu_desafio_v5_sintese',
+      'viu_resultado',
+    ])
+    await lead(funnel, 'def-desafio-v5', [
+      ...entrada,
+      'entrou_ramo_m9',
+      'respondeu_desafio_v5_m9_sintese',
+    ])
+    await lead(funnel, 'def-desafio-v5', [...entrada, 'entrou_ramo_adulto'])
+    // Um lead da v4 fica fora do recorte "quiz atual".
+    await lead(funnel, 'def-desafio-v4', ['desafio_resposta_idade'])
+    const get = async (f: string, query = '') => {
+      const res = await adminFunnel(
+        new Request(`http://localhost/api/admin?funnel=${encodeURIComponent(f)}${query}`, {
+          headers: { cookie: accessCookie(fg) },
+        }),
+        deps,
+      )
+      return (await res.json()) as {
+        total: number
+        steps: Array<{ name: string; label: string; count: number; fromPrev: number }>
+      }
+    }
+    const body = await get(funnel, '&quiz=atual')
+    expect(body.total).toBe(3)
+    const step = (name: string) => body.steps.find((s) => s.name === name)!
+    expect(step('respondeu_desafio_v5_idade').label).toBe('Pergunta 2 · Idade')
+    expect(step('entrou_ramo_9a17')).toMatchObject({ label: 'Ramo · De 9 a 17', count: 1 })
+    expect(step('entrou_ramo_m9')).toMatchObject({ label: 'Ramo · Menor de 9', count: 1 })
+    expect(step('entrou_ramo_adulto').label).toBe('Saída · 18 ou mais')
+    expect(step('respondeu_desafio_v5_sintese').label).toBe('Pergunta 9 · Frase-síntese')
+    expect(step('viu_resultado').fromPrev).toBeCloseTo(1 / 2)
+
+    const adulto = 'pro/desafio-primeiro-jogo'
+    await lead(adulto, 'def-desafio-adulto', [
+      'respondeu_desafio_adulto_v1_computador',
+      'respondeu_desafio_adulto_v1_sintese',
+      'viu_resultado',
+    ])
+    const pro = await get(adulto)
+    expect(pro.total).toBe(1)
+    expect(pro.steps.find((s) => s.name === 'respondeu_desafio_adulto_v1_sintese')?.label).toBe(
+      'Pergunta 8 · Frase-síntese',
+    )
+    expect(pro.steps.some((s) => s.name.startsWith('entrou_ramo_'))).toBe(false)
+  })
   test('agrega contagem e conversão por etapa (com sessão)', async () => {
     const { repo, fg, deps } = setup()
     const a = await repo.createLead()

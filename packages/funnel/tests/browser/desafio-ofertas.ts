@@ -6,8 +6,8 @@
  * catálogo falso (preço diferente da referência de R$ 67, para provar que o SSR usa o catálogo) e
  * confere, em cada página: status e no-store, um h1, âncoras e ids, imagens, o preço ao vivo,
  * larguras sem rolagem lateral, os dois CTAs e o pré-checkout até o checkout com a atribuição.
- * Também os 301 das variantes antigas e o 404 da subpágina no funil adulto. O quiz do Desafio, que
- * grava leads, fica em `desafio-farol.ts` (precisa de banco). `QA_CHROMIUM_PATH` usa um Chromium já
+ * Também os 301 das variantes antigas e o 404 da subpágina no funil adulto. Os quizzes do Desafio,
+ * que gravam leads, ficam em `desafio-quiz-frio.ts` e `desafio-farol.ts` (precisam de banco). `QA_CHROMIUM_PATH` usa um Chromium já
  * baixado; sem ele, o Chromium do Playwright.
  */
 import assert from 'node:assert/strict'
@@ -271,11 +271,16 @@ try {
     `${kidsBase}/oferta/expressao-visual`,
     `${adultBase}/oferta/criar-junto`,
     `${adultBase}/oferta/tempo-de-tela`,
-    `${adultBase}/quiz`,
   ])
     assert.equal((await page.request.get(`${origin}${inexistente}`)).status(), 404, inexistente)
   assert.equal(
     (await page.request.get(`${origin}${adultBase}/termos`)).status(),
+    adultoRegistrado ? 200 : 404,
+  )
+  // Desde 21/10/2026 o Desafio adulto tem quiz (os quizzes gravam leads e ficam em
+  // `desafio-quiz-frio.ts`, com banco): aqui só o status da página, que não toca no banco.
+  assert.equal(
+    (await page.request.get(`${origin}${adultBase}/quiz`)).status(),
     adultoRegistrado ? 200 : 404,
   )
   assert.deepEqual(errors, [])
