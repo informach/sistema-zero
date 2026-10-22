@@ -6,6 +6,7 @@ import {
   prepareSpaceScenario,
 } from '../../../experiments/studio-python-runtime/qualification/space_arena'
 import {
+  enableCausalPresentation,
   evaluate,
   instrumentPresentation,
   providerState,
@@ -14,15 +15,19 @@ import {
   resetPresentation,
   TWO_DISPLAY_FRAMES_MS,
 } from './gamePerformance'
+import { performanceWindow } from './performanceAcceptance'
 
 // S10/P16 for the original Space Arena with real keyboard input and no injected state.
 // The authored loop schedules ceil(1000/60 - elapsed) ms per tick, and the authored tick is
 // heavy: natively (CPython 3.14.2/Tk 8.6.15) this game runs at 33-36 FPS on the development
-// machine. A whole-frame bound therefore uses two display frames (>= 30 FPS); the literal
-// 33 ms F3 bound applies to the F3 fixture (python-f3-performance.spec.ts). Infrastructure
+// machine. Space and F3 use the approved two-display-frame bound (>= 30 FPS at 60 Hz).
+// Infrastructure
 // bounds stay strict: no long task, paint p95 <= 8 ms, input -> presentation p95 <= 100 ms.
-const PLAY_MS = Number(process.env.SZ_GAMES_PLAY_MS ?? 60_000)
+const WINDOW = performanceWindow(process.env.SZ_GAMES_PLAY_MS)
+const PLAY_MS = WINDOW.milliseconds
 const RESTARTS = Number(process.env.SZ_GAMES_RESTARTS ?? 30)
+if (!Number.isSafeInteger(RESTARTS) || RESTARTS < 1 || RESTARTS > 120)
+  throw new Error('Invalid restart count')
 
 test.use({ trace: 'off' })
 const Observation = z.object({ kind: z.string(), simulationCalls: z.number() }).passthrough()
@@ -35,7 +40,7 @@ async function observations(cdp: CDPSession) {
 }
 async function openGame(page: Page, request: Parameters<typeof prepareSpaceQualification>[0]) {
   const baseline = await prepareSpaceQualification(request)
-  const fixture = await prepareSpaceScenario(baseline.project, 'input-lifecycle')
+  const fixture = await prepareSpaceScenario(baseline.project, 'performance-input')
   await page.route('**/project/spaceArenaPortable', (route) =>
     route.fulfill({ json: fixture.project }),
   )
@@ -77,7 +82,7 @@ async function play(page: Page, cdp: CDPSession) {
   return { frame, runningMs, splashMs }
 }
 
-test('Space Arena play keeps presented frames, paint cost and input latency within bounds', async ({
+test(`${WINDOW.qualification} Space Arena: presented frames, paint cost and causal input latency`, async ({
   page,
   request,
 }, info) => {
@@ -89,9 +94,10 @@ test('Space Arena play keeps presented frames, paint cost and input latency with
     const { frame } = await play(page, cdp)
     await frame.locator('canvas').focus()
     await resetPresentation(frame)
+    await enableCausalPresentation(frame)
     // Thirty real inputs spread over the window; the rest is uninterrupted play.
     const keys = ['ArrowLeft', 'ArrowRight', 'ArrowUp']
-    const began = Date.now()
+    const began = performance.now()
     for (let index = 0; index < 30; index++) {
       const key = keys[index % keys.length]!
       await page.keyboard.down(key)
@@ -99,8 +105,9 @@ test('Space Arena play keeps presented frames, paint cost and input latency with
       await page.keyboard.up(key)
       await page.waitForTimeout(Math.max(150, PLAY_MS / 30 - 120))
     }
-    const remaining = PLAY_MS - (Date.now() - began)
+    const remaining = PLAY_MS - (performance.now() - began)
     if (remaining > 0) await page.waitForTimeout(remaining)
+    const measuredPlayMs = performance.now() - began
     const presentation = await readPresentation(frame)
     // The game prints its own frame count every second (authored 1000 ms timer).
     const authoredFps = (
@@ -112,6 +119,10 @@ test('Space Arena play keeps presented frames, paint cost and input latency with
     ).map((line) => Number(line.slice(5)))
     const report = {
       playMs: PLAY_MS,
+      measuredPlayMs,
+      qualification: WINDOW.qualification,
+      witness:
+        'QA6x6 RGB token after original player render/pose effect,same Turtle update;no game/pool changes;read-only RAF observation plus one display opportunity,not GPU scanout',
       authoredFps: quantiles(authoredFps.slice(1)),
       ...presentation,
       evidence,
@@ -122,14 +133,16 @@ test('Space Arena play keeps presented frames, paint cost and input latency with
       contentType: 'application/json',
     })
     expect(presentation.inputs).toBe(30)
-    expect(presentation.inputToSecondPresentedFrame.count).toBe(30)
+    expect(measuredPlayMs).toBeGreaterThanOrEqual(PLAY_MS)
+    expect(presentation.causalFailure).toBeUndefined()
+    expect(presentation.causalInputToPresentation.count).toBe(30)
     expect(presentation.intervals.count).toBeGreaterThan(PLAY_MS / 100)
     expect(presentation.intervals.p95).toBeLessThanOrEqual(TWO_DISPLAY_FRAMES_MS)
     expect(presentation.frameBuckets.more).toBeLessThanOrEqual(presentation.intervals.count / 100)
     expect(presentation.paintWork.p95).toBeLessThanOrEqual(8)
     expect(presentation.longPaints).toBe(0)
     expect(presentation.longTasks).toBe(0)
-    expect(presentation.inputToSecondPresentedFrame.p95).toBeLessThanOrEqual(100)
+    expect(presentation.causalInputToPresentation.p95).toBeLessThanOrEqual(100)
     expect(errors).toEqual([])
   } finally {
     await page
@@ -170,6 +183,7 @@ test('Space Arena survives repeated Stop and restart without leftover activity',
     }
     const report = {
       restarts: RESTARTS,
+      qualification: RESTARTS >= 30 ? 'acceptance' : 'diagnostic',
       clickToRunning: quantiles(starts),
       authoredSetupToSplash: quantiles(splashes),
     }

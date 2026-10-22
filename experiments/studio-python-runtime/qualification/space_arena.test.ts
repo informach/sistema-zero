@@ -48,6 +48,38 @@ test('an existing QA entry is refused without changing the project', async () =>
   expect(project).toEqual(original)
 })
 
+test('performance witness adds only QA modules, preserving every game and media byte', async () => {
+  const project = documentFixture('python', 'pro')
+  if (project.programmingLanguage !== 'python' || project.kind !== 'pro') throw new Error('fixture')
+  project.assets = [
+    {
+      id: 'hero',
+      name: 'hero',
+      kind: 'image',
+      source: 'upload',
+      proPath: 'hero.png',
+      dataUrl:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lXcAAAAASUVORK5CYII=',
+    },
+  ]
+  project.coverAssetName = 'hero'
+  const original = structuredClone(project)
+  const result = await prepareSpaceScenario(project, 'performance-input')
+  const {
+    '_qa_space_observer.py': _observer,
+    'qa_space_entry.py': driver,
+    '_qa_input_presentation.py': presentation,
+    ...unchanged
+  } = result.project.tree
+  expect(project).toEqual(original)
+  expect(unchanged).toEqual(original.tree)
+  expect(result.project.assets).toEqual(original.assets)
+  expect(result.project.runtime).toEqual(original.runtime)
+  expect(driver?.kind === 'file' && driver.content.includes('"causalPresentation":True')).toBe(true)
+  expect(presentation?.kind).toBe('file')
+  expect(result.evidence.presentationSha256).toMatch(/^[a-f0-9]{64}$/)
+})
+
 test('source inspector refuses missing or wrong-version canonical Turtle before game preparation', async () => {
   const directory = await mkdtemp(resolve(tmpdir(), 'sz-space-metadata-'))
   const previous = process.env.SZ_GAMES_HOST_AUTHORITY

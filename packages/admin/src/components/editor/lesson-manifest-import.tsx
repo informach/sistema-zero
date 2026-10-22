@@ -272,7 +272,11 @@ export function LessonManifestImport({
                   : { ...origem, courseSlug, lessonSlug }
                 change(JSON.stringify(vinculado, null, 2))
                 setNotice(
-                  `Arquivo vinculado a ${courseSlug} / ${lessonSlug}. Confira a prévia antes de aplicar; mídias já publicadas permanecem no modo de preservação.`,
+                  `Arquivo vinculado a ${courseSlug} / ${lessonSlug}. ${
+                    mode === 'replace'
+                      ? 'O modo selecionado substitui o rascunho inteiro, incluindo os blocos criados no Admin fora do manifesto.'
+                      : 'O modo selecionado atualiza pelo manifesto e mantém os blocos criados no Admin fora dele.'
+                  } Confira a prévia antes de aplicar. A versão publicada só muda quando você publicar.`,
                 )
               } catch (e) {
                 setError((e as Error).message)

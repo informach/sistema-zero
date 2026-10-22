@@ -2,6 +2,31 @@
 
 Continuação do [relatório de transferência](2026-10-21-transferencia-estudio-python.md). Este registro separa **implementação**, **implantação** e **homologação**. Produção não foi tocada nem liberada.
 
+## Atualização de leitura — 22/10/2026
+
+O corpo deste documento registra etapas sucessivas da máquina de 32 GB e preserva
+falhas/limites encontrados naquele momento. Não é uma lista atual de bloqueios.
+A continuação já foi integrada no staging remoto em `c4222471a`; os nove jobs de
+validação do CI 39704535639 passaram e o deploy parou na prova SSH readonly antes
+de aplicar mudanças. A sessão de chaves Railway cuida dessa frente operacional.
+
+Foram integrados o Pro da equipe Kids, a correção do contexto de aula sem corpo,
+as correções dos 16 testes antigos e a exigência de `publish`/`assist` na release
+nova, sem ampliar o piloto imutável. As decisões apresentadas como pendentes no
+registro inicial abaixo não devem ser perguntadas novamente nem reimplementadas.
+
+Consulte o [estado atual das lacunas](2026-10-21-lacunas-conclusao.md#estado-conferido-em-22102026)
+e a [revisão de 22/10](2026-10-22-review-continuacao-python.md). Os recibos novos
+citados em caminhos de cache desta máquina não vieram automaticamente pelo Git.
+As [correções e verificações de 22/10](2026-10-22-python-review-fixes-results.md)
+acrescentaram o gate estatístico F1 e o testemunho causal F3/Space. F3 passou em
+600.015,9 ms no Chrome local, com recibo próprio; F1 completo, Space de dez minutos
+e outros perfis permanecem pendentes. `python-live` sem mídia e com repositórios
+em memória não fecha o percurso com contas/banco/gravação reais. Esses limites
+não invalidam as provas locais delimitadas abaixo nem equivalem a aceite final.
+
+## Registro histórico da reconstrução
+
 ## Ambiente reconstruído
 
 - Windows 11 Pro 10.0.26200, 32 GB RAM (cerca de 16 GB livres), 20 CPUs.

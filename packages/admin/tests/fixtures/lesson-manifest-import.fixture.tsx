@@ -90,6 +90,12 @@ test('confirma todas as remoções antes de substituir o rascunho', async () => 
       textarea.dispatchEvent(new Event('input', { bubbles: true }))
       inputInLabel('Substituir o rascunho inteiro')?.click()
     })
+    await act(async () => button('Vincular ao destino aberto')?.click())
+    expect(inputInLabel('Substituir o rascunho inteiro')?.checked).toBe(true)
+    expect(container.textContent).toContain(
+      'O modo selecionado substitui o rascunho inteiro, incluindo os blocos criados no Admin fora do manifesto.',
+    )
+    expect(container.textContent).not.toContain('permanecem no modo de preservação')
     await act(async () => button('Conferir importação')?.click())
 
     expect(calls[0]?.body.mode).toBe('replace')
@@ -148,6 +154,11 @@ test('atualizar pelo manifesto é o padrão e aplica sem confirmação extra, mo
       setValue.call(textarea, source)
       textarea.dispatchEvent(new Event('input', { bubbles: true }))
     })
+    await act(async () => button('Vincular ao destino aberto')?.click())
+    expect(container.querySelector<HTMLInputElement>('input[value="preserve"]')?.checked).toBe(true)
+    expect(container.textContent).toContain(
+      'O modo selecionado atualiza pelo manifesto e mantém os blocos criados no Admin fora dele.',
+    )
     await act(async () => button('Conferir importação')?.click())
 
     expect(calls[0]?.body.mode).toBe('preserve')

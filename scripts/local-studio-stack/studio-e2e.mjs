@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './preflight.mjs'
 /**
  * Ponta a ponta do Estúdio livre no navegador (Chromium headless do Playwright, via Node: o pipe
  * do Playwright não sobe sob o Bun no Windows). Para uma conta, um produto, uma linguagem e um
