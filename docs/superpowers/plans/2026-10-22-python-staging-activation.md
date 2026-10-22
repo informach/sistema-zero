@@ -16,7 +16,7 @@ offline de baseline vazio representa o estado remoto.
 
 ## Sequência
 
-1. Exigir CI verde do código a implantar. Lote de oficinas e reparo do teste Zappy publicados em `862308ac2`; acompanhar run `39795005373`. Conciliar qualquer avanço remoto antes da ativação.
+1. Exigir CI verde do SHA final conciliado a implantar; um resultado de um checkout anterior não substitui esse gate. Conciliar qualquer avanço local/remoto antes da ativação.
 2. Construir a imagem atual e qualificar JavaScript sem rede. O perfil `bee4799c5e9ef6bd8f1838273234c6db0a37b61156c3966b30873d64a379efbc` é independente da distribuição browser `476d32…`. Não trocar tags de imagens de outras sessões para executar QA: os smokes aceitam a imagem como primeiro argumento.
 3. Executar `build:server` do language service antes da imagem. Qualificar a imagem real, RPC/Pyright, cancelamento e cleanup; não reutilizar o bundle remoto antigo.
 4. Registrar a retirada explícita da referência Python antiga do runtime, preservando JavaScript, origens, secrets e todos os objetos R2. Só depois da ausência confirmada usar `baseline.worker: null` no promotor. Não converter o catálogo antigo para o contrato atual.
@@ -237,3 +237,12 @@ falha de teste do aplicativo. A correção anterior do mirror estava somente no
 job geral; o preparo precisa ocorrer também nos demais jobs Ubuntu antes de
 APT, preservando fontes assinadas, keyrings e pacotes. O resultado geral dessa
 execução ainda não substitui CI verde do próximo código a implantar.
+
+O preparo APT agora usa um único helper nos quatro jobs Ubuntu, antes de
+instalações: troca somente a URI Azure exata pelo arquivo HTTPS oficial,
+mantendo prioridades, mirror+file, keyrings, suites, componentes e fontes de
+terceiros. A transformação é idempotente. Foram sete testes/29 asserts
+reexecutados pelo root e os 167 testes/570 asserts do diretório CI executados
+pela revisão independente, sem falhas. Nenhum timeout, teste de navegador,
+AppArmor ou orçamento do produto foi relaxado. O efeito na instalação real
+depende do próximo run; não é um contorno para ignorar o job Kids.
