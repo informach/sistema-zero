@@ -61,7 +61,7 @@ Todas as provas são locais nesta máquina. A pilha local (`scripts/local-studio
 
 | Meta | Resultado nesta máquina |
 | --- | --- |
-| F1 frio / cache / após edição | p95 0,95 s / 0,71 s / 0,81 s, contra 12 s / 3 s / 1,5 s (30 amostras por caso) |
+| F1 frio / cache / após edição | Distribuição `65c9bffd…`, 30 amostras por caso, 120/120 dentro das metas. Clássico: p95 0,55 s / 0,48 s / 0,50 s. Pro: p95 0,86 s / 0,58 s / 0,61 s (pior entre Chrome e Edge). Metas: 12 s / 3 s / 1,5 s |
 | Frio com rede de referência (20 Mbps / 80 ms) | p95 7,8 s, contra 12 s (60/60) |
 | Parar ≤ 250 ms; liberação ≤ 3 s; 30 ciclos | Conferido nas suítes que passaram |
 | F3 entrada ≤ 100 ms; pintura ≤ 8 ms; sem tarefa > 50 ms | p95 de 49 ms; 0,1 ms; nenhuma tarefa longa |
@@ -89,12 +89,11 @@ Feito nesta máquina:
 Falhas herdadas do staging: 16 testes unitários falham também no `origin/staging`, sem relação com este branch. Estão em core 1, member-shell 3, molda 1, admin 6 e members 5, e a maior parte espera o vocabulário anterior ("seção", "fase"). A correção depende de decisão do usuário.
 
 Pendente:
-1. F1 contra a `65c9bffd…`.
-2. Decisões do usuário:
+1. Decisões do usuário:
    - F3: limite literal de 33 ms ou dois quadros;
    - instalar o Docker, que libera o compilador Pro, a inspeção Python e o Pyright localmente;
    - fazer o push para o staging.
-3. Quando o Railway voltar:
+2. Quando o Railway voltar:
    - deploy no staging, ativação do Python, aulas gravadas, Mural e Zappy hospedados;
    - F7 (carga de 30 alunos).
-4. Ao final: REF e MOB.
+3. Ao final: REF e MOB.
