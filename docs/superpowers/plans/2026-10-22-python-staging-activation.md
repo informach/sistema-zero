@@ -246,3 +246,26 @@ reexecutados pelo root e os 167 testes/570 asserts do diretório CI executados
 pela revisão independente, sem falhas. Nenhum timeout, teste de navegador,
 AppArmor ou orçamento do produto foi relaxado. O efeito na instalação real
 depende do próximo run; não é um contorno para ignorar o job Kids.
+
+## Verificação seguinte: CI e desempenho local
+
+O run `39819804782`, no commit `180864740`, aprovou os oito jobs de interface,
+incluindo Kids. O job geral falhou antes da execução Node do novo qualificador
+de delivery: `Bun.build` dentro do processo de testes recebeu `EISDIR` ao ler
+módulos reais do Core. A causa específica dessa leitura não foi reproduzida no
+recorte local; contaminação por mocks permanece hipótese. O teste agora usa o
+mesmo caminho operacional documentado: Bun CLI em processo próprio, seguido de
+Node nativo, com um prazo compartilhado de 30 segundos, saída única e limpeza
+confirmada. Os controles de bytes, gzip, MIME e conexão continuam presentes.
+O root reexecutou delivery e distribuições: 11 testes/84 asserts, Biome e
+tipagem focada verdes. Isso ainda requer confirmação no próximo CI completo.
+
+O [recibo F3 Chrome](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-local-f3-chrome-r1.json.snapshot)
+registra dez minutos contínuos da distribuição `476d32e7`, com 20 tartarugas,
+timers, imagens e 30 entradas causais de teclado/mouse. Intervalo de apresentação
+p95: 33,4 ms; trabalho de pintura p95: 0,2 ms; entrada até apresentação p95:
+62 ms; zero long paints/tasks. A execução passou sem retry e confirmou o
+encerramento dos processos e portas próprios. O recibo inclui os dados causais,
+hashes e o supervisor utilizado. É prova local neste computador de 16 GB;
+não substitui Edge, F1, sala hospedada, audibilidade nem a prova posterior no
+computador de 8 GB.

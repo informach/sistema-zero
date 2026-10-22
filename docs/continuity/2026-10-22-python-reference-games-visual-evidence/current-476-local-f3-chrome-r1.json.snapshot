@@ -1,0 +1,452 @@
+{
+  "kind": "studio-python-local-f3-performance-evidence",
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-22T17:33:54.4958296Z",
+  "receipt": {
+    "kind": "studio-python-local-performance",
+    "mode": "F3",
+    "project": "chrome",
+    "sourceCommit": "180864740da2790e363b52ef35b3ff9f25580d57",
+    "startedAt": "2026-10-22T17:16:48.9487245Z",
+    "elapsedMs": 612244,
+    "creatorPid": 5680,
+    "birthTicks": 639282862089510377,
+    "exitCode": 0,
+    "deadline": false,
+    "deadlineSeconds": 840,
+    "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+    "releaseSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+    "node": "24.22.0",
+    "bun": "1.4.3",
+    "windows": "Microsoft Windows 11 Pro",
+    "osVersion": "10.0.26200",
+    "totalMemoryMiB": 16176.90625,
+    "freeBeforeMiB": 3874.84765625,
+    "cpu": {
+      "Name": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+      "NumberOfCores": 6,
+      "NumberOfLogicalProcessors": 12
+    },
+    "gpu": {
+      "Name": "NVIDIA GeForce RTX 3050",
+      "DriverVersion": "32.0.16.1088",
+      "CurrentHorizontalResolution": 1920,
+      "CurrentVerticalResolution": 1080,
+      "CurrentRefreshRate": 60
+    },
+    "serverPids": [
+      21460
+    ],
+    "browserPids": [
+      17928
+    ],
+    "remainingKnownPids": [],
+    "openPorts": [],
+    "cleanupConfirmed": true,
+    "nativeMemoryAttributionQualified": false,
+    "referencePcAcceptance": false,
+    "hostedAcceptance": false,
+    "audioAudibilityAccepted": false,
+    "supervisorSha256": "11f1787f08d248ae957b4271563c3d9a7d4c7cc698a28d1d8aa3392e6a258e37"
+  },
+  "playwrightStats": {
+    "startTime": "2026-10-22T17:16:49.768Z",
+    "duration": 610668.533,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "presentation": {
+    "playMs": 600000,
+    "measuredPlayMs": 600011.2315,
+    "qualification": "acceptance",
+    "witness": "QA6x6 RGB token after original pose effect, same Turtle update;20 turtles;read-only RAF observation plus one display opportunity,not GPU scanout",
+    "intervals": {
+      "count": 30073,
+      "median": 16.70000000001164,
+      "p95": 33.400000000001455,
+      "max": 66.69999999995343
+    },
+    "frameBuckets": {
+      "oneFrame": 24167,
+      "twoFrames": 5895,
+      "more": 11
+    },
+    "paintWork": {
+      "count": 30091,
+      "median": 0.09999999403953552,
+      "p95": 0.20000000298023224,
+      "max": 0.7000000029802322
+    },
+    "longPaints": 0,
+    "longTasks": 0,
+    "inputs": 30,
+    "causalInputToPresentation": {
+      "count": 30,
+      "median": 40.20000000298023,
+      "p95": 62,
+      "max": 63.1000000089407
+    },
+    "causalEvidence": {
+      "generation": "140d290c-3a7e-41d7-b75a-9be07751d2dc",
+      "inputs": [
+        {
+          "id": 1,
+          "key": "Left",
+          "at": 2563.2999999970198
+        },
+        {
+          "id": 2,
+          "key": "Up",
+          "at": 22586.5
+        },
+        {
+          "id": 3,
+          "key": "click",
+          "at": 42596.10000000894
+        },
+        {
+          "id": 4,
+          "key": "Left",
+          "at": 62482.5
+        },
+        {
+          "id": 5,
+          "key": "Up",
+          "at": 82500.40000000596
+        },
+        {
+          "id": 6,
+          "key": "click",
+          "at": 102531.10000000894
+        },
+        {
+          "id": 7,
+          "key": "Left",
+          "at": 122420.20000000298
+        },
+        {
+          "id": 8,
+          "key": "Up",
+          "at": 142446.20000000298
+        },
+        {
+          "id": 9,
+          "key": "click",
+          "at": 162467.60000000894
+        },
+        {
+          "id": 10,
+          "key": "Left",
+          "at": 182356.90000000596
+        },
+        {
+          "id": 11,
+          "key": "Up",
+          "at": 202374.60000000894
+        },
+        {
+          "id": 12,
+          "key": "click",
+          "at": 222396.10000000894
+        },
+        {
+          "id": 13,
+          "key": "Left",
+          "at": 242280.90000000596
+        },
+        {
+          "id": 14,
+          "key": "Up",
+          "at": 262298.40000000596
+        },
+        {
+          "id": 15,
+          "key": "click",
+          "at": 282309.40000000596
+        },
+        {
+          "id": 16,
+          "key": "Left",
+          "at": 302208.200000003
+        },
+        {
+          "id": 17,
+          "key": "Up",
+          "at": 322227.200000003
+        },
+        {
+          "id": 18,
+          "key": "click",
+          "at": 342246.10000000894
+        },
+        {
+          "id": 19,
+          "key": "Left",
+          "at": 362136.10000000894
+        },
+        {
+          "id": 20,
+          "key": "Up",
+          "at": 382148.799999997
+        },
+        {
+          "id": 21,
+          "key": "click",
+          "at": 402160.200000003
+        },
+        {
+          "id": 22,
+          "key": "Left",
+          "at": 422055.200000003
+        },
+        {
+          "id": 23,
+          "key": "Up",
+          "at": 442074
+        },
+        {
+          "id": 24,
+          "key": "click",
+          "at": 462098
+        },
+        {
+          "id": 25,
+          "key": "Left",
+          "at": 481989
+        },
+        {
+          "id": 26,
+          "key": "Up",
+          "at": 502020.40000000596
+        },
+        {
+          "id": 27,
+          "key": "click",
+          "at": 522050.5
+        },
+        {
+          "id": 28,
+          "key": "Left",
+          "at": 541952.299999997
+        },
+        {
+          "id": 29,
+          "key": "Up",
+          "at": 561986.400000006
+        },
+        {
+          "id": 30,
+          "key": "click",
+          "at": 582010.299999997
+        }
+      ],
+      "shown": [
+        {
+          "id": 1,
+          "key": "Left",
+          "observedAt": 2599.2999999970198,
+          "at": 2616
+        },
+        {
+          "id": 2,
+          "key": "Up",
+          "observedAt": 22606.60000000894,
+          "at": 22623.29999999702
+        },
+        {
+          "id": 3,
+          "key": "click",
+          "observedAt": 42614,
+          "at": 42630.5
+        },
+        {
+          "id": 4,
+          "key": "Left",
+          "observedAt": 62505.10000000894,
+          "at": 62521.5
+        },
+        {
+          "id": 5,
+          "key": "Up",
+          "observedAt": 82528.79999999702,
+          "at": 82545.40000000596
+        },
+        {
+          "id": 6,
+          "key": "click",
+          "observedAt": 102552.90000000596,
+          "at": 102569.40000000596
+        },
+        {
+          "id": 7,
+          "key": "Left",
+          "observedAt": 122444.10000000894,
+          "at": 122460.20000000298
+        },
+        {
+          "id": 8,
+          "key": "Up",
+          "observedAt": 142467.60000000894,
+          "at": 142484.40000000596
+        },
+        {
+          "id": 9,
+          "key": "click",
+          "observedAt": 162492,
+          "at": 162508.40000000596
+        },
+        {
+          "id": 10,
+          "key": "Left",
+          "observedAt": 182382.29999999702,
+          "at": 182399
+        },
+        {
+          "id": 11,
+          "key": "Up",
+          "observedAt": 202406.40000000596,
+          "at": 202423.10000000894
+        },
+        {
+          "id": 12,
+          "key": "click",
+          "observedAt": 222414.20000000298,
+          "at": 222430.5
+        },
+        {
+          "id": 13,
+          "key": "Left",
+          "observedAt": 242304.40000000596,
+          "at": 242321.10000000894
+        },
+        {
+          "id": 14,
+          "key": "Up",
+          "observedAt": 262328.60000000894,
+          "at": 262345.10000000894
+        },
+        {
+          "id": 15,
+          "key": "click",
+          "observedAt": 282335.90000000596,
+          "at": 282352.700000003
+        },
+        {
+          "id": 16,
+          "key": "Left",
+          "observedAt": 302226.60000000894,
+          "at": 302243.40000000596
+        },
+        {
+          "id": 17,
+          "key": "Up",
+          "observedAt": 322250.700000003,
+          "at": 322267.40000000596
+        },
+        {
+          "id": 18,
+          "key": "click",
+          "observedAt": 342291.5,
+          "at": 342308.10000000894
+        },
+        {
+          "id": 19,
+          "key": "Left",
+          "observedAt": 362165.40000000596,
+          "at": 362182.10000000894
+        },
+        {
+          "id": 20,
+          "key": "Up",
+          "observedAt": 382172.90000000596,
+          "at": 382189.60000000894
+        },
+        {
+          "id": 21,
+          "key": "click",
+          "observedAt": 402180.299999997,
+          "at": 402197.799999997
+        },
+        {
+          "id": 22,
+          "key": "Left",
+          "observedAt": 422087.700000003,
+          "at": 422104.40000000596
+        },
+        {
+          "id": 23,
+          "key": "Up",
+          "observedAt": 442095.10000000894,
+          "at": 442111.799999997
+        },
+        {
+          "id": 24,
+          "key": "click",
+          "observedAt": 462119.200000003,
+          "at": 462135.799999997
+        },
+        {
+          "id": 25,
+          "key": "Left",
+          "observedAt": 482010.200000003,
+          "at": 482026.700000003
+        },
+        {
+          "id": 26,
+          "key": "Up",
+          "observedAt": 502050.60000000894,
+          "at": 502067.299999997
+        },
+        {
+          "id": 27,
+          "key": "click",
+          "observedAt": 522075.799999997,
+          "at": 522091.700000003
+        },
+        {
+          "id": 28,
+          "key": "Left",
+          "observedAt": 541998.700000003,
+          "at": 542015.400000006
+        },
+        {
+          "id": 29,
+          "key": "Up",
+          "observedAt": 562022.799999997,
+          "at": 562039.5
+        },
+        {
+          "id": 30,
+          "key": "click",
+          "observedAt": 582030.299999997,
+          "at": 582047.799999997
+        }
+      ],
+      "pending": false
+    }
+  },
+  "sourceFiles": [
+    {
+      "path": "packages/studio/e2e-runtime/python-f3-performance.spec.ts",
+      "sha256": "134d4ed62922cc4216b5b7832fbd9bd6acc3e90bdea0ab0567f62cbd7956db41"
+    },
+    {
+      "path": "packages/studio/playwright.python-games.config.ts",
+      "sha256": "ef9fd2332aa4263348322049e25135af312917f4eefb1631c2a5b3d050cb7338"
+    }
+  ],
+  "rawReportSha256": "548578914cd4443b96e2582293d9880ce564e20c5bd2af55b49761f4de0b3c9f",
+  "rawReceiptSha256": "9c617811be4b7d6be4bfd4c11e6e92e62bd84417dcd692f9272d331d5b3dae52",
+  "supervisor": {
+    "sha256": "11f1787f08d248ae957b4271563c3d9a7d4c7cc698a28d1d8aa3392e6a258e37",
+    "content": "param([Parameter(Mandatory=$true)][string]$RunName, [ValidateSet('F1','F3')][string]$Mode='F3', [ValidateSet('chrome','edge','msedge')][string]$Project='chrome')\n$ErrorActionPreference='Stop'\n$workspace='C:\\Users\\tocha\\projects\\sistema-zero-python-review-fixes'\n$packet=Join-Path $workspace '.cache\\python-reference-games'\nif($RunName -notmatch '^[a-z0-9-]+$'){throw 'Invalid run namespace'}\n$output=Join-Path $packet $RunName\nif(Test-Path -LiteralPath $output){throw 'Output namespace already used'}\n$listeners=@(Get-CimInstance -Namespace root/StandardCimv2 -ClassName MSFT_NetTCPConnection -Filter 'State = 2' | Where-Object LocalPort -in @(5297,5298))\nif($listeners.Count){throw 'A UI port is already owned; no process was stopped'}\n$node='C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe'\n$bun='C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe'\nif((Get-FileHash -LiteralPath $bun -Algorithm SHA256).Hash.ToLowerInvariant() -ne '095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6'){throw 'Bun pin mismatch'}\nif((Get-FileHash -LiteralPath $node -Algorithm SHA256).Hash.ToLowerInvariant() -ne 'ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c'){throw 'Node pin mismatch'}\n[void](New-Item -ItemType Directory -Path $output)\n$profileDir=Join-Path $output 'profile'\nforeach($suffix in @('AppData\\Local','AppData\\Roaming','temp')){[void](New-Item -ItemType Directory -Path (Join-Path $profileDir $suffix) -Force)}\n$info=[Diagnostics.ProcessStartInfo]::new()\n$info.FileName=$node\n$info.WorkingDirectory=Join-Path $workspace 'packages\\studio'\n$info.UseShellExecute=$false\n$info.CreateNoWindow=$true\n$info.RedirectStandardOutput=$true\n$info.RedirectStandardError=$true\n$info.Environment.Clear()\nforeach($name in @('SYSTEMROOT','WINDIR','SYSTEMDRIVE','COMSPEC','PROGRAMDATA','PROGRAMFILES','PROGRAMFILES(X86)','COMMONPROGRAMFILES','COMMONPROGRAMFILES(X86)')){\n  $value=[Environment]::GetEnvironmentVariable($name)\n  if($null -ne $value){$info.Environment[$name]=$value}\n}\n$info.Environment['PATH']=(Split-Path $bun -Parent)+';'+(Split-Path $node -Parent)+';'+$env:SYSTEMROOT+'\\System32'\n$info.Environment['USERPROFILE']=$profileDir\n$info.Environment['LOCALAPPDATA']=Join-Path $profileDir 'AppData\\Local'\n$info.Environment['APPDATA']=Join-Path $profileDir 'AppData\\Roaming'\n$info.Environment['TEMP']=Join-Path $profileDir 'temp'\n$info.Environment['TMP']=Join-Path $profileDir 'temp'\n$info.Environment['CI']='true'\n$info.Environment['NO_COLOR']='1'\n$info.Environment['DEBUG']='pw:browser'\n$info.Environment['NODE_OPTIONS']='--max-old-space-size=2304'\n$info.Environment['SZ_VISUAL_UI_OUTPUT']=$output\n$dist='476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c'\n$info.Environment['PYTHON_PROBE_DISTRIBUTION_DIRECTORY']='C:/Users/tocha/projects/sistema-zero/.cache/python-visual-games/dist-r2/distributions/'+$dist\n$info.Environment['PYTHON_PROBE_DISTRIBUTION_SHA256']=$dist\n$releasePath=Join-Path $packet 'staging-release-476-r1.json'\n$release=Get-Content -LiteralPath $releasePath -Raw | ConvertFrom-Json\n$info.Environment['PYTHON_PROBE_RELEASE_FILE']=$releasePath\n$info.Environment['PYTHON_PROBE_RELEASE_MANIFEST_SHA256']=$release.manifestSha256\n$info.Environment['PYTHON_PROBE_OUTPUT_DIR']=$output\n$info.Environment['SZ_PACMAN_QA_DISTRIBUTION']=$dist\nif($Mode -eq 'F3') {\n  $config=Join-Path $workspace 'packages/studio/playwright.python-games.config.ts'\n  $spec='python-f3-performance.spec.ts'\n  $info.Environment['SZ_F3_PLAY_MS']='600000'\n  $deadlineSeconds=840\n  if($Project -eq 'msedge'){$Project='edge'}\n} else {\n  $config=Join-Path $workspace 'packages/studio/playwright.python-live.config.ts'\n  $spec='live-performance.spec.ts'\n  $info.Environment['PYTHON_LIVE_WORKLOAD']='f1'\n  $info.Environment['PYTHON_LIVE_OUTPUT_DIR']=$output\n  $info.Environment['PYTHON_PROBE_NETWORK']='reference'\n  $deadlineSeconds=2700\n  if($Project -eq 'edge'){$Project='msedge'}\n}\nforeach($argument in @('node_modules/@playwright/test/cli.js','test','--config',$config,$spec,'--project',$Project,'--workers=1','--retries=0','--max-failures=1')){$info.ArgumentList.Add($argument)}\nif($Mode -eq 'F1'){$info.ArgumentList.Add('--repeat-each=30')}\n$before=Get-CimInstance Win32_OperatingSystem\n$cpu=Get-CimInstance Win32_Processor | Select-Object Name,NumberOfCores,NumberOfLogicalProcessors\n$gpu=Get-CimInstance Win32_VideoController | Select-Object Name,DriverVersion,CurrentHorizontalResolution,CurrentVerticalResolution,CurrentRefreshRate\n$sourceCommit=(git -C $workspace rev-parse HEAD).Trim()\n$child=[Diagnostics.Process]::new()\n$child.StartInfo=$info\n$start=[DateTime]::UtcNow\nif(-not $child.Start()){throw 'Runner did not start'}\n$birth=$child.StartTime.ToUniversalTime().Ticks\n$stdoutTask=$child.StandardOutput.ReadToEndAsync()\n$stderrTask=$child.StandardError.ReadToEndAsync()\nWrite-Output ('START '+$Mode+' project='+$Project+' pid='+$child.Id+' output='+$output)\n$watch=[Diagnostics.Stopwatch]::StartNew()\n$owners=[Collections.Generic.HashSet[int]]::new()\nwhile(-not $child.HasExited -and $watch.Elapsed.TotalSeconds -lt $deadlineSeconds){\n  Start-Sleep -Milliseconds 1000\n  foreach($listener in @(Get-CimInstance -Namespace root/StandardCimv2 -ClassName MSFT_NetTCPConnection -Filter 'State = 2' | Where-Object LocalPort -in @(5297,5298))){[void]$owners.Add([int]$listener.OwningProcess)}\n}\n$deadline=-not $child.HasExited\nif($deadline){\n  $same=Get-Process -Id $child.Id -ErrorAction Stop\n  if($same.StartTime.ToUniversalTime().Ticks -ne $birth){throw 'Runner PID ownership changed'}\n  $child.Kill($true)\n}\n$child.WaitForExit()\n$stdout=$stdoutTask.GetAwaiter().GetResult()\n$stderr=$stderrTask.GetAwaiter().GetResult()\n[IO.File]::WriteAllText((Join-Path $output 'stdout.log'),$stdout,[Text.UTF8Encoding]::new($false))\n[IO.File]::WriteAllText((Join-Path $output 'stderr.log'),$stderr,[Text.UTF8Encoding]::new($false))\n$browserIds=@([regex]::Matches($stderr,'\\[pid=(\\d+)\\]') | ForEach-Object {[int]$_.Groups[1].Value} | Sort-Object -Unique)\n$known=@($child.Id)+@($owners)+$browserIds\n$remaining=@(Get-CimInstance Win32_Process | Where-Object {$_.ProcessId -in $known} | Select-Object -ExpandProperty ProcessId)\n$openPorts=@(Get-CimInstance -Namespace root/StandardCimv2 -ClassName MSFT_NetTCPConnection -Filter 'State = 2' | Where-Object LocalPort -in @(5297,5298) | Select-Object LocalPort,OwningProcess)\n$receipt=[ordered]@{kind='studio-python-local-performance';mode=$Mode;project=$Project;sourceCommit=$sourceCommit;startedAt=$start.ToString('o');elapsedMs=$watch.ElapsedMilliseconds;creatorPid=$child.Id;birthTicks=$birth;exitCode=$child.ExitCode;deadline=$deadline;deadlineSeconds=$deadlineSeconds;distributionSha256=$dist;releaseSha256=$release.manifestSha256;node='24.22.0';bun='1.4.3';windows=$before.Caption;osVersion=$before.Version;totalMemoryMiB=$before.TotalVisibleMemorySize/1024;freeBeforeMiB=$before.FreePhysicalMemory/1024;cpu=$cpu;gpu=$gpu;serverPids=@($owners);browserPids=$browserIds;remainingKnownPids=$remaining;openPorts=$openPorts;cleanupConfirmed=($remaining.Count -eq 0 -and $openPorts.Count -eq 0);nativeMemoryAttributionQualified=$false;referencePcAcceptance=$false;hostedAcceptance=$false;audioAudibilityAccepted=$false;supervisorSha256=(Get-FileHash -LiteralPath $PSCommandPath -Algorithm SHA256).Hash.ToLowerInvariant()}\n[IO.File]::WriteAllText((Join-Path $output 'receipt.json'),($receipt|ConvertTo-Json -Depth 6),[Text.UTF8Encoding]::new($false))\n$child.Dispose()\n$receipt|ConvertTo-Json -Depth 6\nif($deadline -or $receipt.exitCode -ne 0 -or -not $receipt.cleanupConfirmed){exit 1}\n"
+  },
+  "limits": [
+    "Local controlled browser fixture, not hosted user workflow",
+    "16 GB Windows test machine, not the deferred 8 GB reference computer",
+    "Presentation witness uses RAF plus display opportunity, not physical GPU scanout",
+    "No audio audibility or native per-worker memory qualification"
+  ]
+}

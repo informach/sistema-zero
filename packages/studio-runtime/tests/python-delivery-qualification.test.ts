@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readdir, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { runOwnedNodeProcess } from './fixtures/owned-node-process'
@@ -15,14 +15,34 @@ test('native Node delivery checks raw gzip, rejection and connection cleanup', a
   let retired = true
   try {
     const fixture = await pythonDistributionFixture({ compressed: true })
-    const build = await Bun.build({
-      entrypoints: [resolve('scripts/qualify-python-delivery.ts')],
-      target: 'node',
-      format: 'esm',
+    const deadline = performance.now() + 30000
+    function remainingTime() {
+      const remaining = Math.ceil(deadline - performance.now())
+      if (remaining < 1) throw new Error('Delivery qualification deadline expired')
+      return remaining
+    }
+    // Compile real modules in a fresh VM, independent of test-module mocks and caches.
+    const buildTimeout = remainingTime()
+    retired = false
+    const build = await runOwnedNodeProcess({
+      command: [
+        process.execPath,
+        '--no-env-file',
+        'build',
+        resolve('scripts/qualify-python-delivery.ts'),
+        '--target',
+        'node',
+        '--format',
+        'esm',
+        '--outfile',
+        entry,
+      ],
+      timeoutMs: buildTimeout,
     })
-    expect(build.success).toBe(true)
-    expect(build.outputs).toHaveLength(1)
-    await Bun.write(entry, build.outputs[0]!)
+    retired = build.retired
+    expect(build.failure, build.stderr).toBeUndefined()
+    expect(build.exit, `${build.stdout}\n${build.stderr}`).toBe(0)
+    expect(await readdir(directory)).toEqual(['qualifier.mjs'])
     await Bun.write(
       seed,
       JSON.stringify({
@@ -35,6 +55,7 @@ test('native Node delivery checks raw gzip, rejection and connection cleanup', a
         ),
       }),
     )
+    const runTimeout = remainingTime()
     retired = false
     const result = await runOwnedNodeProcess({
       command: [
@@ -44,7 +65,7 @@ test('native Node delivery checks raw gzip, rejection and connection cleanup', a
         seed,
         report,
       ],
-      timeoutMs: 30000,
+      timeoutMs: runTimeout,
     })
     retired = result.retired
     expect(result.failure, result.stderr).toBeUndefined()
