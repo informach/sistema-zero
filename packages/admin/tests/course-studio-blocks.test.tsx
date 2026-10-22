@@ -342,7 +342,11 @@ test('importação JSON Python reconstitui auxiliares mesmo ao substituir seleç
   }
 })
 
-test('salvar curso recusa Python incompleto e envia o conjunto explícito com JavaScript e versão no PATCH', async () => {
+test.each([
+  ['kids', 'recorded'],
+  ['kids', 'live'],
+  ['adult', 'live'],
+] as const)('salvar curso %s %s recusa Python incompleto e envia o conjunto explícito com JavaScript e versão no PATCH', async (audience, modality) => {
   const originalFetch = globalThis.fetch
   const response = await options()
   const requests: Record<string, unknown>[] = []
@@ -365,8 +369,8 @@ test('salvar curso recusa Python incompleto e envia o conjunto explícito com Ja
     coverImageUrl: null,
     salesPageUrl: null,
     status: 'draft',
-    audience: 'kids',
-    modality: 'recorded',
+    audience,
+    modality,
     level: 'iniciante',
     careerSlot: null,
     sequentialLock: true,
@@ -392,6 +396,21 @@ test('salvar curso recusa Python incompleto e envia o conjunto explícito com Ja
     )
     await act(async () => button(document, 'Salvar').click())
     expect(requests).toHaveLength(0)
+    if (modality === 'live') {
+      expect(document.body.textContent).toContain('sem exigir publicação no Mural')
+      expect(document.body.textContent).toContain(
+        'O uso no Estúdio Completo depende do acesso ao produto.',
+      )
+      expect(document.querySelector('#journey-slot')).toBeNull()
+      expect(document.querySelector('#csequentiallock')).toBeNull()
+      expect(document.querySelector('#cvideobeforeactivity')).toBeNull()
+      if (audience === 'adult') {
+        expect(document.body.textContent).toContain(
+          'conquistados ficam registrados mesmo sem licença do Estúdio Completo',
+        )
+        expect(document.body.textContent).not.toContain('A oficina não concede a paleta')
+      }
+    }
     await act(async () => {
       const select = document.querySelector<HTMLSelectElement>(
         '[aria-label="Linguagem das ferramentas"]',
@@ -406,10 +425,15 @@ test('salvar curso recusa Python incompleto e envia o conjunto explícito com Ja
     expect(requests).toHaveLength(1)
     expect(requests[0]).toMatchObject({
       version: 7,
-      modality: 'recorded',
+      modality,
+      audience,
       sequentialLock: true,
       studioUnlockBlocks: ['sz_js_repeat', ...pythonCourseBlockClosure(['sz_py_print'])],
     })
+    if (modality === 'live') {
+      expect(requests[0]).toHaveProperty('careerSlot', null)
+      expect(requests[0]).not.toHaveProperty('journeyRole')
+    }
     expect(editing.studioUnlockBlocks).toEqual(['sz_js_repeat', 'sz_py_print'])
   } finally {
     await act(async () => root.unmount())

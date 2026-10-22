@@ -108,7 +108,6 @@ describe.skipIf(!url)('journey authoring readiness (Postgres)', () => {
       title: 'Primeiros passos (adulto)',
       audience: 'adult',
       modality: 'recorded',
-      dropStudioUnlockBlocks: true,
     })
     if (!clone) throw new Error('O clone não nasceu')
     ownedCourses.push(clone.id)

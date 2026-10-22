@@ -104,8 +104,9 @@ export interface Course {
   videoBeforeActivity: boolean
   /**
    * GRAVADO (`recorded`, o de sempre) ou AO VIVO (`live`, 14/10/2026): o ao vivo só existe em
-   * Oficinas. Não entra em listagem do aluno, Jornada, chave-mestra, liberação de blocos do
-   * Estúdio nem na base do Zappy; a aula abre pela vaga na turma (ver `CheckAccessService`).
+   * Oficinas. Não entra em listagem do aluno, Jornada, chave-mestra nem na base do Zappy;
+   * a aula abre pela vaga na turma (ver `CheckAccessService`). Sua conclusão concede os
+   * blocos configurados, sem conceder o produto Estúdio Completo.
    */
   modality: CourseModality
   /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */

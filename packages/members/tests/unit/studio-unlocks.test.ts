@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { ForbiddenError } from '@sistemazero/core/http'
+import { initialKidsJourneyPolicy, projectKidsJourney } from '@sistemazero/core/journey'
+import { FreeStudioAccessService } from '../../src/application/studio/free-studio-access.service'
 import { GetStudioUnlocksService } from '../../src/application/studio-unlocks/get-studio-unlocks.service'
 import type { Course } from '../../src/domain/course/course'
 import { studioUnlockRevision } from '../../src/domain/gamification/studio-unlock-revision'
@@ -14,8 +16,8 @@ import {
 
 /**
  * A paleta do Estúdio livre passou a vir do CURRÍCULO: cada curso declara o que libera
- * e o aluno tem a união dos cursos elegíveis (bônus Kids: conclusão; demais:
- * conclusão + Mural).
+ * e o aluno tem a união dos cursos elegíveis: gravado Kids com posição exige Mural;
+ * bônus Kids, Adult e oficinas exigem somente a conclusão da modalidade correta.
  *
  * O teste que mais importa é o da REGRA DA USUÁRIA: **bloco liberado não é revogado**.
  * A união ao vivo sozinha não garante isso — editar o JSON, despublicar ou apagar o curso
@@ -53,8 +55,12 @@ function makeCourse(
 function setup() {
   const courses = new InMemoryCourseRepository()
   const entitlements = new InMemoryEntitlementRepository()
-  const gamification = new InMemoryGamificationRepository({ entitlements, courses })
   const unlocks = new InMemoryStudioUnlockRepository()
+  const gamification = new InMemoryGamificationRepository({
+    entitlements,
+    courses,
+    studioUnlocks: unlocks,
+  })
   const service = new GetStudioUnlocksService(gamification, unlocks, silentLogger)
   const userId = randomUUID()
   const accountId = randomUUID()
@@ -89,6 +95,172 @@ function setup() {
 }
 
 describe('GetStudioUnlocksService', () => {
+  for (const audience of ['kids', 'adult'] as const) {
+    test(`LIVE ${audience}: completion unlocks literal JS/Python rewards without Mural`, async () => {
+      const { courses, gamification, service, userId, accountId } = setup()
+      const course = makeCourse(['sz_g2d_create_ship', 'sz_py_pass'], {
+        audience,
+        careerSlot: null,
+      })
+      course.modality = 'live'
+      courses.courses.push(course)
+      const before = await gamification.getStudioUnlockRevision(userId, audience)
+      await gamification.award({
+        userId,
+        accountId,
+        audience,
+        privileged: false,
+        now: new Date('2026-10-22T12:00:00Z'),
+        today: '2026-10-22',
+        events: [{ sourceType: 'live_course_complete', sourceId: course.id, amount: 0 }],
+      })
+      expect(await service.execute(userId, audience, accountId)).toEqual({
+        blocks: ['sz_g2d_create_ship', 'sz_py_pass'],
+      })
+      expect(await gamification.getStudioUnlockRevision(userId, audience)).not.toBe(before)
+      expect(await service.execute(randomUUID(), audience, accountId)).toEqual({ blocks: [] })
+      expect(
+        await service.execute(userId, audience === 'kids' ? 'adult' : 'kids', accountId),
+      ).toEqual({ blocks: [] })
+    })
+  }
+
+  test('completion events must match the current course modality; presence cannot replace completion', async () => {
+    const { courses, gamification, service, userId, accountId, mark } = setup()
+    const live = makeCourse(['sz_py_pass'], { careerSlot: null })
+    live.modality = 'live'
+    const recorded = makeCourse(['sz_g2d_create_ship'], { careerSlot: null })
+    courses.courses.push(live, recorded)
+    mark(live.id, {})
+    await gamification.award({
+      userId,
+      accountId,
+      audience: 'kids',
+      privileged: false,
+      now: new Date(),
+      today: '2026-10-22',
+      events: [
+        { sourceType: 'live_course_complete', sourceId: recorded.id, amount: 0 },
+        { sourceType: 'live_encounter', sourceId: live.id, amount: 0 },
+      ],
+    })
+    expect(await service.execute(userId, 'kids', accountId)).toEqual({ blocks: [] })
+    expect(await gamification.getStudioUnlockRevision(userId, 'kids')).toBe(
+      studioUnlockRevision([]),
+    )
+  })
+
+  test('LIVE replay freezes additions before any GET; later product access uses the same earned union', async () => {
+    const { courses, gamification, unlocks, service, userId, accountId } = setup()
+    const course = makeCourse(['sz_py_pass'], { careerSlot: null })
+    course.modality = 'live'
+    courses.courses.push(course)
+    const award = () =>
+      gamification.award({
+        userId,
+        accountId,
+        audience: 'kids',
+        privileged: false,
+        now: new Date('2026-10-22T12:00:00Z'),
+        today: '2026-10-22',
+        events: [{ sourceType: 'live_course_complete', sourceId: course.id, amount: 0 }],
+      })
+    await award()
+    expect(await unlocks.listGrants(userId, 'kids')).toEqual([
+      { courseId: course.id, blocks: ['sz_py_pass'] },
+    ])
+    course.metadata = { studioUnlockBlocks: ['sz_py_pass', 'sz_g2d_create_ship'] }
+    await award()
+    expect(gamification.events.filter((e) => e.sourceType === 'live_course_complete')).toHaveLength(
+      1,
+    )
+    expect(await unlocks.listGrants(userId, 'kids')).toEqual([
+      { courseId: course.id, blocks: ['sz_py_pass', 'sz_g2d_create_ship'] },
+    ])
+    courses.courses = []
+    let ownsProduct = false
+    let journeyAllowsStudio = false
+    const access = new FreeStudioAccessService(
+      {
+        async execute() {
+          return {
+            grants: [],
+            communities: ownsProduct ? ['estudio-completo'] : [],
+            hasMaster: false,
+            hasMasterKids: false,
+          }
+        },
+      },
+      service,
+      {
+        async get() {
+          return projectKidsJourney({
+            policy: initialKidsJourneyPolicy(),
+            policyVersion: 1,
+            catalog: [],
+            milestones: [],
+            earned: {
+              level: 'noob',
+              capabilities: journeyAllowsStudio ? ['studio'] : [],
+              courseAccess: { entry: [], expanded: [], reward: [] },
+            },
+          })
+        },
+        async staffPreview() {
+          throw new Error('Student must not use staff preview')
+        },
+      },
+    )
+    const actor = {
+      userId,
+      accountId,
+      audience: 'kids' as const,
+      privileged: false,
+      readOnly: false,
+    }
+    await expect(access.execute(actor)).rejects.toThrow('Você não tem acesso')
+    ownsProduct = true
+    await expect(access.execute(actor)).rejects.toThrow('Seu nível ainda não libera')
+    // Independent existing authorities are now satisfied; this test does not award journey milestones.
+    journeyAllowsStudio = true
+    expect(await access.execute(actor)).toEqual({
+      blocks: ['sz_py_pass', 'sz_g2d_create_ship'],
+      pro: false,
+      modes: ['blocks'],
+    })
+    await expect(access.execute(actor, 'existing-pro', 'python')).rejects.toThrow('Pro')
+    await expect(access.execute({ ...actor, readOnly: true })).rejects.toThrow('suporte')
+    expect(await gamification.listQualifyingJourneySlots(userId, 'kids')).toEqual(
+      expect.objectContaining({ 'iniciante-2d': [] }),
+    )
+  })
+
+  test('LIVE unpublished course or mismatched event audience cannot enter the current or frozen curriculum', async () => {
+    const { courses, gamification, unlocks, service, userId, accountId } = setup()
+    const draft = makeCourse(['sz_py_pass'], { careerSlot: null })
+    draft.modality = 'live'
+    draft.status = 'draft'
+    const adult = makeCourse(['sz_g2d_create_ship'], { audience: 'adult', careerSlot: null })
+    adult.modality = 'live'
+    courses.courses.push(draft, adult)
+    await gamification.award({
+      userId,
+      accountId,
+      audience: 'kids',
+      privileged: false,
+      now: new Date(),
+      today: '2026-10-22',
+      events: [draft, adult].map(({ id }) => ({
+        sourceType: 'live_course_complete',
+        sourceId: id,
+        amount: 0,
+      })),
+    })
+    expect(await unlocks.listGrants(userId, 'kids')).toEqual([])
+    expect(await service.execute(userId, 'kids', accountId)).toEqual({ blocks: [] })
+    expect(await service.execute(userId, 'adult', accountId)).toEqual({ blocks: [] })
+  })
+
   test('sem curso qualificado, a paleta vem vazia (o Estúdio livre fica trancado)', async () => {
     const { service, userId, accountId } = setup()
     expect(await service.execute(userId, 'kids', accountId)).toEqual({ blocks: [] })

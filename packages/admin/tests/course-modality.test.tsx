@@ -155,6 +155,14 @@ describe('modalidade no formulário do curso', () => {
       expect(document.querySelector('#journey-slot') !== null).toBe(false)
       expect(document.querySelector('#csequentiallock') !== null).toBe(false)
       expect(document.querySelector('#cvideobeforeactivity') !== null).toBe(false)
+      expect(document.querySelector('[aria-label="Linguagem das ferramentas"]')).not.toBeNull()
+      await settle()
+      const repeat = document
+        .querySelector('span[title="sz_js_repeat"]')
+        ?.closest('label')
+        ?.querySelector<HTMLInputElement>('input')
+      expect(repeat).toBeDefined()
+      await act(async () => repeat!.click())
       await act(async () =>
         type(document.querySelector<HTMLInputElement>('#title')!, 'Farol ao vivo'),
       )
@@ -164,6 +172,7 @@ describe('modalidade no formulário do curso', () => {
       expect(post?.url).toBe('/api/members/courses')
       expect(post?.body).toMatchObject({ modality: 'live', careerSlot: null, audience: 'kids' })
       expect(post?.body).not.toHaveProperty('journeyRole')
+      expect(post?.body).toHaveProperty('studioUnlockBlocks', ['sz_js_repeat'])
     },
     UI_TIMEOUT,
   )

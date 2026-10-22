@@ -160,8 +160,6 @@ export class CourseAdminService {
       title: input.title?.trim() || source.title,
       audience: input.audience,
       modality,
-      // Cursos gravados dos dois públicos podem liberar blocos; ao vivo permanece fora.
-      dropStudioUnlockBlocks: modality === 'live',
     })
     if (!cloned) throw new ContentNotFoundError('Curso não encontrado')
     return toCourseView(cloned)

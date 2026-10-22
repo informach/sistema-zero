@@ -17,11 +17,12 @@ export interface StudioUnlocksView {
  *
  * Antes o conjunto de blocos era fixo por NÍVEL da jornada. Agora cada curso declara
  * o que libera (`metadata.studioUnlockBlocks`) e o aluno tem a UNIÃO dos cursos
- * elegíveis: bônus Kids exige conclusão; curso Kids com posição e curso Adult exigem
- * também publicação no Mural.
+ * elegíveis: gravado Kids com posição exige conclusão + Mural; bônus Kids e Adult
+ * exigem conclusão. Oficina exige `live_course_complete`, sem Mural. Recompensa de
+ * blocos não concede produto nem capacidades de Jornada.
  *
  * A união tem duas metades, e as duas são necessárias:
- * - **ao vivo** (`listStudioUnlocksByCourse`): lê o JSON ATUAL dos cursos elegíveis,
+ * - **atual** (`listStudioUnlocksByCourse`): lê o JSON ATUAL dos cursos elegíveis,
  *   então um bloco ACRESCENTADO chega sozinho em quem já atende ao critério atual;
  * - **congelada** (`listGrants`): o que já foi servido a este aluno, para que remover um
  *   bloco do JSON, despublicar ou apagar o curso NÃO tire a ferramenta da mão de quem já

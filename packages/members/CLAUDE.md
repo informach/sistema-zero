@@ -309,7 +309,7 @@ mais, para vender mais", então fica fora de tudo o que é da Jornada.
 - **Clone**: o corpo aceita `modality` (ausente = a da origem). Vale para a OUTRA plataforma ou
   para a OUTRA modalidade (a versão ao vivo do mesmo tema na mesma plataforma, slug
   `<origem>-ao-vivo`); igual nos dois é só duplicar e segue recusado (`CLONE_SAME_AUDIENCE`, com
-  recado novo). Clone ao vivo não leva `studioUnlockBlocks`.
+  recado novo). Clone preserva `studioUnlockBlocks` também ao mudar para ao vivo (22/10/2026).
 - **Acesso** (`CheckAccessService.assertLive` + `LiveLessonAccessPort`, implementação
   `DrizzleLiveLessonAccessRepository`): matrícula e chave-mestra NÃO abrem curso ao vivo. Abre para
   a equipe (inclusive o curso em rascunho; a professora atribuída é equipe, o `LiveService` exige
@@ -323,8 +323,7 @@ mais, para vender mais", então fica fora de tudo o que é da Jornada.
   virtual (`EntitlementAggregate.virtualLiveSeat`, nunca persistido).
 - **Onde o ao vivo NÃO entra**: `listPublishedCourses` (catálogo, "meus cursos" pela chave-mestra,
   painel dos pais), `findAccessibleCoursesBySlugs` ("meus cursos" por matrícula),
-  `hasPublishedFoundationCourse`, `eligibleStudioGrants` e a revisão dos blocos
-  (`publishedCourseSourceInAudience`), e a base do Zappy inteira (busca, reindexação, relatório,
+  `hasPublishedFoundationCourse` e a base do Zappy inteira (busca, reindexação, relatório,
   a faxina do reconcile e a SINCRONIZAÇÃO: o Admin sincroniza ao publicar qualquer aula, e a fonte
   de curso ao vivo responde 200 `{ status: 'skipped' }` e apaga o que já estivesse indexado). Marco da Jornada: o `award` DESCARTA `course_complete`/`course_showcased`
   de curso ao vivo (régua única para a conclusão, o certificado e o webhook do Mural); a conclusão
@@ -2154,10 +2153,13 @@ A **avaliação de avatar+aura dos autores** do fórum é servida pela rota em l
 O Estúdio livre deixou de liberar blocos **por NÍVEL** e passou a liberar **por CURSO**: cada curso
 declara `metadata.studioUnlockBlocks` (jsonb, **sem migração** — mesma régua do `salesPageUrl`, mas
 **AUSENTE PRESERVA** como `audience`/`level`, para um PATCH de build antigo não apagar currículo) e o
-aluno recebe a UNIÃO dos cursos ELEGÍVEIS. O critério usa o `careerSlot` VIVO: bônus Kids (`null`)
-exige só `course_complete`; curso Kids com posição e curso Adult exigem também `course_showcased`.
-O NÍVEL segue decidindo o MODO (livre/Ponte/Pro), e a jornada continua usando exclusivamente a
-interseção dos dois marcos.
+aluno recebe a UNIÃO dos cursos ELEGÍVEIS. Gravado Kids com posição exige `course_complete` +
+`course_showcased`; bônus Kids (`careerSlot: null`) e Adult exigem só `course_complete`.
+Desde 22/10/2026, oficina publicada da mesma audiência concede os blocos ao concluir com
+`live_course_complete`, sem Mural. Presença e conclusão parcial não bastam. O award congela a
+recompensa na mesma transação, inclusive no replay, antes de qualquer GET ou compra do produto.
+Conquista não concede Estúdio Completo, Ponte/Pro, posição ou capacidade de Jornada. A licença
+e as capacidades continuam sendo verificadas pelas autoridades existentes no acesso ao produto.
 
 - **A lista é dos blocos que o curso USA** (fluxo da autora), então repetir fundamentos de cursos
   anteriores é o NORMAL, não erro. Quem acumula é o ALUNO: a paleta é a união deduplicada dos cursos
@@ -2167,9 +2169,9 @@ interseção dos dois marcos.
 - **Rota** `GET /members/studio/unlocks?audience=` → `{blocks: string[]}` (`GetStudioUnlocksService`).
   À PARTE do `/gamification/me` de propósito: a lista pode ter centenas de ids e o `me` é buscado em
   toda página do kids. Gateway: `members-studio-unlocks`.
-- **Ao vivo** = `GamificationRepository.listStudioUnlocksByCourse` (`course_complete` como origem +
-  LEFT join do Mural + `courses.metadata`, com INNER join no curso vivo **da mesma audiência**).
-  Bônus e `lenda` Kids entram só pela conclusão; cursos com posição e Adult entram pela
+- **Currículo atual** = `GamificationRepository.listStudioUnlocksByCourse` (pareia modalidade e
+  evento de conclusão, LEFT join do Mural + metadata, curso publicado **da mesma audiência**).
+  Oficina, bônus e `lenda` Kids e Adult entram só pela conclusão; gravado Kids com posição entra pela
   interseção. Só a JORNADA ignora bônus e `lenda`.
 - ⭐⭐ **`studio_block_grants` (migration `0062`) = o "não revoga".** Regra da usuária: bloco liberado
   nunca é retirado. A união ao vivo sozinha NÃO garante isso (editar o JSON, despublicar ou apagar o

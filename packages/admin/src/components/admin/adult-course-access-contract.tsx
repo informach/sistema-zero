@@ -29,13 +29,17 @@ export function AdultCourseAccessContract({
         </dd>
         <dt>Ferramentas da aula</dt>
         <dd>Autorizadas pela aula liberada. Não exigem produto livre adicional.</dd>
-        <dt>Paleta livre</dt>
+        <dt>Blocos conquistados</dt>
         <dd>
           {live
-            ? 'A oficina não concede a paleta dos cursos gravados.'
+            ? `${blocks} blocos configurados; concedidos ao concluir a oficina, sem exigir publicação no Mural.`
             : `${blocks} blocos configurados; a conclusão preserva as ferramentas conquistadas.`}
         </dd>
       </dl>
+      <p>
+        Os blocos conquistados ficam registrados mesmo sem licença do Estúdio Completo. O acesso ao
+        produto é verificado separadamente.
+      </p>
       <p>
         Estúdio, Pinta, Molda e Pensa livres dependem das licenças adultas e das liberações da
         jornada. IA e voz exigem formação avançada; a voz depende também da preferência do aluno.

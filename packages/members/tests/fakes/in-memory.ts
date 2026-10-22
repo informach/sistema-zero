@@ -694,7 +694,6 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     }
     if (this.courses.some((c) => c.slug === overrides.slug)) throw new DuplicateSlugError()
     const metadata: Record<string, unknown> = { ...(src.metadata ?? {}), clonedFrom: src.slug }
-    if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
     const now = new Date()
     const clone: Course = {
       ...src,
@@ -2372,6 +2371,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     private readonly sources?: {
       entitlements: InMemoryEntitlementRepository
       courses: InMemoryCourseRepository
+      studioUnlocks?: InMemoryStudioUnlockRepository
       // Inventários p/ a compra ATÔMICA (`spendCoins` + posse na mesma "transação" — mirror
       // do prod, onde os repos partilham o `db`). Opcionais: testes de erro não os exigem.
       avatar?: InMemoryAvatarRepository
@@ -2438,6 +2438,25 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         createdAt: input.now,
       })
       newEvents.push(e)
+    }
+
+    const curriculumIds = new Set(
+      input.events
+        .filter(
+          (event) =>
+            event.sourceType === 'course_complete' ||
+            event.sourceType === 'course_showcased' ||
+            event.sourceType === 'live_course_complete',
+        )
+        .map((event) => event.sourceId),
+    )
+    if (this.sources?.studioUnlocks && curriculumIds.size) {
+      const grants = await this.listStudioUnlocksByCourse(input.userId, input.audience)
+      await this.sources.studioUnlocks.saveGrants(
+        input.userId,
+        input.audience,
+        grants.filter((grant) => curriculumIds.has(grant.courseId)),
+      )
     }
 
     const badgeCandidates = new Set<BadgeSlug>()
@@ -2916,8 +2935,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /**
-   * Mirror do SQL: curso Kids bônus fica elegível com `course_complete`; curso com
-   * posição e qualquer curso Adult continuam exigindo também `course_showcased`.
+   * Mirror do SQL: gravado Kids com posição exige Mural; bônus Kids e Adult só conclusão.
+   * Oficina exige seu próprio `live_course_complete`, sem Mural.
    * Lê `metadata.studioUnlockBlocks` do curso VIVO — o snapshot preserva o que já
    * foi servido quando o curso some ou muda de classificação.
    */
@@ -2930,17 +2949,26 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       mine.filter((e) => e.sourceType === 'course_showcased').map((e) => e.sourceId),
     )
     const out: { courseId: string; blocks: string[] }[] = []
-    for (const ce of mine.filter((e) => e.sourceType === 'course_complete')) {
+    for (const ce of mine.filter(
+      (e) => e.sourceType === 'course_complete' || e.sourceType === 'live_course_complete',
+    )) {
       const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
-      // Mirror do SQL: curso AO VIVO nunca libera bloco do Estúdio.
       if (
         course?.status !== 'published' ||
         course.audience !== audience ||
-        course.modality !== 'recorded'
+        (course.modality === 'recorded'
+          ? ce.sourceType !== 'course_complete'
+          : ce.sourceType !== 'live_course_complete')
       )
         continue
       const bonusKids = audience === 'kids' && course.careerSlot === null
-      if (audience === 'kids' && !bonusKids && !showcased.has(ce.sourceId)) continue
+      if (
+        course.modality === 'recorded' &&
+        audience === 'kids' &&
+        !bonusKids &&
+        !showcased.has(ce.sourceId)
+      )
+        continue
       const raw = (course.metadata as Record<string, unknown> | null | undefined)
         ?.studioUnlockBlocks
       if (!Array.isArray(raw)) continue
@@ -2963,7 +2991,10 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     )
     return studioUnlockRevision(
       mine
-        .filter((event) => event.sourceType === 'course_complete')
+        .filter(
+          (event) =>
+            event.sourceType === 'course_complete' || event.sourceType === 'live_course_complete',
+        )
         .flatMap((completed) => {
           const showcase = showcased.get(completed.sourceId)
           const foundCourse = this.sources?.courses.courses.find(
@@ -2972,17 +3003,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
           const course =
             foundCourse?.status === 'published' &&
             foundCourse.audience === audience &&
-            foundCourse.modality === 'recorded'
+            (foundCourse.modality === 'recorded'
+              ? completed.sourceType === 'course_complete'
+              : completed.sourceType === 'live_course_complete')
               ? foundCourse
               : undefined
           if (!course) return []
           const bonusKids = audience === 'kids' && course.careerSlot === null
-          if (audience === 'kids' && !bonusKids && !showcase) return []
+          if (course.modality === 'recorded' && audience === 'kids' && !bonusKids && !showcase)
+            return []
           return [
             {
               courseId: completed.sourceId,
               completedAt: completed.createdAt,
-              showcasedAt: audience === 'adult' || bonusKids ? null : (showcase?.createdAt ?? null),
+              showcasedAt:
+                audience === 'adult' || course.modality === 'live' || bonusKids
+                  ? null
+                  : (showcase?.createdAt ?? null),
               courseUpdatedAt: course?.updatedAt ?? null,
             },
           ]

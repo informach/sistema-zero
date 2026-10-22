@@ -1,7 +1,8 @@
 /**
  * Cursos AO VIVO (14/10/2026): o curso tem modalidade, a aula do curso ao vivo abre pela VAGA na
  * turma (grant ativo da sessão daquela aula), e o ao vivo fica fora das listagens do aluno, da
- * chave-mestra, da Jornada e da liberação de blocos do Estúdio. As anotações da professora
+ * chave-mestra e da Jornada. Sua conclusão libera os blocos configurados sem conceder o
+ * produto Estúdio Completo. As anotações da professora
  * viajam no rascunho e na publicação e NUNCA chegam à view do aluno.
  */
 import { describe, expect, test } from 'bun:test'
@@ -148,6 +149,30 @@ describe('Curso ao vivo — modalidade na autoria', () => {
     expect(env.courses.courses).toHaveLength(0)
   })
 
+  test('recompensas Live preservam JS/Python e validam dependências no POST e PATCH sem expandir', async () => {
+    const env = buildApp({ now: NOW })
+    const blocks = ['sz_g2d_create_ship', 'sz_py_pass']
+    expect(
+      (await create(env, { modality: 'live', studioUnlockBlocks: ['sz_py_print'] })).status,
+    ).toBe(400)
+    expect(env.courses.courses).toHaveLength(0)
+    const response = await create(env, { modality: 'live', studioUnlockBlocks: blocks })
+    expect(response.status).toBe(201)
+    const saved = await readJson(response)
+    expect(saved.studioUnlockBlocks).toEqual(blocks)
+    expect(
+      (await patch(env, saved.id, { modality: 'live', studioUnlockBlocks: ['sz_py_print'] }))
+        .status,
+    ).toBe(400)
+    expect(
+      (await readJson(await request(env, `/members/admin/courses/${saved.id}`))).studioUnlockBlocks,
+    ).toEqual(blocks)
+    expect((await patch(env, saved.id, { modality: 'live', title: 'Renomeada' })).status).toBe(200)
+    expect(
+      (await readJson(await request(env, `/members/admin/courses/${saved.id}`))).studioUnlockBlocks,
+    ).toEqual(blocks)
+  })
+
   test('PATCH: ausente preserva; trocar só sem turma; curso da Jornada precisa sair dela antes', async () => {
     const env = buildApp({ now: NOW })
     const created = await readJson(await create(env))
@@ -234,7 +259,12 @@ describe('Curso ao vivo — modalidade na autoria', () => {
 
   test('o clone aceita a modalidade: a versão ao vivo do mesmo tema na mesma plataforma', async () => {
     const env = buildApp({ now: NOW })
-    const recorded = await readJson(await create(env, { slug: 'corre-dino' }))
+    const recorded = await readJson(
+      await create(env, {
+        slug: 'corre-dino',
+        studioUnlockBlocks: ['sz_g2d_create_ship', 'sz_py_pass'],
+      }),
+    )
     const clone = (body: Record<string, unknown>) =>
       request(env, `/members/admin/courses/${recorded.id}/clone`, { method: 'POST', body })
     const live = await clone({ audience: 'kids', modality: 'live' })
@@ -244,6 +274,7 @@ describe('Curso ao vivo — modalidade na autoria', () => {
       audience: 'kids',
       modality: 'live',
       careerSlot: null,
+      studioUnlockBlocks: ['sz_g2d_create_ship', 'sz_py_pass'],
     })
     // Mesma plataforma E mesma modalidade é só duplicar: recusado.
     expect((await clone({ audience: 'kids', modality: 'recorded' })).status).toBe(409)
@@ -356,6 +387,9 @@ describe('Curso ao vivo — acesso pela vaga na turma', () => {
       headers: childHeaders,
     })
     expect(refused.status).toBe(403)
+    expect(env.gamification.events.some((e) => e.sourceType === 'live_course_complete')).toBe(false)
+    expect(await env.studioUnlocks.listGrants(CHILD, 'kids')).toEqual([])
+    expect(await env.gamification.listStudioUnlocksByCourse(CHILD, 'kids')).toEqual([])
   })
 })
 
@@ -386,9 +420,12 @@ describe('Curso ao vivo — onde ele NÃO entra', () => {
     expect(staffMine.courses.map((c: { courseSlug: string }) => c.courseSlug)).not.toContain(slug)
   })
 
-  test('concluir o curso ao vivo não gera marco da Jornada: vira "Oficina completa" com troféu', async () => {
+  test('concluir o curso ao vivo congela recompensas sem produto, sem Mural e sem marco da Jornada', async () => {
     const env = buildApp({ now: NOW })
     const { course, lessonIds } = seedLiveCourse(env)
+    const rewards = ['sz_g2d_create_ship', 'sz_py_pass']
+    course.metadata = { studioUnlockBlocks: rewards }
+    const entitlementsBefore = await env.entitlements.listActiveByUser(ACCOUNT, NOW)
     for (const lessonId of lessonIds) grant(env, course.id, lessonId, { from: -HOUR, to: DAY })
     for (const lessonId of lessonIds)
       expect(
@@ -408,11 +445,26 @@ describe('Curso ao vivo — onde ele NÃO entra', () => {
       env.gamification.badges.filter((b) => b.userId === CHILD).map((b) => b.badgeSlug),
     ).toContain('live-course-complete')
     expect(env.room.inventory.map((item) => item.itemId)).toContain('trofeu-oficina-completa')
-    // Nada de bloco do Estúdio pelo currículo, nem com o metadata preenchido.
+    // No GET happened between earning and author editing: the award itself must freeze it.
+    course.metadata = { studioUnlockBlocks: [] }
+    course.status = 'archived'
     const unlocks = await readJson(
       await request(env, '/members/studio/unlocks?audience=kids', { headers: childHeaders }),
     )
-    expect(JSON.stringify(unlocks)).not.toContain('jogo2d_pular')
+    expect(unlocks).toEqual({ blocks: rewards })
+    expect(await env.entitlements.listActiveByUser(ACCOUNT, NOW)).toEqual(entitlementsBefore)
+    expect(
+      (await request(env, '/members/studio/free-options', { headers: childHeaders })).status,
+    ).toBe(403)
+    expect(await env.gamification.listQualifyingJourneySlots(CHILD, 'kids')).toEqual({
+      'primeiros-passos-2d': [],
+      'iniciante-2d': [],
+      'intermediario-2d': [],
+      'avancado-2d': [],
+      'iniciante-3d': [],
+      'intermediario-3d': [],
+      'avancado-3d': [],
+    })
   })
 
   test('curso ao vivo não se libera por matrícula manual (a vaga é na turma)', async () => {
@@ -485,6 +537,8 @@ describe('Curso ao vivo — recompensas do encontro', () => {
       env.gamification.badges.filter((b) => b.badgeSlug === 'live-first-encounter'),
     ).toHaveLength(1)
     expect(env.gamification.profiles.get(`${CHILD}:kids`)?.xp ?? 0).toBe(0)
+    expect(env.gamification.events.some((e) => e.sourceType === 'live_course_complete')).toBe(false)
+    expect(await env.studioUnlocks.listGrants(CHILD, 'kids')).toEqual([])
   })
 
   test('as conquistas e o troféu da oficina só aparecem depois de ganhos (sem divulgação)', async () => {

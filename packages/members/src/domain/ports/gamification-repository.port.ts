@@ -335,9 +335,10 @@ export interface GamificationRepository {
   ): Promise<Map<string, CourseMilestones>>
   /**
    * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
-   * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult
-   * exigem também `course_showcased`. Lê `metadata.studioUnlockBlocks` de cada curso
-   * vivo. É a parte "ao vivo" da paleta: acrescentar um bloco ao JSON de um curso
+   * Gravado Kids com posição exige `course_complete` + `course_showcased`; bônus Kids
+   * e Adult exigem `course_complete`. Oficina exige `live_course_complete`, sem Mural.
+   * Lê `metadata.studioUnlockBlocks` de cada curso publicado da mesma audiência.
+   * É a parte atual da paleta: acrescentar um bloco ao JSON de um curso
    * chega sozinho em quem já atende ao critério atual.
    * Vem POR CURSO (não achatado) porque é essa a chave do snapshot que impede a
    * revogação. ⚠️ Curso APAGADO não aparece aqui (join interno, sem metadata para
