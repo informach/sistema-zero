@@ -73,5 +73,5 @@
 - [x] Revisar cada lote contra a reprodução original, procurando bypass, falso positivo e regressão JavaScript.
 - [x] Rodar testes focados novos e regressões afetadas, em processos pequenos e seriais; registrar comandos/resultados reais.
 - [x] Fazer full review do diff, corrigir achados e conferir formatter/diff/lockfile.
-- [ ] Conferir avanço remoto e integrar sem alterações nas chaves da sessão paralela. Commitar lotes revisáveis e atualizar staging de forma consistente, sem disparar tentativas repetidas de implantação.
-- [ ] Relatar alterações, evidências e limites restantes de homologação com precisão.
+- [x] Conferir avanço remoto e integrar sem alterações nas chaves da sessão paralela. Commitar lotes revisáveis e atualizar staging de forma consistente, sem disparar tentativas repetidas de implantação.
+- [x] Relatar alterações, evidências e limites restantes de homologação com precisão.
