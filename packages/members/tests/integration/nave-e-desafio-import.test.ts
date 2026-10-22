@@ -153,12 +153,12 @@ test('Desafio Dia 1 imports and reimports keeping the notebook in the Farol mate
   }
   const first = await apply()
   expect(first.document.sections).toHaveLength(document.sections.length)
-  // Um bloco de materiais por fase (07/10/2026): o PDF anexado no Admin fica à frente do que o
+  // Um bloco de materiais por aula (07/10/2026): o PDF anexado no Admin fica à frente do que o
   // manifesto traz para o mesmo bloco (o recado e os seis links do Como Fazer).
   const materiais = first.document.blocks.filter((b) => b.content.kind === 'materials')
   expect(materiais).toHaveLength(1)
   const content = materiais[0]?.content
-  expect(content).toMatchObject({ title: 'Mapa da Aventura: A Chave do Farol' })
+  expect(content).toMatchObject({ title: 'Passo a passo do projeto: A Chave do Farol' })
   if (content?.kind !== 'materials' || !Array.isArray(content.items)) throw new Error('sem itens')
   expect(content.items[0]).toEqual(notebook)
   expect(content.items.slice(1).map((item) => (item as { kind: string }).kind)).toEqual([
