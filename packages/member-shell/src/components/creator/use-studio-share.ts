@@ -2,6 +2,7 @@
 
 import { dataUrlBase64ToBlob } from '@sistemazero/member-shell/lib/data-url'
 import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
+import { showcaseErrorMessage } from '@sistemazero/member-shell/lib/showcase-failure'
 import { studioDescriptionInput } from '@sistemazero/member-shell/lib/studio-description-input'
 import { createStudioPublicationAdapter } from '@sistemazero/member-shell/lib/studio-publication-adapter'
 import type { StudioShareAdapter } from '@sistemazero/studio'
@@ -69,11 +70,8 @@ export function useStudioShare(
           muralUrl?: string
           playUrl?: string
           publicationId?: string
-          error?: { message?: string }
         } | null
-        if (!res.ok) {
-          throw new Error(body?.error?.message ?? 'Não foi possível publicar agora.')
-        }
+        if (!res.ok) throw new Error(showcaseErrorMessage(body))
         return {
           muralUrl: body?.muralUrl,
           playUrl: body?.playUrl,

@@ -10,7 +10,9 @@ async function nativeMemory(cdp: CDPSession) {
   expect(ids.length).toBeGreaterThan(0)
   expect(ids.every((id) => Number.isSafeInteger(id) && id > 0)).toBe(true)
   const { stdout } = await promisify(execFile)(
-    'powershell.exe',
+    // Same script and 10 s budget; hosts whose Windows PowerShell 5.1 starts too slowly can
+    // point this at PowerShell 7 (pwsh.exe) without changing what is measured.
+    process.env.SZ_NATIVE_POWERSHELL ?? 'powershell.exe',
     [
       '-NoProfile',
       '-NonInteractive',

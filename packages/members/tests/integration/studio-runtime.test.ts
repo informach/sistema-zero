@@ -137,7 +137,7 @@ for (const kind of ['classic', 'pro'] as const)
     expect(decision.projectId).toBe(env.project.id)
     expect(decision.curation.pythonLevel).toBe(2)
     expect(decision.expiresAt - decision.issuedAt).toBe(30_000)
-    expect(decision.capabilities).toEqual(['edit', 'execute', 'export-source'])
+    expect(decision.capabilities).toEqual(['edit', 'execute', 'publish', 'export-source', 'assist'])
     expect(decision.frame.url).toBe(
       `https://runtime.example.test/v1/runtimes/${env.project.runtime.manifestSha256}/frame.html`,
     )
@@ -267,6 +267,7 @@ test('HTTP analysis permits pending requirements but cannot grant execution or i
     expect(StudioLessonRuntimeDecisionSchema.parse(await result.json()).capabilities).toEqual([
       'edit',
       'export-source',
+      'assist',
     ])
     expect((await env.request('studio-runtime', { ...body, operation: 'execute' })).status).toBe(
       400,

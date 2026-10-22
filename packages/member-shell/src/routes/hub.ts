@@ -21,6 +21,7 @@ import {
   redactAuthors,
 } from '../lib/hub-redact'
 import { stripImageMarkdown } from '../lib/markdown'
+import { showcaseFailureBody } from '../lib/showcase-failure'
 import type { HubAttachmentKind } from '../lib/types'
 import type { HubClient, MembersAudience, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
@@ -679,6 +680,10 @@ export function createHubRoutes(deps: {
         blockId,
         coverImageUrl,
       })
+      if (r.status !== 200)
+        return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
+          status: r.status,
+        })
       return ok(r)
     },
   }

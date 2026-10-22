@@ -4,7 +4,10 @@ import type { JourneyLevelSlug } from '@sistemazero/core/journey'
 import { StudioAuthoringCatalogSchema } from '@sistemazero/core/studio/authoring-catalog'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
 import { StudioPythonAnalysisAuthorizationSchema } from '@sistemazero/core/studio/python-language-authorization'
-import type { StudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
+import type {
+  StudioProjectCapability,
+  StudioRuntimeRelease,
+} from '@sistemazero/core/studio/runtime-catalog'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { AuthorizeLessonRuntimeService } from '../../../members/src/application/studio/authorize-lesson-runtime.service'
 import { AuthorizePythonAnalysisService } from '../../../members/src/application/studio/authorize-python-analysis.service'
@@ -26,7 +29,11 @@ const { createStudioZappyRoutes } = await import('../../src/routes/studio-zappy'
 export async function pythonZappyFixture(
   kind: 'classic' | 'pro',
   audience: 'kids' | 'adult' = 'kids',
-  options: { runtimeRelease?: StudioRuntimeRelease } = {},
+  options: {
+    runtimeRelease?: StudioRuntimeRelease
+    /** Declared by the inert fixture release; the default includes `assist`. */
+    releaseCapabilities?: readonly StudioProjectCapability[]
+  } = {},
 ) {
   const user: SessionUser = {
     id: crypto.randomUUID(),
@@ -37,7 +44,7 @@ export async function pythonZappyFixture(
     status: 'active',
     ...(audience === 'kids' ? { activeProfile: { accountId: crypto.randomUUID() } } : {}),
   }
-  const fixture = await authoringFixture('python', kind)
+  const fixture = await authoringFixture('python', kind, options.releaseCapabilities)
   const document = fixture.project
   if (document.programmingLanguage !== 'python') throw new Error('Python fixture required')
   const release = options.runtimeRelease

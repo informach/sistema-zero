@@ -28,6 +28,7 @@ import { createLivePreviewAdapter } from '../../lib/live/preview'
 import { isTransientLiveFailure, sameLiveProject } from '../../lib/live/workspace-compare'
 import { type LiveDraft, LiveDraftJournal, liveDraftScope } from '../../lib/live/workspace-drafts'
 import { sessionFetch as fetch } from '../../lib/session-fetch'
+import { showcaseErrorMessage } from '../../lib/showcase-failure'
 import { EXPANDED_EXIT_ATTR, EXPANDED_EXIT_EDITOR, LessonVideoToggle } from '../lesson-video-float'
 import { SectionProjectCheck } from '../studio/section-project-check'
 import { LiveAssistanceCursor } from './live-assistance-cursor'
@@ -649,8 +650,10 @@ function WorkspaceEditor({
             const result = await response.json()
             if (!response.ok)
               throw new Error(
-                result.error?.message ??
+                showcaseErrorMessage(
+                  result,
                   'Não foi possível publicar. Seu projeto continua guardado.',
+                ),
               )
             return { muralUrl: result.muralUrl, playUrl: result.playUrl }
           },

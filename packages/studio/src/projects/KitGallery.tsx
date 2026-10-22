@@ -485,9 +485,15 @@ export function KitGallery({
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [groups, setGroups] = useState<KitGroup<GalleryEntry>[] | null>(null)
-  const [programmingLanguage, setProgrammingLanguage] = useState<'javascript' | 'python'>(
-    'javascript',
-  )
+  const [selectedLanguage, setProgrammingLanguage] = useState<'javascript' | 'python'>('javascript')
+  // A oferta de Python é decisão do host (admin/superadmin). Sem ela, a galeria
+  // nem mostra o seletor: staff com exemplos liberados continua só em JavaScript.
+  const pythonOffered = Boolean(pythonCreation || pythonDiscovery)
+  const programmingLanguage = pythonOffered ? selectedLanguage : 'javascript'
+  // Se a oferta voltar, a galeria recomeça em JavaScript, não na escolha antiga.
+  useEffect(() => {
+    if (!pythonOffered) setProgrammingLanguage('javascript')
+  }, [pythonOffered])
   const attempt = useRef<AbortController | null>(null)
   const lifetime = useMemo(
     () => ({ programmingLanguage, professional, signal: pythonCreation?.signal }),
@@ -623,20 +629,24 @@ export function KitGallery({
         <h3 className="text-base font-semibold text-sz-fg">{t('kits.title')}</h3>
         <p className="text-xs text-sz-fg-soft">{t('kits.subtitle')}</p>
       </div>
-      <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
-        {t('kits.filter.language')}
-        <select
-          name="kit-language"
-          value={programmingLanguage}
-          onChange={(event) =>
-            setProgrammingLanguage(event.currentTarget.value === 'python' ? 'python' : 'javascript')
-          }
-          className="sz-touch-target h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm"
-        >
-          <option value="javascript">JavaScript</option>
-          <option value="python">Python</option>
-        </select>
-      </label>
+      {pythonOffered ? (
+        <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
+          {t('kits.filter.language')}
+          <select
+            name="kit-language"
+            value={programmingLanguage}
+            onChange={(event) =>
+              setProgrammingLanguage(
+                event.currentTarget.value === 'python' ? 'python' : 'javascript',
+              )
+            }
+            className="sz-touch-target h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm"
+          >
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+          </select>
+        </label>
+      ) : null}
       {programmingLanguage === 'python' && (!professional || !pythonCreation) ? (
         <div role={pythonDiscovery?.error ? 'alert' : 'status'} className="text-sm text-sz-fg-soft">
           {pythonDiscovery?.error ??

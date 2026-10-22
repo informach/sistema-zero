@@ -35,6 +35,7 @@ import { z } from 'zod'
 import { getEnv } from '../lib/env'
 import { UGC_IMAGE_INPUT_MIME } from '../lib/hub-attachments'
 import { hasKidsCapability, kidsJourneyAccess } from '../lib/kids-journey-access'
+import { showcaseFailureBody } from '../lib/showcase-failure'
 import { verifyCleanupSignature, verifyReservationCleanupSignature } from '../lib/studio-cleanup'
 import { isPrivilegedRole } from '../lib/studio-tier'
 import type { HubClient, MembersClient } from '../server/clients'
@@ -103,7 +104,12 @@ function publicationError(error: unknown): NextResponse {
   if (error instanceof InvalidJsonBodyError) return invalid()
   if (error instanceof StudioPublicationError || error instanceof StudioProRuntimeInputError)
     return NextResponse.json(
-      { error: { code: 'PRO_PUBLICATION_FAILED', message: error.message } },
+      {
+        error: {
+          code: (error instanceof StudioPublicationError && error.code) || 'PRO_PUBLICATION_FAILED',
+          message: error.message,
+        },
+      },
       { status: error.status },
     )
   if (error instanceof StudioProRuntimeUpstreamError)
@@ -115,6 +121,18 @@ function publicationError(error: unknown): NextResponse {
 }
 
 const invalid = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } }, { status: 400 })
+/** The client shows `error.message`; without it the author only saw a generic failure. */
+const projectTooLarge = () =>
+  NextResponse.json(
+    {
+      error: {
+        code: 'PROJECT_TOO_LARGE',
+        message:
+          'O projeto ficou grande demais para publicar. Use imagens ou sons menores e tente de novo.',
+      },
+    },
+    { status: 413 },
+  )
 
 /** Slug do servidor do Mural (kids). Só a vitrine kids chama estas rotas. */
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
@@ -292,7 +310,7 @@ export function createStudioRoutes(deps: {
     expectedPlayId?: string,
   ) {
     if (result.status !== 200 || !result.body)
-      return NextResponse.json(result.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+      return NextResponse.json(showcaseFailureBody(result.body, 'SHOWCASE_FAILED'), {
         status: result.status === 200 ? 502 : result.status,
       })
     const prepared = result.body
@@ -479,7 +497,7 @@ export function createStudioRoutes(deps: {
       const projectPart = form.get('project')
       if (!(projectPart instanceof File) || projectPart.size === 0) return invalid()
       if (projectPart.size > PROJECT_MAX_BYTES) {
-        return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        return projectTooLarge()
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
@@ -522,8 +540,7 @@ export function createStudioRoutes(deps: {
         publicationProject = studioPublicProject(project)
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf8')
-        if (projectBytes.length > PROJECT_MAX_BYTES)
-          return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        if (projectBytes.length > PROJECT_MAX_BYTES) return projectTooLarge()
         if (project.programmingLanguage === 'python') {
           const opened = await members.openLessonStudio(lessonId, blockId)
           const baseline = z
@@ -703,7 +720,7 @@ export function createStudioRoutes(deps: {
         studioMeta,
       })
       if (r.status !== 200 || !r.body) {
-        return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+        return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
           status: r.status,
         })
       }
@@ -823,7 +840,7 @@ export function createStudioRoutes(deps: {
       if (!liveSnapshot && (!(projectPart instanceof File) || projectPart.size === 0))
         return invalid()
       if (!liveSnapshot && projectPart instanceof File && projectPart.size > PROJECT_MAX_BYTES) {
-        return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+        return projectTooLarge()
       }
       let projectBytes: Buffer
       let publicationProject: EditableStudioProject | null = null
@@ -841,7 +858,7 @@ export function createStudioRoutes(deps: {
         studioMeta = publicMetadata(project)
         projectBytes = Buffer.from(JSON.stringify(publicationProject), 'utf-8')
         if (projectBytes.length > PROJECT_MAX_BYTES) {
-          return NextResponse.json({ error: { code: 'PROJECT_TOO_LARGE' } }, { status: 413 })
+          return projectTooLarge()
         }
       } catch {
         return invalid()
@@ -1040,7 +1057,7 @@ export function createStudioRoutes(deps: {
       if (r.status !== 200 || !r.body) {
         // A timeout or even a rejected retry cannot prove Hub did not commit a
         // previous attempt. Keep the stable private object for reconciliation.
-        return NextResponse.json(r.body ?? { error: { code: 'SHOWCASE_FAILED' } }, {
+        return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
           status: r.status,
         })
       }

@@ -29,10 +29,15 @@ import {
   proProjectTemplateId,
 } from './studio-pro-runtime'
 
+/** The selected Python release does not declare `publish`, or this context does not grant it. */
+export const STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED = 'RUNTIME_PUBLISH_NOT_ALLOWED'
+
 export class StudioPublicationError extends Error {
   constructor(
     readonly status: number,
     message: string,
+    /** Specific public error code; callers fall back to their generic publication code. */
+    readonly code?: typeof STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
   ) {
     super(message)
   }
@@ -283,6 +288,13 @@ export async function publishStudioPythonRevision(options: {
     throw new StudioPublicationError(
       403,
       'A publicação precisa de uma autorização atual para este projeto.',
+    )
+  // Members resolves `publish` from the exact release, context grants and curation.
+  if (!decision.capabilities.includes('publish'))
+    throw new StudioPublicationError(
+      403,
+      'O ambiente Python deste projeto ainda não permite publicar no Mural.',
+      STUDIO_RUNTIME_PUBLISH_NOT_ALLOWED,
     )
   const result = await callStudioPublication(
     {

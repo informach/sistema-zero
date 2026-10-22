@@ -1,5 +1,6 @@
 import { readJsonBodyWithLimit } from '@sistemazero/core/http'
 import {
+  createStudioPythonPublicationRecipe,
   isStudioProjectId,
   isStudioProPublication,
   isStudioProValidationIdentity,
@@ -9,6 +10,7 @@ import {
   isStudioPythonPublication,
   parseStudioArtifactManifest,
   STUDIO_PRO_PUBLICATION_LIMITS,
+  STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS,
   StudioProjectDocumentSchema,
   type StudioProPublishedRevision,
   type StudioPublication,
@@ -18,6 +20,9 @@ import {
   StudioPythonPublicationManifestSchema,
   StudioPythonPublicationSchema,
   type StudioPythonPublishedRevision,
+  studioPythonPublicationLegacyRecipeText,
+  studioPythonPublicationRecipeText,
+  studioPythonRecipeMatchesProject,
   validStudioArtifactPath,
 } from '@sistemazero/core/studio'
 import { pythonExternalDependenciesIssue } from '@sistemazero/core/studio/python-dependency-policy'
@@ -195,7 +200,8 @@ async function retainPublicationRevision(
     sourceBytes: Uint8Array<ArrayBuffer>
     sourceHash: string
     artifactHash: string
-    manifest: unknown
+    /** Exact retained bytes; artifactHash was computed over this text. */
+    manifestText: string
     proof:
       | Pick<StudioProPublishedRevision, 'validation'>
       | Pick<StudioPythonPublishedRevision, 'approval'>
@@ -224,7 +230,7 @@ async function retainPublicationRevision(
     }
     written.push(`${prefix}source.json`, `${prefix}manifest.json`)
     await bucket.put(`${prefix}source.json`, input.sourceBytes, { sha256: input.sourceHash })
-    await bucket.put(`${prefix}manifest.json`, JSON.stringify(input.manifest))
+    await bucket.put(`${prefix}manifest.json`, input.manifestText)
   } catch (error) {
     await bucket.delete(written).catch(() =>
       console.error('[studio-publication] partial revision cleanup pending', {
@@ -436,7 +442,7 @@ export async function publicationCommand(
       sourceBytes,
       sourceHash,
       artifactHash: input.artifactHash,
-      manifest,
+      manifestText: JSON.stringify(manifest),
       proof: { validation: metadata.validation },
       saved,
       files: manifest.files.map((file) => ({
@@ -480,8 +486,15 @@ async function promotePythonPublication(
     throw new PublicationError(409, 'O pacote pertence a outro projeto.')
   const parentOrigin = origin(input.parentOrigin)
   const sourceHash = await sha256(sourceBytes)
-  const manifest = { version: 1 as const, sourceHash, approval }
-  const artifactHash = await sha256(new TextEncoder().encode(JSON.stringify(manifest)))
+  // New revisions retain recipe v2. A request first committed as v1 before this
+  // version shipped is still recognized by its exact legacy bytes on replay.
+  const manifestText = studioPythonPublicationRecipeText(
+    createStudioPythonPublicationRecipe({ project, sourceHash, approval }),
+  )
+  const artifactHash = await sha256(new TextEncoder().encode(manifestText))
+  const legacyArtifactHash = await sha256(
+    new TextEncoder().encode(studioPythonPublicationLegacyRecipeText({ sourceHash, approval })),
+  )
   if (saved) {
     if (
       !saved.state.python ||
@@ -495,7 +508,10 @@ async function promotePythonPublication(
       (revision) => revision.requestId === input.requestId,
     )
     if (previous) {
-      if (previous.sourceHash !== sourceHash || previous.artifactHash !== artifactHash)
+      if (
+        previous.sourceHash !== sourceHash ||
+        (previous.artifactHash !== artifactHash && previous.artifactHash !== legacyArtifactHash)
+      )
         throw new PublicationError(409, 'Esta operação já foi usada com outro conteúdo.')
       return view(saved.state)
     }
@@ -518,7 +534,7 @@ async function promotePythonPublication(
       sourceBytes,
       sourceHash,
       artifactHash,
-      manifest,
+      manifestText,
       proof: { approval },
       python: {
         publicationVersion: 2,
@@ -584,8 +600,10 @@ export async function purgePublication(
     publicationKey(playId),
     JSON.stringify({ playId, deleted: true, deletedAt: now }),
   )
-  const page = await bucket.list({ prefix: `published/${playId}/`, limit: 1000 })
-  if (page.objects.length) await bucket.delete(page.objects.map((file) => file.key))
+  const prefix = `published/${playId}/`
+  const page = await bucket.list({ prefix, limit: 1000 })
+  const keys = ownedKeys(page.objects, prefix)
+  if (keys.length) await bucket.delete(keys)
   return { deleted: true as const }
 }
 
@@ -643,16 +661,54 @@ export async function retirePublicationReservation(
     )
     if (!written) throw new PublicationError(409, 'A publicação mudou durante a retirada.')
   }
-  const page = await bucket.list({ prefix: `published/${input.playId}/`, limit: 1000 })
-  if (page.objects.length) await bucket.delete(page.objects.map((file) => file.key))
+  const prefix = `published/${input.playId}/`
+  const page = await bucket.list({ prefix, limit: 1000 })
+  const keys = ownedKeys(page.objects, prefix)
+  if (keys.length) await bucket.delete(keys)
   if (page.truncated)
     throw new PublicationError(409, 'A retirada dos arquivos ainda está em andamento.')
   return { deleted: true as const }
 }
 
+/** Deletion never trusts a listing to honor its prefix: shared runtime bytes live beside it. */
+function ownedKeys(objects: readonly { key: string }[], prefix: string) {
+  return objects.map((file) => file.key).filter((key) => key.startsWith(prefix))
+}
+
+/**
+ * Retention closure of one publication record (R13). Every retained revision stays
+ * restorable through `activate`, so history counts even while disabled or inactive.
+ * Each Python revision, v1 or v2, also pins its runtime release
+ * (`runtimes/<manifestSha256>/`, which closes over the release artifacts and extension
+ * versions); the v2 recipe and the revision approval must agree on it when read.
+ * A tombstone (moderation or reservation retirement) retains nothing.
+ */
+export function publicationRetention(revisions: readonly StudioPublishedRevision[]) {
+  return {
+    revisions: new Set(revisions.map((revision) => revision.id)),
+    runtimes: new Set(
+      revisions.flatMap((revision) =>
+        'approval' in revision ? [revision.approval.runtime.manifestSha256] : [],
+      ),
+    ),
+  }
+}
+
 const GC_CURSOR_KEY = 'maintenance/publications-cursor.json'
 const ORPHAN_GRACE_MS = 48 * 60 * 60 * 1000
-/** One bounded page per cron; retained history is never pruned by age. */
+const COLLECTABLE_REVISION_OBJECT = /^published\/([a-f0-9-]{36})\/([a-f0-9]{64})\//
+/**
+ * One bounded page per cron; retained history is never pruned by age.
+ *
+ * Runtime decision (R13): this collector only ever removes unreferenced objects under
+ * `published/<playId>/<revision>/`. Runtime releases under `runtimes/` are immutable,
+ * shared and also referenced by drafts, lessons, previews and exports that this worker
+ * cannot enumerate; catalog retirement/revocation changes availability, never bytes.
+ * So a runtime referenced by any retained revision is never deleted, and unreferenced
+ * runtimes are deliberately NOT collected here. Collecting them would need a reference
+ * inventory across every owner (catalog configuration, Members/Hub projects, previews)
+ * plus its own grace/fence protocol; until such an inventory exists they are retained.
+ */
 export async function collectPublicationGarbage(bucket: PublicationBucket, now = Date.now()) {
   const checkpoint = await bucket.get(GC_CURSOR_KEY)
   let cursor: string | undefined
@@ -666,10 +722,11 @@ export async function collectPublicationGarbage(bucket: PublicationBucket, now =
     limit: 1000,
     ...(cursor ? { cursor } : {}),
   })
-  const retained = new Map<string, Set<string>>()
+  const retained = new Map<string, ReturnType<typeof publicationRetention> | 'unreadable'>()
   const remove: string[] = []
+  let unreadable = 0
   for (const file of page.objects) {
-    const match = /^published\/([a-f0-9-]{36})\/([a-f0-9]{64})\//.exec(file.key)
+    const match = COLLECTABLE_REVISION_OBJECT.exec(file.key)
     if (!match || !isStudioPublicationId(match[1]) || !match[2]) continue
     // Fresh objects may belong to an in-flight copy or an ambiguous CAS response.
     if (
@@ -678,13 +735,20 @@ export async function collectPublicationGarbage(bucket: PublicationBucket, now =
     )
       continue
     const playId = match[1]
-    let revisions = retained.get(playId)
-    if (!revisions) {
-      const saved = await readState(bucket, playId)
-      revisions = new Set(saved?.state.revisions.map((r) => r.id))
-      retained.set(playId, revisions)
+    let retention = retained.get(playId)
+    if (!retention) {
+      try {
+        const saved = await readState(bucket, playId)
+        retention = publicationRetention(saved?.state.revisions ?? [])
+      } catch {
+        // Fail closed and keep going: an unreadable record proves nothing about its
+        // history, and one bad record must not stall collection of every later page.
+        retention = 'unreadable'
+        unreadable++
+      }
+      retained.set(playId, retention)
     }
-    if (!revisions.has(match[2])) remove.push(file.key)
+    if (retention !== 'unreadable' && !retention.revisions.has(match[2])) remove.push(file.key)
   }
   if (remove.length) await bucket.delete(remove)
   // Commit after deletion; failed batches are safe to repeat. Concurrent cron
@@ -693,7 +757,7 @@ export async function collectPublicationGarbage(bucket: PublicationBucket, now =
     GC_CURSOR_KEY,
     JSON.stringify({ cursor: page.truncated ? page.cursor : undefined }),
   )
-  return { scanned: page.objects.length, removed: remove.length }
+  return { scanned: page.objects.length, removed: remove.length, unreadable }
 }
 
 async function readSource(
@@ -709,7 +773,8 @@ async function readSource(
     throw new PublicationError(409, 'Fonte inválida.')
   if ('approval' in revision) {
     const stored = await bucket.get(`${publishedRevisionPrefix(playId, revision.id)}manifest.json`)
-    if (!stored || stored.size > 4096) throw new PublicationError(409, 'Pacote Python incompleto.')
+    if (!stored || stored.size > STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS.v2Bytes)
+      throw new PublicationError(409, 'Pacote Python incompleto.')
     const manifestText = await stored.text()
     let raw: unknown
     try {
@@ -720,13 +785,20 @@ async function readSource(
     const parsed = StudioPythonPublicationManifestSchema.safeParse(raw)
     if (
       !parsed.success ||
+      // v1 bytes stay legacy-hashed as written; v2 must also be its own canonical form.
+      (parsed.data.version === 1
+        ? stored.size > STUDIO_PYTHON_PUBLICATION_RECIPE_LIMITS.v1Bytes
+        : studioPythonPublicationRecipeText(parsed.data) !== manifestText) ||
       (await sha256(new TextEncoder().encode(manifestText))) !== revision.artifactHash ||
       parsed.data.sourceHash !== revision.sourceHash ||
+      parsed.data.approval.kind !== revision.approval.kind ||
       parsed.data.approval.snapshotSha256 !== revision.approval.snapshotSha256 ||
       !sameRuntime(parsed.data.approval.runtime, revision.approval.runtime)
     )
       throw new PublicationError(409, 'Receita Python inválida.')
-    await validatePythonPublicationSource(source, revision.approval.runtime)
+    const project = await validatePythonPublicationSource(source, revision.approval.runtime)
+    if (!studioPythonRecipeMatchesProject(parsed.data, project))
+      throw new PublicationError(409, 'Receita Python inválida.')
   }
   return source
 }

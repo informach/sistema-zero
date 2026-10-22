@@ -1,0 +1,125 @@
+{
+  "machine": "Windows 11 Pro 10.0.26200, 32 GB RAM, 20 CPUs",
+  "chrome": "155.0.8059.85 (channel chrome, headless)",
+  "webcontainerApi": "1.6.4",
+  "metric": "soma de working sets por PID (tasklist), papel via CDP SystemInfo.getProcessInfo; paginas compartilhadas podem ser contadas mais de uma vez",
+  "runs": {
+    "raw-vite-8.0.16-r2": {
+      "outcome": "ready",
+      "elapsedMs": 71240,
+      "peakTotalMiB": 2360,
+      "peakPhase": "ready",
+      "phasePeaksMiB": {
+        "load": 473,
+        "installing": 2262,
+        "starting": 2234,
+        "ready": 2360
+      },
+      "largestProcess": {
+        "pid": 28756,
+        "type": "renderer",
+        "mib": 1386,
+        "phase": "installing"
+      },
+      "mainHeapAtPeakMiB": 3
+    },
+    "raw-vite-8.0.16-r3": {
+      "outcome": "ready",
+      "elapsedMs": 46159,
+      "peakTotalMiB": 2447,
+      "peakPhase": "ready",
+      "phasePeaksMiB": {
+        "load": 505,
+        "installing": 2012,
+        "starting": 2254,
+        "ready": 2447
+      },
+      "largestProcess": {
+        "pid": 19304,
+        "type": "renderer",
+        "mib": 1457,
+        "phase": "ready"
+      },
+      "mainHeapAtPeakMiB": 2
+    },
+    "raw-vite-8.1.6-r2": {
+      "outcome": "ready",
+      "elapsedMs": 54974,
+      "peakTotalMiB": 2386,
+      "peakPhase": "ready",
+      "phasePeaksMiB": {
+        "load": 515,
+        "installing": 2083,
+        "starting": 2303,
+        "ready": 2386
+      },
+      "largestProcess": {
+        "pid": 96816,
+        "type": "renderer",
+        "mib": 1436,
+        "phase": "starting"
+      },
+      "mainHeapAtPeakMiB": 2
+    },
+    "raw-vite-8.1.6-r3": {
+      "outcome": "ready",
+      "elapsedMs": 55311,
+      "peakTotalMiB": 2355,
+      "peakPhase": "ready",
+      "phasePeaksMiB": {
+        "load": 544,
+        "installing": 2262,
+        "starting": 2178,
+        "ready": 2355
+      },
+      "largestProcess": {
+        "pid": 28704,
+        "type": "renderer",
+        "mib": 1373,
+        "phase": "installing"
+      },
+      "mainHeapAtPeakMiB": 2
+    },
+    "studio-vite816-r2": {
+      "outcome": "ready",
+      "elapsedMs": 62515,
+      "peakTotalMiB": 2686,
+      "peakPhase": "starting",
+      "phasePeaksMiB": {
+        "create": 456,
+        "editor": 617,
+        "booting": 1178,
+        "installing": 2316,
+        "starting": 2686,
+        "ready": 2543
+      },
+      "largestProcess": {
+        "pid": 65624,
+        "type": "renderer",
+        "mib": 1548,
+        "phase": "starting"
+      },
+      "mainHeapAtPeakMiB": 58
+    },
+    "studio-vite816-r3": {
+      "outcome": "ready",
+      "elapsedMs": 45045,
+      "peakTotalMiB": 2618,
+      "peakPhase": "ready",
+      "phasePeaksMiB": {
+        "editor": 536,
+        "booting": 1151,
+        "installing": 2210,
+        "starting": 2560,
+        "ready": 2618
+      },
+      "largestProcess": {
+        "pid": 51712,
+        "type": "renderer",
+        "mib": 1430,
+        "phase": "starting"
+      },
+      "mainHeapAtPeakMiB": 37
+    }
+  }
+}

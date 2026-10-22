@@ -64,6 +64,60 @@ test('ordinary rendering remains blocked until its RAF is delivered', async () =
   }
 })
 
+const deliverFrame = () => {
+  const [id, fn] = [...callbacks][0]!
+  callbacks.delete(id)
+  fn(0)
+}
+
+test('after a frame has passed, a new presentation paints at once like Tk update()', async () => {
+  const host = document.createElement('div'),
+    renderer = createTurtleRenderer(host)
+  try {
+    const first = renderer.exchange(request('present', [{ op: 'open' }]), [])
+    deliverFrame()
+    await first
+    await delay(20)
+    const before = paints
+    let settled = false
+    const next = renderer
+      .exchange(request('present', [{ op: 'background', color: '#ff0000' }]), [])
+      .then(() => {
+        settled = true
+      })
+    await next
+    expect(settled).toBe(true)
+    expect(paints).toBe(before + 1)
+    expect(callbacks.size).toBe(0)
+  } finally {
+    renderer.dispose()
+  }
+})
+
+test('a presentation within the same frame still waits for the animation frame', async () => {
+  const host = document.createElement('div'),
+    renderer = createTurtleRenderer(host)
+  try {
+    const first = renderer.exchange(request('present', [{ op: 'open' }]), [])
+    deliverFrame()
+    await first
+    let settled = false
+    const fast = renderer
+      .exchange(request('present', [{ op: 'background', color: '#00ff00' }]), [])
+      .then(() => {
+        settled = true
+      })
+    await delay(5)
+    expect(settled).toBe(false)
+    expect(callbacks.size).toBe(1)
+    deliverFrame()
+    await fast
+    expect(settled).toBe(true)
+  } finally {
+    renderer.dispose()
+  }
+})
+
 test('activity presents without RAF and readiness requires an explicit turn', async () => {
   const host = document.createElement('div'),
     renderer = createTurtleRenderer(host, { activityPresentation: true })

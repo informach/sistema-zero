@@ -56,7 +56,10 @@ for (const kind of ['classic', 'pro'])
         ),
       ),
     ).toBe(true)
-    await expect(page.getByTestId('admission')).toContainText('acesso a esta aula mudou')
+    // Same copy the lesson host shows (member-shell use-lesson-runtime): access changed, work kept.
+    await expect(page.getByTestId('admission')).toContainText(
+      'Seu acesso mudou. O projeto continua salvo.',
+    )
     await expect(page.locator('iframe')).toHaveCount(0)
     const stopped = await page.evaluate(() => globalThis.lessonRuntimeProbe.read())
     expect(stopped.source).toEqual(started.source)

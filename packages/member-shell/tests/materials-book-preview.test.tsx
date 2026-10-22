@@ -54,7 +54,7 @@ describe('prévia do caderno no material da aula', () => {
 
   test('sem PDF orienta a criança sem mostrar um livro vazio', () => {
     const html = show({ kind: 'materials', bookPreview: true, items: [] })
-    expect(html).toContain('O caderno ainda não está disponível nesta aula')
+    expect(html).toContain('O Passo a passo do projeto ainda não está disponível nesta aula')
     expect(html).not.toContain('Ler por páginas')
   })
 

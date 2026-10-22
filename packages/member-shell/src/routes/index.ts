@@ -1447,7 +1447,18 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const studioContext = {
     POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
       const { lessonId, blockId } = await ctx.params
-      const input = req.body ? await req.json().catch(() => null) : {}
+      // O bloco da aula abre com POST SEM corpo; no Request do Next o `body` desse POST ainda é
+      // um stream (vazio), então a ausência é decidida pelo texto, não pela existência do stream.
+      const text = await req.text().catch(() => null)
+      let input: unknown = null
+      if (text !== null && text.trim() === '') input = {}
+      else if (text !== null) {
+        try {
+          input = JSON.parse(text)
+        } catch {
+          input = null
+        }
+      }
       const parsed = z
         .object({
           confirm: z

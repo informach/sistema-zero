@@ -112,6 +112,11 @@ dependencies = []
 `
     occupied.push('pyproject.toml')
   }
+  // Tk anterior a 8.6 só abre GIF em PhotoImage/register_shape; os PNG do projeto
+  // continuam os bytes originais, então o requisito precisa constar no pacote.
+  const pngLimit = assets.assets.some((asset) => asset.mime === 'image/png')
+    ? 'Imagens PNG usadas como forma ou fundo do Turtle exigem Tk 8.6 ou mais recente no computador; versões anteriores do Tk só abrem GIF.'
+    : null
   const sourceEntries = []
   for (const path of Object.keys(sourceFiles).sort()) {
     const content = sourceFiles[path]!
@@ -143,6 +148,7 @@ dependencies = []
       'O runtime e o lock identificam o navegador; não são uma instalação ou resolução de pacotes nativos.',
       'A exportação preserva a fonte, mas não analisa todos os imports, caminhos, código dinâmico ou configurações autorais.',
       'Turtle nativo usa a biblioteca padrão e exige suporte gráfico Tk instalado no computador.',
+      ...(pngLimit ? [pngLimit] : []),
     ],
     generatedFiles: [instructionsPath, manifestPath, ...Object.keys(files)].sort(),
     warnings,
@@ -179,7 +185,7 @@ mantenha o laço normal do programa com turtle.done() ou turtle.mainloop(). Ence
 
 Para projetos Turtle, teste o suporte gráfico com: python -m tkinter
 Esse comando precisa abrir uma janela. Algumas instalações de Python no Linux exigem instalar o suporte a Tk separadamente.
-
+${pngLimit ? `${pngLimit}\nPara conferir a versão do Tk: python -c "import tkinter; print(tkinter.TkVersion)"\n` : ''}
 Seus arquivos e materiais foram preservados. O programa usa Python nativo no computador.
 O adaptador gráfico do navegador não faz parte deste pacote.
 ${

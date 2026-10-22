@@ -7,6 +7,7 @@ import type {
   StudioLivePublicationRuntimeRequest,
   StudioPublicRuntimeRequest,
 } from '@sistemazero/core/studio/runtime-authorization'
+import type { StudioProjectCapability } from '@sistemazero/core/studio/runtime-catalog'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
 import sharp from 'sharp'
 import { KidsJourneyQueryService } from '../../members/src/application/kids-journey/kids-journey-query.service'
@@ -48,8 +49,9 @@ async function fixture(
   language: 'python' | 'javascript' = 'python',
   identity?: { userId: string; accountId: string; requestId: string; publicObjects: Set<string> },
   runtimeStatus: 'active' | 'retired' | 'revoked' = 'active',
+  releaseCapabilities?: readonly StudioProjectCapability[],
 ) {
-  const f = await authoringFixture(language, kind)
+  const f = await authoringFixture(language, kind, releaseCapabilities)
   if (language === 'python') f.configuration.releases[0]!.status = runtimeStatus
   const userId = identity?.userId ?? crypto.randomUUID()
   const actor = {
@@ -636,6 +638,45 @@ test('revoked Python release cannot publish; retired existing release stays play
   expect(playable.status).toBe(200)
 })
 
+const PILOT_CAPABILITIES = ['edit', 'export-source', 'execute', 'python-repl'] as const
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  test(`${context} Python publication requires the exact release to declare publish`, async () => {
+    const f = await fixture('classic', context, 'kids', 'python', undefined, 'active', [
+      ...PILOT_CAPABILITIES,
+    ])
+    const refused = await f.publish()
+    expect(refused.status).toBe(403)
+    expect((await refused.json()).error.code).toBe('RUNTIME_PUBLISH_NOT_ALLOWED')
+    expect(f.state.calls).toContain(`authorize-${context}`)
+    expect(f.state.calls).not.toContain('promote-python')
+    expect([...f.objects.keys()].every((key) => key.startsWith('studio/publication-owners/'))).toBe(
+      true,
+    )
+    expect(f.publicObjects.size).toBe(0)
+
+    const declared = await fixture('classic', context, 'kids', 'python', undefined, 'active', [
+      ...PILOT_CAPABILITIES,
+      'publish',
+    ])
+    const published = await declared.publish()
+    expect(published.status).toBe(200)
+    expect(declared.state.calls).toContain('promote-python')
+  })
+
+for (const context of ['free', 'lesson', 'live'] as const)
+  test(`${context} JavaScript Classic publication is unchanged by release publish declarations`, async () => {
+    // JavaScript publication never consults Python release capabilities.
+    const f = await fixture('classic', context, 'kids', 'javascript', undefined, 'active', [
+      'edit',
+      'execute',
+      'export-source',
+    ])
+    const published = await f.publish()
+    expect(published.status).toBe(200)
+    expect(f.state.calls).not.toContain(`authorize-${context}`)
+  })
+
 test('a Python project cannot publish a Turtle extension absent from its approved release', async () => {
   const f = await fixture('classic', 'free')
   f.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0', installedAt: 1 }]
@@ -897,4 +938,94 @@ test('free Python publication separates the edited draft from public update, res
   ).toBe(200)
   expect((await play()).status).toBe(404)
   expect(await currentPublishedSource(f.bucket, playId)).toBeNull()
+})
+
+/** A structurally valid PNG whose size is set by one private ancillary chunk. */
+function paddedPng(padding: number): Buffer {
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
+    return c >>> 0
+  })
+  const crc32 = (bytes: Uint8Array) => {
+    let c = 0xffffffff
+    for (const byte of bytes) c = crcTable[(c ^ byte) & 0xff]! ^ (c >>> 8)
+    return (c ^ 0xffffffff) >>> 0
+  }
+  const base = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jH1QAAAAASUVORK5CYII=',
+    'base64',
+  )
+  const typed = Buffer.concat([Buffer.from('szPd', 'latin1'), Buffer.alloc(padding)])
+  const chunk = Buffer.alloc(12 + padding)
+  chunk.writeUInt32BE(padding, 0)
+  typed.copy(chunk, 4)
+  chunk.writeUInt32BE(crc32(typed), 8 + padding)
+  const iend = base.length - 12
+  return Buffer.concat([base.subarray(0, iend), chunk, base.subarray(iend)])
+}
+
+test('a large PNG publishes at the 6 MiB project cap and fails clearly one encoded block above it', async () => {
+  const { studioPublicProject } = await import('../src/server/studio-publication')
+  const { prepareEditableStudioProject } = await import(
+    '@sistemazero/studio/editable-project-validation'
+  )
+  const PROJECT_MAX_BYTES = 6 * 1024 * 1024
+  const f = await fixture('classic', 'free')
+  const withPng = async (padding: number) => {
+    const png = paddedPng(padding)
+    const prepared = await prepareEditableStudioProject({
+      ...structuredClone(f.project),
+      assets: [
+        {
+          id: 'grande',
+          name: 'grande',
+          kind: 'image',
+          source: 'upload',
+          dataUrl: `data:image/png;base64,${png.toString('base64')}`,
+          width: 1,
+          height: 1,
+          proPath: 'assets/grande.png',
+        },
+      ],
+    })
+    if (prepared?.programmingLanguage !== 'python') throw new Error('Python fixture required')
+    const uploaded = studioPublicProject(prepared)
+    const bytes = Math.max(
+      Buffer.byteLength(JSON.stringify(uploaded)),
+      Buffer.byteLength(
+        JSON.stringify(studioPublicProject((await prepareEditableStudioProject(uploaded))!)),
+      ),
+    )
+    return { png, uploaded, bytes }
+  }
+  // Padding in multiples of 3 adds exactly 4 base64 characters per step.
+  const probe = await withPng(3_000)
+  const steps = Math.floor((PROJECT_MAX_BYTES - probe.bytes) / 4)
+  const atLimit = await withPng(3_000 + steps * 3)
+  expect(atLimit.bytes).toBeLessThanOrEqual(PROJECT_MAX_BYTES)
+  expect(atLimit.bytes).toBeGreaterThan(PROJECT_MAX_BYTES - 4)
+  expect(atLimit.png.length).toBeGreaterThan(4_500_000)
+
+  const accepted = await f.publish(atLimit.uploaded)
+  expect(accepted.status).toBe(200)
+  const body = await accepted.json()
+  const retained = await currentPublishedSource(f.bucket, body.publicationId)
+  expect(JSON.parse(retained!.source).assets[0].dataUrl).toBe(
+    `data:image/png;base64,${atLimit.png.toString('base64')}`,
+  )
+
+  const above = await withPng(3_000 + (steps + 1) * 3)
+  expect(above.bytes).toBeGreaterThan(PROJECT_MAX_BYTES)
+  const calls = f.state.calls.length
+  const rejected = await f.publish(above.uploaded, undefined, crypto.randomUUID())
+  expect(rejected.status).toBe(413)
+  expect(await rejected.json()).toEqual({
+    error: {
+      code: 'PROJECT_TOO_LARGE',
+      message:
+        'O projeto ficou grande demais para publicar. Use imagens ou sons menores e tente de novo.',
+    },
+  })
+  expect(f.state.calls.slice(calls)).toEqual([])
 })

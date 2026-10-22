@@ -11,7 +11,7 @@ for (const kind of ['classic', 'pro'] as const) {
     expect(decision.workspaceRevision).toBe(0)
     expect(decision.baselineId).toHaveLength(64)
     expect(decision.curation.pythonLevel).toBe(2)
-    expect(decision.capabilities).toEqual(['edit', 'execute', 'export-source'])
+    expect(decision.capabilities).toEqual(['edit', 'execute', 'export-source', 'assist'])
     expect(decision.expiresAt).toBe(Date.parse(f.claimed.leaseExpiresAt ?? ''))
     expect(f.records.records.get(f.claimed.id)).toEqual(before)
     expect(f.records.revisions.size).toBe(0)
@@ -76,7 +76,8 @@ test('an assigned observer can analyze a live project without edit, execution, R
   }
   const before = structuredClone(f.records.records.get(f.claimed.id))
   const decision = await f.service.execute(f.teacher, request)
-  expect(decision.capabilities).toEqual([])
+  // Observers keep only the release-declared assistance, never edit, execute or REPL.
+  expect(decision.capabilities).toEqual(['assist'])
   expect(decision.operation).toBe('analyze')
   expect(decision.curation.pythonLevel).toBe(2)
   expect(decision.expiresAt - decision.issuedAt).toBe(30_000)
@@ -101,7 +102,7 @@ test('an assigned observer can analyze a live project without edit, execution, R
     }),
   ).rejects.toThrow()
   f.advance(35_000)
-  expect((await f.service.execute(f.teacher, request)).capabilities).toEqual([])
+  expect((await f.service.execute(f.teacher, request)).capabilities).toEqual(['assist'])
   expect(f.records.records.get(f.claimed.id)).toEqual(before)
 })
 
@@ -117,7 +118,7 @@ test('a lease left over after access expires grants only the owner library analy
     operation: 'analyze' as const,
     context: { ...f.request.context, sessionId: null, blockId: null },
   }
-  expect((await f.service.execute(f.child, request)).capabilities).toEqual([])
+  expect((await f.service.execute(f.child, request)).capabilities).toEqual(['assist'])
   for (const operation of ['execute', 'python-repl'] as const)
     await expect(f.service.execute(f.child, { ...request, operation })).rejects.toThrow()
   await expect(
@@ -163,7 +164,7 @@ test('ending a supervised help session preserves teacher analysis without extend
   expect((await f.workspace.forSession(f.session.id).get(f.teacher, f.claimed.id)).id).toBe(
     f.claimed.id,
   )
-  expect((await f.service.execute(f.teacher, request)).capabilities).toEqual([])
+  expect((await f.service.execute(f.teacher, request)).capabilities).toEqual(['assist'])
   for (const operation of ['execute', 'python-repl'] as const)
     await expect(f.service.execute(f.teacher, { ...request, operation })).rejects.toThrow()
   expect(f.records.records.get(f.claimed.id)).toEqual(before)

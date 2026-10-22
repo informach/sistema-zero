@@ -4,6 +4,16 @@ import type {} from '../../../experiments/studio-python-runtime/host'
 import type {} from './fixtures/publicAuthor'
 import { tracePythonFrameLayout } from './layout-diagnostic'
 
+/**
+ * Payload do player Python (desempenho §"Payload do player Python"): nenhum editor/analisador
+ * Python, Blockly, modos de edição do Estúdio nem a seleção/sincronização de imagens do Pinta.
+ * Cada termo corresponde a um chunk real do build deste fixture (`vite build` com rolldown
+ * nomeia pelo módulo: blockly-*.js, BlocksMode-*.js, PintaImageSelection-*.js...). Não inclui
+ * `pintaImageAsset`, a conferência dos bytes publicados, que pertence ao player.
+ */
+const EDITOR_PAYLOAD =
+  /monaco|webcontainer|analysis-worker|python-language|ruff|blockly|BlocksMode|BridgeMode|BridgeCodeEditor|PythonSourceEditor|PythonClassicMode|PythonCodeMode|StudioEditor|AssetsPanel|PintaImageSelection|pintaImageTarget|pintaImageSync/i
+
 test('isolated product Turtle frame has visible layout after a real CPython draw', async ({
   page,
 }) => {
@@ -67,11 +77,11 @@ for (const kind of ['classic', 'pro'] as const)
       await player.getByRole('button', { name: 'Enviar', exact: true }).click()
       await expect(player.getByRole('log')).toContainText('Você ganhou! 42')
       expect(await anonymous.cookies()).toEqual([])
-      expect(
-        requests.some((url) =>
-          /monaco|webcontainer|analysis-worker|python-language|ruff/i.test(url),
-        ),
-      ).toBe(false)
+      expect(requests.filter((url) => EDITOR_PAYLOAD.test(url))).toEqual([])
+      // R09: the page names the published profile from the document it already downloaded.
+      await expect(player.locator('[data-runtime-profile]')).toContainText(
+        kind === 'pro' ? 'Python Pro' : 'Python Clássico',
+      )
       const second = 'print("Versão nova")\n'
       await page.evaluate((source) => studioPublicAuthorProbe.source(source), second)
       await player.reload()
@@ -144,6 +154,8 @@ for (const kind of ['classic', 'pro'] as const)
     let finishTrace = async () => {}
     try {
       const player = await anonymous.newPage()
+      const requests: string[] = []
+      player.on('request', (request) => requests.push(request.url()))
       finishTrace = await tracePythonFrameLayout(player, testInfo)
       await player.goto(`http://127.0.0.1:5298/public.html?playId=${playId}`)
       await expect(player.getByRole('log')).toContainText('pinta-ready', { timeout: 30_000 })
@@ -289,6 +301,7 @@ for (const kind of ['classic', 'pro'] as const)
           }),
       )
       expect(image).toMatch(/^data:image\/png;base64,/)
+      expect(requests.filter((url) => EDITOR_PAYLOAD.test(url))).toEqual([])
       await request.post(`/public-probe/hide?playId=${playId}`)
       await player.reload()
       await expect(player.getByText('Não encontramos este jogo.', { exact: true })).toBeVisible()

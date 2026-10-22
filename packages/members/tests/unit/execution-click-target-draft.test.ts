@@ -180,7 +180,7 @@ test('draft keeps incomplete or prohibited path text inert; final testing and pu
       sectionCompletionIssues(input.change.sections, [
         { id: workspaceId, content: { kind: 'studio' } },
       ]).map((issue) => issue.message),
-    ).toContain('Configure os critérios de conclusão desta seção.')
+    ).toContain('Configure os critérios de conclusão desta parte.')
     const response = await testApp.handle(
       new Request('http://members.test/', {
         method: 'POST',

@@ -22,7 +22,9 @@ function scope(callback) {
     rmSync(directory, { recursive: true })
   }
 }
-function run(directory, scenario = 'Q02') {
+// Every native child needs a fresh absolute UTC window (the runner refuses to spawn without one).
+const freshWindow = () => new Date(Math.ceil((Date.now() + 120_000) / 1000) * 1000).toISOString()
+function run(directory, scenario = 'Q02', windowEnd = freshWindow()) {
   return spawnSync(
     process.execPath,
     [
@@ -31,6 +33,7 @@ function run(directory, scenario = 'Q02') {
       resolve(directory, 'unused-input'),
       resolve(directory, 'attempt'),
       scenario,
+      ...(windowEnd === null ? [] : [windowEnd]),
     ],
     { windowsHide: true, encoding: 'utf8', timeout: 15_000 },
   )
@@ -64,10 +67,44 @@ test('an existing attempt is never overwritten', () =>
     assert.equal(readFileSync(marker, 'utf8'), 'preserve negative evidence')
   }))
 
+test('non-Q08 children also refuse to start without an absolute UTC window', () =>
+  scope((directory) => {
+    const child = run(directory, 'Q02', null)
+    assert.equal(child.status, 1)
+    assert.match(child.stderr, /Explicit UTC deadline/)
+    assert.equal(existsSync(resolve(directory, 'attempt')), false)
+  }))
+
 test('invalid scenarios fail before creating an output namespace', () =>
   scope((directory) => {
     const child = run(directory, 'Q99')
     assert.equal(child.status, 1)
     assert.match(child.stderr, /Usage:/)
+    assert.equal(existsSync(resolve(directory, 'attempt')), false)
+  }))
+
+test('Q08 requires a fresh absolute UTC window before allocating output', () =>
+  scope((directory) => {
+    for (const windowEnd of [null, '2000-01-01T00:00:00Z']) {
+      const child = run(directory, 'Q08-pause', windowEnd)
+      assert.equal(child.status, 1)
+      assert.match(child.stderr, /Explicit UTC deadline|required|expired or too short/)
+      assert.equal(existsSync(resolve(directory, 'attempt')), false)
+    }
+  }))
+
+test('long Q08 replay refuses a window shorter than the full 160-second child budget', () =>
+  scope((directory) => {
+    const child = run(directory, 'Q08-bgm', new Date(Date.now() + 80_000).toISOString())
+    assert.equal(child.status, 1)
+    assert.match(child.stderr, /expired or too short/)
+    assert.equal(existsSync(resolve(directory, 'attempt')), false)
+  }))
+
+test('Q08 rejects invalid calendar dates instead of normalizing the deadline', () =>
+  scope((directory) => {
+    const child = run(directory, 'Q08-pause', '2999-02-30T18:00:00Z')
+    assert.equal(child.status, 1)
+    assert.match(child.stderr, /Invalid UTC date/)
     assert.equal(existsSync(resolve(directory, 'attempt')), false)
   }))

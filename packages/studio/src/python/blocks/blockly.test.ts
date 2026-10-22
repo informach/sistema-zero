@@ -221,3 +221,27 @@ test('setting an optional input twice preserves the learner value and connection
     workspace.dispose()
   }
 })
+
+test('the title label is presentation only; the editable literal field carries the source value', () => {
+  const workspace = new Blockly.Workspace()
+  try {
+    const roots = pythonVisualToWorkspace(pythonASTToVisual(fixture()), workspace)
+    const block = workspace.getAllBlocks(false).find((item) => item.type === 'sz_py_integer')!
+    const named = block.inputList.flatMap((input) => input.fieldRow).filter((field) => field.name)
+    // A gesture driver that picks the first named field hits the label, not the number.
+    expect(named.map((field) => [field.name, field.EDITABLE])).toEqual([
+      ['PYTHON_TITLE', false],
+      ['NUMBER', true],
+    ])
+    block.getField('PYTHON_TITLE')!.setValue('4')
+    expect(
+      pythonSemanticTree(pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots))),
+    ).toEqual(pythonSemanticTree(fixture()))
+    block.getField('NUMBER')!.setValue('4')
+    expect(JSON.stringify(pythonVisualToAST(pythonWorkspaceToVisual(workspace, roots)))).toContain(
+      '{"literal":"int","value":"4"}',
+    )
+  } finally {
+    workspace.dispose()
+  }
+})

@@ -168,6 +168,43 @@ describe('one project store for Python Classic and Pro', () => {
     })
   })
 
+  for (const kind of ['classic', 'pro'] as const)
+    test(`Python ${kind} refuses new 3D materials but still opens a document that already has one`, async () => {
+      const glb = `data:model/gltf-binary;base64,${btoa(
+        String.fromCharCode(0x67, 0x6c, 0x54, 0x46, 0x02, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x00, 0x00),
+      )}`
+      const hdr = `data:image/vnd.radiance;base64,${btoa('#?RADIANCE\nFORMAT=32-bit_rle_rgbe\n')}`
+      const store = await setup(kind)
+      const before = store.getState().project
+      for (const [assetKind, dataUrl, originalFileName] of [
+        ['model3d', glb, 'nave.glb'],
+        ['environment3d', hdr, 'ceu.hdr'],
+      ] as const) {
+        expect(
+          store.getState().addAsset({ name: 'nave', kind: assetKind, dataUrl, originalFileName }),
+        ).toContain('recursos 3D ainda não estão disponíveis')
+        expect(store.getState().project).toBe(before)
+      }
+      // Existing content is never dropped on load/import/remix: the gate is the insertion.
+      const raw = documentFixture('python', kind)
+      raw.assets = [
+        {
+          id: 'nave',
+          name: 'nave',
+          kind: 'model3d',
+          source: 'upload',
+          dataUrl: glb,
+          originalFileName: 'nave.glb',
+          proPath: 'assets/nave.glb',
+        },
+      ] as never
+      delete (raw as { coverAssetName?: string }).coverAssetName
+      const reopened = await refinePythonProjectDocument(raw)
+      expect(reopened.assets?.map((asset) => [asset.kind, asset.proPath])).toEqual([
+        ['model3d', 'assets/nave.glb'],
+      ])
+    })
+
   test('promotion preserves an independent Classic copy and the execution recipe', async () => {
     const store = await setup('classic')
     expect(store.getState().setPublication(crypto.randomUUID())).toBeNull()

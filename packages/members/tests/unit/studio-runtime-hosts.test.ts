@@ -35,6 +35,16 @@ test('runtime hosts validate exact releases and isolated deployment origins, nev
     }),
   ).toThrow('disponível')
   const hosts = createStudioRuntimeHosts(configuration.catalog, [valid])
+  // Hosted Python offers BFF publication and Zappy; the release manifest still decides.
+  expect(hosts.operations(project).map(({ capability }) => capability)).toEqual([
+    'edit',
+    'execute',
+    'pause',
+    'publish',
+    'export-source',
+    'python-repl',
+    'assist',
+  ])
   const frame = hosts.frame(project)!
   frame.url = 'https://changed.example.test'
   expect(hosts.frame(project)?.url).toContain('https://runtime.example.test/v1/runtimes/')
@@ -59,4 +69,45 @@ test('runtime hosts validate exact releases and isolated deployment origins, nev
     expect(
       createStudioRuntimeHosts(configuration.catalog, [{ ...valid, origin }]).frame(project)?.url,
     ).toStartWith(origin)
+})
+
+test('publish and assist require the release declaration and the context grant', async () => {
+  const authorize = async (
+    capabilities: Parameters<typeof authoringFixture>[2],
+    grantedCapabilities: Parameters<
+      Awaited<ReturnType<typeof createStudioRuntimePolicy>>['authorize']
+    >[0]['grantedCapabilities'],
+    operation: 'execute' | 'analyze',
+    allowReadOnlyAnalysis = false,
+  ) => {
+    const { project, configuration } = await authoringFixture('python', 'pro', capabilities)
+    const policy = await createStudioRuntimePolicy(
+      configuration,
+      createStudioRuntimeHosts(configuration.catalog, [
+        { runtime: project.runtime, origin: 'https://runtime.example.test' },
+      ]),
+    )
+    return policy.authorize({
+      project: studioRuntimeSubject(project),
+      operation,
+      curation: {},
+      grantedCapabilities,
+      allowReadOnlyAnalysis,
+    }).capabilities
+  }
+  const all = ['edit', 'execute', 'publish', 'export-source', 'assist'] as const
+  const pilot = ['edit', 'export-source', 'execute', 'python-repl'] as const
+  expect(await authorize(undefined, all, 'execute')).toEqual(all)
+  expect(await authorize(undefined, all, 'analyze')).toEqual(['edit', 'export-source', 'assist'])
+  expect(await authorize(undefined, ['assist'], 'analyze', true)).toEqual(['assist'])
+  // Declared by the release but not granted by the context.
+  expect(await authorize(undefined, ['edit', 'execute', 'export-source'], 'execute')).toEqual([
+    'edit',
+    'execute',
+    'export-source',
+  ])
+  // Granted by the context but absent from the immutable pilot release.
+  expect(await authorize(pilot, all, 'execute')).toEqual(['edit', 'execute', 'export-source'])
+  expect(await authorize(pilot, all, 'analyze')).toEqual(['edit', 'export-source'])
+  expect(await authorize(pilot, ['assist'], 'analyze', true)).toEqual([])
 })

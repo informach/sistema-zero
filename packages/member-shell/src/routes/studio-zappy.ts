@@ -429,6 +429,13 @@ export function createStudioZappyRoutes(deps: {
             accountId: user.activeProfile?.accountId ?? user.id,
           })
           if (!decision) return error('ZAPPY_UNAVAILABLE', 503)
+          // Members resolves `assist` from the exact release, context grants and curation.
+          if (!decision.capabilities.includes('assist'))
+            return error(
+              'RUNTIME_ASSIST_NOT_ALLOWED',
+              403,
+              'O ambiente Python deste projeto ainda não oferece o Zappy.',
+            )
           pythonAuthorizationExpiresAt = decision.expiresAt
           const { loadPythonAuthoring, selectPythonPalette } = await import(
             '@sistemazero/studio/python-authoring'

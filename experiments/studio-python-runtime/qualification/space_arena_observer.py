@@ -26,7 +26,7 @@ def state(sprite):
 
 class Observer:
     def __init__(self, scenario, report, callbacks):
-        assert scenario in ('Q02', 'Q03', 'Q04', 'Q05', 'Q06', 'Q07')
+        assert scenario in ('Q02', 'Q03', 'Q04', 'Q05', 'Q06', 'Q07', 'Q08-pause', 'Q08-bgm')
         self.scenario, self.report, self.callbacks = scenario, report, callbacks
         self.namespace = None
         self.step = 0

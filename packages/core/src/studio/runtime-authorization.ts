@@ -151,6 +151,7 @@ export type StudioPublicRuntimeDecision = z.infer<typeof StudioPublicRuntimeDeci
 
 /** A saved owner revision may be published after the room closes; this is not
  * an editor writer lease and never grants free Pro or REPL capabilities.
+ * `publish` appears only when the selected release declares it; the BFF requires it.
  */
 export const StudioLivePublicationRuntimeContextSchema = z.strictObject({
   kind: z.literal('live-publication'),
@@ -169,7 +170,7 @@ export type StudioLivePublicationRuntimeRequest = z.infer<
 export const StudioLivePublicationRuntimeDecisionSchema = StudioLessonRuntimeDecisionSchema.extend({
   context: StudioLivePublicationRuntimeContextSchema,
   operation: z.literal('execute'),
-  capabilities: z.array(z.enum(['execute', 'pause'])).max(2),
+  capabilities: z.array(z.enum(['execute', 'pause', 'publish'])).max(3),
   blockIds: z.array(z.never()).length(0),
 })
 export type StudioLivePublicationRuntimeDecision = z.infer<

@@ -20,10 +20,11 @@ import tempfile
 import time
 import traceback
 import zipfile
+import wave
 
 HERE = Path(__file__).resolve().parent
-RECEIPT_SHA = 'df6d6812ac511686e5dd32187b900cc68c9b565d5d49498e5d3265e9b137fcc0'
-ENTRY_SHA = '9db951e68bd4ce10f3739368d806d2a8a15db3535d9d543f21ddd5f2bd2f38a5'
+RECEIPT_SHA = '9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419'
+ENTRY_SHA = 'd9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3'
 
 
 def sha(value):
@@ -34,23 +35,26 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifact-dir', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--scenario', choices=[f'Q{i:02}' for i in range(2, 8)], required=True)
+    parser.add_argument('--scenario', choices=[f'Q{i:02}' for i in range(2, 8)] + ['Q08-pause', 'Q08-bgm'], required=True)
     args = parser.parse_args()
     assert sys.flags.isolated and sys.dont_write_bytecode
     assert sys.version_info[:3] == (3, 14, 2)
     args.output.mkdir(parents=True, exist_ok=False)
+    cooperative_budget = 150 if args.scenario == 'Q08-bgm' else 30
     report = dict(state='failed', scenario=args.scenario, python=sys.version,
                   executable=sys.executable, runnerSha256=sha(Path(__file__).read_bytes()),
                   observerSha256=sha((HERE / 'space_arena_observer.py').read_bytes()),
                   sourceReceiptSha256=RECEIPT_SHA, observations=[], errors=[],
                   rootMapEvents=0, rootDestroyEvents=0, audioReleased=False,
                   freshInstall=False, physicalKeyboard=False, seed=2026,
-                  cooperativeBudgetSeconds=30,
+                  cooperativeBudgetSeconds=cooperative_budget,
                   limits=['Explicit fixtures and QA invocations of authored bindings',
                           'Bounded QA completion after original clear; not natural game exit',
                           'No browser, acoustic, raster, Pro, performance or complete-game acceptance'])
     screen = desktop = turtle = observer = None
-    original_update = original_press = original_release = None
+    original_audio_play = audio_module = None
+    before = None
+    original_update = original_press = original_release = original_timer = None
     old_cwd, old_path = Path.cwd(), sys.path.copy()
     scope = tempfile.TemporaryDirectory(prefix='sz-space-functional-')
     project = Path(scope.name).resolve()
@@ -99,7 +103,28 @@ def main():
         report.update(installedAudio=str(installed), matchingModuleFiles=matched, dependencies=deps)
         spec = importlib.util.spec_from_file_location('space_arena_observer', HERE / 'space_arena_observer.py')
         module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
         spec.loader.exec_module(module)
+        if args.scenario.startswith('Q08-'):
+            q08_source = HERE / 'space_arena_q08.py'
+            report['q08ObserverSha256'] = sha(q08_source.read_bytes())
+            spec = importlib.util.spec_from_file_location('space_arena_q08', q08_source)
+            q08 = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(q08)
+            module = q08
+            report['audioPlays'] = []
+            with wave.open(str(project / 'bgm.wav'), 'rb') as wav:
+                report['bgmDurationSeconds'] = wav.getnframes() / wav.getframerate()
+                assert report['bgmDurationSeconds'] > 120
+            audio_module, original_audio_play = sz_audio, sz_audio.play
+
+            def observed_audio(path, *values, **options):
+                result = original_audio_play(path, *values, **options)
+                report['audioPlays'].append(dict(path=path, handle=result, clock=time.monotonic(),
+                    sha256=sha(Path(path).read_bytes()), activeVoices=desktop._mixer.active))
+                return result
+
+            sz_audio.play = observed_audio
         callbacks = {}
         observer = module.Observer(args.scenario, report, callbacks)
         import turtle
@@ -127,6 +152,7 @@ def main():
         original_press = turtle.TurtleScreen.onkeypress
         original_release = turtle.TurtleScreen.onkeyrelease
         original_update = turtle.TurtleScreen.update
+        original_timer = turtle.TurtleScreen.ontimer
 
         def press(self, callback, key=None):
             callbacks['press', key] = callback
@@ -136,11 +162,29 @@ def main():
             callbacks['release', key] = callback
             return original_release(self, callback, key)
 
+        def timer(self, callback, t=0):
+            # runpy uses __main__; identify the exact authored function object.
+            if observer.namespace is None or callback is not observer.namespace.get('_space_arena_tick'):
+                return original_timer(self, callback, t)
+
+            def bounded_tick():
+                try:
+                    return callback()
+                except module.FunctionalComplete:
+                    assert observer.complete_requested
+                    assert sum(item['kind'] == 'complete' for item in report['observations']) == 1
+                    assert not report.get('boundedFunctionalCompletion'), 'Duplicate QA completion'
+                    report['boundedFunctionalCompletion'] = True
+                    report['functionalCompletionBoundary'] = 'authored-timer-callback'
+                    screen.bye()
+
+            return original_timer(self, bounded_tick, t)
+
         def update(self):
             namespace = sys._getframe(1).f_globals
             result = original_update(self)
             elapsed = time.monotonic() - started
-            assert elapsed < 30, 'Native functional cooperative deadline'
+            assert elapsed < cooperative_budget, 'Native functional cooperative deadline'
             if 'game' in namespace and 'exhaust' in namespace:
                 if observer.namespace is None:
                     report['fullGameReadyMs'] = elapsed * 1000
@@ -150,7 +194,14 @@ def main():
         turtle.TurtleScreen.onkeypress = press
         turtle.TurtleScreen.onkeyrelease = release
         turtle.TurtleScreen.update = update
-        root.report_callback_exception = lambda kind, value, tb: report['errors'].append(dict(callback=kind.__name__, message=str(value)))
+        turtle.TurtleScreen.ontimer = timer
+        def callback_error(kind, value, tb):
+            report['errors'].append(dict(callback=kind.__name__, message=str(value)))
+            traceback.print_exception(kind, value, tb)
+            if report['rootDestroyEvents'] == 0:
+                screen.bye()
+
+        root.report_callback_exception = callback_error
         os.chdir(project)
         sys.path.insert(0, str(project))
         random.seed(2026)
@@ -158,9 +209,10 @@ def main():
             runpy.run_path(str(project / 'space_arena.py'), run_name='__main__')
         except module.FunctionalComplete:
             report['boundedFunctionalCompletion'] = True
-        else:
-            raise AssertionError('Expected bounded observation of infinite author loop')
+            report['functionalCompletionBoundary'] = 'top-level-legacy'
         assert report.get('boundedFunctionalCompletion') and not report['errors']
+        assert observer.complete_requested
+        assert sum(item['kind'] == 'complete' for item in report['observations']) == 1
         assert desktop._failure is None and desktop._device is not None
         report['audioBackend'] = str(desktop._device.backend)
         assert report['audioBackend'].lower() != 'null'
@@ -171,6 +223,8 @@ def main():
     except BaseException as error:
         report['errors'].append(dict(name=type(error).__name__, message=str(error), traceback=traceback.format_exc()))
     finally:
+        if original_audio_play is not None:
+            audio_module.play = original_audio_play
         if observer is not None:
             observer.restore()
             if observer.namespace is not None:
@@ -182,19 +236,31 @@ def main():
                 turtle.TurtleScreen.onkeypress = original_press
             if original_release is not None:
                 turtle.TurtleScreen.onkeyrelease = original_release
-        if screen is not None:
+            if original_timer is not None:
+                turtle.TurtleScreen.ontimer = original_timer
+        if screen is not None and report['rootDestroyEvents'] == 0:
             try:
                 screen.bye()
             except BaseException as error:
                 report['errors'].append(dict(cleanup='screen', name=type(error).__name__, message=str(error)))
         if desktop is not None:
             try:
+                if desktop._device is not None:
+                    report.setdefault('audioBackend', str(desktop._device.backend))
                 desktop._shutdown()
                 report['audioReleased'] = desktop._device is None and desktop._generator is None and desktop._mixer.active == 0
             except BaseException as error:
                 report['errors'].append(dict(cleanup='audio', name=type(error).__name__, message=str(error)))
         os.chdir(old_cwd)
         sys.path[:] = old_path
+        if before is not None:
+            try:
+                report['exportTreeUnchanged'] = before == {
+                    path.relative_to(project).as_posix(): sha(path.read_bytes())
+                    for path in project.rglob('*') if path.is_file()}
+                assert report['exportTreeUnchanged']
+            except BaseException as error:
+                report['errors'].append(dict(cleanup='export-integrity', name=type(error).__name__, message=str(error)))
         try:
             scope.cleanup()
             report['ownedTempAbsent'] = not project.exists()

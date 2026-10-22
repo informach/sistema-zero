@@ -150,6 +150,75 @@ test('invalid origin is rejected before the first request', async () => {
   expect(calls).toHaveLength(0)
 })
 
+const hostedAdmin = 'https://admin-qa.example.invalid'
+
+test('a hosted origin is admitted only when it equals the reviewed HTTPS binding', () => {
+  expect(pythonAdminOrigin(hostedAdmin, hostedAdmin)).toBe(hostedAdmin)
+  for (const [value, reviewed] of [
+    ['http://admin-qa.example.invalid', 'http://admin-qa.example.invalid'],
+    ['https://other.example.invalid', hostedAdmin],
+    [`${hostedAdmin}/`, hostedAdmin],
+    [`${hostedAdmin}/cursos`, `${hostedAdmin}/cursos`],
+    ['http://localhost:43107', hostedAdmin],
+  ] as const)
+    expect(() => pythonAdminOrigin(value, reviewed)).toThrow()
+})
+
+test('the hosted JS Pro producer creates an adult QA course in its own namespace', async () => {
+  const courseId = randomUUID(),
+    moduleId = randomUUID(),
+    lessonId = randomUUID()
+  const { request, calls } = server(
+    [courseId, moduleId, lessonId].map((id) => ({ status: 201, body: { id } })),
+  )
+  const result = await createEmptyPythonLesson({
+    request,
+    origin: hostedAdmin,
+    modality: 'recorded',
+    hosted: { adminOrigin: hostedAdmin, audience: 'adult' },
+    onStep: async () => {},
+  })
+  expect(result).toMatchObject({
+    hostedAdminOrigin: hostedAdmin,
+    audience: 'adult',
+    variant: 'hosted-js-pro',
+    title: `QA JS Pro recorded ${result.runId}`,
+  })
+  expect(calls[0]?.data).toMatchObject({
+    slug: `qa-js-pro-${result.runId}`,
+    audience: 'adult',
+    modality: 'recorded',
+  })
+  expect(JSON.stringify(calls.map((call) => call.data))).not.toContain('qa-python-')
+})
+
+test('a hosted fixture refuses a course with another audience or the Python namespace', async () => {
+  const fixture: PythonLessonFixture = {
+    ...ownedFixture(),
+    modality: 'recorded',
+    hostedAdminOrigin: hostedAdmin,
+    audience: 'adult',
+    variant: 'hosted-js-pro',
+  }
+  fixture.title = `QA JS Pro recorded ${fixture.runId}`
+  const hostedTree = (overrides: Record<string, unknown>) => {
+    const tree = courseTree(fixture)
+    const slug = `qa-js-pro-${fixture.runId}`
+    for (const lesson of tree.modules[0]?.lessons ?? []) lesson.slug = slug
+    return { ...tree, slug, audience: 'adult', ...overrides }
+  }
+  const read = (body: unknown) =>
+    readOwnedPythonLesson({
+      request: server([{ status: 200, body }]).request,
+      origin: hostedAdmin,
+      fixture,
+      onStep: async () => {},
+    })
+  await expect(read(hostedTree({ audience: 'kids' }))).rejects.toThrow()
+  await expect(read(hostedTree({ slug: `qa-python-${fixture.runId}` }))).rejects.toThrow()
+  await expect(read(hostedTree({}))).resolves.toBeDefined()
+})
+
 async function publication(kind: 'classic' | 'pro') {
   const { project } = await pythonEnvironmentFixture(kind)
   project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0', installedAt: 1 }]

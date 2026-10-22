@@ -372,3 +372,58 @@ test('Python memory accepts its own language and cannot reuse JavaScript or ambi
   expect(prompt.user).not.toContain('LEGACY_AMBIGUOUS')
   expect(prompt.user).not.toContain('WRONG_PEDAGOGY')
 })
+
+test('Python Zappy requires the exact release to declare assist; history deletion stays available', async () => {
+  const originalFetch = globalThis.fetch
+  let modelCalls = 0
+  globalThis.fetch = (async (_url: unknown, _init?: RequestInit) => {
+    modelCalls++
+    return Response.json({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              text: 'Confira o comando print no seu projeto.',
+              scope: 'concept',
+              blockReferences: [],
+              fileReferences: [],
+              lessonReferences: [],
+              helpReferences: [],
+              suggestions: [],
+            }),
+          },
+        },
+      ],
+    })
+  }) as typeof fetch
+  try {
+    const pilot = ['edit', 'export-source', 'execute', 'python-repl'] as const
+    const refused = await pythonZappyFixture('pro', 'kids', { releaseCapabilities: pilot })
+    const response = await refused.request()
+    expect(response.status).toBe(403)
+    expect((await response.json()).error.code).toBe('RUNTIME_ASSIST_NOT_ALLOWED')
+    expect(refused.state.policies).toBe(1)
+    expect(refused.state.reservations).toBe(0)
+    expect(refused.state.knowledge).toBe(0)
+    expect(modelCalls).toBe(0)
+    // Removing existing conversation data is never gated by the assistance capability.
+    const deletion = await refused.historyRequest({
+      operation: 'delete-history',
+      projectId: refused.project.id,
+      authorization: refused.input.authorization,
+    })
+    expect(deletion.status).toBe(200)
+    expect(refused.state.deletions).toBe(1)
+
+    const declared = await pythonZappyFixture('pro', 'kids', {
+      releaseCapabilities: [...pilot, 'assist'],
+    })
+    const answered = await declared.request()
+    const envelope = await answered.json()
+    expect(envelope.status, JSON.stringify(envelope)).toBe(200)
+    expect(declared.state.reservations).toBe(1)
+    expect(modelCalls).toBe(1)
+  } finally {
+    globalThis.fetch = originalFetch
+  }
+})

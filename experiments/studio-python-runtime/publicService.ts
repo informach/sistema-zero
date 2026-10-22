@@ -1,4 +1,5 @@
 import { mock } from 'bun:test'
+import { initialKidsJourneyPolicy } from '../../packages/core/src/journey'
 import { StudioAuthoringCatalogSchema } from '../../packages/core/src/studio/authoring-catalog'
 import type {
   StudioFreeRuntimeRequest,
@@ -34,10 +35,37 @@ export async function createPublicRuntimeProbe(
   process.env.STUDIO_PRO_RUNTIME_TOKEN = 'local-public-probe-internal-token'
   const originalR2 = { ...(await import('../../packages/member-shell/src/server/r2')) }
   const privateObjects = new Map<string, Uint8Array<ArrayBuffer>>()
+  const publicObjects = new Set<string>()
+  const retiredPublicKeys = new Set<string>()
   mock.module('../../packages/member-shell/src/server/r2', () => ({
     ...originalR2,
     r2PutObjectPrivate: async (input: { key: string; body: Uint8Array }) => {
       privateObjects.set(input.key, new Uint8Array(input.body))
+    },
+    r2CreateObjectPrivate: async (input: { key: string; body: Uint8Array }) => {
+      if (privateObjects.has(input.key)) return false
+      privateObjects.set(input.key, new Uint8Array(input.body))
+      return true
+    },
+    r2HeadObjectPrivate: async (key: string) => {
+      const bytes = privateObjects.get(key)
+      return bytes
+        ? { contentType: 'application/json', contentLength: bytes.length, etag: 'probe' }
+        : null
+    },
+    r2DeleteObjectPrivate: async (key: string) => {
+      privateObjects.delete(key)
+    },
+    // Capa pública: somente a chave/URL; o player local não serve a imagem.
+    r2CreateObject: async (input: { key: string }) => {
+      if (publicObjects.has(input.key) || retiredPublicKeys.has(input.key)) return null
+      publicObjects.add(input.key)
+      return { key: input.key, url: `https://media.probe.invalid/${input.key}` }
+    },
+    // Como o real, a chave cercada fica retirada para sempre e não pode ser recriada.
+    r2FenceObject: async (key: string) => {
+      retiredPublicKeys.add(key)
+      publicObjects.delete(key)
     },
     r2GetObjectPrivate: async (key: string) => {
       const bytes = privateObjects.get(key)
@@ -61,6 +89,11 @@ export async function createPublicRuntimeProbe(
   }
   const storage = memoryArtifactBucket()
   const visible = new Map<string, boolean>()
+  const reservations = new Map<
+    string,
+    { reservationId: string; playId: string; snapshotHash: string }
+  >()
+  const finalized = new Map<string, { id: string; playId: string; studioMeta?: unknown }>()
   let status: 'active' | 'revoked' = 'active'
   let policy = await runtimePolicy()
   let publicRuntime = new AuthorizePublicRuntimeService(policy)
@@ -84,7 +117,28 @@ export async function createPublicRuntimeProbe(
       }),
     },
     members: {
-      getGamification: async () => ({ status: 200, body: { level: { slug: 'god' } } }),
+      // Publicar Pro no Kids exige a jornada canônica com studio + pro (desde 5833b73cb).
+      getGamification: async () => ({
+        status: 200,
+        body: {
+          level: { slug: 'god' },
+          kidsJourney: {
+            audience: 'kids',
+            policyVersion: 2,
+            mode: 'active',
+            tierAccess: initialKidsJourneyPolicy().tierAccess,
+            earned: {
+              level: 'god',
+              capabilities: ['studio', 'pinta', 'bridge', 'pro'],
+              courseAccess: { entry: [], expanded: [], reward: [] },
+            },
+            nextLevel: null,
+            missing: [],
+            advances: [],
+            readiness: { status: 'incomplete', horizon: 'noob', issues: [] },
+          },
+        },
+      }),
       checkStudioAccess: async () => ({
         status: 200,
         body: { access: { 'estudio-completo': true } },
@@ -113,11 +167,45 @@ export async function createPublicRuntimeProbe(
       },
     },
     hub: {
-      createShowcaseThreadStudioStandalone: async (input: { playId: string }) => {
+      // Publicação em duas fases do Hub: reserva idempotente do playId, depois o post.
+      prepareShowcaseThreadStudioStandalone: async (input: {
+        clientIdempotencyKey: string
+        snapshotHash: string
+      }) => {
+        const thread = finalized.get(input.clientIdempotencyKey)
+        if (thread)
+          return {
+            status: 200,
+            body: { state: 'finalized', deduped: true, thread: { ...thread, status: 'visible' } },
+          }
+        let reservation = reservations.get(input.clientIdempotencyKey)
+        if (reservation && reservation.snapshotHash !== input.snapshotHash)
+          return { status: 409, body: null }
+        if (!reservation) {
+          reservation = {
+            reservationId: crypto.randomUUID(),
+            playId: crypto.randomUUID(),
+            snapshotHash: input.snapshotHash,
+          }
+          reservations.set(input.clientIdempotencyKey, reservation)
+        }
+        return { status: 200, body: { state: 'reserved', ...reservation } }
+      },
+      createShowcaseThreadStudioStandalone: async (input: {
+        playId: string
+        clientIdempotencyKey: string
+        studioMeta?: unknown
+      }) => {
         visible.set(input.playId, true)
+        const thread = {
+          id: crypto.randomUUID(),
+          playId: input.playId,
+          studioMeta: input.studioMeta,
+        }
+        finalized.set(input.clientIdempotencyKey, thread)
         return {
           status: 200,
-          body: { thread: { id: crypto.randomUUID(), playId: input.playId }, deduped: false },
+          body: { thread: { ...thread, status: 'visible' }, deduped: false },
         }
       },
       resolveStudioPlay: async (id: string) => ({
