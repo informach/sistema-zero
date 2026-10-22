@@ -1,29 +1,43 @@
 import { describe, expect, test } from 'bun:test'
 import { quizDefinition } from '../../src/analytics/quiz-definition'
 import type { QuizDefinition } from '../../src/analytics/types'
+import { DESAFIO_ADULTO } from '../../src/funnels/desafio-adulto'
+import { QUIZ_VERSION as ADULTO_VERSION } from '../../src/funnels/desafio-adulto/quiz/engine'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../src/funnels/desafio-primeiro-jogo'
-import { DESAFIO_QUIZ_VERSION } from '../../src/funnels/desafio-primeiro-jogo/quiz/engine'
+import { QUIZ_VERSION } from '../../src/funnels/desafio-primeiro-jogo/quiz/engine'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import type { QuizAnswers } from '../../src/lib/quiz-types'
 import { createLead, patchLead } from '../../src/server/leads'
+import { quizFeedback } from '../../src/server/quiz-feedback'
 import { quizSessionToken } from '../../src/server/quiz-session'
 import { createFakeRepo } from '../fakes/fake-db'
 
 const funnel = DESAFIO_PRIMEIRO_JOGO.key
 const definition = quizDefinition(DESAFIO_PRIMEIRO_JOGO)!
+/** O 9 a 17 inteiro, na ordem das telas (perfil B). */
+const respostas917: [string, string][] = [
+  ['genero', 'filho'],
+  ['idade', '13_17'],
+  ['tempo_tela', '2_4'],
+  ['computador', 'dividido'],
+  ['cena', 'B'],
+  ['trava', 'chama'],
+  ['cena_desejada', 'B'],
+  ['garantia', 'ajuda'],
+  ['sintese', 'B'],
+]
 const fixture = (): QuizAnswers => ({
-  _quiz_version: DESAFIO_QUIZ_VERSION,
-  _quiz_revision: 8,
-  idade: '9_11',
-  equipamento: 'disponivel',
-  interesses: ['joga'],
-  experiencia: 'primeira_vez',
-  motivos: ['B'],
-  duvida: 'ajuda',
-  formato: 'gravado',
-  abertura_criacao: 'conhecer',
+  ...Object.fromEntries(respostas917),
+  _quiz_version: QUIZ_VERSION,
+  _quiz_revision: 9,
 })
-const request = (method: string, body: Record<string, unknown>, id?: string) =>
+/** `f: null` manda o corpo sem o funil (o feedback é estrito e não o aceita). */
+const request = (
+  method: string,
+  body: Record<string, unknown>,
+  id?: string,
+  f: string | null = funnel,
+) =>
   new Request('http://localhost/api/leads', {
     method,
     headers: {
@@ -31,174 +45,199 @@ const request = (method: string, body: Record<string, unknown>, id?: string) =>
       ...(id ? { cookie: `${LEAD_COOKIE}=${id}` } : {}),
     },
     body: JSON.stringify({
-      funnel,
-      quizDefinitionId: definition.id,
+      ...(f ? { funnel: f } : {}),
       ...(id ? { sessionToken: quizSessionToken(id) } : {}),
       ...body,
     }),
   })
-async function setup(answers: QuizAnswers = {}) {
+async function setup(answers: QuizAnswers = {}, perfilResultado: string | null = null) {
   const fake = createFakeRepo()
-  const definitions: QuizDefinition[] = []
-  const deps = {
-    repo: fake.repo,
-    secureCookie: false,
-    saveQuizDefinition: async (d: QuizDefinition) => {
-      definitions.push(structuredClone(d))
-    },
-  }
-  const response = await createLead(request('POST', {}), deps)
-  const { id } = await response.json()
-  if (Object.keys(answers).length) await fake.repo.updateLead(id, { quizAnswers: answers })
-  return { ...fake, deps, id: id as string, definitions }
+  const { id } = await fake.repo.createLead(funnel)
+  await fake.repo.updateLead(id, { quizAnswers: answers, perfilResultado })
+  return { ...fake, id, deps: { repo: fake.repo, secureCookie: false } }
 }
 
-describe('API do Desafio Farol', () => {
-  test('registra definição, confirma respostas e emite marcos na revisão salva', async () => {
-    const { deps, id, repo, events, definitions } = await setup()
-    expect(definitions[0]?.version).toBe(DESAFIO_QUIZ_VERSION)
-    expect(definitions[0]?.questions).toHaveLength(10)
+describe('API do quiz Kids do Desafio (v5)', () => {
+  test('registra a definição v5, grava cada resposta com revisão e os marcos uma vez', async () => {
+    const fake = createFakeRepo()
+    const definitions: QuizDefinition[] = []
+    const deps = {
+      repo: fake.repo,
+      secureCookie: false,
+      saveQuizDefinition: async (d: QuizDefinition) => {
+        definitions.push(structuredClone(d))
+      },
+    }
+    const created = await createLead(request('POST', { quizDefinitionId: definition.id }), deps)
+    const { id } = await created.json()
+    expect(definitions[0]?.version).toBe(QUIZ_VERSION)
+    expect(definitions[0]?.questions).toHaveLength(16)
     let revision = 0
-    for (const [key, value] of Object.entries(fixture()).filter(([k]) => !k.startsWith('_'))) {
-      const response = await patchLead(request('PATCH', { key, value, revision }, id), deps)
-      expect(response.status).toBe(200)
+    for (const [key, value] of respostas917) {
+      const response = await patchLead(
+        request('PATCH', { key, value, revision, quizDefinitionId: definition.id }, id),
+        deps,
+      )
+      expect([key, response.status]).toEqual([key, 200])
       const body = await response.json()
       expect(body.answers._quiz_revision).toBe(++revision)
-      expect(body.complete).toBe(revision === 8)
+      expect(body.complete).toBe(revision === respostas917.length)
     }
-    const lead = await repo.getLead(id)
+    const lead = await fake.repo.getLead(id)
     expect(lead?.perfilResultado).toBe('criacao-de-jogos')
     expect(lead?.quizDefinitionId).toBe(definition.id)
-    expect(events.filter((e) => e.eventName === 'start_quiz')).toHaveLength(1)
-    expect(events.filter((e) => e.eventName === 'complete_quiz')).toHaveLength(1)
-    const saved = events.filter((e) => e.eventName === 'quiz_answer_saved')
-    expect(saved).toHaveLength(8)
+    const names = fake.events.map((e) => e.eventName)
+    expect(names.filter((n) => n === 'start_quiz')).toHaveLength(1)
+    expect(names.filter((n) => n === 'complete_quiz')).toHaveLength(1)
+    expect(names.filter((n) => n === 'entrou_ramo_9a17')).toHaveLength(1)
+    expect(names).toContain('respondeu_desafio_v5_sintese')
+    const saved = fake.events.filter((e) => e.eventName === 'quiz_answer_saved')
+    expect(saved).toHaveLength(respostas917.length)
     expect(saved.at(-1)?.metadata).toMatchObject({
       quiz_definition_id: definition.id,
-      question_id: 'abertura_criacao',
+      question_id: 'sintese',
     })
-    expect(new Set(saved.map((e) => e.eventKey)).size).toBe(8)
   })
-  test('abre desempate, recusa escolha fora do ramo e mantém empate sem perfil forçado', async () => {
-    const { deps, id, repo } = await setup(fixture())
-    const update = await patchLead(
-      request('PATCH', { key: 'motivos', value: ['A', 'C'], revision: 8 }, id),
+
+  test('a v4 inicia novo lead sem apagar respostas; a aba antiga não grava no lead v4', async () => {
+    const old = { idade: '9_11', motivos: ['B'], _quiz_version: 'desafio-farol-v4' }
+    const { deps, id, repo } = await setup(old)
+    const response = await createLead(request('POST', {}, id), deps)
+    expect(response.status).toBe(201)
+    expect((await response.json()).id).not.toBe(id)
+    expect((await repo.getLead(id))?.quizAnswers).toEqual(old)
+    const patch = await patchLead(
+      request('PATCH', { key: 'genero', value: 'filha', revision: 0 }, id),
       deps,
     )
-    expect((await update.json()).complete).toBe(false)
-    expect((await repo.getLead(id))?.perfilResultado).toBeNull()
-    expect(
-      (await patchLead(request('PATCH', { key: 'prioridade', value: 'D', revision: 9 }, id), deps))
-        .status,
-    ).toBe(400)
-    const tie = await patchLead(
-      request('PATCH', { key: 'prioridade', value: 'iguais', revision: 9 }, id),
-      deps,
-    )
-    expect((await tie.json()).complete).toBe(true)
-    expect((await repo.getLead(id))?.perfilResultado).toBeNull()
-    await patchLead(request('PATCH', { key: 'motivos', value: ['C'], revision: 10 }, id), deps)
+    expect(patch.status).toBe(409)
+    expect((await patch.json()).error.code).toBe('QUIZ_CONFLICT')
+    expect((await repo.getLead(id))?.quizAnswers).toEqual(old)
+  })
+
+  test('trocar a idade grava cada ramo uma vez e apaga as respostas do ramo anterior', async () => {
+    const { deps, id, events, repo } = await setup(fixture(), 'criacao-de-jogos')
+    const salvar = async (key: string, value: string) => {
+      const revision = Number((await repo.getLead(id))?.quizAnswers?._quiz_revision ?? 0)
+      return patchLead(request('PATCH', { key, value, revision }, id), deps)
+    }
+    expect((await salvar('idade', 'menos_9')).status).toBe(200)
     const lead = await repo.getLead(id)
-    expect(lead?.perfilResultado).toBe('expressao-visual')
-    expect(lead?.quizAnswers?.prioridade).toBeUndefined()
-    expect(lead?.quizAnswers?.duvida).toBe('ajuda')
+    expect(lead?.quizAnswers?.tempo_tela).toBeUndefined()
+    expect(lead?.quizAnswers?.genero).toBe('filho')
+    expect(lead?.perfilResultado).toBeNull()
+    expect((await salvar('m9_leitura', 'nao')).status).toBe(200)
+    expect((await salvar('tempo_tela', '2_4')).status).toBe(400)
+    expect(events.map((e) => e.eventName)).toContain('entrou_ramo_m9')
   })
-  test('outra atividade exige esclarecimento, que sai ao considerar a iniciação', async () => {
+
+  test('18 ou mais: grava a saída e o quiz não completa', async () => {
+    const { deps, id, events, repo } = await setup()
+    await patchLead(request('PATCH', { key: 'genero', value: 'filha', revision: 0 }, id), deps)
+    const res = await patchLead(
+      request('PATCH', { key: 'idade', value: '18_mais', revision: 1 }, id),
+      deps,
+    )
+    expect((await res.json()).complete).toBe(false)
+    expect(events.map((e) => e.eventName)).toContain('entrou_ramo_adulto')
+    expect((await repo.getLead(id))?.perfilResultado).toBeNull()
+  })
+
+  test('feedback do resultado em carta, com o ramo e o perfil, só na revisão atual', async () => {
+    const { deps, id, events } = await setup(fixture(), 'criacao-de-jogos')
+    expect(
+      (await quizFeedback(request('POST', { feedback: 'sim', revision: 8 }, id, null), deps))
+        .status,
+    ).toBe(409)
+    expect(
+      (await quizFeedback(request('POST', { feedback: 'em_parte', revision: 9 }, id, null), deps))
+        .status,
+    ).toBe(201)
+    expect(events.find((e) => e.eventName === 'quiz_feedback')?.metadata).toMatchObject({
+      feedback: 'em_parte',
+      revision: 9,
+      perfil: 'criacao-de-jogos',
+      ramo: '9a17',
+    })
+  })
+
+  test('outra criança recebe nova sessão sem apagar a anterior', async () => {
     const { deps, id, repo } = await setup(fixture())
-    const response = await patchLead(
-      request('PATCH', { key: 'abertura_criacao', value: 'outra_atividade', revision: 8 }, id),
+    const res = await createLead(request('POST', { restartQuiz: true }, id), deps)
+    expect(res.status).toBe(201)
+    const next = await res.json()
+    expect(next.id).not.toBe(id)
+    expect(next.answers).toEqual({})
+    expect((await repo.getLead(id))?.quizAnswers).toEqual(fixture())
+  })
+
+  test('a manchete `tela` vai na atribuição do lead', async () => {
+    const fake = createFakeRepo()
+    const res = await createLead(
+      request('POST', {
+        attribution: { landingPath: '/kids/desafio-primeiro-jogo/quiz', quizHeadline: 'tela' },
+      }),
+      { repo: fake.repo, secureCookie: false },
+    )
+    expect((await fake.repo.getLead((await res.json()).id))?.attribution?.quizHeadline).toBe('tela')
+  })
+})
+
+describe('API do quiz adulto do Desafio (v1)', () => {
+  const adulto = DESAFIO_ADULTO.key
+  const respostas: [string, string][] = [
+    ['computador', 'meu'],
+    ['programacao', 'nunca'],
+    ['tempo_livre', '1_3'],
+    ['cena', 'D'],
+    ['tentativa', 'tutorial'],
+    ['cena_desejada', 'D'],
+    ['garantia', 'zero'],
+    ['sintese', 'D'],
+  ]
+
+  test('oito respostas completam o quiz, com perfil, definição e feedback', async () => {
+    const fake = createFakeRepo()
+    const deps = { repo: fake.repo, secureCookie: false }
+    const definitionAdulto = quizDefinition(DESAFIO_ADULTO)!
+    const created = await createLead(
+      request('POST', { quizDefinitionId: definitionAdulto.id }, undefined, adulto),
       deps,
     )
-    expect((await response.json()).complete).toBe(false)
-    await patchLead(
-      request('PATCH', { key: 'desencontro', value: 'desenho', revision: 9 }, id),
-      deps,
-    )
-    await patchLead(
-      request('PATCH', { key: 'abertura_criacao', value: 'conhecer', revision: 10 }, id),
-      deps,
-    )
-    expect((await repo.getLead(id))?.quizAnswers?.desencontro).toBeUndefined()
+    expect(created.status).toBe(201)
+    const { id } = await created.json()
+    let revision = 0
+    for (const [key, value] of respostas) {
+      const response = await patchLead(request('PATCH', { key, value, revision }, id, adulto), deps)
+      expect([key, response.status]).toEqual([key, 200])
+      const body = await response.json()
+      expect(body.answers._quiz_version).toBe(ADULTO_VERSION)
+      expect(body.complete).toBe(++revision === respostas.length)
+    }
+    expect((await fake.repo.getLead(id))?.perfilResultado).toBe('desafio-adulto-por-dentro')
+    expect(fake.events.map((e) => e.eventName)).toContain('respondeu_desafio_adulto_v1_sintese')
+    expect(fake.events.some((e) => e.eventName.startsWith('entrou_ramo_'))).toBe(false)
+    expect(
+      (
+        await quizFeedback(
+          request('POST', { feedback: 'sim', revision: respostas.length }, id, null),
+          deps,
+        )
+      ).status,
+    ).toBe(201)
+  })
+
+  test('uma resposta do Kids não entra no quiz adulto', async () => {
+    const fake = createFakeRepo()
+    const { id } = await fake.repo.createLead(adulto)
+    const deps = { repo: fake.repo, secureCookie: false }
     expect(
       (
         await patchLead(
-          request('PATCH', { key: 'desencontro', value: 'desenho', revision: 11 }, id),
+          request('PATCH', { key: 'genero', value: 'filho', revision: 0 }, id, adulto),
           deps,
         )
       ).status,
     ).toBe(400)
-  })
-  test('novo quiz não reinterpreta nem apaga as respostas da tipologia antiga', async () => {
-    const { deps, repo } = await setup()
-    const { id } = await repo.createLead(funnel)
-    const old = { perfil: 'criador', tempo_tela: 'muito' }
-    await repo.updateLead(id, { quizAnswers: old, perfilResultado: 'criador' })
-    const response = await createLead(request('POST', {}, id), deps)
-    expect(response.status).toBe(201)
-    const next = await response.json()
-    expect(next.id).not.toBe(id)
-    expect(next.answers).toEqual({})
-    expect((await repo.getLead(id))?.quizAnswers).toEqual(old)
-  })
-  test('a exposição ao produto na v2 não vira abertura espontânea na v3', async () => {
-    const { deps, repo, id } = await setup()
-    const { abertura_criacao: _, ...otherAnswers } = fixture()
-    const old = {
-      ...otherAnswers,
-      _quiz_version: 'desafio-farol-v2',
-      interesse_no_projeto: 'conhecer',
-    }
-    await repo.updateLead(id, { quizAnswers: old })
-    const response = await createLead(request('POST', {}, id), deps)
-    expect(response.status).toBe(201)
-    const next = await response.json()
-    expect(next.id).not.toBe(id)
-    expect(next.answers).toEqual({})
-    expect((await repo.getLead(id))?.quizAnswers).toEqual(old)
-    const invalid = await patchLead(
-      request('PATCH', { key: 'interesse_no_projeto', value: 'conhecer', revision: 0 }, next.id),
-      deps,
-    )
-    expect(invalid.status).toBe(400)
-  })
-  test('outro filho tem sessão própria, e uma aba anterior não pode sobrescrevê-la', async () => {
-    const { deps, id, repo } = await setup(fixture())
-    const next = await (await createLead(request('POST', { restartQuiz: true }, id), deps)).json()
-    expect(next.id).not.toBe(id)
-    expect(next.answers).toEqual({})
-    const response = await patchLead(
-      request(
-        'PATCH',
-        { key: 'idade', value: '12_14', revision: 0, sessionToken: quizSessionToken(id) },
-        next.id,
-      ),
-      deps,
-    )
-    expect(response.status).toBe(409)
-    expect((await repo.getLead(id))?.quizAnswers).toEqual(fixture())
-    expect((await repo.getLead(next.id))?.quizAnswers).toBeNull()
-  })
-  test('duas abas não gravam a mesma revisão duas vezes', async () => {
-    const { deps, id, events } = await setup(fixture())
-    const responses = await Promise.all(
-      ['rotina', 'companhia'].map((value) =>
-        patchLead(request('PATCH', { key: 'duvida', value, revision: 8 }, id), deps),
-      ),
-    )
-    expect(responses.map((r) => r.status).sort()).toEqual([200, 409])
-    expect(events.filter((e) => e.eventName === 'quiz_answer_saved')).toHaveLength(1)
-  })
-  test('definição antiga, outro funil e pagamento confirmado impedem mutação', async () => {
-    const { deps, id, repo } = await setup(fixture())
-    const body = { key: 'duvida', value: 'rotina', revision: 8 }
-    for (const extra of [
-      { quizDefinitionId: '0'.repeat(64) },
-      { funnel: 'kids/comunidade-dos-criadores' },
-    ]) {
-      expect((await patchLead(request('PATCH', { ...body, ...extra }, id), deps)).status).toBe(409)
-    }
-    await repo.updateLead(id, { paidAt: new Date() })
-    expect((await patchLead(request('PATCH', body, id), deps)).status).toBe(409)
-    expect((await repo.getLead(id))?.quizAnswers).toEqual(fixture())
   })
 })

@@ -1,5 +1,8 @@
 # Quiz e resultados: direção vigente
 
+> **Histórico.** Este documento descreve as versões v3 e v4 do quiz do Desafio, em cartões. Desde 21/10/2026 vale o quiz em conversa: veja [quiz-2026-10-21.md](quiz-2026-10-21.md).
+
+
 03/10/2026. Versão implementada: `desafio-farol-v3`. A revisão para tráfego frio substitui a apresentação antecipada do produto na proposta v2. Complementa a [proposta do funil](proposta-funil-2026-10-03.md); a [revisão de entrada e posicionamento](revisao-quiz-frio-e-bio.md) registra a aplicação do comando `lt-quiz`, as mudanças e o uso de cada resposta.
 
 ## Função do quiz

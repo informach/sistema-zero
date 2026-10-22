@@ -203,8 +203,8 @@ body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
 partir de `SALES`). O layout `.cdc` mora em
 `src/styles/comunidade-oferta.css` (sem o escopo do Astro; ver "Direção de arte das quatro páginas"),
-hoje vestido pelo quiz e pelo resultado do Desafio (com `desafio-farol.css` sob `.df`) e pelas
-páginas do presente e do embaixador. ⚠️ Astro escopa somando um
+hoje vestido pelas páginas do presente e do embaixador (o quiz e o resultado antigos do Desafio,
+que também o vestiam, saíram em 21/10/2026). ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
@@ -230,22 +230,47 @@ R$ 67 é a referência editorial: preço/cupom vêm do catálogo e da cotação.
 `desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua reservada aos contratos
 vitalícios históricos e ao fluxo de bolsas. Não mudar direitos históricos para fazer a oferta passar.
 
-`src/funnels/desafio-primeiro-jogo/quiz/` contém perguntas, motor, definição e resultado.
-Versão `desafio-farol-v4` (21/10/2026: a idade ganhou "15 a 17" e "18 ou mais", a faixa é 9 a 17 e
-todo resultado leva à mesma `/oferta`; a v3, de tráfego frio, é de 03/10/2026): o quiz qualifica e aquece, e NENHUMA tela
-antes do resultado cita o Desafio, o Farol, preço, prazo ou oferta (decisão da dona; a entrada
-mora em `quiz/entry-copy.ts` e a régua é `tests/browser/desafio-quiz-frio.ts`). O Desafio aparece
-no resultado (`presentation`) como a primeira experiência na plataforma da Comunidade. A pergunta
-final `abertura_criacao` (era `interesse_no_projeto`) mede abertura para o tipo de atividade, não
-aceitação do produto; a justificativa de cada pergunta está em
-`docs/marketing/kids/desafio-primeiro-jogo/revisao-quiz-frio-e-bio.md`. Oito perguntas principais,
-prioridade condicional entre dois motivos e motivo de recusa; idade/equipamento cedo, sem
-pontuação por personalidade. Motivo adulto,
-interesse observado, condição prática e destino são campos distintos. Empate não força perfil;
-C continua expressão visual, com limite de arte preparada explicado. O registry usa
-`activeSteps/applyAnswer/isComplete`; API mantém revisão, sessão e definição analítica.
-`DesafioQuiz.tsx` e `DesafioResultado.astro` usam a mesma composição Kids, rodapé institucional
-fora de `.cdc`, erros recuperáveis e convite copiável sem cadastro de contato.
+**Quizzes do Desafio em conversa (21/10/2026, Canvas "Quiz do Desafio · Kids e adulto",
+https://claude.ai/artifact/7RLNMmkCa6yMrSUnWR9UHs; registro em
+`docs/marketing/kids/desafio-primeiro-jogo/quiz-2026-10-21.md`):** o mesmo motor e as mesmas peles
+dos quizzes da Comunidade (ver "Peças comuns aos dois quizzes em conversa"), com perguntas mais curtas
+e um resultado que fala de um jogo só, A Chave do Farol. NENHUMA tela antes do resultado cita o
+Desafio, o Farol, curso, aula, plataforma, preço ou prazo, nem as saídas e o topo (decisão da dona;
+a régua é `tests/browser/desafio-quiz-frio.ts`). Única exceção, deliberada: a opção adulta "Não ser
+curso de criança", que é o medo do adulto nas palavras dele. Os links do quiz levam a atribuição da
+página (UTMs, `event_code` e o `cupom` do anúncio, que a oferta só lê da própria URL):
+`linkWithAttribution` em `useSpinQuiz.ts` (resultado e saídas) e `funnelLinkWithAttribution` no botão
+da carta, em `resultado.astro`.
+- **Kids v5** (`desafio-primeiro-jogo/quiz/`, `desafio-farol-v5`, `presentation: 'desafio-kids'`):
+  filho ou filha em cartas, a idade em cartas e sete perguntas por ramo (`9a17` e `m9`, chaves `m9_*`);
+  "18 ou mais" sai para o quiz adulto do Desafio. Perfil por soma (cena 3, cena desejada 2, síntese 3;
+  empate vai para a síntese, depois para a cena; abaixo de 4 pontos a carta avisa). O 9 a 17 usa os
+  slugs da v4 (`tempo-de-tela`, `criacao-de-jogos`, `expressao-visual`, `iniciacao-tecnologica`) para a
+  aba Perfis continuar comparável; o menor de 9 tem `m9-*`. Eventos `respondeu_desafio_v5_*` e
+  `entrou_ramo_<id>`; manchetes `padrao` e `?manchete=tela`; a v4 fica em `questions-v4.ts` só como
+  `legacySteps`. Carta (`result.ts`/`result-copy.ts`): 4 títulos, a tela do jogo, um relato
+  (André no A e no D, Rafael no B e no C, Débora no menor de 9) e o botão para `/oferta` ou
+  `/oferta/criar-junto`; só celular ou tablet e professor ao vivo trocam o botão por "Ver os
+  requisitos e como funciona", com a âncora da seção que responde (`#duvidas` para o computador,
+  `#aula` no 9 a 17 e `#sessao` no menor de 9 para o professor ao vivo). Texto no masculino, `flexionar` troca para "ela".
+- **Adulto v1** (`desafio-adulto/quiz/`, `desafio-adulto-v1`, `presentation: 'desafio-adulto'`):
+  "Começar" e o link "Tenho menos de 18 anos" (saída para o quiz Kids do Desafio, nada gravado),
+  oito perguntas sem ramo nem condicional, manchetes `padrao` e `?manchete=ideia`. Carta sem relato,
+  com o parágrafo dos fundadores da página adulta; só celular ou tablet, professor ao vivo e trabalhar
+  com jogos trocam o botão (`/pro/desafio-primeiro-jogo/oferta` com `#duvidas`, `#aula` ou `#jogo`). O título das necessidades
+  conta as frases ("Duas coisas…", "Três coisas…"). O topo leva só a logo, sem nome de produto.
+- O botão das duas cartas leva a nota "O preço aparece na próxima página." (`cta.nota`; sem ela vale a
+  da assinatura, "O preço e os planos…"). O `resultado.astro` não tem mais ramo próprio do Desafio: a
+  `/resultado` desenha a carta de qualquer `FunnelQuiz.conversa`.
+- **Espelho:** `bun scripts/espelho-quiz-desafio.ts` →
+  `docs/marketing/kids/desafio-primeiro-jogo/copy/{quiz,resultados-quiz,adulto-quiz,adulto-resultados-quiz}.md`.
+- **Testes:** `desafio-quiz.test.ts` e `desafio-adulto-quiz.test.ts` (as combinações das perguntas de
+  perfil nos dois gêneros, Light Copy, produto fora antes do resultado, exemplos do Canvas, espelho),
+  `api-desafio-quiz.test.ts`, `quiz-branches.test.ts` (definições fixadas, ramos no /admin),
+  `api-admin.test.ts`; navegador, com banco, `desafio-quiz-frio.ts` e `desafio-farol.ts` (a carta,
+  o feedback, rever e outra criança).
+- Saíram com o quiz antigo: `DesafioQuizLayout`, `DesafioResultado`, `DesafioConvite`,
+  `DesafioVisual`, `visuals.ts`, `server/desafio-price.ts`, `desafio-farol.css` e `comunidade-quiz.css`.
 
 Ofertas: desde 21/10/2026, três páginas (ver "Desafio do Primeiro Jogo em três públicos"). As
 variantes por motivo (`/oferta/tempo-de-tela`, `/oferta/iniciacao-tecnologica` e o alias
@@ -288,10 +313,12 @@ código; a copy Kids fala de "seu filho" e "ele" (a maioria dos alunos são meni
 - **Funil adulto** `pro/desafio-primeiro-jogo` (`src/funnels/desafio-adulto/`), registrado no `FUNNELS`
   desde 21/10/2026, DEPOIS da Comunidade adulta (o `/pro` segue no NCI; a ordem é pinada por teste). A
   env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção (criada pela
-  dona) e está declarada em `.railway/variables.ts`; a oferta e o Termo estão no sitemap. O quiz Kids
-  aponta a página adulta a quem marca 18 ou mais (`desafioAdultoPath`, resolvido pela página).
+  dona) e está declarada em `.railway/variables.ts`; a oferta e o Termo estão no sitemap. Desde
+  21/10/2026 o quiz Kids do Desafio leva quem marca 18 ou mais ao quiz adulto do Desafio, e o adulto
+  leva quem tem menos de 18 ao Kids (`desafioAdultQuizPath`/`desafioKidsQuizPath` em `quiz.astro`).
   `DesafioAdultoBody` + `oferta/pagina.ts` +
-  `styles/desafio-adulto.css` sob `.cda` (tema arcade), sem quiz nem resultado, Termo próprio
+  `styles/desafio-adulto.css` sob `.cda` (tema arcade), quiz e resultado desde 21/10/2026 (ver
+  "Quizzes do Desafio em conversa"; as dúvidas têm `id="duvidas"`), Termo próprio
   `termos-desafio-adulto.ts` (`desafio-adulto-2026-10-21`), `chargeName` "(adultos)". Oferta pela env
   `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` (`desafio-primeiro-jogo-adulto-30-dias`, criada pelo seed do
   catálogo com o curso `desafio-primeiro-jogo-adulto` e o Mural adulto). O jogo e os blocos são os
@@ -318,8 +345,8 @@ código; a copy Kids fala de "seu filho" e "ele" (a maioria dos alunos são meni
   `docs/marketing/kids/desafio-primeiro-jogo/copy/pagina-{9-a-17,menor-9,adulto}.md`.
 - **Testes:** `desafio-offer-copy.test.ts` (rotas, despacho, 301, contrato igual, env, Light Copy,
   imagens, relatos, dois CTAs, preço, espelhos), `comunidade-offer-css.test.ts` (as três folhas só por
-  tokens), o browser `tests/browser/desafio-ofertas.ts` e, com banco, `tests/browser/desafio-farol.ts`
-  (o quiz).
+  tokens), o browser `tests/browser/desafio-ofertas.ts` e, com banco, `tests/browser/desafio-quiz-frio.ts`
+  e `desafio-farol.ts` (os quizzes).
 
 ## Comunidade dos Criadores em três públicos (20/10/2026)
 
@@ -368,7 +395,11 @@ quadros em `docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/`; regis
   peles `--kids`, `--m9`, `--adulto` só por variáveis), resultado `components/funnel/resultado/
   ResultadoConversa.astro` + `content/resultado-conversa.ts` (blocos `p|h|img|relato|cta`, trechos
   `[[...]]` viram destaque) + `QuizResultadoFeedback.tsx`. `FunnelQuiz.conversa` liga o construtor da
-  carta do funil; a `/resultado` desenha qualquer funil que o declare.
+  carta do funil; a `/resultado` desenha qualquer funil que o declare. Desde 21/10/2026 as ilhas são
+  genéricas: `spin-quiz/KidsConversaQuiz.tsx` (`KidsQuizConfig`) e `spin-quiz/AdultoConversaQuiz.tsx`
+  (`AdultoQuizConfig`), e cada funil tem uma ilha fina com a sua configuração (`ComunidadeQuiz`,
+  `ComunidadeAdultoQuiz`, `DesafioQuiz`, `DesafioAdultoQuiz`), porque funções não atravessam as props
+  do Astro. Os `data-analytics-id` próprios levam o prefixo da configuração.
 - **Etapas compartilhadas sem chave presa ao Kids:** a abertura do checkout vem de
   `FunnelContent.checkout` (título vira o h1) e a confirmação do obrigado de `FunnelObrigado.titulo`,
   `acesso`, `passosTitulo` e `botao`. ⚠️ Duas expressões Astro separadas só por espaço perdem o
