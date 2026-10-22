@@ -293,6 +293,16 @@ export function createTurtleRenderer(
       }
       const stroke = item.kind === 'line' ? item.fill : item.outline
       if (stroke && (item.width ?? 1) > 0) {
+        const [x, y] = item.points[0]!
+        if (item.kind === 'line' && item.points.every(([px, py]) => px === x && py === y)) {
+          // Canvas prunes zero-length segments, so their round caps paint nothing. Tk draws
+          // them as a disc, and turtle.dot() is exactly such a line: paint the disc.
+          ctx.fillStyle = stroke
+          ctx.beginPath()
+          ctx.arc(x, y, (item.width ?? 1) / 2, 0, Math.PI * 2)
+          ctx.fill()
+          return
+        }
         ctx.strokeStyle = stroke
         ctx.lineWidth = item.width ?? 1
         ctx.stroke(shape)

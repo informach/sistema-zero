@@ -1,11 +1,14 @@
 # Reproduzir a autoria visual dos jogos
 
-Os dois arquivos `*.edits.json` contêm os inputs usados na qualificação R4.
-A única diferença de bytes é um LF final exigido pelo formatter; o JSON é igual
-e os originais R4 foram preservados. Cada um altera uma coordenada, uma velocidade e uma cor por
-caminho estrutural de bloco, com valor anterior obrigatório. Se a fonte mudar,
+Cada jogo de `src/examples/python/visualReferenceGames.manifest.ts` tem um
+`<jogo>.edits.json` com os inputs da qualificação. Cada um altera uma coordenada,
+uma velocidade e uma cor por caminho estrutural de bloco, com valor anterior
+obrigatório. Se a fonte mudar,
 uma recusa por caminho ou valor divergente exige investigar e requalificar;
 não ajuste os inputs somente para obter um resultado positivo.
+
+Os inputs de Pac-Man e Space Arena são os da R4; a única diferença de bytes é
+um LF final exigido pelo formatter, e o JSON é igual:
 
 | Input | SHA-256 original R4 | SHA-256 versionado com LF |
 | --- | --- | --- |
@@ -13,21 +16,22 @@ não ajuste os inputs somente para obter um resultado positivo.
 | `space-arena-visual.edits.json` | `f7ad89a41f1ed3ca9ade2ed2890ee54ebf47a6b7de9a408cdceb804a911577e3` | `7c0730b8526e9e91e99c624904705b9bde6d53bff9830c093856ad1736d7b8fb` |
 
 Use Bun **1.3.11**, Node **24.22.0**, as dependências do lockfile e a distribuição
-atual `e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9`.
+atual `476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c`.
 Para obtê-la em outro computador, siga a [reprodução canônica](../../../../../../docs/superpowers/plans/2026-10-22-python-current-candidate/README.md).
 Não use o caminho absoluto de distribuição gravado no plano por outra máquina.
 
 Na raiz do checkout, execute em PowerShell 7. O diretório de saída deve ser novo.
 Os comandos extraem a release e a lista de blocos do plano **offline** versionado:
 isso configura a paleta deste teste local, sem consultar nem atestar autorização
-de um host remoto. A paleta de 255 IDs do plano corresponde à usada na R4.
+de um host remoto. A paleta do plano tem 256 IDs: os 255 da R4 mais
+`sz_py_lambda`.
 
 ```powershell
 $ErrorActionPreference = 'Stop'
 $node = (Get-Command node -CommandType Application).Source
 if ((& $node --version) -ne 'v24.22.0') { throw 'Use Node 24.22.0' }
 $plan = Get-Content -Raw docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json | ConvertFrom-Json
-$sha = 'e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9'
+$sha = '476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c'
 if ($plan.input.distribution.sha256 -ne $sha) { throw 'O candidato atual mudou: confira o plano e a evidência' }
 $distribution = (Resolve-Path ".cache/python-current-build/distributions/$sha").Path
 $output = Join-Path (Get-Location) '.cache/visual-reference-local'
@@ -46,7 +50,9 @@ $releasePath = Join-Path $output 'release.json'
 $blocksPath = Join-Path $output 'candidate-block-ids.json'
 [IO.File]::WriteAllText($releasePath, (ConvertTo-Json -InputObject $release[0] -Depth 100), $utf8)
 [IO.File]::WriteAllText($blocksPath, (ConvertTo-Json -InputObject @($approval[0].blockIds) -Depth 10), $utf8)
-foreach ($game in @('pacman-visual', 'space-arena-visual')) {
+$games = Get-ChildItem packages/studio/scripts/python/fixtures/visual-reference-games -Filter '*.edits.json' |
+  ForEach-Object { $_.Name -replace '\.edits\.json$', '' }
+foreach ($game in $games) {
   $result = & bun --no-env-file packages/studio/scripts/python/visual-example-qualification.ts `
     --node $node --distribution $distribution --distribution-sha256 $sha `
     --runtime-release $releasePath --approved-block-ids $blocksPath `
@@ -73,8 +79,9 @@ bun --no-env-file test packages/studio/scripts/python/visual-example-qualificati
 if ($LASTEXITCODE -ne 0) { throw 'Falha nos testes do qualificador' }
 ```
 
-Os [recibos públicos R4](../../../../../../docs/continuity/2026-10-22-python-reference-games-visual-evidence/)
-registram os resultados originais. Esta qualificação é de AST e Blockly sem
+Os [recibos públicos](../../../../../../docs/continuity/2026-10-22-python-reference-games-visual-evidence/)
+registram os resultados: R4 é a primeira release dos dois jogos originais; o
+recibo apontado por `receipt` no manifesto é o vigente de cada jogo. Esta qualificação é de AST e Blockly sem
 interface gráfica: não executa os jogos, não certifica desempenho, não mede o
 efeito visual da constante alterada e não concede capacidades ao runtime. Os
 testes de interface, execução e controles em pixels são evidências separadas.

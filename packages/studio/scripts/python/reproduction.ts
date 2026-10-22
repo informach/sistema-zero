@@ -12,7 +12,7 @@ import vendor from '../../src/runtime/python/vendor-manifest.json'
 import standardLibrary from './stdlib-manifest.json'
 
 export const PYTHON_REPRODUCTION_SHA256 =
-  'e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9'
+  '476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c'
 export const PYTHON_REPRODUCTION_BUN_VERSION = '1.3.11'
 export const repositoryRoot = resolve(import.meta.dirname, '../../../..')
 const planPath = resolve(
