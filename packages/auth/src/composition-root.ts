@@ -497,6 +497,7 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   let purgeTimer: ReturnType<typeof setInterval> | null = null
+  let purgeCycle: Promise<void> | null = null
 
   // Aviso de 18 anos: e-mail único ao responsável; o perfil segue funcionando.
   const notifyAdultProfiles = new NotifyAdultProfilesService(
@@ -515,6 +516,18 @@ export async function createApplication(env: Env): Promise<Application> {
   let adultNoticeTimer: ReturnType<typeof setInterval> | null = null
   let adultNoticeCycle: Promise<void> | null = null
   let stopping = false
+  const purgeSafely = () => {
+    if (purgeCycle || stopping) return
+    purgeCycle = runPurgeCycle()
+      .catch((error) =>
+        logger.error('tokens.purge.failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        purgeCycle = null
+      })
+  }
   const runAdultNoticeCycle = () => {
     if (adultNoticeCycle || stopping) return // ciclo anterior ainda enviando nesta réplica
     adultNoticeCycle = withSessionAdvisoryLock(connection.sql, ADULT_NOTICE_ADVISORY_LOCK_KEY, () =>
@@ -545,16 +558,10 @@ export async function createApplication(env: Env): Promise<Application> {
           detail: 'sem GATEWAY_URL + AUTH_HMAC_SECRET o aviso de 18 anos não roda',
         })
       }
-      const purgeSafely = () =>
-        runPurgeCycle().catch((error) =>
-          logger.error('tokens.purge.failed', {
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        )
       // Um ciclo no boot (deploys mais frequentes que o intervalo não deixam a
       // purga órfã) + intervalo. O advisory lock segura a concorrência entre réplicas.
-      void purgeSafely()
-      purgeTimer = setInterval(() => void purgeSafely(), PURGE_INTERVAL_MS)
+      purgeSafely()
+      purgeTimer = setInterval(purgeSafely, PURGE_INTERVAL_MS)
       // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
       // Railway (`auth.railway.internal` resolve IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
@@ -567,6 +574,7 @@ export async function createApplication(env: Env): Promise<Application> {
       await server.stop()
       await adultNoticeCycle
       await profileAdmissionWorker.stop()
+      await purgeCycle
       await connection.close()
       logger.info('app.stopped')
     },
