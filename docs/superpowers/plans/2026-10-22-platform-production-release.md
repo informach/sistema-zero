@@ -122,6 +122,12 @@ Não houve implantação equivalente em produção. Ver a
 [ativação atual](2026-10-22-python-staging-activation.md) para a distinção entre
 provas locais, imagem registrada, Worker e limpeza ainda não qualificada.
 
+A leitura posterior de 21:31 UTC confirmou zero instâncias físicas e zero
+active/assigned/scheduling/starting, fechando a pendência dessa observação.
+Às 21:32 UTC, catálogo/hosts do Members staging foram configurados com
+`skip-deploys`, leitura de volta e sem novo deployment. Sua carga pelo processo
+novo e os percursos autenticados continuam pendentes; produção não foi alterada.
+
 O Runtime staging passou na prova HTTP de três casos em 131,42 s: compilação sem
 execução, rejeição de sintaxe inválida e Turtle com stdin/Space/clique e captura
 320×240. As retiradas lógicas passaram e a leitura posterior mostrou zero containers

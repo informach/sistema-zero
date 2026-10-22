@@ -1,0 +1,317 @@
+{
+  "kind": "members-staging-python-activation-and-runtime-readback",
+  "version": 1,
+  "createdAt": "2026-10-22T21:32:57.951Z",
+  "sources": [
+    {
+      "path": ".cache/python-reference-games/members-staging-python-config-r1.ts",
+      "sha256": "ae820c228d282718f607d3c3ace094fe62f778b5d4a351fd1a23ec6aa8184426",
+      "bytes": 12236,
+      "content": "/** Private operator. `check` is read-only. Only Root may invoke explicit `apply`. */\nimport { execFile } from 'node:child_process'\nimport { createHash } from 'node:crypto'\nimport { mkdir, open, readFile, rename } from 'node:fs/promises'\nimport { dirname, join, resolve } from 'node:path'\nimport { fileURLToPath } from 'node:url'\nimport { canonicalJson, sha256Hex } from '../../packages/core/src/creations/content-fingerprint'\nimport { createStudioAuthoringPolicy } from '../../packages/members/src/domain/studio/authoring-policy'\nimport { createStudioRuntimeHosts } from '../../packages/members/src/domain/studio/runtime-hosts'\nimport { verifyPythonPromotionPlan } from '../../packages/studio-runtime/scripts/python-promotion-plan'\n\nconst CACHE = dirname(fileURLToPath(import.meta.url))\nconst ROOT = resolve(CACHE, '../..')\nconst PINS = Object.freeze({\n  project: '415d5a1c-5f75-432c-8445-b395d0977ce3',\n  environment: 'f634cff6-aafb-4804-8b69-172fad4e946e',\n  environmentName: 'staging',\n  service: 'aa282801-ffba-477c-af6d-394b2f4f9af9',\n  deployment: '1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e',\n  source: '001ce078891cef0e03d5f9d3926653668e2b6c5f',\n  plan: '43f7c218d08b00d4a91dd360ffaf53970316d9d3048dd307e59289fc72fd6725',\n  configuration: '97a116863d4759717e7511d835d3d37b82f6e738c705075bf9179bf385ed7512',\n  distribution: '476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c',\n  manifest: 'bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80',\n})\nconst KEYS = ['STUDIO_AUTHORING_POLICY_JSON', 'STUDIO_RUNTIME_HOSTS_JSON'] as const\ntype Key = typeof KEYS[number]\ntype VariableState = 'absent' | 'equal' | 'unexpected'\nconst sha = (bytes: string | Uint8Array) => createHash('sha256').update(bytes).digest('hex')\nclass OperatorError extends Error { constructor(readonly code: string) { super(code) } }\nfunction requireThat(condition: unknown, code: string): asserts condition { if (!condition) throw new OperatorError(code) }\nconst codes = new Set(['ARGUMENTS_INVALID','PLAN_VERIFY_FAILED','PLAN_PIN_MISMATCH','CLI_VERSION_MISMATCH','NATIVE_READ_UNCONFIRMED','VARIABLES_INVALID','REMOTE_IDENTITY_MISMATCH','DEPLOYMENT_BARRIER_FAILED','UNEXPECTED_VARIABLE','PREFLIGHT_CHANGED','READBACK_UNCONFIRMED','ACK_UNKNOWN','DEADLINE_EXCEEDED','RECEIPT_FAILED'])\n\nconst [mode = 'check', runName, ...extra] = process.argv.slice(2)\nrequireThat(['check', 'apply'].includes(mode) && !!runName && /^members-staging-python-[a-z0-9-]+$/.test(runName) && extra.length === 0, 'ARGUMENTS_INVALID')\nconst output = join(CACHE, runName)\nawait mkdir(output) // Exclusive run directory: never erase an earlier/partial receipt.\nconst receiptPath = join(output, 'receipt.json')\nconst started = Date.now()\nconst deadline = started + 180_000\nconst receipt: Record<string, unknown> = {\n  kind: 'members-staging-python-configuration-only', version: 1, mode,\n  startedAt: new Date(started).toISOString(), pins: PINS,\n  state: 'PREPARING', skipDeploys: true, deploymentRequested: false,\n  compareAndSwapAvailable: false, externalWriterFreezeRequired: true,\n  rawVariablesRecorded: false, credentialsRecorded: false,\n  mutationAttempts: 0, operations: [], remoteOutcomeUnknown: false,\n}\nconst operations = receipt.operations as Record<string, unknown>[]\nasync function checkpoint() {\n  try {\n    const temporary = `${receiptPath}.tmp`\n    const file = await open(temporary, 'w')\n    try { await file.writeFile(`${JSON.stringify(receipt, null, 2)}\\n`); await file.sync() } finally { await file.close() }\n    await rename(temporary, receiptPath)\n  } catch { throw new OperatorError('RECEIPT_FAILED') }\n}\nfunction native(executable: string, args: string[], input = ''): Promise<string> {\n  requireThat(Date.now() < deadline, 'DEADLINE_EXCEEDED')\n  return new Promise((accept, reject) => {\n    const child = execFile(executable, args, { cwd: ROOT, windowsHide: true, timeout: Math.min(20_000, deadline - Date.now()), maxBuffer: 16 * 1024 * 1024, encoding: 'utf8' }, (error, stdout) => {\n      // stderr/stdout/driver errors can contain raw variables. Never log or persist them.\n      if (error) reject(new OperatorError('NATIVE_READ_UNCONFIRMED'))\n      else accept(stdout)\n    })\n    child.stdin?.on('error', () => {})\n    child.stdin?.end(input)\n  })\n}\nconst executable = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe')\nconst selection = ['--project', PINS.project, '--environment', PINS.environmentName, '--service', PINS.service]\nconst contextQuery = `query($id:String!,$s:String!,$e:String!,$input:DeploymentListInput!){\n  deployment(id:$id){id projectId environmentId serviceId status meta}\n  serviceInstance(serviceId:$s,environmentId:$e){activeDeployments{id status meta}}\n  deployments(input:$input,first:1){edges{node{id status}} pageInfo{hasNextPage}}\n}`\nasync function readContext() {\n  const result = await native(executable, ['api','--compact','--file','-','--variables',JSON.stringify({ id:PINS.deployment, s:PINS.service, e:PINS.environment, input:{ projectId:PINS.project, environmentId:PINS.environment, serviceId:PINS.service, status:{notIn:['SUCCESS','FAILED','CRASHED','REMOVED','SKIPPED']} } })], contextQuery)\n  let reply\n  try { reply = JSON.parse(result) } catch { throw new OperatorError('DEPLOYMENT_BARRIER_FAILED') }\n  const data = reply.data\n  const deployment = data?.deployment\n  const active = data?.serviceInstance?.activeDeployments\n  const pending = data?.deployments\n  requireThat(!reply.errors && deployment?.id === PINS.deployment && deployment.projectId === PINS.project && deployment.environmentId === PINS.environment && deployment.serviceId === PINS.service && deployment.status === 'SUCCESS' && deployment.meta?.commitHash === PINS.source, 'DEPLOYMENT_BARRIER_FAILED')\n  requireThat(Array.isArray(active) && active.length === 1 && active[0].id === PINS.deployment && active[0].status === 'SUCCESS' && active[0].meta?.commitHash === PINS.source && Array.isArray(pending?.edges) && pending.edges.length === 0 && pending.pageInfo?.hasNextPage === false, 'DEPLOYMENT_BARRIER_FAILED')\n  return { observedAt:new Date().toISOString(), id:deployment.id, status:'SUCCESS', commitHash:PINS.source, activeCount:1, pendingCount:0, pendingHasNextPage:false }\n}\nasync function readVariables(desired: Record<Key, string>) {\n  const raw = await native(executable, ['variable','list',...selection,'--json'])\n  let variables\n  try { variables = JSON.parse(raw) } catch { throw new OperatorError('VARIABLES_INVALID') }\n  requireThat(variables && typeof variables === 'object' && !Array.isArray(variables), 'VARIABLES_INVALID')\n  for (const [key,value] of [['RAILWAY_PROJECT_ID',PINS.project],['RAILWAY_ENVIRONMENT_ID',PINS.environment],['RAILWAY_SERVICE_ID',PINS.service]]) {\n    if (Object.hasOwn(variables,key)) requireThat(variables[key] === value, 'REMOTE_IDENTITY_MISMATCH')\n  }\n  const result = {} as Record<Key, {state:VariableState; semanticSha256?:string}>\n  for (const key of KEYS) {\n    if (!Object.hasOwn(variables,key)) { result[key]={state:'absent'}; continue }\n    if (typeof variables[key] !== 'string') { result[key]={state:'unexpected'}; continue }\n    try {\n      const semantic = canonicalJson(JSON.parse(variables[key]))\n      // Do not record unexpected value hashes: they may accidentally be secrets.\n      result[key] = semantic === desired[key] ? {state:'equal',semanticSha256:sha(semantic)} : {state:'unexpected'}\n    } catch { result[key]={state:'unexpected'} }\n  }\n  return result\n}\nasync function snapshot(desired: Record<Key,string>) {\n  const variables = await readVariables(desired)\n  const context = await readContext()\n  return {variables,context}\n}\nlet desired: Record<Key,string> | undefined\ntry {\n  await checkpoint()\n  let plan\n  try {\n    plan = await verifyPythonPromotionPlan(JSON.parse(await readFile(join(CACHE,'staging-promotion-plan-001-r1.json'),'utf8')), PINS.plan)\n    await createStudioAuthoringPolicy(plan.configuration.members)\n    createStudioRuntimeHosts(plan.configuration.members.catalog, plan.configuration.hosts)\n  } catch { throw new OperatorError('PLAN_VERIFY_FAILED') }\n  requireThat(plan.input.environment === 'staging' && plan.input.distribution.sha256 === PINS.distribution && plan.deployment.release.manifestSha256 === PINS.manifest && plan.configurationSha256 === PINS.configuration, 'PLAN_PIN_MISMATCH')\n  desired = {STUDIO_AUTHORING_POLICY_JSON:canonicalJson(plan.configuration.members),STUDIO_RUNTIME_HOSTS_JSON:canonicalJson(plan.configuration.hosts)}\n  receipt.expectedVariables = Object.fromEntries(KEYS.map((key)=>[key,{semanticSha256:sha(desired![key]),bytes:Buffer.byteLength(desired![key])}]))\n  receipt.operatorSha256 = await sha256Hex(await readFile(fileURLToPath(import.meta.url),'utf8'))\n  requireThat((await native(executable,['--version'])).trim() === 'railway 5.62.1','CLI_VERSION_MISMATCH')\n  const before = await snapshot(desired)\n  receipt.before = before\n  requireThat(KEYS.every((key)=>before.variables[key].state !== 'unexpected'),'UNEXPECTED_VARIABLE')\n  receipt.state = 'READ_ONLY_READY'\n  await checkpoint()\n  if (mode === 'apply') {\n    for (const key of KEYS) {\n      const fresh = await snapshot(desired)\n      requireThat(KEYS.every((item)=>fresh.variables[item].state !== 'unexpected'),'UNEXPECTED_VARIABLE')\n      // Each prior write must still have its expected value. An external change stops the chain.\n      requireThat(operations.every((op)=>fresh.variables[op.key as Key].state === 'equal'),'PREFLIGHT_CHANGED')\n      if (fresh.variables[key].state === 'equal') {\n        operations.push({key,state:'SKIPPED_ALREADY_EQUAL',mutationAttempted:false})\n        await checkpoint()\n        continue\n      }\n      const operation: Record<string,unknown> = {key,state:'MUTATION_OUTCOME_UNKNOWN',mutationAttempted:true,acknowledgedByCliExit0:false,readbackMatched:false}\n      operations.push(operation)\n      receipt.mutationAttempts = Number(receipt.mutationAttempts) + 1\n      receipt.remoteOutcomeUnknown = true\n      receipt.state = 'MUTATION_OUTCOME_UNKNOWN'\n      await checkpoint() // Durable intent before stdin is sent. Never retry a set.\n      let acknowledged = false\n      try {\n        await native(executable,['variable','set',key,'--stdin','--skip-deploys',...selection,'--json'],desired[key])\n        acknowledged = true\n        operation.acknowledgedByCliExit0 = true\n        operation.state = 'ACKNOWLEDGED_READBACK_PENDING'\n      } catch { operation.state = 'ACK_UNKNOWN_READBACK_PENDING' }\n      await checkpoint()\n      try {\n        const after = await snapshot(desired)\n        operation.readback = after\n        operation.readbackMatched = after.variables[key].state === 'equal'\n      } catch { operation.readbackMatched = false }\n      operation.state = acknowledged ? operation.readbackMatched ? 'APPLIED_VERIFIED' : 'ACKNOWLEDGED_READBACK_UNCONFIRMED' : operation.readbackMatched ? 'ACK_UNKNOWN_READBACK_MATCHED' : 'ACK_UNKNOWN_READBACK_UNCONFIRMED'\n      receipt.remoteOutcomeUnknown = !acknowledged\n      await checkpoint()\n      requireThat(acknowledged,'ACK_UNKNOWN')\n      requireThat(operation.readbackMatched,'READBACK_UNCONFIRMED')\n    }\n    const after = await snapshot(desired)\n    receipt.after = after\n    requireThat(KEYS.every((key)=>after.variables[key].state === 'equal'),'READBACK_UNCONFIRMED')\n    receipt.state = 'CONFIGURATION_READBACK_VERIFIED_NO_DEPLOY'\n  }\n} catch (error) {\n  receipt.state = Number(receipt.mutationAttempts) > 0 ? 'STOPPED_AFTER_MUTATION_ATTEMPT' : 'PREFLIGHT_REFUSED'\n  receipt.reason = error instanceof OperatorError && codes.has(error.code) ? error.code : 'OPERATION_UNCONFIRMED'\n  // Diagnostic reads only; no retry/rollback/second set after any uncertain result.\n  if (desired && Number(receipt.mutationAttempts) > 0) {\n    try { receipt.diagnosticReadback = await snapshot(desired) } catch { receipt.diagnosticReadback = {confirmed:false} }\n  }\n  process.exitCode = 1\n} finally {\n  receipt.finishedAt = new Date().toISOString()\n  try { await checkpoint() } catch { console.error('RECEIPT_FAILED'); process.exitCode = 1 }\n  console.log(JSON.stringify({state:receipt.state,reason:receipt.reason,mutationAttempts:receipt.mutationAttempts,remoteOutcomeUnknown:receipt.remoteOutcomeUnknown,receipt:runName+'/receipt.json'}))\n}\n"
+    }
+  ],
+  "receipts": [
+    {
+      "path": ".cache/python-reference-games/members-staging-python-preflight-r1/receipt.json",
+      "sha256": "1245fb6a70009e1969924844553ee579ce4fc07ee887ebf32439228cd04461f4",
+      "bytes": 2076
+    },
+    {
+      "path": ".cache/python-reference-games/members-staging-python-apply-r1/receipt.json",
+      "sha256": "f8098951463c1af566c8894012c95442910be847939b1d132e11e67fe32dec75",
+      "bytes": 4585
+    },
+    {
+      "path": ".cache/python-reference-games/runtime-ae46-postqualification-r2/receipt.json",
+      "sha256": "cbdf8d9137d449054649ab2fb9c4ec4474ed218bfe9f74624ce408c2206511e8",
+      "bytes": 6609
+    }
+  ],
+  "preflight": {
+    "kind": "members-staging-python-configuration-only",
+    "version": 1,
+    "mode": "check",
+    "startedAt": "2026-10-22T21:31:44.393Z",
+    "pins": {
+      "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+      "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+      "environmentName": "staging",
+      "service": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+      "source": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+      "plan": "43f7c218d08b00d4a91dd360ffaf53970316d9d3048dd307e59289fc72fd6725",
+      "configuration": "97a116863d4759717e7511d835d3d37b82f6e738c705075bf9179bf385ed7512",
+      "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifest": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+    },
+    "state": "READ_ONLY_READY",
+    "skipDeploys": true,
+    "deploymentRequested": false,
+    "compareAndSwapAvailable": false,
+    "externalWriterFreezeRequired": true,
+    "rawVariablesRecorded": false,
+    "credentialsRecorded": false,
+    "mutationAttempts": 0,
+    "operations": [],
+    "remoteOutcomeUnknown": false,
+    "expectedVariables": {
+      "STUDIO_AUTHORING_POLICY_JSON": {
+        "semanticSha256": "519116d364331755ccac354e767aca43e414cfbf9b1c4bdfce7c1e2cb04a838c",
+        "bytes": 16707
+      },
+      "STUDIO_RUNTIME_HOSTS_JSON": {
+        "semanticSha256": "48bf725a9a8281399bede44589a9e5edd800b7810f538632c958589232eb9b42",
+        "bytes": 245
+      }
+    },
+    "operatorSha256": "ae820c228d282718f607d3c3ace094fe62f778b5d4a351fd1a23ec6aa8184426",
+    "before": {
+      "variables": {
+        "STUDIO_AUTHORING_POLICY_JSON": {
+          "state": "absent"
+        },
+        "STUDIO_RUNTIME_HOSTS_JSON": {
+          "state": "absent"
+        }
+      },
+      "context": {
+        "observedAt": "2026-10-22T21:31:46.761Z",
+        "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+        "status": "SUCCESS",
+        "commitHash": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "activeCount": 1,
+        "pendingCount": 0,
+        "pendingHasNextPage": false
+      }
+    },
+    "finishedAt": "2026-10-22T21:31:46.764Z"
+  },
+  "configuration": {
+    "kind": "members-staging-python-configuration-only",
+    "version": 1,
+    "mode": "apply",
+    "startedAt": "2026-10-22T21:32:17.555Z",
+    "pins": {
+      "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+      "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+      "environmentName": "staging",
+      "service": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+      "source": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+      "plan": "43f7c218d08b00d4a91dd360ffaf53970316d9d3048dd307e59289fc72fd6725",
+      "configuration": "97a116863d4759717e7511d835d3d37b82f6e738c705075bf9179bf385ed7512",
+      "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "manifest": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+    },
+    "state": "CONFIGURATION_READBACK_VERIFIED_NO_DEPLOY",
+    "skipDeploys": true,
+    "deploymentRequested": false,
+    "compareAndSwapAvailable": false,
+    "externalWriterFreezeRequired": true,
+    "rawVariablesRecorded": false,
+    "credentialsRecorded": false,
+    "mutationAttempts": 2,
+    "operations": [
+      {
+        "key": "STUDIO_AUTHORING_POLICY_JSON",
+        "state": "APPLIED_VERIFIED",
+        "mutationAttempted": true,
+        "acknowledgedByCliExit0": true,
+        "readbackMatched": true,
+        "readback": {
+          "variables": {
+            "STUDIO_AUTHORING_POLICY_JSON": {
+              "state": "equal",
+              "semanticSha256": "519116d364331755ccac354e767aca43e414cfbf9b1c4bdfce7c1e2cb04a838c"
+            },
+            "STUDIO_RUNTIME_HOSTS_JSON": {
+              "state": "absent"
+            }
+          },
+          "context": {
+            "observedAt": "2026-10-22T21:32:26.226Z",
+            "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+            "status": "SUCCESS",
+            "commitHash": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+            "activeCount": 1,
+            "pendingCount": 0,
+            "pendingHasNextPage": false
+          }
+        }
+      },
+      {
+        "key": "STUDIO_RUNTIME_HOSTS_JSON",
+        "state": "APPLIED_VERIFIED",
+        "mutationAttempted": true,
+        "acknowledgedByCliExit0": true,
+        "readbackMatched": true,
+        "readback": {
+          "variables": {
+            "STUDIO_AUTHORING_POLICY_JSON": {
+              "state": "equal",
+              "semanticSha256": "519116d364331755ccac354e767aca43e414cfbf9b1c4bdfce7c1e2cb04a838c"
+            },
+            "STUDIO_RUNTIME_HOSTS_JSON": {
+              "state": "equal",
+              "semanticSha256": "48bf725a9a8281399bede44589a9e5edd800b7810f538632c958589232eb9b42"
+            }
+          },
+          "context": {
+            "observedAt": "2026-10-22T21:32:32.534Z",
+            "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+            "status": "SUCCESS",
+            "commitHash": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+            "activeCount": 1,
+            "pendingCount": 0,
+            "pendingHasNextPage": false
+          }
+        }
+      }
+    ],
+    "remoteOutcomeUnknown": false,
+    "expectedVariables": {
+      "STUDIO_AUTHORING_POLICY_JSON": {
+        "semanticSha256": "519116d364331755ccac354e767aca43e414cfbf9b1c4bdfce7c1e2cb04a838c",
+        "bytes": 16707
+      },
+      "STUDIO_RUNTIME_HOSTS_JSON": {
+        "semanticSha256": "48bf725a9a8281399bede44589a9e5edd800b7810f538632c958589232eb9b42",
+        "bytes": 245
+      }
+    },
+    "operatorSha256": "ae820c228d282718f607d3c3ace094fe62f778b5d4a351fd1a23ec6aa8184426",
+    "before": {
+      "variables": {
+        "STUDIO_AUTHORING_POLICY_JSON": {
+          "state": "absent"
+        },
+        "STUDIO_RUNTIME_HOSTS_JSON": {
+          "state": "absent"
+        }
+      },
+      "context": {
+        "observedAt": "2026-10-22T21:32:19.912Z",
+        "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+        "status": "SUCCESS",
+        "commitHash": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "activeCount": 1,
+        "pendingCount": 0,
+        "pendingHasNextPage": false
+      }
+    },
+    "after": {
+      "variables": {
+        "STUDIO_AUTHORING_POLICY_JSON": {
+          "state": "equal",
+          "semanticSha256": "519116d364331755ccac354e767aca43e414cfbf9b1c4bdfce7c1e2cb04a838c"
+        },
+        "STUDIO_RUNTIME_HOSTS_JSON": {
+          "state": "equal",
+          "semanticSha256": "48bf725a9a8281399bede44589a9e5edd800b7810f538632c958589232eb9b42"
+        }
+      },
+      "context": {
+        "observedAt": "2026-10-22T21:32:34.446Z",
+        "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+        "status": "SUCCESS",
+        "commitHash": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "activeCount": 1,
+        "pendingCount": 0,
+        "pendingHasNextPage": false
+      }
+    },
+    "finishedAt": "2026-10-22T21:32:34.446Z"
+  },
+  "runtimeReadback": {
+    "observedAt": "2026-10-22T21:31:42.7377231Z",
+    "workers": [
+      {
+        "publicVars": [
+          {
+            "name": "STUDIO_PYTHON_DISTRIBUTIONS_SHA256",
+            "text": "3c69eea36bfb14db88679a7e32bc7b61c69e05095d2794f1aabf4ab54985b230"
+          },
+          {
+            "name": "STUDIO_PYTHON_PREVIEW_ORIGIN",
+            "text": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+          }
+        ],
+        "bindings": [
+          {
+            "name": "ProBuildSandbox",
+            "namespace_id": "78f0772f7be645bea69737a055c12aa0",
+            "class_name": "ProBuildSandbox",
+            "script_name": null
+          },
+          {
+            "name": "PythonInspectionJobs",
+            "namespace_id": "d201a22dc61645eba43b97751edbd7db",
+            "class_name": "PythonInspectionJob",
+            "script_name": null
+          }
+        ],
+        "migrationTag": "v2-python-inspection-jobs",
+        "version": "6fc805dd-dba2-43b2-9dff-15dc802a0bf6",
+        "name": "sistemazero-studio-runtime-staging",
+        "deployment": "6d23d1d9-854e-40be-8561-89f01bfe4fbf"
+      },
+      {
+        "publicVars": [],
+        "bindings": [
+          {
+            "name": "PythonLanguageSandbox",
+            "namespace_id": "fb9d81d3e52b489faf23ed8c74cea71a",
+            "class_name": "PythonLanguageSandbox",
+            "script_name": null
+          },
+          {
+            "name": "PythonLanguageSessions",
+            "namespace_id": "e6c5eb8011df471b985f34aac7002edf",
+            "class_name": "PythonLanguageSessions",
+            "script_name": null
+          }
+        ],
+        "migrationTag": "language-sessions-initial",
+        "version": "991d09f7-3474-48c6-880c-e4ffe6baa04a",
+        "name": "sistemazero-studio-language-staging",
+        "deployment": "8fa2713b-4af7-4788-a3e7-7c2d48dd1a25"
+      }
+    ],
+    "application": {
+      "version": 7,
+      "updatedAt": "2026-10-22T21:11:51.372Z",
+      "health": {
+        "errors": [],
+        "instances": {
+          "active": 0,
+          "assigned": 0,
+          "healthy": 7,
+          "stopped": 0,
+          "failed": 0,
+          "scheduling": 0,
+          "starting": 0
+        }
+      },
+      "namespaceId": "78f0772f7be645bea69737a055c12aa0",
+      "id": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+      "name": "sistemazero-studio-runtime-staging-probuildsandbox-staging",
+      "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sz-studio-runtime-qa@sha256:7e881384684120a0e5993f2972f7ceddca8849fa9d463053ddc8ed0c7d5b6ee1"
+    },
+    "physicalInstances": 0,
+    "historicalDurableObjectRecords": 17,
+    "physicalCleanupVerifiedAtObservation": true,
+    "configurationChanged": false
+  },
+  "runningMembersConfigurationReloaded": false,
+  "applicationDeploymentCompleted": false,
+  "authenticatedUiQualified": false,
+  "productionQualified": false,
+  "overallQualified": false,
+  "credentialsRecorded": false,
+  "limitations": [
+    "Configuration was set with skip-deploys; a subsequent Members deployment must load and validate it.",
+    "Provider readback has no compare-and-swap guarantee and only describes its observed interval.",
+    "Historical Durable Object records are not physical containers; their private names are omitted.",
+    "The earlier starting:1 observation remains preserved in the prior archive."
+  ]
+}

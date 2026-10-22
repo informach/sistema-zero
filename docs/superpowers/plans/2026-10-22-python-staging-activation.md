@@ -474,3 +474,19 @@ Continuam abertos: catálogo/hosts Members carregados pela nova implantação,
 CI dos aplicativos com os contratos atuais, percursos autenticados admin/aluno,
 Mural/página pública, cancelamento ocupado, desempenho F1 Pro e qualificação
 integral de produção. Estes recibos não afirmam conclusão dessas etapas.
+
+Às 21:31 UTC, uma nova leitura confirmou a mesma aplicação versão 7/imagem
+`7e881384…`, zero instâncias físicas e zero active/assigned/scheduling/starting,
+sem erros agregados. Isso fecha a pendência de limpeza daquela observação;
+o recibo anterior com `starting:1` continua preservado.
+
+Às 21:32 UTC foram configuradas `STUDIO_AUTHORING_POLICY_JSON` e
+`STUDIO_RUNTIME_HOSTS_JSON` no Members staging. Ambas estavam ausentes;
+os valores vieram do plano canônico `43f7c218…`, passaram nos validadores Core
+e foram lidos de volta por comparação semântica. As duas operações usaram
+`--skip-deploys`, sem retry, mantendo o Members `1e2d1e6a…` único e saudável,
+sem deployments pendentes. Isso não recarrega o processo já em execução:
+a próxima implantação precisa carregar a configuração e validar seus percursos.
+O [operador e os recibos](../../continuity/2026-10-22-python-reference-games-visual-evidence/staging-members-python-activation-r1.json.snapshot)
+registram esse limite, os hashes e a ausência de CAS. Não foi aplicada
+configuração equivalente em produção.
