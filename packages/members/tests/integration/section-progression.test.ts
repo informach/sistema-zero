@@ -355,7 +355,7 @@ describe('section gates across HTTP and persistence', () => {
     ])
     expect(view.sectionProgress.sections[0]!.pending).toEqual(['Termine o experimento'])
     expect(view.sectionProgress.sections[1]!.pendingItems).toEqual([
-      { kind: 'locked', text: 'Conclua a seção anterior' },
+      { kind: 'locked', text: 'Conclua a parte anterior' },
     ])
     expect(view.sectionProgress.sections.map((s: { status: string }) => s.status)).toEqual([
       'available',

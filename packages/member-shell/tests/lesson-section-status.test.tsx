@@ -28,7 +28,7 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       completed: true,
     })
     expect(markup).toContain('data-state="pronto"')
-    // Sem provedor vale o vocabulário ADULTO ("seção"); o Kids lê "parte" (abaixo).
+    // Sem provedor vale a linguagem comum ("parte"), a mesma do Kids (abaixo).
     expect(markup).toContain('Tudo pronto nesta parte. Pode seguir!')
     // Na ÚLTIMA seção não há o que seguir: o botão ao lado é "Concluir aula".
     const ultima = faixa({ items: [], completed: true, ultima: true })
@@ -101,7 +101,7 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     // Os demais ficam na lista de dentro, na ordem em que vieram.
     const ul = markup.slice(markup.indexOf('<ul'))
     expect(ul.indexOf('Passe no quiz')).toBeGreaterThan(-1)
-    expect(ul.indexOf('Passe no quiz')).toBeLessThan(ul.indexOf('Envie seu projeto'))
+    expect(ul.indexOf('Passe no quiz')).toBeLessThan(ul.indexOf('Envie o seu projeto'))
     // Só o primeiro leva o prefixo.
     expect(markup.split('Para seguir:').length - 1).toBe(1)
   })
