@@ -148,10 +148,22 @@ export function selectProductionServices(csv, ids) {
   return selected
 }
 
+/** A first deployment is deliberate and closed to the already provisioned recorder. */
+export function selectInitialProductionApplications(value, services) {
+  if (value === undefined || value === false || value === 'false' || value === '') return []
+  if ((value !== true && value !== 'true') || !services.includes('live-recorder'))
+    throw new Error('Inicialização explícita permite somente o gravador selecionado')
+  return ['live-recorder']
+}
+
 /** One owner; apps cannot be scheduled by this function before the V1 result. */
 export async function runProductionRelease(input, ports) {
   if (!shaPattern.test(input.sha ?? '')) throw new Error('SHA inválido')
   const services = selectProductionServices(input.services, ports.ids)
+  const initialApplications = selectInitialProductionApplications(
+    input.initializeRecorder,
+    services,
+  )
   validateProductionRolloutPlan(input.plan)
   const deadline = ports.now() + 175 * 60 * 1000
   const bounded = async (operation) => {
@@ -162,7 +174,7 @@ export async function runProductionRelease(input, ports) {
   }
   await bounded(() => ports.checkSource())
   await bounded(() => ports.backend.requireNativeDisabled(Object.keys(ports.ids), deadline))
-  await bounded(() => ports.backend.preflightApplications(services, deadline))
+  await bounded(() => ports.backend.preflightApplications(services, deadline, initialApplications))
   await bounded(() => ports.backend.preflight(deadline))
   // This operation is readonly: nonempty config is refused above and again by runConfig.
   await bounded(() => ports.checkConfiguration())
@@ -205,6 +217,7 @@ export async function runProductionRelease(input, ports) {
     environment: kidsJourneyTargets.production.environment,
     publishedVersion: barrier.version,
     deployments,
+    initialApplications,
   }
 }
 
@@ -253,10 +266,20 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       console.log(JSON.stringify(source))
     } else {
       const ids = productionApplicationIds(process.env)
-      selectProductionServices(services, ids)
+      const selected = selectProductionServices(services, ids)
+      const initialApplications = selectInitialProductionApplications(
+        process.env.INITIALIZE_RECORDER,
+        selected,
+      )
       const plan = JSON.parse(readFileSync(planPath, 'utf8'))
       validateProductionRolloutPlan(plan)
-      record = { kind: 'production-owned-release', source, state: 'PREPARING', events: [] }
+      record = {
+        kind: 'production-owned-release',
+        source,
+        state: 'PREPARING',
+        initialApplications,
+        events: [],
+      }
       writeFileSync('production-manifest.json', JSON.stringify(record), { flag: 'wx', mode: 0o600 })
       persist = () => {
         const fd = openSync('production-manifest.json', 'r+')
@@ -289,7 +312,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         },
       })
       const result = await runProductionRelease(
-        { sha, services, plan },
+        { sha, services, plan, initializeRecorder: process.env.INITIALIZE_RECORDER },
         {
           ids,
           backend,

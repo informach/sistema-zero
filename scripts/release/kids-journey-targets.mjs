@@ -2,6 +2,11 @@ const project = '415d5a1c-5f75-432c-8445-b395d0977ce3'
 const members = 'aa282801-ffba-477c-af6d-394b2f4f9af9'
 const auth = '8c57d71d-3a8e-48f1-9627-63f1528b9a48'
 
+/** Only this already provisioned production service may opt into a first deployment. */
+export const initialProductionApplicationIds = Object.freeze({
+  'live-recorder': 'a4e0c11a-03be-4ada-bd79-d8f4cdf8d3fd',
+})
+
 /** Closed provider identities; caller input cannot override any UUID. */
 export const kidsJourneyTargets = Object.freeze({
   staging: Object.freeze({

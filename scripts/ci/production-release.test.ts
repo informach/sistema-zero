@@ -5,6 +5,7 @@ import {
   productionCiJobs,
   resolveProductionSource,
   runProductionRelease,
+  selectInitialProductionApplications,
   selectProductionServices,
 } from './production-release.mjs'
 
@@ -18,7 +19,7 @@ const env = {
   RAILWAY_TOKEN: 'inert-only',
   HELPDESK_SERVICE_ID: '11111111-1111-4111-8111-111111111111',
   HELPDESK_APP_SERVICE_ID: '22222222-2222-4222-8222-222222222222',
-  LIVE_RECORDER_SERVICE_ID: '33333333-3333-4333-8333-333333333333',
+  LIVE_RECORDER_SERVICE_ID: 'a4e0c11a-03be-4ada-bd79-d8f4cdf8d3fd',
 }
 const ids = productionApplicationIds(env)
 const plan = { environmentId: target.environment, changeSet: { changes: [] } }
@@ -195,6 +196,21 @@ function wave(
 }
 
 describe('one production owner and canonical V1 barrier', () => {
+  test('recorder initialization is opt-in and its POST still follows V1', async () => {
+    const fixture = wave()
+    const result = await runProductionRelease(
+      { sha, services: 'members,auth,live-recorder', plan, initializeRecorder: true },
+      fixture.ports,
+    )
+    expect(result.initialApplications).toEqual(['live-recorder'])
+    expect(fixture.order.indexOf('POST-live-recorder')).toBeGreaterThan(
+      fixture.order.indexOf('BACKEND_BARRIER_PASSED'),
+    )
+    expect(selectInitialProductionApplications(undefined, ['live-recorder'])).toEqual([])
+    expect(selectInitialProductionApplications('false', ['live-recorder'])).toEqual([])
+    expect(() => selectInitialProductionApplications(true, ['admin'])).toThrow()
+    expect(() => selectInitialProductionApplications('all', ['live-recorder'])).toThrow()
+  })
   test('Members/Auth retire and verify V1 before any app POST', async () => {
     const fixture = wave()
     const result = await runProductionRelease(
@@ -328,6 +344,10 @@ function application(
     skipped?: boolean
     wrongContext?: boolean
     blockedCheckpoint?: boolean
+    service?: 'admin' | 'live-recorder'
+    initiallyEmpty?: boolean
+    concurrentActive?: boolean
+    pending?: boolean
   } = {},
 ) {
   const old = '44444444-4444-4444-8444-444444444444'
@@ -335,6 +355,7 @@ function application(
   let deployed = false
   let clock = 0
   let mutations = 0
+  let activeReads = 0
   const ports = createRailwayPorts(sha, env, 'inert', {
     target: 'production',
     applications: true,
@@ -353,23 +374,35 @@ function application(
         deployed = true
         return Response.json({ data: { serviceInstanceDeployV2: fresh } })
       }
-      if (query.includes('activeDeployments'))
+      if (query.includes('activeDeployments')) {
+        activeReads++
         return Response.json({
           data: {
             serviceInstance: {
-              activeDeployments: [
-                {
-                  id: deployed ? fresh : old,
-                  status: 'SUCCESS',
-                  meta: { commitHash: deployed ? sha : headSha },
-                },
-              ],
+              activeDeployments:
+                options.initiallyEmpty &&
+                !deployed &&
+                (!options.concurrentActive || activeReads === 1)
+                  ? []
+                  : [
+                      {
+                        id: deployed ? fresh : old,
+                        status: 'SUCCESS',
+                        meta: { commitHash: deployed ? sha : headSha },
+                      },
+                    ],
             },
           },
         })
+      }
       if (query.includes('deployments(input:'))
         return Response.json({
-          data: { deployments: { edges: [], pageInfo: { hasNextPage: false } } },
+          data: {
+            deployments: {
+              edges: options.pending ? [{ node: { id: old, status: 'BUILDING' } }] : [],
+              pageInfo: { hasNextPage: false },
+            },
+          },
         })
       if (query.includes('deployment(id:'))
         return Response.json({
@@ -380,7 +413,7 @@ function application(
               environmentId: options.wrongContext
                 ? kidsJourneyTargets.staging.environment
                 : target.environment,
-              serviceId: ids.admin,
+              serviceId: ids[options.service ?? 'admin'],
               status:
                 variables.id === old
                   ? deployed && !options.oldActive
@@ -402,6 +435,70 @@ function application(
 }
 
 describe('apps reuse the real canonical deployment ports, without an SSH backend probe', () => {
+  test('first recorder deployment uses its exact identity, then proves unique healthy readiness', async () => {
+    const fixture = application({ service: 'live-recorder', initiallyEmpty: true })
+    await fixture.ports.preflightApplications(['live-recorder'], Infinity, ['live-recorder'])
+    const id = await fixture.ports.deploy('live-recorder')
+    await fixture.ports.waitRetired('live-recorder', id)
+    expect(fixture.mutations()).toBe(1)
+  })
+  test('no healthy recorder remains a refusal without explicit initialization', async () => {
+    const fixture = application({ service: 'live-recorder', initiallyEmpty: true })
+    await expect(fixture.ports.preflightApplications(['live-recorder'])).rejects.toThrow()
+    expect(fixture.mutations()).toBe(0)
+  })
+  test('a substituted recorder service ID refuses before any provider call', async () => {
+    let calls = 0
+    const ports = createRailwayPorts(
+      sha,
+      { ...env, LIVE_RECORDER_SERVICE_ID: '33333333-3333-4333-8333-333333333333' },
+      'inert',
+      {
+        target: 'production',
+        applications: true,
+        fetch: async () => {
+          calls++
+          throw new Error('provider must not be called')
+        },
+      },
+    )
+    await expect(
+      ports.preflightApplications(['live-recorder'], Infinity, ['live-recorder']),
+    ).rejects.toThrow('somente o gravador')
+    expect(calls).toBe(0)
+  })
+  test.each([
+    'admin',
+    'members',
+    'auth',
+    'unknown',
+  ])('initialization cannot weaken an existing backend/app: %s', async (service) => {
+    const fixture = application({ initiallyEmpty: true })
+    await expect(
+      fixture.ports.preflightApplications([service], Infinity, [service]),
+    ).rejects.toThrow()
+    expect(fixture.mutations()).toBe(0)
+  })
+  test.each([
+    { pending: true },
+    { concurrentActive: true },
+  ])('a pending/concurrent recorder prevents a duplicate POST: %j', async (options) => {
+    const fixture = application({ service: 'live-recorder', initiallyEmpty: true, ...options })
+    await expect(
+      (async () => {
+        await fixture.ports.preflightApplications(['live-recorder'], Infinity, ['live-recorder'])
+        await fixture.ports.deploy('live-recorder')
+      })(),
+    ).rejects.toThrow()
+    expect(fixture.mutations()).toBe(0)
+  })
+  test('an existing healthy recorder refuses first-deployment mode', async () => {
+    const fixture = application({ service: 'live-recorder' })
+    await expect(
+      fixture.ports.preflightApplications(['live-recorder'], Infinity, ['live-recorder']),
+    ).rejects.toThrow('já tem')
+    expect(fixture.mutations()).toBe(0)
+  })
   test('exact app SHA/context plus unique active and old REMOVED permits completion', async () => {
     const fixture = application()
     await fixture.ports.preflightApplications(['admin'])

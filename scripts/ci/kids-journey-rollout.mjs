@@ -15,6 +15,7 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.mjs'
 import {
+  initialProductionApplicationIds,
   productionApplicationIds,
   resolveKidsJourneyTarget,
 } from '../release/kids-journey-targets.mjs'
@@ -292,6 +293,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
   }
   const log = options.log ?? ((value) => console.log(JSON.stringify(value)))
   const before = new Map()
+  const initialApplications = new Set()
   const adoptions = new Map()
   if (options.adoptDeployments !== undefined) {
     if (
@@ -581,15 +583,37 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           throw new Error('Trigger nativo ativo ou desconhecido; nenhuma nova mutação permitida')
       }
     },
-    async preflightApplications(services, deadline = Number.POSITIVE_INFINITY) {
+    async preflightApplications(services, deadline = Number.POSITIVE_INFINITY, initial = []) {
       if (
         !applications ||
         !Array.isArray(services) ||
         services.some((service) => !Object.hasOwn(applications, service))
       )
         throw new Error('Seleção de aplicações de produção inválida')
+      if (
+        !Array.isArray(initial) ||
+        initial.length > 1 ||
+        initial.some(
+          (service) =>
+            targetName !== 'production' ||
+            service !== 'live-recorder' ||
+            target[service] !== initialProductionApplicationIds[service] ||
+            !services.includes(service),
+        )
+      )
+        throw new Error('Primeira implantação permite somente o gravador de produção')
       for (const service of services) {
         checkTime(deadline)
+        if (initial.includes(service)) {
+          const rows = await active(service)
+          if (rows.length !== 0)
+            throw new Error('Gravador já tem deployment ativo; inicialização recusada')
+          await requireNoPending(service, deadline)
+          initialApplications.add(service)
+          before.set(service, [])
+          log({ stage: 'initial-application-preflight', service })
+          continue
+        }
         const current = await single(service)
         checkTime(deadline)
         await requireNoPending(service, deadline)
@@ -675,11 +699,13 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         }
         log({ stage: step })
         // Refresh immediately before the mutation; preflight may precede a long Members wave.
+        if (targetName === 'production' && !before.has(service))
+          throw new Error('Preflight do serviço de produção ausente')
+        const currentActive = await active(service)
+        if (initialApplications.has(service) && currentActive.length !== 0)
+          throw new Error('Deployment concorrente impede inicialização do gravador')
         before.set(service, [
-          ...new Set([
-            ...(before.get(service) ?? []),
-            ...(await active(service)).map((item) => item.id),
-          ]),
+          ...new Set([...(before.get(service) ?? []), ...currentActive.map((item) => item.id)]),
         ])
         checkTime(deadline)
         if (targetName === 'production') await requireNoPending(service, deadline)

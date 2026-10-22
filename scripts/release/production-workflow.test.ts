@@ -38,6 +38,13 @@ test('production has one deliberate owner and source checks precede provider set
   expect(job.steps[deploy]!.env?.RAILWAY_ENVIRONMENT_ID).toBe(
     '19c212a5-85c0-493c-9630-a7a0569e8412',
   )
+  expect(job.steps[deploy]!.env?.INITIALIZE_RECORDER).toBe(
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Literal GitHub expression in YAML.
+    '${{ github.event.inputs.initialize_recorder }}',
+  )
+  expect(workflow.on.workflow_dispatch).toMatchObject({
+    inputs: { initialize_recorder: { type: 'boolean', default: false, required: false } },
+  })
 })
 
 test('push-main IaC cannot mutate or enable native deployment behind the canonical owner', () => {

@@ -10,6 +10,11 @@ on:
       expected_sha:
         description: 'SHA completo de main com PR/CI/plano aprovados'
         required: true
+      initialize_recorder:
+        description: 'Primeira implantação do gravador existente, sem deployment ativo'
+        type: boolean
+        default: false
+        required: false
 
 concurrency:
   group: deploy-production
@@ -58,6 +63,7 @@ jobs:
           LIVE_RECORDER_SERVICE_ID: ${{ vars.RAILWAY_LIVE_RECORDER_SERVICE_ID }}
           EXPECTED_SHA: ${{ github.event.inputs.expected_sha }}
           SELECTED_SERVICES: ${{ github.event.inputs.services }}
+          INITIALIZE_RECORDER: ${{ github.event.inputs.initialize_recorder }}
         run: node scripts/ci/production-release.mjs deploy "$EXPECTED_SHA" "$SELECTED_SERVICES" "$RUNNER_TEMP/production-plan/railway-production-plan.json"
       - name: Guardar checkpoints da onda, inclusive resultado desconhecido
         if: always()
