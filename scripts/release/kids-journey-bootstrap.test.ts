@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import {
+  parseBootstrapArguments,
   parseBootstrapOutput,
   preparationProgress,
   runRemoteBootstrap,
@@ -23,6 +24,21 @@ const env = {
 }
 
 describe('remote canonical bootstrap wrapper', () => {
+  test('staging argv remains unchanged and production requires its explicit closed target prefix', () => {
+    const values = ['initialize', input.sha, deployment, input.nonce]
+    expect(parseBootstrapArguments(values)).toEqual({ ...input, preparationId: undefined })
+    expect(parseBootstrapArguments(['--target', 'production', ...values])).toEqual({
+      ...input,
+      target: 'production',
+      preparationId: undefined,
+    })
+    for (const invalid of [
+      ['--target', 'prod', ...values],
+      ['--target', ...values],
+      [...values, preparationId, 'extra'],
+    ])
+      expect(() => parseBootstrapArguments(invalid)).toThrow()
+  })
   test('executable refuses a wrong artifact without logging credentials or child error objects', () => {
     const result = spawnSync(
       'node',

@@ -14,6 +14,7 @@ import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.mjs'
+import { resolveKidsJourneyTarget } from '../release/kids-journey-targets.mjs'
 
 // Deployment orchestration only; product/test execution budgets are independent.
 export const STAGING_ROLLOUT_TIMEOUT_MS = 70 * 60 * 1000
@@ -254,6 +255,22 @@ export function prepareSsh(env) {
 }
 
 export function createRailwayPorts(sha, env, identity, options = {}) {
+  const targetName = options.target === undefined ? 'staging' : options.target
+  const target = resolveKidsJourneyTarget(targetName)
+  if (
+    targetName === 'production' &&
+    (env.RAILWAY_PROJECT_ID !== target.project ||
+      env.RAILWAY_ENVIRONMENT_ID !== target.environment ||
+      env.STAGING_ENV_ID !== undefined)
+  )
+    throw new Error('Contexto explícito de produção divergente')
+  if (
+    targetName === 'staging' &&
+    ((env.RAILWAY_PROJECT_ID !== undefined && env.RAILWAY_PROJECT_ID !== target.project) ||
+      (env.RAILWAY_ENVIRONMENT_ID !== undefined &&
+        env.RAILWAY_ENVIRONMENT_ID !== target.environment))
+  )
+    throw new Error('Contexto de staging divergente; produção exige target explícito')
   const exec = options.exec ?? execFileSync,
     doFetch = options.fetch ?? fetch
   const sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)))
@@ -373,7 +390,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
   const active = async (service) => {
     const data = await gql(
       'query($s:String!,$e:String!){serviceInstance(serviceId:$s,environmentId:$e){activeDeployments{id status meta}}}',
-      { s: stagingJourney[service], e: stagingJourney.environment },
+      { s: target[service], e: target.environment },
     )
     const rows = data.serviceInstance?.activeDeployments
     if (!Array.isArray(rows)) throw new Error('Inventário de deployments inválido')
@@ -388,18 +405,18 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     ).deployment
   const matchesContext = (current, service, id) =>
     current?.id === id &&
-    current.projectId === stagingJourney.project &&
-    current.environmentId === stagingJourney.environment &&
-    current.serviceId === stagingJourney[service]
+    current.projectId === target.project &&
+    current.environmentId === target.environment &&
+    current.serviceId === target[service]
   const requireNoPending = async (service, deadline) => {
     checkTime(deadline)
     const data = await gql(
       'query($input:DeploymentListInput!){deployments(input:$input,first:1){edges{node{id status}} pageInfo{hasNextPage endCursor}}}',
       {
         input: {
-          projectId: stagingJourney.project,
-          environmentId: stagingJourney.environment,
-          serviceId: stagingJourney[service],
+          projectId: target.project,
+          environmentId: target.environment,
+          serviceId: target[service],
           status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] },
         },
       },
@@ -421,17 +438,26 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       !/^[a-f0-9]{40}$/.test(rows[0].meta?.commitHash ?? '')
     )
       throw new Error(`Deployment ${service} ativo não é único/saudável/versionado`)
+    if (targetName === 'production') {
+      const current = await deployment(rows[0].id)
+      if (
+        !matchesContext(current, service, rows[0].id) ||
+        current.status !== 'SUCCESS' ||
+        current.meta?.commitHash !== rows[0].meta.commitHash
+      )
+        throw new Error('Identidade do deployment de produção divergente')
+    }
     return rows[0]
   }
   const ssh = (service, args) =>
     cli([
       'ssh',
       '-p',
-      stagingJourney.project,
+      target.project,
       '-e',
-      stagingJourney.environment,
+      target.environment,
       '-s',
-      stagingJourney[service],
+      target[service],
       '-i',
       identity,
       '--',
@@ -457,7 +483,11 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     // Readonly and available in the OLD artifact; skipDeploys secrets need not exist there yet.
     // Report only check outcomes. A failed remote assertion would otherwise look exactly like
     // a rejected SSH connection, while printing environment values could expose credentials.
-    const code = `const e=process.env;console.log(JSON.stringify({nonce:${JSON.stringify(nonce)},bun:Bun.version,checks:{environment:e.RAILWAY_ENVIRONMENT_ID===${JSON.stringify(stagingJourney.environment)},service:e.RAILWAY_SERVICE_ID===${JSON.stringify(stagingJourney[service])},deployment:e.RAILWAY_DEPLOYMENT_ID===${JSON.stringify(current.id)},commit:e.RAILWAY_GIT_COMMIT_SHA===${JSON.stringify(current.meta.commitHash)},required:${JSON.stringify(required)}.every(k=>!!e[k])}}))`
+    const projectCheck =
+      targetName === 'production'
+        ? `project:e.RAILWAY_PROJECT_ID===${JSON.stringify(target.project)},`
+        : ''
+    const code = `const e=process.env;console.log(JSON.stringify({nonce:${JSON.stringify(nonce)},bun:Bun.version,checks:{${projectCheck}environment:e.RAILWAY_ENVIRONMENT_ID===${JSON.stringify(target.environment)},service:e.RAILWAY_SERVICE_ID===${JSON.stringify(target[service])},deployment:e.RAILWAY_DEPLOYMENT_ID===${JSON.stringify(current.id)},commit:e.RAILWAY_GIT_COMMIT_SHA===${JSON.stringify(current.meta.commitHash)},required:${JSON.stringify(required)}.every(k=>!!e[k])}}))`
     let output
     try {
       output = ssh(service, ['bun', '-e', code])
@@ -509,7 +539,9 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       probeFailureReasons.set(failure, 'ssh-response-invalid')
       throw failure
     }
-    for (const check of ['environment', 'service', 'deployment', 'commit', 'required']) {
+    const checks = ['environment', 'service', 'deployment', 'commit', 'required']
+    if (targetName === 'production') checks.unshift('project')
+    for (const check of checks) {
       if (reply.checks?.[check] === true) continue
       const failure = new Error('Preflight SSH encontrou identidade ou configuração divergente')
       probeFailureReasons.set(failure, `${check}-check-failed`)
@@ -604,12 +636,13 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           ]),
         ])
         checkTime(deadline)
+        if (targetName === 'production') await requireNoPending(service, deadline)
         step = `${label}-deploy-mutation`
         mutationOutcome = 'unknown'
         log({ stage: step, mutationOutcome })
         const data = await gql(
           'mutation($s:String!,$e:String!,$c:String){serviceInstanceDeployV2(serviceId:$s,environmentId:$e,commitSha:$c)}',
-          { s: stagingJourney[service], e: stagingJourney.environment, c: sha },
+          { s: target[service], e: target.environment, c: sha },
         )
         step = `${label}-deploy-ack`
         const id = data.serviceInstanceDeployV2
@@ -647,6 +680,8 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
           step = `${label}-${index === 0 ? 'first-poll' : 'deployment-poll'}`
           const current = await deployment(id)
           checkRetirementTime()
+          if (targetName === 'production' && !matchesContext(current, service, id))
+            throw new Error('Identidade do deployment de produção divergente')
           if (
             ['FAILED', 'CRASHED', 'REMOVED', 'SKIPPED', 'CANCELED', 'CANCELLED'].includes(
               current?.status,
@@ -671,16 +706,22 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
               ]),
             ])
             step = `${label}-retirement-poll`
-            const old = await Promise.all(
-              (before.get(service) ?? []).filter((oldId) => oldId !== id).map(deployment),
-            )
+            const oldIds = (before.get(service) ?? []).filter((oldId) => oldId !== id)
+            const old = await Promise.all(oldIds.map(deployment))
             checkRetirementTime()
+            if (
+              targetName === 'production' &&
+              old.some((item, oldIndex) => !matchesContext(item, service, oldIds[oldIndex]))
+            )
+              throw new Error('Identidade do predecessor de produção divergente')
             if (
               rows.length === 1 &&
               rows[0].id === id &&
+              (targetName !== 'production' ||
+                (rows[0].status === 'SUCCESS' && rows[0].meta?.commitHash === sha)) &&
               old.every((item) => item?.status === 'REMOVED')
             ) {
-              if (adoptions.has(service)) {
+              if (adoptions.has(service) || targetName === 'production') {
                 await requireNoPending(service, deadline)
                 checkRetirementTime()
               }
@@ -712,6 +753,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       const args = [
         'bun',
         'scripts/release/kids-journey-bootstrap.mjs',
+        ...(targetName === 'production' ? ['--target', 'production'] : []),
         action,
         current.meta.commitHash,
         current.id,
@@ -725,7 +767,21 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       checkTime(deadline)
       if (reply.kind !== 'kids-journey-rollout' || reply.nonce !== nonce)
         throw new Error('ACK bootstrap remoto inválido')
-      const { kind: _, nonce: __, ...result } = reply
+      if (
+        targetName === 'production' &&
+        (reply.target !== 'production' ||
+          reply.project !== target.project ||
+          reply.environment !== target.environment)
+      )
+        throw new Error('ACK bootstrap de produção divergente')
+      const {
+        kind: _,
+        nonce: __,
+        target: ___,
+        project: ____,
+        environment: _____,
+        ...result
+      } = reply
       return result
     },
   }

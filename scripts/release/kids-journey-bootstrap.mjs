@@ -1,17 +1,14 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { pathToFileURL } from 'node:url'
+import { kidsJourneyTargets, resolveKidsJourneyTarget } from './kids-journey-targets.mjs'
 
-export const stagingJourney = Object.freeze({
-  project: '415d5a1c-5f75-432c-8445-b395d0977ce3',
-  environment: 'f634cff6-aafb-4804-8b69-172fad4e946e',
-  members: 'aa282801-ffba-477c-af6d-394b2f4f9af9',
-  auth: '8c57d71d-3a8e-48f1-9627-63f1528b9a48',
-})
+export const stagingJourney = kidsJourneyTargets.staging
 export const uuidPattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
 const actions = new Set(['migrate', 'initialize', 'advance', 'publish', 'verify'])
 
 export function validateRemoteContext(input, env) {
+  const target = resolveKidsJourneyTarget(input.target)
   if (
     !actions.has(input.action) ||
     !/^[a-f0-9]{40}$/.test(input.sha ?? '') ||
@@ -20,8 +17,9 @@ export function validateRemoteContext(input, env) {
   )
     throw new Error('Contexto remoto inválido')
   if (
-    env.RAILWAY_ENVIRONMENT_ID !== stagingJourney.environment ||
-    env.RAILWAY_SERVICE_ID !== stagingJourney.members ||
+    (input.target === 'production' && env.RAILWAY_PROJECT_ID !== target.project) ||
+    env.RAILWAY_ENVIRONMENT_ID !== target.environment ||
+    env.RAILWAY_SERVICE_ID !== target.members ||
     env.RAILWAY_DEPLOYMENT_ID !== input.deployment ||
     env.RAILWAY_GIT_COMMIT_SHA !== input.sha
   )
@@ -185,15 +183,34 @@ export async function runRemoteBootstrap(input, env = process.env, ports = {}) {
       result.progress = preparationProgress(current, input.preparationId)
     }
   }
-  return { kind: 'kids-journey-rollout', nonce: input.nonce, ...result }
+  return {
+    kind: 'kids-journey-rollout',
+    nonce: input.nonce,
+    ...(input.target === 'production'
+      ? {
+          target: 'production',
+          project: env.RAILWAY_PROJECT_ID,
+          environment: env.RAILWAY_ENVIRONMENT_ID,
+        }
+      : {}),
+    ...result,
+  }
+}
+
+export function parseBootstrapArguments(args) {
+  const explicit = args[0] === '--target'
+  const target = explicit ? args[1] : 'staging'
+  resolveKidsJourneyTarget(target)
+  const values = explicit ? args.slice(2) : args
+  if (values.length < 4 || values.length > 5) throw new Error('Argumentos bootstrap inválidos')
+  const [action, sha, deployment, nonce, preparationId] = values
+  return { action, sha, deployment, nonce, preparationId, ...(explicit ? { target } : {}) }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    const [action, sha, deployment, nonce, preparationId] = process.argv.slice(2)
-    if (process.argv.length > 7) throw new Error('Argumentos extras recusados')
     console.log(
-      JSON.stringify(await runRemoteBootstrap({ action, sha, deployment, nonce, preparationId })),
+      JSON.stringify(await runRemoteBootstrap(parseBootstrapArguments(process.argv.slice(2)))),
     )
   } catch {
     // Child errors can contain database configuration. Never forward stdout/stderr or the error object.
