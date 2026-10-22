@@ -1,5 +1,6 @@
 import { expect, mock, spyOn, test } from 'bun:test'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
+import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
 import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import { describePythonCatalog } from '../../studio/src/python/blocks/selection'
 
@@ -36,11 +37,24 @@ test('HTTP assistance uses the approved exact-release audio descriptor and ignor
     })
   }) as typeof fetch
   try {
-    const current = await pythonZappyFixture('pro', 'kids', {
-      runtimeRelease: await providedPythonRelease(),
+    const audioRelease = await providedPythonRelease()
+    const unassisted = await pythonZappyFixture('pro', 'kids', { runtimeRelease: audioRelease })
+    const refusal = await unassisted.request()
+    expect(refusal.status).toBe(403)
+    expect((await refusal.json()).error.code).toBe('RUNTIME_ASSIST_NOT_ALLOWED')
+    expect(unassisted.state.policies).toBe(1)
+    expect(unassisted.state.reservations).toBe(0)
+    expect(prompts).toHaveLength(0)
+    // Audio metadata does not grant assistance. This positive case declares it explicitly.
+    const assistedAudioRelease = await createStudioRuntimeRelease({
+      ...audioRelease.manifest,
+      capabilities: [...audioRelease.manifest.capabilities, 'assist'],
     })
-    const historical = await pythonZappyFixture('pro')
-    for (const fixture of [current, historical]) {
+    const current = await pythonZappyFixture('pro', 'kids', {
+      runtimeRelease: assistedAudioRelease,
+    })
+    const withoutAudio = await pythonZappyFixture('pro')
+    for (const fixture of [current, withoutAudio]) {
       const response = await fixture.request({
         ...fixture.input,
         // This field is not part of the HTTP availability contract.
@@ -59,7 +73,7 @@ test('HTTP assistance uses the approved exact-release audio descriptor and ignor
     expect(prompts[1]!.providedModules).toEqual([])
 
     const mismatched = await pythonZappyFixture('pro', 'kids', {
-      runtimeRelease: await providedPythonRelease(),
+      runtimeRelease: assistedAudioRelease,
     })
     mismatched.state.mutate = (value) => ({
       ...(value as object),
