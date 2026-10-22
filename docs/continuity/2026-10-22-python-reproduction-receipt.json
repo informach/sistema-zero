@@ -1,0 +1,283 @@
+{
+  "kind": "studio.python.distribution-reproduction-summary",
+  "version": 1,
+  "baseSourceCommit": "c4222471a7c9105d6af4c303f265dcbcb9a80e85",
+  "scope": "Artifact byte reproduction only. No browser, hosted deployment or historical performance qualification.",
+  "distributionSha256": "65c9bffd3e97d71e22bbaaf2f2dd29fbf10ee80759ad56423c0e3e4b82af022c",
+  "files": [
+    {
+      "path": "LICENSE-pyodide.txt",
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "bytes": 16725
+    },
+    {
+      "path": "LICENSE-python.txt",
+      "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+      "bytes": 13804
+    },
+    {
+      "path": "LICENSE-tk.txt",
+      "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198",
+      "bytes": 2267
+    },
+    {
+      "path": "SOURCES.txt",
+      "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185",
+      "bytes": 1503
+    },
+    {
+      "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+      "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba",
+      "bytes": 5810
+    },
+    {
+      "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+      "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b",
+      "bytes": 1715
+    },
+    {
+      "path": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz",
+      "sha256": "17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4",
+      "bytes": 7266
+    },
+    {
+      "path": "_http/gzip/2fe9b598bf2ddf9792d1ab5284e1351b917249a8710e692a56aeca47fae8f410.gz",
+      "sha256": "2fe9b598bf2ddf9792d1ab5284e1351b917249a8710e692a56aeca47fae8f410",
+      "bytes": 171621
+    },
+    {
+      "path": "_http/gzip/343725b6277253e03d0eae08e99dde7a8cbbb9b8ff0f865f76280adf9f3a2433.gz",
+      "sha256": "343725b6277253e03d0eae08e99dde7a8cbbb9b8ff0f865f76280adf9f3a2433",
+      "bytes": 85217
+    },
+    {
+      "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+      "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16",
+      "bytes": 8013
+    },
+    {
+      "path": "_http/gzip/863a9528c4a36b691076e1b20973d37a15399a0bc1a21b6d231668e1666476dd.gz",
+      "sha256": "863a9528c4a36b691076e1b20973d37a15399a0bc1a21b6d231668e1666476dd",
+      "bytes": 181623
+    },
+    {
+      "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+      "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f",
+      "bytes": 1578
+    },
+    {
+      "path": "_http/gzip/89d76deb803e75926945afc8f6889a54040f6aff58dbf98761e4ac2de0b726e5.gz",
+      "sha256": "89d76deb803e75926945afc8f6889a54040f6aff58dbf98761e4ac2de0b726e5",
+      "bytes": 180914
+    },
+    {
+      "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+      "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7",
+      "bytes": 292028
+    },
+    {
+      "path": "_http/gzip/a5c51343bdbca79e88a3abbb32197c26d54cb67d05a4addd9d66ed5cb8862cc2.gz",
+      "sha256": "a5c51343bdbca79e88a3abbb32197c26d54cb67d05a4addd9d66ed5cb8862cc2",
+      "bytes": 81170
+    },
+    {
+      "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+      "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5",
+      "bytes": 2331
+    },
+    {
+      "path": "analysis-frame.mjs",
+      "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97",
+      "bytes": 5419
+    },
+    {
+      "path": "analysis-worker.mjs",
+      "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7",
+      "bytes": 19988
+    },
+    {
+      "path": "analysis.html",
+      "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c",
+      "bytes": 151
+    },
+    {
+      "path": "boot-loader-derivation.json",
+      "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466",
+      "bytes": 840
+    },
+    {
+      "path": "boot-reader.mjs",
+      "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02",
+      "bytes": 3782
+    },
+    {
+      "path": "frame.html",
+      "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe",
+      "bytes": 211
+    },
+    {
+      "path": "frame.mjs",
+      "sha256": "3cb2dadf0987192a3fa15d2ce1e0b35a15f2ebd1c8687cc993b6c64b868c9b44",
+      "bytes": 321105
+    },
+    {
+      "path": "http-compression-recipe.json",
+      "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5",
+      "bytes": 134
+    },
+    {
+      "path": "inspect.mjs",
+      "sha256": "253e88ede2fc73f9396a94779b3e465d51ec920d2d530e4fa157d26e5c2c2502",
+      "bytes": 698465
+    },
+    {
+      "path": "playtest.mjs",
+      "sha256": "778dcf87c03a4ede2a53060d7fe01c503fcea26654cea4d7e3edf78de5ef2e69",
+      "bytes": 725790
+    },
+    {
+      "path": "pyodide-lock.json",
+      "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010",
+      "bytes": 119077
+    },
+    {
+      "path": "pyodide.asm.mjs",
+      "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b",
+      "bytes": 1530472
+    },
+    {
+      "path": "pyodide.asm.wasm",
+      "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6",
+      "bytes": 9598218
+    },
+    {
+      "path": "pyodide.mjs",
+      "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1",
+      "bytes": 21884
+    },
+    {
+      "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+      "bytes": 469
+    },
+    {
+      "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+      "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49",
+      "bytes": 2748
+    },
+    {
+      "path": "python_stdlib.zip",
+      "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+      "bytes": 7066273
+    },
+    {
+      "path": "standalone.mjs",
+      "sha256": "5ec7690ee22cc337a3473cb71bf5b1717da48b12326ca3bf31895864aaea623b",
+      "bytes": 724266
+    },
+    {
+      "path": "turtle-protocol.mjs",
+      "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57",
+      "bytes": 3466
+    },
+    {
+      "path": "turtle-renderer.mjs",
+      "sha256": "a63a3802a92cb5e17a9c799f4d94a7bac621aeb49f8dfcfaefeffb577ab088b3",
+      "bytes": 17126
+    },
+    {
+      "path": "turtle/_sz_turtle_backend.py",
+      "sha256": "6562b2a5e6f5ebaa3ac59dc9fffa848c4eaa3fb8a41eab168d1d121643f198eb",
+      "bytes": 18788
+    },
+    {
+      "path": "turtle/_sz_turtle_colors.py",
+      "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc",
+      "bytes": 25484
+    },
+    {
+      "path": "turtle/_sz_turtle_limits.py",
+      "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862",
+      "bytes": 435
+    },
+    {
+      "path": "turtle/turtle.py",
+      "sha256": "63759ac09e0caaef0eb70e13f49e706d1752141d5351ec888e24b72667852a68",
+      "bytes": 117612
+    },
+    {
+      "path": "worker.mjs",
+      "sha256": "32623cf1bf24f241ae83c82ec261f15e66382220d904d873e22f473b2fcb2d28",
+      "bytes": 334092
+    }
+  ],
+  "inputs": {
+    "vendor": [
+      {
+        "path": "pyodide.mjs",
+        "bytes": 17931,
+        "sha256": "6f1d60f7bf529beb300f0f47983c921d3982363640ba20af0e38efdddbc66109"
+      },
+      {
+        "path": "pyodide.asm.mjs",
+        "bytes": 1250344,
+        "sha256": "f7cdc8ece80678ceb712f8e65ebe6d3a83203a180c399865f49612a051693635"
+      },
+      {
+        "path": "pyodide.asm.wasm",
+        "bytes": 9598218,
+        "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+      },
+      {
+        "path": "python_stdlib.zip",
+        "bytes": 2545637,
+        "sha256": "fa1957e5777068fc4f7437f96d860ae2fbe9c19732ba06c84e004ec16dd7dd7a"
+      },
+      {
+        "path": "pyodide-lock.json",
+        "bytes": 119077,
+        "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+      },
+      {
+        "path": "LICENSE-pyodide.txt",
+        "bytes": 16725,
+        "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+      },
+      {
+        "path": "LICENSE-python.txt",
+        "bytes": 13804,
+        "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+      }
+    ],
+    "standardLibrary": {
+      "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+      "bytes": 7066273,
+      "recipe": "stdlib-wasm-checked-bytecode-with-sources-v2",
+      "mode": "canonical-builder"
+    }
+  },
+  "tools": {
+    "platform": "win32",
+    "nodeForStandardLibrary": "24.22.0",
+    "arch": "x64",
+    "bun": "1.3.11"
+  },
+  "attempts": [
+    {
+      "name": "run1",
+      "stdlibMode": "verified-input",
+      "status": "verified",
+      "startedAt": "2026-10-22T09:15:14.277Z",
+      "finishedAt": "2026-10-22T09:15:15.25Z"
+    },
+    {
+      "name": "run2",
+      "stdlibMode": "canonical-builder",
+      "status": "verified",
+      "startedAt": "2026-10-22T09:16:24.316Z",
+      "finishedAt": "2026-10-22T09:16:31.039Z"
+    }
+  ],
+  "functionalAcceptance": "not-executed",
+  "historicalBrowserReceipts": "not-available-in-this-checkout"
+}
