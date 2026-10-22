@@ -1,0 +1,539 @@
+{
+  "kind": "studio.python.visual-reference-games.ui",
+  "version": 1,
+  "receipt": {
+    "kind": "visual-reference-games-controlled-host-ui",
+    "startedAt": "2026-10-22T13:32:44.7698428Z",
+    "elapsedMs": 91795,
+    "creatorPid": 29396,
+    "birthTicks": 639282727647748600,
+    "exitCode": 0,
+    "deadline": false,
+    "grep": "gallery, actual editing",
+    "distributionSha256": "e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9",
+    "releaseSha256": "40bff8eb23206550da4599132bd6a56d42f13dcb8e0d83d7c1d189609cfa30d5",
+    "node": "24.22.0",
+    "bun": "1.4.3",
+    "freeBeforeMiB": 2010.703125,
+    "serverPids": [
+      31192,
+      32332
+    ],
+    "browserPids": [
+      26020
+    ],
+    "remainingKnownPids": [],
+    "openPorts": [],
+    "cleanupConfirmed": true,
+    "hostedAcceptance": false,
+    "audioAudibilityAccepted": false
+  },
+  "codeCommit": "1e8dd0e87165d4bc8958c5c90f5592243400ca47",
+  "reportSha256": "226c4a0311b960353784e7673afeeb6c5f5b395c34bac0d5cb7a9105a776e0da",
+  "sourceFiles": [
+    {
+      "path": "packages/studio/e2e-python-editor/visual-reference-games.spec.ts",
+      "sha256": "e3a84772e58de773bb714ca0cf32ea35e605e0b611f510f44cc16021208d322d"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/fixtures/free.tsx",
+      "sha256": "9cc97bae92a298db209f4b6dedf77884ddf4b413eb4d054e8501079b0a2f180e"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/fixtures/styles.css",
+      "sha256": "643e1fd12949ee0e9538dc4e57b60b4e1463faaa8285b9c6461d9c7a6ba291af"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/fixtures/index.html",
+      "sha256": "55871b4f8a69f7e25cbad16f143c4ac4a401beec0c70bfe8c91a296c7f2e1fe0"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-22T13:32:45.569Z",
+    "duration": 90152.908,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "cases": [
+    {
+      "title": "Pac-Man classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+      "project": "chrome",
+      "durationMs": 25300,
+      "result": {
+        "qualification": "functional controlled-host UI; not production authentication, audio audibility or performance acceptance",
+        "assertions": "editing → exact source/save/reopen; controls → actor pixels; does not quantify the gameplay effect of the edited constant",
+        "game": "pacman-visual",
+        "kind": "classic",
+        "projectId": "01M5HX18QKP3BG6TQ8T6GK8D85",
+        "distribution": "e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9",
+        "release": "40bff8eb23206550da4599132bd6a56d42f13dcb8e0d83d7c1d189609cfa30d5",
+        "originalSourceSha256": "f1b75ea2908c89020a6e04221962d50d9b33574928a8959aaa2d94cb9f5ed60b",
+        "editedSourceSha256": "0feabd028771ac5db8a699d920043db313a46553244d35b04d02a24d78f067f6",
+        "audio": {
+          "opening.wav": "cb9c07216886edb67ad1adbc68b64dc02e8af3b865a95aa32ce1ba491d5ef753",
+          "collect.wav": "6a4f47aedf6ae29c38d5eac27c423f6b5391f1f1f8d40865766c3c89d70e843e",
+          "power.wav": "c16c154ca03dce085c24cdab5cedeadac9e1e0179a1fcc8991ff62772c3e57bd",
+          "collision.wav": "d1ccf34c7cab4bf3443722e1f55d753c97cf27227e569d8008920762c96e6562"
+        },
+        "initialWorkspace": {
+          "id": "Jc%B;_9MzcSjTOx7Yd{h",
+          "count": 2307,
+          "opaque": [],
+          "types": [
+            "sz_py_abs",
+            "sz_py_alias",
+            "sz_py_and",
+            "sz_py_arithmetic",
+            "sz_py_assign",
+            "sz_py_attribute",
+            "sz_py_boolean",
+            "sz_py_break",
+            "sz_py_call",
+            "sz_py_compare",
+            "sz_py_continue",
+            "sz_py_delete",
+            "sz_py_dictionary",
+            "sz_py_expression",
+            "sz_py_float",
+            "sz_py_for",
+            "sz_py_function",
+            "sz_py_if",
+            "sz_py_import",
+            "sz_py_int",
+            "sz_py_integer",
+            "sz_py_keyword",
+            "sz_py_len",
+            "sz_py_list",
+            "sz_py_math_ceil",
+            "sz_py_max",
+            "sz_py_min",
+            "sz_py_negative",
+            "sz_py_not",
+            "sz_py_or",
+            "sz_py_parameter",
+            "sz_py_parameters",
+            "sz_py_random_choice",
+            "sz_py_range",
+            "sz_py_return",
+            "sz_py_str",
+            "sz_py_subscript",
+            "sz_py_text",
+            "sz_py_tuple",
+            "sz_py_turtle_module_Screen",
+            "sz_py_turtle_module_Shape",
+            "sz_py_turtle_module_Turtle",
+            "sz_py_turtle_screen_bgcolor",
+            "sz_py_turtle_screen_listen",
+            "sz_py_turtle_screen_mainloop",
+            "sz_py_turtle_screen_onkey",
+            "sz_py_turtle_screen_onkeypress",
+            "sz_py_turtle_screen_setup",
+            "sz_py_turtle_screen_title",
+            "sz_py_turtle_screen_tracer",
+            "sz_py_turtle_shape_addcomponent",
+            "sz_py_update",
+            "sz_py_variable",
+            "sz_py_while"
+          ]
+        },
+        "firstRun": {
+          "before": {
+            "count": 260,
+            "x": 504.5,
+            "y": 743.5,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "after": {
+            "count": 271,
+            "x": 536.0258302583026,
+            "y": 743.5018450184502,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX18QKP3BG6TQ8T6GK8D85",
+            "expectedRevision": "e00f0774449154238b7aab50828369bb5a7c5c06adaf8ee1a58d80a38bd546b8",
+            "observedRevision": "e00f0774449154238b7aab50828369bb5a7c5c06adaf8ee1a58d80a38bd546b8"
+          }
+        },
+        "reopenedRun": {
+          "before": {
+            "count": 260,
+            "x": 504.5,
+            "y": 743.5,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "after": {
+            "count": 271,
+            "x": 620.9741697416974,
+            "y": 743.4981549815498,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX18QKP3BG6TQ8T6GK8D85",
+            "expectedRevision": "e00f0774449154238b7aab50828369bb5a7c5c06adaf8ee1a58d80a38bd546b8",
+            "observedRevision": "e00f0774449154238b7aab50828369bb5a7c5c06adaf8ee1a58d80a38bd546b8"
+          }
+        }
+      },
+      "browserErrors": []
+    },
+    {
+      "title": "Pac-Man pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+      "project": "chrome",
+      "durationMs": 12225,
+      "result": {
+        "qualification": "functional controlled-host UI; not production authentication, audio audibility or performance acceptance",
+        "assertions": "editing → exact source/save/reopen; controls → actor pixels; does not quantify the gameplay effect of the edited constant",
+        "game": "pacman-visual",
+        "kind": "pro",
+        "projectId": "01M5HX20QSQRQGXVKH5ED6NTTV",
+        "distribution": "e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9",
+        "release": "40bff8eb23206550da4599132bd6a56d42f13dcb8e0d83d7c1d189609cfa30d5",
+        "originalSourceSha256": "f1b75ea2908c89020a6e04221962d50d9b33574928a8959aaa2d94cb9f5ed60b",
+        "editedSourceSha256": "eda81f807c4fd304863a68f407883e3d482c0e4503c5cc7c74fdbea5b3dd24ef",
+        "audio": {
+          "opening.wav": "cb9c07216886edb67ad1adbc68b64dc02e8af3b865a95aa32ce1ba491d5ef753",
+          "collect.wav": "6a4f47aedf6ae29c38d5eac27c423f6b5391f1f1f8d40865766c3c89d70e843e",
+          "power.wav": "c16c154ca03dce085c24cdab5cedeadac9e1e0179a1fcc8991ff62772c3e57bd",
+          "collision.wav": "d1ccf34c7cab4bf3443722e1f55d753c97cf27227e569d8008920762c96e6562"
+        },
+        "initialWorkspace": null,
+        "firstRun": {
+          "before": {
+            "count": 272,
+            "x": 504.5,
+            "y": 743.5,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "after": {
+            "count": 266,
+            "x": 611.703007518797,
+            "y": 743.5300751879699,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX20QSQRQGXVKH5ED6NTTV",
+            "expectedRevision": "f0b2b48f944d0c68cedcd5df8d84c62d64058b3f48c158d1e8a8c6f87443d0e4",
+            "observedRevision": "f0b2b48f944d0c68cedcd5df8d84c62d64058b3f48c158d1e8a8c6f87443d0e4"
+          }
+        },
+        "reopenedRun": {
+          "before": {
+            "count": 260,
+            "x": 504.5,
+            "y": 743.5,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "after": {
+            "count": 267,
+            "x": 562.5355805243446,
+            "y": 743.4868913857678,
+            "backing": [
+              1010,
+              860
+            ],
+            "logical": [
+              1010,
+              860
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX20QSQRQGXVKH5ED6NTTV",
+            "expectedRevision": "f0b2b48f944d0c68cedcd5df8d84c62d64058b3f48c158d1e8a8c6f87443d0e4",
+            "observedRevision": "f0b2b48f944d0c68cedcd5df8d84c62d64058b3f48c158d1e8a8c6f87443d0e4"
+          }
+        }
+      },
+      "browserErrors": []
+    },
+    {
+      "title": "Space Arena classic: gallery, actual editing, save/reopen and causal keyboard pixels",
+      "project": "chrome",
+      "durationMs": 30477,
+      "result": {
+        "qualification": "functional controlled-host UI; not production authentication, audio audibility or performance acceptance",
+        "assertions": "editing → exact source/save/reopen; controls → actor pixels; does not quantify the gameplay effect of the edited constant",
+        "game": "space-arena-visual",
+        "kind": "classic",
+        "projectId": "01M5HX2D8A2Y0YWW5GTBNQHZRJ",
+        "distribution": "e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9",
+        "release": "40bff8eb23206550da4599132bd6a56d42f13dcb8e0d83d7c1d189609cfa30d5",
+        "originalSourceSha256": "de1aca049305204288f7602b965bbc3f91192bd3dfc471076035c27fce6f4576",
+        "editedSourceSha256": "6fb0c3e715653929feb6bd7e0c0afae94cf4b22ec9503ecc4b4a1fe936cb9121",
+        "audio": {
+          "bgm.wav": "b6a944d43d2cbc2a163f073797063742e6c8139e1fb94318212ef7ae89d39fb3",
+          "explosion.wav": "ce5410a870f6f22183f861d3eeec0ac9359e3d48734ea9626dd6f49f795899df",
+          "missile_fire.wav": "7fc3be41ab59711ca2e4174dbf53baf8bc924ba54cb4d675ae1bfd65984c1fd0",
+          "powerup.wav": "926be1a02181c2f72663725e8eec9b0ffa46086d2aba4d96c5381571462be213",
+          "thruster.wav": "36421e360773e027df7d36d2c337443c0ae0d7cf9ff0068eda68926661a00760"
+        },
+        "initialWorkspace": {
+          "id": "En6V3U2zB/vqWYnM;E0(",
+          "count": 2808,
+          "opaque": [],
+          "types": [
+            "sz_py_abs",
+            "sz_py_alias",
+            "sz_py_and",
+            "sz_py_arithmetic",
+            "sz_py_assign",
+            "sz_py_attribute",
+            "sz_py_boolean",
+            "sz_py_break",
+            "sz_py_call",
+            "sz_py_compare",
+            "sz_py_dictionary",
+            "sz_py_expression",
+            "sz_py_float",
+            "sz_py_for",
+            "sz_py_function",
+            "sz_py_if",
+            "sz_py_import",
+            "sz_py_integer",
+            "sz_py_keyword",
+            "sz_py_len",
+            "sz_py_list",
+            "sz_py_math_ceil",
+            "sz_py_max",
+            "sz_py_min",
+            "sz_py_negative",
+            "sz_py_none",
+            "sz_py_not",
+            "sz_py_or",
+            "sz_py_parameter",
+            "sz_py_parameters",
+            "sz_py_random_randint",
+            "sz_py_range",
+            "sz_py_return",
+            "sz_py_str",
+            "sz_py_subscript",
+            "sz_py_text",
+            "sz_py_try",
+            "sz_py_tuple",
+            "sz_py_turtle_module_Screen",
+            "sz_py_turtle_module_Turtle",
+            "sz_py_turtle_turtle_hideturtle",
+            "sz_py_turtle_turtle_penup",
+            "sz_py_turtle_turtle_speed",
+            "sz_py_update",
+            "sz_py_variable"
+          ]
+        },
+        "firstRun": {
+          "before": {
+            "count": 36,
+            "x": 399.5,
+            "y": 309.8333333333333,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "after": {
+            "count": 36,
+            "x": 399.5,
+            "y": 282.8333333333333,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX2D8A2Y0YWW5GTBNQHZRJ",
+            "expectedRevision": "0251362da0679941fb504437c13c2947858bf387742dc608a0dfd454e3183057",
+            "observedRevision": "0251362da0679941fb504437c13c2947858bf387742dc608a0dfd454e3183057"
+          }
+        },
+        "reopenedRun": {
+          "before": {
+            "count": 34,
+            "x": 399.61764705882354,
+            "y": 309.88235294117646,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "after": {
+            "count": 34,
+            "x": 399.5,
+            "y": 208.35294117647058,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX2D8A2Y0YWW5GTBNQHZRJ",
+            "expectedRevision": "0251362da0679941fb504437c13c2947858bf387742dc608a0dfd454e3183057",
+            "observedRevision": "0251362da0679941fb504437c13c2947858bf387742dc608a0dfd454e3183057"
+          }
+        }
+      },
+      "browserErrors": []
+    },
+    {
+      "title": "Space Arena pro: gallery, actual editing, save/reopen and causal keyboard pixels",
+      "project": "chrome",
+      "durationMs": 9708,
+      "result": {
+        "qualification": "functional controlled-host UI; not production authentication, audio audibility or performance acceptance",
+        "assertions": "editing → exact source/save/reopen; controls → actor pixels; does not quantify the gameplay effect of the edited constant",
+        "game": "space-arena-visual",
+        "kind": "pro",
+        "projectId": "01M5HX3AMXX6NFT8DAQEMSPMS7",
+        "distribution": "e3188c84b1b63baee730656ea1399e6ee4d03946e6cbe6cbee57ef92bc43f8e9",
+        "release": "40bff8eb23206550da4599132bd6a56d42f13dcb8e0d83d7c1d189609cfa30d5",
+        "originalSourceSha256": "de1aca049305204288f7602b965bbc3f91192bd3dfc471076035c27fce6f4576",
+        "editedSourceSha256": "d76c1d4873ca0413b57aa463aa00b1d6b38beccfc643cc46e8eafef0f40fb6a3",
+        "audio": {
+          "bgm.wav": "b6a944d43d2cbc2a163f073797063742e6c8139e1fb94318212ef7ae89d39fb3",
+          "explosion.wav": "ce5410a870f6f22183f861d3eeec0ac9359e3d48734ea9626dd6f49f795899df",
+          "missile_fire.wav": "7fc3be41ab59711ca2e4174dbf53baf8bc924ba54cb4d675ae1bfd65984c1fd0",
+          "powerup.wav": "926be1a02181c2f72663725e8eec9b0ffa46086d2aba4d96c5381571462be213",
+          "thruster.wav": "36421e360773e027df7d36d2c337443c0ae0d7cf9ff0068eda68926661a00760"
+        },
+        "initialWorkspace": null,
+        "firstRun": {
+          "before": {
+            "count": 36,
+            "x": 399.5,
+            "y": 309.8333333333333,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "after": {
+            "count": 36,
+            "x": 399.5,
+            "y": 290.8333333333333,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX3AMXX6NFT8DAQEMSPMS7",
+            "expectedRevision": "1233e7728a25f3e655385a30b00cf823d69408f10d4733424c3a5537a6f62e23",
+            "observedRevision": "1233e7728a25f3e655385a30b00cf823d69408f10d4733424c3a5537a6f62e23"
+          }
+        },
+        "reopenedRun": {
+          "before": {
+            "count": 36,
+            "x": 399.5,
+            "y": 309.8333333333333,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "after": {
+            "count": 36,
+            "x": 399.5,
+            "y": 267.44444444444446,
+            "backing": [
+              1020,
+              620
+            ],
+            "logical": [
+              1020,
+              620
+            ]
+          },
+          "execution": {
+            "projectId": "01M5HX3AMXX6NFT8DAQEMSPMS7",
+            "expectedRevision": "1233e7728a25f3e655385a30b00cf823d69408f10d4733424c3a5537a6f62e23",
+            "observedRevision": "1233e7728a25f3e655385a30b00cf823d69408f10d4733424c3a5537a6f62e23"
+          }
+        }
+      },
+      "browserErrors": []
+    }
+  ],
+  "limits": [
+    "Controlled host fixture, not deployed authentication/authorization acceptance",
+    "Keyboard causality is checked in actual canvas pixels, not audio audibility",
+    "No performance or 8GB hardware acceptance is claimed"
+  ]
+}

@@ -83,8 +83,9 @@ salvamento, reabertura, execução, controles causais em pixels e Stop.
 
 Uma terceira reprodução, após as regras de conquista por linguagem, manteve o
 mesmo hash e os 41 arquivos. O qualificador de autoria configurado com esse
-artefato passou nos dez casos, sem skips. Isso não antecipa o aceite gráfico da
-atualização reativa de permissões, que é verificado separadamente.
+artefato passou nos dez casos, sem skips. Após a atualização reativa de permissões,
+`ui-r13` repetiu os quatro percursos gráficos sobre `1e8dd0e87`, sem retries,
+skips, falhas ou erros da aplicação e com limpeza de processos/portas confirmada.
 
 Essas provas usam um host local controlado. Não substituem autenticação real,
 isolamento de containers no provedor, medição F1/F3, áudio audível, teste no

@@ -89,5 +89,6 @@ atualização de conquistas, oferta Python presa ao bootstrap, recuperação do
 ambiente Admin retirado e hidratação ao mudar permissões. Testes causais cobrem
 fonte/rascunhos JS e Python preservados, curadoria de aula e abertura bloqueada.
 Tipagem completa e testes afetados passaram. A integração local disponibiliza
-essa base para outras sessões; a rodada gráfica adicional e a ativação remota
-seguem declaradas separadamente no [registro do lote](../../continuity/2026-10-22-python-visual-games-and-unlocks.md).
+essa base para outras sessões. A rodada gráfica adicional `ui-r13` passou nos
+quatro exemplos sobre `1e8dd0e87`; a ativação remota continua separada no
+[registro do lote](../../continuity/2026-10-22-python-visual-games-and-unlocks.md).

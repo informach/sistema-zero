@@ -148,4 +148,13 @@ não implementações ativas nem justificativa para manter caminhos antigos.
   preservando as funcionalidades distintas de compilar e inspecionar.
 - [x] Atualizar os comandos operacionais ativos e a candidata inicial depois do
   freeze; não fazer um artefato antigo passar por uma nova qualificação.
-- [ ] Repetir verificações afetadas e revisar a limpeza inteira com JavaScript.
+- [x] Repetir verificações afetadas e revisar a limpeza inteira com JavaScript.
+
+## Checkpoint de código para outras sessões
+
+Full review e correções de jogos, contratos atuais e conquistas por linguagem
+foram integrados na staging local em `1e8dd0e87`, após tipagem completa e testes
+afetados. O avanço remoto `2429a37bd` está incluído. A rodada gráfica adicional
+`ui-r13` passou nos quatro exemplos sobre esse commit e confirmou limpeza.
+O [registro do lote](../../continuity/2026-10-22-python-visual-games-and-unlocks.md)
+separa essas provas locais de CI, imagem e ativação/homologação hospedadas.

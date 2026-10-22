@@ -47,8 +47,10 @@ registry ou documento.
 Os [recibos dos jogos e da distribuição](2026-10-22-python-reference-games-visual-evidence/)
 são imutáveis. `ui-r12` comprova os quatro percursos gráficos na candidata final
 do motor: galeria, edição, Ponte, salvar/reabrir, revisão exata, entrada causal em
-pixels e Stop. A nova rodada gráfica após as regras de conquista é uma pendência
-explícita deste checkpoint, sem herdar aprovação por inferência.
+pixels e Stop. A rodada `ui-r13`, executada sobre `1e8dd0e87` após as regras de
+conquista e a correção de hidratação, repetiu os quatro percursos com sucesso:
+zero skips, retries, falhas ou erros de página/console da aplicação, em 90,2 s.
+O supervisor confirmou saída normal e nenhum processo/porta de teste restante.
 
 Checagens locais executadas neste lote, sem somar wrappers e seus casos internos:
 
@@ -80,8 +82,8 @@ desempenho remotos em `65c9bffd…` pertencem à candidata anterior.
 ## Implantação e pendências
 
 Este checkpoint disponibiliza código revisado para integração entre sessões;
-não declara a homologação final do produto Python. A rodada gráfica integrada,
-CI/imagem, fluxos autenticados hospedados Admin→aluno, aulas/salas/Mural, áudio
+não declara a homologação final do produto Python. CI/imagem, fluxos
+autenticados hospedados Admin→aluno, aulas/salas/Mural, áudio
 ouvido por pessoa e máquina de referência continuam qualificados separadamente.
 
 O login Railway foi restabelecido pelo usuário. As consultas readonly confirmaram
