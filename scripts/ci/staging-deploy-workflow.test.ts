@@ -3,10 +3,38 @@ import { spawnSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import {
+  STAGING_DEPLOYMENT_TIMEOUT_MS,
+  STAGING_ROLLOUT_TIMEOUT_MS,
+} from './kids-journey-rollout.mjs'
 
 const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
 const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
+
+test('only the deployment job receives the larger wall-clock budget', () => {
+  expect(STAGING_DEPLOYMENT_TIMEOUT_MS).toBe(30 * 60 * 1000)
+  expect(STAGING_ROLLOUT_TIMEOUT_MS).toBe(70 * 60 * 1000)
+  expect(deploy).toContain('timeout-minutes: 100')
+  expect(deploy).toContain('local deadline=$((SECONDS + 20 * 60))')
+  expect(deploy).toContain('while [ "$SECONDS" -lt "$deadline" ]')
+  expect(deploy).toContain('HTTP_TIMEOUT=$((REMAINING < 15 ? REMAINING : 15))')
+  expect(deploy).toContain('RESP=$(gql "$Q" "$HTTP_TIMEOUT")')
+  expect(deploy).toContain(`--connect-timeout 5 --max-time "\${2:-15}"`)
+  expect(deploy).not.toContain('seq 1 60')
+  expect(
+    workflow.slice(0, workflow.indexOf('\n  deploy-staging:')).match(/timeout-minutes: \d+/g),
+  ).toEqual([
+    'timeout-minutes: 45',
+    'timeout-minutes: 2',
+    'timeout-minutes: 15',
+    'timeout-minutes: 20',
+    'timeout-minutes: 20',
+    'timeout-minutes: 30',
+    'timeout-minutes: 20',
+    'timeout-minutes: 20',
+  ])
+})
 
 test('workflow resolves before installation, public/provider access, SSH and apply', () => {
   const resolverPosition = deploy.indexOf('run: node scripts/ci/staging-deploy-baseline.mjs')

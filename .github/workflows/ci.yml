@@ -566,9 +566,9 @@ jobs:
     permissions:
       contents: read
       actions: read
-    # 50min: o members espera ficar pronto ANTES de disparar admin, community-kids e community (ver
-    # DEPOIS_DO_MEMBERS), e cada espera tem teto próprio de 20min.
-    timeout-minutes: 50
+    # Até 70min na onda canônica (30min por backend), 20min para os apps em paralelo
+    # e 10min para preparação/IaC/disparos. Os jobs de testes mantêm seus limites.
+    timeout-minutes: 100
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API: https://backboard.railway.com/graphql/v2
@@ -749,7 +749,7 @@ jobs:
           fi
           echo "deployando no staging: ${!WANT[*]} (sha $GITHUB_SHA)"
 
-          gql() { curl -sS -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API"; }
+          gql() { curl -sS --connect-timeout 5 --max-time "${2:-15}" -X POST -H "Authorization: Bearer $RAILWAY_TOKEN" -H 'content-type: application/json' -d "$1" "$RAILWAY_API"; }
 
           declare -A DEP=()
           disparar() {
@@ -767,13 +767,22 @@ jobs:
           # a API às vezes devolve corpo não-JSON transitório num poll — conta como
           # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
           esperar() {
+            local deadline=$((SECONDS + 20 * 60))
+            local i=0 REMAINING HTTP_TIMEOUT
             FAIL=0; PENDING=1; BADPOLLS=0
-            for i in $(seq 1 60); do
-              sleep 20
+            while [ "$SECONDS" -lt "$deadline" ]; do
+              i=$((i+1))
+              REMAINING=$((deadline - SECONDS))
+              sleep "$((REMAINING < 20 ? REMAINING : 20))"
+              if [ "$SECONDS" -ge "$deadline" ]; then PENDING=1; break; fi
               PENDING=0; LINE=""; ROUND_OK=1
               for s in "$@"; do
+                REMAINING=$((deadline - SECONDS))
+                if [ "$REMAINING" -le 0 ]; then PENDING=1; break; fi
+                HTTP_TIMEOUT=$((REMAINING < 15 ? REMAINING : 15))
                 Q=$(jq -nc --arg id "${DEP[$s]}" '{query:"query($id:String!){deployment(id:$id){status}}",variables:{id:$id}}')
-                RESP=$(gql "$Q") || RESP=""
+                RESP=$(gql "$Q" "$HTTP_TIMEOUT") || RESP=""
+                if [ "$SECONDS" -ge "$deadline" ]; then PENDING=1; break; fi
                 if ! echo "$RESP" | jq -e . >/dev/null 2>&1; then
                   echo "  poll de $s devolveu corpo não-JSON: $(echo "$RESP" | head -c 120)"
                   ROUND_OK=0; PENDING=1; LINE="$LINE $s=?"

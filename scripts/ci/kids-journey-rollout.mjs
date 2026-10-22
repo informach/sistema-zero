@@ -15,6 +15,11 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.mjs'
 
+// Deployment orchestration only; product/test execution budgets are independent.
+export const STAGING_ROLLOUT_TIMEOUT_MS = 70 * 60 * 1000
+export const STAGING_DEPLOYMENT_TIMEOUT_MS = 30 * 60 * 1000
+export const STAGING_DEPLOYMENT_POLL_MS = 10000
+
 // Diagnostics are generated locally. Never serialize an exception, command, API body or token.
 const rolloutFailures = new WeakMap()
 const apiFailures = new WeakMap()
@@ -87,38 +92,41 @@ export async function runKidsJourneyRollout(input, ports) {
   const { sha, mode } = input
   if (!/^[a-f0-9]{40}$/.test(sha ?? '') || !['deploy', 'verify', 'preflight'].includes(mode))
     throw new Error('Onda staging inválida')
-  const deadline = ports.now() + 30 * 60 * 1000
+  const deadline = ports.now() + STAGING_ROLLOUT_TIMEOUT_MS
   const checkTime = () => {
     if (ports.now() >= deadline)
       throw new Error('Onda Kids excedeu o limite; retome explicitamente')
   }
+  const bounded = async (operation) => {
+    checkTime()
+    const result = await operation()
+    checkTime()
+    return result
+  }
   ports.log({ stage: 'preflight' })
-  await ports.preflight()
-  checkTime()
+  await bounded(() => ports.preflight(deadline))
   if (mode === 'preflight') return { status: 'preflight' }
   if (mode === 'verify') {
-    const state = await ports.remote('verify', 'active')
+    const state = await bounded(() => ports.remote('verify', 'active', {}, deadline))
     if (state.status !== 'published' || !Number.isSafeInteger(state.version) || state.version < 1)
       throw new Error('Jornada ainda não publicada')
     return state
   }
   ports.log({ stage: 'members-deploy', sha })
-  const members = await ports.deploy('members')
-  await ports.waitRetired('members', members)
-  checkTime()
+  const members = await bounded(() => ports.deploy('members', deadline))
+  await bounded(() => ports.waitRetired('members', members, deadline))
   ports.log({ stage: 'members-migrate-initialize', deployment: members })
-  await ports.remote('migrate', members)
-  const initial = await ports.remote('initialize', members)
+  await bounded(() => ports.remote('migrate', members, {}, deadline))
+  const initial = await bounded(() => ports.remote('initialize', members, {}, deadline))
   if (!['initializing', 'already-published'].includes(initial.status))
     throw new Error('Inicialização inválida')
   ports.log({ stage: 'auth-deploy-and-retire', sha })
-  const auth = await ports.deploy('auth')
-  await ports.waitRetired('auth', auth)
-  checkTime()
+  const auth = await bounded(() => ports.deploy('auth', deadline))
+  await bounded(() => ports.waitRetired('auth', auth, deadline))
   if (initial.status === 'already-published') {
     if (!Number.isSafeInteger(initial.version) || initial.version < 1)
       throw new Error('Versão inválida')
-    const confirmed = await ports.remote('verify', members)
+    const confirmed = await bounded(() => ports.remote('verify', members, {}, deadline))
     if (
       confirmed.status !== 'published' ||
       !Number.isSafeInteger(confirmed.version) ||
@@ -135,8 +143,8 @@ export async function runKidsJourneyRollout(input, ports) {
   let progress
   for (let index = 0; index < (input.maxAdvances ?? 10000); index++) {
     checkTime()
-    await ports.waitRetired('auth', auth)
-    const next = await ports.remote('advance', members, { preparationId })
+    await bounded(() => ports.waitRetired('auth', auth, deadline))
+    const next = await bounded(() => ports.remote('advance', members, { preparationId }, deadline))
     if (next.preparationId !== preparationId)
       throw new Error('Identificador de preparação divergente')
     if (
@@ -155,17 +163,17 @@ export async function runKidsJourneyRollout(input, ports) {
   }
   if (!ready) throw new Error('Preparação excedeu o limite; retome o mesmo identificador')
   checkTime()
-  await ports.waitRetired('auth', auth)
+  await bounded(() => ports.waitRetired('auth', auth, deadline))
   ports.log({ stage: 'publish', preparationId })
-  await ports.remote('publish', members, { preparationId })
-  const confirmed = await ports.remote('initialize', members)
+  await bounded(() => ports.remote('publish', members, { preparationId }, deadline))
+  const confirmed = await bounded(() => ports.remote('initialize', members, {}, deadline))
   if (
     confirmed.status !== 'already-published' ||
     !Number.isSafeInteger(confirmed.version) ||
     confirmed.version < 1
   )
     throw new Error('Publicação canônica ainda não confirmada')
-  await ports.waitRetired('auth', auth)
+  await bounded(() => ports.waitRetired('auth', auth, deadline))
   return { status: 'published', version: confirmed.version }
 }
 
@@ -249,8 +257,47 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
   const exec = options.exec ?? execFileSync,
     doFetch = options.fetch ?? fetch
   const sleep = options.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)))
+  const now = options.now ?? (() => performance.now())
+  const checkTime = (deadline) => {
+    if (now() >= deadline) throw new Error('Onda Kids excedeu o limite; retome explicitamente')
+  }
   const log = options.log ?? ((value) => console.log(JSON.stringify(value)))
   const before = new Map()
+  const adoptions = new Map()
+  if (options.adoptDeployments !== undefined) {
+    if (
+      !options.adoptDeployments ||
+      typeof options.adoptDeployments !== 'object' ||
+      Array.isArray(options.adoptDeployments)
+    )
+      throw new Error('Adoção de deployment inválida')
+    for (const [service, candidate] of Object.entries(options.adoptDeployments)) {
+      if (
+        !['members', 'auth'].includes(service) ||
+        !candidate ||
+        typeof candidate !== 'object' ||
+        Array.isArray(candidate) ||
+        Object.keys(candidate).some(
+          (key) => !['id', 'commitSha', 'imageDigest', 'previousIds'].includes(key),
+        ) ||
+        typeof candidate.id !== 'string' ||
+        !uuidPattern.test(candidate.id) ||
+        candidate.commitSha !== sha ||
+        !/^[a-f0-9]{40}$/.test(candidate.commitSha ?? '') ||
+        typeof candidate.imageDigest !== 'string' ||
+        !/^sha256:[a-f0-9]{64}$/.test(candidate.imageDigest) ||
+        !Array.isArray(candidate.previousIds) ||
+        candidate.previousIds.length < 1 ||
+        candidate.previousIds.length > 100 ||
+        candidate.previousIds.some(
+          (id) => typeof id !== 'string' || !uuidPattern.test(id) || id === candidate.id,
+        ) ||
+        new Set(candidate.previousIds).size !== candidate.previousIds.length
+      )
+        throw new Error('Adoção de deployment inválida')
+      adoptions.set(service, { ...candidate, previousIds: [...candidate.previousIds] })
+    }
+  }
   const cliEnv = { ...env, RAILWAY_API_TOKEN: env.RAILWAY_TOKEN }
   delete cliEnv.RAILWAY_TOKEN
   delete cliEnv.RAILWAY_SSH_PRIVATE_KEY
@@ -333,7 +380,38 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     return rows
   }
   const deployment = async (id) =>
-    (await gql('query($id:String!){deployment(id:$id){id status meta}}', { id })).deployment
+    (
+      await gql(
+        'query($id:String!){deployment(id:$id){id projectId environmentId serviceId status meta}}',
+        { id },
+      )
+    ).deployment
+  const matchesContext = (current, service, id) =>
+    current?.id === id &&
+    current.projectId === stagingJourney.project &&
+    current.environmentId === stagingJourney.environment &&
+    current.serviceId === stagingJourney[service]
+  const requireNoPending = async (service, deadline) => {
+    checkTime(deadline)
+    const data = await gql(
+      'query($input:DeploymentListInput!){deployments(input:$input,first:1){edges{node{id status}} pageInfo{hasNextPage endCursor}}}',
+      {
+        input: {
+          projectId: stagingJourney.project,
+          environmentId: stagingJourney.environment,
+          serviceId: stagingJourney[service],
+          status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] },
+        },
+      },
+    )
+    checkTime(deadline)
+    if (
+      !Array.isArray(data.deployments?.edges) ||
+      data.deployments.edges.length !== 0 ||
+      data.deployments.pageInfo?.hasNextPage !== false
+    )
+      throw new Error('Outro deployment pendente impede a adoção')
+  }
   const single = async (service) => {
     const rows = await active(service)
     if (
@@ -439,31 +517,84 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
     }
   }
   return {
-    now: () => Date.now(),
+    now,
     log,
-    async preflight() {
+    async preflight(deadline = Number.POSITIVE_INFINITY) {
       let step = 'cli-version'
       try {
+        checkTime(deadline)
         if (cli(['--version']).trim() !== 'railway 5.62.1')
           throw new Error('CLI Railway deve ser5.62.1')
         step = 'openssh-version'
         exec('ssh', ['-V'], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 5000 })
         for (const service of ['members', 'auth']) {
+          checkTime(deadline)
           step = `${service}-inventory`
           const current = await single(service)
+          checkTime(deadline)
           before.set(service, [current.id])
           step = `${service}-probe`
           probe(service, current)
+          checkTime(deadline)
         }
       } catch (error) {
         throw rolloutFailure(error, { step, ...failureDetails(error) })
       }
     },
-    async deploy(service) {
+    async deploy(service, deadline = Number.POSITIVE_INFINITY) {
       const label = ['members', 'auth'].includes(service) ? service : 'unknown-service'
       let step = `${label}-active-refresh`
       let mutationOutcome = 'not-attempted'
       try {
+        checkTime(deadline)
+        const adoption = adoptions.get(service)
+        if (adoption) {
+          step = `${label}-adoption-deployment`
+          log({ stage: step, deployment: adoption.id, mutationOutcome })
+          const current = await deployment(adoption.id)
+          checkTime(deadline)
+          if (
+            !matchesContext(current, service, adoption.id) ||
+            current.status !== 'SUCCESS' ||
+            current.meta?.commitHash !== sha ||
+            current.meta?.imageDigest !== adoption.imageDigest
+          )
+            throw new Error('Deployment existente não corresponde à adoção')
+          step = `${label}-adoption-active`
+          const rows = await active(service)
+          checkTime(deadline)
+          if (
+            rows.length !== 1 ||
+            rows[0].id !== adoption.id ||
+            rows[0].status !== 'SUCCESS' ||
+            rows[0].meta?.commitHash !== sha ||
+            rows[0].meta?.imageDigest !== adoption.imageDigest
+          )
+            throw new Error('Deployment adotado não é o único ativo esperado')
+          step = `${label}-adoption-pending`
+          await requireNoPending(service, deadline)
+          step = `${label}-adoption-predecessors`
+          const old = await Promise.all(adoption.previousIds.map(deployment))
+          checkTime(deadline)
+          if (
+            old.some(
+              (item, index) =>
+                !matchesContext(item, service, adoption.previousIds[index]) ||
+                item.status !== 'REMOVED',
+            )
+          )
+            throw new Error('Predecessores da adoção ainda não retirados')
+          before.set(service, [
+            ...new Set([...(before.get(service) ?? []), ...adoption.previousIds]),
+          ])
+          log({
+            stage: `${label}-deployment-adopted`,
+            deployment: adoption.id,
+            adopted: true,
+            mutationOutcome,
+          })
+          return adoption.id
+        }
         log({ stage: step })
         // Refresh immediately before the mutation; preflight may precede a long Members wave.
         before.set(service, [
@@ -472,6 +603,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             ...(await active(service)).map((item) => item.id),
           ]),
         ])
+        checkTime(deadline)
         step = `${label}-deploy-mutation`
         mutationOutcome = 'unknown'
         log({ stage: step, mutationOutcome })
@@ -494,19 +626,27 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         })
       }
     },
-    async waitRetired(service, id) {
+    async waitRetired(service, id, rolloutDeadline = Number.POSITIVE_INFINITY) {
       const label = ['members', 'auth'].includes(service) ? service : 'unknown-service'
       let step = `${label}-first-poll`
       let reason = 'operation-failed'
       let deploymentStatus
+      const deadline = Math.min(rolloutDeadline, now() + STAGING_DEPLOYMENT_TIMEOUT_MS)
+      const checkRetirementTime = () => {
+        if (now() < deadline) return
+        reason = 'retirement-timeout'
+        throw new Error(`Antigos deployments ${service} ainda não retirados; não capturar coorte`)
+      }
       try {
         log({
           stage: step,
           ...(typeof id === 'string' && uuidPattern.test(id) ? { deployment: id } : {}),
         })
-        for (let index = 0; index < 60; index++) {
+        for (let index = 0; ; index++) {
+          checkRetirementTime()
           step = `${label}-${index === 0 ? 'first-poll' : 'deployment-poll'}`
           const current = await deployment(id)
+          checkRetirementTime()
           if (
             ['FAILED', 'CRASHED', 'REMOVED', 'SKIPPED', 'CANCELED', 'CANCELLED'].includes(
               current?.status,
@@ -523,6 +663,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             }
             step = `${label}-retirement-inventory`
             const rows = await active(service)
+            checkRetirementTime()
             before.set(service, [
               ...new Set([
                 ...(before.get(service) ?? []),
@@ -533,20 +674,24 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
             const old = await Promise.all(
               (before.get(service) ?? []).filter((oldId) => oldId !== id).map(deployment),
             )
+            checkRetirementTime()
             if (
               rows.length === 1 &&
               rows[0].id === id &&
               old.every((item) => item?.status === 'REMOVED')
             ) {
+              if (adoptions.has(service)) {
+                await requireNoPending(service, deadline)
+                checkRetirementTime()
+              }
               step = `${label}-admission-probe`
               probe(service, current, true)
+              checkRetirementTime()
               return
             }
           }
-          await sleep(10000)
+          await sleep(Math.min(STAGING_DEPLOYMENT_POLL_MS, deadline - now()))
         }
-        reason = 'retirement-timeout'
-        throw new Error(`Antigos deployments ${service} ainda não retirados; não capturar coorte`)
       } catch (error) {
         throw rolloutFailure(error, {
           step,
@@ -557,8 +702,10 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         })
       }
     },
-    async remote(action, id, input = {}) {
+    async remote(action, id, input = {}, deadline = Number.POSITIVE_INFINITY) {
+      checkTime(deadline)
       const current = await single('members')
+      checkTime(deadline)
       if (id !== 'active' && (current.id !== id || current.meta.commitHash !== sha))
         throw new Error('Members mudou durante bootstrap')
       const nonce = randomBytes(16).toString('hex')
@@ -575,6 +722,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         args.push(input.preparationId)
       }
       const reply = JSON.parse(ssh('members', args).trim())
+      checkTime(deadline)
       if (reply.kind !== 'kids-journey-rollout' || reply.nonce !== nonce)
         throw new Error('ACK bootstrap remoto inválido')
       const { kind: _, nonce: __, ...result } = reply

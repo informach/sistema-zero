@@ -46,6 +46,51 @@ function fixture(options: { published?: boolean; fail?: string; wrongId?: boolea
 }
 
 describe('staging canonical Kids deployment barrier', () => {
+  test('sequential backend deployment and preparation can finish after thirty minutes within the shared seventy', async () => {
+    const f = fixture({ published: true })
+    let elapsed = 0
+    f.ports.now = () => elapsed
+    const wait = f.ports.waitRetired
+    f.ports.waitRetired = async (service, id) => {
+      elapsed += 29 * 60 * 1000
+      return wait(service, id)
+    }
+    const remote = f.ports.remote
+    f.ports.remote = async (action, id, input) => {
+      if (action === 'migrate' || action === 'initialize') elapsed += 5 * 60 * 1000
+      return remote(action, id, input)
+    }
+    expect(await runKidsJourneyRollout({ sha, mode: 'deploy' }, f.ports)).toEqual({
+      status: 'published',
+      version: 3,
+    })
+    expect(elapsed).toBe(68 * 60 * 1000)
+  })
+
+  test('the shared deadline is rechecked after migration before initialize or a new Auth deploy', async () => {
+    const f = fixture()
+    let elapsed = 0
+    f.ports.now = () => elapsed
+    const remote = f.ports.remote
+    f.ports.remote = async (action, id, input) => {
+      if (action === 'migrate') elapsed = 70 * 60 * 1000
+      return remote(action, id, input)
+    }
+    await expect(runKidsJourneyRollout({ sha, mode: 'deploy' }, f.ports)).rejects.toThrow('limite')
+    expect(f.calls).not.toContain('deploy:auth')
+    expect(f.calls.some((call) => call.startsWith('remote:initialize'))).toBe(false)
+  })
+
+  test('a published verification arriving at the shared deadline does not release apps', async () => {
+    const f = fixture()
+    let elapsed = 0
+    f.ports.now = () => elapsed
+    f.ports.remote = async () => {
+      elapsed = 70 * 60 * 1000
+      return { status: 'published', version: 3 }
+    }
+    await expect(runKidsJourneyRollout({ sha, mode: 'verify' }, f.ports)).rejects.toThrow('limite')
+  })
   test('orders migration/V0 before new Auth, retirement before capture, and V1 before release', async () => {
     const f = fixture()
     const result = await runKidsJourneyRollout({ sha, mode: 'deploy' }, f.ports)

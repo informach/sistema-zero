@@ -87,6 +87,23 @@ observado, conservando os IDs mesmo quando somem de activeDeployments; confere A
 durante a captura e antes/depois da publicação. O container Members confirma seu SHA, service,
 ambiente e deployment antes de executar o CLI produtivo.
 
+O deploy de staging reserva até 30 minutos por espera de backend e 70 minutos para a onda
+canônica inteira, incluindo migrações, captura e publicação. O deployment observado em
+22/10 levou 24min25s até `SUCCESS`; o antigo limite de dez minutos interrompia o operador
+enquanto o Railway ainda construía ou provisionava a réplica. Depois da barreira, os apps
+são disparados em paralelo e compartilham uma espera de 20 minutos reais, com cada chamada
+HTTP limitada a 15 segundos. O job reserva 100 minutos ao todo; os limites dos testes e do
+produto não mudam. Expirar continua bloqueando a liberação e exige retomada explícita,
+sem cancelar ou repetir automaticamente um deployment de resultado pendente.
+
+Para reaproveitar uma imagem já implantada, um operador explícito pode fornecer
+`createRailwayPorts(..., { adoptDeployments: { members: { id, commitSha, imageDigest, previousIds } } })`
+ao mesmo `runKidsJourneyRollout`. A porta confere novamente destino, SHA e digest reais, único
+deployment `SUCCESS`, ausência de qualquer outro deployment pendente e `REMOVED` de todos os
+predecessores indicados. A adoção não faz POST de deploy nem substitui o probe SSH de admissão,
+as migrações, a verificação da jornada ou a barreira dos aplicativos. Não há flag de CLI nem
+adoção automática; sem essa opção, a porta continua criando um deployment novo normalmente.
+
 **Janela operacional:** manter congelados deploys/rollbacks externos, criadores antigos,
 import/backfill e autoria do catálogo durante toda a carga inicial. O trigger nativo staging
 fica desligado e o CI serializa sua própria onda, mas isso não é um lock contra um operador

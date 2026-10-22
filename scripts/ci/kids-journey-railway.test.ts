@@ -13,6 +13,8 @@ const sha = 'a'.repeat(40),
   oldSha = 'b'.repeat(40)
 const oldId = '44444444-4444-4444-8444-444444444444'
 const newId = '55555555-5555-4555-8555-555555555555'
+const imageDigest = `sha256:${'c'.repeat(64)}`
+const adoption = { id: newId, commitSha: sha, imageDigest, previousIds: [oldId] }
 
 function transport(
   options: {
@@ -22,6 +24,8 @@ function transport(
     hideOldAfterProbe?: boolean
     failedProbeCheck?: 'environment' | 'service' | 'deployment' | 'commit' | 'required'
     probeStderr?: string
+    pendingForMs?: number
+    adoption?: typeof adoption
     failAt?: 'cli' | 'openssh' | 'inventory' | 'probe'
     reply?: (query: string, call: number) => Response | undefined
   } = {},
@@ -29,14 +33,16 @@ function transport(
   const commands: string[][] = [],
     queries: string[] = [],
     logs: unknown[] = []
-  let deployed = false,
+  let deployed = !!options.adoption,
     polls = 0
   let activeReads = 0
+  let elapsedMs = 0
   const ports = createRailwayPorts(
     sha,
     { RAILWAY_TOKEN: 'local-test-only' },
     '/isolated/identity',
     {
+      ...(options.adoption ? { adoptDeployments: { members: options.adoption } } : {}),
       exec(command: string, args: string[]) {
         commands.push([command, ...args])
         if (
@@ -79,7 +85,9 @@ function transport(
         if (query.startsWith('mutation')) {
           deployed = true
           data = { serviceInstanceDeployV2: newId }
-        } else if (query.includes('activeDeployments'))
+        } else if (query.includes('deployments(input:'))
+          data = { deployments: { edges: [], pageInfo: { hasNextPage: false, endCursor: null } } }
+        else if (query.includes('activeDeployments'))
           data = {
             serviceInstance: {
               activeDeployments:
@@ -89,7 +97,7 @@ function transport(
                       {
                         id: deployed ? newId : oldId,
                         status: 'SUCCESS',
-                        meta: { commitHash: deployed ? sha : oldSha },
+                        meta: { commitHash: deployed ? sha : oldSha, imageDigest },
                       },
                     ],
             },
@@ -98,27 +106,204 @@ function transport(
           data = {
             deployment: {
               id: variables.id,
+              projectId: stagingJourney.project,
+              environmentId: stagingJourney.environment,
+              serviceId: stagingJourney.members,
               status:
                 variables.id === oldId
-                  ? options.retire && polls > 0
+                  ? options.retire && (polls > 0 || options.adoption)
                     ? 'REMOVED'
                     : 'SUCCESS'
-                  : 'SUCCESS',
-              meta: { commitHash: options.wrongSha ? oldSha : sha },
+                  : elapsedMs < (options.pendingForMs ?? 0)
+                    ? 'BUILDING'
+                    : 'SUCCESS',
+              meta: { commitHash: options.wrongSha ? oldSha : sha, imageDigest },
             },
           }
         return { ok: true, json: async () => ({ data }) }
       },
-      sleep: async () => {
+      now: () => elapsedMs,
+      sleep: async (ms: number) => {
         polls++
+        elapsedMs += ms
       },
       log: (value: unknown) => logs.push(value),
     },
   )
-  return { ports, commands, queries, logs, polls: () => polls }
+  return {
+    ports,
+    commands,
+    queries,
+    logs,
+    polls: () => polls,
+    elapsed: () => elapsedMs,
+    advance: (ms: number) => {
+      elapsedMs += ms
+    },
+  }
 }
 
 describe('actual Railway boundary without remote I/O', () => {
+  test('explicit adoption reuses only the exact healthy image and still requires retirement plus admission', async () => {
+    const f = transport({ adoption, retire: true })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('members')
+    expect(id).toBe(newId)
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
+    expect(f.logs).toContainEqual({
+      stage: 'members-deployment-adopted',
+      deployment: newId,
+      adopted: true,
+      mutationOutcome: 'not-attempted',
+    })
+    await f.ports.waitRetired('members', id)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(3)
+    expect(f.queries.filter((query) => query.includes('deployments(input:'))).toHaveLength(2)
+  })
+
+  test.each([
+    { field: 'id', value: oldId },
+    { field: 'projectId', value: oldId },
+    { field: 'environmentId', value: oldId },
+    { field: 'serviceId', value: stagingJourney.auth },
+    { field: 'status', value: 'DEPLOYING' },
+    { field: 'meta', value: { commitHash: oldSha, imageDigest } },
+    { field: 'meta', value: { commitHash: sha, imageDigest: `sha256:${'d'.repeat(64)}` } },
+  ])('adoption refuses changed remote $field without mutation', async ({ field, value }) => {
+    const f = transport({
+      adoption,
+      retire: true,
+      reply(query) {
+        if (!query.includes('deployment(id:')) return undefined
+        return Response.json({
+          data: {
+            deployment: {
+              id: newId,
+              projectId: stagingJourney.project,
+              environmentId: stagingJourney.environment,
+              serviceId: stagingJourney.members,
+              status: 'SUCCESS',
+              meta: { commitHash: sha, imageDigest },
+              [field]: value,
+            },
+          },
+        })
+      },
+    })
+    await f.ports.preflight()
+    await expect(f.ports.deploy('members')).rejects.toThrow('adoção')
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test.each([
+    { edges: [{ node: { id: oldId, status: 'BUILDING' } }], hasNextPage: false },
+    { edges: [], hasNextPage: true },
+  ])('pending or incomplete inventory cannot authorize adoption', async ({
+    edges,
+    hasNextPage,
+  }) => {
+    const f = transport({
+      adoption,
+      retire: true,
+      reply(query) {
+        return query.includes('deployments(input:')
+          ? Response.json({ data: { deployments: { edges, pageInfo: { hasNextPage } } } })
+          : undefined
+      },
+    })
+    await f.ports.preflight()
+    await expect(f.ports.deploy('members')).rejects.toThrow('pendente')
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('adoption requires every explicit predecessor to be REMOVED, not just absent from active', async () => {
+    const f = transport({ adoption })
+    await f.ports.preflight()
+    await expect(f.ports.deploy('members')).rejects.toThrow('Predecessores')
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('a competing active deployment observed after preflight refuses adoption', async () => {
+    let activeReads = 0
+    const f = transport({
+      adoption,
+      retire: true,
+      reply(query) {
+        if (!query.includes('activeDeployments') || ++activeReads <= 2) return undefined
+        return Response.json({
+          data: {
+            serviceInstance: {
+              activeDeployments: [
+                { id: newId, status: 'SUCCESS', meta: { commitHash: sha, imageDigest } },
+                { id: oldId, status: 'SUCCESS', meta: { commitHash: oldSha } },
+              ],
+            },
+          },
+        })
+      },
+    })
+    await f.ports.preflight()
+    await expect(f.ports.deploy('members')).rejects.toThrow('único')
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('an adoption read that exhausts the shared deadline starts no further operation', async () => {
+    const f = transport({
+      adoption,
+      retire: true,
+      reply(query) {
+        if (query.includes('deployment(id:')) f.advance(101)
+        return undefined
+      },
+    })
+    await f.ports.preflight()
+    await expect(f.ports.deploy('members', 100)).rejects.toThrow('limite')
+    expect(f.queries.some((query) => query.includes('deployments(input:'))).toBe(false)
+    expect(f.queries.some((query) => query.startsWith('mutation'))).toBe(false)
+  })
+
+  test('a new pending deployment between adoption and admission blocks the release', async () => {
+    let inventories = 0
+    const f = transport({
+      adoption,
+      retire: true,
+      reply(query) {
+        if (!query.includes('deployments(input:') || ++inventories === 1) return undefined
+        return Response.json({
+          data: {
+            deployments: {
+              edges: [{ node: { id: oldId, status: 'BUILDING' } }],
+              pageInfo: { hasNextPage: false },
+            },
+          },
+        })
+      },
+    })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('members')
+    await expect(f.ports.waitRetired('members', id)).rejects.toThrow('pendente')
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
+  })
+
+  test('malformed adoption is refused before provider access', () => {
+    for (const candidate of [
+      { ...adoption, commitSha: oldSha },
+      { ...adoption, imageDigest: 'latest' },
+      { ...adoption, previousIds: [] },
+      { ...adoption, previousIds: [newId] },
+      { ...adoption, previousIds: [oldId, oldId] },
+      { ...adoption, unexpected: true },
+    ])
+      expect(() =>
+        createRailwayPorts(sha, {}, '/isolated/identity', {
+          adoptDeployments: { members: candidate },
+          fetch: () => {
+            throw new Error('Must not access provider')
+          },
+        }),
+      ).toThrow('Adoção')
+  })
   test('post-preflight failures identify refresh, mutation, ACK and first poll without releasing apps', async () => {
     for (const [call, step, reason, mutationOutcome, status] of [
       [3, 'members-active-refresh', 'api-authorization-rejected', 'not-attempted', 401],
@@ -448,7 +633,48 @@ describe('actual Railway boundary without remote I/O', () => {
     await f.ports.preflight()
     const id = await f.ports.deploy('auth')
     await expect(f.ports.waitRetired('auth', id)).rejects.toThrow('não retirados')
-    expect(f.polls()).toBe(60)
+    expect(f.elapsed()).toBe(30 * 60 * 1000)
+  })
+  test('a deployment taking 24 minutes 25 seconds still requires SHA, retirement and admission', async () => {
+    const f = transport({ retire: true, pendingForMs: (24 * 60 + 25) * 1000 })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('members')
+    await f.ports.waitRetired('members', id)
+    expect(f.elapsed()).toBeGreaterThanOrEqual((24 * 60 + 25) * 1000)
+    expect(f.elapsed()).toBeLessThan(30 * 60 * 1000)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(3)
+  })
+
+  test('a deployment still building at thirty minutes never reaches admission', async () => {
+    const f = transport({ retire: true, pendingForMs: 31 * 60 * 1000 })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('members')
+    await expect(f.ports.waitRetired('members', id)).rejects.toThrow('não retirados')
+    expect(f.elapsed()).toBe(30 * 60 * 1000)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
+  })
+
+  test('a shorter shared wave deadline caps deployment polling without resetting the budget', async () => {
+    const f = transport({ retire: true, pendingForMs: 24 * 60 * 1000 })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('auth')
+    await expect(f.ports.waitRetired('auth', id, 12 * 60 * 1000)).rejects.toThrow('não retirados')
+    expect(f.elapsed()).toBe(12 * 60 * 1000)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
+  })
+
+  test('a successful response arriving after the deadline cannot authorize admission', async () => {
+    const f = transport({
+      retire: true,
+      reply(query) {
+        if (query.includes('deployment(id:')) f.advance(31 * 60 * 1000)
+        return undefined
+      },
+    })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('auth')
+    await expect(f.ports.waitRetired('auth', id)).rejects.toThrow('não retirados')
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
   })
   test('waits for explicit old REMOVED even after activeDeployments stopped listing it', async () => {
     const f = transport({ retire: true })
