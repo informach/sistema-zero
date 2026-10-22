@@ -2,7 +2,14 @@ import { useEffect, useRef } from 'react'
 import type { SelecaoStep } from '../../content/quiz-config'
 import { flexionar, type Genero } from '../../funnels/comunidade-dos-criadores/quiz/genero'
 import type { QuizAnswers, QuizAnswerValue } from '../../lib/quiz-types'
-import { INTRO, orderedOptions, REVIEW, type SpinEngine, useSpinQuiz } from './useSpinQuiz'
+import {
+  INTRO,
+  linkWithAttribution,
+  orderedOptions,
+  REVIEW,
+  type SpinEngine,
+  useSpinQuiz,
+} from './useSpinQuiz'
 
 // O quiz Kids em conversa (Comunidade v6, 20/10/2026; Desafio v5, 21/10/2026): filho ou filha em
 // duas cartas na entrada, a idade em três cartas e as perguntas do ramo, uma por tela. Tocar numa
@@ -232,7 +239,7 @@ export default function KidsConversaQuiz({
         <div className="qz-acoes">
           <a
             className="qz-botao"
-            href={adultQuizPath ?? exitPath}
+            href={adultQuizPath ? linkWithAttribution(adultQuizPath) : exitPath}
             data-analytics-id={`${c.analyticsPrefix}-saida-adulto`}
           >
             {adultQuizPath ? ADULT_EXIT.action : ADULT_EXIT.fallbackAction}

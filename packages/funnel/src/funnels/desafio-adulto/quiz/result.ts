@@ -4,6 +4,7 @@
 import type { BlocoConversa, ResultadoConversa } from '../../../content/resultado-conversa'
 import type { QuizAnswers } from '../../../lib/quiz-types'
 import {
+  type Condition,
   type DesafioAdultoDecision,
   type DesafioAdultoProfile,
   desafioAdultoDecision,
@@ -87,9 +88,20 @@ function necessidades(answers: QuizAnswers): string[] {
   ].filter((frase): frase is string => Boolean(frase))
 }
 
+/**
+ * A seção da página adulta que responde à condição não atendida: o computador nas dúvidas
+ * ("Funciona no celular?"), o formato na aula e o que o Desafio ensina nas fases do jogo.
+ */
+const ANCORA: Record<Condition, string> = {
+  computador: '#duvidas',
+  formato: '#aula',
+  trabalho: '#jogo',
+}
+
 function cta(d: DesafioAdultoDecision): { bloco: BlocoConversa; href: string } {
   const destino = DESAFIO_ADULTO_OFFER_PATH
-  if (!d.unmet.length)
+  const [primeira] = d.unmet
+  if (!primeira)
     return {
       bloco: {
         tipo: 'cta',
@@ -100,7 +112,7 @@ function cta(d: DesafioAdultoDecision): { bloco: BlocoConversa; href: string } {
       },
       href: destino,
     }
-  const href = `${destino}#duvidas`
+  const href = `${destino}${ANCORA[primeira]}`
   return {
     bloco: {
       tipo: 'cta',

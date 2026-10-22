@@ -72,7 +72,7 @@ try {
   assert.ok((await page.locator('mark').count()) >= 4)
   const botao = page.locator('[data-analytics-id="resultado-oferta"]')
   assert.equal(await botao.innerText(), 'Ver os requisitos e como funciona')
-  assert.equal(await botao.getAttribute('href'), `${base}/oferta#duvidas`)
+  assert.equal(await botao.getAttribute('href'), `${base}/oferta?utm_source=qa_farol#duvidas`)
   await noOverflow(page)
   await page.screenshot({ path: `${output}/resultado-390.png`, fullPage: true })
   await page.setViewportSize({ width: 1440, height: 1000 })

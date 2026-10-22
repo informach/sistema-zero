@@ -7,6 +7,7 @@ import { legendaDoRelato } from '../../comunidade-dos-criadores/oferta/pagina-9a
 import { RELATOS } from '../../comunidade-dos-criadores/oferta/relatos'
 import { flexionar } from '../../comunidade-dos-criadores/quiz/genero'
 import {
+  type Condition,
   type Decision917,
   type DecisionM9,
   type DesafioProfile,
@@ -83,6 +84,7 @@ export const DESAFIO_OFFER_PATHS = {
 } as const
 
 type Opener = 'cena' | 'sintese' | 'cena_desejada'
+type DesafioBranchComCarta = keyof typeof DESAFIO_OFFER_PATHS
 
 const join = (...partes: (string | false | null | undefined)[]): string =>
   partes.filter(Boolean).join(' ')
@@ -98,19 +100,31 @@ function opener(answers: QuizAnswers, prefix: '' | 'm9_', p: string): Opener {
   return 'cena_desejada'
 }
 
+/**
+ * A seção de cada página que responde à condição não atendida: o computador nas dúvidas ("Funciona no
+ * celular ou no tablet?"), o formato na aula (9 a 17) ou na sessão (menor de 9).
+ */
+const ANCORA: Record<DesafioBranchComCarta, Record<Condition, string>> = {
+  '9a17': { computador: '#duvidas', formato: '#aula' },
+  m9: { computador: '#duvidas', formato: '#sessao' },
+}
+
 function cta(
-  unmet: string[],
+  ramo: DesafioBranchComCarta,
+  unmet: Condition[],
   texto: string,
   rotulo: string,
-  destino: string,
 ): { bloco: BlocoConversa; href: string } {
-  if (!unmet.length)
+  const destino = DESAFIO_OFFER_PATHS[ramo]
+  const [primeira] = unmet
+  if (!primeira)
     return { bloco: { tipo: 'cta', texto, rotulo, href: destino, nota: CTA_NOTA }, href: destino }
-  const href = `${destino}#duvidas`
+  const itens = unmet.map((c) => (ramo === 'm9' ? UNMET_M9 : UNMET_917)[c])
+  const href = `${destino}${ANCORA[ramo][primeira]}`
   return {
     bloco: {
       tipo: 'cta',
-      texto: ctaUnmetText(unmet),
+      texto: ctaUnmetText(itens),
       rotulo: CTA_UNMET_LABEL,
       href,
       nota: CTA_NOTA,
@@ -140,12 +154,7 @@ function carta917(answers: QuizAnswers, d: Decision917): ResultadoConversa {
   const relato = RELATO_917[p]
   const r = RELATOS[relato.id]
   const destino = DESAFIO_OFFER_PATHS['9a17']
-  const botao = cta(
-    d.unmet.map((c) => UNMET_917[c]),
-    CTA_TEXT_917,
-    CTA_LABEL_917[p],
-    destino,
-  )
+  const botao = cta('9a17', d.unmet, CTA_TEXT_917, CTA_LABEL_917[p])
 
   const blocos: BlocoConversa[] = [
     { tipo: 'p', texto: abertura },
@@ -219,12 +228,7 @@ function cartaM9(answers: QuizAnswers, d: DecisionM9): ResultadoConversa {
     CLOSE_M9,
   )
   const destino = DESAFIO_OFFER_PATHS.m9
-  const botao = cta(
-    d.unmet.map((c) => UNMET_M9[c]),
-    CTA_TEXT_M9,
-    CTA_LABEL_M9[p],
-    destino,
-  )
+  const botao = cta('m9', d.unmet, CTA_TEXT_M9, CTA_LABEL_M9[p])
 
   const blocos: BlocoConversa[] = [
     { tipo: 'p', texto: abertura },

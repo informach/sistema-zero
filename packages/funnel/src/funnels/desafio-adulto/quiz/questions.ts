@@ -45,7 +45,7 @@ export const DESAFIO_ADULTO_QUESTIONS: SelecaoStep[] = [
   // S. Calibra a frase dos blocos, sem medir nível. Não pontua.
   pergunta(2, 'programacao', 'rotina', 'Já programou', 'Você já programou?', [
     ['nunca', 'Nunca'],
-    ['um_pouco', 'Um pouco, sozinho'],
+    ['um_pouco', 'Um pouco, por conta própria'],
     ['estudei', 'Estudei ou trabalho com isso'],
   ]),
   // S. "Não tenho tempo", a objeção mais citada. Não pontua e não promete duração.

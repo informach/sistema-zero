@@ -48,7 +48,7 @@ _Etapa: SUA ROTINA. Chave `computador`. No /admin: Computador._
 _Etapa: SUA ROTINA. Chave `programacao`. No /admin: Já programou._
 
 - `nunca`: Nunca
-- `um_pouco`: Um pouco, sozinho
+- `um_pouco`: Um pouco, por conta própria
 - `estudei`: Estudei ou trabalho com isso
 
 ### 3. Numa semana normal, quanto tempo sobra para um projeto seu?

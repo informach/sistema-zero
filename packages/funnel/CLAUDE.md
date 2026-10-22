@@ -236,7 +236,11 @@ https://claude.ai/artifact/7RLNMmkCa6yMrSUnWR9UHs; registro em
 dos quizzes da Comunidade (ver "Peças comuns aos dois quizzes em conversa"), com perguntas mais curtas
 e um resultado que fala de um jogo só, A Chave do Farol. NENHUMA tela antes do resultado cita o
 Desafio, o Farol, curso, aula, plataforma, preço ou prazo, nem as saídas e o topo (decisão da dona;
-a régua é `tests/browser/desafio-quiz-frio.ts`).
+a régua é `tests/browser/desafio-quiz-frio.ts`). Única exceção, deliberada: a opção adulta "Não ser
+curso de criança", que é o medo do adulto nas palavras dele. Os links do quiz levam a atribuição da
+página (UTMs, `event_code` e o `cupom` do anúncio, que a oferta só lê da própria URL):
+`linkWithAttribution` em `useSpinQuiz.ts` (resultado e saídas) e `funnelLinkWithAttribution` no botão
+da carta, em `resultado.astro`.
 - **Kids v5** (`desafio-primeiro-jogo/quiz/`, `desafio-farol-v5`, `presentation: 'desafio-kids'`):
   filho ou filha em cartas, a idade em cartas e sete perguntas por ramo (`9a17` e `m9`, chaves `m9_*`);
   "18 ou mais" sai para o quiz adulto do Desafio. Perfil por soma (cena 3, cena desejada 2, síntese 3;
@@ -247,12 +251,13 @@ a régua é `tests/browser/desafio-quiz-frio.ts`).
   `legacySteps`. Carta (`result.ts`/`result-copy.ts`): 4 títulos, a tela do jogo, um relato
   (André no A e no D, Rafael no B e no C, Débora no menor de 9) e o botão para `/oferta` ou
   `/oferta/criar-junto`; só celular ou tablet e professor ao vivo trocam o botão por "Ver os
-  requisitos e como funciona", com `#duvidas`. Texto no masculino, `flexionar` troca para "ela".
+  requisitos e como funciona", com a âncora da seção que responde (`#duvidas` para o computador,
+  `#aula` no 9 a 17 e `#sessao` no menor de 9 para o professor ao vivo). Texto no masculino, `flexionar` troca para "ela".
 - **Adulto v1** (`desafio-adulto/quiz/`, `desafio-adulto-v1`, `presentation: 'desafio-adulto'`):
   "Começar" e o link "Tenho menos de 18 anos" (saída para o quiz Kids do Desafio, nada gravado),
   oito perguntas sem ramo nem condicional, manchetes `padrao` e `?manchete=ideia`. Carta sem relato,
   com o parágrafo dos fundadores da página adulta; só celular ou tablet, professor ao vivo e trabalhar
-  com jogos trocam o botão (`/pro/desafio-primeiro-jogo/oferta#duvidas`). O título das necessidades
+  com jogos trocam o botão (`/pro/desafio-primeiro-jogo/oferta` com `#duvidas`, `#aula` ou `#jogo`). O título das necessidades
   conta as frases ("Duas coisas…", "Três coisas…"). O topo leva só a logo, sem nome de produto.
 - O botão das duas cartas leva a nota "O preço aparece na próxima página." (`cta.nota`; sem ela vale a
   da assinatura, "O preço e os planos…"). O `resultado.astro` não tem mais ramo próprio do Desafio: a

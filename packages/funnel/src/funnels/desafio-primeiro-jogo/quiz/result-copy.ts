@@ -123,7 +123,7 @@ export const CHANGE_917: Record<DesafioProfile, string> = {
   A: 'O tempo na tela continua, mas agora sai dele alguma coisa que ele fez e pode mostrar.',
   B: 'A ideia sai da conversa e vira uma regra que funciona.',
   C: 'No primeiro jogo, ele escolhe o personagem e o cenário entre os do jogo. Desenhar os próprios personagens fica para depois.',
-  D: 'Cada bloco é uma decisão que ele vê funcionar, e a lógica é a mesma do código.',
+  D: 'Cada bloco é uma decisão que ele vê funcionar, e ele entende por que o jogo faz o que faz.',
 }
 export const HELP_917 =
   'Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta.'
@@ -143,21 +143,19 @@ export const LEGENDA_917 = 'A Chave do Farol, o jogo que ele monta'
 export const RELATO_917: Record<DesafioProfile, { id: 'AV02' | 'AV04'; intro: string }> = {
   A: {
     id: 'AV04',
-    intro:
-      'O André, nosso filho, fez o Desafio do Primeiro Jogo na edição anterior e contou assim:',
+    intro: 'O André, nosso filho, fez o Desafio do Primeiro Jogo e contou assim:',
   },
   B: {
     id: 'AV02',
-    intro: 'O Rafael fez o Desafio do Primeiro Jogo na edição anterior e contou assim:',
+    intro: 'O Rafael fez o Desafio do Primeiro Jogo e contou assim:',
   },
   C: {
     id: 'AV02',
-    intro: 'O Rafael fez o Desafio do Primeiro Jogo na edição anterior e contou assim:',
+    intro: 'O Rafael fez o Desafio do Primeiro Jogo e contou assim:',
   },
   D: {
     id: 'AV04',
-    intro:
-      'O André, nosso filho, fez o Desafio do Primeiro Jogo na edição anterior e contou assim:',
+    intro: 'O André, nosso filho, fez o Desafio do Primeiro Jogo e contou assim:',
   },
 }
 
@@ -167,7 +165,7 @@ export const NEED_917: Record<string, string> = {
   acompanhar: `Você quer ${m('conseguir acompanhar de longe')}. Na Área dos pais, você vê o que ele fez na semana.`,
   tempo_tela: `Você quer que ${m('caiba no tempo de tela que vocês combinaram')}. O projeto fica guardado na conta dele: ele para quando o tempo acaba e continua no outro dia, do mesmo ponto.`,
   orcamento: ORCAMENTO,
-  ao_vivo: `Você disse que precisa de ${m('professor ao vivo')}. As aulas são gravadas, com o vídeo do lado dos blocos, e não há aula ao vivo. Vale conferir na próxima página se esse formato serve para vocês.`,
+  ao_vivo: `Você disse que precisa de ${m('professor ao vivo')}. As aulas são em vídeo, do lado dos blocos, e não há professor ao vivo. Vale conferir na próxima página como é uma aula e se esse formato serve para vocês.`,
 }
 export const COMPUTADOR_917: Record<string, string> = {
   so_dele: '',
@@ -293,11 +291,11 @@ export const NEED_M9: Record<string, string> = {
   curtas: `Você quer ${m('sessões curtas, que caibam no dia')}. Vocês param quando o tempo acaba e, no outro dia, continuam do mesmo ponto.`,
   ele_escolhe: `Você quer que ${m('ele escolha, e você só ajude')}. É assim que a sessão funciona: ele decide o personagem e o cenário, você lê e ajuda com o mouse.`,
   orcamento: ORCAMENTO,
-  ao_vivo: `Você disse que precisa de ${m('professor ao vivo')}. As aulas são gravadas e não há aula ao vivo. Vale conferir na próxima página se esse formato serve para vocês.`,
+  ao_vivo: `Você disse que precisa de ${m('professor ao vivo')}. As aulas são em vídeo e não há professor ao vivo. Vale conferir na próxima página como é uma sessão e se esse formato serve para vocês.`,
 }
 export const COMPUTADOR_M9: Record<string, string> = {
   sim: '',
-  organizar: `E o computador ${m('precisa de um horário combinado')}: como as aulas são gravadas, vocês escolhem a hora.`,
+  organizar: `E o computador ${m('precisa de um horário combinado')}: como as aulas são em vídeo, vocês escolhem a hora.`,
   celular_tablet: `E você disse que ${m('só tem celular ou tablet')}. Para montar o jogo, precisa de computador com mouse e teclado; depois de publicado, o jogo abre no celular e no tablet.`,
   verificar: `E você ${m('ainda vai ver o computador')}: para montar, precisa de um com mouse e teclado.`,
 }

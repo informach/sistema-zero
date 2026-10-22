@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import type { SelecaoStep } from '../../content/quiz-config'
 import type { QuizAnswers, QuizAnswerValue } from '../../lib/quiz-types'
 import { Manchete } from './KidsConversaQuiz'
-import { INTRO, orderedOptions, REVIEW, type SpinEngine, useSpinQuiz } from './useSpinQuiz'
+import {
+  INTRO,
+  linkWithAttribution,
+  orderedOptions,
+  REVIEW,
+  type SpinEngine,
+  useSpinQuiz,
+} from './useSpinQuiz'
 
 // O quiz adulto em conversa (Comunidade v1, 20/10/2026; Desafio v1, 21/10/2026): a entrada tem só o
 // motivo de responder, "Começar" e o link "Tenho menos de 18 anos" (a saída para o quiz Kids, sem
@@ -138,7 +145,7 @@ export default function AdultoConversaQuiz({
         <div className="qz-acoes qz-acoes--fim">
           <a
             className="qz-botao"
-            href={kidsQuizPath}
+            href={linkWithAttribution(kidsQuizPath)}
             data-analytics-id={`${c.analyticsPrefix}-saida-kids`}
           >
             {QUIZ_ENTRY.minor.button}

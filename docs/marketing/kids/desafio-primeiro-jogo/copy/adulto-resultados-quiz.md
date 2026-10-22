@@ -22,7 +22,7 @@ Fazer um jogo é decidir as regras: quando o personagem encostar na chave, ela s
 
 #### Onde isso acontece
 
-No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem e o cenário, escreve os avisos e decide onde a chave fica. Depois publica e manda o link para os amigos jogarem.
+No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
 
 _[Tela: A Chave do Farol, o jogo que você monta nas 3 fases]_
 
@@ -58,7 +58,7 @@ Fazer um jogo é escrever as regras da ideia: quando o personagem encostar na ch
 
 #### Onde isso acontece
 
-No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem e o cenário, escreve os avisos e decide onde a chave fica. Depois publica e manda o link para os amigos jogarem.
+No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
 
 _[Tela: A Chave do Farol, o jogo que você monta nas 3 fases]_
 
@@ -94,7 +94,7 @@ Fazer um jogo é montar as regras uma a uma: quando o personagem encostar na cha
 
 #### Onde isso acontece
 
-No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem e o cenário, escreve os avisos e decide onde a chave fica. Depois publica e manda o link para os amigos jogarem.
+No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.
 
 _[Tela: A Chave do Farol, o jogo que você monta nas 3 fases]_
 

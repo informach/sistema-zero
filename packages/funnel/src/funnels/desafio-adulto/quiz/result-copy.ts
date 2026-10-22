@@ -124,7 +124,7 @@ export const CHANGE: Record<DesafioAdultoProfile, string> = {
 }
 export const PROGRAMACAO: Record<string, string> = {
   nunca: `Como você ${m('nunca programou')}, os blocos tiram a digitação do caminho, e a lógica é a mesma do código.`,
-  um_pouco: `Como você ${m('já programou um pouco, sozinho')}, vai reconhecer a lógica: os blocos só tiram a digitação do caminho.`,
+  um_pouco: `Como você ${m('já programou um pouco, por conta própria')}, vai reconhecer a lógica: os blocos só tiram a digitação do caminho.`,
   estudei: `Como você ${m('estudou ou trabalha com programação')}, a lógica é a mesma do código: os blocos só tiram a digitação do caminho e deixam o foco no jogo.`,
 }
 /** A cena de daqui a um mês volta no fim do "o que muda" (quando ela não abriu a carta). */
@@ -139,7 +139,7 @@ export const WISH: Record<DesafioAdultoProfile, string> = {
 // ---------------------------------------------------------------------------------------------
 
 export const WHERE =
-  'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem e o cenário, escreve os avisos e decide onde a chave fica. Depois publica e manda o link para os amigos jogarem.'
+  'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.'
 export const IMAGEM_FAROL = {
   src: '/img/desafio-primeiro-jogo/farol-jogo.png',
   largura: 1280,
@@ -161,7 +161,7 @@ export const NEED: Record<string, string> = {
   pouco_tempo: `Você precisa que ${m('caiba em pouco tempo por dia')}. As aulas são divididas em seções, e o projeto fica salvo na sua conta: dez minutos num dia, uma hora no outro.`,
   terminar: `Você precisa de ${m('um projeto que consiga terminar')}. O Desafio é um jogo só, do começo ao fim, com o certificado no final.`,
   nao_infantil: `Você quer que ${m('não seja curso de criança')}. A área adulta tem aparência e linguagem próprias, e o jogo é A Chave do Farol nas duas versões, porque é um bom primeiro jogo para qualquer idade.`,
-  ao_vivo: `Você disse que precisa de ${m('professor ao vivo')}. As aulas são gravadas, com o vídeo do lado dos blocos, e não há aula ao vivo. Vale conferir na próxima página se esse formato serve para você.`,
+  ao_vivo: `Você disse que precisa de ${m('professor ao vivo')}. As aulas são em vídeo, do lado dos blocos, e não há professor ao vivo. Vale conferir na próxima página como é uma aula e se esse formato serve para você.`,
   trabalho: `Você quer ${m('aprender para trabalhar com jogos')}. O Desafio ensina a fazer um primeiro jogo e não prepara para trabalhar com jogos. Vale conferir na próxima página se é isso que você procura.`,
 }
 /** O tempo livre volta com o que ele significa no Desafio. */

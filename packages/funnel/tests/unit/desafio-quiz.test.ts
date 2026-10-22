@@ -369,7 +369,7 @@ describe('Desafio v5: o resultado em conversa', () => {
       'Fora da tela, ele inventa o personagem, a regra e o fim da história. No tablet, os joguinhos já vêm decididos: ele só aperta. Falta um lugar onde a ideia dele mande no que acontece, com você do lado para ler e ajudar com o mouse.',
     )
     expect(p.at(-1)).toBe(
-      'Você quer não precisar saber programar. O vídeo mostra cada passo, e os blocos têm as palavras escritas: o seu papel é ler, perguntar e deixar ele escolher. E o computador precisa de um horário combinado: como as aulas são gravadas, vocês escolhem a hora.',
+      'Você quer não precisar saber programar. O vídeo mostra cada passo, e os blocos têm as palavras escritas: o seu papel é ler, perguntar e deixar ele escolher. E o computador precisa de um horário combinado: como as aulas são em vídeo, vocês escolhem a hora.',
     )
     expect(cta(r)).toMatchObject({
       rotulo: 'Ver como criar o primeiro jogo de vocês',
@@ -438,7 +438,10 @@ describe('Desafio v5: o resultado em conversa', () => {
       const destino = DESAFIO_OFFER_PATHS[d.branch]
       expect(r.destino).toBe(destino)
       if (botao?.tipo === 'cta') {
-        expect(botao.href).toBe(d.unmet.length ? `${destino}#duvidas` : destino)
+        // A seção que responde à condição: o computador nas dúvidas, o formato na aula ou na sessão.
+        const ancora =
+          d.unmet[0] === 'computador' ? '#duvidas' : d.branch === 'm9' ? '#sessao' : '#aula'
+        expect(botao.href).toBe(d.unmet.length ? `${destino}${ancora}` : destino)
         expect(botao.rotulo === COPY.CTA_UNMET_LABEL).toBe(d.unmet.length > 0)
         expect(botao.nota).toBe(COPY.CTA_NOTA)
       }
@@ -477,7 +480,7 @@ describe('Desafio v5: o resultado em conversa', () => {
     cobre(COPY.SINTESE_M9, 'm9_sintese', ['conhecer'])
   })
 
-  test('condições: só celular e professor ao vivo trocam o botão e apontam as dúvidas', () => {
+  test('condições: só celular e professor ao vivo trocam o botão e apontam a seção que responde', () => {
     const tablet = buildDesafioKidsResult(answers917({ computador: 'celular_tablet' }))!
     expect(cta(tablet)).toMatchObject({
       rotulo: COPY.CTA_UNMET_LABEL,
@@ -487,7 +490,7 @@ describe('Desafio v5: o resultado em conversa', () => {
     const aoVivo = buildDesafioKidsResult(answersM9({ m9_garantia: 'ao_vivo' }))!
     expect(cta(aoVivo)).toMatchObject({
       rotulo: COPY.CTA_UNMET_LABEL,
-      href: '/kids/desafio-primeiro-jogo/oferta/criar-junto#duvidas',
+      href: '/kids/desafio-primeiro-jogo/oferta/criar-junto#sessao',
     })
     expect(desafioDecision(answers917({ computador: 'verificar' }))).toMatchObject({
       unmet: [],

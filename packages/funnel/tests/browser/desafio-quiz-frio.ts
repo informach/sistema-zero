@@ -20,8 +20,9 @@ const browser = await chromium.launch(
   process.env.QA_CHROMIUM_PATH ? { executablePath: process.env.QA_CHROMIUM_PATH } : {},
 )
 const errors: string[] = []
+// "curso" fica de fora: "Não ser curso de criança" é o medo do adulto nas palavras dele (Canvas).
 const product =
-  /Desafio|Chave do Farol|Farol|Comunidade|R\$\s*\d|30 dias|Mural|Estúdio|pagamento|oferta/i
+  /Desafio|Chave do Farol|Farol|Comunidade|R\$\s*\d|30 dias|Mural|Estúdio|pagamento|oferta|plataforma|preço|prazo|\baulas?\b/i
 
 async function noOverflow(page: Page) {
   assert.equal(
@@ -125,7 +126,8 @@ try {
   // Kids, de 9 a 17: entrada, oito telas e o resultado com o botão para /oferta.
   {
     const { context, page } = await newPage()
-    assert.equal((await page.goto(`${origin}${kids}/quiz?utm_source=qa_quiz_frio`))?.status(), 200)
+    const anuncio = '?utm_source=qa_quiz_frio&cupom=QAQUIZ'
+    assert.equal((await page.goto(`${origin}${kids}/quiz${anuncio}`))?.status(), 200)
     await coldScreen(page)
     await page.screenshot({ path: `${output}/kids-entrada-390.png`, fullPage: true })
     await genero(page, 'filha')
@@ -134,9 +136,10 @@ try {
     await page.locator('.rc-titulo').waitFor()
     assert.match(await page.locator('.rc-titulo').innerText(), /sua filha/)
     assert.match(await page.locator('main').innerText(), /Desafio do Primeiro Jogo/)
+    // O cupom e as UTMs do anúncio chegam à oferta, que só lê o cupom da própria URL.
     assert.equal(
       await page.locator('[data-analytics-id="resultado-oferta"]').getAttribute('href'),
-      `${kids}/oferta`,
+      `${kids}/oferta${anuncio}`,
     )
     assert.match(
       await page.locator('.rc-cta-nota').innerText(),
@@ -158,7 +161,7 @@ try {
     await page.locator('.rc-titulo').waitFor()
     assert.equal(
       await page.locator('[data-analytics-id="resultado-oferta"]').getAttribute('href'),
-      `${kids}/oferta/criar-junto#duvidas`,
+      `${kids}/oferta/criar-junto#sessao`,
     )
     assert.equal(await page.locator('.rc--kids-m9').count(), 1)
     await noOverflow(page)
@@ -169,13 +172,13 @@ try {
   // Kids, 18 ou mais: a saída leva ao quiz adulto do Desafio, sem citar o produto.
   {
     const { context, page } = await newPage()
-    await page.goto(`${origin}${kids}/quiz`)
+    await page.goto(`${origin}${kids}/quiz?utm_source=qa_saida`)
     await genero(page, 'filho')
     await answer(page, 'idade', '18_mais')
     const saida = page.locator('[data-analytics-id="quiz-desafio-kids-saida-adulto"]')
     await saida.waitFor()
     await coldScreen(page)
-    assert.equal(await saida.getAttribute('href'), `${adulto}/quiz`)
+    assert.equal(await saida.getAttribute('href'), `${adulto}/quiz?utm_source=qa_saida`)
     await page.screenshot({ path: `${output}/kids-saida-adulto-390.png`, fullPage: true })
     await context.close()
     console.log('PASS Kids saída de 18 ou mais')

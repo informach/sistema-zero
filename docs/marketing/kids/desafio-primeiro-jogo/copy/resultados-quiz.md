@@ -26,7 +26,7 @@ No Desafio do Primeiro Jogo, ele faz A Chave do Farol: o personagem anda, pega a
 
 _[Tela: A Chave do Farol, o jogo que ele monta]_
 
-O André, nosso filho, fez o Desafio do Primeiro Jogo na edição anterior e contou assim:
+O André, nosso filho, fez o Desafio do Primeiro Jogo e contou assim:
 
 > “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.” André, aluno
 
@@ -64,7 +64,7 @@ No Desafio do Primeiro Jogo, ele faz A Chave do Farol: o personagem anda, pega a
 
 _[Tela: A Chave do Farol, o jogo que ele monta]_
 
-O Rafael fez o Desafio do Primeiro Jogo na edição anterior e contou assim:
+O Rafael fez o Desafio do Primeiro Jogo e contou assim:
 
 > “No fim eu peguei o link e mandei pro meu amigo jogar.” Rafael, aluno
 
@@ -102,7 +102,7 @@ No Desafio do Primeiro Jogo, ele faz A Chave do Farol: o personagem anda, pega a
 
 _[Tela: A Chave do Farol, o jogo que ele monta]_
 
-O Rafael fez o Desafio do Primeiro Jogo na edição anterior e contou assim:
+O Rafael fez o Desafio do Primeiro Jogo e contou assim:
 
 > “No fim eu peguei o link e mandei pro meu amigo jogar.” Rafael, aluno
 
@@ -132,7 +132,7 @@ Num jogo pronto, alguém já decidiu tudo: o que o personagem faz, onde fica a c
 
 #### O que muda quando ele monta um jogo por dentro
 
-O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. Cada bloco é uma decisão que ele vê funcionar, e a lógica é a mesma do código. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta. A cena que você quer ver, **ele explicando como o jogo funciona por dentro**, vem de montar cada regra e testar.
+O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. Cada bloco é uma decisão que ele vê funcionar, e ele entende por que o jogo faz o que faz. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta. A cena que você quer ver, **ele explicando como o jogo funciona por dentro**, vem de montar cada regra e testar.
 
 #### Onde isso acontece
 
@@ -140,7 +140,7 @@ No Desafio do Primeiro Jogo, ele faz A Chave do Farol: o personagem anda, pega a
 
 _[Tela: A Chave do Farol, o jogo que ele monta]_
 
-O André, nosso filho, fez o Desafio do Primeiro Jogo na edição anterior e contou assim:
+O André, nosso filho, fez o Desafio do Primeiro Jogo e contou assim:
 
 > “Eu já jogava um monte, agora eu faço os meus jogos. Esse foi o primeiro e já quero fazer um maior.” André, aluno
 

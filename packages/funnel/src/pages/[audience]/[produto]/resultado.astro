@@ -43,14 +43,24 @@ if (!isQuizComplete(quiz, answers)) return Astro.redirect(leadQuizUrl)
 
 const revision = typeof answers._quiz_revision === 'number' ? answers._quiz_revision : 0
 // Resultado em conversa (Comunidade e Desafio, Kids e adulto): a carta montada pelo funil.
-const conversa = quiz.conversa ? quiz.conversa(answers) : null
-if (quiz.conversa && !conversa) return Astro.redirect(leadQuizUrl)
+const carta = quiz.conversa ? quiz.conversa(answers) : null
+if (quiz.conversa && !carta) return Astro.redirect(leadQuizUrl)
+// O botão leva a atribuição da URL (UTMs, `event_code` e o `cupom` do anúncio, que a oferta só lê
+// da própria URL); a ilha do quiz chega aqui com ela.
+const conversa = carta && {
+  ...carta,
+  blocos: carta.blocos.map((b) =>
+    b.tipo === 'cta' ? { ...b, href: funnelLinkWithAttribution(b.href, Astro.url) } : b,
+  ),
+}
 
+// Uma linha por revisão: recarregar a carta não repete o evento.
 await repo.insertEvent(
   lead.id,
   'viu_resultado',
   'resultado',
   conversa ? conversa.evento : undefined,
+  conversa ? `${lead.id}:viu-resultado:${revision}` : undefined,
 )
 
 // Perfil: usa o persistido (se válido p/ este funil) ou roda o motor do funil agora

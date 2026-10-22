@@ -193,16 +193,17 @@ describe('Desafio adulto v1: perfil e condições', () => {
     expect(desafioAdultoProfileSlug(answersAdulto())).toBe('desafio-adulto-ideia')
   })
 
-  test('só celular, aula ao vivo e trabalhar com jogos trocam o botão e apontam as dúvidas', () => {
-    for (const patch of [
-      { computador: 'celular_tablet' },
-      { garantia: 'ao_vivo' },
-      { garantia: 'trabalho' },
-    ] as QuizAnswers[]) {
+  test('só celular, professor ao vivo e trabalhar com jogos trocam o botão e apontam a seção que responde', () => {
+    for (const [patch, ancora] of [
+      [{ computador: 'celular_tablet' }, '#duvidas'],
+      [{ garantia: 'ao_vivo' }, '#aula'],
+      [{ garantia: 'trabalho' }, '#jogo'],
+      [{ computador: 'celular_tablet', garantia: 'trabalho' }, '#duvidas'],
+    ] as [QuizAnswers, string][]) {
       const r = buildDesafioAdultoResult(answersAdulto(patch))!
       expect(cta(r)).toMatchObject({
         rotulo: COPY.CTA_UNMET_LABEL,
-        href: `${DESAFIO_ADULTO_OFFER_PATH}#duvidas`,
+        href: `${DESAFIO_ADULTO_OFFER_PATH}${ancora}`,
       })
       expect(r.evento).toMatchObject({ adequacao: 'condicao_nao_atendida' })
     }
@@ -230,7 +231,7 @@ describe('Desafio adulto v1: o resultado em conversa', () => {
       'Você contou que tem uma ideia de jogo há anos e nunca começou, que, quando tentou, abriu um programa e fechou no mesmo dia e que sobram de 1 a 3 horas por semana para um projeto seu. A gente ouve essa história com frequência, e ela tem uma explicação simples.',
       'A ideia costuma ser grande, com mundo, história e muitas fases. E o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava.',
       'Fazer um jogo é escrever as regras da ideia: quando o personagem encostar na chave, ela some e o jogo guarda que você pegou. Num primeiro jogo pequeno de propósito, você monta essas regras em blocos, testa cada uma e termina. Como você nunca programou, os blocos tiram a digitação do caminho, e a lógica é a mesma do código. A cena que você quer, a sua ideia funcionando na tela, começa assim: depois de um jogo pronto, a próxima ideia já cabe no tamanho certo.',
-      'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem e o cenário, escreve os avisos e decide onde a chave fica. Depois publica e manda o link para os amigos jogarem.',
+      'No Desafio do Primeiro Jogo, você faz A Chave do Farol em 3 fases: o personagem anda, a chave muda o jogo, o farol acende. São 30 dias para fazer no seu ritmo. No fim, você escolhe o personagem, o cenário e onde a chave fica escondida. Depois publica e manda o link para os amigos jogarem.',
       'Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Informação, com mais de dez anos criando sistemas em empresas como Banco do Brasil, Tractebel e InCeres. O Sistema Zero começou com os jogos que fizemos com os nossos filhos.',
       'Você precisa de um projeto que consiga terminar. O Desafio é um jogo só, do começo ao fim, com o certificado no final. E você tem de 1 a 3 horas por semana: as aulas são divididas em seções, e o projeto fica salvo na sua conta, então você para hoje e continua outro dia do mesmo ponto.',
     ])

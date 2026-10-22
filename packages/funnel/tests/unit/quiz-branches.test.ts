@@ -66,7 +66,7 @@ describe('quiz com ramos', () => {
       'e54f34c626e16bf74eb64f63c446a9d768522d819676d422f34dbe747e023cff',
     )
     expect(quizDefinition(DESAFIO_ADULTO)?.id).toBe(
-      'be346c4e5e47109b36826fda2c7c380a4ad498be01ce04b25806525c7bee87f3',
+      '60fec63352f5392bb32b7dec103d6f6503585085e548cd9baa696e644b7c46a3',
     )
   })
 
