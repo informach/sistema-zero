@@ -3,32 +3,79 @@ import { readFile } from 'node:fs/promises'
 import type { Locator, Page } from '@playwright/test'
 import type { EditableStudioProject } from '../src/core/editableProject'
 import type { PythonProjectDocument } from '../src/core/pythonProject'
+import {
+  VISUAL_REFERENCE_GAMES,
+  type VisualReferenceGameKey,
+} from '../src/examples/python/visualReferenceGames.manifest'
 import { preparePythonExecutionSnapshot } from '../src/runtime/python/snapshot'
 import type {} from './fixtures/free'
 import { expect, test } from './fixtures/pythonLanguageSessions'
 
-const games = [
-  {
-    directory: 'pacman-visual',
-    name: 'Pac-Man',
+/** Presented-pixel probe for one game: actor region/color and the gesture that moves it. */
+interface Probe {
+  /** Numeric constant edited in Blocks and Code, as `VARIABLE = original`. */
+  variable: string
+  original: string
+  edited: string
+  width: number
+  height: number
+  /** Logical canvas region [x0, y0, x1, y1] and exact RGB of the actor's pixels. */
+  actor: {
+    region: readonly [number, number, number, number]
+    color: readonly [number, number, number]
+  }
+  setupKeys?: readonly string[]
+  /**
+   * `retry` presses again until accepted (opening countdowns ignore input); `hold` keeps the
+   * key down. `sign` is the expected direction in canvas pixels on `axis`.
+   */
+  move: { key: string; mode: 'retry' | 'hold'; axis: 'x' | 'y'; sign: 1 | -1; minimum: number }
+  /** Optional held key that must make a second, differently colored object appear. */
+  fire?: { key: string; color: readonly [number, number, number] }
+  pauseKey: string
+}
+const probes = {
+  'pacman-visual': {
     variable: 'INTERVALO',
     original: '16',
     edited: '20',
-    sounds: ['opening.wav', 'collect.wav', 'power.wav', 'collision.wav'],
     width: 1010,
     height: 860,
+    actor: { region: [100, 680, 900, 780], color: [255, 225, 74] },
+    move: { key: 'ArrowRight', mode: 'retry', axis: 'x', sign: 1, minimum: 20 },
+    pauseKey: 'Space',
   },
-  {
-    directory: 'space-arena-visual',
-    name: 'Space Arena',
+  'space-arena-visual': {
     variable: 'GIRO',
     original: '4',
     edited: '5',
-    sounds: ['bgm.wav', 'explosion.wav', 'missile_fire.wav', 'powerup.wav', 'thruster.wav'],
     width: 1020,
     height: 620,
+    actor: { region: [35, 35, 765, 585], color: [103, 232, 249] },
+    // Fixed arena view: moving the ship must move its presented centroid.
+    setupKeys: ['s', 'c'],
+    move: { key: 'ArrowUp', mode: 'hold', axis: 'y', sign: -1, minimum: 18 },
+    fire: { key: 'Space', color: [254, 240, 138] },
+    pauseKey: 'p',
   },
-] as const
+  'snake-visual': {
+    variable: 'PASSO_COBRINHA',
+    original: '120',
+    edited: '90',
+    width: 640,
+    height: 700,
+    // The head walks right by itself; only the arrow can move it up the board.
+    actor: { region: [80, 140, 560, 620], color: [255, 225, 74] },
+    move: { key: 'ArrowUp', mode: 'retry', axis: 'y', sign: -1, minimum: 20 },
+    pauseKey: 'Space',
+  },
+} as const satisfies Record<VisualReferenceGameKey, Probe>
+const games = VISUAL_REFERENCE_GAMES.map((game) => ({
+  directory: game.key,
+  name: game.name,
+  sounds: game.sounds.map(({ path }) => path),
+  ...(probes[game.key] as Probe),
+}))
 type Game = (typeof games)[number]
 const textPaths = ['main.py', 'README.md', 'NOTICE.md', 'LICENSE', 'requirements.txt']
 const normalizeEol = (value: string) => value.replaceAll('\r\n', '\n')
@@ -129,12 +176,7 @@ async function actor(canvas: Locator, game: Game, missile = false) {
       // Canvas backing pixels may be scaled; all returned coordinates are logical Turtle pixels.
       const sx = element.width / input.width
       const sy = element.height / input.height
-      const region = input.pacman ? [100, 680, 900, 780] : [35, 35, 765, 585]
-      const color = input.pacman
-        ? [255, 225, 74]
-        : input.missile
-          ? [254, 240, 138]
-          : [103, 232, 249]
+      const { region, color } = input
       const x0 = Math.floor(region[0]! * sx),
         y0 = Math.floor(region[1]! * sy)
       const width = Math.ceil((region[2]! - region[0]!) * sx)
@@ -165,7 +207,12 @@ async function actor(canvas: Locator, game: Game, missile = false) {
         logical: [input.width, input.height],
       }
     },
-    { pacman: game.directory === 'pacman-visual', width: game.width, height: game.height, missile },
+    {
+      region: game.actor.region,
+      color: missile && game.fire ? game.fire.color : game.actor.color,
+      width: game.width,
+      height: game.height,
+    },
   )
 }
 
@@ -222,10 +269,7 @@ async function play(page: Page, game: Game, release: string) {
   const canvas = frame.contentFrame().locator('canvas')
   await expect(canvas).toBeVisible({ timeout: 35_000 })
   await canvas.click()
-  if (game.directory === 'space-arena-visual') {
-    await canvas.press('s')
-    await canvas.press('c') // Fixed arena view: moving the ship must move its presented centroid.
-  }
+  for (const key of game.setupKeys ?? []) await canvas.press(key)
   let before = await actor(canvas, game)
   await expect
     .poll(
@@ -239,45 +283,52 @@ async function play(page: Page, game: Game, release: string) {
   expect(before.x).not.toBeNull()
   expect(before.y).not.toBeNull()
   let after = before
-  if (game.directory === 'pacman-visual') {
-    // During the opening countdown direction requests are deliberately ignored. Each retry
-    // is another real key gesture; the hero is stationary until one is accepted.
+  const moved = (point: typeof before) => {
+    const axis = game.move.axis
+    const start = before[axis]
+    const end = point[axis]
+    return point.count > 5 && start !== null && end !== null ? (end - start) * game.move.sign : 0
+  }
+  if (game.move.mode === 'retry') {
+    // During opening countdowns direction requests are deliberately ignored. Each retry
+    // is another real key gesture; the actor is stationary until one is accepted.
     await expect
       .poll(
         async () => {
-          await canvas.press('ArrowRight')
+          await canvas.press(game.move.key)
           after = await actor(canvas, game)
-          return after.count > 5 && after.x !== null && before.x !== null ? after.x - before.x : 0
+          return moved(after)
         },
         { timeout: 10_000, intervals: [100, 150, 200] },
       )
-      .toBeGreaterThan(20)
-    await canvas.press('Space')
+      .toBeGreaterThan(game.move.minimum)
   } else {
-    await page.keyboard.down('ArrowUp')
+    await page.keyboard.down(game.move.key)
     try {
       await expect
         .poll(
           async () => {
             after = await actor(canvas, game)
-            return after.count > 5 && after.y !== null && before.y !== null ? before.y - after.y : 0
+            return moved(after)
           },
           { timeout: 5_000, intervals: [100, 150, 200] },
         )
-        .toBeGreaterThan(18)
+        .toBeGreaterThan(game.move.minimum)
     } finally {
-      await page.keyboard.up('ArrowUp')
+      await page.keyboard.up(game.move.key)
     }
-    await page.keyboard.down('Space')
+  }
+  if (game.fire) {
+    await page.keyboard.down(game.fire.key)
     try {
       await expect
         .poll(async () => (await actor(canvas, game, true)).count, { timeout: 3_000 })
         .toBeGreaterThan(0)
     } finally {
-      await page.keyboard.up('Space')
+      await page.keyboard.up(game.fire.key)
     }
-    await canvas.press('p')
   }
+  await canvas.press(game.pauseKey)
   await page.getByRole('button', { name: 'Parar', exact: true }).click()
   await expect(frame).toHaveCount(0)
   return {

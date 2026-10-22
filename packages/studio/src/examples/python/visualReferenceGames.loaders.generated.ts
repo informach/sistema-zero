@@ -29,4 +29,17 @@ export const VISUAL_REFERENCE_GAME_LOADERS = {
       assets: referenceGameAssets('space-arena-visual', SPACE_ARENA_VISUAL_AUDIO),
     }
   },
+  'snake-visual': async () => {
+    const [{ SNAKE_VISUAL_SOURCES }, { SNAKE_VISUAL_AUDIO }, { referenceGameAssets }] =
+      await Promise.all([
+        import('./snakeVisual.sources.generated'),
+        import('./snakeVisual.audio.generated'),
+        import('./referenceGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: SNAKE_VISUAL_SOURCES,
+      assets: referenceGameAssets('snake-visual', SNAKE_VISUAL_AUDIO),
+    }
+  },
 } satisfies Record<VisualReferenceGameKey, () => Promise<unknown>>

@@ -78,6 +78,25 @@ export const VISUAL_REFERENCE_GAMES = [
     ],
     receipt: 'space-arena-visual-r4.json.snapshot',
   },
+  {
+    key: 'snake-visual',
+    stem: 'snakeVisual',
+    name: 'Cobrinha',
+    emoji: '🐍',
+    description:
+      'Coma frutas, cresça sem bater na borda nem em si mesma; no modo Lagarta, cada fruta acelera.',
+    genre: 'Arcade',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Classes', 'Listas', 'Grade', 'Eventos', 'Som'],
+    difficulty: 'beginner',
+    experience: 'game',
+    requiredPythonFeatures: [],
+    sounds: [
+      { path: 'abertura.wav', notes: [392, 494, 587, 784], noteMilliseconds: 110 },
+      { path: 'comer.wav', notes: [784, 1047], noteMilliseconds: 45 },
+      { path: 'bater.wav', notes: [294, 196, 131], noteMilliseconds: 120 },
+    ],
+    receipt: 'snake-visual-r1.json.snapshot',
+  },
 ] as const satisfies readonly VisualReferenceGame[]
 
 export type VisualReferenceGameKey = (typeof VISUAL_REFERENCE_GAMES)[number]['key']
