@@ -1882,7 +1882,11 @@ describe('scene workshop integration', () => {
       fireEvent.change(presets.getByLabelText(copy.animationDuration), { target: { value: '3' } })
       // Mudar os campos não descarta o movimento já preparado.
       fireEvent.click(presets.getByRole('button', { name: copy.animationPresetConfirm }))
-      expect(editor.getState().content.animations!.at(-1)!.tracks[0]!.keys[1]!.value[1]).toBe(-6.4)
+      // O movimento pronto é gravado em espaço local, rígido: a chave é o repouso do corpo
+      // (y = 1) mais o deslocamento ajustado, -8 com "Menos intenso" = -6.4.
+      const ajustado = editor.getState().content.animations!.at(-1)!
+      expect(ajustado.space).toBe('local')
+      expect(ajustado.tracks[0]!.keys[1]!.value[1]).toBe(1 + -6.4)
       fireEvent.change(presets.getByLabelText(copy.animationPresetKind), {
         target: { value: 'sway' },
       })
