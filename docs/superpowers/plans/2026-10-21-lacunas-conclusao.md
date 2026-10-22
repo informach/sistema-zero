@@ -65,7 +65,7 @@ Todas as provas são locais nesta máquina. A pilha local (`scripts/local-studio
 | Frio com rede de referência (20 Mbps / 80 ms) | p95 7,8 s, contra 12 s (60/60) |
 | Parar ≤ 250 ms; liberação ≤ 3 s; 30 ciclos | Conferido nas suítes que passaram |
 | F3 entrada ≤ 100 ms; pintura ≤ 8 ms; sem tarefa > 50 ms | p95 de 49 ms; 0,1 ms; nenhuma tarefa longa |
-| **F3 intervalo de frame p95 ≤ 33 ms** | **33,3 ms (Chrome e Edge), decisão pendente do usuário.** O loop compensado pede ~17 ms por tick, pouco mais que um quadro de 60 Hz (16,7 ms). Quando perde um vsync, o intervalo apresentado é exatamente dois quadros (33,3 ms), e 0–1 de 3.245 intervalos passam de dois quadros. O limite literal de 33 ms fica abaixo de dois quadros e só é cumprido se 95% dos quadros forem únicos. A spec mantém o limite literal até a decisão. Melhorias já feitas: pintura imediata, encoder único e uma ida e volta a menos. Space Arena subiu de 46 para 52–53 FPS (nativo: 33–36) |
+| F3 intervalo de frame p95 ≤ 33 ms | Lido como no máximo dois quadros da tela (≥ 30 FPS), por decisão do usuário em 21/10: os quadros apresentados seguem o vsync, e um vsync perdido mede 33,3 ms a 60 Hz. Na `65c9bffd…`: p95 de 33,4 ms (Chrome) e 33,3 ms (Edge); acima de dois quadros, 2 e 0 de ~3.240 intervalos (limite: 1%). Passa nos dois. Space Arena: 52–53 FPS (nativo: 33–36) |
 | Pro completo (memória) | ~2,4 GiB da pilha WebContainer/Vite; não depende do Python |
 | F10 | Python sem Turtle não baixa renderer nem módulos gráficos (`python-bootstrap`) |
 | F2 arte com 10.000 segmentos, 8 cores, animação a cada 100 segmentos | Com a camada retida (`e1c5fb092`), pintura p95 de 0,4 ms (Chrome) e 0,3 ms (Edge), máximo de 0,5 ms; antes eram 3,6 ms e 5,4 ms. Nenhuma tarefa acima de 50 ms; todos os segmentos mantidos. O desenho passo a passo termina com os mesmos pixels de uma pintura completa (`python-turtle-retained-layer`) |
@@ -86,11 +86,10 @@ Feito nesta máquina:
 - typecheck de 8 pacotes;
 - pilha local refeita com a `65c9bffd…`: verificação HTTP de todas as contas e matriz no navegador, de JS e Python, Clássico e Pro, no Kids e no Adulto, com curso Kids de uma criança nova (`--new-child`).
 
-Falhas herdadas do staging: 16 testes unitários falham também no `origin/staging`, sem relação com este branch. Estão em core 1, member-shell 3, molda 1, admin 6 e members 5, e a maior parte espera o vocabulário anterior ("seção", "fase"). A correção depende de decisão do usuário.
+Falhas herdadas do staging: 16 testes unitários falham também no `origin/staging`, sem relação com este branch. Estão em core 1, member-shell 3, molda 1, admin 6 e members 5, e a maior parte espera o vocabulário anterior ("seção", "fase"). Correção aprovada pelo usuário em 21/10, em branch separado a partir do `origin/staging`.
 
 Pendente:
 1. Decisões do usuário:
-   - F3: limite literal de 33 ms ou dois quadros;
    - instalar o Docker, que libera o compilador Pro, a inspeção Python e o Pyright localmente;
    - fazer o push para o staging.
 2. Quando o Railway voltar:

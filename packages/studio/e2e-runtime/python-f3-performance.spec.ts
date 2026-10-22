@@ -6,12 +6,16 @@ import {
   providerState,
   readPresentation,
   resetPresentation,
+  TWO_DISPLAY_FRAMES_MS,
 } from './gamePerformance'
 
 // F3 of the performance contract: a game with 20 turtles, keyboard and mouse, timers and
 // images, using the same compensated 60 Hz loop as the reference games. Images are the real
-// Space Arena GIF materials. Literal bounds: presented-frame interval p95 <= 33 ms, input ->
-// presentation p95 <= 100 ms, paint slices p95 <= 8 ms, no task > 50 ms.
+// Space Arena GIF materials. Bounds: input -> presentation p95 <= 100 ms, paint slices
+// p95 <= 8 ms, no task > 50 ms, and a presented-frame interval p95 of at most two display
+// frames (>= 30 FPS) with at most 1% of intervals longer than that. The contract wrote the
+// frame bound as 33 ms; presented frames are vsync-aligned, so one missed vsync measures
+// 33.3 ms at 60 Hz. The user accepted reading it as two display frames on 21/10/2026.
 const PLAY_MS = Number(process.env.SZ_F3_PLAY_MS ?? 60_000)
 const F3 = `import math
 import time
@@ -121,7 +125,8 @@ test('F3: 20 turtles with keyboard, mouse, timers and images meet the contract',
     expect(presentation.inputs).toBe(30)
     expect(presentation.inputToSecondPresentedFrame.count).toBe(30)
     expect(presentation.intervals.count).toBeGreaterThan(PLAY_MS / 40)
-    expect(presentation.intervals.p95).toBeLessThanOrEqual(33)
+    expect(presentation.intervals.p95).toBeLessThanOrEqual(TWO_DISPLAY_FRAMES_MS)
+    expect(presentation.frameBuckets.more).toBeLessThanOrEqual(presentation.intervals.count / 100)
     expect(presentation.paintWork.p95).toBeLessThanOrEqual(8)
     expect(presentation.longPaints).toBe(0)
     expect(presentation.longTasks).toBe(0)
