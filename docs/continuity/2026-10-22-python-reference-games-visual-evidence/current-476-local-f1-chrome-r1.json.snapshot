@@ -1,0 +1,2591 @@
+{
+  "kind": "studio-python-local-f1-performance-evidence",
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-22T17:55:49.7431009Z",
+  "state": "FAILED-BUDGET",
+  "receipt": {
+    "kind": "studio-python-local-performance",
+    "mode": "F1",
+    "project": "chrome",
+    "sourceCommit": "44d562192531542ba49779e1d8e877182abd9f74",
+    "startedAt": "2026-10-22T17:34:44.0062961Z",
+    "elapsedMs": 1149740,
+    "creatorPid": 5820,
+    "birthTicks": 639282872840097025,
+    "exitCode": 1,
+    "deadline": false,
+    "deadlineSeconds": 2700,
+    "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+    "releaseSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+    "node": "24.22.0",
+    "bun": "1.4.3",
+    "windows": "Microsoft Windows 11 Pro",
+    "osVersion": "10.0.26200",
+    "totalMemoryMiB": 16176.90625,
+    "freeBeforeMiB": 3797.5703125,
+    "cpu": {
+      "Name": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+      "NumberOfCores": 6,
+      "NumberOfLogicalProcessors": 12
+    },
+    "gpu": {
+      "Name": "NVIDIA GeForce RTX 3050",
+      "DriverVersion": "32.0.16.1088",
+      "CurrentHorizontalResolution": 1920,
+      "CurrentVerticalResolution": 1080,
+      "CurrentRefreshRate": 60
+    },
+    "serverPids": [
+      22900,
+      7812
+    ],
+    "browserPids": [
+      1360,
+      1948,
+      2796,
+      3492,
+      4352,
+      5488,
+      5696,
+      6368,
+      7104,
+      7448,
+      7452,
+      7840,
+      11564,
+      17004,
+      19712,
+      19800,
+      19820,
+      20860,
+      22212,
+      22608,
+      23536,
+      26164,
+      27036,
+      29184,
+      30204,
+      30668,
+      30972,
+      31260,
+      31684,
+      31888
+    ],
+    "remainingKnownPids": [],
+    "openPorts": [],
+    "cleanupConfirmed": true,
+    "nativeMemoryAttributionQualified": false,
+    "referencePcAcceptance": false,
+    "hostedAcceptance": false,
+    "audioAudibilityAccepted": false,
+    "supervisorSha256": "11f1787f08d248ae957b4271563c3d9a7d4c7cc698a28d1d8aa3392e6a258e37"
+  },
+  "gate": {
+    "qualification": "local-F1-budget-only",
+    "noReferenceAcceptance": true,
+    "passesBudget": false,
+    "reasons": [
+      "p95-exceeded"
+    ],
+    "summaries": [
+      {
+        "key": "[\"chrome\",\"classic\"]",
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "phases": [
+          {
+            "phase": "cold",
+            "count": 30,
+            "p95": 8248.699951171875,
+            "limit": 12000
+          },
+          {
+            "phase": "cached",
+            "count": 30,
+            "p95": 1246.800048828125,
+            "limit": 3000
+          },
+          {
+            "phase": "edited",
+            "count": 30,
+            "p95": 1264.000244140625,
+            "limit": 1500
+          }
+        ]
+      },
+      {
+        "key": "[\"chrome\",\"pro\"]",
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "phases": [
+          {
+            "phase": "cold",
+            "count": 30,
+            "p95": 8499.000244140625,
+            "limit": 12000
+          },
+          {
+            "phase": "cached",
+            "count": 30,
+            "p95": 1546.999755859375,
+            "limit": 3000
+          },
+          {
+            "phase": "edited",
+            "count": 30,
+            "p95": 1629.800048828125,
+            "limit": 1500
+          }
+        ]
+      }
+    ],
+    "pins": {
+      "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80"
+    },
+    "invalidEvidence": [],
+    "runnerStatus": "passed",
+    "series": [
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 0,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8048.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1179.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1145.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 0,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8499.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1479.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1679.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 1,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8081,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1229.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1180.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 1,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8449.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1478.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1543.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 2,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8091.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1112.7001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1096.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 2,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8316.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1379.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1413.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 3,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7982,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1180.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1196.7998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 3,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8264.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1396.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1430.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 4,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8198.7001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1242.7001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1264.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 4,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8199.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1446.39990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1395.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 5,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8327.7001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1313.2001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1411.7998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 5,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8363.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1508.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1463.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 6,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8216.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1229.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1208.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 6,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8295.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1379.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1362.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 7,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7998.39990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1080.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1212.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 7,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8249.599853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1412.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1371.39990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 8,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8248.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1196.2001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1097.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 8,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8315.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1412.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1313,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 9,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8215.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1211.7001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1253.39990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 9,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8244.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1592.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1629.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 10,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8130.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1145.599853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1211.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 10,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8347.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1546.999755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1562.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 11,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8133.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1096.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1129.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 11,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8332.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1545.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1477.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 12,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8099.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1128.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1130.599853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 12,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8510.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1394.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1394,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 13,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8164.2998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1180.69970703125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1128.7998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 13,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8297.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1396.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1380.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 14,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8183.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1194.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1212.69970703125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 14,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8265.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1463.499755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1579.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 15,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8067.2001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1146.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1096.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 15,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8479.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1396,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1362.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 16,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8148,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1111.2998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1207.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 16,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8301.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1392.30029296875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1426.2001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 17,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8048.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1246.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1195.500244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 17,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8231.30029296875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1396.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1429,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 18,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7982.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1211.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1263.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 18,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8098.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1212.39990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1280.19970703125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 19,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8033.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 996.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1046.7001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 19,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8113.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1247.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1213.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 20,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8095.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1047.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 978.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 20,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8399.599609375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1444.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1430.499755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 21,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7915.499755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1029.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1013.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 21,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8200.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1280.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1281,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 22,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8016.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1012.7998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1096.999755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 22,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8117.7998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1196.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1414.2998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 23,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7899.500244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 997.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 997.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 23,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8097.199951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1246.999755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1246.899658203125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 24,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7864.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1014.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 996.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 24,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8083.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1181.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1196.599853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 25,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7917.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1030.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 997.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 25,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8066.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1296.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1330.499755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 26,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7928.10009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1080.7998046875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 997.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 26,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8082.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1197.099853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1246.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 27,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7982.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 996.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 997.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 27,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8148.89990234375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1230.699951171875,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1230.400146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 28,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7916.900146484375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1030,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1064.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 28,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8067.000244140625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1194.60009765625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1197.2001953125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "classic",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 29,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 7881.300048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 980.599853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1063.499755859375,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      },
+      {
+        "identity": {
+          "project": "chrome",
+          "browser": "155.0.8059.85",
+          "kind": "pro",
+          "distribution": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+          "release": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+          "network": "{\"bytesPerSecond\":2500000,\"responseDelayMs\":80}",
+          "workload": "f1"
+        },
+        "repetition": 29,
+        "coldResetVerified": true,
+        "failed": false,
+        "samples": [
+          {
+            "phase": "cold",
+            "milliseconds": 8099.800048828125,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "cached",
+            "milliseconds": 1197.5,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          },
+          {
+            "phase": "edited",
+            "milliseconds": 1214.599853515625,
+            "network": {
+              "bytesPerSecond": 2500000,
+              "responseDelayMs": 80
+            }
+          }
+        ]
+      }
+    ],
+    "seriesSha256": "74230a4ce3b3e34d8b3d3adf47591ff5bb392ef5b9d541d90d9086bca3d4e552"
+  },
+  "matrixVerified": true,
+  "rawReportSha256": "ae21f1a8d7882115c089d5b97bd9fde93acf69341592b4f14fb7b365f75b90a5",
+  "gateSha256": "896b0d210bf1a117b3ee88d9d1be40156feec7a335125c17a868aa81b23e0eab",
+  "sourceFiles": [
+    {
+      "path": "packages/studio/e2e-python-editor/live-performance.spec.ts",
+      "sha256": "c312fda611d3bb0382e6c94fee86ec906e888511bfb7cc78c76410cb7e7465ca"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/f1AcceptanceReporter.ts",
+      "sha256": "b608edfd636318c86c877256425d1de3a445acd140d36542ddef302ea903dcfd"
+    },
+    {
+      "path": "packages/studio/e2e-runtime/performanceAcceptance.ts",
+      "sha256": "81f0c3347374a1b4aae7faa42e612f5f1ec44fc6d7f9ae661d6a5ef0ffbfb2c8"
+    }
+  ],
+  "limits": [
+    "Editor/parser/console already prepared; cold means HTTP and runtime CacheStorage reset",
+    "Trusted click to useful bitmap observed via RAF, not physical GPU/compositor",
+    "Shaped response20Mbps+80ms, not full network/upload/RTT emulation",
+    "No video, hosted auth, reference-PC8GB, audio or native memory acceptance"
+  ],
+  "retriesPerformed": 0,
+  "causeConfirmed": false
+}

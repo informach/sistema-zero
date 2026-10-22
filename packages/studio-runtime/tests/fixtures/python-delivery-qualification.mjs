@@ -15,7 +15,9 @@ const files = new Map(
 const parents = ['https://app.example', 'https://play.example']
 const checks = [],
   failures = [],
+  socketClosures = [],
   sockets = new Set()
+let closedSockets = 0
 let entered
 const pendingResponse = new Promise((done) => {
   entered = done
@@ -93,7 +95,15 @@ const server = createServer((request, response) => {
 })
 server.on('connection', (socket) => {
   sockets.add(socket)
-  socket.once('close', () => sockets.delete(socket))
+  socketClosures.push(
+    new Promise((done) => {
+      socket.once('close', () => {
+        sockets.delete(socket)
+        closedSockets++
+        done()
+      })
+    }),
+  )
 })
 await new Promise((done, fail) => {
   server.once('error', fail)
@@ -209,6 +219,10 @@ try {
   })
 } finally {
   await new Promise((done, fail) => server.close((error) => (error ? fail(error) : done())))
+  // server.close's callback can precede the final socket's own close event.
+  // Register ACKs at connection time, then await physical closure under the parent deadline.
+  const pendingAtServerClose = sockets.size
+  await Promise.all(socketClosures)
   assert.equal(sockets.size, 0)
   await writeFile(
     reportPath,
@@ -217,6 +231,11 @@ try {
       failures,
       node: process.version,
       cleanupConfirmed: true,
+      socketCleanup: {
+        accepted: socketClosures.length,
+        closed: closedSockets,
+        pendingAtServerClose,
+      },
       sourceSha256: createHash('sha256')
         .update(await readFile(entry))
         .digest('hex'),

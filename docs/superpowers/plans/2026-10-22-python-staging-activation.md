@@ -269,3 +269,25 @@ encerramento dos processos e portas próprios. O recibo inclui os dados causais,
 hashes e o supervisor utilizado. É prova local neste computador de 16 GB;
 não substitui Edge, F1, sala hospedada, audibilidade nem a prova posterior no
 computador de 8 GB.
+
+O run `39823914161`, de `44d562192`, aprovou novamente os oito jobs de interface.
+A compilação CLI do qualificador passou; a única falha da suíte geral foi a
+asserção de zero sockets logo depois do callback `server.close`. Um probe nativo
+Node 24.22 reproduziu a ordem real `server-close → socket-close`: a asserção
+antiga observava um socket antes do seu ACK, embora ele fechasse em seguida.
+A fixture agora registra uma Promise no evento `connection` para cada fechamento
+e aguarda tanto o servidor quanto todos os sockets. Não força destruição, não
+usa espera fixa e mantém os mesmos prazos. O root reexecutou os 11 testes com
+86 asserts, Biome, sintaxe e tipagem focada sem falhas. Os sete controles de
+delivery continuam presentes; o próximo CI precisa confirmar o resultado.
+
+O [recibo F1 Chrome](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-local-f1-chrome-r1.json.snapshot)
+preserva uma reprovação real de desempenho: os 60 casos funcionais passaram,
+mas o Pro após edição teve p95 de 1629,8 ms, acima da meta de 1500 ms.
+Classic: frio/cache/editado em 8248,7/1246,8/1264,0 ms; Pro:
+8499,0/1547,0/1629,8 ms. Matriz completa conferida: 30 amostras por fase e
+tipo, Chrome, distribuição/release atuais e respostas a 20 Mbps + 80 ms.
+Não houve retry, evidência inválida nem processo/porta própria retida. O tempo
+medido parte do editor/parser/console preparados e não inclui vídeo nem aceite
+no computador de referência. A causa da ultrapassagem permanece em investigação;
+este recibo não é aprovação de F1 nem autoriza relaxar sua meta.

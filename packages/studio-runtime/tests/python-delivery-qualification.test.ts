@@ -74,6 +74,8 @@ test('native Node delivery checks raw gzip, rejection and connection cleanup', a
     expect(proof.failures).toEqual([])
     expect(proof.checks).toHaveLength(7)
     expect(proof.cleanupConfirmed).toBe(true)
+    expect(proof.socketCleanup.accepted).toBeGreaterThan(0)
+    expect(proof.socketCleanup.closed).toBe(proof.socketCleanup.accepted)
   } finally {
     if (retired) await rm(directory, { recursive: true, force: true })
   }
