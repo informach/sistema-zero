@@ -125,6 +125,35 @@ verificados novamente pelo root, sem falhas. Não houve alteração de autoriza�
 em produção. O commit `41c552349` foi publicado em staging local/remoto e iniciou
 o run `39805510567`; seu resultado não deve ser presumido.
 
+O run `39805510567` aprovou os oito jobs de interface e as suítes gerais, incluindo
+Studio, mas parou no gate SQL Python: a fixture de recuperação do Builder ainda
+retornava uma policy vazia. O commit `af64a21a4` fornece a release do próprio
+fixture de rede, preservando o contrato obrigatório. O root repetiu os três
+comandos do gate com um PostgreSQL 18 próprio e banco novo: galeria/migrações
+8 testes/41 asserts, autorização 35/157 e o wrapper que exige os dois casos reais
+de recuperação aprovados. Não somar esse wrapper aos seus casos internos. O banco
+e seu container foram removidos por ID e label conferidos. Staging local/remoto
+recebeu `af64a21a4`; CI corrente `39810961768`, ainda sem resultado presumido.
+
+As provas SDK adicionais passaram na distribuição atual e têm recibos separados:
+[Turtle/preview](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-sdk-preview-r1.json.snapshot)
+usa entrada roteirizada, SDK/workerd/R2/Docker reais e captura verificada;
+[Builder](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-sdk-builder-r1.json.snapshot)
+usa policy real sobre fatos controlados, PostgreSQL descartável, Pyright,
+proposta/validação/preview, renovação, autorização fresca e recuperação SQL.
+O segundo usa a receita padrão do produto, sem entrada roteirizada; modelo e
+fatos de acesso são fixtures, sem dispatch ao provedor ou gasto de créditos.
+As releases de qualificação desses runners não são a release de staging, embora
+os 41 arquivos da distribuição tenham exatamente SHA `476d32…`.
+
+O host QA do Builder foi corrigido separadamente: retorna a autorização em vez
+de descartá-la, materializa os módulos da release pelo bootstrap canônico e
+encerra sessões/arquivos mesmo com Open pendente ou falha de cleanup, preservando
+o erro original. Não muda código de produção. O teste SDK completo passou com
+esse host; os 12 controles de Open/módulos reexecutados pelo root passaram com
+73 asserts. Os containers/sidecars próprios e os dois bancos SQL de prova foram
+removidos; os serviços locais preexistentes do usuário ficaram intactos.
+
 ## Recursos antigos do serviço de linguagem
 
 O inventário completo da aplicação staging manteve 11 registros históricos

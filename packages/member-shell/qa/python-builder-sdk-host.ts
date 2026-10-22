@@ -28,6 +28,7 @@ import { createDbConnection } from '../../members/src/infrastructure/persistence
 import { DrizzleStudioBuilderRepository } from '../../members/src/infrastructure/persistence/drizzle/studio-builder.repository'
 import { createStudioProjectDocument } from '../../studio/src/core/projectFactory'
 import { capturePythonProRevisionPayload } from '../../studio/src/state/pythonProRevision'
+import { materializePythonProvidedModules } from '../../studio-language-service/runtime/provided-modules'
 import { PythonLanguageSession } from '../../studio-language-service/runtime/pyright'
 import { refreshStudioBuilderPreview } from '../src/server/studio-builder'
 import { runStudioPythonBuilderValidation } from '../src/server/studio-python-builder'
@@ -126,9 +127,16 @@ export async function runStudioPythonBuilderSdkProof(input: {
     actor = { accountId: randomUUID(), userId: randomUUID(), privileged: false },
     connection = createDbConnection(input.databaseUrl, { max: 4 }),
     languageToken = randomBytes(32).toString('hex'),
+    languageLifetime = new AbortController(),
+    languageSignal = AbortSignal.any([input.signal, languageLifetime.signal]),
+    pendingLanguageOpens = new Set<Promise<void>>(),
     sessions = new Map<
       string,
-      { owner: string; binding: string; session: PythonLanguageSession }
+      {
+        owner: string
+        binding: string
+        session: Pick<PythonLanguageSession, 'handle'> & { dispose(): Promise<void> }
+      }
     >(),
     languageRequests: string[] = []
   let owned = true,
@@ -189,7 +197,7 @@ export async function runStudioPythonBuilderSdkProof(input: {
       false,
       async (...args) => {
         policies++
-        await permission.execute(...args)
+        return permission.execute(...args)
       },
     )
   const language = createServer(async (request, response) => {
@@ -229,20 +237,66 @@ export async function runStudioPythonBuilderSdkProof(input: {
       }
       const text = Buffer.concat(chunks).toString('utf8')
       if (id === 'open' && request.method === 'POST') {
-        const opened = StudioPythonLanguageOpenSchema.parse(JSON.parse(text)),
-          sessionId = randomBytes(16).toString('hex'),
-          root = path.join(input.evidence, 'builder-language', sessionId)
-        await mkdir(root, { recursive: true })
-        const session = new PythonLanguageSession({
-          providedModules: [],
-          root,
-          nodePath: process.execPath,
-          serverPath: createRequire(path.join(process.cwd(), 'package.json')).resolve(
-            'pyright/dist/pyright-langserver.js',
-          ),
-        })
-        sessions.set(sessionId, { owner, binding: opened.binding, session })
-        json(200, { version: 1, sessionId, projectId: opened.projectId })
+        const opening = (async () => {
+          languageSignal.throwIfAborted()
+          const opened = StudioPythonLanguageOpenSchema.parse(JSON.parse(text)),
+            sessionId = randomBytes(16).toString('hex'),
+            parent = path.join(input.evidence, 'builder-language', sessionId),
+            root = path.join(parent, 'project')
+          await mkdir(root, { recursive: true })
+          const modules = await materializePythonProvidedModules(
+            { protocolVersion: 1, runtimeRelease: opened.runtimeRelease },
+            parent,
+            languageSignal,
+          )
+          let session: PythonLanguageSession | undefined
+          try {
+            languageSignal.throwIfAborted()
+            session = new PythonLanguageSession({
+              providedModules: modules.roots,
+              root,
+              nodePath: process.execPath,
+              serverPath: createRequire(path.join(process.cwd(), 'package.json')).resolve(
+                'pyright/dist/pyright-langserver.js',
+              ),
+            })
+            const current = session
+            sessions.set(sessionId, {
+              owner,
+              binding: opened.binding,
+              session: {
+                handle: current.handle.bind(current),
+                async dispose() {
+                  current.dispose()
+                  await modules.dispose()
+                },
+              },
+            })
+            json(200, { version: 1, sessionId, projectId: opened.projectId })
+          } catch (error) {
+            sessions.delete(sessionId)
+            const failures: unknown[] = [error]
+            try {
+              session?.dispose()
+            } catch (cleanupError) {
+              failures.push(cleanupError)
+            }
+            try {
+              await modules.dispose()
+            } catch (cleanupError) {
+              failures.push(cleanupError)
+            }
+            if (failures.length > 1)
+              throw new AggregateError(failures, 'Language opening and cleanup failed')
+            throw error
+          }
+        })()
+        pendingLanguageOpens.add(opening)
+        try {
+          await opening
+        } finally {
+          pendingLanguageOpens.delete(opening)
+        }
         return
       }
       const current = sessions.get(id)
@@ -251,7 +305,7 @@ export async function runStudioPythonBuilderSdkProof(input: {
         return
       }
       if (request.method === 'DELETE') {
-        current.session.dispose()
+        await current.session.dispose()
         sessions.delete(id)
         json(200, { closed: true })
         return
@@ -288,6 +342,7 @@ export async function runStudioPythonBuilderSdkProof(input: {
   if (!address || typeof address === 'string') throw new Error('Language listener missing')
   const id = randomUUID(),
     projectId = project.id
+  const failures: unknown[] = []
   try {
     await service.execute(
       actor,
@@ -590,21 +645,44 @@ export async function runStudioPythonBuilderSdkProof(input: {
     console.info(
       JSON.stringify({ phase: 'builder-sdk', verified: true, projectId, revision: revision.hash }),
     )
+  } catch (error) {
+    failures.push(error)
   } finally {
-    for (const current of sessions.values()) current.session.dispose()
-    sessions.clear()
+    languageLifetime.abort()
     language.closeAllConnections()
     try {
       await new Promise<void>((resolve, reject) =>
         language.close((error) => (error ? reject(error) : resolve())),
       )
+    } catch (error) {
+      failures.push(error)
     } finally {
       try {
-        await connection.sql`delete from members.studio_builder_jobs where account_id = ${actor.accountId}`
-        await connection.sql`delete from members.studio_ai_accounts where account_id = ${actor.accountId}`
+        await Promise.allSettled(pendingLanguageOpens)
+        const disposed = await Promise.allSettled(
+          [...sessions.values()].map((current) => current.session.dispose()),
+        )
+        sessions.clear()
+        for (const result of disposed)
+          if (result.status === 'rejected') failures.push(result.reason)
+      } catch (error) {
+        failures.push(error)
       } finally {
-        await connection.close()
+        try {
+          await connection.sql`delete from members.studio_builder_jobs where account_id = ${actor.accountId}`
+          await connection.sql`delete from members.studio_ai_accounts where account_id = ${actor.accountId}`
+        } catch (error) {
+          failures.push(error)
+        } finally {
+          try {
+            await connection.close()
+          } catch (error) {
+            failures.push(error)
+          }
+        }
       }
     }
   }
+  if (failures.length === 1) throw failures[0]
+  if (failures.length) throw new AggregateError(failures, 'Builder proof or cleanup failed')
 }

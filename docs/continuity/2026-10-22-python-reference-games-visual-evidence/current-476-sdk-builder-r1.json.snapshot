@@ -1,0 +1,71 @@
+{
+  "kind": "studio.python.local-sdk-builder",
+  "version": 1,
+  "sourceBaseCommit": "af64a21a4f388c2ba10b9aefd3baddc3d6ecd0f0",
+  "hostSha256": "a5d14a192a1d1684a3a895d72fa361d282c0f88cdb979ad0e4ea6dadea872f3e",
+  "command": "bun tests/python-sdk-smoke.ts --linux-docker --preview --turtle --builder",
+  "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+  "qualificationReleaseIsStagingRelease": false,
+  "verified": true,
+  "builder": {
+    "phase": "builder-sdk",
+    "verified": true,
+    "projectId": "9e6007d9-2d25-408f-944e-7cf23d9c292e",
+    "revision": "ca96a24bf30af0ed7e6b682b1114079ce94a07f80f2fde63e108ad6ed64abd61"
+  },
+  "sdk": {
+    "created": 1,
+    "execStarted": 2,
+    "execFinished": 2,
+    "destroyStarted": 1,
+    "destroyFinished": 1,
+    "status": "succeeded",
+    "cleanupConfirmed": true
+  },
+  "renewal": {
+    "sdk": {
+      "created": 1,
+      "execStarted": 2,
+      "execFinished": 2,
+      "destroyStarted": 1,
+      "destroyFinished": 1,
+      "status": "succeeded",
+      "cleanupConfirmed": true
+    },
+    "modelCalls": 1,
+    "previewRefreshes": 1,
+    "version": 6,
+    "applicationAuthorized": true,
+    "recovered": true
+  },
+  "policies": 55,
+  "languageRequests": [
+    "POST open",
+    "POST start",
+    "POST session",
+    "POST session",
+    "DELETE session",
+    "POST open",
+    "POST start",
+    "POST session",
+    "POST session",
+    "DELETE session"
+  ],
+  "evidenceSha256": "8931b1b9eb5d15e8374fe292fb206dd9624751a0cde95e68a38a60178ae22837",
+  "limits": {
+    "model": "deterministic fixture; no provider dispatch or credits",
+    "languageGateway": "local controlled reservation; real Pyright",
+    "accessFacts": "controlled; real policy",
+    "compiler": "real workerd/R2/DO/SDK/CPython/playtest",
+    "playtest": "production default recipe; observation/capture may stop at waiting-input, no scripted stdin/keys/clicks",
+    "database": "real disposable PostgreSQL",
+    "application": "fresh authorization and SQL recovery; browser apply/IndexedDB not exercised here"
+  },
+  "cleanup": {
+    "after": []
+  },
+  "sqlDatabaseWasDisposable": true,
+  "hostedAcceptance": false,
+  "registryImageIdentityQualifiedByThisProof": false,
+  "audioAudibilityAccepted": false
+}
