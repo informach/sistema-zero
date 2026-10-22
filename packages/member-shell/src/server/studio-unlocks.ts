@@ -40,6 +40,17 @@ export function extensionsForBlocks(blocks: readonly string[]): string[] {
 /** Os tipos que o catálogo do Studio conhece hoje. */
 const KNOWN_BLOCKS = new Set(SERVER_BLOCK_CATALOG.map((entry) => entry.type))
 
+/**
+ * Oferta de Python pela linguagem conquistada, após o gate do Estúdio Completo.
+ * O catálogo homologado e a autorização atual ainda decidem os ambientes disponíveis.
+ */
+export function canShowPythonCreation(
+  role: string | undefined,
+  blocks: readonly string[],
+): boolean {
+  return isPrivilegedRole(role) || blocks.some(isPythonCourseBlock)
+}
+
 /** Modos adultos vêm da política adulta; a paleta vem dos cursos, sem usar rank Kids. */
 export function adultStudioTier(
   journey: AdultJourneyView,

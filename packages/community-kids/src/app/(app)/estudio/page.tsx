@@ -1,5 +1,6 @@
 import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
-import { canShowPythonCreation, isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
+import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
+import { canShowPythonCreation } from '@sistemazero/member-shell/server/studio-unlocks'
 import {
   KidsJourneyLockedStudio,
   KidsStudioWithoutTools,
@@ -93,7 +94,10 @@ export default async function EstudioPage({
       {...services}
       tier={tier}
       showExamples={showExamples}
-      showPythonCreation={canShowPythonCreation(session?.role)}
+      showPythonCreation={canShowPythonCreation(
+        session?.role,
+        unlocksRes?.status === 200 && unlocksRes.body ? unlocksRes.body.blocks : [],
+      )}
       taskId={missao ?? null}
       initialProjectId={projeto ?? null}
       pintaOwned={pintaOwned}

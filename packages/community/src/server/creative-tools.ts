@@ -1,6 +1,9 @@
 import 'server-only'
 import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
-import { adultStudioTier } from '@sistemazero/member-shell/server/studio-unlocks'
+import {
+  adultStudioTier,
+  canShowPythonCreation,
+} from '@sistemazero/member-shell/server/studio-unlocks'
 import { cache } from 'react'
 import { getSession } from './session'
 import { shell } from './shell'
@@ -30,6 +33,7 @@ export const getCreativeToolsState = cache(async () => {
     access: access.body.access,
     journey: progress.body.journey,
     tier,
+    showPythonCreation: canShowPythonCreation(session.role, unlocks.body.blocks),
     studioAvailable:
       access.body.access['estudio-completo'] === true && tier.freeStudio && tier.hasPalette,
   }

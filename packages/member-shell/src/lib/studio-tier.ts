@@ -32,11 +32,6 @@ export function isPrivilegedRole(role: string | undefined): boolean {
   return !!role && PRIVILEGED_ROLES.has(role)
 }
 
-/** Oferta administrativa de criação Python; não concede autorização de runtime. */
-export function canShowPythonCreation(role: string | undefined): boolean {
-  return role === 'admin' || role === 'superadmin'
-}
-
 /**
  * Ferramentas que um jogo do Mural EXIGE p/ ser remixado: extensões instaladas +
  * modo Código (Pro). Vem do `studioMeta` do post (selo no card) OU do próprio

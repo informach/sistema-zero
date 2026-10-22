@@ -1,18 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import {
-  canShowPythonCreation,
-  isPrivilegedRole,
-  remixRequirementFromSnapshot,
-  studioTierCoversRemix,
-} from '../src/lib/studio-tier'
+import { remixRequirementFromSnapshot, studioTierCoversRemix } from '../src/lib/studio-tier'
 import { resolveStudioTier } from './fixtures/legacy-studio-tier'
-
-test('Python creation is offered only to administrators, independently of team examples', () => {
-  for (const role of ['admin', 'superadmin']) expect(canShowPythonCreation(role)).toBe(true)
-  for (const role of [undefined, '', 'member', 'staff', 'god', 'ADMIN'])
-    expect(canShowPythonCreation(role)).toBe(false)
-  expect(isPrivilegedRole('staff')).toBe(true)
-})
 
 describe('frozen migration reference — ferramentas conquistadas', () => {
   test('Faísca usa o Estúdio apenas dentro das aulas', () => {

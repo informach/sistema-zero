@@ -2,11 +2,36 @@ import { describe, expect, test } from 'bun:test'
 import type { AdultJourneyView } from '@sistemazero/core/journey'
 import {
   adultStudioTier,
+  canShowPythonCreation,
   drawerSnapshotsForBlocks,
   drawersForBlocks,
   extensionsForBlocks,
   groupDrawersByFamily,
 } from '../src/server/studio-unlocks'
+
+describe('Python creation offer follows earned language', () => {
+  test('does not offer Python for absent, JavaScript-only or unknown grants', () => {
+    for (const blocks of [
+      [],
+      ['sz_js_array_push'],
+      ['sz_py_unknown'],
+      ['sz_js_array_push', 'sz_py_unknown'],
+    ])
+      expect(canShowPythonCreation('member', blocks)).toBe(false)
+  })
+
+  test('offers Python for a known earned Python block', () => {
+    for (const blocks of [['sz_py_print'], ['sz_js_array_push', 'sz_py_print']])
+      expect(canShowPythonCreation('member', blocks)).toBe(true)
+  })
+
+  test('retains the existing privileged preview without granting a learner by role name', () => {
+    for (const role of ['admin', 'superadmin', 'staff'])
+      expect(canShowPythonCreation(role, [])).toBe(true)
+    for (const role of [undefined, '', 'member', 'god', 'ADMIN'])
+      expect(canShowPythonCreation(role, [])).toBe(false)
+  })
+})
 
 test('adult Python course access does not grant JavaScript blocks, extensions or Pro', () => {
   const journey: AdultJourneyView = {
