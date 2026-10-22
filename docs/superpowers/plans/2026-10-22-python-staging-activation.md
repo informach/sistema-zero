@@ -135,6 +135,16 @@ de recuperação aprovados. Não somar esse wrapper aos seus casos internos. O b
 e seu container foram removidos por ID e label conferidos. Staging local/remoto
 recebeu `af64a21a4`; CI corrente `39810961768`, ainda sem resultado presumido.
 
+O job geral desse run falhou posteriormente em 15 cenários de importação
+OBJ/Blockbench do Molda, antes do gate SQL. A mesma suíte havia passado no run
+anterior e não houve alteração produtiva do Molda entre os dois commits. A
+reprodução local Windows passou tanto no foco quanto no lote `test:2` inteiro
+(1232 testes/121100 asserts); isso não demonstra a causa do erro Linux nem
+autoriza chamá-lo de intermitência resolvida. O teste recebe diagnóstico limitado
+na fronteira do Worker real, mantendo os mesmos módulos, revisão e exigência de
+estado `ready`. Nenhum retry, timeout adicional ou relaxamento de critério foi
+introduzido. A implantação continua dependente de CI verde.
+
 As provas SDK adicionais passaram na distribuição atual e têm recibos separados:
 [Turtle/preview](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-sdk-preview-r1.json.snapshot)
 usa entrada roteirizada, SDK/workerd/R2/Docker reais e captura verificada;

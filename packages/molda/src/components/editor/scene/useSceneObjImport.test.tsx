@@ -22,8 +22,55 @@ function chosen() {
     })),
   }
 }
+interface WorkerIssue {
+  type: 'error' | 'messageerror'
+  message?: string
+  filename?: string
+  lineno?: number
+  colno?: number
+  errorName?: string
+  errorMessage?: string
+}
+function observedObjWorker(issues: WorkerIssue[]) {
+  // Same module Worker as prepareObjImportInWorker; observe without consuming its events.
+  const worker = new Worker(new URL('../../../workers/objImport.worker.ts', import.meta.url), {
+    type: 'module',
+  })
+  worker.addEventListener(
+    'error',
+    (event) => {
+      if (issues.length >= 4) return
+      const error: unknown = event.error
+      issues.push({
+        type: 'error',
+        message: typeof event.message === 'string' ? event.message.slice(0, 512) : undefined,
+        filename: typeof event.filename === 'string' ? event.filename.slice(0, 256) : undefined,
+        lineno: Number.isSafeInteger(event.lineno) ? event.lineno : undefined,
+        colno: Number.isSafeInteger(event.colno) ? event.colno : undefined,
+        ...(error instanceof Error
+          ? {
+              errorName: typeof error.name === 'string' ? error.name.slice(0, 64) : undefined,
+              errorMessage:
+                typeof error.message === 'string' ? error.message.slice(0, 512) : undefined,
+            }
+          : {}),
+      })
+    },
+    { once: true },
+  )
+  worker.addEventListener(
+    'messageerror',
+    () => {
+      if (issues.length < 4) issues.push({ type: 'messageerror' })
+    },
+    { once: true },
+  )
+  return worker
+}
 function setup(options: Parameters<typeof useSceneObjImport>[1] = {}) {
   const asset = animatedScene()
+  const workerIssues: WorkerIssue[] = []
+  const createWorker = () => observedObjWorker(workerIssues)
   let saves = 0
   const editor = createDocumentEditorStore({
       asset,
@@ -35,10 +82,20 @@ function setup(options: Parameters<typeof useSceneObjImport>[1] = {}) {
         },
       },
     }),
-    hook = renderHook((props) => useSceneObjImport(props.editor, props.options), {
-      wrapper: StrictMode,
-      initialProps: { editor, options },
-    })
+    hook = {
+      ...renderHook(
+        (props) =>
+          useSceneObjImport(props.editor, {
+            ...props.options,
+            createWorker: props.options.createWorker ?? createWorker,
+          }),
+        {
+          wrapper: StrictMode,
+          initialProps: { editor, options },
+        },
+      ),
+      workerIssues,
+    }
   return {
     asset,
     editor,
@@ -60,7 +117,17 @@ async function ready(hook: ReturnType<typeof setup>['hook']) {
   await act(async () => {
     await hook.result.current.prepare()
   })
-  expect(hook.result.current.view.stage.kind).toBe('ready')
+  const stage = hook.result.current.view.stage
+  const diagnostic =
+    stage.kind === 'error'
+      ? JSON.stringify({
+          kind: stage.kind,
+          path: stage.path,
+          message: stage.message.slice(0, 1024),
+          workerIssues: hook.workerIssues,
+        }).slice(0, 7168)
+      : `OBJ preparation stage: ${stage.kind}`
+  expect(stage.kind, diagnostic).toBe('ready')
 }
 test('OBJ selection waits for Prepare, real worker review waits for current consent, replacement is one undoable commit', async () => {
   const { asset, editor, hook, saves, close } = setup()
