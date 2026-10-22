@@ -58,7 +58,7 @@ test.each([
     () => new Date(),
     true,
     false,
-    async () => ({}),
+    async () => ({ runtimeRelease: network.runtimeRelease }),
   )
   let late: Promise<StudioProBuilderClaim | null> | undefined
   try {
