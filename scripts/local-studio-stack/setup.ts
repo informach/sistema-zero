@@ -132,12 +132,12 @@ function migrateAndSeed() {
     })
   }
   // Servidores da comunidade (Clube e Mural dos Criadores), idempotente por slug.
-  run(process.execPath, ['run', 'scripts/seed-community-spaces.ts'], {
+  run(process.execPath, ['run', 'scripts/seed-community-spaces.ts', 'apply'], {
     cwd: join(ROOT, 'packages', 'hub'),
     env: childEnv(serviceEnv('hub', secrets)),
   })
   // Seed canônico do catálogo (idempotente por sku/slug): produtos e ofertas Kids e Adulto.
-  run(process.execPath, ['run', 'scripts/seed.ts'], {
+  run(process.execPath, ['run', 'scripts/seed.ts', 'apply'], {
     cwd: join(ROOT, 'packages', 'catalog'),
     env: childEnv(serviceEnv('catalog', secrets)),
   })

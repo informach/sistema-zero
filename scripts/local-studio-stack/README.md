@@ -72,8 +72,9 @@ no-op.
 2. Aplica as migrations de auth, catalog, members e hub com `migrate.ts`, uma transação por
    migration. Num banco vazio, o `drizzle-kit migrate` do Members falha porque um valor de enum
    novo é usado na mesma transação.
-3. Roda os seeds canônicos: catálogo (`catalog/scripts/seed.ts`) e servidores Kids do hub
-   (`hub/scripts/seed-community-spaces.ts`).
+3. Roda explicitamente `apply` dos seeds canônicos: catálogo (`catalog/scripts/seed.ts`) e
+   servidores Kids + Mural adulto do hub (`hub/scripts/seed-community-spaces.ts`). Os operadores
+   sozinhos têm default `plan`; o setup local preserva sua intenção explícita de criar os ausentes.
 4. Roda `python-local.ts`, que parte da candidata atual
    (`docs/superpowers/plans/2026-10-22-python-current-candidate/canonical-plan.json`). A cópia local da
    distribuição é escolhida pelo SHA fixado no plano, dentro **desta worktree**, em

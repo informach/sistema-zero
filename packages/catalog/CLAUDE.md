@@ -21,7 +21,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > da oferta com expand → backfill → constraints, ver Invariantes da oferta). Seed
 > (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
 > **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
-> RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Pensa** (kids, R$97 —
+> apenas relata diferenças de kind, preservando a autoria existente) · **Pensa** (kids, R$97 —
 > `kind: 'tool'`, entrega `community` courseRef `pensa`; o app de PLANEJAMENTO guiado/metodologia
 > ZERO — a chave casa com o gate do members no create de projeto do Pensa e com o
 > `/members/access?refs=pensa` da página `/pensa`; oferta padrão `pensa`, ajustável no painel —
@@ -330,9 +330,14 @@ migration faz `CREATE SCHEMA "catalog"`.
 
 Serviço próprio no projeto `sistema-zero` via **`packages/catalog/railway.json`** (config-as-code:
 Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns catalog/core/lockfile,
-healthcheck **`/readyz`**). `preDeployCommand` roda **`db:deploy` = migrate + seed** (o seed é
-idempotente — checa por sku/slug e pula; rodar a cada deploy é seguro e dispensa acesso manual ao
-banco interno). **SEM domínio público por design** — o catálogo só é alcançado pelo gateway e pelo
+healthcheck **`/readyz`**). `preDeployCommand` roda **`db:deploy` = somente migrations**. Seed comercial
+é explícito: `bun run db:seed plan`, `status`, e depois `apply`. Sem argumento, apenas planeja.
+As definições aprovadas vivem em `scripts/catalog-seed-definitions.ts`; o relatório inclui preços,
+status e referências. Apply cria somente ausentes, preserva alterações do Admin e relata drift.
+Conflitos de identidade ou novas ofertas dependentes de produtos divergentes ficam bloqueados.
+Nenhum curso/conquista/aluno é criado pelo seed. Ver
+[operação dos seeds](../../docs/superpowers/plans/2026-10-22-platform-production-seeds.md).
+**SEM domínio público por design** — o catálogo só é alcançado pelo gateway e pelo
 members via private networking (`catalog.railway.internal:3003`). Envs de prod: `NODE_ENV=production`
 (todo o fail-closed depende disso), `PORT=3003`, `DATABASE_URL=${{Postgres.DATABASE_URL}}`,
 `DATABASE_POOL_MAX`, `INTERNAL_API_TOKEN` (≥16; o MESMO valor vira `CATALOG_INTERNAL_TOKEN` no
