@@ -232,8 +232,12 @@ test('HTTP revalidates product loss and forbids client-injected rights and conte
   expect((await classic.options()).status).toBe(403)
 })
 
-async function adultSetup(kind: 'classic' | 'pro' = 'classic') {
+async function adultSetup(
+  kind: 'classic' | 'pro' = 'classic',
+  { completeCourse = true }: { completeCourse?: boolean } = {},
+) {
   const fixture = await authoringFixture('python', kind)
+  if (kind === 'classic') fixture.project.mode = 'blocks'
   fixture.configuration.releases[0]!.blockIds = [
     'sz_py_pass',
     ...pythonCourseBlockClosure(['sz_py_print']),
@@ -258,18 +262,19 @@ async function adultSetup(kind: 'classic' | 'pro' = 'classic') {
   env.courses.courses.find(({ id }) => id === course.courseId)!.metadata = {
     studioUnlockBlocks: ['sz_py_pass'],
   }
-  await env.gamification.award({
-    userId: ACCOUNT,
-    accountId: ACCOUNT,
-    audience: 'adult',
-    privileged: false,
-    events: [
-      { sourceType: 'course_complete', sourceId: course.courseId, amount: 0 },
-      { sourceType: 'course_showcased', sourceId: course.courseId, amount: 0 },
-    ],
-    today: '2026-10-17',
-    now: NOW,
-  })
+  if (completeCourse)
+    await env.gamification.award({
+      userId: ACCOUNT,
+      accountId: ACCOUNT,
+      audience: 'adult',
+      privileged: false,
+      events: [
+        { sourceType: 'course_complete', sourceId: course.courseId, amount: 0 },
+        { sourceType: 'course_showcased', sourceId: course.courseId, amount: 0 },
+      ],
+      today: '2026-10-17',
+      now: NOW,
+    })
   const body: StudioFreeRuntimeRequest = {
     context: { kind: 'free', audience: 'adult', projectId: fixture.project.id },
     subject: studioRuntimeSubject(fixture.project),
@@ -410,10 +415,53 @@ test('Kids purchase and palette do not substitute for adult purchase or adult pa
   f.entitlements.seed(f.grant)
   grantCommunityProduct(f.entitlements, { userId: ACCOUNT, sku: 'estudio-completo' })
   expect((await f.request()).status).toBe(403)
-  grantCommunityProduct(f.entitlements, { userId: ACCOUNT, sku: 'adult-estudio-completo' })
+
+  // This owner has the Adult product/journey, but has earned only a Kids palette.
+  // Removing a completed Adult course's metadata would retain its frozen grant.
+  const kidsOnly = await adultSetup('classic', { completeCourse: false })
+  const kidsCourse = seedSampleCourse(kidsOnly.courses, 'kids-python-palette', 'published', 'kids')
+  kidsOnly.courses.courses.find(({ id }) => id === kidsCourse.courseId)!.metadata = {
+    studioUnlockBlocks: ['sz_py_pass'],
+  }
+  await kidsOnly.gamification.award({
+    userId: ACCOUNT,
+    accountId: ACCOUNT,
+    audience: 'kids',
+    privileged: false,
+    events: [{ sourceType: 'course_complete', sourceId: kidsCourse.courseId, amount: 0 }],
+    today: '2026-10-17',
+    now: NOW,
+  })
+  expect(await kidsOnly.studioUnlocks.listGrants(ACCOUNT, 'kids')).toEqual([
+    { courseId: kidsCourse.courseId, blocks: ['sz_py_pass'] },
+  ])
+  expect(await kidsOnly.studioUnlocks.listGrants(ACCOUNT, 'adult')).toEqual([])
+  for (const path of ['free-options', 'free-runtime', 'python-analysis'])
+    expect(
+      (
+        await kidsOnly.request(path, {
+          ...kidsOnly.body,
+          operation: path === 'python-analysis' ? 'analyze' : 'execute',
+        })
+      ).status,
+    ).toBe(403)
+})
+
+test('Adult awarded palette survives curriculum removal before the first discovery request', async () => {
+  const f = await adultSetup()
   const adultCourse = f.courses.courses.find(({ slug }) => slug === 'adult-python-palette')!
+  expect(await f.studioUnlocks.listGrants(ACCOUNT, 'adult')).toEqual([
+    { courseId: adultCourse.id, blocks: ['sz_py_pass'] },
+  ])
   adultCourse.metadata = { studioUnlockBlocks: [] }
-  expect((await f.request('free-options')).status).toBe(403)
+  expect(await f.gamification.listStudioUnlocksByCourse(ACCOUNT, 'adult')).toEqual([])
+
+  const options = await f.request('free-options')
+  expect(options.status).toBe(200)
+  const discovery = StudioFreeOptionsSchema.parse(await options.json())
+  expect(discovery.canCreatePython).toBe(true)
+  expect(discovery.catalog?.releases[0]?.blockIds).toEqual(['sz_py_pass'])
+  expect((await f.request()).status).toBe(200)
 })
 
 test('Kids free authority requires an authenticated student profile or explicit active staff', async () => {
