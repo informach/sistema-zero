@@ -401,6 +401,16 @@ Isso não cancela nem prova falha do deployment: às 20:22 UTC ele estava
 DEPLOYING, com uma instância nova INITIALIZING. Não houve segundo POST Auth.
 Nenhum recibo publicado foi fabricado a partir dessa observação.
 
+Às 20:43:39 UTC, nova leitura confirmou Auth SUCCESS, instância nova RUNNING e
+digest `sha256:3e3c9daaf027707e5699a2cde6d7b2e76ad45879df7a991cade161b733290164`.
+A retomada R2 adotou esse Auth e o Members anterior pelos IDs/SHA/digests exatos;
+conferiu predecessores REMOVED, ausência de deployments pendentes, admissão SSH
+e bootstrap canônico. Às 20:45:46 UTC retornou `BACKEND_BARRIER_PASSED`,
+`published`, versão 1. Não houve POST de deployment na R2. O recibo R1 FAILED
+continua preservado. Esta barreira não equivale à implantação dos aplicativos
+nem à qualificação de contratos Core posteriores. Ver
+[evidência R2](../../continuity/2026-10-22-python-reference-games-visual-evidence/staging-backend-001-adoption-r2.json.snapshot).
+
 A prova HTTP do Runtime passou às 19:51 UTC, em 131,42 s: três casos,
 28 verificações, compilação sem executar os raises/imports da fixture,
 rejeição de sintaxe inválida e Turtle com stdin, Space e clique. A captura
@@ -426,6 +436,10 @@ não confundir regra acordada com implantação concluída.
 O [plano de produção](2026-10-22-platform-production-release.md) inclui oficinas,
 comunidade/ofertas adultas, jornada, objetivos e os serviços relacionados.
 Foram identificados 806.391.379 bytes de docs no source001 e COPY integral no
-Dockerfile Auth. A exclusão de acervo editorial/QA das imagens está em revisão;
-isso não mede a imagem comprimida nem atribui toda a demora ao tamanho. As
-imagens já em construção conservam seu contexto original.
+Dockerfile Auth. A exclusão de acervo editorial, QA e caches locais passou por
+exportação Docker real de contexto: 8.857 arquivos/170.382.687 bytes, com 27
+entradas necessárias conferidas por hash; BuildKit informou transferência de
+171,33 MB. A execução levou 22,952 s. Isso não mede dependências instaladas por
+RUN, a imagem comprimida ou o tempo de deploy remoto, nem atribui toda a demora
+ao tamanho. As imagens anteriores conservam seu contexto original. Ver
+[prova do contexto](../../continuity/2026-10-22-python-reference-games-visual-evidence/docker-context-pruning-r1.json.snapshot).

@@ -20,9 +20,14 @@ passa a concluído com leitura do destino e evidência da operação corresponde
 - Produção: `19c212a5-85c0-493c-9630-a7a0569e8412`.
 - Main remoto: `6f93dcb…`; staging remoto: `001ce0788…` nesta leitura.
 - Os nove checks de `001ce0788…` passaram; o job de deploy Railway expirou.
-  A retomada manual adota o Members saudável desse mesmo SHA, executa o
-  bootstrap canônico e atualiza Auth antes dos aplicativos. Não atribuir esses
-  checks a commits posteriores sem verificá-los.
+  A retomada manual R1 adotou Members e iniciou Auth; sua consulta expirou,
+  mantendo a falha registrada. Auth posteriormente chegou a SUCCESS. A R2
+  adotou os dois deployments exatos, conferiu retirada dos anteriores e admissão
+  por SSH e executou migrate/initialize/verify canônicos. Às 20:45:46 UTC,
+  retornou `BACKEND_BARRIER_PASSED`, jornada publicada versão 1, sem novo POST
+  de deployment na R2. Aplicativos e commits posteriores não estão qualificados
+  por essa barreira. Evidência: `staging-backend-001-adoption-r2.json.snapshot`
+  no diretório público de continuidade.
 - Produção ainda usa imagens antigas de Runtime/Language. Runtime não tem os
   bindings R2/PythonInspectionJob atuais; Language ainda usa PythonLanguageOwner.
   Não copiar namespaces de staging nem apagar o Owner sem tratar sua aposentadoria.

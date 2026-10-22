@@ -1,0 +1,300 @@
+{
+  "kind": "docker-context-pruning-public-evidence",
+  "version": 1,
+  "state": "PASS_LOCAL_DOCKER_CONTEXT",
+  "scope": "Observed local working-tree Docker build context only; not a production image, deployment, CI approval, or application runtime qualification.",
+  "sourceState": "Working tree with uncommitted changes at execution; required-input hashes are observations, not a claim that a committed revision was built.",
+  "toolchain": {
+    "dockerVersion": "29.8.2",
+    "dockerVersionEvidence": "Root operator observation; not queried again by this archive writer",
+    "driver": "desktop-linux Docker driver"
+  },
+  "execution": {
+    "kind": "owned-local-docker-context-execution",
+    "startedAt": "2026-10-22T20:33:41.185Z",
+    "pins": {
+      "ignore": "88c9a44240784ac5a6b4c89dfc641ab94e8c3456759509d8c49b197e2f3522bd",
+      "dockerfile": "0837162982057d16f6c2363c396d2811f9839aeb2480f977ad955788e8c73e36",
+      "verifier": "3919bf2e8c6dbd0971718f0b71c026607c3036b3b775be08e6fe53befc079743"
+    },
+    "state": "CONTEXT_EXPORTED",
+    "timeoutMs": 180000,
+    "noRunInstructions": true,
+    "noImageTag": true,
+    "noRegistryPush": true,
+    "exitCode": 0,
+    "killed": false,
+    "completedAt": "2026-10-22T20:34:04.137Z",
+    "elapsedMs": 22952,
+    "requiredInputCount": 27
+  },
+  "artifacts": [
+    {
+      "path": ".cache/python-reference-games/docker-context-proof-r1/receipt.json",
+      "sha256": "b2ae15ef8df4bda985ac7da7ac3dfc6c4bd2f67497e60951ad18839433fcd02f",
+      "bytes": 5288,
+      "value": {
+        "kind": "docker-real-context-export-proof",
+        "scope": "local BuildKit FROM scratch COPY export, not production image size or runtime qualification",
+        "state": "PASS_LOCAL_DOCKER_CONTEXT",
+        "checkedAt": "2026-10-22T20:34:15.212Z",
+        "dockerignoreSha256": "88c9a44240784ac5a6b4c89dfc641ab94e8c3456759509d8c49b197e2f3522bd",
+        "exportedFileCount": 8857,
+        "exportedBytes": 170382687,
+        "excludedRootTreesAbsent": true,
+        "qaAbsent": true,
+        "requiredInputs": [
+          {
+            "path": "package.json",
+            "sha256": "535d00ee2316939dbb991f9d524e85bb743811774beec115ae206c107c3358d5",
+            "matches": true
+          },
+          {
+            "path": "bun.lock",
+            "sha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd",
+            "matches": true
+          },
+          {
+            "path": "patches/three@0.184.0.patch",
+            "sha256": "1c0bc962ace89ef5f6af871496177cecd8448629cc880d68ffcf19eb0438c943",
+            "matches": true
+          },
+          {
+            "path": "scripts/release/start.mjs",
+            "sha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+            "matches": true
+          },
+          {
+            "path": "scripts/release/kids-journey-bootstrap.mjs",
+            "sha256": "cac8c1b0a29fc5fd111f1cb03687f813282c65bb4488b6c35e5346ce5634ed1f",
+            "matches": true
+          },
+          {
+            "path": "packages/members/src/index.ts",
+            "sha256": "bd981f55dd0a85db0996eb851a41c48d43351bbe66767e5bc96f3ef2f83cfa7e",
+            "matches": true
+          },
+          {
+            "path": "packages/members/drizzle.config.ts",
+            "sha256": "e89da1ddfb1ff97640471c13df9896d04c26763e781b607d8837ab47376bd598",
+            "matches": true
+          },
+          {
+            "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+            "sha256": "5a153702be5c4fb8601ccdba6e58f9e6d0ae31bc61632831e1a61a157a59b64d",
+            "matches": true
+          },
+          {
+            "path": "packages/auth/src/index.ts",
+            "sha256": "bd981f55dd0a85db0996eb851a41c48d43351bbe66767e5bc96f3ef2f83cfa7e",
+            "matches": true
+          },
+          {
+            "path": "packages/auth/drizzle.config.ts",
+            "sha256": "0e8c0d2245d48d3d9c3812d06a4fa47e287a3c8a9439f920b2db371fead80b44",
+            "matches": true
+          },
+          {
+            "path": "packages/auth/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+            "sha256": "240cac26ffd1e17dd55b73026e2eb6911bdd2e34c28b0265a3b44e03ca6c68f6",
+            "matches": true
+          },
+          {
+            "path": "packages/catalog/scripts/seed.ts",
+            "sha256": "4f2b8694a02b1c570a5a041d3abf3b4b80585d54ce24ffb22bee270cea8f4e8f",
+            "matches": true
+          },
+          {
+            "path": "packages/funnel/astro.config.mjs",
+            "sha256": "ee45dbda7a6e1a9300a758125260e06d31837db364549052345b304c94410524",
+            "matches": true
+          },
+          {
+            "path": "packages/funnel/src/env.d.ts",
+            "sha256": "5a498a2ff3c0abb338aff60209dfe32fb591fc5ad359182c5a14910f4c2fff8f",
+            "matches": true
+          },
+          {
+            "path": "packages/funnel/src/layouts/BaseLayout.astro",
+            "sha256": "8e0397feeba2b1bc16d6c8a24f2992b419f8fad2ef716e52248821f844d42ece",
+            "matches": true
+          },
+          {
+            "path": "packages/fiscal/assets/fonts/arial.ttf",
+            "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a",
+            "matches": true
+          },
+          {
+            "path": "packages/fiscal/assets/fonts/arialbd.ttf",
+            "sha256": "e8f4e3baf6cc35fed6fcce3a540e8b39e8f6cda1d22a28f2ec8f526fef7a43f5",
+            "matches": true
+          },
+          {
+            "path": "packages/fiscal/assets/fonts/micross.ttf",
+            "sha256": "89b42a12ea0379133fb2f4a1d1bd53058fb61e2343c1d509452d5761acc85b7a",
+            "matches": true
+          },
+          {
+            "path": "packages/messaging/assets/logo-sistema-zero-light.png",
+            "sha256": "bc9a049d00c235157019480867176ec06f4c2f0c90facb44d5e8e6cccb1b18a4",
+            "matches": true
+          },
+          {
+            "path": "packages/member-shell/assets/live-camera/selfie_segmenter_landscape.tflite",
+            "sha256": "490e9ea734313e0de10fa0cd9e3c6133e36ea4db2b7a49bde9ef019f72796b8e",
+            "matches": true
+          },
+          {
+            "path": "packages/studio/src/official-extensions/scene-2d/docs.ts",
+            "sha256": "6d2cc9b9e01b2a4070bd4ee70744aef80cf529b94187f6764942fbf63aefeb30",
+            "matches": true
+          },
+          {
+            "path": "packages/studio/src/examples/python/visualReferenceGames.manifest.ts",
+            "sha256": "3ed4cfc9386e1fa910c6a15b1be91a0a0164a6cb6e0d065fb9367ac538be8522",
+            "matches": true
+          },
+          {
+            "path": "packages/studio/src/python/blocks/structureCatalog.ts",
+            "sha256": "fc7d9e0626857bdc3db29a88edb1189b37094fdbae8e6290688917da876c26bc",
+            "matches": true
+          },
+          {
+            "path": "packages/helpdesk/src/application/ai/prompts.ts",
+            "sha256": "ee20f3e6147acd12f6c74019ec6608c36dcd1b300f6f8ac0803b882c7e928b0f",
+            "matches": true
+          },
+          {
+            "path": "packages/marketing/src/application/ai/ai-copy.service.ts",
+            "sha256": "ca5be43bbb6e0ac213d6940dc6db1ade735ac241f21de707feabc7dd260d2834",
+            "matches": true
+          },
+          {
+            "path": ".railway/services/members.json",
+            "sha256": "a3b0930eb1822d5c7aea2d63219dafafeba352d1d292e1192e14111e62863b86",
+            "matches": true
+          },
+          {
+            "path": ".railway/services/auth.json",
+            "sha256": "53fbb9a731b2fb83d8d3b29be6d857c18ff71f70fe52051d110d1730f8ad6c1f",
+            "matches": true
+          }
+        ]
+      }
+    },
+    {
+      "path": ".cache/python-reference-games/docker-context-proof-r1/run-root.json",
+      "sha256": "72702f09a2b483fc73f75281f6c46a7ee1e50977c68592dcfd86529b7b39c4f7",
+      "bytes": 576,
+      "value": {
+        "kind": "owned-local-docker-context-execution",
+        "startedAt": "2026-10-22T20:33:41.185Z",
+        "pins": {
+          "ignore": "88c9a44240784ac5a6b4c89dfc641ab94e8c3456759509d8c49b197e2f3522bd",
+          "dockerfile": "0837162982057d16f6c2363c396d2811f9839aeb2480f977ad955788e8c73e36",
+          "verifier": "3919bf2e8c6dbd0971718f0b71c026607c3036b3b775be08e6fe53befc079743"
+        },
+        "state": "CONTEXT_EXPORTED",
+        "timeoutMs": 180000,
+        "noRunInstructions": true,
+        "noImageTag": true,
+        "noRegistryPush": true,
+        "exitCode": 0,
+        "killed": false,
+        "completedAt": "2026-10-22T20:34:04.137Z"
+      }
+    }
+  ],
+  "sources": [
+    {
+      "path": ".dockerignore",
+      "sha256": "88c9a44240784ac5a6b4c89dfc641ab94e8c3456759509d8c49b197e2f3522bd",
+      "bytes": 1161,
+      "utf8": "node_modules\n**/node_modules\n.git\n.gitignore\n**/dist\n**/.next\nout\n**/*.tsbuildinfo\n**/*.log\n.env\n**/.env\n.env.*\ncerts\n**/certs\nsecrets\n**/secrets\n**/.local-fonts\n*.p12\n*.pfx\n*.pem\n*.key\n**/tests\n.claude\n.idea\n.DS_Store\n\n# Material de produção (PDFs dos cursos, Instagram, áudios dos relatos): nenhum serviço lê, e ele\n# não pode entrar nas imagens (full review de 10/10/2026: ~350 MB e áudio de depoimentos de pais).\noutput\n.tmp\ntmp\n.audits\n\n# Acervo editorial, planos e provas ficam no Git/local, nunca no contexto das imagens.\n# Regras ancoradas na raiz: os assets, manuais e fontes dos pacotes continuam disponíveis.\n/docs\n/.agents\n/.compozy\n/experiments\n/.cache\n/.sistemazero\n/.vscode\n/.github\n\n# Provas e saídas de teste não são entradas de build nem de runtime dos serviços.\n**/.cache\n**/__tests__\n**/*.test.*\n**/*.spec.*\n**/*.cases.ts\n**/*.cases.tsx\n**/e2e\n**/e2e-*\n**/qa\n**/playwright-report\n**/test-results\n**/coverage\n\n# Caches locais de ferramentas e ambientes Python; os fontes .astro/.py são preservados.\n**/.wrangler\n**/.turbo\n**/__pycache__\n**/.pytest_cache\n**/.mypy_cache\n**/.ruff_cache\n**/.venv\n**/venv\n**/*.pyc\n**/*.pyo\n**/.astro\n"
+    },
+    {
+      "path": ".cache/python-reference-games/docker-context-proof-r1/Dockerfile",
+      "sha256": "0837162982057d16f6c2363c396d2811f9839aeb2480f977ad955788e8c73e36",
+      "bytes": 22,
+      "utf8": "FROM scratch\nCOPY . /\n"
+    },
+    {
+      "path": ".cache/python-reference-games/docker-context-proof-r1/verify.mjs",
+      "sha256": "3919bf2e8c6dbd0971718f0b71c026607c3036b3b775be08e6fe53befc079743",
+      "bytes": 4395,
+      "utf8": "import { createHash } from 'node:crypto'\nimport { existsSync, lstatSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'\nimport { resolve } from 'node:path'\nimport { fileURLToPath } from 'node:url'\n\nconst root = fileURLToPath(new URL('../../../', import.meta.url))\nconst exported = resolve(root, '.cache/python-reference-games/docker-context-proof-r1/export')\nconst receiptPath = resolve(root, '.cache/python-reference-games/docker-context-proof-r1/receipt.json')\nif (process.argv.length !== 2 || !existsSync(exported) || existsSync(receiptPath)) throw new Error('fresh-real-export-required')\nconst hash = bytes => createHash('sha256').update(bytes).digest('hex')\nconst receipt = { kind: 'docker-real-context-export-proof', scope: 'local BuildKit FROM scratch COPY export, not production image size or runtime qualification', state: 'NEG', checkedAt: new Date().toISOString(), dockerignoreSha256: hash(readFileSync(resolve(root, '.dockerignore'))), exportedFileCount: 0, exportedBytes: 0, excludedRootTreesAbsent: false, qaAbsent: false, requiredInputs: [] }\ntry {\n  for (const directory of ['docs', '.agents', '.compozy', 'experiments', '.cache', '.sistemazero', '.vscode', '.github'])\n    if (existsSync(resolve(exported, directory))) throw new Error('editorial-or-qa-root-present')\n  receipt.excludedRootTreesAbsent = true\n  function walk(directory) {\n    for (const entry of readdirSync(directory, { withFileTypes: true })) {\n      const path = resolve(directory, entry.name)\n      if (entry.isSymbolicLink()) continue // Required input byte checks below never rely on this count.\n      if (entry.isDirectory()) {\n        if (['.cache', '__tests__', 'e2e', 'qa', 'playwright-report', 'test-results', 'coverage', '.wrangler', '.turbo', '__pycache__', '.pytest_cache', '.mypy_cache', '.ruff_cache', '.venv', 'venv', '.astro'].includes(entry.name) || entry.name.startsWith('e2e-')) throw new Error('qa-or-tool-cache-directory-present')\n        walk(path)\n      } else if (entry.isFile()) {\n        if (/\\.(?:test|spec)\\.|\\.cases\\.tsx?$|\\.py[co]$/.test(entry.name)) throw new Error('test-or-python-cache-file-present')\n        receipt.exportedFileCount++\n        receipt.exportedBytes += lstatSync(path).size\n      }\n    }\n  }\n  walk(exported)\n  receipt.qaAbsent = true\n  const required = [\n    'package.json', 'bun.lock', 'patches/three@0.184.0.patch',\n    'scripts/release/start.mjs', 'scripts/release/kids-journey-bootstrap.mjs',\n    'packages/members/src/index.ts', 'packages/members/drizzle.config.ts',\n    'packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json',\n    'packages/auth/src/index.ts', 'packages/auth/drizzle.config.ts',\n    'packages/auth/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json',\n    'packages/catalog/scripts/seed.ts',\n    'packages/funnel/astro.config.mjs',\n    'packages/funnel/src/env.d.ts',\n    'packages/funnel/src/layouts/BaseLayout.astro',\n    'packages/fiscal/assets/fonts/arial.ttf',\n    'packages/fiscal/assets/fonts/arialbd.ttf',\n    'packages/fiscal/assets/fonts/micross.ttf',\n    'packages/messaging/assets/logo-sistema-zero-light.png',\n    'packages/member-shell/assets/live-camera/selfie_segmenter_landscape.tflite',\n    'packages/studio/src/official-extensions/scene-2d/docs.ts',\n    'packages/studio/src/examples/python/visualReferenceGames.manifest.ts',\n    'packages/studio/src/python/blocks/structureCatalog.ts',\n    'packages/helpdesk/src/application/ai/prompts.ts',\n    'packages/marketing/src/application/ai/ai-copy.service.ts',\n    '.railway/services/members.json', '.railway/services/auth.json',\n  ]\n  for (const path of required) {\n    const before = hash(readFileSync(resolve(root, path)))\n    if (hash(readFileSync(resolve(exported, path))) !== before) throw new Error('required-input-missing-or-changed')\n    receipt.requiredInputs.push({ path, sha256: before, matches: true })\n  }\n  receipt.state = 'PASS_LOCAL_DOCKER_CONTEXT'\n} catch (failure) {\n  receipt.failure = failure instanceof Error && /^[a-z]+(?:-[a-z]+)+$/.test(failure.message) ? failure.message : 'input-observation-failed'\n  process.exitCode = 1\n} finally {\n  writeFileSync(receiptPath, JSON.stringify(receipt, null, 2) + '\\n', { flag: 'wx' })\n}\nconsole.log(JSON.stringify({ state: receipt.state, exportedFileCount: receipt.exportedFileCount, exportedBytes: receipt.exportedBytes, failure: receipt.failure }))\n"
+    },
+    {
+      "path": ".cache/python-reference-games/run-context-proof-r1.mjs",
+      "sha256": "6cb13c977a66ff4426c6fc62ea861bd08eae8ae40a69572c2b22df8ee683ccf8",
+      "bytes": 1804,
+      "utf8": "import {execFile} from 'node:child_process'\nimport {writeFileSync,existsSync,readFileSync} from 'node:fs'\nimport {createHash} from 'node:crypto'\nconst base='.cache/python-reference-games/docker-context-proof-r1'\nif(existsSync(base+'/export')||existsSync(base+'/run-root.json'))throw new Error('Fresh output required')\nconst sha=x=>createHash('sha256').update(x).digest('hex')\nconst pins={ignore:'88c9a44240784ac5a6b4c89dfc641ab94e8c3456759509d8c49b197e2f3522bd',dockerfile:'0837162982057d16f6c2363c396d2811f9839aeb2480f977ad955788e8c73e36',verifier:'3919bf2e8c6dbd0971718f0b71c026607c3036b3b775be08e6fe53befc079743'}\nfor(const [path,pin]of [['.dockerignore',pins.ignore],[base+'/Dockerfile',pins.dockerfile],[base+'/verify.mjs',pins.verifier]])if(sha(readFileSync(path))!==pin)throw new Error('Input changed')\nconst receipt={kind:'owned-local-docker-context-execution',startedAt:new Date().toISOString(),pins,state:'RUNNING',timeoutMs:180000,noRunInstructions:true,noImageTag:true,noRegistryPush:true}\nwriteFileSync(base+'/run-root.json',JSON.stringify(receipt,null,2)+'\\n',{flag:'wx'})\nconst result=await new Promise(resolve=>execFile('docker',['build','--network=none','--file',base+'/Dockerfile','--output','type=local,dest='+base+'/export','--progress=plain','.'],{windowsHide:true,encoding:'utf8',timeout:180000,maxBuffer:4_000_000},(error,stdout,stderr)=>resolve({error,stdout,stderr})))\nwriteFileSync(base+'/build-root.log',result.stdout+'\\n'+result.stderr,{flag:'wx'})\nreceipt.state=result.error?'FAILED':'CONTEXT_EXPORTED';receipt.exitCode=result.error?.code??0;receipt.killed=result.error?.killed??false;receipt.completedAt=new Date().toISOString()\nwriteFileSync(base+'/run-root.json',JSON.stringify(receipt,null,2)+'\\n')\nconsole.log(JSON.stringify(receipt));if(result.error)process.exitCode=1\n"
+    }
+  ],
+  "dockerignorePatch": {
+    "base": "HEAD at archive creation",
+    "sha256": "cd7caff18bbd02e32ade4033f68df816c08d790a63dbd84b404d323a4d0dfc52",
+    "bytes": 914,
+    "utf8": "diff --git a/.dockerignore b/.dockerignore\nindex 034397020..47e41192b 100644\n--- a/.dockerignore\n+++ b/.dockerignore\n@@ -30,3 +30,41 @@ output\n .tmp\n tmp\n .audits\n+\n+# Acervo editorial, planos e provas ficam no Git/local, nunca no contexto das imagens.\n+# Regras ancoradas na raiz: os assets, manuais e fontes dos pacotes continuam disponíveis.\n+/docs\n+/.agents\n+/.compozy\n+/experiments\n+/.cache\n+/.sistemazero\n+/.vscode\n+/.github\n+\n+# Provas e saídas de teste não são entradas de build nem de runtime dos serviços.\n+**/.cache\n+**/__tests__\n+**/*.test.*\n+**/*.spec.*\n+**/*.cases.ts\n+**/*.cases.tsx\n+**/e2e\n+**/e2e-*\n+**/qa\n+**/playwright-report\n+**/test-results\n+**/coverage\n+\n+# Caches locais de ferramentas e ambientes Python; os fontes .astro/.py são preservados.\n+**/.wrangler\n+**/.turbo\n+**/__pycache__\n+**/.pytest_cache\n+**/.mypy_cache\n+**/.ruff_cache\n+**/.venv\n+**/venv\n+**/*.pyc\n+**/*.pyo\n+**/.astro\n"
+  },
+  "buildLogProjection": {
+    "sourcePath": ".cache/python-reference-games/docker-context-proof-r1/build-root.log",
+    "sourceSha256": "0640cea3077aafad8cbafb45b625940d2c3002c73e80b48134ce15725ef7f9d5",
+    "rawLogEmbedded": false,
+    "loadContext": {
+      "reportedMB": 171.33,
+      "reportedTransferSeconds": 7.6,
+      "phaseSeconds": 7.7
+    },
+    "copy": {
+      "phaseSeconds": 2
+    },
+    "export": {
+      "reportedMB": 171.29,
+      "reportedTransferSeconds": 12.3,
+      "phaseSeconds": 12.4
+    }
+  },
+  "gitInventory": {
+    "method": "git ls-tree -r -l -z; sum logical tracked blob byte lengths (not disk use, transferred context, compressed layers, or image size)",
+    "revisions": [
+      {
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "trackedBlobCount": 13449,
+        "logicalBlobBytes": 852163514,
+        "docsLogicalBlobBytes": 244322377,
+        "marketingDocsLogicalBlobBytes": 186316047
+      },
+      {
+        "commit": "8c0bb250dc7660869c247f799f126e99e0e93d9c",
+        "trackedBlobCount": 18626,
+        "logicalBlobBytes": 1077314017,
+        "docsLogicalBlobBytes": 816928827,
+        "marketingDocsLogicalBlobBytes": 712184190
+      },
+      {
+        "commit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "trackedBlobCount": 19456,
+        "logicalBlobBytes": 1071413280,
+        "docsLogicalBlobBytes": 806391379,
+        "marketingDocsLogicalBlobBytes": 712262703
+      }
+    ]
+  },
+  "reproduction": {
+    "restoreSourcesAtRecordedRelativePaths": true,
+    "requireFreshOutput": true,
+    "commands": [
+      "node .cache/python-reference-games/run-context-proof-r1.mjs",
+      "node .cache/python-reference-games/docker-context-proof-r1/verify.mjs"
+    ],
+    "warning": "These are deliberate local Docker execution commands, not executed by archiving. The wrapper refuses existing export/run output. The verifier compares export to current source, so later source changes require a new proof, not replaying this result."
+  },
+  "limits": [
+    "No RUN instruction, application build, dependency installation, image tag, registry push or application startup was performed. BuildKit may retain its normal build cache.",
+    "Exact exported regular-file count/bytes exclude symlinks as documented by the embedded verifier. Reported BuildKit MB values are rounded and are not exact receipt bytes.",
+    "Git size growth and this local context proof do not establish how much deployment delay was caused by documentation, nor the final image size.",
+    "Host cache exclusions do not remove caches created by RUN during image builds. Bun installer cache size and physical hardlink duplication were not measured; no Dockerfile cache cleanup is claimed.",
+    "Root-only documentation/tool exclusions preserve package-level assets and checked required inputs. The proof checks those inputs, not every possible application dependency."
+  ]
+}

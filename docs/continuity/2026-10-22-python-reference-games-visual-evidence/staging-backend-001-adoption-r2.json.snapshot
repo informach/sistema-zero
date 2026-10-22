@@ -1,0 +1,289 @@
+{
+  "kind": "actual-staging-backend-adoption-evidence",
+  "archivedAt": "2026-10-22T20:48:27.571Z",
+  "scope": "Backend-only source001ce0788, not a full app/platform deployment or qualification of later commits",
+  "sourceCommit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+  "productionChanged": false,
+  "credentialValuesRecorded": false,
+  "actualProviderRead": true,
+  "actualRemoteBootstrap": true,
+  "newDeploymentMutationPerformedInR2": false,
+  "originalControllerSha256": "5419f0bece74e562ae7d407ecd6dc6a495690757e8da20bc21017e7a20c79f37",
+  "operatorSha256": "96bc11a8c3c8dd3ec348d26efa44aed898a859728b569d2a2c40275a115e80c6",
+  "inputs": [
+    {
+      "path": "manual-staging-backend-001-r1-run.json",
+      "sha256": "8ec0ce341f22365fe4c8bf64d73f194c770a353d7df56befa08e97a88b8f6f75",
+      "receipt": {
+        "kind": "staging-manual-canonical-backend-rollout",
+        "state": "FAILED",
+        "mode": "run",
+        "startedAt": "2026-10-22T19:46:24.831Z",
+        "sourceCommit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "ciRun": 39827084913,
+        "ciAttempt": 1,
+        "checksPassed": 9,
+        "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+        "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+        "adoptedMembers": {
+          "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+          "commitSha": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+          "imageDigest": "sha256:cdd52d394f9fc8863e9f88fa27289f6b6ed7a860cba990b9142929d0109a52b7",
+          "previousIds": [
+            "4f9546c8-dd3c-4db6-b636-a4f9883f74c3",
+            "85626718-7e61-442b-bb33-f48cfd8561f7"
+          ]
+        },
+        "controllerSha256": "5419f0bece74e562ae7d407ecd6dc6a495690757e8da20bc21017e7a20c79f37",
+        "transport": "Real Railway CLI 5.62.1 with existing local OAuth and existing OpenSSH identity",
+        "productionChanged": false,
+        "credentialValuesRecorded": false,
+        "events": [
+          {
+            "at": "2026-10-22T19:46:24.834Z",
+            "stage": "preflight"
+          },
+          {
+            "at": "2026-10-22T19:46:35.274Z",
+            "stage": "members-deploy",
+            "sha": "001ce078891cef0e03d5f9d3926653668e2b6c5f"
+          },
+          {
+            "at": "2026-10-22T19:46:35.274Z",
+            "stage": "members-adoption-deployment",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+            "mutationOutcome": "not-attempted"
+          },
+          {
+            "at": "2026-10-22T19:46:39.294Z",
+            "stage": "members-deployment-adopted",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+            "adopted": true,
+            "mutationOutcome": "not-attempted"
+          },
+          {
+            "at": "2026-10-22T19:46:39.294Z",
+            "stage": "members-first-poll",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e"
+          },
+          {
+            "at": "2026-10-22T19:46:47.881Z",
+            "stage": "members-migrate-initialize",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e"
+          },
+          {
+            "at": "2026-10-22T19:46:57.402Z",
+            "stage": "auth-deploy-and-retire",
+            "sha": "001ce078891cef0e03d5f9d3926653668e2b6c5f"
+          },
+          {
+            "at": "2026-10-22T19:46:57.403Z",
+            "stage": "auth-active-refresh"
+          },
+          {
+            "at": "2026-10-22T19:46:58.302Z",
+            "stage": "auth-deploy-mutation",
+            "mutationOutcome": "unknown"
+          },
+          {
+            "at": "2026-10-22T19:47:00.598Z",
+            "stage": "auth-deploy-ack",
+            "deployment": "3981bb66-92d3-4f54-9be6-847dc3f47cb3",
+            "mutationOutcome": "acknowledged"
+          },
+          {
+            "at": "2026-10-22T19:47:00.599Z",
+            "stage": "auth-first-poll",
+            "deployment": "3981bb66-92d3-4f54-9be6-847dc3f47cb3"
+          }
+        ],
+        "failure": {
+          "kind": "kids-journey-rollout-failure",
+          "step": "auth-deployment-poll",
+          "reason": "api-timeout",
+          "mutationOutcome": "acknowledged",
+          "deployment": "3981bb66-92d3-4f54-9be6-847dc3f47cb3"
+        },
+        "completedAt": "2026-10-22T19:58:26.430Z"
+      }
+    },
+    {
+      "path": "manual-staging-backend-001-r2-preflight.json",
+      "sha256": "8e13de31c7a3f2666413d95c4c14a903a1fe997921e3d485643cfae5620e9578",
+      "receipt": {
+        "kind": "staging-manual-canonical-backend-rollout",
+        "state": "PREFLIGHT_PASSED",
+        "mode": "preflight",
+        "startedAt": "2026-10-22T20:44:35.822Z",
+        "sourceCommit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "ciRun": 39827084913,
+        "ciAttempt": 1,
+        "checksPassed": 9,
+        "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+        "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+        "adoptedMembers": {
+          "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+          "commitSha": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+          "imageDigest": "sha256:cdd52d394f9fc8863e9f88fa27289f6b6ed7a860cba990b9142929d0109a52b7",
+          "previousIds": [
+            "4f9546c8-dd3c-4db6-b636-a4f9883f74c3",
+            "85626718-7e61-442b-bb33-f48cfd8561f7"
+          ]
+        },
+        "adoptedAuth": {
+          "id": "3981bb66-92d3-4f54-9be6-847dc3f47cb3",
+          "commitSha": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+          "imageDigest": "sha256:3e3c9daaf027707e5699a2cde6d7b2e76ad45879df7a991cade161b733290164",
+          "previousIds": [
+            "3a6a5f8b-4262-426f-8c85-1e7553017ec3"
+          ]
+        },
+        "controllerSha256": "5419f0bece74e562ae7d407ecd6dc6a495690757e8da20bc21017e7a20c79f37",
+        "transport": "Real Railway CLI 5.62.1 with existing local OAuth and existing OpenSSH identity",
+        "productionChanged": false,
+        "credentialValuesRecorded": false,
+        "events": [
+          {
+            "at": "2026-10-22T20:44:35.831Z",
+            "stage": "preflight"
+          }
+        ],
+        "result": {
+          "status": "preflight"
+        },
+        "completedAt": "2026-10-22T20:44:44.303Z"
+      }
+    },
+    {
+      "path": "manual-staging-backend-001-r2-run.json",
+      "sha256": "638b0218d02f9437034431066f0b607b6a59368e4a38c293e1fcb683852e2486",
+      "receipt": {
+        "kind": "staging-manual-canonical-backend-rollout",
+        "state": "BACKEND_BARRIER_PASSED",
+        "mode": "run",
+        "startedAt": "2026-10-22T20:45:01.004Z",
+        "sourceCommit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "ciRun": 39827084913,
+        "ciAttempt": 1,
+        "checksPassed": 9,
+        "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+        "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+        "adoptedMembers": {
+          "id": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+          "commitSha": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+          "imageDigest": "sha256:cdd52d394f9fc8863e9f88fa27289f6b6ed7a860cba990b9142929d0109a52b7",
+          "previousIds": [
+            "4f9546c8-dd3c-4db6-b636-a4f9883f74c3",
+            "85626718-7e61-442b-bb33-f48cfd8561f7"
+          ]
+        },
+        "adoptedAuth": {
+          "id": "3981bb66-92d3-4f54-9be6-847dc3f47cb3",
+          "commitSha": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+          "imageDigest": "sha256:3e3c9daaf027707e5699a2cde6d7b2e76ad45879df7a991cade161b733290164",
+          "previousIds": [
+            "3a6a5f8b-4262-426f-8c85-1e7553017ec3"
+          ]
+        },
+        "controllerSha256": "5419f0bece74e562ae7d407ecd6dc6a495690757e8da20bc21017e7a20c79f37",
+        "transport": "Real Railway CLI 5.62.1 with existing local OAuth and existing OpenSSH identity",
+        "productionChanged": false,
+        "credentialValuesRecorded": false,
+        "events": [
+          {
+            "at": "2026-10-22T20:45:01.006Z",
+            "stage": "preflight"
+          },
+          {
+            "at": "2026-10-22T20:45:10.085Z",
+            "stage": "members-deploy",
+            "sha": "001ce078891cef0e03d5f9d3926653668e2b6c5f"
+          },
+          {
+            "at": "2026-10-22T20:45:10.086Z",
+            "stage": "members-adoption-deployment",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+            "mutationOutcome": "not-attempted"
+          },
+          {
+            "at": "2026-10-22T20:45:13.696Z",
+            "stage": "members-deployment-adopted",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e",
+            "adopted": true,
+            "mutationOutcome": "not-attempted"
+          },
+          {
+            "at": "2026-10-22T20:45:13.697Z",
+            "stage": "members-first-poll",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e"
+          },
+          {
+            "at": "2026-10-22T20:45:20.901Z",
+            "stage": "members-migrate-initialize",
+            "deployment": "1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e"
+          },
+          {
+            "at": "2026-10-22T20:45:31.545Z",
+            "stage": "auth-deploy-and-retire",
+            "sha": "001ce078891cef0e03d5f9d3926653668e2b6c5f"
+          },
+          {
+            "at": "2026-10-22T20:45:31.546Z",
+            "stage": "auth-adoption-deployment",
+            "deployment": "3981bb66-92d3-4f54-9be6-847dc3f47cb3",
+            "mutationOutcome": "not-attempted"
+          },
+          {
+            "at": "2026-10-22T20:45:34.981Z",
+            "stage": "auth-deployment-adopted",
+            "deployment": "3981bb66-92d3-4f54-9be6-847dc3f47cb3",
+            "adopted": true,
+            "mutationOutcome": "not-attempted"
+          },
+          {
+            "at": "2026-10-22T20:45:34.982Z",
+            "stage": "auth-first-poll",
+            "deployment": "3981bb66-92d3-4f54-9be6-847dc3f47cb3"
+          }
+        ],
+        "result": {
+          "status": "published",
+          "version": 1
+        },
+        "completedAt": "2026-10-22T20:45:46.781Z"
+      }
+    },
+    {
+      "path": "auth-001-readback-r4.json",
+      "sha256": "bed9b7534747f99da2ccd93c3848478bf7b71266311c033d26e4c2982f67e4a5",
+      "receipt": {
+        "source": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+        "id": "3981bb66-92d3-4f54-9be6-847dc3f47cb3",
+        "imageDigest": "sha256:3e3c9daaf027707e5699a2cde6d7b2e76ad45879df7a991cade161b733290164",
+        "observedAt": "2026-10-22T20:43:39.6836212Z",
+        "status": "SUCCESS",
+        "instances": [
+          {
+            "id": "66ec3bfb-f958-44af-bfe6-9851e936a1f4",
+            "status": "REMOVED"
+          },
+          {
+            "id": "b6faf2f5-e8c0-4878-8a92-b5efbb6ae6cc",
+            "status": "RUNNING"
+          }
+        ]
+      }
+    }
+  ],
+  "remaining": [
+    "Admin and community applications still require deployment at their intended qualified source.",
+    "Members catalog/host configuration still requires activation by an applicable new deployment.",
+    "Production has not been deployed by this evidence."
+  ],
+  "claims": {
+    "backendBarrierPassed": true,
+    "canonicalJourneyPublishedVersion": 1,
+    "wholePlatformUpdated": false,
+    "newCoreContractsQualified": false
+  }
+}

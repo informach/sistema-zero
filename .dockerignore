@@ -30,3 +30,41 @@ output
 .tmp
 tmp
 .audits
+
+# Acervo editorial, planos e provas ficam no Git/local, nunca no contexto das imagens.
+# Regras ancoradas na raiz: os assets, manuais e fontes dos pacotes continuam disponíveis.
+/docs
+/.agents
+/.compozy
+/experiments
+/.cache
+/.sistemazero
+/.vscode
+/.github
+
+# Provas e saídas de teste não são entradas de build nem de runtime dos serviços.
+**/.cache
+**/__tests__
+**/*.test.*
+**/*.spec.*
+**/*.cases.ts
+**/*.cases.tsx
+**/e2e
+**/e2e-*
+**/qa
+**/playwright-report
+**/test-results
+**/coverage
+
+# Caches locais de ferramentas e ambientes Python; os fontes .astro/.py são preservados.
+**/.wrangler
+**/.turbo
+**/__pycache__
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.venv
+**/venv
+**/*.pyc
+**/*.pyo
+**/.astro
