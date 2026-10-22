@@ -81,7 +81,7 @@ describe('platform actions as section criteria', () => {
           },
           {
             status: 'locked',
-            pendingItems: [{ kind: 'locked', text: 'Conclua a seção anterior' }],
+            pendingItems: [{ kind: 'locked', text: 'Conclua a parte anterior' }],
           },
         ],
       },

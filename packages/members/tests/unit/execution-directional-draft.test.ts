@@ -161,7 +161,7 @@ test('inert draft text cannot execute or publish and malformed envelopes remain 
       sectionCompletionIssues(input.change.sections, [
         { id: workspaceId, content: { kind: 'studio' } },
       ]).map((issue) => issue.message),
-    ).toContain('Configure os critérios de conclusão desta seção.')
+    ).toContain('Configure os critérios de conclusão desta parte.')
     const response = await testApp.handle(
       new Request('http://members.test/', {
         method: 'POST',
