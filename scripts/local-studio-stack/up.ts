@@ -1,17 +1,19 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Sobe a pilha local: Postgres portátil (:55432) + Auth, Catalog, Members, Gateway,
  * Admin, Adulto e Kids, cada um em background com a env explícita de lib.ts (nenhum
  * .env nos pacotes). Logs em .cache/local-stack/logs, PIDs/portas em state.json.
  *
- *   bun scripts/local-studio-stack/up.ts [serviço...] [--no-wait]
+ *   bun --no-env-file scripts/local-studio-stack/up.ts [serviço...] [--no-wait]
  *
- * Pré-requisito: `bun scripts/local-studio-stack/setup.ts`.
+ * Pré-requisito: `bun --no-env-file scripts/local-studio-stack/setup.ts`.
  */
 import { spawn } from 'node:child_process'
 import fs from 'node:fs'
 import { join } from 'node:path'
 import {
+  assertLocalStackIsolation,
   childEnv,
   ensureSecrets,
   isOurProcess,
@@ -45,6 +47,7 @@ async function startPostgres(): Promise<void> {
 }
 
 async function startService(s: ServiceDef): Promise<boolean> {
+  assertLocalStackIsolation()
   const state = readState()
   const rec = state.services[s.name]
   if (rec && isOurProcess(rec)) {
@@ -127,4 +130,4 @@ if (failed.length) {
   console.error(`\nFalharam: ${failed.join(', ')} — veja ${LOG_DIR}`)
   process.exit(1)
 }
-console.log('\nPilha local de pé. Parar: bun scripts/local-studio-stack/down.ts')
+console.log('\nPilha local de pé. Parar: bun --no-env-file scripts/local-studio-stack/down.ts')

@@ -9,8 +9,9 @@ import { randomBytes } from 'node:crypto'
 import fs from 'node:fs'
 import net from 'node:net'
 import { join } from 'node:path'
+import { assertLocalStackIsolation, bunArgs, ROOT, SERVICE_DIRECTORIES } from './isolation.mjs'
 
-export const ROOT = join(import.meta.dir, '..', '..')
+export { assertLocalStackIsolation, bunArgs, ROOT } from './isolation.mjs'
 export const CACHE = join(ROOT, '.cache')
 export const STACK_DIR = join(CACHE, 'local-stack')
 export const LOG_DIR = join(STACK_DIR, 'logs')
@@ -60,49 +61,50 @@ export type ServiceDef = {
   requires?: string
 }
 
-const nextArgs = (port: number) => ['run', 'dev', '--', '-H', '127.0.0.1', '-p', String(port)]
+const nextArgs = (port: number) =>
+  bunArgs(['run', 'dev', '--', '-H', '127.0.0.1', '-p', String(port)])
 
 // Portas canônicas de scripts/dev.ts. Payments, messaging, fiscal, funnel, referrals,
 // marketing e helpdesk ficam DESLIGADOS: as rotas do gateway para eles respondem 502/503.
 export const SERVICES: ServiceDef[] = [
   {
     name: 'auth',
-    dir: 'auth',
+    dir: SERVICE_DIRECTORIES.auth,
     port: 3002,
-    args: ['run', 'src/index.ts'],
+    args: bunArgs(['run', 'src/index.ts']),
     health: '/readyz',
     kind: 'api',
   },
   {
     name: 'catalog',
-    dir: 'catalog',
+    dir: SERVICE_DIRECTORIES.catalog,
     port: 3003,
-    args: ['run', 'src/index.ts'],
+    args: bunArgs(['run', 'src/index.ts']),
     health: '/readyz',
     kind: 'api',
   },
   {
     name: 'members',
-    dir: 'members',
+    dir: SERVICE_DIRECTORIES.members,
     port: 3004,
-    args: ['run', 'src/index.ts'],
+    args: bunArgs(['run', 'src/index.ts']),
     health: '/readyz',
     kind: 'api',
   },
   // Fórum/Mural (Clube e Mural dos Criadores): a vitrine do Studio e o marco `showcase`.
   {
     name: 'hub',
-    dir: 'hub',
+    dir: SERVICE_DIRECTORIES.hub,
     port: 3010,
-    args: ['run', 'src/index.ts'],
+    args: bunArgs(['run', 'src/index.ts']),
     health: '/readyz',
     kind: 'api',
   },
   {
     name: 'gateway',
-    dir: 'api-gateway',
+    dir: SERVICE_DIRECTORIES.gateway,
     port: 3000,
-    args: ['run', 'src/index.ts'],
+    args: bunArgs(['run', 'src/index.ts']),
     health: '/health',
     kind: 'api',
   },
@@ -110,7 +112,7 @@ export const SERVICES: ServiceDef[] = [
   // Config e R2 local gerados por python-local.ts.
   {
     name: 'studio-runtime',
-    dir: 'studio-runtime',
+    dir: SERVICE_DIRECTORIES['studio-runtime'],
     port: 8791,
     cmd: join(
       ROOT,
@@ -137,10 +139,17 @@ export const SERVICES: ServiceDef[] = [
     kind: 'api',
     requires: join(STACK_DIR, 'studio-runtime', 'wrangler.jsonc'),
   },
-  { name: 'admin', dir: 'admin', port: 3005, args: nextArgs(3005), health: '/', kind: 'next' },
+  {
+    name: 'admin',
+    dir: SERVICE_DIRECTORIES.admin,
+    port: 3005,
+    args: nextArgs(3005),
+    health: '/',
+    kind: 'next',
+  },
   {
     name: 'community',
-    dir: 'community',
+    dir: SERVICE_DIRECTORIES.community,
     port: 3007,
     args: nextArgs(3007),
     health: '/',
@@ -148,7 +157,7 @@ export const SERVICES: ServiceDef[] = [
   },
   {
     name: 'kids',
-    dir: 'community-kids',
+    dir: SERVICE_DIRECTORIES.kids,
     port: 3008,
     args: nextArgs(3008),
     health: '/',
@@ -185,6 +194,7 @@ const SECRET_NAMES = [
 
 /** Lê os segredos locais; gera os que faltam (hex aleatório de 48 chars). */
 export function ensureSecrets(): Secrets {
+  assertLocalStackIsolation()
   fs.mkdirSync(STACK_DIR, { recursive: true })
   let secrets: Secrets = {}
   try {
@@ -206,7 +216,7 @@ export function ensureSecrets(): Secrets {
 
 export function readSecrets(): Secrets {
   if (!fs.existsSync(SECRETS_FILE))
-    throw new Error('Rode antes: bun scripts/local-studio-stack/setup.ts')
+    throw new Error('Rode antes: bun --no-env-file scripts/local-studio-stack/setup.ts')
   return JSON.parse(fs.readFileSync(SECRETS_FILE, 'utf8'))
 }
 
@@ -352,7 +362,7 @@ export function serviceEnv(name: ServiceName, s: Secrets): Record<string, string
   return byService[name]
 }
 
-/** Env herdada mínima (PATH, perfis do Windows) + a env do serviço; nada de .env. */
+/** Env herdada mínima; dotenv exige também o preflight e --no-env-file no Bun. */
 export function childEnv(extra: Record<string, string>): Record<string, string> {
   const keep = [
     'PATH',
@@ -549,7 +559,8 @@ export function run(
   args: string[],
   opts: { cwd?: string; env?: Record<string, string> } = {},
 ) {
-  const r = spawnSync(cmd, args, {
+  assertLocalStackIsolation({ cwd: opts.cwd ?? ROOT })
+  const r = spawnSync(cmd, cmd === process.execPath ? bunArgs(args) : args, {
     cwd: opts.cwd ?? ROOT,
     env: opts.env ?? childEnv({}),
     stdio: 'inherit',
@@ -572,6 +583,7 @@ export function pgEnv(s: Secrets): Record<string, string> {
  * O log do servidor vai para .cache/local-stack/pg.log.
  */
 export function startPostgresServer(s: Secrets): void {
+  assertLocalStackIsolation()
   const r = spawnSync(
     exe('pg_ctl'),
     ['-D', PG_DATA, '-l', join(STACK_DIR, 'pg.log'), '-w', 'start'],

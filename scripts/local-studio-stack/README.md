@@ -8,20 +8,38 @@ loopback e os segredos são gerados na primeira execução. Há uma exceção, q
 produto: o JavaScript Pro roda num WebContainer no navegador, que baixa os pacotes npm da
 internet.
 
-Tudo o que é gerado fica em `.cache/` (ignorado pelo git). Nenhum `.env` é escrito nos pacotes:
-cada serviço recebe a env explícita definida em `lib.ts`, mais o `studio-env.json` gerado por
-`python-local.ts`.
+Tudo o que é gerado fica em `.cache/` (ignorado pelo git). Cada serviço recebe o ambiente
+explícito de `lib.ts` e o `studio-env.json` de `python-local.ts`. O ambiente herdado do terminal
+é filtrado. Bun inicia com `--no-env-file`; isso **não** desliga o loader próprio do Next.
+Por isso o preflight recusa arquivos `.env`, `.env.local`, `.env.development`,
+`.env.development.local`, `.env.production`, `.env.production.local`, `.env.test` e
+`.env.test.local` na raiz da worktree, no cwd e nas pastas de todos os serviços antes de gerar
+segredos/configuração ou iniciar processos. O erro lista apenas os caminhos. Não lê valores,
+não move nem altera esses arquivos; `.env.example` continua permitido. Use uma worktree sem
+esses arquivos e não os adicione enquanto a pilha estiver rodando.
+
+O Wrangler também procura `.env` e `.env.local` ao lado de seu arquivo de configuração,
+em `.cache/local-stack/studio-runtime/`, como fallback quando falta `.dev.vars`. O preflight
+recusa esses dois nomes nesse diretório; nenhum ambiente Wrangler é selecionado pelo launcher.
+O `.dev.vars` local gerado permanece permitido e não é lido pela guarda.
+
+O `down.ts` continua disponível para encerrar os processos registrados se um dotenv aparecer
+depois da inicialização: ele não carrega apps/Next e executa somente a limpeza dos processos
+verificados e o `pg_ctl` local, com ambiente filtrado. O `.dev.vars` do Worker é gerado somente
+em `.cache/local-stack/studio-runtime/`, com token local novo.
 
 ## Comandos
 
 ```bash
-bun scripts/local-studio-stack/setup.ts      # do zero, idempotente (ver "O que o setup faz")
-bun scripts/local-studio-stack/up.ts [svc…]  # sobe o Postgres e os serviços
-bun scripts/local-studio-stack/down.ts       # para tudo, inclusive o Postgres (--keep-db mantém)
-bun scripts/local-studio-stack/verify.ts     # HTTP: logins, /estudio e free-options por conta
+bun --no-env-file scripts/local-studio-stack/setup.ts  # do zero, exige distribuição Python verificada
+bun --no-env-file scripts/local-studio-stack/setup.ts --without-python  # omite a preparação Python
+bun --no-env-file scripts/local-studio-stack/up.ts [svc…]  # sobe o Postgres e os serviços
+bun --no-env-file scripts/local-studio-stack/down.ts  # para tudo (--keep-db mantém o Postgres)
+bun --no-env-file scripts/local-studio-stack/verify.ts  # HTTP: logins, /estudio e free-options por conta
 node scripts/local-studio-stack/studio-e2e.mjs <adulto|kids> <conta> <js|python> <classic|pro> [--publish]
 node scripts/local-studio-stack/kids-first-course.mjs   # a criança faz o curso do slot 1 (Mural)
-bun scripts/local-studio-stack/curriculum.ts [author|progress|all]
+bun --no-env-file scripts/local-studio-stack/curriculum.ts [author|progress|all]
+bun --no-env-file scripts/local-studio-stack/python-local.ts [--distribution <dir>] [--plan <arquivo>]
 ```
 
 Os serviços são `auth`, `catalog`, `members`, `hub`, `gateway`, `studio-runtime`, `admin`,
@@ -45,7 +63,10 @@ no-op.
 
 ## O que o setup faz
 
-1. Gera os segredos locais e prepara o Postgres portátil. O zip oficial da EDB é conferido pelo
+1. Verifica isolamento e, salvo `--without-python`, o plano Python, o descritor, os caminhos,
+   tamanhos, hashes e representações gzip de todos os arquivos da distribuição. Falha antes
+   de criar segredos, configuração ou banco se faltar algum input. Depois gera os segredos
+   locais e prepara o Postgres portátil. O zip oficial da EDB é conferido pelo
    SHA-256 fixado em `lib.ts`; a EDB não publica checksum e os `.exe` não têm assinatura
    Authenticode. Em seguida faz o initdb e cria o banco `sistemazero`.
 2. Aplica as migrations de auth, catalog, members e hub com `migrate.ts`, uma transação por
@@ -57,8 +78,15 @@ no-op.
    (`docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json`). Usa a
    distribuição `65c9bffd…` (runtime Turtle de `f81fd9ae2` e `e1c5fb092`), com as
    capacidades `publish` e `assist`, que o Members exige desde 896c3a1c3. A cópia local da
-   distribuição é escolhida pelo SHA fixado no plano, em
-   `sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer/`. O script
+   distribuição é escolhida pelo SHA fixado no plano, dentro **desta worktree**, em
+   `.cache/studio-python-runtime/distributions/<sha256>/` (o output padrão do builder).
+   `--distribution <dir>` escolhe outra cópia; `--plan <arquivo>` escolhe outro plano. O setup
+   também mantém `STUDIO_PYTHON_DISTRIBUTION` como alternativa explícita do terminal. O diretório
+   deve conter `distribution.json` e todos os artefatos verificados. O caminho de outra máquina
+   registrado no plano histórico não é usado. Ausência ou divergência interrompe a execução;
+   não há download automático de runtime nem continuação silenciosa como se Python estivesse pronto.
+   `--without-python` omite essa preparação; não desativa uma configuração Python local existente.
+   O script
    grava a distribuição e a config do runtime no R2 local com os helpers do próprio Worker e
    escreve o `studio-env.json`:
    - Members: `STUDIO_AUTHORING_POLICY_JSON` e `STUDIO_RUNTIME_HOSTS_JSON` (origem `http://127.0.0.1:8791`).
@@ -101,6 +129,10 @@ Cada parte é feita pelo caminho canônico do produto:
 
 ## Resultado do ponta a ponta (21/10/2026, `studio-e2e.mjs`)
 
+Registro histórico da execução de 21/10, não um aceite do código atual. A recusa do Pro Kids
+da equipe descrita abaixo foi corrigida posteriormente; o percurso integrado precisa de nova
+execução na pilha local para produzir um recibo atualizado.
+
 O teste cobre criar, editar, executar, "Guardado na sua conta", recarregar, reabrir e reabrir num
 navegador limpo.
 
@@ -138,3 +170,14 @@ navegador limpo.
   local é http. Sem `R2_BUCKET`/`R2_PUBLIC_URL`, a publicação sai sem capa.
 - **Uploads de mídia do Admin:** o Admin não lê `R2_S3_ENDPOINT` (endpoint fixo da Cloudflare),
   então os uploads dele continuam indisponíveis.
+
+## Regressões de isolamento e inputs (sem serviços)
+
+```bash
+bun --no-env-file test scripts/local-studio-stack/isolation.test.ts scripts/local-studio-stack/python-input.test.ts
+```
+
+Os testes usam diretórios temporários e marcadores sintéticos, subprocessos Bun e o loader real
+`@next/env`, sem servidor Next, banco, navegador, Docker ou chamadas de provedor. Conferem
+recusa antes dos efeitos, preservação dos dotenv, caminho portátil, descritor e bytes. Esses
+testes não substituem o ponta a ponta do produto nem a qualificação da distribuição real.

@@ -1,7 +1,8 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Roda um script canônico de packages/members/scripts com a env local do Members.
- *   bun scripts/local-studio-stack/members-script.ts bootstrap-kids-journey.ts initialize --confirm-rollout-order
+ *   bun --no-env-file scripts/local-studio-stack/members-script.ts bootstrap-kids-journey.ts initialize --confirm-rollout-order
  */
 import { join } from 'node:path'
 import { childEnv, ROOT, readSecrets, run, serviceEnv } from './lib'

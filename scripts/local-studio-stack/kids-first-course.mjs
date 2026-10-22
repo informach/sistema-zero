@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './preflight.mjs'
 /**
  * A criança "Crianca QA" faz o curso do slot 1 de primeiros passos como no produto, no
  * navegador: abre a aula, envia o projeto do bloco Estúdio, publica no Mural ("Compartilhar" →
@@ -7,7 +8,7 @@
  *
  *   node scripts/local-studio-stack/kids-first-course.mjs [--new-child]
  *
- * Pré-requisito: `bun scripts/local-studio-stack/curriculum.ts author`. Se o Estúdio livre já
+ * Pré-requisito: `bun --no-env-file scripts/local-studio-stack/curriculum.ts author`. Se o Estúdio livre já
  * abre para a criança, não faz nada. `--new-child` cria antes um perfil novo na conta do
  * responsável (`POST /auth/profiles` pelo gateway, como no setup) e faz o curso com ele, para
  * repetir o fluxo inteiro depois que "Crianca QA" já concluiu.

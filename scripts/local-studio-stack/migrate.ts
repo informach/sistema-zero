@@ -1,4 +1,5 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Aplica as migrations Drizzle de um pacote num banco LOCAL novo.
  *
@@ -9,7 +10,7 @@
  * ("unsafe use of new value ... of enum type": valor de enum criado e usado na mesma
  * transação), além de engolir o erro atrás do spinner no Windows.
  *
- * Uso: DATABASE_URL=... bun scripts/local-studio-stack/migrate.ts <auth|catalog|members>
+ * Uso: DATABASE_URL=... bun --no-env-file scripts/local-studio-stack/migrate.ts <auth|catalog|members>
  */
 import { join } from 'node:path'
 

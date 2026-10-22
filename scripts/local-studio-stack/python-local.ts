@@ -1,4 +1,5 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Prepara o Studio Python LOCAL a partir da distribuição da candidata (65c9bffd…), sem nada
  * hospedado:
@@ -8,7 +9,7 @@
  *     Padrão: a candidata `python-browser/2026-10-21-audio-2` (distribuição 65c9bffd…, com o
  *     runtime Turtle de f81fd9ae2 e e1c5fb092 e as capacidades `publish` e `assist`, exigidas
  *     desde 896c3a1c3 para publicar e para o Zappy). A distribuição padrão é a cópia em
- *     DISTRIBUTIONS_DIR com o SHA que o próprio plano fixou (`input.distribution.sha256`);
+ *     .cache/studio-python-runtime/distributions com o SHA fixado no plano;
  *     `--distribution <dir>` a substitui.
  *     `--plan <arquivo>` escolhe outro (ex.: o piloto audio-1 em
  *     docs/continuity/2026-10-21-studio-python/snapshots/root/0374-canonical-plan.json.snapshot).
@@ -21,32 +22,22 @@
  *  4. Escreve .cache/local-stack/studio-env.json, lido por lib.ts: política de autoria e hosts
  *     no Members, STUDIO_PYTHON_FRAME_ORIGINS nos três apps.
  *
- *   bun scripts/local-studio-stack/python-local.ts [--distribution <dir>] [--plan <arquivo>]
+ *   bun --no-env-file scripts/local-studio-stack/python-local.ts [--distribution <dir>] [--plan <arquivo>]
  */
 import fs from 'node:fs'
 import { join } from 'node:path'
 import { ensureSecrets, ROOT, STACK_DIR, STUDIO_ENV_FILE } from './lib'
+import { option, RUNTIME_ORIGIN, readLocalPythonInput } from './python-input'
 
 export const RUNTIME_PORT = 8791
-export const RUNTIME_ORIGIN = `http://127.0.0.1:${RUNTIME_PORT}`
+export { RUNTIME_ORIGIN } from './python-input'
 export const RUNTIME_DIR = join(STACK_DIR, 'studio-runtime')
 export const RUNTIME_PERSIST = join(STACK_DIR, 'wrangler')
 
-/** Cópias verificadas das distribuições (a8a6c625… do piloto, 65c9bffd… da audio-2), por SHA. */
-const DISTRIBUTIONS_DIR =
-  'C:/Users/julio/projects/sistema-zero-studio-python/.cache/studio-python-runtime/distributions-transfer'
 /** Buckets locais dos apps: UGC (criações) e privado (snapshots do /jogar). */
 const APP_BUCKETS = {
   LOCAL_UGC: 'sz-local-ugc',
   LOCAL_PRIVATE: 'sz-local-private',
-}
-const DEFAULT_PLAN = join(
-  ROOT,
-  'docs/superpowers/plans/2026-10-21-python-audio-2-candidate/canonical-plan.json',
-)
-const option = (name: string) => {
-  const index = process.argv.indexOf(name)
-  return index > 0 ? process.argv[index + 1] : undefined
 }
 const APP_ORIGINS = [3005, 3007, 3008].flatMap((p) => [
   `http://localhost:${p}`,
@@ -54,18 +45,11 @@ const APP_ORIGINS = [3005, 3007, 3008].flatMap((p) => [
 ])
 
 if (import.meta.main) {
+  const { deployment, distribution, members, runtime } = await readLocalPythonInput({
+    planFile: option('--plan'),
+    distribution: option('--distribution'),
+  })
   const secrets = ensureSecrets()
-  const text = fs.readFileSync(option('--plan') ?? DEFAULT_PLAN, 'utf8')
-  const plan = JSON.parse(text.slice(text.indexOf('{')))
-  // A mesma distribuição que o plano fixou; cada arquivo ainda é conferido ao gravar no R2.
-  const distribution =
-    option('--distribution') ?? join(DISTRIBUTIONS_DIR, plan.input.distribution.sha256)
-  const deployment = plan.deployment
-  const runtime = {
-    profileId: deployment.release.profileId ?? plan.configuration.hosts[0].runtime.profileId,
-    releaseId: deployment.release.releaseId ?? plan.configuration.hosts[0].runtime.releaseId,
-    manifestSha256: plan.configuration.hosts[0].runtime.manifestSha256,
-  }
 
   const s3Credentials = {
     accessKeyId: secrets.R2_LOCAL_ACCESS_KEY_ID,
@@ -194,7 +178,7 @@ if (import.meta.main) {
   }
   const studioEnv = {
     members: {
-      STUDIO_AUTHORING_POLICY_JSON: JSON.stringify(plan.configuration.members),
+      STUDIO_AUTHORING_POLICY_JSON: JSON.stringify(members),
       STUDIO_RUNTIME_HOSTS_JSON: JSON.stringify([{ runtime, origin: RUNTIME_ORIGIN }]),
     },
     admin: { STUDIO_PYTHON_FRAME_ORIGINS: JSON.stringify([RUNTIME_ORIGIN]) },

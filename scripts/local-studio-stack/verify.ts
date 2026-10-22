@@ -1,4 +1,5 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Verificação HTTP da pilha local pelos BFFs (como o navegador faria, com cookies):
  *  - login de cada conta no Admin (3005), Adulto (3007) e Kids (3008);
@@ -7,7 +8,7 @@
  *  - /api/studio/free-options: o catálogo de ambientes que o Members devolve;
  *  - runtime Python local: frame.html da release publicada.
  *
- *   bun scripts/local-studio-stack/verify.ts
+ *   bun --no-env-file scripts/local-studio-stack/verify.ts
  */
 import fs from 'node:fs'
 import { CREDENTIALS_FILE, readStudioEnv } from './lib'

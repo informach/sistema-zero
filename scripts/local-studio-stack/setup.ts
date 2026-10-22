@@ -1,4 +1,5 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 import { spawnSync } from 'node:child_process'
 /**
  * Provisiona a pilha local do Studio do zero (idempotente; reexecutar só completa o que falta):
@@ -8,17 +9,18 @@ import { spawnSync } from 'node:child_process'
  *     extrai em .cache/tools/postgresql-<versão>, faz initdb em .cache/local-stack/pg
  *     (scram-sha-256, só 127.0.0.1:55432) e cria o banco `sistemazero`. Sem serviço do Windows.
  *  3. Migrations de auth, catalog e members (migrate.ts) e o seed canônico do catálogo.
- *  4. Studio Python local (python-local.ts), se a distribuição aprovada estiver no disco.
+ *  4. Studio Python local (python-local.ts), previamente validado; --without-python o omite.
  *  5. Sobe a pilha (up.ts), publica a jornada Kids inicial pelo bootstrap canônico do Members,
  *     cria as contas de QA (accounts.ts), publica o currículo mínimo e leva o cliente adulto e a
  *     criança ao Estúdio livre pelo progresso real (curriculum.ts, kids-first-course.mjs).
  *
- *   bun scripts/local-studio-stack/setup.ts [--no-start]
+ *   bun --no-env-file scripts/local-studio-stack/setup.ts [--no-start] [--without-python]
  */
 import { createHash } from 'node:crypto'
 import fs from 'node:fs'
 import { join } from 'node:path'
 import {
+  bunArgs,
   CACHE,
   childEnv,
   databaseUrl,
@@ -39,8 +41,15 @@ import {
   serviceEnv,
   startPostgresServer,
 } from './lib'
+import { option, readLocalPythonInput } from './python-input'
 
 const here = (name: string) => join(import.meta.dir, name)
+const pythonInput = process.argv.includes('--without-python')
+  ? undefined
+  : await readLocalPythonInput({
+      planFile: option('--plan'),
+      distribution: option('--distribution') ?? process.env.STUDIO_PYTHON_DISTRIBUTION,
+    })
 const secrets = ensureSecrets()
 
 async function provisionPostgresBinaries() {
@@ -138,9 +147,15 @@ function bootstrapKidsJourney() {
   const membersScript = (...args: string[]) => {
     const r = spawnSync(
       process.execPath,
-      [here('members-script.ts'), 'bootstrap-kids-journey.ts', ...args, '--confirm-rollout-order'],
+      bunArgs([
+        here('members-script.ts'),
+        'bootstrap-kids-journey.ts',
+        ...args,
+        '--confirm-rollout-order',
+      ]),
       {
         cwd: ROOT,
+        env: childEnv({}),
         encoding: 'utf8',
       },
     )
@@ -163,17 +178,21 @@ await provisionPostgresBinaries()
 initDataDir()
 await startPostgresAndDb()
 migrateAndSeed()
-const distribution = process.env.STUDIO_PYTHON_DISTRIBUTION
-const python = spawnSync(
-  process.execPath,
-  [here('python-local.ts'), ...(distribution ? ['--distribution', distribution] : [])],
-  {
-    stdio: 'inherit',
-    env: childEnv({ WRANGLER_SEND_METRICS: 'false' }),
-  },
-)
-if (python.status !== 0)
-  console.log('⚠ Studio Python local não preparado (veja acima); JS segue funcionando')
+if (pythonInput) {
+  run(
+    process.execPath,
+    [
+      here('python-local.ts'),
+      '--plan',
+      pythonInput.planFile,
+      '--distribution',
+      pythonInput.distribution,
+    ],
+    {
+      env: childEnv({ WRANGLER_SEND_METRICS: 'false' }),
+    },
+  )
+}
 
 if (!process.argv.includes('--no-start')) {
   run(process.execPath, [here('up.ts')])
@@ -183,4 +202,6 @@ if (!process.argv.includes('--no-start')) {
   run(process.execPath, [here('curriculum.ts'), 'all'])
   run('node', [here('kids-first-course.mjs')])
 }
-console.log('\n✓ setup concluído. Verificar: bun scripts/local-studio-stack/verify.ts')
+console.log(
+  '\n✓ setup concluído. Verificar: bun --no-env-file scripts/local-studio-stack/verify.ts',
+)

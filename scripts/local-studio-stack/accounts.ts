@@ -1,4 +1,5 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Cria (ou reaplica) as contas de QA locais pelos caminhos canônicos, com a pilha DE PÉ:
  *
@@ -11,7 +12,7 @@
  *
  * As senhas são geradas na primeira execução e ficam SÓ em .cache/local-stack/credentials.json.
  *
- *   bun scripts/local-studio-stack/accounts.ts
+ *   bun --no-env-file scripts/local-studio-stack/accounts.ts
  */
 import { randomBytes, randomUUID } from 'node:crypto'
 import fs from 'node:fs'

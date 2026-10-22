@@ -1,4 +1,5 @@
-#!/usr/bin/env bun
+#!/usr/bin/env -S bun --no-env-file
+import './preflight.mjs'
 /**
  * Currículo mínimo local para os CLIENTES chegarem ao Estúdio livre pela política real.
  * Tudo pelas rotas do Admin (gateway, JWT do admin) e do aluno — nenhuma linha à mão:
@@ -14,7 +15,7 @@
  *  O script conclui a aula como a criança; a publicação no Mural é feita no navegador
  *  (browser-check.mjs kids-mural), pelo mesmo botão do produto.
  *
- *   bun scripts/local-studio-stack/curriculum.ts [author|progress|all]
+ *   bun --no-env-file scripts/local-studio-stack/curriculum.ts [author|progress|all]
  */
 import { randomUUID } from 'node:crypto'
 import fs from 'node:fs'

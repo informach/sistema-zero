@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import './preflight.mjs'
 /**
  * Checagem única no navegador (Chromium headless do Playwright, via Node: o pipe do
  * Playwright não sobe sob o Bun no Windows): entra com uma conta, abre /estudio, abre
