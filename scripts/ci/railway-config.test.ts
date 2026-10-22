@@ -92,8 +92,8 @@ describe('execução do plano Railway', () => {
   })
 
   test('aplica mudanças permitidas pelo plano fixado antes de conferir o estado remoto', () => {
-    const f = execution(plan([build]))
-    runConfig('apply', 'production', f.path, f.exec)
+    const f = execution({ ...plan([build]), environmentId: railwayEnvironments.staging })
+    runConfig('apply', 'staging', f.path, f.exec)
     expect(f.calls.filter((call) => call[0] === 'railway' && call[1] === 'config')).toEqual([
       ['railway', 'config', 'apply', '--plan', f.path, '--yes'],
       ['railway', 'config', 'plan', '--detailed-exit-code'],
@@ -101,10 +101,26 @@ describe('execução do plano Railway', () => {
   })
 
   test.each([false, true])('divergência remota bloqueia o deploy com mudanças=%s', (changed) => {
-    const f = execution(plan(changed ? [build] : []), true)
-    expect(() => runConfig('apply', 'production', f.path, f.exec)).toThrow(
+    const f = execution(
+      { ...plan(changed ? [build] : []), environmentId: railwayEnvironments.staging },
+      true,
+    )
+    expect(() => runConfig('apply', 'staging', f.path, f.exec)).toThrow(
       'Update Postgres networking',
     )
+  })
+
+  test('produção recusa config apply real antes de qualquer mutação; check vazio é readonly', () => {
+    const changed = execution(plan([build]))
+    expect(() => runConfig('apply', 'production', changed.path, changed.exec)).toThrow(
+      'onda operacional',
+    )
+    expect(changed.calls.some((call) => call[0] === 'railway' && call[1] === 'config')).toBe(false)
+    const empty = execution(plan())
+    runConfig('check', 'production', empty.path, empty.exec)
+    expect(empty.calls.filter((call) => call[0] === 'railway' && call[1] === 'config')).toEqual([
+      ['railway', 'config', 'plan', '--detailed-exit-code'],
+    ])
   })
 
   test('mudança no banco é recusada antes de executar qualquer apply', () => {

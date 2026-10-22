@@ -13,9 +13,9 @@ const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
 
 test('only the deployment job receives the larger wall-clock budget', () => {
-  expect(STAGING_DEPLOYMENT_TIMEOUT_MS).toBe(30 * 60 * 1000)
-  expect(STAGING_ROLLOUT_TIMEOUT_MS).toBe(70 * 60 * 1000)
-  expect(deploy).toContain('timeout-minutes: 100')
+  expect(STAGING_DEPLOYMENT_TIMEOUT_MS).toBe(60 * 60 * 1000)
+  expect(STAGING_ROLLOUT_TIMEOUT_MS).toBe(140 * 60 * 1000)
+  expect(deploy).toContain('timeout-minutes: 180')
   expect(deploy).toContain('local deadline=$((SECONDS + 20 * 60))')
   expect(deploy).toContain('while [ "$SECONDS" -lt "$deadline" ]')
   expect(deploy).toContain('HTTP_TIMEOUT=$((REMAINING < 15 ? REMAINING : 15))')

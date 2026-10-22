@@ -14,11 +14,14 @@ import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { stagingJourney, uuidPattern } from '../release/kids-journey-bootstrap.mjs'
-import { resolveKidsJourneyTarget } from '../release/kids-journey-targets.mjs'
+import {
+  productionApplicationIds,
+  resolveKidsJourneyTarget,
+} from '../release/kids-journey-targets.mjs'
 
 // Deployment orchestration only; product/test execution budgets are independent.
-export const STAGING_ROLLOUT_TIMEOUT_MS = 70 * 60 * 1000
-export const STAGING_DEPLOYMENT_TIMEOUT_MS = 30 * 60 * 1000
+export const STAGING_ROLLOUT_TIMEOUT_MS = 140 * 60 * 1000
+export const STAGING_DEPLOYMENT_TIMEOUT_MS = 60 * 60 * 1000
 export const STAGING_DEPLOYMENT_POLL_MS = 10000
 
 // Diagnostics are generated locally. Never serialize an exception, command, API body or token.
@@ -256,7 +259,16 @@ export function prepareSsh(env) {
 
 export function createRailwayPorts(sha, env, identity, options = {}) {
   const targetName = options.target === undefined ? 'staging' : options.target
-  const target = resolveKidsJourneyTarget(targetName)
+  const backendTarget = resolveKidsJourneyTarget(targetName)
+  if (
+    options.applications !== undefined &&
+    (options.applications !== true || targetName !== 'production')
+  )
+    throw new Error('Aplicações exigem destino explícito de produção')
+  const applications = options.applications ? productionApplicationIds(env) : null
+  const target = applications ? { ...backendTarget, ...applications } : backendTarget
+  const serviceKnown = (service) =>
+    ['members', 'auth'].includes(service) || (applications && Object.hasOwn(applications, service))
   if (
     targetName === 'production' &&
     (env.RAILWAY_PROJECT_ID !== target.project ||
@@ -551,6 +563,39 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
   return {
     now,
     log,
+    async requireNativeDisabled(services, deadline = Number.POSITIVE_INFINITY) {
+      if (
+        !applications ||
+        !Array.isArray(services) ||
+        services.some((service) => !Object.hasOwn(applications, service))
+      )
+        throw new Error('Inventário de triggers de produção inválido')
+      for (const service of services) {
+        checkTime(deadline)
+        const data = await gql(
+          'query($p:String!,$e:String!,$s:String!){serviceInstanceAutoDeployStatus(projectId:$p,environmentId:$e,serviceId:$s){enabled}}',
+          { p: target.project, e: target.environment, s: target[service] },
+        )
+        checkTime(deadline)
+        if (data.serviceInstanceAutoDeployStatus?.enabled !== false)
+          throw new Error('Trigger nativo ativo ou desconhecido; nenhuma nova mutação permitida')
+      }
+    },
+    async preflightApplications(services, deadline = Number.POSITIVE_INFINITY) {
+      if (
+        !applications ||
+        !Array.isArray(services) ||
+        services.some((service) => !Object.hasOwn(applications, service))
+      )
+        throw new Error('Seleção de aplicações de produção inválida')
+      for (const service of services) {
+        checkTime(deadline)
+        const current = await single(service)
+        checkTime(deadline)
+        await requireNoPending(service, deadline)
+        before.set(service, [current.id])
+      }
+    },
     async preflight(deadline = Number.POSITIVE_INFINITY) {
       let step = 'cli-version'
       try {
@@ -574,10 +619,11 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       }
     },
     async deploy(service, deadline = Number.POSITIVE_INFINITY) {
-      const label = ['members', 'auth'].includes(service) ? service : 'unknown-service'
+      const label = serviceKnown(service) ? service : 'unknown-service'
       let step = `${label}-active-refresh`
       let mutationOutcome = 'not-attempted'
       try {
+        if (!serviceKnown(service)) throw new Error('Serviço fora do registry da onda')
         checkTime(deadline)
         const adoption = adoptions.get(service)
         if (adoption) {
@@ -637,6 +683,8 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         ])
         checkTime(deadline)
         if (targetName === 'production') await requireNoPending(service, deadline)
+        if (options.beforeDeploy) await options.beforeDeploy(service, deadline)
+        checkTime(deadline)
         step = `${label}-deploy-mutation`
         mutationOutcome = 'unknown'
         log({ stage: step, mutationOutcome })
@@ -660,7 +708,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
       }
     },
     async waitRetired(service, id, rolloutDeadline = Number.POSITIVE_INFINITY) {
-      const label = ['members', 'auth'].includes(service) ? service : 'unknown-service'
+      const label = serviceKnown(service) ? service : 'unknown-service'
       let step = `${label}-first-poll`
       let reason = 'operation-failed'
       let deploymentStatus
@@ -671,6 +719,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
         throw new Error(`Antigos deployments ${service} ainda não retirados; não capturar coorte`)
       }
       try {
+        if (!serviceKnown(service)) throw new Error('Serviço fora do registry da onda')
         log({
           stage: step,
           ...(typeof id === 'string' && uuidPattern.test(id) ? { deployment: id } : {}),
@@ -726,7 +775,7 @@ export function createRailwayPorts(sha, env, identity, options = {}) {
                 checkRetirementTime()
               }
               step = `${label}-admission-probe`
-              probe(service, current, true)
+              if (['members', 'auth'].includes(service)) probe(service, current, true)
               checkRetirementTime()
               return
             }

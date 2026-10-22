@@ -566,9 +566,9 @@ jobs:
     permissions:
       contents: read
       actions: read
-    # Até 70min na onda canônica (30min por backend), 20min para os apps em paralelo
-    # e 10min para preparação/IaC/disparos. Os jobs de testes mantêm seus limites.
-    timeout-minutes: 100
+    # Até 140min na onda canônica (60min por backend), 20min para os apps em paralelo
+    # e 20min para preparação/IaC/disparos. Os jobs de testes mantêm seus limites.
+    timeout-minutes: 180
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API: https://backboard.railway.com/graphql/v2

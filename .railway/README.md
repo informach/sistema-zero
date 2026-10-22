@@ -13,10 +13,14 @@ O Railway usa `ON_FAILURE` como política padrão de reinício. O importador omi
 
 1. Integrar o trabalho em staging. O CI executa todos os testes, aplica a configuração de staging e publica os serviços afetados.
 2. Abrir PR de staging para main. Além dos testes, `railway-config-plan` salva o plano de produção, vinculado ao SHA da pasta `.railway/` e ao estado remoto.
-3. Fazer merge commit. O workflow de configuração aplica exatamente o plano salvo. Os 16 autodeploys de produção usam **Wait for CI** e aguardam esse workflow antes de iniciar.
-4. Conferir os deployments e a sincronização automática de staging com main.
+3. Antes da primeira promoção, desligar os triggers nativos de produção e conferir `enabled=false` para todos os serviços. Branch e `checkSuites` na definição não substituem esse toggle. Congelar operações externas durante a onda.
+4. Fazer merge commit. O workflow de configuração somente confere o plano salvo e a deriva, sem apply. Um plano real não vazio exige uma onda operacional de configuração por fase; não está resolvido automaticamente por este lote.
+5. Executar `Deploy produção` na ref `main`, com o SHA completo e CSV explícito. O controlador confere os nove jobs da mesma tentativa CI do PR, igualdade da árvore promovida, plano aprovado e triggers desligados. Publica Members/Auth na ordem canônica e só libera os aplicativos após V1. Selecione Members e Auth juntos quando houver mudança de backend.
+6. Conferir os deployments e os fluxos reais. O recibo preserva checkpoints e ACKs; falha parcial não autoriza repetir POST desconhecido nem presumir rollback.
 
-Não cancelar o workflow de configuração de produção: ele é pré-requisito do deploy. Fiscal continua sem autodeploy em produção; esta migração não altera seu certificado.
+Não usar Wait for CI como barreira de dados: ele aguarda workflows completos e pode esperar o próprio job que aguarda os deployments. Fiscal mantém seleção deliberada e validação do certificado; nenhum serviço sem deployment saudável será estreado por esse controlador.
+
+O [plano do dono único de CD](../docs/superpowers/plans/2026-10-22-production-cd-owner.md) registra as tarefas pendentes da primeira promoção, inclusive aplicação de configuração por fases com adoção dos ACKs iniciados pelo apply. O gate atual recusa essas mudanças antes de qualquer apply. Não há alegação de configuração conciliada ou produção pronta apenas porque um plano vazio passou.
 
 O secret `RAILWAY_TOKEN` existente é um token de conta. A CLI o recebe como `RAILWAY_API_TOKEN` e vincula explicitamente o projeto e o ambiente antes de cada operação. O gate confere o ambiente do plano e a definição recusa IDs desconhecidos. Nenhuma credencial é gravada no repositório.
 
@@ -87,12 +91,13 @@ observado, conservando os IDs mesmo quando somem de activeDeployments; confere A
 durante a captura e antes/depois da publicação. O container Members confirma seu SHA, service,
 ambiente e deployment antes de executar o CLI produtivo.
 
-O deploy de staging reserva até 30 minutos por espera de backend e 70 minutos para a onda
-canônica inteira, incluindo migrações, captura e publicação. O deployment observado em
-22/10 levou 24min25s até `SUCCESS`; o antigo limite de dez minutos interrompia o operador
-enquanto o Railway ainda construía ou provisionava a réplica. Depois da barreira, os apps
+O deploy de staging e o controlador de produção reservam até 60 minutos por espera de
+backend e 140 minutos para a onda canônica inteira, incluindo migrações, captura e
+publicação. Em 22/10 Members levou 24min25s e Auth cerca de 56 minutos até `SUCCESS`;
+os limites anteriores de dez e trinta minutos interrompiam o operador enquanto o
+Railway ainda construía ou provisionava a réplica. Depois da barreira, os apps
 são disparados em paralelo e compartilham uma espera de 20 minutos reais, com cada chamada
-HTTP limitada a 15 segundos. O job reserva 100 minutos ao todo; os limites dos testes e do
+HTTP limitada a 15 segundos. O job reserva 180 minutos ao todo; os limites dos testes e do
 produto não mudam. Expirar continua bloqueando a liberação e exige retomada explícita,
 sem cancelar ou repetir automaticamente um deployment de resultado pendente.
 
@@ -133,7 +138,8 @@ Referências: [comando oficial](https://docs.railway.com/cli/ssh) e
 [transporte da versão pinada](https://github.com/railwayapp/cli/blob/v5.62.1/src/commands/ssh/native.rs).
 A chave precisa estar cadastrada no mesmo usuário/workspace usado pelo tokenAPI do CI.
 ChavesRailway não têm escopo nativo de ambiente: usar a menor autoridade disponível; o nosso
-wrapper e workflow recusam qualquer ambiente diferente do staging. O runner não registra
+wrapper exige destino explícito de produção com IDs reais quando usado fora de staging;
+o default permanece staging. O runner não registra
 chaves automaticamente, não usa tmux e não desliga a verificação do host.
 
 Procedimento do operador, em terminal confiável, sem imprimir valores privados:

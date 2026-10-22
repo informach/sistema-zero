@@ -78,12 +78,12 @@ export function validatePinnedPlan(plan, environment, tree) {
 
 export function runConfig(command, environment, planPath, exec = execFileSync) {
   if (
-    !['plan', 'apply'].includes(command) ||
+    !['plan', 'apply', 'check'].includes(command) ||
     !planPath ||
     !Object.hasOwn(railwayEnvironments, environment)
   ) {
     throw new Error(
-      'Uso: node scripts/ci/railway-config.mjs <plan|apply> <staging|production> <plano.json>',
+      'Uso: node scripts/ci/railway-config.mjs <plan|apply|check> <staging|production> <plano.json>',
     )
   }
   const git = (...args) => exec('git', args, { encoding: 'utf8' }).trim()
@@ -108,15 +108,29 @@ export function runConfig(command, environment, planPath, exec = execFileSync) {
   if (command === 'plan') railway('config', 'plan', '--out', planPath)
   const plan = JSON.parse(readFileSync(planPath, 'utf8'))
   const changes = validatePinnedPlan(plan, environment, tree)
+  if (environment === 'production' && command !== 'plan') validateProductionRolloutPlan(plan)
   console.log(`${environment}: plano validado, ${changes} alterações, árvore ${tree}`)
-  if (command === 'apply') {
+  if (command === 'apply' || command === 'check') {
     // Na CLI 5.62.1, claim=true ainda envia uma aplicação com changes=[].
     // O deploy de aplicações não deve reaplicar a posse de toda a infraestrutura.
-    if (changes > 0) railway('config', 'apply', '--plan', planPath, '--yes')
+    if (changes > 0 && command === 'apply') railway('config', 'apply', '--plan', planPath, '--yes')
     else console.log(`${environment}: sem alterações; conferindo o estado remoto sem apply`)
     // Inclusive no plano vazio: uma divergência surgida depois do plano bloqueia o deploy.
     railway('config', 'plan', '--detailed-exit-code')
   }
+}
+
+/** CLI config apply can deploy every changed service before the backend barrier. */
+export function validateProductionRolloutPlan(plan) {
+  if (
+    plan.environmentId !== railwayEnvironments.production ||
+    !Array.isArray(plan.changeSet?.changes)
+  )
+    throw new Error('Plano de produção inválido')
+  if (plan.changeSet.changes.length !== 0)
+    throw new Error(
+      'Plano real não vazio exige onda operacional de configuração por fase; nenhum apply permitido',
+    )
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

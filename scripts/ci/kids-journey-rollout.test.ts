@@ -46,13 +46,13 @@ function fixture(options: { published?: boolean; fail?: string; wrongId?: boolea
 }
 
 describe('staging canonical Kids deployment barrier', () => {
-  test('sequential backend deployment and preparation can finish after thirty minutes within the shared seventy', async () => {
+  test('observed Members 24m25 and Auth 56m plus preparation can finish beyond seventy minutes within shared140', async () => {
     const f = fixture({ published: true })
     let elapsed = 0
     f.ports.now = () => elapsed
     const wait = f.ports.waitRetired
     f.ports.waitRetired = async (service, id) => {
-      elapsed += 29 * 60 * 1000
+      elapsed += service === 'auth' ? 56 * 60 * 1000 : (24 * 60 + 25) * 1000
       return wait(service, id)
     }
     const remote = f.ports.remote
@@ -64,7 +64,7 @@ describe('staging canonical Kids deployment barrier', () => {
       status: 'published',
       version: 3,
     })
-    expect(elapsed).toBe(68 * 60 * 1000)
+    expect(elapsed).toBe((24 * 60 + 25 + 56 * 60 + 10 * 60) * 1000)
   })
 
   test('the shared deadline is rechecked after migration before initialize or a new Auth deploy', async () => {
@@ -73,7 +73,7 @@ describe('staging canonical Kids deployment barrier', () => {
     f.ports.now = () => elapsed
     const remote = f.ports.remote
     f.ports.remote = async (action, id, input) => {
-      if (action === 'migrate') elapsed = 70 * 60 * 1000
+      if (action === 'migrate') elapsed = 140 * 60 * 1000
       return remote(action, id, input)
     }
     await expect(runKidsJourneyRollout({ sha, mode: 'deploy' }, f.ports)).rejects.toThrow('limite')
@@ -86,7 +86,7 @@ describe('staging canonical Kids deployment barrier', () => {
     let elapsed = 0
     f.ports.now = () => elapsed
     f.ports.remote = async () => {
-      elapsed = 70 * 60 * 1000
+      elapsed = 140 * 60 * 1000
       return { status: 'published', version: 3 }
     }
     await expect(runKidsJourneyRollout({ sha, mode: 'verify' }, f.ports)).rejects.toThrow('limite')

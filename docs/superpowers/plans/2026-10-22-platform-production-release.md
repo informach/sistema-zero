@@ -74,14 +74,21 @@ Essa lista não inclui Workers, SFU/TURN, R2, banco ou configuração de ofertas
    alterações de outras sessões. Conferir infraestrutura e nomes preservados no IaC.
 3. Corrigir a lacuna do rollout de produção: o wrapper e o controller canônicos
    do artefato implantado são fechados para staging. O novo registry/controller
-   local já admite produção explícita e passou em 90 testes/430 asserções, mas
-   o workflow de produção ainda dispara serviços em paralelo e não implementa
-   a barreira de publicação da jornada.
+   local já admite produção explícita. O novo controlador de produção e seus
+   workflows passaram em revisão independente e em 152 testes/585 asserções do
+   coordenador: plano/CI/SHA conferidos, triggers nativos desligados exigidos e
+   aplicativos somente após a barreira canônica. Esse código ainda precisa ser
+   promovido; o workflow antigo de main não está substituído por este documento.
    Usar destinos explicitamente permitidos e identidade remota real; nunca simular
    o ID de staging no container de produção. Testar a ordem e os casos de falha.
 4. Conferir a relação entre plano de PR, apply, Wait for CI e autodeploys antes do
    merge. O apply não pode antecipar Auth/Members/apps e a espera não pode criar
    deadlock com a própria onda canônica. Não desativar controles para contornar isso.
+   A leitura real de 20:59 UTC encontrou 17 triggers nativos ativos e Fiscal
+   desativado; nenhuma configuração foi alterada nessa leitura. O novo gate
+   recusa esses triggers e qualquer plano IaC não vazio antes de mutações. A
+   primeira promoção exige tratar a configuração por fases; esse impedimento
+   não foi resolvido apenas pela implementação do novo controlador.
 5. Preparar plano de produção próprio e fresco para Python: origens, bucket,
    versões, namespaces, catálogo anterior e retirada de leases. Imagens atuais por
    digest podem ser reutilizadas; identidades/configurações de staging não.

@@ -633,7 +633,7 @@ describe('actual Railway boundary without remote I/O', () => {
     await f.ports.preflight()
     const id = await f.ports.deploy('auth')
     await expect(f.ports.waitRetired('auth', id)).rejects.toThrow('não retirados')
-    expect(f.elapsed()).toBe(30 * 60 * 1000)
+    expect(f.elapsed()).toBe(60 * 60 * 1000)
   })
   test('a deployment taking 24 minutes 25 seconds still requires SHA, retirement and admission', async () => {
     const f = transport({ retire: true, pendingForMs: (24 * 60 + 25) * 1000 })
@@ -645,12 +645,22 @@ describe('actual Railway boundary without remote I/O', () => {
     expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(3)
   })
 
-  test('a deployment still building at thirty minutes never reaches admission', async () => {
-    const f = transport({ retire: true, pendingForMs: 31 * 60 * 1000 })
+  test('observed Auth taking fifty-six minutes now reaches admission only after exact SHA and retirement', async () => {
+    const f = transport({ retire: true, pendingForMs: 56 * 60 * 1000 })
+    await f.ports.preflight()
+    const id = await f.ports.deploy('auth')
+    await f.ports.waitRetired('auth', id)
+    expect(f.elapsed()).toBeGreaterThanOrEqual(56 * 60 * 1000)
+    expect(f.elapsed()).toBeLessThan(60 * 60 * 1000)
+    expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(3)
+  })
+
+  test('a deployment still building at sixty minutes never reaches admission', async () => {
+    const f = transport({ retire: true, pendingForMs: 61 * 60 * 1000 })
     await f.ports.preflight()
     const id = await f.ports.deploy('members')
     await expect(f.ports.waitRetired('members', id)).rejects.toThrow('não retirados')
-    expect(f.elapsed()).toBe(30 * 60 * 1000)
+    expect(f.elapsed()).toBe(60 * 60 * 1000)
     expect(f.commands.filter((command) => command[1] === 'ssh')).toHaveLength(2)
   })
 
@@ -667,7 +677,7 @@ describe('actual Railway boundary without remote I/O', () => {
     const f = transport({
       retire: true,
       reply(query) {
-        if (query.includes('deployment(id:')) f.advance(31 * 60 * 1000)
+        if (query.includes('deployment(id:')) f.advance(61 * 60 * 1000)
         return undefined
       },
     })

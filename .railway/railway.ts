@@ -64,7 +64,9 @@ export default defineRailway((ctx) => {
         deploy: DeployConfig
       }
       return service(name, {
-        // Staging publica pelo CI. O Fiscal mantém seu deploy manual em produção.
+        // Branch/checkSuites são metadados de origem, NÃO o toggle de autodeploy.
+        // Produção usa o dispatch canônico e exige enabled=false observado antes
+        // de IaC/deploy. A ativação operacional desliga os triggers no Railway.
         source: github('informach/sistema-zero', {
           ...(rootServices.has(name) ? { rootDirectory: '/' } : {}),
           ...(!production ? { branch: 'staging' } : {}),
