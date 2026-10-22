@@ -124,3 +124,37 @@ de preservação do ledger após retirada da metadata. Foram 61 testes/211 asser
 verificados novamente pelo root, sem falhas. Não houve alteração de autorização
 em produção. O commit `41c552349` foi publicado em staging local/remoto e iniciou
 o run `39805510567`; seu resultado não deve ser presumido.
+
+## Recursos antigos do serviço de linguagem
+
+O inventário completo da aplicação staging manteve 11 registros históricos
+inativos, sem paginação restante e sem containers ativos, atribuídos ou iniciando.
+Sete nomes correspondem aos recibos anteriores de sessão. Quatro nomes não tinham
+proveniência de owner suficiente para repetir o Close com segurança. Não se
+inventou owner nem se interpretou sucesso idempotente de uma sessão desconhecida
+como destruição física.
+
+Um operador de manutenção efêmero foi revisado com allowlist desses quatro nomes,
+conta/Worker/namespace/aplicação fixados, inventário externo obrigatório e prazo
+curto. O preview remoto usa somente um binding externo para o Sandbox já existente;
+não contém migração, aplicação de container ou endpoint no produto. Os dez
+controles locais passaram. A etapa remota `inspect` comparou os quatro IDs
+derivados com os IDs efetivamente lidos do provider, sem chamar `getStub`/`destroy`,
+e encerrou o preview. O [recibo de inspeção](../../continuity/2026-10-22-python-reference-games-visual-evidence/staging-orphan-inspect-r1.json.snapshot)
+mantém `gateQualified: false`: ainda não houve drain nem cutover.
+
+O [pacote de preparação](../../continuity/2026-10-22-python-reference-games-visual-evidence/staging-orphan-maintenance-prep-r1.json.snapshot)
+preserva os nove arquivos de fonte/plano/controles, com bytes e SHA-256 de cada um,
+para retomar em outra máquina. Não contém credenciais. Para restaurar, criar um
+diretório novo `.cache/python-reference-games/orphan-drain-prep-r1`, conferir o
+hash UTF-8 de cada `content` e gravar cada `name` simples sem sobrescrever arquivos.
+O `plan.json` exige também os pins do checkout e das dependências instaladas.
+O inventário UNBOUND é deliberadamente inválido; usar somente um inventário
+fresco da mesma aplicação e Worker, sem reutilizar as janelas expiradas dos recibos.
+
+Após o CI do código publicado e com callers pausados, executar o drain serial dos
+quatro alvos, guardar ACKs e fazer nova leitura completa do provider. Registros
+históricos inativos podem permanecer; o gate requer zero execução viva/pendente e
+todos os alvos contabilizados. Só então aplicar a migração de namespace. Falha,
+transporte incerto ou divergência de ID mantém o namespace antigo e interrompe
+novos disparos; nenhuma exclusão de aplicação ou fallback de leases é permitida.
