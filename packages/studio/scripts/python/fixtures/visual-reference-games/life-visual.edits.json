@@ -1,0 +1,58 @@
+[
+  {
+    "label": "coordinate",
+    "path": {
+      "body": 51,
+      "inputs": [
+        {
+          "name": "body",
+          "index": 6
+        },
+        {
+          "name": "VALUE",
+          "index": 0
+        },
+        {
+          "name": "elts:0",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "20",
+    "after": "12"
+  },
+  {
+    "label": "speed",
+    "path": {
+      "body": 10,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "150",
+    "after": "90"
+  },
+  {
+    "label": "color",
+    "path": {
+      "body": 17,
+      "inputs": [
+        {
+          "name": "VALUE",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_text",
+    "field": "TEXT",
+    "before": "#4ade80",
+    "after": "#fbbf24"
+  }
+]
