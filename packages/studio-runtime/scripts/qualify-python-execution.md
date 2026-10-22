@@ -1,4 +1,4 @@
-# Qualificar execução Python por HTTP em staging
+# Qualificar execução Python por HTTP no ambiente explícito
 
 Este operador usa a API interna do Runtime já implantado. Abre inputs próprios,
 transfere arquivos pequenos, solicita inspeção/validação e remove seus inputs e
@@ -15,7 +15,7 @@ linha de comando: as três fontes QA limitadas estão no script.
 Use o checkout e o plano canônico da implantação real. O preflight recalcula o
 plano com o verificador existente, incluindo seus artefatos locais; não constrói
 nem baixa uma distribuição ausente. Informe todos os argumentos na forma
---nome=valor. Não existem destino padrão, modo produção, retry ou fallback.
+--nome=valor. Não existem destino padrão, retry ou fallback.
 
 Na raiz do repositório, compile somente o operador QA com Bun 1.3.11 e execute
 com Node 24.22.0. Este bundle não é artefato do runtime nem altera seu fingerprint.
@@ -28,7 +28,12 @@ node .cache/runtime-execution-operator-NOVO.mjs preflight --environment=staging 
 Os pinos acima identificam a implantação 476 do plano 43f7. Para outra implantação,
 forneça seus próprios pinos externamente conferidos e seu plano correspondente;
 não renomeie um hash esperado para aceitar bytes diferentes. A origem do serviço
-é restrita exatamente ao Worker staging acima. O parent deve constar na
+deve corresponder ao ambiente: `staging` aceita exatamente o Worker acima e
+`production` aceita somente `https://sistemazero-studio-runtime.helena-bcc.workers.dev`.
+O plano também deve declarar o mesmo ambiente e origem; trocar somente a flag
+ou usar o plano de staging para produção é recusado. A chamada programática
+também confere o destino antes de qualquer HTTP. Não há herança de qualificação
+entre ambientes. O parent deve constar na
 configuração final do plano e ser distinto do Runtime. O arquivo do plano deve
 ser regular, sem symlink e ter até 2 MB. O diretório pai da saída precisa existir;
 a saída final precisa ser nova.

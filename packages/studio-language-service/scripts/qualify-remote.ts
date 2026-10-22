@@ -18,6 +18,7 @@ import {
   STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES,
   type StudioPythonLanguageBootstrap,
 } from '@sistemazero/core/studio/python-language-bootstrap'
+import { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-runtime-distribution'
 import { z } from 'zod'
 
 const sha = /^[a-f0-9]{64}$/
@@ -29,12 +30,29 @@ const diagnostics = z.array(
   z.object({ code: z.union([z.string(), z.number()]), source: z.literal('Pyright') }),
 )
 const hover = z.object({ text: z.string() })
+const languageOrigins = Object.freeze({
+  staging: 'https://sistemazero-studio-language-staging.helena-bcc.workers.dev',
+  production: 'https://sistemazero-studio-language.helena-bcc.workers.dev',
+})
+function qualificationEnvironment(environment: string, baseUrl: string) {
+  assert(
+    environment === 'staging' || environment === 'production',
+    'Choose an explicit environment',
+  )
+  assert.equal(
+    baseUrl,
+    languageOrigins[environment],
+    'The exact language Worker origin must match the environment',
+  )
+  return environment
+}
 
 export const REMOTE_QUALIFICATION_LIMITS = Object.freeze({
   workMs: 240_000,
   cleanupMs: 60_000,
   totalMs: 300_000,
   admissionMs: 5_000,
+  deploymentBytes: 2_000_000,
   // One fixed fixture, no load escalation/retry if cancellation loses the race.
   cancelLines: 7_000,
 })
@@ -46,6 +64,8 @@ export function parseRemoteQualificationOptions(args: readonly string[]) {
     'environment',
     'base-url',
     'bootstrap',
+    'deployment',
+    'distribution-sha256',
     'manifest-sha256',
     'profile-id',
     'release-id',
@@ -59,7 +79,7 @@ export function parseRemoteQualificationOptions(args: readonly string[]) {
   }
   assert.equal(fields.size, names.length, 'All public inputs are required')
   const get = (name: string) => fields.get(name)!
-  assert.equal(get('environment'), 'staging', 'This qualifier admits staging explicitly only')
+  const environment = qualificationEnvironment(get('environment'), get('base-url'))
   const url = new URL(get('base-url'))
   assert(
     url.protocol === 'https:' &&
@@ -72,15 +92,18 @@ export function parseRemoteQualificationOptions(args: readonly string[]) {
     'An explicit HTTPS origin is required',
   )
   assert(sha.test(get('manifest-sha256')), 'An exact manifest SHA256 is required')
+  assert(sha.test(get('distribution-sha256')), 'An exact distribution SHA256 is required')
   assert(
     identity.test(get('profile-id')) && identity.test(get('release-id')),
     'Invalid release pin',
   )
   return Object.freeze({
     mode,
-    environment: 'staging' as const,
+    environment,
     baseUrl: url.origin,
     bootstrapPath: resolve(get('bootstrap')),
+    deploymentPath: resolve(get('deployment')),
+    distributionSha256: get('distribution-sha256'),
     manifestSha256: get('manifest-sha256'),
     profileId: get('profile-id'),
     releaseId: get('release-id'),
@@ -91,9 +114,20 @@ export type RemoteQualificationOptions = ReturnType<typeof parseRemoteQualificat
 
 export async function pinRemoteQualificationBootstrap(
   raw: unknown,
-  pins: Pick<RemoteQualificationOptions, 'manifestSha256' | 'profileId' | 'releaseId'>,
+  pins: Pick<
+    RemoteQualificationOptions,
+    'manifestSha256' | 'profileId' | 'releaseId' | 'distributionSha256'
+  >,
+  rawDeployment: unknown,
 ) {
   const bootstrap = await createPythonLanguageBootstrap(raw)
+  const deployment = await verifyStudioPythonDeployment(rawDeployment)
+  assert.equal(deployment.distributionSha256, pins.distributionSha256, 'Distribution pin mismatch')
+  assert.equal(
+    canonicalJson(deployment.release),
+    canonicalJson(bootstrap.runtimeRelease),
+    'Deployment and bootstrap releases differ',
+  )
   const release = bootstrap.runtimeRelease
   assert.equal(release.manifestSha256, pins.manifestSha256, 'Manifest pin mismatch')
   assert.equal(release.profileId, pins.profileId, 'Profile pin mismatch')
@@ -116,9 +150,10 @@ type OwnedSession = { id: string; closeAcknowledged: boolean; retired: boolean }
 export interface RemoteQualificationReceipt {
   kind: 'python-language-remote-api'
   state: 'RUNNING' | 'API_PASSED' | 'FAILED' | 'PREFLIGHT_PASSED'
-  environment: 'staging'
+  environment: 'staging' | 'production'
   baseUrl: string
   manifestSha256: string
+  distributionSha256: string
   profileId: string
   releaseId: string
   bootstrapSha256: string
@@ -154,6 +189,7 @@ export async function createRemoteQualificationReceipt(
     environment: options.environment,
     baseUrl: options.baseUrl,
     manifestSha256: options.manifestSha256,
+    distributionSha256: options.distributionSha256,
     profileId: options.profileId,
     releaseId: options.releaseId,
     bootstrapSha256: await sha256Hex(canonicalJson(bootstrap)),
@@ -229,7 +265,9 @@ export async function qualifyRemoteLanguage(input: {
   request?: (request: Request) => Promise<Response>
   signal?: AbortSignal
 }) {
-  const { options, bootstrap, token, receipt, checkpoint } = input
+  const { bootstrap, token, receipt, checkpoint } = input
+  const options = Object.freeze({ ...input.options })
+  qualificationEnvironment(options.environment, options.baseUrl)
   const request = input.request ?? ((request: Request) => fetch(request))
   const binding = randomBytes(32).toString('hex'),
     wrongBinding = randomBytes(32).toString('hex')
@@ -654,7 +692,19 @@ export async function runRemoteQualificationCli(args: readonly string[]) {
   )
   const source = await readFile(options.bootstrapPath, 'utf8')
   assert(Buffer.byteLength(source) <= STUDIO_PYTHON_LANGUAGE_BOOTSTRAP_MAX_BYTES)
-  const bootstrap = await pinRemoteQualificationBootstrap(JSON.parse(source), options)
+  const deploymentFile = await lstat(options.deploymentPath)
+  assert(
+    deploymentFile.isFile() &&
+      !deploymentFile.isSymbolicLink() &&
+      deploymentFile.size <= REMOTE_QUALIFICATION_LIMITS.deploymentBytes,
+  )
+  const deploymentSource = await readFile(options.deploymentPath, 'utf8')
+  assert(Buffer.byteLength(deploymentSource) <= REMOTE_QUALIFICATION_LIMITS.deploymentBytes)
+  const bootstrap = await pinRemoteQualificationBootstrap(
+    JSON.parse(source),
+    options,
+    JSON.parse(deploymentSource),
+  )
   const receipt = await createRemoteQualificationReceipt(options, bootstrap)
   const output = await reserveRemoteQualificationOutput(options.directory, bootstrap, receipt)
   const errors: unknown[] = []

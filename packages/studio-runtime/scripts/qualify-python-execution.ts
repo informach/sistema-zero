@@ -35,6 +35,20 @@ import { verifyPythonPromotionPlan } from './python-promotion-plan'
 
 export const STAGING_PYTHON_RUNTIME_ORIGIN =
   'https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev'
+export const PRODUCTION_PYTHON_RUNTIME_ORIGIN =
+  'https://sistemazero-studio-runtime.helena-bcc.workers.dev'
+function qualificationEnvironment(environment: string, baseUrl: string) {
+  assert(
+    environment === 'staging' || environment === 'production',
+    'Choose an explicit environment.',
+  )
+  assert.equal(
+    baseUrl,
+    environment === 'staging' ? STAGING_PYTHON_RUNTIME_ORIGIN : PRODUCTION_PYTHON_RUNTIME_ORIGIN,
+    'The exact runtime Worker origin must match the environment.',
+  )
+  return environment
+}
 export const PYTHON_EXECUTION_QUALIFICATION_LIMITS = Object.freeze({
   workMs: 240_000,
   cleanupMs: 60_000,
@@ -80,8 +94,7 @@ export function parsePythonExecutionOptions(args: readonly string[]) {
     'Every public pin and path is required.',
   )
   const get = (name: string) => values.get(name)!
-  assert.equal(get('environment'), 'staging')
-  assert.equal(get('base-url'), STAGING_PYTHON_RUNTIME_ORIGIN)
+  const environment = qualificationEnvironment(get('environment'), get('base-url'))
   for (const key of ['plan-sha256', 'manifest-sha256', 'distribution-sha256'])
     assert(/^[a-f0-9]{64}$/.test(get(key)), 'Invalid SHA-256.')
   const parent = new URL(get('parent-origin'))
@@ -95,7 +108,7 @@ export function parsePythonExecutionOptions(args: readonly string[]) {
   )
   return Object.freeze({
     mode,
-    environment: 'staging' as const,
+    environment,
     baseUrl: get('base-url'),
     planPath: resolve(get('plan')),
     planSha256: get('plan-sha256'),
@@ -379,7 +392,7 @@ export async function qualifyPythonExecution(input: {
 }) {
   const { deployment, run, checkpoint, saveCapture } = input
   const options = Object.freeze({ ...input.options })
-  assert(options.baseUrl === STAGING_PYTHON_RUNTIME_ORIGIN && options.environment === 'staging')
+  qualificationEnvironment(options.environment, options.baseUrl)
   assert(
     input.token.trim() === input.token && input.token.length > 0 && !/[\r\n]/.test(input.token),
   )

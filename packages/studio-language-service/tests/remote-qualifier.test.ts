@@ -4,7 +4,13 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { parsePythonLanguageCommand } from '@sistemazero/core/studio/python-language'
 import { StudioPythonLanguageOpenSchema } from '@sistemazero/core/studio/python-language-authorization'
-import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
+import { buildPythonProvidedModuleMetadata } from '@sistemazero/core/studio/python-provided-modules-render'
+import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
+import { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-runtime-distribution'
+import {
+  currentPythonDeployment,
+  providedPythonRelease,
+} from '../../core/tests/fixtures/python-provided-release'
 import {
   createRemoteQualificationReceipt,
   parseRemoteQualificationOptions,
@@ -13,13 +19,33 @@ import {
   reserveRemoteQualificationOutput,
 } from '../scripts/qualify-remote'
 
-async function inputs() {
+async function inputs(environment: 'staging' | 'production' = 'staging') {
   const runtimeRelease = await providedPythonRelease()
+  const original = await currentPythonDeployment()
+  const audio = await buildPythonProvidedModuleMetadata(SZ_AUDIO_MODULE_DESCRIPTOR)
+  const deployment = {
+    release: runtimeRelease,
+    distribution: {
+      ...original.distribution,
+      providedModules: runtimeRelease.manifest.python!.providedModules,
+      files: [
+        ...original.distribution.files,
+        ...[audio.descriptorFile, audio.typingFile].map((file) => ({
+          path: file.path,
+          sha256: file.sha256,
+          bytes: Buffer.byteLength(file.text),
+        })),
+      ],
+    },
+  }
+  const verified = await verifyStudioPythonDeployment(deployment)
   const args = [
     'run',
-    '--environment=staging',
-    '--base-url=https://language.example.test',
+    `--environment=${environment}`,
+    `--base-url=https://sistemazero-studio-language${environment === 'staging' ? '-staging' : ''}.helena-bcc.workers.dev`,
     '--bootstrap=bootstrap.json',
+    '--deployment=deployment.json',
+    `--distribution-sha256=${verified.distributionSha256}`,
     `--manifest-sha256=${runtimeRelease.manifestSha256}`,
     `--profile-id=${runtimeRelease.profileId}`,
     `--release-id=${runtimeRelease.releaseId}`,
@@ -29,21 +55,27 @@ async function inputs() {
   const bootstrap = await pinRemoteQualificationBootstrap(
     { protocolVersion: 1, runtimeRelease },
     options,
+    deployment,
   )
   const receipt = await createRemoteQualificationReceipt(options, bootstrap)
-  return { args, options, bootstrap, receipt }
+  return { args, options, bootstrap, receipt, deployment }
 }
 
-test('remote qualification has no implicit destination, production, credentials or unknown arguments', async () => {
+test('remote qualification has no implicit destination, credentials or unknown arguments', async () => {
   const { args, options } = await inputs()
-  expect(options.baseUrl).toBe('https://language.example.test')
+  expect(options.baseUrl).toBe('https://sistemazero-studio-language-staging.helena-bcc.workers.dev')
   for (const invalid of [
     [],
     args.slice(1),
     args.filter((arg) => !arg.startsWith('--manifest-sha256=')),
+    args.filter((arg) => !arg.startsWith('--distribution-sha256=')),
+    args.filter((arg) => !arg.startsWith('--deployment=')),
     [...args, '--token=secret'],
     [...args, '--environment=staging'],
     args.map((arg) => (arg === '--environment=staging' ? '--environment=production' : arg)),
+    args.map((arg) =>
+      arg.startsWith('--base-url=') ? '--base-url=https://language.example.test' : arg,
+    ),
     args.map((arg) => (arg.startsWith('--base-url=') ? '--base-url=http://localhost' : arg)),
     args.map((arg) =>
       arg.startsWith('--base-url=') ? '--base-url=https://u:p@example.test' : arg,
@@ -56,18 +88,41 @@ test('remote qualification has no implicit destination, production, credentials 
     expect(() => parseRemoteQualificationOptions(invalid)).toThrow()
 })
 
+test('production requires its explicit environment and exact language Worker origin', async () => {
+  const { args } = await inputs()
+  const production = args.map((arg) =>
+    arg === '--environment=staging'
+      ? '--environment=production'
+      : arg.replace('sistemazero-studio-language-staging.', 'sistemazero-studio-language.'),
+  )
+  const options = parseRemoteQualificationOptions(production)
+  expect(options.environment).toBe('production')
+  expect(options.baseUrl).toBe('https://sistemazero-studio-language.helena-bcc.workers.dev')
+  for (const invalid of [
+    production.map((arg) => arg.replace('--environment=production', '--environment=staging')),
+    production.map((arg) =>
+      arg.replace('sistemazero-studio-language.', 'sistemazero-studio-runtime.'),
+    ),
+    production.map((arg) => arg.replace('--environment=production', '--environment=prod')),
+  ])
+    expect(() => parseRemoteQualificationOptions(invalid)).toThrow()
+})
+
 test('canonical release integrity and all external pins are verified before remote work', async () => {
-  const { options, bootstrap } = await inputs()
-  expect(await pinRemoteQualificationBootstrap(bootstrap, options)).toEqual(bootstrap)
+  const { options, bootstrap, deployment } = await inputs()
+  expect(await pinRemoteQualificationBootstrap(bootstrap, options, deployment)).toEqual(bootstrap)
   for (const changed of [
     { manifestSha256: '0'.repeat(64) },
     { releaseId: 'another' },
     { profileId: 'another' },
+    { distributionSha256: '0'.repeat(64) },
   ])
     await expect(
-      pinRemoteQualificationBootstrap(bootstrap, { ...options, ...changed }),
+      pinRemoteQualificationBootstrap(bootstrap, { ...options, ...changed }, deployment),
     ).rejects.toThrow()
-  await expect(pinRemoteQualificationBootstrap({ protocolVersion: 1 }, options)).rejects.toThrow()
+  await expect(
+    pinRemoteQualificationBootstrap({ protocolVersion: 1 }, options, deployment),
+  ).rejects.toThrow()
   await expect(
     pinRemoteQualificationBootstrap(
       {
@@ -78,8 +133,17 @@ test('canonical release integrity and all external pins are verified before remo
         },
       },
       { ...options, manifestSha256: '0'.repeat(64) },
+      deployment,
     ),
   ).rejects.toThrow('release hash mismatch')
+  await expect(
+    pinRemoteQualificationBootstrap(bootstrap, options, await currentPythonDeployment()),
+  ).rejects.toThrow()
+  const changedDistribution = structuredClone(deployment)
+  changedDistribution.distribution.files[0]!.bytes += 1
+  await expect(
+    pinRemoteQualificationBootstrap(bootstrap, options, changedDistribution),
+  ).rejects.toThrow('Distribution pin mismatch')
 })
 
 test('receipt is RUNNING before dispatch and output cannot reuse an existing directory', async () => {
@@ -242,6 +306,38 @@ test('a completed target and cancel ACK do not qualify cancellation or the overa
   expect(receipt.cancellation).toBe('target-completed-first')
   expect(receipt.cancellationQualified).toBe(false)
   expect(receipt.overallQualified).toBe(false)
+})
+
+test('production transport keeps its own origin and receipt; a crossed target is rejected before requests', async () => {
+  const prepared = await inputs('production'),
+    transport = boundary()
+  const crossed = {
+    ...prepared.options,
+    baseUrl: 'https://sistemazero-studio-language-staging.helena-bcc.workers.dev',
+  }
+  await expect(
+    qualifyRemoteLanguage({
+      ...prepared,
+      options: crossed,
+      token,
+      checkpoint: async () => {},
+      request: transport.request,
+    }),
+  ).rejects.toThrow()
+  expect(transport.requests).toHaveLength(0)
+  const result = await qualifyRemoteLanguage({
+    ...prepared,
+    token,
+    checkpoint: async () => {},
+    request: transport.request,
+  })
+  expect(result.environment).toBe('production')
+  expect(result.state).toBe('API_PASSED')
+  expect(result.physicalCleanupVerified).toBe(false)
+  expect(new Set(transport.requests.map((request) => new URL(request.url).origin))).toEqual(
+    new Set(['https://sistemazero-studio-language.helena-bcc.workers.dev']),
+  )
+  expect(transport.ids.size).toBe(0)
 })
 
 test('wrong target reply fails despite a successful cancel ACK and still closes both reservations', async () => {

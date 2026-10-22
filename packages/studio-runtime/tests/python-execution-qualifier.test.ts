@@ -15,7 +15,7 @@ const flags = [
   '--out=new-receipt',
 ]
 
-test('the qualifier requires all explicit pins and only the exact staging origin', () => {
+test('the qualifier requires all explicit pins and an origin matching its environment', () => {
   expect(parsePythonExecutionOptions(['preflight', ...flags]).mode).toBe('preflight')
   expect(parsePythonExecutionOptions(['run', ...flags]).baseUrl).toBe(STAGING_PYTHON_RUNTIME_ORIGIN)
   for (const args of [
@@ -29,6 +29,25 @@ test('the qualifier requires all explicit pins and only the exact staging origin
     ],
   ])
     expect(() => parsePythonExecutionOptions(args)).toThrow()
+})
+
+test('production execution requires the production environment and exact runtime Worker', () => {
+  const production = flags.map((flag) =>
+    flag
+      .replace('environment=staging', 'environment=production')
+      .replace('sistemazero-studio-runtime-staging.', 'sistemazero-studio-runtime.'),
+  )
+  const options = parsePythonExecutionOptions(['preflight', ...production])
+  expect(options.environment).toBe('production')
+  expect(options.baseUrl).toBe('https://sistemazero-studio-runtime.helena-bcc.workers.dev')
+  for (const invalid of [
+    production.map((flag) => flag.replace('environment=production', 'environment=staging')),
+    production.map((flag) =>
+      flag.replace('sistemazero-studio-runtime.', 'sistemazero-studio-language.'),
+    ),
+    production.map((flag) => flag.replace('environment=production', 'environment=prod')),
+  ])
+    expect(() => parsePythonExecutionOptions(['run', ...invalid])).toThrow()
 })
 
 import { createHash, randomUUID } from 'node:crypto'
@@ -185,12 +204,15 @@ type Fault =
   | 'stream-too-large'
   | 'receipt-recipe'
   | 'preview-cleanup-503'
-async function harness(fault?: Fault) {
+async function harness(fault?: Fault, environment: 'staging' | 'production' = 'staging') {
   const payload = await currentPythonDeployment()
   const deployment = await verifyStudioPythonDeployment(payload)
   const options = parsePythonExecutionOptions([
     'run',
     ...flags.map((flag) => {
+      if (flag.startsWith('--environment=')) return `--environment=${environment}`
+      if (environment === 'production' && flag.startsWith('--base-url='))
+        return '--base-url=https://sistemazero-studio-runtime.helena-bcc.workers.dev'
       if (flag.startsWith('--manifest-sha256='))
         return `--manifest-sha256=${deployment.release.manifestSha256}`
       if (flag.startsWith('--distribution-sha256='))
@@ -465,6 +487,34 @@ test('all three API oracles bind real Core schemas, callbacks and PNG; retiremen
     'stderr',
   ])
     expect(text.includes(forbidden)).toBe(false)
+})
+
+test('production API flow preserves all oracles and cleanup; crossed targets fail before dispatch', async () => {
+  const h = await harness(undefined, 'production')
+  await expect(
+    qualifyPythonExecution({
+      options: { ...h.options, baseUrl: STAGING_PYTHON_RUNTIME_ORIGIN },
+      deployment: h.deployment,
+      run: h.run,
+      token: 'fake-secret',
+      checkpoint: async () => {},
+      fetchImpl: h.fetchImpl,
+    }),
+  ).rejects.toThrow()
+  expect(h.calls).toHaveLength(0)
+  const origins = new Set<string>()
+  const receipt = await h.execute({
+    fetchImpl: async (url, init) => {
+      origins.add(new URL(url).origin)
+      return h.fetchImpl(url, init)
+    },
+  })
+  expect(receipt.environment).toBe('production')
+  expect(receipt.status).toBe('API_PASSED')
+  expect(receipt.cases.map((item) => item.oraclePassed)).toEqual([true, true, true])
+  expect(receipt.logicalCleanupConfirmed).toBe(true)
+  expect(receipt.overallQualified).toBe(false)
+  expect(origins).toEqual(new Set(['https://sistemazero-studio-runtime.helena-bcc.workers.dev']))
 })
 
 test('a changed plan pin is rejected before artifact reads or any remote operation', async () => {
