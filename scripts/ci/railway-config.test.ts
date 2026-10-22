@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import {
+  PRODUCTION_APPLICATION_NAMES,
+  PRODUCTION_GITHUB_SOURCES,
+  productionSource,
+} from '../../.railway/production-sources'
 import {
   railwayCliVersion,
   railwayEnvironments,
@@ -189,32 +194,70 @@ describe('gate do plano Railway', () => {
       )
     }
   })
-  test('produção mantém main sem rearmar Wait for CI; staging e Fiscal mantêm publicação controlada', () => {
-    const source = {
-      ...build,
-      field: 'source',
-      after: { type: 'github', repo: 'informach/sistema-zero', branch: 'main' },
+  test.each([
+    'production',
+    'staging',
+  ])('qualquer atualização de origem exige operação explícita em %s', (environment) => {
+    for (const address of ['service.members', 'service.admin', 'service.fiscal']) {
+      for (const after of [
+        { type: 'github', repo: 'informach/sistema-zero', branch: 'main' },
+        { type: 'github', repo: 'informach/sistema-zero' },
+        { type: 'github', repo: 'informach/sistema-zero', branch: 'main', checkSuites: true },
+        { type: 'github', repo: 'informach/sistema-zero', branch: 'main', checkSuites: false },
+        null,
+      ]) {
+        const source = { ...build, address, field: 'source', after }
+        const saved = { ...plan([source]), environmentId: railwayEnvironments[environment] }
+        expect(() => validatePinnedPlan(saved, environment, tree)).toThrow('escopo')
+        const executionFixture = execution(saved)
+        expect(() =>
+          runConfig('apply', environment, executionFixture.path, executionFixture.exec),
+        ).toThrow('escopo')
+        expect(
+          executionFixture.calls.some((call) => call[0] === 'railway' && call[1] === 'config'),
+        ).toBe(false)
+      }
     }
-    expect(validatePinnedPlan(plan([source]), 'production', tree)).toBe(1)
-    for (const after of [
-      { ...source.after, branch: 'staging' },
-      { ...source.after, branch: undefined },
-      { ...source.after, checkSuites: true },
-      { ...source.after, checkSuites: false },
-    ]) {
-      expect(() => validatePinnedPlan(plan([{ ...source, after }]), 'production', tree)).toThrow(
-        'gatilho',
-      )
+  })
+})
+
+describe('origens de produção qualificadas após native off', () => {
+  test('toda aplicação tem um literal fechado e nomes novos recusam antes de criar recursos', () => {
+    const services = readdirSync(new URL('../../.railway/services/', import.meta.url))
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => name.slice(0, -5))
+      .sort()
+    expect([...PRODUCTION_APPLICATION_NAMES].sort()).toEqual(services)
+    for (const name of services) {
+      const source = productionSource(name)
+      expect(source).toMatchObject({ type: 'github', repo: 'informach/sistema-zero' })
+      expect(Object.hasOwn(source, 'checkSuites')).toBe(false)
     }
-    expect(() =>
-      validatePinnedPlan(plan([{ ...source, address: 'service.fiscal' }]), 'production', tree),
-    ).toThrow('gatilho')
-    expect(() =>
-      validatePinnedPlan(
-        { ...plan([source]), environmentId: railwayEnvironments.staging },
-        'staging',
-        tree,
-      ),
-    ).toThrow('gatilho')
+    expect(() => productionSource('novo-servico')).toThrow('sem origem')
+    expect(() => productionSource('toString')).toThrow('sem origem')
+  })
+  test('branch ausente permanece ausente, sem o default main do helper GitHub', () => {
+    const absent = [
+      'fiscal',
+      'helpdesk',
+      'helpdesk-app',
+      'hub',
+      'marketing',
+      'marketing-app',
+      'referrals',
+    ]
+    expect(
+      Object.entries(PRODUCTION_GITHUB_SOURCES)
+        .filter(([, source]) => !Object.hasOwn(source, 'branch'))
+        .map(([name]) => name)
+        .sort(),
+    ).toEqual(absent)
+    for (const name of PRODUCTION_APPLICATION_NAMES) {
+      const source = productionSource(name)
+      if (Object.hasOwn(source, 'branch')) expect(source.branch).toBe('main')
+    }
+    expect(productionSource('members').rootDirectory).toBe('/')
+    expect(Object.hasOwn(productionSource('helpdesk'), 'rootDirectory')).toBe(false)
+    expect(Object.hasOwn(productionSource('helpdesk'), 'branch')).toBe(false)
   })
 })

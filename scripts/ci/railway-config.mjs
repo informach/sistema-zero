@@ -55,23 +55,10 @@ export function validatePinnedPlan(plan, environment, tree) {
       change.severity !== 'safe' ||
       !change.address?.startsWith('service.') ||
       !applicationNames.has(name) ||
-      !['build', 'deploy', 'source'].includes(change.field) ||
+      !['build', 'deploy'].includes(change.field) ||
       !change.after
     ) {
       throw new Error(`Mudança fora do escopo automático: ${change.summary ?? change.kind}`)
-    }
-    // O dono único de produção não declara Wait for CI. O toggle enabled=false
-    // continua sendo conferido no provedor, independentemente destes metadados.
-    if (
-      change.field === 'source' &&
-      (environment !== 'production' ||
-        name === 'fiscal' ||
-        change.after.type !== 'github' ||
-        change.after.repo !== 'informach/sistema-zero' ||
-        change.after.branch !== 'main' ||
-        Object.hasOwn(change.after, 'checkSuites'))
-    ) {
-      throw new Error('Origem ou gatilho de deploy inesperado')
     }
   }
   return plan.changeSet.changes.length

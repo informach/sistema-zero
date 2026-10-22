@@ -10,6 +10,7 @@ import {
   service,
   volume,
 } from 'railway/iac'
+import { productionSource } from './production-sources.ts'
 import { preservedVariables } from './variables.ts'
 
 const projectId = '415d5a1c-5f75-432c-8445-b395d0977ce3'
@@ -64,15 +65,13 @@ export default defineRailway((ctx) => {
         deploy: DeployConfig
       }
       return service(name, {
-        // Branch não substitui a conferência do toggle de autodeploy.
-        // Produção usa o dispatch canônico e exige enabled=false observado antes
-        // de IaC/deploy. O toggle oficial remove checkSuites; não o redeclarar
-        // aqui, pois isso cria drift contra o estado de publicação manual.
-        source: github('informach/sistema-zero', {
-          ...(rootServices.has(name) ? { rootDirectory: '/' } : {}),
-          ...(!production ? { branch: 'staging' } : {}),
-          ...(production && name !== 'fiscal' ? { branch: 'main' } : {}),
-        }),
+        // Native off can remove branch; preserve the qualified literal source.
+        source: production
+          ? productionSource(name)
+          : github('informach/sistema-zero', {
+              ...(rootServices.has(name) ? { rootDirectory: '/' } : {}),
+              branch: 'staging',
+            }),
         build: config.build,
         deploy: config.deploy,
         replicas: { 'us-west2': 1 },

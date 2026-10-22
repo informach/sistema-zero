@@ -4,16 +4,17 @@ Esta pasta substitui os 17 arquivos `packages/*/railway.json`. O formato antigo 
 
 - `railway.ts`: projeto, serviços, Postgres, Evolution e volumes existentes.
 - `services/*.json`: Dockerfile, padrões de arquivos, preDeploy, comando inicial e healthcheck de cada aplicação.
+- `production-sources.ts`: origens literais dos 18 serviços após desligamento nativo, sem defaults de branch.
 - `variables.ts`: nomes das variáveis que devem permanecer no Railway. Não contém valores nem credenciais.
 - `package-lock.json`: SDK Railway 3.11.0. A automação fixa a CLI em 5.62.1 e usa Node 24.
 
-O Railway usa `ON_FAILURE` como política padrão de reinício. O importador omite esse padrão; os serviços mantêm três tentativas em `restartPolicyMaxRetries`. Os nomes e tamanhos dos volumes refletem recursos existentes, sem recriação. Staging tem origem na branch staging, com autodeploy nativo desligado; produção acompanha main.
+O Railway usa `ON_FAILURE` como política padrão de reinício. O importador omite esse padrão; os serviços mantêm três tentativas em `restartPolicyMaxRetries`. Os nomes e tamanhos dos volumes refletem recursos existentes, sem recriação. Staging tem origem na branch staging, com autodeploy nativo desligado. Em produção, o controlador valida main e envia o commit SHA explícito; o mapa de origens preserva exatamente a presença ou ausência de branch observada após o desligamento nativo.
 
 ## Próximo deploy
 
 1. Integrar o trabalho em staging. O CI executa todos os testes, aplica a configuração de staging e publica os serviços afetados.
 2. Abrir PR de staging para main. Além dos testes, `railway-config-plan` salva o plano de produção, vinculado ao SHA da pasta `.railway/` e ao estado remoto.
-3. Antes da primeira promoção, desligar os triggers nativos de produção e conferir `enabled=false` para todos os serviços. A mutação oficial remove `source.checkSuites`; a definição mantém `branch: main` sem redeclarar esse campo. Ausência de `checkSuites` não substitui a leitura do toggle. Congelar operações externas durante a onda.
+3. Antes da primeira promoção, desligar os triggers nativos de produção e conferir `enabled=false` para todos os serviços. A mutação oficial pode remover `source.checkSuites` e também `source.branch`. O mapa literal preserva essa forma exata sem restaurar branch nem usar o default do helper GitHub. Ausência desses campos não substitui a leitura do toggle. Congelar operações externas durante a onda.
 4. Fazer merge commit. O workflow de configuração somente confere o plano salvo e a deriva, sem apply. Um plano real não vazio exige uma onda operacional de configuração por fase; não está resolvido automaticamente por este lote.
 5. Executar `Deploy produção` na ref `main`, com o SHA completo e CSV explícito. O controlador confere os nove jobs da mesma tentativa CI do PR, igualdade da árvore promovida, plano aprovado e triggers desligados. Publica Members/Auth na ordem canônica e só libera os aplicativos após V1. Selecione Members e Auth juntos quando houver mudança de backend.
 6. Conferir os deployments e os fluxos reais. O recibo preserva checkpoints e ACKs; falha parcial não autoriza repetir POST desconhecido nem presumir rollback.
@@ -32,7 +33,7 @@ O apply do Railway pode iniciar deployments quando altera build ou deploy. Por i
 
 Ao adicionar uma variável pelo painel, inclua seu nome em `variables.ts`, na lista comum ou na lista específica do ambiente. Use `preserve()` para manter seu valor no Railway. Se o nome estiver ausente, o plano mostrará uma exclusão e o gate impedirá a aplicação. Alterar apenas o valor de uma variável preservada não exige editar o repositório.
 
-O gate automático aceita somente alterações seguras de build, deploy e origem das aplicações existentes. Recusa mudanças em variáveis, domínios, bancos, volumes, Evolution e operações destrutivas. Alterações nesses recursos precisam de um plano operacional específico.
+O gate automático aceita somente alterações seguras de build e deploy das aplicações existentes. Toda alteração de origem é recusada, inclusive main sem checkSuites: mudanças de repo, branch ou trigger exigem operação explícita, com nova leitura dos 18 toggles e da configuração. Também recusa mudanças em variáveis, domínios, bancos, volumes, Evolution e operações destrutivas. Não omitir source para tentar preservá-lo: a CLI pode traduzir isso em source:null.
 
 ## Conferir localmente
 

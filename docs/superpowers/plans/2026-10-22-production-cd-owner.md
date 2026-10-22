@@ -90,8 +90,41 @@ ETag da configuração. O primeiro operador parou após esse único ACK; nenhum
 outro serviço foi alterado por aquela tentativa e o recibo parcial foi preservado.
 
 A declaração anterior de `checkSuites:true` conflitava com esse estado real.
-A definição e o validador passaram a manter `branch:main` sem o campo, recusando
-sua reintrodução tanto true quanto false. Isso não transforma metadados de
+A primeira correção manteve `branch:main` sem o campo, mas a leitura seguinte
+mostrou que essa forma não é uniforme entre serviços. Essa etapa intermediária
+foi substituída pelo mapa literal descrito abaixo. Isso não transforma metadados de
 origem em toggle: `serviceInstanceAutoDeployStatus.enabled=false` continua
-obrigatório para todos os serviços e antes dos POSTs. Os 16 alvos restantes
-exigem novo plano e leitura própria; não repetir a operação já confirmada do Admin.
+obrigatório para todos os serviços e antes dos POSTs. Os alvos restantes foram conciliados nas etapas seguintes, sem repetir a operação
+já confirmada do Admin.
+
+
+## Origens literais e 18 toggles desligados
+
+R3 confirmou seis novas transições completas e parou após o ACK do Helpdesk:
+nesse serviço, o desligamento também removeu branch. O recibo NEG foi preservado.
+A reconstrução da configuração inteira com os source.before do plano anterior
+reproduziu o hash original, sem drift de variáveis, build, deploy ou volumes.
+R4 permitiu duas previsões literais só no próprio alvo reconhecido: remover
+checkSuites, ou remover checkSuites e branch. Os nove ACKs e readbacks restantes
+concluíram com os 18 toggles false, pending zero e deployments ativos preservados.
+Isso não é deploy de aplicativos nem prova dos fluxos de produção.
+
+A definição agora usa production-sources.ts com os 18 nomes fechados, repo e
+rootDirectory atuais, branch main somente onde foi preservada e ausência exata
+onde foi removida. Nome novo ou desconhecido recusa antes de criar recurso.
+Staging mantém seu helper e sua branch. O helper github() injeta main por default;
+por isso não deve reconstruir a origem de produção. Omissão de source também não
+serve: a CLI 5.62.1 a compara como null e pode desconectar a origem.
+
+A extração posterior ficou vinculada ao recibo R4 SHA
+719ef0ddb725f5e32f05e007b946632e061388d76af40acdc62b57515a4d04ff,
+configuração SHA 4d09835a59654a69d01a4d12165875891c98649678e9322130d71745154d99ab
+e ETag 5ea7995731e991d30c80b708e3d872dbe0cbc1040571af21517bfc78c02e9cef.
+O candidato independente passou no planner real com zero mudanças e nenhum apply.
+O gate automático passou a recusar toda source update, nos dois ambientes, mesmo
+rotulada segura. Alteração futura de origem exige operação específica e readback
+nativo completo; não há ciclo off, IaC e off para esconder uma reativação.
+
+Main e commitSha continuam sendo autoridades do controlador canônico. A aceitação
+real de um novo deploy do Helpdesk com branch ausente permanece pendente até sua
+onda: o planner sem drift não equivale a esse ensaio, nem a produção pronta.
