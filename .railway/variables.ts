@@ -308,6 +308,9 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   members: [
+    'STUDIO_AI_VAULT_KEYS',
+    'STUDIO_AI_VAULT_ACTIVE_ID',
+    'STUDIO_AI_CALLBACK_ORIGINS',
     'STUDIO_AUTHORING_POLICY_JSON',
     'STUDIO_RUNTIME_HOSTS_JSON',
     'STUDIO_PYTHON_RUNTIME_URL',
@@ -390,6 +393,8 @@ const common: Record<string, string[]> = {
     'VIMEO_WHITELIST_DOMAINS',
   ],
   'community-kids': [
+    'STUDIO_AI_RECONCILE_CRON_SECRET',
+    'FUNNEL_URL',
     'STUDIO_PYTHON_FRAME_ORIGINS',
     'STUDIO_PYTHON_RUNTIME_URL',
     'STUDIO_PYTHON_RUNTIME_TOKEN',

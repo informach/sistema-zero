@@ -53,3 +53,11 @@ ID recusam o POST. O mesmo verificador exige SHA/contexto e deployment único
 saudável depois da implantação, mesmo sem predecessor. Os testes focados do
 controlador, portas e workflows passaram em 142 casos/572 asserções; isso ainda
 não é uma implantação do gravador ou prova de mídia.
+
+O Worker `packages/studio-ai-reconcile-cron` foi implementado separadamente,
+com manifesto por ambiente e sem cron no destino base não configurado. Revisão
+independente conferiu a rota real Kids e seu contrato. O coordenador repetiu
+60 testes/136 asserções do Worker/IaC; tipagem focada e tipos Wrangler foram
+verificados pelo responsável pelo lote. A atualização de lock adiciona somente
+o workspace, sem novas versões de dependências. O fingerprint Runtime `ae46…`
+continua conferindo. Nenhum scheduler foi implantado ou ligado por esses testes.
