@@ -106,7 +106,7 @@ createRoot(root).render(
             className="min-w-0 overflow-visible!"
           >
             <div className="sz-lesson-block" style={{ aspectRatio: '16 / 9' }}>
-              Vídeo da fase
+              Vídeo da aula
             </div>
           </Panel>
           <PanelResizeHandle
