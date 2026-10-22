@@ -291,3 +291,98 @@ Não houve retry, evidência inválida nem processo/porta própria retida. O tem
 medido parte do editor/parser/console preparados e não inclui vídeo nem aceite
 no computador de referência. A causa da ultrapassagem permanece em investigação;
 este recibo não é aprovação de F1 nem autoriza relaxar sua meta.
+
+## Implantação efetiva da candidata atual
+
+Em 22/10, os nove jobs de verificação do commit
+`001ce078891cef0e03d5f9d3926653668e2b6c5f` passaram no run `39827084913`.
+A etapa Railway dessa primeira tentativa expirou aguardando o Members ainda
+`DEPLOYING`; não houve liberação dos aplicativos por essa barreira. Às 19:03 UTC,
+uma consulta independente confirmou o deployment `1e2d1e6a-f77b-4aa9-9bbd-f7fb989caa9e`
+em `SUCCESS`, com `http.listening`, e o anterior `REMOVED`. Nenhum cancelamento
+foi enviado. A retomada explícita usa `gh run rerun 39827084913 --failed`, no
+mesmo commit, preservando os nove resultados verdes e todo o range original.
+A saúde desse Members, por si só, não comprova a conclusão das migrations,
+publicação da jornada, Auth e aplicativos pela onda canônica.
+
+A tentativa 2 também expirou às 19:16:58 UTC em `members-deployment-poll`.
+Seu deployment `85626718-7e61-442b-bb33-f48cfd8561f7` continuava `BUILDING`
+na leitura de 19:18 UTC; o anterior `1e2d…` permanecia `SUCCESS`.
+Isso é falha da etapa de implantação, não dos nove checks aprovados. Nenhuma
+terceira tentativa automática foi disparada nem o build pendente foi cancelado.
+O timeout chamado `retirement-timeout` é genérico: nesta tentativa a implantação
+nem chegara à fase de retirada. Conferir seu estado antes de retomar a onda;
+não publicar aplicativos pulando a barreira nem declarar o run inteiro verde.
+
+O Cloudflare staging recebeu as imagens atuais e a distribuição `476d32…`:
+
+| Componente | Identidade efetivamente lida |
+|---|---|
+| Runtime Worker | `3db34366-b1e2-4528-8d3b-f3875e34341f` |
+| Catálogo Runtime R2 | `3c69eea36bfb14db88679a7e32bc7b61c69e05095d2794f1aabf4ab54985b230` |
+| Language Worker | `991d09f7-3474-48c6-880c-e4ffe6baa04a` |
+| Migração Language | `language-sessions-initial` |
+| Novo namespace Sessions | `e6c5eb8011df471b985f34aac7002edf` |
+| Sandbox preservado | `fb9d81d3e52b489faf23ed8c74cea71a` |
+| Plano canônico real | `43f7c218d08b00d4a91dd360ffaf53970316d9d3048dd307e59289fc72fd6725` |
+
+Antes da migração, sete sessões QA conhecidas receberam `closed:true` e quatro
+órfãos identificados receberam ACK de destroy. A leitura seguinte ainda mostrou
+quatro vínculos físicos; essa negativa foi preservada e impediu o corte. Sem
+outro destroy, uma nova consulta mostrou zero instâncias físicas e zero
+`active/assigned/scheduling/starting`, com os onze nomes históricos contabilizados.
+Só então o namespace antigo foi excluído. A primeira invocação usou por engano o
+Wrangler 4.98.0 da raiz; a configuração foi reaplicada com o binário explícito
+4.120.1, e a versão acima foi conferida externamente. Os recibos distinguem as
+duas versões, sem atribuir retroativamente a primeira ao binário pinado.
+
+A referência antiga de catálogo Runtime foi retirada e sua ausência conferida
+antes de regenerar o plano. As origens existentes de preview e frames foram
+preservadas; Members, Admin, Community e Kids continuavam sem catálogo/hosts.
+O promotor canônico realizou o upload imutável nativo R2. Uma leitura independente
+conferiu corpo, tamanho e checksum nativo SHA256 dos 43 objetos: 41 arquivos,
+`complete.json` e catálogo. O proxy foi encerrado. Só depois o catálogo novo foi
+ativado no Runtime. As duas regras temporárias de um dia foram adicionadas aos
+prefixos `python-inputs/` e `python-input-states/`, preservando multipart/previews
+e os arquivos permanentes.
+
+A primeira tentativa de conexão do promotor em Bun foi interrompida após 200 s
+sem readiness; os processos locais próprios foram encerrados, e seu resultado
+de upload não foi presumido. A execução seguinte usou o mesmo operador canônico,
+compilado com Bun e executado em Node 24.22, com Wrangler externo 4.120.1. Ela
+terminou zero, embora o SDK tenha registrado três referências de erro interno.
+O readback independente completo passou. Isso não demonstra uma causa específica
+em Bun, Node ou no provedor, nem permite apagar a tentativa negativa.
+
+As provas hospedadas efetivamente executadas são:
+
+- API Language: Open/Start/Sync, consultas Pyright reais, assinatura `sz_audio`,
+  erro de argumento e sua correção, rejeição de release/contexto/revisão, quota,
+  cancelamento da consulta alvo e Close/retirada das duas sessões. Passou em
+  15,3 s. Uma leitura posterior da aplicação exata confirmou zero containers
+  vivos/pendentes. Não prova cancelamento durante startup ou autorização BFF.
+- Delivery público: metadata, arquivos públicos, doze representações gzip em
+  bytes brutos, tamanho/SHA/MIME/ETag, HEAD/304, HTML sem cache, CSP com origens
+  exatas e artefatos internos indisponíveis. Passou. Não executa jogos nem prova
+  Mural/remix/autenticação.
+
+Os helpers, configurações e recibos públicos ficam no
+[pacote operacional](../../continuity/2026-10-22-python-reference-games-visual-evidence/staging-cloudflare-476-001-r1.json.snapshot).
+Os pins desse pacote são históricos: não reexecutar drain, reutilizar inventário
+vencido nem aplicar sua configuração sem nova leitura do destino.
+
+Ainda faltam a conclusão da onda Railway, ativação Members por último e os
+percursos autenticados com admin/aluno. O usuário confirmou possuir ambas as
+contas, mas nenhum navegador conectado estava disponível para esta sessão.
+Isso não autoriza obter cookies por fora do login normal. Python continua com
+seletor de criação apenas para admin/superadmin; produção não foi alterada.
+F1 Pro permanece reprovado em 1629,8 ms para a meta de 1500 ms. Nenhuma destas
+provas é aceite integral do produto.
+
+O [F3 Edge local](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-476-local-f3-edge-r1.json.snapshot)
+também passou nos dez minutos contínuos, com 20 tartarugas e 30 entradas
+causais: intervalo p95 de 33,4 ms, pintura p95 de 0,2 ms e entrada até
+apresentação p95 de 59,3 ms, sem long paints/tasks. O encerramento dos processos
+e portas próprios foi confirmado. Junto ao F3 Chrome anterior, isso cobre os
+dois navegadores nesta máquina, sem vídeo, audibilidade, autenticação hospedada
+ou teste no computador de 8 GB. Não substitui nem corrige a reprovação F1 Pro.
