@@ -57,3 +57,16 @@ The budget result is explicitly **local-F1-budget-only**, with no reference acce
 current controlled actor/storage collector does not include a lesson video or the 8 GB machine.
 The exact command additionally needs the existing pinned runtime/network environment described
 by the live fixture. It is a planned browser gate; it was not executed to validate these fixes.
+
+## Focused type verification on limited memory
+
+From `packages/studio`, after stopping performance runs:
+
+```text
+node --max-old-space-size=1536 node_modules/typescript/bin/tsc --noEmit --project tsconfig.python-qa.json
+```
+
+This strict profile checks the explicit helper/instrument roots and their dependencies.
+It does not replace or modify the full Studio typecheck. The editor fixture graph and
+legacy local process library are outside this focused profile; functional tests,
+the browser runs and full CI remain separate evidence.

@@ -2,6 +2,25 @@
 
 Análise do plano original ([proposta](../../plans/2026-10-16-estudio-javascript-python-turtle-proposta.md), [matriz R01–R22](../../plans/2026-10-16-estudio-python-validacao-entregas.md), [desempenho F0–F10](../../plans/2026-10-16-estudio-python-desempenho.md), [Pac-Man P01–P16](../../plans/2026-10-16-pacman-aceite.md) e [Space Arena S01–S10](../../plans/2026-10-16-space-arena-aceite.md)) contra o que já foi feito, e do que falta. Estado de execução em [retomada](2026-10-21-retomada-maquina-nova.md).
 
+## Estado conferido em 22/10/2026
+
+Este quadro prevalece sobre as anotações históricas de 21/10 abaixo. A
+[revisão da continuação](2026-10-22-review-continuacao-python.md) fixa o corte
+`c4222471a` e distingue os relatos da outra máquina das provas reexecutadas aqui.
+
+| Frente | Estado atual e fronteira restante |
+| --- | --- |
+| Integração | A continuação já chegou ao staging remoto em `c4222471a`. Não falta autorização de push daquele lote. Os 16 testes antigos foram corrigidos; os nove jobs de validação do CI 39704535639 passaram. O deploy falhou antes de qualquer apply, na prova SSH readonly; não há aceite de implantação nesse resultado. |
+| JS e Kids Pro | O reparo do contexto sem corpo e o acesso Pro da equipe Kids estão integrados. Há relatos de navegador locais e testes focados reexecutados verdes. Ainda falta qualificar os percursos hospedados de aula gravada Pro, publicação Pro e preparação de projeto antigo com o compilador. |
+| Aulas/salas | `python-live` é integração com repositórios em memória, atores sintéticos e sem mídia. Não comprova autenticação/device/perfil real, persistência no banco, vídeo, gravação/pausa nem Admin→aula gravada→aluno; esses percursos permanecem abertos. |
+| F1 | Os números históricos abaixo são relatos de coleta diagnóstica; status verde daquele spec não aplicava um gate estatístico. O reporter corrigido exige pelo menos 30 amostras homogêneas por fase e p95 contratado; seus testes passaram, mas a série gráfica completa ainda precisa ser executada. |
+| F3 e Space | O oráculo antigo media segundo repaint, sem provar efeito causal da entrada. O instrumento causal corrigido passou em diagnósticos dos dois jogos e em F3 de 600.015,9 ms no Chrome local: resposta p95 62,4 ms, 30/30 efeitos. [Recibos e anexos](../../continuity/2026-10-22-python-witness-smoke.md). Space de dez minutos, Edge e demais composições permanecem abertos. |
+| Artefatos | `65c9bffd…` foi reproduzida duas vezes neste clone, incluindo stdlib compilada dos inputs; 41 arquivos idênticos e ZIP complementar remoto baixado/conferido. [Comandos e recibo](../../continuity/2026-10-22-python-distribution-reproduction.md). Os recibos históricos de navegador continuam ausentes. `audio-2` segue candidata offline: baseline remoto fresco e promoção/ativação são etapas separadas. |
+| Infraestrutura | A sessão de chaves Railway é responsável por essa frente. Estados de pane, tokens e deploy descritos abaixo são históricos; não reaplicar plano de promoção baseado na ausência antiga dos objetos. |
+| Aceite final | REF ao final; execução física móvel adiada pelo usuário. F4/F7/F8/F9, memória incremental, pico do isolate, jogos completos e áudio ouvido por pessoa continuam conforme a matriz, sem aprovação por inferência. |
+
+## Registro histórico de 21/10/2026
+
 Bloqueios:
 - **L**: fecha nesta máquina.
 - **CF**: Cloudflare, acessível.
@@ -37,7 +56,7 @@ Todas as provas são locais nesta máquina. A pilha local (`scripts/local-studio
 | R | Situação | Falta | Bloqueio |
 | --- | --- | --- | --- |
 | R03/R04/R19/R20 | `python-bridge` 86/86; Python Clássico e Pro executam na pilha local do Adulto e do Kids | Análise Python (Pyright) | DK ou RW |
-| R05/R06/R07/R10 | `python-live` 10/10, com passagem aluno → professor e revogação real; bloco Estúdio de aula corrigido | Contas hospedadas | RW |
+| R05/R06/R07/R10 | `python-live` 10/10 na integração de serviços/editor, com repositórios em memória e atores sintéticos; passagem de autoridade e revogação exercitadas; bloco Estúdio de aula corrigido | Auth/device/perfis reais, banco persistente, mídia, gravação/pausa, Admin→aula gravada→aluno e prova hospedada | L + RW |
 | R09 Mural/`/jogar` | 4 combinações locais; sem cliente de análise na página (`facde61ca`); selo Python; payload sem editores; 20 cards sem runtime; publicar → `/jogar` anônimo na pilha local | Prova hospedada | RW |
 | R11 Turtle × CPython/Tk | Motor 10/10, linguagem 12/12, limites de fila e blocos conferidos contra CPython 3.14.2/Tk 8.6.15 | — | — |
 | R12 ZIP no computador | Clássico e Pro descompactados, executados, alterados e reexecutados no CPython nativo | — | — |

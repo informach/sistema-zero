@@ -115,6 +115,17 @@ jobs:
       - name: Lint (biome ci)
         run: bun run ci
 
+      # Studio's isolated unit runner intentionally discovers only src/. These QA
+      # helpers live beside Playwright specs and local CLIs, so select them explicitly.
+      - name: Validate local Python qualification contracts
+        run: |
+          bun --no-env-file test ./scripts/local-studio-stack/isolation.test.ts ./scripts/local-studio-stack/python-input.test.ts ./experiments/studio-python-runtime/qualification/space_arena.test.ts
+          python3 -B -m unittest discover -s experiments/studio-python-runtime/qualification -p input_presentation_test.py
+
+      - name: Validate Python performance and reproduction instruments
+        working-directory: packages/studio
+        run: bun --no-env-file test ./scripts/python/reproduction.test.ts ./e2e-runtime/performanceAcceptance.test.ts ./e2e-runtime/gamePerformance.test.ts ./e2e-python-editor/f1AcceptanceReporter.test.ts
+
       - name: Verificar cancelamento Python por RPC no runtime real
         working-directory: packages/studio-language-service
         run: bun run verify:rpc

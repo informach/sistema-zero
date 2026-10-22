@@ -64,6 +64,15 @@ do kernel, F6 de 30 ciclos ou prova de ausência de vazamento.
 
 ## Recibos e preparação preservada
 
+Os anexos de métricas foram conferidos por estrutura e copiados com os mesmos
+bytes para o Git. Contêm métricas, pins e UUID da geração local, sem credenciais,
+fontes de aluno ou caminhos pessoais. Podem ser examinados em outro clone:
+
+| Anexo versionado | SHA-256 dos bytes originais |
+| --- | --- |
+| [F3 diagnóstico](2026-10-22-python-witness-evidence/f3-smoke.json.snapshot) | `847be53ac4688be9779dc9f9121aad27a2db00cd9b77f355f8b9a0492d0f63bd` |
+| [Space diagnóstico](2026-10-22-python-witness-evidence/space-smoke.json.snapshot) | `6662194342f3c6fa3fa0bd4d4cc35290cf0a2d51abaf992ab4297e09d43faebe` |
+
 Os caminhos abaixo são relativos à worktree de correção. Os recibos e logs estão
 em cache ignorado; seus hashes documentam os bytes observados, não tornam o cache
 automaticamente disponível num clone. Os relatórios Playwright completos podem
@@ -115,6 +124,59 @@ valores para representar uma execução que não ocorreu.
 | `experiments/studio-python-runtime/qualification/space_arena_input.py` | `b9197d366ec2d1b6a0d94f98d6d7813fcad7930c099a64abf0a05e4dbc40aadc` |
 | `experiments/studio-python-runtime/qualification/space_arena.ts` | `49404fdfd2c2da8ae2feffd61ded78414c6d1cec88fdae96e815ede813d0ab75` |
 
-Continuam pendentes as execuções de aceite de dez minutos, F1 estatístico completo,
-demais perfis de desempenho, 30 reinícios, evidência de áudio e integração hospedada.
-Os negativos e limites históricos não foram reclassificados por estes dois smokes.
+Na conclusão dos dois smokes ainda estavam pendentes as execuções de dez minutos.
+A medição completa de F3 no Chrome local foi executada depois, conforme o adendo
+abaixo. Os negativos e limites históricos não foram reclassificados pelos smokes.
+
+## Adendo: F3 completo no Chrome local
+
+Uma nova execução, com saída exclusiva e sem `SZ_F3_PLAY_MS`, passou no caso F3
+de **600.000 ms**. Usou a mesma distribuição, versões e instrumentos acima,
+somente um servidor Bun e um Chrome headless. Os hashes de `gamePerformance.ts`
+e do spec F3 foram reconferidos depois e permaneceram iguais aos dos smokes.
+Nenhum limiar, asserção, runtime ou fonte de jogo foi alterado nessa rodada.
+
+| Medida | F3 Chrome completo |
+| --- | ---: |
+| Janela UTC em 22/10/2026 | 09:51:50,742–10:02:04,143 |
+| Tempo total do runner | 613.380 ms |
+| Jogo planejado / medido | 600.000 / 600.015,9 ms |
+| Resultado Playwright | 1 passou |
+| Entradas / witnesses causais | 30 / 30 |
+| Entrada → apresentação p95 / máxima | 62,4 / 63,8 ms |
+| Intervalos observados | 30.093 |
+| Intervalo entre frames p95 / máximo | 33,4 / 50,1 ms |
+| Intervalos acima de dois quadros | 6 de 30.093 (0,020%) |
+| Pintura p95 / máxima | 0,2 / 0,6 ms |
+| Pinturas longas / tarefas longas | 0 / 0 |
+| RAM livre antes / depois | 2.785 / 2.217 MiB |
+
+Os 30 comandos foram distribuídos pela janela, com efeitos apresentados desde o
+início até aproximadamente 582 segundos. Não restou entrada pendente. A geração
+foi `f74507a0-7429-45a7-8c7a-261d3ceba128`; o anexo preserva os IDs, teclas e
+instantes correlacionados. Essa evidência continua sendo leitura de pixels com
+uma oportunidade adicional de apresentação, sem afirmar scanout da GPU.
+
+O runner encerrou com código 0 e `cleanupConfirmed=true`, sem força. O CLI, o
+listener Bun e o browser principal conhecidos estavam ausentes, e a porta 5297
+estava fechada. Nova leitura às 10:02:44 UTC confirmou as mesmas ausências. Isso
+não amplia a prova de limpeza para todos os descendentes do kernel ou 30 ciclos.
+
+| Evidência | SHA-256 |
+| --- | --- |
+| [Anexo F3 Chrome de 600.000 ms](2026-10-22-python-witness-evidence/f3-chrome-600000.json.snapshot) | `78f3f3158153c646cc21ab73d33d238a0bbedaf3d488f4981507e516615a0b8f` |
+| `.cache/witness-f3-acceptance-20261022-r1/execution-full/smoke-receipt.json` | `8e120844faf2a3a11afa7123ad1e5f4091d24016dc6f437274325fd1b04dd610` |
+| `.cache/witness-f3-acceptance-20261022-r1/execution-full/report.json` | `143fdbaf312c51ba927bbbf317692d8169cc753b2568dd5dd6bfed9e96026266` |
+
+O anexo versionado mantém os bytes originais e contém somente métricas e a
+identidade da geração local. O relatório geral continua em cache, pois pode conter
+caminhos pessoais. A composição efêmera estende a config real de jogos, seleciona
+somente o spec F3 e o projeto Chrome, usa um worker, zero retries e o servidor Bun
+com `--no-env-file`. O driver teve prazo de 850 segundos incluindo setup e limpeza;
+o prazo não alterou a janela medida nem os gates do caso.
+
+Este resultado fecha a lacuna de duração de **F3 no Chrome nesta máquina local**.
+Permanecem pendentes Space de dez minutos, Edge, F1 estatístico completo, máquina
+de referência e aula com vídeo, demais perfis, 30 reinícios, áudio e integração
+hospedada. O campo `qualification: acceptance` do anexo classifica a duração desse
+caso, sem declarar aceite integral da plataforma ou produção.
