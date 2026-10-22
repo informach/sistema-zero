@@ -182,7 +182,15 @@ test('a gesture cannot overwrite unfinished visual work from another file', asyn
     const current = f.store.getState().project!
     if (!isPythonProject(current) || current.kind !== 'classic') throw new Error('Fixture')
     const older = createPythonWorkspaceDraft(current, 'helper.py', { marker: 'unfinished' }, [])
-    expect(f.store.getState().applyPythonSourceFiles(current, current.files, older)).toBeNull()
+    expect(
+      f.store
+        .getState()
+        .applyPythonSourceFiles(
+          current,
+          current.files,
+          updatePythonWorkspaceDraft(current, older.path, older),
+        ),
+    ).toBeNull()
     expect(() => f.gesture()).toThrow('helper.py')
     const retained = f.store.getState().project!
     if (!isPythonProject(retained)) throw new Error('Fixture')
@@ -225,7 +233,13 @@ test('a reentrant subscriber cannot make the older gesture claim and delete a ne
       return
     const newer = createPythonWorkspaceDraft(current, 'main.py', { marker: 'newer' }, [])
     replacement = newer.generation
-    expect(state.applyPythonSourceFiles(current, current.files, newer)).toBeNull()
+    expect(
+      state.applyPythonSourceFiles(
+        current,
+        current.files,
+        updatePythonWorkspaceDraft(current, newer.path, newer),
+      ),
+    ).toBeNull()
   })
   try {
     const result = f.gesture().catch((error) => error.name)

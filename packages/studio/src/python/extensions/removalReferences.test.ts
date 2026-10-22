@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { pythonEnvironmentFixture } from '../../state/fixtures/pythonEnvironment'
 import { integer, moduleNode, node } from '../blocks/nodes'
-import { createPythonWorkspaceDraft } from '../blocks/workspaceDraft'
+import { createPythonWorkspaceDraft, updatePythonWorkspaceDraft } from '../blocks/workspaceDraft'
 import type { PythonAnalysisSession } from '../language/session'
 import type { PythonNode } from '../language/types'
 import { inspectPythonTurtleRemoval } from './removalReferences'
@@ -120,7 +120,14 @@ test('invalid syntax, pending visual work and oversized source never qualify rem
   const idle = parser(moduleNode([]))
   await expect(
     inspectPythonTurtleRemoval(
-      { ...project, blocksState: createPythonWorkspaceDraft(project, 'main.py', {}, []) },
+      {
+        ...project,
+        blocksState: updatePythonWorkspaceDraft(
+          project,
+          'main.py',
+          createPythonWorkspaceDraft(project, 'main.py', {}, []),
+        ),
+      },
       idle,
       () => {},
     ),

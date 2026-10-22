@@ -38,7 +38,15 @@ test('pagehide persists an unfinished gesture before asynchronous generation exi
       },
       ['pending-print'],
     )
-    expect(stores.project.getState().applyPythonSourceFiles(active, active.files, draft)).toBeNull()
+    expect(
+      stores.project
+        .getState()
+        .applyPythonSourceFiles(
+          active,
+          active.files,
+          updatePythonWorkspaceDraft(active, draft.path, draft),
+        ),
+    ).toBeNull()
     window.dispatchEvent(new Event('pagehide'))
     detach()
     detach = undefined
@@ -93,7 +101,13 @@ for (const writer of ['local writer', 'persistence service'] as const) {
       detach = stores.persistence.attach()
       const draft = createPythonWorkspaceDraft(initial, 'main.py', { note: 'unfinished' }, [])
       expect(
-        stores.project.getState().applyPythonSourceFiles(initial, initial.files, draft),
+        stores.project
+          .getState()
+          .applyPythonSourceFiles(
+            initial,
+            initial.files,
+            updatePythonWorkspaceDraft(initial, draft.path, draft),
+          ),
       ).toBeNull()
       expect(stores.project.getState().setPythonFile('helper.py', 'print(2)\n')).toBeNull()
       const edited = stores.project.getState().project
@@ -124,7 +138,8 @@ for (const editTiming of ['before opening', 'during hydration'] as const) {
       ...(editTiming === 'before opening' ? { bridgeCodeAhead: true as const } : {}),
     }
     const draft = createPythonWorkspaceDraft(initial, 'main.py', { note: 'unfinished' }, [])
-    const { promise: load, resolve: deliver } = Promise.withResolvers<typeof draft>()
+    const state = updatePythonWorkspaceDraft(initial, draft.path, draft)
+    const { promise: load, resolve: deliver } = Promise.withResolvers<typeof state>()
     const stores = createStudioStores({
       persistence: {
         load: async () => initial,
@@ -136,7 +151,7 @@ for (const editTiming of ['before opening', 'during hydration'] as const) {
     stores.persistence.hydrateAfterLoad(initial)
     if (editTiming === 'during hydration')
       expect(stores.project.getState().setPythonFile('helper.py', 'print(2)\n')).toBeNull()
-    deliver(draft)
+    deliver(state)
     await load
     const current = stores.project.getState().project
     if (current?.programmingLanguage !== 'python') throw new Error('Python project missing')
@@ -152,7 +167,15 @@ test('source download cannot hide an unfinished Python gesture after editing ano
   const stores = createStudioStores({ persistence: 'none' })
   stores.project.getState().hydrateProject(initial)
   const draft = createPythonWorkspaceDraft(initial, 'main.py', { note: 'unfinished' }, [])
-  expect(stores.project.getState().applyPythonSourceFiles(initial, initial.files, draft)).toBeNull()
+  expect(
+    stores.project
+      .getState()
+      .applyPythonSourceFiles(
+        initial,
+        initial.files,
+        updatePythonWorkspaceDraft(initial, draft.path, draft),
+      ),
+  ).toBeNull()
   expect(stores.project.getState().setPythonFile('helper.py', 'print(2)\n')).toBeNull()
   await expect(
     prepareProjectDownload(stores.project, undefined, new AbortController().signal, (snapshot) =>
@@ -172,7 +195,10 @@ for (const discard of ['source edit', 'visual discard'] as const) {
       const { project } = await pythonEnvironmentFixture('classic')
       if (project.kind !== 'classic') throw new Error('Fixture')
       const draft = createPythonWorkspaceDraft(project, 'main.py', { note: 'retired' }, [])
-      const original = { ...project, blocksState: draft }
+      const original = {
+        ...project,
+        blocksState: updatePythonWorkspaceDraft(project, draft.path, draft),
+      }
       const stores = createStudioStores({ persistence: 'none' })
       stores.project.getState().hydrateProject(original)
       await persistProject(original)
@@ -199,7 +225,8 @@ test('a draft retired by a same-file edit during hydration cannot return after U
   const { project } = await pythonEnvironmentFixture('classic')
   if (project.kind !== 'classic') throw new Error('Fixture')
   const draft = createPythonWorkspaceDraft(project, 'main.py', { note: 'retired' }, [])
-  const { promise: load, resolve: deliver } = Promise.withResolvers<typeof draft>()
+  const state = updatePythonWorkspaceDraft(project, draft.path, draft)
+  const { promise: load, resolve: deliver } = Promise.withResolvers<typeof state>()
   const stores = createStudioStores({
     persistence: {
       load: async () => project,
@@ -210,7 +237,7 @@ test('a draft retired by a same-file edit during hydration cannot return after U
   stores.project.getState().hydrateProject(project)
   stores.persistence.hydrateAfterLoad(project)
   expect(stores.project.getState().setPythonFile('main.py', 'print(2)\n')).toBeNull()
-  deliver(draft)
+  deliver(state)
   await load
   expect(stores.project.getState().blocksHydration).toBe('restored')
   expect(stores.project.getState().setPythonFile('main.py', draft.baseSource)).toBeNull()

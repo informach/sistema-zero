@@ -12,13 +12,12 @@ export interface PythonWorkspaceDraft {
   workspace: Record<string, unknown>
   rootIds: string[]
 }
-interface PythonWorkspaceCollection {
+export interface PythonWorkspaceState {
   kind: 'python-workspace-collection'
   version: 1
   activePath: string
   drafts: PythonWorkspaceDraft[]
 }
-export type PythonWorkspaceState = PythonWorkspaceDraft | PythonWorkspaceCollection
 
 /** Explicit empty cache: unlike a quick-load null, this must replace older saved drafts. */
 export function emptyPythonWorkspaceState(): PythonWorkspaceState {
@@ -30,8 +29,9 @@ const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
 
 function decode(raw: unknown): PythonWorkspaceDraft | undefined {
+  if (!record(raw)) return
+  const rootIds = raw.rootIds
   if (
-    !record(raw) ||
     raw.kind !== 'python-workspace-draft' ||
     raw.version !== 1 ||
     typeof raw.path !== 'string' ||
@@ -41,10 +41,10 @@ function decode(raw: unknown): PythonWorkspaceDraft | undefined {
     !/^[A-Za-z0-9_-]{1,128}$/.test(raw.generation) ||
     typeof raw.pending !== 'boolean' ||
     !record(raw.workspace) ||
-    !Array.isArray(raw.rootIds) ||
-    raw.rootIds.length > 20_000 ||
-    raw.rootIds.some((id) => typeof id !== 'string' || id.length > 128) ||
-    new Set(raw.rootIds).size !== raw.rootIds.length
+    !Array.isArray(rootIds) ||
+    rootIds.length > 20_000 ||
+    !rootIds.every((id): id is string => typeof id === 'string' && id.length <= 128) ||
+    new Set(rootIds).size !== rootIds.length
   )
     return
   return {
@@ -55,8 +55,29 @@ function decode(raw: unknown): PythonWorkspaceDraft | undefined {
     generation: raw.generation,
     pending: raw.pending,
     workspace: raw.workspace,
-    rootIds: raw.rootIds as string[],
+    rootIds,
   }
+}
+
+function decodeState(raw: unknown): PythonWorkspaceState | undefined {
+  if (
+    !record(raw) ||
+    raw.kind !== 'python-workspace-collection' ||
+    raw.version !== 1 ||
+    typeof raw.activePath !== 'string' ||
+    !Array.isArray(raw.drafts) ||
+    raw.drafts.length > 1000
+  )
+    return
+  const drafts: PythonWorkspaceDraft[] = []
+  const paths = new Set<string>()
+  for (const value of raw.drafts) {
+    const draft = decode(value)
+    if (!draft || paths.has(draft.path)) return
+    paths.add(draft.path)
+    drafts.push(draft)
+  }
+  return { kind: raw.kind, version: raw.version, activePath: raw.activePath, drafts }
 }
 
 export function createPythonWorkspaceDraft(
@@ -95,37 +116,17 @@ function readDrafts(project: PythonProjectDocument): {
   if (
     project.kind !== 'classic' ||
     !record(project.blocksState) ||
-    (project.blocksState.kind !== 'python-workspace-draft' &&
-      project.blocksState.kind !== 'python-workspace-collection')
+    project.blocksState.kind !== 'python-workspace-collection'
   )
     return { drafts: [] }
-  const state = copyStudioProjectJson(project.blocksState, limits) as Record<string, unknown>
-  const raw =
-    state.kind === 'python-workspace-draft'
-      ? [state]
-      : state.version === 1 &&
-          typeof state.activePath === 'string' &&
-          Array.isArray(state.drafts) &&
-          state.drafts.length <= 1000
-        ? state.drafts
-        : []
-  const drafts: PythonWorkspaceDraft[] = []
-  const paths = new Set<string>()
-  for (const value of raw) {
-    const draft = decode(value)
-    if (!draft || paths.has(draft.path)) return { drafts: [] }
-    paths.add(draft.path)
-    if (draft.path.endsWith('.py') && project.files[draft.path] === draft.baseSource)
-      drafts.push(draft)
-  }
+  const state = decodeState(copyStudioProjectJson(project.blocksState, limits))
+  if (!state) return { drafts: [] }
+  const drafts = state.drafts.filter(
+    (draft) => draft.path.endsWith('.py') && project.files[draft.path] === draft.baseSource,
+  )
   return {
     drafts,
-    activePath:
-      state.kind === 'python-workspace-draft'
-        ? drafts[0]?.path
-        : typeof state.activePath === 'string'
-          ? state.activePath
-          : undefined,
+    activePath: state.activePath,
   }
 }
 
@@ -148,19 +149,18 @@ function pack(
 ): PythonWorkspaceState | null {
   if (!drafts.length) return knownEmpty ? emptyPythonWorkspaceState() : null
   if (drafts.length > 1000) throw new Error('Há arquivos demais com blocos salvos neste projeto.')
-  const state: PythonWorkspaceState =
-    drafts.length === 1
-      ? drafts[0]!
-      : {
-          kind: 'python-workspace-collection',
-          version: 1,
-          activePath: drafts.some((draft) => draft.path === activePath)
-            ? activePath!
-            : drafts[0]!.path,
-          drafts,
-        }
-  // A longer filename can exceed the budget even when the old envelope fits.
-  return copyStudioProjectJson(state, limits) as PythonWorkspaceState
+  const active = drafts.find((draft) => draft.path === activePath) ?? drafts[0]
+  if (!active) throw new Error('A coleção de blocos precisa de um arquivo ativo.')
+  const state: PythonWorkspaceState = {
+    kind: 'python-workspace-collection',
+    version: 1,
+    activePath: active.path,
+    drafts,
+  }
+  // A longer filename can exceed the global recovery budget.
+  const detached = decodeState(copyStudioProjectJson(state, limits))
+  if (!detached) throw new Error('Não foi possível guardar a coleção de blocos Python.')
+  return detached
 }
 
 /** Replace only one file's cache. Passing no draft discards only that file's cache. */

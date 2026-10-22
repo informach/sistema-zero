@@ -12,6 +12,22 @@ import {
   updatePythonWorkspaceDraft,
 } from './workspaceDraft'
 
+test('Python stores a single current collection envelope even for one editable file', async () => {
+  const { project } = await pythonEnvironmentFixture('classic')
+  if (project.kind !== 'classic') throw new Error('Fixture')
+  const draft = createPythonWorkspaceDraft(project, 'main.py', { marker: 'current' }, [])
+  const blocksState = updatePythonWorkspaceDraft(project, 'main.py', draft)
+  expect(blocksState).toEqual({
+    kind: 'python-workspace-collection',
+    version: 1,
+    activePath: 'main.py',
+    drafts: [draft],
+  })
+  expect(readPythonWorkspaceDraft({ ...project, blocksState })).toEqual(draft)
+  // Individual draft entries are data inside the collection, never another document format.
+  expect(readPythonWorkspaceDraft({ ...project, blocksState: draft })).toBeUndefined()
+})
+
 test('an interrupted visual edit remains recoverable and cannot silently execute/export/promote old source', async () => {
   const { project } = await pythonEnvironmentFixture('classic')
   if (project.kind !== 'classic') throw new Error('Fixture')
@@ -22,7 +38,15 @@ test('an interrupted visual edit remains recoverable and cannot silently execute
   }
   const draft = createPythonWorkspaceDraft(project, project.python.entrypoint, workspace, ['root'])
   workspace.blocks.blocks.length = 0
-  expect(store.getState().applyPythonSourceFiles(project, project.files, draft)).toBeNull()
+  expect(
+    store
+      .getState()
+      .applyPythonSourceFiles(
+        project,
+        project.files,
+        updatePythonWorkspaceDraft(project, draft.path, draft),
+      ),
+  ).toBeNull()
   const reopened = await refinePythonProjectDocument(store.getState().project)
   expect(readPythonWorkspaceDraft({ ...reopened, id: 'duplicated-project' })?.generation).toBe(
     draft.generation,
@@ -57,7 +81,7 @@ test('a cache from other source cannot replace code or prevent execution of the 
   const altered = {
     ...project,
     files: { ...project.files, [project.python.entrypoint]: '# fonte mais nova\n' },
-    blocksState: draft,
+    blocksState: updatePythonWorkspaceDraft(project, draft.path, draft),
   }
   expect(readPythonWorkspaceDraft(altered)).toBeUndefined()
   expect(() => assertPythonVisualDraftSettled(altered)).not.toThrow()
@@ -101,7 +125,10 @@ for (const pending of [true, false])
     const source = { ...project, files: { ...project.files, 'helper.py': 'print(1)\n' } }
     const draft = { ...createPythonWorkspaceDraft(source, 'helper.py', {}, []), pending }
     const store = createProjectStore()
-    store.getState().hydrateProject({ ...source, blocksState: draft })
+    store.getState().hydrateProject({
+      ...source,
+      blocksState: updatePythonWorkspaceDraft(source, draft.path, draft),
+    })
     expect(store.getState().setPythonFile('main.py', 'print(2)\n')).toBeNull()
     expect(
       readPythonWorkspaceDraft(await refinePythonProjectDocument(store.getState().project))

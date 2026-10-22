@@ -1,6 +1,9 @@
 import { expect, test } from 'bun:test'
 import type { PythonProjectDocument } from '../core/editableProject'
-import { createPythonWorkspaceDraft } from '../python/blocks/workspaceDraft'
+import {
+  createPythonWorkspaceDraft,
+  updatePythonWorkspaceDraft,
+} from '../python/blocks/workspaceDraft'
 import { documentFixture } from '../state/fixtures/projectDocuments'
 import { buildStudioTutorContext } from './tutor'
 import { studioTutorSourceHash } from './tutorSafety'
@@ -85,7 +88,11 @@ test('Classic Python keeps saved source distinct from a pending visual buffer an
       ],
     },
   }
-  project.blocksState = createPythonWorkspaceDraft(project, 'helper.py', workspace, ['print'])
+  project.blocksState = updatePythonWorkspaceDraft(
+    project,
+    'helper.py',
+    createPythonWorkspaceDraft(project, 'helper.py', workspace, ['print']),
+  )
   const input = {
     project,
     selectedBlockId: 'print',
@@ -153,12 +160,13 @@ test('a saved sensitive Python workspace never bypasses whole-file privacy filte
   const project = fixture('classic')
   if (project.kind !== 'classic') throw new Error('Classic fixture required')
   project.files['secrets.py'] = 'values = ["family-private-value-123"]'
-  project.blocksState = createPythonWorkspaceDraft(
+  const draft = createPythonWorkspaceDraft(
     project,
     'secrets.py',
     { blocks: { blocks: [{ id: 'private-block', type: 'sz_py_assign' }] } },
     ['private-block'],
   )
+  project.blocksState = updatePythonWorkspaceDraft(project, draft.path, draft)
   const context = buildStudioTutorContext({
     project,
     selectedBlockId: 'private-block',
