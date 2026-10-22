@@ -158,19 +158,19 @@ test('external confirmations do not bypass discoveries or unfinished section cri
       if (!escolha) throw new Error('a pergunta herdada não está na tela')
       await act(async () => escolha.click())
     }
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(true)
     await act(async () => button('Simular confirmação da ação externa').click())
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(true)
     await palpitar(container, content)
     await trocarOrdem(container)
     // A descoberta aconteceu, e o bloco ainda não fechou: falta enunciar a regra.
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(true)
     await explicar()
-    expect(button('Próxima seção').disabled).toBe(false)
-    await act(async () => button('Próxima seção').click())
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(false)
+    await act(async () => button('Próxima parte').click())
+    expect(button('Próxima parte').disabled).toBe(true)
     await act(async () => button('Simular confirmação da ação externa').click())
-    await act(async () => button('Próxima seção').click())
+    await act(async () => button('Próxima parte').click())
     expect(container.textContent).toContain('Configure um critério de conclusão na autoria')
   } finally {
     await act(async () => root.unmount())
@@ -346,38 +346,38 @@ test('rehearsal interleaves two discoveries and two independent goals in one pro
         />,
       ),
     )
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(true)
     await click('Falhar na próxima confirmação')
     await palpitar(container, content)
     await trocarOrdem(container)
     // ⚠️⚠️ A descoberta sozinha não manda mais tentativa nenhuma: a experimentação herda a
     // pergunta do modelo da cena, e a tentativa só sai com a frase escolhida. Quem tropeça na
     // falha de gravação é a RESPOSTA, e é depois dela que o "Tentar salvar" tem o que repetir.
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(true)
     await explicar()
     expect(container.textContent).toContain('Falha de salvamento simulada')
-    expect(button('Próxima seção').disabled).toBe(true)
+    expect(button('Próxima parte').disabled).toBe(true)
     await click('Tentar salvar')
-    expect(button('Próxima seção').disabled).toBe(false)
-    await click('Próxima seção')
+    expect(button('Próxima parte').disabled).toBe(false)
+    await click('Próxima parte')
     // ⚠️ Sem "Criar" (14/09/2026): as duas seções de criação têm o Estúdio como ÚNICO bloco,
     // e seção assim não divide mais a tela — ela ocupa a largura toda, então o editor já está
     // à vista. As abas "Ver exemplo"/"Criar" só existem quando há conteúdo do outro lado.
     await click('Mudar projeto')
     const original = identity
     await click('Conferir repetição')
-    await click('Próxima seção')
+    await click('Próxima parte')
     await palpitar(container, content)
     await trocarOrdem(container)
     await explicar()
-    await click('Próxima seção')
+    await click('Próxima parte')
     expect(identity).toBe(original)
     expect(
       container.querySelector<HTMLInputElement>('input[aria-label="Nome do projeto"]')?.value,
     ).toBe('Dino azul')
-    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção')
+    expect(container.textContent).toContain('Confira o objetivo desta parte no seu projeto')
     await click('Conferir repetição')
-    expect(container.textContent).toContain('Confira o objetivo no projeto desta seção')
+    expect(container.textContent).toContain('Confira o objetivo desta parte no seu projeto')
     await click('Ensaiar retomada')
     expect(identity).toBe(original)
     expect(
@@ -436,9 +436,9 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
         />,
       ),
     )
-    // O índice tem o nome do vocabulário do curso: "Partes da fase" no kids.
+    // O índice tem o mesmo nome nas duas comunidades desde a linguagem comum (21/10/2026).
     const indice = [...container.querySelectorAll('summary')].find((s) =>
-      s.textContent?.includes(kids ? 'Partes da fase' : 'Índice da aula'),
+      s.textContent?.includes('Partes da aula'),
     )
     return {
       container,
@@ -478,7 +478,9 @@ test('o ensaio segue a plataforma do curso: no kids a aula monta sem a barra do 
     expect(adulto.pedePendencias).toBe(true)
     expect(adulto.indiceNoCabecalho).toBe(true)
     expect(adulto.temTemaKids).toBe(false)
-    expect(adulto.texto).toContain('Próxima seção')
+    // A linguagem é comum (21/10/2026): o adulto também lê "Próxima parte".
+    expect(adulto.texto).toContain('Próxima parte')
+    expect(adulto.texto).not.toContain('Próxima seção')
   } finally {
     await act(async () => adulto.root.unmount())
     adulto.container.remove()

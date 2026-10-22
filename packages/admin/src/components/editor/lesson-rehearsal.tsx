@@ -105,7 +105,8 @@ export function LessonRehearsal({
   const completed = new Set<string>()
   // Itens TIPADOS (30/09/2026), como o members manda: a faixa "o que falta para seguir" do
   // rodapé escolhe o ícone pelo `kind`, e o ensaio mostra ao professor a mesma faixa (com os
-  // textos DO ENSAIO: o ensaio não passa pelo `lessonCompletionRequirements` do members).
+  // textos DO ENSAIO: o ensaio não passa pelo `lessonCompletionRequirements` do members). Os
+  // textos são os da linguagem comum (21/10/2026), iguais para as duas comunidades.
   const pending = new Map<string, SectionPendingItem[]>()
   for (const s of document.sections) {
     const missing: SectionPendingItem[] = []
@@ -113,14 +114,12 @@ export function LessonRehearsal({
       if (!state.completedBlocks.has(id))
         missing.push({
           kind: 'LEARNING_GATE_INCOMPLETE',
-          text: kids ? 'Termine o que esta parte pede' : 'Realize a atividade desta seção',
+          text: 'Termine o que esta parte pede',
         })
     if (s.completion?.projectChecks?.length && !state.completedProjects.has(s.id))
       missing.push({
         kind: 'project-check',
-        text: kids
-          ? 'Confira o objetivo desta parte no seu projeto'
-          : 'Confira o objetivo no projeto desta seção',
+        text: 'Confira o objetivo desta parte no seu projeto',
       })
     if (s.completion?.platformAction && !state.fixtures.has(s.id))
       missing.push({ kind: 'platform-action', text: 'Verifique a ação da plataforma' })
