@@ -197,3 +197,43 @@ históricos inativos podem permanecer; o gate requer zero execução viva/penden
 todos os alvos contabilizados. Só então aplicar a migração de namespace. Falha,
 transporte incerto ou divergência de ID mantém o namespace antigo e interrompe
 novos disparos; nenhuma exclusão de aplicação ou fallback de leases é permitida.
+
+## Continuação sobre staging local `8a885d540`
+
+O avanço foi conciliado por fast-forward. O resolver de blocos passou a detectar
+escrita em atributos privados oficiais e acesso dinâmico a mecanismos de mutação,
+preservando leituras comuns. Os 11 testes de catálogo/Core/Turtle passaram com
+1017 asserts; `check:python-visual-examples` conferiu os arquivos dos 20 jogos e
+seus metadados sem alteração. O fingerprint da imagem passou novamente no
+verificador. Essas verificações não são uma nova execução dos 64 percursos UI.
+
+Os operadores atuais de qualificação hospedada ficam versionados, substituindo
+a dependência operacional dos scripts privados de 19/10:
+
+- [Language API](../../../packages/studio-language-service/scripts/qualify-remote.md):
+  bootstrap/release pinados, admissão, Pyright, contexto, quota, cancelamento
+  classificado pelo resultado do alvo e Close aguardado. Os dez testes inertes
+  passaram com 58 asserts; não são prova de Pyright hospedado. O recibo mantém
+  explicitamente separados UI, autorização contextual, versão implantada e
+  limpeza física externa.
+- [Delivery público](../../../packages/studio-runtime/scripts/qualify-python-delivery.md):
+  plano canônico da implantação, Node HTTP sem descompressão implícita, bytes
+  identity/gzip, MIME, ETag, HEAD/304 e CSP com as origens finais preservadas.
+  Um wrapper passou nos sete controles em Node 24.22, incluindo corrupção,
+  MIME incorreto, excesso de bytes e cancelamento de conexão aberta. Não somar
+  o wrapper aos seus controles como oito testes independentes. Não qualifica
+  o fluxo de publicação/Mural/remix.
+
+Ambos passaram na tipagem focada em seus ambientes corretos (Node e Worker
+separados). Nenhum dos dois executou chamadas remotas neste checkpoint. Seus
+destinos e pins são explícitos, não recebem tokens em argumentos e não ativam
+catálogos. A execução deve usar os novos planos obtidos depois da conciliação
+real da infraestrutura.
+
+A execução `39815270042` aprovou a suíte que falhara no Molda, mas o job Kids
+`119952377716` esgotou seus 20 minutos na instalação APT do Playwright, antes de
+qualquer teste: o log ficou no mirror Azure entre 16:37 e 16:56 UTC. Não é
+falha de teste do aplicativo. A correção anterior do mirror estava somente no
+job geral; o preparo precisa ocorrer também nos demais jobs Ubuntu antes de
+APT, preservando fontes assinadas, keyrings e pacotes. O resultado geral dessa
+execução ainda não substitui CI verde do próximo código a implantar.
