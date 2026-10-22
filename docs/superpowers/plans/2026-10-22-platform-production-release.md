@@ -102,6 +102,26 @@ Essa lista não inclui Workers, SFU/TURN, R2, banco ou configuração de ofertas
 
 ## Limites de aceite ainda abertos
 
+Às 21:22 UTC, a execução somente leitura do SDK Railway 3.11.0 contra produção
+produziu plano não destrutivo com apenas duas diferenças: `build.watchPatterns`
+de Community e Members. O plano foi conferido contra a árvore `.railway`
+`3b659dfa…`; não foi aplicado. O endpoint oficial `environmentPatchCommit`
+oferece `skipDeploys:true`, permitindo conciliar somente esses arrays sem
+reconstruir o código antigo. O operador preparado verifica configuração e
+deployments exatos antes/depois. Esse endpoint não oferece CAS; exige coordenar
+escritores externos e não transforma uma comparação prévia em trava atômica.
+O ensaio do operador passou em 19 testes e a leitura real retornou
+`READ_ONLY_READY`, sem mutação. O plano de promoção deverá ser regenerado após
+qualquer conciliação; esta leitura não substitui o artefato aprovado do PR.
+
+A imagem Runtime staging foi atualizada após o lote de conquistas por linguagem
+para fingerprint `ae46e781…` e digest `7e881384…`. A prova HTTP corrente passou
+em três casos/28 verificações; a última leitura publicada ainda tinha
+`starting:1` na saúde agregada, apesar de zero instâncias físicas listadas.
+Não houve implantação equivalente em produção. Ver a
+[ativação atual](2026-10-22-python-staging-activation.md) para a distinção entre
+provas locais, imagem registrada, Worker e limpeza ainda não qualificada.
+
 O Runtime staging passou na prova HTTP de três casos em 131,42 s: compilação sem
 execução, rejeição de sintaxe inválida e Turtle com stdin/Space/clique e captura
 320×240. As retiradas lógicas passaram e a leitura posterior mostrou zero containers

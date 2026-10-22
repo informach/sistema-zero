@@ -430,8 +430,9 @@ exige pelo menos um bloco conhecido conquistado naquela linguagem; Pro também
 exige a capacidade Pro da jornada. Cursos e oficinas podem conceder esses
 blocos. Equipe mantém a prévia privilegiada. Uma linguagem não concede a outra,
 os blocos da paleta continuam restritos e nenhuma matrícula/curso Python é
-publicada automaticamente. O lote de simetria JavaScript está em implementação;
-não confundir regra acordada com implantação concluída.
+publicada automaticamente. O lote de simetria JavaScript foi implementado em
+`d89c00fe1`, com autorização fresca na criação/importação/remix e no Pro;
+não confundir implementação local com implantação dos aplicativos concluída.
 
 O [plano de produção](2026-10-22-platform-production-release.md) inclui oficinas,
 comunidade/ofertas adultas, jornada, objetivos e os serviços relacionados.
@@ -443,3 +444,33 @@ entradas necessárias conferidas por hash; BuildKit informou transferência de
 RUN, a imagem comprimida ou o tempo de deploy remoto, nem atribui toda a demora
 ao tamanho. As imagens anteriores conservam seu contexto original. Ver
 [prova do contexto](../../continuity/2026-10-22-python-reference-games-visual-evidence/docker-context-pruning-r1.json.snapshot).
+
+## Runtime após o lote de conquistas por linguagem
+
+O lote alterou contratos Core consumidos pela imagem nativa. O perfil foi
+regenerado pelo Bun canônico: fingerprint `ae46e781…`. A imagem
+`sha256:7e881384684120a0e5993f2972f7ceddca8849fa9d463053ddc8ed0c7d5b6ee1`
+passou nos smokes de imagem e nos seis jogos JavaScript de validação e foi
+publicada no registro Cloudflare. O Worker Runtime staging passou para
+`6fc805dd-dba2-43b2-9dff-15dc802a0bf6` às 21:06 UTC; a aplicação passou para
+versão 7 com esse digest às 21:12 UTC. A primeira leitura ainda mostrava a
+imagem anterior, pois o rollout dos containers é assíncrono. Não houve segundo
+deploy para contornar essa transição. Language permaneceu na versão `991d09f7…`.
+
+O operador HTTP corrente `4d30f83e…` foi realmente executado contra esse
+destino às 21:13–21:15 UTC: três casos e 28 verificações passaram em 133,804 s,
+incluindo inspeção sem execução, sintaxe inválida e Turtle com stdin, teclado,
+clique e captura 320×240. A retirada lógica de input/preview passou. Às 21:17 UTC,
+a aplicação tinha zero instâncias físicas listadas, mas a saúde agregada ainda
+informava `starting: 1`; portanto a limpeza física completa permanece sem aceite.
+Ver [fonte, pins e recibos atuais](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-ae46-staging-release-r1.json.snapshot).
+
+O ensaio local SDK/CPython/Turtle/preview também passou. Seu harness constrói
+uma imagem própria `25a2ffca…`, distinta da imagem `7e881384…` publicada;
+o [recibo SDK](../../continuity/2026-10-22-python-reference-games-visual-evidence/current-ae46-sdk-preview-r1.json.snapshot)
+mantém essa distinção. Os resultados antigos não foram atribuídos à imagem nova.
+
+Continuam abertos: catálogo/hosts Members carregados pela nova implantação,
+CI dos aplicativos com os contratos atuais, percursos autenticados admin/aluno,
+Mural/página pública, cancelamento ocupado, desempenho F1 Pro e qualificação
+integral de produção. Estes recibos não afirmam conclusão dessas etapas.
