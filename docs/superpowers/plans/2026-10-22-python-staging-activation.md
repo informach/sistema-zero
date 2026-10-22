@@ -374,8 +374,9 @@ vencido nem aplicar sua configuração sem nova leitura do destino.
 Ainda faltam a conclusão da onda Railway, ativação Members por último e os
 percursos autenticados com admin/aluno. O usuário confirmou possuir ambas as
 contas, mas nenhum navegador conectado estava disponível para esta sessão.
-Isso não autoriza obter cookies por fora do login normal. Python continua com
-seletor de criação apenas para admin/superadmin; produção não foi alterada.
+Isso não autoriza obter cookies por fora do login normal. Naquela etapa o seletor
+estava restrito a admin/superadmin; essa decisão foi superada pela regra de
+conquistas descrita abaixo. Produção não foi alterada.
 F1 Pro permanece reprovado em 1629,8 ms para a meta de 1500 ms. Nenhuma destas
 provas é aceite integral do produto.
 
@@ -386,3 +387,45 @@ apresentação p95 de 59,3 ms, sem long paints/tasks. O encerramento dos process
 e portas próprios foi confirmado. Junto ao F3 Chrome anterior, isso cobre os
 dois navegadores nesta máquina, sem vídeo, audibilidade, autenticação hospedada
 ou teste no computador de 8 GB. Não substitui nem corrige a reprovação F1 Pro.
+
+## Retomada e decisões posteriores de 22/10
+
+O build duplicado Members `85626718…` foi cancelado às 19:28 UTC depois da
+conferência de contexto, estado BUILDING sem instâncias e da imagem saudável
+`1e2d1e6a…`. O cancelamento recebeu ACK e o estado REMOVED foi conferido.
+A imagem saudável foi adotada pelo controller canônico, sem novo build;
+migrate e initialize passaram. Auth recebeu o ACK real
+`3981bb66-92d3-4f54-9be6-847dc3f47cb3` às 19:47 UTC. Uma consulta posterior
+expirou em `auth-deployment-poll`; o recibo ficou FAILED e foi preservado.
+Isso não cancela nem prova falha do deployment: às 20:22 UTC ele estava
+DEPLOYING, com uma instância nova INITIALIZING. Não houve segundo POST Auth.
+Nenhum recibo publicado foi fabricado a partir dessa observação.
+
+A prova HTTP do Runtime passou às 19:51 UTC, em 131,42 s: três casos,
+28 verificações, compilação sem executar os raises/imports da fixture,
+rejeição de sintaxe inválida e Turtle com stdin, Space e clique. A captura
+320×240/2961 bytes/frameSequence8 passou pelos verificadores Core. Inputs
+retirados responderam 410 e o preview retirado respondeu 404. A leitura externa
+das 19:52 UTC confirmou zero containers físicos e zero active/assigned/
+scheduling/starting no app Runtime exato; nomes DO históricos não são
+containers vivos. Fonte qualificada `9ac283…` e delta posterior de duas
+conversões de tipos estão separados no
+[recibo operacional](../../continuity/2026-10-22-python-reference-games-visual-evidence/staging-execution-and-production-inventory-r1.json.snapshot).
+Nenhuma destas provas afirma UI, Mural, cancelamento de operação ocupada ou
+aprovação de desempenho.
+
+O usuário autorizou todo o Python em staging e produção, sem flag temporária
+nem seletor limitado à equipe. A regra de produto permanece: cada linguagem
+exige pelo menos um bloco conhecido conquistado naquela linguagem; Pro também
+exige a capacidade Pro da jornada. Cursos e oficinas podem conceder esses
+blocos. Equipe mantém a prévia privilegiada. Uma linguagem não concede a outra,
+os blocos da paleta continuam restritos e nenhuma matrícula/curso Python é
+publicada automaticamente. O lote de simetria JavaScript está em implementação;
+não confundir regra acordada com implantação concluída.
+
+O [plano de produção](2026-10-22-platform-production-release.md) inclui oficinas,
+comunidade/ofertas adultas, jornada, objetivos e os serviços relacionados.
+Foram identificados 806.391.379 bytes de docs no source001 e COPY integral no
+Dockerfile Auth. A exclusão de acervo editorial/QA das imagens está em revisão;
+isso não mede a imagem comprimida nem atribui toda a demora ao tamanho. As
+imagens já em construção conservam seu contexto original.
