@@ -50,6 +50,13 @@ describe('contrato de medição', () => {
       kind: 'explicacao',
     })
     expect(analyticsPage('/kids/comunidade-dos-criadores/checkout')?.publicText).toBe(false)
+    // O Desafio adulto ganhou quiz e resultado em 21/10/2026: as duas páginas entram na medição.
+    expect(analyticsPage('/pro/desafio-primeiro-jogo/quiz')?.funnel).toBe(
+      'pro/desafio-primeiro-jogo',
+    )
+    expect(analyticsPage('/pro/desafio-primeiro-jogo/resultado')?.funnel).toBe(
+      'pro/desafio-primeiro-jogo',
+    )
     expect(analyticsPage('/?email=pessoa@example.com')).toBeNull()
   })
 

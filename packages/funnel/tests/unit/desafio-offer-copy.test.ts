@@ -106,7 +106,7 @@ describe('rotas e despacho', () => {
 })
 
 describe('o funil adulto tem a mesma oferta do Kids', () => {
-  test('registrado depois da Comunidade adulta; o quiz Kids aponta a página adulta', () => {
+  test('registrado depois da Comunidade adulta; os quizzes do Desafio apontam um para o outro', () => {
     const keys = Object.keys(FUNNELS)
     expect(keys.indexOf(DESAFIO_ADULTO.key)).toBeGreaterThan(keys.indexOf(COMUNIDADE_ADULTO.key))
     expect(Object.values(FUNNELS).find((f) => f.audience === 'pro')?.key).toBe(
@@ -114,9 +114,11 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     )
     expect(getFunnel('pro', 'desafio-primeiro-jogo')).toBe(DESAFIO_ADULTO)
     const quiz = ler('pages', '[audience]', '[produto]', 'quiz.astro')
-    expect(quiz).toContain(
-      'desafioAdultoPath={desafioAdulto ? `${desafioAdulto.basePath}/oferta` : undefined}',
+    expect(quiz).toMatch(
+      /const desafioAdultQuizPath = desafioAdulto\?\.steps\.quiz\s+\? `\$\{desafioAdulto\.basePath\}\/quiz`/,
     )
+    expect(quiz).toContain('adultQuizPath={desafioAdultQuizPath}')
+    expect(quiz).toContain('kidsQuizPath={desafioKidsQuizPath}')
     const sitemap = readFileSync(join(ROOT, 'astro.config.mjs'), 'utf8')
     expect(sitemap).toContain('`${site}/pro/desafio-primeiro-jogo/oferta`')
     expect(sitemap).toContain('`${site}/pro/desafio-primeiro-jogo/termos`')
@@ -127,8 +129,8 @@ describe('o funil adulto tem a mesma oferta do Kids', () => {
     expect(DESAFIO_ADULTO.lifetimeAccess).toBe(false)
     expect(DESAFIO_ADULTO.theme).toBe('arcade')
     expect(DESAFIO_ADULTO.steps).toEqual({
-      quiz: false,
-      resultado: false,
+      quiz: true,
+      resultado: true,
       upsell: false,
       downsell: false,
     })

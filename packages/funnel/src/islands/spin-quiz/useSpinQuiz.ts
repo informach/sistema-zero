@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { SelecaoStep } from '../../content/quiz-config'
 import { ApiError, apiPatch, apiPost } from '../../lib/api-fetch'
-import { leadAttributionFromLocation } from '../../lib/lead-attribution'
+import { funnelLinkWithAttribution, leadAttributionFromLocation } from '../../lib/lead-attribution'
 import type { QuizAnswers, QuizAnswerValue } from '../../lib/quiz-types'
 
 /**
@@ -10,6 +10,14 @@ import type { QuizAnswers, QuizAnswerValue } from '../../lib/quiz-types'
  * mudou" e o conflito de outra aba, e decide a próxima tela. Cada ilha só desenha; o motor do funil
  * (puro, importado pela ilha) diz quais perguntas estão ativas e quando o quiz terminou.
  */
+/**
+ * O link com a atribuição da página (UTMs, `event_code` e `cupom`): o cupom de um anúncio precisa
+ * chegar à oferta, que só o lê da própria URL. Sem `window` (render no servidor), o link puro; as
+ * telas que usam estes links só aparecem depois da hidratação.
+ */
+export const linkWithAttribution = (path: string): string =>
+  typeof window === 'undefined' ? path : funnelLinkWithAttribution(path, window.location)
+
 export interface SpinEngine {
   version: string
   activeSteps: (answers: QuizAnswers) => SelecaoStep[]
@@ -58,7 +66,7 @@ export function useSpinQuiz({
   const firstMissing =
     steps.find((s) => !engine.validChoice(s, current[s.key]))?.key ?? steps[0]?.key
   const revision = typeof answers._quiz_revision === 'number' ? answers._quiz_revision : 0
-  const resultPath = `${basePath}/resultado`
+  const resultPath = linkWithAttribution(`${basePath}/resultado`)
 
   const attribution = useCallback(
     () => ({

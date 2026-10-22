@@ -1,7 +1,7 @@
 import { TERMOS_DESAFIO } from '../../content/legal/termos-desafio'
 import type { FunnelDef } from '../registry'
 import { DESAFIO_CHECKOUT, DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
-import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz/definition'
+import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz'
 
 export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   audience: 'kids',

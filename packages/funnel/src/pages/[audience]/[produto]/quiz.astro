@@ -1,13 +1,14 @@
 ---
 import { quizDefinition } from '../../../analytics/quiz-definition'
-import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
 import QuizConversaLayout from '../../../components/funnel/QuizConversaLayout.astro'
 import { QUIZ_ENTRY as ADULT_QUIZ_ENTRY } from '../../../funnels/comunidade-adulto/quiz/entry-copy'
 import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
-import { DESAFIO_QUIZ_ENTRY } from '../../../funnels/desafio-primeiro-jogo/quiz/entry-copy'
+import { QUIZ_ENTRY as DESAFIO_ADULTO_QUIZ_ENTRY } from '../../../funnels/desafio-adulto/quiz/entry-copy'
+import { QUIZ_ENTRY as DESAFIO_QUIZ_ENTRY } from '../../../funnels/desafio-primeiro-jogo/quiz/entry-copy'
 import { getFunnel, getFunnelByKey, quizHeadlineId } from '../../../funnels/registry'
 import ComunidadeAdultoQuiz from '../../../islands/ComunidadeAdultoQuiz'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
+import DesafioAdultoQuiz from '../../../islands/DesafioAdultoQuiz'
 import DesafioQuiz from '../../../islands/DesafioQuiz'
 import Quiz from '../../../islands/Quiz'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -36,8 +37,13 @@ const adultQuizPath = adulto?.steps.quiz ? `${adulto.basePath}/quiz` : undefined
 // Adulto, menos de 18: a saída leva ao quiz Kids (dos responsáveis).
 const kids = getFunnelByKey('kids/comunidade-dos-criadores')
 const kidsQuizPath = kids?.steps.quiz ? `${kids.basePath}/quiz` : undefined
-// Desafio Kids, 18 ou mais: a tela de idade aponta o Desafio adulto quando o funil está registrado.
+// No Desafio, as saídas ficam entre os dois quizzes do Desafio (os anúncios do Desafio levam a eles).
 const desafioAdulto = getFunnelByKey('pro/desafio-primeiro-jogo')
+const desafioAdultQuizPath = desafioAdulto?.steps.quiz
+  ? `${desafioAdulto.basePath}/quiz`
+  : undefined
+const desafioKids = getFunnelByKey('kids/desafio-primeiro-jogo')
+const desafioKidsQuizPath = desafioKids?.steps.quiz ? `${desafioKids.basePath}/quiz` : undefined
 // Ao concluir: vai ao diagnóstico (se o funil tiver) ou direto à oferta.
 const donePath = f.steps.resultado ? `${f.basePath}/resultado` : `${f.basePath}/oferta`
 
@@ -50,14 +56,19 @@ const q1Images =
     : []
 ---
 
-{quiz.presentation === 'desafio' ? (
-  <DesafioQuizLayout title={`${DESAFIO_QUIZ_ENTRY.title} | Sistema Zero`} description={DESAFIO_QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-fala.webp`, Astro.site ?? Astro.url).toString()}>
-    <DesafioQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} desafioAdultoPath={desafioAdulto ? `${desafioAdulto.basePath}/oferta` : undefined}/>
-    <noscript><p class="wrap cq-panel">Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
-  </DesafioQuizLayout>
+{quiz.presentation === 'desafio-kids' ? (
+  <QuizConversaLayout title={`${DESAFIO_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={DESAFIO_QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-fala.webp`, Astro.site ?? Astro.url).toString()} tema="kids">
+    <DesafioQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} adultQuizPath={desafioAdultQuizPath} />
+    <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
+  </QuizConversaLayout>
+) : quiz.presentation === 'desafio-adulto' ? (
+  <QuizConversaLayout title={`${DESAFIO_ADULTO_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={DESAFIO_ADULTO_QUIZ_ENTRY.description} tema="adulto">
+    <DesafioAdultoQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} kidsQuizPath={desafioKidsQuizPath} />
+    <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
+  </QuizConversaLayout>
 ) : quiz.presentation === 'comunidade' ? (
   <QuizConversaLayout title={`${QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={QUIZ_ENTRY.description} ogImage={new URL(`${f.imagesBase}/zappy-happy.webp`, Astro.site ?? Astro.url).toString()} tema="kids">
-    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} imagesBase={f.imagesBase} quizDefinitionId={quizDefinitionId} headline={headline} adultQuizPath={adultQuizPath} />
+    <ComunidadeQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} adultQuizPath={adultQuizPath} />
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>
 ) : quiz.presentation === 'comunidade-adulto' ? (

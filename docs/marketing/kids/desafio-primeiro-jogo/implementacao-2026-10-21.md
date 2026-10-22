@@ -29,6 +29,8 @@ O quiz do Desafio virou `desafio-farol-v4`:
 
 O quiz antigo continua legível pela regra de versão.
 
+No mesmo dia, a v4 deu lugar aos quizzes em conversa do Canvas "Quiz do Desafio · Kids e adulto": o Kids `desafio-farol-v5`, com os ramos de 9 a 17 e menor de 9, e o adulto `desafio-adulto-v1`, no funil `pro/desafio-primeiro-jogo`. Quem marca 18 ou mais no Kids vai para o quiz adulto, e não mais para a página adulta. Registro em [quiz-2026-10-21.md](quiz-2026-10-21.md).
+
 O Termo Kids subiu para `desafio-2026-10-21`. Ele passou a dizer que a criança menor de 9 usa o Desafio junto com o responsável. O adulto tem Termo próprio (`desafio-adulto-2026-10-21`).
 
 ## Peças fora do funil

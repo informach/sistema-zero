@@ -14,7 +14,14 @@ export type BlocoConversa =
   | { tipo: 'h'; texto: string }
   | { tipo: 'img'; src: string; legenda: string; largura: number; altura: number }
   | { tipo: 'relato'; texto: string; autor: string; foto?: string }
-  | { tipo: 'cta'; texto: string; rotulo: string; href: string }
+  | {
+      tipo: 'cta'
+      texto: string
+      rotulo: string
+      href: string
+      /** A linha abaixo do botão; sem ela, a da assinatura ("O preço e os planos..."). */
+      nota?: string
+    }
 
 export interface ResultadoConversa {
   tema: ResultadoTema
@@ -60,7 +67,7 @@ export function textoDoResultado(r: ResultadoConversa): string[] {
         : b.tipo === 'relato'
           ? [b.texto, b.autor]
           : b.tipo === 'cta'
-            ? [b.texto, b.rotulo]
+            ? [b.texto, b.rotulo, ...(b.nota ? [b.nota] : [])]
             : [b.texto],
     ),
     r.assinatura,

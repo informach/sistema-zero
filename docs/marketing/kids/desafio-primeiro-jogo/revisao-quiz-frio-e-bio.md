@@ -1,5 +1,8 @@
 # Revisão do quiz para tráfego frio e posicionamento da bio (03/10/2026)
 
+> **Histórico.** Este documento descreve as versões v3 e v4 do quiz do Desafio, em cartões. Desde 21/10/2026 vale o quiz em conversa: veja [quiz-2026-10-21.md](quiz-2026-10-21.md).
+
+
 Versão do quiz: `desafio-farol-v3`. Aplica o comando `lt-quiz` (`.claude/commands/lt-quiz.md`):
 justificar cada pergunta e o uso da resposta, preservando o `FunnelQuiz` e as validações.
 
