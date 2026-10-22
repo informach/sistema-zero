@@ -16,11 +16,7 @@ const evidence = path.join(
 )
 await mkdir(evidence, { recursive: true })
 console.info('activity-browser evidence', evidence)
-const build = await buildPythonRuntimeDistribution({
-  standardLibrary: JSON.parse(
-    await readFile(path.join(root, '.cache/studio-python-runtime/stdlib-recipe.json'), 'utf8'),
-  ),
-})
+const build = await buildPythonRuntimeDistribution()
 const release = await createStudioRuntimeRelease({
   manifestVersion: 1,
   profileId: 'python-activity-verify',

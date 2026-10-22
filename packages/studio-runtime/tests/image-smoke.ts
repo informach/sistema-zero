@@ -2,6 +2,7 @@ import { buildProConsoleBridgeScript, STUDIO_PRO_ARTIFACT_LIMITS } from '@sistem
 import { trustedPackageJson, trustedViteConfig } from '../src/contracts'
 
 // Explicit smoke command, separate from unit tests: requires the locally built image.
+const image = process.argv[2] ?? 'sistemazero-studio-runtime:verify'
 const script = `
 const fs = require('node:fs');
 const cp = require('node:child_process');
@@ -30,17 +31,7 @@ try {
 } finally { fs.rmSync(root, { recursive: true, force: true }); }
 `
 const child = Bun.spawn(
-  [
-    'docker',
-    'run',
-    '--rm',
-    '--network',
-    'none',
-    '--entrypoint',
-    'node',
-    '-i',
-    'sistemazero-studio-runtime:verify',
-  ],
+  ['docker', 'run', '--rm', '--network', 'none', '--entrypoint', 'node', '-i', image],
   {
     stdin: new TextEncoder().encode(script),
     stdout: 'inherit',

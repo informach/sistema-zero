@@ -22,11 +22,7 @@ const root = path.resolve(import.meta.dirname, '../../..')
 const evidence = path.join(root, '.cache/studio-python-l0/preview-browser', crypto.randomUUID())
 await mkdir(evidence, { recursive: true })
 console.info('preview-browser evidence', evidence)
-const build = await buildPythonRuntimeDistribution({
-  standardLibrary: JSON.parse(
-    await readFile(path.join(root, '.cache/studio-python-runtime/stdlib-recipe.json'), 'utf8'),
-  ),
-})
+const build = await buildPythonRuntimeDistribution()
 const release = await createStudioRuntimeRelease({
   manifestVersion: 1,
   profileId: 'python-preview-verify',

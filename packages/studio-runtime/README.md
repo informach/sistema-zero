@@ -30,6 +30,10 @@ A imagem com Chromium exige `standard-1` (4 GiB de memória e 8 GB de disco). Na
 
 Depois do deploy, aguarde o provisionamento dos contêineres e valide uma compilação com `validate: true`; `/healthz` sozinho não comprova que a imagem está pronta.
 
+Para qualificar uma imagem local específica sem substituir a tag de outra sessão,
+use `bun tests/image-smoke.ts <imagem>` e `bun tests/validation-smoke.ts <imagem>`.
+Sem argumento, ambos mantêm a imagem padrão `sistemazero-studio-runtime:verify`.
+
 ## Fluxo
 
 1. Community Kids ou Admin valida sessão e autorização.

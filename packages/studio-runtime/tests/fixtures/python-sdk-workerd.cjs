@@ -7,12 +7,26 @@ const { createHash } = require('node:crypto')
 const net = require('node:net')
 const { pathToFileURL } = require('node:url')
 const { createRequire } = require('node:module')
-const localRequire = createRequire(
-  require.resolve('wrangler/package.json', { paths: [process.cwd()] }),
-)
-const { unstable_dev } = localRequire('wrangler')
+
+/** The exact request sent by the manual SDK proof; importing it starts no services. */
+function createPythonSdkInspectionRequest(seed, reference) {
+  return seed.validate
+    ? {
+        version: 1,
+        input: reference,
+        structure: seed.structure,
+        recipe: seed.recipe,
+        ...(seed.preview ? { preview: { parentOrigin: 'https://kids.test' } } : {}),
+      }
+    : { version: 1, input: reference, structure: seed.structure }
+}
 
 async function main() {
+  const localRequire = createRequire(
+    require.resolve('wrangler/package.json', { paths: [process.cwd()] }),
+  )
+  const { unstable_dev } = localRequire('wrangler')
+
   const seed = JSON.parse(await fs.readFile(process.argv[3], 'utf8'))
   let port = 0
   if (seed.preview) {
@@ -130,17 +144,7 @@ async function main() {
     }
     const started = performance.now()
     console.error(JSON.stringify({ phase: 'sdk-inspection' }))
-    const inspection = seed.validate
-      ? {
-          version: 1,
-          input: reference,
-          structure: seed.structure,
-          recipe: seed.recipe,
-          ...(seed.preview ? { preview: { parentOrigin: 'https://kids.test' } } : {}),
-        }
-      : seed.structure
-        ? { version: 1, input: reference, structure: true }
-        : reference
+    const inspection = createPythonSdkInspectionRequest(seed, reference)
     const pendingInspection = send(
       seed.validate ? '/v1/python/validate' : '/v1/python/inspect',
       JSON.stringify(inspection),
@@ -418,7 +422,9 @@ async function main() {
     }
   }
 }
-main().catch((error) => {
-  console.error(error)
-  process.exitCode = 1
-})
+module.exports = { createPythonSdkInspectionRequest }
+if (require.main === module)
+  main().catch((error) => {
+    console.error(error)
+    process.exitCode = 1
+  })

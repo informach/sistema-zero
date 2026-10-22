@@ -1,10 +1,13 @@
 import { expect, test } from 'bun:test'
+import type { StudioPythonLanguageBootstrap } from '@sistemazero/core/studio/python-language-bootstrap'
+import { providedPythonRelease } from '../../core/tests/fixtures/python-provided-release'
 import {
   assertOwnedContainer,
   inspectContainerIsolation,
   LANGUAGE_QA_PROBE,
   LANGUAGE_QA_SUPERVISOR,
   parseContainerVerificationOptions,
+  pinContainerVerificationBootstrap,
   redactVerificationError,
 } from '../scripts/verify-container'
 
@@ -27,6 +30,7 @@ const args = [
   '--run=r1',
   '--bootstrap=bootstrap.json',
   `--bundle-sha256=${'b'.repeat(64)}`,
+  `--manifest-sha256=${'f'.repeat(64)}`,
 ]
 const inspection = () => ({
   Id: 'd'.repeat(64),
@@ -62,18 +66,42 @@ test('QA invocation requires immutable image and fresh safe run identity', () =>
     expectedPlatformManifestDigest: platformImage,
     platform: 'linux/amd64',
     run: 'r1',
+    expectedManifestSha256: 'f'.repeat(64),
   })
   for (const invalid of [
     args.filter((value) => !value.startsWith('--image=')),
     args.filter((value) => !value.startsWith('--platform-manifest=')),
+    args.filter((value) => !value.startsWith('--manifest-sha256=')),
+    args.map((value) =>
+      value.startsWith('--manifest-sha256=') ? '--manifest-sha256=current' : value,
+    ),
     args.map((value) => (value.startsWith('--image=') ? '--image=moving:tag' : value)),
     args.map((value) =>
       value.startsWith('--run=') ? '--run=../l5-language-container-proof' : value,
     ),
     [...args, '--run=other'],
+    [...args, `--manifest-sha256=${'f'.repeat(64)}`],
     [...args, '--skip-auth=true'],
   ])
     expect(() => parseContainerVerificationOptions(invalid)).toThrow()
+})
+
+test('the actual canonical bootstrap must match the external release pin before container work', async () => {
+  const runtimeRelease = await providedPythonRelease()
+  const bootstrap: StudioPythonLanguageBootstrap = { protocolVersion: 1, runtimeRelease }
+  const pinned = await pinContainerVerificationBootstrap(bootstrap, runtimeRelease.manifestSha256)
+  expect(pinned).toEqual(bootstrap)
+  expect(pinned).not.toBe(bootstrap)
+  expect(pinned.runtimeRelease).not.toBe(runtimeRelease)
+  await expect(pinContainerVerificationBootstrap(bootstrap, '0'.repeat(64))).rejects.toThrow(
+    'Bootstrap does not match the expected release manifest',
+  )
+  await expect(
+    pinContainerVerificationBootstrap(
+      { ...bootstrap, runtimeRelease: { ...runtimeRelease, manifestSha256: '0'.repeat(64) } },
+      '0'.repeat(64),
+    ),
+  ).rejects.toThrow('release hash mismatch')
 })
 
 test('running-image mismatch and weakened isolation fail before any probe', () => {

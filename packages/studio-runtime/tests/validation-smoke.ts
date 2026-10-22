@@ -3,6 +3,7 @@ import { parseBuildRequest, trustedPackageJson, trustedViteConfig } from '../src
 import { materializeTestTemplate } from './template-files'
 
 // Explicit integration check: the actual image, no network, same non-root runtime and budgets.
+const image = process.argv[2] ?? 'sistemazero-studio-runtime:verify'
 const ids = [
   'canvas-puzzle',
   'canvas-survival',
@@ -74,7 +75,7 @@ try {
       '--entrypoint',
       'node',
       '-i',
-      'sistemazero-studio-runtime:verify',
+      image,
     ],
     { stdin: new TextEncoder().encode(script), stdout: 'inherit', stderr: 'inherit' },
   )

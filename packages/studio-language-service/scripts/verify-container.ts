@@ -11,10 +11,13 @@ import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-cat
 export function parseContainerVerificationOptions(args: readonly string[]) {
   const fields = new Map<string, string>()
   for (const argument of args) {
-    const match = /^--(image|platform-manifest|run|bootstrap|bundle-sha256)=(.+)$/.exec(argument)
+    const match =
+      /^--(image|platform-manifest|run|bootstrap|bundle-sha256|manifest-sha256)=(.+)$/.exec(
+        argument,
+      )
     assert.ok(
       match,
-      'Expected --image, --platform-manifest, --run, --bootstrap and --bundle-sha256',
+      'Expected --image, --platform-manifest, --run, --bootstrap, --bundle-sha256 and --manifest-sha256',
     )
     const [, key, value] = match
     assert.ok(key && value && !fields.has(key), 'Duplicate or empty option')
@@ -25,6 +28,7 @@ export function parseContainerVerificationOptions(args: readonly string[]) {
   const run = fields.get('run') ?? ''
   const bootstrap = fields.get('bootstrap') ?? ''
   const bundleSha256 = fields.get('bundle-sha256') ?? ''
+  const expectedManifestSha256 = fields.get('manifest-sha256') ?? ''
   assert.match(
     sourceImageRef,
     /^sha256:[a-f0-9]{64}$/,
@@ -38,6 +42,11 @@ export function parseContainerVerificationOptions(args: readonly string[]) {
   assert.match(run, /^[a-z0-9][a-z0-9-]{0,63}$/, 'A fresh run name is required')
   assert.ok(bootstrap, 'A canonical provided-module bootstrap file is required')
   assert.match(bundleSha256, /^[a-f0-9]{64}$/, 'The expected server bundle SHA256 is required')
+  assert.match(
+    expectedManifestSha256,
+    /^[a-f0-9]{64}$/,
+    'The expected release manifest SHA256 is required',
+  )
   return {
     sourceImageRef,
     expectedPlatformManifestDigest,
@@ -45,7 +54,23 @@ export function parseContainerVerificationOptions(args: readonly string[]) {
     run,
     bootstrap: resolve(bootstrap),
     bundleSha256,
+    expectedManifestSha256,
   }
+}
+
+/** The bootstrap's self-consistent hash must also match the release chosen by the caller. */
+export async function pinContainerVerificationBootstrap(
+  raw: unknown,
+  expectedManifestSha256: string,
+) {
+  assert.match(expectedManifestSha256, /^[a-f0-9]{64}$/)
+  const bootstrap = await createPythonLanguageBootstrap(raw)
+  assert.equal(
+    bootstrap.runtimeRelease.manifestSha256,
+    expectedManifestSha256,
+    'Bootstrap does not match the expected release manifest',
+  )
+  return bootstrap
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -264,6 +289,7 @@ export async function verifyLanguageContainer(args: readonly string[]) {
       platform: options.platform,
       run: options.run,
       bundleSha256: options.bundleSha256,
+      expectedManifestSha256: options.expectedManifestSha256,
     },
     verifierSha256: createHash('sha256')
       .update(await readFile(import.meta.filename))
@@ -285,8 +311,9 @@ export async function verifyLanguageContainer(args: readonly string[]) {
   evidence.cases = cases
   try {
     const bootstrapBytes = await readFile(options.bootstrap)
-    const bootstrap = await createPythonLanguageBootstrap(
+    const bootstrap = await pinContainerVerificationBootstrap(
       JSON.parse(bootstrapBytes.toString('utf8')),
+      options.expectedManifestSha256,
     )
     const python = bootstrap.runtimeRelease.manifest.python
     assert.ok(python, 'Gate requires a Python release')

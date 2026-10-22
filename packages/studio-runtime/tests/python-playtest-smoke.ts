@@ -48,10 +48,7 @@ if (docker) {
     'The Docker proof requires the current trusted image',
   )
 }
-const standardLibrary = JSON.parse(
-  await readFile(path.join(root, '.cache/studio-python-runtime/stdlib-recipe.json'), 'utf8'),
-)
-const build = await buildPythonRuntimeDistribution({ standardLibrary })
+const build = await buildPythonRuntimeDistribution()
 const release = await createStudioRuntimeRelease({
   manifestVersion: 1,
   profileId: 'python-playtest-verify',
