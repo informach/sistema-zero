@@ -77,13 +77,24 @@ As mudanças do renderer e do adaptador Turtle (`f81fd9ae2`, `e1c5fb092`) geram 
 
 ## O que fazer a seguir
 
-1. Integrar a correção do Pro da equipe no Kids e a mensagem amigável de publicação; conferir na pilha local.
-2. Gerar a distribuição atual e a release candidata nova; repetir jogos e F1 contra ela.
-3. Medir F0, F10, a partida de 10 min e os 30 reinícios, e o despertar de timer mais preciso (F3).
-4. Decisões do usuário:
+Feito nesta máquina:
+- Pro da equipe no Kids e mensagem amigável de publicação;
+- distribuição `65c9bffd…` com a camada retida, e a candidata `audio-2` regenerada a partir dela;
+- jogos repetidos contra ela, cada spec isolada: Pac-Man 9/9 e Space Arena 9/9 em cada navegador;
+- F0, F2, F10, a partida de 10 min e os 30 reinícios;
+- `origin/staging` (`84a0c83a7`) integrado;
+- typecheck de 8 pacotes;
+- pilha local refeita com a `65c9bffd…`: verificação HTTP de todas as contas e matriz no navegador, de JS e Python, Clássico e Pro, no Kids e no Adulto, com curso Kids de uma criança nova (`--new-child`).
+
+Falhas herdadas do staging: 16 testes unitários falham também no `origin/staging`, sem relação com este branch. Estão em core 1, member-shell 3, molda 1, admin 6 e members 5, e a maior parte espera o vocabulário anterior ("seção", "fase"). A correção depende de decisão do usuário.
+
+Pendente:
+1. F1 contra a `65c9bffd…`.
+2. Decisões do usuário:
+   - F3: limite literal de 33 ms ou dois quadros;
    - instalar o Docker, que libera o compilador Pro, a inspeção Python e o Pyright localmente;
    - fazer o push para o staging.
-5. Quando o Railway voltar:
+3. Quando o Railway voltar:
    - deploy no staging, ativação do Python, aulas gravadas, Mural e Zappy hospedados;
    - F7 (carga de 30 alunos).
-6. Ao final: REF e MOB.
+4. Ao final: REF e MOB.
