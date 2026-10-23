@@ -1,6 +1,7 @@
 @import "tailwindcss";
 /* Tokens do chassi das ferramentas internas (fonte ÚNICA dos três consoles). */
 @import "@sistemazero/ui/console.css";
+@import "@sistemazero/ui/styles/console-scrollbars.css";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind (registra as cores sz para o
    @source GERAR as utilitárias bg-sz, text-sz, border-sz). Sem isto as classes do Studio
    ficam NO-OP e os modais e menus do editor embutido saem sem fundo nem cor (washed-out).
@@ -187,26 +188,6 @@ a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
 }
 .sz-modal {
   animation: sz-zoom-in 0.15s ease;
-}
-
-/* Scrollbar discreta */
-.scrollbar-subtle {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-.scrollbar-subtle:hover {
-  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
-}
-.scrollbar-subtle::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.scrollbar-subtle::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 9999px;
-}
-.scrollbar-subtle:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--foreground) 18%, transparent);
 }
 
 /* Toast — contraste garantido em ambos os modos */
