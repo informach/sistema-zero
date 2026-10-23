@@ -1761,8 +1761,10 @@ missões do plano (Pinta e Molda). Especificação: `docs/plans/2026-10-16-pensa
 - ⚠️ A arte da colega entra com `libOrigin` da ferramenta dela: com o Pinta/Molda do perfil, o
   "✏️ Editar" aparece e abre a ferramenta num id que não está na galeria DESTE perfil (o recado de
   "sumiu" de lá). Aceito nesta fase.
-- Copy: `teamImport.*` (pt-BR e en). ⚠️ "entregar"/"entrega" é palavra da escola no guarda
-  `copy-vocabulario` do kids: a tela diz "fez"/"terminou".
+- Copy: `teamImport.*` (pt-BR e en). A tela diz "fez"/"terminou", não "entregar"/"entrega". Até
+  21/10/2026 o guarda `copy-vocabulario` do Kids reprovava "entrega" e varria o `studio/src`; desde a
+  unificação da linguagem ele só confere os rótulos antigos de navegação e envio, nos dois apps e no
+  member-shell, e não lê mais este pacote.
 - Testes: `components/assets/TeamImportDialog.test.tsx` (botão com e sem adapter, lista, desenho pelo
   caminho do Pinta com animações, "Trazer de novo" no lugar, gate 3D, textura e modelo pelo caminho do
   Molda, consentimento, not-found, lista que falha/vazia, import atrasado com outro jogo, colisão de

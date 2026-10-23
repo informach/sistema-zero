@@ -2,12 +2,14 @@
 
 > Direção vigente: fonte e linguagem comuns aos dois públicos; consulte [diretrizes](DIRETRIZES-PEDAGOGICAS.md) e [voz](DIRETRIZES-VOZ-ELEVENLABS.md). Os termos técnicos de schema não são rótulos de tela.
 
-> Onde cada coisa está na plataforma **hoje**, lido direto do `sistema-zero` em 20/09/2026 e
-> conferido de novo em 06/10/2026, com o vocabulário da aventura (Diretrizes Pedagógicas, seção 6).
+> Onde cada coisa está na plataforma **hoje**, lido direto do `sistema-zero` em 20/09/2026,
+> conferido em 06/10/2026 e de novo em 23/10/2026, com a linguagem comum de 21/10/2026: curso →
+> módulo → aula → parte nas duas comunidades (Diretrizes Pedagógicas, seção 6). De 06/10 a 21/10 a
+> área da criança usou aventura e fase; a unificação de 21/10 voltou para curso, aula e parte.
 > Serve a todos os cursos. Toda fala de aula que nomeia um menu, uma tela ou um botão confere aqui.
-> Os rótulos do player da aula no Kids estão em `packages/community-kids/src/lib/lesson-copy.ts`,
-> que reexporta `packages/member-shell/src/lib/lesson-copy-kids.ts` (a versão adulta fica em
-> `packages/member-shell/src/lib/lesson-copy.ts`).
+> Os rótulos do player da aula estão no `COMMON_LESSON_COPY` de
+> `packages/member-shell/src/lib/lesson-copy.ts`, o mesmo objeto nas duas comunidades
+> (`lesson-copy-kids.ts` e o `lesson-copy.ts` do Kids só o reexportam).
 >
 > A fonte de cada linha está citada. Quando a plataforma mudar, recomece daqui, não de memória.
 
@@ -27,7 +29,7 @@ autorização dele. Os perfis, as criações e o progresso de antes continuam gu
 
 ⚠️ **"Aluno" não aparece nem nos rótulos da entrada** (desde 10/10/2026, antes da produção: a
 criança clica em **Eu sou criador(a)** e o responsável em **Ir para a área da criança**). Na fala da
-fase e no Como Fazer, quem entra é "você" ou "a criança", como em todo o vocabulário da aventura.
+aula e no Como Fazer, quem entra é "você" ou "a criança".
 Nunca peça a senha do responsável na fala.
 
 Rótulos marcados com † foram decididos em 10/10/2026 e estão sendo aplicados nas telas por outra
@@ -35,7 +37,7 @@ sessão; confira o código antes de gravar uma fala com eles.
 
 | Onde | Rótulos exatos |
 | --- | --- |
-| Escolha de entrada (`/login`; a raiz sem sessão também mostra esta escolha †) | Título **Quem vai entrar?**; cartões **Eu sou criador(a)** (subtítulo "Entre para continuar suas aventuras." †) e **Eu sou responsável**; link **Preciso de ajuda para entrar** |
+| Escolha de entrada (`/login`; a raiz sem sessão também mostra esta escolha †) | Título **Quem vai entrar?**; cartões **Eu sou criador(a)** (subtítulo "Entre para continuar seus cursos.") e **Eu sou responsável**; link **Preciso de ajuda para entrar** |
 | Entrada da criança, perfis (`/login/aluno`) | Título **Quem vai criar hoje?**; no cartão, **Entrar** ou **Pedir código**, o selo **Último perfil usado** e os avisos **O prazo deste acesso terminou.** e **Acesso encerrado neste aparelho.**; botão **Tenho um código**; links **Voltar** e **Preciso de ajuda** |
 | Entrada da criança, código | Títulos **Vamos começar?** ou **Vamos entrar, [nome]?**; campo **Código de acesso** † (era "Código do responsável"); botão **Entrar para criar**; **Voltar aos perfis**. A criança não tem mais "Remover estes perfis do aparelho" †: só a Área dos pais esquece o aparelho |
 | Avisos da entrada | **Foram muitas tentativas. Aguarde 10 minutos e tente novamente.**; **Esse código não liberou o acesso. Confira as letras ou peça um novo código ao responsável.**; **Não conseguimos preparar este navegador. Permita os cookies e tente novamente.**; **Este navegador já está sendo usado por outra família. Use outro navegador.** † |
@@ -52,8 +54,7 @@ Três armadilhas de fala:
    perfil precisa de outro código naquele navegador.
 3. **Outro navegador, janela anônima ou dados do navegador apagados pedem código novo.** Na fala
    para a criança, diga "limpar os dados do navegador", não "cookies". A legenda do formulário
-   dos pais diz "Onde [nome] vai estudar?": não a cite em texto para a criança ("estudar" é
-   palavra da escola).
+   dos pais diz "Onde [nome] vai criar?" (era "vai estudar" até 10/10/2026).
 
 ## 1. O menu da esquerda da Comunidade Kids
 
@@ -62,18 +63,20 @@ Fonte: `packages/community-kids/src/components/kids/nav.ts`
 | Item | Rota | Filhos |
 |---|---|---|
 | **Início** | `/` | — |
-| **Explorar** | `/cursos` | — |
+| **Cursos** | `/cursos` | — |
+| **Oficinas** | `/oficinas` | nenhum (o item só existe no computador; some da barra do celular) |
 | **Criar** | `/criar` | Minhas criações `/criar` · **Estúdio** `/estudio` · **Pinta** `/pinta` · Pensa `/pensa` · Molda `/molda` |
 | **Comunidade** | `/comunidade` | Nossa turma · Mural dos Criadores · Clube dos Criadores · Ranking |
 | **Meu espaço** | `/perfil` | **Meu perfil** `/perfil` · **Meu avatar** `/meu-avatar` · **Meu quarto** `/quarto` |
 
 Três armadilhas de fala:
 
-1. **O item chama Explorar, não Cursos nem Aprender** (06/10/2026). Ele abre o mapa da Jornada do
-   Criador. A rota é `/cursos`, mas ninguém lê rota.
+1. **O item chama Cursos** desde a unificação de 21/10/2026 (foi Aprender desde 03/10 e Explorar de
+   06/10 a 21/10). Ele abre o mapa da Jornada do Criador, com o título **Cursos da Jornada do
+   Criador**. Fala escrita antes de 21/10 que mande clicar em Explorar está desatualizada.
 2. **Estúdio e Pinta são filhos de Criar.** "No menu da esquerda, clica no Pinta" pula um passo:
    primeiro **Criar**, depois **Pinta**.
-3. **Dentro de uma fase ou de uma ferramenta, esse menu começa escondido.**
+3. **Dentro de uma aula ou de uma ferramenta, esse menu começa escondido.**
 
 ## 2. O menu começa escondido na aula e na ferramenta
 
@@ -81,9 +84,9 @@ Fontes: `packages/community-kids/src/components/kids/focus-mode.tsx`, `focus-mod
 `docs/plans/2026-09-19-aula-imersiva-design.md` (19/09/2026)
 
 Na página de aula e nas galerias de criação embarcadas (Estúdio, Pinta, Pensa, Molda), a barra
-esquerda **recolhe sozinha já no primeiro quadro**, e a lista de fases da direita também. O que
+esquerda **recolhe sozinha já no primeiro quadro**, e a lista de aulas da direita também. O que
 traz cada uma de volta é uma setinha sem texto na borda da tela; o nome dela, **Mostrar menu** e
-**Mostrar lista de fases**, existe só para o leitor de tela (`focus-mode-toggle.tsx`). Na fala,
+**Mostrar lista de aulas**, existe só para o leitor de tela (`focus-mode-toggle.tsx`). Na fala,
 diga "a setinha da borda esquerda" ou "a setinha da borda direita". Com um editor
 aberto, a ferramenta toma a largura inteira. A escolha **não** fica guardada entre visitas: toda vez
 que se entra, começa recolhido. Ao voltar para **Criar**, o menu está aberto de novo.
@@ -105,7 +108,7 @@ preferência:
 2. **O botão do bloco de ação de plataforma**, quando o destino é o avatar, o quarto ou o perfil
    (seção 4 abaixo). Também abre em outra aba.
 3. **A setinha do menu (Mostrar menu)**, quando não é nenhum dos dois, que hoje é só a ida ao mapa
-   da Jornada, pelo **Explorar**. A fala manda clicar nela antes de nomear o caminho.
+   da Jornada, pelo **Cursos**. A fala manda clicar nela antes de nomear o caminho.
 
 ## 3. A cor do perfil, que substituiu o tema
 
@@ -145,7 +148,7 @@ A própria plataforma escreve, na seção: "Vá em Meu perfil, escolha a sua cor
 conferir!" e, nas outras duas, "Deixe do seu jeito, salve e volte aqui para eu conferir!"
 
 ⚠️ Duas coisas que a fala precisa dizer e costuma esquecer: **abre em outra aba**, então tem que
-voltar para a aba da fase; e a conferência **não é automática**, tem que clicar em **Verificar minha
+voltar para a aba da aula; e a conferência **não é automática**, tem que clicar em **Verificar minha
 ação**.
 
 ⚠️ A régua do `change-theme` é "escolheu uma cor", não "escolheu a cor X". Nenhuma fala pode mandar
@@ -208,33 +211,36 @@ regra de conclusão muda**, e que a seção de dois lados continua usando a áre
 e as regras atuais. A regra das duas colunas do `ESPEC-MANIFESTO.md` segue valendo sem emenda.
 
 O que mudou em volta: a aula ganhou um rodapé fixo com **Anterior**, **Preciso de ajuda** e **Próxima
-parte**, e na última parte o avanço dá lugar a **Concluir aula** (na comunidade adulta, **Próxima
-seção** e **Concluir aula**). Título da aula, título da seção e índice saíram do corpo; no alto
+parte**, e na última parte o avanço dá lugar a **Concluir aula**, com os mesmos rótulos na
+comunidade adulta desde 21/10/2026 (antes ela dizia **Próxima seção**). Título da aula, título da seção e índice saíram do corpo; no alto
 fica **Parte N de M**. Fala que mande "rola até embaixo e clica em continuar" merece conferência.
 
-## 9. Os rótulos da fase no Kids (06/10/2026; envio e recados revistos à noite)
+## 9. Os rótulos da aula nas duas comunidades (21/10/2026; módulo em 23/10/2026)
 
 Fontes: `packages/community-kids/src/lib/lesson-copy.ts` (que reexporta
 `packages/member-shell/src/lib/lesson-copy-kids.ts`), `lesson-progress.ts`, `lesson-celebration.tsx`,
 `kids-lesson-blocks.tsx`, `recados/page.tsx`, `recados/[threadId]/recado-thread-client.tsx` e
 `recados-bell.tsx`; no member-shell, `studio/studio-block.tsx`, `pinta/pinta-block.tsx` e
-`lesson-gallery-delivery.tsx`. Por dentro, curso, aula e
-seção; na tela, aventura, fase e parte (Diretrizes Pedagógicas, seção 6).
+`lesson-gallery-delivery.tsx`. Na tela e por dentro, curso → módulo → aula → parte (no schema, a
+parte é a seção). "Aventura" só descreve a história de um curso; "fase", só um nível real do jogo.
+"Mundo" e "unidade" não nomeiam o módulo (Diretrizes Pedagógicas, seção 6).
 
 | Onde | Rótulo |
 |---|---|
-| Rodapé da fase | **Anterior** · **Preciso de ajuda** · **Próxima parte**; na última parte, **Concluir aula** |
-| Comemoração da fase | **Fase concluída!** · **Próxima fase** · **Voltar à aventura** |
-| Objetivos do projeto no Estúdio da fase | **Objetivos desta parte** · **Verificar esta parte** · **Objetivo cumprido!** |
-| Cartão do Estúdio da fase | **Seu projeto no Estúdio** · **Enviar meu projeto**, confirmado em **Enviar** (janela **Enviar o seu projeto?**, campo **Recado (opcional)**) · **Enviar de novo**, confirmado em **Reenviar** · depois do envio, **Projeto enviado!** e, quando a equipe confere, **A equipe já viu o seu projeto.** |
-| Pinta da fase | **Enviar meu desenho**, confirmado em **Enviar** (janela **Enviar o seu desenho?**) · **Enviar de novo** · **Desenho enviado!** · **A equipe já viu o seu desenho.** |
+| Rodapé da aula | **Anterior** · **Preciso de ajuda** · **Próxima parte**; na última parte, **Concluir aula** |
+| Comemoração da aula (Kids) | **Aula concluída!** · **Próxima aula** · **Voltar ao curso** |
+| Objetivos do projeto no Estúdio da aula | **Objetivos desta parte** · **Verificar esta parte** · **Objetivo cumprido!** |
+| Cartão do Estúdio da aula | **Seu projeto no Estúdio** · **Enviar meu projeto**, confirmado em **Enviar** (janela **Enviar o seu projeto?**, campo **Recado (opcional)**) · **Enviar de novo**, confirmado em **Reenviar** · depois do envio, **Projeto enviado!** e, quando a equipe confere, **A equipe já viu o seu projeto.** |
+| Pinta da aula | **Enviar meu desenho**, confirmado em **Enviar** (janela **Enviar o seu desenho?**) · **Enviar de novo** · **Desenho enviado!** · **A equipe já viu o seu desenho.** |
 | Entrega pela galeria | **Escolher no Pinta** ou **Escolher no Estúdio** · janela **Minhas criações do Pinta** (ou **do Estúdio**) · campo **Recado (opcional)** · **Enviar (1)** · **Recebido!** · **Enviar outra versão** |
 | Pedido de ajuda | **Preciso de ajuda** · **Enviar para a equipe** · **Ver conversa** |
 | Recados | **Recados da equipe** (no sino, **1 recado novo da equipe**; autor **Equipe**; sem título próprio, **Conversa com a equipe**) · **Voltar à parte: …** (`teacher-lesson-link.tsx`) |
-| Ampliação | **Ampliar jogo** ou **Ampliar experiência** · **Voltar à fase** |
+| Ampliação | **Ampliar jogo** ou **Ampliar experiência** · **Voltar à aula** |
 | Certificado | **Baixar meu certificado** · **Baixar certificado (PDF)** |
 | Material | selo **Baixe**; o título do caderno vem do manifesto: **Passo a passo do projeto: …** |
 
+| Trilha do curso (Kids) | cada módulo aparece como **Módulo N**, e o baú diz **Você terminou o Módulo N** (`course-trail.tsx`, `chest-reward.tsx`; era "Mundo" até 23/10/2026) |
+
 Quem recebe os envios e responde os recados é **a equipe** desde a noite de 06/10/2026 (era "guia"),
-e o botão de envio diz o que a criança envia. Fora da fase, a missão de envio diz **Envie um projeto**
-e o painel das tarefas do Pensa continua **Guia do Pensa**.
+nas duas comunidades desde 21/10/2026, e o botão de envio diz o que se envia. Fora da aula, a missão
+de envio diz **Envie um projeto** e o painel das tarefas do Pensa continua **Guia do Pensa**.

@@ -221,6 +221,17 @@ Kids:
   (`ProBuilderPanel`: "passos do Zappy"; `ZappyCredits`: "Vale para o Zappy e o Pensa"; `ShareDialog`:
   "Gerar resumo com o Zappy") seguem o mesmo vocabulário desde 20/10/2026.
 
+## Linguagem das aulas: a mesma do Kids (21/10/2026; módulo em 23/10/2026)
+
+Desde a unificação de 21/10/2026 as duas comunidades usam os mesmos nomes: **curso → módulo → aula →
+parte** ("módulo" para o grupo de aulas foi decidido em 23/10/2026 e vale também no Admin). Rótulos:
+**Próxima parte**, **Partes da aula**, **Verificar esta parte**, **Objetivos desta parte**, **Enviar meu
+projeto**, **Enviar de novo**, **Concluir aula** e **Baixar meu certificado**; o material é **Passo a passo
+do projeto** e quem recebe e responde é **a equipe**. A comunidade adulta deixou de dizer "Próxima seção"
+e "professor" nas telas de aula. O contrato é o `COMMON_LESSON_COPY` do member-shell (o
+`ADULT_LESSON_COPY` é o mesmo objeto); a regra está nas Diretrizes Pedagógicas, seção 6, e o guarda dos
+rótulos antigos (`community-kids/tests/copy-vocabulario.test.ts`) também varre o `src/` daqui.
+
 ## Entrada, páginas públicas, perfil público e Ajuda (19/10/2026)
 
 O resto do Canvas "Comunidade adulta · direção de arte" (as pranchas de entrada, páginas sem login,
@@ -261,7 +272,7 @@ avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção an
   sempre montada (`LiveMessage`) e o foco vai para o título ou o campo do passo novo.
 - **Perfil público** (`/criador/[id]`): faixa marinha com foto grande e quatro números, jogos antes
   das conquistas, conquistas com a explicação (`adultBadgeInfo` de `src/lib/adult-badges.ts`: o
-  texto adulto, sem "fase"/"aventura"/"quarto", com o ícone do `BADGE_INFO` do member-shell; mora
+  texto adulto, sem o "quarto" do Kids nem os nomes que o Kids usou de 06/10 a 21/10/2026 ("fase", "aventura"), com o ícone do `BADGE_INFO` do member-shell; mora
   AQUI porque o guarda `copy-vocabulario` do Kids varre o member-shell), espaço 3D "Só para ver" e o
   aviso quando o perfil é seu. O voltar segue `?de=mural|ranking|perfil`.
 - **Mural, não Mostra**: a vitrine adulta se chama Mural dos Criadores em toda tela, como no Kids.
@@ -742,7 +753,7 @@ valida e só então importa o `server.js` standalone).
   `kind: rich_text|video|image|audio|quiz|embed|ebook|studio` + anexos + `positionSeconds`; bloco quiz vem
   **SEM gabarito** e com `quizState`; **bloco `studio`** vem com a config inteira (`initialProject`/level/
   allowlist — não é segredo) + `studioState{submitted}` — o editor embarcado roda no client (ssr:false),
-  WIP no IndexedDB local, e "Enviar para o professor" faz `POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`;
+  WIP no IndexedDB local, e "Enviar meu projeto" faz `POST /api/members/lessons/:lessonId/blocks/:blockId/studio-submission`;
   **anexo vem SEM `url`** — o download é pela rota BFF
   `/api/cursos/:slug/aulas/:lessonId/anexos/:id`, que resolve a localização real via
   `GET …/attachments/:attachmentId/resolve` → `AttachmentDownloadView{storageRef}` e aplica a

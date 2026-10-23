@@ -61,8 +61,7 @@ padrão de tudo abaixo continua sendo o Kids, byte por byte.
   do `EbookBlockView` nos DOIS apps; o arquivo se baixa pelo bloco de materiais. O acesso conta
   ao abrir o livro (`onMaterialAccess('opened')`); o `downloaded` antigo segue valendo no core.
 - **`lib/help-return.ts`** (`resolveHelpReturn(valor, rótulo)`): a allowlist do `?voltar=` do Como
-  fazer saiu do Kids para cá (o Kids reexporta com "Voltar para a fase"; o adulto usa "Voltar para a
-  aula") e devolve também `courseSlug`/`lessonId`.
+  fazer saiu do Kids para cá (os dois apps usam "Voltar para a aula" desde 21/10/2026) e devolve também `courseSlug`/`lessonId`.
 - **Meu avatar 3D e Meu espaço 3D na pele adulta** (`skin="adult"`, `components/cosmetics`): a
   MESMA lógica (`configurator.tsx`, `room-builder.tsx`) com outra tela (`configurator-adult.tsx`,
   `room-builder-view-adult.tsx`) e as frases de `skin.ts`. ⚠️⚠️ A tela adulta só entra por uma
@@ -103,7 +102,7 @@ descoberta). O resultado guardado (`savedResults`) volta ao reabrir; o desta tel
 projeto depois de verificar marca o resultado como "de antes da mudança": o bloco passa
 `subscribeProjectChanges` (o `onChange` do Estúdio com `updatedAt`) e só uma edição POSTERIOR à
 verificação conta (o autosave do mesmo projeto não). As frases moram em `copy.verificacao` do
-`LessonCopy` (os dois vocabulários). Ganchos `sz-lesson-objectives*`/`sz-lesson-objective*` com
+`LessonCopy` (o contrato comum desde 21/10/2026). Ganchos `sz-lesson-objectives*`/`sz-lesson-objective*` com
 `data-state`/`data-extra`/`data-stale` (invariante 8). O antigo `StudioActivityPanel`, o
 `getActivityResult` do envio e o `STUDIO_GATE_NOT_PASSED` saíram. `LessonDetailView.sections[]
 .completion` aceita a vista (aluno) OU a `SectionCompletion` inteira (prévia do admin);
@@ -466,7 +465,7 @@ bloquinhos". Duas causas, quatro regras:
   bloco: as keys do player são estáveis.
 - **Só atualiza quando muda algo que a página precisa**: o "Verificar esta parte" só quando passou
   (como o "Verificar minha ação"); a tentativa da experiência e a do jogo pronto/pergunta só na
-  PRIMEIRA vez que passam (o progresso já vem na resposta). No Kids, o refresh do "Concluir fase"
+  PRIMEIRA vez que passam (o progresso já vem na resposta). No Kids, o refresh do "Concluir aula"
   espera a celebração fechar.
 
 ## Rascunho da fase guardado na conta (10/10/2026)
@@ -721,7 +720,7 @@ Não confundir estrutura verificada no servidor com execução comprovada do jog
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido da dona para os dois apps: a tela diz **o Zappy** (o tutor do Estúdio; no Kids, também as
-falas das fases, que são da equipe e não gastam), **o Pensa**, **créditos** (o que os assistentes
+falas das aulas, que são da equipe e não gastam), **o Pensa**, **créditos** (o que os assistentes
 gastam: Zappy no Estúdio, Pensa, a descrição automática do Mural em `server/openrouter.ts` e o
 "Construir" do Pro) e **assistente virtual**, nunca "IA" solta. Aqui: "A conexão do Zappy precisa da
 atenção do responsável…" (`routes/studio-zappy.ts`), a recusa de reserva do "Construir"
@@ -736,61 +735,67 @@ autor da resposta automática do atendimento segue **"Assistente de IA"** (`cust
 `components`, `lib`, `routes` e `server` deste pacote (texto de tela pelo parser; o `new Error` de
 `server/` e os prompts do modelo não contam). Vocabulário completo nos CLAUDE.md dos dois apps.
 
-## O vocabulário das telas de aula: `LessonCopy` (06/10/2026)
+## A linguagem das telas de aula: `LessonCopy` (21/10/2026; módulo em 23/10/2026)
 
-As telas de aula que os dois apps dividem falam a língua de cada app: no adulto curso, aula, seção e
-professor; no Kids aventura, fase, parte, equipe e Mapa da Aventura (decisão da dona, Diretrizes Pedagógicas,
-seção 6). Por dentro (rotas, ids, Admin) tudo segue com os nomes de sempre. ⭐ No Kids os botões de envio
-dizem o que vai, sem destinatário ("Enviar meu projeto", "Enviar meu desenho", "Enviar (2)"), e quem lê é
-"a equipe": o "guia" saiu da tela da criança no mesmo 06/10/2026 (fica só o "Guia do Pensa", que é painel).
+Desde a unificação de 21/10/2026, as telas de aula que os dois apps dividem falam a MESMA língua:
+**curso → módulo → aula → parte** (o nome "módulo" para o grupo de aulas foi decidido em 23/10/2026,
+valendo também para o Admin), com **Próxima parte**, **Partes da aula**, **Verificar esta parte**,
+**Objetivos desta parte**, **Enviar meu projeto**, **Enviar de novo**, **Concluir aula**, **Baixar meu
+certificado**, o material **Passo a passo do projeto** e **a equipe** como quem recebe e responde
+("Recados da equipe"). "Aventura" só descreve a história de um curso e "fase", um nível real de jogo;
+"Mundo" e "unidade" não nomeiam o módulo (a trilha e o baú do Kids dizem "Módulo N" desde 23/10/2026;
+ver o CLAUDE.md do Kids). Regra: Diretrizes Pedagógicas, seção 6 ("Mesmos nomes
+nas duas comunidades"); desenho: `docs/plans/2026-10-21-unificacao-aulas-plataforma-design.md`.
+Histórico: de 06/10 a 21/10/2026 o Kids tinha o próprio vocabulário (aventura, fase, parte, Mapa da
+Aventura) e o adulto dizia seção e professor; a unificação juntou os dois.
 
-- **`lib/lesson-copy.ts`**: o tipo `LessonCopy`, o padrão adulto `ADULT_LESSON_COPY` e os ajudantes
-  `codigoDoErro`/`mensagemDoErro`/**`fraseDoServidor`** (a régua ÚNICA dos dois vocabulários). **`lib/lesson-copy-kids.ts`**: `KIDS_LESSON_COPY`, a régua
-  `PALAVRAS_DA_ESCOLA` e `conclusaoRecusada`. O da criança mora AQUI (e não no Kids, que só o reexporta em
-  `src/lib/lesson-copy.ts`) porque o Admin também o usa.
-- **`components/lesson-copy-context.tsx`**: `LessonCopyProvider` + `useLessonCopy()`. Sem provedor vale o
-  adulto. O Kids embrulha o `(app)` com `KidsLessonCopy`; o Admin embrulha a prévia ("Conferir
-  livremente") e o ensaio com `kids ? KIDS_LESSON_COPY : ADULT_LESSON_COPY` (antes a prévia de uma aula
-  kids dizia "Próxima seção" e "Índice da aula").
-- ⚠️ **Texto de tela compartilhada que diga curso, aula, seção, etapa, caderno, professor ou aluno entra no
-  `LessonCopy`, nunca solto no componente.** O guarda `copy-vocabulario` do Kids varre `components`, `lib`,
-  `routes` e `server` daqui (além do `core/src`, do Estúdio, do Pinta, do Molda e do `ui`) e só deixa passar o
-  `lesson-copy.ts` adulto e exceções com motivo escrito (ver o CLAUDE.md do Kids).
-- **`itemPendente(item)`**: o texto de cada item da faixa "o que falta para seguir". O members manda a voz
-  adulta (`lessonCompletionRequirements`); o Kids troca pelo `kind`.
-- **`erroDoServidor(erro, padrao)`**: no adulto, a frase do servidor; no Kids, código conhecido vira a
-  frase da aventura, código desconhecido usa a frase do servidor só sem palavra da escola, e o resto cai na
-  `padrao`. ⚠️⚠️ **Erro SEM `code` não é do servidor e cai na `padrao` nos DOIS apps**: o `TypeError: Failed
-  to fetch` da rede chegava à tela, em inglês. ⚠️⚠️ O `'ERROR'`/"Algo deu errado." que o `apiSend` INVENTA
-  quando a resposta vem sem envelope (gateway em 502/504, rota com `{ ok: false }`) também conta como
-  ausência (`CODIGO_SEM_ENVELOPE`/`FRASE_SEM_ENVELOPE` em `lib/api.ts`): antes, concluir a fase com o
-  gateway fora mostrava "Algo deu errado." no lugar da frase do componente. O projeto grande demais para
-  conferir (413 `PAYLOAD_TOO_LARGE` da rota, 2 MB) tem frase própria no `SectionProjectCheck`
-  (`verificacao.grandeDemais`), e o Kids mapeia `VALIDATION_ERROR` numa frase que serve para guardar e
-  para conferir. Por isso a recusa do download de material
-  (`downloadLessonAttachment`, `reason: 'refused'`) leva o `code` do envelope, e a falha simulada do ensaio
-  do Admin (`FalhaSimulada`) também tem `code`. ⚠️ O `ApiError` é objeto simples, não `Error`: nunca filtrar
-  com `instanceof Error` antes de chamar (era o bug do `section-project-check`, que nunca mostrava a frase
-  do servidor).
-- **`conclusaoRecusada(erro)`** (`lesson-copy-kids.ts`): o toast do Kids quando o members recusa concluir a
-  fase, com a mesma troca do `erroDoServidor` (inclui `IMPERSONATION_READONLY`, que antes virava "Tente
-  novamente").
+- **`lib/lesson-copy.ts`**: o tipo `LessonCopy`, o objeto único **`COMMON_LESSON_COPY`** ("Linguagem comum
+  das aulas, decisão de 21/10/2026"), o alias `ADULT_LESSON_COPY` (o mesmo objeto), `PALAVRAS_DA_ESCOLA`,
+  `conclusaoRecusada` e os ajudantes `codigoDoErro`/`mensagemDoErro`/**`fraseDoServidor`**.
+  **`lib/lesson-copy-kids.ts`** só reexporta `COMMON_LESSON_COPY` como `KIDS_LESSON_COPY`, mais
+  `PALAVRAS_DA_ESCOLA` e `conclusaoRecusada`, para preservar os imports do Kids e do Admin.
+- **`components/lesson-copy-context.tsx`**: `LessonCopyProvider` + `useLessonCopy()`. O Kids embrulha o
+  `(app)` com `KidsLessonCopy` e o Admin escolhe `KIDS_LESSON_COPY` ou `ADULT_LESSON_COPY` na prévia e no
+  ensaio; hoje os dois apontam para o mesmo objeto, então a escolha só preserva o encaixe.
+- ⚠️ **Texto de tela compartilhada sobre a aula entra no `LessonCopy`, nunca solto no componente.** O guarda
+  `community-kids/tests/copy-vocabulario.test.ts` varre o texto visível de `member-shell/src`,
+  `community/src` e `community-kids/src` atrás de `PALAVRAS_DA_ESCOLA`, que hoje só aponta as variantes
+  antigas (`Concluir fase`, `Próxima fase|seção|etapa`, `Mapa da Aventura`, `Enviar para o professor`).
+  Ele não proíbe curso nem aula; detalhes no CLAUDE.md do Kids.
+- **`itemPendente(item)`**: o texto de cada item da faixa "o que falta para seguir", trocado pelo `kind`
+  com a mesma frase nos dois apps ("Passe no quiz (meta: 70% de acertos)", "Envie o seu projeto",
+  "Conclua a parte anterior").
+- **`erroDoServidor(erro, padrao)`**: código conhecido vira a frase comum, código desconhecido usa a frase do
+  servidor só se ela não casar com `PALAVRAS_DA_ESCOLA`, e o resto cai na `padrao`. ⚠️⚠️ **Erro SEM `code`
+  não é do servidor e cai na `padrao`**: o `TypeError: Failed to fetch` da rede chegava à tela, em inglês.
+  ⚠️⚠️ O `'ERROR'`/"Algo deu errado." que o `apiSend` INVENTA quando a resposta vem sem envelope (gateway
+  em 502/504, rota com `{ ok: false }`) também conta como ausência (`CODIGO_SEM_ENVELOPE`/
+  `FRASE_SEM_ENVELOPE` em `lib/api.ts`): antes, concluir a aula com o gateway fora mostrava "Algo deu
+  errado." no lugar da frase do componente. O projeto grande demais para conferir (413
+  `PAYLOAD_TOO_LARGE` da rota, 2 MB) tem frase própria no `SectionProjectCheck`
+  (`verificacao.grandeDemais`), e `VALIDATION_ERROR` tem uma frase que serve para guardar e para conferir.
+  Por isso a recusa do download de material (`downloadLessonAttachment`, `reason: 'refused'`) leva o
+  `code` do envelope, e a falha simulada do ensaio do Admin (`FalhaSimulada`) também tem `code`. ⚠️ O
+  `ApiError` é objeto simples, não `Error`: nunca filtrar com `instanceof Error` antes de chamar (era o
+  bug do `section-project-check`, que nunca mostrava a frase do servidor).
+- **`conclusaoRecusada(erro)`**: o toast quando o members recusa concluir a aula, com a mesma troca do
+  `erroDoServidor` (inclui `IMPERSONATION_READONLY`, "Sessão de suporte é só leitura. Ative o modo de
+  edição no banner."); sem frase, "Não foi possível concluir a aula. Tente novamente.".
 - **`cena.perguntaMudou`**: o core devolve `PERGUNTA_MUDOU` ("Esta pergunta mudou. Abra a aula de novo.") e
   ⚠️ a constante NÃO muda (contrato com o members); o `SceneConclusion` a reconhece por igualdade e desenha a
-  frase do app ("Abra a fase de novo" no Kids).
+  frase do `LessonCopy`, hoje a mesma.
 - **`secoes.preparando`/`pronta`/`prontaUltima`** (a faixa "o que falta para seguir") e
-  **`secoes.duvida`** (o rótulo do pedido de ajuda): o adulto lê "seção", o Kids "parte" (antes os dois
-  liam "parte").
-- **`estudio.enviado(quando)` e `pinta.enviado(quando)` são FUNÇÕES** (a data do envio ou `null`): o adulto
-  lê "Projeto enviado ao professor em <data>." como sempre, e o Kids "Projeto enviado!" ou "Projeto
-  enviado! Foi em <data>.". Emendar a data num texto que já fecha com "!" saía "enviado! em…". O título da
-  confirmação do Pinta também entrou no `LessonCopy` (`pinta.confirmarEnviar`/`confirmarReenviar`); o
-  botão dela segue "Enviar". ⚠️ O rótulo do recado do Estúdio no Kids é só "Recado": o componente completa
-  com "(opcional)". O da galeria já vem completo ("Recado (opcional)").
-- **`secoes.voltarParaSecao`**: o rótulo do `TeacherLessonLink`. **`secoes.indice` e `secoes.lista` têm nomes
-  DIFERENTES** (o `summary` e o `nav` do índice; dois marcos com o mesmo nome o leitor não separa): "Índice da
-  aula"/"Seções da aula" e "Partes da fase"/"Escolha uma parte da fase".
-- Testes: `community-kids/tests/copy-vocabulario.test.ts` (o guarda e as trocas), a prévia e o ensaio em
+  **`secoes.duvida`** (o rótulo do pedido de ajuda): os dois apps leem "parte".
+- **`estudio.enviado(quando)` e `pinta.enviado(quando)` são FUNÇÕES** (a data do envio ou `null`): "Projeto
+  enviado!" ou "Projeto enviado! Foi em <data>.", nos dois apps. Emendar a data num texto que já fecha com
+  "!" saía "enviado! em…". O título da confirmação do Pinta também está no `LessonCopy`
+  (`pinta.confirmarEnviar`/`confirmarReenviar`); o botão dela segue "Enviar". ⚠️ O rótulo do recado do
+  Estúdio é só "Recado": o componente completa com "(opcional)". O da galeria já vem completo ("Recado
+  (opcional)").
+- **`secoes.voltarParaSecao`** ("Voltar à parte"): o rótulo do `TeacherLessonLink`. **`secoes.indice` e
+  `secoes.lista` têm nomes DIFERENTES** (o `summary` e o `nav` do índice; dois marcos com o mesmo nome o
+  leitor não separa): "Partes da aula" e "Escolha uma parte da aula".
+- Testes: `community-kids/tests/copy-vocabulario.test.ts` (o contrato e o guarda), a prévia e o ensaio em
   `admin/tests/lesson-structure-preview.test.tsx` e `lesson-rehearsal.test.tsx`, e a pergunta mudada em
   `community-kids/tests/lesson-experimentation.test.tsx`.
 
@@ -802,11 +807,11 @@ dizem o que vai, sem destinatário ("Enviar meu projeto", "Enviar meu desenho", 
 | Route handlers (`createShellRoutes`) — a LÓGICA inteira de `/api/*` | `route.ts` de 1-3 linhas (`export const { POST } = shell.routes.x`) |
 | `createMemberProxy` (anti-CSRF + gate + rotação pré-render) | `proxy.ts` com config do app + `matcher` LITERAL |
 | Libs puras (csrf, download-mime, act, format, markdown, types, api, cn…) | — |
-| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar para o professor" (com confirmação + campo OPCIONAL de **recado ao professor** no modal → corpo `message`, ≤1000, trim; o client `submitStudioProject` e o handler `studioSubmit` repassam) + "Expandir" (tela cheia por **overlay CSS** `fixed inset-0 z-50` no card, **NÃO** a Fullscreen API nativa — ela restringe a pintura à subárvore do elemento e some com os menus/diálogos PORTALADOS no body, ex.: o três-pontinhos do editor "não fazia nada"; o overlay cobre a navegação z-40 e o botão "Reduzir"/Esc mora no cabeçalho DENTRO dele; trava o scroll
+| Componentes de DOMÍNIO (vimeo-player, lesson-blocks, quiz-block, ebook 3D, **studio/studio-block** — editor @sistemazero/studio embarcado, dynamic ssr:false, rascunho LOCAL IndexedDB chaveado por bloco, "Enviar meu projeto" (com confirmação + campo OPCIONAL de **recado à equipe** no modal → corpo `message`, ≤1000, trim; o client `submitStudioProject` e o handler `studioSubmit` repassam) + "Expandir" (tela cheia por **overlay CSS** `fixed inset-0 z-50` no card, **NÃO** a Fullscreen API nativa — ela restringe a pintura à subárvore do elemento e some com os menus/diálogos PORTALADOS no body, ex.: o três-pontinhos do editor "não fazia nada"; o overlay cobre a navegação z-40 e o botão "Reduzir"/Esc mora no cabeçalho DENTRO dele; trava o scroll
 do body enquanto expandido via `useBodyScrollLock` do ui — REFCONTADO com o `Dialog`, senão a barra de
 rolagem fantasma da página atrás voltava ao fechar o "Enviar?"; ⚠️ o estado `expanded` PERSISTE por
 projeto num Map de MÓDULO (`expandedByProject`, restaurado no lazy `useState` + espelhado por effect):
-o "Enviar para o professor" dispara `router.refresh()` que RE-MONTA o `StudioBlockView` (a aula
+o "Enviar meu projeto" dispara `router.refresh()` que RE-MONTA o `StudioBlockView` (a aula
 re-renderiza com `submitted:true`) e um `useState` comum voltava a `false` → a criança caía da tela
 cheia ao enviar; só "Reduzir"/Esc saem dela agora, F5 limpa o Map) —, anexos, progress-bar, impersonation-banner, user-avatar) — 100% em tokens CSS, vestem o tema do app | Componentes de IDENTIDADE (topnav, user-menu, cards, auth-shell) + globals.css/tokens |
 | Helpers de cookie (`sessionCookieNames`/`prefixedCookieName`/`expireCookieOptions`) | CONSTANTES `sz_member_*`/`sz_kids_*` (compile-time POR APP — cookies não escopam por porta em dev) |
@@ -1432,9 +1437,9 @@ fila só libera o job após o TTL do PUT + margem. Produção do kids falha no b
 O irmão do bloco `studio`, para DESENHO. `PintaBlockView`
 (`components/pinta/pinta-block.tsx`, wired no `lesson-blocks.tsx`) monta o
 `<PintaLesson>` de `@sistemazero/pinta/lesson` (import dinâmico no effect — IndexedDB/canvas
-não existem no SSR), com "Enviar para o professor" (recado opcional), **"Baixar o desenho"**
+não existem no SSR), com "Enviar meu desenho" (recado opcional), **"Baixar o desenho"**
 (`.pinta.json` de UM asset — o mesmo envelope que a galeria do Pinta restaura, então a criança
-importa lá sem ponte nova), Expandir e o selo "o professor já viu".
+importa lá sem ponte nova), Expandir e o selo "A equipe já viu o seu desenho.".
 
 - ⭐ **O rascunho É o armazenamento injetado.** Diferente do Estúdio (store local próprio +
   seed por prop), aqui o `<PintaLesson>` recebe `createPintaPersistence({namespace})` — um banco
@@ -1837,7 +1842,7 @@ botão; o kids veste por cima com a TV navy.
   perdeu; fechar a tela ampliada devolve o vídeo ao lugar sem parar. ⚠️ O modo mostrado é DERIVADO no render (`player && anyExpanded && floatVideoId ?
   escolha : null`): fechar a tela ampliada esconde de novo o painel do conteúdo (modo de abas) no
   MESMO render da devolução do foco, sem um quadro de layout trocado embaixo dela.
-- **Outro diálogo por cima** (o "Enviar para o professor?" do Estúdio ampliado, o diálogo do Pinta,
+- **Outro diálogo por cima** (o "Enviar o seu projeto?" do Estúdio ampliado, o diálogo do Pinta,
   uma celebração do kids): o flutuante fica `invisible` + `inert` e perde a marca de
   acompanhante enquanto existir um `[aria-modal="true"]` que não seja uma tela ampliada
   (`MutationObserver` só com o modo ativo, filtrando `aria-modal`). O vídeo segue tocando.
@@ -2497,7 +2502,7 @@ acrescenta mais o modelo da cena automaticamente.
   fora da janela (`block: 'nearest'`).
 - **Certo** mostra o `feedback` do servidor (a explicação do professor) e a regra; **errado** é âmbar com a
   palavra do servidor (o gabarito não sai de lá); `PERGUNTA_MUDOU` oferece "Abrir de novo" e a frase desenhada é
-  a do vocabulário do app (`copy.cena.perguntaMudou`, ver "O vocabulário das telas de aula"). Resposta enviada
+  a do vocabulário do app (`copy.cena.perguntaMudou`, ver "A linguagem das telas de aula"). Resposta enviada
   com a cena DESFEITA vira a caixa neutra "Para conferir, deixe a cena como estava quando você descobriu."
   (`aguardaCena`), nunca âmbar. ⚠️ Toda região viva (esta, a do Conferir, a de anúncios) existe SEMPRE, com o
   texto por dentro: montada junto do conteúdo, não é anunciada.

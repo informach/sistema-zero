@@ -1,5 +1,12 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+> **Linguagem vigente (21/10/2026; módulo em 23/10/2026):** a criança lê a mesma linguagem da
+> comunidade adulta, curso → módulo → aula → parte, e quem recebe e responde é a equipe. A regra
+> está em §"Curso, módulo, aula e parte nas duas comunidades" e nas Diretrizes Pedagógicas, seção 6.
+> De 06/10 a 21/10/2026 a área da criança usou o vocabulário da aventura (aventura, fase, Mundo,
+> Mapa da Aventura). Nos registros datados abaixo, "fase" e "aventura" costumam ser o nome daquela
+> época para aula e curso; os rótulos de tela de hoje estão no `COMMON_LESSON_COPY` do member-shell.
+
 ## Jornada canônica (implementação isolada, 19/10/2026)
 
 Mapa, trilha, requisitos, ferramentas e celebrações Kids leem a mesma view de política/earned
@@ -61,8 +68,8 @@ no CLAUDE.md do member-shell, §"Cursos ao vivo"). Aqui moram a página e a pele
   da fase: o `LessonSections` do Kids (`kids`, `immersive`, `KidsLessonBlocks`) com o
   `LessonPlayerProvider` de sempre, a transmissão em `stage`, as partes conduzidas em
   `sectionControl` e `liveWorkspace` com `publishToMural: true` (o bloco Estúdio é o projeto ao
-  vivo e publica no Mural). "Concluir fase" usa a mesma rota da fase gravada (XP, foguinho e missões
-  pela mesma régua) e avisa por toast, sem a celebração que navegaria por `<Link>`.
+  vivo e publica no Mural). "Concluir aula" usa a mesma rota da aula gravada (XP, foguinho e missões
+  pela mesma régua) e avisa por toast ("Aula concluída!"), sem a celebração que navegaria por `<Link>`.
   ⚠️⚠️ Nada aqui chama `router.refresh()`: atualizar a fase é RELER o JSON (`useLiveLesson`), senão
   um deploy recarregaria a página e derrubaria a chamada.
 - **Primeiro quadro e espera**: a página lê a sala e a fase no servidor (`loadLiveRoomInitial` do
@@ -215,7 +222,7 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
 
 O `lesson-player-client` liga `refreshAfterLearning/Quiz/Studio` ao `useLessonRefresh` do
 member-shell (junta pedidos e espera a atividade ampliada fechar; ver o CLAUDE.md de lá), e o
-refresh do "Concluir fase" espera a celebração fechar OU a rota mudar (ela já mostra o retrato da
+refresh do "Concluir aula" espera a celebração fechar OU a rota mudar (ela já mostra o retrato da
 resposta, e um build novo no servidor transformaria o refresh em recarregamento). Quem guarda
 esse pedido é o `LessonCompletionRefreshProvider`, no layout `(app)`, isolado por sessão: a
 navegação do Next preserva o layout com XP, moedas e ferramentas, e só trocar a página não
@@ -293,13 +300,17 @@ fontes **Baloo 2** (display) + **Nunito** (corpo) + Geist Mono (código), microi
 bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
 
 ⭐⭐ **Nav: cinco seções, e as três com destinos por dentro ABREM em vez de navegar (09/2026).**
-⭐ **O item da Jornada chama "Explorar" desde 06/10/2026** (era "Aprender" desde 03/10; decisão da
-dona, junto com o vocabulário da aventura): o menu diz o que a criança FAZ ali, em par com o "Criar"
-(o caminho guiado × a criação livre); a página `/cursos` é "Aventuras da Jornada do Criador" e todo o
-"sua jornada" de dentro fica. Trava: `tests/copy-jornada.test.ts`. Os tutoriais do "Como fazer" e os
-prints acompanham (a lista do que refazer está em `docs/como-fazer/PRINTS-A-REFAZER-2026-10-06.md`).
-`NAV_ITEMS` (= `MOBILE_NAV_ITEMS`) tem Início, Explorar, Criar, Comunidade e Meu espaço. As três
-últimas têm **`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
+⭐ **O item da Jornada chama "Cursos" desde a unificação de 21/10/2026**, o mesmo nome da comunidade
+adulta, em par com o "Criar" (o caminho guiado × a criação livre); a página `/cursos` é "Cursos da
+Jornada do Criador" e todo o "sua jornada" de dentro fica. Histórico: "Aprender" desde 03/10 e
+"Explorar" de 06/10 a 21/10/2026, junto com o vocabulário da aventura. Trava: `tests/copy-jornada.test.ts`
+(a lista exata dos rótulos do menu e o título da página). O comentário de `nav.ts` e o cabeçalho
+desse teste ainda citam "Explorar" ou datam "Cursos" de 06/10; vale o código. Os tutoriais do "Como
+fazer" e os prints acompanham (a lista de 06/10 está em `docs/como-fazer/PRINTS-A-REFAZER-2026-10-06.md`,
+a de 20/10 em `docs/como-fazer/PRINTS-2026-10-20.md`).
+`NAV_ITEMS` tem Início, Cursos, Oficinas (só no computador, `desktopOnly`), Criar, Comunidade e Meu
+espaço; `MOBILE_NAV_ITEMS` é a mesma lista sem as Oficinas. Criar, Comunidade e Meu espaço têm
+**`children`**, e é isso que o menu desenha: no computador um `<details>` controlado
 (o padrão nativo do "Minhas ferramentas"), no celular uma **gaveta** sobre a barra de abas
 (`useModalA11y`, o mesmo das celebrações). O agrupamento de 07/09 tinha deixado as ferramentas a
 dois cliques e uma página no meio, e as crianças reclamaram do caminho no vaivém Estúdio↔Pinta.
@@ -307,7 +318,7 @@ dois cliques e uma página no meio, e as crianças reclamaram do caminho no vaiv
   deixa o Criar aberto, então o Pinta fica a UM clique. A escolha da criança vale até a próxima
   navegação, quando o menu volta a refletir onde ela está.
 - ⚠️ **O clique no nome do grupo ABRE, não navega** (decisão da dona): a página da seção é o
-  primeiro filho ("Meus trabalhos" → `/criar`, "Nossa turma" → `/comunidade`, "Meu perfil" →
+  primeiro filho ("Minhas criações" → `/criar`, "Nossa turma" → `/comunidade`, "Meu perfil" →
   `/perfil`). Quem esperava navegar paga um clique a mais; o que torna isso aceitável é o grupo da
   página já nascer aberto.
 - ⚠️⚠️ **O `match` é DERIVADO dos filhos** (`navMatch`), nunca escrito à mão: o menu é a fonte
@@ -396,7 +407,7 @@ no negative-lookahead do matcher do proxy); env `APP_PUBLIC_URL` p/ o QR. O memb
 o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell — editor embarcado
 (altura `h-[36rem] lg:h-[40rem]` desde 09/2026, quando ele passou a dividir a tela com o conteúdo
 da seção; mudança no member-shell, vale tb no adulto),
-rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
+rascunho local, "Enviar meu projeto" (o modal "Enviar o seu projeto?" tem um campo OPCIONAL de recado à equipe; compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
 (o `STUDIO_GATE_NOT_PASSED` da nota mínima saiu em 18/10/2026); o `lesson-player-client`
 distingue os dois no toast/botão. O player compartilhado `LessonSections` mostra uma seção por vez e mantém uma instância do editor entre seções, ocultando-a quando não usada. O índice é livre dentro da aula desbloqueada.
 Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
@@ -571,10 +582,13 @@ silenciar ali, e a criança volta a ler *"Falta 1 curso para você virar Constru
 
 ## Vocabulário do ALUNO × vocabulário da EQUIPE (08/2026)
 
-O aluno nunca lê a linguagem com que a gente MONTA o curso. Três termos são internos e não podem
-aparecer na área da criança: **"curso-base"**, **"etapa"** e os nomes de degrau (**"Iniciante 2D"**,
-"Avançado 3D"…). Para a criança, trilha se chama pelo POSTO dela: **"Trilha Faísca"**, **"Trilha
-Construtor(a)"**. `courseTierOf`/`COURSE_TIER_LABELS` seguem vivos como LÓGICA (horizonte, trava,
+O aluno nunca lê a linguagem com que a gente MONTA o curso. Termos internos que não aparecem na
+área da criança: **"curso-base"** e os nomes de degrau (**"Iniciante 2D"**, "Avançado 3D"…), que o
+guarda reprova, e **"etapa"** como nome de degrau ou de pedaço da aula (dentro da aula a palavra é
+**parte**; "etapa" só fica quando é uma etapa real do método ZERO/Pensa, regra de 21/10/2026).
+Curso, módulo, aula e parte NÃO são mais termos internos: desde 21/10/2026 são os nomes de tela
+(ver §"Curso, módulo, aula e parte nas duas comunidades"). Para a criança, trilha se chama pelo
+POSTO dela: **"Trilha Faísca"**, **"Trilha Construtor(a)"**. `courseTierOf`/`COURSE_TIER_LABELS` seguem vivos como LÓGICA (horizonte, trava,
 admin) — o que saiu foi a exibição. O `course-level-chip.tsx` (selo "Iniciante 2D" na capa do card)
 foi APAGADO por isso.
 
@@ -583,8 +597,8 @@ publicados** (1 em Primeiros Passos e 8 em todos os demais). Com o
 degrau pela metade, "faltam 2 para virar Inventor(a)" é mentira: a criança fecha os 2 e não sobe.
 `journeyProgress` devolve `hint: null` nesse caso e as telas silenciam; quando o degrau enche, o
 `remaining` do members vira verdade e a frase volta sozinha. O retorno por curso nesse meio-tempo é
-a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 aventuras
-prontas"), nunca do que falta para subir — e desde 15/08 elas contam a TRILHA INTEIRA, bônus
+a GAVETA nova no Estúdio. As bolinhas do nó ficam, mas falam do que EXISTE ("1 de 3 cursos
+prontos"), nunca do que falta para subir — e desde 15/08 elas contam a TRILHA INTEIRA, bônus
 incluído (ver "O contador do medalhão" abaixo).
 
 ⚠️ **O POSTO não anuncia mais kit de blocos.** Desde a reforma do currículo (08/2026) quem entrega
@@ -601,17 +615,18 @@ com arquivo:linha se sobrar travessão em texto visível, `aria-label` ou `<titl
 assere que LEU arquivos — guarda que não lê nada aprova tudo, em silêncio. O irmão
 **`tests/copy-vocabulario.test.ts`** faz o mesmo com o JARGÃO ("curso-base", "Iniciante 2D"),
 que já tinha voltado duas vezes por componente novo; os dois dividem a máquina de estados em
-`tests/helpers/copy-scan.ts`. Desde 06/10/2026 o mesmo arquivo guarda o vocabulário da aventura (abaixo).
+`tests/helpers/copy-scan.ts`. Desde 21/10/2026 o mesmo arquivo guarda a linguagem comum das aulas
+(abaixo); de 06/10 a 21/10 ele guardava o vocabulário da aventura.
 
 ## O recurso tem nome, sem "IA" solta (20/10/2026)
 
 Pedido dela (o mesmo da comunidade adulta, com o mesmo vocabulário): a tela nomeia o RECURSO, não
 a tecnologia.
 
-- **o Zappy**: o mascote que fala nas fases ("falas do Zappy") e a ajuda do Zappy no Estúdio.
+- **o Zappy**: o mascote que fala nas aulas ("falas do Zappy") e a ajuda do Zappy no Estúdio.
 - **o Pensa**: planeja o jogo com a criança, em missões.
 - **créditos**: o que o Zappy no Estúdio e o Pensa gastam, da família inteira. ⚠️ As **falas do
-  Zappy nas fases** são escritas pela equipe e NÃO gastam crédito. Gastam: cada pergunta ao Zappy no
+  Zappy nas aulas** são escritas pela equipe e NÃO gastam crédito. Gastam: cada pergunta ao Zappy no
   Estúdio, cada pedido ao Pensa, a descrição automática ao publicar no Mural (`server/openrouter.ts`
   do member-shell) e o "Construir com Zappy" do modo Pro (`server/studio-builder.ts`). Na área dos
   pais: "Créditos do Zappy e do Pensa neste mês" com `CREDIT_USES` e "Na tela da criança, os
@@ -624,7 +639,7 @@ a tecnologia.
 - **assistente virtual** (decisão dela, 20/10/2026), nunca "assistente automático".
 - **"IA" fica só no aviso de transparência aos pais**, `AI_DISCLOSURE` do `ai-credits-card.tsx`:
   "A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência
-  artificial. As falas do Zappy nas fases são escritas pela nossa equipe, e nos Recados quem
+  artificial. As falas do Zappy nas aulas são escritas pela nossa equipe, e nos Recados quem
   responde é a equipe." ⚠️ Ele mora no `AiTransparencyNotice` ("Quem responde à criança"), montado
   na Conta ao lado do cartão de créditos e FORA dele: o cartão some quando a consulta falha e para
   a equipe, e o aviso não pode sumir junto. No atendimento compartilhado (member-shell), o autor da
@@ -640,81 +655,95 @@ a tecnologia.
   Zappy"; `ProBuilderPanel`: "passos do Zappy" e "ideias da família"; `ZappyPanel`: "ideias"). O
   painel do Zappy diz à criança: "O Zappy é um assistente virtual, não uma pessoa da equipe."
 
-## A criança lê aventura, não escola (06/10/2026)
+## Curso, módulo, aula e parte nas duas comunidades (21/10/2026; módulo em 23/10/2026)
 
-⭐⭐ Decisão da dona: a área da criança é um lugar de criar jogos, não uma extensão da escola. No que a
-criança lê, curso é **aventura**, aula é **fase**, seção (e etapa) é **parte**, unidade é **Mundo**, o
-Caderno do Aluno é o **Mapa da Aventura** e quem lê os projetos e responde os recados é **a equipe**. Também
-saem atividade, entrega, trabalho, devolutiva, lição, formatura, diploma, estudar e nota mínima ("Meta: N%
-de acertos"). A regra e o glossário estão nas Diretrizes Pedagógicas, seção 6. Por dentro nada muda:
-rotas (`/cursos/…/aulas/…`), ids, Admin e a ÁREA DOS PAIS (`/perfis`, `/responsavel`) seguem com curso,
-aula e professor, que é a língua dos adultos.
+⭐⭐ Decisão da dona em 21/10/2026, que desfez a de 06/10: a área da criança e a comunidade adulta
+falam a mesma língua nas aulas. A estrutura é **curso → módulo → aula → parte**, igual no Kids, no
+adulto e no Admin (o nome "módulo" para o grupo de aulas foi decidido em 23/10/2026). Os rótulos
+são **Próxima parte**, **Partes da aula**, **Verificar esta parte**, **Objetivos desta parte**,
+**Enviar meu projeto**, **Enviar de novo**, **Concluir aula** e **Baixar meu certificado**. O
+material é **Passo a passo do projeto**, no PDF e no botão. Quem recebe os envios e responde os
+recados é **a equipe** ("Recados da equipe"). A regra e os exemplos estão nas Diretrizes
+Pedagógicas, seção 6 ("Mesmos nomes nas duas comunidades"), e o desenho da unificação em
+`docs/plans/2026-10-21-unificacao-aulas-plataforma-design.md`.
 
+- **"Aventura" e "fase" não nomeiam curso nem aula.** Aventura pode descrever a história ou o tema
+  de um curso; fase, só um nível de verdade dentro de um jogo. **"Mundo" e "unidade" não nomeiam o
+  módulo.** Desde 23/10/2026 a trilha do curso mostra **Módulo N** na faixa de cada grupo
+  (`course-trail.tsx`), o baú diz "Você terminou o Módulo N" (`chest-reward.tsx`) e o "Baú do
+  Módulo" está em `trail-chest.tsx`, `lesson-celebration.tsx`, `missions-panel.tsx` e
+  `xp-sources.ts` (era "Mundo"). Na fala de aula e no Como fazer, também é módulo. "Explorador(a) de Mundos" e "Arquiteto(a) de Mundos" são nomes de posto, não de módulo,
+  e ficam.
+- **O que continua só do Kids:** os postos (Faísca até Lenda) e a "Trilha <posto>", a Jornada do
+  Criador, as moedas Zappy, a sequência de dias, as regras do Zappy, do Pensa, dos créditos e das
+  ideias (§"O recurso tem nome") e o **Eu sou criador(a)** do cartão de entrada.
+- Por dentro nada mudou por causa de copy: rotas (`/cursos/…/aulas/…`), ids, nomes internos e as
+  etapas do método Pensa.
 - **As telas de aula do member-shell** falam pelo `LessonCopy` (ver o CLAUDE.md do member-shell). O
-  `KidsLessonCopy` (`components/kids/kids-lesson-copy.tsx`, componente de CLIENTE porque o vocabulário tem
-  funções) embrulha o `{children}` do `(app)/layout.tsx`; o vocabulário em si (`KIDS_LESSON_COPY`,
-  `PALAVRAS_DA_ESCOLA`, `conclusaoRecusada`) mora no member-shell (`lib/lesson-copy-kids.ts`, o Admin
-  também usa) e `src/lib/lesson-copy.ts` só o reexporta. ⚠️ Teste que monta uma tela de aula e confere
-  texto do Kids precisa do `KidsLessonCopy` em volta (as fixtures do `e2e-scenes` também: sem ele saía
-  "Voltar à aula").
-- **`conclusaoRecusada(erro)`**: o toast quando o members recusa concluir a fase. Código conhecido vira a
-  frase da aventura; desconhecido usa a frase do servidor só sem palavra da escola; erro sem `code` (rede)
-  e o resto caem em "Não foi possível concluir a fase. Tente novamente.". Recebe o ERRO inteiro, não só o
-  `code`: antes a sessão de suporte (`IMPERSONATION_READONLY`) lia "Tente novamente". O mesmo vale para o
-  `erroDoServidor` das telas de aula (com `GALLERY_DELIVERY_FAILED` e `VALIDATION_ERROR` mapeados).
-- ⭐ **O "guia" saiu da tela da criança (06/10/2026, decisão da dona no mesmo dia).** A pessoa que lê
-  os projetos e responde os recados é **a equipe** ("Recados da equipe", "A equipe já viu o seu projeto",
-  "Pedir ajuda à equipe", "Enviar para a equipe" no pedido de ajuda, autor "Equipe" na conversa). E os
-  botões de envio dizem O QUE vai, sem destinatário: "Enviar meu projeto" / "Enviar de novo" no Estúdio,
-  "Enviar meu desenho" no Pinta, "Enviar (2)" na galeria, confirmação "Enviar o seu projeto?" /
-  "Enviar o seu desenho?" com o botão "Enviar", e "Projeto enviado!" / "Desenho enviado!" depois. Os
-  rótulos moram no `KIDS_LESSON_COPY` (member-shell) e nas telas de Recados, no sino, na Comunidade, no
-  "Como fazer", nas missões e no status de publicação. A área dos pais segue com "professor" e explica
-  a ponte ("o professor como a equipe"). O prompt do Zappy (`zappy-ai.ts` do member-shell) acompanha.
-  **"Guia" sobrou só no "Guia do Pensa"**, o painel das tarefas do Pensa nas oficinas, com o nome
-  inteiro em todo texto (Estúdio, Molda, Pinta): é um painel, não uma pessoa.
-- ⭐ **O guarda `tests/copy-vocabulario.test.ts`** lê o TEXTO DE TELA pelo parser do TypeScript
-  (`literaisVisiveis` em `tests/helpers/copy-scan.ts`: literais, crases, texto de JSX e rótulos; comentário
-  não é nó da árvore) e reprova qualquer palavra da régua `PALAVRAS_DA_ESCOLA`, e também a CONCORDÂNCIA que
-  a troca palavra por palavra deixa ("o fase", "no parte", "próximo parte"; a régua `CONCORDANCIA_ERRADA`
-  é importada, só leitura, de `docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`). O alcance: o `src/` do
-  app (a área dos pais fica fora por ARQUIVO, e a grade `perfis-client.tsx`, que a criança também lê, é
-  varrida com exceções pontuais), o member-shell que roda aqui (`components`, `lib`, `routes`, `server`),
-  o `core/src` inteiro, o `studio/src`, o `pinta/src`, o `molda/src` e o `ui/src`, cada raiz com um
-  mínimo de arquivos lidos. Regras do detector (reviews de 06/10/2026, cada furo provado por mutação):
+  contrato é um só, o `COMMON_LESSON_COPY` (`lib/lesson-copy.ts` do member-shell, "Linguagem comum das
+  aulas, decisão de 21/10/2026"); `lib/lesson-copy-kids.ts` só o reexporta como `KIDS_LESSON_COPY`,
+  junto com `PALAVRAS_DA_ESCOLA` e `conclusaoRecusada`, e o `src/lib/lesson-copy.ts` daqui reexporta
+  de novo, para os imports antigos. O `KidsLessonCopy` (`components/kids/kids-lesson-copy.tsx`,
+  componente de CLIENTE) segue embrulhando o `{children}` do `(app)/layout.tsx`. ⚠️ Teste que monta
+  uma tela de aula do Kids continua precisando do `KidsLessonCopy` em volta.
+- **`PALAVRAS_DA_ESCOLA`** hoje só aponta as variantes antigas de navegação e envio:
+  `Concluir fase`, `Próxima fase|seção|etapa` (no começo do texto ou depois de "clique em/na"),
+  `Mapa da Aventura` e `Enviar para o professor`. Ela NÃO proíbe curso, aula nem "fase" no sentido
+  de nível do jogo. A cópia dos roteiros (`docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`)
+  ainda inclui `Caderno do Aluno`.
+- **`conclusaoRecusada(erro)`**: o toast quando o members recusa concluir a aula. Código conhecido vira
+  a frase comum ("Passe no quiz desta aula para concluir."); código desconhecido usa a frase do
+  servidor só se ela não casar com `PALAVRAS_DA_ESCOLA`; erro sem `code` (rede) e o resto caem em
+  "Não foi possível concluir a aula. Tente novamente.". Recebe o ERRO inteiro, não só o `code`: a
+  sessão de suporte (`IMPERSONATION_READONLY`) lê "Ative o modo de edição…".
+- ⭐ **A equipe, não o guia nem o professor (desde a noite de 06/10/2026, mantido em 21/10).** "Recados
+  da equipe", "A equipe já viu o seu projeto.", "Pedir ajuda à equipe", "Enviar para a equipe" no
+  pedido de ajuda, "Conversa com a equipe" e autor "Equipe" na conversa. Os botões de envio dizem O
+  QUE vai: "Enviar meu projeto" / "Enviar de novo" no Estúdio, "Enviar meu desenho" no Pinta, "Enviar
+  (2)" na galeria, confirmação "Enviar o seu projeto?" / "Enviar o seu desenho?" com o botão "Enviar",
+  e "Projeto enviado!" / "Desenho enviado!" depois. A área dos pais também fala de equipe.
+  **"Guia" sobrou só no "Guia do Pensa"**, o painel das tarefas do Pensa nas oficinas: é um painel, não
+  uma pessoa.
+- ⭐ **O guarda `tests/copy-vocabulario.test.ts`** (reescrito na unificação de 21/10/2026) lê o TEXTO
+  DE TELA pelo parser do TypeScript (`literaisVisiveis` e `naoETextoDeTela` em
+  `tests/helpers/copy-scan.ts`) e confere:
+  - o contrato: `KIDS_LESSON_COPY` é o MESMO objeto que `COMMON_LESSON_COPY`, "Próxima parte" e
+    "Enviar meu projeto" são os rótulos, e os dois marcos de navegação ("Partes da aula" e "Escolha
+    uma parte da aula") têm nomes diferentes para o leitor de tela;
+  - nenhum texto visível de `community-kids/src`, `community/src` e `member-shell/src` casa com
+    `PALAVRAS_DA_ESCOLA`;
+  - a página inicial, o catálogo e as trilhas (`app/(app)`, as páginas e o que mora em `cursos/`)
+    não dizem "aventura pronta", "Acessar aventura", "Minhas aventuras", "lista de fases" nem
+    "Próxima fase";
+  - o detector pega os rótulos antigos e deixa passar Curso, Aula, Concluir aula, Próxima parte e
+    "Fase do jogo";
+  - o jargão de montagem ("curso-base", "Iniciante 2D"…) continua fora do `src/` do Kids;
+  - a concordância que a troca de aventura por curso deixaria ("as próximos cursos", "cursos
+    liberadas") nas três raízes;
+  - pendências, erro de rede e sessão de suporte com a instrução comum.
+  As regras de leitura do texto de tela continuam no `copy-scan.ts` (reviews de 06/10/2026, cada furo
+  provado por mutação), e o `copy-sem-ia` e o `copy-sem-travessao` usam a mesma máquina:
   - texto de JSX, valor de rótulo (`aria-label`, `title`, `alt`, `placeholder`, `label`) e o par
-    singular/plural de contagem (`n === 1 ? 'aula' : 'aulas'`, `plural(n, 'aula', 'aulas')`) NUNCA caem
-    nas regras de "parece código" (o texto depois de `{expr}` começa com ". " e escondia "Continue nos
-    cursos");
-  - caminho é `/`, `@`, `#` ou ponto seguido de letra (`.sz-aula`), e SÓ sem espaço: o manual em
-    markdown ("## Jogo 2D…") é lido como texto, e ". " é pontuação. Numa crase cada `${…}` vira espaço
-    para a régua de palavras e `#` para as regras de código (`/cursos/${slug}` continua caminho);
-  - palavra solta minúscula é identificador; com inicial maiúscula ("Aluno") é rótulo; numa crase (que
-    sobra "cursos" de `${n} cursos`) ou com espaço nas pontas (`n + ' aulas'`) conta;
-  - lista de classes CSS só quando o `-`/`:` fica POR DENTRO da palavra (`w-full`, `md:flex`): "aula:
-    comece aqui" e "parte - 2" são frase;
-  - `new Error(…)` só fica fora em `page.tsx`, `route.ts` e `server/`: num componente a mensagem chega à
-    tela (o Molda faz `setError(cause.message)`);
-  - literal que É código JS (o runtime que o Estúdio injeta no preview: `(function () {…`, `import …`,
-    `var …` ou um runtime que abre com comentário, `// ----`/`/**`) é lido por dentro: o comentário dele
-    passa, a frase que aparece no jogo ou no console do Estúdio (`fillText('Fim da aula')`) não.
-  O que sobra tem motivo escrito em duas listas: `FORA_DA_VARREDURA` (arquivo inteiro que não chega à
-  tela da criança: o `lesson-copy.ts` ADULTO, os prompts de IA, os exemplos da galeria, as mensagens de
-  autoria do core) e `EXCECOES` (trecho EXATO; cobre só as palavras de dentro dele e só UMA vez, então a
-  palavra nova no mesmo texto ou o trecho repetido reprova). Entrada que não esconde nada também reprova.
-  Palavra no sentido de outra coisa (o `<section>` do HTML, "unidades por segundo", o dado `etapa` da
-  campanha, a "etapa Z" do Pensa, "O kit entrega" como verbo, os comentários do Dockerfile do `.zip` Pro)
-  é exceção com motivo, não troca de bloco. O "o que falta para seguir" tem anti-vácuo por `Record`
-  EXAUSTIVO de `SectionPendingKind` (um motivo novo no core é erro de tipo no teste).
+    singular/plural de contagem (`n === 1 ? 'aula' : 'aulas'`) NUNCA caem nas regras de "parece
+    código";
+  - caminho é `/`, `@`, `#` ou ponto seguido de letra (`.sz-aula`), e SÓ sem espaço;
+  - palavra solta minúscula é identificador; com inicial maiúscula é rótulo; numa crase ou com espaço
+    nas pontas conta;
+  - lista de classes CSS só quando o `-`/`:` fica POR DENTRO da palavra (`w-full`, `md:flex`);
+  - `new Error(…)` só fica fora em `page.tsx`, `route.ts` e `server/`;
+  - literal que É código JS (o runtime que o Estúdio injeta no preview) é lido por dentro.
+  ⚠️ O guarda de hoje não varre mais `core`, `studio`, `pinta`, `molda` e `ui`, nem tem as listas
+  `FORA_DA_VARREDURA`/`EXCECOES` nem a régua `GUIA_PESSOA` que a versão de 06/10 tinha. "Guia" como
+  pessoa segue barrado nos roteiros e no Como fazer (`qa/vocabulario-crianca.test.ts` e
+  `docs/como-fazer/validar.ts`). O selo do posto travado no mapa (`journey-map.tsx`) diz "N cursos"
+  desde 23/10/2026 (era "N aventuras"); é componente e fica fora da varredura do catálogo.
 - **O guarda de travessão** (`tests/copy-sem-travessao.test.ts`) também varre, pelo parser, o
-  member-shell que aparece nas fases (`components`, `routes` e o `lib/lesson-copy-kids.ts`).
-- **Texto compartilhado com o adulto (core, Estúdio, Pinta)** ganha redação NEUTRA, nem de escola nem de
-  aventura: "Assista ao vídeo" e "Faça o quiz" (títulos de parte das aulas legadas), "Material para
-  explorar" (modelo de seção), "Pré-visualização do projeto Pro", o arquivo baixado do Pinta
-  "meu-desenho" (o `PintaLesson` troca o "desenho-da-aula" antigo ao carregar, sem mexer no banco), e
-  nos manuais do Estúdio "das engines de verdade" no lugar de "do curso".
-- ⚠️ A régua da tela cobre tudo o que a régua dos roteiros e manifestos cobre
-  (`docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`): o que a narração não pode dizer, a tela também não.
+  member-shell que aparece nas aulas (`components`, `routes` e o `lib/lesson-copy-kids.ts`).
+- Histórico: de 06/10 a 21/10/2026 a criança lia aventura (curso), fase (aula), parte (seção), Mundo
+  (unidade), Mapa da Aventura (caderno) e "a equipe" (que antes foi "guia" e "professor"), com o menu
+  "Explorar". A unificação de 21/10 voltou para curso, aula e parte, e a de 23/10 deu o nome de
+  módulo ao grupo de aulas. O registro daquela fase está em
+  `docs/plans/2026-10-06-vocabulario-da-aventura-pendencias.md`, já marcado como superado.
 
 ## A regra de ouro: quase tudo vem do member-shell
 
@@ -1590,16 +1619,17 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
   a rosa pura dava 4,37:1 com o branco. ⚠️ Item de grade com texto `truncate` precisa de `min-w-0`:
   sem ele o cartão da missão vazava a tela no celular.
 - **Jornada:** o chip amarelo "Você é <posto>" e a frase do próximo marco moram no CABEÇALHO (o
-  `JourneyMap` não os desenha mais). A página fecha com as "Aventuras da trilha" em
+  `JourneyMap` não os desenha mais). A página fecha com os "Cursos da trilha <posto>" em
   `CatalogCourseCard layout="linha"`, com o progresso vindo de `listMyCourses` (o catálogo não sabe as
   aulas feitas). No mapa: o posto atual com o anel azul da marca, o travado claro sem borda e com o
-  selo branco, e o travado também diz quantas aventuras a trilha dele tem.
+  selo branco, e o travado também diz quantos cursos a trilha dele tem ("N cursos", em `journey-map.tsx`;
+  os postos que ela pode abrir dizem "N de M cursos prontos").
 - **Trilha:** cartões grandes de duas colunas (`CatalogCourseCard`, sem cor de unidade: o prop `theme`
   saiu) e, na trilha ATUAL, o cartão lilás "Próximo nível" (o que ele libera + N de M prontas).
   ⚠️ O cartão só aparece quando o catálogo LEVA até o posto (`promisedNextLevel`, full review de
   11/09/2026): com o degrau pela metade o mapa fecha com "E tem muito mais pela frente" e a frase de
   quanto falta cala, então prometer o posto aqui seria a mesma falsa esperança por outro caminho.
-  E o cartão de curso COM barra ao vivo (as "Aventuras da trilha") mostra só o selo pendente, como
+  E o cartão de curso COM barra ao vivo (os "Cursos da trilha") mostra só o selo pendente, como
   o da home: o marco é congelado e a barra não, então "Pronta!" apareceria ao lado de 90%.
 - **Trilha de aulas:** nós e faixas de unidade CHAPADOS (a sombra dura de 5px e o `--node-shadow`
   saíram); o aperto virou `translateY(2px) scale(.97)`.
@@ -2776,7 +2806,7 @@ comportamento antigo) + `GET /members/gamification/me` p/ widgets. Server Compon
      Antes isso era impossível por construção — o defeito nasceu ao remover essa garantia.
 
   ⚠️ **O lado duro da régua mista, e é intencional:** quem concluiu os 8 e não publicou nenhum lê
-  "0 de 8 aventuras prontas", agora também em degrau já vencido. É a jornada sendo fiel — e é
+  "0 de 8 cursos prontos", agora também em degrau já vencido. É a jornada sendo fiel — e é
   justamente o que o SELO do card tornou legível: ao entrar na trilha, os oito cards dizem o motivo. ⚠️ **Nenhum espelho novo do core:** `requiredSlots[nível_i] = ∪ LEVEL_STUDY[j].slots
   p/ j < i`, então `LEVEL_TIER`+`LEVEL_STUDY` bastam e a garantia do `journey-conformance` é herdada.
   ⚠️ **Catálogo `null` (a busca FALHOU) ≠ catálogo vazio:** `null` não restringe nada (cai na visão
