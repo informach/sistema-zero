@@ -19,7 +19,7 @@ export function teacherDisplayName(user: Pick<StaffUser, 'firstName' | 'lastName
 /** O nome que a sala mostra: o primeiro nome, ou o começo do e-mail. */
 export function teacherShortName(user: Pick<StaffUser, 'firstName' | 'email'>): string {
   const first = (user.firstName ?? '').trim().split(/\s+/)[0]
-  return (first || user.email.split('@')[0] || 'Professora').slice(0, 50)
+  return (first || user.email.split('@')[0] || 'Equipe').slice(0, 50)
 }
 
 /** As três páginas (um papel por consulta) viram uma lista só, sem repetir, em ordem de nome. */
@@ -31,7 +31,7 @@ export function mergeStaffPages(pages: readonly (readonly StaffUser[])[]): Staff
   )
 }
 
-/** Marcar respeita o teto de quatro; desmarcar nunca deixa a turma sem professora. */
+/** Marcar respeita o teto de quatro; desmarcar nunca deixa a turma sem ninguém da equipe. */
 export function toggleTeacher(selected: readonly string[], id: string, checked: boolean): string[] {
   if (checked)
     return selected.includes(id) || selected.length >= MAX_TEACHERS

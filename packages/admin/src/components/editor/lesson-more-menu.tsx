@@ -2,8 +2,12 @@
 
 import { Button } from '@sistemazero/ui/button'
 import { ChevronDown } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
+import { type MenuPlacement, menuPlacementStyle, placeMenuFrom } from '@/lib/menu-placement'
+
+/** Largura do menu (`w-72`), usada antes de ele existir para ser medido. */
+const MENU_WIDTH = 288
 
 export interface LessonMoreMenuItem {
   /** Chave estável do item (não aparece na tela). */
@@ -22,6 +26,10 @@ export interface LessonMoreMenuItem {
  * fila de botões e ficam aqui. São botões de verdade: a seta abre e percorre, Escape fecha e
  * devolve o foco ao gatilho (também com o foco no próprio gatilho), Tab para fora e clicar fora
  * fecham. Sem item visível, o gatilho não aparece.
+ *
+ * O menu fica em `position: fixed` (`lib/menu-placement`): alinhado à direita do gatilho, mas
+ * nunca a menos de 8px das bordas da janela; sem espaço embaixo, abre para cima; em tela baixa,
+ * rola por dentro. Rolar a página ou redimensionar a janela o reposiciona.
  */
 export function LessonMoreMenu({
   items,
@@ -31,19 +39,49 @@ export function LessonMoreMenu({
   label?: string
 }) {
   const [open, setOpen] = useState(false)
+  const [pos, setPos] = useState<MenuPlacement | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
   const menuId = useId()
+
+  /** Recalcula a posição a partir do gatilho e do tamanho real do menu (estimado antes de existir). */
+  const reposition = useCallback(() => {
+    const trigger = triggerRef.current
+    if (!trigger) return
+    const menu = menuRef.current
+    setPos(
+      placeMenuFrom(trigger, {
+        width: menu?.offsetWidth || MENU_WIDTH,
+        height: menu?.scrollHeight ?? 0,
+      }),
+    )
+  }, [])
+
+  // Aberto: mede o menu de verdade (para cima se não couber embaixo) antes de pintar.
+  useLayoutEffect(() => {
+    if (open) reposition()
+  }, [open, reposition])
 
   useEffect(() => {
     if (!open) return
     const onDown = (event: MouseEvent) => {
       if (rootRef.current && !rootRef.current.contains(event.target as Node)) setOpen(false)
     }
+    const onScroll = (event: Event) => {
+      if (event.target instanceof Node && menuRef.current?.contains(event.target)) return
+      reposition()
+    }
     document.addEventListener('mousedown', onDown)
-    return () => document.removeEventListener('mousedown', onDown)
-  }, [open])
+    window.addEventListener('scroll', onScroll, true)
+    window.addEventListener('resize', reposition)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      window.removeEventListener('scroll', onScroll, true)
+      window.removeEventListener('resize', reposition)
+    }
+  }, [open, reposition])
 
   useEffect(() => {
     // Abriu: o foco vai ao primeiro item que dá para usar (teclado e leitor de tela).
@@ -119,12 +157,14 @@ export function LessonMoreMenu({
       </Button>
       {open ? (
         <div
+          ref={menuRef}
           id={menuId}
           role="menu"
           aria-label={label}
           tabIndex={-1}
           onKeyDown={onMenuKeyDown}
-          className="absolute left-0 z-50 mt-2 w-72 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-border bg-popover py-1 text-popover-foreground shadow-lg sm:left-auto sm:right-0"
+          style={pos ? menuPlacementStyle(pos) : undefined}
+          className="fixed z-50 max-h-[calc(100dvh-1rem)] w-72 max-w-[calc(100vw-1rem)] overflow-y-auto overscroll-contain rounded-xl border border-border bg-popover py-1 text-popover-foreground shadow-lg"
         >
           {items.map((item, index) => (
             <button

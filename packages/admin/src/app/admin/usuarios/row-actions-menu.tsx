@@ -14,6 +14,12 @@ import {
   useState,
 } from 'react'
 import { cn } from '@/lib/cn'
+import {
+  type MenuPlacement,
+  menuPlacementStyle,
+  placeMenuFrom,
+  triggerOutOfView,
+} from '@/lib/menu-placement'
 
 /**
  * Um item do menu "Ações" de uma conta. `href` vira link; senão é botão. `separatorBefore`
@@ -30,34 +36,8 @@ export interface RowActionItem {
   separatorBefore?: boolean
 }
 
-/** Onde o menu fica na tela, em coordenadas da janela (`position: fixed`). */
-export interface MenuPlacement {
-  top?: number
-  bottom?: number
-  right: number
-  maxHeight: number
-}
-
-const MENU_GAP = 4
-const VIEWPORT_MARGIN = 8
-
-/**
- * Abre para baixo do botão quando o menu cabe ali; senão, para cima, se em cima houver mais
- * espaço. O que não couber em nenhum dos dois rola dentro do menu (`maxHeight`).
- */
-export function menuPlacement(
-  button: { top: number; bottom: number; right: number },
-  menuHeight: number,
-  viewport: { width: number; height: number },
-): MenuPlacement {
-  const right = viewport.width - button.right
-  const below = viewport.height - button.bottom - MENU_GAP - VIEWPORT_MARGIN
-  const above = button.top - MENU_GAP - VIEWPORT_MARGIN
-  if (menuHeight > below && above > below) {
-    return { bottom: viewport.height - button.top + MENU_GAP, right, maxHeight: above }
-  }
-  return { top: button.bottom + MENU_GAP, right, maxHeight: Math.max(below, 0) }
-}
+/** Largura do menu (`w-64`), usada antes de ele existir para ser medido. */
+const MENU_WIDTH = 256
 
 /**
  * O botão "Ações" de cada linha da lista de contas (a sala da equipe, 23/10/2026): um menu
@@ -65,8 +45,10 @@ export function menuPlacement(
  *
  * ⚠ O menu usa `position: fixed` calculado a partir do botão: a tabela mora num
  * `overflow-x-auto`, que cortaria um menu absoluto na última linha. Sem espaço embaixo, ele
- * abre para cima. Rolar a PÁGINA (ou redimensionar a janela) reposiciona o menu junto do
- * botão, e fecha se o botão sair da tela; rolar dentro do próprio menu não fecha nada.
+ * abre para cima; na horizontal, fica a 8px das bordas da janela (`lib/menu-placement`).
+ * Rolar a PÁGINA (ou redimensionar a janela) reposiciona o menu junto do botão, e fecha se o
+ * botão sair da tela, para cima, para baixo ou para os lados; rolar dentro do próprio menu
+ * não fecha nada.
  *
  * Teclado: Enter, Espaço e seta para baixo abrem e focam o primeiro item; seta para cima abre
  * e foca o último; as setas sobem e descem; Home/End vão às pontas; Escape fecha e devolve o
@@ -88,11 +70,14 @@ export function RowActionsMenu({ label, items }: { label: string; items: RowActi
 
   /** Recalcula a posição a partir do botão e da altura real do menu (0 antes de existir). */
   const reposition = useCallback(() => {
-    const rect = buttonRef.current?.getBoundingClientRect()
-    if (!rect) return
-    const menuHeight = menuRef.current?.scrollHeight ?? 0
+    const button = buttonRef.current
+    if (!button) return
+    const menu = menuRef.current
     setPos(
-      menuPlacement(rect, menuHeight, { width: window.innerWidth, height: window.innerHeight }),
+      placeMenuFrom(button, {
+        width: menu?.offsetWidth || MENU_WIDTH,
+        height: menu?.scrollHeight ?? 0,
+      }),
     )
   }, [])
 
@@ -134,7 +119,7 @@ export function RowActionsMenu({ label, items }: { label: string; items: RowActi
   }, [open])
 
   // Clique fora fecha. Rolar a página ou redimensionar reposiciona junto do botão (e fecha se
-  // o botão saiu da tela); a rolagem dentro do menu não conta.
+  // o botão saiu da tela, em qualquer direção); a rolagem dentro do menu não conta.
   useEffect(() => {
     if (!open) return
     function onPointer(e: PointerEvent) {
@@ -145,7 +130,10 @@ export function RowActionsMenu({ label, items }: { label: string; items: RowActi
     function onScroll(e: Event) {
       if (e.target instanceof Node && menuRef.current?.contains(e.target)) return
       const rect = buttonRef.current?.getBoundingClientRect()
-      if (!rect || rect.bottom < 0 || rect.top > window.innerHeight) {
+      if (
+        !rect ||
+        triggerOutOfView(rect, { width: window.innerWidth, height: window.innerHeight })
+      ) {
         close(false)
         return
       }
@@ -216,7 +204,7 @@ export function RowActionsMenu({ label, items }: { label: string; items: RowActi
           aria-label={label}
           tabIndex={-1}
           onKeyDown={onMenuKeyDown}
-          style={{ top: pos.top, bottom: pos.bottom, right: pos.right, maxHeight: pos.maxHeight }}
+          style={menuPlacementStyle(pos)}
           className="fixed z-50 w-64 overflow-y-auto overscroll-contain rounded-2xl border border-border bg-card p-1.5 text-left shadow-lg"
         >
           {items.map((item) => (

@@ -653,9 +653,10 @@ export function OffersClient() {
                     setForm((f) => withSuggestions({ ...f, productId: e.target.value }))
                   }
                 >
+                  {/* O código interno vai junto: dois produtos com o mesmo nome ficam diferentes. */}
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name}
+                      {p.name} · código {p.sku}
                     </option>
                   ))}
                 </Select>

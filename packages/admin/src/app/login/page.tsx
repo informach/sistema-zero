@@ -34,9 +34,10 @@ export default async function LoginPage({
             priority
             className="h-auto w-[150px] md:w-[180px]"
           />
-          <h2 className="font-display text-4xl font-bold leading-tight text-white md:text-[44px]">
+          {/* Um `<p>` com cara de título: o primeiro título da página é o "Entrar" do formulário. */}
+          <p className="font-display text-4xl font-bold leading-tight text-white md:text-[44px]">
             A sala da equipe
-          </h2>
+          </p>
           <p className="text-[17px] leading-relaxed">
             Daqui a gente cuida da Comunidade dos Criadores e da Comunidade Sistema Zero: encontros,
             projetos, recados, cursos e o que mantém a casa de pé.

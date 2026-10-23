@@ -118,7 +118,10 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       .catch(() => {})
     apiGet<Paginated<CourseView>>('/api/members/courses?limit=100')
       .then((page) => {
-        if (alive) setCourses(page.items.map((c) => ({ slug: c.slug, title: c.title })))
+        if (alive)
+          setCourses(
+            page.items.map((c) => ({ slug: c.slug, title: c.title, audience: c.audience })),
+          )
       })
       .catch(() => {})
       .finally(() => {
@@ -428,7 +431,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-base">
               O que a pessoa ganha
-              <InfoTooltip text="O que a área de membros libera para quem comprou: um curso ou todos os cursos, e quando. O combo não tem isso próprio: vale o que vem nos produtos dele." />
+              <InfoTooltip text="O que a área do aluno libera para quem comprou: um curso ou todos os cursos, e quando. O combo não tem isso próprio: vale o que vem nos produtos dele." />
             </CardTitle>
           </CardHeader>
           <CardContent>

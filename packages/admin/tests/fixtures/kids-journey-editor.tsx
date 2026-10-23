@@ -82,6 +82,7 @@ function preview(candidate: KidsJourneyPolicy) {
   }
 }
 beforeEach(() => {
+  window.sessionStorage.clear()
   setPlatform('kids')
   calls.length = 0
   replaced.length = 0
@@ -435,4 +436,54 @@ test('falha ao paginar histórico fica local, preserva edição e não bloqueia 
     (container.querySelector('select[aria-label="Progressão"]') as HTMLSelectElement).disabled,
   ).toBe(false)
   expect(button(container, 'Comparar com a versão no ar').disabled).toBe(false)
+})
+
+async function closeAll() {
+  for (const cleanup of close.splice(0)) await cleanup()
+}
+const progression = (container: HTMLElement) =>
+  (container.querySelector('select[aria-label="Progressão"]') as HTMLSelectElement).value
+
+test('trocar a lente com rascunho mudado guarda na aba e devolve ao voltar para Kids', async () => {
+  const container = await mount()
+  await pause(container)
+  await reason(container)
+  await act(async () => setPlatform('adult'))
+  expect(replaced).toContain('/admin/professor/jornada-adulta')
+  await closeAll()
+
+  setPlatform('kids')
+  const again = await mount()
+  expect(progression(again)).toBe('paused')
+  expect((again.querySelector('textarea') as HTMLTextAreaElement).value).toBe('Teste pedagógico')
+  expect(again.textContent).toContain('O rascunho que estava aberto antes da troca de comunidade')
+  expect(writes()).toEqual([])
+
+  // Volta uma vez só: montar de novo começa da versão no ar.
+  await closeAll()
+  const third = await mount()
+  expect(progression(third)).toBe('active')
+})
+
+test('rascunho guardado não volta por cima de outra versão, e a tela avisa', async () => {
+  const container = await mount()
+  await pause(container)
+  await act(async () => setPlatform('adult'))
+  await closeAll()
+
+  record = { ...record, version: 2 }
+  setPlatform('kids')
+  const again = await mount()
+  expect(progression(again)).toBe('active')
+  expect(again.textContent).toContain(
+    'A versão no ar mudou enquanto você estava na outra comunidade',
+  )
+  expect(writes()).toEqual([])
+})
+
+test('sem mudança, trocar a lente não guarda nada', async () => {
+  await mount()
+  await act(async () => setPlatform('adult'))
+  expect(replaced).toContain('/admin/professor/jornada-adulta')
+  expect(window.sessionStorage.length).toBe(0)
 })

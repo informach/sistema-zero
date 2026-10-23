@@ -471,8 +471,8 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       title: kind === 'mute' ? 'Silenciar esta conta?' : 'Afastar esta conta?',
       message:
         kind === 'mute'
-          ? `A conta ${userId} não pode postar em ${spaceName} até alguém da equipe tirar o silêncio.`
-          : `A conta ${userId} não posta nem reage em ${spaceName} até alguém da equipe tirar o afastamento.`,
+          ? `Esta conta não pode postar em ${spaceName} até alguém da equipe tirar o silêncio.`
+          : `Esta conta não posta nem reage em ${spaceName} até alguém da equipe tirar o afastamento.`,
       confirmText: kind === 'mute' ? 'Silenciar' : 'Afastar',
       confirmVariant: 'destructive',
       onConfirm: () =>
@@ -496,8 +496,8 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
     confirm({
       title: mute ? 'Tirar o silêncio?' : 'Tirar o afastamento?',
       message: mute
-        ? `A conta ${mb.userId} volta a poder postar em ${spaceName}.`
-        : `A conta ${mb.userId} volta a postar e reagir em ${spaceName}.`,
+        ? `Esta conta volta a poder postar em ${spaceName}.`
+        : `Esta conta volta a postar e reagir em ${spaceName}.`,
       confirmText: mute ? 'Tirar o silêncio' : 'Tirar o afastamento',
       onConfirm: () =>
         run(
@@ -533,7 +533,7 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
       />
       {!canWrite ? <ReadOnlyNotice /> : null}
 
-      <Field label="Servidor" htmlFor="mod-space">
+      <Field label="Espaço" htmlFor="mod-space">
         <Select
           id="mod-space"
           value={spaceId}
@@ -697,7 +697,7 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
           <EmptyState
             zappy="thinking"
             title="Escolha um espaço primeiro."
-            description="Quem está silenciado ou afastado vale para um espaço. Escolha o espaço no campo Servidor, aqui em cima."
+            description="Quem está silenciado ou afastado vale para um espaço. Escolha o espaço no campo Espaço, aqui em cima."
           />
         </section>
       ) : null}
@@ -706,7 +706,11 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
         <section aria-label="Silenciados" className="space-y-3">
           <Card className="space-y-3 rounded-[18px] p-5">
             <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-              <Field label="Conta (ID)" htmlFor="mb-user" hint="Copie o ID na ficha do aluno.">
+              <Field
+                label="Conta (ID)"
+                htmlFor="mb-user"
+                hint="Na ficha da conta, abra Detalhes técnicos e copie o ID da conta."
+              >
                 <Input
                   id="mb-user"
                   value={mbUserId}
@@ -748,14 +752,20 @@ export function ModerationClient({ currentRole }: { currentRole: string }) {
                 key={mb.id}
                 className="flex items-center justify-between gap-3 rounded-[18px] p-4"
               >
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
+                <div className="min-w-0 space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="muted">{mb.kind === 'ban' ? 'Afastado' : 'Silenciado'}</Badge>
-                    <span className="truncate font-mono text-xs">{mb.userId}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Desde {formatDate(mb.createdAt)}
+                    </span>
                   </div>
                   {mb.reason ? (
                     <p className="truncate text-sm text-muted-foreground">{mb.reason}</p>
                   ) : null}
+                  <details className="text-xs text-muted-foreground">
+                    <summary className="cursor-pointer">Detalhes técnicos</summary>
+                    <p className="mt-1 break-all font-mono">Conta (ID): {mb.userId}</p>
+                  </details>
                 </div>
                 <Button
                   className="min-h-11 px-4"

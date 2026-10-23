@@ -3,7 +3,8 @@ import type { InvoiceView } from '@/lib/types'
 /** A nota da venda aberta no detalhe: procurada pelo código da venda na lista de notas. */
 export type InvoiceLookup =
   | { state: 'loading' }
-  | { state: 'none' }
+  /** Nenhuma nota valendo. `previous`: a mais recente das que não valem (falhou, cancelada…). */
+  | { state: 'none'; previous?: InvoiceView }
   | { state: 'error' }
   | { state: 'found'; invoice: InvoiceView }
 
@@ -12,14 +13,25 @@ export type InvoiceLookupEntry = { paymentId: string | null; lookup: InvoiceLook
 
 export const INVOICE_LOOKUP_LOADING: InvoiceLookup = { state: 'loading' }
 
-/** Notas que não contam como "a nota desta venda" (canceladas ou trocadas por outra). */
-const INACTIVE_INVOICE = new Set(['CANCELLED', 'SUBSTITUTED'])
+/**
+ * As notas que contam como "a nota desta venda": as mesmas do fiscal
+ * (`ACTIVE_STATUSES` em packages/fiscal/.../invoice.repository.ts). Falhou, pulada, cancelada
+ * ou trocada por outra não vale: a venda pode ganhar uma nota nova.
+ */
+const ACTIVE_INVOICE = new Set(['SCHEDULED', 'EMITTED', 'CANCEL_PENDING', 'CANCEL_FAILED'])
 
-/** A nota desta venda entre as notas achadas pela busca livre (a ativa vence a cancelada). */
+/**
+ * A nota desta venda entre as notas achadas pela busca livre. Sem nenhuma valendo, a mais
+ * recente das outras vai como `previous`, para a tela oferecer abrir a nota anterior.
+ */
 export function invoiceLookupFrom(items: InvoiceView[], paymentId: string): InvoiceLookup {
-  const mine = items.filter((inv) => inv.paymentId === paymentId)
-  const active = mine.find((inv) => !INACTIVE_INVOICE.has(inv.status)) ?? mine[0]
-  return active ? { state: 'found', invoice: active } : { state: 'none' }
+  const mine = items
+    .filter((inv) => inv.paymentId === paymentId)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+  const active = mine.find((inv) => ACTIVE_INVOICE.has(inv.status))
+  if (active) return { state: 'found', invoice: active }
+  const previous = mine[0]
+  return previous ? { state: 'none', previous } : { state: 'none' }
 }
 
 /**
@@ -36,7 +48,8 @@ export function invoiceLookupFor(
 
 /**
  * O que o rodapé da venda paga mostra sobre a nota: o botão de emitir só quando a busca confirmou
- * que não há nota (nunca enquanto procura nem depois de um erro); depois de um erro, o aviso.
+ * que não há nota valendo (nunca enquanto procura nem depois de um erro); depois de um erro, o
+ * aviso.
  */
 export function invoiceFooterAction(lookup: InvoiceLookup): 'emit' | 'error' | null {
   if (lookup.state === 'none') return 'emit'

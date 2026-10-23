@@ -24,7 +24,12 @@ import { MoreMenu } from '@/components/professor/more-menu'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
-import { COMMUNITY_NAMES, PLATFORM_LABELS, type Platform } from '@/lib/platform'
+import {
+  BOTH_COMMUNITIES_LABEL,
+  COMMUNITY_NAMES,
+  PLATFORM_LABELS,
+  type Platform,
+} from '@/lib/platform'
 import { platformTransition } from '@/lib/platform-transition'
 import { threadSubject } from '@/lib/teacher-thread-subject'
 import type { CourseView, Paginated, TeacherThreadRow, TeacherThreadView } from '@/lib/types'
@@ -264,6 +269,7 @@ export function RecadosClient() {
       <AdminHeader
         title="Recados"
         description={audience ? DESCRIPTION[platform] : DESCRIPTION_BOTH}
+        community={audience ? true : BOTH_COMMUNITIES_LABEL}
         action={
           <div className="flex flex-wrap items-center gap-2">
             {kids ? (

@@ -328,7 +328,7 @@ export function CourseEditorClient({
               <Pencil className="size-4" /> Editar dados do curso
             </Button>
             {tab === 'estrutura' ? (
-              <Button onClick={openCreateModule} disabled={!canWrite}>
+              <Button onClick={openCreateModule} disabled={!tree || !canWrite}>
                 <Plus className="size-4" /> Novo módulo
               </Button>
             ) : null}

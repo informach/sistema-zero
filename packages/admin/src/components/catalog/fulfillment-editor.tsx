@@ -3,6 +3,7 @@
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import type { AccessType, FulfillmentSpec, ReleaseMode } from '@/lib/types'
 
 const ACCESS_TYPES: { value: AccessType; label: string }[] = [
@@ -24,6 +25,19 @@ const RELEASE_MODES: { value: ReleaseMode; label: string }[] = [
 export interface CourseOption {
   slug: string
   title: string
+  /** A comunidade do curso: vai junto do endereço na lista, como na concessão de acesso. */
+  audience?: string
+}
+
+/** O texto do curso na lista: título, comunidade e endereço (dois títulos iguais se distinguem). */
+export function courseOptionLabel(course: CourseOption): string {
+  const community =
+    course.audience === 'kids'
+      ? COMMUNITY_NAMES.kids
+      : course.audience === 'adult'
+        ? COMMUNITY_NAMES.adult
+        : null
+  return [course.title, community, `/${course.slug}`].filter(Boolean).join(' · ')
 }
 
 /**
@@ -78,7 +92,7 @@ export function FulfillmentEditor({
       <Field
         label="O que esta compra libera"
         htmlFor="accessType"
-        tooltip="Tudo chega pela área de membros: um curso, ou todos os cursos de uma comunidade, inclusive os que forem lançados depois da compra."
+        tooltip="Tudo chega pela área do aluno: um curso, ou todos os cursos de uma comunidade, inclusive os que forem lançados depois da compra."
       >
         <Select
           id="accessType"
@@ -97,7 +111,7 @@ export function FulfillmentEditor({
         <Field
           label="Qual curso"
           htmlFor="courseRef"
-          tooltip="O curso da área de membros que esta compra libera. A matrícula usa o endereço do curso."
+          tooltip="O curso que esta compra libera na área do aluno. A matrícula usa o endereço do curso, que aparece ao lado do nome."
         >
           <Select
             id="courseRef"
@@ -106,9 +120,10 @@ export function FulfillmentEditor({
             disabled={coursesLoading}
           >
             <option value="">{coursesLoading ? 'Carregando cursos…' : 'Escolha um curso'}</option>
+            {/* Comunidade e endereço vão junto: dois cursos com o mesmo título ficam diferentes. */}
             {courses.map((c) => (
               <option key={c.slug} value={c.slug}>
-                {c.title}
+                {courseOptionLabel(c)}
               </option>
             ))}
           </Select>

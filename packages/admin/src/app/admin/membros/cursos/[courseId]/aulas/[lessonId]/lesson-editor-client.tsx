@@ -1290,9 +1290,10 @@ function LessonEditorSession({
           <ArrowLeft className="size-4" /> Conteúdo do curso
         </Link>
 
+        {/* O título da aula na linha principal; o endereço é secundário e o ID não aparece. */}
         <AdminHeader
-          title={lesson?.title ?? 'Aula'}
-          description={lesson ? lesson.slug : lessonId}
+          title={lesson?.title || (loading ? 'Carregando a aula…' : 'Aula')}
+          description={lesson ? `Endereço /${lesson.slug}` : undefined}
           acoesAbaixo
           action={
             <div className="flex flex-wrap gap-2">

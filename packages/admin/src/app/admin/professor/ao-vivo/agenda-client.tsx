@@ -107,12 +107,9 @@ export function LiveAgenda() {
             Cada horário aparece no fuso da turma. Quando ele for diferente do seu, o encontro
             avisa.
           </p>
-          <section
-            role="tabpanel"
-            aria-label={current.title}
-            className="space-y-3"
-            data-agenda-group={current.key}
-          >
+          {/* Sem `role="tabpanel"`: as abas compartilhadas não recebem id, então não há como
+              ligar o painel à aba (`aria-labelledby`/`aria-controls`). Fica uma região nomeada. */}
+          <section aria-label={current.title} className="space-y-3" data-agenda-group={current.key}>
             {groups[current.key].length === 0 ? (
               <p className="text-[15px] text-muted-foreground">{current.empty}</p>
             ) : (

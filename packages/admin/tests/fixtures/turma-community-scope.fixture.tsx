@@ -145,6 +145,10 @@ async function choose(select: HTMLSelectElement, value: string) {
   await settle()
 }
 
+/** O selo de comunidade ao lado do título da tela. */
+const chip = (container: HTMLElement) =>
+  container.querySelector('h1')?.nextElementSibling?.textContent
+
 function lastList(path: string) {
   return calls.filter((call) => call.path === path && call.method === 'GET').at(-1)
 }
@@ -158,9 +162,12 @@ test('Recados: o filtro Comunidade nasce na lente, junta as duas e volta para a 
   ])
   expect(select.value).toBe('kids')
   expect(lastList('/api/members/teacher-threads')?.params.get('audience')).toBe('kids')
+  expect(chip(container)).toBe('Comunidade dos Criadores')
 
   await choose(select, '')
   expect(lastList('/api/members/teacher-threads')?.params.has('audience')).toBe(false)
+  // O selo acompanha o filtro: a fila mostra as duas comunidades.
+  expect(chip(container)).toBe('Kids e Adultos juntos')
   // As duas comunidades: cada recado diz de qual comunidade é.
   expect(container.textContent).toContain('Kids')
 
@@ -191,7 +198,9 @@ test('Projetos: "As duas comunidades" tira o filtro de audiência da fila', asyn
   const select = container.querySelector('#ent-community') as HTMLSelectElement
   expect(select.value).toBe('kids')
   expect(lastList('/api/members/studio-submissions')?.params.get('audience')).toBe('kids')
+  expect(chip(container)).toBe('Comunidade dos Criadores')
   await choose(select, '')
+  expect(chip(container)).toBe('Kids e Adultos juntos')
   const list = calls.filter(
     (call) => call.path === '/api/members/studio-submissions' && call.params.get('limit') === '30',
   )

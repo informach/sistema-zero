@@ -4,8 +4,9 @@ import { type KidsRequirement, kidsRequirementKey } from '@sistemazero/core/jour
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Check } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { cn } from '@/lib/cn'
@@ -26,10 +27,21 @@ function milestone(value: 'complete' | 'showcase') {
   return value === 'complete' ? 'concluir' : 'concluir e publicar no Mural'
 }
 type CourseTitles = ReadonlyMap<string, string>
-function requirement(value: KidsRequirement, titles: CourseTitles) {
-  return value.kind === 'course'
-    ? `${titles.get(value.courseId) ?? 'Curso que não está na lista'}: ${milestone(value.milestone)}`
-    : `${KIDS_TIER_LABELS[value.tier]}, posição ${value.slot}: ${milestone(value.milestone)}`
+function requirement(value: KidsRequirement, titles: CourseTitles): React.ReactNode {
+  if (value.kind !== 'course')
+    return `${KIDS_TIER_LABELS[value.tier]}, posição ${value.slot}: ${milestone(value.milestone)}`
+  const title = titles.get(value.courseId)
+  if (title) return `${title}: ${milestone(value.milestone)}`
+  // Curso fora da lista: o nome diz o que houve; o ID fica guardado para quem for procurar.
+  return (
+    <>
+      Curso que não está na lista: {milestone(value.milestone)}
+      <details className="mt-1 text-xs text-muted-foreground">
+        <summary className="cursor-pointer">Detalhes técnicos</summary>
+        <p className="mt-1 break-all font-mono">Curso {value.courseId}</p>
+      </details>
+    </>
+  )
 }
 
 /**
@@ -223,13 +235,23 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
   const editor = useKidsJourneyEditor(initialPreparation)
   const { record, preparation, preview } = editor
   const router = useRouter()
+  const { keepDraftForLensChange } = editor
+  const [draftNotKept, setDraftNotKept] = useState(false)
   // Trocar a lente para Adultos aqui leva à jornada de lá, em vez de um aviso sem saída. O
-  // endereço vai junto (`?preparacao=`): voltar para Kids retoma a preparação aberta.
+  // endereço vai junto (`?preparacao=`): voltar para Kids retoma a preparação aberta. O
+  // rascunho com mudanças fica guardado na aba e volta com a lente Kids; se o navegador não
+  // deixar guardar, a página não sai sozinha: avisa e deixa a pessoa escolher.
   useEffect(() => {
-    if (editor.platform !== 'kids') {
-      router.replace(journeyLensHref(ADULT_JOURNEY_PATH, window.location.search))
+    if (editor.platform === 'kids') {
+      setDraftNotKept(false)
+      return
     }
-  }, [editor.platform, router])
+    if (!keepDraftForLensChange()) {
+      setDraftNotKept(true)
+      return
+    }
+    router.replace(journeyLensHref(ADULT_JOURNEY_PATH, window.location.search))
+  }, [editor.platform, keepDraftForLensChange, router])
   const titles: CourseTitles = new Map(editor.courses.map((course) => [course.id, course.title]))
   return (
     <div className="space-y-6">
@@ -247,7 +269,25 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
           </Button>
         }
       />
-      {editor.platform !== 'kids' ? (
+      {editor.platform !== 'kids' && draftNotKept ? (
+        <Card role="alert" className="space-y-3 p-5">
+          <h2 className="font-semibold">O rascunho da Jornada do Criador não foi guardado</h2>
+          <p className="text-sm text-muted-foreground">
+            Este navegador não deixou guardar as mudanças desta aba. Volte para a lente Kids para
+            continuar o rascunho, ou abra a jornada da Comunidade Sistema Zero sabendo que ele não
+            vai voltar.
+          </p>
+          <Link
+            href={journeyLensHref(
+              ADULT_JOURNEY_PATH,
+              typeof window === 'undefined' ? '' : window.location.search,
+            )}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Abrir a jornada da Comunidade Sistema Zero sem o rascunho
+          </Link>
+        </Card>
+      ) : editor.platform !== 'kids' ? (
         <p role="status" className="text-sm text-muted-foreground">
           Abrindo a jornada da Comunidade Sistema Zero…
         </p>

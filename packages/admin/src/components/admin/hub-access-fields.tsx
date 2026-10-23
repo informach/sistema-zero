@@ -8,12 +8,9 @@ import { apiGet } from '@/lib/api'
 import type { HubAccessConfig, HubVisibility } from '@/lib/hub-types'
 import { type CourseView, type Paginated, ROLE_LABELS } from '@/lib/types'
 
-/**
- * Papéis que podem ser usados em `role_gated` (RBAC do auth). O papel `customer` aparece como
- * "Alunos" aqui: no fórum é quem estuda; os outros usam os nomes de `ROLE_LABELS`.
- */
+/** Papéis que podem ser usados em `role_gated` (RBAC do auth), com os nomes de `ROLE_LABELS`. */
 const ROLES: { value: string; label: string }[] = [
-  { value: 'customer', label: 'Alunos' },
+  { value: 'customer', label: ROLE_LABELS.customer ?? 'Cliente' },
   { value: 'staff', label: ROLE_LABELS.staff ?? 'Equipe' },
   { value: 'admin', label: ROLE_LABELS.admin ?? 'Admin' },
   { value: 'superadmin', label: ROLE_LABELS.superadmin ?? 'Superadmin' },

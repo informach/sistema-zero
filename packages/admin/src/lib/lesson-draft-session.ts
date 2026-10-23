@@ -388,7 +388,7 @@ export class LessonDraftSession<T extends { kind: string }> {
             draft,
             status: 'conflict',
             error:
-              'Há alterações locais e outra versão no servidor. Compare as duas antes de continuar.',
+              'Há alterações neste navegador e outra versão salva na plataforma. Compare as duas antes de continuar.',
             recovery,
           })
           return
@@ -515,7 +515,7 @@ export class LessonDraftSession<T extends { kind: string }> {
       return
     }
     if (this.state.status === 'conflict') throw new Error(this.state.error)
-    if (this.intervening) throw new Error('Aguarde a abertura da versão do servidor.')
+    if (this.intervening) throw new Error('Aguarde a abertura da versão salva na plataforma.')
     if (this.running) {
       await this.running
       if (generation !== this.sendGeneration) throw this.handoffInterrupted()

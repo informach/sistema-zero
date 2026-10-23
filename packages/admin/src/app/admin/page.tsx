@@ -9,7 +9,7 @@ export default function PainelPage() {
     <div className="space-y-8">
       <AdminHeader
         title="Visão geral"
-        description="Como as vendas estão indo. Cada número abre a lista que ele resume."
+        description="Como as vendas estão indo. Os cartões de contas, produtos, ofertas e cupons abrem a lista que resumem."
       />
       <DashboardCards />
       <SalesPanel />

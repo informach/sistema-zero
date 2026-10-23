@@ -57,7 +57,7 @@ const QUEUE: StatDef[] = [
   { key: 'open', label: 'Em aberto', value: (s) => s.counts.open, path: HELPDESK_PATHS.open },
   {
     key: 'waiting',
-    label: 'Esperando a família',
+    label: 'Esperando quem abriu',
     value: (s) => s.counts.waiting,
     path: HELPDESK_PATHS.waiting,
   },
@@ -173,7 +173,8 @@ export function AtendimentoClient({ appUrl }: { appUrl: string | null }) {
             Precisa de atenção
           </h2>
           <p className="text-muted-foreground text-xs">
-            Os prazos são metas da equipe para a primeira resposta. A família não vê esses prazos.
+            Os prazos são metas da equipe para a primeira resposta. Quem abriu o atendimento não vê
+            esses prazos.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">

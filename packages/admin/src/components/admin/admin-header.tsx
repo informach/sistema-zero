@@ -26,10 +26,12 @@ export function AdminHeader({
   action?: React.ReactNode
   acoesAbaixo?: boolean
   /**
-   * O selo da comunidade ao lado do título (a sala da equipe, 23/10/2026). Desligue só onde a
-   * tela já diz a comunidade de outro jeito (o editor de um curso mostra a do próprio curso).
+   * O selo da comunidade ao lado do título (a sala da equipe, 23/10/2026). Desligue (`false`)
+   * só onde a tela já diz a comunidade de outro jeito (o editor de um curso mostra a do próprio
+   * curso). Um texto troca o que o selo diz: a fila que mostra as duas comunidades passa
+   * `BOTH_COMMUNITIES_LABEL`, e o selo fica neutro.
    */
-  community?: boolean
+  community?: boolean | string
 }) {
   const identidade = (
     <div className="min-w-0 space-y-1.5">
@@ -37,7 +39,9 @@ export function AdminHeader({
         <h1 className="min-w-0 break-words font-display text-[28px] font-bold leading-tight md:text-[32px]">
           {title}
         </h1>
-        {community ? <CommunityChip /> : null}
+        {community === false ? null : (
+          <CommunityChip label={typeof community === 'string' ? community : undefined} />
+        )}
       </div>
       {/* ⚠ `break-words` junto do `min-w-0` (full review de 18/09/2026): sozinho, o `min-w-0`
           só muda ONDE o estouro aparece — uma descrição de token ÚNICO (o slug da aula, o e-mail

@@ -7,6 +7,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { apiGet, apiSend } from '@/lib/api'
 import {
+  journeyDraftStorage,
+  keepKidsJourneyDraft,
+  takeKidsJourneyDraft,
+} from '@/lib/kids-journey-draft'
+import {
   KidsAdvanceSchema,
   type KidsHistory,
   KidsHistorySchema,
@@ -108,6 +113,20 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
             (options.keepDraft && previous ? previous : next.policy),
         )
         if (savedPreparation) setReason(savedPreparation.reason)
+        // Rascunho guardado na troca de lente: volta se a versão no ar ainda é a mesma. Se mudou,
+        // avisa em vez de sumir com ele calado (aplicar por cima desfaria a versão nova).
+        if (!savedPreparation && next.phase === 'published') {
+          const kept = takeKidsJourneyDraft(journeyDraftStorage())
+          if (kept && kept.version === next.version) {
+            setDraft(kept.policy)
+            setReason(kept.reason)
+            setSuccess('O rascunho que estava aberto antes da troca de comunidade voltou.')
+          } else if (kept) {
+            setError(
+              `A versão no ar mudou enquanto você estava na outra comunidade. O rascunho que estava aberto era sobre a versão ${kept.version} e não voltou, para não desfazer a versão ${next.version}.`,
+            )
+          }
+        }
         const conflict = Boolean(
           savedPreparation &&
             savedPreparation.status !== 'published' &&
@@ -211,6 +230,24 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
       preparation.expectedVersion === record.version &&
       compared.current === draftKey,
   )
+
+  // O estado de agora, para guardar o rascunho na troca de lente sem recriar a função.
+  const latest = useRef({ record, draft, reason, changed, preparation })
+  latest.current = { record, draft, reason, changed, preparation }
+  /**
+   * Antes de a lente Adultos levar a outra página: guarda o rascunho com mudanças (ou com motivo
+   * escrito) na aba. Devolve `false` só quando havia o que guardar e não deu.
+   */
+  const keepDraftForLensChange = useCallback((): boolean => {
+    const state = latest.current
+    if (state.record?.phase !== 'published' || !state.draft || state.preparation) return true
+    if (!state.changed && !state.reason.trim()) return true
+    return keepKidsJourneyDraft(journeyDraftStorage(), {
+      version: state.record.version,
+      policy: state.draft,
+      reason: state.reason,
+    })
+  }, [])
 
   async function run(
     name: string,
@@ -410,6 +447,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     publish,
     earlierHistory,
     returnToDraft,
+    keepDraftForLensChange,
     refresh: () => load({ keepDraft: true, resume: preparation?.id ?? null }),
   }
 }

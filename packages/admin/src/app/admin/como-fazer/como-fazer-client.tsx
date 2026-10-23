@@ -147,10 +147,13 @@ function parseImport(text: string): ImportParseResult<HelpImportFile> {
   const vistos = new Set<string>()
   for (const [i, t] of (file.tutorials ?? []).entries()) {
     const nome = `Tutorial ${i + 1}${t?.slug ? ` (${t.slug})` : ''}`
-    if (!isHelpSlug(t?.slug)) errors.push(`${nome}: "slug" inválido.`)
-    else if (vistos.has(t.slug)) errors.push(`${nome}: "slug" repetido no arquivo.`)
+    if (!isHelpSlug(t?.slug))
+      errors.push(`${nome}: o endereço precisa ter só letras minúsculas, números e hífens.`)
+    else if (vistos.has(t.slug))
+      errors.push(`${nome}: o endereço aparece mais de uma vez no arquivo.`)
     else vistos.add(t.slug)
-    if (!isHelpSlug(t?.collection)) errors.push(`${nome}: "collection" inválida.`)
+    if (!isHelpSlug(t?.collection))
+      errors.push(`${nome}: a coleção precisa ser o endereço de uma coleção que já existe.`)
     if (!t?.draft || typeof t.draft !== 'object') {
       errors.push(`${nome}: falta "draft".`)
       continue
@@ -419,7 +422,7 @@ function ComoFazerForPlatform({
       ]
       if (result.rejected.length) {
         toast.warning(
-          `${partes.join('; ')}. Recusados: ${result.rejected.map((r) => `${r.slug} (${r.reason})`).join(', ')}`,
+          `${partes.join('; ')}. Não entraram: ${result.rejected.map((r) => `${r.slug} (${r.reason})`).join(', ')}`,
         )
       } else {
         toast.info(`${partes.join('; ')}. Tudo entrou como rascunho: revise e publique.`)
@@ -639,7 +642,7 @@ function ComoFazerForPlatform({
         </Card>
       ) : !canWrite ? (
         <ReadOnlyNotice>
-          Importar grava tutoriais no servidor, então esta aba é só de Admin.
+          Importar cria e muda tutoriais na plataforma, então esta aba é só de Admin.
         </ReadOnlyNotice>
       ) : (
         <JsonImportPanel<HelpImportFile>
@@ -676,9 +679,8 @@ function ComoFazerForPlatform({
           onApply={applyImport}
           confirmMessage={(filename) => (
             <span>
-              A importação de <strong>{filename}</strong> grava no servidor agora: cria ou atualiza
-              o RASCUNHO de cada tutorial pelo endereço. O que está publicado não muda até você
-              publicar de novo.
+              A importação de <strong>{filename}</strong> vale agora: cria ou atualiza o RASCUNHO de
+              cada tutorial pelo endereço. O que está publicado não muda até você publicar de novo.
             </span>
           )}
           hasExistingContent={(tutorials?.length ?? 0) > 0}

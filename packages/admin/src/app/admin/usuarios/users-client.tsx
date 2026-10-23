@@ -477,7 +477,8 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     const actions: RowActionItem[] = [
       {
         key: 'aluno',
-        label: 'Ver a ficha do aluno',
+        // Aluno é quem compra (Cliente); para a equipe, a mesma ficha é "da conta".
+        label: u.role === 'customer' ? 'Ver a ficha do aluno' : 'Ver a ficha da conta',
         icon: <GraduationCap className="size-4" aria-hidden />,
         href: `/admin/membros/${u.id}`,
       },

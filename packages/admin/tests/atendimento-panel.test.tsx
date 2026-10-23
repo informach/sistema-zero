@@ -78,7 +78,7 @@ test('o painel mostra os números e leva ao atendimento já no filtro certo', as
 
   const text = container.textContent ?? ''
   expect(text).toContain('Prazo estourado')
-  expect(text).toContain('Esperando a família')
+  expect(text).toContain('Esperando quem abriu')
   expect(text).toContain('Estourado há 30 min')
 
   const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'))

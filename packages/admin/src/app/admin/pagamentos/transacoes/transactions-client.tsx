@@ -489,7 +489,25 @@ function CopyCode({ value, label }: { value: string; label: string }) {
 /** A nota fiscal da venda, procurada pelo código da venda na lista de notas (best-effort). */
 function InvoiceFact({ lookup }: { lookup: InvoiceLookup }) {
   if (lookup.state === 'loading') return <span className="text-muted-foreground">Procurando…</span>
-  if (lookup.state === 'error') return <span className="text-muted-foreground">não carregou</span>
+  if (lookup.state === 'error')
+    return (
+      <span className="text-muted-foreground">
+        Não conseguimos carregar a nota. Feche e abra a venda de novo.
+      </span>
+    )
+  if (lookup.state === 'none' && lookup.previous)
+    return (
+      <span className="inline-flex flex-wrap items-center justify-end gap-2">
+        <span className="text-muted-foreground">Sem nota valendo. A anterior:</span>
+        <InvoiceStatusBadge status={lookup.previous.status} />
+        <Link
+          href={`/admin/notas-fiscais?nota=${encodeURIComponent(lookup.previous.id)}`}
+          className="text-xs text-primary hover:underline"
+        >
+          Abrir a nota anterior
+        </Link>
+      </span>
+    )
   if (lookup.state === 'none') return <span className="text-muted-foreground">Ainda sem nota</span>
   return (
     <span className="inline-flex flex-wrap items-center justify-end gap-2">

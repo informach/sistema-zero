@@ -16,14 +16,27 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, CreditCard, Inbox, LogIn, Mail, MailOpen, Pencil, Plus } from 'lucide-react'
+import {
+  ArrowLeft,
+  Copy,
+  CreditCard,
+  Inbox,
+  LogIn,
+  Mail,
+  MailOpen,
+  Megaphone,
+  Pencil,
+  Plus,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { SpokenChip } from '@/components/admin/spoken-chip'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
@@ -57,6 +70,9 @@ const SOURCE_LABELS: Record<string, string> = {
   subscription: 'Assinatura',
   manual: 'Manual',
 }
+
+/** Por que os botões de acesso estão apagados para quem só lê. */
+const READ_ONLY_ACCESS = 'Só Admin muda os acessos.'
 
 const ACCESS_LABELS: Record<string, string> = {
   course: 'Curso',
@@ -297,22 +313,34 @@ export function MemberDetailClient({
     canImpersonate(currentUser, { id: user.id, role: user.role, status: user.status })
 
   // O "Mais" do cabeçalho: as ações de segunda linha, com as MESMAS regras de antes
-  // (conceder = quem escreve; entrar como = `canImpersonate`).
+  // (conceder = quem escreve; entrar como = `canImpersonate`). Quem só lê vê o "Conceder
+  // acesso" apagado, com o motivo, e a faixa de só leitura explica.
+  const groupRecadoFor = platform === 'kids' && learner?.audience === 'kids' ? learner : null
   const moreItems: MoreMenuItem[] = [
     {
       label: 'Ver recados',
       icon: <MailOpen className="size-4" aria-hidden />,
       href: `/admin/professor/recados?userId=${encodeURIComponent(learner?.id ?? userId)}`,
     },
-    ...(canWrite
+    // Criança escolhida na ficha: abre o recado em grupo (Recados lê `compose=1`) já com ela.
+    ...(groupRecadoFor
       ? [
           {
-            label: 'Conceder acesso',
-            icon: <Plus className="size-4" aria-hidden />,
-            onSelect: () => setGrantOpen(true),
+            label: 'Mandar recado em grupo',
+            icon: <Megaphone className="size-4" aria-hidden />,
+            href: `/admin/professor/recados?userId=${encodeURIComponent(groupRecadoFor.id)}&compose=1`,
+            disabled: !canMessage,
+            disabledReason: 'Seu papel não manda recados.',
           },
         ]
       : []),
+    {
+      label: 'Conceder acesso',
+      icon: <Plus className="size-4" aria-hidden />,
+      onSelect: () => setGrantOpen(true),
+      disabled: !canWrite,
+      disabledReason: 'Só Admin concede acesso.',
+    },
     {
       label: 'Editar conta',
       icon: <Pencil className="size-4" aria-hidden />,
@@ -343,9 +371,12 @@ export function MemberDetailClient({
         <ArrowLeft className="size-4" /> Voltar aos alunos
       </Link>
 
+      {/* A conta pode ter a criança na Comunidade dos Criadores e o responsável na outra: o selo
+          da lente diria só uma das duas, então a ficha não mostra selo. */}
       <AdminHeader
         title={title}
         description={email}
+        community={false}
         action={
           <div className="flex flex-wrap items-center gap-2">
             {canMessage ? (
@@ -365,6 +396,12 @@ export function MemberDetailClient({
           </div>
         }
       />
+
+      {canWrite ? null : (
+        <ReadOnlyNotice>
+          Mandar recado e ver os projetos continuam liberados para você.
+        </ReadOnlyNotice>
+      )}
 
       {loading ? (
         <Card className="py-10 text-center text-muted-foreground">
@@ -592,6 +629,24 @@ function IdentityCard({ detail }: { detail: MemberDetail }) {
           <span className="text-sm">{detail.profiles.length}</span>
         </Info>
       ) : null}
+      {/* O ID da conta é o que a Moderação pede para silenciar alguém: fica aqui, fechado. */}
+      <details className="basis-full text-muted-foreground text-xs">
+        <summary className="inline-flex min-h-11 cursor-pointer items-center">
+          Detalhes técnicos
+        </summary>
+        <div className="flex flex-wrap items-center gap-2">
+          <span>ID da conta</span>
+          <code className="break-all font-mono text-foreground">{u.id}</code>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void copyToClipboard(u.id, 'ID da conta')}
+          >
+            <Copy className="size-4" aria-hidden /> Copiar o ID
+          </Button>
+        </div>
+      </details>
     </Card>
   )
 }
@@ -682,16 +737,13 @@ function OverviewTab({
               <TableHead>Origem</TableHead>
               <TableHead>Liberado em</TableHead>
               <TableHead>Validade</TableHead>
-              {canWrite ? <TableHead className="text-right">Ações</TableHead> : null}
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {detail.entitlements.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={canWrite ? 6 : 5}
-                  className="py-10 text-center text-muted-foreground"
-                >
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                   Nenhum acesso ainda.
                 </TableCell>
               </TableRow>
@@ -721,29 +773,45 @@ function OverviewTab({
                   <TableCell className="text-muted-foreground">
                     {e.expiresAt ? formatDate(e.expiresAt) : 'Vitalícia'}
                   </TableCell>
-                  {canWrite ? (
-                    <TableCell className="text-right">
-                      {busyId === e.id ? (
-                        <Spinner className="ml-auto" />
-                      ) : e.status === 'revoked' ? (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      ) : (
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => onExtend(e)}>
-                            Estender
+                  <TableCell className="text-right">
+                    {busyId === e.id ? (
+                      <Spinner className="ml-auto" />
+                    ) : e.status === 'revoked' ? (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    ) : (
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canWrite}
+                          title={canWrite ? undefined : READ_ONLY_ACCESS}
+                          onClick={() => onExtend(e)}
+                        >
+                          Estender
+                        </Button>
+                        {e.status === 'active' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={!canWrite}
+                            title={canWrite ? undefined : READ_ONLY_ACCESS}
+                            onClick={() => onExpire(e)}
+                          >
+                            Encerrar agora
                           </Button>
-                          {e.status === 'active' ? (
-                            <Button variant="ghost" size="sm" onClick={() => onExpire(e)}>
-                              Encerrar agora
-                            </Button>
-                          ) : null}
-                          <Button variant="ghost" size="sm" onClick={() => onRevoke(e)}>
-                            Tirar acesso
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  ) : null}
+                        ) : null}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canWrite}
+                          title={canWrite ? undefined : READ_ONLY_ACCESS}
+                          onClick={() => onRevoke(e)}
+                        >
+                          Tirar acesso
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -1064,7 +1132,7 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
             <TableHead>Série</TableHead>
             <TableHead>Emitido</TableHead>
             <TableHead>Status</TableHead>
-            {canWrite ? <TableHead className="text-right">Ações</TableHead> : null}
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -1076,19 +1144,23 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
               <TableCell>
                 <StatusBadge status={c.revokedAt ? 'revoked' : 'active'} />
               </TableCell>
-              {canWrite ? (
-                <TableCell className="text-right">
-                  {c.revokedAt ? (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  ) : busyId === c.id ? (
-                    <Spinner className="ml-auto" />
-                  ) : (
-                    <Button variant="ghost" size="sm" onClick={() => revoke(c)}>
-                      Invalidar
-                    </Button>
-                  )}
-                </TableCell>
-              ) : null}
+              <TableCell className="text-right">
+                {c.revokedAt ? (
+                  <span className="text-muted-foreground text-xs">—</span>
+                ) : busyId === c.id ? (
+                  <Spinner className="ml-auto" />
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={!canWrite}
+                    title={canWrite ? undefined : 'Só Admin invalida certificados.'}
+                    onClick={() => revoke(c)}
+                  >
+                    Invalidar
+                  </Button>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -256,8 +256,8 @@ export function LessonManifestImport({
           <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
             Esta aula é de um curso ao vivo e o arquivo traz{' '}
             {liveVideos === 1 ? 'um vídeo planejado' : `${liveVideos} vídeos planejados`}. Na aula
-            ao vivo o vídeo é a transmissão do encontro, por isso o servidor recusa vídeo planejado.
-            Tire esses blocos do arquivo antes de importar.
+            ao vivo o vídeo é a transmissão do encontro, por isso a plataforma recusa vídeo
+            planejado. Tire esses blocos do arquivo antes de importar.
           </p>
         )}
         <div className="flex flex-wrap gap-3">

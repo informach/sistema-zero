@@ -15,8 +15,14 @@ import { StudioSubmissionViewer } from './studio-submission-viewer'
 
 // Mostra a CRIANÇA (perfil) quando a entrega veio de um perfil; senão a conta.
 // Espelha o studio-submissions-dialog por-bloco (nunca expõe o uuid cru).
-const studentName = (r: StudioSubmissionCourseRow) =>
-  r.childName ?? r.accountName ?? r.accountEmail ?? 'Sem nome'
+const knownName = (r: StudioSubmissionCourseRow) =>
+  r.childName ?? r.accountName ?? r.accountEmail ?? null
+/** O nome na lista (sozinho na linha). */
+const listName = (r: StudioSubmissionCourseRow, audience: 'adult' | 'kids') =>
+  knownName(r) ?? (audience === 'kids' ? 'Criança sem nome' : 'Aluno sem nome')
+/** O nome dentro das frases do projeto aberto ("Projeto de…", "Recado de…"). */
+const sentenceName = (r: StudioSubmissionCourseRow, audience: 'adult' | 'kids') =>
+  knownName(r) ?? (audience === 'kids' ? 'uma criança' : 'um aluno')
 const responsibleLabel = (r: StudioSubmissionCourseRow) =>
   [r.accountName, r.accountEmail].filter(Boolean).join(' · ') || '—'
 
@@ -73,7 +79,7 @@ export function CourseSubmissionsPanel({
     const filtered = q
       ? rows.filter(
           (r) =>
-            studentName(r).toLowerCase().includes(q) ||
+            (knownName(r) ?? '').toLowerCase().includes(q) ||
             r.lessonTitle.toLowerCase().includes(q) ||
             r.moduleTitle.toLowerCase().includes(q),
         )
@@ -151,7 +157,9 @@ export function CourseSubmissionsPanel({
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-medium">{studentName(r)}</span>
+                        <span className="truncate text-sm font-medium">
+                          {listName(r, audience)}
+                        </span>
                       </div>
                       {r.childName ? (
                         <div className="truncate text-xs text-muted-foreground">
@@ -185,7 +193,7 @@ export function CourseSubmissionsPanel({
           onClose={() => setSelected(null)}
           blockId={selected.blockId}
           userId={selected.userId}
-          studentName={studentName(selected)}
+          studentName={sentenceName(selected, audience)}
           responsible={selected.childName ? responsibleLabel(selected) : null}
           audience={audience}
           courseId={courseId}

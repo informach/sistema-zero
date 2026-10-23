@@ -67,6 +67,8 @@ describe('escolha das professoras da turma', () => {
     const merged = mergeStaffPages([[bia, ana], [ana], [caio]])
     expect(merged.map((item) => item.id)).toEqual(['ana', 'bia', 'caio'])
     expect(teacherShortName(caio)).toBe('caio')
+    // Sem nome nem e-mail útil: "Equipe", nunca um gênero presumido.
+    expect(teacherShortName({ firstName: '', email: '@sem-nome' })).toBe('Equipe')
   })
 
   test('o PATCH da turma leva só o que mudou', () => {

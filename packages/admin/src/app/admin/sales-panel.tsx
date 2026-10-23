@@ -24,7 +24,7 @@ const PERIODS = [
 const TOOLTIPS = {
   net: 'O que entrou no período em pagamentos confirmados, menos os estornos do período. O estorno desconta no dia em que aconteceu, então um dia pode ficar negativo.',
   transactions:
-    'Cobranças criadas no período, em qualquer situação: aguardando, pagas ou que não deram certo. Mostra quantas pessoas chegaram a pagar.',
+    'Cobranças criadas no período, em qualquer situação: aguardando, pagas ou que não deram certo. Mostra quantas compras começaram.',
   cancellations:
     'Estornos no período, isto é, dinheiro devolvido a quem comprou. Pix e boleto que expiraram não contam, porque o pagamento nunca aconteceu.',
   mrr: 'Quanto as assinaturas em dia rendem por mês, somadas agora. A anual entra com um doze avos do valor. Não muda com o período escolhido.',
@@ -199,7 +199,9 @@ export function SalesPanel() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-2">
-                      <p className="text-[15px] text-muted-foreground">não carregou</p>
+                      <p className="text-[15px] text-muted-foreground">
+                        Não conseguimos carregar este número.
+                      </p>
                       <Button
                         variant="outline"
                         size="sm"

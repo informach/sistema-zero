@@ -40,7 +40,7 @@ import { SpokenChip } from '@/components/admin/spoken-chip'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { canBackgroundRefreshPage, createForegroundPriority } from '@/lib/latest-wins'
-import { PLATFORM_LABELS, type Platform } from '@/lib/platform'
+import { BOTH_COMMUNITIES_LABEL, PLATFORM_LABELS, type Platform } from '@/lib/platform'
 import { platformTransition } from '@/lib/platform-transition'
 import {
   isSubmissionPending,
@@ -302,6 +302,7 @@ export function EntregasClient() {
       <AdminHeader
         title="Projetos"
         description={audience ? DESCRIPTION[platform] : DESCRIPTION_BOTH}
+        community={audience ? true : BOTH_COMMUNITIES_LABEL}
       />
 
       {studentFilter ? (

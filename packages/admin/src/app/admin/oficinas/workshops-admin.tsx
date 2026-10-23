@@ -33,7 +33,7 @@ import {
   teacherDisplayName,
   teacherSelectionPayload,
 } from '@/lib/live-teachers'
-import { COMMUNITY_NAMES } from '@/lib/platform'
+import { COMMUNITY_NAMES, type Platform } from '@/lib/platform'
 import type { CourseView } from '@/lib/types'
 import { CourseFormDialog } from '../membros/cursos/course-form-dialog'
 import { EnrollmentPicker } from './enrollment-picker'
@@ -45,6 +45,30 @@ const errorMessage = (cause: unknown, fallback: string) =>
   cause instanceof Error && cause.message ? cause.message : fallback
 
 const courseEditorHref = (courseId: string) => `/admin/membros/cursos/${courseId}`
+
+/**
+ * Quem se inscreve, em cada lente: na Comunidade dos Criadores são as famílias, pela área dos
+ * pais; na Comunidade Sistema Zero, os próprios alunos, pela área do aluno.
+ */
+const SIGN_UP_WORDS: Record<
+  Platform,
+  { people: string; People: string; area: string; learners: string; account: string }
+> = {
+  kids: {
+    people: 'as famílias',
+    People: 'As famílias',
+    area: 'na área dos pais',
+    learners: 'crianças',
+    account: 'da família',
+  },
+  adult: {
+    people: 'os alunos',
+    People: 'Os alunos',
+    area: 'na área do aluno',
+    learners: 'alunos',
+    account: 'da conta',
+  },
+}
 
 /**
  * Oficinas ao vivo (14/10/2026): a gestão das TURMAS dos cursos ao vivo da plataforma ativa.
@@ -66,6 +90,7 @@ export function LiveAdmin({
   canWrite: boolean
 }) {
   const platform = usePlatform()
+  const words = SIGN_UP_WORDS[platform]
   const platformRef = useRef(platform)
   platformRef.current = platform
   const [catalog, setCatalog] = useState<LiveCatalogView | null>(null)
@@ -198,7 +223,7 @@ export function LiveAdmin({
             </p>
             {item.status === 'draft' ? (
               <p className="text-xs text-muted-foreground">
-                Rascunho: as famílias só conseguem se inscrever depois de Abrir inscrições.
+                Rascunho: {words.people} só conseguem se inscrever depois de Abrir inscrições.
               </p>
             ) : null}
           </div>
@@ -229,7 +254,7 @@ export function LiveAdmin({
                       ),
                     item.status === 'open'
                       ? 'Inscrições encerradas.'
-                      : 'Inscrições abertas. As famílias já podem se inscrever.',
+                      : `Inscrições abertas. ${words.People} já podem se inscrever.`,
                   )
                 }
               >
@@ -320,7 +345,7 @@ export function LiveAdmin({
               <EmptyState
                 zappy="happy"
                 title={`Ainda não há curso ao vivo na ${COMMUNITY_NAMES[platform]}`}
-                description="Um curso ao vivo se monta como qualquer curso, em Cursos. Cada aula publicada vira um encontro das turmas, e o curso só aparece para as famílias em Oficinas."
+                description={`Um curso ao vivo se monta como qualquer curso, em Cursos. Cada aula publicada vira um encontro das turmas, e o curso só aparece para ${words.people} em Oficinas.`}
                 action={
                   canWrite ? (
                     <Button onClick={() => setCourseFormOpen(true)}>
@@ -463,6 +488,7 @@ function CohortCreateDialog({
   /** A turma saiu como o autor pediu: fecha o diálogo e mostra o recado na página. */
   onDone(message: string): void
 }) {
+  const words = SIGN_UP_WORDS[usePlatform()]
   const [zones] = useState(() => timeZoneOptions(Intl.DateTimeFormat().resolvedOptions().timeZone))
   // O fuso do computador só vira o padrão quando é um do Brasil: a turma é de crianças daqui,
   // e um computador em outro fuso marcaria os encontros fora de hora sem ninguém perceber.
@@ -559,7 +585,7 @@ function CohortCreateDialog({
     if (openAfterCreate.current) await openEnrollments(cohort)
     else
       onDone(
-        `Turma ${cohort.title} salva como rascunho. As famílias só se inscrevem depois de Abrir inscrições.`,
+        `Turma ${cohort.title} salva como rascunho. ${words.People} só se inscrevem depois de Abrir inscrições.`,
       )
   }
   /** O MESMO PATCH do "Abrir inscrições" da turma, encadeado depois da criação. */
@@ -570,7 +596,7 @@ function CohortCreateDialog({
       await liveRequest(`/api/admin/live/cohorts/${cohort.id}`, { status: 'open' }, 'PATCH')
       onChanged()
       onDone(
-        `Inscrições abertas na turma ${cohort.title}. As famílias encontram a oficina na área dos pais.`,
+        `Inscrições abertas na turma ${cohort.title}. ${words.People} encontram a oficina ${words.area}.`,
       )
     } catch (cause) {
       // A turma JÁ existe: o diálogo passa a falar dela, com a chance de tentar abrir de novo.
@@ -743,6 +769,7 @@ function CohortSettingsDialog({
   onClose(): void
   onSaved(message: string): void
 }) {
+  const words = SIGN_UP_WORDS[usePlatform()]
   const formId = useId()
   const [status, setStatus] = useState<LiveCohort['status']>(cohort.status)
   const [teacherIds, setTeacherIds] = useState<string[]>(() => [...cohort.teacherIds])
@@ -828,7 +855,7 @@ function CohortSettingsDialog({
             disabled={archived || busy}
             onChange={(event) => setStatus(event.target.value as LiveCohort['status'])}
           >
-            <option value="draft">Rascunho (as famílias ainda não veem)</option>
+            <option value="draft">Rascunho ({words.people} ainda não veem)</option>
             <option value="open">Inscrições abertas</option>
             <option value="closed">Inscrições encerradas</option>
             <option value="archived">Histórico (arquivada)</option>
@@ -861,6 +888,7 @@ function EnrollmentDialog({
   canWrite: boolean
   onClose(): void
 }) {
+  const words = SIGN_UP_WORDS[usePlatform()]
   const [enrollments, setEnrollments] = useState<LiveEnrollment[]>([])
   const [families, setFamilies] = useState<Record<string, FamilyAccount>>({})
   const [error, setError] = useState<string | null>(null)
@@ -925,8 +953,8 @@ function EnrollmentDialog({
       <div className="space-y-4">
         {cohort.status === 'draft' ? (
           <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-            A turma ainda é um rascunho: as famílias só conseguem se inscrever depois de Abrir
-            inscrições. A equipe pode inscrever crianças por aqui desde já.
+            A turma ainda é um rascunho: {words.people} só conseguem se inscrever depois de Abrir
+            inscrições. A equipe pode inscrever {words.learners} por aqui desde já.
           </p>
         ) : null}
         {canWrite ? null : <ReadOnlyNotice />}
@@ -989,8 +1017,8 @@ function EnrollmentDialog({
                             ? `Tirar a inscrição de ${item.learnerName}?`
                             : 'Tirar esta vaga reservada?',
                           message: item.learnerName
-                            ? `${item.learnerName} perde o acesso a esta turma. Os outros acessos da família continuam.`
-                            : 'A vaga reservada volta a ficar livre. Os outros acessos da família continuam.',
+                            ? `${item.learnerName} perde o acesso a esta turma. Os outros acessos ${words.account} continuam.`
+                            : `A vaga reservada volta a ficar livre. Os outros acessos ${words.account} continuam.`,
                           confirmText: 'Tirar a inscrição',
                           confirmVariant: 'destructive',
                           onConfirm: async () => {
