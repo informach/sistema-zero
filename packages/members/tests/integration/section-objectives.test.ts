@@ -122,6 +122,79 @@ function setup() {
 }
 
 describe('objetivos da parte no servidor', () => {
+  test('admin confere os mesmos objetivos como ensaio, sem progresso nem recompensa de aluno', async () => {
+    const ctx = setup()
+    const revision = ctx.learningRepository.structures.get(ctx.lessonId)!.revision
+    const response = await ctx.app.handle(
+      new Request(
+        `http://localhost/members/lessons/${ctx.lessonId}/sections/${ctx.section.id}/project-check`,
+        {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-auth-user-id': USER,
+            'x-auth-user-role': 'admin',
+            'x-auth-user-status': 'active',
+          },
+          body: JSON.stringify({ revision, project: COM_LACO }),
+        },
+      ),
+    )
+    expect(response.status).toBe(200)
+    const result = (await response.json()) as {
+      passed: boolean
+      results: { id: string; passed: boolean }[]
+      gamification: unknown
+    }
+    expect(result.passed).toBe(true)
+    expect(result.results).toContainEqual({ id: 'laco', passed: true })
+    expect(result.gamification).toBeNull()
+    expect(ctx.learningRepository.sectionProgress.size).toBe(0)
+    expect(ctx.gamification.events).toHaveLength(0)
+    expect(ctx.learningRepository.evidence.size).toBe(0)
+  })
+
+  test('ensaio da equipe pode conferir parte posterior, mas não aceita revisão obsoleta', async () => {
+    const ctx = setup()
+    const current = ctx.learningRepository.structures.get(ctx.lessonId)!
+    const firstBlockId = randomUUID()
+    const workspace = ctx.courses.blocks.find((block) => block.id === ctx.studioId)!
+    ctx.courses.blocks.push({ ...workspace, id: firstBlockId })
+    const first: LessonSection = {
+      ...ctx.section,
+      id: randomUUID(),
+      blockIds: [firstBlockId],
+      workspaceBlockId: firstBlockId,
+    }
+    ctx.learningRepository.structures.set(ctx.lessonId, {
+      ...current,
+      sections: [first, ctx.section],
+    })
+    const check = (revision: string) =>
+      ctx.app.handle(
+        new Request(
+          `http://localhost/members/lessons/${ctx.lessonId}/sections/${ctx.section.id}/project-check`,
+          {
+            method: 'POST',
+            headers: {
+              'content-type': 'application/json',
+              'x-auth-user-id': USER,
+              'x-auth-user-role': 'admin',
+              'x-auth-user-status': 'active',
+            },
+            body: JSON.stringify({ revision, project: COM_LACO }),
+          },
+        ),
+      )
+    expect((await check(randomUUID())).status).toBe(409)
+    const response = await check(current.revision)
+    expect(response.status).toBe(200)
+    expect(((await response.json()) as { passed: boolean }).passed).toBe(true)
+    expect(ctx.learningRepository.sectionProgress.size).toBe(0)
+    expect(ctx.learningRepository.evidence.size).toBe(0)
+    expect(ctx.gamification.events).toHaveLength(0)
+  })
+
   test('o HTTP da aula não entrega exemplos privados nem a outra conta sem acesso', async () => {
     const ctx = setup()
     const studio = ctx.courses.blocks.find((block) => block.id === ctx.studioId)

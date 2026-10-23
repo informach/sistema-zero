@@ -436,6 +436,9 @@ function LessonSectionsContent({
     [lesson.id, lesson.title, lesson.sections, lesson.blocks, lesson.legacyLayout],
   )
   const state = lesson.sectionProgress
+  // A equipe não tem progresso de aluno; os objetivos publicados continuam tendo
+  // uma revisão autoritativa e podem ser conferidos como ensaio.
+  const projectCheckRevision = state?.revision ?? lesson.structureRevision
   // ⭐ Sala ao vivo (14/10/2026): quem abre as partes é a professora. Com o controle presente, a
   // trava é SÓ "a professora ainda não abriu" (a progressão por conclusão não vale no encontro);
   // sem ele, a régua de sempre.
@@ -1234,10 +1237,12 @@ function LessonSectionsContent({
                       .flatMap((s) => s.completion?.blockIds ?? [])
                       .filter((id) => lesson.blocks.some((b) => b.id === id && b.kind === 'ebook')),
               sectionProjectCheck:
-                section.completion?.projectChecks?.length && section.workspaceBlockId && state
+                section.completion?.projectChecks?.length &&
+                section.workspaceBlockId &&
+                projectCheckRevision
                   ? {
                       sectionId: section.id,
-                      revision: state.revision,
+                      revision: projectCheckRevision,
                       blockId: section.workspaceBlockId,
                       // A prévia do Admin e as aulas sem estrutura trazem a regra inteira; a criança
                       // só recebe a vista (a do members já vem assim). Nunca a regra na tela.
@@ -1245,7 +1250,7 @@ function LessonSectionsContent({
                         (check: ProjectObjectiveView | SectionProjectCheck) =>
                           'rule' in check ? projectObjectiveView(check) : check,
                       ),
-                      savedResults: state.sections.find((progress) => progress.id === section.id)
+                      savedResults: state?.sections.find((progress) => progress.id === section.id)
                         ?.objectives,
                     }
                   : undefined,
