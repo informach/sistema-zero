@@ -128,4 +128,26 @@ export const CONSOLE_STATIC: Record<string, string> = {
   // ⚠️ Ela reverbera em todo `rounded-sm/md/lg/xl` dos painéis (o `@theme inline` deriva os
   // quatro deste token) — é o que faz o console ter a forma da comunidade, não só a cor.
   radius: '1.25rem',
+  // A SALA DA EQUIPE (admin, 23/10/2026): o chão um tom mais claro, o menu na noite da Comunidade
+  // dos Criadores, a lente das comunidades (o amarelo do Zappy para o Kids, o verde-água para os
+  // Adultos) e o degrau dos botões. Moram AQUI, e não num `:root` do admin, porque a folha é a
+  // fonte única dos três consoles; o atendimento e o marketing simplesmente não consomem.
+  'room-ground': '#eef2fb',
+  'primary-step': '#1343b8',
+  menu: '#121a30',
+  'menu-2': '#1b2540',
+  'menu-text': '#cbd4e8',
+  'menu-icon': '#8e9bba',
+  'lens-kids': '#ffc02e',
+  'lens-kids-ink': '#0f1a33',
+  'lens-adult': '#2ba3ac',
+  'lens-adult-ink': '#06272a',
+  'lens-adult-tint': '#d7eef0',
+  sun: '#ffc02e',
+  warning: '#7a4100',
+  'warning-tint': '#fff3c4',
+  // Os títulos da sala usam a Bricolage Grotesque, que o admin carrega e põe no `body`; sem ela,
+  // a pilha comum.
+  'font-display':
+    '\n    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,\n    "Helvetica Neue", Arial, sans-serif',
 }
