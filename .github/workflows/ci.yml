@@ -584,9 +584,9 @@ jobs:
     permissions:
       contents: read
       actions: read
-    # Até 140min na onda canônica (60min por backend), 20min para os apps em paralelo
-    # e 20min para preparação/IaC/disparos. Os jobs de testes mantêm seus limites.
-    timeout-minutes: 180
+    # Até 140min na onda canônica (60min por backend), 60min para fila/build dos apps
+    # em paralelo e margem para preparação/IaC/disparos. Testes mantêm seus limites.
+    timeout-minutes: 240
     env:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       RAILWAY_API: https://backboard.railway.com/graphql/v2
@@ -785,7 +785,7 @@ jobs:
           # a API às vezes devolve corpo não-JSON transitório num poll — conta como
           # poll perdido (segue tentando) e só aborta após 5 rounds ruins SEGUIDOS
           esperar() {
-            local deadline=$((SECONDS + 20 * 60))
+            local deadline=$((SECONDS + 60 * 60))
             local i=0 REMAINING HTTP_TIMEOUT
             FAIL=0; PENDING=1; BADPOLLS=0
             while [ "$SECONDS" -lt "$deadline" ]; do
@@ -826,6 +826,9 @@ jobs:
               echo "[$i]$LINE"
               [ "$PENDING" -eq 0 ] && break
             done
+            # FAIL/PENDING são conferidos pelo caller. Um predicado falso no
+            # último round não pode abortar sob errexit antes desse diagnóstico.
+            return 0
           }
 
           # O wrapper é a barreira canônica: migrations/V0 -> Auth novo e antigos
