@@ -134,6 +134,10 @@ describe('nav — grupos e helpers de seção', () => {
     expect(pathIsPlatformScoped('/admin/professor')).toBe(true)
     expect(pathIsPlatformScoped('/admin/professor/entregas')).toBe(true)
     expect(pathIsPlatformScoped('/admin/professor/recados')).toBe(true)
+    // Encontros lê a agenda sem plataforma: mostra as duas comunidades (e as salas também).
+    expect(pathIsPlatformScoped('/admin/professor/ao-vivo')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/professor/ao-vivo/s-1')).toBe(false)
+    expect(pathIsPlatformScoped('/admin/professor/ao-vivox')).toBe(true)
     expect(pathIsPlatformScoped('/admin/comunidade/moderacao')).toBe(true)
     expect(pathIsPlatformScoped('/admin/membros')).toBe(true)
     expect(pathIsPlatformScoped('/admin/membros/u-123')).toBe(true)

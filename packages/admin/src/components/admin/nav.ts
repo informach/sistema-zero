@@ -282,9 +282,17 @@ const PLATFORM_SCOPED_PREFIXES = [
   '/admin/como-fazer',
 ] as const
 
+/**
+ * Dentro de um prefixo escopado, as telas que mostram as DUAS comunidades: a agenda de
+ * Encontros (e as salas) lê os encontros sem filtro de plataforma, então o selo diz
+ * "Kids e Adultos juntos" e a lente mostra a legenda das duas comunidades (23/10/2026).
+ */
+const BOTH_COMMUNITIES_PREFIXES = ['/admin/professor/ao-vivo'] as const
+
 export function pathIsPlatformScoped(pathname: string): boolean {
   // O editor aponta para um curso FIXO: trocar o seletor não troca a entidade.
   // A tela mostra a audiência canônica do próprio curso.
   if (pathname.startsWith('/admin/membros/cursos/')) return false
+  if (BOTH_COMMUNITIES_PREFIXES.some((prefix) => prefixMatches(pathname, prefix))) return false
   return PLATFORM_SCOPED_PREFIXES.some((prefix) => prefixMatches(pathname, prefix))
 }

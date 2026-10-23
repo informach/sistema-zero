@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import type * as React from 'react'
 import { cn } from '@/lib/cn'
 
@@ -35,7 +34,10 @@ export function EmptyState({
       )}
     >
       {zappy ? (
-        <Image src={ZAPPY[zappy]} alt="" width={96} height={96} className="h-auto w-24" />
+        // Arte estática do public/: `<img>` simples, que também roda nos testes sem o
+        // otimizador do Next (o `next/image` quebrava sob o happy-dom sem URL de página).
+        // biome-ignore lint/performance/noImgElement: arte estática pequena, sem otimização a ganhar
+        <img src={ZAPPY[zappy]} alt="" width={96} height={96} className="h-auto w-24" />
       ) : null}
       <p className="font-display text-xl font-bold">{title}</p>
       {description ? (

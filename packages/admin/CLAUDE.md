@@ -1,5 +1,46 @@
 # CLAUDE.md — @sistemazero/admin
 
+## A sala da equipe: o admin redesenhado (23/10/2026)
+
+Proposta aprovada pela dona (canvas "Sistema Zero, novo admin"): reorganização de fluxo, layout e
+copy das funções que já existiam. Rotas, BFF e permissões não mudaram.
+
+- **Menu em três áreas** (`components/admin/nav.ts`, ids `turma | conteudo | negocio`), nomeadas
+  pelo que a pessoa faz: **Turma** (Hoje, Encontros, Projetos, Recados, Moderação, Alunos),
+  **Conteúdo** (Cursos, Oficinas, Jornada, Desafio do mês, Como fazer, Clube e Comunidade) e
+  **Negócio** (Visão geral, Contas, Vendas, Notas fiscais, Catálogo, Campanhas, Zappy e Pensa,
+  Atendimento, Auditoria). Ranking e Análises são abas de Alunos (`ALUNOS_TABS`,
+  `AlunosTabs`). As duas jornadas são UM item que segue a lente (`platformHref` +
+  `alsoMatch`, `hrefForPlatform`); cada página da jornada faz `router.replace` para a outra quando
+  a lente muda.
+- **Todo mundo entra por Hoje** (`/admin/professor`): o `/`, o login, o proxy e o logo levam
+  para lá. Hoje junta os encontros do dia (o mesmo fetch da agenda, `use-live-agenda.ts`) e uma
+  fila única de projetos, recados, aprovações e denúncias; cada item abre o próprio item
+  (`?abrir=` em Projetos e Recados, `?aba=` em Moderação).
+- **A lente das comunidades** (`platform-switcher.tsx`): Kids no amarelo do Zappy, Adultos no
+  verde-água; apagada nas telas globais ("Esta área mostra as duas comunidades."). O cabeçalho
+  (`AdminHeader`) mostra o selo da comunidade (`CommunityChip`: Comunidade dos Criadores, Comunidade
+  Sistema Zero ou "Kids e Adultos juntos"). Como fazer segue a lente.
+- **Visual**: o chassi console continua a fonte dos três painéis; só o `globals.css` do admin
+  veste a sala por cima (chão `#eef2fb`, menu `#121a30`, tokens `menu*`, `lens-*`, `sun`,
+  `warning`), as letras da comunidade adulta (Atkinson Hyperlegible Next, Bricolage Grotesque nos
+  títulos via `font-display`, Geist Mono nos rótulos) e o degrau de 3 px no botão primário.
+- **Peças comuns**: `StatusBadge`/`statusLabel(status, kind)` (situações escritas para gente:
+  Rascunho, Publicado, Aguardando, Pago...; nenhum `draft/PENDING` cru em filtro ou formulário),
+  `ReadOnlyNotice` (a faixa "Só leitura" para quem não pode mudar; os botões ficam apagados, não
+  somem), `EmptyState`/`LoadError` (o Zappy no lugar de emoji; erro de carga nunca vira lista
+  vazia), `SectionTabs`, `OverviewCard href`, `roleLabel`/`canWriteRole` em `lib/types.ts`.
+- **Voz e vocabulário**: os mesmos nomes das comunidades (curso, módulo, aula, parte, projeto,
+  desenho, recado, a equipe, Passo a passo do projeto, Clube dos Criadores, Mural dos Criadores,
+  sequência de dias, moedas Zappy, o Zappy e o Pensa). Sem travessão e sem emoji no texto visível.
+  Quem conduz uma turma pode ser professora ou professor: o texto usa "quem conduz a turma", "a
+  equipe" ou "professor ou professora", nunca "professora" como padrão. IDs, códigos do provedor e
+  códigos HTTP ficam em "Detalhes técnicos", fechado.
+- **Pendências que pedem backend** (não feitas): a faixa "A casa hoje" de Hoje; "Revisar
+  gravação" na agenda (o `LiveSessionSummary` não diz se a gravação espera revisão); o nome de quem
+  assina em Assinaturas; a busca por nome em Auditoria, Vendas e no silenciar da Moderação; o nome
+  da pessoa no histórico da Jornada Kids.
+
 ## Jornada Kids canônica (implementação isolada, 19/10/2026)
 
 `/admin/professor/jornada-kids` lê somente a política persistida. Os oito nomes/ordem são
@@ -14,6 +55,15 @@ de lote é manual e publicação envia versão/três hashes da mesma preparaçã
 do navegador ou retry invisível. Histórico tem erro próprio. Editor tem DOM/API e tipos locais
 qualificados; navegador real e integração JWT/banco ainda pendentes. Consulte os recibos em
 `.compozy/tasks/kids-configurable-journey/` antes de declarar rollout pronto.
+
+**Sala da equipe (23/10/2026):** a tela se chama "Jornada do Criador" e mostra os passos da
+publicação à vista (Mudar no rascunho, Comparar com a versão no ar, Dizer o motivo, Conferir os
+perfis, Publicar), só LENDO o estado do editor. ⚠️ Decisão da dona: **"Conferir o próximo grupo
+de perfis" continua MANUAL, um grupo por clique** (o antigo "Verificar próximo lote"); nada de
+laço automático nem nova tentativa sozinha. O ID da preparação e o da conta que publicou ficam em
+"Detalhes técnicos" (o histórico não traz o nome: aparece "Alguém da equipe"). O item "Jornada"
+do menu segue a lente, e as duas páginas fazem `router.replace` para a outra quando a lente
+muda (Kids na lente Adultos vai para `/jornada-adulta`, e vice-versa).
 
 ## Autoria do Estúdio em duas linguagens (18/10/2026)
 
@@ -134,8 +184,10 @@ sempre, com a modalidade "Ao vivo". Contrato no core: `core/course/modality` e `
   para UTC por `zonedLocalToUtcIso` (nunca `new Date(local)`, que lê o fuso do computador);
   `buildSchedule` recusa fim antes do início e encontro que começa antes do fim do anterior.
   `POST /api/admin/live/courses/:courseId/cohorts` com `LiveCreateCohort` SEM `courseId`. Curso sem
-  aula publicada: o diálogo explica e leva ao editor. Ficaram como estavam: turma nasce rascunho com
-  "Abrir inscrições" ali mesmo, "Editar turma" (status e professoras, só admin; arquivar pede
+  aula publicada: o diálogo explica e leva ao editor. O formulário tem dois botões (23/10/2026):
+  "Salvar como rascunho" e "Salvar e abrir inscrições", que encadeia o MESMO `PATCH` de status
+  `open` depois do `POST`; se esse segundo passo falhar, o diálogo diz que a turma ficou rascunho e
+  oferece tentar de novo. Ficaram como estavam: "Abrir inscrições" no cartão da turma, "Editar turma" (status e professoras, só admin; arquivar pede
   confirmação), Inscrições (com a família via `POST /api/admin/accounts/batch`), reposição e
   agenda. SAÍRAM: o editor de roteiro, `live-steps-editor`, `live-studio-editor`,
   `lib/live-studio-curation.ts`, a importação de projeto/templates e a rota
