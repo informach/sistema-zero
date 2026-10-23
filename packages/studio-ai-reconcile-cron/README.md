@@ -18,7 +18,7 @@ desabilitados, e o handler HTTP sempre responde 404.
 
 ## Limites e observação
 
-Cada agendamento faz um único POST, com `redirect: 'error'`, prazo total de
+Cada agendamento faz um único POST, com `redirect: 'manual'`, prazo total de
 25 segundos e resposta de até 4 KiB. O prazo cobre conexão e leitura do corpo.
 Não há retry imediato. Abortar a espera não prova que o BFF cancelou o trabalho;
 uma resposta perdida continua sem confirmação. A próxima execução usa a rota
@@ -51,6 +51,7 @@ Na raiz do repositório, com Bun 1.3.11 e Node 24:
 ```sh
 bun install --frozen-lockfile --ignore-scripts
 bun test packages/studio-ai-reconcile-cron/tests scripts/ci/railway-config.test.ts
+bun run --filter @sistemazero/studio-ai-reconcile-cron test:workerd
 bun run --filter @sistemazero/studio-ai-reconcile-cron typecheck
 bun run --filter @sistemazero/studio-ai-reconcile-cron check
 node packages/studio-ai-reconcile-cron/node_modules/wrangler/bin/wrangler.js types packages/studio-ai-reconcile-cron/worker-configuration.d.ts --config packages/studio-ai-reconcile-cron/wrangler.jsonc --include-runtime=false --check
@@ -59,6 +60,31 @@ node packages/studio-ai-reconcile-cron/node_modules/wrangler/bin/wrangler.js typ
 `worker-configuration.d.ts` é gerado pelo Wrangler 4.120.1 fixado no pacote. Não
 editar o arquivo manualmente. A suíte usa transportes controlados; não chama
 Railway, Cloudflare nem OpenRouter.
+
+`test:workerd` usa Node 24 para remover apenas os tipos da fonte real e executá-la
+no engine nativo já instalado como dependência do Wrangler. Não instala pacotes,
+não carrega o arquivo de configuração remoto e não usa credenciais reais. Toda
+saída de `fetch` do Worker é interceptada pelo serviço local do Miniflare, sem
+encaminhamento ou resolução de DNS externo. A prova verifica:
+
+- `Request` nativo com `redirect: 'error'` lança `TypeError` antes de qualquer
+  chamada; `manual` é aceito pelo engine.
+- A fonte atual recebe um 302 sintético com `Location`, recusa esse status e faz
+  uma única chamada, sem seguir o destino.
+- HTTP 200 com as três contagens exatas chega a `reconciled`, também com uma
+  única chamada.
+
+O comando `test` do pacote inclui essa prova após os testes Bun. Um caminho de
+fonte opcional permite reproduzir uma versão anterior explicitamente, sem editar
+o arquivo atual: `node tests/workerd-proof.mjs /caminho/para/fonte.ts`.
+O relatório registra os hashes da fonte e do binário, versões de Node,
+Miniflare/workerd e a data de compatibilidade suportada pelo engine local. O
+engine instalado em 23/10/2026 é `workerd 1.20260804.1`, via
+`Miniflare 5.20260804.0-alpha`, com data `2026-08-04`; essa prova local não é aceite
+do deployment remoto com data `2026-10-22`.
+
+`finally` aguarda `Miniflare.dispose()` para encerrar o runtime pertencente ao
+teste. A prova hospedada continua sendo uma etapa separada da implantação.
 
 ## Ordem de ativação por ambiente
 

@@ -31,7 +31,7 @@ describe('Studio AI reconciliation scheduler', () => {
     expect(calls).toHaveLength(1)
     expect(calls[0].url).toBe(`${env.KIDS_ORIGIN}/api/internal/studio-ai/reconcile`)
     expect(calls[0].init.method).toBe('POST')
-    expect(calls[0].init.redirect).toBe('error')
+    expect(calls[0].init.redirect).toBe('manual')
     expect(calls[0].init.body).toBeUndefined()
     expect(new Headers(calls[0].init.headers).get('authorization')).toBe(`Bearer ${secret}`)
   })

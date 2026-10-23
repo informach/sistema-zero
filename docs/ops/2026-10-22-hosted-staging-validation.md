@@ -76,3 +76,33 @@ qualificação global de ledger ou de reconciliação agendada.
 Continuam abertos a análise hospedada após o reparo, a integração positiva de
 oficina/conquistas e os gates de produção. O resultado negativo anterior de
 desempenho F1 também permanece aberto.
+
+## Continuação de 23/10
+
+O commit `bf33cbef621865f264561f689111e01bbcdc8fe0` passou nos nove checks
+do CI de push 39894706573 e no CI de PR 39894722743. O deploy automático
+começou; isso ainda não prova imagem ativa nem a análise hospedada reparada.
+
+Um curso próprio de QA foi criado pela interface em staging, como curso extra
+em rascunho, sem posição na jornada, matrícula ou ferramentas concedidas.
+A aula permitiu escolher Python e Código Pro, instalar Turtle e editar a
+fonte pelo editor. A execução criou o frame/canvas com título próprio.
+Depois de voltar ao percurso e recarregar a página, ambiente, modo Pro e
+fonte foram preservados. Stop e retorno ao percurso deixaram zero iframes.
+A captura raster dessa aula ficou incompleta e não qualifica seu desenho
+visualmente. Os cursos existentes não foram editados.
+
+O ZIP de Pinta/Pro baixado na rodada anterior foi executado com o CPython
+3.14.2 e o módulo oficial `Lib/turtle.py`, usando Tk 8.6.15. A fonte e o PNG
+permaneceram byte a byte iguais. O observador delegou a criação da tela,
+ocultou a janela e agendou inspeção/encerramento: `register_shape` carregou
+16×16 pixels, o primeiro RGB coincidiu com o PNG exportado e a tartaruga usou
+essa imagem; `mainloop` retornou depois de `bye`. Isso prova execução nativa
+desse exemplo, sem adaptação gráfica do navegador. Não qualifica interação
+visual manual no desktop nem todos os jogos exportados. O primeiro oráculo
+supunha outro tom de vermelho e foi corrigido para derivar a cor do PNG;
+o negativo original continua preservado.
+
+A causa da falha agendada e a correção do transporte estão em
+[runtime do cron](2026-10-23-cron-native-runtime.md). A repetição hospedada
+após implantação continua necessária.

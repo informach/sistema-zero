@@ -6,7 +6,8 @@
   "scripts": {
     "types": "wrangler types --include-runtime=false",
     "typecheck": "tsc --noEmit",
-    "test": "bun test",
+    "test": "bun test && bun run test:workerd",
+    "test:workerd": "node tests/workerd-proof.mjs",
     "check": "biome check ."
   },
   "devDependencies": {

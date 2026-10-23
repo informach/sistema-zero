@@ -117,7 +117,9 @@ export async function runReconciliation(
   const operation = async (): Promise<ReconciliationResult> => {
     const response = await fetchImpl(`${ORIGINS[environment]}${ROUTE}`, {
       method: 'POST',
-      redirect: 'error',
+      // workerd accepts manual/follow only. Keep redirects as non-200 failures
+      // so the bearer is never forwarded to another destination.
+      redirect: 'manual',
       headers: {
         Authorization: `Bearer ${secret}`,
         'User-Agent': 'sistemazero-studio-ai-reconcile',
