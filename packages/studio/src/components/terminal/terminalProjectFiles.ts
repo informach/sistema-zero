@@ -3,13 +3,14 @@ import {
   type ExtraFile,
   isReservedProjectFileName,
   normalizeExtraFileName,
+  type ProjectAsset,
   type ProjectFiles,
   type ProjectTree,
 } from '#core'
 
 export const WEB_CONTAINER_PACKAGE_DEPENDENCIES = {
   '@vitejs/plugin-react': '6.0.2',
-  vite: '8.0.16',
+  vite: '8.1.6',
   typescript: '5.9.3',
 } as const
 
@@ -21,6 +22,7 @@ export interface TerminalProjectSnapshot {
   /** Modo profissional (árvore real). Ausente = projeto classic. */
   kind?: 'pro'
   tree?: ProjectTree
+  assets?: ProjectAsset[]
 }
 
 /**

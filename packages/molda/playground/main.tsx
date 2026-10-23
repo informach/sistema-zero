@@ -20,9 +20,8 @@ import {
   type MoldaPersistence,
   setMoldaStorageNamespace,
 } from '@sistemazero/molda'
-import { type JSX, lazy, StrictMode, Suspense, useEffect, useState } from 'react'
+import { type JSX, StrictMode, useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { COPY } from '../src/core/copy'
 import type { SkyPreviewLike } from '../src/viewport/SkyPreview'
 import type { TexturePreviewLike } from '../src/viewport/TexturePreview'
 import type { MoldaViewportLike } from '../src/viewport/types'
@@ -38,7 +37,6 @@ const params = new URLSearchParams(window.location.search)
 const initialAssetId = params.get('criacao')
 // `?nivel=explorer|architect|god`: o portão por nível de jornada, como o kids calcula.
 const toolAccess = playgroundToolAccess(params.get('nivel'))
-const ScenePlayground = lazy(() => import('./ScenePlayground'))
 
 const DEMO_STATUSES: Array<MoldaHostChromeStatus | null> = [
   null,
@@ -190,12 +188,22 @@ async function installPreviewTracking(): Promise<void> {
   })
 
   skyModule.setMoldaSkyPreviewFactory((canvas, options) => {
-    skyPreview = skyModule.defaultSkyPreviewFactory(canvas, options)
+    try {
+      skyPreview = skyModule.defaultSkyPreviewFactory(canvas, options)
+    } catch (error) {
+      debug.errors.push(String(error))
+      throw error
+    }
     return skyPreview
   })
 
   textureModule.setMoldaTexturePreviewFactory((canvas, options) => {
-    texturePreview = textureModule.defaultTexturePreviewFactory(canvas, options)
+    try {
+      texturePreview = textureModule.defaultTexturePreviewFactory(canvas, options)
+    } catch (error) {
+      debug.errors.push(String(error))
+      throw error
+    }
     return texturePreview
   })
 }
@@ -209,9 +217,6 @@ const app = (
       onOpenStudio: () => console.log('[playground] onOpenStudio'),
       // Deep link de teste: `?criacao=<id>` abre direto uma criação.
       ...(initialAssetId ? { initialAssetId } : {}),
-      // QA da integração pública: `?oficina=app` liga a geração seguinte DENTRO
-      // do app, com a galeria enxergando as duas. Não é ativação de produto.
-      ...(params.get('oficina') === 'app' ? { sceneWorkshop: true } : {}),
       ...(toolAccess ? { toolAccess } : {}),
     }}
   />
@@ -221,15 +226,7 @@ void installPreviewTracking().then(() =>
   createRoot(root).render(
     <StrictMode>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {params.get('oficina') === 'nova' ? (
-          <Suspense fallback={<p role="status">{COPY.scene.starting}</p>}>
-            <ScenePlayground id={initialAssetId} toolAccess={toolAccess} />
-          </Suspense>
-        ) : hostDemo ? (
-          <DemoHostChrome>{app}</DemoHostChrome>
-        ) : (
-          app
-        )}
+        {hostDemo ? <DemoHostChrome>{app}</DemoHostChrome> : app}
       </div>
     </StrictMode>,
   ),

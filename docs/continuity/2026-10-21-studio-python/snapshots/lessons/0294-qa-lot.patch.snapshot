@@ -1,0 +1,1384 @@
+diff --git a/packages/admin/tests/e2e/python-lesson-fixture.ts b/packages/admin/tests/e2e/python-lesson-fixture.ts
+index 00d95c7da..e544c8e8a 100644
+--- a/packages/admin/tests/e2e/python-lesson-fixture.ts
++++ b/packages/admin/tests/e2e/python-lesson-fixture.ts
+@@ -347,6 +347,8 @@ export async function enrollPythonLiveLesson(input: {
+       ),
+     )
+   fixture.enrollmentId = identity(enrollment.id)
++  // Retain the acknowledged server ID even if the returned owner fails validation.
++  await input.onStep(structuredClone(fixture))
+   assert.equal(enrollment.accountId, input.accountId)
+   assert.equal(enrollment.learnerId, input.learnerId)
+   fixture.learnerPath = `/oficinas/aulas/${fixture.sessionId}`
+diff --git a/packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1 b/packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1
+new file mode 100644
+index 000000000..bcb686a70
+--- /dev/null
++++ b/packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1
+@@ -0,0 +1,51 @@
++$ErrorActionPreference='Stop'
++$taskRoot=(Resolve-Path (Join-Path $PSScriptRoot '../../../..')).Path
++$operators=Join-Path $taskRoot 'packages/community-kids/tests/e2e/windows'
++. (Join-Path $operators 'python-lesson-process-ownership.ps1')
++. (Join-Path $operators 'python-lesson-browser-watch.ps1')
++$out=Join-Path $taskRoot ('.cache/lessons-safehandle-r1/control-'+[guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $out -ErrorAction Stop|Out-Null
++$binary='C:\Users\tocha\projects\sistema-zero-python\.cache\studio-python-l0\bun-1.4.3-isolated\extracted\bun-windows-x64\bun.exe'
++$entry=Join-Path $out 'inert-loop.mjs';[IO.File]::WriteAllText($entry,'setInterval(() => {}, 1000)')
++$victim=$null;$sentinel=$null;$record=$null;$sentinelRecord=$null;$assertionsPassed=$false;$sentinelWitness=$null
++try {
++ $victim=Start-Process -FilePath $binary -ArgumentList @('--no-env-file',$entry) -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $out 'victim.stdout') -RedirectStandardError (Join-Path $out 'victim.stderr')
++ $witness=Process-Witness $victim.Id
++ $record=Retain-OwnedProcess $witness $victim
++ if(-not $record -or -not(Retained-OwnedProcessAlive $record)){throw 'Cannot retain benign victim'}
++ $sentinel=Start-Process -FilePath $binary -ArgumentList @('--no-env-file',$entry) -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $out 'sentinel.stdout') -RedirectStandardError (Join-Path $out 'sentinel.stderr')
++ $sentinelWitness=Process-Witness $sentinel.Id
++ $sentinelRecord=Retain-OwnedProcess $sentinelWitness $sentinel
++ if(-not $sentinelRecord){throw 'Cannot retain unrelated benign sentinel'}
++ # A different creation generation for this same PID must be refused.
++ $wrong=($witness|ConvertTo-Json|ConvertFrom-Json -DateKind String)
++ $wrong.createdAt=([datetimeoffset]$wrong.createdAt).AddTicks(10).ToString('o')
++ if($null -ne (Retain-OwnedProcess $wrong)){throw 'Mismatched creation generation accepted'}
++ # Deterministic PID-rebinding attempt: never look up or signal the new PID.
++ $originalId=$record.processId;$record.processId=$sentinel.Id
++ if((Retained-OwnedProcessObservation $record).state -cne 'unknown'){throw 'Rebound identifier was classified as an exit'}
++ $reboundRefused=$false
++ try{Stop-RetainedOwnedProcess $record|Out-Null}catch{$reboundRefused=$true}
++ if(-not $reboundRefused){throw 'Rebound identifier did not refuse unknown ownership'}
++ if(-not(Retained-OwnedProcessAlive $sentinelRecord)){throw 'Unrelated sentinel was touched'}
++ $record.processId=$originalId
++ if(-not(Stop-RetainedOwnedProcess $record)){throw 'Exact retained victim was not stopped'}
++ if(-not $victim.WaitForExit(5000)){throw 'Victim did not exit'}
++ if(Stop-RetainedOwnedProcess $record){throw 'Exited retained object was signalled again'}
++ if((Retained-OwnedProcessObservation $record).state -cne 'exited'){throw 'Proven process exit was not distinguished from unknown'}
++ if(-not(Retained-OwnedProcessAlive $sentinelRecord)){throw 'Old-record retry touched unrelated sentinel'}
++ $record.safeHandle.Dispose()
++ if((Retained-OwnedProcessObservation $record).state -cne 'unknown'){throw 'Closed retained handle was classified as an exit'}
++ $assertionsPassed=$true
++} finally {
++ # Both are exact newly returned Process objects, never looked up for cleanup.
++ $cleanupErrors=@()
++ foreach($owned in @($victim,$sentinel)){
++  if($owned){try{if(-not $owned.HasExited){$handle=$owned.SafeHandle;$owned.Kill();if(-not $owned.WaitForExit(5000)){throw 'Benign process did not exit'}}}catch{$cleanupErrors+=$_.Exception.GetType().Name}finally{$owned.Dispose()}}
++ }
++ if($cleanupErrors.Count){throw 'Retained-handle control cleanup failed'}
++}
++if($assertionsPassed){
++ Write-Durable @{state='benign-retained-handle-control-passed';creationMismatchRefused=$true;pidRebindingRefused=$true;oldExitedRecordRefused=$true;unrelatedSentinelUntouched=$true;victimStoppedByRetainedObject=$true;witnesses=@($witness,$sentinelWitness);resources='none';noBrowser=$true;noServices=$true;noHttp=$true;at=[datetimeoffset]::UtcNow.ToString('o')} (Join-Path $out 'receipt.json') -Exclusive
++ Write-Output "CONTROL retained handles passed; receipt=$(Join-Path $out 'receipt.json')"
++}
+diff --git a/packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 b/packages/admin/tests/e2e/python-lesson-supervisor-control.ps1
+new file mode 100644
+index 000000000..0cb1ea702
+--- /dev/null
++++ b/packages/admin/tests/e2e/python-lesson-supervisor-control.ps1
+@@ -0,0 +1,186 @@
++param([ValidateSet('complete','abrupt','deadline','completion-malformed','monitor-save-failure','monitor-cim-failure','monitor-parent-witness-missing','witness-query-failure','completion-ack-slow','retained-observation-failure')][string]$Mode='complete', [ValidateSet('Refresh','HasExited','StartTime')][string]$ObservationFault='Refresh')
++$ErrorActionPreference='Stop'
++$taskRoot=(Resolve-Path (Join-Path $PSScriptRoot '../../../..')).Path
++$operators=Join-Path $taskRoot 'packages/community-kids/tests/e2e/windows'
++. (Join-Path $operators 'python-lesson-process-ownership.ps1')
++. (Join-Path $operators 'python-lesson-browser-watch.ps1')
++$out=Join-Path $taskRoot ('.cache/lessons-qa-controls-r1/supervisor-'+$Mode+'-'+[guid]::NewGuid().ToString('N'))
++New-Item -ItemType Directory -Path $out -ErrorAction Stop|Out-Null
++if($Mode -eq 'witness-query-failure'){
++ # Real successful query with no matching process remains a legitimate null.
++ if($null -ne (Process-Witness 2147483647)){throw 'Absent PID unexpectedly produced a witness'}
++ function Get-CimInstance {
++  [CmdletBinding()]param([string]$ClassName,[string]$Filter)
++  $script:cimErrorAction=[string]$PSBoundParameters['ErrorAction']
++  Write-Error -Message 'benign nonterminating CIM query failure' -ErrorId 'LessonsCimControl'
++ }
++ $queryFailed=$false
++ try{Process-Witness 2147483647|Out-Null}catch{$queryFailed=$true}
++ finally{Remove-Item Function:Get-CimInstance}
++ if(-not $queryFailed){throw 'CIM query failure was silently converted to absent PID'}
++ if($script:cimErrorAction -cne 'Stop'){throw 'Process witness did not request terminating CIM errors'}
++ Write-Durable @{mode=$Mode;state='inert-control-passed';absentPidReturnedNull=$true;queryErrorPropagated=$true;queryErrorAction=$script:cimErrorAction;resources='none';noBrowser=$true;noHttp=$true;noServices=$true;at=[datetimeoffset]::UtcNow.ToString('o')} (Join-Path $out 'control-receipt.json') -Exclusive
++ Write-Output "CONTROL $Mode passed; receipt=$(Join-Path $out 'control-receipt.json')"
++ return
++}
++$entry=Join-Path $out 'inert-scenario.mjs'
++$source=@'
++import { writeFileSync } from 'node:fs';
++export async function runPythonLessonAdmin() {
++  const [mode, childReceipt, completionPath, statePath] = process.argv.slice(2);
++  const child = Bun.spawn([process.execPath, '--eval', 'setInterval(() => {}, 1000)'], { stdin: 'ignore', stdout: 'ignore', stderr: 'ignore' });
++  if (mode === 'retained-observation-failure') child.unref();
++  writeFileSync(childReceipt, JSON.stringify({ childPid: child.pid, inert: true }));
++  if (mode === 'completion-malformed') {
++    const { readFileSync } = await import('node:fs');
++    for (let i = 0; i < 100; i++) {
++      try { if (JSON.parse(readFileSync(statePath, 'utf8')).observedTree.some(w => w.processId === child.pid)) break; } catch {}
++      await new Promise(resolve => setTimeout(resolve, 25));
++    }
++    writeFileSync(completionPath, '{');
++    setInterval(() => {}, 1000); await new Promise(() => {});
++  }
++  if (mode === 'monitor-save-failure' || mode === 'monitor-cim-failure' || mode === 'monitor-parent-witness-missing') { setInterval(() => {}, 1000); await new Promise(() => {}); }
++  if (mode === 'deadline') { setInterval(() => {}, 1000); await new Promise(() => {}); }
++  await new Promise(resolve => setTimeout(resolve, 2000));
++  if (mode === 'abrupt') process.exit(9);
++  if (mode === 'retained-observation-failure') return; // Completion while owned child remains alive.
++  child.kill();
++  await child.exited;
++}
++'@
++[IO.File]::WriteAllText($entry,$source)
++$binary='C:\Users\tocha\projects\sistema-zero-python\.cache\studio-python-l0\bun-1.4.3-isolated\extracted\bun-windows-x64\bun.exe'
++$adapter=Join-Path $operators 'python-lesson-windows-entry.mjs'
++$envFile=Join-Path $out 'env.json';Write-Durable @{version=1;role='adminBrowser';env=@{NODE_ENV='test'}} $envFile -Exclusive
++$stateFile=Join-Path $out 'owned-process.json'
++$job=@{version=1;owner='lessons-inert-control';run=[guid]::NewGuid().ToString();nonce=[guid]::NewGuid().ToString('N');role='adminBrowser';cwd=$taskRoot;entry=$entry;entrySha256=(Get-FileHash -LiteralPath $entry -Algorithm SHA256).Hash.ToLowerInvariant();entryExport='runPythonLessonAdmin';argv=@($Mode,(Join-Path $out 'child.json'));stopRequest=(Join-Path $out 'stop.request');signalReceipt=(Join-Path $out 'signal.json');failureReceipt=(Join-Path $out 'failure.json');claimFile=(Join-Path $out 'owner.claim.json');claimReceipt=(Join-Path $out 'claim-accepted.json');stateFile=$stateFile;envFile=$envFile;envSha256=(Get-FileHash -LiteralPath $envFile -Algorithm SHA256).Hash.ToLowerInvariant();cleanPath=$env:PATH;home=$out;runComplete=(Join-Path $out 'run-complete.json');completionAck=(Join-Path $out 'completion-ack.json')}
++$job.argv+=@($job.runComplete,$stateFile)
++$jobPath=Join-Path $out 'job.json';Write-Durable $job $jobPath -Exclusive
++$process=Start-Process -FilePath $binary -ArgumentList @('--no-env-file',$adapter,$jobPath) -WorkingDirectory $taskRoot -WindowStyle Hidden -PassThru -Environment @{STUDIO_LESSONS_QA_ADMIN_EMAIL='inert@example.invalid';STUDIO_LESSONS_QA_ADMIN_PASSWORD='control-password-in-memory'} -RedirectStandardOutput (Join-Path $out 'stdout.log') -RedirectStandardError (Join-Path $out 'stderr.log')
++$handle=$process.SafeHandle
++if($handle.IsInvalid -or $handle.IsClosed){throw 'Exact inert child handle required'}
++$root=Process-Witness $process.Id
++if(-not $root){$process.Kill($true);throw 'No inert root witness'}
++$state=[pscustomobject]@{version=2;nonce=$job.nonce;owner=$job.owner;run=$job.run;role='adminBrowser';status='witnessed-awaiting-app';root=$root;observedTree=@();forced=$false}
++Save $state $stateFile
++$pending=Join-Path $out 'claim.pending.json'
++Write-Durable @{version=1;nonce=$job.nonce;pid=$process.Id;stateSha256=(Get-FileHash -LiteralPath $stateFile -Algorithm SHA256).Hash.ToLowerInvariant()} $pending -Exclusive
++[IO.File]::Move($pending,$job.claimFile,$false)
++if($Mode -eq 'completion-ack-slow'){
++ $script:originalWriteDurable=${function:Write-Durable};$script:slowAckObserved=$false
++ function Write-Durable($value,[string]$path,[switch]$Exclusive){
++  if($path -eq $job.completionAck -or $path -eq ($job.completionAck+'.pending')){
++   $script:slowAckObserved=$true
++   $bytes=[Text.UTF8Encoding]::new($false).GetBytes(($value|ConvertTo-Json -Depth 12))
++   $stream=[IO.File]::Open($path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::Read)
++   try{$stream.Write($bytes,0,1);$stream.Flush($true);Start-Sleep -Milliseconds 500;$stream.Write($bytes,1,$bytes.Length-1);$stream.Flush($true)}finally{$stream.Dispose()}
++   return
++  }
++  & $script:originalWriteDurable $value $path -Exclusive:$Exclusive
++ }
++}
++if($Mode -eq 'monitor-save-failure'){
++ $script:failMonitorSave=$false;$script:originalSave=${function:Save}
++ function Save($value,$path){
++  if($script:failMonitorSave){throw [IO.IOException]::new('benign monitor Save control')}
++  if($value.status -eq 'monitoring-owned-browser-tree' -and (Test-Path -LiteralPath (Join-Path $out 'child.json'))){
++   $childPid=(Get-Content -LiteralPath (Join-Path $out 'child.json') -Raw|ConvertFrom-Json).childPid
++   if($value.observedTree.processId -contains $childPid){$script:failMonitorSave=$true;throw [IO.IOException]::new('benign monitor Save control')}
++  }
++  & $script:originalSave $value $path
++ }
++}
++if($Mode -in @('monitor-cim-failure','monitor-parent-witness-missing')){
++ $script:realGetCimInstance=Get-Command Get-CimInstance -CommandType Cmdlet
++ $script:cimFaultObserved=$false
++ function Get-CimInstance {
++  [CmdletBinding()]param([string]$ClassName,[string]$Filter)
++  if($state.status -eq 'monitoring-owned-browser-tree' -and (Test-Path -LiteralPath (Join-Path $out 'child.json'))){
++   $childPid=(Get-Content -LiteralPath (Join-Path $out 'child.json') -Raw|ConvertFrom-Json).childPid
++   if($state.observedTree.processId -contains $childPid -and $Filter -ceq "ProcessId=$($state.root.processId)"){
++    $script:cimFaultObserved=$true
++    $script:cimErrorAction=[string]$PSBoundParameters['ErrorAction']
++    if($Mode -eq 'monitor-cim-failure'){Write-Error -Message 'benign nonterminating monitor CIM failure' -ErrorId 'LessonsCimControl'}
++    return
++   }
++  }
++  & $script:realGetCimInstance -ClassName $ClassName -Filter $Filter -ErrorAction Stop
++ }
++}
++$started=[datetimeoffset]::UtcNow
++if($Mode -eq 'retained-observation-failure'){
++ $script:originalRetainOwnedProcess=${function:Retain-OwnedProcess}
++ $script:observationFaultRecord=$null
++ $script:observationControlRecord=$null
++ function Retain-OwnedProcess($Witness,[Diagnostics.Process]$ExistingProcess=$null){
++  $record=& $script:originalRetainOwnedProcess $Witness $ExistingProcess
++  $childReceipt=Join-Path $out 'child.json'
++  if($record -and (Test-Path -LiteralPath $childReceipt) -and $Witness.processId -eq (Get-Content -LiteralPath $childReceipt -Raw|ConvertFrom-Json).childPid){
++   $script:observationControlRecord=& $script:originalRetainOwnedProcess $Witness
++   # Keep the actual pinned handle; fault only a Process observation, not the liveness helper.
++   $facade=[pscustomobject]@{inner=$record.process;fault=$ObservationFault;killCalls=0;faultCalls=0}
++   $facade|Add-Member ScriptMethod Refresh {if($this.fault -eq 'Refresh'){$this.faultCalls++;throw [IO.IOException]::new('benign retained Refresh failure')};$this.inner.Refresh()}
++   $facade|Add-Member ScriptProperty HasExited {if($this.fault -eq 'HasExited'){$this.faultCalls++;throw [IO.IOException]::new('benign retained HasExited failure')};$this.inner.HasExited}
++   $facade|Add-Member ScriptProperty Id {$this.inner.Id}
++   $facade|Add-Member ScriptProperty StartTime {if($this.fault -eq 'StartTime'){$this.faultCalls++;throw [IO.IOException]::new('benign retained StartTime failure')};$this.inner.StartTime}
++   $facade|Add-Member ScriptMethod Kill {$this.killCalls++;$this.inner.Kill()}
++   $facade|Add-Member ScriptMethod Dispose {$this.inner.Dispose()}
++   $record.process=$facade;$script:observationFaultRecord=$record
++  }
++  return $record
++ }
++}
++$positive=$Mode -in @('complete','completion-ack-slow')
++$soft=if($positive -or $Mode -eq 'retained-observation-failure'){$started.AddSeconds(15)}else{$started.AddSeconds(3)}
++$hard=if($positive -or $Mode -eq 'retained-observation-failure'){$started.AddSeconds(20)}else{$started.AddSeconds(7)}
++try {
++ $result=Watch-OwnedBrowser $process $state $stateFile $job $soft $hard
++ if($Mode -eq 'retained-observation-failure'){
++  ${function:Retain-OwnedProcess}=$script:originalRetainOwnedProcess
++  if(-not $script:observationFaultRecord -or -not $script:observationFaultRecord.process.faultCalls){throw 'Real retained observation boundary was not exercised'}
++  if($result.status -notlike 'NEG-*' -or $result.ownershipComplete -or $result.cleanupConfirmed){throw 'Unknown retained process was falsely qualified as exited'}
++  if(Test-Path -LiteralPath $job.completionAck){throw 'Unknown retained descendant received completion acknowledgement'}
++  if($result.unconfirmedProcessIds -notcontains $script:observationFaultRecord.processId -and $result.provenExitedProcessIds -notcontains $script:observationFaultRecord.processId){throw 'Retained process was lost without a proven exit or explicit uncertainty'}
++  if($script:observationFaultRecord.process.killCalls){throw 'Unknown retained object was signalled'}
++  # The monitor must leave this unconfirmed. The benign control owns a separate fresh
++  # separately retained real handle for its own cleanup; that does not qualify monitor cleanup.
++  $cleanupRecord=$script:observationControlRecord
++  if(-not $cleanupRecord){throw 'Control did not retain its own independent inert child handle'}
++  if(Retained-OwnedProcessAlive $cleanupRecord){if(-not(Stop-RetainedOwnedProcess $cleanupRecord)){throw 'Control inert child was not stopped'}}
++  if(-not $cleanupRecord.process.WaitForExit(5000)){throw 'Control inert child did not exit'}
++ }
++ if($Mode -in @('monitor-cim-failure','monitor-parent-witness-missing')){Remove-Item Function:Get-CimInstance}
++ $live=@($result.observedTree|Where-Object{Same-Witness $_ (Process-Witness $_.processId)})
++ if($live.Count){throw 'Inert control left witnessed resources alive'}
++ if($result.observedTree.Count -lt 2){throw 'Inert child was not captured below the live root'}
++ if($positive -and $result.status -cne 'completed-owned-tree-exited'){throw "Expected complete control, got $($result.status)"}
++ if(-not $positive -and $result.status -notlike 'NEG-*'){throw 'Negative control was incorrectly qualified'}
++ if($Mode -eq 'abrupt' -and $result.processExitCode -ne 9){throw 'Abrupt primary process exit was not preserved'}
++ if($Mode -eq 'deadline' -and -not $result.forced){throw 'Hard deadline did not mark its forced negative'}
++ if($result.retainedHandleCount -ne $result.observedTree.Count -or -not $result.descendantHandlesReleased){throw 'Validated descendant handles were not retained/released'}
++ if($Mode -in @('completion-malformed','monitor-save-failure','monitor-cim-failure','monitor-parent-witness-missing')){
++  if($result.status -notlike 'NEG-monitor-*' -or -not $result.forced -or $result.ownershipComplete){throw 'Monitor failure escaped without forced-negative reconciliation'}
++ }
++ if($Mode -in @('monitor-cim-failure','monitor-parent-witness-missing')){
++  if(-not $script:cimFaultObserved){throw 'Actual witness CIM command path was not exercised'}
++  if($script:cimErrorAction -cne 'Stop'){throw 'Witness CIM query still suppresses errors'}
++  $persisted=Get-Content -LiteralPath $stateFile -Raw|ConvertFrom-Json -DateKind String
++  if($persisted.ownershipComplete -or $persisted.primaryFailure -cne 'owned-browser-monitor-failed' -or -not $persisted.descendantHandlesReleased){throw 'CIM failure NEG and exact-handle reconciliation were not durably retained'}
++ }
++ if($Mode -eq 'monitor-save-failure' -and -not(Test-Path -LiteralPath $result.persistenceFallback)){throw 'Missing durable NEG fallback after Save failure'}
++ if($Mode -eq 'complete' -and (Test-Path -LiteralPath ($job.runComplete+'.pending'))){throw 'Completion was not atomically published'}
++ if($Mode -eq 'completion-ack-slow' -and (-not $script:slowAckObserved -or (Test-Path -LiteralPath ($job.completionAck+'.pending')))){throw 'Slow acknowledgement publication was not exercised and completed'}
++ foreach($file in Get-ChildItem -LiteralPath $out -File){if([IO.File]::ReadAllText($file.FullName).Contains('control-password-in-memory')){throw 'Credential escaped into an artifact'}}
++ Write-Durable @{mode=$Mode;state='inert-control-passed';supervisorState=$result.status;observedProcesses=$result.observedTree.Count;exitCode=$result.processExitCode;forced=$result.forced;ownershipComplete=$result.ownershipComplete;cleanupConfirmed=$result.cleanupConfirmed;unconfirmedProcessIds=$result.unconfirmedProcessIds;observationFault=$ObservationFault;primaryFailure=$result.primaryFailure;queryFaultObserved=$script:cimFaultObserved;queryErrorAction=$script:cimErrorAction;resources='none';noBrowser=$true;noHttp=$true;noServices=$true;at=[datetimeoffset]::UtcNow.ToString('o')} (Join-Path $out 'control-receipt.json') -Exclusive
++ Write-Output "CONTROL $Mode passed; receipt=$(Join-Path $out 'control-receipt.json')"
++} finally {
++ if($Mode -eq 'retained-observation-failure'){${function:Retain-OwnedProcess}=$script:originalRetainOwnedProcess}
++ # Also bound a failed control itself using exact retained objects, never Stop -Id.
++ foreach($w in @($state.observedTree|Sort-Object createdAt -Descending)){
++  $cleanupRecord=Retain-OwnedProcess $w
++  if($cleanupRecord){try{Stop-RetainedOwnedProcess $cleanupRecord|Out-Null}finally{$cleanupRecord.process.Dispose()}}
++ }
++ $process.Dispose()
++ if($Mode -eq 'retained-observation-failure' -and $script:observationControlRecord){$script:observationControlRecord.process.Dispose()}
++}
+diff --git a/packages/admin/tests/e2e/python-lessons-acceptance.md b/packages/admin/tests/e2e/python-lessons-acceptance.md
+index 3512b3616..b29591182 100644
+--- a/packages/admin/tests/e2e/python-lessons-acceptance.md
++++ b/packages/admin/tests/e2e/python-lessons-acceptance.md
+@@ -6,7 +6,7 @@ These producers are **implemented but have not qualified the browser flows**. Un
+ 
+ Use a new output directory for every attempt. Failures retain the created IDs and acknowledged statuses; do not delete a failed fixture to make a receipt green. The historical revoked enrollment `45b69128-70b1-4b56-9b90-4e8cadb499bf` must remain untouched.
+ 
+-Before either browser command, agree a heavy-test window with the coordinator, observe at least 4096 MiB free RAM, and start the owned host/chain/Next using the reviewed Windows operators. Review the **new actual host witness and approval SHA** before the canonical policy bind. Old process approvals do not authorize these runs. Admin and Kids Next run serially on exact parents `http://localhost:43107` and `http://localhost:43108`.
++Before either browser command, agree a heavy-test window and review the per-stage incremental budget with the coordinator. The QA budget is not a product RAM requirement. Start the owned host/chain/Next using the reviewed Windows operators. Review the **new actual host witness and approval SHA** before the canonical policy bind. Old process approvals do not authorize these runs. Admin and Kids Next run serially on exact parents `http://localhost:43107` and `http://localhost:43108`, with one Chrome and one Next audience at a time. The reviewed Next prefix fixes heap1536; no automatic heap increase/retry on OOM.
+ 
+ The Admin command accepts a reviewed config file with these fields:
+ 
+@@ -30,7 +30,7 @@ The Admin command accepts a reviewed config file with these fields:
+ Use `recorded` for a separate recorded course. Use `kind: "classic"` for a separate classic fixture: the Admin enables Blocos/Ponte and Python level3 through the UI, edits the real Ponte source editor, and requires both modes and the level in the published block. `kind` defaults to `pro`; the Kids receipt binds the actual kind rather than guessing it from the source. Each variant creates its own QA course. Set `STUDIO_LESSONS_QA_ADMIN_EMAIL` and `STUDIO_LESSONS_QA_ADMIN_PASSWORD` in process memory, then run from the repository root:
+ 
+ ```powershell
+-bun packages/community-kids/tests/e2e/python-lesson-admin.ts <reviewed-config.json> <new-admin-output-directory>
++pwsh -NoProfile -NonInteractive -File <reviewed-own-windows-directory>/python-lesson-browser-owned.ps1 -Action Run -Role adminBrowser -ExpectedPlanSha256 <bound-plan-sha> -ExpectedEnvSha256 <admin-browser-env-sha> -InputFile <reviewed-config.json> -ExpectedInputSha256 <config-sha> -NextStateFile <owned-admin-next-state.json> -ExpectedNextStateSha256 <state-sha> -StartCutoff <granted-UTC-cutoff> -WindowEnd <granted-UTC-end>
+ ```
+ 
+ The Admin output is scoped to the selected classic/Pro authoring/publication/reopen, rehearsal execution/resume and before-call Turtle execution. Rehearsal edits a local copy, executes and stops it, resumes through the real UI, and requires the server draft and revision to stay unchanged. It does not claim assessment evaluation or recorded-student execution. It retains no login payload, cookies, bearer credentials or trace containing authentication requests. Successful live output includes a new enrollment. Stop Admin by its captured owned state **before** starting Kids.
+@@ -38,7 +38,7 @@ The Admin output is scoped to the selected classic/Pro authoring/publication/reo
+ Set `STUDIO_LESSONS_QA_PARENT_EMAIL`, `STUDIO_LESSONS_QA_PARENT_PASSWORD` and `STUDIO_LESSONS_QA_LEARNER_ID` only in process memory:
+ 
+ ```powershell
+-bun packages/community-kids/tests/e2e/python-lesson-kids.ts <passed-admin-output-directory>/receipt.json <new-kids-output-directory>
++pwsh -NoProfile -NonInteractive -File <reviewed-own-windows-directory>/python-lesson-browser-owned.ps1 -Action Run -Role kidsBrowser -ExpectedPlanSha256 <bound-plan-sha> -ExpectedEnvSha256 <kids-browser-env-sha> -InputFile <passed-admin-receipt.json> -ExpectedInputSha256 <receipt-sha> -NextStateFile <owned-kids-next-state.json> -ExpectedNextStateSha256 <state-sha> -StartCutoff <granted-UTC-cutoff> -WindowEnd <granted-UTC-end>
+ ```
+ 
+ Kids requires the preceding successful Admin receipt and exact observed provider. It verifies canonical Python v3 Pro save/reopen, actual Turtle pixels and `input()` marker, a stale-revision refusal bound to the current document session, then a real second-tab takeover that withdraws the original iframe. Its source, snapshots and authority receipt remain isolated from historical JS proofs.
+@@ -49,7 +49,8 @@ Lightweight checks, without services:
+ 
+ ```powershell
+ bun test packages/admin/tests/python-lesson-fixture.test.ts
+-bunx biome check packages/admin/tests/e2e/python-lesson-fixture.ts packages/admin/tests/python-lesson-fixture.test.ts packages/community-kids/tests/e2e/python-lesson-admin.ts packages/community-kids/tests/e2e/python-lesson-kids.ts
++bun test packages/admin/tests/python-lesson-admission.test.ts
++bunx biome check packages/admin/tests/e2e/python-lesson-fixture.ts packages/admin/tests/python-lesson-fixture.test.ts packages/community-kids/tests/e2e/python-lesson-admission.ts packages/admin/tests/python-lesson-admission.test.ts packages/community-kids/tests/e2e/python-lesson-admin.ts packages/community-kids/tests/e2e/python-lesson-kids.ts
+ ```
+ 
+ Full TypeScript checks and browser execution require the coordinated resource window. A Bun bundle checks syntax and imports only; it is not typechecking or browser evidence.
+@@ -59,3 +60,35 @@ Both browser CLIs detach response listeners, close the context and browser, then
+ ```powershell
+ bun test packages/admin/tests/python-lesson-cleanup.test.ts
+ ```
++
++The external browser operator reuses the witnessed Windows claim protocol. Its adapter calls only the closed Admin/Kids export after the durable claim, forwards the audience's credential keys in memory, and holds the runner alive for a completion acknowledgement. The supervisor discovers descendants while the root is alive, persists PID/creation/executable/CLI-hash witnesses, samples tree memory and reconciles all known identities. A root-owned Windows console host remains in final reconciliation but is allowed to exit with its root after acknowledgement. Early root exit, nonzero scenario/process exit, deadline, forced fallback or residual descendants are NEG. A hard deadline can terminate only captured identities that still match; forced cleanup never qualifies a gate. No credentials are stored in job/environment/receipt files.
++
++Every validated descendant retains its own `Process`/`SafeHandle`. Creation is checked against that object (CIM's microsecond precision on initial capture, exact object ticks afterward), and fallback calls `Kill()` only on the retained object; no numeric-PID stop or relookup occurs in that path. Handles are released in `finally`. Completion is published through a new temporary file followed by rename. Completion parsing, CIM or state-write failure enters a NEG catch that attempts durable state/fallback persistence and cleanup only of objects already retained, without assuming discovery was complete. If both persistence paths fail, stderr remains explicitly NEG. The old851/r3 receipts and source identity remain preserved; this follow-up does not rebind/reseal those artifacts.
++
++Browser admission is a SHA-bound observation generated by that operator from the actual owned Next tree. It expires after 10 seconds and binds audience, Next root witness and reviewed plan. Fixed approved envelopes are Next2048, retained-base growth256, host reserve512, browser1024 Admin/1536 Kids (MiB). Required free RAM is rounded up to256MiB from browser + max(0,2048-current Next tree working set) +256+512. With Next1536 this is Admin2304/Kids2816MiB. A Next already above2048, stale/altered/foreign admission or insufficient memory is refused before `chromium.launch`; the CLI saves the observation/decision in its receipt. These envelopes are estimates to verify, not measured browser performance. There is no generic4096MiB fallback.
++
++The direct internal CLI shape now requires `<input.json> <new-output-dir> <fresh-admission.json> <admission-sha256>`. Use the external operator for acceptance, which provides those arguments and owns the deadline/tree. Its Windows controls run only inert Bun parent/child processes, never Playwright/Chrome/HTTP:
++
++The browser operator requires PowerShell 7.5 or newer, matching its `ConvertFrom-Json -DateKind String` parsing contract.
++
++```powershell
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode complete
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode abrupt
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode deadline
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode completion-malformed
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode monitor-save-failure
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode monitor-cim-failure
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode witness-query-failure
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode monitor-parent-witness-missing
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode completion-ack-slow
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode retained-observation-failure -ObservationFault Refresh
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode retained-observation-failure -ObservationFault HasExited
++pwsh -NoProfile -NonInteractive -File packages/admin/tests/e2e/python-lesson-supervisor-control.ps1 -Mode retained-observation-failure -ObservationFault StartTime
++```
++
++The completion acknowledgement also uses temporary-file publication followed by rename. The slow-ack control pauses after writing its first byte; the adapter must see only the complete final JSON and exit successfully. This prevents a successful scenario from becoming a spurious NEG during the external cleanup handshake.
++
++CIM query errors are terminating; only a successful query without a matching process returns a null witness. Discovery also refuses a missing or changed parent witness while that parent's retained kernel object remains alive. Both failures persist an incomplete-ownership NEG and reconcile only retained handles. The CIM control injects a nonterminating error at the actual `Get-CimInstance` command, rather than throwing from the witness function; a separate control checks genuine PID absence and another checks a missing witness with a live retained parent.
++
++Retained process observations distinguish `alive`, proven `exited` and `unknown`. Observation errors, invalid handles or identity mismatches never count as an exit. Unknown observations prevent completion acknowledgement and produce NEG with incomplete ownership and unconfirmed cleanup; they are included in `unconfirmedProcessIds` during reconciliation. Stop still requires a fresh valid observation of the same retained object. The observation controls return scenario completion with an unreferenced live inert child, inject failures at each Process observation, and require no ACK or kill of that unknown object. A separate actual handle owned by the benign control reconciles its own child afterward, without qualifying monitor cleanup.
+diff --git a/packages/admin/tests/python-lesson-admission.test.ts b/packages/admin/tests/python-lesson-admission.test.ts
+new file mode 100644
+index 000000000..e9740a768
+--- /dev/null
++++ b/packages/admin/tests/python-lesson-admission.test.ts
+@@ -0,0 +1,126 @@
++import { expect, test } from 'bun:test'
++import { createHash, randomUUID } from 'node:crypto'
++import { mkdtemp, rm, writeFile } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import {
++  evaluatePythonLessonAdmission,
++  launchAdmittedPythonLessonBrowser,
++  readPythonLessonAdmission,
++} from '../../community-kids/tests/e2e/python-lesson-admission'
++
++const now = Date.parse('2026-10-20T18:40:00Z')
++function input(role: 'admin' | 'kids' = 'admin') {
++  return {
++    version: 1,
++    role,
++    attemptId: randomUUID(),
++    reviewedPlanSha256: 'a'.repeat(64),
++    observedAt: new Date(now).toISOString(),
++    nextTree: {
++      role: role === 'admin' ? 'adminNext' : 'kidsNext',
++      processId: 1234,
++      createdAt: '2026-10-20T18:39:00.1234567+00:00',
++      executable: 'C:\\node.exe',
++      cliSha256: 'b'.repeat(64),
++      workingSetMiB: 1536,
++    },
++    envelopes: {
++      browserMiB: role === 'admin' ? 1024 : 1536,
++      nextTreeMiB: 2048,
++      retainedBaseGrowthMiB: 256,
++      hostReserveMiB: 512,
++    },
++  }
++}
++const observe = (role: 'admin' | 'kids' = 'admin', freeMiB = 2304, nowMs = now) => ({
++  role,
++  nowMs,
++  freeBytes: freeMiB * 1024 ** 2,
++})
++
++test('approved incremental budgets admit Admin at 2304 and Kids at 2816 MiB, not generic 4096', () => {
++  const admin = evaluatePythonLessonAdmission(input(), observe())
++  const kids = evaluatePythonLessonAdmission(input('kids'), observe('kids', 2816))
++  expect(admin.admitted).toBe(true)
++  expect(admin.requiredFreeMiB).toBe(2304)
++  expect(kids.admitted).toBe(true)
++  expect(kids.requiredFreeMiB).toBe(2816)
++})
++
++test('low-memory decision refuses the launch operation before any browser is created', async () => {
++  const decision = evaluatePythonLessonAdmission(input(), {
++    ...observe(),
++    freeBytes: 2304 * 1024 ** 2 - 1,
++  })
++  expect(decision.admitted).toBe(false)
++  let launched = false
++  await expect(
++    launchAdmittedPythonLessonBrowser(decision, async () => {
++      launched = true
++    }),
++  ).rejects.toThrow('admission refused')
++  expect(launched).toBe(false)
++})
++
++test('admitted decision executes the operation exactly once', async () => {
++  let launches = 0
++  const result = await launchAdmittedPythonLessonBrowser(
++    evaluatePythonLessonAdmission(input(), observe()),
++    async () => ++launches,
++  )
++  expect(result).toBe(1)
++  expect(launches).toBe(1)
++})
++
++test('remaining Next growth is accounted for without counting retained RSS twice', () => {
++  const plan = input()
++  plan.nextTree.workingSetMiB = 1025
++  const decision = evaluatePythonLessonAdmission(plan, observe())
++  expect(decision.nextGrowthMiB).toBe(1023)
++  expect(decision.requiredFreeMiB).toBe(2816)
++  expect(decision.admitted).toBe(false)
++})
++
++test('refuses Next that exceeded the fixed budget instead of reducing growth to zero', () => {
++  const plan = input()
++  plan.nextTree.workingSetMiB = 2049
++  expect(() => evaluatePythonLessonAdmission(plan, observe())).toThrow('exceeded')
++})
++
++test('refuses stale, future-dated or foreign audience observations', () => {
++  expect(() =>
++    evaluatePythonLessonAdmission(input(), observe('admin', 4096, now + 10_001)),
++  ).toThrow('fresh')
++  expect(() => evaluatePythonLessonAdmission(input(), observe('admin', 4096, now - 1))).toThrow(
++    'fresh',
++  )
++  expect(() => evaluatePythonLessonAdmission(input(), observe('kids'))).toThrow('another audience')
++  const plan = input()
++  plan.nextTree.role = 'kidsNext'
++  expect(() => evaluatePythonLessonAdmission(plan, observe())).toThrow()
++})
++
++test('refuses altered envelopes, malformed metadata and invalid free-memory observations', () => {
++  const plan = input()
++  plan.envelopes.hostReserveMiB = 1
++  expect(() => evaluatePythonLessonAdmission(plan, observe())).toThrow()
++  expect(() =>
++    evaluatePythonLessonAdmission({ ...input(), password: 'must-not-be-retained' }, observe()),
++  ).toThrow()
++  expect(() => evaluatePythonLessonAdmission(input(), { ...observe(), freeBytes: NaN })).toThrow()
++  expect(() => evaluatePythonLessonAdmission(input(), { ...observe(), freeBytes: -1 })).toThrow()
++})
++
++test('changed admission file bytes are rejected before an operation can launch', async () => {
++  const out = await mkdtemp(join(tmpdir(), 'lesson-admission-'))
++  const path = join(out, 'admission.json')
++  const bytes = JSON.stringify(input())
++  const sha = createHash('sha256').update(bytes).digest('hex')
++  try {
++    await writeFile(path, `${bytes}\n`)
++    await expect(readPythonLessonAdmission(path, sha, 'admin')).rejects.toThrow('bytes changed')
++  } finally {
++    await rm(out, { recursive: true, force: true })
++  }
++})
+diff --git a/packages/admin/tests/python-lesson-fixture.test.ts b/packages/admin/tests/python-lesson-fixture.test.ts
+index 082320518..acef4ec4d 100644
+--- a/packages/admin/tests/python-lesson-fixture.test.ts
++++ b/packages/admin/tests/python-lesson-fixture.test.ts
+@@ -310,6 +310,56 @@ test('fresh server publication is required before a new natural cohort and seat'
+   expect(calls.some((call) => /open-lobby|admit|start|revoke/.test(call.path))).toBe(false)
+ })
+ 
++test('an acknowledged seat with a foreign identity retains its ID and fails without retry', async () => {
++  const input = await publication('pro')
++  const fixture = ownedFixture()
++  const cohortId = randomUUID(),
++    sessionId = randomUUID(),
++    occurrenceId = randomUUID(),
++    enrollmentId = randomUUID()
++  const teacherId = randomUUID(),
++    accountId = randomUUID(),
++    learnerId = randomUUID()
++  const { request, calls } = server([
++    { status: 200, body: courseTree(fixture) },
++    { status: 200, body: input.published },
++    { status: 200, body: {} },
++    {
++      status: 201,
++      body: { cohort: { id: cohortId }, sessions: [{ id: sessionId, occurrenceId }] },
++    },
++    { status: 200, body: {} },
++    { status: 201, body: { id: enrollmentId, accountId: randomUUID(), learnerId } },
++  ])
++  const snapshots: PythonLessonFixture[] = []
++  await expect(
++    enrollPythonLiveLesson({
++      request,
++      origin: 'http://localhost:43107',
++      fixture,
++      expected: input,
++      teacherId,
++      accountId,
++      learnerId,
++      learnerName: 'Aluno QA',
++      onStep: async (value) => {
++        snapshots.push(value)
++      },
++    }),
++  ).rejects.toThrow()
++  expect(calls).toHaveLength(6)
++  expect(snapshots.at(-1)).toMatchObject({
++    cohortId,
++    sessionId,
++    occurrenceId,
++    enrollmentId,
++    state: 'empty-lesson-awaiting-admin-ui',
++  })
++  expect(snapshots.at(-1)?.steps.at(-1)?.status).toBe(201)
++  expect(snapshots.at(-1)?.learnerPath).toBeUndefined()
++  expect(fixture.enrollmentId).toBeUndefined()
++})
++
+ test('course ownership guard refuses an existing curriculum or a foreign lesson before editing', async () => {
+   for (const changed of ['slug', 'careerSlot', 'lesson', 'status']) {
+     const fixture = ownedFixture()
+diff --git a/packages/community-kids/tests/e2e/python-lesson-admin.ts b/packages/community-kids/tests/e2e/python-lesson-admin.ts
+index 2c54900e6..9b13904fd 100644
+--- a/packages/community-kids/tests/e2e/python-lesson-admin.ts
++++ b/packages/community-kids/tests/e2e/python-lesson-admin.ts
+@@ -3,7 +3,6 @@
+ import assert from 'node:assert/strict'
+ import { randomUUID } from 'node:crypto'
+ import { mkdir, readFile, writeFile } from 'node:fs/promises'
+-import { freemem } from 'node:os'
+ import { resolve } from 'node:path'
+ import { type Browser, type BrowserContext, chromium, expect, type Page } from '@playwright/test'
+ import { StudioRuntimeSelectionSchema } from '@sistemazero/core/studio/project-environment'
+@@ -21,6 +20,11 @@ import {
+   readOwnedPythonLesson,
+   verifyPublishedPythonLesson,
+ } from '../../../admin/tests/e2e/python-lesson-fixture'
++import {
++  launchAdmittedPythonLessonBrowser,
++  type PythonLessonAdmission,
++  readPythonLessonAdmission,
++} from './python-lesson-admission'
+ import { cleanupPythonLessonBrowser, failPythonLessonCleanup } from './python-lesson-cleanup'
+ 
+ export function pythonLessonSource(marker: string) {
+@@ -45,7 +49,7 @@ export async function editPythonMain(page: Page, source?: string, kind: 'classic
+   if (kind === 'pro') {
+     await page
+       .getByRole('navigation', { name: 'Organizar o editor' })
+-      .getByRole('button', { name: 'Arquivos', exact: true })
++      .getByRole('button', { name: /^(Arquivos|Código e jogo)$/ })
+       .click()
+     await page.getByRole('treeitem', { name: 'main.py', exact: true }).click()
+   } else {
+@@ -78,7 +82,7 @@ export async function runPythonLessonPreview(
+   if (kind === 'pro') {
+     await page
+       .getByRole('navigation', { name: 'Organizar o editor' })
+-      .getByRole('button', { name: 'Jogo', exact: true })
++      .getByRole('button', { name: /^(Jogo|Ampliar jogo)$/ })
+       .click()
+   } else {
+     const previewTab = page.getByRole('tab', { name: 'Pré-visualização', exact: true })
+@@ -137,11 +141,11 @@ export async function runPythonLessonPreview(
+   }
+ }
+ 
+-async function main() {
+-  const [configPath, outputPath] = process.argv.slice(2)
++export async function runPythonLessonAdmin() {
++  const [configPath, outputPath, admissionPath, admissionSha256] = process.argv.slice(2)
+   assert(
+-    configPath && outputPath,
+-    'Usage: bun python-lesson-admin.ts <reviewed-config.json> <new-output-dir>',
++    configPath && outputPath && admissionPath && admissionSha256,
++    'Usage: python-lesson-admin.ts <reviewed-config.json> <new-output-dir> <fresh-admission.json> <admission-sha256>',
+   )
+   const config = z
+     .object({
+@@ -166,7 +170,6 @@ async function main() {
+   const email = process.env.STUDIO_LESSONS_QA_ADMIN_EMAIL
+   const password = process.env.STUDIO_LESSONS_QA_ADMIN_PASSWORD
+   assert(email && password, 'Real QA Admin credentials must be supplied only in process memory')
+-  assert(freemem() >= 4096 * 1024 * 1024, 'Browser admission requires 4096 MiB available')
+   const out = resolve(outputPath)
+   await mkdir(out) // Exclusive namespace: failed receipts are never overwritten by a new run.
+   const marker = `qa-python-${randomUUID()}`
+@@ -194,6 +197,7 @@ async function main() {
+     consoleErrors: [] as string[],
+     failure: null as string | null,
+     cleanup: [] as string[],
++    admission: null as PythonLessonAdmission | null,
+   }
+   const save = () =>
+     writeFile(resolve(out, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`)
+@@ -204,8 +208,20 @@ async function main() {
+   let timer: ReturnType<typeof setTimeout> | undefined
+   const pending = new Set<Promise<void>>()
+   let listenerFailure: unknown
++  const onSupervisorStop = () => {
++    receipt.failure ??= 'External owned supervisor requested stop'
++    void context?.close().catch((error) => {
++      listenerFailure ??= error
++    })
++  }
++  process.on('SIGTERM', onSupervisorStop)
+   try {
+-    browser = await chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 })
++    receipt.admission = await readPythonLessonAdmission(admissionPath, admissionSha256, 'admin')
++    await save()
++    browser = await launchAdmittedPythonLessonBrowser(receipt.admission, () =>
++      chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 }),
++    )
++    assert(!receipt.failure, 'Supervisor stopped before context creation')
+     context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
+     const ownedContext = context
+     page = await context.newPage()
+@@ -478,6 +494,7 @@ async function main() {
+         }
+       },
+     })
++    process.off('SIGTERM', onSupervisorStop)
+     console.log(
+       JSON.stringify({
+         state: receipt.state,
+@@ -489,4 +506,4 @@ async function main() {
+   }
+ }
+ 
+-if (import.meta.main) await main()
++if (import.meta.main) await runPythonLessonAdmin()
+diff --git a/packages/community-kids/tests/e2e/python-lesson-admission.ts b/packages/community-kids/tests/e2e/python-lesson-admission.ts
+new file mode 100644
+index 000000000..5522a4394
+--- /dev/null
++++ b/packages/community-kids/tests/e2e/python-lesson-admission.ts
+@@ -0,0 +1,102 @@
++import assert from 'node:assert/strict'
++import { createHash } from 'node:crypto'
++import { readFile } from 'node:fs/promises'
++import { freemem } from 'node:os'
++import { z } from 'zod'
++
++export const PythonLessonAdmissionSchema = z
++  .object({
++    version: z.literal(1),
++    role: z.enum(['admin', 'kids']),
++    attemptId: z.uuid(),
++    reviewedPlanSha256: z.string().regex(/^[a-f0-9]{64}$/),
++    observedAt: z.iso.datetime({ offset: true }),
++    nextTree: z
++      .object({
++        role: z.enum(['adminNext', 'kidsNext']),
++        processId: z.number().int().positive(),
++        createdAt: z.iso.datetime({ offset: true }),
++        executable: z.string().min(1),
++        cliSha256: z.string().regex(/^[a-f0-9]{64}$/),
++        workingSetMiB: z.number().finite().positive(),
++      })
++      .strict(),
++    envelopes: z
++      .object({
++        browserMiB: z.union([z.literal(1024), z.literal(1536)]),
++        nextTreeMiB: z.literal(2048),
++        retainedBaseGrowthMiB: z.literal(256),
++        hostReserveMiB: z.literal(512),
++      })
++      .strict(),
++  })
++  .strict()
++
++export function evaluatePythonLessonAdmission(
++  input: unknown,
++  observation: { role: 'admin' | 'kids'; nowMs: number; freeBytes: number },
++) {
++  const plan = PythonLessonAdmissionSchema.parse(input)
++  assert.equal(plan.role, observation.role, 'Admission belongs to another audience')
++  assert.equal(plan.nextTree.role, plan.role === 'admin' ? 'adminNext' : 'kidsNext')
++  assert.equal(plan.envelopes.browserMiB, plan.role === 'admin' ? 1024 : 1536)
++  assert(
++    plan.nextTree.workingSetMiB <= plan.envelopes.nextTreeMiB,
++    'Next exceeded this attempt budget',
++  )
++  const ageMs = observation.nowMs - Date.parse(plan.observedAt)
++  assert(ageMs >= 0 && ageMs <= 10_000, 'Admission observation must be fresh, not future dated')
++  assert(Number.isFinite(observation.freeBytes) && observation.freeBytes >= 0)
++  const nextGrowthMiB = Math.max(0, plan.envelopes.nextTreeMiB - plan.nextTree.workingSetMiB)
++  const requiredFreeMiB =
++    Math.ceil(
++      (plan.envelopes.browserMiB +
++        nextGrowthMiB +
++        plan.envelopes.retainedBaseGrowthMiB +
++        plan.envelopes.hostReserveMiB) /
++        256,
++    ) * 256
++  const observedFreeMiB = observation.freeBytes / 1024 ** 2
++  return {
++    ...plan,
++    evaluatedAt: new Date(observation.nowMs).toISOString(),
++    nextGrowthMiB,
++    requiredFreeMiB,
++    observedFreeMiB,
++    admitted: observedFreeMiB >= requiredFreeMiB,
++  }
++}
++
++export type PythonLessonAdmission = ReturnType<typeof evaluatePythonLessonAdmission> & {
++  admissionSha256: string
++}
++
++export async function readPythonLessonAdmission(
++  path: string,
++  expectedSha256: string,
++  role: 'admin' | 'kids',
++): Promise<PythonLessonAdmission> {
++  assert.match(expectedSha256, /^[a-f0-9]{64}$/)
++  const bytes = await readFile(path)
++  const admissionSha256 = createHash('sha256').update(bytes).digest('hex')
++  assert.equal(admissionSha256, expectedSha256, 'Per-attempt admission bytes changed')
++  return {
++    ...evaluatePythonLessonAdmission(JSON.parse(bytes.toString('utf8')), {
++      role,
++      nowMs: Date.now(),
++      freeBytes: freemem(),
++    }),
++    admissionSha256,
++  }
++}
++
++export async function launchAdmittedPythonLessonBrowser<T>(
++  admission: ReturnType<typeof evaluatePythonLessonAdmission>,
++  launch: () => Promise<T>,
++): Promise<T> {
++  assert(
++    admission.admitted,
++    `Browser admission refused: ${Math.floor(admission.observedFreeMiB)} MiB free, ${admission.requiredFreeMiB} MiB required by this attempt`,
++  )
++  return launch()
++}
+diff --git a/packages/community-kids/tests/e2e/python-lesson-kids.ts b/packages/community-kids/tests/e2e/python-lesson-kids.ts
+index 5378a446a..9d9d778ad 100644
+--- a/packages/community-kids/tests/e2e/python-lesson-kids.ts
++++ b/packages/community-kids/tests/e2e/python-lesson-kids.ts
+@@ -2,7 +2,6 @@
+ import assert from 'node:assert/strict'
+ import { randomUUID } from 'node:crypto'
+ import { mkdir, readFile, writeFile } from 'node:fs/promises'
+-import { freemem } from 'node:os'
+ import { resolve } from 'node:path'
+ import { type Browser, type BrowserContext, chromium, expect, type Page } from '@playwright/test'
+ import { studioSourceAtPath } from '@sistemazero/core/studio/code-anchor'
+@@ -14,6 +13,11 @@ import {
+ } from '@sistemazero/core/studio/runtime-authorization'
+ import { z } from 'zod'
+ import { editPythonMain, pythonLessonSource, runPythonLessonPreview } from './python-lesson-admin'
++import {
++  launchAdmittedPythonLessonBrowser,
++  type PythonLessonAdmission,
++  readPythonLessonAdmission,
++} from './python-lesson-admission'
+ import { cleanupPythonLessonBrowser, failPythonLessonCleanup } from './python-lesson-cleanup'
+ 
+ const workspaceSchema = z.object({
+@@ -29,11 +33,11 @@ const workspaceSchema = z.object({
+   readOnly: z.boolean().optional(),
+ })
+ 
+-async function main() {
+-  const [adminReceiptPath, outputPath] = process.argv.slice(2)
++export async function runPythonLessonKids() {
++  const [adminReceiptPath, outputPath, admissionPath, admissionSha256] = process.argv.slice(2)
+   assert(
+-    adminReceiptPath && outputPath,
+-    'Usage: bun python-lesson-kids.ts <passed-admin-receipt.json> <new-output-dir>',
++    adminReceiptPath && outputPath && admissionPath && admissionSha256,
++    'Usage: python-lesson-kids.ts <passed-admin-receipt.json> <new-output-dir> <fresh-admission.json> <admission-sha256>',
+   )
+   const admin = z
+     .object({
+@@ -56,7 +60,6 @@ async function main() {
+   const password = process.env.STUDIO_LESSONS_QA_PARENT_PASSWORD
+   const learnerId = z.uuid().parse(process.env.STUDIO_LESSONS_QA_LEARNER_ID)
+   assert(email && password, 'Parent QA credentials stay only in process/browser memory')
+-  assert(freemem() >= 4096 * 1024 * 1024, 'Browser admission requires 4096 MiB available')
+   const origin = 'http://localhost:43108'
+   const out = resolve(outputPath)
+   await mkdir(out)
+@@ -82,6 +85,7 @@ async function main() {
+       decision: z.infer<typeof StudioLiveRuntimeDecisionSchema>
+     }[],
+     failure: null as string | null,
++    admission: null as PythonLessonAdmission | null,
+   }
+   const save = () =>
+     writeFile(resolve(out, 'receipt.json'), `${JSON.stringify(receipt, null, 2)}\n`)
+@@ -138,8 +142,20 @@ async function main() {
+       void work.finally(() => pending.delete(work))
+     })
+   }
++  const onSupervisorStop = () => {
++    receipt.failure ??= 'External owned supervisor requested stop'
++    void context?.close().catch((error) => {
++      listenerFailure ??= error
++    })
++  }
++  process.on('SIGTERM', onSupervisorStop)
+   try {
+-    browser = await chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 })
++    receipt.admission = await readPythonLessonAdmission(admissionPath, admissionSha256, 'kids')
++    await save()
++    browser = await launchAdmittedPythonLessonBrowser(receipt.admission, () =>
++      chromium.launch({ channel: 'chrome', headless: true, timeout: 30_000 }),
++    )
++    assert(!receipt.failure, 'Supervisor stopped before context creation')
+     context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
+     const ownedContext = context
+     page = await context.newPage()
+@@ -219,12 +235,34 @@ async function main() {
+     receipt.workspace = saved
+     await save()
+     await page.goto(origin + admin.fixture.learnerPath)
+-    await expect(page.getByRole('button', { name: 'Guardar', exact: true })).toBeVisible({
++    const saveReopened = page.getByRole('button', { name: 'Guardar', exact: true })
++    const resumeReopened = page.getByRole('button', { name: 'Continuar aqui', exact: true })
++    await expect(saveReopened.or(resumeReopened)).toBeVisible({ timeout: 90_000 })
++    // A navigation creates a new document writer; an active preceding lease requires UI consent.
++    if (await resumeReopened.isVisible()) {
++      const resumedResponse = page
++        .waitForResponse(
++          (response) =>
++            new URL(response.url()).pathname === `/api/live/workspaces/${saved.id}/claim` &&
++            response.request().postDataJSON()?.takeover === true,
++        )
++        .then(
++          (response) => ({ response }),
++          (error: unknown) => ({ error }),
++        )
++      await resumeReopened.click()
++      const resumedResult = await resumedResponse
++      if ('error' in resumedResult) throw resumedResult.error
++      assert.equal(resumedResult.response.status(), 200)
++    }
++    await expect(saveReopened).toBeVisible({
+       timeout: 90_000,
+     })
+     const reopened = await readCurrent()
+     assert.deepEqual(reopened.project, saved.project)
+     assert.equal(reopened.revision, saved.revision)
++    assert(reopened.writerEpoch > saved.writerEpoch)
++    assert.notEqual(reopened.writerDeviceId, saved.writerDeviceId)
+     await runPythonLessonPreview(page, marker, providerOrigin, false, admin.kind)
+     await Promise.all([...pending])
+     if (listenerFailure) throw listenerFailure
+@@ -350,6 +388,7 @@ async function main() {
+         if (receipt.failure) failed(receipt.failure)
+       },
+     })
++    process.off('SIGTERM', onSupervisorStop)
+     console.log(
+       JSON.stringify({
+         state: receipt.state,
+@@ -361,4 +400,4 @@ async function main() {
+   }
+ }
+ 
+-if (import.meta.main) await main()
++if (import.meta.main) await runPythonLessonKids()
+diff --git a/packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1 b/packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1
+new file mode 100644
+index 000000000..3698bfe33
+--- /dev/null
++++ b/packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1
+@@ -0,0 +1,99 @@
++param(
++ [ValidateSet('Plan','Run')][string]$Action='Plan',
++ [ValidateSet('adminBrowser','kidsBrowser')][string]$Role='adminBrowser',
++ [string]$ExpectedPlanSha256,[string]$ExpectedEnvSha256,
++ [string]$InputFile,[string]$ExpectedInputSha256,
++ [string]$NextStateFile,[string]$ExpectedNextStateSha256,
++ [datetimeoffset]$WindowEnd,[datetimeoffset]$StartCutoff
++)
++$ErrorActionPreference='Stop'
++. (Join-Path $PSScriptRoot 'python-lesson-process-ownership.ps1')
++. (Join-Path $PSScriptRoot 'python-lesson-browser-watch.ps1')
++if($Action -eq 'Plan'){Write-Output 'PREPARED ONLY. No launch, browser, HTTP or credentials read.';return}
++function Refuse-BrowserAdmission([string]$Reason, $Observation){
++ $refusals=Join-Path $PSScriptRoot 'refusals';[IO.Directory]::CreateDirectory($refusals)|Out-Null
++ Write-Durable @{state='admission-refused-before-start';role=$Role;reason=$Reason;observation=$Observation;at=[datetimeoffset]::UtcNow.ToString('o');runnerStarted=$false;browserStarted=$false} (Join-Path $refusals ($Role+'-'+[guid]::NewGuid().ToString('N')+'.json')) -Exclusive
++ throw $Reason
++}
++if($PSVersionTable.PSVersion -lt [version]'7.5'){throw 'PowerShell 7.5+ required'}
++$planPath=Join-Path $PSScriptRoot 'windows-plan.json'
++if((Get-FileHash -LiteralPath $planPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ExpectedPlanSha256){throw 'Reviewed bound plan SHA required'}
++$plan=Get-Content -LiteralPath $planPath -Raw|ConvertFrom-Json -DateKind String
++if($plan.state -ne 'bound-to-actual-new-host-canonical-policy'){throw 'Actual fresh host bind required'}
++foreach($pin in $plan.hostPins){if((Get-FileHash -LiteralPath $pin.path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pin.sha256){throw 'Pinned input changed'}}
++$spec=$plan.roles.$Role
++if(-not $spec -or $spec.entryExport -cne $(if($Role -eq 'adminBrowser'){'runPythonLessonAdmin'}else{'runPythonLessonKids'})){throw 'Closed browser role/export required'}
++$envPath=Join-Path $PSScriptRoot "envs/$Role.json"
++if((Get-FileHash -LiteralPath $envPath -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ExpectedEnvSha256){throw 'Reviewed browser environment SHA required'}
++$configuration=Get-Content -LiteralPath $envPath -Raw|ConvertFrom-Json
++if($configuration.role -cne $Role -or $configuration.version -ne 1 -or $configuration.env.PSObject.Properties.Name -ne 'NODE_ENV'){throw 'Closed browser environment required; credentials never belong in files'}
++$InputFile=[IO.Path]::GetFullPath($InputFile)
++$cachePrefix=[IO.Path]::GetFullPath((Join-Path $spec.cwd '.cache'))+[IO.Path]::DirectorySeparatorChar
++if(-not $InputFile.StartsWith($cachePrefix,[StringComparison]::OrdinalIgnoreCase)){throw 'Input must be an own QA cache file'}
++if((Get-FileHash -LiteralPath $InputFile -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ExpectedInputSha256){throw 'Reviewed scenario input SHA required'}
++$NextStateFile=Owned-StatePath $NextStateFile
++if((Get-FileHash -LiteralPath $NextStateFile -Algorithm SHA256).Hash.ToLowerInvariant() -cne $ExpectedNextStateSha256){throw 'Exact Next state SHA required'}
++$next=Get-Content -LiteralPath $NextStateFile -Raw|ConvertFrom-Json -DateKind String
++$expectedNext=if($Role -eq 'adminBrowser'){'adminNext'}else{'kidsNext'}
++if($next.owner -cne $plan.owner -or $next.run -cne $plan.run -or $next.role -cne $expectedNext -or -not(Same-Witness $next.root (Process-Witness $next.root.processId))){throw 'Own live Next root witness required'}
++if($plan.roles.$expectedNext.prefixArgv.Count -ne 1 -or $plan.roles.$expectedNext.prefixArgv[0] -cne '--max-old-space-size=1536'){throw 'Reviewed Next heap1536 required'}
++if($next.root.executable -cne $plan.roles.$expectedNext.binary -or -not $next.root.cli.Contains($plan.adapter) -or -not $next.root.cli.Contains('--max-old-space-size=1536')){throw 'Next actual launch shape differs from reviewed heap/adapter'}
++foreach($oldState in @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot 'windows-jobs') -Filter owned-process.json -Recurse -ErrorAction SilentlyContinue)) {
++ $old=Get-Content -LiteralPath $oldState.FullName -Raw|ConvertFrom-Json -DateKind String
++ if($old.role -in @('adminBrowser','kidsBrowser')){
++  foreach($w in @($old.root)+@($old.observedTree)){if($w -and (Same-Witness $w (Process-Witness $w.processId))){throw 'Another own browser tree is still present'}}
++ }
++}
++$now=[datetimeoffset]::UtcNow
++if($now -ge $StartCutoff -or $now.AddSeconds(360) -gt $WindowEnd){throw 'No remaining granted six-minute browser interval'}
++$deadline=$now.AddSeconds(360);$softDeadline=$deadline.AddSeconds(-30)
++$known=@{};$known["$($next.root.processId):$($next.root.createdAt)"]=$next.root
++do{$before=$known.Count;Capture-OwnedTree $next.root $known}while($known.Count -gt $before)
++$nextWorking=0.0
++foreach($w in $known.Values){if(-not(Same-Witness $w (Process-Witness $w.processId))){throw 'Next tree changed during admission'};$nextWorking+=(Get-Process -Id $w.processId -ErrorAction Stop).WorkingSet64/1MB}
++$audience=if($Role -eq 'adminBrowser'){'admin'}else{'kids'}
++$browserMiB=if($Role -eq 'adminBrowser'){1024}else{1536}
++if($nextWorking -gt 2048){Refuse-BrowserAdmission 'Next exceeded the approved fixed attempt envelope' @{nextTreeWorkingSetMiB=$nextWorking;nextTreeBudgetMiB=2048}}
++$requiredFree=[math]::Ceiling(($browserMiB+[math]::Max(0,2048-$nextWorking)+256+512)/256)*256
++$freeMiB=[double](Get-CimInstance Win32_OperatingSystem -Property FreePhysicalMemory).FreePhysicalMemory/1024
++if($freeMiB -lt $requiredFree){Refuse-BrowserAdmission 'Browser incremental preflight refused' @{nextTreeWorkingSetMiB=$nextWorking;observedFreeMiB=$freeMiB;requiredFreeMiB=$requiredFree}}
++$jobDir=Join-Path $PSScriptRoot ('windows-jobs/'+$Role+'-'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory -Path $jobDir -ErrorAction Stop|Out-Null
++$admissionPath=Join-Path $jobDir 'admission.json'
++$admission=@{version=1;role=$audience;attemptId=[guid]::NewGuid().ToString();reviewedPlanSha256=$ExpectedPlanSha256;observedAt=[datetimeoffset]::UtcNow.ToString('o');nextTree=@{role=$expectedNext;processId=$next.root.processId;createdAt=$next.root.createdAt;executable=$next.root.executable;cliSha256=$next.root.cliSha256;workingSetMiB=$nextWorking};envelopes=@{browserMiB=$browserMiB;nextTreeMiB=2048;retainedBaseGrowthMiB=256;hostReserveMiB=512}}
++Write-Durable $admission $admissionPath -Exclusive
++$admissionSha=(Get-FileHash -LiteralPath $admissionPath -Algorithm SHA256).Hash.ToLowerInvariant()
++$homeDir=Join-Path $jobDir 'home';New-Item -ItemType Directory -Path $homeDir -ErrorAction Stop|Out-Null
++$StateFile=Join-Path $jobDir 'owned-process.json'
++$job=@{version=1;owner=$plan.owner;run=$plan.run;nonce=[guid]::NewGuid().ToString('N');role=$Role;cwd=$spec.cwd;entry=$spec.entry;entrySha256=$spec.entrySha256;entryExport=$spec.entryExport;argv=@($InputFile,(Join-Path $jobDir 'scenario'),$admissionPath,$admissionSha);stopRequest=(Join-Path $jobDir 'stop.request');signalReceipt=(Join-Path $jobDir 'signal.json');failureReceipt=(Join-Path $jobDir 'failure.json');claimFile=(Join-Path $jobDir 'owner.claim.json');claimReceipt=(Join-Path $jobDir 'claim-accepted.json');stateFile=$StateFile;envFile=$envPath;envSha256=$ExpectedEnvSha256;cleanPath=$plan.cleanPath;home=$homeDir;runComplete=(Join-Path $jobDir 'run-complete.json');completionAck=(Join-Path $jobDir 'completion-ack.json')}
++$jobPath=Join-Path $jobDir 'job.json';Write-Durable $job $jobPath -Exclusive
++$bootstrapEnv=@{NODE_OPTIONS='';BUN_OPTIONS='';NODE_PATH='';NODE_V8_COVERAGE='';NODE_USE_ENV_PROXY='';HTTP_PROXY='';HTTPS_PROXY='';ALL_PROXY='';HOME=$homeDir;USERPROFILE=$homeDir;PATH=$plan.cleanPath;NODE_ENV='test'}
++$credentialKeys=if($Role -eq 'adminBrowser'){@('STUDIO_LESSONS_QA_ADMIN_EMAIL','STUDIO_LESSONS_QA_ADMIN_PASSWORD')}else{@('STUDIO_LESSONS_QA_PARENT_EMAIL','STUDIO_LESSONS_QA_PARENT_PASSWORD','STUDIO_LESSONS_QA_LEARNER_ID')}
++foreach($key in $credentialKeys){$value=[Environment]::GetEnvironmentVariable($key);if(-not $value){throw 'Missing in-memory QA credentials'};$bootstrapEnv[$key]=$value}
++$argv=@($spec.prefixArgv)+@($plan.adapter,$jobPath)
++if(@($argv|Where-Object{$_ -match '[\s"]'}).Count){throw 'Reviewed fixed Windows argv shape required'}
++$process=$null
++try {
++ if([datetimeoffset]::UtcNow -ge $StartCutoff){throw 'Start cutoff passed during browser preflight'}
++ $process=Start-Process -FilePath $spec.binary -ArgumentList $argv -WorkingDirectory $spec.cwd -WindowStyle Hidden -PassThru -Environment $bootstrapEnv -RedirectStandardOutput (Join-Path $jobDir 'stdout.log') -RedirectStandardError (Join-Path $jobDir 'stderr.log')
++ $handle=$process.SafeHandle
++ if($handle.IsInvalid -or $handle.IsClosed){throw 'Exact newly launched handle required'}
++ $root=Process-Witness $process.Id
++ if(-not $root -or $root.executable -cne $spec.binary -or -not $root.cli.Contains($plan.adapter) -or -not $root.cli.Contains($jobPath)){throw 'Exact new browser runner witness required'}
++ $state=[pscustomobject]@{version=2;nonce=$job.nonce;owner=$plan.owner;run=$plan.run;role=$Role;status='witnessed-awaiting-app';root=$root;envSha256=$ExpectedEnvSha256;inputSha256=$ExpectedInputSha256;admissionSha256=$admissionSha;ports=@();observedTree=@();forced=$false;stopRequest=$job.stopRequest}
++ Save $state $StateFile
++ $pendingClaim=Join-Path $jobDir 'owner.claim.pending.json'
++ Write-Durable @{version=1;nonce=$job.nonce;pid=$process.Id;stateSha256=(Get-FileHash -LiteralPath $StateFile -Algorithm SHA256).Hash.ToLowerInvariant()} $pendingClaim -Exclusive
++ [IO.File]::Move($pendingClaim,$job.claimFile,$false)
++} catch {
++ # Before claim the adapter cannot import a scenario or create Chrome.
++ if($process -and -not(Test-Path -LiteralPath $job.claimFile) -and -not $process.HasExited){$process.Kill($true);$process.WaitForExit(5000)|Out-Null}
++ throw
++} finally {
++ foreach($key in $credentialKeys){$bootstrapEnv.Remove($key)}
++}
++Write-Output "START $Role PID=$($process.Id) deadline=$($deadline.ToString('o')); state=$StateFile"
++try {
++ $result=Watch-OwnedBrowser $process $state $StateFile $job $softDeadline $deadline
++ Write-Output "END $Role state=$($result.status) exit=$($result.processExitCode); stateFile=$StateFile"
++ if($result.status -ne 'completed-owned-tree-exited'){exit 1}
++} finally {$process.Dispose()}
+diff --git a/packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1 b/packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1
+new file mode 100644
+index 000000000..e526fe05f
+--- /dev/null
++++ b/packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1
+@@ -0,0 +1,200 @@
++# Extends the existing witnessed operator protocol; no launch happens on import.
++function Retain-OwnedProcess($Witness, [Diagnostics.Process]$ExistingProcess=$null) {
++ $candidate=$ExistingProcess;$ownsProcess=$null -eq $ExistingProcess;$retained=$false
++ try {
++  if(-not $candidate){$candidate=[Diagnostics.Process]::GetProcessById($Witness.processId)}
++  # Pin the kernel process object before validating creation. Never reopen at stop.
++  $handle=$candidate.SafeHandle
++  if($handle.IsClosed -or $handle.IsInvalid -or $candidate.HasExited -or $candidate.Id -ne $Witness.processId){return $null}
++  $createdTicks=$candidate.StartTime.ToUniversalTime().Ticks
++  $witnessTicks=([datetimeoffset]$Witness.createdAt).UtcTicks
++  # CIM truncates its creation time to microseconds; Process exposes 100ns ticks.
++  if(($createdTicks-($createdTicks%10)) -ne ($witnessTicks-($witnessTicks%10))){return $null}
++  $retained=$true
++  return [pscustomobject]@{process=$candidate;safeHandle=$handle;processId=$candidate.Id;createdTicks=$createdTicks;ownsProcess=$ownsProcess}
++ } catch {return $null}
++ finally {if(-not $retained -and $ownsProcess -and $candidate){$candidate.Dispose()}}
++}
++
++function Retained-OwnedProcessObservation($Record) {
++ try {
++  if(-not $Record -or $Record.safeHandle.IsClosed -or $Record.safeHandle.IsInvalid){throw 'Retained process handle is unavailable'}
++  $Record.process.Refresh()
++  $hasExited=$Record.process.HasExited
++  if($hasExited -isnot [bool]){throw 'Retained process exit observation is unavailable'}
++  if($hasExited){return [pscustomobject]@{state='exited';failureName=$null}}
++  if($Record.process.Id -ne $Record.processId -or $Record.process.StartTime.ToUniversalTime().Ticks -ne $Record.createdTicks){throw 'Retained process identity is unconfirmed'}
++  return [pscustomobject]@{state='alive';failureName=$null}
++ } catch {return [pscustomobject]@{state='unknown';failureName=$_.Exception.GetType().Name}}
++}
++
++function Retained-OwnedProcessAlive($Record) {
++ if(-not $Record){return $false}
++ $observation=Retained-OwnedProcessObservation $Record
++ if($observation.state -eq 'unknown'){throw 'Retained process observation is unknown; exit is not confirmed.'}
++ return $observation.state -eq 'alive'
++}
++
++function Stop-RetainedOwnedProcess($Record) {
++ if(-not(Retained-OwnedProcessAlive $Record)){return $false}
++ # This exact Process retains its SafeHandle. No PID lookup/check-then-stop gap.
++ $Record.process.Kill()
++ return $true
++}
++
++function Save-OwnedMonitorResult($State, [string]$StateFile) {
++ try {Save $State $StateFile}
++ catch {
++  $State.status='NEG-monitor-persistence'
++  if(-not $State.primaryFailure){$State.primaryFailure='monitor-result-persistence-failed'}
++  $State.secondaryFailures+=@{phase='result-save';name=$_.Exception.GetType().Name}
++  $State.persistenceFallback=Join-Path (Split-Path $StateFile) 'monitor-failure.json'
++  try{Write-Durable $State $State.persistenceFallback -Exclusive:(-not(Test-Path -LiteralPath $State.persistenceFallback))}
++  catch{[Console]::Error.WriteLine('NEG: monitor result and fallback could not be persisted; inspect owned cleanup.');throw}
++ }
++}
++
++function Reconcile-RetainedOwnedProcesses($State,$Known,$Retained) {
++ $live=@();$exited=@();$unconfirmed=@($Known.Values|Where-Object{-not $Retained.ContainsKey("$($_.processId):$($_.createdAt)")}|ForEach-Object{$_.processId})
++ foreach($record in $Retained.Values){
++  $observation=Retained-OwnedProcessObservation $record
++  if($observation.state -eq 'alive'){$live+= $record.processId}
++  elseif($observation.state -eq 'exited'){$exited+= $record.processId}
++  elseif($observation.state -eq 'unknown'){
++   $unconfirmed+= $record.processId
++   $State.secondaryFailures+=@{phase='reconciliation-observation';processId=$record.processId;name=$observation.failureName}
++  }
++ }
++ if($unconfirmed.Count){$State.ownershipComplete=$false;if(-not $State.primaryFailure){$State.primaryFailure='retained-process-exit-unconfirmed'}}
++ $State.liveOwned=@($live);$State.provenExitedProcessIds=@($exited);$State.unconfirmedProcessIds=@($unconfirmed|Select-Object -Unique)
++ $State.cleanupConfirmed=$State.ownershipComplete -and -not $live.Count -and -not $unconfirmed.Count
++}
++
++function Capture-OwnedTree($Root, $Known, $Retained=$null) {
++ foreach($parent in @($Known.Values)) {
++  $current=Process-Witness $parent.processId
++  if(-not(Same-Witness $parent $current)){
++   $record=if($null -ne $Retained){$Retained["$($parent.processId):$($parent.createdAt)"]}else{$null}
++   if(Retained-OwnedProcessAlive $record){throw 'Live retained parent has no matching CIM witness; descendant discovery unconfirmed.'}
++   continue
++  }
++  foreach($child in @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($parent.processId)" -ErrorAction Stop)) {
++   $w=Process-Witness $child.ProcessId
++   if($w -and [datetimeoffset]$w.createdAt -ge [datetimeoffset]$parent.createdAt) {
++    $key="$($w.processId):$($w.createdAt)"
++    if(-not $Known.ContainsKey($key)){
++     $Known[$key]=$w
++     if($null -ne $Retained){$record=Retain-OwnedProcess $w;if($record){$Retained[$key]=$record}}
++    }
++   }
++  }
++ }
++}
++
++function Watch-OwnedBrowser($Process, $State, [string]$StateFile, $Job, [datetimeoffset]$SoftDeadline, [datetimeoffset]$HardDeadline) {
++ $known=@{};$known["$($State.root.processId):$($State.root.createdAt)"]=$State.root
++ $retained=@{};$rootRecord=$null
++ $stopRequested=$false;$complete=$null;$acknowledged=$false;$earlyExit=$false;$completionStableRounds=0
++ $State|Add-Member -NotePropertyMembers @{hardDeadline=$HardDeadline.ToString('o');softDeadline=$SoftDeadline.ToString('o');maxSampledTreeWorkingSetMiB=0;maxSampledTreePrivateMiB=0;primaryFailure=$null;secondaryFailures=@();processExitCode=$null;scenarioExitCode=$null;liveOwned=@();completedAt=$null;retainedHandleCount=0;descendantHandlesReleased=$false;monitorFailureName=$null;ownershipComplete=$true;cleanupConfirmed=$false;provenExitedProcessIds=@();unconfirmedProcessIds=@();persistenceFallback=$null} -Force
++ try {
++ $rootRecord=Retain-OwnedProcess $State.root $Process
++ if(-not $rootRecord){throw 'Cannot retain the witnessed root process object'}
++ $retained["$($State.root.processId):$($State.root.createdAt)"]=$rootRecord
++ # The adapter verifies the original state SHA before accepting the claim.
++ # Do not rewrite that state until it has durably acknowledged the claim.
++ while(-not(Test-Path -LiteralPath $Job.claimReceipt) -and (Same-Witness $State.root (Process-Witness $State.root.processId)) -and [datetimeoffset]::UtcNow -lt $HardDeadline){Start-Sleep -Milliseconds 25}
++ while($true) {
++  # Repeat discovery until every newly found parent has been visited this round.
++  do{$before=$known.Count;Capture-OwnedTree $State.root $known $retained}while($known.Count -gt $before)
++  $State.retainedHandleCount=$retained.Count
++  $live=[Collections.Generic.List[object]]::new();$working=0.0;$private=0.0
++  foreach($w in @($known.Values)) {
++   $record=$retained["$($w.processId):$($w.createdAt)"]
++   if(-not $record){
++    if(Same-Witness $w (Process-Witness $w.processId)){$live.Add($w);$State.ownershipComplete=$false;if(-not $State.primaryFailure){$State.primaryFailure='live-descendant-handle-unavailable; refuse PID-only stop'}}
++    continue
++   }
++   if(-not(Retained-OwnedProcessAlive $record)){continue}
++   $live.Add($w)
++   $metrics=$record.process
++   if($metrics){$working+=$metrics.WorkingSet64/1MB;$private+=$metrics.PrivateMemorySize64/1MB}
++  }
++  $State.maxSampledTreeWorkingSetMiB=[math]::Max($State.maxSampledTreeWorkingSetMiB,[math]::Round($working,2))
++  $State.maxSampledTreePrivateMiB=[math]::Max($State.maxSampledTreePrivateMiB,[math]::Round($private,2))
++  $State.observedTree=@($known.Values|ForEach-Object{[pscustomobject]@{processId=$_.processId;parentId=$_.parentId;createdAt=$_.createdAt;executable=$_.executable;cliSha256=$_.cliSha256}})
++  $State.liveOwned=@($live|ForEach-Object{$_.processId})
++  if(-not $complete -and (Test-Path -LiteralPath $Job.runComplete)) {
++   $complete=Get-Content -LiteralPath $Job.runComplete -Raw|ConvertFrom-Json -DateKind String
++   if($complete.pid -ne $State.root.processId -or $complete.nonce -cne $Job.nonce){throw 'Completion identity mismatch'}
++   $State.scenarioExitCode=[int]$complete.exitCode
++  }
++  $rootAlive=Retained-OwnedProcessAlive $rootRecord
++  if(-not $rootAlive -and -not $acknowledged) {
++   if(-not $earlyExit){$HardDeadline=[datetimeoffset]::MinValue.AddTicks([math]::Min($HardDeadline.Ticks,[datetimeoffset]::UtcNow.AddSeconds(30).Ticks))}
++   $earlyExit=$true
++   if(-not $State.primaryFailure){$State.primaryFailure='root-exited-before-completion-ack; descendant completeness unconfirmed'}
++  }
++  # A private Windows console host can only exit after its owning runner exits.
++  # Keep it in the witnessed tree and final reconciliation, but do not deadlock
++  # completion acknowledgement on that root-bound platform helper.
++  $consoleHost=Join-Path ([Environment]::GetFolderPath('System')) 'conhost.exe'
++  $children=@($live|Where-Object{ $_.processId -ne $State.root.processId -and -not($_.parentId -eq $State.root.processId -and [string]::Equals($_.executable,$consoleHost,[StringComparison]::OrdinalIgnoreCase)) })
++  if($complete -and $rootAlive -and -not $children.Count){$completionStableRounds++}else{$completionStableRounds=0}
++  if($completionStableRounds -ge 2 -and -not $acknowledged) {
++   # The adapter polls the final name before parsing: never expose partial JSON.
++   $pendingAck=$Job.completionAck+'.pending'
++   Write-Durable @{pid=$State.root.processId;nonce=$Job.nonce;at=[datetimeoffset]::UtcNow.ToString('o')} $pendingAck -Exclusive
++   [IO.File]::Move($pendingAck,$Job.completionAck,$false)
++   $acknowledged=$true
++  }
++  $Process.Refresh()
++  if($Process.HasExited){$State.processExitCode=$Process.ExitCode}
++  if(-not $live.Count) {break}
++  $now=[datetimeoffset]::UtcNow
++  if(($now -ge $SoftDeadline -or $earlyExit) -and -not $stopRequested) {
++   if(-not $State.primaryFailure){$State.primaryFailure='external-browser-deadline'}
++   if($rootAlive -and -not(Test-Path -LiteralPath $Job.stopRequest)){Write-Durable @{requestedAt=$now.ToString('o')} $Job.stopRequest -Exclusive}
++   $stopRequested=$true
++  }
++  if($now -ge $HardDeadline) {
++   if(-not $State.primaryFailure){$State.primaryFailure='external-browser-hard-deadline'}
++   # Only identities captured below this exact witnessed root are eligible.
++   # Forced cleanup is always NEG, even if every process exits afterward.
++   foreach($w in @($live|Sort-Object createdAt -Descending)) {
++    $record=$retained["$($w.processId):$($w.createdAt)"]
++    try{if(Stop-RetainedOwnedProcess $record){$State.forced=$true}}
++    catch{$State.ownershipComplete=$false;$State.secondaryFailures+=@{processId=$w.processId;name=$_.Exception.GetType().Name}}
++   }
++   break
++  }
++  $State.status='monitoring-owned-browser-tree';Save $State $StateFile
++  Start-Sleep -Milliseconds 100
++ }
++ Reconcile-RetainedOwnedProcesses $State $known $retained
++ $Process.Refresh()
++ if($Process.HasExited){$State.processExitCode=$Process.ExitCode}
++ $State.completedAt=[datetimeoffset]::UtcNow.ToString('o')
++ $State.status=if(-not $State.ownershipComplete -or $State.unconfirmedProcessIds.Count){'NEG-owned-cleanup-unconfirmed'}elseif($State.liveOwned.Count){'NEG-live-owned-residuals'}elseif($earlyExit -or $State.forced -or $State.primaryFailure){'NEG-abrupt-or-deadline-cleanup'}elseif(-not $acknowledged -or $State.scenarioExitCode -ne 0 -or $State.processExitCode -ne 0){'NEG-scenario-or-exit'}else{'completed-owned-tree-exited'}
++ } catch {
++  $State.monitorFailureName=$_.Exception.GetType().Name
++  if(-not $State.primaryFailure){$State.primaryFailure='owned-browser-monitor-failed'}
++  $State.status='NEG-monitor-failure';$State.ownershipComplete=$false
++  # Persist NEG before attempting cleanup. A broken state path must not bypass it.
++  try{Save-OwnedMonitorResult $State $StateFile}catch{$State.secondaryFailures+=@{phase='failure-save';name=$_.Exception.GetType().Name}}
++  try{if(Retained-OwnedProcessAlive $rootRecord){if(-not(Test-Path -LiteralPath $Job.stopRequest)){Write-Durable @{requestedAt=[datetimeoffset]::UtcNow.ToString('o');reason='monitor-failure'} $Job.stopRequest -Exclusive}}}catch{$State.secondaryFailures+=@{phase='stop-request';name=$_.Exception.GetType().Name}}
++  # Discovery may have failed, so act only on kernel objects already retained.
++  foreach($record in @($retained.Values|Sort-Object createdTicks -Descending)){
++   try{if(Stop-RetainedOwnedProcess $record){$State.forced=$true}}catch{$State.secondaryFailures+=@{phase='failure-cleanup';processId=$record.processId;name=$_.Exception.GetType().Name}}
++  }
++  Reconcile-RetainedOwnedProcesses $State $known $retained
++  $State.observedTree=@($known.Values|ForEach-Object{[pscustomobject]@{processId=$_.processId;parentId=$_.parentId;createdAt=$_.createdAt;executable=$_.executable;cliSha256=$_.cliSha256}})
++  try{$Process.Refresh();if($Process.HasExited){$State.processExitCode=$Process.ExitCode}}catch{$State.secondaryFailures+=@{phase='root-exit-observation';name=$_.Exception.GetType().Name};$State.unconfirmedProcessIds=@($State.unconfirmedProcessIds+$State.root.processId|Select-Object -Unique);$State.cleanupConfirmed=$false}
++  $State.retainedHandleCount=$retained.Count
++  $State.completedAt=[datetimeoffset]::UtcNow.ToString('o')
++ } finally {
++  foreach($record in $retained.Values){if($record.ownsProcess){$record.process.Dispose()}}
++  $State.descendantHandlesReleased=$true
++ }
++ Save-OwnedMonitorResult $State $StateFile
++ return $State
++}
+diff --git a/packages/community-kids/tests/e2e/windows/python-lesson-process-ownership.ps1 b/packages/community-kids/tests/e2e/windows/python-lesson-process-ownership.ps1
+new file mode 100644
+index 000000000..25278617a
+--- /dev/null
++++ b/packages/community-kids/tests/e2e/windows/python-lesson-process-ownership.ps1
+@@ -0,0 +1,21 @@
++function Process-Witness([int]$ProcessId){
++ $p=Get-CimInstance Win32_Process -Filter "ProcessId=$ProcessId" -ErrorAction Stop
++ if(-not $p){return $null}
++ if(-not $p.ExecutablePath -or -not $p.CommandLine){throw 'No complete process witness; refuse ownership inference.'}
++ $bytes=[Text.Encoding]::UTF8.GetBytes($p.CommandLine);$hash=[Security.Cryptography.SHA256]::Create()
++ try{$cliSha=[BitConverter]::ToString($hash.ComputeHash($bytes)).Replace('-','').ToLowerInvariant()}finally{$hash.Dispose()}
++ return [pscustomobject]@{processId=[int]$p.ProcessId;parentId=[int]$p.ParentProcessId;createdAt=$p.CreationDate.ToUniversalTime().ToString('o');executable=$p.ExecutablePath;cliSha256=$cliSha;cli=$p.CommandLine}
++}
++function Same-Witness($before,$after){return $after -and $before.processId -eq $after.processId -and $before.createdAt -eq $after.createdAt -and $before.executable -eq $after.executable -and $before.cliSha256 -eq $after.cliSha256}
++function Write-Durable($value,[string]$path,[switch]$Exclusive){
++ $bytes=[Text.UTF8Encoding]::new($false).GetBytes(($value|ConvertTo-Json -Depth 12))
++ $mode=if($Exclusive){[IO.FileMode]::CreateNew}else{[IO.FileMode]::Create}
++ $stream=[IO.File]::Open($path,$mode,[IO.FileAccess]::Write,[IO.FileShare]::Read)
++ try{$stream.Write($bytes,0,$bytes.Length);$stream.Flush($true)}finally{$stream.Dispose()}
++}
++function Save($state,$path){Write-Durable $state $path}
++function Owned-StatePath([string]$path){
++ $absolute=[IO.Path]::GetFullPath($path);$prefix=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot 'windows-jobs'))+[IO.Path]::DirectorySeparatorChar
++ if(-not $absolute.StartsWith($prefix,[StringComparison]::OrdinalIgnoreCase)){throw 'State must be in this namespace windows-jobs.'}
++ return $absolute
++}
+diff --git a/packages/community-kids/tests/e2e/windows/python-lesson-windows-entry.mjs b/packages/community-kids/tests/e2e/windows/python-lesson-windows-entry.mjs
+new file mode 100644
+index 000000000..024bcfd6c
+--- /dev/null
++++ b/packages/community-kids/tests/e2e/windows/python-lesson-windows-entry.mjs
+@@ -0,0 +1,162 @@
++// Trusted QA lifetime adapter; does not intercept auth/runtime/provider behavior.
++import { createHash } from 'node:crypto'
++import { existsSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
++import { setTimeout as delay } from 'node:timers/promises'
++import { pathToFileURL } from 'node:url'
++
++const job = JSON.parse(readFileSync(process.argv[2], 'utf8'))
++const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
++let requested = false
++let phase = 'preclaim'
++try {
++  if (sha(readFileSync(job.entry)) !== job.entrySha256) throw new Error('Trusted QA entry changed')
++  const envBytes = readFileSync(job.envFile)
++  if (sha(envBytes) !== job.envSha256) throw new Error('Reviewed QA environment changed')
++  const environment = JSON.parse(envBytes.toString('utf8'))
++  if (environment.version !== 1 || environment.role !== job.role)
++    throw new Error('QA environment role mismatch')
++  const browserExports = {
++    adminBrowser: 'runPythonLessonAdmin',
++    kidsBrowser: 'runPythonLessonKids',
++  }
++  const credentialKeys = {
++    adminBrowser: ['STUDIO_LESSONS_QA_ADMIN_EMAIL', 'STUDIO_LESSONS_QA_ADMIN_PASSWORD'],
++    kidsBrowser: [
++      'STUDIO_LESSONS_QA_PARENT_EMAIL',
++      'STUDIO_LESSONS_QA_PARENT_PASSWORD',
++      'STUDIO_LESSONS_QA_LEARNER_ID',
++    ],
++  }
++  const ephemeral = {}
++  if (job.entryExport) {
++    if (browserExports[job.role] !== job.entryExport)
++      throw new Error('Closed browser export required')
++    for (const key of credentialKeys[job.role]) {
++      if (!process.env[key]) throw new Error('Missing in-memory QA credential')
++      ephemeral[key] = process.env[key]
++    }
++  }
++  const platform = Object.fromEntries(
++    ['SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'COMSPEC']
++      .filter((key) => process.env[key])
++      .map((key) => [key, process.env[key]]),
++  )
++  for (const key of Object.keys(process.env)) delete process.env[key]
++  Object.assign(process.env, platform, environment.env, ephemeral, {
++    PATH: job.cleanPath,
++    USERPROFILE: job.home,
++    HOME: job.home,
++  })
++
++  // No application import, child, listener, port or remote work before durable claim.
++  // Referenced polling keeps this adapter alive only for this bounded handshake.
++  const deadline = performance.now() + 10_000
++  while (!existsSync(job.claimFile)) {
++    if (performance.now() >= deadline) throw new Error('QA owner claim deadline')
++    await delay(25)
++  }
++  if (performance.now() >= deadline) throw new Error('QA owner claim arrived after deadline')
++  const claim = JSON.parse(readFileSync(job.claimFile, 'utf8'))
++  const stateBytes = readFileSync(job.stateFile)
++  const state = JSON.parse(stateBytes.toString('utf8'))
++  if (
++    claim.version !== 1 ||
++    claim.pid !== process.pid ||
++    claim.nonce !== job.nonce ||
++    claim.stateSha256 !== sha(stateBytes) ||
++    state.root.processId !== process.pid ||
++    state.nonce !== job.nonce ||
++    state.owner !== job.owner ||
++    state.run !== job.run ||
++    state.status !== 'witnessed-awaiting-app' ||
++    state.role !== job.role
++  )
++    throw new Error('QA owner claim mismatch')
++  if (existsSync(job.stopRequest)) throw new Error('QA stop requested before app import')
++  writeFileSync(
++    job.claimReceipt,
++    JSON.stringify({
++      state: 'claim-accepted-not-ready',
++      pid: process.pid,
++      nonce: job.nonce,
++      at: new Date().toISOString(),
++    }),
++    { flag: 'wx' },
++  )
++  process.chdir(job.cwd)
++  process.argv = [process.execPath, job.entry, ...job.argv]
++  let delivered = false
++  const watch = setInterval(() => {
++    if (!existsSync(job.stopRequest)) return
++    requested = true
++    if (!delivered && process.listenerCount('SIGTERM') > 0) {
++      delivered = true
++      clearInterval(watch)
++      writeFileSync(
++        job.signalReceipt,
++        JSON.stringify({
++          state: 'delivered-to-existing-app-handler',
++          at: new Date().toISOString(),
++          pid: process.pid,
++          role: job.role,
++          method: 'QA file request -> existing SIGTERM event handler; not a native OS signal',
++        }),
++        { flag: 'wx' },
++      )
++      process.emit('SIGTERM')
++    }
++  }, 100)
++  watch.unref()
++  phase = 'app-import'
++  const entry = await import(pathToFileURL(job.entry).href)
++  if (job.entryExport) {
++    await entry[job.entryExport]()
++    const pendingCompletion = `${job.runComplete}.pending`
++    writeFileSync(
++      pendingCompletion,
++      JSON.stringify({
++        state: 'scenario-returned-not-resource-qualified',
++        exitCode: Number(process.exitCode ?? 0),
++        pid: process.pid,
++        nonce: job.nonce,
++        at: new Date().toISOString(),
++      }),
++      { flag: 'wx' },
++    )
++    renameSync(pendingCompletion, job.runComplete)
++    // Keep the witnessed root alive while the external owner reconciles Chrome.
++    const ackDeadline = performance.now() + 30_000
++    while (!existsSync(job.completionAck)) {
++      if (performance.now() >= ackDeadline)
++        throw new Error('External cleanup acknowledgement deadline')
++      await delay(25)
++    }
++    const ack = JSON.parse(readFileSync(job.completionAck, 'utf8'))
++    if (ack.pid !== process.pid || ack.nonce !== job.nonce)
++      throw new Error('External completion acknowledgement mismatch')
++  }
++} catch (error) {
++  let name = 'Error'
++  try {
++    if (typeof error?.name === 'string') name = error.name.slice(0, 80)
++  } catch {}
++  // Never persist arbitrary error message/stack/URL/env values.
++  try {
++    writeFileSync(
++      job.failureReceipt,
++      JSON.stringify({
++        state: 'failed',
++        phase,
++        name,
++        role: job.role,
++        pid: process.pid,
++        stopRequested: requested,
++      }),
++      { flag: 'wx' },
++    )
++  } catch {}
++  console.error(JSON.stringify({ state: 'qa-entry-failed', phase, name, pid: process.pid }))
++  process.exitCode = 1
++  if (phase === 'preclaim') process.exit(1) // No imported app/children to drain.
++  if (process.listenerCount('SIGTERM') > 0) process.emit('SIGTERM')
++}

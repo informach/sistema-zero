@@ -1,0 +1,111 @@
+[upbeat, welcoming voice] Oi! Neste desafio, você vai programar o jogo A Chave do Farol. Antes de montar o seu, vamos ver como ele funciona.
+
+[engaging, energetic, conversational voice] A história é assim: um barco precisa chegar à costa, mas o farol está apagado, e sem a luz dele o barco não acha o caminho. Para acender o farol, o personagem precisa pegar a chave e levar até lá.
+
+[curious] E como eu levo o personagem até a chave?
+
+[interested, animated voice] Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado. E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.
+
+[engaging, energetic, conversational voice] Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.
+
+[engaging, energetic, conversational voice] E tem uma coisa esperando por você lá no fim deste curso: uma surpresa para deixar o jogo do seu jeito.
+
+[upbeat, encouraging voice] Agora é a sua vez: jogue até o farol acender e o barco chegar. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar o seu jogo nos três dias, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer algum passo, é só voltar aqui e abrir o material.
+
+[upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
+
+[confident, clear, unhurried voice] Agora clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Vamos ver o movimento bem de perto. Nesta experiência, você vai perceber o que muda em cada quadro do jogo.
+
+[engaging, energetic, conversational voice] Já reparou como um desenho animado se mexe? Você vê muitas imagens, uma depois da outra, passando bem rápido. O jogo funciona do mesmo jeito: mostra muitas imagens por segundo, e cada imagem é um quadro. E repare neste x aqui: ele mostra onde o personagem está. Quanto maior o x, mais para a direita ele fica.
+
+[interested, animated voice] Olha aqui: com Segurar a seta para a direita desligado, eu clico em Avançar 1 quadro. Tá vendo? O quadro passou de 0 para 1, mas o x não muda, porque, sem a seta, o personagem fica parado.
+
+[engaging, energetic, conversational voice] Agora eu ligo Segurar a seta para a direita e clico em Avançar 1 quadro algumas vezes. [confident, clear, unhurried voice] Repare: a cada quadro, o x aumenta 3, como mostra o +3 embaixo do personagem. É assim que ele anda: um passo em cada quadro. E sabe por quê? Olha a regra do movimento: o bloco que move o personagem fica dentro de A cada quadro do jogo. Por isso, ele acontece de novo em todo quadro.
+
+[curious] E se eu clicar em Rodar?
+
+[engaging, energetic, conversational voice] Vamos ver. Quando eu clico em Rodar, os quadros passam bem rápido, e o personagem parece andar sozinho, como num desenho animado. Ele anda até sair da tela, e, para ver tudo de novo, eu clico em Recomeçar.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, procure as setas na tela ou, no computador, clique no jogo e use as setas do teclado. Tá vendo? Não tem seta nenhuma, e o personagem não sai do lugar, porque faltam as setas e o movimento.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a seta segurada, ele andava a cada quadro. Agora a gente vai pôr as setas e o movimento no seu jogo!
+
+[engaging, energetic, conversational voice] Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos. [interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
+
+[engaging, energetic, conversational voice] As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Ativar controles clássicos.
+
+[confident, clear, unhurried voice] Arraste até o fim de Ao iniciar e solte logo abaixo do último bloco que já está lá.
+
+[confident, clear, unhurried voice] Repare que o bloco chega com automáticos no celular. Clique em automáticos no celular e escolha só as quatro direções, porque o seu personagem só precisa das setas. Depois espere o jogo atualizar. [interested, animated voice] Olha só: as setas de cima, de baixo, da esquerda e da direita aparecem na tela! Segure uma delas.
+
+[engaging, energetic, conversational voice] É que as setas sozinhas ainda não movem ninguém. A gente precisa dizer para o jogo quem elas vão mover, e esse alguém é o personagem. No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar.
+
+[engaging, energetic, conversational voice] E, como você viu na experiência, o movimento tem que acontecer em todo quadro. Por isso, ele vai dentro do bloco A cada quadro do jogo, que fica na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco A cada quadro do jogo, deixe à vista o Desenhar o cenário praia tropical.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover sprite em 4 direções com setas.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo de Desenhar o cenário praia tropical, quando aparecer o encaixe.
+
+[confident, clear, unhurried voice] Repare que o bloco chega com o nome heroi, mas o sprite do seu jogo se chama personagem. Por isso, clique em heroi e escolha personagem na lista. A velocidade já vem em 3; deixe assim.
+
+[upbeat, encouraging voice] Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. [interested, animated voice] Olha só: o personagem anda na direção da seta!
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Vamos usar a mesma experiência para ver o que acontece na borda da tela.
+
+[engaging, energetic, conversational voice] Quando você olha por uma janela, só consegue ver o que está dentro dela, né? A tela do jogo funciona assim: o que passa da borda some de vista. Aqui na experiência, o que sai ainda aparece, clarinho, nesta faixa de fora da tela.
+
+[interested, animated voice] Olha aqui: com Manter dentro da tela desligado, eu ligo Segurar a seta para a direita e clico em Rodar. Tá vendo? O personagem chega na borda e continua andando até sair da tela, porque nada segura ele dentro da janela.
+
+[curious] Como eu faço ele parar na borda?
+
+[engaging, energetic, conversational voice] Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em Rodar de novo. [interested, animated voice] Olha só: dessa vez ele para na borda e fica inteiro na tela! É que Manter dentro da tela funciona como uma parede invisível na borda da janela. E repare na regra do movimento: Manter o sprite personagem dentro da tela fica logo abaixo do bloco que move, para conferir a borda logo depois que o personagem anda.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, segure uma seta até o personagem chegar à beirada e continue segurando. Tá vendo? Ele passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!
+
+[curious] E onde eu coloco esse limite?
+
+[engaging, energetic, conversational voice] O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido em todo quadro, logo depois que o personagem anda. Deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de movimento. [confident, clear, unhurried voice] Repare que esse bloco também chega com heroi: clique em heroi e escolha personagem.
+
+[upbeat, encouraging voice] Agora teste as quatro direções até chegar às beiradas. [interested, animated voice] Olha só: ele para em cada beirada e não sai mais da tela!
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[pleased, lively voice] Pronto, você programou o movimento do seu personagem: agora ele anda pelo mapa e não sai da tela!
+
+[engaging, energetic, conversational voice] Quando aparecer Projeto enviado!, clique em Concluir aula.

@@ -22,7 +22,8 @@ const SIZES = [
 
 async function createModel(page: Page, name: string): Promise<void> {
   await page.getByRole('button', { name: 'Criar novo' }).click()
-  await page.getByRole('button', { name: 'Criar modelo' }).click()
+  await page.getByText('Mais opções para começar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Configurar modelo' }).click()
   await page.getByRole('button', { name: 'Continuar' }).click()
   await page.getByLabel('Nome', { exact: true }).fill(name)
   await page.getByRole('button', { name: 'Criar', exact: true }).click()
@@ -74,7 +75,8 @@ async function coveredControls(page: Page): Promise<string[]> {
       const hit = document.elementFromPoint(x, y)
       if (!hit || control === hit || control.contains(hit)) continue
       // Um rótulo que envolve o próprio campo não é "cobrir".
-      if (hit.contains(control) && hit.tagName === 'LABEL') continue
+      // Its icon/switch also activates that input through native label behavior.
+      if (hit.closest('label')?.control === control) continue
       covered.push(`"${nameOf(control)}" coberto por "${nameOf(hit)}"`)
     }
     return covered
@@ -84,11 +86,6 @@ async function coveredControls(page: Page): Promise<string[]> {
 async function checkEverySize(page: Page, label: string) {
   for (const size of SIZES) {
     await page.setViewportSize(size)
-    // Abaixo de 1024 o painel vira gaveta. Aberta, ela cobre o palco por desenho (é uma
-    // gaveta); o repouso do tablet é com ela fechada. Veio aberta porque o modelo nasceu em
-    // tela larga, onde o painel fica encaixado e aberto.
-    const collapse = page.getByRole('button', { name: 'Recolher peças e propriedades' })
-    if (size.width < 1024 && (await collapse.isVisible())) await collapse.click()
     const canvas = page.locator('canvas').first()
     await expect(canvas).toBeVisible()
     // O palco assenta depois do resize; a conta só vale com o layout parado.
@@ -106,7 +103,7 @@ async function checkEverySize(page: Page, label: string) {
 }
 
 async function openFreshModel(page: Page, name: string, query = '') {
-  await page.goto(`/?oficina=app${query}`)
+  await page.goto(`/?${query}`)
   await createModel(page, name)
   await expect(page.getByRole('button', { name: 'Meus projetos' })).toBeVisible()
   // O aviso "… criado!" some sozinho em segundos; enquanto dura, a pílula dele recebe clique.
@@ -115,6 +112,70 @@ async function openFreshModel(page: Page, name: string, query = '') {
     { timeout: 15_000 },
   )
 }
+
+test('o menu de ajustes do palco cabe inteiro e seus campos recebem clique', async ({
+  page,
+}, testInfo) => {
+  await openFreshModel(page, 'layout-ajustes-e2e', 'nivel=god')
+  await page.getByText('Adicionar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  const trigger = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
+  const menu = page.locator('details').filter({ has: trigger }).locator('.mld-drop')
+
+  for (const activity of ['Modelar', 'Pintar', 'Animar']) {
+    await page.getByRole('button', { name: activity, exact: true }).click()
+    for (const size of SIZES) {
+      await page.setViewportSize(size)
+      await trigger.click()
+      await expect(menu).toBeVisible()
+      const bounds = await menu.boundingBox()
+      const stage = await page.locator('.mld-stage-viewport').boundingBox()
+      if (!bounds || !stage) throw new Error('Menu ou palco sem área visível')
+      const label = `${activity} ${size.width}px`
+      expect.soft(bounds.x, `${label}: borda esquerda`).toBeGreaterThanOrEqual(stage.x)
+      expect
+        .soft(bounds.x + bounds.width, `${label}: borda direita`)
+        .toBeLessThanOrEqual(stage.x + stage.width)
+      expect
+        .soft(bounds.y + bounds.height, `${label}: borda inferior`)
+        .toBeLessThanOrEqual(stage.y + stage.height)
+      const covered: string[] = []
+      // A short drawing area may need a scrolling menu. Each control must remain
+      // reachable and uncovered after scrolling it into that menu's visible area.
+      for (const control of await menu.locator('select, button, input').all()) {
+        await control.scrollIntoViewIfNeeded()
+        const hidden = await control.evaluate((control) => {
+          const rect = control.getBoundingClientRect()
+          const points = [
+            { x: rect.left + 2, y: rect.top + rect.height / 2 },
+            { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+            { x: rect.right - 2, y: rect.top + rect.height / 2 },
+          ]
+          return points.every(({ x, y }) => control.contains(document.elementFromPoint(x, y)))
+            ? null
+            : control.getAttribute('name') || control.textContent?.trim() || 'Unnamed control'
+        })
+        if (hidden) covered.push(hidden)
+      }
+      expect.soft(covered, `${label}: campos descobertos`).toEqual([])
+      await trigger.click()
+    }
+  }
+
+  await page.getByRole('button', { name: 'Modelar', exact: true }).click()
+  await page.setViewportSize(SIZES[0])
+  await trigger.click()
+  await menu.getByLabel('Eixos de Mover e Girar').selectOption('local')
+  await menu.getByRole('checkbox', { name: 'Permitir números quebrados' }).check()
+  await trigger.click()
+  await trigger.click()
+  await expect(menu.getByLabel('Eixos de Mover e Girar')).toHaveValue('local')
+  await expect(menu.getByRole('checkbox', { name: 'Permitir números quebrados' })).toBeChecked()
+  await expect(menu.getByText('Passo das medidas: 0,1', { exact: true })).toBeVisible()
+  await page.screenshot({ path: testInfo.outputPath('menu-ajustes-desktop.png') })
+  await page.setViewportSize(SIZES[3])
+  await page.screenshot({ path: testInfo.outputPath('menu-ajustes-mobile.png') })
+})
 
 test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em todo tamanho', async ({
   page,
@@ -126,16 +187,64 @@ test('nenhum controle da oficina fica coberto, e o palco tem área de desenho em
   expect(pageErrors).toEqual([])
 })
 
+for (const hasTouch of [false, true]) {
+  test.describe(`painel com ${hasTouch ? 'toque' : 'mouse'}`, () => {
+    test.use({ hasTouch })
+    test('o painel direito mostra as cores e seus contornos inteiros', async ({ page }) => {
+      await openFreshModel(page, 'layout-cores-e2e', 'nivel=god')
+      await page.getByText('Adicionar', { exact: true }).click()
+      await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+      const colors = page.locator('.mld-inspector-properties .mld-paint-swatches > button')
+      await expect(colors).toHaveCount(15)
+      for (const size of [{ width: 1810, height: 900 }, ...SIZES]) {
+        await page.setViewportSize(size)
+        for (let index = 0; index < 15; index++) {
+          const color = colors.nth(index)
+          await color.scrollIntoViewIfNeeded()
+          await color.click()
+          await color.press('Shift+Tab')
+          await page.keyboard.press('Tab')
+          await expect(color).toBeFocused()
+          const clipped = await color.evaluate((button) => {
+            const rect = button.getBoundingClientRect()
+            const style = getComputedStyle(button)
+            const halo = Math.max(
+              4,
+              Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset),
+            )
+            const result: string[] = []
+            for (let parent = button.parentElement; parent; parent = parent.parentElement) {
+              if (!/(auto|scroll|hidden|clip)/.test(getComputedStyle(parent).overflowX)) continue
+              const bounds = parent.getBoundingClientRect()
+              if (rect.left - halo < bounds.left || rect.right + halo > bounds.right)
+                result.push(
+                  `${parent.className}: ${rect.left - halo},${rect.right + halo} / ${bounds.left},${bounds.right}`,
+                )
+            }
+            return result
+          })
+          expect(clipped, `${size.width}px, cor ${index}: seleção e foco`).toEqual([])
+        }
+      }
+      await page.setViewportSize({ width: 1810, height: 900 })
+      await colors.nth(7).click()
+      await page.locator('.mld-workshop-inspector').screenshot({
+        path: `.cache/painel-direito-${hasTouch ? 'toque' : 'mouse'}.png`,
+      })
+    })
+  })
+}
+
 test('na aba Pintar, a coluna de ferramentas e a faixa de cores não cobrem nada nem o palco', async ({
   page,
 }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await openFreshModel(page, 'layout-pinta-e2e')
-  await page.getByText('Adicionar forma ou ponto').click()
+  await page.getByText('Adicionar', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Cores', exact: true })).toBeVisible()
   await checkEverySize(page, 'Pintar')
   expect(pageErrors).toEqual([])
 })
@@ -149,13 +258,14 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await openFreshModel(page, 'layout-anima-e2e')
-  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Criar movimento' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Criar movimento', exact: true })).toBeVisible()
   await checkEverySize(page, 'Animar')
   for (const size of SIZES) {
     await page.setViewportSize(size)
-    const create = await page.getByRole('button', { name: 'Criar movimento' }).boundingBox()
+    const create = await page
+      .getByRole('button', { name: 'Criar movimento', exact: true })
+      .boundingBox()
     expect(create, `Animar ${size.width}px: "Criar movimento" na tela`).not.toBeNull()
     expect(
       (create?.x ?? 0) + (create?.width ?? 0),
@@ -170,18 +280,65 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
  * Somem a malha, o laço, o ponto de giro, os ossos e o "Trazer arquivo 3D", e entra a linha
  * "Ferramentas que vêm por aí". Nada coberto, em nenhum tamanho, nas duas abas.
  */
-test('no nível de entrada, a oficina com o portão ligado não cobre nada', async ({ page }) => {
+test('no nível de entrada, a oficina padrão não cobre nada', async ({ page }) => {
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
   await openFreshModel(page, 'layout-explorador-e2e', '&nivel=explorer')
+  await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
   await expect(page.getByText('Ferramentas que vêm por aí')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Trazer arquivo 3D' })).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Editar malha' })).toHaveCount(0)
+  await page.locator('summary').filter({ hasText: 'Seleção e organização' }).click()
+  await expect(page.getByRole('button', { name: 'Trazer arquivo 3D' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Editar malha', exact: true })).toHaveCount(0)
   await checkEverySize(page, 'Modelar no básico')
-  await page.getByText('Adicionar forma').click()
+  await page.getByText('Adicionar', { exact: true }).click()
   await page.getByRole('button', { name: 'Caixa', exact: true }).click()
   await page.getByRole('button', { name: 'Pintar', exact: true }).click()
-  await expect(page.getByRole('region', { name: 'Cores' })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Cores', exact: true })).toBeVisible()
   await checkEverySize(page, 'Pintar no básico')
   expect(pageErrors).toEqual([])
+})
+
+test('o painel direito mantém peças acima do conteúdo de cada modo', async ({ page }, testInfo) => {
+  await openFreshModel(page, 'painel-organizado-e2e', 'nivel=god')
+  await page.getByText('Adicionar', { exact: true }).click()
+  await page.getByRole('button', { name: 'Caixa', exact: true }).click()
+  await page.setViewportSize({ width: 1366, height: 768 })
+
+  for (const mode of ['Modelar', 'Pintar', 'Animar'] as const) {
+    await page.getByRole('button', { name: mode, exact: true }).click()
+    await page.locator('.mld-workshop-inspector').screenshot({
+      path: testInfo.outputPath(`painel-${mode.toLowerCase()}-desktop.png`),
+    })
+    const pieces = await page.locator('.mld-inspector-pieces').boundingBox()
+    const overview = (await page.locator('.mld-inspector-overview').count())
+      ? await page.locator('.mld-inspector-overview').boundingBox()
+      : null
+    const details = await page.locator('.mld-inspector-properties').boundingBox()
+    expect(pieces).not.toBeNull()
+    expect(details).not.toBeNull()
+    if (overview) {
+      expect(pieces!.y + pieces!.height, mode).toBeLessThanOrEqual(overview.y)
+      expect(overview.y + overview.height, mode).toBeLessThanOrEqual(details!.y)
+    } else {
+      expect(pieces!.y + pieces!.height, mode).toBeLessThanOrEqual(details!.y)
+    }
+  }
+
+  await page.getByRole('button', { name: 'Pintar', exact: true }).click()
+  await page.setViewportSize({ width: 1024, height: 768 })
+  const tabs = page.getByRole('tablist', { name: 'Painel da criação' }).getByRole('tab')
+  await expect(tabs).toHaveText(['Peças', 'Cores', 'Ajustes'])
+  await expect(page.getByRole('tabpanel', { name: 'Cores' })).toBeVisible()
+  await expect(page.getByRole('tabpanel', { name: 'Ajustes' })).toBeHidden()
+  await page.locator('.mld-workshop-inspector').screenshot({
+    path: testInfo.outputPath('painel-pintar-compacto.png'),
+  })
+  await tabs.getByText('Ajustes').click()
+  await expect(page.getByRole('tabpanel', { name: 'Ajustes' })).toBeVisible()
+  await expect(page.getByRole('tabpanel', { name: 'Cores' })).toBeHidden()
+  await tabs.getByText('Peças').click()
+  await expect(page.getByRole('tabpanel', { name: 'Peças' })).toBeVisible()
+
+  await page.getByRole('button', { name: 'Animar', exact: true }).click()
+  await expect(tabs).toHaveText(['Peças', 'Movimentos', 'Pose'])
 })

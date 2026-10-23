@@ -1,0 +1,53 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1000198
+    },
+    {
+      "file": "02-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 990042
+    },
+    {
+      "file": "03-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1069987
+    },
+    {
+      "file": "04-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 397573
+    },
+    {
+      "file": "05-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 218366
+    },
+    {
+      "file": "06-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 259831
+    },
+    {
+      "file": "07-p40.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 929907
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 36,
+  "errors": [],
+  "artDirection": "Leitura visual de capa, sete slides, continuidade da mãe e do filho, mapa fictício, cinco anéis em ordem e tentativa de atalho e prévia móvel; imagens independentes por slide.",
+  "scope": "P40 produzido, índices atualizados. Sem publicar, agendar, commit ou deploy."
+}

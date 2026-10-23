@@ -1,0 +1,177 @@
+{
+  "id": "P33",
+  "checkedAt": "2026-10-15T00:45:18.189Z",
+  "errors": [],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "01-p33.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p33.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p33.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/fernando-retrato-real.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/09-p31-a-p40.md#p33",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../03-postagens.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy-linter.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../destaques/avaliacoes/fontes-dos-relatos.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "fernando-retrato-real.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem-do-retrato.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "fernando-transcricao-conferida.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../01-p33.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../previa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "published": false,
+  "visualReview": "Arte inspecionada em tamanho integral e prévia móvel. Retrato real de Fernando, com rosto e gesto preservados. Abertura menor e separada do depoimento, aspas simétricas, identificação junto à fala. Copy e legenda aprovadas preservadas, incluindo a construção oral do relato.",
+  "wordCount": 29,
+  "wordLimitException": "Fala literal, conforme direção visual",
+  "png": {
+    "width": 1080,
+    "height": 1350,
+    "sha256": "42dbb64b35d52f28133846179cc1dbd6463f89a5d1cf5a96afb4557731ca26f1",
+    "bytes": 424846
+  },
+  "staticOrder": [
+    "P03",
+    "P14",
+    "P33",
+    "P38",
+    "P49",
+    "P53",
+    "P08",
+    "P29",
+    "P19",
+    "P58",
+    "P45",
+    "P27"
+  ],
+  "nextStaticPost": "P38",
+  "carouselCount": 30,
+  "staticCount": 3,
+  "totalPngs": 223,
+  "previewReadable": true,
+  "galleryNoOverflow": true
+}

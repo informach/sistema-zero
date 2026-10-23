@@ -29,15 +29,24 @@ function TutorErrorFallback({
   reset,
   onClose,
   isNarrow,
-}: ErrorBoundaryFallbackProps & { onClose: () => void; isNarrow: boolean }): JSX.Element {
+  embedded,
+}: ErrorBoundaryFallbackProps & {
+  onClose: () => void
+  isNarrow: boolean
+  embedded?: boolean
+}): JSX.Element {
   return (
     <aside
       role="alert"
       className={cn(
         'absolute z-[75] flex flex-col border-sz-border bg-sz-panel text-sz-fg shadow-2xl',
-        isNarrow
-          ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
-          : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
+        embedded && !isNarrow
+          ? 'inset-0'
+          : embedded && isNarrow
+            ? 'inset-2 rounded-2xl border'
+            : isNarrow
+              ? 'inset-x-2 bottom-2 top-[4.25rem] rounded-2xl border'
+              : 'bottom-0 right-0 top-[4.25rem] w-[min(26rem,42%)] border-l',
       )}
     >
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
@@ -70,7 +79,9 @@ function TutorErrorFallback({
 
 export function ZappyPanelBoundary({
   onError,
+  embedded = false,
 }: {
+  embedded?: boolean
   /** Telemetria do host: sem isto, um crash do tutor morre num console.error. */
   onError?: (error: Error) => void
 }): JSX.Element {
@@ -95,6 +106,7 @@ export function ZappyPanelBoundary({
           <TutorErrorFallback
             {...props}
             isNarrow={isNarrow}
+            embedded={embedded}
             onClose={() => {
               props.reset()
               setOpen(false)
@@ -103,7 +115,7 @@ export function ZappyPanelBoundary({
         ) : null
       }
     >
-      <ZappyPanel />
+      <ZappyPanel embedded={embedded} />
     </ErrorBoundary>
   )
 }

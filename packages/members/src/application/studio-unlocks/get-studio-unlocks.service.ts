@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
@@ -16,11 +17,12 @@ export interface StudioUnlocksView {
  *
  * Antes o conjunto de blocos era fixo por NÍVEL da jornada. Agora cada curso declara
  * o que libera (`metadata.studioUnlockBlocks`) e o aluno tem a UNIÃO dos cursos
- * elegíveis: bônus Kids exige conclusão; curso Kids com posição e curso Adult exigem
- * também publicação no Mural.
+ * elegíveis: gravado Kids com posição exige conclusão + Mural; bônus Kids e Adult
+ * exigem conclusão. Oficina exige `live_course_complete`, sem Mural. Recompensa de
+ * blocos não concede produto nem capacidades de Jornada.
  *
  * A união tem duas metades, e as duas são necessárias:
- * - **ao vivo** (`listStudioUnlocksByCourse`): lê o JSON ATUAL dos cursos elegíveis,
+ * - **atual** (`listStudioUnlocksByCourse`): lê o JSON ATUAL dos cursos elegíveis,
  *   então um bloco ACRESCENTADO chega sozinho em quem já atende ao critério atual;
  * - **congelada** (`listGrants`): o que já foi servido a este aluno, para que remover um
  *   bloco do JSON, despublicar ou apagar o curso NÃO tire a ferramenta da mão de quem já
@@ -29,7 +31,8 @@ export interface StudioUnlocksView {
  * Os marcos de curso congelam as concessões na mesma transação do award. Esta leitura
  * também reconcilia conquistas legadas e acréscimos posteriores no currículo, somente
  * quando a união cresceu. A conciliação aqui é best-effort: falhar não nega a paleta
- * atual, e a próxima visita pode tentar novamente.
+ * atual, e a próxima visita pode tentar novamente. O fence de exclusão é uma recusa
+ * de autorização e deve ser propagado.
  */
 export class GetStudioUnlocksService {
   constructor(
@@ -38,7 +41,12 @@ export class GetStudioUnlocksService {
     private readonly logger: Logger,
   ) {}
 
-  async execute(userId: string, audience: CourseAudience): Promise<StudioUnlocksView> {
+  async execute(
+    userId: string,
+    audience: CourseAudience,
+    accountId: string,
+  ): Promise<StudioUnlocksView> {
+    const owner = { userId, accountId }
     const [live, frozen] = await Promise.all([
       this.gamification.listStudioUnlocksByCourse(userId, audience),
       this.unlocks.listGrants(userId, audience),
@@ -58,8 +66,9 @@ export class GetStudioUnlocksService {
 
     if (toFreeze.length > 0) {
       try {
-        await this.unlocks.saveGrants(userId, audience, toFreeze)
+        await this.unlocks.freezeGrants(owner, audience, toFreeze)
       } catch (error) {
+        if (error instanceof ForbiddenError) throw error
         // Congelar é proteção contra uma edição FUTURA do currículo; falhar aqui não
         // pode custar a paleta de agora.
         this.logger.error('studio_unlocks.freeze_failed', {

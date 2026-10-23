@@ -1,0 +1,44 @@
+SLIDE 1
+Curto (65 caracteres): Menina fictícia desenha uma ideia de futebol, com a bola ao lado.
+
+Longo: Fotografia gerada de uma menina fictícia de aproximadamente 11 anos, pele morena e cabelo cacheado preso, usando camiseta amarela com gola azul. Ela desenha um campo de futebol numa folha sobre a mesa de casa, com lápis azul. Uma bola está ao lado. Não representa aluna identificada nem testemunho real. Texto da arte: Seu filho adora futebol. Imagine ele inventando as regras de um jogo de futebol próprio.
+
+SLIDE 2
+Curto (64 caracteres): Menina fictícia explica seu desenho de uma partida a uma adulta.
+
+Longo: Fotografia gerada da mesma menina fictícia explicando o desenho para uma adulta fictícia. A criança aponta o papel enquanto gesticula; a adulta acompanha com atenção. Cena nova, com duas pessoas e enquadramento diferente da capa. Texto da arte: O interesse dele pode dar ideias para criar. Vale perguntar: como seria a partida? O que o jogador poderia fazer?
+
+SLIDE 3
+Curto (62 caracteres): Desenho no papel: uma bola e uma longa seta em direção ao gol.
+
+Longo: Fotografia gerada de uma folha sobre a mesa, com lápis e parte de uma bola. A folha foi produzida em branco. O desenho foi aplicado na montagem: bola à esquerda, seta longa em direção ao gol à direita e anotações E se o chute fosse de longe? e Ideia para a partida. É esboço editorial, não tela da plataforma. Texto da arte: Talvez ele queira um chute muito forte de longe. Depois precisa pensar: esse chute vai acertar sempre ou será mais difícil de usar?
+
+SLIDE 4
+Curto (71 caracteres): Dois desenhos comparam um chute forte e difícil com outro mais simples.
+
+Longo: Fotografia gerada de duas folhas sobre a mesa. Desenhos aplicados na montagem comparam duas ideias: à esquerda, chute Mais forte cuja trajetória passa acima do gol, com a anotação Mais difícil de acertar; à direita, chute Mais simples a partir de perto do gol. Nenhum número ou curso de futebol foi inventado. Texto da arte: Essa escolha muda a partida. Se uma opção é melhor em tudo, talvez as outras deixem de ter utilidade.
+
+SLIDE 5
+Curto (75 caracteres): Batalha real de Bichinhos do Quintal: Fogoso tem dois golpes para escolher.
+
+Longo: Captura real de Bichinhos do Quintal em execução local. Fogoso, laranja, enfrenta Folhinha, verde. O menu Qual golpe? oferece Brasa e Investida. A opção Brasa está selecionada. O título do exemplo é anotação editorial, separada da interface nativa. Texto da arte: Veja uma decisão parecida neste jogo de bichinhos da nossa plataforma. Um personagem tem dois ataques diferentes.
+
+SLIDE 6
+Curto (72 caracteres): Menu real de golpes: Brasa e Investida, com a segunda opção selecionada.
+
+Longo: Segunda captura real da mesma batalha, após uma Investida e a resposta do oponente. O recorte aproxima o menu Qual golpe? com Brasa, Investida e Voltar. Agora Investida está selecionada. Não é a imagem anterior repetida ou uma interface desenhada por IA. Texto da arte: Um ataque tira mais vida, mas às vezes erra. O outro tira menos vida e sempre acerta. O jogador escolhe qual usar.
+
+SLIDE 7
+Curto (79 caracteres): Blocos reais: Brasa tem dano 20 e acerto 90%; Investida, dano 12 e acerto 100%.
+
+Longo: Capturas dos dois blocos originais do exemplo, renderizados pelo Blockly atual. O bloco Brasa ensina o golpe para Fogoso, com tipo fogo, dano 20 e acerto 90 por cento; Investida tem tipo normal, dano 12 e acerto 100 por cento. Campos de efeito e cor permanecem originais. Os números são configurações, não a vida exata retirada. Texto da arte: Quem cria precisa definir esses valores e testar a batalha. As opções ficaram interessantes? Há motivo para usar as duas?
+
+SLIDE 8
+Curto (74 caracteres): Caderno com campo desenhado, seta longa e anotações “forte” e “erra mais”.
+
+Longo: Fotografia gerada de um caderno espiral aberto. O desenho foi aplicado na edição: campo de futebol visto de cima, uma bola e seta longa em direção ao gol. As anotações manuscritas dizem forte e erra mais. A mão da menina segura um lápis no canto da página. Texto da arte: Seu filho pode fazer perguntas assim sobre o jogo que imaginar. O assunto de que gosta vira uma oportunidade de inventar regras e experimentar escolhas.
+
+SLIDE 9
+Curto (70 caracteres): A mesma menina fictícia acrescenta uma escolha ao desenho de seu jogo.
+
+Longo: Fotografia gerada da mesma menina fictícia da capa, agora vista por trás do ombro, olhando para o caderno e desenhando uma escolha. A folha mostra um campo e duas trajetórias. Outra cena e outro enquadramento, com continuidade de rosto, cabelo e roupa. Texto da arte: Aqui mostramos o que as crianças podem criar a partir dos próprios interesses. Siga o perfil para conhecer mais possibilidades.

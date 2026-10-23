@@ -27,11 +27,26 @@ test('a prévia do céu recria o ambiente PMREM depois de perder o contexto', as
   await page.goto('/?criacao=e2e-sky')
 
   const canvas = page.locator('canvas[aria-label="Prévia do céu"]')
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        canvas: !!document.querySelector('canvas[aria-label="Prévia do céu"]'),
+        errors: window.__molda?.debug.errors,
+      })),
+    )
+    .toEqual({ canvas: true, errors: [] })
   await expect(canvas).toBeVisible()
-  await expect.poll(() => page.evaluate(() => window.__molda?.skyEnvironmentId())).not.toBeNull()
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        environment: window.__molda?.skyEnvironmentId(),
+        errors: window.__molda?.debug.errors,
+      })),
+    )
+    .toEqual({ environment: expect.any(String), errors: [] })
   const before = await page.evaluate(() => window.__molda?.skyEnvironmentId())
 
-  const supported = await canvas.evaluate(async (element) => {
+  const supported = await canvas.evaluate(async (element: HTMLCanvasElement) => {
     const gl = element.getContext('webgl2')
     const extension = gl?.getExtension('WEBGL_lose_context')
     if (!extension) return false
@@ -75,13 +90,29 @@ test('a prévia 3D repete a textura três vezes nos dois eixos', async ({ page }
   })
   await page.goto('/?criacao=e2e-texture')
 
+  await expect
+    .poll(() =>
+      page.evaluate(() => ({
+        canvas: !!document.querySelector('canvas[aria-label="Prévia 3D"]'),
+        errors: window.__molda?.debug.errors,
+      })),
+    )
+    .toEqual({ canvas: true, errors: [] })
   await expect(page.locator('canvas[aria-label="Prévia 3D"]')).toBeVisible()
   await expect
-    .poll(() => page.evaluate(() => window.__molda?.textureWrapping()))
+    .poll(() =>
+      page.evaluate(() => ({
+        wrapping: window.__molda?.textureWrapping(),
+        errors: window.__molda?.debug.errors,
+      })),
+    )
     .toEqual({
-      wrapS: 1000,
-      wrapT: 1000,
-      repeatX: 3,
-      repeatY: 3,
+      errors: [],
+      wrapping: {
+        wrapS: 1000,
+        wrapT: 1000,
+        repeatX: 3,
+        repeatY: 3,
+      },
     })
 })

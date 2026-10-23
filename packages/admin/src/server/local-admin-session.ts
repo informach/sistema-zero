@@ -12,8 +12,15 @@ import { type AccessVerdict, getAccessToken, getRefreshToken, verifyAccessToken 
  */
 export async function requireLocalAdminSession(
   forbiddenMessage = 'Sem permissão para realizar esta operação.',
+  /**
+   * `staff` também passa: a professora de uma turma pode ser da equipe sem ser admin (a gravação
+   * do encontro é publicada por ela). A autorização fina continua no members.
+   */
+  { allowStaff = false, signal }: { allowStaff?: boolean; signal?: AbortSignal } = {},
 ): Promise<SessionUser | NextResponse> {
+  signal?.throwIfAborted()
   const requestHeaders = await headers()
+  signal?.throwIfAborted()
   if (
     !isSameOriginRequest({
       secFetchSite: requestHeaders.get('sec-fetch-site'),
@@ -31,10 +38,12 @@ export async function requireLocalAdminSession(
   const refresh = await getRefreshToken()
   let verdict: AccessVerdict =
     access && refresh ? await verifyAccessToken(access) : { ok: false, expired: false }
+  signal?.throwIfAborted()
   if (!verdict.ok && verdict.expired) {
-    const renewed = await tryRefresh()
+    const renewed = await tryRefresh(signal)
     if (renewed) verdict = await verifyAccessToken(renewed)
   }
+  signal?.throwIfAborted()
   if (!verdict.ok) {
     return NextResponse.json(
       { error: { code: 'UNAUTHORIZED', message: 'Sessão expirada. Faça login novamente.' } },
@@ -43,7 +52,11 @@ export async function requireLocalAdminSession(
   }
 
   const session = verdict.user
-  if (session.role !== 'superadmin' && session.role !== 'admin') {
+  if (
+    session.role !== 'superadmin' &&
+    session.role !== 'admin' &&
+    !(allowStaff && session.role === 'staff')
+  ) {
     return NextResponse.json(
       { error: { code: 'FORBIDDEN', message: forbiddenMessage } },
       { status: 403 },

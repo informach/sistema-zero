@@ -211,8 +211,9 @@ describe.skipIf(!url)('Kids teacher broadcasts against PostgreSQL', () => {
       new CheckAccessService(
         env.courses,
         env.entitlements,
-        env.gamification,
+        env.kidsJourneyQuery,
         () => env.clockRef.now,
+        env.liveLessonAccess,
       ),
       () => env.clockRef.now,
     )

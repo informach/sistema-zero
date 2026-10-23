@@ -1,0 +1,52 @@
+"""Read existing native receipts only. No checker, interpreter, game or service rerun."""
+import hashlib
+import json
+from pathlib import Path
+from datetime import datetime, timezone
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+cache = games / '.cache/studio-python-l0'
+sha = lambda data: hashlib.sha256(data).hexdigest()
+definitions = [('observe', 'pacman11-native-observe-r1'), ('pellet', 'pacman11-native-pellet-r1'),
+               ('power', 'pacman11-native-power-r1'), ('death', 'pacman11-native-death-r1'),
+               ('victory-near-end', 'pacman11-native-victory-near-end-r1'),
+               ('defeat-near-end', 'pacman11-native-defeat-paired-r1')]
+cases = []
+for scenario, directory in definitions:
+    base = cache / directory
+    native_bytes = (base / 'result/native.json').read_bytes()
+    supervisor_bytes = (base / 'supervisor.json').read_bytes()
+    native, supervisor = json.loads(native_bytes), json.loads(supervisor_bytes)
+    timers = [e for e in native['events'] if e['event'] in ('timer-scheduled','timer-fired','natural-close')]
+    cases.append(dict(scenario=scenario, output=str(base), nativeReceiptSha256=sha(native_bytes),
+                      supervisorSha256=sha(supervisor_bytes), reportedState=native['state'],
+                      reportedSupervisorState=supervisor['state'], startedAt=supervisor['startedAt'],
+                      endedAt=supervisor['endedAt'], pythonPID=supervisor['pid'], exitCode=supervisor['exitCode'],
+                      deadline=supervisor['deadline'], signalAttempted=supervisor['signalAttempted'],
+                      runnerSha256=native['runnerSha256'], observerSha256=native['observerSourceSha256'],
+                      sourceReceiptSha256=native['sourceReceiptSha256'], mainSha256=native['mainSha256'],
+                      zipSha256=native['zipSha256'], completionMode=native['completionMode'],
+                      cleanup={key: native.get(key) for key in ('rootMapEvents','rootDestroyEvents','audioReleased','ownedTempAbsent','exportTreeUnchanged')},
+                      backend=native['audioBackend'], errors=native['errors'], timers=timers,
+                      bindings=native.get('bindings'), nativeClockInfo=native.get('nativeClockInfo')))
+old = cache / 'pacman11-native-defeat-near-end-r1/result/native.json'
+paired = cache / 'games-functional-r1/pacman11-native-paired-r1/execution-witness-r1.json'
+report = dict(state='CONSOLIDATED-READ-ONLY-SIX-SPECIFIC-NATIVE-FIXTURES-NOT-FULL-GAME',
+              compiledAt=datetime.now(timezone.utc).isoformat(), sourceGamesCommit='9557e17bcafbe529d0079c8d941485b7f67061c4',
+              variant='portable-audio-1.1.0', qualification='limited-to-declared-six-native-rule-fixtures',
+              cases=cases, preservedOriginalDefeatNegative=dict(path=str(old), sha256=sha(old.read_bytes()),
+                  meaning='Original QPC2.9973143999814056s failed>=3. It is not reclassified by a later diagnostic pass.'),
+              pairedWitness=dict(path=str(paired), sha256=sha(paired.read_bytes()),
+                  limitation='Python26360/Launcher20136 known; own NodePID not captured while alive. Synchronous exit0 and empty exact-child postcheck preserved; no invented ID.'),
+              independentRootObservation='Root reported at04:29:00Z all8 PIDs of four new cases absent and four supervisors exit0/no deadline/signal.',
+              causalControl='Standalone3sample control and paired defeat both did not reproduce earlyQPC; cause of original negative remains unconfirmed.',
+              noActualExecutionInConsolidation=True,
+              limits=['Declared injections/QA closures are not a whole played game or physical keyboard input',
+                      'WASAPI output device, no acoustic capture, no fresh installation',
+                      'No browser1.1, Mural/Pro publication, performance/FPS/10minute/30restart acceptance',
+                      'No source/oracle3000/fingerprint/provider/staging changes; Root owns review/integration/push'])
+target = here / 'receipt-index.json'
+with target.open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(report, stream, indent=2); stream.write('\n')
+print(json.dumps(dict(state=report['state'], cases=len(cases), receiptIndexSha256=sha(target.read_bytes()), originalNegativeSha256=report['preservedOriginalDefeatNegative']['sha256'], noNativeOrCheckerRun=True)))

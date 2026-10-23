@@ -477,24 +477,9 @@
   font-size: inherit;
 }
 
-/* ── Reveal ao rolar: só com JS, e parado com menos movimento ────────────────── */
-html.kof-js .theme-kids .kof-reveal {
-  opacity: 0;
-  translate: 0 14px;
-  transition:
-    opacity 0.5s ease,
-    translate 0.5s ease;
-}
-html.kof-js .theme-kids .kof-reveal.is-visible {
-  opacity: 1;
-  translate: 0 0;
-}
+/* ── Menos movimento: o botão para de afundar ────────────────────────────────── */
+/* O reveal ao rolar saiu em 20/10/2026 com a única página que o ligava, a continuidade antiga. */
 @media (prefers-reduced-motion: reduce) {
-  html.kof-js .theme-kids .kof-reveal {
-    opacity: 1;
-    translate: 0 0;
-    transition: none;
-  }
   .theme-kids .kof-btn,
   .theme-kids .kof-btn:hover,
   .theme-kids .kof-btn:active {
@@ -550,10 +535,6 @@ html.kof-js .theme-kids .kof-reveal.is-visible {
   }
 }
 @media print {
-  html.kof-js .theme-kids .kof-reveal {
-    opacity: 1;
-    translate: 0 0;
-  }
   .theme-kids .kof-mobar {
     display: none;
   }

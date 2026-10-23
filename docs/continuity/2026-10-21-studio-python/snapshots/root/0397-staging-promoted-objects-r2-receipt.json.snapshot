@@ -1,0 +1,22 @@
+{
+  "state": "readonly-staging-promoted-objects-match",
+  "observedAt": "2026-10-21T07:49:55.524Z",
+  "objects": [
+    {
+      "key": "runtimes/7026b09b04a1222cfbc594d5ab3ec9de8649eece71c613c823a2c33d8c43ce5f/complete.json",
+      "bytes": 192,
+      "sha256": "798c39e24fc7c2aa916692425aa419350d9a8060340f5962a73b485a14808bd7",
+      "matchesCanonical": true
+    },
+    {
+      "key": "runtime-configs/2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4.json",
+      "bytes": 33105,
+      "sha256": "2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4",
+      "matchesCanonical": true
+    }
+  ],
+  "mutationsPerformed": false,
+  "payloadRepeated": false,
+  "rawOutputPersisted": false,
+  "credentialValuesPersisted": false
+}

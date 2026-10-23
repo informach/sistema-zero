@@ -66,7 +66,7 @@ function inventory(container: HTMLElement): { rendered: string[]; expanded: stri
 
 /** Escolher como a criança escolhe: pelo botão da peça na hierarquia. */
 function choosePiece(container: HTMLElement): void {
-  const button = container.querySelector<HTMLButtonElement>('button[aria-label^="Escolher "]')
+  const button = container.querySelector<HTMLButtonElement>('button.mld-piece')
   if (!button) throw new Error('a hierarquia não ofereceu nenhuma peça para escolher')
   act(() => {
     button.click()
@@ -162,7 +162,7 @@ describe('inventário da oficina: o que a criança alcança', () => {
    *   Este só pode subir quando um controle NOVO entra, e o aumento tem de ser explicado
    *   aqui. Ele é a rede contra "acrescentaram mais coisa".
    * - **encarados** (`frontControls`) é o que a criança vê ao chegar: os montados menos o
-   *   que está atrás de um `<details>` fechado. Este é o número da queixa, e ele SÓ DESCE.
+   *   que está atrás de um `<details>` fechado. Mudanças exigem justificativa de produto.
    *
    * Medido em 10/09/2026, antes de qualquer mudança de layout: 44 montados com a oficina
    * recém-aberta e 67 com uma peça escolhida — e, como nada era recolhido, encarados eram
@@ -189,26 +189,40 @@ describe('inventário da oficina: o que a criança alcança', () => {
    * (-1). Com uma peça, "Mais sobre a peça" recolhe o nome, mostrar, travar e o grupo (-4
    * encarados), e o gatilho dele é o +1 dos montados: é um `<summary>` NOVO, e nada saiu.
    *
-   * Alvo do redesenho: **≤30 encarados** com uma peça escolhida, medido no nível de entrada.
+   * Fidelidade (15/10): 62/41 sem seleção e teto 115/80 com seleção neste fixture sem portão.
+   * Duas entradas de área substituem a antiga entrada de malha escondida no trilho.
+   * Campos básicos, pivô, componentes e importação simples são acessos explícitos da proposta.
+   * A contagem inclui cada cor e cada ação por peça;
+   * não mede sozinha a compreensão infantil. Famílias e inventário continuam testados.
    */
-  test('a quantidade de controles na tela não cresce, e a que a criança encara desce', () => {
+  test('o inventário respeita as ações explícitas da proposta de fidelidade', () => {
     const vazio = mount(migrateLegacyModel(makeModel()).document)
     const encaradosVazio = frontControls(vazio.view.container)
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(47)
+    // Header rename/save menus, zoom alternatives and tree visibility/lock are explicit additions.
+    // One local/world selector in stage settings, only from the intermediate tier.
+    // The reference's dismissible canvas hint adds one named button in Modelar too.
+    // The surface knife and the explicit volume separation are independent actions.
+    // Direct edge picking adds one visible stage mode alongside whole, points and faces.
+    // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
+    // The requested Plano adds one visible creation button.
+    expect(vazio.view.getByRole('button', { name: copy.plane })).toBeDefined()
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(68)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(32)
+    ).toBeLessThanOrEqual(48)
     cleanup()
 
     const comPeca = mount(withPiece())
     choosePiece(comPeca.view.container)
     const encaradosPeca = frontControls(comPeca.view.container)
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(88)
+    // 12 coordinate inputs are now available directly, with pivot and component tools.
+    // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(126)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(59)
+    ).toBeLessThanOrEqual(88)
   })
 
   /**
@@ -227,8 +241,16 @@ describe('inventário da oficina: o que a criança alcança', () => {
     await view.findByText(SCENE_PAINT_COPY.more, { selector: 'summary' })
     const montados = controlInventory(view.container)
     const encarados = frontControls(view.container)
-    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(67)
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(49)
+    // A real tree selection also mounts the isolated view and image actions. Scope, UV grid,
+    // favorites, HSV/hex and a palette picker are the approved additions to the paint workflow.
+    // One dismiss button persists the contextual hint preference, as in the reference.
+    // Two optional disclosures replace the duplicate palette eyedropper (+1 mounted control).
+    // One explicit UV-simple action repairs an existing piece without exposing UV editing tools.
+    expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(84)
+    // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
+    // Named UV/material/sheet areas and the visible contextual brush section add four controls.
+    // Ready colors stay in front; HSV, favorites, UV/materials and layers are now closed.
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(56)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

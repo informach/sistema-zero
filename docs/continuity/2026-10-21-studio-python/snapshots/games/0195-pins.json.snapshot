@@ -1,0 +1,50 @@
+{
+  "state": "source-artifact-preflight-passed-no-Tk",
+  "checkedAt": "2026-10-20T18:56:38.551499+00:00",
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "interpreter": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "interpreterSha256": "e725f520cfbb2e4844fe0a9fc8949236f20b0d67e470d1232618b99504a0691a",
+  "pyvenvCfgSha256": "3f96d69d9c2271c487c6069a158ca6b9d3e2f696eda3016ce0c6af455fada55c",
+  "artifact": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\space-arena-canonical-r2",
+  "receiptSha256": "df6d6812ac511686e5dd32187b900cc68c9b565d5d49498e5d3265e9b137fcc0",
+  "zipSha256": "55a893f0a982d37f2ca87b5af6f0f7614d93516722d3f9c880f3409d253609df",
+  "files": 42,
+  "moduleFiles": {
+    "__init__.py": "36d5a58ebb43004cfd10aac2708350f16ced161a2cb8062915e644f491a227ba",
+    "__init__.pyi": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+    "_desktop.py": "df8f0d7b7baefdd18ba8979b8f6634d7deb6496355f6fb018a2de1d86b3f6b42",
+    "_mixer.py": "78b23124b0d05ad74b6aeb37d4ed5e5c986331f20d3f262374647ae4b2a600c4",
+    "_module.json": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49",
+    "_wav.py": "1dc17a15bc63439c8cbdb14af8227104a8034c56261c497c7692badb55ab6f87",
+    "py.typed": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "runtimeDependencies": {
+    "cffi": "2.1.1",
+    "miniaudio": "1.71",
+    "pycparser": "3.11"
+  },
+  "declaredDependencies": {
+    "cffi": "2.1.1",
+    "miniaudio": "1.71",
+    "pycparser": "3.11",
+    "setuptools": "84.2.0"
+  },
+  "bgm": {
+    "channels": 2,
+    "sampleWidth": 2,
+    "sampleRate": 48000,
+    "frames": 5868094,
+    "durationSeconds": 122.25195833333333
+  },
+  "sourcePins": {
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_native.py": "473a9a32677c10da04d9c2d18ff7dc6016e3a5ca95993e939768510fa31a9232",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_observer.py": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_q08.py": "8eb1871295d8496330ac23ad37d478af3ce2af6715a2347549f5ae136e3d8c12",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_q08_test.py": "b009e8a98514212e0a7a96ba38824c3e2311a398f5b3dc994636642937c966be",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\run_space_arena_native.mjs": "8e374a898ea231dd5fadc65292bfa8bc2d327db565700256c772ae415e08906d",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_supervisor.test.mjs": "e807da85b4e3cfdf3fcdfef52850d09b64a2c3aeac16a6dcdbb9b8e7789dd040"
+  },
+  "noTk": true,
+  "noAudioImport": true,
+  "nativeCasesExecuted": 0
+}

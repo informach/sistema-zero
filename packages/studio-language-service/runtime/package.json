@@ -1,0 +1,9 @@
+{
+  "name": "sistemazero-python-analysis-runtime",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pyright": "1.1.414"
+  }
+}

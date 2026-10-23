@@ -1,4 +1,5 @@
 import type { CreativeToolId } from '@sistemazero/core/journey'
+import { LiveCreationList } from '@sistemazero/member-shell/components/live/live-creation-list'
 import { ArrowRight, LockKeyhole, Palette, Wrench } from 'lucide-react'
 import Link from 'next/link'
 import { Suspense } from 'react'
@@ -11,6 +12,7 @@ import { KidsPageHeader } from '@/components/kids/kids-page-header'
 import { KidsScene } from '@/components/kids/kids-scene'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { levelInfo } from '@/lib/level-info'
+import { comunidadeContinuarUrl } from '@/lib/links'
 import { TOOL_SIGNATURE } from '@/lib/tool-signature'
 import { getCreatorJourney } from '@/server/creator-journey'
 
@@ -32,8 +34,11 @@ const descricoes: Record<CreativeToolId, string> = {
  */
 export default async function CriarPage() {
   const journey = await getCreatorJourney()
-  const available = journey.tools.filter((tool) => tool.state === 'available')
-  const future = journey.tools.filter((tool) => tool.state !== 'available')
+  const earned = journey.tools.filter((tool) => tool.state === 'available')
+  const available = earned.filter(
+    (tool) => !tool.studioCurriculum || tool.studioCurriculum === 'ready',
+  )
+  const future = journey.tools.filter((tool) => !available.includes(tool))
   return (
     <>
       <KidsBand tone="creme">
@@ -42,9 +47,9 @@ export default async function CriarPage() {
           eyebrowIcon={Palette}
           title="Uma ideia. Muitas formas de criar."
           subtitle={
-            available.length
+            earned.length
               ? 'Retome seus projetos nas ferramentas abaixo. Tudo o que você aprende amplia sua oficina.'
-              : 'Comece criando dentro das fases. Sua oficina cresce junto com a Jornada do Criador.'
+              : 'Comece criando dentro das aulas. Sua oficina cresce junto com a Jornada do Criador.'
           }
         />
         <div className="mt-6">
@@ -52,13 +57,14 @@ export default async function CriarPage() {
             <ContinueHero courses={journey.courses} />
           ) : (
             <p role="status" className="kids-carta p-5 font-semibold">
-              Não conseguimos consultar suas aventuras agora. Tente atualizar esta página.
+              Não conseguimos consultar seus cursos agora. Tente atualizar esta página.
             </p>
           )}
         </div>
+        <LiveCreationList membershipHref={comunidadeContinuarUrl('criar-oficinas-ao-vivo')} />
       </KidsBand>
 
-      {available.length ? (
+      {earned.length ? (
         <KidsBand tone="menta">
           <Suspense
             fallback={
@@ -67,7 +73,7 @@ export default async function CriarPage() {
               </p>
             }
           >
-            <CreatorWorks available={available.map((tool) => tool.id)} />
+            <CreatorWorks available={earned.map((tool) => tool.id)} />
           </Suspense>
         </KidsBand>
       ) : null}
@@ -129,7 +135,7 @@ export default async function CriarPage() {
               </h2>
             </div>
             <div className="mt-6 grid gap-3 md:grid-cols-2">
-              {future.map(({ id, state, requiredLevel }) => {
+              {future.map(({ id, state, requiredLevel, studioCurriculum }) => {
                 const oficina = TOOL_SIGNATURE[id]
                 const Icone = oficina.icone
                 return (
@@ -150,13 +156,19 @@ export default async function CriarPage() {
                         {descricoes[id]}
                       </p>
                       <p className="mt-2 font-bold text-sm">
-                        {state === 'career-locked'
-                          ? `Incluído na sua conta · abre no nível ${levelInfo(requiredLevel).label}`
-                          : state === 'not-included'
-                            ? 'Não incluído nos acessos desta conta'
-                            : 'Não foi possível consultar a disponibilidade agora'}
+                        {state === 'available' && studioCurriculum === 'empty'
+                          ? 'Ferramenta conquistada · os blocos para criar vêm dos cursos'
+                          : state === 'available' && studioCurriculum === 'unavailable'
+                            ? 'Ferramenta conquistada · não foi possível consultar seus blocos agora'
+                            : state === 'career-locked'
+                              ? requiredLevel
+                                ? `Incluído na sua conta · abre no nível ${levelInfo(requiredLevel).label}`
+                                : 'Incluído na sua conta · ainda não liberado na jornada'
+                              : state === 'not-included'
+                                ? 'Não incluído nos acessos desta conta'
+                                : 'Não foi possível consultar a disponibilidade agora'}
                       </p>
-                      {state === 'career-locked' ? (
+                      {state === 'career-locked' || studioCurriculum === 'empty' ? (
                         <Link
                           href="/cursos"
                           prefetch={false}

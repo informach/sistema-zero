@@ -1,0 +1,3 @@
+ALTER TABLE "marketing"."editorial_import_source_versions" DROP CONSTRAINT "editorial_import_source_versions_project_id_editorial_projects_id_fk";
+--> statement-breakpoint
+ALTER TABLE "marketing"."editorial_import_source_versions" ADD CONSTRAINT "editorial_import_sources_project_fk" FOREIGN KEY ("project_id") REFERENCES "marketing"."editorial_projects"("id") ON DELETE no action ON UPDATE no action;

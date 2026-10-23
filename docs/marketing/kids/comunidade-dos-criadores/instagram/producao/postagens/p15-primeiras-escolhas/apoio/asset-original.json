@@ -1,0 +1,12 @@
+[
+  {
+    "id": "example-backdrop",
+    "name": "cenario",
+    "kind": "image",
+    "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDMyIDI0Ij48cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMjQiIGZpbGw9IiM3ZGQzZmMiLz48Y2lyY2xlIGN4PSIyNSIgY3k9IjUiIHI9IjMiIGZpbGw9IiNmZGU2OGEiLz48cGF0aCBkPSJNMCAxNiBMNyA5IEwxMyAxNiBaIiBmaWxsPSIjOTRhM2I4Ii8+PHBhdGggZD0iTTExIDE2IEwxOSA3IEwyNyAxNiBaIiBmaWxsPSIjY2JkNWUxIi8+PHJlY3QgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSI4IiBmaWxsPSIjNGFkZTgwIi8+PHJlY3QgeT0iMTYiIHdpZHRoPSIzMiIgaGVpZ2h0PSIxIiBmaWxsPSIjMjJjNTVlIi8+PC9zdmc+",
+    "width": 32,
+    "height": 24,
+    "source": "library",
+    "libId": "example-backdrop"
+  }
+]

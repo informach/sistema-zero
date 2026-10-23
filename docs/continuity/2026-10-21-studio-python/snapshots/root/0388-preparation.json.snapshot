@@ -1,0 +1,28 @@
+{
+  "kind": "fresh-staging-only-public-baseline-readers",
+  "sources": [
+    {
+      "name": "read-staging-members.ts",
+      "bytes": 3846,
+      "sha256": "410c4b4f0e010113db2d65ca6bd86c491c915915679c761a4012a58026c1fb4b",
+      "byteIdentical": true
+    },
+    {
+      "name": "read-staging-worker.ts",
+      "bytes": 4341,
+      "sha256": "d7a49d5ff95de930c067eba4c46563c47101dd8455dce1827536f83fdea11590",
+      "byteIdentical": true
+    },
+    {
+      "name": "read-staging-apps.cjs",
+      "bytes": 3723,
+      "sha256": "28bf5b8391a37aedec5a8fa9958ff496b71cf6cf082da5f738883f164415eaf0",
+      "byteIdentical": true
+    }
+  ],
+  "rawProviderOutputPersisted": false,
+  "credentialValuesPersisted": false,
+  "mutations": 0,
+  "providerCalls": 0,
+  "oldReceiptsUntouched": true
+}

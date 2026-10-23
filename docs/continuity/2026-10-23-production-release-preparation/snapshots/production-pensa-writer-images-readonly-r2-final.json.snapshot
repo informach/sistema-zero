@@ -1,0 +1,702 @@
+{
+  "kind": "production-pensa-writer-images-readonly",
+  "version": 2,
+  "supplementalTo": "production-pensa-writer-images-readonly-r2.json",
+  "originalReceiptSha256": "954acf3a73fef856412fb1e845e1e246f43c4ae6bc6d494d093d9805e59a6957",
+  "startedAt": "2026-10-23T01:38:23.584Z",
+  "projectId": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
+  "cli": "5.62.1",
+  "node": "24.22.0",
+  "offlineReportSha256": "5c00bdd2d14d3af41a3c334559258b05d120bc2ea2451b16f5b0c476e537cbf3",
+  "mutations": 0,
+  "variablesQueried": false,
+  "rawMetadataPersisted": false,
+  "credentialsPersisted": false,
+  "sqlCalls": 0,
+  "applicationImports": 0,
+  "maintenanceStarted": false,
+  "maximumConcurrency": 1,
+  "localTransport": "Existing native process environment; Railway credential overrides removed; no environment values serialized",
+  "targets": [
+    {
+      "name": "Members",
+      "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "state": "FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED",
+      "applicationImported": false,
+      "sqlExecuted": false,
+      "before": {
+        "observedAt": "2026-10-23T01:38:24.464Z",
+        "deploymentId": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+        "snapshotId": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+        "status": "SUCCESS",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "44957d2e-059e-45bc-9d80-6d456126bc9c",
+            "status": "REMOVED"
+          },
+          {
+            "id": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/members/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/members/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "snapshot": {
+        "createdAt": "2026-10-22T09:22:52.925Z",
+        "id": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+        "updatedAt": "2026-10-22T09:22:53.417Z"
+      },
+      "gitRecipe": {
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "launcherPath": "scripts/release/start.mjs",
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherMatchesOfflineReport": true,
+        "dockerfilePath": "packages/members/Dockerfile",
+        "dockerfileSha256": "e4c88c6658c869c4cb3401a352684706ae24ff833a6ea2f03c5ab83c614ae582",
+        "dockerCmd": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/members/src/index.ts",
+          "unrecognized": false
+        },
+        "launcherMentionedInDockerfile": true
+      },
+      "ssh": {
+        "selectedInstanceId": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+        "instanceCount": 2,
+        "state": "INSTALLED_LAUNCHER_HASHED",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherBytes": 2726,
+        "equalsGitRecipe": true
+      },
+      "after": {
+        "observedAt": "2026-10-23T01:38:30.013Z",
+        "deploymentId": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+        "snapshotId": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+        "status": "SUCCESS",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "44957d2e-059e-45bc-9d80-6d456126bc9c",
+            "status": "REMOVED"
+          },
+          {
+            "id": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/members/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/members/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "entrypointEvidence": {
+        "command": "bun scripts/release/start.mjs packages/members/src/index.ts",
+        "deploymentManifestExplicit": true,
+        "configuredExplicit": true,
+        "otherwiseDockerRecipeOnly": false,
+        "runningProcessArgvInspected": false,
+        "imageConfigInspected": false
+      }
+    },
+    {
+      "name": "Kids",
+      "serviceId": "fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f",
+      "state": "FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED",
+      "applicationImported": false,
+      "sqlExecuted": false,
+      "before": {
+        "observedAt": "2026-10-23T01:38:30.871Z",
+        "deploymentId": "48c12111-5bb3-449a-90d4-525af1f51aa8",
+        "snapshotId": "9eea1241-4d0c-44ad-bb2b-07e4840bf165",
+        "status": "SUCCESS",
+        "commit": "91d3e99aae0b602e9ad5548efb2106355f9fe801",
+        "imageDigest": "sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "9ce89396-deb2-4d34-b049-46ca526f2a3d",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "snapshot": {
+        "createdAt": "2026-10-22T09:22:58.680Z",
+        "id": "9eea1241-4d0c-44ad-bb2b-07e4840bf165",
+        "updatedAt": "2026-10-22T09:22:59.060Z"
+      },
+      "gitRecipe": {
+        "commit": "91d3e99aae0b602e9ad5548efb2106355f9fe801",
+        "launcherPath": "scripts/release/start.mjs",
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherMatchesOfflineReport": true,
+        "dockerfilePath": "packages/community-kids/Dockerfile",
+        "dockerfileSha256": "9d7faf0c4a0db5a9da80b06cd0e63996c29f5c3ff760d99e9cacc4fc11eedf8c",
+        "dockerCmd": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "node scripts/release/start.mjs packages/community-kids/boot-check.mjs --require-creation-cleanup",
+          "unrecognized": false
+        },
+        "launcherMentionedInDockerfile": true
+      },
+      "ssh": {
+        "selectedInstanceId": "9ce89396-deb2-4d34-b049-46ca526f2a3d",
+        "instanceCount": 1,
+        "state": "INSTALLED_LAUNCHER_HASHED",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherBytes": 2726,
+        "equalsGitRecipe": true
+      },
+      "after": {
+        "observedAt": "2026-10-23T01:38:36.647Z",
+        "deploymentId": "48c12111-5bb3-449a-90d4-525af1f51aa8",
+        "snapshotId": "9eea1241-4d0c-44ad-bb2b-07e4840bf165",
+        "status": "SUCCESS",
+        "commit": "91d3e99aae0b602e9ad5548efb2106355f9fe801",
+        "imageDigest": "sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "9ce89396-deb2-4d34-b049-46ca526f2a3d",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "entrypointEvidence": {
+        "command": "node scripts/release/start.mjs packages/community-kids/boot-check.mjs --require-creation-cleanup",
+        "deploymentManifestExplicit": false,
+        "configuredExplicit": false,
+        "otherwiseDockerRecipeOnly": true,
+        "runningProcessArgvInspected": false,
+        "imageConfigInspected": false
+      }
+    },
+    {
+      "name": "Adult",
+      "serviceId": "9df1b493-4cea-4b36-bec8-7299f054c17d",
+      "state": "FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED",
+      "applicationImported": false,
+      "sqlExecuted": false,
+      "before": {
+        "observedAt": "2026-10-23T01:38:38.015Z",
+        "deploymentId": "9b8cf594-86f8-4534-bde9-000d433fd836",
+        "snapshotId": "f7db585d-8d27-4d37-ae7c-d04818e5fc6a",
+        "status": "SUCCESS",
+        "commit": "e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28",
+        "imageDigest": "sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "88b17e4e-7e4c-4b2c-a36e-35e094534cd8",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "snapshot": {
+        "createdAt": "2026-10-22T09:22:57.049Z",
+        "id": "f7db585d-8d27-4d37-ae7c-d04818e5fc6a",
+        "updatedAt": "2026-10-22T09:22:57.526Z"
+      },
+      "gitRecipe": {
+        "commit": "e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28",
+        "launcherPath": "scripts/release/start.mjs",
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherMatchesOfflineReport": true,
+        "dockerfilePath": "packages/community/Dockerfile",
+        "dockerfileSha256": "c9301a185285da7fc50ebb0621cd0f3a8e796818daf2f01c7860d19065937de1",
+        "dockerCmd": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "node scripts/release/start.mjs packages/community/boot-check.mjs",
+          "unrecognized": false
+        },
+        "launcherMentionedInDockerfile": true
+      },
+      "ssh": {
+        "selectedInstanceId": "88b17e4e-7e4c-4b2c-a36e-35e094534cd8",
+        "instanceCount": 1,
+        "state": "INSTALLED_LAUNCHER_HASHED",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherBytes": 2726,
+        "equalsGitRecipe": true
+      },
+      "after": {
+        "observedAt": "2026-10-23T01:38:43.629Z",
+        "deploymentId": "9b8cf594-86f8-4534-bde9-000d433fd836",
+        "snapshotId": "f7db585d-8d27-4d37-ae7c-d04818e5fc6a",
+        "status": "SUCCESS",
+        "commit": "e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28",
+        "imageDigest": "sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "88b17e4e-7e4c-4b2c-a36e-35e094534cd8",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "entrypointEvidence": {
+        "command": "node scripts/release/start.mjs packages/community/boot-check.mjs",
+        "deploymentManifestExplicit": false,
+        "configuredExplicit": false,
+        "otherwiseDockerRecipeOnly": true,
+        "runningProcessArgvInspected": false,
+        "imageConfigInspected": false
+      }
+    },
+    {
+      "name": "Admin",
+      "serviceId": "e00eca0b-5323-4424-9b58-fdb073cfce82",
+      "state": "FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED",
+      "applicationImported": false,
+      "sqlExecuted": false,
+      "before": {
+        "observedAt": "2026-10-23T01:38:44.534Z",
+        "deploymentId": "10c8d309-1f50-4b52-aa47-693543b010f1",
+        "snapshotId": "a6b45897-402d-414c-9e11-c676b347d96d",
+        "status": "SUCCESS",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "1de2a327-ea3c-49f0-9e5f-865aed778964",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "snapshot": {
+        "createdAt": "2026-10-22T09:23:00.423Z",
+        "id": "a6b45897-402d-414c-9e11-c676b347d96d",
+        "updatedAt": "2026-10-22T09:23:00.782Z"
+      },
+      "gitRecipe": {
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "launcherPath": "scripts/release/start.mjs",
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherMatchesOfflineReport": true,
+        "dockerfilePath": "packages/admin/Dockerfile",
+        "dockerfileSha256": "6ed452d0b78059a26da10ed69093fc3fde8850734781acd12d11a360165b50b8",
+        "dockerCmd": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "node scripts/release/start.mjs packages/admin/boot-check.mjs",
+          "unrecognized": false
+        },
+        "launcherMentionedInDockerfile": true
+      },
+      "ssh": {
+        "selectedInstanceId": "1de2a327-ea3c-49f0-9e5f-865aed778964",
+        "instanceCount": 1,
+        "state": "INSTALLED_LAUNCHER_HASHED",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherBytes": 2726,
+        "equalsGitRecipe": true
+      },
+      "after": {
+        "observedAt": "2026-10-23T01:38:49.987Z",
+        "deploymentId": "10c8d309-1f50-4b52-aa47-693543b010f1",
+        "snapshotId": "a6b45897-402d-414c-9e11-c676b347d96d",
+        "status": "SUCCESS",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "1de2a327-ea3c-49f0-9e5f-865aed778964",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": false,
+          "matchesExpected": false,
+          "value": null,
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "entrypointEvidence": {
+        "command": "node scripts/release/start.mjs packages/admin/boot-check.mjs",
+        "deploymentManifestExplicit": false,
+        "configuredExplicit": false,
+        "otherwiseDockerRecipeOnly": true,
+        "runningProcessArgvInspected": false,
+        "imageConfigInspected": false
+      }
+    },
+    {
+      "name": "Hub",
+      "serviceId": "00b27b18-0587-460b-ba90-b6b24c423e45",
+      "state": "FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED",
+      "applicationImported": false,
+      "sqlExecuted": false,
+      "before": {
+        "observedAt": "2026-10-23T01:38:50.871Z",
+        "deploymentId": "ba08042b-d2bf-4063-87e7-97ea452cf030",
+        "snapshotId": "c8c099f8-3b7f-4695-9035-76fd13c59806",
+        "status": "SUCCESS",
+        "commit": "a270417ba4acffe97629793bb3fb62ac0e134519",
+        "imageDigest": "sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "c1b70b88-9c7f-4c4b-ac7a-4c6d51112776",
+            "status": "REMOVED"
+          },
+          {
+            "id": "c2051063-6c37-44b9-8a51-eb3ec5380632",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/hub/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/hub/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "snapshot": {
+        "createdAt": "2026-10-22T09:22:55.874Z",
+        "id": "c8c099f8-3b7f-4695-9035-76fd13c59806",
+        "updatedAt": "2026-10-22T09:22:56.347Z"
+      },
+      "gitRecipe": {
+        "commit": "a270417ba4acffe97629793bb3fb62ac0e134519",
+        "launcherPath": "scripts/release/start.mjs",
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherMatchesOfflineReport": true,
+        "dockerfilePath": "packages/hub/Dockerfile",
+        "dockerfileSha256": "4ece6f780e153d2575bccb71b1c5104c0a9b4ebfaf70edb17e619cec43e7c452",
+        "dockerCmd": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/hub/src/index.ts",
+          "unrecognized": false
+        },
+        "launcherMentionedInDockerfile": true
+      },
+      "ssh": {
+        "selectedInstanceId": "c2051063-6c37-44b9-8a51-eb3ec5380632",
+        "instanceCount": 2,
+        "state": "INSTALLED_LAUNCHER_HASHED",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "launcherSha256": "9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f",
+        "launcherBytes": 2726,
+        "equalsGitRecipe": true
+      },
+      "after": {
+        "observedAt": "2026-10-23T01:38:56.488Z",
+        "deploymentId": "ba08042b-d2bf-4063-87e7-97ea452cf030",
+        "snapshotId": "c8c099f8-3b7f-4695-9035-76fd13c59806",
+        "status": "SUCCESS",
+        "commit": "a270417ba4acffe97629793bb3fb62ac0e134519",
+        "imageDigest": "sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241",
+        "uniqueActive": true,
+        "noPending": true,
+        "instances": [
+          {
+            "id": "c1b70b88-9c7f-4c4b-ac7a-4c6d51112776",
+            "status": "REMOVED"
+          },
+          {
+            "id": "c2051063-6c37-44b9-8a51-eb3ec5380632",
+            "status": "RUNNING"
+          }
+        ],
+        "configuredStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/hub/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestStartCommand": {
+          "present": true,
+          "matchesExpected": true,
+          "value": "bun scripts/release/start.mjs packages/hub/src/index.ts",
+          "unrecognized": false
+        },
+        "deploymentManifestHasStartCommandField": true,
+        "fileConfig": {
+          "deploymentMatches": true,
+          "commitMatches": true,
+          "startCommand": {
+            "present": false,
+            "matchesExpected": false,
+            "value": null,
+            "unrecognized": false
+          }
+        },
+        "unchangedFromHistoricalInventory": true
+      },
+      "entrypointEvidence": {
+        "command": "bun scripts/release/start.mjs packages/hub/src/index.ts",
+        "deploymentManifestExplicit": true,
+        "configuredExplicit": true,
+        "otherwiseDockerRecipeOnly": false,
+        "runningProcessArgvInspected": false,
+        "imageConfigInspected": false
+      }
+    }
+  ],
+  "limits": [
+    "DeploymentSnapshot exposes identity/timestamps/variables only. Variables are not queried. startCommand is projected from the active deployment serviceManifest and current service instance, not invented as a snapshot field.",
+    "Git Docker CMD plus an absent Railway override is a source recipe. This reader does not inspect OCI image configuration or the running process argv and does not label that inference as binary entrypoint attestation.",
+    "SSH explicitly selects a deployment instance and checks project/environment/service/deployment/commit in RAM before hashing only /app/scripts/release/start.mjs. No application or database dependency is loaded.",
+    "One selected instance per service is inspected. Fresh unique active deployment and instance inventory are checked before and after; this is not a continuous process/writer fence.",
+    "A matching installed launcher proves file presence/bytes, not activation of maintenance mode, retirement of old processes, or absence of Pensa writes.",
+    "No provider configuration, secrets, arbitrary command text, raw metadata, remote stdout/stderr or environment values are stored."
+  ],
+  "state": "FIVE_ACTIVE_IMAGES_AND_INSTALLED_LAUNCHERS_VERIFIED",
+  "finishedAt": "2026-10-23T01:38:56.488Z",
+  "queryCount": 20,
+  "sshCount": 5,
+  "sourceSha256": "3984a83081b71f16f264fe86311e32e1a915d69ed257992193ab849d39376fe9"
+}

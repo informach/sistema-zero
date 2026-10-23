@@ -2,8 +2,8 @@ import { renderedPalette } from '@sistemazero/core/palette'
 import { paletteValueOf } from '@sistemazero/member-shell/lib/palette-cookie'
 import { derive } from '@sistemazero/ui/tokens'
 import { GeistMono } from 'geist/font/mono'
-import { GeistSans } from 'geist/font/sans'
 import type { Metadata, Viewport } from 'next'
+import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque } from 'next/font/google'
 import { cookies } from 'next/headers'
 import { Providers } from '@/components/providers'
 import { PALETTE_COOKIE } from '@/lib/cookies'
@@ -24,6 +24,27 @@ export const metadata: Metadata = {
   },
 }
 
+/**
+ * As letras da comunidade adulta (direção de arte de 18/10/2026): a Atkinson Hyperlegible Next no
+ * texto, desenhada para quem enxerga com dificuldade, a Bricolage Grotesque nos títulos e a Geist
+ * Mono nos rótulos curtos. O público são adultos iniciantes, com o leitor de 50 a 70 anos como régua
+ * de leitura: a letra base é de 20 px (`globals.css`).
+ * As duas famílias são variáveis: sem `weight`, todos os pesos vêm num arquivo só (com só 400 e
+ * 700, o `font-medium` e o `font-semibold` dos componentes compartilhados caíam nos vizinhos).
+ */
+const atkinson = Atkinson_Hyperlegible_Next({
+  subsets: ['latin'],
+  variable: '--font-atkinson',
+  // O Next não tem as métricas desta família para ajustar o fallback (avisava no build): a pilha
+  // do sistema fica declarada aqui, sem o ajuste.
+  adjustFontFallback: false,
+  fallback: ['system-ui', 'Arial', 'sans-serif'],
+})
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-bricolage',
+})
+
 /** A cor do perfil, decidida no SERVIDOR. O proxy já deixou o espelho em dia antes do render. */
 async function paletteAtual() {
   return renderedPalette(paletteValueOf((await cookies()).get(PALETTE_COOKIE)?.value))
@@ -40,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="pt-BR"
       suppressHydrationWarning
       data-sz-palette={await paletteAtual()}
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`${atkinson.variable} ${bricolage.variable} ${GeistMono.variable}`}
     >
       <body
         suppressHydrationWarning

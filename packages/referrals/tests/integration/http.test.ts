@@ -11,7 +11,9 @@ const INTERNAL_TOKEN = 'internal-token-32-chars-ok-xxxxx'
 const METRICS_TOKEN = 'metrics-token-32-chars-okay-xxxx'
 const FUNNEL_URL = 'https://sistemazero.com.br'
 
-function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) {
+function buildApp(
+  opts: { internalToken?: string; metricsToken?: string; communityUrl?: string | null } = {},
+) {
   const repo = new InMemoryReferralRepository()
   const gateway = new FakeReferralsGateway()
   const campaignRepo = new InMemoryCampaignRepository(repo)
@@ -22,6 +24,7 @@ function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) 
     {
       courseSlug: 'cade-todo-mundo',
       kidsCommunityUrl: 'https://kids.sistemazero.com.br',
+      communityUrl: opts.communityUrl ?? null,
       leaseMs: 90_000,
       campaigns: campaignRepo,
     },
@@ -30,13 +33,13 @@ function buildApp(opts: { internalToken?: string; metricsToken?: string } = {}) 
   const invite = new CreateInviteService(
     repo,
     gateway,
-    { funnelPublicUrl: FUNNEL_URL, dailyLimit: 50 },
+    { funnelPublicUrl: FUNNEL_URL, dailyLimit: 50, adultGiftEnabled: Boolean(opts.communityUrl) },
     silentLogger,
   )
   const ambassadors = new AmbassadorAdminService(
     repo,
     gateway,
-    { funnelPublicUrl: FUNNEL_URL },
+    { funnelPublicUrl: FUNNEL_URL, adultGiftEnabled: Boolean(opts.communityUrl) },
     silentLogger,
   )
   const app = createServer({
@@ -298,6 +301,46 @@ describe('borda HTTP do referrals', () => {
       expect(body.created).toBe(false)
       expect(gateway.callsOf('sendEmail').length).toBe(emailsAfterCreate)
     })
+
+    test('sessão de SUPORTE (impersonação): GET sem links nem código; POST recusado', async () => {
+      const { app, repo, gateway } = buildApp({
+        internalToken: INTERNAL_TOKEN,
+        communityUrl: 'https://comunidade.sistemazero.com.br',
+      })
+      const own = {
+        'x-internal-token': INTERNAL_TOKEN,
+        'x-auth-user-id': '44444444-4444-4444-8444-444444444444',
+        'x-auth-user-email': 'tia@example.com',
+      }
+      const support = { ...own, 'x-auth-impersonator-id': '55555555-5555-4555-8555-555555555555' }
+
+      const blocked = await app.handle(
+        req('/referrals/me/ambassador', { method: 'POST', headers: support }),
+      )
+      expect(blocked.status).toBe(403)
+      expect(repo.ambassadors).toHaveLength(0)
+      expect(gateway.callsOf('sendEmail')).toHaveLength(0)
+
+      await app.handle(req('/referrals/me/ambassador', { method: 'POST', headers: own }))
+      const codesBefore = repo.codes.length
+      const get = await app.handle(req('/referrals/me/ambassador', { headers: support }))
+      expect(get.status).toBe(200)
+      const body = (await get.json()) as {
+        enrolled: boolean
+        ambassador: Record<string, unknown>
+      }
+      expect(body.enrolled).toBe(true)
+      expect(body.ambassador).toMatchObject({
+        code: null,
+        pageUrl: null,
+        shareUrl: null,
+        shareUrls: { kids: null, adult: null },
+      })
+      expect(JSON.stringify(body)).not.toContain('/embaixador/')
+      expect(JSON.stringify(body)).not.toContain('/bolsa/')
+      // O GET da equipe não cria o código adulto.
+      expect(repo.codes.length).toBe(codesBefore)
+    })
   })
 
   test('healthz e readyz respondem', async () => {
@@ -428,6 +471,7 @@ describe('borda HTTP do referrals', () => {
         state: 'active',
         startsAt: null,
         endsAt: null,
+        audience: 'kids',
       })
 
       const missing = await app.handle(req('/referrals/internal/codes/nao-existe', { headers }))
@@ -546,5 +590,232 @@ describe('borda HTTP do referrals', () => {
       )
       expect(dup.status).toBe(409)
     })
+  })
+})
+
+describe('presente Kids e adulto no HTTP (20/10/2026)', () => {
+  const COMMUNITY = 'https://comunidade.sistemazero.com.br'
+  const headers = { 'x-internal-token': INTERNAL_TOKEN, 'content-type': 'application/json' }
+
+  async function seedAmbassador(app: ReturnType<typeof buildApp>['app']) {
+    const created = await app.handle(
+      req('/referrals/admin/ambassadors', {
+        method: 'POST',
+        body: JSON.stringify({ name: 'Marta Lima', email: 'marta@example.com' }),
+        headers: ADMIN_HEADERS,
+      }),
+    )
+    const { ambassador } = (await created.json()) as {
+      ambassador: { id: string; code: string; pageUrl: string }
+    }
+    return { ...ambassador, token: ambassador.pageUrl.split('/embaixador/')[1]! }
+  }
+
+  test('by-token: shareUrl Kids de sempre + shareUrls; o código adulto nasce uma vez', async () => {
+    const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN, communityUrl: COMMUNITY })
+    const ambassador = await seedAmbassador(app)
+    const first = await app.handle(
+      req(`/referrals/internal/ambassadors/by-token/${ambassador.token}`, { headers }),
+    )
+    expect(first.status).toBe(200)
+    const view = (await first.json()) as {
+      shareUrl: string
+      shareUrls: { kids: string; adult: string }
+    }
+    const adultCode = repo.codes.find((c) => c.audience === 'adult')!
+    expect(view.shareUrl).toBe(`${FUNNEL_URL}/bolsa/${ambassador.code}`)
+    expect(view.shareUrls).toEqual({
+      kids: `${FUNNEL_URL}/bolsa/${ambassador.code}`,
+      adult: `${FUNNEL_URL}/bolsa/${adultCode.code}`,
+    })
+    await app.handle(
+      req(`/referrals/internal/ambassadors/by-token/${ambassador.token}`, { headers }),
+    )
+    expect(repo.codes.filter((c) => c.audience === 'adult')).toHaveLength(1)
+
+    // O código adulto resolve com o público e consulta o curso adulto.
+    const code = await app.handle(req(`/referrals/internal/codes/${adultCode.code}`, { headers }))
+    expect(await code.json()).toMatchObject({
+      code: adultCode.code,
+      audience: 'adult',
+      giftAvailable: true,
+      source: { kind: 'ambassador', name: 'Marta Lima' },
+    })
+  })
+
+  test('sem COMMUNITY_URL: código adulto aparece indisponível e o resgate dá 503; Kids segue', async () => {
+    const { app, repo, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const ambassador = await seedAmbassador(app)
+    // O painel não mostra nem cria o link adulto enquanto o presente adulto está desligado.
+    const panel = await app.handle(
+      req(`/referrals/internal/ambassadors/by-token/${ambassador.token}`, { headers }),
+    )
+    expect(((await panel.json()) as { shareUrls: { adult: string | null } }).shareUrls.adult).toBe(
+      null,
+    )
+    expect(repo.codes.filter((c) => c.audience === 'adult')).toHaveLength(0)
+    // Código adulto criado quando o presente estava ligado continua fechado.
+    const ensured = await repo.ensureAmbassadorCode({
+      ambassadorId: ambassador.id,
+      audience: 'adult',
+      code: 'marta-ad77',
+    })
+    if (ensured?.kind !== 'ok') throw new Error('seed adulto')
+    const adultCode = ensured.code
+
+    const invite = await app.handle(
+      req(`/referrals/internal/ambassadors/by-token/${ambassador.token}/invites`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: 'Ana', email: 'ana@example.com', audience: 'adult' }),
+      }),
+    )
+    expect(invite.status).toBe(503)
+    expect(await invite.json()).toMatchObject({ error: { code: 'GIFT_UNAVAILABLE' } })
+
+    const page = await app.handle(req(`/referrals/internal/codes/${adultCode.code}`, { headers }))
+    expect(page.status).toBe(200)
+    expect(await page.json()).toMatchObject({ audience: 'adult', giftAvailable: false })
+    expect(gateway.callsOf('getGiftAvailability')).toHaveLength(0)
+
+    const redeem = await app.handle(
+      req('/referrals/internal/redemptions', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ code: adultCode.code, name: 'Ana Souza', email: 'ana@example.com' }),
+      }),
+    )
+    expect(redeem.status).toBe(503)
+    expect(await redeem.json()).toMatchObject({ error: { code: 'GIFT_UNAVAILABLE' } })
+
+    const kids = await app.handle(
+      req('/referrals/internal/redemptions', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          code: ambassador.code,
+          name: 'Ana Souza',
+          email: 'ana@example.com',
+        }),
+      }),
+    )
+    expect(kids.status).toBe(201)
+  })
+
+  test('mesmo e-mail resgata um Kids e um adulto; o 409 é por público', async () => {
+    const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN, communityUrl: COMMUNITY })
+    const ambassador = await seedAmbassador(app)
+    await app.handle(
+      req(`/referrals/internal/ambassadors/by-token/${ambassador.token}`, { headers }),
+    )
+    const adultCode = repo.codes.find((c) => c.audience === 'adult')!
+    const redeem = (code: string) =>
+      app.handle(
+        req('/referrals/internal/redemptions', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ code, name: 'Ana Souza', email: 'ana@example.com' }),
+        }),
+      )
+    expect((await redeem(ambassador.code)).status).toBe(201)
+    expect((await redeem(adultCode.code)).status).toBe(201)
+    const again = await redeem(adultCode.code)
+    expect(again.status).toBe(409)
+    expect(await again.json()).toMatchObject({ error: { code: 'SCHOLARSHIP_ALREADY_REDEEMED' } })
+  })
+
+  test('convite com público: adulto 202 com o template adulto; público inválido 400', async () => {
+    const { app, gateway } = buildApp({ internalToken: INTERNAL_TOKEN, communityUrl: COMMUNITY })
+    const ambassador = await seedAmbassador(app)
+    const path = `/referrals/internal/ambassadors/by-token/${ambassador.token}/invites`
+    const ok = await app.handle(
+      req(path, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: 'Ana', email: 'ana@example.com', audience: 'adult' }),
+      }),
+    )
+    expect(ok.status).toBe(202)
+    const sent = gateway.callsOf('sendEmail').at(-1)!.input as { templateKey: string }
+    expect(sent.templateKey).toBe('referrals-scholarship-invite-adult')
+    const bad = await app.handle(
+      req(path, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ name: 'Ana', email: 'rui@example.com', audience: 'pro' }),
+      }),
+    )
+    expect(bad.status).toBe(400)
+  })
+
+  test('me/ambassador devolve shareUrls', async () => {
+    const { app } = buildApp({ internalToken: INTERNAL_TOKEN, communityUrl: COMMUNITY })
+    const res = await app.handle(
+      req('/referrals/me/ambassador', {
+        method: 'POST',
+        headers: {
+          'x-internal-token': INTERNAL_TOKEN,
+          'x-auth-user-id': '33333333-3333-4333-8333-333333333333',
+          'x-auth-user-email': 'adulto@example.com',
+          'x-auth-user-name': encodeURIComponent('Ana Souza'),
+        },
+      }),
+    )
+    expect(res.status).toBe(201)
+    const body = (await res.json()) as {
+      ambassador: { shareUrl: string; shareUrls: { kids: string; adult: string } }
+    }
+    expect(body.ambassador.shareUrls.kids).toBe(body.ambassador.shareUrl)
+    expect(body.ambassador.shareUrls.adult).toMatch(/\/bolsa\/ana-[a-z0-9]{4}$/)
+    expect(body.ambassador.shareUrls.adult).not.toBe(body.ambassador.shareUrls.kids)
+  })
+
+  test('campanha: público no corpo; publicada recusa troca com 409 CAMPAIGN_AUDIENCE_LOCKED', async () => {
+    const { app } = buildApp({ internalToken: INTERNAL_TOKEN, communityUrl: COMMUNITY })
+    const body = {
+      name: 'Feira adulta',
+      publicTitle: 'Feira de jogos',
+      description: '',
+      context: 'event',
+      code: 'feira-adulta',
+      startsAt: '2026-01-01T00:00:00Z',
+      endsAt: '2099-01-01T00:00:00Z',
+      status: 'active',
+      channel: 'feira',
+      audience: 'adult',
+    }
+    const created = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify(body),
+      }),
+    )
+    expect(created.status).toBe(201)
+    const { campaign } = (await created.json()) as {
+      campaign: { id: string; audience: string; updatedAt: string }
+    }
+    expect(campaign.audience).toBe('adult')
+    const code = await app.handle(req('/referrals/internal/codes/feira-adulta', { headers }))
+    expect(await code.json()).toMatchObject({ audience: 'adult', giftAvailable: true })
+
+    const locked = await app.handle(
+      req(`/referrals/admin/campaigns/${campaign.id}`, {
+        method: 'PATCH',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...body, audience: 'kids', expectedUpdatedAt: campaign.updatedAt }),
+      }),
+    )
+    expect(locked.status).toBe(409)
+    expect(await locked.json()).toMatchObject({ error: { code: 'CAMPAIGN_AUDIENCE_LOCKED' } })
+
+    const invalid = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...body, code: 'feira-pro', audience: 'pro' }),
+      }),
+    )
+    expect(invalid.status).toBe(400)
   })
 })

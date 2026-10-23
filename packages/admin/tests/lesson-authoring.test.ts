@@ -3,13 +3,14 @@ import {
   applyLessonDraftChange,
   defaultLessonSection,
   type LessonDraftDocument,
+  readStudioProjectExamples,
 } from '@sistemazero/core/learning'
 import { chaveDeVoz } from '@sistemazero/core/learning/scene'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import { createEmptyProject } from '@sistemazero/studio'
-import {
-  buildContent,
-  EMPTY_BLOCK,
-} from '../src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/lesson-editor-client'
+import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
+import { createEditableStudioProject } from '@sistemazero/studio/project-factory'
+import { authoringFixture } from '../../members/tests/fakes/studio-authoring-policy'
 import {
   appendLessonSection,
   copyLessonContent,
@@ -18,7 +19,99 @@ import {
   sectionCompletionSummary,
   suggestedCompletion,
 } from '../src/lib/lesson-authoring'
+import { buildContent, EMPTY_BLOCK } from '../src/lib/lesson-block-form'
+import { prepareStudioAuthoringOptions } from '../src/lib/studio-authoring-options'
 import type { LessonBlockContent } from '../src/lib/types'
+
+test('exemplos por parte preservam nomes no limite sem alterar o inicial ou partir emoji', async () => {
+  for (const language of ['javascript', 'python'] as const) {
+    for (const kind of ['classic', 'pro'] as const) {
+      const fixture = await authoringFixture(language, kind)
+      const project = await prepareEditableStudioProject(fixture.project)
+      if (!project)
+        throw new Error('O projeto de autoria precisa ser aceito pelo leitor do Estúdio.')
+      for (const name of ['x'.repeat(190), 'x'.repeat(200), `${'x'.repeat(188)}😀`]) {
+        project.name = name
+        const original = JSON.stringify(project)
+        expect(StudioProjectDocumentSchema.safeParse(project).success).toBe(true)
+        const solution = { ...project, id: crypto.randomUUID() }
+        expect(StudioProjectDocumentSchema.safeParse(solution).success).toBe(true)
+        const blockId = crypto.randomUUID(),
+          sectionId = crypto.randomUUID(),
+          exampleId = crypto.randomUUID()
+        const document: LessonDraftDocument<LessonBlockContent> = {
+          title: 'Exemplo por parte',
+          slug: 'exemplo-por-parte',
+          estimatedMinutes: null,
+          attachments: [],
+          plannedVideos: [],
+          blocks: [{ id: blockId, content: { kind: 'studio', initialProject: project } }],
+          sections: [
+            { ...defaultLessonSection(sectionId, 'Parte', [blockId]), workspaceBlockId: blockId },
+          ],
+        }
+        const saved = applyLessonDraftChange(document, {
+          type: 'studio-example',
+          blockId,
+          sectionId,
+          role: 'solution',
+          action: { type: 'save', exampleId, project: solution },
+        })
+        const content = saved.blocks[0]!.content
+        if (content.kind !== 'studio') throw new Error('Expected Studio')
+        const read = readStudioProjectExamples(content.projectExamples)
+        expect(read.kind).toBe('valid')
+        if (read.kind !== 'valid') throw new Error('Expected canonical private examples')
+        expect(read.value.sections[sectionId]?.solutionExampleId).toBe(exampleId)
+        expect(read.value.examples[exampleId]?.name).toBe(name)
+        expect(solution.name).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/u)
+        expect(solution.id).not.toBe(project.id)
+        expect(JSON.stringify(project)).toBe(original)
+      }
+    }
+  }
+})
+
+test('o formulário salva nível Python independente sem traduzir o código nem a curadoria', async () => {
+  const fixture = await authoringFixture('python', 'classic')
+  const prepared = await prepareStudioAuthoringOptions({
+    legacyJavaScript: true,
+    catalog: fixture.configuration,
+  })
+  const project = await createEditableStudioProject(
+    { id: 'python-form', name: 'Python', programmingLanguage: 'python' },
+    { catalog: prepared.catalog!, runtime: fixture.project.runtime, releaseStatus: 'active' },
+  )
+  const content = buildContent(
+    {
+      ...EMPTY_BLOCK,
+      kind: 'studio',
+      studioPythonLevel: 2,
+      studioAllowBlocks: ['sz_py_print'],
+      studioCategories: ['Entrada e saída'],
+    },
+    project,
+  )
+  expect(content).toMatchObject({
+    kind: 'studio',
+    pythonLevel: 2,
+    allowBlocks: ['sz_py_print'],
+    allowCategories: ['Entrada e saída'],
+    initialProject: project,
+  })
+  expect(content).not.toHaveProperty('level')
+  expect(content).not.toHaveProperty('solutionProject')
+  expect(() =>
+    buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, project, {
+      kind: 'studio',
+      initialProject: project,
+      solutionProject: { ...project, id: crypto.randomUUID() },
+    }),
+  ).toThrow('gabarito global')
+  const legacy = buildContent({ ...EMPTY_BLOCK, kind: 'studio' }, createEmptyProject('old', 'JS'))
+  expect(legacy).toHaveProperty('level', 'iniciante-2d')
+  expect(legacy).not.toHaveProperty('pythonLevel')
+})
 
 function fixture(): LessonDraftDocument<LessonBlockContent> {
   return {
@@ -184,9 +277,7 @@ describe('lesson authoring integrity', () => {
       intent: 'material' as const,
       completion: { version: 1 as const, blockIds: ['book'] },
     }
-    expect(sectionCompletionSummary(material, document.blocks)).toBe(
-      'Abrir o livro ou baixar o PDF',
-    )
+    expect(sectionCompletionSummary(material, document.blocks)).toBe('Abrir o livro')
     expect(sectionCompletionCandidates(document, material)[0]?.issue).toBeUndefined()
     expect(sectionCompletionSummary(document.sections[0]!, document.blocks)).toContain(
       '1 objetivo em Dino',

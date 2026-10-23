@@ -6,7 +6,7 @@ import { QuartoHeader } from './quarto-header'
 export const dynamic = 'force-dynamic'
 
 /**
- * "Meu quarto": a criança monta o quarto virtual (móveis/tema/bichinho), arrasta as
+ * "Meu quarto": a criança monta o quarto virtual (móveis/tema/personagem), arrasta as
  * peças e salva. O avatar dela aparece dentro do quarto. Sempre em sessão de perfil.
  */
 export default async function QuartoPage() {

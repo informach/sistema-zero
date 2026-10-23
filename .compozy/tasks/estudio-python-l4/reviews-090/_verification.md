@@ -1,0 +1,13 @@
+# Producer Members — inspeção estrutural própria
+
+Escopo PythonActivityInspectionService/errors/HTTP503mapping/Studio server-python-snapshot export e dependências existentes snapshot/refinamento/materialização; helper C não wired. Não revisar DTO/admin/submission/progressão que ainda estão em implementação fora do escopo. Sem fonte/teste permanente alterado pelo revisor, sem TSC/build/browser/SDK/SQL executado.
+
+090001mediumVALID antes: `bun test ./.cache/review090-inspection.test.ts`, cwd Members, exit1/1pass2fail/7asserts. Port de autorização inicial/final ignorando signal mantinha grade pendente após abort, até gate manual ser liberado. Nenhuma aprovação tardia ou sandboxleak alegado; deadline45s viaAbortSignal não limitava essa espera externa ao Coreclient jácorrigido074.
+
+Depois: awaitWithSignal limita authContext e snapshot materialization, mantendo checks de sinal/curadoria/policy antes de continuar. Prova própria inicial/final original passou. Extensão usa digest real retardado somente no processo isolado do probe para reter materialização: após abort settle, libera hash e verifica inspect0/authorization1, sem efeito tardio. Não falsifica bytes ou digest final e não prova cancelar a operação crypto/DB propriamente dita. Programa/aluno não executado.
+
+Final `bun test ./.cache/review090-inspection.test.ts tests/unit/python-activity-inspection.test.ts`, cwd Members:exit0/11pass/0fail/33asserts (5próprios+6permanentes). Confirma owner SHAaccount/user capturado, document/activity/clientresults detached antesawait, BOM/CRLF exatos, cópias readindependentes, path estranho recusado, scopeprofile/config ausência, DomainError de revogação preservado, fatos completos/sha/revisão próprios viaCoreverifiers, compilação falha não transforma resultado estrutural do cliente em prova e nota comportamental insuficiente. Mapping real buildErrorResponse do novo DomainError retorna503/code/mensagemenvelopenested. Primeiroassert do probe procurou code na raiz do envelope e foi corrigido para body.error.code; não é defeito de produto nem evidência de falha final.
+
+Biome4 arquivos helper/errorclass/errorhandler/permanent exit0/no fixes. Package export aponta diretamente ao snapshot leaf existente, semimport root editor, semgrant/exec. Leitura confirma sinal/bytes/metadataidentidade e reautorização final. Helpers ainda dependem de authorizecallback futuro consultar contexto DB fresco e de caller revalidar antes de persistir; wiring não habilitado nem qualificado aqui. Coreclient transporte/R2/SDK/CPython possuem provas anteriores separadas, não requalificados por estas portas sintéticas.
+
+0901/1/0VALID/resolved, sem outro achado confirmado. Fonte preservada, nenhum processo próprio ativo. Não conclui sublote C completo nem featureglobal.

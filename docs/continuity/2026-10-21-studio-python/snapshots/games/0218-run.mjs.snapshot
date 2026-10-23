@@ -1,0 +1,51 @@
+import assert from 'node:assert/strict'
+import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { readFileSync, mkdirSync, writeFileSync, openSync, closeSync } from 'node:fs'
+import { join } from 'node:path'
+const [packetSha, windowEnd] = process.argv.slice(2)
+assert.equal(process.argv.slice(2).length, 2)
+assert(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(windowEnd ?? ''), 'Absolute UTC required')
+const end = Date.parse(windowEnd)
+assert(Number.isFinite(end) && new Date(end).toISOString() === windowEnd, 'Invalid UTC date')
+assert(end - Date.now() >= 40000, 'At least40s remaining required')
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+const bytes = readFileSync(join(import.meta.dirname, 'packet.json'))
+assert(/^[a-f0-9]{64}$/.test(packetSha ?? '') && sha(bytes) === packetSha, 'Reviewed packet SHA required')
+const packet = JSON.parse(bytes)
+for (const file of [...packet.files, ...packet.nativeEnvironmentPins, packet.observer, packet.node]) assert.equal(sha(readFileSync(file.path)), file.sha256, file.path)
+assert(end - Date.now() >= 40000, 'Not enough time after file checks')
+mkdirSync(packet.output)
+const stdout = openSync(join(packet.output, 'stdout.log'), 'wx')
+const stderr = openSync(join(packet.output, 'stderr.log'), 'wx')
+const argv = ['-I', '-B', packet.probe, '--packet-sha', packetSha]
+const report = { state: 'running', startedAt: new Date().toISOString(), absoluteWindowEnd: windowEnd, packetSha, nodePID: process.pid, pythonPID: null, argv, deadline: false, signalAttempted: false }
+const child = spawn(packet.python, argv, { cwd: import.meta.dirname, windowsHide: true, stdio: ['ignore', stdout, stderr] })
+report.pythonPID = child.pid ?? null
+writeFileSync(join(packet.output, 'owner.json'), JSON.stringify(report, null, 2) + '\n', { flag: 'wx' })
+let launchError
+child.once('error', error => { launchError = String(error) })
+const timer = setTimeout(() => {
+  report.deadline = true; report.signalAttempted = true; report.signalDelivered = child.kill()
+}, Math.min(40000, end - Date.now()))
+const [exitCode, signal] = await new Promise(done => child.once('close', (code, signal) => done([code, signal])))
+clearTimeout(timer); closeSync(stdout); closeSync(stderr)
+Object.assign(report, { endedAt: new Date().toISOString(), exitCode, signal, launchError: launchError ?? null })
+report.state = 'failed-or-incomplete-preserved'
+try {
+  assert.equal(exitCode, 0); assert.equal(signal, null)
+  assert(!report.deadline && !report.signalAttempted && !launchError)
+  const raw = readFileSync(join(packet.output, 'native.json'))
+  const native = JSON.parse(raw)
+  assert.equal(native.state, 'causal-control-completed-not-game-acceptance')
+  assert.equal(native.sourcePacketSha256, packetSha)
+  assert.equal(native.rows.length, 3); assert.deepEqual(native.errors, [])
+  assert.equal(native.rootMap, 0); assert.equal(native.rootDestroy, 1)
+  assert.equal(native.cooperativeDeadline, false)
+  assert(Date.parse(report.endedAt) <= end)
+  report.nativeReceiptSha256 = sha(raw)
+  report.state = native.state
+} catch (error) { report.receiptError = String(error) }
+writeFileSync(join(packet.output, 'supervisor.json'), JSON.stringify(report, null, 2) + '\n', { flag: 'wx' })
+console.log(JSON.stringify(report))
+process.exitCode = report.state === 'causal-control-completed-not-game-acceptance' ? 0 : 1

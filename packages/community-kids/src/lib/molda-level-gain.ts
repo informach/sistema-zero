@@ -1,4 +1,8 @@
-import { MOLDA_TOOL_BAND_LEVELS, type MoldaToolBand } from '@sistemazero/core/journey'
+import {
+  KIDS_MOLDA_BAND_CAPABILITIES,
+  type KidsCreatorCapability,
+  type MoldaToolBand,
+} from '@sistemazero/core/journey'
 
 /**
  * O que cada faixa de ferramentas do Molda traz, dito para a criança, e as FAMÍLIAS que a frase
@@ -32,13 +36,22 @@ export function moldaFeatureList(band: MoldaToolBand): string {
   return items.length > 1 ? `${items.slice(0, -1).join(', ')} e ${items.at(-1)}` : (items[0] ?? '')
 }
 
-/** A frase do posto, ou `null` quando nenhuma faixa do Molda abre nele. */
-export function moldaLevelGain(level: string | null | undefined): string | null {
-  for (const band of Object.keys(MOLDA_BAND_PROMISES) as MoldaToolBand[]) {
-    if (MOLDA_TOOL_BAND_LEVELS[band] !== level) continue
-    return band === 'basic'
-      ? `a oficina 3D abriu para você, com ${moldaFeatureList(band)}.`
-      : `chegaram ${moldaFeatureList(band)}.`
-  }
-  return null
+/** Actual newly observed pedagogical capabilities; product ownership is checked separately. */
+export function moldaCapabilitiesGain(
+  before: readonly KidsCreatorCapability[],
+  after: readonly KidsCreatorCapability[],
+): string | null {
+  const gained = (Object.keys(MOLDA_BAND_PROMISES) as MoldaToolBand[]).filter((band) => {
+    const capability = KIDS_MOLDA_BAND_CAPABILITIES[band]
+    return !before.includes(capability) && after.includes(capability)
+  })
+  return (
+    gained
+      .map((band) =>
+        band === 'basic'
+          ? `a oficina 3D abriu para você, com ${moldaFeatureList(band)}.`
+          : `chegaram ${moldaFeatureList(band)}.`,
+      )
+      .join(' ') || null
+  )
 }

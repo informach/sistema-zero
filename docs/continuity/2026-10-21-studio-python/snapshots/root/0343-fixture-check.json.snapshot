@@ -1,0 +1,32 @@
+{
+  "canonicalReader": true,
+  "files": [
+    {
+      "path": "package.json",
+      "sha256": "cbbbde54531e8be4b0dfd96f73757f509d432bae0bab5e46abec70c448796dbf"
+    },
+    {
+      "path": "vite.config.ts",
+      "sha256": "c7f8626374b3ff7772c4fc60accfcaddc1d55b5eae424ab088b9fb1d173bdf0f"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "1ba63bf0ea7ebe1ec7ee209028b946e6aa01d92616e8c06450639e7710074d00"
+    },
+    {
+      "path": "index.html",
+      "sha256": "0382fd0ef7441e752e1254bdab77d12e8bc26135118e1275626ac7c459b46a49"
+    },
+    {
+      "path": "src/main.ts",
+      "sha256": "dfec77774dda73d21b2be5f85f8a7bd34111e98e36eae4b5231318c80b7f6d55"
+    },
+    {
+      "path": "src/style.css",
+      "sha256": "64e2380b7cfd06ec0b39ad588a6f7a9608b88555064dab38d2bf1919616d57d4"
+    }
+  ],
+  "assets": 0,
+  "expectedLockSha256": "96dd72bfc06e84c213549e9e1a8bfba7f21addddf06fc2f73f21c4422156f665",
+  "fixtureSha256": "a2ebacf4f985cede068ccf64580e1a0614eba124fd384af13d47bb8ab73d30e8"
+}

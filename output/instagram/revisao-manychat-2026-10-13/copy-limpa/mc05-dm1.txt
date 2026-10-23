@@ -1,1 +1,0 @@
-Oi, esta é uma resposta automática. Temos um primeiro projeto em que ele acompanha a explicação, monta e testa. Veja como funciona.

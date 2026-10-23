@@ -37,6 +37,7 @@ export function KeyboardLayerProvider({ children }: { children: React.ReactNode 
 
   const pop = useCallback((id: string) => {
     responders.current.delete(id)
+    if (!stackRef.current.includes(id)) return
     setStack((prev) => prev.filter((layer) => layer !== id))
   }, [])
 

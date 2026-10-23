@@ -58,7 +58,7 @@ export function ChildCard({
   photoUrl: string | null
   grants: StudyGrantView[] | null | undefined
   stats: ChildrenStats
-  /** A fase do link que trouxe o responsável: segue para a página da criança. */
+  /** A aula do link que trouxe o responsável: segue para a página da criança. */
   studentDestination?: string
 }) {
   const child = statsFor(stats, profile.id)

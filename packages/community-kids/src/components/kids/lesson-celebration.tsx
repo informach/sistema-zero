@@ -32,7 +32,7 @@ interface LessonCelebrationProps {
  * justifica lib), a barra animando do progresso ANTES → DEPOIS e o delta
  * REAL de gamificação (+XP, fogo do streak, baú da unidade, badges) vindo
  * do backend na resposta do complete. `xpAwarded: 0` (re-complete) ou
- * `gamification: null` (award falhou, fail-open) → overlay sem a seção.
+ * `gamification: null` (award falhou, fail-open) → overlay sem a parte.
  * A navegação vira decisão do aluno (próxima aula / trilha / ficar).
  */
 export function LessonCelebration({
@@ -68,7 +68,7 @@ export function LessonCelebration({
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
-        aria-label="Fase concluída"
+        aria-label="Aula concluída"
         onClick={(e) => e.stopPropagation()}
         className="sz-modal w-full max-w-md rounded-3xl bg-card p-6 text-center shadow-xl outline-none md:p-8"
       >
@@ -77,10 +77,10 @@ export function LessonCelebration({
           className="mx-auto size-24"
           stillClassName="kid-wiggle"
         />
-        <h2 className="sz-display mt-3 text-2xl">Fase concluída!</h2>
+        <h2 className="sz-display mt-3 text-2xl">Aula concluída!</h2>
         <p className="mt-1 text-muted-foreground text-sm">
           {publicationPending
-            ? 'As fases desta aventura estão concluídas. Confira a publicação do projeto para registrar a conquista na jornada.'
+            ? 'As aulas deste curso estão concluídas. Confira a publicação do projeto para registrar a conquista na jornada.'
             : 'Seu progresso está guardado. Você pode continuar ou fazer uma pausa.'}
         </p>
 
@@ -101,17 +101,17 @@ export function LessonCelebration({
             {publicationPending
               ? 'Conferir publicação do projeto'
               : nextHref
-                ? 'Próxima fase'
-                : 'Voltar à aventura'}
+                ? 'Próxima aula'
+                : 'Voltar ao curso'}
           </Link>
           {nextHref ? (
             <Link
               href={courseHref}
               // min-h-11: alvo de toque de mão pequena (a régua da casa) — era um
-              // link de texto puro de ~20px num modal que abre a cada fase concluída.
+              // link de texto puro de ~20px num modal que abre a cada aula concluída.
               className="inline-flex min-h-11 items-center justify-center px-4 text-muted-foreground text-sm transition-colors hover:text-foreground"
             >
-              Voltar à aventura
+              Voltar ao curso
             </Link>
           ) : null}
           <button
@@ -119,7 +119,7 @@ export function LessonCelebration({
             onClick={onClose}
             className="inline-flex min-h-11 items-center justify-center px-4 text-muted-foreground text-sm transition-colors hover:text-foreground"
           >
-            Ficar nesta fase
+            Ficar nesta aula
           </button>
         </div>
       </div>

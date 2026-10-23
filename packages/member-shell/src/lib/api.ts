@@ -18,6 +18,7 @@ export interface ApiError {
   code: string
   message: string
   /** Só em `QUIZ_COOLDOWN` (429): ISO de quando o aluno pode refazer o quiz. */
+  retryAfterMs?: number
   retryAvailableAt?: string
 }
 
@@ -41,8 +42,24 @@ async function handle<T>(res: Response): Promise<T> {
     if (!pageSessionId()) window.location.href = '/login'
     throw { status: 401, code: 'UNAUTHORIZED', message: 'Sessão expirada.' } satisfies ApiError
   }
-  const body = await res.json().catch(() => null)
-  if (!res.ok) throw extractError(res.status, body)
+  const body = await res.json().catch((error: unknown) => {
+    // A lost response body is still a transport failure. Preserve it so callers can
+    // recover offline; malformed JSON remains an invalid payload, never an outage.
+    // A received denial (403, etc.) keeps its status even if its body is unavailable.
+    if (res.ok && !(error instanceof SyntaxError)) throw error
+    return null
+  })
+  if (!res.ok) {
+    const error = extractError(res.status, body)
+    const retry = res.headers.get('retry-after')
+    if (retry) {
+      const seconds = Number(retry)
+      error.retryAfterMs = Number.isFinite(seconds)
+        ? Math.max(0, seconds * 1000)
+        : Math.max(0, (Date.parse(retry) || Date.now()) - Date.now())
+    }
+    throw error
+  }
   return body as T
 }
 
@@ -80,7 +97,7 @@ export async function apiSend<T>(
    * aluno dispara e some logo em seguida, como trocar de seção e fechar a aula:
    * sem isso o navegador CANCELA o pedido no unload e o lugar se perde.
    */
-  options?: { keepalive?: boolean },
+  options?: { keepalive?: boolean; signal?: AbortSignal },
 ): Promise<T> {
   return handle<T>(
     await fetch(path, {
@@ -88,6 +105,7 @@ export async function apiSend<T>(
       headers: { 'content-type': 'application/json', ...headers },
       body: body !== undefined ? JSON.stringify(body) : undefined,
       ...(options?.keepalive ? { keepalive: true } : {}),
+      ...(options?.signal ? { signal: options.signal } : {}),
     }),
   )
 }

@@ -19,7 +19,7 @@ test('Studio budget mirrors stay tied to both current runtimes, without cross-pa
   for (const [file, limits] of [
     ['official-extensions/game-3d/runtimeModelAssets.ts', staticLimits],
     ['official-extensions/game-3d-advanced/runtime.ts', SCENE_STUDIO_LIMITS],
-    ['core/project.ts', { data_url_chars: MOLDA_LIMITS.studioMax3DChars }],
+    ['core/projectAssets.ts', { data_url_chars: MOLDA_LIMITS.studioMax3DChars }],
   ] as const) {
     const source = readFileSync(resolve(root, 'packages/studio/src', file), 'utf8')
     for (const [key, maximum] of Object.entries(limits)) {

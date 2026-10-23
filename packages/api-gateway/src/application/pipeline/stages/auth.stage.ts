@@ -15,15 +15,14 @@ export function createAuthStage(chain: AuthChain): Stage {
         // o consumer precisa ser um dos esperados (um consumer de e-mail não
         // pode alcançar o grant-manual só por existir no registry).
         const allowed = typeof auth === 'object' ? auth.allowedConsumers : undefined
-        if (
-          allowed &&
-          result.principal.kind === 'hmac' &&
-          !allowed.includes(result.principal.subject)
-        ) {
+        const consumerId =
+          result.authenticatedConsumerId ??
+          (result.principal.kind === 'hmac' ? result.principal.subject : undefined)
+        if (allowed && consumerId !== undefined && !allowed.includes(consumerId)) {
           ctx.logger.warn('gateway.consumer_not_allowed', {
             requestId: ctx.requestId,
             route: ctx.route.route.id,
-            consumer: result.principal.subject,
+            consumer: consumerId,
           })
           return errorResponse(403, 'CONSUMER_NOT_ALLOWED', 'Consumer não autorizado nesta rota')
         }

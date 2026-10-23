@@ -9,11 +9,13 @@ import type {
 } from '@sistemazero/studio'
 import { createLocalPersistenceAdapter } from '@sistemazero/studio/local-persistence'
 import { savePersonalAsset, setPersonalAssetsNamespace } from '@sistemazero/studio/personal-assets'
-import { createEmptyProject, type Project } from '@sistemazero/studio/project'
+import { createEmptyProject } from '@sistemazero/studio/project'
 import { ProjectList } from '@sistemazero/studio/project-list'
 import type { JSX } from 'react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import type { EditableStudioProject as Project } from '../src/core/editableProject'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
+import { E2E_AUTOSAVE_MS } from './initialQuery'
 import moldaDemoAssets from './moldaDemoAssets.json'
 
 // Só para os e2e da gravação de SAÍDA (`?autosave-ms=600000`): segura o autosave do editor
@@ -21,8 +23,6 @@ import moldaDemoAssets from './moldaDemoAssets.json'
 // fica escondida, e não a do debounce, que no WebKit chegava antes do reload em metade das
 // rodadas. Lido uma vez, na carga, como o `?host=1`: a navegação da lista para o editor é por
 // `pushState` e o parâmetro some da URL, mas não daqui. Sem o parâmetro, nada muda.
-const E2E_AUTOSAVE_MS = Number(new URLSearchParams(window.location.search).get('autosave-ms'))
-
 const StudioEditor = lazy(async () => {
   if (E2E_AUTOSAVE_MS > 0) {
     // Pelo caminho RELATIVO, como o `hostChromeDemo.tsx`: é o mesmo módulo que o editor usa.
@@ -254,12 +254,16 @@ const tutorDemo: StudioTutorAdapter = {
 function EditorScreen({
   projectId,
   onExit,
+  demoMission,
 }: {
   projectId: string
   onExit: () => void
+  demoMission: string | null
 }): JSX.Element {
   const adapter = useMemo(() => createLocalPersistenceAdapter(), [])
   const [state, setState] = useState<EditorState>({ status: 'loading' })
+  const [guideCollapsed, setGuideCollapsed] = useState(false)
+  const [guideVisible, setGuideVisible] = useState(Boolean(demoMission && demoMission !== 'adiada'))
 
   // Adapter de COMPARTILHAR de DEMONSTRAÇÃO: liga o botão "Compartilhar" na Topbar
   // e simula o servidor (a IA e o publish são mockados; o PRINT é capturado de
@@ -349,7 +353,7 @@ function EditorScreen({
         showExamples
         // Experiência completa no playground (defaults embarcados: terminal/IA OFF).
         // Projeto profissional força terminal + allowedModes:['code'] via a flag.
-        features={isPro ? { professional: true, ai: true } : { terminal: true, ai: true }}
+        features={isPro ? { professional: true } : { terminal: true }}
         // Host fake: loga o fluxo híbrido p/ validação manual (DevTools).
         onChange={(project) => console.debug('[host] onChange', project.id, project.updatedAt)}
         onSave={(project) => console.debug('[host] onSave', project.id)}
@@ -363,63 +367,87 @@ function EditorScreen({
         pintaLibrary={pintaLibraryDemo}
         // "Trazer do Molda" com os três tipos codificados de verdade (ver moldaLibraryDemo).
         moldaLibrary={moldaLibraryDemo}
-        // `?tarefa=1` liga o guia do Pensa; `?tarefa=falha` faz a marcação REJEITAR, que é como
+        // `?missao=1` liga o guia do Pensa; `?missao=falha` faz a conferência rejeitar, que é como
         // se vê o recado sobrevivendo ao guia recolhido.
-        {...(tarefaDemo ? { taskSession: taskSessionDemo } : {})}
+        {...(guideVisible
+          ? {
+              taskSession: {
+                ...taskSessionDemo,
+                onComplete: async () => {
+                  if (demoMission === 'falha') throw new Error('Falha de demonstração.')
+                },
+                collapsed: guideCollapsed,
+                onCollapsedChange: setGuideCollapsed,
+              },
+            }
+          : {})}
       />
+      {demoMission === 'adiada' ? (
+        <button
+          type="button"
+          className="fixed bottom-2 left-2 z-[2000] rounded bg-sz-bg p-2 text-sz-fg"
+          onClick={() => setGuideVisible((visible) => !visible)}
+        >
+          {guideVisible ? 'Remover missão de demonstração' : 'Mostrar missão de demonstração'}
+        </button>
+      ) : null}
     </Suspense>
   )
 }
 
 /**
- * O Cartão de Criação do Pensa (`?tarefa=1`), que no app de verdade chega pelo
- * `/estudio?tarefa=<id>` e monta o guia da tarefa — a coluna lateral a partir de `lg`. Aqui ele
- * é fixo e as marcações só vão para o console: o que este demo existe para mostrar é o DESENHO
- * do painel (a casca `.sz-tool-guide` compartilhada com o Pinta e o Molda) e o comportamento da
- * seta nas duas larguras. Sem o par `collapsed`/`onCollapsedChange` de propósito: playground não
- * tem perfil para lembrar de nada, e é assim que o painel recolhe por conta própria.
+ * A missão funcional do Pensa (`?missao=1`) usa o mesmo painel das oficinas.
+ * `?missao=adiada` permite anexar/remover a sessão no mesmo editor já aberto.
+ * O host demonstra estado local; não envia progresso ao servidor.
  */
-const tarefaDemo = new URLSearchParams(window.location.search).get('tarefa')
 const taskSessionDemo: StudioTaskSession = {
-  taskId: 'task-demo',
-  title: 'Fazer o herói pular',
-  summary: 'O herói sobe quando a criança aperta o espaço, e volta ao chão sozinho.',
-  project: { id: 'plan-demo', name: 'Corrida do Bolt' },
-  cycle: { id: 'cycle-demo', number: 1, goal: null },
-  guide: {
-    steps: [
-      { id: 's1', text: 'Instale a extensão Jogo 2D pelo menu de mais opções.', required: true },
-      { id: 's2', text: 'Use o bloco "Criar sprite com imagem" no "Ao iniciar".', required: true },
-      { id: 's3', text: 'Ligue o pulo no bloco "Quando a tecla for pressionada".', required: true },
+  mission: {
+    id: 'demo-mission',
+    contentRevision: 1,
+    stageId: 'demo-stage',
+    position: 0,
+    title: 'Fazer o herói pular',
+    objective: 'O herói sobe quando o jogador aperta espaço e volta ao chão.',
+    kind: 'feature',
+    destination: 'studio',
+    requirementIds: ['demo-rule'],
+    dependencyIds: [],
+    rules: [],
+    checks: [
+      {
+        id: 'jump',
+        action: 'Aperte espaço com o herói no chão.',
+        expected: 'Ele sobe e volta ao chão sozinho.',
+      },
     ],
-    criteria: [{ id: 'c1', text: 'O herói pula e volta ao chão sozinho.', required: true }],
   },
-  blocks: [
-    {
-      id: 'sz_g2d_sprite',
-      label: 'Criar sprite com imagem',
-      category: 'Jogo 2D',
-      subcategory: 'Sprites',
-      area: 'game',
-      extension: 'game-2d',
-    },
-  ],
   progress: {
-    // ⚠ Tudo marcado e com `outputRef`: só assim o "Concluir tarefa" nasce HABILITADO, e é o
-    // desenho da pílula primária que este demo existe para mostrar (o `onProgress` daqui não
-    // muta nada, então marcar um passo na tela não gruda).
+    missionId: 'demo-mission',
+    progressRevision: 0,
     status: 'in_progress',
-    completedStepIds: ['s1', 's2', 's3'],
-    completedCriteriaIds: ['c1'],
-    startedAt: '2026-09-19T12:00:00.000Z',
+    validity: 'current',
+    assigneeProfileId: null,
+    completedByProfileId: null,
+    deliveries: [],
+    verification: null,
+    resumeNote: null,
+    startedAt: null,
     completedAt: null,
-    updatedAt: '2026-09-19T12:00:00.000Z',
-    outputRef: { kind: 'studio_project', projectId: 'plan-demo' },
   },
-  async onProgress(input) {
-    console.debug('[host] taskSession.onProgress', input)
-    if (tarefaDemo === 'falha') throw new Error('Falha de mentira do playground.')
-  },
+  project: { id: 'demo-plan', name: 'Corrida do Bolt' },
+  assetSlots: [],
+  references: [],
+  blockedReason: null,
+  collapsed: false,
+  onCollapsedChange() {},
+  nextMissionLabel: 'Continuar meu caminho',
+  async onComplete() {},
+  async onReopen() {},
+  async onNextMission() {},
+  onNeedHelp() {},
+  onReturnToPlan() {},
+  async onBindCreation() {},
+  async onSaveNote() {},
 }
 
 /**
@@ -452,7 +480,7 @@ function DualView(): JSX.Element {
   )
 }
 
-export function App(): JSX.Element {
+export function App({ demoMission }: { demoMission: string | null }): JSX.Element {
   const [view, setView] = useState<View>(() => parseViewFromLocation())
 
   const navigate = (next: View) => {
@@ -474,7 +502,11 @@ export function App(): JSX.Element {
   // (o dev server do Vite já envia COOP/COEP, exigidos pelo WebContainer).
   const screen =
     view.name === 'editor' ? (
-      <EditorScreen projectId={view.projectId} onExit={() => navigate({ name: 'list' })} />
+      <EditorScreen
+        projectId={view.projectId}
+        onExit={() => navigate({ name: 'list' })}
+        demoMission={demoMission}
+      />
     ) : (
       <ProjectList
         professional

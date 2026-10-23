@@ -42,6 +42,89 @@ test('absent animations and explicitly empty animations retain their original sh
     expect(readSceneGlbWireRequest(packSceneGlbRequest(request))).toEqual(request)
   }
 })
+
+test.each([
+  undefined,
+  'step',
+  'linear',
+  'smooth',
+] as const)('packed rotation keys preserve pivot compensation with curve %s without aliasing', (curve) => {
+  const document = animatedScene(),
+    rotation = sceneRotationTrack()
+  rotation.keys[1]!.incomingPivot = [1.123456789123, Number.MIN_VALUE, -3.5]
+  if (curve !== undefined) rotation.keys[1]!.incomingPivotInterpolation = curve
+  document.animations[0]!.tracks.push(rotation)
+  const request = { document, documentId: document.id, revision: 1, animatedPaint: true },
+    before = structuredClone(request),
+    wire = packSceneGlbRequest(request),
+    read = readSceneGlbWireRequest(wire)
+  expect(read).toEqual(before)
+  expect(read.document.animations![0]!.tracks[1]!.keys[1]!.incomingPivot).not.toBe(
+    rotation.keys[1]!.incomingPivot,
+  )
+  expect(encodeSceneGlb(read.document, { allowLosses: true, animatedPaint: true })).toEqual(
+    encodeSceneGlb(document, { allowLosses: true, animatedPaint: true }),
+  )
+  expect(request).toEqual(before)
+})
+
+test('pivot transport rejects unknown fields, invalid centers, curves, channels and key indices', () => {
+  const document = animatedScene(),
+    rotation = sceneRotationTrack()
+  rotation.keys[1]!.incomingPivot = [0, 0, 0]
+  document.animations[0]!.tracks.push(rotation)
+  const request = { document, documentId: document.id, revision: 0, animatedPaint: false },
+    wire = packSceneGlbRequest(request),
+    packet = wire.animations!,
+    clip = packet.clips[0]!,
+    track = clip.tracks[1]!,
+    pivot = track.pivots![0]!
+  for (const pivots of [
+    null,
+    [{ ...pivot, extra: true }],
+    [{ ...pivot, keyIndex: -1 }],
+    [{ ...pivot, keyIndex: 0.5 }],
+    [{ ...pivot, keyIndex: 2 }],
+    [pivot, pivot],
+    [pivot, { ...pivot, keyIndex: 0 }],
+    [{ keyIndex: 1, incomingPivotInterpolation: 'linear' }],
+    [{ ...pivot, incomingPivot: [0, NaN, 0] }],
+    [{ ...pivot, incomingPivot: [0, 0] }],
+    [{ ...pivot, incomingPivotInterpolation: 'cubic' }],
+  ]) {
+    expect(() =>
+      readSceneGlbWireRequest({
+        ...wire,
+        animations: {
+          ...packet,
+          clips: [{ ...clip, tracks: [clip.tracks[0], { ...track, pivots }] }],
+        },
+      }),
+    ).toThrow()
+  }
+  for (const patch of [
+    { incomingPivot: [0, Infinity, 0] },
+    { incomingPivot: [0, 0] },
+    { incomingPivotInterpolation: 'cubic' },
+    { incomingPivot: undefined, incomingPivotInterpolation: 'linear' },
+  ]) {
+    const copy = structuredClone(document)
+    Object.assign(copy.animations[0]!.tracks[1]!.keys[1]!, patch)
+    expect(() => packSceneGlbRequest({ ...request, document: copy })).toThrow()
+  }
+  const copy = structuredClone(document)
+  copy.animations[0]!.tracks[0]!.keys[0]!.incomingPivot = [0, 0, 0]
+  expect(() => packSceneGlbRequest({ ...request, document: copy })).toThrow('rotação')
+  expect(() =>
+    readSceneGlbWireRequest({
+      ...wire,
+      animations: {
+        ...packet,
+        clips: [{ ...clip, tracks: [{ ...clip.tracks[0], pivots: [pivot] }, track] }],
+      },
+    }),
+  ).toThrow('rotação')
+})
 test('compact transport rejects malformed buffers, counts, unknown fields and invalid reconstructed animation data', () => {
   const document = animatedScene(),
     request = { document, documentId: document.id, revision: 0, animatedPaint: false }

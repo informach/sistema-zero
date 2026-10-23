@@ -1,0 +1,6 @@
+{
+  "type": "sz_gk_rpg_connect_edge",
+  "text": "Ligar a borda leste (direita) deste mapa ao mapa praia",
+  "parentType": "sz_frame_events",
+  "parentText": "⚡ Quando acontecer Quando entrar no mapa-cenário campo fazer Ligar a borda leste (direita) deste mapa ao mapa praia"
+}

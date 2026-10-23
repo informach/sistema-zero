@@ -12,6 +12,8 @@ export interface SceneGeometryBuffers {
   /** Authorial corner index for each expanded draw vertex; never persisted or uploaded. */
   cornerIndices: Uint32Array
   faceIds: string[]
+  /** Authorial face per draw triangle, separate from a parametric paint surface. */
+  componentFaceIds: string[]
   /** null uses the node's default material. */
   materialIds: Array<string | null>
   issues: Array<{ faceId: string; code: 'degenerate' | 'self-intersection' | 'precision' }>
@@ -27,6 +29,7 @@ export function buildSceneGeometry(geometry: SceneGeometry): SceneGeometryBuffer
   const uvs: number[] = []
   const cornerIndices: number[] = []
   const faceIds: string[] = []
+  const componentFaceIds: string[] = []
   const materialIds: Array<string | null> = []
   const issues: SceneGeometryBuffers['issues'] = []
   for (const [key, face] of Object.entries(mesh.faces)) {
@@ -58,6 +61,7 @@ export function buildSceneGeometry(geometry: SceneGeometry): SceneGeometryBuffer
         uvs.push(...corner.uv)
       }
       faceIds.push(faceId)
+      componentFaceIds.push(key)
       materialIds.push(face.materialId ?? null)
     }
   }
@@ -67,6 +71,7 @@ export function buildSceneGeometry(geometry: SceneGeometry): SceneGeometryBuffer
     uvs: Float32Array.from(uvs),
     cornerIndices: Uint32Array.from(cornerIndices),
     faceIds,
+    componentFaceIds,
     materialIds,
     issues,
   }
@@ -114,6 +119,7 @@ function validateBuffers(buffers: SceneGeometryBuffers): SceneGeometryBuffers {
     uvs: keep(buffers.uvs, 6),
     cornerIndices,
     faceIds: kept.map((triangle) => buffers.faceIds[triangle] ?? ''),
+    componentFaceIds: kept.map((triangle) => buffers.componentFaceIds[triangle] ?? ''),
     materialIds: kept.map((triangle) => buffers.materialIds[triangle] ?? null),
     issues: [
       ...buffers.issues,

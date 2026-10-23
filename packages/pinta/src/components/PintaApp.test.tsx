@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { strToU8, zipSync } from 'fflate'
+import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
 import { COPY } from '../core/copy'
 import { createPixelBackgroundAsset } from '../core/project'
 import type { PintaTaskSession } from '../core/types'
@@ -513,36 +514,7 @@ describe('PintaApp — galeria', () => {
  */
 describe('PintaApp — Voltar ao plano', () => {
   function tarefa(onReturnToPlan: () => void | Promise<void>): PintaTaskSession {
-    return {
-      taskId: 'tarefa-1',
-      project: { id: 'plano-1', name: 'Bosque' },
-      cycle: { id: 'ciclo-1', number: 1, goal: null },
-      title: 'Desenhar a nave',
-      summary: null,
-      brief: {
-        assetId: 'nave',
-        artKind: 'sprite',
-        style: 'pixel',
-        palette: [],
-        appearance: 'Uma nave comprida',
-        animations: [],
-        states: [],
-        usage: 'Personagem principal',
-        requiresStudioUse: false,
-      },
-      guide: { steps: [], criteria: [] },
-      progress: {
-        status: 'in_progress',
-        completedStepIds: [],
-        completedCriteriaIds: [],
-        startedAt: null,
-        completedAt: null,
-        updatedAt: null,
-        outputRef: null,
-      },
-      onProgress: async () => undefined,
-      onReturnToPlan,
-    }
+    return { ...missionSessionFixture(), onReturnToPlan }
   }
 
   async function abrirNave(): Promise<void> {
@@ -652,23 +624,137 @@ describe('PintaApp — Voltar ao plano', () => {
 
     await waitFor(() => expect(eventos).toEqual(['navegou']), { timeout: 5000 })
   })
+})
 
-  it('sem o `onReturnToPlan` do host o botão não existe (playground, aula, Pinta solto)', async () => {
+describe('PintaApp — a missão chega sem remontar o editor', () => {
+  it('o canvas aberto é o MESMO nó antes e depois do painel aparecer, e o painel vem depois', async () => {
     const { createMemoryPersistence } = await import('../state/memoryPersistence')
     const { createPixelSpriteAsset } = await import('../core/project')
     const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
-    const semVolta = tarefa(() => undefined)
-    delete semVolta.onReturnToPlan
-
-    render(
-      <PintaApp
-        adapter={{ taskSession: semVolta }}
-        persistence={createMemoryPersistence([nave])}
-      />,
-    )
+    const persistence = createMemoryPersistence([nave])
+    const { container, rerender } = render(<PintaApp adapter={{}} persistence={persistence} />)
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
     })
-    expect(screen.queryByRole('button', { name: COPY.task.back })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /Abrir nave/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+    const canvas = container.querySelector('canvas')
+    expect(canvas).toBeTruthy()
+    expect(container.querySelector('aside[aria-label="Missão do Pensa"]')).toBeNull()
+
+    rerender(
+      <PintaApp adapter={{ taskSession: missionSessionFixture() }} persistence={persistence} />,
+    )
+    const panel = container.querySelector('aside[aria-label="Missão do Pensa"]')
+    expect(panel).toBeTruthy()
+    // Sem remontar: o desenho, o desfazer e o zoom continuam onde estavam.
+    expect(container.querySelector('canvas') === canvas).toBe(true)
+    expect(canvas?.isConnected).toBe(true)
+    // A oficina vem primeiro e o painel é irmão dela (nunca por cima).
+    const work = container.querySelector('.sz-tool-mission-layout__work')
+    expect(work?.contains(canvas ?? null)).toBe(true)
+    expect(work?.contains(panel)).toBe(false)
+    expect(work?.parentElement === panel?.parentElement).toBe(true)
+  })
+})
+
+/**
+ * O missão funcional no `PintaApp` (14/10/2026): "Conferi e está pronto" GRAVA o desenho aberto antes
+ * de chamar o host, a mesma disciplina do "Voltar ao plano". A ordem é REGISTRADA numa lista
+ * compartilhada; a gravação que falha não chama o host e o painel mostra a frase dela (nunca
+ * "Confira a internet": a internet não tem nada a ver com o disco deste aparelho).
+ */
+describe('PintaApp — missão funcional grava antes de concluir', () => {
+  function tarefaV2(assetId: string, eventos: string[]): PintaTaskSession {
+    const session = missionSessionFixture()
+    session.progress.deliveries = [
+      {
+        assetSlotId: session.assetSlots[0]!.id,
+        creation: {
+          tool: 'pinta',
+          profileId: '10000000-0000-4000-8000-000000000002',
+          creationId: assetId,
+          saveRevision: '1',
+          contentFingerprint: null,
+        },
+      },
+    ]
+    session.onComplete = async () => {
+      eventos.push('concluiu:completed')
+    }
+    return session
+  }
+
+  async function abrirNave(): Promise<void> {
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Abrir nave/ })).toBeTruthy()
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Abrir nave/ }))
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) })).toBeTruthy()
+    })
+  }
+
+  function editarPendente(): void {
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.button(32, 32) }))
+    fireEvent.change(screen.getByLabelText(COPY.newAsset.customSize.width), {
+      target: { value: '128' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.resize.apply }))
+  }
+
+  it('🚨 com uma edição pendente, GRAVA antes de concluir', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const memoria = createMemoryPersistence([nave])
+    const persistence = {
+      ...memoria,
+      persistAssets: async (assets: Parameters<typeof memoria.persistAssets>[0]) => {
+        await Bun.sleep(5)
+        eventos.push('gravou')
+        await memoria.persistAssets(assets)
+      },
+    }
+    render(
+      <PintaApp adapter={{ taskSession: tarefaV2(nave.id, eventos) }} persistence={persistence} />,
+    )
+    await abrirNave()
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: 'Conferi e está pronto' }))
+    await waitFor(() => expect(eventos).toEqual(['gravou', 'concluiu:completed']), {
+      timeout: 5000,
+    })
+  })
+
+  it('🚨 gravação que FALHA não conclui e mostra a frase da gravação', async () => {
+    const { createMemoryPersistence } = await import('../state/memoryPersistence')
+    const { createPixelSpriteAsset } = await import('../core/project')
+    const { FRASE_DE_GRAVAR_NO_APARELHO } = await import('./taskSessionSave')
+    const nave = createPixelSpriteAsset({ name: 'nave', frameSize: 32 })
+    const eventos: string[] = []
+    const persistence = {
+      ...createMemoryPersistence([nave]),
+      persistAssets: async () => {
+        throw new Error('sem espaço')
+      },
+    }
+    render(
+      <PintaApp adapter={{ taskSession: tarefaV2(nave.id, eventos) }} persistence={persistence} />,
+    )
+    await abrirNave()
+    editarPendente()
+    fireEvent.click(screen.getByRole('button', { name: 'Conferi e está pronto' }))
+    await waitFor(
+      () => {
+        const alertas = screen.getAllByRole('alert').map((alerta) => alerta.textContent)
+        expect(alertas).toContain(FRASE_DE_GRAVAR_NO_APARELHO)
+      },
+      { timeout: 5000 },
+    )
+    expect(eventos).toEqual([])
   })
 })

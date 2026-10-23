@@ -1,0 +1,58 @@
+{
+  "state": "PROSPECTIVE-ONLY-NOT-STARTED-NOT-AUTHORITY",
+  "commit": "9557e17bcafbe529d0079c8d941485b7f67061c4",
+  "sourceFreeze": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\current-host-browser-package-r8\\source-freeze.json",
+  "sourceFreezeSha256": "b4f70d586a34f2b1db2ca6a485d7364daad409abd4e5b40daf0881316711df7a",
+  "browser": {
+    "runCandidate": "games-pacman11-endings-r1",
+    "config": "playwright.python-games-current.config.ts",
+    "project": "chrome",
+    "grep": "Pac-Man instrumented (victory-near-end|defeat-near-end) ",
+    "expectedTitles": [
+      "portable Pac-Man instrumented victory-near-end preserves authored rules",
+      "portable Pac-Man instrumented defeat-near-end preserves authored rules"
+    ],
+    "workers": 1,
+    "pagesAtATime": 1,
+    "retries": 0,
+    "maxFailures": 1,
+    "targetSecondsEstimate": 20,
+    "existingPolicy": {
+      "startupMs": 30000,
+      "suiteMs": 180000,
+      "cleanupMs": 30000,
+      "totalMs": 240000,
+      "initialFreeMiB": 3584,
+      "floorFreeMiB": 1536,
+      "maximumFreeDropMiB": 2048,
+      "runnerHeapMiB": 384
+    },
+    "criteria": [
+      "entire completed event history: callback=bye AND delay=3000 scheduled exactly1, fired exactly1",
+      "same scheduledClock and fired elapsedSeconds>=3",
+      "natural-close exactly1, completed, expected player/enemy/message states, errors absent, normal cleanup",
+      "do not count independent reset_speed callback as bye even though both use3000ms"
+    ],
+    "remainingDependencies": [
+      "Root cherry-pick/review isolated commit after release; Root server/source graph is not rebound by this file",
+      "derive existing approved operator parameters with fresh current Root bindings, new output namespace/release, fresh scan/seal/window",
+      "recheck reusable distribution a8a6 fingerprint/release0123; no distribution rebuild requested",
+      "fresh exact executable/Playwright/operator/source hashes, RAM preflight and exclusive resource window"
+    ]
+  },
+  "native": {
+    "state": "BLOCKED-ON-NEW-ACTUAL-EXPORT-NO-FABRICATED-PINS",
+    "scenarios": [
+      "victory-near-end",
+      "defeat-near-end"
+    ],
+    "remainingDependencies": [
+      "actual canonical1.1 export from integrated current Root exporter with ZIP/receipt/inventory/new entry identity",
+      "review new cache runner pins only after actual artifact exists; keep tracked historical1.0 native runner unchanged",
+      "reuse venv only after exact package/native/installed audio pins and new window are reviewed",
+      "preserve existing cooperative/external budgets and process ownership/cleanup; no timer acceleration"
+    ]
+  },
+  "notQualifiedByOldReceipts": true,
+  "noStartNoServicesNoExportNoBrowserNoNative": true
+}

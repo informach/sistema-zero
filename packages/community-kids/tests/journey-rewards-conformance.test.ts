@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { CREATOR_JOURNEY_LEVELS } from '../../core/src/journey/catalog'
-import { MOLDA_TOOL_BAND_LEVELS } from '../../core/src/journey/state'
 import {
   AI_APPS_MIN_LEVEL,
   FREE_CREATION_MIN_LEVEL,
   THREE_D_CREATION_MIN_LEVEL,
-} from '../../member-shell/src/lib/studio-tier'
-import { JOURNEY_REWARD_INFO } from '../src/lib/journey-rewards'
+} from '../../core/src/journey/state'
+import { MOLDA_TOOL_BAND_LEVELS } from '../../core/tests/fixtures/legacy-kids-tool-levels'
+import { JOURNEY_REWARD_INFO } from './fixtures/legacy-journey-rewards'
 
 /**
  * Conformância da COPY das recompensas × o que a regra realmente entrega.
@@ -52,7 +52,7 @@ const levelOf = (slug: string) => CREATOR_JOURNEY_LEVELS.find((level) => level.s
  *   1. nunca prometer o que aquele posto não tem;
  *   2. anunciar no posto em que a coisa APARECE, senão a conquista passa em branco.
  */
-describe('journey-rewards (kids) — a copy não promete o que a regra não dá', () => {
+describe('frozen initial copy — migration reference while the remaining trail UI is migrated', () => {
   test('nunca promete Ponte a quem não tem Ponte', () => {
     const mentiras = CREATOR_JOURNEY_LEVELS.filter(
       (level) => PROMISES_BRIDGE.test(textOf(level.slug)) && !level.reward.bridge,

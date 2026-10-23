@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import type { ProjectPlayActivity } from '@sistemazero/core/learning'
-import { renderToStaticMarkup } from 'react-dom/server'
-import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
+import { renderToReadableStream } from 'react-dom/server'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
 import {
   clickedProjectPlayTarget,
   ProjectPlayActivityView,
@@ -29,10 +29,13 @@ describe('jogo pronto na seção', () => {
     expect(clickedProjectPlayTarget(activity, { type: 'outro', x: 137, y: 224 })).toBeNull()
   })
 
-  test('mostra o jogo real, ampliar e jogar de novo, sem revelar esconderijos em botões', () => {
-    const html = renderToStaticMarkup(
+  test('mostra o jogo real, ampliar e jogar de novo, sem revelar esconderijos em botões', async () => {
+    const stream = await renderToReadableStream(
       <ProjectPlayActivityView activity={activity} answers={{}} onChange={() => {}} />,
     )
+    // Aguarde o player JS carregado sob demanda antes de conferir seu sandbox real.
+    await stream.allReady
+    const html = await new Response(stream).text()
     expect(html).toContain('sandbox="allow-scripts allow-modals allow-pointer-lock"')
     expect(html).not.toContain('allow-same-origin')
     expect(html).toContain('Ampliar jogo')

@@ -6,14 +6,30 @@ import type { Env } from '../../infrastructure/config/env'
 import { buildErrorResponse } from './error-handler'
 import { type AccountsRoutesDeps, accountsRoutes } from './routes/accounts.routes'
 import { type AiRoutesDeps, aiRoutes } from './routes/ai.routes'
+import { type ApprovalRoutesDeps, approvalRoutes } from './routes/approval.routes'
 import { type ContentsRoutesDeps, contentsRoutes } from './routes/contents.routes'
+import { type DeliveryRoutesDeps, deliveryRoutes } from './routes/delivery.routes'
 import { type DriveRoutesDeps, driveRoutes } from './routes/drive.routes'
+import { type EngagementRoutesDeps, engagementRoutes } from './routes/engagement.routes'
+import {
+  ENGAGEMENT_WEBHOOK_PATH,
+  type EngagementWebhookDeps,
+  engagementWebhookRoutes,
+} from './routes/engagement-webhook.routes'
+import { type ExecutionRoutesDeps, executionRoutes } from './routes/execution.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { type IdeasRoutesDeps, ideasRoutes } from './routes/ideas.routes'
+import { type ImportRoutesDeps, importRoutes } from './routes/import.routes'
 import { type MediaRoutesDeps, mediaRoutes } from './routes/media.routes'
 import { type MetricsRoutesDeps, metricsRoutes } from './routes/metrics.routes'
+import { type MonitoringRoutesDeps, monitoringRoutes } from './routes/monitoring.routes'
 import { type OAuthRoutesDeps, oauthRoutes } from './routes/oauth.routes'
 import { type PublicationsRoutesDeps, publicationsRoutes } from './routes/publications.routes'
+import { type WorkspaceRoutesDeps, workspaceRoutes } from './routes/workspace.routes'
+import {
+  type WorkspaceAssetsRoutesDeps,
+  workspaceAssetsRoutes,
+} from './routes/workspace-assets.routes'
 
 export interface HttpDeps {
   env: Env
@@ -29,6 +45,15 @@ export interface HttpDeps {
   drive: DriveRoutesDeps
   metrics: MetricsRoutesDeps
   ai: AiRoutesDeps
+  workspace?: WorkspaceRoutesDeps
+  monitoring?: MonitoringRoutesDeps
+  imports?: ImportRoutesDeps
+  approval?: ApprovalRoutesDeps
+  deliveries?: DeliveryRoutesDeps
+  execution?: ExecutionRoutesDeps
+  workspaceAssets?: WorkspaceAssetsRoutesDeps
+  engagement?: EngagementRoutesDeps
+  engagementWebhook?: EngagementWebhookDeps
 }
 
 const OVERSIZE = new WeakSet<Request>()
@@ -48,6 +73,23 @@ export function createServer(deps: HttpDeps) {
         OVERSIZE.add(request)
         return undefined
       }
+      if (new URL(request.url).pathname === ENGAGEMENT_WEBHOOK_PATH) {
+        const reader = request.body?.getReader()
+        if (!reader) return new Uint8Array()
+        const chunks: Uint8Array[] = []
+        let size = 0
+        for (;;) {
+          const next = await reader.read()
+          if (next.done) break
+          size += next.value.byteLength
+          if (size > maxBytes) {
+            await reader.cancel()
+            throw new PayloadTooLargeError('Webhook excede o limite')
+          }
+          chunks.push(next.value)
+        }
+        return Buffer.concat(chunks)
+      }
       if (contentType?.includes('application/json')) {
         const text = await request.text()
         if (Buffer.byteLength(text, 'utf8') > maxBytes) {
@@ -64,8 +106,16 @@ export function createServer(deps: HttpDeps) {
         throw new PayloadTooLargeError('Corpo da requisição excede o limite')
       }
     })
-    .onError({ as: 'global' }, ({ code, error, set }) => {
-      const { status, body } = buildErrorResponse({ code, error, logger: deps.logger })
+    .onError({ as: 'global' }, ({ code, error, set, request }) => {
+      const path = new URL(request.url).pathname
+      const privateContext = path === ENGAGEMENT_WEBHOOK_PATH || path.includes('/engagement')
+      if (privateContext) set.headers['cache-control'] = 'no-store'
+      const { status, body } = buildErrorResponse({
+        code,
+        error,
+        logger: deps.logger,
+        privateContext,
+      })
       set.status = status
       return body
     })
@@ -86,6 +136,15 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
+  if (deps.workspace) app.use(workspaceRoutes(deps.workspace))
+  if (deps.engagement) app.use(engagementRoutes(deps.engagement))
+  if (deps.engagementWebhook) app.use(engagementWebhookRoutes(deps.engagementWebhook))
+  if (deps.monitoring) app.use(monitoringRoutes(deps.monitoring))
+  if (deps.imports) app.use(importRoutes(deps.imports))
+  if (deps.approval) app.use(approvalRoutes(deps.approval))
+  if (deps.deliveries) app.use(deliveryRoutes(deps.deliveries))
+  if (deps.execution) app.use(executionRoutes(deps.execution))
+  if (deps.workspaceAssets) app.use(workspaceAssetsRoutes(deps.workspaceAssets))
   return app
     .use(healthRoutes(deps.readiness))
     .use(ideasRoutes(deps.ideas))

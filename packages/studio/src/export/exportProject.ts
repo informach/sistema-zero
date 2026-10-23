@@ -1,4 +1,5 @@
-import type { Project } from '#core'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
+import type { StudioRuntimeEnvironment } from '../runtime/environment'
 import { classicDeployTemplates, proDeployTemplates } from './deployTemplates'
 import { buildClassicFileMap, buildProFileMap, type ExportFileMap } from './fileMap'
 import { defaultMinifiers, identityMinifiers, type Minifiers } from './minify'
@@ -8,6 +9,8 @@ import { zipFiles } from './zip'
 export type ExportStep = 'collecting' | 'minifying' | 'zipping' | 'done'
 
 export interface ExportOptions {
+  signal?: AbortSignal
+  runtimeEnvironment?: StudioRuntimeEnvironment | null
   /** Minifica o caminho clássico. Default true. Ignorado no pro (Vite minifica). */
   minify?: boolean
   /** Injeta minificadores (testes usam `identityMinifiers`). */
@@ -34,6 +37,31 @@ export async function exportProject(
   opts: ExportOptions = {},
 ): Promise<ExportResult> {
   const report = (step: ExportStep, pct: number) => opts.onProgress?.(step, pct)
+  opts.signal?.throwIfAborted()
+  if (isPythonProject(project)) {
+    const captured = structuredClone(project)
+    report('collecting', 5)
+    const { buildPythonWebFiles } = await import('./pythonWeb')
+    const signal = opts.runtimeEnvironment?.signal
+      ? AbortSignal.any([
+          opts.signal ?? new AbortController().signal,
+          opts.runtimeEnvironment.signal,
+        ])
+      : (opts.signal ?? new AbortController().signal)
+    const built = await buildPythonWebFiles(captured, opts.runtimeEnvironment ?? undefined, signal)
+    report('zipping', 80)
+    const bytes = await zipFiles(built.files, { signal })
+    await built.revalidate()
+    signal.throwIfAborted()
+    const blob = new Blob([new Uint8Array(bytes)], { type: 'application/zip' })
+    report('done', 100)
+    return {
+      blob,
+      filename: `${sanitizeBaseFilename(captured.name)}-web.zip`,
+      kind: captured.kind,
+      warnings: built.warnings,
+    }
+  }
   const isPro = project.kind === 'pro' && !!project.tree
 
   report('collecting', 5)
@@ -42,11 +70,11 @@ export async function exportProject(
   const warnings: string[] = []
 
   if (isPro) {
-    const built = buildProFileMap(project)
+    const built = await buildProFileMap(project)
     files = built.files
     warnings.push(...built.warnings)
     // Não sobrescreve arquivos de deploy que o usuário já tenha na árvore.
-    const deploy = proDeployTemplates(project.name)
+    const deploy = proDeployTemplates(project.name, 'package-lock.json' in files)
     for (const [path, content] of Object.entries(deploy)) {
       if (!(path in files)) files[path] = content
     }
@@ -61,7 +89,7 @@ export async function exportProject(
   }
 
   report('zipping', 80)
-  const bytes = await zipFiles(files)
+  const bytes = await zipFiles(files, { signal: opts.signal })
   // Cópia para um Uint8Array com ArrayBuffer "comum": o retorno do fflate é
   // tipado como ArrayBufferLike (pode ser SharedArrayBuffer), que o Blob recusa.
   const blobBytes = new Uint8Array(bytes.byteLength)

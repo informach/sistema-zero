@@ -1,0 +1,51 @@
+[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o que é publicar um jogo no Mural. Esta bancada é um treino: nada daqui vai para o Mural de verdade.
+
+[interested, animated voice] Olha aqui: na esquerda está o seu projeto, com a nave azul, e na direita, a versão no Mural, ainda sem nada publicado. Quando eu clico em Publicar, aparece o cartão Publicação 1, com a nave azul, e as duas telas mostram a mesma nave.
+
+[engaging, energetic, conversational voice] Agora, em Cor da nave no seu projeto, eu escolho rosa. Tá vendo? A nave do projeto fica rosa, e a Publicação 1 continua azul, porque publicar guardou uma cópia daquele momento, e o projeto continua seu para mexer.
+
+[engaging, energetic, conversational voice] Sabe quando você manda a foto de um desenho para alguém da família? Se depois você pinta mais o desenho, a foto que a pessoa recebeu continua igual. Para ela ver o desenho novo, você manda outra foto.
+
+[engaging, energetic, conversational voice] Por isso, eu clico em Publicar de novo. [confident, clear, unhurried voice] Repare: aparece a Publicação 2, rosa, ao lado da Publicação 1, que continua azul. Ou seja, cada publicação é um cartão novo, e o anterior fica no Mural.
+
+[engaging, energetic, conversational voice] Mais adiante, publicar o seu jogo de verdade vai ser uma escolha sua.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada publicação guardou o jogo do jeito que ele estava naquele momento. Por isso, agora a gente vai testar o seu jogo inteiro, antes de você decidir se quer publicar.
+
+[confident, clear, unhurried voice] Clique em Abrir meu Estúdio nesta parte e retome o seu jogo. Clique na prévia e toque na tecla Enter para começar. Mova a nave para os lados, atire e acerte uma pedra. [confident, clear, unhurried voice] Confira se os pontos mudam e se as duas animações aparecem.
+
+[engaging, energetic, conversational voice] Depois deixe as pedras acertarem a nave até acabar a última vida. Tá vendo? A partida acaba e aparece a tela de fim, porque as vidas acabaram. Toque na tecla Enter para voltar à abertura e em outro Enter para começar de novo. [confident, clear, unhurried voice] Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.
+
+[curious] E se alguma coisa não funcionar?
+
+[reassuring, encouraging voice] Se alguma regra falhar, volte à aula em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de ajuda, clique em Preciso de ajuda, aqui na aula, e conte o que você queria, o que tentou e o que aconteceu. Depois dos ajustes, teste de novo.
+
+[engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora vem uma escolha sua: publicar o seu jogo no Mural. Se quiser mostrar o seu jogo para a família e os amigos, deixe o jogo salvo e clique em Compartilhar, no alto do Estúdio. [confident, clear, unhurried voice] Confira o título. O resumo pode já vir escrito, por isso leia e deixe do seu jeito, contando como jogar. Depois clique em Gerar capa e confira se a imagem mostra o seu jogo. Com título, resumo e capa prontos, clique em Publicar.
+
+[engaging, energetic, conversational voice] Espere aparecer Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.
+
+[curious] E para mandar o jogo para alguém?
+
+[engaging, energetic, conversational voice] Depois clique em Copiar link de jogar. [interested, animated voice] Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar.
+
+[engaging, energetic, conversational voice] Se preferir guardar o jogo por enquanto, você pode seguir para o quiz e depois enviar o jogo pela galeria. E, se mudar o projeto depois de publicar e quiser mostrar a mudança, publique uma nova versão, porque o cartão antigo continua com a versão anterior, como na experiência.
+
+[engaging, energetic, conversational voice] Pause aqui se você escolheu publicar. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois de clicar em Fechar, volte a esta aba e clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Hora de enviar o seu jogo do seu jeito! Antes, confira no seu jogo: as duas artes aparecem inteiras e animadas, e uma partida completa termina e recomeça direitinho. Publicar e escrever um recado ficam à sua escolha. Se alguma coisa estiver diferente, volte à parte em que ela foi feita e ajuste. Depois espere aparecer Guardado na sua conta no Estúdio, porque a galeria da aula só mostra o que já está guardado na sua conta.
+
+[engaging, energetic, conversational voice] Agora volte para a aba da aula e clique em Escolher no Estúdio. Na janela Minhas criações do Estúdio, selecione o cartão do seu jogo. Se a sua criação não aparecer, confira se ela ficou guardada na sua conta e clique em Atualizar galeria.
+
+[upbeat, encouraging voice] Se quiser, escreva uma mensagem no campo Recado. Depois clique em Enviar (1) e espere aparecer Recebido!
+
+[engaging, energetic, conversational voice] Esse envio guarda uma cópia deste momento, e você continua criando no Estúdio. Por último, clique em Concluir aula.

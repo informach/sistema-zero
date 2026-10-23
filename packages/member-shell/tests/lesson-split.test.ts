@@ -180,7 +180,7 @@ describe('o tipo LessonSplit', () => {
  * Duas coisas que a régua de largura sozinha não decide: (1) a experimentação em CENA
  * também é bancada e vai para a direita, junto do Estúdio e do Pinta;
  * (2) dividir só faz sentido com conteúdo dos DOIS lados. Antes bastava haver ferramenta,
- * e uma seção cujo único bloco era o Estúdio abria ao meio com metade da tela vazia.
+ * e uma parte cujo único bloco era o Estúdio abria ao meio com metade da tela vazia.
  */
 const editor = { id: 'projeto', kind: 'studio', content: { kind: 'studio' } }
 const texto = { id: 'fala', kind: 'dialogue', content: { kind: 'dialogue', text: 'Oi!' } }
@@ -199,8 +199,8 @@ function cena(id = 'cena') {
   }
 }
 
-describe('a partição da seção', () => {
-  test('vídeo e jogo pronto dividem a seção sem abrir o Estúdio', () => {
+describe('a partição da parte', () => {
+  test('vídeo e jogo pronto dividem a parte sem abrir o Estúdio', () => {
     const video = { id: 'video', kind: 'video', content: { kind: 'video' } }
     const jogo = {
       id: 'jogo',

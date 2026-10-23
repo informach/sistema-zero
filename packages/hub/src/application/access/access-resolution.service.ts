@@ -1,3 +1,4 @@
+import { CREATOR_SHOWCASE_SLUGS, creatorCommunityAccessRef } from '@sistemazero/core/creations'
 import type { AccessConfig } from '../../domain/access/access-config'
 import type { MembersGateway } from '../../domain/ports/members-gateway.port'
 import type { Audience, Channel, Space } from '../../domain/space/space'
@@ -5,6 +6,8 @@ import type { MicroCache } from '../../infrastructure/cache/micro-cache'
 
 /** Ator resolvido dos headers `X-Auth-User-*` injetados pelo gateway. */
 export interface Actor {
+  /** Trusted Kids context; absent on adult account sessions. */
+  kidsContext?: boolean
   /** Identidade de DADOS: autor de tópicos/comentários, reações, "novidades". Em
    *  sessão de perfil (estilo Netflix) é o PERFIL de criança (x-auth-user-id). */
   userId: string
@@ -41,6 +44,14 @@ export interface SpaceAccessDecision {
 const MURAL_SLUG = 'mural-dos-criadores'
 const MURAL_FULL_ACCESS = 'mural-dos-criadores'
 const MURAL_VISITOR_ACCESS = 'mural-dos-criadores-visitante'
+/**
+ * Mural ADULTO (20/10/2026): mesma política de visita do Kids, com as chaves adultas
+ * (`adult-mural-dos-criadores` pleno, `adult-mural-dos-criadores-visitante` só leitura) sobre a
+ * Mostra `mural-dos-criadores-adulto`. A visita nunca vale no Mural do outro público.
+ */
+const ADULT_MURAL_SLUG = CREATOR_SHOWCASE_SLUGS.adult
+const ADULT_MURAL_FULL_ACCESS = creatorCommunityAccessRef(MURAL_FULL_ACCESS, 'adult')
+const ADULT_MURAL_VISITOR_ACCESS = creatorCommunityAccessRef(MURAL_VISITOR_ACCESS, 'adult')
 
 type AccessRefs = {
   courseRefs: string[]
@@ -66,6 +77,21 @@ export class AccessResolutionService {
     private readonly members: MembersGateway,
     private readonly cache: MicroCache<CourseAccess>,
   ) {}
+  private async liveMural(actor: Actor): Promise<boolean> {
+    try {
+      return await this.members.getLiveMuralAccess(actor.userId, actor.accountId)
+    } catch {
+      return false
+    }
+  }
+  private isMural(space: Space) {
+    return (
+      space.slug === MURAL_SLUG &&
+      space.audience === 'kids' &&
+      space.accessConfig.visibility === 'community_gated' &&
+      Boolean(space.accessConfig.communities?.includes(MURAL_FULL_ACCESS))
+    )
+  }
 
   private collectAccessRefs(
     items: Array<Pick<AccessConfig, 'visibility' | 'courses' | 'communities'>>,
@@ -83,16 +109,22 @@ export class AccessResolutionService {
     return { courseRefs: [...courseRefs], communityRefs: [...communityRefs] }
   }
 
-  /** O presente de indicação amplia apenas a LEITURA do Mural, nunca a escrita. */
+  /**
+   * O presente de indicação amplia apenas a LEITURA do Mural, nunca a escrita. Kids e adulto têm
+   * a mesma regra, cada um com a sua chave de visita; a escrita usa o `accessConfig` persistido.
+   */
   private readConfig(space: Space): AccessConfig {
     const config = space.accessConfig
+    if (config.visibility !== 'community_gated') return config
+    if (space.slug === MURAL_SLUG && config.communities?.includes(MURAL_FULL_ACCESS))
+      return { ...config, communities: [...config.communities, MURAL_VISITOR_ACCESS] }
     if (
-      space.slug !== MURAL_SLUG ||
-      config.visibility !== 'community_gated' ||
-      !config.communities?.includes(MURAL_FULL_ACCESS)
+      space.slug === ADULT_MURAL_SLUG &&
+      space.audience === 'adult' &&
+      config.communities?.includes(ADULT_MURAL_FULL_ACCESS)
     )
-      return config
-    return { ...config, communities: [...config.communities, MURAL_VISITOR_ACCESS] }
+      return { ...config, communities: [...config.communities, ADULT_MURAL_VISITOR_ACCESS] }
+    return config
   }
 
   /**
@@ -119,10 +151,15 @@ export class AccessResolutionService {
     const access = needsAccess
       ? await this.resolveCourseAccessFailClosed(actor.accountId, courseRefs, communityRefs)
       : NO_COURSE_ACCESS
+    const liveMural = spaces.some((space) => this.isMural(space)) && (await this.liveMural(actor))
     return spaces.map((space) => ({
       space,
-      accessible: this.evaluate(this.readConfig(space), actor, space.audience, access),
-      canInteract: this.evaluate(space.accessConfig, actor, space.audience, access),
+      accessible:
+        (this.isMural(space) && liveMural) ||
+        this.evaluate(this.readConfig(space), actor, space.audience, access),
+      canInteract:
+        (this.isMural(space) && liveMural) ||
+        this.evaluate(space.accessConfig, actor, space.audience, access),
     }))
   }
 
@@ -134,11 +171,13 @@ export class AccessResolutionService {
 
   async canAccessSpace(actor: Actor, space: Space): Promise<boolean> {
     if (actor.privileged) return true
+    if (this.isMural(space) && (await this.liveMural(actor))) return true
     return this.evaluateWithFetch(this.readConfig(space), actor, space.audience)
   }
 
   async canInteractSpace(actor: Actor, space: Space): Promise<boolean> {
     if (actor.privileged) return true
+    if (this.isMural(space) && (await this.liveMural(actor))) return true
     return this.evaluateWithFetch(space.accessConfig, actor, space.audience)
   }
 
@@ -148,6 +187,8 @@ export class AccessResolutionService {
    */
   async decideSpaceAccess(actor: Actor, space: Space): Promise<SpaceAccessDecision> {
     if (actor.privileged) return { accessible: true, unavailable: false, canInteract: true }
+    if (this.isMural(space) && (await this.liveMural(actor)))
+      return { accessible: true, unavailable: false, canInteract: true }
     const readConfig = this.readConfig(space)
     if (readConfig.visibility === 'course_gated' || readConfig.visibility === 'community_gated') {
       try {

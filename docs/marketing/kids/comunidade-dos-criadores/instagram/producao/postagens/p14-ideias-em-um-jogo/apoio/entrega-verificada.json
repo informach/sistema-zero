@@ -1,0 +1,177 @@
+{
+  "id": "P14",
+  "checkedAt": "2026-10-15T00:38:34.140Z",
+  "errors": [],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "01-p14.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p14.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p14.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/jeffrey-retrato-real.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/02-p11-a-p20.md#p14",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../03-postagens.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy-linter.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../destaques/avaliacoes/fontes-dos-relatos.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jeffrey-retrato-real.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem-do-retrato.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jeffrey-transcricao-conferida.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../01-p14.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../previa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "published": false,
+  "visualReview": "Arte inspecionada em tamanho integral e prévia móvel. Retrato real de Jeffrey com o rosto inteiro visível, óculos e fones preservados; enquadramento corrigido para não cortar o rosto à direita. Título e depoimento legíveis, aspas simétricas, identificação correta. Desenhos editoriais separados do retrato. Copy e legenda aprovadas preservadas.",
+  "wordCount": 25,
+  "wordLimitException": "Fala literal, conforme direção visual",
+  "png": {
+    "width": 1080,
+    "height": 1350,
+    "sha256": "31e9f8c7f85e6c5e5eb2ff52c9f5c321dbe59c66b39206771c7cfad2cc3a3f2c",
+    "bytes": 330349
+  },
+  "staticOrder": [
+    "P03",
+    "P14",
+    "P33",
+    "P38",
+    "P49",
+    "P53",
+    "P08",
+    "P29",
+    "P19",
+    "P58",
+    "P45",
+    "P27"
+  ],
+  "nextStaticPost": "P33",
+  "carouselCount": 30,
+  "staticCount": 2,
+  "totalPngs": 222,
+  "previewReadable": true,
+  "galleryNoOverflow": true
+}

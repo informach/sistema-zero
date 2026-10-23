@@ -10,6 +10,7 @@ import type {
   IngestedGmailMessage,
   TicketIngestionRepository,
 } from '../../domain/ports/ticket-ingestion-repository.port'
+import { initialHandling } from '../../domain/ticket/automation'
 import type { Ticket } from '../../domain/ticket/ticket'
 
 export type IngestStatus = 'created' | 'appended' | 'duplicate'
@@ -127,10 +128,12 @@ export class IngestService {
       messageCount: 1,
       aiSummary: null,
       aiSummaryAt: null,
+      aiDraftRunId: null,
       aiDraft: null,
       aiDraftAt: null,
       aiDraftEdited: false,
       aiClassification: null,
+      ...initialHandling(),
       aiGeneration: aiStatus === 'pending' ? 1 : 0,
       aiStatus,
       aiNextAttemptAt: aiStatus === 'pending' ? at : null,
@@ -169,6 +172,8 @@ export class IngestService {
       ccEmails: parsed.ccEmails,
       subject: parsed.subject || null,
       bodyText: parsed.bodyText,
+      aiRunId: null,
+      draftEdited: null,
       bodyHtml: parsed.bodyHtml,
       snippet: parsed.snippet,
       attachments: parsed.attachments,

@@ -1,10 +1,66 @@
 import { describe, expect, test } from 'bun:test'
+import type { AdultJourneyView } from '@sistemazero/core/journey'
 import {
+  adultStudioTier,
+  canShowJavaScriptCreation,
+  canShowPythonCreation,
   drawerSnapshotsForBlocks,
   drawersForBlocks,
   extensionsForBlocks,
   groupDrawersByFamily,
 } from '../src/server/studio-unlocks'
+
+test('JavaScript creation requires known JavaScript achievements, independently of Python', () => {
+  for (const blocks of [[], ['sz_py_pass'], ['sz_js_unknown']])
+    expect(canShowJavaScriptCreation('member', blocks)).toBe(false)
+  for (const blocks of [['sz_js_array_push'], ['sz_py_pass', 'sz_html_ul']])
+    expect(canShowJavaScriptCreation('member', blocks)).toBe(true)
+  for (const role of ['staff', 'admin', 'superadmin'])
+    expect(canShowJavaScriptCreation(role, [])).toBe(true)
+})
+
+describe('Python creation offer follows earned language', () => {
+  test('does not offer Python for absent, JavaScript-only or unknown grants', () => {
+    for (const blocks of [
+      [],
+      ['sz_js_array_push'],
+      ['sz_py_unknown'],
+      ['sz_js_array_push', 'sz_py_unknown'],
+    ])
+      expect(canShowPythonCreation('member', blocks)).toBe(false)
+  })
+
+  test('offers Python for a known earned Python block', () => {
+    for (const blocks of [['sz_py_print'], ['sz_js_array_push', 'sz_py_print']])
+      expect(canShowPythonCreation('member', blocks)).toBe(true)
+  })
+
+  test('retains the existing privileged preview without granting a learner by role name', () => {
+    for (const role of ['admin', 'superadmin', 'staff'])
+      expect(canShowPythonCreation(role, [])).toBe(true)
+    for (const role of [undefined, '', 'member', 'god', 'ADMIN'])
+      expect(canShowPythonCreation(role, [])).toBe(false)
+  })
+})
+
+test('adult Python course access does not grant JavaScript blocks, extensions or Pro', () => {
+  const journey: AdultJourneyView = {
+    audience: 'adult',
+    policyVersion: 1,
+    configured: true,
+    capabilities: ['studio'],
+    stages: [],
+  }
+  const tier = adultStudioTier(journey, 'user', ['sz_py_print'])
+  expect(tier).toMatchObject({ freeStudio: true, hasPalette: true, allowBlocks: [], pro: false })
+  expect(tier.allowedExtensions).toEqual([])
+  expect(adultStudioTier(journey, 'user', ['sz_py_unknown']).hasPalette).toBe(false)
+  expect(adultStudioTier(journey, 'admin', [])).toMatchObject({
+    hasPalette: true,
+    freeStudio: true,
+    pro: true,
+  })
+})
 
 /**
  * Blocos REAIS do catálogo cujo nome de gaveta COLIDE entre famílias: os dois moram numa
@@ -109,7 +165,7 @@ describe('drawersForBlocks', () => {
     expect(drawersForBlocks(['sz_bloco_que_nao_existe'])).toEqual([])
   })
 
-  test('sem blocos, sem gavetas (a seção some no perfil)', () => {
+  test('sem blocos, sem gavetas (a parte some no perfil)', () => {
     expect(drawersForBlocks([])).toEqual([])
   })
 })

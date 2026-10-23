@@ -1,0 +1,339 @@
+/** Private staging-only operator. Import is inert. Root reviews before any provider call. */
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, open, readFile, rename } from 'node:fs/promises'
+import { basename, dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { currentSecret, PINS as BFF, projectContext, validatePlan as validateBffPlan } from './staging-reconcile-bff-proof-r3.mjs'
+
+export const PINS = Object.freeze({ account: 'bcc0f2d44140e05b69152cba326132f8', worker: 'sistemazero-studio-ai-reconcile-staging',
+  environment: 'staging', origin: BFF.origin, node: '24.22.0', wrangler: '4.120.1', railway: 'railway 5.62.1',
+  config: 'packages/studio-ai-reconcile-cron/wrangler.jsonc', source: 'packages/studio-ai-reconcile-cron/src/index.ts',
+  cli: 'packages/studio-ai-reconcile-cron/node_modules/wrangler/wrangler-dist/cli.js',
+  configSha: 'b248254fceb9378f43320a4bfa5e2ca81911975c5f71a16c97a7d76fcc81ae02',
+  sourceSha: 'e77858b335783f29b5a08455aaa374df0b2e8bf7b2404347d25864875a443e16',
+  cliSha: '0862f6f1616a99cf0b0c379ee762b36dd75761992f1c80b43ff1542a954de6bd',
+  bundleSha: 'dd88f8763f8ad4f445cfc026704a0d4c78c4c34d6668b0bfa99a46e20dca6c54', bundleBytes: 4975,
+  bffSha: '965bd80d400b91ebecb34b3e4f7a52bc81cb37000d33722864a775b4b13d9fba' })
+export const INTENTS = Object.freeze({ secret: 'staging-studio-ai-reconcile-secret.intent.json', deploy: 'staging-studio-ai-reconcile-deploy.intent.json' })
+const SECRET = 'STUDIO_AI_RECONCILE_CRON_SECRET'
+const CACHE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(CACHE, '../..')
+const DRAFT = 'export default { fetch() {} }'
+const MAX_AGE = 30 * 60_000
+const object = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+const sha = value => createHash('sha256').update(value).digest('hex')
+const digest = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+const uuid = value => typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value)
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const keys = (value, list) => object(value) && same(Object.keys(value).sort(), [...list].sort())
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function requireThat(value, code) { if (!value) throw new Refusal(code) }
+function fileReference(value) { return keys(value, ['path', 'sha256']) && typeof value.path === 'string' && value.path.length > 0 && digest(value.sha256) }
+
+export function argumentsFor(argv) {
+  const [mode, run, planPath, planSha256, secretPath, secretSha256, ...extra] = argv
+  requireThat(['read', 'secret', 'deploy'].includes(mode) && typeof run === 'string' && new RegExp(`^staging-cron-${mode}-[a-z0-9-]+$`).test(run) && planPath && digest(planSha256) && extra.length === 0, 'ARGUMENTS')
+  requireThat(mode === 'deploy' ? typeof secretPath === 'string' && secretPath.length > 0 && digest(secretSha256) : secretPath === undefined && secretSha256 === undefined, 'ARGUMENTS')
+  return { mode, run, planPath, planSha256, secretPath, secretSha256 }
+}
+export function validatePlan(plan) {
+  requireThat(keys(plan, ['kind', 'version', 'account', 'worker', 'environment', 'bffPlan', 'bffReceipt', 'bundle']) &&
+    plan.kind === 'staging-reconcile-cron-plan' && plan.version === 1 && plan.account === PINS.account && plan.worker === PINS.worker && plan.environment === 'staging' &&
+    fileReference(plan.bffPlan) && fileReference(plan.bffReceipt) && keys(plan.bundle, ['name', 'file']) && plan.bundle.name === 'index.js' && fileReference(plan.bundle.file) && plan.bundle.file.sha256 === PINS.bundleSha, 'PLAN_SCOPE')
+  return plan
+}
+export function validateBffProof(receipt, bffPlanSha, mode, now = Date.now()) {
+  requireThat(receipt?.kind === 'staging-reconcile-bff-proof' && receipt.version === 1 && receipt.mode === 'apply' && receipt.state === 'BFF_API_QUALIFIED' &&
+    receipt.operatorSha256 === PINS.bffSha && receipt.planSha256 === bffPlanSha && same(receipt.pins, BFF) && receipt.anonymousPostAttempts === 1 && receipt.anonymousRejected === true &&
+    receipt.anonymousStatus === 401 && receipt.authenticatedPostAttempts === 1 && receipt.remoteOutcomeUnknown === false && receipt.apiContractQualified === true && receipt.contextUnchanged === true &&
+    receipt.result?.state === 'reconciled' && receipt.result.environment === 'staging' && receipt.result.pending === 0 && Number.isSafeInteger(receipt.result.expiredBuilderJobs) &&
+    receipt.result.expiredBuilderJobs >= 0 && receipt.result.expiredBuilderJobs <= 100 && Number.isSafeInteger(receipt.result.confirmed) && receipt.result.confirmed >= 0 && receipt.result.confirmed <= 4 &&
+    receipt.retries === 0 && same(receipt.beforeContext, receipt.afterContext), 'BFF_PROOF_INVALID')
+  if (mode !== 'read') fresh(receipt.finishedAt, now)
+}
+function fresh(at, now = Date.now()) { const age = now - Date.parse(at); requireThat(Number.isFinite(age) && age >= 0 && age < MAX_AGE, 'PROOF_STALE') }
+
+export function environmentFor(parent) {
+  const result = Object.fromEntries(['PATH', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA'].filter(key => parent[key]).map(key => [key, parent[key]]))
+  return Object.assign(result, { CI: 'true', NO_COLOR: '1', WRANGLER_SEND_METRICS: 'false', WRANGLER_SEND_ERROR_REPORTS: 'false', WRANGLER_WRITE_LOGS: 'false',
+    WRANGLER_LOG_SANITIZE: 'true', CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV: 'false', CLOUDFLARE_ACCOUNT_ID: PINS.account })
+}
+export function invocation(mode, root, emptyFile) {
+  requireThat(['auth', 'secret', 'deploy'].includes(mode), 'CLI_OPERATION')
+  const action = mode === 'auth' ? ['auth', 'token', '--json'] : mode === 'secret' ? ['secret', 'put', SECRET] : ['deploy']
+  return ['--no-warnings', join(root, PINS.cli), ...action, '--config', join(root, PINS.config), '--env', 'staging', '--env-file', emptyFile]
+}
+export function mutationInvocation(mode, root, emptyFile, secret) {
+  requireThat(mode === 'secret' || mode === 'deploy', 'CLI_OPERATION')
+  requireThat(mode === 'secret' ? typeof secret === 'string' && secret.length >= 24 && secret.trim() === secret && !/\s/.test(secret) : secret === undefined, 'STDIN_SECRET_INVALID')
+  return { argv: invocation(mode, root, emptyFile), input: secret, timeout: mode === 'secret' ? 120_000 : 180_000 }
+}
+export async function reserveIntent(directory, mode, receipt) {
+  requireThat(Object.hasOwn(INTENTS, mode), 'INTENT_OPERATION')
+  let handle
+  try { handle = await open(join(directory, INTENTS[mode]), 'wx', 0o600) }
+  catch { throw new Refusal('GLOBAL_INTENT_EXISTS_OR_UNAVAILABLE') }
+  try { await handle.writeFile(JSON.stringify(receipt) + '\n'); await handle.sync() }
+  finally { await handle.close() }
+}
+
+export function projectBindings(rows, phase) {
+  requireThat(Array.isArray(rows), 'BINDINGS_INVALID')
+  const expected = phase === 'draft' ? [SECRET] : ['ENVIRONMENT', 'KIDS_ORIGIN', SECRET].sort()
+  requireThat(same(rows.map(row => row.name).sort(), expected), 'BINDINGS_INVALID')
+  return rows.map(row => {
+    if (row.name === SECRET) { requireThat(row.type === 'secret_text', 'SECRET_BINDING_INVALID'); return { name: SECRET, type: 'secret_text' } }
+    const expectedValue = row.name === 'ENVIRONMENT' ? 'staging' : PINS.origin
+    requireThat(row.type === 'plain_text' && row.text === expectedValue, 'PUBLIC_BINDING_INVALID')
+    return { name: row.name, type: row.type, text: expectedValue }
+  }).sort((a, b) => a.name.localeCompare(b.name))
+}
+export function assertSnapshot(snapshot, phase, expectedModules) {
+  requireThat(snapshot?.exists === true && uuid(snapshot.version), 'WORKER_STATE_INVALID')
+  requireThat(same(snapshot.secretNames, [{ name: SECRET, type: 'secret_text' }]) && same(snapshot.bindings, projectBindings(snapshot.bindings, phase)), 'WORKER_BINDINGS_CHANGED')
+  requireThat(same(snapshot.modules, expectedModules) && same(snapshot.routes, []) && same(snapshot.customDomains, []), 'WORKER_CONTENT_OR_ROUTING_CHANGED')
+  requireThat(same(snapshot.crons, phase === 'draft' ? [] : ['* * * * *']), 'SCHEDULE_CHANGED')
+  requireThat(typeof snapshot.workersDev === 'boolean' && typeof snapshot.previewUrls === 'boolean', 'ROUTING_UNKNOWN')
+  if (phase === 'final') requireThat(snapshot.workersDev === false && snapshot.previewUrls === false && snapshot.compatibilityDate === '2026-10-22' &&
+    same(snapshot.compatibilityFlags, ['nodejs_compat']) && snapshot.observabilityEnabled === true, 'FINAL_SETTINGS_CHANGED')
+}
+
+/** A single CLI mutation; response loss never unlocks another invocation or the next stage. */
+export async function mutateOnce(mode, baseline, deps) {
+  requireThat(['secret', 'deploy'].includes(mode), 'MUTATION_OPERATION')
+  await deps.preflightRemote()
+  const fresh = await deps.inspectContext()
+  requireThat(same(fresh.context, baseline.context) && fresh.secret === baseline.secret, 'CONTEXT_CHANGED_BEFORE_MUTATION')
+  await deps.reserve()
+  await deps.checkpoint({ state: 'MUTATION_OUTCOME_UNKNOWN', mutationAttempts: 1, remoteOutcomeUnknown: true })
+  let acknowledged = false
+  try { acknowledged = (await deps.invoke(mode, mode === 'secret' ? fresh.secret : undefined)).ok === true }
+  catch { /* Deliberately discard untrusted child errors/outputs; readback is independent. */ }
+  await deps.checkpoint({ cliAcknowledged: acknowledged })
+  let after
+  try {
+    after = await deps.readback()
+    const context = await deps.inspectContext()
+    requireThat(same(context.context, baseline.context) && context.secret === baseline.secret, 'CONTEXT_CHANGED_AFTER_MUTATION')
+  } catch {
+    await deps.checkpoint({ state: acknowledged ? 'ACK_RECEIVED_READBACK_UNCONFIRMED' : 'ACK_UNKNOWN_READBACK_UNCONFIRMED', remoteOutcomeUnknown: true, readbackVerified: false })
+    return false
+  }
+  await deps.checkpoint({ after, readbackVerified: true, contextUnchanged: true, remoteOutcomeUnknown: !acknowledged,
+    state: acknowledged ? (mode === 'secret' ? 'SECRET_PROVISIONED_READBACK_VERIFIED' : 'CRON_DEPLOYED_READBACK_VERIFIED') : 'ACK_UNKNOWN_READBACK_MATCHED' })
+  return acknowledged
+}
+
+async function readPinned(reference, maximum = 2 * 1024 * 1024) {
+  const path = resolve(ROOT, reference.path), stat = await lstat(path)
+  requireThat(stat.isFile() && !stat.isSymbolicLink() && stat.size <= maximum, 'PINNED_FILE_INVALID')
+  const bytes = await readFile(path)
+  requireThat(bytes.length <= maximum && sha(bytes) === reference.sha256, 'PINNED_FILE_CHANGED')
+  return bytes
+}
+const decode = bytes => JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+export async function boundedResponse(response, maxBytes = 1_048_576) {
+  requireThat(response.body, 'RESPONSE_BODY_MISSING')
+  const reader = response.body.getReader(), chunks = []; let length = 0
+  try {
+    for (;;) { const next = await reader.read(); if (next.done) break; length += next.value.byteLength; requireThat(length <= maxBytes, 'RESPONSE_TOO_LARGE'); chunks.push(next.value) }
+  } finally { await reader.cancel().catch(() => {}); reader.releaseLock() }
+  const output = new Uint8Array(length); let offset = 0
+  for (const chunk of chunks) { output.set(chunk, offset); offset += chunk.length }
+  return output
+}
+export function makeGet(token, checkpoint, deadline, fetcher = fetch) {
+  requireThat(typeof token === 'string' && token.length >= 16, 'CF_AUTH_INVALID')
+  const prefix = `/workers/scripts/${PINS.worker}`
+  return async path => {
+    requireThat(path === '/workers/scripts?per_page=100&page=1' || /^\/workers\/scripts\?per_page=100&page=([1-9]|10)$/.test(path) ||
+      [prefix + '/deployments', prefix + '/settings', prefix + '/schedules', prefix + '/subdomain', prefix + '/secrets', prefix + '/content/v2',
+        `/workers/services/${PINS.worker}/environments/production/routes?show_zonename=true`, `/workers/domains/records?page=0&per_page=5&service=${PINS.worker}&environment=production`].includes(path) ||
+      (path.startsWith(prefix + '/versions/') && uuid(path.slice((prefix + '/versions/').length))), 'GET_PATH_REFUSED')
+    const remaining = deadline - Date.now(); requireThat(remaining > 0, 'READ_DEADLINE')
+    const response = await fetcher(`https://api.cloudflare.com/client/v4/accounts/${PINS.account}${path}`, { method: 'GET', redirect: 'error',
+      headers: { authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(Math.min(15_000, remaining)) })
+    await checkpoint({ path, status: response.status })
+    if (response.status !== 200) { await response.body?.cancel(); throw new Refusal('CF_GET_FAILED') }
+    return new Response(await boundedResponse(response), { headers: { 'content-type': response.headers.get('content-type') ?? '' } })
+  }
+}
+
+export async function observe(get) {
+  const prefix = `/workers/scripts/${PINS.worker}`
+  const json = async path => { const body = await (await get(path)).json(); requireThat(body.success === true, 'CF_RESPONSE_INVALID'); return body }
+  const inventory = async () => {
+    let found
+    for (let page = 1; page <= 10; page++) {
+      const body = await json(`/workers/scripts?per_page=100&page=${page}`)
+      requireThat(Array.isArray(body.result), 'CF_INVENTORY_INVALID')
+      for (const row of body.result) if (row.id === PINS.worker) { requireThat(!found && digest(row.etag), 'CF_INVENTORY_DUPLICATE'); found = { etag: row.etag } }
+      if (body.result.length < 100 || (Number.isSafeInteger(body.result_info?.total_pages) && page >= body.result_info.total_pages)) return found
+    }
+    throw new Refusal('CF_INVENTORY_INCOMPLETE')
+  }
+  const before = await inventory()
+  if (!before) return { exists: false, inventoryComplete: true }
+  const active = async () => {
+    const result = (await json(prefix + '/deployments')).result
+    const versions = result?.deployments?.[0]?.versions
+    requireThat(Array.isArray(versions) && versions.length === 1 && versions[0].percentage === 100 && uuid(versions[0].version_id), 'CF_VERSION_NOT_UNIQUE')
+    return versions[0].version_id
+  }
+  const version = await active(), details = (await json(prefix + '/versions/' + version)).result
+  requireThat(details?.id === version, 'CF_VERSION_CHANGED')
+  const settings = (await json(prefix + '/settings')).result
+  const secrets = (await json(prefix + '/secrets')).result
+  const schedules = (await json(prefix + '/schedules')).result
+  const subdomain = (await json(prefix + '/subdomain')).result
+  const routes = (await json(`/workers/services/${PINS.worker}/environments/production/routes?show_zonename=true`)).result
+  const domains = (await json(`/workers/domains/records?page=0&per_page=5&service=${PINS.worker}&environment=production`)).result
+  requireThat(Array.isArray(secrets) && Array.isArray(schedules?.schedules) && same(routes, []) && same(domains, []), 'CF_ROUTING_OR_SECRET_SHAPE')
+  const form = await (await get(prefix + '/content/v2')).formData(), modules = []
+  for (const [name, file] of form) {
+    if (typeof file === 'string') continue
+    const bytes = new Uint8Array(await file.arrayBuffer())
+    modules.push({ name, bytes: bytes.length, sha256: sha(bytes) })
+  }
+  modules.sort((a, b) => a.name.localeCompare(b.name))
+  const draftModules = [{ name: PINS.worker, bytes: new TextEncoder().encode(DRAFT).length, sha256: sha(DRAFT) }]
+  const phase = same(modules, draftModules) ? 'draft' : 'final'
+  const bindings = projectBindings(settings?.bindings, phase)
+  requireThat(same(projectBindings(details.resources?.bindings, phase), bindings), 'VERSION_BINDINGS_CHANGED')
+  if (phase === 'final') requireThat(details.resources?.script_runtime?.compatibility_date === settings.compatibility_date &&
+    same(details.resources.script_runtime.compatibility_flags, settings.compatibility_flags), 'VERSION_RUNTIME_CHANGED')
+  const after = await inventory()
+  requireThat(same(after, before) && await active() === version, 'CF_CHANGED_DURING_READ')
+  // Nothing except names/types and approved public vars crosses this projection.
+  return { exists: true, inventoryComplete: true, version, etag: before.etag, phase, bindings,
+    secretNames: secrets.map(value => ({ name: value.name, type: value.type })).sort((a, b) => a.name.localeCompare(b.name)),
+    modules, crons: schedules.schedules.map(value => value.cron), workersDev: subdomain.enabled, previewUrls: subdomain.previews_enabled,
+    routes: [], customDomains: [], compatibilityDate: settings.compatibility_date ?? null,
+    compatibilityFlags: settings.compatibility_flags ?? [], observabilityEnabled: settings.observability?.enabled === true }
+}
+
+export function validateSecretReceipt(receipt, planSha, operatorSha, now = Date.now()) {
+  requireThat(receipt?.kind === 'staging-reconcile-cron-activation' && receipt.version === 1 && receipt.mode === 'secret' && receipt.state === 'SECRET_PROVISIONED_READBACK_VERIFIED' &&
+    receipt.planSha256 === planSha && receipt.operatorSha256 === operatorSha && same(receipt.pins, PINS) && receipt.mutationAttempts === 1 && receipt.cliAcknowledged === true &&
+    receipt.readbackVerified === true && receipt.remoteOutcomeUnknown === false && receipt.contextUnchanged === true && receipt.after?.exists === true, 'SECRET_RECEIPT_INVALID')
+  fresh(receipt.finishedAt, now)
+}
+
+async function main() {
+  const args = argumentsFor(process.argv.slice(2))
+  requireThat(process.versions.node === PINS.node && !process.versions.bun, 'NODE_VERSION')
+  const out = join(CACHE, args.run); await mkdir(out)
+  const deadline = Date.now() + 600_000
+  const receipt = { kind: 'staging-reconcile-cron-activation', version: 1, mode: args.mode, pins: PINS, state: 'RUNNING', startedAt: new Date().toISOString(),
+    planSha256: args.planSha256, operatorSha256: sha(await readFile(fileURLToPath(import.meta.url))), mutationAttempts: 0, cliAcknowledged: false, remoteOutcomeUnknown: false,
+    readbackVerified: false, bffPosts: 0, scheduledWitnessQualified: false, overallQualified: false, secretValuesOrHashesRecorded: false, requests: [] }
+  const save = async patch => {
+    Object.assign(receipt, patch)
+    const temp = join(out, 'receipt.tmp'), handle = await open(temp, 'w', 0o600)
+    try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+    await rename(temp, join(out, 'receipt.json'))
+  }
+  const remaining = () => { const value = deadline - Date.now(); requireThat(value > 0, 'OPERATION_DEADLINE'); return value }
+  const env = environmentFor(process.env)
+  const command = (executable, argv, { input, timeout = 20_000 } = {}) => new Promise(resolveResult => {
+    let child
+    try {
+      child = execFile(executable, argv, { cwd: out, env, windowsHide: true, shell: false, timeout: Math.min(timeout, remaining()), maxBuffer: 1_048_576, encoding: 'utf8' },
+        (error, stdout) => resolveResult({ ok: !error, stdout: error ? '' : stdout }))
+      child.stdin.on('error', () => {})
+      child.stdin.end(input)
+    } catch { resolveResult({ ok: false, stdout: '' }) }
+  })
+  let token, baseline
+  try {
+    await save({})
+    const plan = validatePlan(decode(await readPinned({ path: args.planPath, sha256: args.planSha256 }, 16_384)))
+    const bffPlan = validateBffPlan(decode(await readPinned(plan.bffPlan, 16_384)))
+    const bffProof = decode(await readPinned(plan.bffReceipt))
+    validateBffProof(bffProof, plan.bffPlan.sha256, args.mode)
+    for (const [path, digest] of [[PINS.config, PINS.configSha], [PINS.source, PINS.sourceSha], [PINS.cli, PINS.cliSha],
+      ['.cache/python-reference-games/staging-reconcile-bff-proof-r3.mjs', PINS.bffSha]]) await readPinned({ path, sha256: digest }, 32 * 1024 * 1024)
+    requireThat(decode(await readFile(join(ROOT, 'packages/studio-ai-reconcile-cron/node_modules/wrangler/package.json'))).version === PINS.wrangler, 'WRANGLER_VERSION')
+    const bundle = await readPinned(plan.bundle.file)
+    requireThat(bundle.length === PINS.bundleBytes, 'BUNDLE_SIZE_CHANGED')
+    const expectedModules = [{ name: plan.bundle.name, bytes: bundle.length, sha256: plan.bundle.file.sha256 }]
+    const draftModules = [{ name: PINS.worker, bytes: new TextEncoder().encode(DRAFT).length, sha256: sha(DRAFT) }]
+    let secretReceipt
+    if (args.mode === 'deploy') {
+      secretReceipt = decode(await readPinned({ path: args.secretPath, sha256: args.secretSha256 }))
+      validateSecretReceipt(secretReceipt, args.planSha256, receipt.operatorSha256)
+      assertSnapshot(secretReceipt.after, 'draft', draftModules)
+    }
+    const empty = join(out, 'empty-public.env'), emptyHandle = await open(empty, 'wx', 0o600)
+    try { await emptyHandle.sync() } finally { await emptyHandle.close() }
+    const native = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe')
+    const version = await command(native, ['--version']); requireThat(version.ok && version.stdout.trim() === PINS.railway, 'RAILWAY_VERSION')
+    const api = async (query, variables) => {
+      const reply = await command(native, ['api', '--compact', query, '--variables', JSON.stringify(variables)])
+      requireThat(reply.ok, 'RAILWAY_READ_UNCONFIRMED')
+      const body = JSON.parse(reply.stdout); requireThat(object(body.data) && !body.errors, 'RAILWAY_RESPONSE_INVALID'); return body.data
+    }
+    const fields = 'id projectId environmentId serviceId status snapshotId deploymentStopped meta'
+    const context = async () => {
+      const result = []
+      for (const role of ['kids', 'members']) result.push(projectContext(await api(`query($id:String!,$s:String!,$e:String!,$input:DeploymentListInput!){deployment(id:$id){${fields}}serviceInstance(serviceId:$s,environmentId:$e){serviceId environmentId activeDeployments{${fields}}latestDeployment{${fields}}}deployments(input:$input,first:1){edges{node{id status}}pageInfo{hasNextPage}}}`,
+        { id: bffPlan[role].deploymentId, s: BFF[role], e: BFF.environment, input: { projectId: BFF.project, environmentId: BFF.environment, serviceId: BFF[role], status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } }), bffPlan, role))
+      return result
+    }
+    const inspectContext = async () => {
+      const before = await context()
+      const data = await api('query($d:String!,$p:String!,$e:String!,$s:String!){snapshot:deploymentSnapshot(deploymentId:$d){id variables}raw:variables(projectId:$p,environmentId:$e,serviceId:$s,unrendered:true)rendered:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$s)}', { d: bffPlan.kids.deploymentId, p: BFF.project, e: BFF.environment, s: BFF.kids })
+      let secret
+      try { secret = currentSecret(data, before[0].snapshotId) }
+      finally { for (const map of [data.raw, data.rendered, data.snapshot?.variables]) if (object(map)) for (const key of Object.keys(map)) delete map[key] }
+      const after = await context()
+      requireThat(same(before, after) && same(after, bffProof.afterContext), 'BFF_CONTEXT_CHANGED')
+      return { context: after, secret }
+    }
+    baseline = await inspectContext()
+    const auth = await command(process.execPath, invocation('auth', ROOT, empty))
+    requireThat(auth.ok, 'CF_AUTH_UNCONFIRMED')
+    const credentials = JSON.parse(auth.stdout)
+    requireThat(['oauth', 'api_token'].includes(credentials.type) && typeof credentials.token === 'string' && credentials.token.length >= 16, 'CF_AUTH_INVALID')
+    token = credentials.token; delete credentials.token; auth.stdout = ''
+    const get = makeGet(token, async item => { receipt.requests.push(item); await save({}) }, deadline)
+    const before = await observe(get)
+    await save({ before, beforeContext: baseline.context, bffReceiptSha256: plan.bffReceipt.sha256, expectedModules })
+    if (args.mode === 'read') {
+      if (before.exists) assertSnapshot(before, before.phase, before.phase === 'draft' ? draftModules : expectedModules)
+      await save({ state: 'READ_ONLY_VERIFIED', readbackVerified: true })
+    } else {
+      requireThat(remaining() >= 300_000, 'INSUFFICIENT_MUTATION_BUDGET')
+      const check = snapshot => {
+        if (args.mode === 'secret') requireThat(snapshot.exists === false && snapshot.inventoryComplete === true, 'SECRET_TARGET_NOT_ABSENT')
+        else { assertSnapshot(snapshot, 'draft', draftModules); requireThat(same(snapshot, secretReceipt.after), 'SECRET_STATE_CHANGED') }
+      }
+      check(before)
+      const success = await mutateOnce(args.mode, baseline, { inspectContext,
+        preflightRemote: async () => { const current = await observe(get); check(current); requireThat(same(before, current), 'REMOTE_CHANGED_BEFORE_MUTATION');
+          validateBffProof(bffProof, plan.bffPlan.sha256, args.mode) },
+        reserve: () => reserveIntent(CACHE, args.mode, { kind: 'staging-reconcile-cron-exclusive-intent', operation: args.mode, pins: PINS,
+          planSha256: args.planSha256, operatorSha256: receipt.operatorSha256, run: args.run, createdAt: new Date().toISOString() }), checkpoint: save,
+        invoke: async (mode, secret) => {
+          const stat = await lstat(empty)
+          requireThat(stat.isFile() && !stat.isSymbolicLink() && (await readFile(empty)).length === 0, 'EMPTY_ENV_CHANGED')
+          for (const [path, digest] of [[PINS.config, PINS.configSha], [PINS.source, PINS.sourceSha], [PINS.cli, PINS.cliSha]]) await readPinned({ path, sha256: digest }, 32 * 1024 * 1024)
+          validateBffProof(bffProof, plan.bffPlan.sha256, mode)
+          const request = mutationInvocation(mode, ROOT, empty, secret)
+          const result = await command(process.execPath, request.argv, request)
+          result.stdout = ''
+          return result
+        },
+        readback: async () => { const observed = await observe(get); assertSnapshot(observed, args.mode === 'secret' ? 'draft' : 'final', args.mode === 'secret' ? draftModules : expectedModules); return observed } })
+      if (!success) process.exitCode = 1
+    }
+  } catch (error) {
+    await save({ state: 'REFUSED_OR_UNCONFIRMED', failureCode: error instanceof Refusal ? error.code : 'LOCAL_OR_PROVIDER_UNCONFIRMED' })
+    process.exitCode = 1
+  } finally {
+    token = undefined; if (baseline) baseline.secret = undefined
+    await save({ finishedAt: new Date().toISOString() })
+    console.log(JSON.stringify({ state: receipt.state, output: basename(out), mutationAttempts: receipt.mutationAttempts, remoteOutcomeUnknown: receipt.remoteOutcomeUnknown, scheduledWitnessQualified: false }))
+  }
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main().catch(() => { console.error('LOCAL_PREFLIGHT_OR_RECEIPT_FAILURE'); process.exitCode = 1 })

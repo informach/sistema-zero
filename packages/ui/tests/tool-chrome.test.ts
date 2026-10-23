@@ -255,7 +255,7 @@ describe('tool-chrome.css: receitas', () => {
    * "totalmente fora da identidade visual da comunidade".
    */
   it('o guia divide a regra do cartão das galerias, em vez de copiá-la', () => {
-    // ⚠ Enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás em
+    // ! Enquanto eram dois blocos byte a byte iguais, mudar um deixava o outro para trás em
     // silêncio (achado do full review de 19/09/2026). Hoje o seletor é o mesmo bloco.
     const cartao = bloco('.sz-tool-card,')
     expect(cartao.seletor.split(',').map((parte) => parte.trim())).toEqual([
@@ -266,7 +266,7 @@ describe('tool-chrome.css: receitas', () => {
     expect(cartao.corpo).toContain('background: var(--sz-tool-surface)')
     // O título idem: o guia entra na regra do `.sz-tool-card-title`.
     expect(bloco('.sz-tool-card-title,').seletor).toContain('.sz-tool-guide__title')
-    // E não sobrou uma segunda regra de BASE só para o guia. ⚠ A asserção olha os seletores
+    // E não sobrou uma segunda regra de BASE só para o guia. ! A asserção olha os seletores
     // inteiros: um regex de texto casaria a própria regra compartilhada, que tem o guia numa
     // linha só dele depois da vírgula.
     const soDoGuia = [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
@@ -276,7 +276,7 @@ describe('tool-chrome.css: receitas', () => {
   })
 
   it('o guia é CHAPADO: o relevo das galerias não o alcança', () => {
-    // ⚠️⚠️ A classe vive no SELETOR, nunca no corpo (que só tem declarações). A primeira versão
+    // !! A classe vive no SELETOR, nunca no corpo (que só tem declarações). A primeira versão
     // deste caso olhava o corpo e era verdadeira para sempre — provado no full review de
     // 19/09/2026 somando a classe do guia ao `:is()` do relevo sem o teste piscar. E são QUATRO
     // regras de relevo (base, hover, aperto, reduced-motion), não uma.
@@ -289,78 +289,169 @@ describe('tool-chrome.css: receitas', () => {
     expect(dasFaixas.some((seletor) => seletor.includes('sz-tool-card--new'))).toBe(true)
   })
 
-  it('o cabeçalho do guia tem o alvo de toque e o respiro do canto de 20px', () => {
-    // O relato dela era o Pinta: 12px de lado e 8px embaixo num canto de 16px, com o texto
-    // encostando na curva. Recolhido o cabeçalho é o ÚNICO filho, então o respiro do cartão
-    // inteiro é o dele.
-    const cabeca = bloco('.sz-tool-guide__head {')
-    expect(cabeca.corpo).toContain('min-height: var(--sz-tool-hit)')
-    expect(cabeca.corpo).toContain('padding: 0.875rem 1.125rem')
-    // O primeiro filho come o espaço livre: sem isso a situação flutua no meio da linha.
-    expect(bloco('.sz-tool-guide__head > :first-child {').corpo).toContain('flex: 1 1 auto')
-    // O cabeçalho que é CONTÊINER (o do Estúdio, com o botão dentro) respira menos: o botão já
-    // traz o alvo de 44px, e 14+44+14 dava 72px contra os ~47px dos irmãos.
-    expect(bloco('div.sz-tool-guide__head {').corpo).toContain('padding-block: 0.125rem')
-    const botao = bloco('button.sz-tool-guide__head,')
-    expect(botao.seletor).toContain('.sz-tool-guide__head button')
-    expect(botao.corpo).toContain('cursor: pointer')
-    // ⚠ O raio inteiro só quando o cabeçalho É o cartão (recolhido): aberto, herdar os quatro
-    // cantos deixava o hover com dois entalhes arredondados sobre o corpo.
-    expect(bloco('button.sz-tool-guide__head {').corpo).toContain('border-start-start-radius')
-    expect(bloco('button.sz-tool-guide__head:only-child {').corpo).toContain(
-      'border-radius: inherit',
+  /*
+   * A MISSÃO DO PENSA nas oficinas (20/10/2026, desenho aprovado). Pedido dela: o painel
+   * NUNCA cobre o Estúdio, o Pinta ou o Molda, nem aberto nem recolhido. Coluna própria à
+   * direita quando sobram 1024px para o editor, faixa embaixo abaixo disso, trilho de 64px ou uma
+   * linha quando recolhido.
+   */
+  const regrasDaMissao = () =>
+    [...semComentarios.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .map(([, seletor = '', corpo = '']) => ({ seletor: seletor.trim(), corpo }))
+      .filter(({ seletor }) => seletor.includes('sz-tool-mission'))
+  const containerLarga = () => {
+    const i = semComentarios.indexOf(
+      '@container sz-mission (min-width: calc(1024px + 22.5rem + 0.75rem)) {',
     )
+    expect(i).toBeGreaterThan(-1)
+    let profundidade = 0
+    for (let j = semComentarios.indexOf('{', i); j < semComentarios.length; j++) {
+      if (semComentarios[j] === '{') profundidade++
+      if (semComentarios[j] === '}') profundidade--
+      if (profundidade === 0) return semComentarios.slice(i, j + 1)
+    }
+    throw new Error('bloco @container sem fim')
+  }
+
+  it('a oficina é o contêiner, e o painel fica EMBAIXO dela sem espaço para a coluna', () => {
+    expect(bloco('.sz-tool-mission-layout.has-panel {').corpo).toContain(
+      'container: sz-mission / inline-size',
+    )
+    // A direção padrão é a coluna: o painel vem DEPOIS da oficina no DOM, então fica embaixo,
+    // e quem rola é a coluna (a faixa nunca espreme nem corta a oficina).
+    const linha = bloco('.has-panel > .sz-tool-mission-layout__row {').corpo
+    expect(linha).toContain('flex-direction: column')
+    expect(linha).toContain('overflow-y: auto')
+    // A oficina não desce do piso das ferramentas embarcadas e não pinta fora da caixa dela.
+    const oficina = bloco('.has-panel .sz-tool-mission-layout__work {').corpo
+    expect(oficina).toContain('min-height: min(34rem, calc(100% - 4.875rem))')
+    expect(oficina).toContain('overflow-y: clip')
+    expect(bloco('.sz-tool-mission-panel {').corpo).toContain('flex: none')
   })
 
-  it('o texto pequeno do guia respeita o piso de 12px da casa', () => {
-    // ⚠️⚠️ Achado do full review de 19/09/2026: o sobretítulo nasceu em 11px e a situação em 10px
-    // (herdada de uma utilitária de 10px que existia só no Estúdio). Promover isso a receita
-    // teria espalhado o tamanho errado para as quatro ferramentas. O piso para criança é 12px.
-    for (const ancora of ['.sz-tool-guide__kicker {', '.sz-tool-guide__state {']) {
-      const tamanho = /font-size:\s*([\d.]+)rem/.exec(bloco(ancora).corpo)?.[1]
-      expect({ ancora, tamanho }).toEqual({ ancora, tamanho: '0.75' })
+  it('com espaço para preservar 1024px, o painel é uma coluna de 360px e recolhe para 64px', () => {
+    const larga = containerLarga()
+    expect(larga).toMatch(/\.has-panel > \.sz-tool-mission-layout__row \{\s*flex-direction: row;/)
+    expect(larga).toMatch(/\.sz-tool-mission-panel \{[^}]*width: 22\.5rem/)
+    expect(larga).toMatch(
+      /\.sz-tool-mission-panel\.is-collapsed:not\(\.has-alert\) \{\s*width: 4rem;/,
+    )
+    // O texto do trilho é vertical.
+    expect(larga).toContain('writing-mode: vertical-rl')
+  })
+
+  it('o limiar da coluna reserva 1024px ao editor com fontes raiz de 12, 16 e 20px', () => {
+    const query =
+      /@container sz-mission \(min-width: calc\((\d+)px \+ ([\d.]+)rem \+ ([\d.]+)rem\)\)/.exec(
+        semComentarios,
+      )
+    expect(query).not.toBeNull()
+    const larga = containerLarga()
+    const width = /\.sz-tool-mission-panel \{[^}]*width: ([\d.]+)rem/.exec(larga)
+    const margin = /\.sz-tool-mission-panel \{[^}]*margin: 0\.75rem ([\d.]+)rem 0\.75rem 0/.exec(
+      larga,
+    )
+    expect(width).not.toBeNull()
+    expect(margin).not.toBeNull()
+    // Contrato geométrico da folha; identidade DOM continua sendo verificada no browser.
+    for (const fontSize of [12, 16, 20]) {
+      const threshold = Number(query?.[1]) + (Number(query?.[2]) + Number(query?.[3])) * fontSize
+      const panel = (Number(width?.[1]) + Number(margin?.[1])) * fontSize
+      expect(threshold - panel).toBeGreaterThanOrEqual(1024)
     }
   })
 
-  it('o corpo e o pé do guia trazem o respiro e a divisória', () => {
-    expect(bloco('.sz-tool-guide__body {').corpo).toContain('padding: 0 1.125rem 1rem')
-    const pe = bloco('.sz-tool-guide__foot {')
-    expect(pe.corpo).toContain('padding: 0.75rem 1.125rem 1.125rem')
-    expect(pe.corpo).toContain('border-top: 1px solid var(--sz-tool-line)')
+  it('nada do painel flutua por cima da oficina', () => {
+    const regras = regrasDaMissao()
+    expect(regras.length).toBeGreaterThan(30) // anti-vácuo
+    for (const { seletor, corpo } of regras) {
+      expect({ seletor, fixed: corpo.includes('position: fixed') }).toEqual({
+        seletor,
+        fixed: false,
+      })
+      expect({ seletor, z: corpo.includes('z-index') }).toEqual({ seletor, z: false })
+      // `absolute` só no que é escondido para o leitor de tela (recortado por inteiro).
+      if (corpo.includes('position: absolute')) expect(corpo).toContain('clip-path: inset(50%)')
+      else
+        expect({ seletor, negativa: /margin[\w-]*:\s*-/.test(corpo) }).toEqual({
+          seletor,
+          negativa: false,
+        })
+    }
   })
 
-  it('a divisória do guia lateral usa o fio VISÍVEL, nunca a borda de cartão', () => {
-    // O `--sz-tool-card-edge` é transparent no claro (uma borda de cartão some de propósito);
-    // a divisória que separa o guia do editor não pode sumir.
-    const aside = bloco('.sz-tool-guide--aside {')
-    expect(aside.corpo).toContain('border-bottom: 1px solid var(--sz-tool-line)')
-    expect(aside.corpo).toContain('border-radius: 0')
-    expect(aside.corpo).not.toContain('card-edge')
-    // ⚠️⚠️ O bloco da media é RECORTADO de verdade: a primeira versão fatiava daqui até o FIM do
-    // arquivo, então esvaziar a media e pôr as declarações em qualquer regra mais abaixo passava
-    // verde (provado no full review de 19/09/2026) — e o fio do lado sumiria a partir de 1024px
-    // sem nenhum teste vermelho.
-    const iMedia = semComentarios.indexOf('@media', semComentarios.indexOf('.sz-tool-guide--aside'))
-    const abre = semComentarios.indexOf('{', iMedia)
-    const fimDaRegra = semComentarios.indexOf('}', abre)
-    const media = semComentarios.slice(iMedia, semComentarios.indexOf('}', fimDaRegra + 1) + 1)
-    expect(media).toContain('min-width: 64rem')
-    expect(media).toContain('.sz-tool-guide--aside')
-    expect(media).toContain('border-inline-end: 1px solid var(--sz-tool-line)')
-    expect(media).toContain('border-bottom: 0')
+  it('recolhido com um recado, a coluna não vira trilho: problema não se esconde', () => {
+    const larga = containerLarga()
+    expect(larga).toContain('.sz-tool-mission-panel.is-collapsed.has-alert {')
+    // Toda regra de trilho exige a ausência do recado.
+    for (const linha of larga.split('\n')) {
+      if (linha.includes('.is-collapsed') && linha.includes('{') && !linha.includes('.has-alert {'))
+        expect(linha).toContain(':not(.has-alert)')
+    }
+  })
+
+  it('o texto pequeno do painel respeita o piso de 12px da casa', () => {
+    for (const ancora of ['.sz-tool-mission-panel__kicker {', '.sz-tool-mission-panel__chip,']) {
+      const tamanho = /font-size:\s*([\d.]+)rem/.exec(bloco(ancora).corpo)?.[1]
+      expect({ ancora, tamanho }).toEqual({ ancora, tamanho: '0.75' })
+    }
+    for (const { seletor, corpo } of regrasDaMissao()) {
+      for (const [, rem] of corpo.matchAll(/font-size:\s*([\d.]+)rem/g))
+        expect({ seletor, rem: Number(rem) >= 0.75 }).toEqual({ seletor, rem: true })
+    }
+  })
+
+  it('os botões do painel têm o degrau do desenho aprovado, com classe própria', () => {
+    expect(bloco('.sz-tool-mission-panel__btn--primary {').corpo).toContain(
+      '0 4px 0 var(--sz-tool-cta-degrau)',
+    )
+    const botao = bloco('.sz-tool-mission-panel__btn {').corpo
+    expect(botao).toContain('var(--sz-tool-degrau)')
+    // O alvo da casa: 40px no mouse, 44px no toque.
+    expect(botao).toContain('min-height: var(--sz-tool-hit)')
+    expect(bloco('.sz-tool-mission-panel__link {').corpo).toContain(
+      'min-height: var(--sz-tool-hit)',
+    )
+  })
+
+  it('o topo âmbar e o menta do pronto usam as constantes, que não trocam de tema', () => {
+    const geometria = bloco(':root {').corpo
+    for (const nome of [
+      'on-tint',
+      'sig-pensa-tint',
+      'sig-pensa-ink',
+      'sig-ok-tint',
+      'sig-molda-tint',
+    ])
+      expect(geometria).toContain(`--sz-tool-${nome}:`)
+    const topo = bloco('.sz-tool-mission-panel__head,').corpo
+    expect(topo).toContain('background: var(--sz-tool-sig-pensa-tint)')
+    expect(topo).toContain('color: var(--sz-tool-on-tint)')
+  })
+
+  it('a tinta sobre o âmbar do Pensa é ESCURA, derivada da assinatura, nunca a branca da ação', () => {
+    const geometria = bloco(':root {').corpo
+    const tinta = /--sz-tool-on-sig-pensa:\s*([^;]+);/.exec(geometria)?.[1] ?? ''
+    expect(tinta).toBe('color-mix(in oklab, var(--sz-tool-sig-pensa) 33%, oklch(0 0 0))')
+    expect(tinta).not.toContain('cta-tinta')
+    // O ladrilho das galerias e a lâmpada do topo da missão leem a mesma tinta.
+    expect(bloco('.sz-tool-tile--pensa {').corpo).toContain('color: var(--sz-tool-on-sig-pensa)')
+    expect(bloco('.sz-tool-mission-panel__lamp {').corpo).toContain(
+      'color: var(--sz-tool-on-sig-pensa)',
+    )
   })
 
   it('o recado de problema tem cara de problema, o de aviso não, e os dois passam nos temas', () => {
     const alerta = bloco('.sz-tool-guide__alert {')
     expect(alerta.corpo).toContain('var(--sz-tool-danger)')
     expect(alerta.corpo).toContain('border-radius: var(--sz-tool-radius-control)')
-    // ⚠️ A tinta leva um quinto da tinta de texto (o truque da barra do Pinta): o vermelho puro
+    // ! A tinta leva um quinto da tinta de texto (o truque da barra do Pinta): o vermelho puro
     // sobre o fundo rosado do próprio alerta deu 4,25:1 no ESCURO, abaixo do piso de 4,5.
     // Medido no playground depois da mistura: 6,31 no claro e 5,74 no escuro.
     expect(alerta.corpo).toContain(
       'color: color-mix(in oklab, var(--sz-tool-danger) 80%, var(--sz-tool-ink))',
     )
-    // ⚠️⚠️ E existe a variante de AVISO: vermelho o tempo todo, para uma criança de 8 anos, lê
+    // !! E existe a variante de AVISO: vermelho o tempo todo, para uma criança de 8 anos, lê
     // como "quebrou". Ela vem DEPOIS da base (mesma especificidade: quem decide é a ordem).
     expect(bloco('.sz-tool-guide__alert--warn {').corpo).toContain('var(--sz-tool-warn)')
     expect(semComentarios.indexOf('.sz-tool-guide__alert--warn')).toBeGreaterThan(
@@ -431,17 +522,30 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
    * comunidade". A regressão a evitar é a óbvia: alguém mexer em UM e deixar os outros dois
    * para trás. Classe sem receita não quebra teste nenhum — o painel só sai sem desenho —,
    * então a trava é ler os três como TEXTO.
-   * ⚠ O que ela vê é PRESENÇA, não divergência fina: um ganhar uma peça nova e os outros não
+   * ! O que ela vê é PRESENÇA, não divergência fina: um ganhar uma peça nova e os outros não
    * continua passando.
    */
   const GUIAS = [
     '../../pinta/src/components/TaskBriefPanel.tsx',
     '../../studio/src/studio/TaskGuidePanel.tsx',
-    '../../community-kids/src/components/kids/molda-task-guide.tsx',
+    '../../member-shell/src/components/creator/molda-mission-guide.tsx',
   ]
   it('a receita existe na folha que os três consomem', () => {
     // Fora do laço: repetida a cada arquivo, ela não era anti-vácuo de nada.
-    expect(semComentarios).toMatch(/\.sz-tool-guide__head\b/)
+    expect(semComentarios).toMatch(/\.sz-tool-mission-panel__head\b/)
+  })
+  it('o ponto de entrada Kids encaminha para o mesmo guia compartilhado', async () => {
+    const wrapper = await Bun.file(
+      join(HERE, '../../community-kids/src/components/kids/molda-mission-guide.tsx'),
+    ).text()
+    expect(wrapper.trim()).toBe(
+      "export * from '@sistemazero/member-shell/components/creator/molda-mission-guide'",
+    )
+    const workspace = await Bun.file(
+      join(HERE, '../../member-shell/src/components/creator/molda-client.tsx'),
+    ).text()
+    expect(workspace).toContain("from './molda-mission-guide'")
+    expect(workspace).toContain('<MoldaMissionGuide')
   })
   for (const arquivo of GUIAS) {
     it(`${arquivo} usa .sz-tool-guide`, async () => {
@@ -449,11 +553,10 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
       const semComentario = texto
         .replace(/\/\*[\s\S]*?\*\//g, '')
         .replace(/(^|[^:])\/\/.*$/gm, '$1')
-      // ⚠ Por LIMITE de palavra: `toContain('sz-tool-guide')` casaria `sz-tool-guideXYZ` e
+      // ! Por LIMITE de palavra: `toContain('sz-tool-guide')` casaria `sz-tool-guideXYZ` e
       // `--aside` sozinho (achado do full review de 19/09/2026).
-      expect(semComentario).toMatch(/\bsz-tool-guide\b/)
-      expect(semComentario).toMatch(/\bsz-tool-guide__head\b/)
-      // ⚠️⚠️ E a cor do recado vem da receita: um `text-*-danger` no consumidor desfaz a mistura
+      expect(semComentario).toContain('PensaMissionPanel')
+      // !! E a cor do recado vem da receita: um `text-*-danger` no consumidor desfaz a mistura
       // que faz o alerta passar no contraste do tema escuro.
       for (const linha of semComentario.split('\n')) {
         if (!linha.includes('sz-tool-guide__alert')) continue
@@ -464,4 +567,16 @@ describe('os três guias do Pensa vestem a MESMA casca', () => {
       }
     })
   }
+})
+
+describe('o conteúdo funcional da missão usa o tema compartilhado', () => {
+  it('a receita de conteúdo existe e não depende de tokens de uma oficina', async () => {
+    expect(semComentarios).toContain('.sz-tool-mission-content {')
+    const texto = await Bun.file(
+      join(HERE, '../src/components/ui/pensa-mission-content.tsx'),
+    ).text()
+    expect(texto).toContain('sz-tool-mission-content')
+    expect(texto).not.toMatch(/\b(bg|text|border|ring|fill|stroke|outline)-(sz|pin)-/)
+    expect(texto).not.toMatch(/--sz-kids-|--sz-tool-/)
+  })
 })

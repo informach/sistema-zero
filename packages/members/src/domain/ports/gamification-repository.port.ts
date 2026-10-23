@@ -20,9 +20,7 @@ export type XpSourceType =
   // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
   // `course_complete` define o curso "qualificado" p/ o nível do aluno.
   | 'course_showcased'
-  // Pensa (07/2026): etapa do ciclo concluída (z→e/e→r/r→o; sourceId = uuid
-  // DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId`) e ciclo LANÇADO
-  // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
+  // Stable financial categories: functional milestones and final verification.
   | 'pensa_stage_complete'
   | 'pensa_cycle_complete'
   // Desafio MENSAL (game jam, 07/2026): publicou no Mural com a tag do mês
@@ -67,10 +65,20 @@ export type XpSourceType =
   // plays-10/plays-100 (+ troféu) — anti-farm natural: exige volume real de outros.
   | 'play_milestone_10'
   | 'play_milestone_100'
+  // Cursos AO VIVO (14/10/2026) — MARCOS (amount 0; nada de XP por presença, o XP vem das
+  // rotas de aula de sempre): `live_encounter` = a criança foi recebida num encontro (sourceId =
+  // ocorrência; conquista `live-first-encounter` + missão semanal `live_encounter`) e
+  // `live_course_complete` = concluiu TODAS as aulas publicadas de um curso ao vivo (sourceId =
+  // curso; conquista `live-course-complete` + troféu). Nenhum dos dois é marco da Jornada.
+  | 'live_encounter'
+  | 'live_course_complete'
+  // Objetivo EXTRA da parte cumprido pela primeira vez (18/10/2026): XP puro, sem moeda;
+  // sourceId = uuid determinístico de aula + parte + objetivo.
+  | 'objective_extra'
 
 export interface XpEventInput {
   sourceType: XpSourceType
-  /** lessonId | blockId | moduleId | courseId | cycleId | claimId — snapshot, sem FK. */
+  /** lessonId | blockId | moduleId | courseId | eventId | claimId — snapshot, sem FK. */
   sourceId: string
   amount: number
   /**
@@ -145,6 +153,8 @@ export type SpendCoinsResult =
   | { ok: false; code: 'INSUFFICIENT_BALANCE' | 'ALREADY_SPENT'; balance: number }
 
 export interface AwardInput {
+  /** Atomic guard for a standalone publication: an existing marker suppresses the entire reward batch. */
+  standalonePublicationId?: string
   userId: string
   /**
    * CONTA do responsável (sessão de perfil estilo Netflix). Em sessão normal = o
@@ -318,11 +328,17 @@ export interface GamificationRepository {
    * derivação e evita misturar eventos de snapshots diferentes.
    */
   listJourneyCourseState(userId: string, audience: CourseAudience): Promise<JourneyCourseState>
+  /** Raw ledger badges only; no qualification, rank or pedagogical gate. */
+  listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>>
   /**
    * Blocos do Estúdio que os cursos ELEGÍVEIS do aluno liberam AGORA, POR CURSO.
-   * Curso Kids bônus exige `course_complete`; curso Kids com posição e curso Adult
-   * exigem também `course_showcased`. Lê `metadata.studioUnlockBlocks` de cada curso
-   * vivo. É a parte "ao vivo" da paleta: acrescentar um bloco ao JSON de um curso
+   * Gravado Kids com posição exige `course_complete` + `course_showcased`; bônus Kids
+   * e Adult exigem `course_complete`. Oficina exige `live_course_complete`, sem Mural.
+   * Lê `metadata.studioUnlockBlocks` de cada curso publicado da mesma audiência.
+   * É a parte atual da paleta: acrescentar um bloco ao JSON de um curso
    * chega sozinho em quem já atende ao critério atual.
    * Vem POR CURSO (não achatado) porque é essa a chave do snapshot que impede a
    * revogação. ⚠️ Curso APAGADO não aparece aqui (join interno, sem metadata para

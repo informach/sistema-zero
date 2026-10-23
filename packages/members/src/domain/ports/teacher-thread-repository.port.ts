@@ -52,6 +52,11 @@ export interface TeacherMessageRecord {
   authorId: string | null
   authorName: string | null
   body: string
+  /**
+   * O turno foi FALADO pela criança e transcrito pelo servidor (14/10/2026). O Admin avisa a
+   * equipe para ler um erro de transcrição com boa vontade. `false` = digitado.
+   */
+  spoken: boolean
   createdAt: Date
 }
 
@@ -121,6 +126,8 @@ export interface AppendMessageInput {
   authorId: string | null
   authorName: string | null
   body: string
+  /** Turno falado e transcrito (voz para texto). Ausente = digitado (`false`). */
+  spoken?: boolean
   now: Date
   /**
    * Id DETERMINÍSTICO opcional (idempotência). Quando presente, a inserção é

@@ -1,0 +1,15 @@
+/* Match the consumer pipeline: Studio exports tokens, not Tailwind utilities. */
+@import "tailwindcss";
+@import "../../../ui/src/styles/theme-kids.css";
+@import "../../../ui/src/styles/tool-chrome.css";
+@import "../../src/styles/studio.css";
+@source "../../src";
+@source "../../../admin/src/components/studio";
+@source "../../../member-shell/src/components/live";
+@source "../../../member-shell/src/components/studio";
+@source "../../../community-kids/src/components/kids";
+
+html,
+body {
+  margin: 0;
+}

@@ -1,0 +1,377 @@
+/*
+ * presente-adulto.css: a página de recebimento do presente ADULTO (`/bolsa/<codigo>`, público
+ * `adult`), Canvas "Presente Kids e adulto · proposta" (quadro RecebimentoAdulto, 20/10/2026). Veste
+ * o layout da oferta adulta (`comunidade-adulto.css`, `.cda`): topo, herói, monitor, rótulos em
+ * pixel, botão amarelo, dúvidas e barra fixa vêm de lá. Aqui ficam só as peças do presente
+ * (`.pa-*`) e o formulário da ilha `BolsaResgate` (`.bz-*`), sem cor própria: só os tokens
+ * `--cda-*` do theme-arcade.
+ */
+
+/* ── Herói ──────────────────────────────────────────────────────────────────── */
+.cda .pa-hero {
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in oklab, var(--cda-branco) 3.5%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in oklab, var(--cda-amarelo) 14%, transparent),
+      transparent 55%
+    );
+}
+.cda .pa-link {
+  color: var(--cda-texto);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--cda-rosa);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 5px;
+}
+.cda .pa-prazo {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.cda .pa-monitor {
+  flex: 1 1 31.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.cda .pa-monitor__tela img {
+  width: 100%;
+  aspect-ratio: 1264 / 723;
+  object-fit: cover;
+  border: 3px solid var(--cda-fundo);
+}
+.cda .pa-monitor__start {
+  margin-top: 0.875rem;
+  font-family: var(--cda-pixel);
+  font-size: 1rem;
+  color: var(--cda-amarelo);
+  text-align: center;
+}
+
+/* ── Telas com contorno e sombra na cor do item ─────────────────────────────── */
+.cda .pa-figura {
+  flex: 1 1 32.5rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.cda .pa-figura--estreita {
+  flex-basis: 23.75rem;
+}
+.cda .pa-figura img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: left top;
+  background: var(--cda-branco);
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 8px 8px 0 var(--cor);
+}
+.cda .pa-figura--mural img {
+  aspect-ratio: 1440 / 1187;
+  object-position: top;
+}
+.cda .pa-figura--foto img {
+  aspect-ratio: 1280 / 851;
+  object-position: center;
+}
+.cda .pa-texto {
+  flex: 1 1 27.5rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cda .pa-texto--largo {
+  flex-basis: 32.5rem;
+}
+.cda .pa-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1.75rem;
+}
+.cda .pa-passos {
+  flex: 1 1 21.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cda .pa-passos li {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.125rem;
+  background: var(--cda-carta);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .pa-passos strong {
+  font-family: var(--cda-titulo);
+  font-size: 1.3125rem;
+  line-height: 1.2;
+}
+
+/* ── O presente: cartas com rótulo em pixel ─────────────────────────────────── */
+.cda .pa-cartoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(18.75rem, 100%), 1fr));
+  gap: 1.25rem;
+}
+.cda .pa-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.375rem;
+  background: var(--cda-carta);
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 6px 6px 0 var(--cor);
+}
+.cda .pa-cartao p:not(.cda-rotulo) {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+.cda .pa-nota {
+  max-width: 53.75rem;
+  font-size: 1.125rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .pa-cta {
+  align-self: flex-start;
+}
+.cda .pa-duvidas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(28.75rem, 100%), 1fr));
+  gap: 0.875rem;
+}
+.cda .pa-duvida {
+  background: var(--cda-carta);
+  border-width: 2px;
+  border-color: var(--cda-linha-forte);
+}
+.cda .pa-previa {
+  margin-block: 1.25rem;
+  padding: 1rem 1.125rem;
+  background: var(--cda-carta);
+  border: 3px dashed var(--cda-amarelo);
+  font-size: 1rem;
+}
+
+/* ── Estados sem formulário ─────────────────────────────────────────────────── */
+.cda .pa-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 6px 6px 0 var(--cor);
+}
+.cda .pa-estado--pagina {
+  max-width: 45rem;
+  margin-inline: auto;
+}
+.cda .pa-estado__selo {
+  align-self: flex-start;
+  padding: 0.3125rem 0.625rem;
+  background: var(--cor);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.cda .pa-estado__titulo {
+  font-family: var(--cda-titulo);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.cda .pa-retomar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cda .pa-retomar summary {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  background: var(--cda-fundo-2);
+  color: var(--cda-texto);
+  font-weight: 700;
+  border: 3px solid var(--cda-linha-forte);
+  cursor: pointer;
+  list-style: none;
+}
+.cda .pa-retomar summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ── O formulário (`BolsaResgate`) ──────────────────────────────────────────── */
+.cda .pa-form {
+  flex: 1 1 30rem;
+  min-width: 0;
+}
+.cda .bz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 1.625rem;
+  background: var(--cda-carta);
+  color: var(--cda-texto);
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 8px 8px 0 var(--cda-amarelo);
+}
+.cda .bz-card--resultado {
+  background: var(--cda-fundo);
+  box-shadow: 8px 8px 0 var(--cda-verde);
+}
+.cda .bz-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+.cda .bz-rotulo {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.cda .bz-opcional {
+  font-weight: 400;
+  color: var(--cda-texto-apoio);
+}
+.cda .bz-input {
+  min-height: 3.375rem;
+  padding: 0 1rem;
+  background: var(--cda-fundo);
+  color: var(--cda-texto);
+  font: inherit;
+  font-size: 1.0625rem;
+  border: 2px solid var(--cda-linha-forte);
+  border-radius: 0;
+}
+.cda .bz-input::placeholder {
+  color: var(--cda-legenda);
+}
+.cda .bz-input:focus-visible {
+  outline: 3px solid var(--cda-amarelo);
+  outline-offset: 2px;
+}
+.cda .bz-input--erro {
+  border-color: var(--cda-rosa);
+}
+.cda .bz-erro,
+.cda .bz-alerta {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--cda-rosa);
+}
+.cda .bz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.25rem;
+  padding: 0 1.25rem;
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  border: 3px solid var(--cda-fundo);
+  box-shadow: 4px 4px 0 var(--cda-rosa);
+  cursor: pointer;
+}
+.cda .bz-btn--enviar {
+  min-height: 3.75rem;
+  margin-top: 0.375rem;
+  font-size: 1.125rem;
+  box-shadow: 6px 6px 0 var(--cda-rosa);
+}
+.cda .bz-btn:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.cda .bz-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.25rem;
+  color: var(--cda-texto);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--cda-rosa);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.cda .bz-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+.cda .bz-nota {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--cda-texto-apoio);
+}
+.cda .bz-nota a {
+  color: var(--cda-azul);
+}
+.cda .bz-selo {
+  align-self: flex-start;
+  padding: 0.3125rem 0.625rem;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+.cda .bz-titulo,
+.cda .bz-estado__titulo {
+  font-family: var(--cda-titulo);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.cda .bz-titulo:focus {
+  outline: none;
+}
+.cda .bz-texto {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+.cda .bz-texto strong {
+  color: var(--cda-texto);
+}
+.cda .bz-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1.125rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-amarelo);
+}
+.cda .bz-estado__titulo {
+  font-size: 1.375rem;
+}
+
+/* No celular o botão do topo quebrava para uma linha só dele: o herói já abre com o botão e a barra
+   fixa assume depois da dobra. */
+@media (max-width: 520px) {
+  .cda .pa-topo-cta {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .cda .pa-corpo {
+    padding-bottom: 5.25rem;
+  }
+}

@@ -1,0 +1,5 @@
+merge: integrate reviewed Helpdesk AI and knowledge into local staging
+
+Merge ccef726b6 after batch reviews, full review and validation on updated staging.
+Revalidated backend PostgreSQL suite and gateway routing in the staging worktree.
+Preserve unrelated local changes and keep automated support disabled by default.

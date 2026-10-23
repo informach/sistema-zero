@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { randomUUID } from 'node:crypto'
 import { sha256Hex } from '@sistemazero/core/security'
 import { saoPauloDayKey } from '@sistemazero/core/time'
 import { decodeJwt } from 'jose'
@@ -20,6 +21,7 @@ import { ChangeImpersonationModeService } from '../../src/application/impersonat
 import { CreateImpersonationTokenService } from '../../src/application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from '../../src/application/impersonation/exchange-impersonation-token.service'
 import { ImpersonationSessionValidator } from '../../src/application/impersonation/impersonation-session-validator'
+import { ReadProfileCohortService } from '../../src/application/internal/read-profile-cohort.service'
 import { WriteAuditLogService } from '../../src/application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from '../../src/application/login/login.service'
 import { LogoutService } from '../../src/application/logout/logout.service'
@@ -36,6 +38,7 @@ import { CreateProfileService } from '../../src/application/profiles/create-prof
 import { ExitProfileSessionService } from '../../src/application/profiles/exit-profile-session.service'
 import { GetPublicProfileService } from '../../src/application/profiles/get-public-profile.service'
 import { ListProfilesService } from '../../src/application/profiles/list-profiles.service'
+import { ProfileAdmissionService } from '../../src/application/profiles/profile-admission.service'
 import { SelectProfileService } from '../../src/application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
 import { RefreshService } from '../../src/application/refresh/refresh.service'
@@ -51,6 +54,7 @@ import { createServer } from '../../src/interfaces/http/server'
 import {
   FakeMessagingClient,
   FakeProfileAllowanceGateway,
+  FakeProfileJourneyGateway,
   fakeHasher,
   InMemoryAuditLogRepository,
   InMemoryImpersonationTokenRepository,
@@ -61,6 +65,7 @@ import {
   InMemoryUserRepository,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemoryProfileCohortRepository } from '../fakes/profile-cohort'
 import { testTokenIssuer } from '../helpers'
 
 const COMMUNITY_URL = 'http://localhost:3007'
@@ -68,7 +73,12 @@ const KIDS_COMMUNITY_URL = 'http://localhost:3008'
 const INTERNAL_TOKEN = 'internal-token-de-teste'
 
 function buildApp(
-  opts: { otpCooldownSeconds?: number; resetCooldownSeconds?: number; ready?: boolean } = {},
+  opts: {
+    otpCooldownSeconds?: number
+    resetCooldownSeconds?: number
+    ready?: boolean
+    journeyReady?: boolean
+  } = {},
 ) {
   // Cooldowns DESLIGADOS por default: os fluxos da suíte fazem pedidos em rajada
   // (ex.: dois forgot-password seguidos). Os testes de cooldown ligam via opts.
@@ -194,6 +204,8 @@ function buildApp(
     silentLogger,
   )
   const allowance = new FakeProfileAllowanceGateway()
+  const journeyGateway = new FakeProfileJourneyGateway()
+  journeyGateway.result = opts.journeyReady === false ? 'not_ready' : 'admitted'
   let profileSeq = 0
   const listProfiles = new ListProfilesService(profilesRepo)
   const createProfile = new CreateProfileService(
@@ -201,6 +213,7 @@ function buildApp(
     allowance,
     () => `00000000-0000-4000-8000-${String(++profileSeq).padStart(12, '0')}`,
     () => new Date(),
+    new ProfileAdmissionService(profilesRepo, journeyGateway, () => new Date(), silentLogger),
   )
   const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
@@ -278,6 +291,9 @@ function buildApp(
     changeImpersonationMode,
     users,
     profilesRepo,
+    readProfileCohort: new ReadProfileCohortService(
+      new InMemoryProfileCohortRepository(profilesRepo),
+    ),
     profiles: {
       listProfiles,
       createProfile,
@@ -296,6 +312,7 @@ function buildApp(
     users,
     profilesRepo,
     allowance,
+    journeyGateway,
     refreshTokens,
     resetTokens,
     otpCodes,
@@ -1299,7 +1316,10 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       whatsapp: null,
       birthDate: over.birthDate ?? null,
       publicProfileEnabled: false,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: over.status ?? 'active',
+      admissionState: 'ready',
       sortOrder: 0,
       createdAt: now,
       updatedAt: now,
@@ -1442,7 +1462,10 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       whatsapp: '+5511999999999',
       birthDate: '2015-05-10',
       publicProfileEnabled: true,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: 'active',
+      admissionState: 'ready',
       sortOrder: 0,
       createdAt: now,
       updatedAt: now,
@@ -1455,7 +1478,10 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       whatsapp: null,
       birthDate: null,
       publicProfileEnabled: false,
+      voiceInputEnabled: false,
+      voiceInputEnabledAt: null,
       status: 'archived',
+      admissionState: 'ready',
       sortOrder: 1,
       createdAt: now,
       updatedAt: now,
@@ -1537,6 +1563,39 @@ describe('Auth admin routes (/auth/admin/users)', () => {
       ],
       total: 1,
     })
+  })
+
+  test('vínculo de oficina exige token, perfil ativo e a família correta', async () => {
+    const { app, users, profilesRepo } = buildApp()
+    const accountId = seedUser(users, { email: 'live-owner@example.com', firstName: 'Ana' })
+    const otherId = seedUser(users, { email: 'live-other@example.com' })
+    const blockedId = seedUser(users, { email: 'live-blocked@example.com', status: 'blocked' })
+    const profileId = seedProfile(profilesRepo, { accountUserId: accountId, name: 'Alice' })
+    const archivedId = seedProfile(profilesRepo, { accountUserId: accountId, status: 'archived' })
+    const path = '/auth/internal/profiles/ownership'
+    const headers = { 'x-internal-token': INTERNAL_TOKEN }
+    expect((await app.handle(post(path, { accountId, profileId }))).status).toBe(401)
+    expect(await (await app.handle(post(path, { accountId, profileId }, headers))).json()).toEqual({
+      valid: true,
+      name: 'Alice',
+    })
+    expect(
+      await (await app.handle(post(path, { accountId: otherId, profileId }, headers))).json(),
+    ).toEqual({ valid: false })
+    expect(
+      await (await app.handle(post(path, { accountId, profileId: archivedId }, headers))).json(),
+    ).toEqual({ valid: false })
+    expect(
+      await (
+        await app.handle(post(path, { accountId: blockedId, profileId: null }, headers))
+      ).json(),
+    ).toEqual({ valid: false })
+    expect(
+      await (await app.handle(post(path, { accountId, profileId: null }, headers))).json(),
+    ).toEqual({ valid: true, name: 'Ana' })
+    expect(
+      (await app.handle(post(path, { accountId: 'invalid', profileId }, headers))).status,
+    ).toBe(400)
   })
 
   test('diretório interno de recados exige token e exclui contas inativas, órfãos e perfis arquivados', async () => {
@@ -2040,6 +2099,22 @@ describe('Auth — perfis (estilo Netflix)', () => {
   const ACCOUNT = '11111111-1111-4111-8111-111111111111'
   const OTHER = '22222222-2222-4222-8222-222222222222'
 
+  function buildProfilesApp(journeyReady = true) {
+    const built = buildApp({ journeyReady })
+    for (const id of [ACCOUNT, OTHER]) {
+      built.users.seed(
+        UserAggregate.register({
+          id,
+          email: Email.create(`${id}@example.test`),
+          passwordHash: 'unused-profile-fixture',
+          firstName: 'Responsavel',
+          lastName: 'Teste',
+        }),
+      )
+    }
+    return built
+  }
+
   // Headers que o gateway injeta para uma conta de responsável (customer ativo) +
   // o token interno que prova a origem.
   function gw(accountId = ACCOUNT, extra: Record<string, string> = {}) {
@@ -2065,6 +2140,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
   }
   interface Profile {
     id: string
+    admissionState: 'pending' | 'ready'
     name: string
     avatarUrl: string | null
     whatsapp: string | null
@@ -2073,10 +2149,77 @@ describe('Auth — perfis (estilo Netflix)', () => {
     sortOrder: number
   }
 
+  test('admission: criação exige requestId estável e ausência não grava perfil', async () => {
+    const { app, allowance, profilesRepo } = buildProfilesApp()
+    allowance.maxProfiles = 2
+    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))).status).toBe(
+      400,
+    )
+    expect(profilesRepo.byId.size).toBe(0)
+  })
+
+  test('admission: pending aparece só na grade parental e não autoriza seleção, público ou ownership', async () => {
+    const { app, allowance } = buildProfilesApp(false)
+    allowance.maxProfiles = 2
+    const response = await app.handle(
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        name: 'Sofia',
+        publicProfileEnabled: true,
+      }),
+    )
+    expect(response.status).toBe(201)
+    const { profile } = (await response.json()) as { profile: Profile }
+    expect(profile.admissionState).toBe('pending')
+    const grade = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
+      profiles: Profile[]
+    }
+    expect(grade.profiles.map((p) => p.id)).toEqual([profile.id])
+    const child = (await (
+      await app.handle(
+        req(
+          'GET',
+          '/auth/profiles',
+          gw(profile.id, {
+            'x-auth-account-id': ACCOUNT,
+          }),
+        ),
+      )
+    ).json()) as { profiles: Profile[] }
+    expect(child.profiles).toEqual([])
+    expect(
+      (await app.handle(req('POST', `/auth/profiles/${profile.id}/select`, gw()))).status,
+    ).toBe(404)
+    expect(
+      (
+        await app.handle(
+          req('GET', `/auth/internal/profiles/${profile.id}/public`, {
+            'x-internal-token': INTERNAL_TOKEN,
+          }),
+        )
+      ).status,
+    ).toBe(404)
+    const ownership = await (
+      await app.handle(
+        req(
+          'POST',
+          '/auth/internal/profiles/ownership',
+          {
+            'x-internal-token': INTERNAL_TOKEN,
+          },
+          { accountId: ACCOUNT, profileId: profile.id },
+        ),
+      )
+    ).json()
+    expect(ownership).toEqual({ valid: false })
+  })
+
   test('o teto vem do members: maxProfiles=0 → 409 (a conta não comprou)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 0
-    const res = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    const res = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+    )
     expect(res.status).toBe(409)
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
       'PROFILE_LIMIT_REACHED',
@@ -2087,13 +2230,17 @@ describe('Auth — perfis (estilo Netflix)', () => {
   // Kids sem matrícula — bypassa o teto do members (e nem consulta o S2S).
   for (const role of ['superadmin', 'admin', 'staff'] as const) {
     test(`equipe (${role}): perfis ilimitados mesmo com allowance=0 (sem S2S)`, async () => {
-      const { app, allowance } = buildApp()
+      const { app, allowance } = buildProfilesApp()
       allowance.maxProfiles = 0 // a conta da equipe não tem matrícula kids
       const headers = gw(ACCOUNT, { 'x-auth-user-role': role })
       for (const name of ['Sofia', 'Théo', 'Bia']) {
-        expect((await app.handle(req('POST', '/auth/profiles', headers, { name }))).status).toBe(
-          201,
-        )
+        expect(
+          (
+            await app.handle(
+              req('POST', '/auth/profiles', headers, { requestId: randomUUID(), name }),
+            )
+          ).status,
+        ).toBe(201)
       }
       const list = (await (await app.handle(req('GET', '/auth/profiles', headers))).json()) as {
         profiles: Profile[]
@@ -2105,30 +2252,42 @@ describe('Auth — perfis (estilo Netflix)', () => {
   }
 
   test('o pai decide o perfil público já na CRIAÇÃO (opt-in no POST; ausente → OFF)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     // Com o opt-in ligado no próprio create (tutorial de 1º acesso, 08/2026).
     const on = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { name: 'Sofia', publicProfileEnabled: true }),
+        req('POST', '/auth/profiles', gw(), {
+          requestId: randomUUID(),
+          name: 'Sofia',
+          publicProfileEnabled: true,
+        }),
       )
     ).json()) as { profile: Profile }
     expect(on.profile.publicProfileEnabled).toBe(true)
     // Ausente → nasce DESLIGADO (o default seguro do agregado, opt-in de verdade).
     const off = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Théo' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Théo' }),
+      )
     ).json()) as { profile: Profile }
     expect(off.profile.publicProfileEnabled).toBe(false)
   })
 
   test('cria até o teto e barra o excedente; a lista volta ordenada', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
-    const a = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+    const a = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+    )
     expect(a.status).toBe(201)
-    const b = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Théo' }))
+    const b = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Théo' }),
+    )
     expect(b.status).toBe(201)
-    const c = await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Extra' }))
+    const c = await app.handle(
+      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Extra' }),
+    )
     expect(c.status).toBe(409)
 
     const list = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
@@ -2138,10 +2297,12 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('editar e arquivar: arquivar libera um slot do teto', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const created = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+      )
     ).json()) as { profile: Profile }
     const id = created.profile.id
 
@@ -2155,25 +2316,35 @@ describe('Auth — perfis (estilo Netflix)', () => {
     expect(patched.profile.whatsapp).toBe('+55319')
 
     // No teto (1) — não cria outro.
-    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Outro' }))).status).toBe(
-      409,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Outro' }),
+        )
+      ).status,
+    ).toBe(409)
     // Arquivar libera o slot.
     expect((await app.handle(req('DELETE', `/auth/profiles/${id}`, gw()))).status).toBe(200)
     const after = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
       profiles: Profile[]
     }
     expect(after.profiles).toHaveLength(0)
-    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Novo' }))).status).toBe(
-      201,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Novo' }),
+        )
+      ).status,
+    ).toBe(201)
   })
 
   test('ownership: editar/arquivar perfil de OUTRA conta → 404 (não vaza)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const created = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(ACCOUNT), { name: 'Sofia' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(ACCOUNT), { requestId: randomUUID(), name: 'Sofia' }),
+      )
     ).json()) as { profile: Profile }
     const id = created.profile.id
     expect(
@@ -2188,21 +2359,29 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('foto inválida (não http(s)) → 400', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     const res = await app.handle(
-      req('POST', '/auth/profiles', gw(), { name: 'Sofia', avatarUrl: 'javascript:alert(1)' }),
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        name: 'Sofia',
+        avatarUrl: 'javascript:alert(1)',
+      }),
     )
     expect(res.status).toBe(400)
   })
 
   test('data de nascimento: a CONTA grava/edita; a sessão de PERFIL é barrada (403)', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     // A conta (responsável) cria o perfil JÁ com a data de nascimento.
     const created = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { name: 'Sofia', birthDate: '2015-04-10' }),
+        req('POST', '/auth/profiles', gw(), {
+          requestId: randomUUID(),
+          name: 'Sofia',
+          birthDate: '2015-04-10',
+        }),
       )
     ).json()) as { profile: Profile }
     expect(created.profile.birthDate).toBe('2015-04-10')
@@ -2241,7 +2420,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('cadastro com 18 anos completos → 400 PROFILE_AGE_RESTRICTED', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     // ⚠️ O dia de referência é o CIVIL DE SÃO PAULO, a mesma régua do agregado
     // (`assertBirthDate` → `saoPauloDayKey`). Montar "18 anos exatos" a partir da
@@ -2252,7 +2431,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     const exactlyEighteen = `${String((ano ?? 0) - 18).padStart(4, '0')}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`
 
     const response = await app.handle(
-      req('POST', '/auth/profiles', gw(), { name: 'Pessoa adulta', birthDate: exactlyEighteen }),
+      req('POST', '/auth/profiles', gw(), {
+        requestId: randomUUID(),
+        name: 'Pessoa adulta',
+        birthDate: exactlyEighteen,
+      }),
     )
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({
@@ -2264,10 +2447,12 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('perfil público: a CONTA liga/desliga; a sessão de PERFIL é barrada (403); rota interna devolve nome+flag', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1
     const created = (await (
-      await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+      )
     ).json()) as { profile: Profile }
     const id = created.profile.id
     expect(created.profile.publicProfileEnabled).toBe(false) // nasce privado (opt-in)
@@ -2310,7 +2495,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
   })
 
   test('guardas de origem: sem token interno → 401; sem identidade → 401', async () => {
-    const { app, allowance } = buildApp()
+    const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     // Sem x-internal-token (GET — sem schema de corpo, o guard de origem corre primeiro).
     const noToken = await app.handle(
@@ -2363,7 +2548,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
       user: { id: string }
     }
     const accountId = reg.user.id
-    built.profilesRepo.seed(
+    built.profilesRepo.seedReady(
       ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
     )
     return { ...built, accountId }
@@ -2390,13 +2575,17 @@ describe('Auth — sessão de perfil (PR2)', () => {
         .status,
     ).toBe(200)
     // Criar e arquivar seguem só na área dos pais (sessão da conta).
-    expect((await app.handle(req('POST', '/auth/profiles', ph, { name: 'Outro' }))).status).toBe(
-      403,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', ph, { requestId: randomUUID(), name: 'Outro' }),
+        )
+      ).status,
+    ).toBe(403)
     expect((await app.handle(req('DELETE', `/auth/profiles/${PROFILE_ID}`, ph))).status).toBe(403)
     // Editar o perfil de um IRMÃO (outro id) a partir da sessão de perfil → 403.
     const SIBLING = '55555555-5555-4555-8555-555555555555'
-    profilesRepo.seed(
+    profilesRepo.seedReady(
       ProfileAggregate.create({ id: SIBLING, accountUserId: accountId, name: 'Irmão' }),
     )
     expect(
@@ -2482,9 +2671,7 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(decodeJwt(r1.tokens.accessToken).pfl).toMatchObject({ accountId })
 
     // A regra vale também para as famílias antigas, sem contexto Kids.
-    const profile = await profilesRepo.findById(PROFILE_ID)
-    profile?.archive()
-    if (profile) await profilesRepo.update(profile)
+    await profilesRepo.archiveOwned({ profileId: PROFILE_ID, accountUserId: accountId }, new Date())
     const r2 = await app.handle(post('/auth/refresh', { refreshToken: r1.tokens.refreshToken }))
     expect(r2.status).toBe(401)
     expect(await r2.json()).not.toHaveProperty('tokens')
@@ -2711,7 +2898,7 @@ describe('Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo
       user: { id: string }
     }
     const accountId = reg.user.id
-    built.profilesRepo.seed(
+    built.profilesRepo.seedReady(
       ProfileAggregate.create({
         id: PROFILE_ID,
         accountUserId: accountId,
@@ -2845,5 +3032,226 @@ describe('Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo
     expect(body.user).toBeUndefined()
     expect(body.profile).toMatchObject({ id: PROFILE_ID, name: 'Sofia', birthDate: '2016-05-01' })
     expect(JSON.stringify(body).toLowerCase()).not.toContain(REGISTER_BODY.email.toLowerCase())
+  })
+})
+
+describe('Kids: fala da criança (voz → texto), consentimento dos pais por criança', () => {
+  const PROFILE_ID = '77777777-7777-4777-8777-777777777777'
+  const nowSeconds = () => Math.floor(Date.now() / 1000)
+  function req(
+    method: string,
+    path: string,
+    headers: Record<string, string>,
+    body?: unknown,
+  ): Request {
+    return new Request(`http://localhost${path}`, {
+      method,
+      headers: { 'content-type': 'application/json', ...headers },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    })
+  }
+  const gwAccount = (accountId: string, extra: Record<string, string> = {}) => ({
+    'x-internal-token': INTERNAL_TOKEN,
+    'x-auth-user-id': accountId,
+    'x-auth-user-role': 'customer',
+    'x-auth-user-status': 'active',
+    ...extra,
+  })
+  // Responsável do Kids (o Gateway injeta o contexto e a hora do login).
+  const gwParent = (accountId: string, authenticatedAt: number) =>
+    gwAccount(accountId, {
+      'x-auth-kids-context': 'parent',
+      'x-auth-kids-auth-time': String(authenticatedAt),
+    })
+  // Suporte "entrando como" o responsável: o Gateway injeta o ator em `x-auth-impersonator-id`.
+  const gwSupport = (accountId: string) =>
+    gwAccount(accountId, { 'x-auth-impersonator-id': 'ffffffff-ffff-4fff-8fff-ffffffffffff' })
+  // A própria criança (sessão de perfil): o Gateway injeta `x-auth-account-id`.
+  const gwChild = (accountId: string) =>
+    gwAccount(PROFILE_ID, { 'x-auth-account-id': accountId, 'x-auth-kids-context': 'student' })
+  async function setup() {
+    const built = buildApp()
+    built.allowance.maxProfiles = 5
+    const reg = (await (await built.app.handle(post('/auth/register', REGISTER_BODY))).json()) as {
+      user: { id: string }
+    }
+    const accountId = reg.user.id
+    built.profilesRepo.seedReady(
+      ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
+    )
+    const patchProfile = (headers: Record<string, string>, body: unknown) =>
+      built.app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, headers, body))
+    const stored = () => built.profilesRepo.byId.get(PROFILE_ID)
+    return { ...built, accountId, patchProfile, stored }
+  }
+  async function errorOf(res: Response) {
+    return ((await res.json()) as { error?: { code?: string; message?: string } }).error
+  }
+
+  test('perfil antigo vem com a fala desligada; a lista e o /auth/me da criança devolvem o campo', async () => {
+    const { app, accountId, patchProfile } = await setup()
+    const list = (await (
+      await app.handle(req('GET', '/auth/profiles', gwAccount(accountId)))
+    ).json()) as { profiles: Array<Record<string, unknown>> }
+    expect(list.profiles[0]?.voiceInputEnabled).toBe(false)
+    // A data do consentimento nunca sai na view.
+    expect(list.profiles[0]).not.toHaveProperty('voiceInputEnabledAt')
+
+    // É pelo `GET /auth/me` da sessão da criança que o app Kids lê a preferência.
+    const selected = (await (
+      await app.handle(req('POST', `/auth/profiles/${PROFILE_ID}/select`, gwAccount(accountId)))
+    ).json()) as { tokens: { accessToken: string } }
+    const me = async () =>
+      (
+        (await (
+          await app.handle(
+            req('GET', '/auth/me', { authorization: `Bearer ${selected.tokens.accessToken}` }),
+          )
+        ).json()) as { profile: Record<string, unknown> }
+      ).profile
+    expect((await me()).voiceInputEnabled).toBe(false)
+
+    expect(
+      (await patchProfile(gwParent(accountId, nowSeconds() - 60), { voiceInputEnabled: true }))
+        .status,
+    ).toBe(200)
+    // O mesmo token já enxerga a mudança: o /me lê o perfil fresco do repositório.
+    const after = await me()
+    expect(after.voiceInputEnabled).toBe(true)
+    expect(after).not.toHaveProperty('voiceInputEnabledAt')
+  })
+
+  test('a criança não liga nem desliga a própria fala (403 com mensagem clara)', async () => {
+    const { accountId, patchProfile, stored } = await setup()
+    for (const voiceInputEnabled of [true, false]) {
+      const res = await patchProfile(gwChild(accountId), { voiceInputEnabled })
+      expect(res.status).toBe(403)
+      expect(await errorOf(res)).toEqual({
+        code: 'FORBIDDEN',
+        message: 'A fala da criança só pode ser alterada pelos responsáveis',
+      })
+    }
+    expect(stored()?.voiceInputEnabled).toBe(false)
+    // O auto-serviço dela (nome) segue igual.
+    expect((await patchProfile(gwChild(accountId), { name: 'Sofia S' })).status).toBe(200)
+  })
+
+  test('o suporte nunca liga, mas pode desligar', async () => {
+    const { accountId, patchProfile, stored, profilesRepo } = await setup()
+    const denied = await patchProfile(gwSupport(accountId), { voiceInputEnabled: true })
+    expect(denied.status).toBe(403)
+    expect(await errorOf(denied)).toEqual({
+      code: 'FORBIDDEN',
+      message:
+        'Só os responsáveis podem ligar a fala da criança. A equipe de suporte pode apenas desligar.',
+    })
+    expect(stored()?.voiceInputEnabled).toBe(false)
+
+    // Os pais ligam; o suporte reenviar o mesmo valor (editando o nome) não é ligar.
+    await patchProfile(gwParent(accountId, nowSeconds() - 60), { voiceInputEnabled: true })
+    expect(
+      (await patchProfile(gwSupport(accountId), { name: 'Sofia M', voiceInputEnabled: true }))
+        .status,
+    ).toBe(200)
+    // E desligar pela equipe é permitido.
+    const off = await patchProfile(gwSupport(accountId), { voiceInputEnabled: false })
+    expect(off.status).toBe(200)
+    expect(stored()?.voiceInputEnabled).toBe(false)
+
+    // A trilha do consentimento: os pais ligaram, o suporte (ator real do header) desligou. A
+    // recusa e o reenvio do mesmo valor não viraram linha.
+    expect(profilesRepo.voiceInputEvents).toEqual([
+      {
+        profileId: PROFILE_ID,
+        accountUserId: accountId,
+        enabled: true,
+        actor: 'parent',
+        impersonatorId: null,
+        at: expect.any(Date),
+      },
+      {
+        profileId: PROFILE_ID,
+        accountUserId: accountId,
+        enabled: false,
+        actor: 'support',
+        impersonatorId: 'ffffffff-ffff-4fff-8fff-ffffffffffff',
+        at: expect.any(Date),
+      },
+    ])
+  })
+
+  test('ligar pede login recente do responsável; desligar não pede', async () => {
+    const { accountId, patchProfile, stored } = await setup()
+    const stale = gwParent(accountId, nowSeconds() - 16 * 60)
+    const turnOnStale = await patchProfile(stale, { voiceInputEnabled: true })
+    expect(turnOnStale.status).toBe(403)
+    expect((await errorOf(turnOnStale))?.code).toBe('PARENT_REAUTH_REQUIRED')
+    // Hora de login ilegível vale como antiga (falha fechada).
+    expect((await patchProfile(gwParent(accountId, 0), { voiceInputEnabled: true })).status).toBe(
+      403,
+    )
+    expect(stored()?.voiceInputEnabled).toBe(false)
+
+    const on = (await (
+      await patchProfile(gwParent(accountId, nowSeconds() - 60), { voiceInputEnabled: true })
+    ).json()) as { profile: { voiceInputEnabled: boolean } }
+    expect(on.profile.voiceInputEnabled).toBe(true)
+    expect(stored()?.voiceInputEnabledAt).toBeInstanceOf(Date)
+
+    // Formulário dos pais reenviando tudo ao trocar só o nome: não pede login de novo.
+    expect(
+      (await patchProfile(stale, { name: 'Sofia Maria', voiceInputEnabled: true })).status,
+    ).toBe(200)
+    // Desligar com login antigo: livre (voltar à opção mais protetiva não tem obstáculo).
+    const off = await patchProfile(stale, { voiceInputEnabled: false })
+    expect(off.status).toBe(200)
+    expect(stored()?.voiceInputEnabled).toBe(false)
+    expect(stored()?.voiceInputEnabledAt).toBeNull()
+  })
+
+  test('o perfil público segue pedindo login recente nos DOIS sentidos (sem mudança)', async () => {
+    const { accountId, patchProfile } = await setup()
+    const recent = gwParent(accountId, nowSeconds() - 60)
+    const stale = gwParent(accountId, nowSeconds() - 16 * 60)
+    expect((await patchProfile(recent, { publicProfileEnabled: true })).status).toBe(200)
+    const off = await patchProfile(stale, { publicProfileEnabled: false })
+    expect(off.status).toBe(403)
+    expect((await errorOf(off))?.code).toBe('PARENT_REAUTH_REQUIRED')
+  })
+
+  test('criar já com a fala ligada pede login recente e nunca vem do suporte', async () => {
+    const { app, accountId, profilesRepo } = await setup()
+    const create = (headers: Record<string, string>, body: Record<string, unknown>) =>
+      app.handle(req('POST', '/auth/profiles', headers, { requestId: randomUUID(), ...body }))
+    const before = profilesRepo.byId.size
+
+    const stale = await create(gwParent(accountId, nowSeconds() - 16 * 60), {
+      name: 'Théo',
+      voiceInputEnabled: true,
+    })
+    expect(stale.status).toBe(403)
+    expect((await errorOf(stale))?.code).toBe('PARENT_REAUTH_REQUIRED')
+    const support = await create(gwSupport(accountId), { name: 'Théo', voiceInputEnabled: true })
+    expect(support.status).toBe(403)
+    expect((await errorOf(support))?.code).toBe('FORBIDDEN')
+    // Nenhum perfil foi criado pelas tentativas recusadas.
+    expect(profilesRepo.byId.size).toBe(before)
+
+    // Criar sem o campo ou com false não muda nada (nem com login antigo).
+    for (const body of [{ name: 'Bia' }, { name: 'Lia', voiceInputEnabled: false }]) {
+      const res = await create(gwParent(accountId, nowSeconds() - 16 * 60), body)
+      expect(res.status).toBe(201)
+      const created = (await res.json()) as { profile: { voiceInputEnabled: boolean } }
+      expect(created.profile.voiceInputEnabled).toBe(false)
+    }
+
+    const ok = await create(gwParent(accountId, nowSeconds() - 60), {
+      name: 'Théo',
+      voiceInputEnabled: true,
+    })
+    expect(ok.status).toBe(201)
+    const created = (await ok.json()) as { profile: { id: string; voiceInputEnabled: boolean } }
+    expect(created.profile.voiceInputEnabled).toBe(true)
+    expect(profilesRepo.byId.get(created.profile.id)?.voiceInputEnabledAt).toBeInstanceOf(Date)
   })
 })

@@ -50,6 +50,19 @@ export function isPrivilegedActor(headers: Record<string, string | undefined>): 
 }
 
 /**
+ * Sessão de suporte/impersonação (`x-auth-impersonator-id`, injetado SÓ pelo gateway) nunca age
+ * numa oficina ao vivo: o atendente entraria na sala com o nome da criança, poderia ligar a
+ * própria câmera para a turma e tomar o lugar do aparelho dela. Leitura continua livre.
+ */
+export function assertNoLiveSupportWrite(
+  headers: Record<string, string | undefined>,
+  method: string,
+): void {
+  if (method !== 'GET' && headers['x-auth-impersonator-id']?.trim())
+    throw new ForbiddenError('A sessão de suporte não pode agir na oficina ao vivo.')
+}
+
+/**
  * As mutações exclusivas do BFF exigem o consumer HMAC `member-shell`. O gateway
  * remove o valor cru e re-injeta este header depois de validar a assinatura.
  */
@@ -157,5 +170,74 @@ export function assertInternalCaller(
   }
   if (!provided || !safeEqual(provided, expected)) {
     throw new UnauthorizedError('Chamada não autorizada (token interno ausente/inválido)')
+  }
+}
+
+/** Adult learners are authenticated accounts, never Kids student or parental sessions. */
+export function resolveAdultLearnerId(headers: Record<string, string | undefined>): string {
+  const id = resolveUserId(headers)
+  if (id !== resolveAccountId(headers) || headers['x-auth-kids-context'])
+    throw new ForbiddenError('Use sua conta adulta.')
+  return id
+}
+
+/**
+ * Trusted own-account team preview. Only the ROLE proves staff membership: a parent context
+ * alone never does. Two shapes are accepted, both without a support session:
+ * - the staff account itself (no profile headers; context absent or `parent`);
+ * - a profile session of the staff's OWN account. The Kids app forces every login (staff too)
+ *   to pick a profile before the learning area, so this is how the team reaches Pinta, Molda,
+ *   Pensa and Estúdio. Auth signs `role`/`status` from the account named in `pfl.accountId`
+ *   (`x-auth-account-id`) after checking that the profile belongs to it, so here the role and
+ *   the profile's owner are the same authenticated account.
+ * A support/impersonation session (`x-auth-impersonator-id`, claim `act`) carries the TARGET's
+ * role and may be looking at a customer's child: it must see the child's real state, so it is
+ * always refused. All `x-auth-*` headers are stripped from input and injected by the gateway.
+ */
+export function resolveKidsStaffPreviewActor(headers: Record<string, string | undefined>) {
+  if (!isPrivilegedActor(headers))
+    throw new ForbiddenError('Prévia disponível somente para a equipe ativa.')
+  if (
+    headers['x-auth-impersonator-id'] !== undefined ||
+    headers['x-auth-impersonation-mode'] !== undefined
+  )
+    throw new ForbiddenError('A sessão de suporte vê o estado real da criança, sem prévia.')
+  const userId = resolveUserId(headers)
+  const accountId = resolveAccountId(headers)
+  const context = headers['x-auth-kids-context']
+  const profileSession = headers['x-auth-account-id'] !== undefined
+  const consistent = profileSession
+    ? // `pfl` exists only in profile sessions: never with the parent context.
+      context === undefined || context === 'student'
+    : // Without `pfl` there is no profile: no child name/visibility and no student context.
+      accountId === userId &&
+      headers['x-auth-profile-name'] === undefined &&
+      headers['x-auth-profile-public'] === undefined &&
+      (context === undefined || context === 'parent')
+  if (!consistent) throw new ForbiddenError('Sessão da equipe inconsistente para a prévia.')
+  return { userId, accountId, profileSession }
+}
+
+/** Free Studio requires an adult account or a verified student profile; parent sessions are not learners. */
+export function resolveStudioFreeActor(
+  headers: Record<string, string | undefined>,
+  audience: 'kids' | 'adult',
+) {
+  const userId = audience === 'adult' ? resolveAdultLearnerId(headers) : resolveUserId(headers)
+  const accountId = resolveAccountId(headers)
+  const privileged = isPrivilegedActor(headers)
+  if (audience === 'kids' && privileged) resolveKidsStaffPreviewActor(headers)
+  if (
+    audience === 'kids' &&
+    !privileged &&
+    (headers['x-auth-kids-context'] !== 'student' || userId === accountId)
+  )
+    throw new ForbiddenError('Escolha um perfil de estudante para usar o Estúdio.')
+  return {
+    userId,
+    accountId,
+    audience,
+    privileged,
+    readOnly: Boolean(headers['x-auth-impersonator-id']),
   }
 }

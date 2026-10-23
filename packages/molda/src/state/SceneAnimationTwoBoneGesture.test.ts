@@ -158,6 +158,8 @@ test('invalid preparation/sample is visible without writes; no-op and reach limi
     const matrix = identityMatrix()
     matrix[12] = 1
     expect(f.gesture.preview(matrix)).toBe(true)
+    expect(f.gesture.beginTwoBone(CHAIN)).toBeNull()
+    f.gesture.cancel()
     const next = f.gesture.beginTwoBone(CHAIN)!
     expect(f.gesture.getSnapshot().pending).toBe(false)
     f.gesture.end(true)
@@ -227,7 +229,7 @@ test('preparation and publication cannot hand back an input canceled or replaced
   }
 })
 
-test('changing a normal-pose selection cannot publish the old time if cancellation seeks reentrantly', () => {
+test('changing a normal-pose selection preserves the same-time draft without publishing a cancellation', () => {
   const f = setup()
   try {
     f.gesture.begin(['root'])
@@ -240,10 +242,13 @@ test('changing a normal-pose selection cannot publish the old time if cancellati
       off()
       f.player.seek(1)
     })
-    expect(f.gesture.begin(['middle'])).toBe(false)
-    expect(f.player.getSnapshot().time).toBe(1)
-    expect(f.gesture.getSnapshot().pose).toBeNull()
-    expect(f.gesture.getSnapshot().dragging).toBe(false)
+    expect(f.gesture.begin(['middle'])).toBe(true)
+    expect(f.player.getSnapshot().time).toBe(0.7)
+    expect(f.gesture.getSnapshot().pose).not.toBeNull()
+    expect(f.gesture.getSnapshot().dragging).toBe(true)
+    off()
+    f.gesture.end(false)
+    expect(f.gesture.getSnapshot().pending).toBe(true)
     expect(f.editor.getState().asset).toBe(f.source)
   } finally {
     f.close()

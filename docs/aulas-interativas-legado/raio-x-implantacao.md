@@ -142,7 +142,7 @@ Na produção este passo não existe: não há sessão de cena nenhuma.
 2. `desafio-primeiro-jogo-v6/introducao`, depois `dia-1` a `dia-5` (as 6).
 3. `o-jogo-do-meu-jeito-v6/aula-01` a `aula-08` (as 8).
 
-Antes de importar: **`bun docs/aulas-interativas/qa/validar-manifestos-v6.ts`**, que é o portão destes 27 (ele
+Antes de importar: **`bun docs/aulas-interativas-tecnico/qa/validar-manifestos-v6.ts`**, que é o portão destes 27 (ele
 roda no CI). ⚠️ O `validar-manifestos.ts` valida o `catalogo.json` da RAIZ, o conjunto ANTERIOR ao v6, e não
 serve de portão aqui. Os três validadores completos (`validar-revisao-completa.ts`, `validar-desafio-v6.ts`,
 `validar-meu-jeito-v6.ts`) exigem os roteiros originais das entregas de vídeo, que não moram no repositório.

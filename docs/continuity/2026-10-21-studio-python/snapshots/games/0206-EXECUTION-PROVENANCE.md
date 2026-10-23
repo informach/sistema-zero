@@ -1,0 +1,9 @@
+# Execution provenance and duplicate refusal, preserved
+OwnerGames UUID01a15a4f-d555-7c81-80a2-a0fe887e9bbf executed the exact checker ONCE after actual Rootreceipt END23:13:36.720Z, observed finalized receipt at23:13:41UTC.
+Executable: Rootisolated Bun1.4.3 .cache/studio-python-l0/bun-1.4.3-isolated/extracted/bun-windows-x64/bun.exe.
+Arguments: --no-env-file .cache/studio-python-l0/games-functional-r1/space12-q02-q04-browser-checker-r1/check.ts C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/games-space12-q02-q04-r1/evidence --plan-sha=2cf4e00e7eb4b295f028728df877b914ec66d11d84d65e01bef668153b065100 --seal-sha=5d45f53ac29b122af09415e34d9c593b0c415024f57585ba46cee8d37d3f1b6b
+Workingdirectory C:/Users/tocha/projects/sistema-zero-python-games. Tool returnedexit0,193ms. Output:Q02frames7clears8complete7duration18400;Q039/10/9/17962;Q042/3/2/17767.
+JSONat2026-10-20T23:13:50.573Z. CreationUTC23:13:50.5730419,LastWriteUTC23:13:50.5735662,43114B. SHAb26a6bfebe5f7bc981d762e5efc963a4eec7aed15c47299e0f8a5b9b0562f5b9.
+Checkerimmutable828e89118afbcb78eeee0d3b15d52b84a0c0863d22efb9f70ac68e043b23302e. Inputbinds:plan2cf4/seal5d45/receiptd78bfcdf/reportcb8cc266/admissione61920b3/authoritydbd3b0a0/R73981. FullSHAstrings retained inexistingJSON.
+Root independently invoked postprocessor afterward; its semantic-review.log reportsEEXIST at write-once actual-review.json, Bun1.3.11 footer. RootlogSHAca9fa6bd3fb57e5ac091ef4c75f4632036a1f18937805824e0b301a8ffe6fd23. The second invocation is a publication refusal, NOT a rerun/failure of the game, and is preserved. No JSON/log/source/Rootartifact overwritten or retried by Games.
+Forwardcoordination: Root alone executes semantic checker; Games reads existing JSON/log/payloads without reexecution unless Root explicitly delegates ownership differently. SourceR7/28paths/checkerandold1.1proofsunchanged. No codefix for write-once guard; retain flagwx.

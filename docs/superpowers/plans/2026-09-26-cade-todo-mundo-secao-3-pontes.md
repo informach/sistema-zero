@@ -22,15 +22,15 @@
 ### Task 1: Encadear a seção 3
 
 **Files:**
-- Modify: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.roteiro.md`
-- Modify: `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`
-- Modify: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.manifesto.json`
-- Test: `docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`
+- Modify: `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`
+- Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`
 
 **Interfaces:** A chave do vídeo continua `video-a1-toque`; o texto `plannedVideo` no gerador e no manifesto deve ser idêntico. Nenhum campo estrutural muda.
 
 - [x] **Step 1: Ler as versões atuais e separar alterações paralelas.** Conferir `git diff` dos três arquivos, sobretudo mudanças não relacionadas à seção 3.
 - [x] **Step 2: Escrever a fala conectada.** Começar com a volta ao caderno pelo botão Anterior; conectar a futura montagem do jogo à analogia da campainha; após a pergunta sobre o jardim, inserir “É isso que você vai investigar na atividade desta seção” antes da explicação do layout. Ajustar indicações de tela para seguir essa ordem.
 - [x] **Step 3: Sincronizar a orientação de gravação.** Em `video('video-a1-toque', ...)`, descrever a sequência `caderno/Anterior → missão no jardim → campainha → acontecimento e ação → convite à atividade → layout`. Replicar somente essa string no manifesto, sem regerar todos os projetos/arquivos do curso.
-- [x] **Step 4: Verificar.** Rodar `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo` e `bun test docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts`. Ler a seção 3 em voz alta para conferir as duas transições, a duração e que o resultado permanece na experiência. Rodar `git diff --check`.
+- [x] **Step 4: Verificar.** Rodar `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts cade-todo-mundo` e `bun test docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`. Ler a seção 3 em voz alta para conferir as duas transições, a duração e que o resultado permanece na experiência. Rodar `git diff --check`.
 - [x] **Step 5: Registrar.** Fazer commit apenas das alterações da seção 3, com staging parcial se qualquer arquivo também tiver alterações paralelas.

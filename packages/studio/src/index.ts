@@ -66,10 +66,18 @@ export {
  * entrada no editor pro sem montar o runtime pesado. Ver docs/embedding.md.
  */
 export { canBootWebContainer as canRunProMode } from './components/terminal/webContainerClient'
+export type {
+  EditableStudioProject,
+  PythonClassicProjectDocument,
+  PythonProjectDocument,
+  PythonProProjectDocument,
+} from './core/editableProject'
+export { isPythonProject } from './core/editableProject'
 export {
   type CaptureCoverOptions,
   captureCoverFromProject,
 } from './cover/coverCapture'
+export { downloadProjectAsJSON } from './export/download'
 export { replaceLocalProject } from './persistence/local'
 export type { StudioPersistence, StudioPersistenceAdapter } from './persistence/types'
 export type { PreviewSecurityProfile } from './preview/csp'
@@ -90,11 +98,16 @@ export {
   restoreProjectFromCloud,
   validateCloudProjectSnapshot,
 } from './projects/importSnapshot'
-export { ProjectList, type ProjectListProps } from './projects/ProjectList'
+export {
+  ProjectList,
+  type ProjectListProps,
+  type ProjectListSection,
+} from './projects/ProjectList'
 export {
   buildTilemapGameProject,
   type TilemapGamePayload,
 } from './projects/tilemapGame'
+export type { StudioRuntimeEnvironment } from './runtime/environment'
 export {
   // "Guardado na sua conta": o host observa toda escrita/apagamento local (subir
   // para a nuvem) e relê o snapshot COMPLETO (com blocos) na hora de subir. A descida
@@ -114,22 +127,6 @@ export {
   prepareProjectForHost,
   sanitizeProjectForHost,
 } from './state/projectStore'
-export type {
-  ActivityCheck,
-  ActivityCheckBase,
-  ActivityCheckKind,
-  ActivityRunResult,
-  BehaviorCheck,
-  BehaviorRule,
-  CheckResult,
-  CheckVerifiedBy,
-  CodeCheck,
-  JsonValue,
-  LessonActivity,
-  StructureCheck,
-  StructureRule,
-  TestCaseCheck,
-} from './studio/activity'
 export type { StudioAIConfig, StudioFeatures } from './studio/config'
 // Chrome do HOST na Topbar/lista (07/09/2026): o kids embrulha `<ProjectList>`, `<StudioEditor>`
 // e o editor PRO neste Provider com o botão do menu lateral + o selo "Guardado na sua conta"
@@ -156,6 +153,7 @@ export type {
 } from './studio/pinta-library'
 export { prefetchStudioModes } from './studio/prefetch'
 export type {
+  PrepareProDependencies,
   StudioProRuntimeAdapter,
   StudioProRuntimeBuildInput,
   StudioProRuntimeBuildResult,
@@ -170,6 +168,12 @@ export type {
   StudioSharePublishInput,
   StudioShareResult,
 } from './studio/share'
+export type {
+  StudioTeamArtKind,
+  StudioTeamArtSummary,
+  StudioTeamImportResult,
+  StudioTeamLibraryAdapter,
+} from './studio/team-library'
 export type { StudioTheme } from './studio/theme'
 export type {
   StudioTutorAdapter,
@@ -180,8 +184,10 @@ export type {
   StudioTutorFeedbackInput,
   StudioTutorHelpReference,
   StudioTutorHistoryMessage,
+  StudioTutorHistoryPage,
   StudioTutorLessonReference,
   StudioTutorProjectContext,
+  StudioTutorRequestTransport,
   StudioTutorResponse,
   StudioTutorScope,
 } from './studio/tutor'
@@ -212,3 +218,4 @@ export function setStudioStorageNamespace(namespace: string): void {
   setStorageNamespace(namespace)
   setPersonalAssetsNamespace(namespace)
 }
+export type { ProWorkspacePreferences, StudioWorkspacePreferencesAdapter } from './studio/workspace'

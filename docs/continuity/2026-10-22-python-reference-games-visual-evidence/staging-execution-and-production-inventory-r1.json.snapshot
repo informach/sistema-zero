@@ -1,0 +1,1029 @@
+{
+  "kind": "studio-python-public-operational-evidence",
+  "version": 1,
+  "date": "2026-10-22",
+  "scope": "Staging Runtime S2S execution qualification and separate production Cloudflare read-only inventory.",
+  "provenance": {
+    "qualificationPerformedBy": "Root operator; this archive was assembled offline from pinned local evidence.",
+    "remoteCallsPerformedWhileArchiving": false,
+    "receiptPolicy": "Original receipt hashes are retained; only explicit public projections are embedded. No original raw receipts or provider responses are embedded.",
+    "sourcePolicy": "Embedded sources are operator/helper programs, including their fixed QA fixtures and environment variable names; no runtime credential values, contextual session bindings or learner documents are embedded."
+  },
+  "toolchain": {
+    "executionNode": "24.22.0",
+    "qaBundlerAndUnitRunner": "Bun 1.3.11",
+    "inventoryWrangler": "4.120.1",
+    "executionEngine": "Node; no Bun hosted execution result is claimed.",
+    "versionsBasis": "Pinned root invocation/runbook and explicit Node/Wrangler assertions in the GET readers."
+  },
+  "qualifiedOperator": {
+    "role": "Exact source of the remotely qualified operator",
+    "path": ".cache/python-reference-games/qualified-runtime-operator-9ac.ts",
+    "sha256": "9ac2833028ca9cd3a1025830c079a60acf04718a3a6d8dd4467d4f4a6fa7ed34",
+    "byteLength": 32240,
+    "encoding": "UTF-8",
+    "text": "import assert from 'node:assert/strict'\nimport { createHash, randomBytes, randomUUID } from 'node:crypto'\nimport { lstat, mkdir, open, readFile, writeFile } from 'node:fs/promises'\nimport { resolve } from 'node:path'\nimport { fileURLToPath } from 'node:url'\nimport { canonicalJson } from '@sistemazero/core/creations'\nimport { awaitWithSignal, readJsonBodyWithLimit } from '@sistemazero/core/http'\nimport {\n  StudioPythonExecutionContentSchema,\n  studioPythonExecutionRevision,\n  verifyStudioPythonExecutionMetadata,\n} from '@sistemazero/core/studio/python-execution-content'\nimport { verifyStudioPythonInspectionReport } from '@sistemazero/core/studio/python-inspection'\nimport {\n  STUDIO_PYTHON_PLAYTEST_LIMITS,\n  StudioPythonPlaytestRecipeSchema,\n  verifyStudioPythonPlaytestCapture,\n} from '@sistemazero/core/studio/python-playtest'\nimport { verifyStudioPythonPreviewReference } from '@sistemazero/core/studio/python-preview'\nimport { verifyStudioPythonDeployment } from '@sistemazero/core/studio/python-runtime-distribution'\nimport {\n  STUDIO_PYTHON_VALIDATION_LIMITS,\n  verifyStudioPythonValidationReport,\n} from '@sistemazero/core/studio/python-validation'\nimport {\n  STUDIO_PYTHON_INPUT_LIMITS,\n  StudioPythonInputOpenSchema,\n  type StudioPythonInputReference,\n  StudioPythonInputReferenceSchema,\n  StudioPythonInspectionRequestSchema,\n  StudioPythonValidationRequestSchema,\n} from '@sistemazero/core/studio/python-validation-input'\nimport { z } from 'zod'\nimport { verifyPythonPromotionPlan } from './python-promotion-plan'\n\nexport const STAGING_PYTHON_RUNTIME_ORIGIN =\n  'https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev'\nexport const PYTHON_EXECUTION_QUALIFICATION_LIMITS = Object.freeze({\n  workMs: 240_000,\n  cleanupMs: 60_000,\n  totalMs: 300_000,\n  requestMs: 90_000,\n  smallRequestMs: 15_000,\n  cleanupRequestMs: 10_000,\n  planBytes: 2_000_000,\n})\nconst hash = (value: string | Uint8Array) => createHash('sha256').update(value).digest('hex')\nconst ackSchema = z.strictObject({ ok: z.literal(true) })\nconst openSchema = z.strictObject({ ok: z.literal(true), input: StudioPythonInputReferenceSchema })\nconst reportSchema = z.strictObject({ ok: z.literal(true), report: z.unknown() })\nconst validationSchema = reportSchema.extend({ preview: z.unknown().optional() })\nconst denialSchema = z.object({ ok: z.literal(false), code: z.string() })\ntype Deployment = Awaited<ReturnType<typeof verifyStudioPythonDeployment>>\ntype FetchPort = (url: string | URL, init: RequestInit) => Promise<Response>\n\nexport function parsePythonExecutionOptions(args: readonly string[]) {\n  const [mode, ...flags] = args\n  assert(mode === 'preflight' || mode === 'run', 'Use preflight or run explicitly.')\n  const names = [\n    'environment',\n    'base-url',\n    'plan',\n    'plan-sha256',\n    'manifest-sha256',\n    'distribution-sha256',\n    'parent-origin',\n    'out',\n  ]\n  const values = new Map<string, string>()\n  for (const flag of flags) {\n    const match = /^--([a-z0-9-]+)=(.+)$/.exec(flag)\n    assert(\n      match && names.includes(match[1]!) && !values.has(match[1]!),\n      'Invalid or repeated argument.',\n    )\n    values.set(match[1]!, match[2]!)\n  }\n  assert(\n    names.every((name) => values.has(name)),\n    'Every public pin and path is required.',\n  )\n  const get = (name: string) => values.get(name)!\n  assert.equal(get('environment'), 'staging')\n  assert.equal(get('base-url'), STAGING_PYTHON_RUNTIME_ORIGIN)\n  for (const key of ['plan-sha256', 'manifest-sha256', 'distribution-sha256'])\n    assert(/^[a-f0-9]{64}$/.test(get(key)), 'Invalid SHA-256.')\n  const parent = new URL(get('parent-origin'))\n  assert(\n    parent.protocol === 'https:' &&\n      parent.origin === get('parent-origin') &&\n      !parent.username &&\n      !parent.password &&\n      parent.origin !== get('base-url'),\n    'Invalid parent origin.',\n  )\n  return Object.freeze({\n    mode,\n    environment: 'staging' as const,\n    baseUrl: get('base-url'),\n    planPath: resolve(get('plan')),\n    planSha256: get('plan-sha256'),\n    manifestSha256: get('manifest-sha256'),\n    distributionSha256: get('distribution-sha256'),\n    parentOrigin: parent.origin,\n    directory: resolve(get('out')),\n  })\n}\nexport type PythonExecutionOptions = ReturnType<typeof parsePythonExecutionOptions>\n\nexport async function pinPythonExecutionPlan(raw: unknown, options: PythonExecutionOptions) {\n  const plan = await verifyPythonPromotionPlan(raw, options.planSha256)\n  assert.equal(plan.input.environment, options.environment)\n  assert.equal(plan.input.target.runtimeOrigin, options.baseUrl)\n  assert(\n    plan.configuration.worker?.parentOrigins.includes(options.parentOrigin),\n    'Parent origin is absent from the final approved plan.',\n  )\n  const deployment = await verifyStudioPythonDeployment(plan.deployment)\n  assert.equal(deployment.release.manifestSha256, options.manifestSha256)\n  assert.equal(deployment.distributionSha256, options.distributionSha256)\n  assert(\n    deployment.release.manifest.extensions.some(\n      (item) => item.id === 'python-turtle' && item.versions.includes('1.0.0'),\n    ),\n    'Turtle 1.0.0 is required.',\n  )\n  assert(\n    ['inspect.mjs', 'playtest.mjs'].every((path) =>\n      deployment.distribution.files.some((file) => file.path === path),\n    ),\n    'Inspection/playtest artifacts are required.',\n  )\n  return deployment\n}\n\nconst imageBytes = () =>\n  Buffer.from(\n    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==',\n    'base64',\n  )\nconst sourceFixtures = [\n  {\n    name: 'inspection-no-execution',\n    main: 'import helper\\nraise RuntimeError(\"qa-main-must-not-run\")\\n',\n    helper: 'raise RuntimeError(\"qa-helper-must-not-run\")\\n',\n  },\n  { name: 'compile-rejection', main: 'def broken(:\\n    pass\\n', helper: 'VALUE = 7\\n' },\n  {\n    name: 'turtle-input-and-capture',\n    main: [\n      'import turtle',\n      'from helper import greeting',\n      'screen = turtle.Screen()',\n      'screen.setup(320, 240)',\n      'actor = turtle.Turtle()',\n      'actor.speed(0)',\n      'screen.addshape(\"hero.png\")',\n      'actor.shape(\"hero.png\")',\n      'def pressed():',\n      '    actor.forward(10)',\n      '    print(\"qa-key-fired\")',\n      'def clicked(x, y):',\n      '    actor.goto(x, y)',\n      '    print(\"qa-click-fired\")',\n      'screen.onkey(pressed, \"space\")',\n      'screen.onclick(clicked)',\n      'screen.listen()',\n      'print(\"Nome?\")',\n      'answer = input()',\n      'print(greeting(answer))',\n      'screen.mainloop()',\n      '',\n    ].join('\\n'),\n    helper: 'def greeting(name):\\n    return \"qa-stdin-\" + name\\n',\n  },\n] as const\n\ninterface CaseEvidence {\n  name: string\n  requestId: string\n  executionId: string\n  revision: string\n  files: { path: string; sha256: string; byteLength: number }[]\n  admission: 'not-sent' | 'pending' | 'denied' | 'known' | 'unknown'\n  oraclePassed: boolean\n  recipeSha256?: string\n  reportSha256?: string\n  compilePassed?: boolean\n  noExecutionReported?: boolean\n  callbacks?: { stdin: boolean; key: boolean; click: boolean }\n  capture?: {\n    sha256: string\n    byteLength: number\n    width: number\n    height: number\n    frameSequence: number\n  }\n  previewRequested: boolean\n  previewRemoveAcknowledged: boolean\n  previewRetirementConfirmed: boolean\n  inputRemoveAcknowledged: boolean\n  inputRetirementConfirmed: boolean\n}\nfunction evidence(name: string, revision: string, files: CaseEvidence['files']): CaseEvidence {\n  return {\n    name,\n    requestId: randomUUID(),\n    executionId: `qa-${randomUUID()}`,\n    revision,\n    files,\n    admission: 'not-sent',\n    oraclePassed: false,\n    previewRequested: false,\n    previewRemoveAcknowledged: false,\n    previewRetirementConfirmed: false,\n    inputRemoveAcknowledged: false,\n    inputRetirementConfirmed: false,\n  }\n}\nexport async function createPythonExecutionRun(\n  options: PythonExecutionOptions,\n  deployment: Deployment,\n) {\n  assert.equal(deployment.release.manifestSha256, options.manifestSha256)\n  assert.equal(deployment.distributionSha256, options.distributionSha256)\n  const owner = randomBytes(32).toString('hex')\n  const projectId = `qa-runtime-${randomUUID()}`\n  const cases = []\n  for (const fixture of sourceFixtures) {\n    const files = new Map<string, Uint8Array>([\n      ['main.py', Buffer.from(fixture.main)],\n      ['helper.py', Buffer.from(fixture.helper)],\n    ])\n    const graphical = fixture.name === 'turtle-input-and-capture'\n    if (graphical) files.set('hero.png', imageBytes())\n    const content = StudioPythonExecutionContentSchema.parse({\n      version: 1,\n      configuration: {\n        runtime: {\n          profileId: deployment.release.profileId,\n          releaseId: deployment.release.releaseId,\n          manifestSha256: options.manifestSha256,\n        },\n        extensions: graphical ? [{ id: 'python-turtle', version: '1.0.0' }] : [],\n        python: {\n          entrypoint: 'main.py',\n          dependencyLock: {\n            lockVersion: 1,\n            target: 'browser',\n            pythonVersion: deployment.distribution.pythonVersion,\n            runtimeManifestSha256: options.manifestSha256,\n            requirementsSha256: hash(''),\n            packages: [],\n          },\n        },\n      },\n      directories: [],\n      files: [...files].map(([path, bytes]) => ({\n        path,\n        kind: path.endsWith('.py') ? 'source' : 'asset',\n        sha256: hash(bytes),\n        byteLength: bytes.length,\n      })),\n    })\n    const snapshot = await verifyStudioPythonExecutionMetadata({\n      ...content,\n      projectId,\n      revision: await studioPythonExecutionRevision(content),\n    })\n    const recipe = StudioPythonPlaytestRecipeSchema.parse({\n      version: 1,\n      observeMs: 1000,\n      stdin: graphical ? ['Lia'] : [],\n      keys: graphical ? ['Space'] : [],\n      clicks: graphical ? [{ x: 0.25, y: 0.25, button: 'left' }] : [],\n      requireGraphics: graphical,\n    })\n    const state = evidence(\n      fixture.name,\n      snapshot.revision,\n      snapshot.files.map(({ path, sha256, byteLength }) => ({ path, sha256, byteLength })),\n    )\n    if (fixture.name !== 'inspection-no-execution') state.recipeSha256 = hash(canonicalJson(recipe))\n    cases.push({\n      files,\n      snapshot,\n      recipe,\n      state,\n    })\n  }\n  const receipt = {\n    version: 1,\n    kind: 'studio.python.remote-execution-qualification',\n    environment: options.environment,\n    baseUrl: options.baseUrl,\n    parentOrigin: options.parentOrigin,\n    planSha256: options.planSha256,\n    manifestSha256: options.manifestSha256,\n    distributionSha256: options.distributionSha256,\n    pythonVersion: deployment.distribution.pythonVersion,\n    owner,\n    projectId,\n    status: 'RUNNING',\n    phase: 'reserved',\n    startedAt: new Date().toISOString(),\n    endedAt: null as string | null,\n    cases: cases.map((item) => item.state),\n    negativeAdmissions: [] as CaseEvidence[],\n    checks: [] as { name: string; status: number; passed: boolean }[],\n    remoteOutcomeUnknown: false,\n    logicalCleanupConfirmed: false,\n    apiQualified: false,\n    cancellationQualified: false,\n    physicalCleanupVerified: false,\n    hostedUI: false,\n    contextualAuthorization: false,\n    publicGameExecution: false,\n    performance: false,\n    overallQualified: false,\n    failures: [] as { phase: string; kind: 'operation' | 'cleanup' | 'checkpoint' }[],\n  }\n  return { receipt, cases }\n}\ntype Run = Awaited<ReturnType<typeof createPythonExecutionRun>>\ninterface Resource {\n  ref: StudioPythonInputReference\n  state: CaseEvidence\n  previewUrl?: string\n  cleanupAttempted: boolean\n}\n\n/** Body budget applies to actual bytes, including a missing or misleading Content-Length. */\nasync function readBinary(response: Response, maximum: number, signal: AbortSignal) {\n  const declared = response.headers.get('content-length')\n  assert(\n    declared === null || (/^\\d+$/.test(declared) && Number(declared) <= maximum),\n    'Body limit.',\n  )\n  assert(response.body, 'Missing response body.')\n  const reader = response.body.getReader()\n  const chunks: Uint8Array[] = []\n  let length = 0\n  let complete = false\n  try {\n    while (true) {\n      const part = await awaitWithSignal(() => reader.read(), signal)\n      if (part.done) {\n        complete = true\n        break\n      }\n      length += part.value.length\n      assert(length <= maximum, 'Body limit.')\n      chunks.push(part.value)\n    }\n    const bytes = new Uint8Array(length)\n    let offset = 0\n    for (const chunk of chunks) {\n      bytes.set(chunk, offset)\n      offset += chunk.length\n    }\n    return bytes\n  } finally {\n    if (!complete)\n      await awaitWithSignal(() => reader.cancel(), AbortSignal.timeout(1000)).catch(() => {})\n    reader.releaseLock()\n  }\n}\n\n/** Test port supplies only HTTP; all metadata/report/image oracles remain the real Core verifiers. */\nexport async function qualifyPythonExecution(input: {\n  options: PythonExecutionOptions\n  deployment: Deployment\n  run: Run\n  token: string\n  checkpoint: () => Promise<void>\n  saveCapture?: (bytes: Uint8Array) => Promise<void>\n  fetchImpl?: FetchPort\n  signal?: AbortSignal\n}) {\n  const { deployment, run, checkpoint, saveCapture } = input\n  const options = Object.freeze({ ...input.options })\n  assert(options.baseUrl === STAGING_PYTHON_RUNTIME_ORIGIN && options.environment === 'staging')\n  assert(\n    input.token.trim() === input.token && input.token.length > 0 && !/[\\r\\n]/.test(input.token),\n  )\n  // Capture caller-owned inputs before the first suspension.\n  const cases = run.cases.map((item) => ({\n    ...item,\n    snapshot: structuredClone(item.snapshot),\n    recipe: structuredClone(item.recipe),\n    files: new Map([...item.files].map(([path, bytes]) => [path, Uint8Array.from(bytes)])),\n  }))\n  const token = input.token\n  const fetchPort: FetchPort = input.fetchImpl ?? fetch\n  const receipt = run.receipt\n  const resources: Resource[] = []\n  const failures: unknown[] = []\n  const total = AbortSignal.timeout(PYTHON_EXECUTION_QUALIFICATION_LIMITS.totalMs)\n  const work = AbortSignal.any([\n    total,\n    AbortSignal.timeout(PYTHON_EXECUTION_QUALIFICATION_LIMITS.workMs),\n    ...(input.signal ? [input.signal] : []),\n  ])\n  let finalCleanup: AbortSignal | undefined\n\n  const persist = async (signal: AbortSignal = work) => {\n    try {\n      await awaitWithSignal(checkpoint, signal)\n    } catch (error) {\n      receipt.failures.push({ phase: receipt.phase, kind: 'checkpoint' })\n      throw error\n    }\n  }\n  const wire = async (\n    name: string,\n    path: string,\n    params: {\n      body?: unknown\n      bytes?: Uint8Array\n      ref?: StudioPythonInputReference\n      anonymous?: boolean\n      cleanup?: boolean\n      binary?: boolean\n      onDispatch?: () => void\n    } = {},\n  ) => {\n    receipt.phase = name\n    const scope = params.cleanup ? (finalCleanup ?? total) : work\n    const signal = AbortSignal.any([\n      scope,\n      AbortSignal.timeout(\n        params.cleanup\n          ? PYTHON_EXECUTION_QUALIFICATION_LIMITS.cleanupRequestMs\n          : path.endsWith('/validate') || path.endsWith('/inspect')\n            ? PYTHON_EXECUTION_QUALIFICATION_LIMITS.requestMs\n            : PYTHON_EXECUTION_QUALIFICATION_LIMITS.smallRequestMs,\n      ),\n    ])\n    // Failure to persist cannot abandon already-owned resources. It remains a failing oracle.\n    if (params.cleanup) {\n      try {\n        await persist(AbortSignal.any([scope, AbortSignal.timeout(1000)]))\n      } catch (error) {\n        failures.push(error)\n      }\n    } else await persist(signal)\n    signal.throwIfAborted()\n    const headers: Record<string, string> = {}\n    if (!params.anonymous) headers.Authorization = `Bearer ${token}`\n    if (params.ref) headers['X-Studio-Python-Input'] = JSON.stringify(params.ref)\n    const body = params.bytes\n      ? new Blob([Uint8Array.from(params.bytes)])\n      : params.body === undefined\n        ? undefined\n        : JSON.stringify(params.body)\n    if (body !== undefined)\n      headers['Content-Type'] = params.bytes ? 'application/octet-stream' : 'application/json'\n    const response = await awaitWithSignal(\n      () => {\n        params.onDispatch?.()\n        return fetchPort(new URL(path, options.baseUrl), {\n          method: body === undefined ? 'GET' : 'POST',\n          body,\n          headers,\n          signal,\n          redirect: 'error',\n        })\n      },\n      signal,\n      (late) => {\n        void late.body?.cancel().catch(() => {})\n      },\n    )\n    try {\n      const value: unknown = params.binary\n        ? await readBinary(response, STUDIO_PYTHON_PLAYTEST_LIMITS.captureBytes, signal)\n        : await readJsonBodyWithLimit(\n            response,\n            STUDIO_PYTHON_VALIDATION_LIMITS.responseBytes,\n            signal,\n          )\n      receipt.checks.push({ name, status: response.status, passed: false })\n      return { status: response.status, headers: response.headers, value }\n    } catch (error) {\n      void response.body?.cancel().catch(() => {})\n      throw error\n    }\n  }\n  const pass = () => {\n    receipt.checks[receipt.checks.length - 1]!.passed = true\n  }\n  const retire = async (resource: Resource) => {\n    if (resource.cleanupAttempted) return\n    resource.cleanupAttempted = true\n    const { state, ref } = resource\n    if (state.previewRequested) {\n      try {\n        const removed = await wire(`${state.name}:remove-preview`, '/v1/python/previews/remove', {\n          body: ref,\n          cleanup: true,\n        })\n        assert.equal(removed.status, 200)\n        ackSchema.parse(removed.value)\n        state.previewRemoveAcknowledged = true\n        pass()\n        if (resource.previewUrl) {\n          const absent = await wire(`${state.name}:preview-retired`, resource.previewUrl, {\n            anonymous: true,\n            cleanup: true,\n            binary: true,\n          })\n          assert.equal(absent.status, 404)\n          state.previewRetirementConfirmed = true\n          pass()\n        }\n      } catch (error) {\n        failures.push(error)\n        receipt.failures.push({ phase: receipt.phase, kind: 'cleanup' })\n      }\n    }\n    try {\n      const removed = await wire(`${state.name}:remove-input`, '/v1/python/inputs/remove', {\n        body: ref,\n        cleanup: true,\n      })\n      assert.equal(removed.status, 200)\n      ackSchema.parse(removed.value)\n      state.inputRemoveAcknowledged = true\n      pass()\n      const absent = await wire(`${state.name}:input-retired`, '/v1/python/inspect', {\n        body: StudioPythonInspectionRequestSchema.parse({\n          version: 1,\n          input: ref,\n          structure: false,\n        }),\n        cleanup: true,\n      })\n      assert.equal(absent.status, 410)\n      denialSchema.parse(absent.value)\n      state.inputRetirementConfirmed = true\n      pass()\n    } catch (error) {\n      failures.push(error)\n      receipt.failures.push({ phase: receipt.phase, kind: 'cleanup' })\n    }\n  }\n  const admit = async (\n    item: Run['cases'][number],\n    expected: 200 | 401 | 409,\n    anonymous = false,\n  ) => {\n    const state = item.state\n    if (expected !== 200) receipt.negativeAdmissions.push(state)\n    const body = StudioPythonInputOpenSchema.parse({\n      version: 1,\n      owner: receipt.owner,\n      requestId: state.requestId,\n      executionId: state.executionId,\n      snapshot: item.snapshot,\n    })\n    let dispatched = false\n    let acknowledged = false\n    try {\n      const result = await wire(`${state.name}:open`, '/v1/python/inputs', {\n        body,\n        anonymous,\n        onDispatch: () => {\n          dispatched = true\n          state.admission = 'pending'\n        },\n      })\n      if (result.status === 200) {\n        const ref = openSchema.parse(result.value).input\n        assert(\n          ref.owner === body.owner &&\n            ref.requestId === body.requestId &&\n            ref.executionId === body.executionId &&\n            ref.projectId === body.snapshot.projectId &&\n            ref.revision === body.snapshot.revision &&\n            ref.expiresAt > Date.now() &&\n            ref.expiresAt <= Date.now() + STUDIO_PYTHON_INPUT_LIMITS.lifetimeMs,\n          'Admission mismatch.',\n        )\n        const resource: Resource = { ref, state, cleanupAttempted: false }\n        resources.push(resource) // Own it before the next await, including an unexpected successful admission.\n        state.admission = 'known'\n        acknowledged = true\n        assert.equal(result.status, expected)\n        pass()\n        await persist()\n        return resource\n      }\n      denialSchema.parse(result.value)\n      // A positive admission can persist before a later check/approval returns 4xx.\n      // Only these constructed pre-admission negatives establish that no input was opened.\n      const provenPreAdmissionDenial =\n        (anonymous && expected === 401 && result.status === 401) ||\n        (!anonymous &&\n          expected === 409 &&\n          result.status === 409 &&\n          body.snapshot.configuration.runtime.manifestSha256 !== options.manifestSha256)\n      if (provenPreAdmissionDenial) {\n        state.admission = 'denied'\n        acknowledged = true\n      }\n      assert.equal(result.status, expected)\n      pass()\n      return undefined\n    } catch (error) {\n      if (dispatched && !acknowledged) {\n        state.admission = 'unknown'\n        receipt.remoteOutcomeUnknown = true\n      }\n      throw error\n    }\n  }\n\n  try {\n    const metadata = await wire('deployment', `/v1/runtime-deployments/${options.manifestSha256}`, {\n      anonymous: true,\n    })\n    assert.equal(metadata.status, 200)\n    const served = await verifyStudioPythonDeployment(metadata.value)\n    assert.equal(served.release.manifestSha256, options.manifestSha256)\n    assert.equal(served.distributionSha256, options.distributionSha256)\n    assert.equal(canonicalJson(served.release), canonicalJson(deployment.release))\n    pass()\n    const base = cases[0]!\n    await admit(\n      { ...base, state: evidence('anonymous-refused', base.snapshot.revision, []) },\n      401,\n      true,\n    )\n    const changed = structuredClone(base.snapshot)\n    const unknownManifest = hash(`unapproved-qa-${randomUUID()}`)\n    changed.configuration.runtime.manifestSha256 = unknownManifest\n    changed.configuration.python.dependencyLock.runtimeManifestSha256 = unknownManifest\n    const { projectId: _id, revision: _revision, ...changedContent } = changed\n    changed.revision = await studioPythonExecutionRevision(changedContent)\n    await admit(\n      {\n        ...base,\n        snapshot: changed,\n        state: evidence('unapproved-release-refused', changed.revision, []),\n      },\n      409,\n    )\n    for (const item of cases) {\n      const resource = await admit(item, 200)\n      assert(resource)\n      const { state, ref } = resource\n      const wrongOwner = { ...ref, owner: hash(`different-owner-${receipt.owner}`) }\n      const refused = await wire(`${state.name}:owner-refused`, '/v1/python/inspect', {\n        body: StudioPythonInspectionRequestSchema.parse({\n          version: 1,\n          input: wrongOwner,\n          structure: false,\n        }),\n      })\n      assert.equal(refused.status, 409)\n      denialSchema.parse(refused.value)\n      pass()\n      for (const file of item.snapshot.files) {\n        const bytes = item.files.get(file.path)\n        assert(bytes && hash(bytes) === file.sha256 && bytes.byteLength === file.byteLength)\n        const uploaded = await wire(\n          `${state.name}:upload:${file.path}`,\n          `/v1/python/files/${file.sha256}`,\n          { bytes, ref },\n        )\n        assert.equal(uploaded.status, 200)\n        const ack = z\n          .strictObject({\n            ok: z.literal(true),\n            file: z.strictObject({\n              sha256: z.string(),\n              bytes: z.number(),\n            }),\n          })\n          .parse(uploaded.value)\n        assert.equal(ack.file.sha256, file.sha256)\n        assert.equal(ack.file.bytes, file.byteLength)\n        pass()\n      }\n      if (state.name === 'inspection-no-execution') {\n        const inspected = await wire(`${state.name}:inspect`, '/v1/python/inspect', {\n          body: StudioPythonInspectionRequestSchema.parse({\n            version: 1,\n            input: ref,\n            structure: false,\n          }),\n        })\n        assert.equal(inspected.status, 200)\n        const report = await verifyStudioPythonInspectionReport(\n          reportSchema.parse(inspected.value).report,\n          item.snapshot,\n        )\n        assert.equal(report.status, 'passed')\n        state.compilePassed = true\n        state.noExecutionReported = true\n        state.reportSha256 = hash(canonicalJson(report))\n        pass()\n      } else {\n        state.previewRequested = item.recipe.requireGraphics\n        const validated = await wire(`${state.name}:validate`, '/v1/python/validate', {\n          body: StudioPythonValidationRequestSchema.parse({\n            version: 1,\n            input: ref,\n            structure: false,\n            recipe: item.recipe,\n            ...(state.previewRequested ? { preview: { parentOrigin: options.parentOrigin } } : {}),\n          }),\n        })\n        assert.equal(validated.status, 200)\n        const envelope = validationSchema.parse(validated.value)\n        const report = await verifyStudioPythonValidationReport(\n          envelope.report,\n          item.snapshot,\n          item.recipe,\n          false,\n        )\n        state.reportSha256 = hash(canonicalJson(report))\n        state.compilePassed = report.inspection.status === 'passed'\n        if (!state.previewRequested) {\n          assert.equal(report.status, 'failed')\n          assert.equal(report.inspection.status, 'failed')\n          assert.equal(report.execution, undefined)\n          assert.equal(envelope.preview, undefined)\n          state.noExecutionReported = true\n          pass()\n        } else {\n          assert.equal(report.status, 'passed')\n          const execution = report.execution\n          assert(execution?.capture && execution.omittedChars === 0 && execution.stderr === '')\n          state.callbacks = {\n            stdin: execution.stdout.split(/\\r?\\n/).includes('qa-stdin-Lia'),\n            key: execution.stdout.split(/\\r?\\n/).includes('qa-key-fired'),\n            click: execution.stdout.split(/\\r?\\n/).includes('qa-click-fired'),\n          }\n          assert(\n            Object.values(state.callbacks).every(Boolean),\n            'Callbacks did not produce their causal markers.',\n          )\n          const preview = verifyStudioPythonPreviewReference(envelope.preview, {\n            projectId: item.snapshot.projectId,\n            revision: item.snapshot.revision,\n            runtimeManifestSha256: options.manifestSha256,\n            serviceOrigin: options.baseUrl,\n            parentOrigin: options.parentOrigin,\n            now: Date.now(),\n          })\n          resource.previewUrl = preview.url\n          pass()\n          const capture = await wire(\n            `${state.name}:capture`,\n            new URL('python-playtest.png', preview.url).href,\n            { anonymous: true, binary: true },\n          )\n          assert.equal(capture.status, 200)\n          assert.equal(capture.headers.get('content-type'), 'image/png')\n          assert(capture.value instanceof Uint8Array)\n          const verified = await verifyStudioPythonPlaytestCapture(execution.capture, capture.value)\n          const { path: _path, ...publicCapture } = verified\n          state.capture = publicCapture\n          const png = capture.value\n          if (saveCapture) await awaitWithSignal(() => saveCapture(png), work)\n          pass()\n        }\n      }\n      state.oraclePassed = true\n      await retire(resource)\n      await persist()\n      assert.equal(failures.length, 0, 'Cleanup failed; no further case will be admitted.')\n      work.throwIfAborted()\n    }\n  } catch (error) {\n    failures.push(error)\n    receipt.failures.push({ phase: receipt.phase, kind: 'operation' })\n  } finally {\n    finalCleanup = AbortSignal.any([\n      total,\n      AbortSignal.timeout(PYTHON_EXECUTION_QUALIFICATION_LIMITS.cleanupMs),\n    ])\n    for (const resource of resources) await retire(resource)\n    receipt.logicalCleanupConfirmed =\n      resources.length > 0 &&\n      !receipt.remoteOutcomeUnknown &&\n      resources.every(\n        ({ state, previewUrl }) =>\n          state.inputRemoveAcknowledged &&\n          state.inputRetirementConfirmed &&\n          (!state.previewRequested ||\n            (state.previewRemoveAcknowledged && (!previewUrl || state.previewRetirementConfirmed))),\n      )\n    receipt.apiQualified =\n      failures.length === 0 &&\n      receipt.logicalCleanupConfirmed &&\n      receipt.cases.every((state) => state.oraclePassed)\n    receipt.status = receipt.apiQualified ? 'API_PASSED' : 'FAILED'\n    receipt.endedAt = new Date().toISOString()\n    try {\n      await persist(finalCleanup)\n    } catch (error) {\n      failures.push(error)\n      receipt.status = 'FAILED'\n      receipt.apiQualified = false\n    }\n  }\n  if (failures.length === 1) throw failures[0]\n  if (failures.length > 1)\n    throw new AggregateError(failures, 'Runtime qualification and/or cleanup failed.')\n  return receipt\n}\n\nexport async function runPythonExecutionCli(args: readonly string[]) {\n  assert(\n    !process.versions.bun && process.versions.node === '24.22.0',\n    'Use Node 24.22.0 for the remote operator.',\n  )\n  const options = parsePythonExecutionOptions(args)\n  const info = await lstat(options.planPath)\n  assert(\n    info.isFile() &&\n      !info.isSymbolicLink() &&\n      info.size <= PYTHON_EXECUTION_QUALIFICATION_LIMITS.planBytes,\n    'Plan must be a bounded regular file.',\n  )\n  const bytes = await readFile(options.planPath)\n  assert(bytes.length <= PYTHON_EXECUTION_QUALIFICATION_LIMITS.planBytes)\n  const deployment = await pinPythonExecutionPlan(JSON.parse(bytes.toString('utf8')), options)\n  const run = await createPythonExecutionRun(options, deployment)\n  await mkdir(options.directory, { recursive: false })\n  const output = await open(resolve(options.directory, 'receipt.json'), 'wx')\n  let writing: Promise<unknown> = Promise.resolve()\n  const checkpoint = () => {\n    const json = `${JSON.stringify(run.receipt, null, 2)}\\n`\n    const pending = writing.then(async () => {\n      await output.truncate(0)\n      await output.write(json, 0, 'utf8')\n      await output.sync()\n    })\n    writing = pending.catch(() => {})\n    return pending\n  }\n  const controller = new AbortController()\n  const abort = () => controller.abort(new Error('Operator interrupted.'))\n  process.on('SIGINT', abort)\n  process.on('SIGTERM', abort)\n  const errors: unknown[] = []\n  try {\n    await checkpoint()\n    if (options.mode === 'preflight') {\n      run.receipt.status = 'PREFLIGHT_ONLY'\n      run.receipt.phase = 'offline-inputs-verified'\n      run.receipt.endedAt = new Date().toISOString()\n      await checkpoint()\n    } else {\n      const token = process.env.STUDIO_PYTHON_RUNTIME_TOKEN\n      assert(token, 'STUDIO_PYTHON_RUNTIME_TOKEN is required in memory.')\n      await qualifyPythonExecution({\n        options,\n        deployment,\n        run,\n        token,\n        checkpoint,\n        signal: controller.signal,\n        saveCapture: (png) =>\n          writeFile(resolve(options.directory, 'python-playtest.png'), png, { flag: 'wx' }),\n      })\n    }\n  } catch (error) {\n    errors.push(error)\n    run.receipt.status = 'FAILED'\n    run.receipt.apiQualified = false\n    run.receipt.endedAt = new Date().toISOString()\n    try {\n      await checkpoint()\n    } catch (failure) {\n      errors.push(failure)\n    }\n  } finally {\n    process.off('SIGINT', abort)\n    process.off('SIGTERM', abort)\n    await writing\n    try {\n      await output.close()\n    } catch (error) {\n      errors.push(error)\n    }\n  }\n  if (errors.length === 1) throw errors[0]\n  if (errors.length > 1)\n    throw new AggregateError(errors, 'Operator failed; inspect the sanitized receipt.')\n}\nif (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {\n  runPythonExecutionCli(process.argv.slice(2)).catch(() => {\n    // Exceptions may contain authenticated request details. Never print them.\n    process.stderr.write(\n      'Runtime qualification failed. Inspect the new sanitized receipt; no automatic retry.\\n',\n    )\n    process.exitCode = 1\n  })\n}\n",
+    "hostedQualificationAttributedToThisShaOnly": true,
+    "reconstruction": "Recovered by reversing exactly the two typing conversions from 4d30; its SHA was checked against the recorded 9ac pin before exclusive private archival."
+  },
+  "qualifiedBundle": {
+    "path": ".cache/python-reference-games/runtime-execution-operator-r2.mjs",
+    "sha256": "533c36c7219a54d2165aa63539620f7d5ae5e94d5f26f446e9479c869b567dce",
+    "byteLength": 744685,
+    "contentEmbedded": false,
+    "target": "node",
+    "format": "esm",
+    "sourceSha256": "9ac2833028ca9cd3a1025830c079a60acf04718a3a6d8dd4467d4f4a6fa7ed34",
+    "runtimeArtifact": false
+  },
+  "subsequentTypingOnlyDelta": {
+    "qualifiedSourceSha256": "9ac2833028ca9cd3a1025830c079a60acf04718a3a6d8dd4467d4f4a6fa7ed34",
+    "currentSource": {
+      "path": "packages/studio-runtime/scripts/qualify-python-execution.ts",
+      "sha256": "4d30f83edaab501f9003422ade29fb567e2fb4ae1c3e938ba62913157f3469b9",
+      "byteLength": 32341
+    },
+    "replacements": [
+      {
+        "purpose": "Avoid the Workers ambient Buffer.toString overload while preserving 64-character lowercase random hex.",
+        "before": "const owner = randomBytes(32).toString('hex')",
+        "after": "const owner = Array.from(randomBytes(32), (byte) => byte.toString(16).padStart(2, '0')).join('')"
+      },
+      {
+        "purpose": "Decode file bytes without the Workers ambient Buffer.toString overload; preserve a BOM as Buffer.toString did.",
+        "before": "const deployment = await pinPythonExecutionPlan(JSON.parse(bytes.toString('utf8')), options)",
+        "after": "const deployment = await pinPythonExecutionPlan(\n    JSON.parse(new TextDecoder('utf-8', { ignoreBOM: true }).decode(bytes)),\n    options,\n  )"
+      }
+    ],
+    "exactForwardReconstructionVerified": true,
+    "hostedRerunOfCurrentSourceClaimed": false,
+    "note": "The remote result remains bound to 9ac and bundle 533c. The later 4d30 source changes only the two byte-to-string conversions shown here."
+  },
+  "runtimeQualification": {
+    "originalReceipt": {
+      "path": ".cache/python-reference-games/runtime-execution-hosted-r2/receipt.json",
+      "sha256": "4558f7c02bb201ee7a78478cc0be8e3089ed271fc6ecca5ab352b48eedbc7bda",
+      "byteLength": 8974
+    },
+    "projection": {
+      "version": 1,
+      "kind": "studio.python.remote-execution-qualification",
+      "environment": "staging",
+      "baseUrl": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
+      "parentOrigin": "https://community-kids-staging.up.railway.app",
+      "planSha256": "43f7c218d08b00d4a91dd360ffaf53970316d9d3048dd307e59289fc72fd6725",
+      "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+      "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+      "pythonVersion": "3.14.2",
+      "projectId": "qa-runtime-49af03ba-55d6-4b44-ab85-1275bf931c1c",
+      "status": "API_PASSED",
+      "phase": "turtle-input-and-capture:input-retired",
+      "startedAt": "2026-10-22T19:49:36.553Z",
+      "endedAt": "2026-10-22T19:51:47.973Z",
+      "remoteOutcomeUnknown": false,
+      "logicalCleanupConfirmed": true,
+      "apiQualified": true,
+      "cancellationQualified": false,
+      "physicalCleanupVerified": false,
+      "hostedUI": false,
+      "contextualAuthorization": false,
+      "publicGameExecution": false,
+      "performance": false,
+      "overallQualified": false,
+      "elapsedMilliseconds": 131420,
+      "cases": [
+        {
+          "name": "inspection-no-execution",
+          "requestId": "4e4159ee-f90a-4cf9-bcef-97ad9c19ab41",
+          "executionId": "qa-c673bf57-fb65-4189-851e-27d255f68a92",
+          "revision": "a75ada4205b366076ade02ee3038255bdfc16e2b97302bafb13dd64a24cbc0be",
+          "admission": "known",
+          "oraclePassed": true,
+          "previewRequested": false,
+          "previewRemoveAcknowledged": false,
+          "previewRetirementConfirmed": false,
+          "inputRemoveAcknowledged": true,
+          "inputRetirementConfirmed": true,
+          "compilePassed": true,
+          "noExecutionReported": true,
+          "reportSha256": "962313370c738fe0512675c31e82c8b40487a3ee222f0893ef809d6e78b64358",
+          "files": [
+            {
+              "path": "main.py",
+              "sha256": "cf07577322ba6892b4e872da35767e30d432ee8e8ebd49eef61583c68c4717e8",
+              "byteLength": 57
+            },
+            {
+              "path": "helper.py",
+              "sha256": "f3e10714d8ac715bf4acf6d7f13763f710980de87edbecb2c461b10c3300115d",
+              "byteLength": 45
+            }
+          ]
+        },
+        {
+          "name": "compile-rejection",
+          "requestId": "cea2fc3f-fab8-4aa1-a2d4-8d06496fc502",
+          "executionId": "qa-bcc161ed-883f-4f56-afa5-65a783986674",
+          "revision": "8a011893306a31925b62ea68268de04475fcd0ba87726cf74c285fc66462ff67",
+          "admission": "known",
+          "oraclePassed": true,
+          "previewRequested": false,
+          "previewRemoveAcknowledged": false,
+          "previewRetirementConfirmed": false,
+          "inputRemoveAcknowledged": true,
+          "inputRetirementConfirmed": true,
+          "compilePassed": false,
+          "noExecutionReported": true,
+          "recipeSha256": "cdcc947f064d1834323d4e5a8dacddd9f995754e3844f19e43a79930e48070da",
+          "reportSha256": "cf5bff8490d5d6b334d4531a735d239476fa88a6b5b48416d7279da5c2eb38a6",
+          "files": [
+            {
+              "path": "main.py",
+              "sha256": "6b8c8a725c23dc076d9a2c185ce4e02435746bc3b4f99906d13de360e56898c7",
+              "byteLength": 22
+            },
+            {
+              "path": "helper.py",
+              "sha256": "76b26c40fd1de8995c9a5457c2bd4cf363c42d1f88a66f4d583bc10295f2062a",
+              "byteLength": 10
+            }
+          ]
+        },
+        {
+          "name": "turtle-input-and-capture",
+          "requestId": "473d472a-c713-4f0f-828e-67045d7343f5",
+          "executionId": "qa-86cef5fe-44de-4b49-8842-5348b6dcc3fb",
+          "revision": "12de12cc92cbd6ec39dd82c3ca266a0d73417055fa8cf8cafb656451812fc5fd",
+          "admission": "known",
+          "oraclePassed": true,
+          "previewRequested": true,
+          "previewRemoveAcknowledged": true,
+          "previewRetirementConfirmed": true,
+          "inputRemoveAcknowledged": true,
+          "inputRetirementConfirmed": true,
+          "compilePassed": true,
+          "recipeSha256": "eb739b00c7a3e0ddeee48c592496ebe0e292a3d76ca0fd41a218333bdac09ce3",
+          "reportSha256": "cfd55e5c25d7a7dd4bb79649d4a9b9e558bd19d518a7950a981ec8477587f243",
+          "files": [
+            {
+              "path": "main.py",
+              "sha256": "3a09ba19712a114349ad8f3e6f4b687b4812b8ed7be9ce6a49b46fe491f782e4",
+              "byteLength": 457
+            },
+            {
+              "path": "helper.py",
+              "sha256": "8eb85077eb33a580c0f8fbe993f0c9ac1c6c41bbec95b100d780eb079ec11c8e",
+              "byteLength": 50
+            },
+            {
+              "path": "hero.png",
+              "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5",
+              "byteLength": 70
+            }
+          ],
+          "callbacks": {
+            "stdin": true,
+            "key": true,
+            "click": true
+          },
+          "capture": {
+            "sha256": "1e070f0738cbd4ea111821a0c5a864cc5ec8fd187e9148f58bcad7cc8b802503",
+            "byteLength": 2961,
+            "width": 320,
+            "height": 240,
+            "frameSequence": 8
+          }
+        }
+      ],
+      "negativeAdmissions": [
+        {
+          "name": "anonymous-refused",
+          "requestId": "dd587e73-45df-49ee-8728-a9a0242421bb",
+          "executionId": "qa-38e40026-519b-486b-a895-63f8186f3f52",
+          "revision": "a75ada4205b366076ade02ee3038255bdfc16e2b97302bafb13dd64a24cbc0be",
+          "admission": "denied",
+          "oraclePassed": false,
+          "previewRequested": false,
+          "previewRemoveAcknowledged": false,
+          "previewRetirementConfirmed": false,
+          "inputRemoveAcknowledged": false,
+          "inputRetirementConfirmed": false,
+          "files": []
+        },
+        {
+          "name": "unapproved-release-refused",
+          "requestId": "7d998e74-25dd-4471-b0bd-7e43b1a95ff0",
+          "executionId": "qa-a5e024f9-bc78-4fc9-a43d-870941c9c39c",
+          "revision": "22ca9346751c6d3dd72a72e3f4fab6afbd77e126e03d42df96dcca24945810e9",
+          "admission": "denied",
+          "oraclePassed": false,
+          "previewRequested": false,
+          "previewRemoveAcknowledged": false,
+          "previewRetirementConfirmed": false,
+          "inputRemoveAcknowledged": false,
+          "inputRetirementConfirmed": false,
+          "files": []
+        }
+      ],
+      "checks": [
+        {
+          "name": "deployment",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "anonymous-refused:open",
+          "status": 401,
+          "passed": true
+        },
+        {
+          "name": "unapproved-release-refused:open",
+          "status": 409,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:open",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:owner-refused",
+          "status": 409,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:upload:main.py",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:upload:helper.py",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:inspect",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:remove-input",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "inspection-no-execution:input-retired",
+          "status": 410,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:open",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:owner-refused",
+          "status": 409,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:upload:main.py",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:upload:helper.py",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:validate",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:remove-input",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "compile-rejection:input-retired",
+          "status": 410,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:open",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:owner-refused",
+          "status": 409,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:upload:main.py",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:upload:helper.py",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:upload:hero.png",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:validate",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:capture",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:remove-preview",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:preview-retired",
+          "status": 404,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:remove-input",
+          "status": 200,
+          "passed": true
+        },
+        {
+          "name": "turtle-input-and-capture:input-retired",
+          "status": 410,
+          "passed": true
+        }
+      ],
+      "failureCount": 0
+    },
+    "interpretation": {
+      "checksPassed": 28,
+      "caseOraclesPassed": 3,
+      "elapsedSeconds": 131.42,
+      "inspection": "The harmless raise/import fixture compiled and reported no execution in this case; this is not a general sandbox-isolation proof.",
+      "invalidSyntax": "Compilation was rejected and execution was not reported.",
+      "turtle": "The controlled S2S playtest reported stdin, Space-key and click callbacks and returned a PNG bound to its report/recipe.",
+      "negativeAdmissions": "Anonymous 401 and the deliberately unapproved release 409 were confirmed by named checks. Their oraclePassed=false fields describe non-executed cases and were preserved unchanged.",
+      "cleanup": "Every admitted input removal was acknowledged and followed by 410; the requested preview removal was acknowledged and followed by 404."
+    }
+  },
+  "capturedPng": {
+    "path": ".cache/python-reference-games/runtime-execution-hosted-r2/python-playtest.png",
+    "sha256": "1e070f0738cbd4ea111821a0c5a864cc5ec8fd187e9148f58bcad7cc8b802503",
+    "byteLength": 2961,
+    "mimeType": "image/png",
+    "encoding": "base64",
+    "width": 320,
+    "height": 240,
+    "frameSequence": 8,
+    "data": "iVBORw0KGgoAAAANSUhEUgAAAUAAAADwCAYAAABxLb1rAAALRklEQVR4AezYy3EUSxAF0Obt2WIEbFmwwwrhDsIIrJAJrDCAJbijJ0KIQJ+Z6U9Vd2bWIRDSzFRXZZ5U3Kjgv1t/CBAgMKjAf5M/BAgQGFRAAA46eG0TIDBNQwegXwACBMYWEIBjz1/3BIYWEIBDj1/zBMYWEICjzl/fBAj4P0C/AwQIjCvgBjju7HVOYHgBATj8r8CIAHomcC8gAO8d/EuAwIACAnDAoWuZAIF7AQF47+BfAqMI6PMfAQH4D4YfCRAYS0AAjjVv3RIg8I+AAPwHw48ECNQWeNqdAHwq4jUBAsMICMBhRq1RAgSeCgjApyJeEyAwjMBQATjMVDVKgMAsAQE4i8kiAgQqCgjAilPVEwECswQE4CymAou0QIDAMwEB+IzEGwQIjCIgAEeZtD4JEHgmIACfkXijnoCOCLwsIABfdvEuAQIDCAjAAYasRQIEXhYQgC+7eJdAFQF9nBEQgGdwfESAQG0BAVh7vrojQOCMgAA8g+MjAgRyC1yqXgBeEvI5AQJlBQRg2dFqjACBSwIC8JKQzwkQKCtQOgDLTk1jBAg0ERCATRhtQoBARgEBmHFqaiZAoImAAGzCGHATJREgcFFAAF4ksoAAgaoCArDqZPVFgMBFAQF4kciCfAIqJjBPQADOc7KKAIGCAgKw4FC1RIDAPAEBOM/JKgJZBNS5QEAALsCylACBWgICsNY8dUOAwAIBAbgAy1ICBGILLK1OAC4Vs54AgTICArDMKDVCgMBSAQG4VMx6AgTKCJQKwDJT0QgBArsICMBdmB1CgEBEAQEYcSpqIkBgFwEBuAvzDoc4ggCBxQICcDGZBwgQqCIgAKtMUh8ECCwWEICLyTwQT0BFBNYJCMB1bp4iQKCAgADcMMRv375Nv3792rCDRwkQOFJAAG7Q//Dhw/T23bvp+vp6wy4eJbBJwMMbBATgBrzXr19P0+3t9OrVq+ndXRC6DW7A9CiBAwQEYAP0z58/Tzc3N9PV1ZXbYANPWxDYS0AANpJ++/bt9PPnT7fBRp62ITBHYOsaAbhV8MnzboNPQLwkEFhAAHYYjttgB1RbEuggIAA7oD5s6Tb4IOE7gZgCqQMwJunjqtwGH3t4RSCSgADcaRpugztBO4bAAgEBuABr61K3wa2CnifQVkAAtvWctVuT2+CskywiQOCcgAA8p9PxM7fBjri2JjBTQADOhOq1zG2wl6x9CVwWEICXjbqvcBtcSmw9gTYCArCNY5Nd3AabMNqEwGwBATibap+FboP7ODuFwG8BAfhbIeCX22DAocQoSRUNBQRgQ8zWW7kNtha1H4HHAgLwsUfIV26DIceiqAICAjDJEN0GkwxKmV0FWm8uAFuLdt7PbbAzsO2HEhCACcftNphwaEoOKSAAQ45lXlFug/OcrCJwSiBVAJ5qYuT33QZHnr7etwoIwK2CQZ53GwwyCGWkEhCAqcZ1vli3wfM+PiXwVEAAPhWJ+npBXW6DC7AsHVpAABYdv9tg0cFqq6mAAGzKGW8zt8F4M1FRHAEBGGcW3SrJfxvsRmPjwQUE4EC/AG6DAw1bq7MEBOAspjqL3AbrzFIn2wUE4HbDlDu4DaYZm0I7CgjAjrjRt3YbjD4h9fUWEIC9hRPs7zaYYEhK7CIgALuw5tvUbTDfzEaouHePArC3cLL93QaTDUy5mwQE4Ca+mg+7Ddacq66eCwjA5ybe+SPgNvgHwreyAqEDsKx6osbcBhMNS6mLBQTgYrIxH3AbHHPu1bsWgNUn3LA/t8GGmLYKISAAQ4zhhSICv+U2GHg4SlskIAAXcVn8IOA2+CDhe2YBAZh5egFqdxsMMAQlrBYQgKvpPPgg0P42+LCz7wT6CgjAvr5D7e42ONS4SzQrAEuMMU4TboNxZqGSywIC8LKRFSsE3AZXoN0/4t8dBQTgjtijHeU2ONrE8/UrAPPNLF3FboPpRjZMwQJwmFEf26jb4LH+WU7fu04BuLf44Oe5DQ7+CxCsfQEYbCAjlOM2OMKUc/QoAHPMqWSVboMlx5qqqVABmEpOsU0E3AabMNpkpYAAXAnnsbYCboNtPe02T0AAznOyagcBt8EdkB3xSEAAPuI48IWj/wq4Df6l8ENnAQHYGdj2pwV+/Pgxffny5cWvm5ub6dOnT9P379+nN2/enN7EJwQ2CAjADXge3SZwe3s7Xfr6+PHjdHV1te0gTxM4ISAAT8B4u7/A+/fvp+vr6+n6+vzX169f+xfjhCEFBOCQY9c0AQK/BQTgbwVfBAgMKSAAhxy7pgMJKOVAAQF4IL6jCRA4VkAAHuvvdAIEDhQQgAfiO5rA6AJH9y8Aj56A8wkQOExAAB5G72ACBI4WEIBHT8D5BAgcJnBoAB7WtYMJECBwJyAA7xD8JUBgTAEBOObcdU2AwJ2AALxDOOSvQwkQOFxAAB4+AgUQIHCUgAA8St65BAgcLiAADx/BiAXomUAMAQEYYw6qIEDgAAEBeAC6IwkQiCEgAGPMQRXjCOg0kIAADDQMpRAgsK+AANzX22kECAQSEICBhqEUAtUFovUnAKNNRD0ECOwmIAB3o3YQAQLRBARgtImohwCB3QR2DcDdunIQAQIEZggIwBlIlhAgUFNAANacq64IEJghIABnIDVZYhMCBMIJCMBwI1EQAQJ7CQjAvaSdQ4BAOAEBGG4kFQvSE4GYAgIw5lxURYDADgICcAdkRxAgEFNAAMaci6rqCOgksIAADDwcpREg0FdAAPb1tTsBAoEFBGDg4SiNQHaB6PULwOgTUh8BAt0EBGA3WhsTIBBdQABGn5D6CBDoJtA1ALtVbWMCBAg0EBCADRBtQYBATgEBmHNuqiZAoIGAAGyA+OIW3iRAILyAAAw/IgUSINBLQAD2krUvAQLhBQRg+BFlLFDNBHIICMAcc1IlAQIdBARgB1RbEiCQQ0AA5piTKvMIqDSRgABMNCylEiDQVkAAtvW0GwECiQQEYKJhKZVAdIFs9QnAbBNTLwECzQQEYDNKGxEgkE1AAGabmHoJEGgm0DQAm1VlIwIECOwgIAB3QHYEAQIxBQRgzLmoigCBHQQEYCtk+xAgkE5AAKYbmYIJEGglIABbSdqHAIF0AgIw3cgiFqwmAjkFBGDOuamaAIEGAgKwAaItCBDIKSAAc85N1XEEVJJYQAAmHp7SCRDYJiAAt/l5mgCBxAICMPHwlE7gaIHs5wvA7BNUPwECqwUE4Go6DxIgkF1AAGafoPoJEFgtsCkAV5/qQQIECAQQEIABhqAEAgSOERCAx7g7lQCBAAICcO0QPEeAQHoBAZh+hBogQGCtgABcK+c5AgTSCwjA9CM8ogFnEqghIABrzFEXBAisEBCAK9A8QoBADQEBWGOOuthPwEmFBARgoWFqhQCBZQICcJmX1QQIFBIQgIWGqRUCvQWq7S8Aq01UPwQIzBYQgLOpLCRAoJqAAKw2Uf0QIDBbYFEAzt7VQgIECCQQEIAJhqREAgT6CAjAPq52JUAggYAAnDsk6wgQKCcgAMuNVEMECMwVEIBzpawjQKCcgAAsN9IeDdmTQE0BAVhzrroiQGCGgACcgWQJAQI1BQRgzbnqqp2AnQoLCMDCw9UaAQLnBQTgeR+fEiBQWEAAFh6u1ghsFaj+vACsPmH9ESBwUkAAnqTxAQEC1QUEYPUJ648AgZMCZwPw5FM+IECAQAEBAVhgiFogQGCdgABc5+YpAgQKCAjAU0P0PgEC5QUEYPkRa5AAgVMCAvCUjPcJECgvIADLj3hNg54hMIaAABxjzrokQOAFAQH4Aoq3CBAYQ0AAjjFnXc4XsHIgAQE40LC1SoDAYwEB+NjDKwIEBhIQgAMNW6sELgmM9vn/AAAA//9aBc1fAAAABklEQVQDAMJunTtdi7a6AAAAAElFTkSuQmCC",
+    "note": "Own QA render returned by the runtime playtest, not a screenshot of a hosted editor or public game."
+  },
+  "postQualificationPlatformRead": {
+    "originalReceipt": {
+      "path": ".cache/python-reference-games/runtime-postqualification-platform-r14/receipt.json",
+      "sha256": "228b4729c204ef5fc2d56113862b0858d5e5545f81a3993066c5c40cd6a0fd88",
+      "byteLength": 5916
+    },
+    "projection": {
+      "kind": "staging-platform-read-only",
+      "observedAt": "2026-10-22T19:52:10.7150109Z",
+      "readCompletedAt": "2026-10-22T19:52:19.1344354Z",
+      "accountId": "bcc0f2d44140e05b69152cba326132f8",
+      "applicationId": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+      "configurationChanged": false,
+      "secretsRecorded": false,
+      "workers": [
+        {
+          "name": "sistemazero-studio-runtime-staging",
+          "version": "3db34366-b1e2-4528-8d3b-f3875e34341f",
+          "deployment": "bceab92d-98d9-44f6-aae3-ccf1ce4e02de",
+          "migrationTag": "v2-python-inspection-jobs",
+          "publicConfiguration": [
+            {
+              "name": "STUDIO_PYTHON_DISTRIBUTIONS_SHA256",
+              "value": "3c69eea36bfb14db88679a7e32bc7b61c69e05095d2794f1aabf4ab54985b230"
+            },
+            {
+              "name": "STUDIO_PYTHON_PREVIEW_ORIGIN",
+              "value": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+            }
+          ],
+          "structuralDurableObjectBindings": [
+            {
+              "name": "ProBuildSandbox",
+              "namespace_id": "78f0772f7be645bea69737a055c12aa0",
+              "class_name": "ProBuildSandbox",
+              "script_name": null
+            },
+            {
+              "name": "PythonInspectionJobs",
+              "namespace_id": "d201a22dc61645eba43b97751edbd7db",
+              "class_name": "PythonInspectionJob",
+              "script_name": null
+            }
+          ]
+        },
+        {
+          "name": "sistemazero-studio-language-staging",
+          "version": "991d09f7-3474-48c6-880c-e4ffe6baa04a",
+          "deployment": "8fa2713b-4af7-4788-a3e7-7c2d48dd1a25",
+          "migrationTag": "language-sessions-initial",
+          "publicConfiguration": [],
+          "structuralDurableObjectBindings": [
+            {
+              "name": "PythonLanguageSandbox",
+              "namespace_id": "fb9d81d3e52b489faf23ed8c74cea71a",
+              "class_name": "PythonLanguageSandbox",
+              "script_name": null
+            },
+            {
+              "name": "PythonLanguageSessions",
+              "namespace_id": "e6c5eb8011df471b985f34aac7002edf",
+              "class_name": "PythonLanguageSessions",
+              "script_name": null
+            }
+          ]
+        }
+      ],
+      "application": {
+        "namespaceId": "78f0772f7be645bea69737a055c12aa0",
+        "version": 6,
+        "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sz-studio-runtime-qa@sha256:7bcc39cd5182804602636fdc4481829d94cf3d738cf758f8c251364e2ce06048",
+        "id": "a038c8f3-1b1c-40ca-8935-bfcc799202ef",
+        "updatedAt": "2026-10-22T18:51:21.377999872Z",
+        "name": "sistemazero-studio-runtime-staging-probuildsandbox-staging",
+        "health": {
+          "instances": {
+            "active": 0,
+            "assigned": 0,
+            "healthy": 7,
+            "stopped": 0,
+            "failed": 0,
+            "scheduling": 0,
+            "starting": 0
+          },
+          "errorCount": 0
+        }
+      },
+      "physicalInstances": [],
+      "physicalInstanceCount": 0,
+      "historicalDurableObjectCount": 14,
+      "historicalNamesAndIdsOmitted": true,
+      "pagination": {
+        "perPage": 100,
+        "continuationTokenPresent": false,
+        "interpretation": "No next_page_token, matching the pinned Wrangler 4.120.1 dashboard reader."
+      },
+      "physicalZeroObservedAtThisRead": true,
+      "laterLifecycleOrLeaseRetirementProven": false
+    },
+    "note": "A separate later GET read observed zero physical instances and activity counters for the runtime application. The operator receipt physicalCleanupVerified=false is retained; this point observation does not establish cancellation, a future state or an absence of historical records."
+  },
+  "productionInventory": {
+    "originalReceipt": {
+      "path": ".cache/python-reference-games/production-cf-readonly-r1/receipt.json",
+      "sha256": "54afd2eabac0b658a809136d981ddda2919250ab2f9dc06bad0b8b98f772d157",
+      "byteLength": 17341
+    },
+    "projection": {
+      "kind": "production-cloudflare-readonly-inventory",
+      "version": 1,
+      "environment": "production",
+      "status": "READ_COMPLETE",
+      "accountId": "bcc0f2d44140e05b69152cba326132f8",
+      "observedAt": "2026-10-22T19:52:24.695Z",
+      "completedAt": "2026-10-22T19:52:43.888Z",
+      "scriptInventoryComplete": true,
+      "namespaceInventoryComplete": true,
+      "secretsRecorded": false,
+      "runtimeApiInvoked": false,
+      "atomicSnapshot": false,
+      "deploymentQualified": false,
+      "changes": {
+        "deployments": false,
+        "configuration": false,
+        "resources": false
+      },
+      "toolchain": {
+        "node": "24.22.0",
+        "wrangler": "4.120.1",
+        "cliSha256": "780661a508810f3b65786895b1ca9aacbc4f55d329ae6b8c1e49ec8433569f77",
+        "writeLogs": false,
+        "sendMetrics": false,
+        "oauthRefreshPermitted": true
+      },
+      "localDefaults": [
+        {
+          "path": "packages/studio-runtime/wrangler.jsonc",
+          "sha256": "e589395314dad1d1a04f14f88dacff4b057d6ca9b644d92b49fd540ae984a584",
+          "name": "sistemazero-studio-runtime",
+          "compatibility_date": "2026-07-01",
+          "compatibility_flags": [
+            "nodejs_compat"
+          ],
+          "migrations": [
+            {
+              "new_sqlite_classes": [
+                "ProBuildSandbox"
+              ],
+              "tag": "v1"
+            },
+            {
+              "new_sqlite_classes": [
+                "PythonInspectionJob"
+              ],
+              "tag": "v2-python-inspection-jobs"
+            }
+          ],
+          "structuralDurableObjectBindings": [
+            {
+              "name": "ProBuildSandbox",
+              "class_name": "ProBuildSandbox"
+            },
+            {
+              "name": "PythonInspectionJobs",
+              "class_name": "PythonInspectionJob"
+            }
+          ],
+          "r2": [
+            {
+              "binding": "PRO_ARTIFACTS",
+              "bucket_name": "sistemazero-studio-artifacts"
+            },
+            {
+              "binding": "PYTHON_INPUTS",
+              "bucket_name": "sistemazero-studio-artifacts"
+            },
+            {
+              "binding": "PYTHON_PREVIEWS",
+              "bucket_name": "sistemazero-studio-artifacts"
+            }
+          ],
+          "publicConfiguration": [
+            {
+              "name": "STUDIO_PYTHON_DISTRIBUTIONS_SHA256",
+              "value": "6742f03c85bcde761b3df3bac4377e6bf2ffa359ac6572089f38532d1b8e601c"
+            },
+            {
+              "name": "STUDIO_PYTHON_PREVIEW_ORIGIN",
+              "value": "https://sistemazero-studio-runtime.helena-bcc.workers.dev"
+            },
+            {
+              "name": "PUBLICATION_AUTHORIZATION_URL",
+              "value": "https://kids.sistemazero.com.br/api/internal/studio-play"
+            },
+            {
+              "name": "PUBLICATION_AUTHORIZATION_ADULT_URL",
+              "value": "https://comunidade.sistemazero.com.br/api/internal/studio-play"
+            },
+            {
+              "name": "PUBLICATION_CLEANUP_URL",
+              "value": "https://kids.sistemazero.com.br/api/internal/studio-publication-cleanup"
+            },
+            {
+              "name": "PUBLICATION_CLEANUP_ADULT_URL",
+              "value": "https://comunidade.sistemazero.com.br/api/internal/studio-publication-cleanup"
+            }
+          ],
+          "localDefaultsAreNotDeployedState": true
+        },
+        {
+          "path": "packages/studio-language-service/wrangler.jsonc",
+          "sha256": "bbb7aa78884fa1f24271d73d97e85b5cb94c2d2f2c445e862e9d23a35f80bcb5",
+          "name": "sistemazero-studio-language",
+          "compatibility_date": "2026-07-01",
+          "compatibility_flags": [
+            "nodejs_compat"
+          ],
+          "migrations": [
+            {
+              "new_sqlite_classes": [
+                "PythonLanguageSandbox",
+                "PythonLanguageOwner"
+              ],
+              "tag": "v1"
+            },
+            {
+              "tag": "language-sessions-initial",
+              "new_sqlite_classes": [
+                "PythonLanguageSessions"
+              ],
+              "deleted_classes": [
+                "PythonLanguageOwner"
+              ]
+            }
+          ],
+          "structuralDurableObjectBindings": [
+            {
+              "name": "PythonLanguageSandbox",
+              "class_name": "PythonLanguageSandbox"
+            },
+            {
+              "name": "PythonLanguageSessions",
+              "class_name": "PythonLanguageSessions"
+            }
+          ],
+          "r2": [],
+          "publicConfiguration": [],
+          "localDefaultsAreNotDeployedState": true
+        }
+      ],
+      "workers": [
+        {
+          "name": "sistemazero-studio-runtime",
+          "found": true,
+          "domainsComplete": true,
+          "script": {
+            "id": "sistemazero-studio-runtime",
+            "etag": "b3caa1d790f9884477136231c76b85c8421bbe6bf1a60ef1c4cf78fff40aad7b",
+            "created_on": "2026-07-24T16:23:35.441183Z",
+            "modified_on": "2026-08-12T18:24:39.777594Z",
+            "migration_tag": "v1",
+            "has_assets": false
+          },
+          "deployments": [
+            {
+              "id": "e1f860d6-9d69-4c54-a73b-60f0d46b1ab4",
+              "created_on": "2026-10-22T09:05:23.318075Z",
+              "strategy": "percentage",
+              "versions": [
+                {
+                  "version_id": "c3f64701-9b08-413b-80f6-3a4b41e1877d",
+                  "percentage": 100
+                }
+              ]
+            }
+          ],
+          "versions": [
+            {
+              "id": "c3f64701-9b08-413b-80f6-3a4b41e1877d",
+              "percentage": 100,
+              "omittedBindingCount": 2,
+              "runtime": {
+                "compatibility_date": "2026-07-01",
+                "compatibility_flags": [
+                  "nodejs_compat"
+                ],
+                "usage_model": "standard"
+              },
+              "structuralDurableObjectBindings": [
+                {
+                  "name": "ProBuildSandbox",
+                  "namespace_id": "b17aa818b81b4a5e820c8c12261e7f50",
+                  "class_name": "ProBuildSandbox"
+                }
+              ],
+              "r2": [],
+              "publicConfiguration": []
+            }
+          ],
+          "subdomain": {
+            "enabled": true,
+            "previews_enabled": true
+          },
+          "publicDomains": []
+        },
+        {
+          "name": "sistemazero-studio-language",
+          "found": true,
+          "domainsComplete": true,
+          "script": {
+            "id": "sistemazero-studio-language",
+            "etag": "e29fc889cb4c0011171e89a557a8f7824d396a462e8d4e0adab49a6b782e1258",
+            "created_on": "2026-10-19T17:59:54.71487Z",
+            "modified_on": "2026-10-20T01:41:54.963523Z",
+            "migration_tag": "v1",
+            "has_assets": false
+          },
+          "deployments": [
+            {
+              "id": "b14a7ee4-8841-4dfb-9e7b-5af5ffe27de7",
+              "created_on": "2026-10-22T09:06:09.876957Z",
+              "strategy": "percentage",
+              "versions": [
+                {
+                  "version_id": "ec49d7aa-d9d6-4eba-b903-7cfdb7a3c694",
+                  "percentage": 100
+                }
+              ]
+            }
+          ],
+          "versions": [
+            {
+              "id": "ec49d7aa-d9d6-4eba-b903-7cfdb7a3c694",
+              "percentage": 100,
+              "omittedBindingCount": 3,
+              "runtime": {
+                "compatibility_date": "2026-07-01",
+                "compatibility_flags": [
+                  "nodejs_compat"
+                ],
+                "usage_model": "standard"
+              },
+              "structuralDurableObjectBindings": [
+                {
+                  "name": "PythonLanguageOwner",
+                  "namespace_id": "7f9c24b7d37b43f29a259ccdcc1888ee",
+                  "class_name": "PythonLanguageOwner"
+                },
+                {
+                  "name": "PythonLanguageSandbox",
+                  "namespace_id": "0d42f167dd204762adfd1095632fff38",
+                  "class_name": "PythonLanguageSandbox"
+                }
+              ],
+              "r2": [],
+              "publicConfiguration": []
+            }
+          ],
+          "subdomain": {
+            "enabled": true,
+            "previews_enabled": true
+          },
+          "publicDomains": []
+        }
+      ],
+      "namespaces": [
+        {
+          "id": "b17aa818b81b4a5e820c8c12261e7f50",
+          "name": "sistemazero-studio-runtime_ProBuildSandbox",
+          "script": "sistemazero-studio-runtime",
+          "class": "ProBuildSandbox",
+          "use_sqlite": true
+        },
+        {
+          "id": "0d42f167dd204762adfd1095632fff38",
+          "name": "sistemazero-studio-language_PythonLanguageSandbox",
+          "script": "sistemazero-studio-language",
+          "class": "PythonLanguageSandbox",
+          "use_sqlite": true
+        },
+        {
+          "id": "7f9c24b7d37b43f29a259ccdcc1888ee",
+          "name": "sistemazero-studio-language_PythonLanguageOwner",
+          "script": "sistemazero-studio-language",
+          "class": "PythonLanguageOwner",
+          "use_sqlite": true
+        }
+      ],
+      "applications": [
+        {
+          "id": "a03db69d-1a33-4a8c-9cb0-0d239ccd0e75",
+          "name": "sistemazero-studio-language-pythonlanguagesandbox",
+          "namespaceId": "0d42f167dd204762adfd1095632fff38",
+          "association": "active-binding",
+          "version": 2,
+          "createdAt": "2026-10-19T18:00:13.216Z",
+          "updatedAt": "2026-10-20T01:42:54.646000128Z",
+          "instanceInventoryComplete": true,
+          "pages": 1,
+          "configuration": {
+            "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-language-pythonlanguagesandbox@sha256:359497a7e505c6cb8083be16e9411737c73a5422c4fa256bdb56898699264b09",
+            "vcpu": 1,
+            "memory_mib": 6144
+          },
+          "healthCounters": null,
+          "healthProjectionLimit": "Original reader selected the wrong nesting level. The empty object did not assert zero; see the separately timed supplement.",
+          "physicalInstanceCount": 0,
+          "physicalInstances": [],
+          "historicalDurableObjectCount": 4,
+          "historicalNamesAndIdsOmitted": true
+        },
+        {
+          "id": "a03f07be-3a1a-4bb8-82bc-5d2c3c01c057",
+          "name": "sistemazero-studio-runtime-probuildsandbox",
+          "namespaceId": "b17aa818b81b4a5e820c8c12261e7f50",
+          "association": "active-binding",
+          "version": 2,
+          "createdAt": "2026-07-24T16:24:39.171000064Z",
+          "updatedAt": "2026-08-12T18:27:01.731000064Z",
+          "instanceInventoryComplete": true,
+          "pages": 1,
+          "configuration": {
+            "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-probuildsandbox@sha256:a1f256049d1642b1ec65f760d99c0b6d78b56688de942be78d4e594543556a0c",
+            "vcpu": 0.0625,
+            "memory_mib": 256
+          },
+          "healthCounters": null,
+          "healthProjectionLimit": "Original reader selected the wrong nesting level. The empty object did not assert zero; see the separately timed supplement.",
+          "physicalInstanceCount": 0,
+          "physicalInstances": [],
+          "historicalDurableObjectCount": 0,
+          "historicalNamesAndIdsOmitted": true
+        }
+      ],
+      "bucket": {
+        "name": "sistemazero-studio-artifacts",
+        "creation_date": "2026-10-16T01:21:01.186Z",
+        "location": "ENAM",
+        "storage_class": "Standard",
+        "jurisdiction": "default",
+        "lifecycle": {
+          "rules": [
+            {
+              "id": "Default Multipart Abort Rule",
+              "enabled": true,
+              "conditions": {},
+              "abortMultipartUploadsTransition": {
+                "condition": {
+                  "type": "Age",
+                  "maxAge": 604800
+                }
+              }
+            },
+            {
+              "id": "expire-previews",
+              "enabled": true,
+              "conditions": {
+                "prefix": "previews/"
+              },
+              "deleteObjectsTransition": {
+                "condition": {
+                  "type": "Age",
+                  "maxAge": 172800
+                }
+              }
+            }
+          ]
+        },
+        "managedDomain": {
+          "domain": "pub-92dad1e2ba5048f083e0909fd081b91a.r2.dev",
+          "enabled": false
+        },
+        "customDomains": []
+      },
+      "requests": {
+        "count": 19,
+        "methods": [
+          "GET"
+        ],
+        "allSucceeded": true,
+        "statuses": [
+          200
+        ]
+      },
+      "issueCount": 0
+    }
+  },
+  "productionHealthSupplement": {
+    "originalReceipt": {
+      "path": ".cache/python-reference-games/production-cf-readonly-r1/health-supplement.json",
+      "sha256": "98ec4141761a1d9921adcefe6614a0d7fdb8cb7df65db0bf47d0cccf4e37b8bb",
+      "byteLength": 4421
+    },
+    "projection": {
+      "kind": "production-cloudflare-health-supplement",
+      "version": 1,
+      "environment": "production",
+      "status": "READ_COMPLETE",
+      "accountId": "bcc0f2d44140e05b69152cba326132f8",
+      "originalReceiptSha256": "54afd2eabac0b658a809136d981ddda2919250ab2f9dc06bad0b8b98f772d157",
+      "observedAt": "2026-10-22T19:56:06.745Z",
+      "completedAt": "2026-10-22T19:56:13.818Z",
+      "healthProjectionCorrection": "The first receipt selected health counters from the wrong nesting level. Empty health objects did not assert zero.",
+      "secretsRecorded": false,
+      "runtimeApiInvoked": false,
+      "changesPerformed": false,
+      "atomicSnapshot": false,
+      "leaseRetirementQualified": false,
+      "deploymentQualified": false,
+      "toolchain": {
+        "node": "24.22.0",
+        "wrangler": "4.120.1",
+        "cliSha256": "780661a508810f3b65786895b1ca9aacbc4f55d329ae6b8c1e49ec8433569f77",
+        "writeLogs": false,
+        "sendMetrics": false,
+        "oauthRefreshPermitted": true
+      },
+      "applications": [
+        {
+          "id": "a03db69d-1a33-4a8c-9cb0-0d239ccd0e75",
+          "name": "sistemazero-studio-language-pythonlanguagesandbox",
+          "namespaceId": "0d42f167dd204762adfd1095632fff38",
+          "version": 2,
+          "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-language-pythonlanguagesandbox@sha256:359497a7e505c6cb8083be16e9411737c73a5422c4fa256bdb56898699264b09",
+          "updatedAt": "2026-10-20T01:42:54.646000128Z",
+          "instanceInventoryComplete": true,
+          "pages": 1,
+          "health": {
+            "instances": {
+              "active": 0,
+              "assigned": 0,
+              "healthy": 7,
+              "stopped": 0,
+              "failed": 0,
+              "scheduling": 0,
+              "starting": 0
+            },
+            "errorCount": 0
+          },
+          "physicalInstanceCount": 0,
+          "physicalInstances": [],
+          "historicalDurableObjectCount": 4,
+          "historicalNamesAndIdsOmitted": true
+        },
+        {
+          "id": "a03f07be-3a1a-4bb8-82bc-5d2c3c01c057",
+          "name": "sistemazero-studio-runtime-probuildsandbox",
+          "namespaceId": "b17aa818b81b4a5e820c8c12261e7f50",
+          "version": 2,
+          "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sistemazero-studio-runtime-probuildsandbox@sha256:a1f256049d1642b1ec65f760d99c0b6d78b56688de942be78d4e594543556a0c",
+          "updatedAt": "2026-08-12T18:27:01.731000064Z",
+          "instanceInventoryComplete": true,
+          "pages": 1,
+          "health": {
+            "instances": {
+              "active": 0,
+              "assigned": 0,
+              "healthy": 7,
+              "stopped": 0,
+              "failed": 0,
+              "scheduling": 0,
+              "starting": 0
+            },
+            "errorCount": 0
+          },
+          "physicalInstanceCount": 0,
+          "physicalInstances": [],
+          "historicalDurableObjectCount": 0,
+          "historicalNamesAndIdsOmitted": true
+        }
+      ],
+      "requests": {
+        "count": 4,
+        "methods": [
+          "GET"
+        ],
+        "allSucceeded": true,
+        "statuses": [
+          200
+        ]
+      },
+      "issueCount": 0
+    }
+  },
+  "publicGetHelperSources": [
+    {
+      "role": "GET-only production inventory helper; token obtained into RAM, not embedded",
+      "path": ".cache/python-reference-games/production-cf-readonly-r1/read.mjs",
+      "sha256": "44015b25e8b904cbdc15d7d351cf5e7e4e1e2a5100677a562d5802d3d0167275",
+      "byteLength": 14956,
+      "encoding": "UTF-8",
+      "text": "import assert from 'node:assert/strict'\nimport { execFileSync } from 'node:child_process'\nimport { createHash } from 'node:crypto'\nimport { mkdir, readFile, writeFile } from 'node:fs/promises'\nimport { dirname, join, resolve } from 'node:path'\nimport { fileURLToPath } from 'node:url'\n\nconst directory = dirname(fileURLToPath(import.meta.url))\nconst root = resolve(directory, '../../..')\nconst node = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'\nconst cli = join(root, 'packages/studio-runtime/node_modules/wrangler/bin/wrangler.js')\nconst accountId = 'bcc0f2d44140e05b69152cba326132f8'\nconst workerNames = ['sistemazero-studio-runtime', 'sistemazero-studio-language']\nconst bucketName = 'sistemazero-studio-artifacts'\nconst publicVars = new Set([\n  'STUDIO_PYTHON_DISTRIBUTIONS_SHA256', 'STUDIO_PYTHON_PREVIEW_ORIGIN',\n  'PUBLICATION_AUTHORIZATION_URL', 'PUBLICATION_AUTHORIZATION_ADULT_URL',\n  'PUBLICATION_CLEANUP_URL', 'PUBLICATION_CLEANUP_ADULT_URL',\n])\nconst sha = (value) => createHash('sha256').update(value).digest('hex')\nconst pick = (value, keys) => Object.fromEntries(keys.flatMap((key) =>\n  value?.[key] === undefined ? [] : [[key, value[key]]]))\nconst receipt = {\n  kind: 'production-cloudflare-readonly-inventory', version: 1, environment: 'production',\n  status: 'RUNNING', accountId, observedAt: null, completedAt: null,\n  toolchain: { node: process.versions.node, wrangler: null, cliSha256: null,\n    writeLogs: false, sendMetrics: false, oauthRefreshPermitted: true },\n  localDefaults: [], workers: [], namespaces: [], applications: [], bucket: null,\n  requests: [], issues: [], changes: { deployments: false, configuration: false, resources: false },\n  secretsRecorded: false, runtimeApiInvoked: false, atomicSnapshot: false, deploymentQualified: false,\n}\nconst output = join(directory, 'receipt.json')\nlet token\nconst checkpoint = () => writeFile(output, JSON.stringify(receipt, null, 2) + '\\n')\nfunction projectPublicVars(bindings) {\n  return bindings.flatMap((binding) => {\n    if (binding.type !== 'plain_text' || !publicVars.has(binding.name)) return []\n    if (binding.name === 'STUDIO_PYTHON_DISTRIBUTIONS_SHA256') {\n      assert(/^[a-f0-9]{64}$/.test(binding.text))\n    } else {\n      const url = new URL(binding.text)\n      assert(url.protocol === 'https:' && !url.username && !url.password && !url.search && !url.hash)\n    }\n    return [{ name: binding.name, value: binding.text }]\n  })\n}\nasync function get(path) {\n  assert(path.startsWith('/') && !path.includes('://'))\n  const signal = AbortSignal.timeout(30_000)\n  const response = await fetch('https://api.cloudflare.com/client/v4/accounts/' + accountId + path, {\n    method: 'GET', headers: { Authorization: 'Bearer ' + token }, signal, redirect: 'error',\n  })\n  const publicPath = path.replace(/([?&]page_token=)[^&]*/g, '$1[omitted]')\n  const entry = { path: publicPath, status: response.status, observedAt: new Date().toISOString(), success: false }\n  receipt.requests.push(entry)\n  if (Number(response.headers.get('content-length')) > 16_000_000) throw new Error('body-limit')\n  const reader = response.body.getReader()\n  let size = 0\n  const chunks = []\n  try {\n    while (true) {\n      const part = await reader.read()\n      if (part.done) break\n      size += part.value.byteLength\n      if (size > 16_000_000) throw new Error('body-limit')\n      chunks.push(part.value)\n    }\n  } finally {\n    await reader.cancel().catch(() => {})\n    reader.releaseLock()\n  }\n  const body = JSON.parse(Buffer.concat(chunks).toString('utf8'))\n  entry.success = response.ok && body.success === true\n  entry.responseBytes = size\n  if (!entry.success) {\n    receipt.issues.push({ path: publicPath, status: response.status, code: 'read-unavailable' })\n    await checkpoint()\n    return null\n  }\n  await checkpoint()\n  return body\n}\nasync function pages(path, pageSize = 100) {\n  const values = []\n  for (let page = 1; page <= 20; page++) {\n    const data = await get(path + (path.includes('?') ? '&' : '?') + 'per_page=' + pageSize + '&page=' + page)\n    if (!data) return { values, complete: false, pages: page }\n    assert(Array.isArray(data.result))\n    values.push(...data.result)\n    const info = data.result_info\n    if ((Number.isInteger(info?.total_pages) && page >= info.total_pages) || data.result.length < pageSize)\n      return { values, complete: true, pages: page }\n  }\n  receipt.issues.push({ path, code: 'pagination-cap' })\n  return { values, complete: false, pages: 20 }\n}\nfunction projectStatus(status) {\n  if (typeof status === 'string') return status\n  return pick(status, ['health', 'container_status', 'durable_object_status', 'status'])\n}\nfunction projectInstance(instance) {\n  return {\n    ...pick(instance, ['id', 'application_id', 'app_version', 'version', 'created_at', 'updated_at', 'location']),\n    status: projectStatus(instance.status),\n    currentPlacement: instance.current_placement ? {\n      ...pick(instance.current_placement, ['id', 'location', 'created_at', 'updated_at']),\n      status: projectStatus(instance.current_placement.status),\n    } : null,\n  }\n}\ntry {\n  assert.equal(process.versions.node, '24.22.0')\n  const wrangler = JSON.parse(await readFile(join(root, 'packages/studio-runtime/node_modules/wrangler/package.json'), 'utf8'))\n  assert.equal(wrangler.version, '4.120.1')\n  receipt.toolchain.wrangler = wrangler.version\n  receipt.toolchain.cliSha256 = sha(await readFile(cli))\n  for (const packageName of ['studio-runtime', 'studio-language-service']) {\n    const path = join(root, 'packages', packageName, 'wrangler.jsonc')\n    const bytes = await readFile(path)\n    const config = JSON.parse(bytes.toString('utf8'))\n    assert(workerNames.includes(config.name))\n    const bindings = Object.entries(config.vars ?? {}).map(([name, text]) => ({ name, text, type: 'plain_text' }))\n    receipt.localDefaults.push({\n      path: 'packages/' + packageName + '/wrangler.jsonc', sha256: sha(bytes),\n      ...pick(config, ['name', 'main', 'compatibility_date', 'compatibility_flags', 'migrations',\n        'durable_objects', 'r2_buckets', 'containers', 'ratelimits', 'triggers']),\n      publicVars: projectPublicVars(bindings),\n    })\n  }\n  await writeFile(output, JSON.stringify(receipt, null, 2) + '\\n', { flag: 'wx' })\n  const childEnv = { ...process.env, WRANGLER_WRITE_LOGS: 'false', WRANGLER_SEND_METRICS: 'false',\n    WRANGLER_CACHE_DIR: join(directory, 'wrangler-cache'), CI: 'true' }\n  let authText = execFileSync(node, [cli, 'auth', 'token', '--json'], {\n    cwd: directory, env: childEnv, encoding: 'utf8', timeout: 30_000,\n    maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],\n  })\n  const auth = JSON.parse(authText)\n  assert(['oauth', 'api_token'].includes(auth.type) && typeof auth.token === 'string' && auth.token)\n  token = auth.token\n  authText = null\n  delete auth.token\n  receipt.observedAt = new Date().toISOString()\n  await checkpoint()\n  const scripts = await pages('/workers/scripts')\n  receipt.scriptInventoryComplete = scripts.complete\n  for (const name of workerNames) {\n    const script = scripts.values.find((value) => value.id === name)\n    if (!script) {\n      receipt.workers.push({ name, found: false })\n      continue\n    }\n    const worker = {\n      name, found: true, script: pick(script, ['id', 'etag', 'created_on', 'modified_on', 'migration_tag', 'has_assets']),\n      deployments: [], versions: [], subdomain: null, publicDomains: [],\n    }\n    receipt.workers.push(worker)\n    const deployments = await get('/workers/scripts/' + name + '/deployments')\n    const active = deployments?.result?.deployments?.[0]\n    if (!active) receipt.issues.push({ worker: name, code: 'active-deployment-unavailable' })\n    else {\n      worker.deployments.push(pick(active, ['id', 'created_on', 'strategy', 'versions', 'source']))\n      for (const member of active.versions ?? []) {\n        assert(/^[a-f0-9-]{36}$/.test(member.version_id))\n        const response = await get('/workers/scripts/' + name + '/versions/' + member.version_id)\n        if (!response) continue\n        const version = response.result\n        const bindings = version.resources?.bindings ?? []\n        worker.versions.push({\n          id: version.id, percentage: member.percentage,\n          metadata: pick(version.metadata, ['created_on', 'number', 'source']),\n          runtime: pick(version.resources?.script_runtime, ['compatibility_date', 'compatibility_flags', 'usage_model']),\n          durableObjects: bindings.filter((binding) => binding.type === 'durable_object_namespace')\n            .map((binding) => pick(binding, ['name', 'namespace_id', 'class_name', 'script_name', 'environment'])),\n          r2: bindings.filter((binding) => binding.type === 'r2_bucket')\n            .map((binding) => pick(binding, ['name', 'bucket_name', 'jurisdiction'])),\n          publicVars: projectPublicVars(bindings),\n          omittedBindingCount: bindings.filter((binding) =>\n            !['durable_object_namespace', 'r2_bucket'].includes(binding.type) &&\n            !(binding.type === 'plain_text' && publicVars.has(binding.name))).length,\n        })\n      }\n    }\n    const subdomain = await get('/workers/scripts/' + name + '/subdomain')\n    worker.subdomain = subdomain ? pick(subdomain.result, ['enabled', 'previews_enabled']) : null\n    const domains = await pages('/workers/domains?service=' + encodeURIComponent(name))\n    worker.publicDomains = domains.values.filter((value) => value.service === name)\n      .map((value) => pick(value, ['id', 'hostname', 'service', 'environment', 'zone_id', 'zone_name']))\n    worker.domainsComplete = domains.complete\n    await checkpoint()\n  }\n  const namespaces = await pages('/workers/durable_objects/namespaces', 1000)\n  const boundIds = new Set(receipt.workers.flatMap((worker) =>\n    worker.versions?.flatMap((version) => version.durableObjects.map((item) => item.namespace_id)) ?? []))\n  receipt.namespaceInventoryComplete = namespaces.complete\n  receipt.namespaces = namespaces.values.filter((value) =>\n    boundIds.has(value.id) || workerNames.includes(value.script))\n    .map((value) => pick(value, ['id', 'name', 'script', 'class', 'class_name', 'use_sqlite', 'environment']))\n  const applications = await get('/containers/applications')\n  if (applications) {\n    const allApps = Array.isArray(applications.result) ? applications.result : applications.result?.applications\n    assert(Array.isArray(allApps), 'unexpected-app-list-shape')\n    const ownApps = allApps.filter((app) => boundIds.has(app.durable_objects?.namespace_id) ||\n      workerNames.some((worker) => app.name?.startsWith(worker + '-') && !app.name?.includes('-staging')))\n    for (const listed of ownApps) {\n      assert(/^[a-f0-9-]{36}$/.test(listed.id))\n      const response = await get('/containers/applications/' + listed.id)\n      if (!response) continue\n      const app = response.result\n      const projected = {\n        id: app.id, name: app.name,\n        namespaceId: app.durable_objects?.namespace_id,\n        association: boundIds.has(app.durable_objects?.namespace_id) ? 'active-binding' : 'production-name-only',\n        version: app.version, createdAt: app.created_at, updatedAt: app.updated_at,\n        configuration: pick(app.configuration, ['image', 'instance_type', 'vcpu', 'memory_mib', 'disk_mb']),\n        constraints: pick(app.constraints, ['max_instances', 'max_concurrency']),\n        health: pick(app.health, ['active', 'assigned', 'scheduling', 'starting', 'stopping', 'stopped', 'failed']),\n        instances: [], durableObjects: [], instanceInventoryComplete: false, pages: 0,\n      }\n      receipt.applications.push(projected)\n      let next\n      for (let page = 0; page < 20; page++) {\n        const path = '/containers/dash/applications/' + app.id + '/instances?per_page=100' +\n          (next ? '&page_token=' + encodeURIComponent(next) : '')\n        const result = await get(path)\n        if (!result) break\n        const payload = result.result\n        assert(Array.isArray(payload.instances))\n        projected.instances.push(...payload.instances.map(projectInstance))\n        projected.durableObjects.push(...(payload.durable_objects ?? []).map((item) =>\n          pick(item, ['id', 'name', 'deployment_id', 'assigned_at'])))\n        projected.pages++\n        next = result.result_info?.next_page_token\n        if (!next) { projected.instanceInventoryComplete = true; break }\n      }\n      if (!projected.instanceInventoryComplete) receipt.issues.push({ app: app.id, code: 'instance-inventory-incomplete' })\n      await checkpoint()\n    }\n  }\n  const bucket = await get('/r2/buckets/' + bucketName)\n  if (bucket) {\n    assert.equal(bucket.result.name, bucketName)\n    receipt.bucket = {\n      ...pick(bucket.result, ['name', 'creation_date', 'location', 'storage_class', 'jurisdiction']),\n      lifecycle: null, managedDomain: null, customDomains: [],\n    }\n    const lifecycle = await get('/r2/buckets/' + bucketName + '/lifecycle')\n    if (lifecycle) receipt.bucket.lifecycle = {\n      rules: (lifecycle.result.rules ?? []).map((rule) => pick(rule, [\n        'id', 'enabled', 'conditions', 'deleteObjectsTransition', 'abortMultipartUploadsTransition',\n        'storageClassTransitions',\n      ])),\n    }\n    const managed = await get('/r2/buckets/' + bucketName + '/domains/managed')\n    if (managed) receipt.bucket.managedDomain = pick(managed.result, ['domain', 'enabled'])\n    const custom = await get('/r2/buckets/' + bucketName + '/domains/custom')\n    if (custom) receipt.bucket.customDomains = (custom.result.domains ?? []).map((domain) =>\n      pick(domain, ['domain', 'enabled', 'status', 'zoneId', 'zoneName']))\n  }\n  receipt.completedAt = new Date().toISOString()\n  receipt.status = receipt.issues.length ? 'READ_COMPLETE_WITH_LIMITS' : 'READ_COMPLETE'\n  await checkpoint()\n  process.stdout.write(JSON.stringify({\n    path: output, sha256: sha(await readFile(output)), status: receipt.status,\n    workers: receipt.workers.map((worker) => ({\n      name: worker.name, found: worker.found, migrationTag: worker.script?.migration_tag,\n      versions: worker.versions?.map((version) => ({ id: version.id, percentage: version.percentage })),\n    })),\n    applications: receipt.applications.map((app) => ({\n      id: app.id, name: app.name, namespaceId: app.namespaceId, image: app.configuration.image,\n      health: app.health, physicalInstances: app.instances.length,\n      inventoryComplete: app.instanceInventoryComplete,\n    })),\n    issues: receipt.issues, configurationChanged: false,\n  }, null, 2) + '\\n')\n} catch {\n  receipt.status = 'READ_FAILED'\n  receipt.completedAt = new Date().toISOString()\n  receipt.issues.push({ code: 'sanitized-read-failure' })\n  await checkpoint().catch(() => {})\n  process.stderr.write('Read-only production inventory failed; inspect the sanitized receipt. No deployment/resource mutation performed.\\n')\n  process.exitCode = 1\n} finally {\n  token = undefined\n}\n"
+    },
+    {
+      "role": "GET-only production inventory helper; token obtained into RAM, not embedded",
+      "path": ".cache/python-reference-games/production-cf-readonly-r1/read-health-supplement.mjs",
+      "sha256": "876e8ae0b7c554c1768e4d0af02d30618fa94fa4b648cbcda07569b0ff4a4bac",
+      "byteLength": 7237,
+      "encoding": "UTF-8",
+      "text": "import assert from 'node:assert/strict'\nimport { execFileSync } from 'node:child_process'\nimport { createHash } from 'node:crypto'\nimport { readFile, writeFile } from 'node:fs/promises'\nimport { dirname, join, resolve } from 'node:path'\nimport { fileURLToPath } from 'node:url'\n\nconst directory = dirname(fileURLToPath(import.meta.url))\nconst root = resolve(directory, '../../..')\nconst cli = join(root, 'packages/studio-runtime/node_modules/wrangler/bin/wrangler.js')\nconst output = join(directory, 'health-supplement.json')\nconst accountId = 'bcc0f2d44140e05b69152cba326132f8'\nconst sha = (value) => createHash('sha256').update(value).digest('hex')\nconst originalBytes = await readFile(join(directory, 'receipt.json'))\nassert.equal(sha(originalBytes), '54afd2eabac0b658a809136d981ddda2919250ab2f9dc06bad0b8b98f772d157')\nconst original = JSON.parse(originalBytes)\nassert.equal(original.accountId, accountId)\nassert.equal(original.status, 'READ_COMPLETE')\nassert.equal(process.versions.node, '24.22.0')\nconst wrangler = JSON.parse(await readFile(join(root, 'packages/studio-runtime/node_modules/wrangler/package.json')))\nassert.equal(wrangler.version, '4.120.1')\nconst receipt = {\n  kind: 'production-cloudflare-health-supplement', version: 1, environment: 'production',\n  status: 'RUNNING', accountId, originalReceiptSha256: sha(originalBytes),\n  observedAt: null, completedAt: null,\n  toolchain: { node: process.versions.node, wrangler: wrangler.version, cliSha256: sha(await readFile(cli)),\n    writeLogs: false, sendMetrics: false, oauthRefreshPermitted: true },\n  applications: [], requests: [], issues: [],\n  healthProjectionCorrection: 'The first receipt selected health counters from the wrong nesting level. Empty health objects did not assert zero.',\n  secretsRecorded: false, runtimeApiInvoked: false, changesPerformed: false,\n  atomicSnapshot: false, leaseRetirementQualified: false, deploymentQualified: false,\n}\nawait writeFile(output, JSON.stringify(receipt, null, 2) + '\\n', { flag: 'wx' })\nconst checkpoint = () => writeFile(output, JSON.stringify(receipt, null, 2) + '\\n')\nlet token\nasync function get(path) {\n  assert(path.startsWith('/containers/') && !path.includes('://'))\n  const response = await fetch('https://api.cloudflare.com/client/v4/accounts/' + accountId + path, {\n    method: 'GET', headers: { Authorization: 'Bearer ' + token },\n    redirect: 'error', signal: AbortSignal.timeout(30_000),\n  })\n  const entry = { path: path.replace(/([?&]page_token=)[^&]*/g, '$1[omitted]'),\n    observedAt: new Date().toISOString(), status: response.status, success: false }\n  receipt.requests.push(entry)\n  assert(Number(response.headers.get('content-length')) <= 16_000_000)\n  const reader = response.body.getReader()\n  const chunks = []\n  let size = 0\n  try {\n    while (true) {\n      const part = await reader.read()\n      if (part.done) break\n      size += part.value.byteLength\n      assert(size <= 16_000_000)\n      chunks.push(part.value)\n    }\n  } finally {\n    await reader.cancel().catch(() => {})\n    reader.releaseLock()\n  }\n  const body = JSON.parse(Buffer.concat(chunks).toString('utf8'))\n  entry.success = response.ok && body.success === true\n  entry.responseBytes = size\n  await checkpoint()\n  assert(entry.success)\n  return body\n}\nfunction publicInstance(instance) {\n  const fields = ['id', 'application_id', 'app_version', 'version', 'created_at', 'updated_at', 'location']\n  const result = Object.fromEntries(fields.flatMap((key) => instance[key] === undefined ? [] : [[key, instance[key]]]))\n  const status = instance.current_placement?.status ?? instance.status\n  result.status = typeof status === 'string' ? status : Object.fromEntries(\n    ['health', 'container_status', 'durable_object_status', 'status']\n      .flatMap((key) => status?.[key] === undefined ? [] : [[key, status[key]]]))\n  return result\n}\ntry {\n  let authText = execFileSync(process.execPath, [cli, 'auth', 'token', '--json'], {\n    cwd: directory, env: { ...process.env, WRANGLER_WRITE_LOGS: 'false', WRANGLER_SEND_METRICS: 'false',\n      WRANGLER_CACHE_DIR: join(directory, 'wrangler-cache'), CI: 'true' },\n    encoding: 'utf8', timeout: 30_000, maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'],\n  })\n  const auth = JSON.parse(authText)\n  assert(['oauth', 'api_token'].includes(auth.type) && typeof auth.token === 'string' && auth.token)\n  token = auth.token\n  authText = null\n  delete auth.token\n  receipt.observedAt = new Date().toISOString()\n  await checkpoint()\n  for (const expected of original.applications) {\n    assert(/^[a-f0-9-]{36}$/.test(expected.id))\n    const app = (await get('/containers/applications/' + expected.id)).result\n    assert.equal(app.id, expected.id)\n    assert.equal(app.name, expected.name)\n    assert.equal(app.durable_objects?.namespace_id, expected.namespaceId)\n    const counters = {}\n    for (const name of ['active', 'assigned', 'healthy', 'stopped', 'failed', 'scheduling', 'starting']) {\n      const value = app.health?.instances?.[name]\n      assert(Number.isSafeInteger(value) && value >= 0)\n      counters[name] = value\n    }\n    assert(Array.isArray(app.health.errors))\n    const projected = { id: app.id, name: app.name, namespaceId: app.durable_objects.namespace_id,\n      version: app.version, image: app.configuration?.image, updatedAt: app.updated_at,\n      health: { instances: counters, errorCount: app.health.errors.length },\n      instances: [], historicalDurableObjects: [], instanceInventoryComplete: false, pages: 0 }\n    receipt.applications.push(projected)\n    let next\n    for (let page = 0; page < 20; page++) {\n      const data = await get('/containers/dash/applications/' + app.id + '/instances?per_page=100' +\n        (next ? '&page_token=' + encodeURIComponent(next) : ''))\n      assert(Array.isArray(data.result.instances) && Array.isArray(data.result.durable_objects))\n      projected.instances.push(...data.result.instances.map(publicInstance))\n      projected.historicalDurableObjects.push(...data.result.durable_objects.map((item) => {\n        assert(typeof item.id === 'string' && typeof item.name === 'string')\n        return { id: item.id, name: item.name, assignedAt: item.assigned_at }\n      }))\n      projected.pages++\n      next = data.result_info?.next_page_token\n      if (!next) { projected.instanceInventoryComplete = true; break }\n    }\n    assert(projected.instanceInventoryComplete)\n    await checkpoint()\n  }\n  receipt.status = 'READ_COMPLETE'\n  receipt.completedAt = new Date().toISOString()\n  await checkpoint()\n  process.stdout.write(JSON.stringify({ path: output, sha256: sha(await readFile(output)),\n    status: receipt.status, applications: receipt.applications.map((app) => ({\n      name: app.name, id: app.id, health: app.health, physicalInstances: app.instances.length,\n      historicalDurableObjects: app.historicalDurableObjects.length, complete: app.instanceInventoryComplete,\n    })) }, null, 2) + '\\n')\n} catch {\n  receipt.status = 'READ_FAILED'\n  receipt.completedAt = new Date().toISOString()\n  receipt.issues.push({ code: 'sanitized-read-failure' })\n  await checkpoint()\n  process.stderr.write('Health supplement failed; inspect only the sanitized receipt.\\n')\n  process.exitCode = 1\n} finally {\n  token = undefined\n}\n"
+    }
+  ],
+  "productionPlanningLimits": [
+    "Production Workers observed at v1 are not the newly qualified staging deployment. Current local defaults are not evidence that production has those bindings or catalog.",
+    "The production Language Owner namespace remains historical state. Four sandbox DO records plus zero physical instances do not prove owner leases retired or authorize a namespace reset.",
+    "Inventory calls were GET only. Normal Wrangler OAuth refresh was permitted; no deploy, drain, upload, application runtime call or resource/configuration mutation was performed.",
+    "Observations are separately timed snapshots and are not an atomic inventory or a production deployment qualification."
+  ],
+  "qualificationClaims": {
+    "stagingS2sApi": true,
+    "controlledCaseOracles": true,
+    "logicalCleanup": true,
+    "laterRuntimePhysicalZeroObservation": true,
+    "hostedUI": false,
+    "mural": false,
+    "contextualAuthorization": false,
+    "publicGameExecution": false,
+    "cancellation": false,
+    "performanceAcceptance": false,
+    "productionRuntimeExecution": false,
+    "overallProductAcceptance": false
+  },
+  "redactions": {
+    "runtimeOwner": "omitted, including its full value",
+    "inputReferences": "omitted",
+    "requestResponseHeaders": "omitted",
+    "credentials": "omitted",
+    "stdout": "omitted",
+    "learnerSourcesAndDocuments": "omitted",
+    "rawProviderMetadataAndVars": "omitted",
+    "rawResponsesAndEvents": "omitted",
+    "historicalDoNamesAndIds": "count only",
+    "retained": "Public QA IDs, hashes, file descriptors, status, counters, timestamps, approved public origins and structural Worker/R2/DO identities."
+  }
+}

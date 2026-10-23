@@ -1,6 +1,6 @@
 /**
- * Nível de longo prazo da criança, derivado dos slots obrigatórios da jornada
- * que têm os dois marcos: curso concluído + projeto publicado no Mural.
+ * Shared course identities and the existing Adult report calculation.
+ * Kids rank/access comes from the canonical persisted journey view, never this fixed table.
  */
 import {
   CREATOR_JOURNEY_LEVELS,

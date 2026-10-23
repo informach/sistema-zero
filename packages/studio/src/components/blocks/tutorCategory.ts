@@ -2,6 +2,7 @@ export interface TutorToolboxItem {
   getName?: () => string
   getContents?: () => unknown
   getChildToolboxItems?: () => TutorToolboxItem[]
+  setExpanded?: (expanded: boolean) => void
 }
 
 export interface TutorToolbox {
@@ -29,13 +30,17 @@ function contentsIncludeBlockType(contents: unknown, blockType: string): boolean
 
 function findBlockOwner(items: TutorToolboxItem[], blockType: string): TutorToolboxItem | null {
   for (const item of items) {
+    // A parent's serialized contents include every child. Prefer the actual leaf.
+    const found = findBlockOwner(item.getChildToolboxItems?.() ?? [], blockType)
+    if (found) {
+      item.setExpanded?.(true)
+      return found
+    }
     try {
       if (contentsIncludeBlockType(item.getContents?.(), blockType)) return item
     } catch {
       // Categorias dinâmicas podem lançar antes de o flyout existir; seguimos pelos filhos.
     }
-    const found = findBlockOwner(item.getChildToolboxItems?.() ?? [], blockType)
-    if (found) return found
   }
   return null
 }
@@ -45,7 +50,10 @@ function findExactCategory(items: TutorToolboxItem[], category: string): TutorTo
   for (const item of items) {
     if (normalized(item.getName?.() ?? '') === wanted) return item
     const found = findExactCategory(item.getChildToolboxItems?.() ?? [], category)
-    if (found) return found
+    if (found) {
+      item.setExpanded?.(true)
+      return found
+    }
   }
   return null
 }

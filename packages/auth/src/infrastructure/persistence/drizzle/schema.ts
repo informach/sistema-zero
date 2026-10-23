@@ -1,7 +1,8 @@
-import type { KidsSessionClaim } from '@sistemazero/core/security'
+import type { DesktopSessionClaim, KidsSessionClaim } from '@sistemazero/core/security'
 import { sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   date,
   index,
   integer,
@@ -85,6 +86,7 @@ export const refreshTokenFamilies = auth.table(
     id: uuid('id').primaryKey(),
     userId: uuid('user_id').notNull(),
     kidsContext: jsonb('kids_context').$type<KidsSessionClaim>(),
+    desktopContext: jsonb('desktop_context').$type<DesktopSessionClaim>(),
     impersonatorUserId: uuid('impersonator_user_id'),
     impersonationWritable: boolean('impersonation_writable').notNull().default(false),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -240,17 +242,119 @@ export const profiles = auth.table(
     // clicável no Mural). OPT-IN dos pais (default false, segurança infantil); SÓ os
     // pais editam (a sessão de perfil da criança é barrada na rota, como o birthDate).
     publicProfileEnabled: boolean('public_profile_enabled').notNull().default(false),
+    // FALA da criança (voz → texto nas mensagens para a equipe). Consentimento dos pais
+    // POR CRIANÇA: nasce DESLIGADA (default false, a opção mais protetiva que a Política
+    // promete); SÓ os pais ligam, com login recente. `_at` = quando o consentimento EM VIGOR
+    // foi dado (`null` desligada). O HISTÓRICO (prova do consentimento) mora na trilha
+    // `profile_voice_input_events`; as duas colunas só mudam junto com uma linha de lá.
+    // A voz nunca é guardada; só o texto conferido vira mensagem.
+    voiceInputEnabled: boolean('voice_input_enabled').notNull().default(false),
+    voiceInputEnabledAt: timestamp('voice_input_enabled_at', { withTimezone: true }),
     status: profileStatusEnum('status').notNull().default('active'),
+    // Expand migration preserves existing ready profiles; all future inserts default to pending.
+    admissionState: text('admission_state', { enum: ['pending', 'ready'] })
+      .notNull()
+      .default('pending'),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   // Lista da grade (perfis ativos da conta, em ordem) + contagem do limite.
   (t) => [
+    check('profiles_admission_state_ck', sql`${t.admissionState} in ('pending','ready')`),
     index('profiles_account_idx').on(t.accountUserId, t.sortOrder),
     index('profiles_name_trgm_idx').using('gin', t.name.op('gin_trgm_ops')),
   ],
 )
+
+/** Durable creation idempotency and leased admission work; removed only with the profile. */
+export const profileAdmissions = auth.table(
+  'profile_admissions',
+  {
+    profileId: uuid('profile_id')
+      .primaryKey()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    accountUserId: uuid('account_user_id').notNull(),
+    requestId: uuid('request_id').notNull(),
+    requestHash: text('request_hash').notNull(),
+    status: text('status', { enum: ['pending', 'completed', 'cancelled'] })
+      .notNull()
+      .default('pending'),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull(),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    lastErrorCode: text('last_error_code'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('profile_admissions_account_request_uq').on(t.accountUserId, t.requestId),
+    index('profile_admissions_pending_idx')
+      .on(t.nextAttemptAt, t.profileId)
+      .where(sql`${t.status} = 'pending'`),
+    check('profile_admissions_status_ck', sql`${t.status} in ('pending','completed','cancelled')`),
+    check('profile_admissions_attempts_ck', sql`${t.attempts} >= 0`),
+    check('profile_admissions_request_hash_ck', sql`${t.requestHash} ~ '^[0-9a-f]{64}$'`),
+    check('profile_admissions_lease_ck', sql`(${t.leaseId} is null) = (${t.leaseUntil} is null)`),
+    check(
+      'profile_admissions_completed_ck',
+      sql`(${t.status} = 'pending' and ${t.completedAt} is null) or (${t.status} <> 'pending' and ${t.completedAt} is not null)`,
+    ),
+  ],
+)
+
+/**
+ * Trilha APPEND-ONLY do consentimento da FALA da criança (LGPD art. 8º §2º: cabe ao
+ * controlador provar o consentimento). Uma linha a cada MUDANÇA efetiva de
+ * `profiles.voice_input_enabled` (inclusive o perfil criado já com a fala ligada), gravada
+ * na MESMA transação que salva o perfil; reenviar o mesmo valor não grava nada. A app só
+ * INSERE: sem update, sem rota de leitura (consulta por SQL, para auditoria/jurídico) e
+ * fora da purga periódica. Sai junto com o perfil na exclusão física da conta (FK em
+ * cascata), porque é dado pessoal da criança. `account_user_id` é snapshot da conta dona;
+ * `impersonator_id` = o ator REAL numa sessão de suporte (`act.sub`). O CHECK prende a
+ * regra do domínio no banco: a equipe de suporte só DESLIGA.
+ */
+export const profileVoiceInputEvents = auth.table(
+  'profile_voice_input_events',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    profileId: uuid('profile_id')
+      .notNull()
+      .references(() => profiles.id, { onDelete: 'cascade' }),
+    accountUserId: uuid('account_user_id').notNull(),
+    enabled: boolean('enabled').notNull(),
+    /** `parent` (sessão dos responsáveis) | `support` (equipe "entrando como" eles). */
+    actor: text('actor', { enum: ['parent', 'support'] }).notNull(),
+    impersonatorId: uuid('impersonator_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    // Histórico de um perfil em ordem + a busca da cascada quando o perfil sai.
+    index('profile_voice_input_events_profile_created_idx').on(t.profileId, t.createdAt),
+    check(
+      'profile_voice_input_events_actor_ck',
+      sql`(${t.actor} = 'parent' and ${t.impersonatorId} is null) or (${t.actor} = 'support' and ${t.impersonatorId} is not null and ${t.enabled} = false)`,
+    ),
+  ],
+)
+
+/**
+ * Dedupe do aviso "o perfil completou 18 anos" (e-mail `profile-turned-18` ao responsável):
+ * uma linha por perfil, PARA SEMPRE — o PK garante no máximo um aviso. Gravada pelo job
+ * DEPOIS do envio. Só registro: o perfil continua funcionando igual (nunca é cortado).
+ * `account_user_id` é snapshot da conta que recebeu; sai com o perfil (FK em cascata).
+ */
+export const profileAdultNotices = auth.table('profile_adult_notices', {
+  profileId: uuid('profile_id')
+    .primaryKey()
+    .references(() => profiles.id, { onDelete: 'cascade' }),
+  accountUserId: uuid('account_user_id').notNull(),
+  /** 18º aniversário (dia civil). */
+  turnedAdultOn: date('turned_adult_on', { mode: 'string' }).notNull(),
+  notifiedAt: timestamp('notified_at', { withTimezone: true }).notNull(),
+})
 
 /**
  * Trilha de auditoria de AÇÕES ADMINISTRATIVAS (quem fez o quê, quando, de onde).
@@ -370,7 +474,72 @@ export const studyAttempts = auth.table(
   (t) => [index('study_attempts_resets_idx').on(t.resetsAt)],
 )
 
+export const desktopPairings = auth.table(
+  'desktop_pairings',
+  {
+    id: uuid('id').primaryKey(),
+    deviceCodeHash: text('device_code_hash').notNull(),
+    userCodeHash: text('user_code_hash').notNull(),
+    challenge: text('challenge').notNull(),
+    label: text('label').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    approvedBy: uuid('approved_by').references(() => users.id, { onDelete: 'cascade' }),
+    consumedAt: timestamp('consumed_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('desktop_pairings_device_code_idx').on(t.deviceCodeHash),
+    uniqueIndex('desktop_pairings_user_code_idx').on(t.userCodeHash),
+    index('desktop_pairings_expiry_idx').on(t.expiresAt),
+  ],
+)
+export const desktopDevices = auth.table(
+  'desktop_devices',
+  {
+    id: uuid('id').primaryKey(),
+    credentialHash: text('credential_hash'),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sessionId: uuid('session_id').notNull(),
+    label: text('label').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('desktop_devices_user_idx').on(t.userId),
+    uniqueIndex('desktop_devices_session_idx').on(t.sessionId),
+    uniqueIndex('desktop_devices_credential_idx').on(t.credentialHash),
+  ],
+)
+
+// Stable browser credentials keep only their hash. Canonical family revocation
+// covers logout-all/password reset; family expiry purge also removes the binding.
+export const browserSessions = auth.table(
+  'browser_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    familyId: uuid('family_id')
+      .notNull()
+      .references(() => refreshTokenFamilies.id, { onDelete: 'cascade' }),
+    credentialHash: text('credential_hash').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('browser_sessions_credential_uq').on(t.credentialHash),
+    uniqueIndex('browser_sessions_family_uq').on(t.familyId),
+    index('browser_sessions_user_idx').on(t.userId),
+  ],
+)
+
 export const schema = {
+  browserSessions,
+  desktopPairings,
+  desktopDevices,
   studyDevices,
   studyGrants,
   studyCodes,
@@ -383,5 +552,8 @@ export const schema = {
   otpCodes,
   impersonationTokens,
   profiles,
+  profileAdmissions,
+  profileVoiceInputEvents,
+  profileAdultNotices,
   auditLogs,
 }

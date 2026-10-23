@@ -10,12 +10,17 @@
     "start": "bun run src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
+    "test:pensa-db": "bun run scripts/test-pensa-db.ts",
+    "pensa:maintenance": "bun run scripts/pensa-maintenance.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "bun run scripts/seed-course.ts",
+    "journey:bootstrap": "bun run scripts/bootstrap-kids-journey.ts",
     "career:finalize-first-steps": "bun run scripts/finalize-first-steps-rollout.ts",
     "entitlements:rollout-molda": "bun run scripts/rollout-molda-entitlements.ts",
+    "journey:seed-adult": "bun run scripts/seed-adult-journey.ts",
+    "journey:seed-production": "bun run scripts/seed-adult-journey-production.ts",
     "submissions:audit-lost": "bun run scripts/audit-lost-studio-submissions.ts",
     "submissions:restore": "bun run scripts/restore-studio-submissions.ts",
     "check": "biome check .",
@@ -32,14 +37,15 @@
     "@sistemazero/core": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
+    "drizzle-kit": "^0.31.5",
     "drizzle-orm": "^0.44.5",
     "elysia": "^1.4.9",
     "postgres": "^3.4.7",
-    "zod": "^4.1.12"
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "drizzle-kit": "^0.31.5"
+    "@types/node": "24.19.0"
   },
   "peerDependencies": {
     "typescript": "^5"

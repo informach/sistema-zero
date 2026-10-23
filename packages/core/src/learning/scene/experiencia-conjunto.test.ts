@@ -1,6 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { readdirSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { readFileSync } from 'node:fs'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import {
   type InteractiveBlock,
   isInteractiveBlock,
@@ -276,10 +279,9 @@ describe('M5 · a previsão que afirma um estado que a tela ainda não mostra co
   })
 
   test('⚠️ nas previsões ESCRITAS nos manifestos atuais', () => {
-    const raiz = resolve(import.meta.dir, '../../../../../docs/aulas-interativas/aulas')
-    const manifestos = readdirSync(raiz)
+    const manifestos = listarArquivosAulas()
       .filter((nome) => nome.endsWith('.manifesto.json'))
-      .map((nome) => resolve(raiz, nome))
+      .map((nome) => caminhoAula(nome))
     expect(manifestos).toHaveLength(37)
     let cenasLidas = 0
     const premissasAntecipadas: string[] = []

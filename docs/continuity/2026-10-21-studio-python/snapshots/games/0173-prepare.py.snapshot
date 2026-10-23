@@ -1,0 +1,54 @@
+"""Instrumentation-only copy. Original QPC>=3 oracle and all game/observer bytes stay intact."""
+import ast
+import difflib
+import hashlib
+import json
+from pathlib import Path
+
+here = Path(__file__).resolve().parent
+previous = here / '../pacman11-native-package-r1'
+sha = lambda data: hashlib.sha256(data).hexdigest()
+base_bytes = (previous / 'packet.json').read_bytes()
+assert sha(base_bytes) == 'f27267e9c69b833980cd250ded3467442a37e52a81b6d1b47bcde11d214941af'
+base = json.loads(base_bytes)
+old = (previous / 'pacman_native.py').read_text()
+assert sha((previous / 'pacman_native.py').read_bytes()) == '3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075'
+metadata_anchor = "            root = screen.getcanvas().winfo_toplevel()\n"
+metadata_addition = """            report['nativeClockInfo'] = dict(tclPatchlevel=root.tk.call('info', 'patchlevel'),
+                                             tkPatchlevel=root.tk.call('package', 'provide', 'Tk'),
+                                             monotonic=vars(time.get_clock_info('monotonic')))
+"""
+event_anchor = "                            event = json.loads(line[len(PREFIX):])\n"
+event_addition = """                            if event['event'] in ('timer-scheduled', 'timer-fired'):
+                                # Existing observer event only: no extra emit/timer/callback wrapper.
+                                qpc_before = time.monotonic_ns()
+                                tcl_us = int(root.tk.call('clock', 'microseconds'))
+                                qpc_after = time.monotonic_ns()
+                                event['nativeClockPair'] = dict(qpcBeforeNs=qpc_before,
+                                                               tclMicroseconds=tcl_us,
+                                                               qpcAfterNs=qpc_after)
+"""
+assert old.count(metadata_anchor) == old.count(event_anchor) == 1
+new = old.replace(metadata_anchor, metadata_anchor + metadata_addition).replace(event_anchor, event_anchor + event_addition)
+assert new.replace(metadata_addition, '').replace(event_addition, '') == old
+assert "assert fired[0]['value']['elapsedSeconds'] >= 3" in new
+compile(new, '<paired-native-runner>', 'exec')
+with (here / 'pacman_native.py').open('x', encoding='utf-8', newline='\n') as stream:
+    stream.write(new)
+for name in ('pacman_observer.py', 'run_pacman_native.mjs'):
+    with (here / name).open('xb') as stream:
+        stream.write((previous / name).read_bytes())
+assert sha((here / 'pacman_observer.py').read_bytes()) == '1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc'
+assert (here / 'run_pacman_native.mjs').read_bytes() == (previous / 'run_pacman_native.mjs').read_bytes()
+packet = dict(base)
+packet.update(state='INSTRUMENTATION-ONLY-ORIGINAL-QPC-ORACLE-NOT-EXECUTED', parentPacketSha256=sha(base_bytes), scenarios=['defeat-near-end'], outputs={'defeat-near-end': str(here.parents[3] / '.cache/studio-python-l0/pacman11-native-defeat-paired-r1')}, targetSecondsEstimate=5, windowSecondsProposed=90, originalQpcAtLeast3OracleUnchanged=True)
+assert not Path(packet['outputs']['defeat-near-end']).exists()
+packet['files'] = [dict(path=str(here / name), sha256=sha((here / name).read_bytes())) for name in ('pacman_native.py','pacman_observer.py','run_pacman_native.mjs')]
+for item in packet['nativeEnvironmentPins'] + packet['installedAudioMatches'] + packet['artifactPins'] + packet['frozenSourcePins']:
+    assert sha(Path(item['path']).read_bytes()) == item['sha256']
+with (here / 'packet.json').open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(packet, stream, indent=2); stream.write('\n')
+(here / 'instrumentation-only.patch').write_text(''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True), fromfile='r1/pacman_native.py', tofile='paired/pacman_native.py')), encoding='utf-8', newline='\n')
+proof = dict(state='INSTRUMENTATION-ONLY-STATIC-PASS-NOT-EXECUTED', packetSha256=sha((here / 'packet.json').read_bytes()), originalRunnerExactlyRestoredByRemovingTwoInstrumentationBlocks=True, originalQpcAtLeast3AssertUnchanged=True, observerByteIdentical=True, supervisorByteIdentical=True, cleanupAndAllOtherOracleCodeUnchanged=True, sourceCompilePassed=True, newOutputAbsent=True)
+(here / 'static-review.json').write_text(json.dumps(proof, indent=2) + '\n', encoding='utf-8', newline='\n')
+print(json.dumps(dict(packetSha256=proof['packetSha256'], scripts=packet['files'], staticReviewSha256=sha((here / 'static-review.json').read_bytes()), patchSha256=sha((here / 'instrumentation-only.patch').read_bytes()), noNativeStart=True)))

@@ -24,14 +24,18 @@ export class GetMyCourseService {
     courseSlug: string,
     privileged = false,
     accountId?: string,
+    audience?: CourseAudience,
   ): Promise<CourseDetailView> {
+    if (audience === 'adult' && userId !== (accountId ?? userId)) throw new CourseNotFoundError()
     // Acesso pela CONTA (sessão de perfil → x-auth-account-id); progresso pelo userId.
-    const { course, entitlement } = await this.checkAccess.requireBySlug(
+    const { course, entitlement, liveLessonIds } = await this.checkAccess.requireBySlug(
       accountId ?? userId,
       courseSlug,
       privileged,
       userId,
+      'course',
     )
+    if (audience && course.audience !== audience) throw new CourseNotFoundError()
     // Aluno só vê aulas PUBLICADAS — outline e progresso idem.
     const [
       outline,
@@ -48,7 +52,7 @@ export class GetMyCourseService {
       this.progress.lastCompletedAt(userId, course.id),
       this.positions.lastAccessedLessonId(userId, course.id),
       this.ratings.find(userId, course.id),
-      course.audience === 'kids' ? this.gamification.listJourneyCourseState(userId, 'kids') : null,
+      course.audience === 'kids' ? this.gamification.listCourseMilestones(userId, 'kids') : null,
       course.audience === 'kids' ? this.courses.listShowcaseLessonIds(course.id) : [],
       this.courses.listMaterialLessonIds(course.id),
     ])
@@ -74,8 +78,11 @@ export class GetMyCourseService {
       last,
     )
     // Trava sequencial: só calcula quando o curso a tem ligada E o ator não é equipe
-    // interna (privileged navega tudo destravado, como a chave-mestra virtual).
-    const lockedSet = lockedLessonSetForCourse(course, publishedLessonIds, completedSet, privileged)
+    // interna (privileged navega tudo destravado, como a chave-mestra virtual). No curso AO
+    // VIVO quem trava é a vaga: fica fechada toda aula que o grant não abre agora.
+    const lockedSet = liveLessonIds
+      ? new Set(publishedLessonIds.filter((id) => !liveLessonIds.has(id)))
+      : lockedLessonSetForCourse(course, publishedLessonIds, completedSet, privileged)
     const continueLessonId = resolveContinueLesson(outline, completedSet, lastAccessed, lockedSet)
     const view = toCourseDetailView(
       course,
@@ -91,10 +98,13 @@ export class GetMyCourseService {
     return {
       ...view,
       milestones: journeyState
-        ? (journeyState.milestones.get(course.id) ?? { completed: false, showcased: false })
+        ? (journeyState.get(course.id) ?? { completed: false, showcased: false })
         : undefined,
       materialLessonIds: materialLessonIds.filter((id) => !lockedSet.has(id)),
       showcaseLessonId: showcaseLessonIds.find((id) => !lockedSet.has(id)) ?? null,
     }
   }
 }
+
+import type { CourseAudience } from '../../domain/course/course'
+import { CourseNotFoundError } from '../../domain/course/course.errors'

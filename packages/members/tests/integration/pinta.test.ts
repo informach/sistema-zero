@@ -144,6 +144,41 @@ describe('bloco Pinta — entrega', () => {
     expect(restored.animations[0]?.frames[0]?.[0]?.data[0]).toBe(7)
   })
 
+  test('voz para texto: o recado FALADO do desenho chega marcado à equipe; sem o campo, digitado', async () => {
+    const { app, courses, lessonId } = cenario()
+    const blockId = seedPintaBlock(courses, lessonId)
+    const admin = (path: string) =>
+      app.handle(new Request(`http://localhost/members/admin${path}`)).then(readJson)
+
+    const falado = await enviar(app, lessonId, blockId, {
+      asset: DESENHO_DA_CRIANCA,
+      message: 'desenhei um dragão',
+      messageSpoken: true,
+    })
+    expect(falado.status).toBe(200)
+    expect(await admin(`/blocks/${blockId}/studio-submissions/${USER}`)).toMatchObject({
+      message: 'desenhei um dragão',
+      messageSpoken: true,
+    })
+    const { thread } = await admin(
+      `/teacher-threads/by-context?userId=${USER}&contextType=studio_submission&contextRef=${blockId}`,
+    )
+    expect(thread.messages[0]).toMatchObject({ body: 'desenhei um dragão', spoken: true })
+    const activity = await admin(`/members/${USER}/activity`)
+    expect(
+      activity.items.find((i: { kind: string }) => i.kind === 'pinta_submission'),
+    ).toMatchObject({ messageSpoken: true })
+
+    expect(
+      (await enviar(app, lessonId, blockId, { asset: DESENHO_DA_CRIANCA, message: 'pronto' }))
+        .status,
+    ).toBe(200)
+    expect(await admin(`/blocks/${blockId}/studio-submissions/${USER}`)).toMatchObject({
+      message: 'pronto',
+      messageSpoken: false,
+    })
+  })
+
   test('desenho com PALETA PERSONALIZADA atravessa o servidor intacto', async () => {
     // O members roda o MESMO sanitize do Pinta na borda (pintaAssetFromWire):
     // se a chave `customPalette` fosse podada aqui, a paleta embutida no

@@ -1,0 +1,55 @@
+import { expect, mock, test } from 'bun:test'
+import { render, renderHook, waitFor } from '../../packages/community-kids/node_modules/@testing-library/react'
+import { createElement } from '../../packages/community-kids/node_modules/react'
+import { useStudioTaskSession } from '../../packages/community-kids/src/components/kids/use-studio-task-session'
+import type { StudioTaskHandoff } from '../../packages/community-kids/src/components/kids/use-pensa-task-handoff'
+
+// Audit-only observations of current behavior. No production file is replaced.
+let captured: Record<string, unknown> | null = null
+mock.module('../../packages/member-shell/src/components/studio/studio-pro-loader', () => ({
+  loadStudioProModule: async () => ({ module: {
+    canRunProMode: () => true,
+    StudioEditor: (props: Record<string, unknown>) => { captured = props; return null },
+  } }),
+  loadPreparedStudioProProject: async () => ({ id: 'audit-pro', kind: 'pro', mode: 'code' }),
+}))
+const { StudioProEditor } = await import('../../packages/member-shell/src/components/studio/studio-pro-editor')
+
+test('observation: actual Pro host omits publication and activity callbacks', async () => {
+  render(createElement(StudioProEditor, { viewerId: 'audit-child', projectId: 'audit-pro', theme: 'light', onExit() {} }))
+  await waitFor(() => expect(captured).not.toBeNull())
+  const evidence = {
+    share: typeof captured!.share,
+    onChange: typeof captured!.onChange,
+    onError: typeof captured!.onError,
+    suppliedProps: Object.keys(captured!).sort(),
+  }
+  console.log('HOST_EVIDENCE', JSON.stringify(evidence))
+  expect(evidence.share).toBe('undefined')
+  expect(evidence.onChange).toBe('undefined')
+})
+
+test('observation: switching to Pro removes chips but retains block instructions', () => {
+  const handoff = {
+    project: { id: 'audit-plan', name: 'Jogo' },
+    cycle: { id: 'cycle', number: 1, goal: null },
+    capability: { owned: true, blockedReason: null },
+    task: {
+      id: 'audit-task', title: 'Mover o personagem', summary: null, revision: 1,
+      destination: 'studio',
+      guide: { contractVersion: 2,
+        steps: [{ id: 's1', text: 'Arraste o bloco de movimento', hint: 'Use a paleta de blocos.', required: false }],
+        criteria: [],
+      },
+      context: { blocks: [{ id: 'move', label: 'Mover' }] },
+      progress: { status: 'in_progress', completedStepIds: [], completedCriteriaIds: [], outputRef: null, updatedAt: 'v1' },
+    },
+  } as unknown as StudioTaskHandoff
+  const { result } = renderHook(() => useStudioTaskSession({
+    handoff, projectId: 'audit-pro', viewerId: 'audit-child', cloud: null,
+    retry() {}, updateProgress() {}, navigate() {}, pro: true,
+  }))
+  console.log('GUIDE_EVIDENCE', JSON.stringify({ blocks: result.current?.blocks, guide: result.current?.guide }))
+  expect(result.current?.blocks).toEqual([])
+  expect(result.current?.guide.steps[0]?.text).toBe('Arraste o bloco de movimento')
+})

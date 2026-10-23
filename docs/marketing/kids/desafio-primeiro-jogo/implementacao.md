@@ -2,7 +2,7 @@
 
 **03/10/2026 · proposta v2 aprovada, implementação local concluída.**
 
-O funil agora apresenta **A Chave do Farol**, com a identidade visual das ofertas da Comunidade. A raiz continua sendo a bio com os caminhos principais; `/como-funciona/` explica a experiência geral. O Desafio é uma entrada opcional: a família pode contratar a Comunidade diretamente.
+O funil agora apresenta **A Chave do Farol**, com a identidade visual das ofertas da Comunidade. A raiz continua sendo a bio com os caminhos principais; `/como-funciona/` explica a experiência geral (desde 20/10/2026, a raiz leva aos dois quizzes da Comunidade e a `/como-funciona` faz 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`; os links do Desafio para ela passaram a apontar para essa seção). O Desafio é uma entrada opcional: a família pode contratar a Comunidade diretamente.
 
 ## Páginas e encaminhamento
 
@@ -51,7 +51,7 @@ Nenhuma coleta paralela ou migração própria foi criada para esta implementaç
 
 | Arquivo | Evidência |
 | --- | --- |
-| `farol-jogo.png` | Captura do projeto concluído gerado por `docs/aulas-interativas/qa/desafio-farol-projeto.ts`, com o runtime real de Jogo 2D. |
+| `farol-jogo.png` | Captura do projeto concluído gerado por `docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`, com o runtime real de Jogo 2D. |
 | `farol-capa.webp` | Versão da mesma captura para checkout e compartilhamento; substitui a nave nas superfícies ativas. |
 | `farol-blocos.png` | Trecho do Caderno do Aluno com as duas respostas da porta. Identificado como esquema do caderno, não como captura do editor. |
 | `farol-caderno.png` | Página real do caderno com os testes com e sem chave. |
@@ -59,7 +59,7 @@ Nenhuma coleta paralela ou migração própria foi criada para esta implementaç
 
 Essas imagens demonstram o projeto e os recursos, não são depoimentos de clientes. Capturas da versão publicada do Farol poderão substituir os exemplos de interface após a conferência em staging.
 
-Em 03/10/2026, o jogo, a capa e o caderno receberam os SVGs personalizados do `pack-game-farol`, com palco 480 × 360. As capturas do jogo preservam 4:3 (1280 × 960); checkout e confirmação mostram a composição inteira nas miniaturas. A [documentação dos materiais](../../../aulas-interativas/recursos/desafio-farol/README.md) descreve as fontes, posições e comandos de regeneração.
+Em 03/10/2026, o jogo, a capa e o caderno receberam os SVGs personalizados do `pack-game-farol`, com palco 480 × 360. As capturas do jogo preservam 4:3 (1280 × 960); checkout e confirmação mostram a composição inteira nas miniaturas. A [documentação dos materiais](../../../aulas-interativas-tecnico/recursos/desafio-farol/README.md) descreve as fontes, posições e comandos de regeneração.
 
 ## Verificação realizada
 

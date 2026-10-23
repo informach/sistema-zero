@@ -34,7 +34,7 @@ test.each([
   expect(clip).toMatchObject({
     id: 'preset',
     duration: 2.123456789123,
-    space: 'local-delta',
+    space: 'local',
     loop: true,
   })
   expect(clip.tracks).toHaveLength(1)
@@ -127,4 +127,37 @@ test('presets reject locks, invalid settings, precision collisions and exhausted
   ).toThrow('orçamento')
   expect(ids).toBe(0)
   expect(source).toEqual(before)
+})
+
+test('o mesmo movimento pronto duas vezes ganha nomes que se distinguem', () => {
+  const source = animatedScene()
+  const options = { kind: 'bounce', name: 'Pular', duration: 1, axis: 'y', amount: 1 } as const
+  const once = createSceneAnimationPreset(source, ['body'], options)
+  const twice = createSceneAnimationPreset(once, ['body'], options)
+  const names = twice.animations!.map((clip) => clip.name)
+  expect(names.filter((name) => name.startsWith('Pular'))).toEqual(['Pular', 'Pular 2'])
+})
+
+test('a ready spin rotates a resized piece without introducing shear', () => {
+  const source = animatedScene()
+  source.nodes.find((node) => node.id === 'body')!.transform = {
+    kind: 'trs',
+    translation: [0, 1, 0],
+    rotation: [0, 0, 0, 1],
+    scale: [1, 3, 1],
+  }
+  const created = createSceneAnimationPreset(
+    source,
+    ['body'],
+    { kind: 'spin', name: 'Girar', axis: 'z', duration: 2, amount: 1 },
+    () => 'spin',
+  )
+  expect(created.animations!.at(-1)!.space).toBe('local')
+  const matrix = prepareSceneAnimation(created, 'spin')
+    .sample(0.25, false)
+    .worldMatrices.get('body')!
+  expect(matrix[0]! * matrix[4]! + matrix[1]! * matrix[5]! + matrix[2]! * matrix[6]!).toBeCloseTo(
+    0,
+    10,
+  )
 })

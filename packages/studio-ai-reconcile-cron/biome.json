@@ -1,0 +1,5 @@
+{
+  "root": false,
+  "extends": ["../../biome.json"],
+  "files": { "includes": ["!worker-configuration.d.ts"] }
+}

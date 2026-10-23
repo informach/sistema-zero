@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { MoldaSceneDocument, Vec2 } from '../../../scene/document'
-import type { ScenePaintTarget } from '../../../scene/imagePaint'
+import type { ScenePaintRgba, ScenePaintTarget } from '../../../scene/imagePaint'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import { SceneValidationError } from '../../../scene/validation'
@@ -12,6 +12,7 @@ import type { SceneSkinPaintSession } from '../../../state/sceneSkinPaintSession
 import type { SceneAreaTool } from '../../../viewport/SceneAreaSelection'
 import type { SceneSkinWeightTarget } from '../../../viewport/SceneSkinWeightOverlay'
 import type {
+  SceneGuideInput,
   ScenePaintActions,
   ScenePaintMode,
   SceneSelectDetail,
@@ -30,6 +31,10 @@ export function useSceneViewport({
   selection,
   isolation,
   select,
+  hover,
+  sampleInk,
+  guideInput,
+  guidePoint,
   selectMany,
   factory,
   transform,
@@ -52,12 +57,18 @@ export function useSceneViewport({
   onThumb,
   paintMode,
   paintMirror = false,
+  paintScope = null,
+  paintGuides = null,
 }: {
   document: MoldaSceneDocument
   selection: readonly string[]
   isolation: readonly string[] | null
   /** Em Pintar, `detail.faceId` diz em que face a peça foi tocada. */
   select(id: string | null, additive: boolean, detail?: SceneSelectDetail): void
+  hover?(id: string | null): void
+  sampleInk?(color: ScenePaintRgba): void
+  guideInput?: SceneGuideInput | null
+  guidePoint?(point: import('../../../core/model').Vec3): void
   selectMany?(ids: readonly string[], additive: boolean): void
   factory?: SceneViewportFactory
   transform?: SceneTransformActions
@@ -83,10 +94,18 @@ export function useSceneViewport({
   paintMode?: ScenePaintMode
   /** Espelho de pintura, ligado pela criança na caixa de ferramentas. */
   paintMirror?: boolean
+  paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
+  paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const onSelect = useRef(select)
   onSelect.current = select
+  const onHover = useRef(hover)
+  onHover.current = hover
+  const inkSample = useRef(sampleInk)
+  inkSample.current = sampleInk
+  const guide = useRef({ input: guideInput, point: guidePoint })
+  guide.current = { input: guideInput, point: guidePoint }
   const onSelectMany = useRef(selectMany)
   onSelectMany.current = selectMany
   const onSelectComponent = useRef(selectComponent)
@@ -102,12 +121,16 @@ export function useSceneViewport({
   interrupt.current = onInterrupt
   onTransform.current = transform
   const [viewport, setViewport] = useState<SceneViewportPort | null>(null)
+  useEffect(() => {
+    viewport?.refreshGuideInput?.(guideInput ?? null)
+  }, [viewport, guideInput])
   const [error, setError] = useState<string | null>(null)
   const [selectionError, setSelectionError] = useState<string | null>(null)
   const [lost, setLost] = useState(false)
   const [issueCount, setIssueCount] = useState(0)
   const [area, setArea] = useState<readonly Vec2[]>([])
   const displayed = useRef<MoldaSceneDocument | null>(null)
+  const refreshAnimation = useRef<(() => void) | null>(null)
   const skinActions = useRef<SceneSkinPaintActions | null>(null)
   useEffect(() => {
     let cancelled = false
@@ -141,6 +164,12 @@ export function useSceneViewport({
       }
       if (cancelled) return
       const callbacks = {
+        sampleInk: (color: ScenePaintRgba) => inkSample.current?.(color),
+        samplingInk: () => !!inkSample.current,
+        hover: (id: string | null) => onHover.current?.(id),
+        hoverEnabled: () => !!onHover.current,
+        guideInput: () => guide.current.input ?? null,
+        guidePoint: (point: import('../../../core/model').Vec3) => guide.current.point?.(point),
         select: (id: string | null, additive: boolean, detail?: SceneSelectDetail) => {
           if (cancelled) return
           if (detail) onSelect.current(id, additive, detail)
@@ -231,6 +260,7 @@ export function useSceneViewport({
     try {
       setIssueCount(viewport.setDocument(document).length)
       displayed.current = document
+      refreshAnimation.current?.()
       const { source, step } = flipbook.getSnapshot()
       if (
         source &&
@@ -288,6 +318,12 @@ export function useSceneViewport({
   useEffect(() => {
     viewport?.setPaintTarget(paintTarget)
   }, [viewport, paintTarget])
+  useEffect(() => {
+    viewport?.setPaintScope?.(paintScope)
+  }, [viewport, paintScope])
+  useEffect(() => {
+    viewport?.setPaintGuides?.(paintGuides)
+  }, [viewport, paintGuides])
   const paintSkinId = weightTarget
     ? document.skins?.find((skin) => skin.nodeId === weightTarget.nodeId)?.id
     : undefined
@@ -355,6 +391,7 @@ export function useSceneViewport({
     if (!viewport || !animation || lost) return
     let failed = false
     const update = () => {
+      const document = displayed.current
       const snapshot = animation.getSnapshot()
       const draft = animationPose?.getSnapshot().pose
       const editing =
@@ -386,18 +423,19 @@ export function useSceneViewport({
         else animation.reportError(error)
       }
     }
+    refreshAnimation.current = update
     update()
     const unsubscribe = animation.subscribe(update)
     const unsubscribePose = animationPose?.subscribe(update)
     return () => {
+      if (refreshAnimation.current === update) refreshAnimation.current = null
       unsubscribe()
       unsubscribePose?.()
-      animationPose?.cancel()
-      animation.pause()
+      animationPose?.interrupt()
       viewport.setAnimationEditing(false)
       viewport.setPose(null)
     }
-  }, [viewport, animation, animationPose, document, lost])
+  }, [viewport, animation, animationPose, lost])
   return {
     canvas,
     viewport,

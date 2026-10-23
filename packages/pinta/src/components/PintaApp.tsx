@@ -3,6 +3,7 @@
  * galeria ⇄ editor. O host só passa o `adapter` (tema/capabilities) e chama
  * `setPintaStorageNamespace(viewerId)` ANTES de montar.
  */
+import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { COPY } from '../core/copy'
@@ -25,6 +26,7 @@ import {
 import { EditorScreen } from './editor/EditorScreen'
 import { GalleryScreen } from './gallery/GalleryScreen'
 import { TaskBriefPanel } from './TaskBriefPanel'
+import { erroParaCrianca, withSaveBeforeTaskActions } from './taskSessionSave'
 import { ToastProvider, useToast } from './ui/Toast'
 
 type PintaView = { screen: 'gallery' } | { screen: 'editor'; assetId: string }
@@ -179,7 +181,8 @@ export function PintaApp({
       closeEditor,
     ],
   )
-  const taskOutputId = resolvedAdapter.taskSession?.progress.outputRef?.assetId ?? null
+  const taskOutputId =
+    resolvedAdapter.taskSession?.progress.deliveries[0]?.creation.creationId ?? null
   const taskOutputMissing = !!taskOutputId && missingAssetId === taskOutputId
   const recreateTaskAsset = () => {
     const session = resolvedAdapter.taskSession
@@ -188,10 +191,17 @@ export function PintaApp({
       projectRef: {
         id: session.project.id,
         name: session.project.name,
-        palette: session.brief.palette.map((item) => item.color),
+        palette: [],
       },
-      artKind: session.brief.artKind,
-      style: session.brief.style,
+      artKind:
+        session.assetSlots[0]?.kind === 'background'
+          ? 'background'
+          : session.assetSlots[0]?.kind === 'tileset'
+            ? 'tileset'
+            : session.assetSlots[0]?.kind === 'tilemap'
+              ? 'tilemap'
+              : 'sprite',
+      style: 'either',
     })
   }
   /**
@@ -202,11 +212,27 @@ export function PintaApp({
    * Falhou ao guardar? Lança, e o painel mostra o recado sem navegar — o desenho
    * da criança não pode ficar para trás numa troca de tela.
    */
+  /** Grava o desenho aberto (nada aberto = nada a gravar). `false` = a gravação falhou. */
+  const gravarDesenhoAberto = useCallback(async (): Promise<boolean> => {
+    const editor = editorRef.current
+    if (!editor) return true
+    const saved = await editor.getState().flush()
+    if (!saved.ok) console.error('[pinta] gravar antes do guia falhou', saved.error)
+    return saved.ok
+  }, [])
+  // O guia v2 GRAVA antes de concluir, continuar e pedir ajuda (ver `taskSessionSave`).
+  const sessaoDoGuia = useMemo(
+    () =>
+      resolvedAdapter.taskSession
+        ? withSaveBeforeTaskActions(resolvedAdapter.taskSession, gravarDesenhoAberto)
+        : undefined,
+    [resolvedAdapter.taskSession, gravarDesenhoAberto],
+  )
   const returnToPlan = async () => {
     const editor = editorRef.current
     if (editor) {
       const saved = await editor.getState().flush()
-      if (!saved.ok) throw new Error(saved.error)
+      if (!saved.ok) throw erroParaCrianca(COPY.task.backError, saved.error)
     }
     await resolvedAdapter.taskSession?.onReturnToPlan?.()
   }
@@ -220,26 +246,34 @@ export function PintaApp({
         <ToastProvider>
           <InitialAssetOpener
             onMissing={(id) => {
-              if (resolvedAdapter.taskSession?.progress.outputRef?.assetId === id) {
+              if (resolvedAdapter.taskSession?.progress.deliveries[0]?.creation.creationId === id) {
                 setMissingAssetId(id)
               }
             }}
           />
-          {resolvedAdapter.taskSession ? (
-            <TaskBriefPanel
-              session={resolvedAdapter.taskSession}
-              outputMissing={taskOutputMissing}
-              onRecreate={recreateTaskAsset}
-              onRelink={() => setView({ screen: 'gallery' })}
-              {...(resolvedAdapter.taskSession.onReturnToPlan ? { onReturn: returnToPlan } : {})}
-            />
-          ) : null}
-          {view.screen === 'gallery' ? (
-            <GalleryScreen />
-          ) : (
-            // key por asset: trocar de desenho recria o editor (stores novas).
-            <EditorScreen key={view.assetId} assetId={view.assetId} />
-          )}
+          {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou uma faixa embaixo, na tela
+              estreita): nunca cobre a paleta, as camadas nem a linha de animações. */}
+          <PensaMissionLayout
+            panel={
+              resolvedAdapter.taskSession ? (
+                <TaskBriefPanel
+                  session={sessaoDoGuia ?? resolvedAdapter.taskSession}
+                  outputMissing={taskOutputMissing}
+                  currentCreationId={view.screen === 'editor' ? view.assetId : null}
+                  onRecreate={recreateTaskAsset}
+                  onRelink={() => setView({ screen: 'gallery' })}
+                  onReturn={returnToPlan}
+                />
+              ) : null
+            }
+          >
+            {view.screen === 'gallery' ? (
+              <GalleryScreen />
+            ) : (
+              // key por asset: trocar de desenho recria o editor (stores novas).
+              <EditorScreen key={view.assetId} assetId={view.assetId} />
+            )}
+          </PensaMissionLayout>
         </ToastProvider>
       </PintaAppProvider>
     </div>

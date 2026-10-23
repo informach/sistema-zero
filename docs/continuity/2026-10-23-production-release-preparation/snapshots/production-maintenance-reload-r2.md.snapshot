@@ -1,0 +1,250 @@
+# Manutenção produção — fase 2, reload de imagens antigas (R2 privado)
+
+PREPARAÇÃO OFFLINE. Nenhum CHECK/APPLY/VERIFY/DIAGNOSE, SSH, HTTP, consulta Railway,
+SQL, deploy ou alteração de variável foi executado. Somente testes inertes com
+respostas sintéticas e import local. Os operadores anteriores R1 permanecem intactos.
+
+## Delta estrito R2 e evidências anteriores
+
+Esta revisão corrige somente duas causas observadas no leitor de metadados:
+
+1. O provider conserva instâncias históricas `REMOVED` no deployment atual. O
+   contexto Members real contém a RUNNING pinada
+   `22602b2c-be12-40d1-81d8-0240f6a0cbf1` e a REMOVED
+   `44957d2e-059e-45bc-9d80-6d456126bc9c`. `stable`, `evaluate`,
+   `targetFromReceipt` e o contexto HTTP agora aceitam somente uma RUNNING e
+   quaisquer outras REMOVED, com UUIDs válidos e únicos. Não descartam linhas.
+   O baseline antigo fixa seu UUID conhecido; predecessores e HTTP fixam o UUID
+   do candidato recebido. `evaluate` exige concordância entre latest e active.
+   Transições/estados desconhecidos, duplicatas ou duas RUNNING nunca qualificam.
+   O deployment antigo precisa continuar REMOVED/stopped e todas as suas
+   instâncias REMOVED; esse contrato de retirada não mudou.
+2. O ambiente artificial reduzido do CLI quebrou SSH Windows. Ambos os natives
+   agora recebem uma cópia de `process.env`, removendo exatamente `RAILWAY_TOKEN`,
+   `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_TOKEN` e `RAILWAY_API`, e impondo `CI=true`
+   e `NO_COLOR=1`. Não há retry nem fallback automático. Nenhum ambiente/valor é
+   impresso, serializado ou passado em argv. A probe fechada de identidade mostrou
+   limited-env exit255/327ms e normal-minus4 exit0/3127ms; não identifica qual
+   variável Windows isolada causou a diferença.
+
+Root executou separadamente METADATA r3: `METADATA_READ_VERIFIED`, uma chamada SSH,
+PostgreSQL 180006 e tamanho 34608831 bytes, read-only/repeatable-read. O recibo é
+`.cache/python-reference-games/production-postgres-metadata-root-r3/receipt.json`.
+Ele comprova esse leitor/ambiente, **não** reload, HTTP full, retirada ou restore.
+R1 e R2 negativos de METADATA permanecem intactos. Os testes R2 usam somente sua
+projeção pública de identidade/instâncias; nenhuma chamada remota foi repetida.
+
+Mutação, precedência, planos v1, identidades/digests, journals, prazos, intents
+fixos, ACK desconhecido e necessidade da prova HTTP permanecem iguais. Não existe
+plano executável novo: o template R1 continua apenas ilustrativo. Os intents
+não ganham sufixo r2 e não são removidos; mudar a versão do operador não permite
+repetir uma tentativa anterior.
+
+Os pins não têm dependência circular de bytes: reload contém o SHA literal de
+HTTP r2; HTTP lê o SHA do arquivo reload r2 e o compara ao APPLY. Nenhum deles
+importa o outro. O programa remoto `remoteHttp` é idêntico em bytes ao R1 e seu
+SHA Node24 permanece
+`301fa4faded7316e778d7a41db558f295174ff3be199fe991f976471e376925b`.
+A versão do envelope continua v1; o pin da fonte distingue R2, sem aceitar um
+recibo anterior como execução da nova fonte.
+
+## Resultado e limite
+
+Ordem fechada: **Kids → Adult → Admin → Hub → Members**. Cada comando aplica-se a
+um alvo, não dispara os demais. Um serviço só libera o seguinte quando tem recibo
+`OLD_IMAGE_FULL_MAINTENANCE_VERIFIED`; imagem saudável sozinha não basta.
+
+- `production-maintenance-reload-r2.mjs`: CHECK de contexto/configuração; um único
+  `deploymentRedeploy(id:old,usePreviousImageTag:true)`; observação GET do resultado;
+  VERIFY posterior com prova HTTP; DIAGNOSE seguro de ACK desconhecido.
+- `production-maintenance-http-r2.mjs`: prova separada da instância nova via SSH e
+  dois GETs locais fechados. Não importa app, não consulta SQL, não altera configuração.
+- `*.test.ts`: testes de gates, ordem, ACK perdido, exclusividade real em diretório
+  temporário, origem/snapshot, configuração, HTTP e execução/import inertes Node24.
+- `production-maintenance-reload-plan-template-r1.json`: inventário do formato,
+  propositalmente recusado como plano executável. Não contém recibos ou IDs novos fictícios.
+
+`usePreviousImageTag` **não prova skipPreDeploy nem ausência de rebuild**. Members
+e Hub podem chamar seus migrators antigos, incluindo bootstrap SQL idempotente.
+O gate compara o journal instalado ao DB, para não haver migration nova pendente
+naquela imagem. Flags `skipPreDeployProven`, `sqlNotExecutedByProviderProven` e
+`noBuildProven` continuam false. O operador não executa SQL diretamente.
+
+Não autoriza 0126/0128, nem reabre aplicações. Não desfaz IA aceita, callbacks,
+uploads ou objetos R2 em voo. Cinco processos cercados não provam restauração de
+backup nem limpeza desses efeitos externos. Gate de dados/backup continua separado.
+
+## Dependências imutáveis, import inerte
+
+O reload importa constantes/validadores puros de `production-maintenance-store-r1.mjs`
+SHA `86ed82e9cca0b47c1bdeec4f14ef5a8ac18e7c72055ecf512baab7bd60a28de4`
+e somente resolução estrita de referência/mapa de serviços de
+`staging-members-image-reload-r1.mjs`
+SHA `ee81fdf4b005ff3ad6937f403c9ff7f8eb302b1315fbdc2ca8ca814a3eccff85`.
+Não chama main, mutação, validadores de ambiente ou configuração staging deste último.
+Todos os imports/pins são conferidos antes de qualquer CLI. Seus imports são inertes.
+
+HTTP também importa somente constantes de fase1 com o mesmo pin. Seu programa
+remoto tem SHA calculado pelo **Node24.22**, não pelo Function.toString do Bun,
+que altera a representação. Um teste Node real comprova esse vínculo sem rede.
+
+## Plano de cada passo, nunca inventar recibos
+
+Root deve criar arquivo novo, SHA externo, com campos exatos:
+
+```text
+kind: production-maintenance-reload-plan
+version: 1
+projectId: 415d5a1c-5f75-432c-8445-b395d0977ce3
+environmentId: 19c212a5-85c0-493c-9630-a7a0569e8412
+phase: reload-old-images-full
+createdAt / expiresAt: timestamps reais, janela máxima 30 minutos
+maintenancePlan: {path,sha256} do plano cinco serviços aprovado (SHA6f6ac9...)
+evidence: {launchers:{path,sha256}, journals:{path,sha256}, next:{path,sha256}}
+journalReadback: null nos Next; {path,sha256} fresco para Hub/Members
+phase1: {kids:{path,sha256},adult:{...},admin:{...},hub:{...},members:{...}}
+previous: somente predecessores concluídos: {} para Kids; {kids:{...}} para Adult;
+          depois cumulativamente os recibos VERIFY reais, na ordem fechada
+```
+
+`phase1` exige cinco recibos reais de APPLY com ACK+readback/full e estado
+CONFIGURATION_STORED_NO_RELOAD. ACK desconhecido não serve, nem check/readback solto.
+Receipts antigos de store podem ser históricos: o operador relê full nos cinco
+mapas atuais antes de reload. Não afirma igualdade secreta entre processos/checks.
+
+`evidence` é o pacote histórico que comprova bytes de imagens/launchers e comandos
+antigos, validado em sua janela original e ligado aos mesmos digests/snapshots/commits
+exatos que são revalidados agora. Não avançar seus timestamps para torná-lo fresco.
+
+`journalReadback` é separado: prova read-only real de DB/artefato, com identidade
+exata e idade máxima30min, novamente conferida imediatamente antes do intent para
+Hub/Members. O formato admitido é o leitor já revisado
+`production-old-image-migration-readonly` v1, estado
+`BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE`. Pode colher ambos antes de Hub e reutilizar
+para Members enquanto fresco; se expirar após Hub recarregado, **parar**. O leitor
+original fixa o Hub antigo e pode exigir revisão Root para nova observação; esta
+fase não remove sua guarda nem executa SSH/SQL automaticamente para renovar prova.
+
+Faltam atualmente os cinco recibos fase1 executados e os novos deployments/HTTP.
+O template entregue não pode ser promovido trocando só a data. Root precisa de
+fatos reais e revisão dos pins/limites antes de qualquer chamada.
+
+## Sequência exata por serviço
+
+Executável Node pinado:
+`C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe`.
+Diretório: worktree `sistema-zero-python-review-fixes`. CLI usada internamente é
+`%APPDATA%/npm/node_modules/@railway/cli/bin/railway.exe`, exige5.62.1.
+
+Os termos entre `<...>` abaixo são parâmetros obrigatórios de Root derivados de
+arquivos reais, não valores aprovados por esta preparação. Todos os outputs são novos.
+
+```text
+<NODE24> .cache/python-reference-games/production-maintenance-reload-r2.mjs
+  check kids production-maintenance-reload-check-kids-root-r2 <PLAN_PATH> <PLAN_SHA>
+
+<NODE24> .cache/python-reference-games/production-maintenance-reload-r2.mjs
+  apply kids production-maintenance-reload-apply-kids-root-r2 <CHECK_RECEIPT_PATH> <CHECK_SHA>
+```
+
+CHECK vale10min. APPLY relê todos os cinco contextos/mapas, preserva cada valor
+declarado e resolvido em RAM, verifica comandos e fonte, depois reserva e fsync o
+intent **fixo** `production-maintenance-reload-kids.intent.json`. Outro run/check/hash
+não permite repetir. Nenhum código remove intent, cancela, reabre ou faz rollback.
+
+ACK conhecido permite só polling: candidateID novo, mesmo commit/digest, snapshot
+novo completo igual às variáveis atuais (referências inteiras normalizadas por
+inventário completo), full, uniqueSUCCESS/zero pending; deployment antigo REMOVED,
+stopped e todas instâncias antigas REMOVED. Outra implantação/source/command para.
+O único resultado intermediário positivo é `IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED`.
+
+```text
+<NODE24> .cache/python-reference-games/production-maintenance-http-r2.mjs
+  production-maintenance-http-kids-root-r2 <APPLY_RECEIPT_PATH> <APPLY_SHA>
+
+<NODE24> .cache/python-reference-games/production-maintenance-reload-r2.mjs
+  verify kids production-maintenance-reload-verify-kids-root-r2
+  <APPLY_RECEIPT_PATH> <APPLY_SHA> <HTTP_RECEIPT_PATH> <HTTP_SHA>
+```
+
+HTTP usa apenas a identidade retornada, verifica contexto fresco antes/depois,
+seleciona explicitamente a instância nova, identidade existente `id_ed25519`, e
+programa Bun fechado. Sem `--session`, sem instalação de dependência, sem SQL ou
+descoberta de credenciais. PORT é o setting do launcher, inteiro1..65535; destino
+fixo `127.0.0.1`, nunca URL/porta enviados pelo caller. Projeto/env/service/deployment/
+commit no processo têm de coincidir antes do primeiro GET.
+
+Dois GETs sem redirect: `/readyz` deve ser200 com JSON `{status:'maintenance'}`;
+`/` deve ser503 com `error.code=RELEASE_MAINTENANCE`. Ambos exigem header
+`x-release-maintenance:full`, `cache-control:no-store` e JSON, limitado4096bytes,
+UTF8 fatal. Recibo só booleans/IDs públicos/hash; body/message/headers/stderr não
+são persistidos. É prova do processo local; **publicEdgeQualified=false**. O
+inventário Members domains=[] justifica não inventar endpoint externo.
+
+VERIFY vale apenas com prova HTTP até5min, ligada ao SHA do APPLY, candidato e
+scripts corretos. Relê configuração/contexto e só então emite
+`OLD_IMAGE_FULL_MAINTENANCE_VERIFIED`. Para Adult, novo plano inclui esse recibo
+Kids; segue o mesmo ciclo até Members. Não há loop de deploy dos cinco.
+
+## ACK incerto e diagnóstico seguro
+
+APPLY que perdeu ACK preserva `remoteOutcomeUnknown=true`, intent e estado
+`ACK_UNKNOWN_NO_REPLAY`. Faz uma leitura de diagnóstico, projeta candidatos
+observados desde o instante da tentativa (margem5s), sem adotar qualquer um como ACK.
+Se surgir depois, Root pode repetir **somente a leitura** em output novo:
+
+```text
+<NODE24> .cache/python-reference-games/production-maintenance-reload-r2.mjs
+  diagnose kids production-maintenance-reload-diagnose-kids-root-r2
+  <UNKNOWN_APPLY_RECEIPT_PATH> <UNKNOWN_APPLY_SHA>
+```
+
+DIAGNOSE mantém resultado não qualificado/exit1 mesmo com candidato plausível. Não
+usa intent novo, não consulta segredos, não envia mutation. Descoberta por contexto/
+tempo não prova causalidade exclusiva; Root decide reconciliação explicitamente.
+Jamais usar novo CHECK/APPLY para “tentar novamente”.
+
+Timeout de ACK conhecido também não cancela o deployment. O operador encerra
+observação em `ACKNOWLEDGED_POLL_TIMEOUT_NO_REPLAY`; Root faz leitura independente,
+não outra mutation. Não apagar intent para reaproveitar a CLI.
+
+## Limites e proteção dos dados
+
+- Cada CLI:20s/8MiB; operação reload20min, polling15min/intervalo3s. São tetos, não
+  SLA. Timeout não dispara reabertura. HTTP separado120s, SSH35s, cada GET10s.
+- Referências: arquivos normais, sem symlink final, sob cache e hash SHA externo,
+  limite2MiB. Outputs exclusivos e checkpoints fsync. Tokens da CLI permanecem no
+  mecanismo existente; nenhuma chave/DSN/valor/hashes secretos no argv ou receipt.
+- Mapas são comparados integralmente em RAM dentro da execução; somente
+  RAILWAY_DEPLOYMENT_ID/RAILWAY_REPLICA_ID resolvidos do alvo podem mudar após reload.
+  Não há CAS do provider nem prova byte-a-byte entre CHECK e APPLY. Exigir freeze
+  externo de mudanças de configuração/CD e refletir essa limitação no aceite.
+- Provas de journals expiram; fonte/imagem divergente, mais de uma réplica RUNNING, estado de transição, pending,
+  configuração mutada, preDeploy novo ou HTTP genérico recusam avanço.
+- Os erros são códigos fechados. Limites não são enfraquecidos para obter PASS.
+- Nenhum acesso a backup/dados/R2, nenhum deploy de código novo e nenhuma liberação
+  de migração destrutiva fazem parte destes operadores.
+
+## Validação local
+
+```text
+bun test --no-env-file ./.cache/python-reference-games/production-maintenance-reload-r2.test.ts ./.cache/python-reference-games/production-maintenance-http-r2.test.ts
+```
+
+Fixtures de provider são explicitamente sintéticas. Há uma leitura local do recibo
+real de journal para conferir shape, sem mudar timestamp/arquivo ou alegar frescura.
+O teste Node24 desabilita execFile/fetch antes de importar e valida pin do programa
+remoto e recusas CLI. Nenhum teste executa Railway/SSH/HTTP real.
+
+A regressão causal começou com **21 pass / 7 fail / 110 asserts / exit1**.
+Resultado final: **28 pass / 0 fail / 149 asserts / exit0**, incluindo o filho
+Node24 com execFile/fetch bloqueados. A tentativa intermediária preservada
+27/1 detectou apenas conversão local de finais de linha que mudava o pin do
+programa remoto; foram restaurados os bytes LF originais, sem trocar o pin.
+Logs: `production-maintenance-phase2-r2-red.log`,
+`production-maintenance-phase2-r2-green-1.log` e
+`production-maintenance-phase2-r2-green-2.log`.
+
+Os hashes finais e a conferência de integridade dos arquivos R1 constam em
+`production-maintenance-phase2-freeze-r2.json`. Esta é preparação para revisão
+Root, sem autorização adicional nem qualificação operacional de manutenção.

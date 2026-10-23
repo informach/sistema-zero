@@ -23,13 +23,15 @@ const impressao = (letra: string) => `v1:${letra.repeat(64)}`
 
 function setup(
   opts: {
+    audience?: 'adult' | 'kids'
     personalizar?: LessonSection['completion']
     matricula?: { subscriptionId?: string; expiresAt?: Date }
   } = {},
 ) {
   let agora = new Date('2026-10-10T12:00:00.000Z')
   const env = buildApp({ now: agora })
-  const course = seedSampleCourse(env.courses)
+  const audience = opts.audience ?? 'adult'
+  const course = seedSampleCourse(env.courses, 'curso-demo', 'published', audience)
   const lessonId = course.lessonIds[0] as string
   grantLifetime(env.entitlements, { userId: USER, courseRef: course.slug, ...opts.matricula })
   env.courses.blocks = env.courses.blocks.filter((b) => b.lessonId !== lessonId)
@@ -97,11 +99,14 @@ function setup(
   env.learningRepository.structures.set(lessonId, { revision: randomUUID(), sections })
   const request = (path: string, method = 'GET', body?: unknown, user = USER) =>
     env.app.handle(
-      new Request(`http://localhost/members${path}`, {
-        method,
-        headers: { 'content-type': 'application/json', 'x-auth-user-id': user },
-        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-      }),
+      new Request(
+        `http://localhost/members${path}${path.startsWith('/creations/') && audience === 'adult' && !path.includes('audience=') ? `${path.includes('?') ? '&' : '?'}audience=adult` : ''}`,
+        {
+          method,
+          headers: { 'content-type': 'application/json', 'x-auth-user-id': user },
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        },
+      ),
     )
   const avancar = (minutos: number) => {
     agora = new Date(agora.getTime() + minutos * 60_000)
@@ -132,7 +137,7 @@ function setup(
     return request(
       `/creations/lesson-studio/${projeto}/commit`,
       'POST',
-      { revision, verifiedPartHashes: [] },
+      { revision, verifiedPartHashes: [], verifiedFormatVersion: STUDIO_PROJECT_FORMAT_VERSION },
       user,
     )
   }
@@ -178,14 +183,36 @@ describe('o rascunho da fase guardado na conta', () => {
       expect(response.status).toBe(400)
     }
   })
-  test('reserva pela FASE, sem a posse do Estúdio, e a impressão sobe no commit', async () => {
-    const ctx = setup()
+  test.each([
+    'kids',
+    'adult',
+  ] as const)('reserva pela FASE de %s, sem licença livre, e conserva a impressão', async (audience) => {
+    const ctx = setup({ audience })
     const commit = await ctx.guardarRascunho(impressao('a'))
     expect(commit.status).toBe(200)
     const baixar = await ctx.request(`/creations/lesson-studio/${ctx.projeto}/download`)
     expect(baixar.status).toBe(200)
     const ticket = (await baixar.json()) as { summary: { contentFingerprint?: string } }
     expect(ticket.summary.contentFingerprint).toBe(impressao('a'))
+  })
+  test.each([
+    'kids',
+    'adult',
+  ] as const)('rascunho de %s recusa o contexto da outra plataforma', async (audience) => {
+    const ctx = setup({ audience })
+    const other = audience === 'adult' ? 'kids' : 'adult'
+    const response = await ctx.request(
+      `/creations/lesson-studio/${ctx.projeto}/upload?audience=${other}`,
+      'POST',
+      {
+        name: 'Projeto',
+        kind: 'classic',
+        bytes: 100,
+        formatVersion: STUDIO_PROJECT_FORMAT_VERSION,
+        itemUpdatedAt: '2026-10-10T12:00:00Z',
+      },
+    )
+    expect(response.status).toBe(404)
   })
 
   test('quem não tem o curso, ou o tipo errado de rascunho, não guarda', async () => {
@@ -245,6 +272,26 @@ describe('o rascunho da fase guardado na conta', () => {
 })
 
 describe('o critério "envio em dia"', () => {
+  test('aceita v2 no envio e no commit, sem trancar uma entrega v1 pela migração', async () => {
+    const ctx = setup()
+    const first = `v2:${'a'.repeat(64)}`
+    const next = `v2:${'b'.repeat(64)}`
+    expect((await ctx.enviar(impressao('a'))).status).toBe(200)
+    ctx.avancar(1)
+    expect((await ctx.guardarRascunho(first)).status).toBe(200)
+    expect((await ctx.parte('personalizar'))?.pendingItems).toEqual([])
+    expect((await ctx.enviar(first)).status).toBe(200)
+    ctx.avancar(1)
+    expect((await ctx.guardarRascunho(next)).status).toBe(200)
+    expect((await ctx.parte('personalizar'))?.pendingItems).toEqual([
+      { kind: 'submission-outdated', text: 'Você mudou o projeto depois de enviar. Envie de novo' },
+    ])
+    const ticket = (await (
+      await ctx.request(`/creations/lesson-studio/${ctx.projeto}/download`)
+    ).json()) as { summary: { contentFingerprint: string } }
+    expect(ticket.summary.contentFingerprint).toBe(next)
+  })
+
   test('mudou depois de enviar: a parte pede "Envie de novo" e avançar é recusado', async () => {
     const ctx = setup()
     expect((await ctx.enviar(impressao('a'))).status).toBe(200)

@@ -610,6 +610,6 @@ const trust = ['Garantia de 7 dias', 'Pagamento via Pix ou cartão de crédito',
     </section>
   </main>
 
-  <Footer audience="pro" />
+  <Footer audience="pro" termosHref={`${f.basePath}/termos`} />
   <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} />
 </BaseLayout>

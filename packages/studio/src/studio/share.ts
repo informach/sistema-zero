@@ -1,5 +1,6 @@
+import type { StudioPublication } from '@sistemazero/core/studio/python-publication'
 import { createContext, useContext } from 'react'
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 
 /**
  * COMPARTILHAR — publicar o projeto no "Mural dos Criadores".
@@ -15,13 +16,14 @@ import type { Project } from '#core'
  * hoje) e ao estúdio COMPLETO independente (`<StudioEditor>`, produto futuro) — os
  * dois recebem a prop `share`.
  *
- * Segue o padrão do {@link useStudioActivity}: contexto INTERNO, latchado uma vez
+ * Segue o padrão dos adapters de host: contexto INTERNO, latchado uma vez
  * por instância (valor estável), default `null` (sem adapter → sem botão), e NÃO
  * exportado pelo index — só os TIPOS do adapter são públicos.
  */
 
 /** Links devolvidos pela publicação (o que a tela de sucesso mostra). */
 export interface StudioShareResult {
+  publicationId?: string
   /** Página do Mural onde o projeto aparece (fechado, só comunidade). Opcional. */
   muralUrl?: string
   /** Página PÚBLICA de jogar (sem login), só o jogo + título. Opcional. */
@@ -37,6 +39,8 @@ export interface StudioShareGenerateInput {
 
 /** Entrada de {@link StudioShareAdapter.publish}. */
 export interface StudioSharePublishInput {
+  /** Stable for an exact publish request, including a retry after a lost response. */
+  requestId?: string
   project: Project
   /**
    * Imagem da capa (data URL) — print automático do jogo OU upload da criança.
@@ -64,6 +68,25 @@ export interface StudioSharePublishInput {
  * precisa saber) como elas funcionam por dentro.
  */
 export interface StudioShareAdapter {
+  /** The host captures the verified compiled game as cover when no image is supplied. */
+  proVerifiedCover?: boolean
+  publication?: {
+    get(playId: string, signal?: AbortSignal): Promise<StudioPublication | null>
+    update(
+      input: { playId: string; requestId: string; expectedVersion: number; project: Project },
+      signal?: AbortSignal,
+    ): Promise<StudioPublication>
+    activate(
+      input: {
+        playId: string
+        requestId: string
+        expectedVersion: number
+        revision: string
+        disabled: boolean
+      },
+      signal?: AbortSignal,
+    ): Promise<StudioPublication>
+  }
   /**
    * DESAFIO do mês (game jam): presente → o ShareDialog mostra o checkbox
    * "🏆 Participar do Desafio: <title>"; marcado, o publish leva `challengeKey`.
@@ -92,7 +115,7 @@ export interface StudioShareAdapter {
   presetCoverUrl?: string
   /**
    * Gera um rascunho CURTO (≤1 parágrafo, PT) via SERVIDOR (chave no servidor).
-   * NUNCA usa a BYOK do painel de IA do aluno. Pode rejeitar/voltar vazio — o
+   * A política da família e a conexão opcional do responsável são resolvidas no servidor. Pode rejeitar/voltar vazio — o
    * dialog cai no modo "escreva você mesmo" sem travar a publicação.
    *
    * **OPCIONAL**: ausente → o dialog NÃO mostra o botão "Gerar/Regerar" nem gera
@@ -109,9 +132,15 @@ export interface StudioShareAdapter {
    * overlay do Zappy no kids, com o "Jogar"). Ausente (ex.: Estúdio Completo) → tela padrão.
    */
   onPublished?(result: StudioShareResult): void
+  /**
+   * Com `onPublished`, mostra a tela de sucesso do próprio dialog em vez de fechar (o host é
+   * avisado, mas não tem comemoração própria). É o caso da aula da comunidade adulta: sem isso,
+   * Publicar fechava a janela em silêncio e a pessoa nunca via o link do jogo.
+   */
+  showPublishedScreen?: boolean
 }
 
-// Contexto INTERNO (como o StudioActivityContext): `null` = sem adapter → o botão
+// Contexto INTERNO: `null` = sem adapter → o botão
 // "Compartilhar" não aparece. Provido SÓ pelo StudioCore quando o host passa `share`.
 const StudioShareContext = createContext<StudioShareAdapter | null>(null)
 

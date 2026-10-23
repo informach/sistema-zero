@@ -1,0 +1,14 @@
+[
+  {
+    "source": "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-09 at 08.36.33 (2).jpeg",
+    "file": "01-andre-original.jpeg",
+    "purpose": "Retrato real fornecido pela Helena; recorte do rosto do André, sem recriar a fisionomia.",
+    "sha256": "efb12bbf77e7233d24bd42661075c63690de0e1984d718c8066df23a87642813"
+  },
+  {
+    "source": "packages/funnel/public/img/desafio-primeiro-jogo/depo-andre.webp",
+    "file": "02-andre-oferta.webp",
+    "purpose": "Retrato real utilizado junto do depoimento na oferta. Não é frame de vídeo; registro de gravação não disponível localmente.",
+    "sha256": "d373b8a951713131a42a54fcc5fb7ddde74c207d1a6f5328e6a5cd30c1e56f25"
+  }
+]

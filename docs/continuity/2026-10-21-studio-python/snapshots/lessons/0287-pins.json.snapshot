@@ -1,0 +1,239 @@
+{
+  "state": "REVIEW-INPUTS-NOT-A-RUN-SEAL",
+  "rootSourceHorizon": "5503f6a245d2f2434fc91289fba05bbf6f229f29",
+  "ownHead": "b763fb6e1773a122188fe37fa044b142c9442f62",
+  "pins": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\admin\\tests\\e2e\\python-lesson-fixture.ts",
+      "bytes": 12260,
+      "sha256": "36d76f22013ace7716c633dd5b74f0cf20ef756d50eb2bab76d858d8ac1bab07",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\python-lesson-admin.ts",
+      "bytes": 21564,
+      "sha256": "2c89fc27c705f14ab7dbbbff0f1121be7fe827fcbf8fd69e3fe169b87b94b493",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\python-lesson-kids.ts",
+      "bytes": 18286,
+      "sha256": "cab9417a9cad952665228a3fcc717e7a737dd73403b7893ab27b795368908b6c",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-native-browser-owner.ps1",
+      "bytes": 13289,
+      "sha256": "97af6e4314844f37e9adde4fb7f4f2b78c442d4ed4e62d6225ede7589d5fd9b4",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-native-browser-worker.mjs",
+      "bytes": 4822,
+      "sha256": "82701a8116a1159429d14e28857598ea27732dd9213106e2a650e46beb2435f2",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-windows-job.cs",
+      "bytes": 12125,
+      "sha256": "160736a821f204e3202f8a2315052633d797a1bfd6948b31255e4e166ba64c2d",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\user\\user.aggregate.ts",
+      "bytes": 9196,
+      "sha256": "e49e209a6af75b9fa3d7ba7a87c4bec962e8d0bb85e3877e9880a7a9bbe4742c",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\infrastructure\\persistence\\drizzle\\user.repository.ts",
+      "bytes": 9007,
+      "sha256": "414a3abe515584995130ab35a507c537f8c311665b8172ed6cbb6f53fba398c0",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\infrastructure\\security\\bun-password-hasher.ts",
+      "bytes": 798,
+      "sha256": "9e1f8534db7695d6632cbc2570c65cc14ef4becb650bfab4d9d1311b788e7cb0",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\admin\\src\\server\\local-admin-session.ts",
+      "bytes": 2477,
+      "sha256": "0d464e64c8c15d8224bae6d8c7bf0a84247b10546039b347e43dbbea0e0cb376",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\admin\\src\\app\\api\\members\\entitlements\\route.ts",
+      "bytes": 391,
+      "sha256": "5282194dde8d465bc0004ef6a9744e10b35a803a186b038553041ef9670df7c1",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\admin\\src\\components\\admin\\grant-access-dialog.tsx",
+      "bytes": 10459,
+      "sha256": "2b303fced541a751a65965ed961b31ee7ef1ff3a16fa791f13e0dc94176c3a44",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\members\\src\\interfaces\\http\\routes\\admin.routes.ts",
+      "bytes": 24350,
+      "sha256": "927ad620b283670adcd9475ad0fe30dbc2d6ff48a728938bee40a1c58dafa732",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\admin\\src\\app\\api\\studio\\pro-runtime\\build\\route.ts",
+      "bytes": 3891,
+      "sha256": "a30da7eb14737e63d2097a62c9d3d9803c6c743aba81e47d55eeba793eba34a0",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\routes\\lesson-pro-runtime.ts",
+      "bytes": 7300,
+      "sha256": "ebfd018626c1b7c026d6ed9ddffcc23fa58fd7500cb812fedf9029e0367574a4",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community\\src\\app\\api\\studio\\pro-runtime\\build\\route.ts",
+      "bytes": 360,
+      "sha256": "aa7d5032110af1ce97038b969c0b37234f27df6b23432d450212bb93aa923c1d",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\server\\studio-pro-runtime.ts",
+      "bytes": 14224,
+      "sha256": "3db141e6ca8fdd915d42b520595260cd384776e6f7c1c1c3610b98dbc2c9975d",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\components\\studio\\studio-block.tsx",
+      "bytes": 59012,
+      "sha256": "8f55ddeaa1e9a753d946e9a1a48671ddca44063d6a7174e35ee9beac4b265a94",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\components\\studio\\lesson-studio-draft.ts",
+      "bytes": 12673,
+      "sha256": "b16d9cb9aa3e095142cdd9f0eb6b15038caf93baa4be3a925020f7ad3ae490ef",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\lib\\lesson-draft-transport.ts",
+      "bytes": 8851,
+      "sha256": "5effa83d0a2908c1fad7e0c13920b58ccf30c5940b2f70e65f14ac5ab6adfb84",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\lib\\creations-cloud.ts",
+      "bytes": 53222,
+      "sha256": "65e035f9e1cbaf59230f9ad12f90a7fc62aa54604d2dd2ed217aff5b6f158eb0",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\studio\\StudioLesson.tsx",
+      "bytes": 1406,
+      "sha256": "a9c8b4630fb5e07a7fb0708f0d7b5eb88366f56d9bb9583af52635f47c372891",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\modes\\pro\\RemoteProPreview.tsx",
+      "bytes": 10443,
+      "sha256": "10a7e9a887ca46243d7920c653f7060afb620749434da2c8b2bbdcb8ed809bb3",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\state\\proToolchainUpdate.ts",
+      "bytes": 3494,
+      "sha256": "0dc9a6c7ca4aafe94a33041b3c936ca9a09c8b11687a672e1c0ca159c3e0b004",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\sourceExport.ts",
+      "bytes": 6028,
+      "sha256": "6535c1e0e6106daabac3237d6592dd750845685582ea8c9d0a6c72900fbc65bc",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\fileMap.ts",
+      "bytes": 19550,
+      "sha256": "8445366dd4e661803e1611c65311e8d947581ffac681e4cf2ec0f84846b488aa",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\zip.ts",
+      "bytes": 2719,
+      "sha256": "1509159cdb70985a1ead9283d7ec5a068080dcb1874ae6abaff83e074703a98f",
+      "kind": "source",
+      "matchesSelectedGitHorizon": true
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\legacy.szproject.json",
+      "bytes": 2372,
+      "sha256": "a2ebacf4f985cede068ccf64580e1a0614eba124fd384af13d47bb8ab73d30e8",
+      "kind": "historical-cache-reference"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\fixture-check.json",
+      "bytes": 998,
+      "sha256": "2e4e6a65c99197dee6f1b5b20b3fe0728ee79adead1fe50caa6ee2da4bc39cfc",
+      "kind": "historical-cache-reference"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\remote.mjs",
+      "bytes": 3961,
+      "sha256": "72a6e6fa83f5d526a508fd0158f3a622ea43b359f8175b7edfdb81129e930361",
+      "kind": "historical-cache-reference"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\contract.mjs",
+      "bytes": 4017,
+      "sha256": "84985b74b44ca7f3fb2a141035e2625a0c233c50baa0af037241bd5a9555d8fd",
+      "kind": "historical-cache-reference"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\prepare-fixture.ts",
+      "bytes": 1986,
+      "sha256": "6da53a49a35e1f2062ef40625140e2ee091be033e9d8bfcc07e3edcd83ae4fb3",
+      "kind": "historical-cache-reference"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-caller-r4\\run.mjs",
+      "bytes": 8439,
+      "sha256": "c7f3b002a847009c7155c26cacb53d91d14a5c8a9e0981e2f100bab488dfee1f",
+      "kind": "historical-cache-reference"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-caller-r4\\functional-contract.mjs",
+      "bytes": 716,
+      "sha256": "d8cbe4d866ead53ec19765388a1f8d3ac66282e6f1f42ee069f691b7e0b8bec9",
+      "kind": "historical-cache-reference"
+    }
+  ],
+  "notIncluded": "No credentials, env dumps, cookies, binding, provider payload, execution directory or active owner state. Runtime9e33/image26b/build52 are Root-reported only and require exact future provenance."
+}

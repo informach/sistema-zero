@@ -20,7 +20,7 @@ Aplicar o padrão já autorizado para Nave Contra Asteroides e Corre, Dino! às 
 - [x] Preparar jogo completo de demonstração com artes ilustrativas e preservar os marcos de código originais.
 - [x] Corrigir a regra de aplicações externas e testar ausência, posição e ferramenta da entrega.
 - [x] Verificar todas as experiências no motor real, quizzes, continuidade, regeneração e importação.
-- [x] Atualizar o mapa e produzir/revisar visualmente o caderno em `output/pdf/meu-jeito-caderno.pdf`.
+- [x] Atualizar o mapa e produzir/revisar visualmente o caderno em `docs/aulas-interativas/kids/o-jogo-do-meu-jeito/mapa-da-aventura.pdf`.
 - [x] Atualizar a cobertura das diretrizes e os controles de perguntas autorais para aceitar experiências sem perguntas.
 - [x] Executar validações finais; registrar evidência e limites na revisão editorial.
 
@@ -28,4 +28,4 @@ Aplicar o padrão já autorizado para Nave Contra Asteroides e Corre, Dino! às 
 
 Três arquivos de cada aula sincronizados; nomes e dimensões compatíveis com as artes; nenhuma regra do jogo original alterada; entrega de galeria preservada; todas as experiências concluíveis pelas instruções; PDF sem cortes; relatório distingue validação técnica de gravação, importação e ensaio com alunos ainda pendentes.
 
-Evidência e limites: `docs/aulas-interativas/qa/revisao-meu-jeito-2026-10-05.md`. A autoria de Meu Jeito passou na tipagem dedicada; a checagem ampla do core registra dois erros em testes do Farol, fora desta revisão.
+Evidência e limites: `docs/aulas-interativas-tecnico/qa/revisao-meu-jeito-2026-10-05.md`. A autoria de Meu Jeito passou na tipagem dedicada; a checagem ampla do core registra dois erros em testes do Farol, fora desta revisão.

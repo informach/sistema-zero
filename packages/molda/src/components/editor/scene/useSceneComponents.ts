@@ -1,10 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { COPY } from '../../../core/copy'
 import { newId } from '../../../core/id'
 import type { MeshSelectionAction } from '../../../model/topologySelection'
 import { editSceneMesh } from '../../../scene/commands'
+import { sceneBaseColor, scenePalette } from '../../../scene/composite'
 import type { MoldaSceneDocument, SceneMeshGeometry } from '../../../scene/document'
-import type { indexSceneDocument } from '../../../scene/documentIndex'
+import { indexSceneDocument } from '../../../scene/documentIndex'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import { bevelMeshEdges } from '../../../scene/meshBevel'
 import {
@@ -15,6 +24,7 @@ import {
   type SceneComponentSession,
   selectMeshComponents,
 } from '../../../scene/meshComponents'
+import { meshCoplanarFaces } from '../../../scene/meshCoplanarSelection'
 import { createMeshLooseEdge, cutMeshFaceBetweenVertices } from '../../../scene/meshCut'
 import {
   MESH_ISSUE_MODES,
@@ -27,14 +37,18 @@ import { dissolveMeshEdges } from '../../../scene/meshMerge'
 import { cutMeshByPlane, type MeshCutPlane } from '../../../scene/meshPlaneCut'
 import { prepareMeshRemoval } from '../../../scene/meshRemoval'
 import { cutMeshEdgeRing } from '../../../scene/meshRingCut'
+import { meshSymmetrySource, symmetrySourceIds } from '../../../scene/meshSymmetry'
 import { mapMeshUv } from '../../../scene/meshUv'
 import { editMeshUv, type MeshUvOperation } from '../../../scene/meshUvOperations'
 import { prepareMeshWeld } from '../../../scene/meshWeld'
+import { sceneGeometryMesh } from '../../../scene/parametricGeometry'
 import { createScenePath, type ScenePathSettings } from '../../../scene/pathCommands'
 import type { SceneSkinInfluence } from '../../../scene/skin'
 import { setSceneSkinWeights } from '../../../scene/skinCommands'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
+import { useMoldaToolGate } from '../../toolAccess'
+import type { SceneUvTexture } from './SceneUvCanvas'
 import { useSceneComponentTransform } from './useSceneComponentTransform'
 import {
   type SceneFacePreviewTool,
@@ -42,6 +56,7 @@ import {
   useSceneFacePreview,
 } from './useSceneFacePreview'
 import { useSceneMeshCheck } from './useSceneMeshCheck'
+import { useSceneMeshOperation } from './useSceneMeshOperation'
 
 /** Components remain session state. Every callback checks the current document before accepting IDs. */
 export function useSceneComponents({
@@ -64,26 +79,44 @@ export function useSceneComponents({
     selection?: 'created' | 'clear',
   ): MoldaSceneDocument | null
 }) {
-  const [session, setSession] = useState<SceneComponentSession | null>(null)
+  const mirrorGate = useMoldaToolGate('model.mesh-pro')
+  const uvGate = useMoldaToolGate('paint.uv')
+  const [session, publishSession] = useState<SceneComponentSession | null>(null)
+  const [panelSession, setPanelSession] = useState(0)
+  const [loopSelection, setLoopSelection] = useState(false)
+  const [coplanarSelection, setCoplanarSelection] = useState(false)
+  const sessionLive = useRef(session)
+  sessionLive.current = session
+  // Range/region picking can dispatch several selections before React renders again.
+  const setSession = useCallback((next: SetStateAction<SceneComponentSession | null>) => {
+    const value = typeof next === 'function' ? next(sessionLive.current) : next
+    sessionLive.current = value
+    publishSession(value)
+  }, [])
   // Equal document IDs/revisions in a replacement editor still belong to a new UI session.
-  const weightSession = useMemo(() => ({ editor, key: newId() }), [editor])
+  const editorSession = useMemo(() => ({ editor, key: newId() }), [editor])
   const revision = editor.getState().contentRevision
   const [softEnabled, setSoftEnabled] = useState(false)
   const [softReach, setSoftReach] = useState('1')
-  const setFaceSession = useCallback((next: SceneFaceSession | null) => {
-    setSession(
-      next
-        ? { nodeId: next.nodeId, geometryId: next.geometryId, mode: 'face', ids: next.faceIds }
-        : null,
-    )
-  }, [])
+  const setFaceSession = useCallback(
+    (next: SceneFaceSession | null) => {
+      setSession(
+        next
+          ? { nodeId: next.nodeId, geometryId: next.geometryId, mode: 'face', ids: next.faceIds }
+          : null,
+      )
+    },
+    [setSession],
+  )
   const preview = useSceneFacePreview(editor, setFaceSession)
   const transform = useSceneComponentTransform(editor, setSession)
   const meshCheck = useSceneMeshCheck(editor, setSession)
-  const blocked = !!preview.tool || transform.dragging || meshCheck.busy || !!meshCheck.preview
+  const baseBlocked = !!preview.tool || transform.dragging || meshCheck.busy || !!meshCheck.preview
   const flags = useMemo(() => evaluateSceneNodeFlags(index.scene), [index])
   const node = selected.length === 1 ? index.scene.nodes.get(selected[0] ?? '') : null
-  const mesh = node?.kind === 'mesh' ? index.geometries.get(node.geometryId) : null
+  const geometry = node?.kind === 'mesh' ? index.geometries.get(node.geometryId) : null
+  const fullMesh = geometry ? sceneGeometryMesh(geometry) : null
+  const mesh = fullMesh ? meshSymmetrySource(fullMesh) : null
   const editable =
     node?.kind === 'mesh' &&
     mesh?.kind === 'mesh' &&
@@ -103,6 +136,44 @@ export function useSceneComponents({
         : null,
     [editable, session, node, mesh],
   )
+  const operation = useSceneMeshOperation(
+    editor,
+    node?.id ?? null,
+    (next) => run(() => next),
+    setSession,
+  )
+  useLayoutEffect(() => {
+    if (!mirrorGate.allowed) {
+      if (preview.tool === 'thickness' || preview.tool === 'subdivide') preview.cancel()
+      meshCheck.cancel()
+      setSoftEnabled(false)
+    }
+  }, [mirrorGate.allowed, preview.tool, preview.cancel, meshCheck.cancel])
+  const blocked =
+    baseBlocked ||
+    (!!operation.kind &&
+      operation.kind !== 'ring' &&
+      operation.kind !== 'fill' &&
+      operation.kind !== 'create')
+  const uvPaint = useMemo<
+    { mixedImages: boolean; visibleIds?: string[]; texture?: SceneUvTexture } | undefined
+  >(() => {
+    if (node?.kind !== 'mesh' || !mesh || selection?.mode !== 'face') return undefined
+    const materialFor = (id: string) =>
+      index.materials.get(mesh.faces[id]?.materialId ?? node.materialId)
+    const material = materialFor(selection.ids.at(-1) ?? Object.keys(mesh.faces)[0] ?? '')
+    const image = material?.colorImageId ? index.images.get(material.colorImageId) : undefined
+    const mixedImages = selection.ids.some((id) => materialFor(id)?.colorImageId !== image?.id)
+    if (!material || !image || mixedImages) return { mixedImages }
+    const palette = scenePalette(editor.getState().asset)
+    return {
+      mixedImages,
+      visibleIds: Object.keys(mesh.faces).filter(
+        (id) => materialFor(id)?.colorImageId === image.id,
+      ),
+      texture: { image, palette, base: sceneBaseColor(material, palette) },
+    }
+  }, [node, mesh, selection, index, editor])
   const removal = useMemo(
     () => (selection && mesh?.kind === 'mesh' ? prepareMeshRemoval(mesh, selection) : null),
     [mesh, selection],
@@ -136,6 +207,9 @@ export function useSceneComponents({
   const softValid = softReach.trim() !== '' && Number.isFinite(softRadius) && softRadius > 0
 
   function close() {
+    setLoopSelection(false)
+    setCoplanarSelection(false)
+    operation.cancel()
     activeWeights.current = null
     cancel()
     meshCheck.clear()
@@ -143,57 +217,103 @@ export function useSceneComponents({
     transform.cancel()
     setSession(null)
   }
-  function open(mode: SceneComponentMode = 'face') {
-    if (!editable) return
+  function open(mode: SceneComponentMode = 'face', ids: readonly string[] = []) {
+    setLoopSelection(false)
+    setCoplanarSelection(false)
     activeWeights.current = null
     cancel()
     meshCheck.cancel()
     preview.cancel()
     transform.cancel()
-    setSession({ nodeId: node.id, geometryId: mesh.id, mode, ids: [] })
+    // A command can publish new geometry and open its result in the same event.
+    const liveIndex = indexSceneDocument(editor.getState().content)
+    const liveNode = selected.length === 1 ? liveIndex.scene.nodes.get(selected[0]!) : null
+    if (liveNode?.kind !== 'mesh') return
+    const liveFlags = evaluateSceneNodeFlags(liveIndex.scene).get(liveNode.id)
+    const liveGeometry = liveIndex.geometries.get(liveNode.geometryId)
+    if (!liveGeometry || liveFlags?.hidden || liveFlags?.locked) return
+    const liveFull = sceneGeometryMesh(liveGeometry)
+    const liveMesh = meshSymmetrySource(liveFull)
+    const alive = new Set(meshComponentIds(liveMesh, mode))
+    // Explicit mode navigation starts a panel session; diagnostic selections stay inside it.
+    setPanelSession((current) => current + 1)
+    setSession({
+      nodeId: liveNode.id,
+      geometryId: liveMesh.id,
+      mode,
+      ids: symmetrySourceIds(liveFull, mode, ids).filter((id) => alive.has(id)),
+    })
   }
   function select(componentId: string | null, add: boolean) {
-    updateSelection(componentId === null ? [] : [componentId], add, true)
+    updateSelection(
+      componentId === null ? [] : [componentId],
+      add,
+      true,
+      loopSelection,
+      coplanarSelection,
+    )
   }
-  function updateSelection(ids: readonly string[], add: boolean, toggle = false) {
+  function updateSelection(
+    ids: readonly string[],
+    add: boolean,
+    toggle = false,
+    wholeLoop = false,
+    coplanar = false,
+  ) {
     if (blocked) return
+    if (!sessionLive.current || editor.getState().contentRevision !== revision) return
     cancel()
-    setSession((current) => {
-      if (!current) return null
+    {
+      const current = sessionLive.current
       const document = editor.getState().asset
       const liveNode = document.nodes.find((n) => n.id === current.nodeId)
-      const liveMesh =
+      const liveGeometry =
         liveNode?.kind === 'mesh' && liveNode.geometryId === current.geometryId
           ? document.geometries.find((g) => g.id === current.geometryId)
           : null
-      if (liveMesh?.kind !== 'mesh') return null
+      if (!liveGeometry) return
+      const liveFull = sceneGeometryMesh(liveGeometry)
+      const liveMesh = meshSymmetrySource(liveFull)
+      ids = symmetrySourceIds(liveFull, current.mode, ids)
       const alive = new Set(meshComponentIds(liveMesh, current.mode))
-      if (ids.some((id) => !alive.has(id))) return current
+      if (ids.some((id) => !alive.has(id))) return
+      const expandLoop = wholeLoop && current.mode === 'edge' && !operation.kind
+      const expandFaces = coplanar && current.mode === 'face' && !operation.kind
+      if (expandLoop) ids = selectMeshComponents(liveMesh, { mode: 'edge', ids }, 'loop')
+      if (expandFaces) ids = meshCoplanarFaces(liveMesh, ids)
       activeWeights.current = null
       const previous = current.ids.filter((id) => alive.has(id))
       const chosen = new Set(previous)
+      const grouped = expandLoop || expandFaces
+      const removeGroup = grouped && ids.every((id) => chosen.has(id))
       for (const id of ids) {
-        if (toggle && chosen.has(id)) chosen.delete(id)
+        if (toggle && (grouped ? removeGroup : chosen.has(id))) chosen.delete(id)
         else chosen.add(id)
       }
-      return {
+      const next = {
         ...current,
         ids: add || additive ? [...chosen] : [...new Set(ids)],
       }
-    })
+      setSession(next)
+      operation.target(next.ids)
+    }
   }
   function choose(action: MeshSelectionAction) {
+    if (!['all', 'none', 'connected'].includes(action) && !mirrorGate.canUse()) return
     if (!selection || !editable || blocked) return
     activeWeights.current = null
     cancel()
+    const ids = selectMeshComponents(mesh, selection, action)
     setSession({
       nodeId: node.id,
       geometryId: mesh.id,
       mode: selection.mode,
-      ids: selectMeshComponents(mesh, selection, action),
+      ids,
     })
+    operation.target(ids)
   }
   function apply(action: SceneFaceAction) {
+    if (action !== 'remove' && !mirrorGate.canUse()) return
     if (selection?.mode !== 'face' || !editable || blocked) return
     const oldFaces = new Set(Object.keys(mesh.faces))
     const chosen = new Set(selection.ids)
@@ -206,6 +326,7 @@ export function useSceneComponents({
     })
   }
   function splitEdges() {
+    if (!mirrorGate.canUse()) return
     if (selection?.mode !== 'edge') return
     applyMesh((mesh) => {
       const result = splitMeshEdges(mesh, selection.ids)
@@ -244,6 +365,7 @@ export function useSceneComponents({
     })
   }
   function beginPreview(tool: SceneFacePreviewTool) {
+    if ((tool === 'thickness' || tool === 'subdivide') && !mirrorGate.canUse()) return
     if (selection?.mode !== 'face' || !selection.ids.length || !editable || blocked) return
     cancel()
     preview.begin(
@@ -254,17 +376,87 @@ export function useSceneComponents({
   }
   return {
     selection,
+    panelSession,
+    coplanarSelection: {
+      enabled: coplanarSelection,
+      setEnabled: (enabled: boolean) => {
+        if (
+          blocked ||
+          operation.kind ||
+          selection?.mode !== 'face' ||
+          enabled === coplanarSelection
+        )
+          return
+        setCoplanarSelection(enabled)
+        if (enabled && sessionLive.current?.ids.length)
+          updateSelection(sessionLive.current.ids, false, false, false, true)
+      },
+    },
+    loopSelection: {
+      enabled: loopSelection,
+      setEnabled: (enabled: boolean) => {
+        if (blocked || operation.kind || selection?.mode !== 'edge' || enabled === loopSelection)
+          return
+        setLoopSelection(enabled)
+        if (enabled && sessionLive.current?.ids.length) {
+          updateSelection(sessionLive.current.ids, false, false, true)
+        }
+      },
+    },
+    empty: !!mesh && Object.keys(mesh.faces).length === 0,
     blocked,
+    operation: {
+      ...operation,
+      start: (kind: Parameters<typeof operation.start>[0]) => {
+        if (!selection || !mesh || !fullMesh || !editable || baseBlocked) return false
+        preview.cancel()
+        meshCheck.cancel()
+        transform.cancel()
+        return operation.start(kind, { ...selection, geometryId: mesh.id }, fullMesh)
+      },
+    },
+    symmetry: fullMesh?.symmetry ?? null,
+    stopSymmetry: () => {
+      if (
+        !mirrorGate.canUse() ||
+        !node ||
+        !fullMesh?.symmetry ||
+        baseBlocked ||
+        operation.kind ||
+        editor.getState().contentRevision !== revision
+      )
+        return false
+      const next = run((source) =>
+        editSceneMesh(
+          source,
+          node.id,
+          (mesh) => {
+            const { symmetry: _relation, ...baked } = mesh
+            return baked
+          },
+          newId,
+          { bakeSymmetry: true },
+        ),
+      )
+      return !!next
+    },
     uv:
       selection?.mode === 'face' && mesh?.kind === 'mesh'
         ? {
             mesh,
-            sourceKey: JSON.stringify([editor.getState().asset.id, revision, selection.nodeId]),
+            sourceKey: JSON.stringify([
+              editorSession.key,
+              editor.getState().asset.id,
+              revision,
+              selection.nodeId,
+            ]),
             blocked,
+            ...uvPaint,
             ids: selection.ids,
             onSelect: select,
             onChoose: (ids: readonly string[]) => updateSelection(ids, false),
             onApply: (operation: MeshUvOperation) => {
+              if (!uvGate.canUse()) return
               if (editor.getState().contentRevision !== revision) return
               applyMesh((source) => ({
                 mesh: editMeshUv(source, selection.ids, operation),
@@ -272,6 +464,7 @@ export function useSceneComponents({
               }))
             },
             onApplyPrepared: (prepared: SceneMeshGeometry) => {
+              if (!uvGate.canUse()) return
               if (editor.getState().contentRevision !== revision) return
               applyMesh((source) => {
                 if (source !== mesh) throw new Error('A malha mudou. Prepare o mapa novamente.')
@@ -291,7 +484,7 @@ export function useSceneComponents({
       skin && selection
         ? {
             sourceKey: JSON.stringify([
-              weightSession.key,
+              editorSession.key,
               editor.getState().asset.id,
               revision,
               selection.nodeId,
@@ -335,25 +528,32 @@ export function useSceneComponents({
       error: meshCheck.error,
       disabled: !editable || !!preview.tool || transform.dragging,
       issues:
-        meshCheck.report && meshCheck.report.mesh === mesh && meshCheck.report.nodeId === node?.id
+        meshCheck.report &&
+        meshCheck.report.mesh === fullMesh &&
+        meshCheck.report.nodeId === node?.id
           ? meshCheck.report.issues
           : null,
       cancel: meshCheck.cancel,
-      confirm: meshCheck.confirm,
+      confirm: () => {
+        if (mirrorGate.canUse()) meshCheck.confirm()
+      },
       inspect: () => {
+        if (!mirrorGate.canUse()) return
         if (!selection || !editable || blocked) return
-        return meshCheck.inspect({ ...selection, geometryId: mesh.id }, mesh)
+        return meshCheck.inspect({ ...selection, geometryId: mesh.id }, fullMesh ?? mesh)
       },
       repair: (kind: MeshFixKind) => {
+        if (!mirrorGate.canUse()) return
         if (!selection || !editable || blocked) return
-        return meshCheck.repair({ ...selection, geometryId: mesh.id }, mesh, kind)
+        return meshCheck.repair({ ...selection, geometryId: mesh.id }, fullMesh ?? mesh, kind, mesh)
       },
       select: (kind: MeshIssueKind) => {
+        if (!mirrorGate.canUse()) return
         if (
           !selection ||
           !editable ||
           blocked ||
-          meshCheck.report?.mesh !== mesh ||
+          meshCheck.report?.mesh !== fullMesh ||
           meshCheck.report.nodeId !== node.id
         )
           return
@@ -363,7 +563,7 @@ export function useSceneComponents({
             nodeId: node.id,
             geometryId: mesh.id,
             mode: MESH_ISSUE_MODES[kind],
-            ids: issue.ids,
+            ids: symmetrySourceIds(fullMesh ?? mesh, MESH_ISSUE_MODES[kind], issue.ids),
           })
       },
     },
@@ -378,11 +578,16 @@ export function useSceneComponents({
         if (!blocked) setSoftReach(value)
       },
     },
-    transformTools: softMove
-      ? softValid
+    transformTools:
+      preview.tool === 'extrude' || operation.kind === 'duplicate' || operation.kind === 'extrude'
         ? (['move'] as const)
-        : []
-      : (['move', 'rotate', 'scale'] as const),
+        : operation.kind
+          ? ([] as const)
+          : softMove
+            ? softValid
+              ? (['move'] as const)
+              : []
+            : (['move', 'rotate', 'scale'] as const),
     canEdit: editable,
     open,
     setMode: (mode: SceneComponentMode) => {
@@ -390,7 +595,8 @@ export function useSceneComponents({
     },
     close,
     select,
-    selectMany: (ids: readonly string[], add: boolean) => updateSelection(ids, add),
+    selectMany: (ids: readonly string[], add: boolean) =>
+      updateSelection(ids, add, false, false, coplanarSelection),
     choose,
     apply,
     splitEdges,
@@ -399,12 +605,13 @@ export function useSceneComponents({
         ? meshComponentVertices(mesh, selection).length
         : 0,
     createPath: (settings: ScenePathSettings) => {
+      if (!mirrorGate.canUse()) return
       if (selection?.mode !== 'edge' || !editable || blocked) return
       const next = run((source) => {
         const liveNode = source.nodes.find((n) => n.id === selection.nodeId)
         if (
           liveNode?.kind !== 'mesh' ||
-          source.geometries.find((g) => g.id === liveNode.geometryId) !== mesh
+          source.geometries.find((g) => g.id === liveNode.geometryId) !== geometry
         )
           throw new Error('O caminho mudou. Escolha novamente.')
         return createScenePath(
@@ -418,6 +625,7 @@ export function useSceneComponents({
       if (next) setSession(null)
     },
     bevel: (depth: number) => {
+      if (!mirrorGate.canUse()) return
       if (selection?.mode !== 'edge') return
       applyMesh((mesh) => {
         const result = bevelMeshEdges(mesh, selection.ids, depth)
@@ -425,6 +633,7 @@ export function useSceneComponents({
       })
     },
     cutPlane: (plane: MeshCutPlane) => {
+      if (!mirrorGate.canUse()) return
       applyMesh((mesh) => {
         const result = cutMeshByPlane(mesh, plane)
         return {
@@ -448,10 +657,12 @@ export function useSceneComponents({
         }
       : null,
     weldPoints: () => {
+      if (!mirrorGate.canUse()) return
       if (!weld) return
       applyMesh(() => ({ mesh: weld.apply(), ids: weld.ids }))
     },
     cutRing: () => {
+      if (!mirrorGate.canUse()) return
       if (selection?.mode !== 'edge') return
       applyMesh((mesh) => {
         const result = cutMeshEdgeRing(mesh, selection.ids)
@@ -459,6 +670,7 @@ export function useSceneComponents({
       })
     },
     connectPoints: (action: 'line' | 'cut') => {
+      if (!mirrorGate.canUse()) return
       if (selection?.mode !== 'vertex') return
       applyMesh((mesh) => ({
         mesh:
@@ -469,6 +681,7 @@ export function useSceneComponents({
       }))
     },
     dissolveEdges: () => {
+      if (!mirrorGate.canUse()) return
       if (selection?.mode !== 'edge') return
       applyMesh((mesh) => ({ mesh: dissolveMeshEdges(mesh, selection.ids), ids: [] }))
     },
@@ -481,20 +694,26 @@ export function useSceneComponents({
     },
     preview,
     beginPreview,
-    transform: {
-      ...transform,
-      begin: () => {
-        if (!selection?.ids.length || !editable || blocked || (softMove && !softValid)) return false
-        activeWeights.current = null
-        cancel()
-        const started = transform.begin(
-          { ...selection, geometryId: mesh.id },
-          mesh,
-          softMove ? softRadius : 0,
-        )
-        if (!started) activeWeights.current = weightOwner
-        return started
-      },
-    },
+    transform:
+      preview.tool === 'extrude'
+        ? preview.transform
+        : operation.kind === 'duplicate' || operation.kind === 'extrude'
+          ? operation.transform
+          : {
+              ...transform,
+              begin: () => {
+                if (!selection?.ids.length || !editable || blocked || (softMove && !softValid))
+                  return false
+                activeWeights.current = null
+                cancel()
+                const started = transform.begin(
+                  { ...selection, geometryId: mesh.id },
+                  mesh,
+                  softMove ? softRadius : 0,
+                )
+                if (!started) activeWeights.current = weightOwner
+                return started
+              },
+            },
   }
 }

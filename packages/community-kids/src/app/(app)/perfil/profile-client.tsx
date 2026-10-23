@@ -46,7 +46,7 @@ export function ProfileClient({
   ranking: RankingInfo | null
   level: StudentLevelView | null
   /** Frase do próximo marco, JÁ limitada ao catálogo (montada no servidor com
-   *  `nextLevelHintWithin` — a mesma do mapa, para os dois números nunca divergirem). */
+   *  `canonicalJourneyProgress` — a mesma do mapa, para os dois números nunca divergirem). */
   levelHint: string | null
   avatarPhotoUrl: string | null
 }) {
@@ -109,11 +109,13 @@ function IdentityCard({
           aria-label="Personalizar avatar"
           title="Personalizar avatar"
           onClick={onCustomize}
-          className="group relative w-fit shrink-0 cursor-pointer rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--sz-primary-fg)"
+          // O contorno do foco vai por fora da aura (folga + anel + fio = 11,5px), senão some nela.
+          className="group relative w-fit shrink-0 cursor-pointer rounded-[1.5rem] focus-visible:outline-2 focus-visible:outline-offset-[14px] focus-visible:outline-(--sz-primary-fg)"
         >
           <AvatarWithAura
             photoUrl={avatarPhotoUrl}
             name={profile.name}
+            levelSlug={level?.slug}
             size="xl"
             // O quadrado de vidro das telas-modelo, e não o círculo: sobre o azul do
             // herói, a inicial no círculo azul da marca sumiria.
@@ -132,7 +134,13 @@ function IdentityCard({
             <p className="sz-display min-w-0 break-words text-[2rem] md:text-[2.25rem]">
               {profile.name}
             </p>
-            <LevelBadge levelSlug={level?.slug} variant="destaque" />
+            {level ? (
+              <LevelBadge levelSlug={level.slug} variant="destaque" />
+            ) : (
+              <span role="status" className="text-sm">
+                Não foi possível consultar sua jornada agora.
+              </span>
+            )}
           </div>
           {profile.whatsapp ? (
             <p className="kids-marca-suave mt-1 truncate font-semibold text-sm">

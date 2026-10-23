@@ -213,7 +213,7 @@ export function ChildGuide({
             trackOnboardingEvent({ audience: 'child', action: 'step_completed', step: 'start' })
           }}
         >
-          Sua primeira fase está te esperando! Clique em <strong>Começar</strong> 👇
+          Sua primeira aula está te esperando! Clique em <strong>Começar</strong> 👇
         </GuideBalloon>
       ) : null}
       {children}

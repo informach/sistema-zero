@@ -76,8 +76,8 @@ Para as imagens complementares: destacar uma coisa por vez; manter escala e posi
 Executar na raiz do repositório, passando a pasta dos originais:
 
 ```powershell
-bun docs/aulas-interativas/qa/gerar-candidatos-v6.ts 'CAMINHO_DOS_ROTEIROS'
-bun docs/aulas-interativas/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/gerar-candidatos-v6.ts 'CAMINHO_DOS_ROTEIROS'
+bun docs/aulas-interativas-tecnico/qa/validar-revisao-completa.ts 'CAMINHO_DOS_ROTEIROS'
 ```
 
 O [relatório de verificação](../qa/revisao-13-aulas-verificacao.json) confere os 13 hashes de fonte, as âncoras dos 86 clipes, todas as seções e os programas finais de referência. Há também teste de carregar/salvar os 13 programas no Blockly real e gerar JavaScript com sintaxe válida. Isso não substitui revisar os vídeos produzidos nem percorrer as aulas publicadas com uma criança.

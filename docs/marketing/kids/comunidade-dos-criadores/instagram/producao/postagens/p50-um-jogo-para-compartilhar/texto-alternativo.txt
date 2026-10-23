@@ -1,0 +1,34 @@
+SLIDE 1
+Curto (82 caracteres): Cena encenada: celular sobre a mesa mostra um convite genérico para abrir um jogo.
+
+Longo: Fotografia gerada de um celular sobre uma mesa de madeira, ao lado de um caderno azul e de uma mão de criança fictícia. A tela foi criada em branco e recebeu uma composição editorial genérica: Conversa e Abrir jogo, com ícone de link. Não é captura de uma conversa real do Rafael, não contém endereço ou remetente real e não inventa resposta do amigo. Texto da arte: Rafael criou um jogo e convidou um amigo para jogar. A ideia dele virou uma experiência que podia compartilhar.
+
+SLIDE 2
+Curto (88 caracteres): Retrato real do Rafael ao lado da sua fala sobre mandar o link de um jogo para um amigo.
+
+Longo: Retrato real do Rafael, preservado do arquivo autorizado de 160 por 160 pixels e exibido nesse tamanho na montagem. Fala literal entre aspas grandes azuis de abertura e fechamento. Identificação: Rafael · aluno. Nenhuma imagem de jogo nem recriação por IA da pessoa. Texto da arte: ‘No fim eu peguei o link e mandei pro meu amigo jogar.’ Rafael · aluno
+
+SLIDE 3
+Curto (93 caracteres): Ilustração: um jogo e seu esboço no caderno; uma cadeira vazia convida alguém a experimentar.
+
+Longo: Ilustração editorial gerada: uma tela mostra uma pequena ilha com caminho, personagem e bandeira. No caderno sobre a mesa há o esboço da mesma ilha. Um controle azul e uma cadeira vazia convidam outra pessoa a experimentar. A ilustração não representa interface nem um projeto específico de aluno. Texto da arte: Mostrar uma criação pode abrir uma conversa sobre algo que a criança gosta. Ela conta o que inventou e vê outra pessoa experimentar.
+
+SLIDE 4
+Curto (86 caracteres): Cena encenada: dois meninos jogam no computador; um aponta a tela e acompanha o amigo.
+
+Longo: Fotografia gerada de dois meninos fictícios, de camisetas azul e amarela, diante de um computador em casa. Um usa o mouse; o outro aponta a tela e observa o amigo. O jogo simples na tela está desfocado e não identifica um projeto. Os meninos não representam Rafael ou seu amigo real. Texto da arte: Depois, pode ouvir o que o amigo achou. Qual parte ele entendeu? Onde ficou difícil? O que foi mais divertido?
+
+SLIDE 5
+Curto (83 caracteres): Captura do Estúdio: três pistas, caixas rosas e herói verde na Corrida Infinita 3D.
+
+Longo: Captura real da Corrida Infinita 3D básica em execução local: três pistas, um herói verde e caixas rosas. O estado foi capturado aos 64 segundos, com velocidade 0,46, maior que os 0,14 iniciais. O destaque amarelo 64 segundos e a identificação Corrida Infinita 3D são anotações editoriais sobre a captura. Este exemplo pertence à plataforma e não é atribuído ao Rafael. Texto da arte: Neste exemplo da nossa plataforma, o jogador desvia de caixas que ficam mais rápidas. Quem criou pode observar a partida e decidir se quer ajustar a dificuldade.
+
+SLIDE 6
+Curto (87 caracteres): Recortes reais do Mural dos Criadores mostram projetos e os botões Jogar e Copiar link.
+
+Longo: Montagem com recortes da captura real do Mural usada no funil: item Mural dos Criadores no menu, três miniaturas de projetos e botões Jogar e Copiar link. A edição exclui nomes, dados de conta, descrições, métricas e comentários. A anotação diz: Escolha um jogo e compartilhe o link. Os controles não foram redesenhados nem gerados por IA. Texto da arte: Na Comunidade, um projeto publicado pode ser compartilhado por link e aparecer no Mural dos Criadores. Ali, os alunos podem conhecer criações e comentar, com moderação.
+
+SLIDE 7
+Curto (90 caracteres): Cena encenada: dois amigos com mochilas olham juntos um celular perto do portão da escola.
+
+Longo: Fotografia gerada: os mesmos dois meninos fictícios, agora com mochilas e parados perto de um portão de escola genérica. O menino de azul mostra um celular ao amigo; ambos olham para a tela. É outra cena e outro ambiente. Não é registro do Rafael nem reconstituição documental de seu relato. Texto da arte: Criar jogos também pode ser uma forma de compartilhar ideias e conversar sobre elas. Siga o perfil para conhecer mais experiências.

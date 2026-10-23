@@ -1,0 +1,310 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/11-p51-a-p60.md",
+  "sourceSectionHash": "52f3d069d18aa44783ab0d4ba8c1acb13f194c098761dee99d8239ec1b4991f7",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 228.15625
+        },
+        {
+          "kind": "copy lead",
+          "top": 136,
+          "bottom": 281.59375,
+          "height": 145.59375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "cover-person",
+          "top": 372,
+          "bottom": 846,
+          "height": 474,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "testimonial-quote",
+          "top": 936.40625,
+          "bottom": 1116,
+          "height": 179.59375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 54
+    },
+    {
+      "number": 2,
+      "file": "02-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 92.796875,
+          "height": 92.796875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "real-person",
+          "top": 278.625,
+          "bottom": 688.625,
+          "height": 410,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 874.453125,
+          "bottom": 1116,
+          "height": 241.546875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 66
+    },
+    {
+      "number": 3,
+      "file": "03-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 143.8125,
+          "height": 143.8125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 249.34375,
+          "bottom": 884,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 989.53125,
+          "bottom": 1116,
+          "height": 126.46875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 4,
+      "file": "04-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 132.21875,
+          "height": 132.21875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "demo",
+          "top": 205.109375,
+          "bottom": 919.109375,
+          "height": 714,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 992,
+          "bottom": 1116,
+          "height": 124,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 50
+    },
+    {
+      "number": 5,
+      "file": "05-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 167.03125,
+          "height": 167.03125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 233.0625,
+          "bottom": 867.71875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 933.75,
+          "bottom": 1116,
+          "height": 182.25,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 6,
+      "file": "06-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 208.78125,
+          "height": 208.78125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 285.546875,
+          "bottom": 920.203125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 996.96875,
+          "bottom": 1116,
+          "height": 119.03125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 7,
+      "file": "07-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 215.71875,
+          "height": 215.71875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 279.09375,
+          "bottom": 913.75,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 977.125,
+          "bottom": 1116,
+          "height": 138.875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 56
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/02-andre-oferta.webp",
+      "loaded": true,
+      "width": 160,
+      "height": 160
+    },
+    {
+      "src": "apoio/03-jogando-no-celular.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-tabuleiro-inicio.png",
+      "loaded": true,
+      "width": 2312,
+      "height": 1540
+    },
+    {
+      "src": "apoio/05-ideia-no-papel.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/06-compartilhar-em-familia.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/07-proximo-jogo.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

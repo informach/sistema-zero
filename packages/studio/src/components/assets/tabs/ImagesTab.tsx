@@ -15,6 +15,9 @@ export interface ImagesTabProps extends AssetsTabCommon {
   onUpload: () => void
   /** "Trazer do Pinta" — ausente quando o host não passa o adapter. */
   onOpenPinta: (() => void) | null
+  onReviewPintaImage?: (asset: ProjectAsset) => void
+  /** "Trazer da equipe" (Pensa em equipe) — ausente sem o adapter do host. */
+  onOpenTeam?: (() => void) | null
   /** Abre o editor de peças/fatiamento daquela imagem. */
   onConfigureTiles: (asset: ProjectAsset, mode: 'tileset' | 'tilemap') => void
   editTargetOf: (asset: ProjectAsset) => EditTarget | null
@@ -40,6 +43,8 @@ export function ImagesTab({
   busy,
   onUpload,
   onOpenPinta,
+  onReviewPintaImage,
+  onOpenTeam = null,
   onConfigureTiles,
   onRename,
   onDelete,
@@ -57,7 +62,7 @@ export function ImagesTab({
   const t = useT()
   return (
     <div className="flex flex-col gap-4">
-      {allowUpload || onOpenPinta ? (
+      {allowUpload || onOpenPinta || onOpenTeam ? (
         <div className="flex flex-wrap items-center gap-3">
           {allowUpload ? (
             <Button variant="primary" size="sm" disabled={busy} onClick={onUpload}>
@@ -67,6 +72,16 @@ export function ImagesTab({
           {onOpenPinta ? (
             <Button variant={allowUpload ? 'subtle' : 'primary'} size="sm" onClick={onOpenPinta}>
               {t('pintaImport.button')}
+            </Button>
+          ) : null}
+          {onOpenTeam ? (
+            <Button
+              variant={allowUpload || onOpenPinta ? 'subtle' : 'primary'}
+              size="sm"
+              className="min-h-11"
+              onClick={onOpenTeam}
+            >
+              {t('teamImport.button')}
             </Button>
           ) : null}
         </div>
@@ -116,22 +131,36 @@ export function ImagesTab({
                           🗺️ mapa
                         </span>
                       ) : null}
-                      <button
-                        type="button"
-                        title="Definir o tamanho das peças e os tiles sólidos"
-                        className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                        onClick={() => onConfigureTiles(asset, 'tileset')}
-                      >
-                        🧩 peças
-                      </button>
-                      <button
-                        type="button"
-                        title="Fatiar esta imagem como um mapa de tiles"
-                        className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
-                        onClick={() => onConfigureTiles(asset, 'tilemap')}
-                      >
-                        🗺️ fatiar
-                      </button>
+                      {asset.pintaImage ? (
+                        onReviewPintaImage ? (
+                          <button
+                            type="button"
+                            className="min-h-11 text-xs text-sz-accent hover:underline"
+                            onClick={() => onReviewPintaImage(asset)}
+                          >
+                            {t('pintaImport.image.review')}
+                          </button>
+                        ) : null
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            title="Definir o tamanho das peças e os tiles sólidos"
+                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                            onClick={() => onConfigureTiles(asset, 'tileset')}
+                          >
+                            🧩 peças
+                          </button>
+                          <button
+                            type="button"
+                            title="Fatiar esta imagem como um mapa de tiles"
+                            className="text-[10px] text-sz-fg-soft hover:text-sz-accent hover:underline"
+                            onClick={() => onConfigureTiles(asset, 'tilemap')}
+                          >
+                            🗺️ fatiar
+                          </button>
+                        </>
+                      )}
                       {editTarget ? (
                         <EditInOriginButton
                           assetName={asset.name}

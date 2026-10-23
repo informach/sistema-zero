@@ -1,325 +1,339 @@
-import type { SelecaoStep } from '../../../content/quiz-config'
+// Quiz Kids do Desafio, v5 (21/10/2026), aprovado no Canvas "Quiz do Desafio · Kids e adulto"
+// (quadros PlanoKids, TelasKids e TelasMenor9). Formato em conversa, o mesmo motor do quiz da
+// Comunidade: filho ou filha em duas cartas, a idade em três cartas e sete perguntas por ramo.
+//
+// A idade decide o caminho sem avisar ninguém: de 9 a 17 (ramo `9a17`), menor de 9 criando junto
+// com um adulto (ramo `m9`, chaves com prefixo `m9_`) e 18 ou mais, que sai para o quiz adulto do
+// Desafio (ramo `adulto`, sem perguntas).
+//
+// Regras da copy (decisão da dona): nenhuma tela antes do resultado cita o Desafio, A Chave do
+// Farol, curso, aula, plataforma, preço ou prazo. Cada opção é uma frase que a família diria. O
+// texto é escrito no masculino; `paraFeminino` troca para "ela" quando a entrada é "Na minha filha".
+// Sem calculadora de horas: a régua do Desafio recusa conta de perda e tensão artificial.
+import type { Opcao, SelecaoStep } from '../../../content/quiz-config'
 
-export interface DesafioQuestion extends SelecaoStep {
-  stage: 'familia' | 'comeco' | 'procura' | 'orientacao'
-}
+const opcoes = (pares: ReadonlyArray<readonly [string, string]>): Opcao[] =>
+  pares.map(([value, label]) => ({ value, label }))
 
-export const DESAFIO_QUESTIONS: DesafioQuestion[] = [
+const pergunta = (
+  id: number,
+  key: string,
+  etapa: SelecaoStep['etapa'],
+  rotuloCurto: string,
+  titulo: string,
+  pares: ReadonlyArray<readonly [string, string]>,
+  extra: Partial<SelecaoStep> = {},
+): SelecaoStep => ({
+  id,
+  key,
+  lastStep: `desafio_v5_${key}`,
+  eventName: `respondeu_desafio_v5_${key}`,
+  tipo: 'selecao',
+  etapa,
+  rotuloCurto,
+  titulo,
+  opcoes: opcoes(pares),
+  ...extra,
+})
+
+/** Os ramos (id → rótulo do /admin), na ordem do Performance. */
+export const BRANCHES = {
+  '9a17': 'De 9 a 17',
+  m9: 'Menor de 9',
+  adulto: '18 ou mais',
+} as const
+export type DesafioBranch = keyof typeof BRANCHES
+
+// ---------------------------------------------------------------------------------------------
+// Entrada: filho ou filha (cartas com desenho) e a idade (cartas; 18 ou mais é um link pequeno).
+// ---------------------------------------------------------------------------------------------
+
+export const GENERO_STEP = pergunta(
+  1,
+  'genero',
+  'rotina',
+  'Filho ou filha',
+  'Em quem você está pensando?',
+  [],
   {
-    key: 'idade',
-    stage: 'familia',
-    titulo: 'Quantos anos tem a criança ou adolescente em quem você está pensando?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_idade',
-    eventName: 'desafio_resposta_idade',
+    subtitulo: 'Uma criança de cada vez.',
+    cartas: true,
     opcoes: [
       {
-        value: 'menos_9',
-        label: 'Menos de 9 anos.',
+        value: 'filho',
+        label: 'No meu filho',
+        image: '/img/comunidade-dos-criadores/dede-fala.webp',
       },
       {
-        value: '9_11',
-        label: 'De 9 a 11 anos.',
-      },
-      {
-        value: '12_14',
-        label: 'De 12 a 14 anos.',
-      },
-      {
-        value: '15_mais',
-        label: '15 anos ou mais.',
+        value: 'filha',
+        label: 'Na minha filha',
+        image: '/img/comunidade-dos-criadores/debinha-fala.webp',
       },
     ],
-    id: 1,
   },
-  {
-    key: 'equipamento',
-    stage: 'familia',
-    titulo: 'Para fazer uma atividade no computador, qual é a situação de vocês hoje?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_equipamento',
-    eventName: 'desafio_resposta_equipamento',
-    opcoes: [
-      {
-        value: 'disponivel',
-        label: 'Temos computador ou notebook com internet disponível para isso.',
-      },
-      {
-        value: 'compartilhado',
-        label: 'Temos, mas precisamos combinar os horários de uso.',
-      },
-      {
-        value: 'sem_computador',
-        label: 'Hoje só temos celular ou tablet para essa atividade.',
-      },
-      {
-        value: 'a_conferir',
-        label: 'Preciso conferir o equipamento e a conexão.',
-      },
+)
+
+/** A idade: as três faixas viram cartas; `18_mais` é o link pequeno embaixo delas. */
+export const IDADE_STEP = pergunta(
+  2,
+  'idade',
+  'rotina',
+  'Idade',
+  'Quantos anos ele tem?',
+  [
+    ['menos_9', 'Menos de 9'],
+    ['9_12', 'De 9 a 12'],
+    ['13_17', 'De 13 a 17'],
+    ['18_mais', 'Ele tem 18 anos ou mais'],
+  ],
+  { cartas: true },
+)
+
+// ---------------------------------------------------------------------------------------------
+// Ramo de 9 a 17: sete perguntas na voz dos pais.
+// ---------------------------------------------------------------------------------------------
+
+/** As perguntas que somam pontos no ramo de 9 a 17 (o valor é a letra do perfil). */
+export const PERGUNTAS_DE_PERFIL = ['cena', 'cena_desejada', 'sintese'] as const
+
+const ramo917 = { ramo: '9a17' } as const
+
+export const QUESTIONS_9A17: SelecaoStep[] = [
+  // S. A rotina, sem julgar: a primeira linha da carta. Não pontua.
+  pergunta(
+    3,
+    'tempo_tela',
+    'rotina',
+    'Tempo em jogos e vídeos',
+    'Num dia normal, quanto tempo ele passa em jogos e vídeos?',
+    [
+      ['menos_1', 'Menos de 1 hora'],
+      ['1_2', 'De 1 a 2 horas'],
+      ['2_4', 'De 2 a 4 horas'],
+      ['mais_4', 'Mais de 4 horas'],
     ],
-    id: 2,
-  },
-  {
-    key: 'interesses',
-    stage: 'comeco',
-    titulo: 'Quais destas situações você já observou?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_interesses',
-    eventName: 'desafio_resposta_interesses',
-    opcoes: [
-      {
-        value: 'joga',
-        label: 'Ele gosta de jogar.',
-      },
-      {
-        value: 'desenha',
-        label: 'Ele gosta de desenhar.',
-      },
-      {
-        value: 'inventa_historias',
-        label: 'Ele inventa personagens ou histórias.',
-      },
-      {
-        value: 'quer_criar',
-        label: 'Ele já falou que gostaria de criar ou mudar um jogo.',
-      },
-      {
-        value: 'nao_observei',
-        label: 'Não observei essas situações; quero apresentar algo novo.',
-      },
-      {
-        value: 'nao_sei',
-        label: 'Não sei dizer.',
-      },
+    { ...ramo917, subtitulo: 'Celular, videogame e computador, tudo junto. Pode chutar.' },
+  ),
+  // S. O requisito real: só celular ou tablet vira condição não atendida.
+  pergunta(
+    4,
+    'computador',
+    'rotina',
+    'Computador',
+    'Ele tem um computador com mouse e teclado para usar?',
+    [
+      ['so_dele', 'Tem, só dele'],
+      ['dividido', 'Tem, mas é dividido em casa'],
+      ['celular_tablet', 'Só celular ou tablet'],
+      ['verificar', 'Ainda vou ver'],
     ],
-    multiple: true,
-    maxSelections: 4,
-    exclusive: ['nao_observei', 'nao_sei'],
-    subtitulo: 'Marque as situações que já observou. Elas podem acontecer juntas.',
-    id: 3,
-  },
-  {
-    key: 'experiencia',
-    stage: 'comeco',
-    titulo: 'Seu filho já tentou programar um jogo?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_experiencia',
-    eventName: 'desafio_resposta_experiencia',
-    opcoes: [
-      {
-        value: 'primeira_vez',
-        label: 'Ainda não tentou.',
-      },
-      {
-        value: 'interrompida',
-        label: 'Começou, mas ainda não conseguiu fazer uma versão funcionar.',
-      },
-      {
-        value: 'guiada',
-        label: 'Já fez uma versão funcionar seguindo uma atividade guiada.',
-      },
-      {
-        value: 'independente',
-        label: 'Já consegue montar jogos por conta própria.',
-      },
-      {
-        value: 'nao_sei',
-        label: 'Não sei dizer.',
-      },
+    ramo917,
+  ),
+  // P. A cena de casa (3 pontos): a mais concreta.
+  pergunta(
+    5,
+    'cena',
+    'casa',
+    'Cena de casa',
+    'Qual destas frases parece mais com a sua casa?',
+    [
+      ['A', 'Ele vive no jogo e no vídeo, e não faz nada com isso'],
+      ['B', 'Ele inventa jogo o tempo todo, mas fica só na conversa'],
+      ['C', 'Ele desenha personagem o tempo todo, e fica no papel'],
+      ['D', 'Ele quer saber como os jogos são feitos, e eu não sei explicar'],
+      ['nenhum', 'Nenhuma dessas'],
     ],
-    id: 4,
-  },
-  {
-    key: 'motivos',
-    stage: 'procura',
-    titulo: 'O que mais importa para você ao buscar uma atividade com tecnologia para seu filho?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_motivos',
-    eventName: 'desafio_resposta_motivos',
-    opcoes: [
-      {
-        value: 'A',
-        label: 'Encontrar algo para ele construir dentro do tempo de tela que já combinamos.',
-      },
-      {
-        value: 'B',
-        label: 'Ver um primeiro jogo funcionando, construído por ele com orientação.',
-      },
-      {
-        value: 'C',
-        label: 'Dar espaço ao interesse dele por desenhos, personagens e histórias.',
-      },
-      {
-        value: 'D',
-        label: 'Conhecer uma iniciação em programação e entender o que ele aprende.',
-      },
-      {
-        value: 'exploracao',
-        label: 'Ainda estou procurando uma ideia para apresentar a ele.',
-      },
-      {
-        value: 'outra_procura',
-        label: 'O que procuro não aparece nessas opções.',
-      },
+    { ...ramo917, shuffle: true, fixedLast: ['nenhum'] },
+  ),
+  // I. Uma cena que a família já viu, no lugar da calculadora. Escolhe o porquê. Não pontua.
+  pergunta(
+    6,
+    'trava',
+    'casa',
+    'Quando não dá certo',
+    'Quando ele tenta uma coisa nova no computador e não dá certo, o que costuma acontecer?',
+    [
+      ['desiste', 'Ele desiste e volta para o jogo'],
+      ['chama', 'Ele me chama, e eu não sei ajudar'],
+      ['copia', 'Ele procura um vídeo e copia sem entender'],
+      ['insiste', 'Ele tenta de outro jeito até dar certo'],
+      ['nao_vi', 'Ainda não vi isso acontecer'],
     ],
-    multiple: true,
-    maxSelections: 2,
-    exclusive: ['exploracao', 'outra_procura'],
-    subtitulo: 'Escolha até duas opções.',
-    id: 5,
-  },
-  {
-    key: 'prioridade',
-    stage: 'procura',
-    titulo: 'Qual desses dois você gostaria de explorar primeiro?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_prioridade',
-    eventName: 'desafio_resposta_prioridade',
-    opcoes: [
-      {
-        value: 'A',
-        label: 'Encontrar algo para ele construir dentro do tempo de tela que já combinamos.',
-      },
-      {
-        value: 'B',
-        label: 'Ver um primeiro jogo funcionando, construído por ele com orientação.',
-      },
-      {
-        value: 'C',
-        label: 'Dar espaço ao interesse dele por desenhos, personagens e histórias.',
-      },
-      {
-        value: 'D',
-        label: 'Conhecer uma iniciação em programação e entender o que ele aprende.',
-      },
-      {
-        value: 'iguais',
-        label: 'Os dois têm o mesmo peso para mim.',
-      },
+    { ...ramo917, shuffle: true, fixedLast: ['nao_vi'] },
+  ),
+  // N. A cena daqui a um mês, o tempo do acesso (2 pontos). Sem opção neutra.
+  pergunta(
+    7,
+    'cena_desejada',
+    'desejo',
+    'Cena desejada',
+    'Daqui a um mês, qual cena você gostaria de ver?',
+    [
+      ['A', 'Ele me chamando: olha o que eu fiz'],
+      ['B', 'Um amigo jogando um jogo que ele fez'],
+      ['C', 'Ele escolhendo o personagem e o cenário do próprio jogo'],
+      ['D', 'Ele me explicando como o jogo funciona por dentro'],
     ],
-    id: 6,
-  },
-  {
-    key: 'duvida',
-    stage: 'procura',
-    titulo: 'Ao pensar em uma atividade nova para ele, qual é sua maior dúvida?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_duvida',
-    eventName: 'desafio_resposta_duvida',
-    opcoes: [
-      {
-        value: 'interesse',
-        label: 'Se ele vai querer participar da atividade.',
-      },
-      {
-        value: 'companhia',
-        label: 'Se vai precisar de mim ao lado o tempo todo.',
-      },
-      {
-        value: 'ajuda',
-        label: 'Como recebe ajuda quando uma parte não funciona.',
-      },
-      {
-        value: 'rotina',
-        label: 'Como encaixar as atividades na nossa rotina.',
-      },
-      {
-        value: 'valor',
-        label: 'Como saber se vale investir nessa atividade.',
-      },
-      {
-        value: 'sem_duvida',
-        label: 'Ainda não tenho uma dúvida específica.',
-      },
+    { ...ramo917, shuffle: true },
+  ),
+  // N. A objeção principal. Professor ao vivo é a única que a oferta não atende.
+  pergunta(
+    8,
+    'garantia',
+    'desejo',
+    'O que precisa estar garantido',
+    'Para dar certo aí em casa, o que precisa estar garantido?',
+    [
+      ['sozinho', 'Ele conseguir fazer sozinho'],
+      ['ajuda', 'Ter ajuda quando ele travar'],
+      ['acompanhar', 'Eu conseguir acompanhar de longe'],
+      ['tempo_tela', 'Caber no tempo de tela que a gente combinou'],
+      ['orcamento', 'Caber no orçamento'],
+      ['ao_vivo', 'Ter professor ao vivo'],
     ],
-    id: 7,
-  },
-  {
-    key: 'formato',
-    stage: 'orientacao',
-    titulo: 'Quando seu filho aprende algo novo, que tipo de acompanhamento você procura?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_formato',
-    eventName: 'desafio_resposta_formato',
-    opcoes: [
-      {
-        value: 'gravado',
-        label: 'Explicações que ele possa pausar e rever, com ajuda por mensagem se precisar.',
-      },
-      {
-        value: 'prefere_ao_vivo',
-        label: 'Prefiro um professor ao vivo, mas posso avaliar explicações gravadas.',
-      },
-      {
-        value: 'exige_ao_vivo',
-        label: 'Preciso de um professor ao vivo acompanhando a atividade.',
-      },
-      {
-        value: 'a_conferir',
-        label: 'Ainda preciso entender a diferença para escolher.',
-      },
+    { ...ramo917, shuffle: true, fixedLast: ['ao_vivo'] },
+  ),
+  // D. A família escolhe o próprio diagnóstico (3 pontos e o desempate).
+  pergunta(
+    9,
+    'sintese',
+    'desejo',
+    'Frase-síntese',
+    'Juntando tudo, o que você quer para ele?',
+    [
+      ['A', 'Que o tempo de tela sirva para alguma coisa'],
+      ['B', 'Que as ideias de jogo dele saiam do papel'],
+      ['C', 'Que os personagens dele ganhem vida na tela'],
+      ['D', 'Que ele entenda como a tecnologia funciona por dentro'],
+      ['conhecer', 'Ainda estou conhecendo'],
     ],
-    id: 8,
-  },
-  {
-    key: 'abertura_criacao',
-    stage: 'orientacao',
-    titulo:
-      'Como você se sente sobre apresentar a ele uma primeira experiência de programação de jogos?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_abertura_criacao',
-    eventName: 'desafio_resposta_abertura_criacao',
-    opcoes: [
-      {
-        value: 'conhecer',
-        label: 'Quero conhecer uma atividade guiada, começando pelo básico.',
-      },
-      {
-        value: 'conversar',
-        label: 'Quero conversar com ele antes de escolher uma atividade.',
-      },
-      {
-        value: 'outra_atividade',
-        label: 'Estamos procurando outro tipo de atividade.',
-      },
+    { ...ramo917, shuffle: true, fixedLast: ['conhecer'] },
+  ),
+]
+
+// ---------------------------------------------------------------------------------------------
+// Ramo menor de 9: sete perguntas para quem cria junto.
+// ---------------------------------------------------------------------------------------------
+
+/** As perguntas que somam pontos no ramo menor de 9. */
+export const PERGUNTAS_DE_PERFIL_M9 = ['m9_cena', 'm9_cena_desejada', 'm9_sintese'] as const
+
+const ramoM9 = { ramo: 'm9' } as const
+
+export const QUESTIONS_M9: SelecaoStep[] = [
+  // S. A leitura define o papel do adulto na sessão. Não pontua.
+  pergunta(
+    10,
+    'm9_leitura',
+    'rotina',
+    'Leitura',
+    'Ele já lê?',
+    [
+      ['nao', 'Ainda não'],
+      ['comecando', 'Está começando'],
+      ['prefere', 'Lê, mas prefere que eu leia'],
+      ['sozinho', 'Lê sozinho'],
     ],
-    id: 9,
-  },
-  {
-    key: 'desencontro',
-    stage: 'orientacao',
-    titulo: 'Que tipo de atividade vocês estão procurando?',
-    tipo: 'selecao',
-    etapa: 'filho',
-    lastStep: 'desafio_desencontro',
-    eventName: 'desafio_resposta_desencontro',
-    opcoes: [
-      {
-        value: 'desenho',
-        label: 'Uma atividade centrada em desenhar.',
-      },
-      {
-        value: 'ferramenta_especifica',
-        label: 'Um curso feito no Roblox ou Minecraft.',
-      },
-      {
-        value: 'avancado',
-        label: 'Um projeto mais avançado de programação.',
-      },
-      {
-        value: 'outro',
-        label: 'Outro tipo de atividade.',
-      },
+    ramoM9,
+  ),
+  // S. O requisito real: nessa idade o aparelho mais comum é o tablet, que não serve para montar.
+  pergunta(
+    11,
+    'm9_computador',
+    'rotina',
+    'Computador',
+    'Vocês têm computador com mouse e teclado em casa?',
+    [
+      ['sim', 'Sim, podemos usar'],
+      ['organizar', 'Sim, mas preciso organizar um horário'],
+      ['celular_tablet', 'Só celular ou tablet'],
+      ['verificar', 'Ainda vou ver'],
     ],
-    id: 10,
-  },
+    ramoM9,
+  ),
+  // S. A oferta pede o adulto do lado: a carta não vende uma rotina que a família não tem.
+  pergunta(
+    12,
+    'm9_tempo_juntos',
+    'rotina',
+    'Tempo juntos',
+    'Numa semana normal, quantas vezes vocês conseguem sentar juntos no computador?',
+    [
+      ['uma', 'Uma vez, um pouquinho'],
+      ['duas_tres', 'Duas ou três vezes'],
+      ['mais', 'Mais do que isso'],
+      ['nao_sei', 'Ainda não sei'],
+    ],
+    { ...ramoM9, subtitulo: 'Pode chutar.' },
+  ),
+  // P. A cena de casa (3 pontos). O irmão mais velho não pontua e ganha uma frase própria.
+  pergunta(
+    13,
+    'm9_cena',
+    'casa',
+    'Cena de casa',
+    'Qual destas frases parece mais com ele?',
+    [
+      ['A', 'Só fica no joguinho pronto do tablet'],
+      ['B', 'Inventa brincadeira e personagem o tempo todo'],
+      ['D', 'Quer saber como tudo funciona e apertar tudo'],
+      ['irmao', 'Quer fazer o que o irmão mais velho faz'],
+      ['nenhum', 'Nenhuma dessas'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['nenhum'] },
+  ),
+  // N. A cena daqui a um mês (2 pontos; a dos avós soma para A). Sem opção neutra.
+  pergunta(
+    14,
+    'm9_cena_desejada',
+    'desejo',
+    'Cena desejada',
+    'Daqui a um mês, qual cena você gostaria de ver?',
+    [
+      ['A', 'Ele me chamando para ver o que a gente fez'],
+      ['B', 'O personagem que ele escolheu andando na tela'],
+      ['D', 'Ele me explicando o que cada bloco faz'],
+      ['A2', 'Os avós jogando um jogo nosso'],
+    ],
+    { ...ramoM9, shuffle: true },
+  ),
+  // N. O medo do adulto que não programa, na voz dele.
+  pergunta(
+    15,
+    'm9_garantia',
+    'desejo',
+    'O que precisa estar garantido',
+    'Na hora de sentar junto, o que precisa estar garantido?',
+    [
+      ['nao_programar', 'Eu não precisar saber programar'],
+      ['curtas', 'Sessões curtas, que caibam no dia'],
+      ['ele_escolhe', 'Ele escolher, e eu só ajudar'],
+      ['orcamento', 'Caber no orçamento'],
+      ['ao_vivo', 'Ter professor ao vivo'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['ao_vivo'] },
+  ),
+  // D. O diagnóstico escolhido pela família (3 pontos e o desempate).
+  pergunta(
+    16,
+    'm9_sintese',
+    'desejo',
+    'Frase-síntese',
+    'Juntando tudo, o que você quer para ele?',
+    [
+      ['A', 'Um tempo de tela que seja de nós dois'],
+      ['B', 'Ver as ideias dele virando jogo'],
+      ['D', 'Que ele entenda como as coisas funcionam'],
+      ['conhecer', 'Ainda estou conhecendo'],
+    ],
+    { ...ramoM9, shuffle: true, fixedLast: ['conhecer'] },
+  ),
+]
+
+/** Todas as perguntas, na ordem do /admin: a entrada e os dois ramos. */
+export const DESAFIO_QUESTIONS: SelecaoStep[] = [
+  GENERO_STEP,
+  IDADE_STEP,
+  ...QUESTIONS_9A17,
+  ...QUESTIONS_M9,
 ]

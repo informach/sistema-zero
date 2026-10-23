@@ -4,6 +4,11 @@ import { type MessageView, toMessageView } from '../mappers/message-view'
 
 export class GetMessageService {
   constructor(private readonly messages: MessageRepository) {}
+  async byIntent(consumerId: string, intentId: string): Promise<MessageView> {
+    const message = await this.messages.findByIdempotency(consumerId, intentId)
+    if (!message) throw new MessageNotFoundError('Solicitação não encontrada')
+    return toMessageView(message)
+  }
 
   async execute(id: string, consumerId?: string | null): Promise<MessageView> {
     const message = await this.messages.findById(id)

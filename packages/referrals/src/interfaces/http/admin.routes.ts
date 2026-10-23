@@ -28,6 +28,7 @@ function toRedemptionView(r: RedemptionRecord, conversion?: ConversionRecord) {
     id: r.id,
     name: r.name,
     email: r.email,
+    audience: r.audience,
     status: r.status,
     failedReason: r.failedReason,
     lastError: r.lastError,

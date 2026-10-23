@@ -1,11 +1,16 @@
 import 'server-only'
-import { creationPartStorageKey, creationStorageKey } from '@sistemazero/core/creations'
+import {
+  CONTENT_FINGERPRINT_PATTERN,
+  creationPartStorageKey,
+  creationStorageKey,
+} from '@sistemazero/core/creations'
 import { isDocumentRecord, ProjectDocumentError } from '@sistemazero/studio/project-document'
-import { validateStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
+import { validateEditableStudioCreationSnapshot } from '@sistemazero/studio/project-validation'
 import { after, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
 import type { MembersClient } from '../server/clients'
+import { CREATION_BLOB_CONTENT_TYPE, signCreationDownload } from '../server/creation-download'
 import { mediaErrorResponse } from '../server/media'
 import {
   r2DeleteObjectsUgc,
@@ -29,13 +34,11 @@ interface CreationsStorage {
   headObject?: typeof r2HeadObjectUgc
 }
 
-/** O blob comprimido (gzip do JSON). O `Content-Type` é ASSINADO no PUT: o navegador manda igual. */
-export const CREATION_BLOB_CONTENT_TYPE = 'application/gzip'
-/** TTL curto das URLs (o upload de 40 MB numa conexão ruim cabe em 10 min; o GET em 5). */
+/** O tipo do blob e os TTLs do GET moram em `server/creation-download.ts`, compartilhado com o Pensa. */
+export { CREATION_BLOB_CONTENT_TYPE }
+
+/** TTL curto do PUT (o upload de 40 MB numa conexão ruim cabe em 10 min). */
 const PUT_TTL_SECONDS = 600
-const GET_TTL_SECONDS = 300
-/** As partes de um projeto grande (até 33 MB) numa conexão lenta: 10 min. */
-const PARTS_GET_TTL_SECONDS = 600
 /**
  * Tetos do members (`CREATION_LIMITS`). Nome e kind são CORTADOS aqui, não recusados: o
  * Estúdio aceita nomes de até 200 caracteres, e recusar com 400 deixava o jogo sem
@@ -53,11 +56,11 @@ const PartHash = z.string().regex(/^[a-f0-9]{64}$/)
 
 /**
  * Espelho de `CREATION_TOOLS` do members (`molda` = a oficina 3D, 04/09/2026; `lesson-*` = o
- * rascunho do Estúdio/Pinta dentro da fase, um item por bloco, 10/10/2026).
+ * rascunho do Estúdio/Pinta dentro da aula, um item por bloco, 10/10/2026).
  */
 const Tool = z.enum(['studio', 'pinta', 'molda', 'lesson-studio', 'lesson-pinta'])
 type ToolName = z.infer<typeof Tool>
-/** O documento é um projeto do Estúdio (conferido no commit): o livre e o da fase. */
+/** O documento é um projeto do Estúdio (conferido no commit): o livre e o da aula. */
 const isStudioFormat = (tool: ToolName) => tool === 'studio' || tool === 'lesson-studio'
 /** Charset seguro: vira segmento da chave no R2 (nunca `/`, `:`, `..`). */
 const ItemId = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/)
@@ -102,13 +105,10 @@ const UploadBody = z.strictObject({
     .max(MAX_PARTS)
     .optional(),
   /**
-   * Impressão digital do conteúdo (`v1:<sha256>`, régua de `@sistemazero/core/creations`). Vai
+   * Impressão digital versionada do conteúdo (régua de `@sistemazero/core/creations`). Vai
    * opaca ao members: é o que o "envio em dia" compara entre o rascunho guardado e o envio.
    */
-  fingerprint: z
-    .string()
-    .regex(/^v1:[a-f0-9]{64}$/)
-    .optional(),
+  fingerprint: z.string().regex(CONTENT_FINGERPRINT_PATTERN).optional(),
 })
 /**
  * Só a revisão: bytes e metadados são os da RESERVA (o que foi conferido e assinado).
@@ -261,6 +261,23 @@ export function createCreationsRoutes(deps: {
     return null
   }
 
+  /** Confirma o protocolo antes de mutar: members antigo ignora `audience` na query. */
+  async function requireAdultNamespace(tool: ToolName): Promise<NextResponse | null> {
+    if (session.audience !== 'adult') return null
+    const probe = await members.listCreations(tool, { limit: 1 })
+    if (probe.status !== 200) return response(probe.status, probe.body)
+    if (probe.body?.audience === 'adult') return null
+    return NextResponse.json(
+      {
+        error: {
+          code: 'UPSTREAM_INCOMPATIBLE',
+          message: 'A biblioteca adulta ainda não está disponível. Tente novamente.',
+        },
+      },
+      { status: 503 },
+    )
+  }
+
   async function parseItem(ctx: ItemCtx): Promise<{ tool: ToolName; itemId: string } | null> {
     const raw = await ctx.params
     const tool = Tool.safeParse(raw.tool)
@@ -283,6 +300,12 @@ export function createCreationsRoutes(deps: {
       const parsed = ListQuery.safeParse(Object.fromEntries(new URL(req.url).searchParams))
       if (!parsed.success) return invalid()
       const { status, body } = await members.listCreations(tool.data, parsed.data)
+      if (session.audience === 'adult' && status === 200 && body?.audience !== 'adult') {
+        return NextResponse.json(
+          { error: { code: 'UPSTREAM_INCOMPATIBLE', message: 'Biblioteca adulta indisponível.' } },
+          { status: 503 },
+        )
+      }
       return response(status, body)
     },
   }
@@ -293,6 +316,8 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const parsed = UploadBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       // Acima do teto por item (manifesto + partes declaradas): a MESMA resposta que o members
@@ -313,6 +338,36 @@ export function createCreationsRoutes(deps: {
       }
       const reserved = await members.reserveCreationUpload(item.tool, item.itemId, parsed.data)
       if (reserved.status !== 200 || !reserved.body) return response(reserved.status, reserved.body)
+      if (session.audience === 'adult') {
+        const user = await session.getSession()
+        if (
+          !user ||
+          reserved.body.storageKey !==
+            creationStorageKey(user.id, item.tool, item.itemId, reserved.body.revision, 'adult') ||
+          reserved.body.parts?.some(
+            (part) =>
+              part.storageKey !==
+              creationPartStorageKey(
+                user.id,
+                item.tool,
+                item.itemId,
+                part.hash,
+                reserved.body?.revision ?? 0,
+                'adult',
+              ),
+          )
+        ) {
+          return NextResponse.json(
+            {
+              error: {
+                code: 'UPSTREAM_INCOMPATIBLE',
+                message: 'O serviço não confirmou o armazenamento adulto.',
+              },
+            },
+            { status: 503 },
+          )
+        }
+      }
       // Old services may silently strip the request field. Confirm before signing ANY PUT.
       // Only absence means legacy 1; malformed values (including null/string) fail closed.
       const confirmedFormat =
@@ -384,6 +439,8 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const parsed = CommitBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       // PARTES que o cliente diz ter enviado: HEAD best-effort no R2 ANTES do members — um 404
@@ -391,6 +448,7 @@ export function createCreationsRoutes(deps: {
       // promover uma revisão que aponta para partes inexistentes. Erro de HEAD ≠ 404 segue.
       const uploaded = parsed.data.uploadedParts ?? []
       let verifiedPartHashes: string[] | undefined
+      let verifiedFormatVersion: number | undefined
       if (uploaded.length > 0 && storage.headObject) {
         const user = await session.getSession()
         if (user) {
@@ -410,6 +468,7 @@ export function createCreationsRoutes(deps: {
                       item.itemId,
                       hash,
                       parsed.data.revision,
+                      session.audience,
                     ),
                   )
                   .catch(() => null),
@@ -442,9 +501,16 @@ export function createCreationsRoutes(deps: {
         if (!user) return NextResponse.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
         try {
           const document = await storage.readJson(
-            creationStorageKey(user.id, item.tool, item.itemId, parsed.data.revision),
+            creationStorageKey(
+              user.id,
+              item.tool,
+              item.itemId,
+              parsed.data.revision,
+              session.audience,
+            ),
           )
-          validateStudioCreationSnapshot(document, item.itemId)
+          const project = await validateEditableStudioCreationSnapshot(document, item.itemId)
+          verifiedFormatVersion = project.formatVersion
           verifiedPartHashes =
             isDocumentRecord(document) && 'format' in document && Array.isArray(document.assets)
               ? (document.assets as string[])
@@ -461,6 +527,7 @@ export function createCreationsRoutes(deps: {
       const { status, body } = await members.commitCreationUpload(item.tool, item.itemId, {
         ...parsed.data,
         ...(verifiedPartHashes ? { verifiedPartHashes } : {}),
+        ...(verifiedFormatVersion !== undefined ? { verifiedFormatVersion } : {}),
       })
       if (status === 200 && body) {
         // Best-effort e DEPOIS da resposta: o manifesto anterior e as partes que a revisão
@@ -487,6 +554,7 @@ export function createCreationsRoutes(deps: {
             item.tool,
             item.itemId,
             parsed.data.revision,
+            session.audience,
           )
           deleteQuietly(rejectedStorageKey, 'a revisão recusada')
         }
@@ -502,35 +570,12 @@ export function createCreationsRoutes(deps: {
       if (mismatch) return mismatch
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const ticket = await members.getCreationDownload(item.tool, item.itemId)
       if (ticket.status !== 200 || !ticket.body) return response(ticket.status, ticket.body)
       try {
-        const downloadUrl = await storage.presignGet(ticket.body.storageKey, {
-          expiresInSeconds: GET_TTL_SECONDS,
-          responseContentType: CREATION_BLOB_CONTENT_TYPE,
-        })
-        // Um GET assinado por PARTE (o cliente baixa só as que não tem localmente). TTL maior:
-        // 33 MB de partes numa conexão de 1 Mbps levam minutos.
-        const parts = await Promise.all(
-          (ticket.body.parts ?? []).map(async (part) => ({
-            hash: part.hash,
-            bytes: part.bytes,
-            url: await storage.presignGet(part.storageKey, {
-              expiresInSeconds: PARTS_GET_TTL_SECONDS,
-              responseContentType: CREATION_BLOB_CONTENT_TYPE,
-            }),
-          })),
-        )
-        return NextResponse.json({
-          downloadUrl,
-          revision: ticket.body.revision,
-          bytes: ticket.body.bytes,
-          item: ticket.body.summary,
-          parts,
-          // O relógio do servidor agora: corrige o do aparelho quando o rascunho da fase decide
-          // qual versão é a mais nova (a da conta tem `syncedAt` do servidor).
-          serverNow: new Date().toISOString(),
-        })
+        return NextResponse.json(await signCreationDownload(storage.presignGet, ticket.body))
       } catch (error) {
         return mediaErrorResponse(error)
       }
@@ -543,6 +588,8 @@ export function createCreationsRoutes(deps: {
       if (readonly) return readonly
       const item = await parseItem(ctx)
       if (!item) return invalid()
+      const incompatible = await requireAdultNamespace(item.tool)
+      if (incompatible) return incompatible
       const parsed = DeleteBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalid()
       const { status, body } = await members.deleteCreation(item.tool, item.itemId, parsed.data)

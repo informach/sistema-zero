@@ -36,15 +36,14 @@ test('a complete mixed-generation ZIP restores editable projects as new copies, 
     const parsed = importMoldaJson(backup.text)!
     expect(projects.projects).toHaveLength(1)
     expect(await gallery.getState().importAssets(parsed.assets)).toEqual({ imported: 1 })
-    expect(
-      await gallery
-        .getState()
-        .importProjects(projects.projects.map((json) => ({ name: source.name, json }))),
-    ).toEqual({ imported: 1 })
+    const result = await gallery
+      .getState()
+      .importProjects(projects.projects.map((json) => ({ name: source.name, json })))
     const all = gallery.getState().assets
     expect(all).toHaveLength(4)
     expect(new Set(all.map((item) => item.name)).size).toBe(4)
     const copy = all.find((item) => item.formatVersion === 2 && item.id !== source.id)!
+    expect(result).toEqual({ imported: 1, ids: [copy.id] })
     const restored = await persistence.read(copy.id),
       original = await persistence.read(source.id)
     expect(restored.status).toBe('active')

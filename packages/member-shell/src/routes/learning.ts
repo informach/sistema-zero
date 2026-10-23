@@ -1,4 +1,4 @@
-import { isLearningAnswers } from '@sistemazero/core/learning'
+import { isLearningAnswers, SectionProjectLiveContextSchema } from '@sistemazero/core/learning'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { isReadonlyImpersonation } from '../lib/act'
@@ -24,7 +24,13 @@ export function createLearningRoutes({
     hintsUsed: z.number().int().min(0).max(10),
   }
   const learningSchemas = {
-    'project-check': z.object({ revision: z.uuid(), project: z.unknown() }).strict(),
+    'project-check': z
+      .object({
+        revision: z.uuid(),
+        project: z.unknown(),
+        liveContext: SectionProjectLiveContextSchema.optional(),
+      })
+      .strict(),
     'action-check': z.object({ revision: z.uuid() }).strict(),
     navigation: z.object({ sectionId: z.uuid() }).strict(),
     'section-help': z
@@ -32,6 +38,8 @@ export function createLearningRoutes({
         sectionId: z.uuid(),
         body: z.string().trim().min(1).max(8000),
         requestId: z.uuid().optional(),
+        // O texto veio da fala transcrita (botão "Falar" do Kids): a equipe vê o chip "falado".
+        spoken: z.boolean().optional(),
       })
       .strict(),
     'learning-progress': z
@@ -105,7 +113,12 @@ export function createLearningRoutes({
           : ''
       const { status, body } = await gateway.gatewayFetch(
         `/members/lessons/${encodeURIComponent(params.lessonId)}${blockPath}/${endpoint}`,
-        { method, body: parsed.data },
+        {
+          method,
+          body: parsed.data,
+          // O "Verificar" com objetivos que RODAM o jogo espera o executor (o gateway dá 160 s).
+          ...(endpoint === 'project-check' ? { timeoutMs: 165_000, signal: req.signal } : {}),
+        },
       )
       return NextResponse.json(body ?? { ok: status === 200 }, {
         status,

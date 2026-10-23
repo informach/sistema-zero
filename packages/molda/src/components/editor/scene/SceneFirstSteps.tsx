@@ -31,11 +31,13 @@ export function SceneFirstSteps({
   context,
   side = 'left',
   compact = false,
+  inline = false,
 }: {
   context: SceneFirstStepsTopic
   side?: 'left' | 'right'
   /** O gatilho redondo, só com o ícone (o nome segue em `aria-label`). */
   compact?: boolean
+  inline?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [chosen, setTopic] = useState(context)
@@ -77,7 +79,7 @@ export function SceneFirstSteps({
     <aside
       aria-label={copy.open}
       className={[
-        'absolute bottom-3 z-20 flex max-h-[calc(100%-1.5rem)]',
+        inline ? 'relative z-40 flex' : 'absolute bottom-3 z-20 flex max-h-[calc(100%-1.5rem)]',
         side === 'right'
           ? 'right-3 max-w-[calc(100%-1.5rem)] flex-col-reverse items-end gap-2'
           : 'left-3 max-w-[calc(100%-1.5rem)] flex-col items-start gap-2',
@@ -109,7 +111,13 @@ export function SceneFirstSteps({
               setOpen(true)
             }
           }}
-          className="sz-tool-icon-btn sz-tool-icon-btn--round shrink-0 bg-mld-surface shadow-(--mld-stage-shadow) hover:bg-mld-bg aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg"
+          // Na barra do projeto, o quadrado quieto dos vizinhos (desfazer, refazer); flutuando no
+          // palco, o círculo branco com sombra.
+          className={
+            inline
+              ? 'sz-tool-icon-btn shrink-0 aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg'
+              : 'sz-tool-icon-btn sz-tool-icon-btn--round shrink-0 bg-mld-surface shadow-(--mld-stage-shadow) hover:bg-mld-bg aria-expanded:bg-mld-accent aria-expanded:text-mld-accent-fg'
+          }
         >
           <CircleHelp aria-hidden="true" />
         </button>
@@ -137,6 +145,7 @@ export function SceneFirstSteps({
           id={panelId}
           aria-labelledby={titleId}
           className={[
+            inline ? 'absolute right-0 top-full mt-2 max-h-[70vh]' : '',
             'min-h-0 w-88 max-w-full space-y-3 overflow-auto overscroll-contain',
             'rounded-xl border border-mld-border bg-mld-surface p-4 text-mld-text',
           ].join(' ')}

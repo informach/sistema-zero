@@ -1,5 +1,119 @@
 # CLAUDE.md — @sistemazero/auth
 
+## Aviso de 18 anos do perfil Kids (20/10/2026)
+
+O perfil NUNCA é cortado ao completar 18 anos (a regra "um perfil válido não perde acesso" do
+`setBirthDate` continua valendo). O responsável recebe UM e-mail `profile-turned-18`
+(`nome` = primeiro nome da conta, fallback `Responsável`; `nome_perfil`; `link` = constante
+`ADULT_AREA_URL`, oferta `/pro/comunidade-dos-criadores/oferta/continuar` com UTM `perfil-18`).
+Job `NotifyAdultProfilesService` (application/maintenance): boot + `PROFILE_ADULT_NOTICE_INTERVAL_MS`
+(default 6 h, 0 desliga, teto 2.147.483.647 do `setInterval`, não roda com NODE_ENV=test). ⚠️ Só
+sobe com o Messaging configurado (`GATEWAY_URL` + `AUTH_HMAC_SECRET`, `adultNoticeJobState`): com
+o cliente nulo o envio resolveria e o aviso ficaria registrado para sempre sem e-mail; sem eles,
+loga UMA vez `profile.adult_notice.disabled` (`reason: messaging-not-configured`). O `link` segue
+constante (o Auth não tem env com a URL pública do funil). Roda sob advisory lock de SESSÃO numa conexão
+reservada (`withSessionAdvisoryLock`, chave `1635430518`; não xact, porque o ciclo faz HTTP).
+Elegível: perfil ativo, com `birth_date`, conta dona ativa, 18º aniversário (dia civil de São
+Paulo; 29/02 → 01/03) entre hoje-7 dias e hoje (`domain/profile/adult-notice.ts`; a faixa exata
+de nascimentos vai ao SQL). O responsável sai de `account_user_id`, inclusive no perfil-padrão
+legado (`id = id da conta`). Dedupe para sempre em `auth.profile_adult_notices` (PK no perfil,
+FK em cascata; migration `0025_profile_adult_notices`), gravado DEPOIS do envio; a
+idempotencyKey `profile-turned-18-<profileId>` cobre crash entre envio e registro. Falha de
+envio não registra e repete no próximo ciclo enquanto estiver na janela. Testes:
+`tests/unit/profile-adult-notice.test.ts`, `tests/db/profile-adult-notice.test.ts` e o contrato
+`tests/unit/message-templates-contract.test.ts` (chaves do Auth no seed do Messaging).
+
+## Admissão de perfis Kids (implementação em andamento, 18/10/2026)
+
+`profiles.admissionState: pending|ready` é separado de `active|archived`. As migrations geradas
+`0023_profile_admission_expand`/`0024_profile_admission_pending` preservam todos os existentes
+como ready e mudam somente o default futuro para pending. Não foram aplicadas em ambiente real
+por esta frente. Criação usa requestId estável por submissão, hash dos dados normalizados e
+perfil+consentimento+job `profile_admissions` na mesma TX. Pending conta no teto; retry não cria
+irmão nem replica consentimento. A grade parental pode exibi-lo; seletores/sessões/público/
+ownership/estudo exigem active+ready.
+
+Auth chama somente o initializer privado Members com owner capturado. `MEMBERS_PROFILE_ADMISSION_TOKEN`
+é uma credencial dedicada, igual nos dois serviços, exigida em produção; não reutilizar o token
+interno geral nem expor no browser. Ausência nega a rota também em dev. RPC nunca ocorre em TX.
+ACK ready disputa lock LOCAL `profile:<account>` e linhas account→profile→job, revalidando owner,
+conta ativa, perfil ativo/pending e lease atual; não exige a política ainda na mesma versão porque
+Members já materializou direitos permanentes. O worker limita cada ciclo, reclama um job por vez,
+tem retry durável/lease e drena chamada ativa no stop.
+
+Edição usa `editDetails(owner, decide)` com decisão síncrona sobre estado fresh sob os locks locais
+account→profile; grava somente os campos fornecidos. Não existe `update(snapshot)` de perfil.
+`archiveOwned` altera apenas o ciclo de vida e cancela o job pendente na mesma transação.
+Nenhuma edição escreve admissionState; voz sem mudança preserva revogação/data/trilha.
+SQL causal teve RED6→GREEN10/32 asserções em banco QA novo5434; expand/default foram exercitadas
+sobre perfis ativos e arquivados reais anteriores à0023. Claim usa alias não qualificado em
+FOR UPDATE OF (PostgreSQL recusa a relação schema-qualified). Types e regressão completa Auth
+continuam pendentes; o recorte ainda não habilita o rollout.
+Clientes/requestId, retry parental, backfill e rollout completo devem acompanhar o contrato; não
+habilitar tráfego parcialmente. Captura inicial suspende criadores antigos e preserva coorte Auth
+completa (inclusive sem XP e arquivados), sem lock crossDB/2PC.
+
+## Operações da equipe no TUI (15/10/2026)
+
+`POST /auth/staff/operations` é uma fachada de operações tipadas, com JWT + refresh vigente da mesma conta. Revalida família/linha, papel, estado e senha definida; não aceita Kids, perfil ou impersonação. Auditoria de intenção é durável antes de qualquer mutação. O schema compartilhado está em `@sistemazero/core/staff`. Mensageria é delegada por HMAC às rotas staff do messaging; demais leituras/resposta de helpdesk usam o Bearer no gateway. Studio build usa STUDIO_PRO_RUNTIME_URL/TOKEN somente no servidor. A rota tem teto de 2.032.768 bytes; o limite das outras rotas é preservado. O timeout de borda é 65 s para builds. Nunca registrar body desta rota: contém refreshToken. Testes em staff-operations.test.ts e staff-gateway.test.ts.
+
+## Fala da criança (voz → texto) por perfil (14/10/2026)
+
+- **O quê:** no Kids a criança pode FALAR em vez de escrever as mensagens para a equipe (o navegador
+  grava, o servidor transcreve, a voz nunca é guardada, a criança confere e envia o texto). Os PAIS
+  decidem POR CRIANÇA. Colunas `profiles.voice_input_enabled` (boolean NOT NULL, default `false`) e
+  `voice_input_enabled_at` (timestamptz nulo = a hora do consentimento EM VIGOR, a última vez que
+  ligaram; volta a `null` ao desligar), migration `0019_profile_voice_input`.
+  `ProfileView.voiceInputEnabled` sai na lista de perfis e no `GET /auth/me` da sessão da criança
+  (é por aí que o app Kids lê); o `_at` NUNCA sai na view.
+- **Trilha do consentimento** (LGPD art. 8º §2º: o controlador prova o consentimento; migration
+  `0020_profile_voice_input_events`): tabela APPEND-ONLY `auth.profile_voice_input_events` (`id`
+  `gen_random_uuid()`, `profile_id` FK → `profiles` `ON DELETE CASCADE`, `account_user_id`
+  snapshot da conta dona, `enabled`, `actor` `parent|support`, `impersonator_id` = ator REAL da
+  sessão de suporte, `created_at`; índice `(profile_id, created_at)`). Uma linha por MUDANÇA
+  efetiva (desligada→ligada ou ligada→desligada), inclusive o perfil criado já ligado; reenviar o
+  mesmo valor não grava. O `_at` do perfil continua sendo zerado ao desligar DE PROPÓSITO: ele
+  responde "há consentimento agora?"; o histórico (quando ligou, quando desligou, quem) é a trilha.
+  - **Como grava:** `setVoiceInputEnabled(valor, ator, agora)` deixa uma `VoiceInputConsentChange`
+    pendente no agregado (fora do snapshot; ida e volta antes de salvar = nada). O
+    `DrizzleProfileRepository` a grava na MESMA transação do perfil (`createWithinLimit` já era
+    transacional; o `update` abre transação só quando há mudança, trava a linha com `FOR UPDATE`
+    e só grava se o valor do banco ainda é o outro: duplo clique não duplica). ⚠️ As colunas da
+    fala só são escritas JUNTO com a linha da trilha: um `update` sem mudança pendente nem toca
+    nelas (uma edição defasada de nome não religa a fala sem prova). O ator vem do
+    `x-auth-impersonator-id` (`impersonatorId` nos comandos de criar/editar, `voiceInputActor`
+    na policy); sem ele, `parent`.
+  - **Suporte só desliga, em três camadas:** a policy (403 `FORBIDDEN`), o agregado
+    (`VoiceInputSupportCannotEnableError`, 403) e um CHECK no banco
+    (`profile_voice_input_events_actor_ck`: `parent` sem `impersonator_id`; `support` com ele e
+    `enabled = false`).
+  - **Sem rota de leitura** (consulta por SQL, para auditoria/jurídico). **Fora da purga
+    periódica.** Sai com a exclusão física da conta pelo painel (`deleteById` apaga os perfis e a
+    FK em cascata leva a trilha: é dado pessoal da criança).
+  - Testes: `tests/unit/profile-voice-input.test.ts` (agregado e serviços com o fake, que espelha
+    a trilha em `InMemoryProfileRepository.voiceInputEvents`), o "o suporte nunca liga" de
+    `tests/integration/http-server.test.ts` (o ator do header chega à trilha) e
+    `tests/db/repositories.test.ts` (persistência junto, duplo clique, edição defasada, CHECK e
+    cascata na exclusão).
+- **Por quê desligada por padrão:** é consentimento dos pais, e a Política promete a opção mais
+  protetiva por padrão. Perfil antigo vem `false`.
+- **Regras** (`voice-input.policy.ts`, régua ÚNICA de criar e editar): a criança (`x-auth-account-id`)
+  não liga nem desliga (403 `FORBIDDEN`, "A fala da criança só pode ser alterada pelos
+  responsáveis"); o suporte (`x-auth-impersonator-id`) nunca LIGA, mesmo em modo escrita (403
+  `FORBIDDEN`), mas pode desligar; LIGAR pede o login recente de 15 min do responsável Kids
+  (`PARENT_REAUTH_REQUIRED`), também no `POST /auth/profiles` com `voiceInputEnabled: true`.
+  **Desligar é livre** (voltar ao mais protetivo nunca encontra obstáculo). Só a passagem de
+  desligada para ligada conta: reenviar `true` com ela já ligada é no-op, preserva a data do
+  consentimento e não grava trilha (`setVoiceInputEnabled`). ⚠️ Diferente do
+  `publicProfileEnabled`, que segue pedindo login recente nos DOIS sentidos (de propósito, não
+  unificar).
+
+## Vínculo de perfil para oficinas (14/10/2026)
+
+`POST /auth/internal/profiles/ownership` é S2S protegido por token interno. Recebe `accountId`
+e `profileId` (UUID ou null), valida conta ativa e perfil ativo pertencente à conta, devolve
+somente `{ valid, name? }` sem cache. Null verifica a conta para uma vaga ainda sem perfil.
+
 ## Acesso infantil por aparelho — correções do review (10/10/2026)
 
 - **Sessão adulta do Kids** (`kids.parent`, login com `platform: 'kids'` por senha ou OTP): família de
@@ -131,6 +245,14 @@ src/
    (ou perder o claim) → revoga a **família** (`family_id`) inteira (mitiga roubo).
    Logout revoga o token (ou a família). NÃO troque o claim por check-then-act:
    a corrida contornaria a reuse-detection para sempre (achado A1 do full review).
+   **Sessão de navegador marketing (`0022`, `browser_sessions`):** `/auth/browser/session/exchange`
+   consome atomicamente um refresh comum da equipe ativa e cria uma credencial opaca
+   estável, armazenada somente como SHA-256. Lock da família precede o token. Mantém
+   família e prazo absoluto existentes; recusa Kids, perfil, desktop e impersonação.
+   `/access` consulta revogação/expiração e papel/status atuais antes de emitir JWT;
+   `/disconnect` revoga a família. O BFF consulta a cada requisição, sem cache de JWT web.
+   Não altera `/refresh` nem sua detecção de reuso. Purga/exclusão em cascata acompanha
+   a família/usuário. Respostas dessas rotas são `private, no-store`.
 4. **Tokens (jose v6):** access JWT carrega `sub,email,firstName,lastName,role,status`
    (+ `phone`/`signupSource` opcionais). `JWT_ALG` = HS256 (segredo, default) ou
    RS256 (chave privada + JWKS público). O `verifyAccessToken` PINA o `alg` e valida
@@ -480,7 +602,8 @@ Espelha o padrão do payments (3 camadas, `infrastructure/observability/sentry.t
   bloqueia a conta e captura **todos** os perfis (inclusive arquivados) antes da purga externa;
   uma conta não ativa não cria perfil novo. A chamada final faz a limpeza de contas de
   teste/lixo. `DeleteUserService` apaga FÍSICA e definitivamente o usuário + os dados auth-owned
-  (refresh/reset/otp/impersonation tokens + `profiles`) numa transação (`UserRepository.deleteById`);
+  (refresh/reset/otp/impersonation tokens + `profiles`, e com eles, pela FK em cascata, a trilha
+  `profile_voice_input_events`) numa transação (`UserRepository.deleteById`);
   **`audit_logs` é PRESERVADA** (compliance, `actor_id` snapshot). Guards (defesa em profundidade,
   o gateway já restringe a `superadmin`): SÓ superadmin, **nunca a si mesmo** nem alvo
   `admin`/`superadmin` (403 `FORBIDDEN`); alvo inexistente → 404; sucesso → **204**. A cascata em

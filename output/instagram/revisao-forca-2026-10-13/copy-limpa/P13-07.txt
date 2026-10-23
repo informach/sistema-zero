@@ -1,3 +1,0 @@
-Primeiro, conferir se a torre escolhe o invasor da frente. Depois, se o disparo o atinge e a pontuação sobe.
-
-Cada teste prepara a próxima parte da construção.

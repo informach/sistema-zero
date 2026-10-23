@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 const PASSOS = [
   {
     title: 'Você envia um projeto ou uma dúvida',
-    text: 'Pode ser um projeto enviado do Estúdio, um jogo publicado no Mural ou uma pergunta na fase.',
+    text: 'Pode ser um projeto enviado do Estúdio, um jogo publicado no Mural ou uma pergunta na aula.',
   },
   {
     title: 'A equipe olha com calma',

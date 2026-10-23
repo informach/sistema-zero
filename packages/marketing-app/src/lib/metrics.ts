@@ -8,11 +8,11 @@ import type { SocialNetwork } from './networks'
 import type { FollowersSeriesView } from './types'
 
 /** Linha do LineChart: `date` + uma coluna por accountId. */
-export type FollowersChartRow = { date: string } & Record<string, number | string>
+export type FollowersChartRow = { date: string } & Record<string, number | string | null>
 
 /**
  * União ordenada das datas de TODAS as séries; conta sem snapshot num dia fica
- * ausente na linha (o recharts pula com `connectNulls`).
+ * ausente na linha; valor ausente não vira zero nem continuidade artificial.
  */
 export function buildFollowersChartRows(view: FollowersSeriesView): FollowersChartRow[] {
   const dates = new Set<string>()
@@ -37,21 +37,18 @@ export function followersDelta(serie: FollowersSeriesView['series'][number]): nu
   if (serie.points.length < 2) return null
   const first = serie.points[0]
   const last = serie.points[serie.points.length - 1]
-  if (!first || !last) return null
+  if (!first || !last || first.followers === null || last.followers === null) return null
   return last.followers - first.followers
 }
 
-/** Soma dos deltas das contas de uma rede (null = nenhuma conta com delta). */
+/** Soma somente quando todas as séries da rede têm extremos observados. */
 export function followersDeltaByNetwork(
   view: FollowersSeriesView,
   network: SocialNetwork,
 ): number | null {
-  const deltas = view.series
-    .filter((s) => s.network === network)
-    .map(followersDelta)
-    .filter((d): d is number => d !== null)
-  if (deltas.length === 0) return null
-  return deltas.reduce((sum, d) => sum + d, 0)
+  const deltas = view.series.filter((s) => s.network === network).map(followersDelta)
+  if (deltas.length === 0 || deltas.some((d) => d === null)) return null
+  return deltas.reduce<number>((sum, d) => sum + (d ?? 0), 0)
 }
 
 /** Cores fixas dark-safe por índice de série (molde sales-chart do admin). */

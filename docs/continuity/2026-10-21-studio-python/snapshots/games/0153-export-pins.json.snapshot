@@ -1,0 +1,227 @@
+{
+  "state": "CURRENT-ROOT-EXPORT-AND-GAMES9557-RECIPE-COMPOSITION-ONLY",
+  "at": "2026-10-20T23:26:47.0882786Z",
+  "root": "C:/Users/tocha/projects/sistema-zero-python",
+  "rootHead": "65b6960d7277b0efd76230589d12325588803e35",
+  "gamesHead": "9557e17bcafbe529d0079c8d941485b7f67061c4",
+  "rootSourceScope": "Relevant current Root exporter/Core files and exact Games9557 recipe/corpus. Original Root corpus fixture is composed with Games main.py only; no Root mutation or old Games Core equivalence assertion.",
+  "sourceFiles": [
+    {
+      "path": "experiments/studio-python-runtime/gameFixtures.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\experiments\\studio-python-runtime\\gameFixtures.ts",
+      "bytes": 3636,
+      "sha256": "b38aa1a81e17a65f161748abbf2ba3f488e4984b944e7bd3272f3197efbff371"
+    },
+    {
+      "path": "experiments/studio-python-runtime/gameVariants.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\experiments\\studio-python-runtime\\gameVariants.ts",
+      "bytes": 5379,
+      "sha256": "3764ab93601625d7d6c3cd945cd05dff22390d4af137c4ec90ed73dc0bdc3122"
+    },
+    {
+      "path": "experiments/studio-python-runtime/turtleFixtures.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\experiments\\studio-python-runtime\\turtleFixtures.ts",
+      "bytes": 3340,
+      "sha256": "0f41f220db9e0bddf2f394dfff6806afbcf218c2d2ad99fa30d67e56e2fd4669"
+    },
+    {
+      "path": "experiments/studio-python-l0/corpus/pacman.json",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\experiments\\studio-python-l0\\corpus\\pacman.json",
+      "bytes": 3864,
+      "sha256": "b0d575be9cf6571b750fdf27af75055f51d92e00b73b37c52d3cdb4aa1c56289"
+    },
+    {
+      "path": "packages/studio/src/export/sourceExport.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\sourceExport.ts",
+      "bytes": 6028,
+      "sha256": "6535c1e0e6106daabac3237d6592dd750845685582ea8c9d0a6c72900fbc65bc"
+    },
+    {
+      "path": "packages/studio/src/export/pythonSource.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\pythonSource.ts",
+      "bytes": 1933,
+      "sha256": "6572b87f31e5515939722b2afd7b99af0b3cf2406a324649ec7e3459ff8acc20"
+    },
+    {
+      "path": "packages/studio/src/export/pythonSourceMetadata.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\pythonSourceMetadata.ts",
+      "bytes": 9444,
+      "sha256": "f1a9f8cc6ab9101eacdbba9b8ad948dc0d894d63e58cdb4aeda57498a250a9db"
+    },
+    {
+      "path": "packages/studio/src/export/sourceRuntimeCatalog.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\sourceRuntimeCatalog.ts",
+      "bytes": 479,
+      "sha256": "b8665fe3d8efe6cbd20feefd2afaf9c592c884c98533f4331bad5d8bddc40d32"
+    },
+    {
+      "path": "packages/studio/src/export/zip.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\zip.ts",
+      "bytes": 2719,
+      "sha256": "1509159cdb70985a1ead9283d7ec5a068080dcb1874ae6abaff83e074703a98f"
+    },
+    {
+      "path": "packages/studio/src/export/zip.worker.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\zip.worker.ts",
+      "bytes": 565,
+      "sha256": "73c539d7a30dc7bd42154a4e54fe052330e4059635a77811382ce5f95d636dc1"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/audio/nativeExport.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\runtime\\python\\audio\\nativeExport.ts",
+      "bytes": 3270,
+      "sha256": "1c365f974d0fa5239b342d63695e108ca8735bc2974c240416da3aee7b04ca5c"
+    },
+    {
+      "path": "packages/studio/src/runtime/python/audio/nativeSources.generated.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\runtime\\python\\audio\\nativeSources.generated.ts",
+      "bytes": 14557,
+      "sha256": "bb724f287eefe8bce683b164a2cb06ca245f7583bdeac469cacd01e87bd3a049"
+    },
+    {
+      "path": "packages/studio/src/core/pythonAssets.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\core\\pythonAssets.ts",
+      "bytes": 5158,
+      "sha256": "2d8f79d7820b8a743a3215805d7c9cbb008e102434a636bfe39d00dca0d7241e"
+    },
+    {
+      "path": "packages/studio/src/core/projectDocumentGuards.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\core\\projectDocumentGuards.ts",
+      "bytes": 8723,
+      "sha256": "83756d8a0611654ee97fee3190563b5a6e4fb95ab51aac90549142bacc301c9a"
+    },
+    {
+      "path": "packages/studio/src/state/pythonProjectValidation.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\state\\pythonProjectValidation.ts",
+      "bytes": 2872,
+      "sha256": "138ed3b223bee0e562b907353a943fbd3724c191681b3aec0bd869d6e1c58ee8"
+    },
+    {
+      "path": "packages/studio/src/state/pythonProjectLayout.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\state\\pythonProjectLayout.ts",
+      "bytes": 4107,
+      "sha256": "1d86c2791edd4967ab1c10a712bdc7bcb28e9831550b0b759d120ace8a35f9a3"
+    },
+    {
+      "path": "packages/studio/src/state/fixtures/projectDocuments.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\state\\fixtures\\projectDocuments.ts",
+      "bytes": 2862,
+      "sha256": "9b9785851d3b4d31459a153b1ccff3aba76b9fe3e7a4988a9944a0907027105f"
+    },
+    {
+      "path": "packages/core/src/studio/runtime-catalog.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\runtime-catalog.ts",
+      "bytes": 11677,
+      "sha256": "d5355c87e4a8c42356713e7ca286ea45ce3cca227dadf1c2b2e5b39e5602e95e"
+    },
+    {
+      "path": "packages/core/src/studio/python-runtime-distribution.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\python-runtime-distribution.ts",
+      "bytes": 8461,
+      "sha256": "c71242708fb13e2c57dbcd5efe75c781e8b64034c2f1d62f6b26ee4e17593662"
+    },
+    {
+      "path": "packages/core/src/studio/project-document.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\project-document.ts",
+      "bytes": 13618,
+      "sha256": "e1915398f4cb4886ede665ad0c1854b8404774eaad89642e1c43616ddac17bdc"
+    },
+    {
+      "path": "packages/core/src/studio/project-json.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\project-json.ts",
+      "bytes": 3713,
+      "sha256": "3fadf2ed3f0c30fa779312bc7e292cef96363401ab2d291c5b3a94159f7dba43"
+    },
+    {
+      "path": "packages/core/src/studio/project-environment.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\project-environment.ts",
+      "bytes": 5516,
+      "sha256": "787a50f253094ba95e191a077d86bc5e2a0a85dbb2438fec5f0557a42edbe28c"
+    },
+    {
+      "path": "packages/core/src/studio/python-provided-modules-sz-audio.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\python-provided-modules-sz-audio.ts",
+      "bytes": 3676,
+      "sha256": "e9f3c3cdce53113916301e2129a631d6314748be48161143df2885b7fc12034b"
+    },
+    {
+      "path": "packages/core/src/studio/python-provided-modules-render.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\studio\\python-provided-modules-render.ts",
+      "bytes": 4227,
+      "sha256": "53548837a56c55d97ec4b14883bcd6fc2c33f04e30a3de18f77fc2c1ec4933dd"
+    },
+    {
+      "path": "packages/core/src/creations/content-fingerprint.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\creations\\content-fingerprint.ts",
+      "bytes": 7667,
+      "sha256": "386c64b4a86d9c792b9c2ea814c3f1843a8ab9692d469d0f5f2008aafa26f00c"
+    },
+    {
+      "path": "packages/core/package.json",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\package.json",
+      "bytes": 1738,
+      "sha256": "3fc14891655d74e1963b8fbbd97311863e274c990c190eb794044c63686f88aa"
+    },
+    {
+      "path": "packages/studio/package.json",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\package.json",
+      "bytes": 7252,
+      "sha256": "1324421f3acad86d71c7f8541913eeadea5d7cb5073654b9be3d7dfa0916de25"
+    },
+    {
+      "path": "bun.lock",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\bun.lock",
+      "bytes": 539814,
+      "sha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd"
+    },
+    {
+      "path": "packages/studio/node_modules/fflate/esm/index.mjs",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\node_modules\\fflate\\esm\\index.mjs",
+      "bytes": 91765,
+      "sha256": "8d75534a30a0580608e1271c13d70943ed4cd3589fddff7b1197748036a5116e"
+    },
+    {
+      "path": "packages/studio/node_modules/fflate/package.json",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\node_modules\\fflate\\package.json",
+      "bytes": 3543,
+      "sha256": "5922d8150b307bc0e4e441491c779c45379e9913d348848fca8d5cf02db4d134"
+    },
+    {
+      "path": "GAMES9557/experiments/studio-python-runtime/gameVariants.ts",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\gameVariants.ts",
+      "bytes": 6033,
+      "sha256": "37f1c769827aaac2d71ac757022e20e2293ba199c47d1fc6c2ee79f629d14ea9"
+    },
+    {
+      "path": "GAMES9557/experiments/studio-python-l0/corpus/pacman.json",
+      "absolutePath": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-l0\\corpus\\pacman.json",
+      "bytes": 4313,
+      "sha256": "689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d"
+    }
+  ],
+  "release": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q02-q04-r1\\release.json",
+    "sha256": "6b8bfd2c90d76549bb061cc10ab4055ae2a5ee5b31b9267b9a7e76665dd4d3f3"
+  },
+  "distribution": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\final-c9d-r1\\execution\\distributions\\a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a\\distribution.json",
+    "fileSha256": "988df6ad0cd9417365ab3fb5252be73c0cc2950e891de9299de3089c85575d3d",
+    "canonicalSha256": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a"
+  },
+  "runtimeManifestSha256": "0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e",
+  "variantVersion": "portable-audio-1.1.0",
+  "entrypointSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+  "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman-canonical11-9557-r1",
+  "historical": {
+    "receiptPath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pacman-native-r1\\preparation.json",
+    "receiptSha256": "7fe7d1743365f3e201eee7c3c6e3bacc00c9642c0b17d100cb8251aa916ca85d",
+    "zipPath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pacman-native-r1\\baseline\\source.zip",
+    "zipSha256": "d67e8f1765ae4e6af46a0d5ef6da163d2da36e3fc8a85c62148fc764608ff98c",
+    "entrySha256": "8bd915293088b0fa85a2313e046711d861f43c481aa691d88ba07402485819d8"
+  },
+  "checkerExecutionOwner": "Root",
+  "noExportPerformed": true,
+  "noRootMutation": true,
+  "noGameOrTkOrAudio": true,
+  "games": "C:\\Users\\tocha\\projects\\sistema-zero-python-games"
+}

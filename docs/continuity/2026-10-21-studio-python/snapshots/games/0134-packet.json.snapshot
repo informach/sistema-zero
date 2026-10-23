@@ -1,0 +1,178 @@
+{
+  "state": "NATIVE12-PACKET-PROPOSED-NOT-EXECUTED",
+  "at": "2026-10-20T23:41:44.1475221Z",
+  "artifact": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\space-arena-canonical12-face-r1",
+  "sourceReceiptSha256": "9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419",
+  "zipSha256": "14b95ac84cf7eefc9ff3bdcd6abc6c743c230dd52c0632eaf2c1a0659608a6c1",
+  "entrySha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3",
+  "inventoryCount": 42,
+  "rootProducerRevision": "face8acef32f1e924f1461557e82716ea7acc3dc",
+  "python": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "node": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+  "files": [
+    {
+      "name": "space_arena_native.py",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\space_arena_native.py",
+      "sha256": "e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1"
+    },
+    {
+      "name": "space_arena_observer.py",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\space_arena_observer.py",
+      "sha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a"
+    },
+    {
+      "name": "run_space_arena_native.mjs",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\native12-functional-package-r1\\run_space_arena_native.mjs",
+      "sha256": "cae7c8fd4c4db8f0622b4116b82c466e162170d5680eaeca428d04d3b25754e7"
+    }
+  ],
+  "environmentPins": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\pyvenv.cfg",
+      "bytes": 462,
+      "sha256": "3f96d69d9c2271c487c6069a158ca6b9d3e2f696eda3016ce0c6af455fada55c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+      "bytes": 255320,
+      "sha256": "e725f520cfbb2e4844fe0a9fc8949236f20b0d67e470d1232618b99504a0691a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\python.exe",
+      "bytes": 106328,
+      "sha256": "fda7026477256845afab371e354c4d512896665f1761939cb5887d0a9dec257a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\_tkinter.pyd",
+      "bytes": 69464,
+      "sha256": "f1d7eebfe85d0b3ef56e9db4d23fe3421de7ed77bfd8bea1df83a1ae96600fea"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\tcl86t.dll",
+      "bytes": 1842008,
+      "sha256": "2fd6035e9e26b90ee5cb5e6f22f9dbc2a3576c81a5da4c673e0d36a540c55c2a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\DLLs\\tk86t.dll",
+      "bytes": 1591640,
+      "sha256": "abcabe172f982a2969ef45dd2c79630c2dd84562b657e11dd97cf2bcfce095c7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\Lib\\turtle.py",
+      "bytes": 153810,
+      "sha256": "8ba9c0ad9ca5c546df1034709b74dac3f76a9799e97800f0e04aca6213ca8fc4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\cpython-3.14.2\\Lib\\tkinter\\__init__.py",
+      "bytes": 193096,
+      "sha256": "ee48b704fbc0066a2bbdd2492eb5a8164a0b7a5ebc06736bdc4c19a52a0260b4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\_miniaudio.pyd",
+      "bytes": 601088,
+      "sha256": "4639e3ae31285aaf2a02cf4d237d4f237f9bf0bac91af723ee8e5195fbb4d43b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\_cffi_backend.cp314-win_amd64.pyd",
+      "bytes": 181248,
+      "sha256": "9e99b2184c60f21a88cafc374386ded3559e8694ed7cf111f2869e066d303334"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\miniaudio.py",
+      "bytes": 90613,
+      "sha256": "282bbe1d936a67b942597303a534e42fdfe407c245686dab5949f46027b59d7f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\miniaudio-1.71.dist-info\\METADATA",
+      "bytes": 26453,
+      "sha256": "4c375f306c54fe64792ffc56fb2a2b5a6458d644149d268898393364cab56f1c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\cffi-2.1.1.dist-info\\METADATA",
+      "bytes": 2594,
+      "sha256": "67b6a7595df7ede2195016a05d285faa7d362a8f57c238984edb8bb674b5770d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\pycparser-3.11.dist-info\\METADATA",
+      "bytes": 8238,
+      "sha256": "e3a74c846648bb55f4f907284b745e2003b87b96d9c9d17a8a50cf37804541c9"
+    }
+  ],
+  "installedAudioMatches": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\__init__.py",
+      "sha256": "36d5a58ebb43004cfd10aac2708350f16ced161a2cb8062915e644f491a227ba",
+      "archivePath": ".sistemazero/python-audio/sz_audio/__init__.py"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\__init__.pyi",
+      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+      "archivePath": ".sistemazero/python-audio/sz_audio/__init__.pyi"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_desktop.py",
+      "sha256": "df8f0d7b7baefdd18ba8979b8f6634d7deb6496355f6fb018a2de1d86b3f6b42",
+      "archivePath": ".sistemazero/python-audio/sz_audio/_desktop.py"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_mixer.py",
+      "sha256": "78b23124b0d05ad74b6aeb37d4ed5e5c986331f20d3f262374647ae4b2a600c4",
+      "archivePath": ".sistemazero/python-audio/sz_audio/_mixer.py"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_module.json",
+      "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49",
+      "archivePath": ".sistemazero/python-audio/sz_audio/_module.json"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\_wav.py",
+      "sha256": "1dc17a15bc63439c8cbdb14af8227104a8034c56261c497c7692badb55ab6f87",
+      "archivePath": ".sistemazero/python-audio/sz_audio/_wav.py"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio\\py.typed",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "archivePath": ".sistemazero/python-audio/sz_audio/py.typed"
+    }
+  ],
+  "cases": [
+    "Q02",
+    "Q03",
+    "Q04",
+    "Q05",
+    "Q06",
+    "Q07"
+  ],
+  "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\native12-functional-run-r1",
+  "cooperativeBudgetSeconds": 30,
+  "childBudgetMs": 40000,
+  "proposedWindowMs": 240000,
+  "estimatedRealBatchMs": 120000,
+  "mandatoryAbsoluteDeadlineEveryChild": true,
+  "stopFirstNegative": true,
+  "predictedFrames": [
+    7,
+    9,
+    2,
+    2,
+    1,
+    20
+  ],
+  "predictedClears": [
+    8,
+    10,
+    3,
+    3,
+    2,
+    21
+  ],
+  "predictionsAreNotNativeEvidence": true,
+  "reusedEnvironment": true,
+  "freshInstall": false,
+  "wasapiObservedFresh": false,
+  "noGameOrTkOrAudioExecution": true,
+  "noInstallOrPip": true,
+  "noRootMutation": true,
+  "sourceFilesUnchanged": true,
+  "checkerExecutionOwner": "Root ONLY after native END"
+}

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import { AmbassadorAdminService } from '../../src/application/ambassadors/ambassador-admin.service'
 import { FakeReferralsGateway, InMemoryReferralRepository, silentLogger } from '../fakes/in-memory'
 
-const OPTS = { funnelPublicUrl: 'https://sistemazero.com.br' }
+const OPTS = { funnelPublicUrl: 'https://sistemazero.com.br', adultGiftEnabled: true }
 const ACCOUNT = '11111111-1111-1111-1111-111111111111'
 
 describe('AmbassadorAdminService.selfEnroll (auto-cadastro do pai)', () => {

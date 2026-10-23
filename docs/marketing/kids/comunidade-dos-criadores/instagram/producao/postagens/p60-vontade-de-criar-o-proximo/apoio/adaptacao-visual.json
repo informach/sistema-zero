@@ -1,0 +1,39 @@
+{
+  "points": [
+    [
+      120,
+      480
+    ],
+    [
+      260,
+      480
+    ],
+    [
+      400,
+      480
+    ],
+    [
+      540,
+      420
+    ],
+    [
+      680,
+      340
+    ],
+    [
+      680,
+      200
+    ],
+    [
+      520,
+      150
+    ],
+    [
+      380,
+      150
+    ]
+  ],
+  "change": "Desenha no callback de desenho a trilha e oito casas nos pontos existentes. Nenhuma numeração nem placar. Não altera eventos, dados ou regras.",
+  "draw": "ctx.save();const track=[[120,480],[260,480],[400,480],[540,420],[680,340],[680,200],[520,150],[380,150]];ctx.lineWidth=12;ctx.strokeStyle='#8aa398';ctx.lineJoin='round';ctx.beginPath();track.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();track.forEach(([x,y],i)=>{ctx.fillStyle=i===7?'#ffd166':'#f6f0dc';ctx.strokeStyle=i===7?'#ffecab':'#9eb6aa';ctx.lineWidth=5;ctx.beginPath();ctx.roundRect(x-35,y-35,70,70,12);ctx.fill();ctx.stroke()});ctx.restore();",
+  "observation": "window.__read=()=>({blue:{x:azul.x,y:azul.y,space:SZGameKit.spaceOf(azul),score:pontosAzul},red:{x:vermelho.x,y:vermelho.y,space:SZGameKit.spaceOf(vermelho),score:pontosVermelho},turn:SZGameKit.currentPlayer()});"
+}

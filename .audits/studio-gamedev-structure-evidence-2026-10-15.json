@@ -1,0 +1,1748 @@
+{
+  "files": 3067,
+  "bytes": 189692017,
+  "unique_hashes": 2904,
+  "skills": 373,
+  "packages": [
+    {
+      "name": "AlterLab_GameForge-main",
+      "files": 115,
+      "bytes": 1687261,
+      "extensions": {
+        ".svg": 1,
+        ".md": 93,
+        ".yml": 1,
+        "": 5,
+        ".sh": 12,
+        ".json": 3
+      }
+    },
+    {
+      "name": "Claude-Code-Game-Studios-main",
+      "files": 412,
+      "bytes": 3153754,
+      "extensions": {
+        ".md": 387,
+        ".yaml": 5,
+        ".sh": 13,
+        ".json": 1,
+        "": 5,
+        ".yml": 1
+      }
+    },
+    {
+      "name": "ai-game-spritesheets-main",
+      "files": 35,
+      "bytes": 13860851,
+      "extensions": {
+        "": 2,
+        ".md": 9,
+        ".png": 21,
+        ".gif": 3
+      }
+    },
+    {
+      "name": "awesome-agent-skills-main",
+      "files": 4,
+      "bytes": 180799,
+      "extensions": {
+        "": 2,
+        ".md": 2
+      }
+    },
+    {
+      "name": "cc-skills-main",
+      "files": 24,
+      "bytes": 333467,
+      "extensions": {
+        ".md": 16,
+        ".html": 1,
+        ".py": 5,
+        ".txt": 1,
+        "": 1
+      }
+    },
+    {
+      "name": "everything-game-dev-code-main",
+      "files": 657,
+      "bytes": 16188432,
+      "extensions": {
+        ".md": 498,
+        ".json": 31,
+        ".toml": 1,
+        ".mdc": 4,
+        ".example": 1,
+        "": 8,
+        ".yml": 1,
+        ".ts": 1,
+        ".ps1": 1,
+        ".sh": 1,
+        ".html": 3,
+        ".js": 91,
+        ".png": 14,
+        ".py": 1,
+        ".txt": 1
+      }
+    },
+    {
+      "name": "godogen-master",
+      "files": 60,
+      "bytes": 347590,
+      "extensions": {
+        ".md": 38,
+        "": 2,
+        ".sh": 5,
+        ".py": 13,
+        ".json": 1,
+        ".txt": 1
+      }
+    },
+    {
+      "name": "love2d-pocket-bomber-game-main",
+      "files": 47,
+      "bytes": 875514,
+      "extensions": {
+        ".md": 22,
+        "": 1,
+        ".lua": 23,
+        ".gif": 1
+      }
+    },
+    {
+      "name": "phaserjs-oakwoods-main",
+      "files": 39,
+      "bytes": 2953155,
+      "extensions": {
+        ".md": 22,
+        ".py": 3,
+        "": 2,
+        ".gif": 1,
+        ".html": 1,
+        ".json": 4,
+        ".txt": 2,
+        ".ts": 4
+      }
+    },
+    {
+      "name": "skills-main",
+      "files": 1209,
+      "bytes": 18811540,
+      "extensions": {
+        ".md": 1064,
+        "": 1,
+        ".ts": 7,
+        ".json": 25,
+        ".html": 1,
+        ".mdx": 15,
+        ".backup": 1,
+        ".yaml": 3,
+        ".py": 19,
+        ".sh": 9,
+        ".template": 2,
+        ".tsx": 8,
+        ".js": 4,
+        ".mp3": 3,
+        ".lock": 4,
+        ".toml": 4,
+        ".rs": 11,
+        ".example": 3,
+        ".txt": 1,
+        ".csv": 24
+      }
+    },
+    {
+      "name": "threejs-capacitor-ios-game-main",
+      "files": 24,
+      "bytes": 31835061,
+      "extensions": {
+        ".md": 13,
+        ".gif": 2,
+        ".txt": 6,
+        "": 2,
+        ".json": 1
+      }
+    },
+    {
+      "name": "threejs-tactics-game-main",
+      "files": 33,
+      "bytes": 28367950,
+      "extensions": {
+        ".md": 18,
+        ".py": 1,
+        "": 1,
+        ".png": 10,
+        ".svg": 1,
+        ".gif": 1,
+        ".json": 1
+      }
+    },
+    {
+      "name": "vibe-isometric-sprites-main",
+      "files": 100,
+      "bytes": 46057835,
+      "extensions": {
+        ".json": 12,
+        ".txt": 4,
+        ".md": 16,
+        ".py": 12,
+        ".toml": 1,
+        "": 1,
+        ".png": 48,
+        ".mov": 2,
+        ".mp4": 2,
+        ".gif": 2
+      }
+    },
+    {
+      "name": "vibejam-starter-pack-main",
+      "files": 308,
+      "bytes": 25038808,
+      "extensions": {
+        ".json": 13,
+        ".txt": 20,
+        ".md": 85,
+        ".py": 23,
+        ".mjs": 2,
+        "": 5,
+        ".png": 53,
+        ".gltf": 93,
+        ".html": 7,
+        ".gif": 2,
+        ".ts": 4,
+        ".jpeg": 1
+      }
+    }
+  ],
+  "gltf": [
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Animals/glTF/Chick.gltf",
+      "bytes": 202015,
+      "triangles": 1944,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 5,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Animals/glTF/Chicken.gltf",
+      "bytes": 219103,
+      "triangles": 2160,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 5,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Animals/glTF/Pig.gltf",
+      "bytes": 428160,
+      "triangles": 2840,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 8,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Animals/glTF/Sheep.gltf",
+      "bytes": 334973,
+      "triangles": 2528,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 8,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Characters/glTF/Character_Female_1.gltf",
+      "bytes": 868447,
+      "triangles": 3596,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 18,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Characters/glTF/Character_Female_2.gltf",
+      "bytes": 922785,
+      "triangles": 4928,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 18,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Characters/glTF/Character_Male_1.gltf",
+      "bytes": 849542,
+      "triangles": 3122,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 18,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Characters/glTF/Character_Male_2.gltf",
+      "bytes": 833973,
+      "triangles": 2632,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 18,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Bush.gltf",
+      "bytes": 107148,
+      "triangles": 1728,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Flowers_1.gltf",
+      "bytes": 162928,
+      "triangles": 1504,
+      "meshes": 1,
+      "materials": 3,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Flowers_2.gltf",
+      "bytes": 200640,
+      "triangles": 2080,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Grass_Big.gltf",
+      "bytes": 22196,
+      "triangles": 264,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Grass_Small.gltf",
+      "bytes": 14997,
+      "triangles": 132,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Mushroom.gltf",
+      "bytes": 58445,
+      "triangles": 1080,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Rock1.gltf",
+      "bytes": 12911,
+      "triangles": 108,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Rock2.gltf",
+      "bytes": 22839,
+      "triangles": 324,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Tree_1.gltf",
+      "bytes": 69360,
+      "triangles": 1090,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Tree_2.gltf",
+      "bytes": 51504,
+      "triangles": 778,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/forest-census/public/assets/Environment/glTF/Tree_3.gltf",
+      "bytes": 72502,
+      "triangles": 1136,
+      "meshes": 1,
+      "materials": 1,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Characters/glTF/Character_Enemy.gltf",
+      "bytes": 2274104,
+      "triangles": 19491,
+      "meshes": 16,
+      "materials": 10,
+      "images": 0,
+      "animations": 17,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Characters/glTF/Character_Hazmat.gltf",
+      "bytes": 2325520,
+      "triangles": 20359,
+      "meshes": 16,
+      "materials": 9,
+      "images": 0,
+      "animations": 17,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Characters/glTF/Character_Soldier.gltf",
+      "bytes": 2343513,
+      "triangles": 20725,
+      "meshes": 18,
+      "materials": 11,
+      "images": 0,
+      "animations": 17,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Barrier_Fixed.gltf",
+      "bytes": 207178,
+      "triangles": 1208,
+      "meshes": 1,
+      "materials": 7,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Barrier_Large.gltf",
+      "bytes": 161083,
+      "triangles": 624,
+      "meshes": 1,
+      "materials": 5,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Barrier_Single.gltf",
+      "bytes": 17441,
+      "triangles": 232,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Barrier_Trash.gltf",
+      "bytes": 169375,
+      "triangles": 4261,
+      "meshes": 1,
+      "materials": 6,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/BearTrap_Closed.gltf",
+      "bytes": 33602,
+      "triangles": 608,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/BearTrap_Open.gltf",
+      "bytes": 33601,
+      "triangles": 608,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/BrickWall_1.gltf",
+      "bytes": 10334,
+      "triangles": 108,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/BrickWall_2.gltf",
+      "bytes": 18111,
+      "triangles": 216,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/CardboardBoxes_1.gltf",
+      "bytes": 10679,
+      "triangles": 108,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/CardboardBoxes_2.gltf",
+      "bytes": 10840,
+      "triangles": 108,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/CardboardBoxes_3.gltf",
+      "bytes": 34343,
+      "triangles": 432,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/CardboardBoxes_4.gltf",
+      "bytes": 34772,
+      "triangles": 432,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Container_Long.gltf",
+      "bytes": 82360,
+      "triangles": 1336,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Container_Small.gltf",
+      "bytes": 57078,
+      "triangles": 920,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Crate.gltf",
+      "bytes": 17892,
+      "triangles": 264,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Debris_BrokenCar.gltf",
+      "bytes": 131668,
+      "triangles": 2624,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Debris_Papers_1.gltf",
+      "bytes": 3566,
+      "triangles": 12,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Debris_Papers_2.gltf",
+      "bytes": 3847,
+      "triangles": 16,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Debris_Papers_3.gltf",
+      "bytes": 3132,
+      "triangles": 6,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Debris_Pile.gltf",
+      "bytes": 36734,
+      "triangles": 424,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Debris_Tires.gltf",
+      "bytes": 106891,
+      "triangles": 1776,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/ExplodingBarrel.gltf",
+      "bytes": 26314,
+      "triangles": 516,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/ExplodingBarrel_Spilled.gltf",
+      "bytes": 33772,
+      "triangles": 724,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Fence.gltf",
+      "bytes": 9800,
+      "triangles": 212,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Fence_Long.gltf",
+      "bytes": 9805,
+      "triangles": 212,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/GasCan.gltf",
+      "bytes": 39211,
+      "triangles": 788,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/GasTank.gltf",
+      "bytes": 45315,
+      "triangles": 1004,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Health.gltf",
+      "bytes": 36391,
+      "triangles": 732,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Key.gltf",
+      "bytes": 17557,
+      "triangles": 472,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Landmine.gltf",
+      "bytes": 18550,
+      "triangles": 300,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/MetalFence.gltf",
+      "bytes": 120224,
+      "triangles": 218,
+      "meshes": 1,
+      "materials": 2,
+      "images": 1,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Pallet.gltf",
+      "bytes": 13938,
+      "triangles": 176,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Pallet_Broken.gltf",
+      "bytes": 21615,
+      "triangles": 258,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Pipes.gltf",
+      "bytes": 28494,
+      "triangles": 688,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/SackTrench.gltf",
+      "bytes": 25095,
+      "triangles": 448,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/SackTrench_Small.gltf",
+      "bytes": 13899,
+      "triangles": 224,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Sign.gltf",
+      "bytes": 14328,
+      "triangles": 142,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Sofa.gltf",
+      "bytes": 20214,
+      "triangles": 416,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Sofa_Small.gltf",
+      "bytes": 13882,
+      "triangles": 264,
+      "meshes": 1,
+      "materials": 1,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/StreetLight.gltf",
+      "bytes": 15197,
+      "triangles": 324,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Structure_1.gltf",
+      "bytes": 335130,
+      "triangles": 3966,
+      "meshes": 1,
+      "materials": 6,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Structure_2.gltf",
+      "bytes": 443202,
+      "triangles": 5276,
+      "meshes": 1,
+      "materials": 8,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Structure_3.gltf",
+      "bytes": 439060,
+      "triangles": 5555,
+      "meshes": 1,
+      "materials": 6,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Structure_4.gltf",
+      "bytes": 449315,
+      "triangles": 5530,
+      "meshes": 1,
+      "materials": 7,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Tank.gltf",
+      "bytes": 147897,
+      "triangles": 2800,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/TrafficCone.gltf",
+      "bytes": 11626,
+      "triangles": 168,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/TrashContainer.gltf",
+      "bytes": 27344,
+      "triangles": 302,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/TrashContainer_Open.gltf",
+      "bytes": 81642,
+      "triangles": 1374,
+      "meshes": 1,
+      "materials": 5,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Tree_1.gltf",
+      "bytes": 64892,
+      "triangles": 2504,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Tree_2.gltf",
+      "bytes": 44241,
+      "triangles": 1652,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Tree_3.gltf",
+      "bytes": 62572,
+      "triangles": 2412,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/Tree_4.gltf",
+      "bytes": 29749,
+      "triangles": 1044,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/WaterTank_Floor.gltf",
+      "bytes": 35272,
+      "triangles": 784,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/WaterTank_Platform.gltf",
+      "bytes": 48073,
+      "triangles": 872,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Environment/glTF/WoodPlanks.gltf",
+      "bytes": 15063,
+      "triangles": 150,
+      "meshes": 1,
+      "materials": 2,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/AK.gltf",
+      "bytes": 81180,
+      "triangles": 1128,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/FireGrenade.gltf",
+      "bytes": 43296,
+      "triangles": 916,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Grenade.gltf",
+      "bytes": 35175,
+      "triangles": 820,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/GrenadeLauncher.gltf",
+      "bytes": 78520,
+      "triangles": 1261,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Knife_1.gltf",
+      "bytes": 36439,
+      "triangles": 687,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Knife_2.gltf",
+      "bytes": 38279,
+      "triangles": 764,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Pistol.gltf",
+      "bytes": 59603,
+      "triangles": 990,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Revolver.gltf",
+      "bytes": 84580,
+      "triangles": 1354,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Revolver_Small.gltf",
+      "bytes": 77084,
+      "triangles": 1350,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/RocketLauncher.gltf",
+      "bytes": 72757,
+      "triangles": 1228,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/ShortCannon.gltf",
+      "bytes": 34087,
+      "triangles": 462,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Shotgun.gltf",
+      "bytes": 68766,
+      "triangles": 1264,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Shovel.gltf",
+      "bytes": 36243,
+      "triangles": 662,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/SMG.gltf",
+      "bytes": 63255,
+      "triangles": 1008,
+      "meshes": 1,
+      "materials": 4,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Sniper.gltf",
+      "bytes": 116733,
+      "triangles": 1441,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    },
+    {
+      "path": "vibejam-starter-pack-main/projects/toonshooter/public/assets/toonshooter/Guns/glTF/Sniper_2.gltf",
+      "bytes": 82122,
+      "triangles": 1298,
+      "meshes": 1,
+      "materials": 3,
+      "images": 0,
+      "animations": 0,
+      "embedded_uris": 1,
+      "external_uris": []
+    }
+  ],
+  "duplicates": [
+    [
+      "ai-game-spritesheets-main/references/animations/11-idle-south-contact.png",
+      "ai-game-spritesheets-main/references/normalization/normalized-contact.png"
+    ],
+    [
+      "Claude-Code-Game-Studios-main/production/session-state/.gitkeep",
+      "Claude-Code-Game-Studios-main/src/.gitkeep"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/GDD.md",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/GDD.md"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/index.html",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/index.html"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/config.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/config.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/main.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/main.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/systems/AudioManager.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/systems/AudioManager.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/systems/LeaderboardClient.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/systems/LeaderboardClient.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/systems/SaveManager.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/systems/SaveManager.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/systems/ScoreManager.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/systems/ScoreManager.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/systems/WaveManager.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/systems/WaveManager.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/utils/AssetGenerator.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/utils/AssetGenerator.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/src/utils/TouchInput.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/src/utils/TouchInput.js"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/TDD.md",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/TDD.md"
+    ],
+    [
+      "everything-game-dev-code-main/samples/PirateInvaders/vite.config.js",
+      "everything-game-dev-code-main/samples/PirateInvadersImagesGen/vite.config.js"
+    ],
+    [
+      "love2d-pocket-bomber-game-main/.claude/skills/love2d-gamedev/references/ios/touch-controls.md",
+      "love2d-pocket-bomber-game-main/.claude/skills/love2d-ios/references/touch-controls.md"
+    ],
+    [
+      "love2d-pocket-bomber-game-main/.claude/skills/love2d-gamedev/references/ios/xcode-project.md",
+      "love2d-pocket-bomber-game-main/.claude/skills/love2d-ios/references/xcode-project-structure.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/phaser-gamedev/references/arcade-physics.md",
+      "phaserjs-oakwoods-main/.codex/skills/phaser-gamedev/references/arcade-physics.md",
+      "vibejam-starter-pack-main/.agents/skills/phaser-gamedev/references/arcade-physics.md",
+      "vibejam-starter-pack-main/.claude/skills/phaser-gamedev/references/arcade-physics.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/phaser-gamedev/references/performance.md",
+      "phaserjs-oakwoods-main/.codex/skills/phaser-gamedev/references/performance.md",
+      "vibejam-starter-pack-main/.agents/skills/phaser-gamedev/references/performance.md",
+      "vibejam-starter-pack-main/.claude/skills/phaser-gamedev/references/performance.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/phaser-gamedev/references/spritesheets-nineslice.md",
+      "vibejam-starter-pack-main/.claude/skills/phaser-gamedev/references/spritesheets-nineslice.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/phaser-gamedev/references/tilemaps.md",
+      "phaserjs-oakwoods-main/.codex/skills/phaser-gamedev/references/tilemaps.md",
+      "vibejam-starter-pack-main/.agents/skills/phaser-gamedev/references/tilemaps.md",
+      "vibejam-starter-pack-main/.claude/skills/phaser-gamedev/references/tilemaps.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/phaser-gamedev/SKILL.md",
+      "vibejam-starter-pack-main/.claude/skills/phaser-gamedev/SKILL.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/playwright-testing/references/flake-reduction.md",
+      "threejs-tactics-game-main/.claude/skills/playwright-testing/references/flake-reduction.md",
+      "vibejam-starter-pack-main/.claude/skills/playwright-testing/references/flake-reduction.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/playwright-testing/references/phaser-canvas-testing.md",
+      "threejs-tactics-game-main/.claude/skills/playwright-testing/references/phaser-canvas-testing.md",
+      "vibejam-starter-pack-main/.claude/skills/playwright-testing/references/phaser-canvas-testing.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/playwright-testing/references/playwright-mcp-cheatsheet.md",
+      "threejs-tactics-game-main/.claude/skills/playwright-testing/references/playwright-mcp-cheatsheet.md",
+      "vibejam-starter-pack-main/.claude/skills/playwright-testing/references/playwright-mcp-cheatsheet.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/playwright-testing/scripts/imgdiff.py",
+      "threejs-tactics-game-main/.claude/skills/playwright-testing/scripts/imgdiff.py",
+      "vibejam-starter-pack-main/.claude/skills/playwright-testing/scripts/imgdiff.py"
+    ],
+    [
+      "phaserjs-oakwoods-main/.claude/skills/playwright-testing/SKILL.md",
+      "vibejam-starter-pack-main/.claude/skills/playwright-testing/SKILL.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/phaser-gamedev/references/core-patterns.md",
+      "vibejam-starter-pack-main/.agents/skills/phaser-gamedev/references/core-patterns.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/phaser-gamedev/references/spritesheets-nineslice.md",
+      "vibejam-starter-pack-main/.agents/skills/phaser-gamedev/references/spritesheets-nineslice.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/phaser-gamedev/SKILL.md",
+      "vibejam-starter-pack-main/.agents/skills/phaser-gamedev/SKILL.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/playwright-testing/references/flake-reduction.md",
+      "vibejam-starter-pack-main/.agents/skills/playwright-testing/references/flake-reduction.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/playwright-testing/references/phaser-canvas-testing.md",
+      "vibejam-starter-pack-main/.agents/skills/playwright-testing/references/phaser-canvas-testing.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/playwright-testing/references/playwright-mcp-cheatsheet.md",
+      "vibejam-starter-pack-main/.agents/skills/playwright-testing/references/playwright-mcp-cheatsheet.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/playwright-testing/scripts/imgdiff.py",
+      "vibejam-starter-pack-main/.agents/skills/playwright-testing/scripts/imgdiff.py"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/playwright-testing/scripts/with_server.py",
+      "vibejam-starter-pack-main/.agents/skills/playwright-testing/scripts/with_server.py"
+    ],
+    [
+      "phaserjs-oakwoods-main/.codex/skills/playwright-testing/SKILL.md",
+      "vibejam-starter-pack-main/.agents/skills/playwright-testing/SKILL.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/.gitignore",
+      "vibejam-starter-pack-main/projects/oakwoods/.gitignore"
+    ],
+    [
+      "phaserjs-oakwoods-main/CLAUDE.md",
+      "vibejam-starter-pack-main/projects/oakwoods/CLAUDE.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/docs/preview.gif",
+      "vibejam-starter-pack-main/projects/oakwoods/docs/preview.gif"
+    ],
+    [
+      "phaserjs-oakwoods-main/index.html",
+      "vibejam-starter-pack-main/projects/oakwoods/index.html"
+    ],
+    [
+      "phaserjs-oakwoods-main/LICENSE",
+      "vibejam-starter-pack-main/projects/oakwoods/LICENSE"
+    ],
+    [
+      "phaserjs-oakwoods-main/package-lock.json",
+      "vibejam-starter-pack-main/projects/oakwoods/package-lock.json"
+    ],
+    [
+      "phaserjs-oakwoods-main/package.json",
+      "vibejam-starter-pack-main/projects/oakwoods/package.json"
+    ],
+    [
+      "phaserjs-oakwoods-main/plans/bubbly-roaming-scone.md",
+      "vibejam-starter-pack-main/projects/oakwoods/plans/bubbly-roaming-scone.md"
+    ],
+    [
+      "phaserjs-oakwoods-main/prompts/01-create-assets-json.txt",
+      "vibejam-starter-pack-main/projects/oakwoods/prompts/01-create-assets-json.txt"
+    ],
+    [
+      "phaserjs-oakwoods-main/prompts/02-plan-implementation.txt",
+      "vibejam-starter-pack-main/projects/oakwoods/prompts/02-plan-implementation.txt"
+    ],
+    [
+      "phaserjs-oakwoods-main/public/assets/oakwoods/assets.json",
+      "vibejam-starter-pack-main/projects/oakwoods/public/assets/oakwoods/assets.json"
+    ],
+    [
+      "phaserjs-oakwoods-main/src/main.ts",
+      "vibejam-starter-pack-main/projects/oakwoods/src/main.ts"
+    ],
+    [
+      "phaserjs-oakwoods-main/src/scenes/BootScene.ts",
+      "vibejam-starter-pack-main/projects/oakwoods/src/scenes/BootScene.ts"
+    ],
+    [
+      "phaserjs-oakwoods-main/src/scenes/GameScene.ts",
+      "vibejam-starter-pack-main/projects/oakwoods/src/scenes/GameScene.ts"
+    ],
+    [
+      "phaserjs-oakwoods-main/src/vite-env.d.ts",
+      "vibejam-starter-pack-main/projects/oakwoods/src/vite-env.d.ts"
+    ],
+    [
+      "phaserjs-oakwoods-main/tsconfig.json",
+      "vibejam-starter-pack-main/projects/oakwoods/tsconfig.json"
+    ],
+    [
+      "skills-main/skills/qa-execution/assets/issue-template.md",
+      "skills-main/skills/qa-report/assets/issue-template.md"
+    ],
+    [
+      "skills-main/skills/stripe-webhooks/examples/express/.env.example",
+      "skills-main/skills/stripe-webhooks/examples/fastapi/.env.example",
+      "skills-main/skills/stripe-webhooks/examples/nextjs/.env.example"
+    ],
+    [
+      "skills-main/skills/tweetsmash-api/assets/add-labels-body.json",
+      "skills-main/skills/tweetsmash-api/assets/remove-labels-body.json"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.claude/skills/threejs-builder/references/advanced-topics.md",
+      "threejs-tactics-game-main/.claude/skills/threejs-builder/references/advanced-topics.md",
+      "vibejam-starter-pack-main/.agents/skills/threejs-builder/references/advanced-topics.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.claude/skills/threejs-builder/references/game-patterns.md",
+      "threejs-tactics-game-main/.claude/skills/threejs-builder/references/game-patterns.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.claude/skills/threejs-builder/references/gltf-loading-guide.md",
+      "threejs-tactics-game-main/.claude/skills/threejs-builder/references/gltf-loading-guide.md",
+      "vibejam-starter-pack-main/.agents/skills/threejs-builder/references/gltf-loading-guide.md",
+      "vibejam-starter-pack-main/.claude/skills/threejs-builder/references/gltf-loading-guide.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.claude/skills/threejs-builder/SKILL.md",
+      "threejs-tactics-game-main/.claude/skills/threejs-builder/SKILL.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-builder/references/advanced-topics.md",
+      "threejs-tactics-game-main/.codex/skills/threejs-builder/references/advanced-topics.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-builder/references/game-patterns.md",
+      "threejs-tactics-game-main/.codex/skills/threejs-builder/references/game-patterns.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-builder/references/gltf-loading-guide.md",
+      "threejs-tactics-game-main/.codex/skills/threejs-builder/references/gltf-loading-guide.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-builder/SKILL.md",
+      "threejs-tactics-game-main/.codex/skills/threejs-builder/SKILL.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-capacitor-ios/references/capacitor-ios-spm-workflow.md",
+      "vibejam-starter-pack-main/.agents/skills/threejs-capacitor-ios/references/capacitor-ios-spm-workflow.md",
+      "vibejam-starter-pack-main/.claude/skills/threejs-capacitor-ios/references/capacitor-ios-spm-workflow.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-capacitor-ios/references/gotchas.md",
+      "vibejam-starter-pack-main/.agents/skills/threejs-capacitor-ios/references/gotchas.md",
+      "vibejam-starter-pack-main/.claude/skills/threejs-capacitor-ios/references/gotchas.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-capacitor-ios/references/threejs-animation-index-pattern.md",
+      "vibejam-starter-pack-main/.agents/skills/threejs-capacitor-ios/references/threejs-animation-index-pattern.md",
+      "vibejam-starter-pack-main/.claude/skills/threejs-capacitor-ios/references/threejs-animation-index-pattern.md"
+    ],
+    [
+      "threejs-capacitor-ios-game-main/.codex/skills/threejs-capacitor-ios/SKILL.md",
+      "vibejam-starter-pack-main/.agents/skills/threejs-capacitor-ios/SKILL.md",
+      "vibejam-starter-pack-main/.claude/skills/threejs-capacitor-ios/SKILL.md"
+    ],
+    [
+      "threejs-tactics-game-main/public/assets/portraits/adventurer-male.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/portraits/adventurer-male.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/assets/model-presets.json",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/assets/model-presets.json",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/assets/model-presets.json",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/assets/model-presets.json",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/assets/model-presets.json"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/assets/prompt-profiles/pirate-character-edit-v1.txt",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/assets/prompt-profiles/pirate-character-edit-v1.txt",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/assets/prompt-profiles/pirate-character-edit-v1.txt"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/assets/prompt-profiles/pirate-character-render-v1.txt",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/assets/prompt-profiles/pirate-character-render-v1.txt",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/assets/prompt-profiles/pirate-character-render-v1.txt"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/references/fal-image-models.md",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/references/fal-image-models.md",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/references/fal-image-models.md",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/references/fal-image-models.md",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/references/fal-image-models.md"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/references/fal-platform-notes.md",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/references/fal-platform-notes.md",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/references/fal-platform-notes.md",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/references/fal-platform-notes.md",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/references/fal-platform-notes.md"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/references/fal-queue-and-inference.md",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/references/fal-queue-and-inference.md",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/references/fal-queue-and-inference.md",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/references/fal-queue-and-inference.md",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/references/fal-queue-and-inference.md"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/scripts/_fal_common.py",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/scripts/_fal_common.py",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/scripts/_fal_common.py",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/scripts/_fal_common.py",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/scripts/_fal_common.py"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/scripts/fal_image_experiment_matrix.py",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/scripts/fal_image_experiment_matrix.py",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/scripts/fal_image_experiment_matrix.py",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/scripts/fal_image_experiment_matrix.py",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/scripts/fal_image_experiment_matrix.py"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/scripts/fal_platform_models.py",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/scripts/fal_platform_models.py",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/scripts/fal_platform_models.py",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/scripts/fal_platform_models.py",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/scripts/fal_platform_models.py"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/scripts/fal_queue_image_run.py",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/scripts/fal_queue_image_run.py",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/scripts/fal_queue_image_run.py",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/scripts/fal_queue_image_run.py",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/scripts/fal_queue_image_run.py"
+    ],
+    [
+      "vibe-isometric-sprites-main/.agents/skills/fal-ai-image/SKILL.md",
+      "vibe-isometric-sprites-main/.claude/skills/fal-ai-image/SKILL.md",
+      "vibe-isometric-sprites-main/.codex/skills/fal-ai-image/SKILL.md",
+      "vibejam-starter-pack-main/.agents/skills/fal-ai-image/SKILL.md",
+      "vibejam-starter-pack-main/.claude/skills/fal-ai-image/SKILL.md"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/cardinal-sheet-banana2-v1/adventurer-male-east-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-03-east.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1-normalized/frames/frame-03-east.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/cardinal-sheet-banana2-v1/adventurer-male-north-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-01-north.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/cardinal-sheet-banana2-v1/adventurer-male-south-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-05-south.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/cardinal-sheet-banana2-v1/adventurer-male-west-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-07-west.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1-normalized/frames/frame-07-west.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/diagonal-sheet-banana2-v1/adventurer-male-northeast-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-02-northeast.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/diagonal-sheet-banana2-v1/adventurer-male-northwest-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-08-northwest.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/diagonal-sheet-banana2-v1/adventurer-male-southeast-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-04-southeast.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/diagonal-sheet-banana2-v1/adventurer-male-southwest-alpha.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1/frames/frame-06-southwest.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1-normalized/adventurer-male-turntable-contact-sheet-normalized.png",
+      "vibe-isometric-sprites-main/public/assets/tictac/characters/adventurer-male/turntable-banana2-v1-normalized/frames/adventurer-male-turntable-contact-sheet-normalized.png"
+    ],
+    [
+      "vibe-isometric-sprites-main/public/vgd.png",
+      "vibejam-starter-pack-main/assets/vgd.png"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/model-presets.json",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/model-presets.json"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-isometric-8turn-from-sw-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-isometric-8turn-from-sw-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-isometric-cardinals-from-sw-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-isometric-cardinals-from-sw-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-isometric-diagonals-from-cardinals-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-isometric-diagonals-from-cardinals-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-isometric-sw-walk-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-isometric-sw-walk-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-side-battle-sprites-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-side-battle-sprites-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-side-punch-any-animation-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-side-punch-any-animation-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-side-running-any-animation-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-side-running-any-animation-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/assets/prompt-profiles/character-side-walk-v1.txt",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/assets/prompt-profiles/character-side-walk-v1.txt"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/references/animation-workflows.md",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/references/animation-workflows.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/references/api-and-styles.md",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/references/api-and-styles.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/scripts/_retro_common.py",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/scripts/_retro_common.py"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/scripts/extract_rd_sheet_frames.py",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/scripts/extract_rd_sheet_frames.py"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/scripts/prepare_reference_image.py",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/scripts/prepare_reference_image.py"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/scripts/retro_experiment_matrix.py",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/scripts/retro_experiment_matrix.py"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/scripts/retro_inference_run.py",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/scripts/retro_inference_run.py"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/retro-diffusion/SKILL.md",
+      "vibejam-starter-pack-main/.claude/skills/retro-diffusion/SKILL.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/threejs-builder/references/game-patterns.md",
+      "vibejam-starter-pack-main/.claude/skills/threejs-builder/references/game-patterns.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/threejs-builder/scripts/gltf-calibration-helpers.mjs",
+      "vibejam-starter-pack-main/.claude/skills/threejs-builder/scripts/gltf-calibration-helpers.mjs"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/threejs-builder/scripts/install-gltf-calibration-helpers.py",
+      "vibejam-starter-pack-main/.claude/skills/threejs-builder/scripts/install-gltf-calibration-helpers.py"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/tinyswords-tilemap/references/asset-paths.md",
+      "vibejam-starter-pack-main/.claude/skills/tinyswords-tilemap/references/asset-paths.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/tinyswords-tilemap/references/layer-system.md",
+      "vibejam-starter-pack-main/.claude/skills/tinyswords-tilemap/references/layer-system.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/tinyswords-tilemap/references/tile-specifications.md",
+      "vibejam-starter-pack-main/.claude/skills/tinyswords-tilemap/references/tile-specifications.md"
+    ],
+    [
+      "vibejam-starter-pack-main/.agents/skills/tinyswords-tilemap/SKILL.md",
+      "vibejam-starter-pack-main/.claude/skills/tinyswords-tilemap/SKILL.md"
+    ],
+    [
+      "vibejam-starter-pack-main/projects/tinyswords/public/assets/tinyswords/Units/Blue Units/Archer/Arrow.png",
+      "vibejam-starter-pack-main/projects/tinyswords/public/assets/tinyswords/Units/Red Units/Archer/Arrow.png"
+    ]
+  ]
+}

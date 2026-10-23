@@ -982,6 +982,43 @@ describe('createCreationsCloud', () => {
     cloud.dispose()
   })
 
+  test('conflito de versão do Pensa orienta reabrir sem reenviar a base antiga', async () => {
+    const server = fakeServer({ checkBase: true })
+    server.items.set('pensa-game', {
+      revision: 2,
+      lastReserved: 2,
+      pendingRevision: null,
+      name: 'Jogo',
+      bytes: 10,
+      parts: new Map(),
+      pendingParts: null,
+    })
+    const cloud = createCreationsCloud({
+      tool: 'studio',
+      fetch: server.fetchImpl,
+      idleMs: 0,
+      wait: noWait,
+    })
+    try {
+      cloud.enqueueUpload(
+        'pensa-game',
+        async () => ({ json: '{}', meta: { name: 'Jogo', kind: 'classic', baseRevision: 1 } }),
+        undefined,
+        async () => {
+          throw Object.assign(new Error('Reabra o jogo'), { code: 'CREATION_REOPEN_REQUIRED' })
+        },
+      )
+      await cloud.flush()
+      await expect(cloud.confirm('pensa-game')).rejects.toThrow(CLOUD_MESSAGES.reopenRequired)
+      expect(cloud.getState().lastError).toBe(CLOUD_MESSAGES.reopenRequired)
+      expect(cloud.getItemState('pensa-game').code).toBe('CREATION_REOPEN_REQUIRED')
+      expect(server.calls.filter((call) => call.method === 'PUT')).toHaveLength(0)
+      expect(server.items.get('pensa-game')?.revision).toBe(2)
+    } finally {
+      cloud.dispose()
+    }
+  })
+
   test('revisão-base: o DELETE leva a revisão conhecida e reconcilia em vez de apagar uma revisão mais nova', async () => {
     const server = fakeServer({ checkBase: true })
     server.items.set('d-1', {

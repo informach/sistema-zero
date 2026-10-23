@@ -1,0 +1,24 @@
+{
+  "kind": "private-CLI-read-diagnostic",
+  "pid": 34124,
+  "status": 1,
+  "signal": null,
+  "settled": true,
+  "expired": false,
+  "overflow": false,
+  "error": false,
+  "stdoutBytes": 0,
+  "stderrBytes": 27,
+  "parsed": false,
+  "object": false,
+  "markers": {
+    "unauthorized": false,
+    "forbidden": false,
+    "network": false,
+    "notFound": false,
+    "unknownArgument": false,
+    "serviceReadDenied": false
+  },
+  "rawOutputPersisted": false,
+  "mutations": 0
+}

@@ -1,0 +1,539 @@
+/*
+ * quiz-spin.css: as telas dos quizzes em conversa da Comunidade dos Criadores (20/10/2026, Canvas de
+ * 19/10: QuizMenorTelas e QuizAdultoTelas). Uma pergunta por tela, numa coluna de celular centrada:
+ * topo com a marca e "Sair", contagem e etapa, a pergunta, as opções como botões (tocar grava e
+ * segue) e o rodapé com "Voltar". Três peles:
+ *   .qz--kids    9 a 17 e entrada Kids: cartas com contorno na tinta (tokens `--kof-*`);
+ *   .qz--m9      menor de 9: creme, cartas sem contorno e marca redonda pastel (tokens `--kof-*`);
+ *   .qz--adulto  arcade escuro, cantos retos e fonte de pixel (tokens `--cda-*`, theme-arcade).
+ * Nenhuma cor própria: as peles só apontam os aliases `--qz-*` para os tokens do tema.
+ */
+
+.qz {
+  --qz-margem: 18px;
+  min-height: 100vh;
+  background: var(--qz-chao);
+  color: var(--qz-tinta);
+  font-family: var(--qz-corpo);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+  overflow-x: clip;
+}
+
+.qz--kids {
+  --qz-chao: var(--kof-chao);
+  --qz-tela: var(--kof-chao);
+  --qz-tinta: var(--kof-tinta);
+  --qz-suave: var(--kof-tinta-suave);
+  --qz-destaque: var(--kof-acao);
+  --qz-titulo: var(--kof-display);
+  --qz-corpo: var(--kof-corpo);
+  --qz-rotulo: var(--kof-corpo);
+  --qz-carta: var(--kof-carta);
+  --qz-carta-borda: 3px solid var(--kof-tinta);
+  --qz-carta-raio: 14px;
+  --qz-carta-sombra: 3px 3px 0 var(--kof-tinta);
+  --qz-marca-borda: 3px solid var(--kof-tinta);
+  --qz-marca-raio: 6px;
+  --qz-marca-fundo: var(--kof-carta);
+  --qz-escolhida: color-mix(in oklab, var(--kof-acao) 14%, var(--kof-carta));
+  --qz-botao: var(--kof-acao);
+  --qz-botao-tinta: var(--kof-sobre-acao);
+  --qz-botao-borda: 3px solid var(--kof-tinta);
+  --qz-botao-raio: 14px;
+  --qz-botao-sombra: 4px 4px 0 var(--kof-tinta);
+  --qz-filho: color-mix(in oklab, var(--kof-azul) 12%, var(--kof-carta));
+  --qz-filha: color-mix(in oklab, var(--kof-rosa-clara) 18%, var(--kof-carta));
+  --qz-trilho: color-mix(in oklab, var(--kof-tinta) 13%, transparent);
+  --qz-foco: var(--kof-acao);
+}
+
+.qz--m9 {
+  --qz-chao: color-mix(in oklab, var(--kof-amarelo-fundo) 35%, var(--kof-carta));
+  --qz-tela: var(--qz-chao);
+  --qz-tinta: var(--kof-tinta);
+  --qz-suave: var(--kof-tinta-suave);
+  --qz-destaque: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--kof-laranja) 30%, var(--kof-rosa-clara)) 40%,
+    var(--kof-amarelo)
+  );
+  --qz-titulo: var(--kof-display);
+  --qz-corpo: var(--kof-corpo);
+  --qz-rotulo: var(--kof-corpo);
+  --qz-carta: var(--kof-carta);
+  --qz-carta-borda: 0;
+  --qz-carta-raio: 20px;
+  --qz-carta-sombra: 0 3px 0 color-mix(in oklab, var(--kof-lilas) 60%, var(--kof-carta));
+  --qz-marca-borda: 0;
+  --qz-marca-raio: 50%;
+  --qz-marca-fundo: color-mix(in oklab, var(--kof-rosa-clara) 45%, var(--kof-carta));
+  --qz-escolhida: color-mix(in oklab, var(--kof-rosa-clara) 16%, var(--kof-carta));
+  --qz-botao: var(--qz-destaque);
+  --qz-botao-tinta: var(--kof-tinta);
+  --qz-botao-borda: 0;
+  --qz-botao-raio: 999px;
+  --qz-botao-sombra: 0 4px 0 var(--kof-tinta);
+  --qz-filho: var(--kof-carta);
+  --qz-filha: var(--kof-carta);
+  --qz-trilho: color-mix(in oklab, var(--kof-tinta) 13%, transparent);
+  --qz-foco: var(--kof-tinta);
+}
+
+.qz--adulto {
+  --qz-chao: var(--cda-fundo);
+  --qz-tela: var(--cda-fundo);
+  --qz-tinta: var(--cda-texto);
+  --qz-suave: var(--cda-legenda);
+  --qz-destaque: var(--cda-amarelo);
+  --qz-titulo: var(--cda-titulo);
+  --qz-corpo: var(--cda-corpo);
+  --qz-rotulo: var(--cda-pixel);
+  --qz-carta: var(--cda-carta);
+  --qz-carta-borda: 3px solid var(--cda-linha-forte);
+  --qz-carta-raio: 0;
+  --qz-carta-sombra: 4px 4px 0 var(--cda-linha-forte);
+  --qz-marca-borda: 3px solid var(--cda-linha-forte);
+  --qz-marca-raio: 0;
+  --qz-marca-fundo: var(--cda-fundo);
+  --qz-escolhida: color-mix(in oklab, var(--cda-amarelo) 16%, var(--cda-carta));
+  --qz-botao: var(--cda-amarelo);
+  --qz-botao-tinta: var(--cda-fundo);
+  --qz-botao-borda: 3px solid var(--cda-fundo);
+  --qz-botao-raio: 0;
+  --qz-botao-sombra: 5px 5px 0 var(--cda-rosa);
+  --qz-filho: var(--cda-carta);
+  --qz-filha: var(--cda-carta);
+  --qz-trilho: color-mix(in oklab, var(--cda-linha-forte) 60%, transparent);
+  --qz-foco: var(--cda-amarelo);
+}
+
+.qz p,
+.qz h1,
+.qz h2,
+.qz ul,
+.qz ol {
+  margin: 0;
+}
+.qz ul,
+.qz ol {
+  padding: 0;
+  list-style: none;
+}
+.qz img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.qz a:focus-visible,
+.qz button:focus-visible,
+.qz [tabindex="-1"]:focus-visible {
+  outline: 3px solid var(--qz-foco);
+  outline-offset: 3px;
+}
+.qz [tabindex="-1"]:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── A coluna de celular ─────────────────────────────────────────────────────── */
+.qz .qz-tela {
+  box-sizing: border-box;
+  max-width: 560px;
+  min-height: 100vh;
+  margin-inline: auto;
+  background: var(--qz-tela);
+  display: flex;
+  flex-direction: column;
+}
+.qz .qz-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px var(--qz-margem) 12px;
+}
+.qz .qz-logo {
+  height: 18px;
+  width: auto;
+}
+.qz--adulto .qz-logo {
+  height: 14px;
+}
+.qz .qz-sair {
+  font-size: 0.8125rem;
+  color: var(--qz-suave);
+}
+/* Adulto: a marca do Sistema Zero e o selo de HUD com o nome da Comunidade (Canvas). */
+.qz .qz-marca-topo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.qz--adulto .qz-marca-nome {
+  padding: 3px 6px;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+.qz .qz-corpo {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px var(--qz-margem) 18px;
+}
+
+/* ── Entrada ─────────────────────────────────────────────────────────────────── */
+.qz .qz-selo {
+  font-family: var(--qz-rotulo);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--qz-suave);
+}
+.qz--adulto .qz-selo {
+  font-weight: 400;
+  color: var(--cda-verde);
+}
+.qz .qz-manchete {
+  font-family: var(--qz-titulo);
+  font-weight: 800;
+  font-size: clamp(1.6875rem, 5vw, 2.125rem);
+  line-height: 1.08;
+  text-wrap: balance;
+}
+.qz .qz-manchete em {
+  font-style: normal;
+  color: var(--qz-destaque);
+}
+.qz--m9 .qz-manchete em {
+  color: var(--kof-tinta);
+}
+.qz .qz-descricao {
+  font-size: 0.9375rem;
+  color: var(--qz-tinta);
+  opacity: 0.88;
+}
+.qz .qz-pergunta-entrada {
+  margin-top: 8px;
+  font-family: var(--qz-titulo);
+  font-weight: 800;
+  font-size: 1.3125rem;
+  line-height: 1.1;
+}
+.qz .qz-ajuda {
+  font-size: 0.8125rem;
+  color: var(--qz-suave);
+}
+.qz .qz-genero {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qz .qz-cartas-genero {
+  margin-top: 6px;
+  display: flex;
+  gap: 12px;
+}
+.qz .qz-carta-genero {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 10px 10px;
+  border: 3px solid var(--qz-tinta);
+  border-radius: 18px;
+  box-shadow: 4px 4px 0 var(--qz-tinta);
+  color: var(--qz-tinta);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.qz .qz-carta-genero--filho {
+  background: var(--qz-filho);
+}
+.qz .qz-carta-genero--filha {
+  background: var(--qz-filha);
+}
+.qz .qz-carta-genero img {
+  height: 120px;
+  width: auto;
+}
+.qz .qz-carta-genero strong {
+  font-family: var(--qz-titulo);
+  font-size: 1.25rem;
+}
+.qz .qz-carta-genero:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+}
+.qz .qz-carta-genero:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+/* A nota de rodapé fica logo abaixo das ações (no pé da tela ela deixava um vão sob as cartas). */
+.qz .qz-nota {
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: var(--qz-suave);
+}
+.qz .qz-genero .qz-nota {
+  margin-top: 4px;
+}
+
+/* ── Contagem, etapa e pergunta ──────────────────────────────────────────────── */
+.qz .qz-progresso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.qz .qz-progresso-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--qz-rotulo);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--qz-suave);
+}
+.qz .qz-etapa {
+  color: var(--qz-destaque);
+}
+.qz--m9 .qz-etapa {
+  color: var(--kof-tinta);
+}
+.qz .qz-barra {
+  height: 6px;
+  background: var(--qz-trilho);
+  border-radius: 999px;
+  overflow: clip;
+}
+.qz .qz-barra span {
+  display: block;
+  height: 100%;
+  background: var(--qz-destaque);
+  transition: width 240ms ease;
+}
+.qz .qz-titulo {
+  margin-top: 8px;
+  font-family: var(--qz-titulo);
+  font-weight: 800;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+/* ── Opções ──────────────────────────────────────────────────────────────────── */
+.qz .qz-opcoes-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.qz .qz-opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.qz .qz-opcao {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  text-align: left;
+  padding: 13px 14px;
+  background: var(--qz-carta);
+  color: var(--qz-tinta);
+  border: var(--qz-carta-borda);
+  border-radius: var(--qz-carta-raio);
+  box-shadow: var(--qz-carta-sombra);
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  cursor: pointer;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease,
+    background 120ms ease;
+}
+.qz .qz-opcao[aria-pressed="true"] {
+  background: var(--qz-escolhida);
+}
+.qz .qz-opcao:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+}
+.qz .qz-opcao:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+.qz .qz-opcao:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+.qz .qz-marca {
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  border: var(--qz-marca-borda);
+  border-radius: var(--qz-marca-raio);
+  background: var(--qz-marca-fundo);
+}
+.qz .qz-opcao[aria-pressed="true"] .qz-marca {
+  background: var(--qz-destaque);
+}
+.qz .qz-opcoes--cartas .qz-opcao {
+  justify-content: center;
+  padding: 18px;
+  font-family: var(--qz-titulo);
+  font-weight: 800;
+  font-size: 1.375rem;
+  text-align: center;
+  border-radius: 16px;
+}
+
+/* ── Rodapé, botões e links ──────────────────────────────────────────────────── */
+/* O rodapé segue as opções (no pé da tela ele abria o mesmo vão da entrada nas telas altas). */
+.qz .qz-rodape {
+  margin-top: 8px;
+  padding-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--qz-suave);
+}
+.qz .qz-acoes {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+/* O botão principal de uma tela sem opções (entrada adulta e saída de menor de 18) segue o texto,
+ * com um respiro a mais. Ele não desce mais para o pé da tela: o quadro do Canvas tinha 720 px e o
+ * vão ficava curto, mas numa tela de 900 px o `margin-top: auto` abria 330 a 380 px vazios entre os
+ * chips e o "Começar" (relato da dona, 20/10/2026). */
+.qz .qz-acoes--fim {
+  margin-top: 16px;
+}
+.qz .qz-botao {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0 20px;
+  background: var(--qz-botao);
+  color: var(--qz-botao-tinta);
+  font: inherit;
+  font-weight: 800;
+  font-size: 1.125rem;
+  text-decoration: none;
+  border: var(--qz-botao-borda);
+  border-radius: var(--qz-botao-raio);
+  box-shadow: var(--qz-botao-sombra);
+  cursor: pointer;
+}
+.qz .qz-botao:disabled {
+  cursor: progress;
+  opacity: 0.75;
+}
+.qz .qz-link {
+  align-self: flex-start;
+  padding: 4px 0;
+  background: none;
+  border: 0;
+  color: var(--qz-suave);
+  font: inherit;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.qz .qz-rodape .qz-link {
+  text-decoration: none;
+}
+.qz .qz-link--centro {
+  align-self: center;
+}
+.qz .qz-erro {
+  padding: 12px 14px;
+  border: var(--qz-carta-borda);
+  border-radius: var(--qz-carta-raio);
+  background: var(--qz-carta);
+  font-size: 0.9375rem;
+}
+
+/* ── Revisão ─────────────────────────────────────────────────────────────────── */
+.qz .qz-revisao {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.qz .qz-revisao li {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--qz-carta);
+  border: var(--qz-carta-borda);
+  border-radius: var(--qz-carta-raio);
+}
+.qz .qz-revisao strong {
+  display: block;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+.qz .qz-revisao p {
+  font-size: 0.875rem;
+  color: var(--qz-suave);
+}
+
+/* ── Adulto: os chips da entrada ─────────────────────────────────────────────── */
+.qz .qz-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.qz .qz-chip {
+  font-family: var(--qz-rotulo);
+  font-size: 0.6875rem;
+  color: var(--qz-suave);
+  border: 2px solid var(--qz-trilho);
+  padding: 4px 8px;
+  text-transform: uppercase;
+}
+.qz--adulto .qz-chip {
+  border-color: var(--cda-linha-forte);
+}
+
+@media (min-width: 640px) {
+  .qz .qz-tela {
+    padding-top: 24px;
+  }
+  .qz .qz-corpo {
+    padding-bottom: 40px;
+  }
+  /* A entrada (adulta e Kids) fica no meio da altura, com o topo onde está: o bloco inteiro desce
+   * junto, então o botão continua logo abaixo dos chips. No celular ela segue o topo. */
+  .qz .qz-entrada {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qz .qz-opcao,
+  .qz .qz-carta-genero,
+  .qz .qz-barra span {
+    transition: none;
+  }
+}

@@ -75,7 +75,7 @@ O Scratch oferece criação de histórias, jogos e animações gratuitamente, co
 | `packages/funnel/src/components/funnel/oferta/ComunidadeOfertaBody.astro` | Público de 9–14 anos, projetos guiados, ferramentas, professor por atividades/Recados, Clube, Mural, planos e história familiar. | Copy existente não equivale a auditoria de operação ou evidência de resultado. |
 | `packages/funnel/src/funnels/comunidade-dos-criadores/content.ts` | Até dois perfis; cursos; ferramentas liberadas conforme a jornada; preços de fallback R$ 97/mês e R$ 797/ano. | O catálogo em execução determina o preço cobrado; o valor comercial vigente precisa ser conferido antes da publicação. |
 | `docs/jornada-do-criador.md` e `packages/core/src/journey/catalog.ts` | Progressão, postos e desbloqueios. | Não apresentar todos os recursos como liberados no primeiro acesso. |
-| `docs/aulas-interativas/BRIEFING.md` e roteiros do Cadê Todo Mundo | Construção guiada, instruções, verificações e experimentos. | Não sugerir que a primeira aula exige inventar tudo sem apoio ou que um verificador de tarefa mede inteligência. |
+| `docs/aulas-interativas-tecnico/BRIEFING.md` e roteiros do Cadê Todo Mundo | Construção guiada, instruções, verificações e experimentos. | Não sugerir que a primeira aula exige inventar tudo sem apoio ou que um verificador de tarefa mede inteligência. |
 | `packages/studio/src/ai/prompts.ts` | Intenção pedagógica do assistente de IA. | Não substitui avaliação das respostas reais. |
 | `docs/plans/2026-09-17-copy-infantil-tecnologia-criacao-design.md` | Direção editorial anterior centrada em tecnologia e criação. | A nova proposta reavalia essa direção; ainda não é uma alteração aprovada da página. |
 

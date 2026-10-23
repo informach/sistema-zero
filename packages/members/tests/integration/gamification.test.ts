@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { BADGE_SLUGS } from '../../src/domain/gamification/badges'
+import { BADGE_SLUGS, HIDDEN_UNTIL_UNLOCKED_BADGES } from '../../src/domain/gamification/badges'
 import { DAILY_COIN_CAP } from '../../src/domain/gamification/coins'
 import type { InMemoryCourseRepository } from '../fakes/in-memory'
 import { buildApp, grantLifetime, seedSampleCourse, signedWebhookHeaders } from '../helpers'
@@ -397,6 +397,13 @@ describe('Gamificação — GET /members/gamification/me', () => {
     expect(body).toEqual({
       xp: 0,
       coins: { balance: 0 },
+      journey: {
+        audience: 'adult',
+        policyVersion: 0,
+        configured: false,
+        capabilities: [],
+        stages: [],
+      },
       streak: {
         current: 0,
         best: 0,
@@ -405,8 +412,12 @@ describe('Gamificação — GET /members/gamification/me', () => {
         onVacation: false,
         vacationUntil: null,
       },
-      // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs).
-      badges: BADGE_SLUGS.map((slug) => ({ slug, unlockedAt: null })),
+      // Catálogo completo do domain, todo bloqueado (derivado — robusto a novos slugs), menos as
+      // conquistas que só aparecem depois de ganhas (as das oficinas ao vivo, que não se divulgam).
+      badges: BADGE_SLUGS.filter((slug) => !HIDDEN_UNTIL_UNLOCKED_BADGES.has(slug)).map((slug) => ({
+        slug,
+        unlockedAt: null,
+      })),
       // Sem cursos qualificados → Noob; falta 1 curso (concluído + publicado) p/ Coder,
       // e ele mora no degrau de ENTRADA desde 14/08.
       level: {
@@ -901,11 +912,13 @@ describe('Missões — progresso derivado + claim', () => {
     grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
 
     const before = await readJson(await getMissions(app))
-    // Set determinístico do USER em 2026-06-02 (computado): 3 diárias, 3 semanais, 2 mensais.
-    // O USER não tem o Clube → nenhuma missão gated no pool.
-    expect(before.daily.length).toBe(3)
-    expect(before.weekly.length).toBe(3)
-    expect(before.monthly.length).toBe(2)
+    // Sem bloco de quiz ou Estúdio disponível, essas ações não são oferecidas.
+    expect(
+      before.daily.some((mission: { goalType: string }) => mission.goalType === 'quiz_passed'),
+    ).toBe(false)
+    expect(
+      before.daily.some((mission: { goalType: string }) => mission.goalType === 'studio_submitted'),
+    ).toBe(false)
     expect(before.daily.every((m: { completed: boolean }) => !m.completed)).toBe(true)
 
     const blockId = seedQuizBlock(courses, course.lessonIds[0])
@@ -992,7 +1005,10 @@ describe('Missões — progresso derivado + claim', () => {
   })
 
   test('claim de missão NÃO concluída → 409; inexistente → 404', async () => {
-    const { app } = buildApp()
+    const { app, courses, entitlements } = buildApp()
+    const course = seedSampleCourse(courses)
+    seedQuizBlock(courses, course.lessonIds[0])
+    grantLifetime(entitlements, { userId: USER, courseRef: course.slug })
     expect((await claimMission(app, 'daily-quiz')).status).toBe(409)
     expect((await claimMission(app, 'missao-fantasma')).status).toBe(404)
   })

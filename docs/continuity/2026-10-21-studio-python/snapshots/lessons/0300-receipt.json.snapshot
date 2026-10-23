@@ -1,0 +1,437 @@
+{
+  "timestamp": "2026-10-20T22:56:48.3689111Z",
+  "commit": "b763fb6e1773a122188fe37fa044b142c9442f62",
+  "parent": "b7ecf368310b6a287ebb52f010f9c940fa49c36d",
+  "productHorizon": "8430486236649740f5f5a9b261c5aee91c64af19",
+  "state": "QA-FOLLOWUP-COMMITTED-INDEPENDENT-REVIEW-PENDING",
+  "red": {
+    "initial": "red-refresh.log: referenced child reached deadline; ownership remained true",
+    "exactState": ".cache/lessons-qa-controls-r1/supervisor-retained-observation-failure-400b6125284245fd8fc7e6cae0c0f63d/owned-process.json",
+    "exact": "red-refresh-detached.log: completed-owned-tree-exited/ownershipComplete=true/process0 with live child and Refresh fault",
+    "exit": 1
+  },
+  "green": {
+    "processControlsPassed": 13,
+    "parserFiles": 4,
+    "controls": [
+      {
+        "log": "green-refresh.log",
+        "receiptSha256": "28edd8d39c37efd58395994e9f2fa3e1bc1643cd45aa496b055867eb7e47f93d",
+        "result": {
+          "queryErrorAction": null,
+          "noBrowser": true,
+          "resources": "none",
+          "observationFault": "Refresh",
+          "queryFaultObserved": null,
+          "primaryFailure": "owned-browser-monitor-failed",
+          "noHttp": true,
+          "mode": "retained-observation-failure",
+          "noServices": true,
+          "observedProcesses": 3,
+          "exitCode": -1,
+          "forced": true,
+          "ownershipComplete": false,
+          "supervisorState": "NEG-monitor-failure",
+          "cleanupConfirmed": false,
+          "at": "2026-10-20T19:54:03.4410417-03:00",
+          "unconfirmedProcessIds": [
+            27432
+          ],
+          "state": "inert-control-passed"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-retained-observation-failure-9ba8074a6b44449cb2b9a99864e2bfe8\\control-receipt.json",
+        "logSha256": "58cc8747a63b1284c4f14beb8f3f158a1ef0dedbda2e3861d3798d8ef764f849"
+      },
+      {
+        "log": "green-hasexited.log",
+        "receiptSha256": "8949030d09f3a9a1ad97114aa1ae287285c2afea45318027f279093e02497544",
+        "result": {
+          "ownershipComplete": false,
+          "mode": "retained-observation-failure",
+          "state": "inert-control-passed",
+          "resources": "none",
+          "supervisorState": "NEG-monitor-failure",
+          "primaryFailure": "owned-browser-monitor-failed",
+          "noBrowser": true,
+          "noServices": true,
+          "forced": true,
+          "at": "2026-10-20T19:54:06.539566-03:00",
+          "noHttp": true,
+          "queryErrorAction": null,
+          "observedProcesses": 3,
+          "queryFaultObserved": null,
+          "exitCode": -1,
+          "cleanupConfirmed": false,
+          "unconfirmedProcessIds": [
+            17340
+          ],
+          "observationFault": "HasExited"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-retained-observation-failure-955647fa120745d2b347b6d09b070186\\control-receipt.json",
+        "logSha256": "bfda2caf6def18df59b378d74f3e737fe2cea23d54dccd27d98876c79483b399"
+      },
+      {
+        "log": "green-starttime.log",
+        "receiptSha256": "c658000549af28efdf9475aa2088981b836e242a690d528c5f8bad51131ad5dc",
+        "result": {
+          "queryFaultObserved": null,
+          "primaryFailure": "owned-browser-monitor-failed",
+          "supervisorState": "NEG-monitor-failure",
+          "resources": "none",
+          "noHttp": true,
+          "at": "2026-10-20T19:54:09.6538639-03:00",
+          "observedProcesses": 3,
+          "ownershipComplete": false,
+          "noServices": true,
+          "state": "inert-control-passed",
+          "observationFault": "StartTime",
+          "unconfirmedProcessIds": [],
+          "noBrowser": true,
+          "mode": "retained-observation-failure",
+          "forced": true,
+          "queryErrorAction": null,
+          "cleanupConfirmed": false,
+          "exitCode": -1
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-retained-observation-failure-ca0f8c7217504f388ae7af06030a10fe\\control-receipt.json",
+        "logSha256": "06a372540af4a83cb8e92715030312b849395f73f1b0c4ead1ccd710abf8baaf"
+      },
+      {
+        "log": "regression-retained.log",
+        "receiptSha256": "39ae4f13e680d813b434424b18b0a6929fac9641f1c2e5ba4e3027ae9ba8709c",
+        "result": {
+          "unrelatedSentinelUntouched": true,
+          "noBrowser": true,
+          "resources": "none",
+          "pidRebindingRefused": true,
+          "creationMismatchRefused": true,
+          "noHttp": true,
+          "at": "2026-10-20T19:54:10.7074045-03:00",
+          "state": "benign-retained-handle-control-passed",
+          "witnesses": [
+            {
+              "processId": 30620,
+              "parentId": 31540,
+              "createdAt": "2026-10-20T22:54:10.166983Z",
+              "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe",
+              "cliSha256": "6337e3cf451b9ac75a94b76dfb84d4a86590dc638a11c4f7c6a100f741c119f4",
+              "cli": "\"C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe\" --no-env-file C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-safehandle-r1\\control-f400bcd929a844ad93a9dfcf964e0e6c\\inert-loop.mjs"
+            },
+            {
+              "processId": 33448,
+              "parentId": 31540,
+              "createdAt": "2026-10-20T22:54:10.477601Z",
+              "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe",
+              "cliSha256": "6337e3cf451b9ac75a94b76dfb84d4a86590dc638a11c4f7c6a100f741c119f4",
+              "cli": "\"C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe\" --no-env-file C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-safehandle-r1\\control-f400bcd929a844ad93a9dfcf964e0e6c\\inert-loop.mjs"
+            }
+          ],
+          "victimStoppedByRetainedObject": true,
+          "oldExitedRecordRefused": true,
+          "noServices": true
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-safehandle-r1\\control-f400bcd929a844ad93a9dfcf964e0e6c\\receipt.json",
+        "logSha256": "2ea30f932055aa551b70a55cef4df50bb4c47cd01dd585144f1e491745262e6e"
+      },
+      {
+        "log": "regression-complete.log",
+        "receiptSha256": "2f1fa167cc1ea651441b0f983ba4f0cb4ee28fc9efb2651c76d9cd114287c751",
+        "result": {
+          "mode": "complete",
+          "queryFaultObserved": null,
+          "resources": "none",
+          "forced": false,
+          "observationFault": "Refresh",
+          "at": "2026-10-20T19:54:45.5082551-03:00",
+          "exitCode": 0,
+          "cleanupConfirmed": true,
+          "noBrowser": true,
+          "unconfirmedProcessIds": [],
+          "ownershipComplete": true,
+          "state": "inert-control-passed",
+          "supervisorState": "completed-owned-tree-exited",
+          "queryErrorAction": null,
+          "noHttp": true,
+          "noServices": true,
+          "observedProcesses": 3,
+          "primaryFailure": null
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-complete-2aebfb6b5e4b48d8adc9b9991f87fd21\\control-receipt.json",
+        "logSha256": "faf573ee76b33c9bca5c7460f0a4face744df2d4816e8a8484ebb6655f5f54ea"
+      },
+      {
+        "log": "regression-abrupt.log",
+        "receiptSha256": "6035a8f75fa357e15429f998061b6cb92c382420242405c06f81753ec8dd08d8",
+        "result": {
+          "exitCode": 9,
+          "observationFault": "Refresh",
+          "resources": "none",
+          "cleanupConfirmed": true,
+          "supervisorState": "NEG-abrupt-or-deadline-cleanup",
+          "queryFaultObserved": null,
+          "ownershipComplete": true,
+          "forced": false,
+          "queryErrorAction": null,
+          "primaryFailure": "root-exited-before-completion-ack; descendant completeness unconfirmed",
+          "unconfirmedProcessIds": [],
+          "mode": "abrupt",
+          "observedProcesses": 3,
+          "noBrowser": true,
+          "state": "inert-control-passed",
+          "noHttp": true,
+          "noServices": true,
+          "at": "2026-10-20T19:54:49.1971427-03:00"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-abrupt-f408902bb73d4d24a951ba240fbe6a57\\control-receipt.json",
+        "logSha256": "4a69d9641c63eccb10fea216af9f7145434628fb992a2d4a9928aa6773c9ece9"
+      },
+      {
+        "log": "regression-deadline.log",
+        "receiptSha256": "c629363d2c00476e567f6c0f63cc3342eecf2e60c47398c18254077ae3373fac",
+        "result": {
+          "ownershipComplete": true,
+          "observedProcesses": 3,
+          "cleanupConfirmed": true,
+          "supervisorState": "NEG-abrupt-or-deadline-cleanup",
+          "queryFaultObserved": null,
+          "observationFault": "Refresh",
+          "primaryFailure": "external-browser-deadline",
+          "mode": "deadline",
+          "noBrowser": true,
+          "noServices": true,
+          "forced": true,
+          "queryErrorAction": null,
+          "resources": "none",
+          "noHttp": true,
+          "state": "inert-control-passed",
+          "at": "2026-10-20T19:54:57.690526-03:00",
+          "unconfirmedProcessIds": [],
+          "exitCode": -1
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-deadline-8e64583012cc4938a32c4635f06a9a71\\control-receipt.json",
+        "logSha256": "2d3f00e00b13fdc5f404a2c4e22cca63edb0714b6efd068728176d6f6a0f989e"
+      },
+      {
+        "log": "regression-completion-malformed.log",
+        "receiptSha256": "9631b23044600c5b7b772737a784bdb86ae14fa3ce8f39da5a9cc36f44ab402f",
+        "result": {
+          "forced": true,
+          "noHttp": true,
+          "exitCode": -1,
+          "noServices": true,
+          "state": "inert-control-passed",
+          "at": "2026-10-20T19:55:02.1096364-03:00",
+          "noBrowser": true,
+          "observedProcesses": 3,
+          "observationFault": "Refresh",
+          "unconfirmedProcessIds": [],
+          "mode": "completion-malformed",
+          "resources": "none",
+          "ownershipComplete": false,
+          "supervisorState": "NEG-monitor-failure",
+          "queryErrorAction": null,
+          "queryFaultObserved": null,
+          "cleanupConfirmed": false,
+          "primaryFailure": "owned-browser-monitor-failed"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-completion-malformed-e6d48ad8634546e994c069ef1ce4463a\\control-receipt.json",
+        "logSha256": "3eaaefd864b6f8689a97645eb9aa3988c40356cb688f831cd90186fa2d19989b"
+      },
+      {
+        "log": "regression-monitor-save-failure.log",
+        "receiptSha256": "415ac8aa06234cacfc413b50c62f917ac41f67eb24570699c0eacb3f47d64b27",
+        "result": {
+          "cleanupConfirmed": false,
+          "noHttp": true,
+          "observationFault": "Refresh",
+          "mode": "monitor-save-failure",
+          "at": "2026-10-20T19:55:05.1440992-03:00",
+          "noBrowser": true,
+          "observedProcesses": 3,
+          "forced": true,
+          "queryErrorAction": null,
+          "exitCode": -1,
+          "ownershipComplete": false,
+          "resources": "none",
+          "primaryFailure": "owned-browser-monitor-failed",
+          "supervisorState": "NEG-monitor-persistence",
+          "state": "inert-control-passed",
+          "noServices": true,
+          "queryFaultObserved": null,
+          "unconfirmedProcessIds": []
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-monitor-save-failure-dc5e7c75b72445fc86427bdc7a621597\\control-receipt.json",
+        "logSha256": "b8884ed7da802d72e181eb0979fab054d83dcecdd827a4ddf1d187ac42551c84"
+      },
+      {
+        "log": "regression-monitor-cim-failure.log",
+        "receiptSha256": "35c93804a828265316a6beb3bf91d7b4c10e419052625d0676b6af116aa90926",
+        "result": {
+          "noServices": true,
+          "unconfirmedProcessIds": [],
+          "resources": "none",
+          "cleanupConfirmed": false,
+          "supervisorState": "NEG-monitor-failure",
+          "queryErrorAction": "Stop",
+          "primaryFailure": "owned-browser-monitor-failed",
+          "observedProcesses": 3,
+          "state": "inert-control-passed",
+          "observationFault": "Refresh",
+          "noHttp": true,
+          "exitCode": -1,
+          "noBrowser": true,
+          "mode": "monitor-cim-failure",
+          "queryFaultObserved": true,
+          "at": "2026-10-20T19:55:08.2875124-03:00",
+          "forced": true,
+          "ownershipComplete": false
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-monitor-cim-failure-a5dbaabeb04544e9af3e9f64d9667abb\\control-receipt.json",
+        "logSha256": "c6cecf8071f5767591b2d6b0ccd9a3e1164cdc3cf6f3038708208b35fd1a5ef8"
+      },
+      {
+        "log": "regression-monitor-parent-witness-missing.log",
+        "receiptSha256": "9027181799120e17fa94dcc7ad00b0aacf402724c3c6f709eb46c7555a837537",
+        "result": {
+          "noServices": true,
+          "queryFaultObserved": true,
+          "primaryFailure": "owned-browser-monitor-failed",
+          "forced": true,
+          "ownershipComplete": false,
+          "queryErrorAction": "Stop",
+          "noBrowser": true,
+          "cleanupConfirmed": false,
+          "supervisorState": "NEG-monitor-failure",
+          "noHttp": true,
+          "resources": "none",
+          "unconfirmedProcessIds": [],
+          "exitCode": -1,
+          "observationFault": "Refresh",
+          "at": "2026-10-20T19:55:11.6030659-03:00",
+          "observedProcesses": 3,
+          "state": "inert-control-passed",
+          "mode": "monitor-parent-witness-missing"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-monitor-parent-witness-missing-e3867625abb54c9ebfe750a45a076e91\\control-receipt.json",
+        "logSha256": "a46e9ded6e54e6ca34044829dfe1311214318e0e3f373fd8087b34616c18818f"
+      },
+      {
+        "log": "regression-witness-query-failure.log",
+        "receiptSha256": "9481f8b028b8eb1ed84dbe3403b472ef840a3ad10a75c15559e7933f05f5bd62",
+        "result": {
+          "queryErrorAction": "Stop",
+          "at": "2026-10-20T19:55:12.2369924-03:00",
+          "noBrowser": true,
+          "noHttp": true,
+          "queryErrorPropagated": true,
+          "noServices": true,
+          "state": "inert-control-passed",
+          "resources": "none",
+          "absentPidReturnedNull": true,
+          "mode": "witness-query-failure"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-witness-query-failure-b8d0f769f9264e47a91b4df0bb95cfd1\\control-receipt.json",
+        "logSha256": "dc45b0addcbd0fd8fd1bb394416c9e18b6df7aa200e385abaac4dc23b75f4810"
+      },
+      {
+        "log": "regression-completion-ack-slow.log",
+        "receiptSha256": "e5181d4ea5ecb474cf727aa729c3c81cdd4051688ba0cd5131101ae2e5f9db6e",
+        "result": {
+          "at": "2026-10-20T19:55:18.6194411-03:00",
+          "noHttp": true,
+          "cleanupConfirmed": true,
+          "unconfirmedProcessIds": [],
+          "queryErrorAction": null,
+          "forced": false,
+          "noServices": true,
+          "primaryFailure": null,
+          "mode": "completion-ack-slow",
+          "observationFault": "Refresh",
+          "queryFaultObserved": null,
+          "ownershipComplete": true,
+          "observedProcesses": 3,
+          "exitCode": 0,
+          "noBrowser": true,
+          "resources": "none",
+          "supervisorState": "completed-owned-tree-exited",
+          "state": "inert-control-passed"
+        },
+        "receipt": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-qa-controls-r1\\supervisor-completion-ack-slow-afe9594e4ff44265a1b89bb0f8ee3028\\control-receipt.json",
+        "logSha256": "9b5747803fa018a09995f6fa68a2ce671c92d70badea4f35c25efea04f30d2a1"
+      }
+    ],
+    "diffCheckExit": 0,
+    "psMinimum": {
+      "noServices": true,
+      "noBrowser": true,
+      "actualHostVersion": "7.6.7",
+      "cases": [
+        {
+          "simulatedVersion": "7.4",
+          "stoppedBeforeAnyProcess": true,
+          "guardRefused": true
+        },
+        {
+          "simulatedVersion": "7.5",
+          "stoppedBeforeAnyProcess": true,
+          "guardRefused": false
+        }
+      ],
+      "noProcesses": true,
+      "state": "minimum-version-control-passed"
+    },
+    "parserErrors": 0
+  },
+  "sources": [
+    {
+      "path": "packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1",
+      "sha256": "c7c8b598f9f037a09fcb718dfea4586df58630e4bf95f5403d3fee8639e4724d"
+    },
+    {
+      "path": "packages/admin/tests/e2e/python-lesson-supervisor-control.ps1",
+      "sha256": "7fa629d3628ae5786b74875110666e2fd9cb239084b47735e314a8ae6877ad88"
+    },
+    {
+      "path": "packages/admin/tests/e2e/python-lessons-acceptance.md",
+      "sha256": "d3c275f7197906875ad97effac9727f3dece1d04db8392d24c44e8fd3f2799f7"
+    },
+    {
+      "path": "packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1",
+      "sha256": "2c3d7526ba9e366fbdfa1a45fab690e42d7bfd1def67f2cc2b2c85d07cafc519"
+    },
+    {
+      "path": "packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1",
+      "sha256": "a19efa1b2743fe992faf6632be23f476d69f2d63e9de71dc88e80af642c27a2f"
+    }
+  ],
+  "deltaPatchSha256": "db7e1689c50aa00dd3cc73b3577558fbca2f69c1823ec32ec1fe3f9deaecf934",
+  "fullQaPatchSha256": "0cd632bb551f900c02e721b253effff09427c2e860d634d920fb7fd8577e4edf",
+  "futureCompositionSha256": "ee647fbb73dcd1069264e0033c3ee7b443185f092243e6f21f5bf456fd7c769d",
+  "historicalArtifacts": [
+    {
+      "path": ".cache/lessons-integration-r3/qa-lot.patch",
+      "sha256": "f93aca1dd2f6780961c61745d6ffe9ae86fe7d8fc19ee61477fe9105fc3eddcb"
+    },
+    {
+      "path": ".cache/lessons-cim-r1/receipt.json",
+      "sha256": "cfed11750fb0776701b06bf54271bd2a4b80c249ff253553dc3761fce42448f0"
+    },
+    {
+      "path": ".cache/lessons-843048-composition-r1/future-composition.json",
+      "sha256": "a4ffb099c908bd9aa6f15e1a28a7605cb159efae1ba51f02e3557f721bebe83e"
+    },
+    {
+      "path": ".cache/studio-python-l0/lessons-admin-r4/review-shas.json",
+      "sha256": "60cb0a6333c3f21a4d12fae0f7272e55a762cf6a60c7a5ed30c06f17344e1c41"
+    }
+  ],
+  "worktreeClean": true,
+  "noPush": true,
+  "noStart": true,
+  "noBrowser": true,
+  "noServices": true,
+  "noBuild": true,
+  "noTsc": true,
+  "noDocker": true,
+  "noExecutionSeal": true
+}

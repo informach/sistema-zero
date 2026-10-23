@@ -15,4 +15,6 @@ export interface BreakerDecision {
 export interface CircuitBreaker {
   beforeCall(serviceId: string, upstreamId: string): Promise<BreakerDecision>
   onResult(serviceId: string, upstreamId: string, ok: boolean, token?: string): Promise<void>
+  /** Withdraws a trial without claiming either upstream success or failure. */
+  onCancelled(serviceId: string, upstreamId: string, token?: string): Promise<void>
 }

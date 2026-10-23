@@ -6,17 +6,20 @@ import {
   type UploadedAttachment,
 } from '@sistemazero/member-shell/components/attachment-uploader'
 import { RichEditor } from '@sistemazero/member-shell/components/rich-editor'
+import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { renderUgcMarkdown } from '@sistemazero/member-shell/lib/markdown'
-import { Badge } from '@sistemazero/ui/badge'
-import { Button } from '@sistemazero/ui/button'
-import { Card } from '@sistemazero/ui/card'
+import type { StudioRemixCapability } from '@sistemazero/member-shell/lib/studio-tier'
 import { Input } from '@sistemazero/ui/input'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import { ArrowLeft, Hash, Lock, MessageCircle, Plus, Send } from 'lucide-react'
-import Link from 'next/link'
-import { useCallback, useEffect, useState } from 'react'
+import { ArrowLeft, Flag, Lock, MessageCircle, MessagesSquare, Plus, Send } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { StageDot, StageFace, StageLine } from '@/components/community/journey/stage'
+import { BackLink, PageBand, PageBody } from '@/components/community/page'
+import { ShowcaseCard } from '@/components/community/showcase-card'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { cn } from '@/lib/cn'
+import { stageTinyLabel } from '@/lib/journey-stage'
 import type {
   HubChannelView,
   HubCommentView,
@@ -28,14 +31,43 @@ import type {
 
 const QUICK_EMOJIS = ['👍', '❤️', '🎉', '😂', '🤔']
 
+/**
+ * Leitura sem interação (20/10/2026): quem recebeu o presente adulto fica, depois dos 7 dias, com a
+ * chave de visitante do Mural (`adult-mural-dos-criadores-visitante`). O hub devolve
+ * `canInteract: false` e recusa comentário, reação e publicação com 403; a tela esconde esses
+ * controles (como o Kids) e diz o que segue aberto, com a oferta de continuidade.
+ */
+export const MURAL_VISITOR_NOTE =
+  'Você pode ver e jogar o Mural. Para publicar, comentar e reagir, a Comunidade dos Criadores abre tudo de novo.'
+
+export function ReadOnlyNote({ origem }: { origem: string }) {
+  return (
+    <p role="note" className="sz-soft flex flex-wrap items-center gap-x-3 gap-y-1 p-4">
+      <span className="min-w-0 flex-1 basis-[16rem] text-muted-foreground">
+        {MURAL_VISITOR_NOTE}
+      </span>
+      <a
+        href={comunidadeAdultoContinuarUrl(origem)}
+        target="_blank"
+        rel="noreferrer"
+        className="sz-link inline-flex min-h-[2.4rem] items-center"
+      >
+        Ver como continuar
+        <span className="sr-only"> (abre em outra aba)</span>
+      </a>
+    </p>
+  )
+}
+
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime()
   const m = Math.floor(diff / 60000)
   if (m < 1) return 'agora'
-  if (m < 60) return `${m} min`
+  if (m < 60) return `há ${m} min`
   const h = Math.floor(m / 60)
-  if (h < 24) return `${h} h`
-  return `${Math.floor(h / 24)} d`
+  if (h < 24) return `há ${h} ${h === 1 ? 'hora' : 'horas'}`
+  const d = Math.floor(h / 24)
+  return d === 1 ? 'ontem' : `há ${d} dias`
 }
 
 /**
@@ -59,7 +91,22 @@ function toggleReaction(reactions: HubReaction[], emoji: string, wasMine: boolea
     : [...reactions, { emoji, count: 1, reactedByMe: true }]
 }
 
-export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: string }) {
+export function SpaceViewClient({
+  slug,
+  viewerId,
+  showcase = false,
+  remixCapability = null,
+  showcaseFilter,
+  initialChannel = null,
+}: {
+  slug: string
+  viewerId: string
+  showcase?: boolean
+  remixCapability?: StudioRemixCapability | null
+  showcaseFilter?: { sort: 'recent' | 'plays'; challengeKey: string | null }
+  /** Slug do canal que abre primeiro (`?canal=`, das linhas de canal da Comunidade). */
+  initialChannel?: string | null
+}) {
   const [space, setSpace] = useState<HubSpaceView | null>(null)
   const [channels, setChannels] = useState<HubChannelView[]>([])
   const [channel, setChannel] = useState<HubChannelView | null>(null)
@@ -103,7 +150,11 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
         if (!alive) return
         setSpace(sp)
         setChannels(ch.items)
-        setChannel(ch.items[0] ?? null)
+        setChannel(
+          (showcase
+            ? ch.items.find((item) => item.slug === 'parede')
+            : (ch.items.find((item) => item.slug === initialChannel) ?? ch.items[0])) ?? null,
+        )
       })
       .catch((err) => {
         if (alive) toast.error((err as ApiError).message ?? 'Não foi possível abrir a comunidade.')
@@ -112,20 +163,33 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     return () => {
       alive = false
     }
-  }, [slug])
+  }, [slug, showcase, initialChannel])
 
+  const threadQuery = new URLSearchParams(
+    showcaseFilter
+      ? {
+          sort: showcaseFilter.sort,
+          ...(showcaseFilter.challengeKey ? { challenge: showcaseFilter.challengeKey } : {}),
+        }
+      : {},
+  ).toString()
   // ── Ao trocar de canal: carrega a 1ª página de tópicos + marca visto ──
-  const loadThreads = useCallback(async (channelId: string) => {
-    try {
-      const page = await apiGet<HubPage<HubThreadView>>(`/api/hub/channels/${channelId}/threads`)
-      setThreads(page.items)
-      setThreadsCursor(page.nextCursor)
-      setThreadsHasMore(page.hasMore)
-    } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar os tópicos.')
-    }
-    apiSend(`/api/hub/channels/${channelId}/seen`, 'POST', {}).catch(() => {})
-  }, [])
+  const loadThreads = useCallback(
+    async (channelId: string) => {
+      try {
+        const page = await apiGet<HubPage<HubThreadView>>(
+          `/api/hub/channels/${channelId}/threads${threadQuery ? `?${threadQuery}` : ''}`,
+        )
+        setThreads(page.items)
+        setThreadsCursor(page.nextCursor)
+        setThreadsHasMore(page.hasMore)
+      } catch (err) {
+        toast.error((err as ApiError).message ?? 'Falha ao carregar os tópicos.')
+      }
+      apiSend(`/api/hub/channels/${channelId}/seen`, 'POST', {}).catch(() => {})
+    },
+    [threadQuery],
+  )
 
   useEffect(() => {
     if (!channel) return
@@ -139,12 +203,23 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     void loadThreads(channel.id)
   }, [channel, loadThreads])
 
+  // No celular os canais rolam de lado: o canal aberto (inclusive o que veio por `?canal=`) precisa
+  // estar à vista, e não escondido depois da borda.
+  const channelNav = useRef<HTMLElement>(null)
+  const activeChannelId = channel?.id
+  useEffect(() => {
+    const nav = channelNav.current
+    if (loading || !nav || !activeChannelId || nav.scrollWidth <= nav.clientWidth) return
+    const active = nav.querySelector<HTMLElement>('[aria-current="true"]')
+    if (active) nav.scrollLeft = Math.max(0, active.offsetLeft - 8)
+  }, [loading, activeChannelId])
+
   async function loadMoreThreads() {
     if (!channel || !threadsCursor || loadingMoreThreads) return
     setLoadingMoreThreads(true)
     try {
       const page = await apiGet<HubPage<HubThreadView>>(
-        `/api/hub/channels/${channel.id}/threads?cursor=${encodeURIComponent(threadsCursor)}`,
+        `/api/hub/channels/${channel.id}/threads?cursor=${encodeURIComponent(threadsCursor)}${threadQuery ? `&${threadQuery}` : ''}`,
       )
       setThreads((prev) => {
         const seen = new Set(prev.map((t) => t.id))
@@ -159,8 +234,29 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     }
   }
 
+  /**
+   * O botão que abriu a conversa ou o formulário. Do `xl` para baixo a lista some (CSS) quando um
+   * deles abre: ao voltar, o foco precisa retornar a ele, senão cai no início da página.
+   */
+  const opener = useRef<HTMLElement | null>(null)
+  function rememberOpener() {
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+  }
+  function restoreOpener() {
+    requestAnimationFrame(() => {
+      if (opener.current?.isConnected) opener.current.focus()
+    })
+  }
+
+  // O formulário abre com o foco no título (no celular ele ocupa o lugar da lista).
+  useEffect(() => {
+    if (showNew) document.getElementById('novo-topico-titulo')?.focus()
+  }, [showNew])
+
   async function openThread(t: HubThreadView) {
+    rememberOpener()
     setThread(t)
+    setShowNew(false)
     setComments([])
     setNewComments([])
     setCommentsCursor(null)
@@ -318,194 +414,419 @@ export function SpaceViewClient({ slug, viewerId }: { slug: string; viewerId: st
     }
   }
 
-  if (loading) return <SpaceViewSkeleton />
+  if (loading) return showcase ? <ShowcaseSkeleton /> : <SpaceViewSkeleton />
   if (!space) {
-    return <p className="px-4 py-8 text-sm text-muted-foreground">Comunidade não encontrada.</p>
+    if (showcase)
+      return <p className="sz-card p-6 text-muted-foreground">Comunidade não encontrada.</p>
+    return (
+      <PageBody className="gap-6">
+        <BackLink href="/comunidade" label="Comunidade" />
+        <p className="sz-card p-6 text-muted-foreground">Comunidade não encontrada.</p>
+      </PageBody>
+    )
   }
 
+  const detail = thread ? (
+    <ThreadDetail
+      key={thread.id}
+      thread={thread}
+      comments={comments}
+      newComments={newComments}
+      hasMoreComments={commentsHasMore}
+      loadingMoreComments={loadingMoreComments}
+      onLoadMoreComments={loadMoreComments}
+      busy={busy}
+      commentBody={commentBody}
+      setCommentBody={setCommentBody}
+      commentAttachments={commentAttachments}
+      setCommentAttachments={setCommentAttachments}
+      onBack={() => {
+        setThread(null)
+        restoreOpener()
+      }}
+      backLabel={showcase ? 'Voltar aos jogos' : 'Tópicos'}
+      paned={!showcase}
+      onSend={sendComment}
+      onReact={space.canInteract ? react : null}
+      onReport={report}
+      authorLabel={authorLabel}
+      canInteract={space.canInteract}
+    />
+  ) : null
+
+  // ── O Mural: a grade de jogos; "Comentários e reações" abre a conversa no lugar da grade ──
+  if (showcase) {
+    if (detail) return <div className="mx-auto w-full max-w-[46rem]">{detail}</div>
+    return (
+      <>
+        {space.canInteract ? null : <ReadOnlyNote origem="mural-visitante" />}
+        {threads.length === 0 ? (
+          <p className="sz-card p-6 text-center text-muted-foreground">
+            {showcaseFilter?.challengeKey
+              ? 'Nenhum jogo no desafio deste mês ainda. Publique o seu pelo Estúdio.'
+              : 'Nenhum jogo no Mural ainda. Publique o seu pelo Estúdio.'}
+          </p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {threads.map((t) =>
+              t.isShowcase ? (
+                <ShowcaseCard
+                  key={t.id}
+                  thread={t}
+                  viewerId={viewerId}
+                  onOpen={() => void openThread(t)}
+                  capability={space.canInteract ? remixCapability : null}
+                />
+              ) : (
+                <TopicCard
+                  key={t.id}
+                  thread={t}
+                  selected={false}
+                  author={t.authorDisplayName ?? authorLabel(t.authorId)}
+                  onOpen={() => void openThread(t)}
+                />
+              ),
+            )}
+          </div>
+        )}
+        {threadsHasMore ? (
+          <button
+            type="button"
+            onClick={loadMoreThreads}
+            disabled={loadingMoreThreads}
+            className="sz-btn-outline self-center"
+          >
+            {loadingMoreThreads ? 'Carregando…' : 'Carregar mais jogos'}
+          </button>
+        ) : null}
+      </>
+    )
+  }
+
+  // ── O fórum: canais, tópicos e conversa lado a lado no computador; um de cada vez no celular ──
+  const paneOpen = Boolean(thread) || showNew
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6">
-      <Link
-        href="/comunidade"
-        className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> Comunidade
-      </Link>
-      <h1 className="mb-4 text-xl font-bold tracking-tight">{space.name}</h1>
-
-      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-        {/* Canais */}
-        <aside className="space-y-1">
-          {channels.map((c) => (
-            <button
-              type="button"
-              key={c.id}
-              onClick={() => setChannel(c)}
-              className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                channel?.id === c.id
-                  ? 'bg-muted font-semibold text-foreground'
-                  : 'text-muted-foreground hover:bg-muted/60'
-              }`}
-            >
-              {c.postingPolicy === 'staff_only' ? (
-                <Lock className="size-4 shrink-0" />
-              ) : (
-                <Hash className="size-4 shrink-0" />
-              )}
-              <span className="truncate">{c.name}</span>
-              {c.hasUnread ? <span className="ml-auto size-2 rounded-full bg-primary" /> : null}
-            </button>
-          ))}
-          {channels.length === 0 ? (
-            <p className="px-3 text-sm text-muted-foreground">Sem canais ainda.</p>
-          ) : null}
-        </aside>
-
-        {/* Conteúdo */}
-        <main className="min-w-0">
-          {thread ? (
-            <ThreadDetail
-              thread={thread}
-              comments={comments}
-              newComments={newComments}
-              hasMoreComments={commentsHasMore}
-              loadingMoreComments={loadingMoreComments}
-              onLoadMoreComments={loadMoreComments}
-              busy={busy}
-              commentBody={commentBody}
-              setCommentBody={setCommentBody}
-              commentAttachments={commentAttachments}
-              setCommentAttachments={setCommentAttachments}
-              onBack={() => setThread(null)}
-              onSend={sendComment}
-              onReact={react}
-              onReport={report}
-              authorLabel={authorLabel}
-            />
-          ) : (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
-                  {channel ? channel.topic || `#${channel.slug}` : 'Selecione um canal'}
-                </p>
-                {channel ? (
-                  <Button size="sm" onClick={() => setShowNew((v) => !v)}>
-                    <Plus className="size-4" /> Novo tópico
-                  </Button>
-                ) : null}
-              </div>
-
-              {showNew ? (
-                <Card className="space-y-2 p-3">
-                  <Input
-                    placeholder="Título"
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                  />
-                  <RichEditor
-                    value={newBody}
-                    onChange={setNewBody}
-                    ariaLabel="Mensagem da conversa"
-                  />
-                  <AttachmentUploader
-                    value={newAttachments}
-                    onChange={setNewAttachments}
-                    disabled={busy}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setShowNew(false)}>
-                      Cancelar
-                    </Button>
-                    <Button size="sm" onClick={createThread} disabled={busy}>
-                      Publicar
-                    </Button>
-                  </div>
-                </Card>
-              ) : null}
-
-              {threads.length === 0 ? (
-                <Card className="p-6 text-center text-sm text-muted-foreground">
-                  Nenhum tópico ainda. Seja o primeiro a postar!
-                </Card>
-              ) : (
-                <>
-                  {threads.map((t) => (
-                    <button
-                      type="button"
-                      key={t.id}
-                      onClick={() => openThread(t)}
-                      className="w-full text-left"
-                    >
-                      <Card className="space-y-1 p-3 transition-colors hover:bg-muted/50">
-                        <div className="flex items-center gap-2">
-                          {t.isPinned ? <Badge variant="muted">Fixado</Badge> : null}
-                          {t.pending ? <Badge variant="muted">Aguardando aprovação</Badge> : null}
-                          <span className="truncate font-medium">{t.title}</span>
-                        </div>
-                        <p className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>{authorLabel(t.authorId)}</span>
-                          <span className="inline-flex items-center gap-1">
-                            <MessageCircle className="size-3" /> {t.commentCount}
-                          </span>
-                          <span>{timeAgo(t.lastActivityAt)}</span>
-                        </p>
-                      </Card>
-                    </button>
-                  ))}
-                  {threadsHasMore ? (
-                    <div className="flex justify-center pt-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={loadMoreThreads}
-                        disabled={loadingMoreThreads}
-                      >
-                        {loadingMoreThreads ? 'Carregando…' : 'Carregar mais'}
-                      </Button>
-                    </div>
+    <>
+      <PageBand
+        compact
+        back={{ href: '/comunidade', label: 'Comunidade' }}
+        title={space.name}
+        lead={space.description ?? undefined}
+      />
+      <PageBody className="pt-7">
+        <div className="grid items-start gap-5 lg:grid-cols-[14rem_minmax(0,1fr)] xl:grid-cols-[14rem_20rem_minmax(0,1fr)]">
+          <nav
+            ref={channelNav}
+            aria-label="Canais"
+            className="sz-card-sm scrollbar-subtle relative flex gap-1 overflow-x-auto p-2 lg:flex-col lg:overflow-visible"
+          >
+            <span className="hidden px-3 py-2 font-mono text-[0.85rem] text-muted-foreground lg:block">
+              Canais
+            </span>
+            {channels.map((c) => {
+              const active = channel?.id === c.id
+              return (
+                <button
+                  type="button"
+                  key={c.id}
+                  onClick={() => setChannel(c)}
+                  aria-current={active ? 'true' : undefined}
+                  className={cn(
+                    'flex min-h-[2.6rem] flex-none items-center gap-2.5 whitespace-nowrap rounded-[0.6rem] px-3 text-left transition-colors lg:w-full lg:whitespace-normal',
+                    active
+                      ? 'bg-(--acao-tint) font-bold text-(--acao-texto)'
+                      : 'text-foreground hover:bg-muted',
+                  )}
+                >
+                  {c.postingPolicy === 'staff_only' ? (
+                    <Lock aria-hidden className="size-[1.1rem] flex-none text-muted-foreground" />
+                  ) : (
+                    <span aria-hidden className="w-[1.1rem] flex-none text-center font-bold">
+                      #
+                    </span>
+                  )}
+                  <span className="min-w-0 lg:flex-1">{c.name}</span>
+                  {c.hasUnread ? (
+                    <span className="size-2.5 flex-none rounded-full bg-primary">
+                      <span className="sr-only">com novidades</span>
+                    </span>
                   ) : null}
-                </>
-              )}
+                </button>
+              )
+            })}
+            {channels.length === 0 ? (
+              <p className="px-3 py-2 text-muted-foreground">Sem canais ainda.</p>
+            ) : null}
+          </nav>
+
+          <section
+            aria-label="Tópicos do canal"
+            className={cn('flex min-w-0 flex-col gap-3', paneOpen && 'hidden xl:flex')}
+          >
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="min-w-0 flex-1 text-[0.85rem] text-muted-foreground">
+                {channel ? channel.topic || `#${channel.slug}` : 'Selecione um canal'}
+              </p>
+              {channel && space.canInteract ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    rememberOpener()
+                    setThread(null)
+                    setShowNew((v) => !v)
+                  }}
+                  aria-expanded={showNew}
+                  className="sz-btn sz-btn-sm"
+                >
+                  <Plus aria-hidden /> Novo tópico
+                </button>
+              ) : null}
             </div>
+
+            {threads.length === 0 ? (
+              <p className="sz-card-sm p-5 text-center text-muted-foreground">
+                Nenhum tópico ainda. Seja o primeiro a postar!
+              </p>
+            ) : (
+              <>
+                {threads.map((t) =>
+                  t.isShowcase ? (
+                    <ShowcaseCard
+                      key={t.id}
+                      thread={t}
+                      viewerId={viewerId}
+                      onOpen={() => void openThread(t)}
+                      capability={space.canInteract ? remixCapability : null}
+                    />
+                  ) : (
+                    <TopicCard
+                      key={t.id}
+                      thread={t}
+                      selected={thread?.id === t.id}
+                      author={t.authorDisplayName ?? authorLabel(t.authorId)}
+                      onOpen={() => void openThread(t)}
+                    />
+                  ),
+                )}
+                {threadsHasMore ? (
+                  <button
+                    type="button"
+                    onClick={loadMoreThreads}
+                    disabled={loadingMoreThreads}
+                    className="sz-btn-outline sz-btn-sm self-center"
+                  >
+                    {loadingMoreThreads ? 'Carregando…' : 'Carregar mais'}
+                  </button>
+                ) : null}
+              </>
+            )}
+          </section>
+
+          {showNew && space.canInteract ? (
+            <section
+              aria-labelledby="novo-topico"
+              className="sz-card flex min-w-0 flex-col gap-4 p-5 md:p-7"
+            >
+              <h2 id="novo-topico" className="sz-h3">
+                Novo tópico{channel ? ` em ${channel.name}` : ''}
+              </h2>
+              <Input
+                id="novo-topico-titulo"
+                placeholder="Título"
+                aria-label="Título"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+              />
+              <RichEditor value={newBody} onChange={setNewBody} ariaLabel="Mensagem da conversa" />
+              <AttachmentUploader
+                value={newAttachments}
+                onChange={setNewAttachments}
+                disabled={busy}
+              />
+              <div className="flex flex-wrap justify-end gap-3">
+                <button
+                  type="button"
+                  className="sz-btn-quiet"
+                  onClick={() => {
+                    setShowNew(false)
+                    restoreOpener()
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button type="button" className="sz-btn" onClick={createThread} disabled={busy}>
+                  Publicar
+                </button>
+              </div>
+            </section>
+          ) : (
+            (detail ?? (
+              <div className="sz-card hidden min-w-0 flex-col items-center gap-3 p-10 text-center text-muted-foreground xl:flex">
+                <MessagesSquare aria-hidden className="size-[2.2rem]" />
+                <p>Escolha um tópico para ler a conversa e comentar.</p>
+              </div>
+            ))
           )}
-        </main>
-      </div>
-    </div>
+        </div>
+      </PageBody>
+    </>
+  )
+}
+
+/** Um tópico na lista do canal: selos, título, autor, comentários e última atividade. */
+function TopicCard({
+  thread,
+  selected,
+  author,
+  onOpen,
+}: {
+  thread: HubThreadView
+  selected: boolean
+  author: string
+  onOpen: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-current={selected ? 'true' : undefined}
+      className={cn(
+        'sz-card-sm flex w-full flex-col items-start gap-1.5 p-4 text-left transition-colors hover:border-(--link)',
+        selected && 'border-primary shadow-[0_0_0_2px_var(--primary)]',
+      )}
+    >
+      {thread.isPinned || thread.pending ? (
+        <span className="flex flex-wrap gap-2">
+          {thread.isPinned ? <span className="sz-chip">Fixado</span> : null}
+          {thread.pending ? (
+            <span className="sz-chip sz-chip-aviso">Aguardando aprovação</span>
+          ) : null}
+        </span>
+      ) : null}
+      <strong>{thread.title}</strong>
+      <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.85rem] text-muted-foreground">
+        <span>{author}</span>
+        {thread.authorJourney ? (
+          <span className="inline-flex items-center gap-1.5">
+            <StageDot badge={thread.authorJourney} />
+            {stageTinyLabel(thread.authorJourney)}
+          </span>
+        ) : null}
+        <span className="inline-flex items-center gap-1">
+          <MessageCircle aria-hidden className="size-4" />
+          {thread.commentCount}
+          <span className="sr-only">
+            {thread.commentCount === 1 ? 'comentário' : 'comentários'}
+          </span>
+        </span>
+        <span>{timeAgo(thread.lastActivityAt)}</span>
+      </span>
+    </button>
+  )
+}
+
+/**
+ * A foto de quem escreveu com o anel da etapa (19/10/2026), quando a pessoa mostra o perfil; senão a
+ * inicial, na cor de ação para "Você".
+ */
+function AuthorAvatar({
+  label,
+  own,
+  photoUrl,
+  journey,
+}: {
+  label: string
+  own: boolean
+  photoUrl?: string | null
+  journey?: HubThreadView['authorJourney']
+}) {
+  if (photoUrl || journey)
+    return (
+      <StageFace
+        name={label}
+        photoUrl={photoUrl}
+        badge={journey}
+        size="p"
+        className="size-[2.2rem] text-[0.85rem]"
+      />
+    )
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        'inline-flex size-[2.2rem] flex-none select-none items-center justify-center rounded-full font-bold text-[0.85rem]',
+        own ? 'bg-primary text-primary-foreground' : 'bg-(--topo) text-(--sz-community-on-action)',
+      )}
+    >
+      {label.trim().charAt(0).toUpperCase() || 'C'}
+    </span>
   )
 }
 
 // Chaves estáveis dos placeholders do esqueleto.
 const SK_CHANNEL_KEYS = ['c1', 'c2', 'c3', 'c4']
 const SK_THREAD_KEYS = ['t1', 't2', 't3', 't4', 't5']
+const SK_GAME_KEYS = ['g1', 'g2', 'g3']
 
 /**
  * Esqueleto da carga INICIAL da comunidade (no lugar de "Carregando…"): espelha o
- * layout — canais na lateral + lista de conversas. `aria-busy` + sr-only.
+ * layout — faixa, canais na lateral e lista de conversas. `aria-busy` + sr-only.
  */
 function SpaceViewSkeleton() {
   return (
-    <div aria-busy="true" className="mx-auto w-full max-w-5xl px-4 py-6">
+    <div aria-busy="true">
       <span className="sr-only">Carregando…</span>
-      <Skeleton className="mb-3 h-4 w-28" />
-      <Skeleton className="mb-4 h-6 w-56" />
-      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
-        <aside className="space-y-1">
+      <section className="sz-band">
+        <div className="sz-page flex flex-col gap-3 py-7">
+          <Skeleton className="h-[1.2rem] w-32" />
+          <Skeleton className="h-[2.2rem] w-72 max-w-full" />
+        </div>
+      </section>
+      <div className="sz-page grid items-start gap-5 pt-7 pb-16 lg:grid-cols-[14rem_minmax(0,1fr)] xl:grid-cols-[14rem_20rem_minmax(0,1fr)]">
+        <div className="flex gap-1 overflow-hidden lg:flex-col">
           {SK_CHANNEL_KEYS.map((k) => (
-            <Skeleton key={k} className="h-9 w-full rounded-lg" />
+            <Skeleton key={k} className="h-[2.6rem] w-32 rounded-[0.6rem] lg:w-full" />
           ))}
-        </aside>
-        <div className="space-y-3">
+        </div>
+        <div className="flex flex-col gap-3">
           {SK_THREAD_KEYS.map((k) => (
-            <div key={k} className="space-y-2 rounded-lg border border-border p-3">
+            <div key={k} className="sz-card-sm flex flex-col gap-2 p-4">
               <Skeleton className="h-4 w-2/3" />
               <Skeleton className="h-3 w-1/2" />
             </div>
           ))}
         </div>
+        <Skeleton className="hidden h-[20rem] rounded-[1.2rem] xl:block" />
       </div>
     </div>
   )
 }
+
+/** Esqueleto da grade do Mural: três cartões de jogo. */
+function ShowcaseSkeleton() {
+  return (
+    <div aria-busy="true" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <span className="sr-only">Carregando…</span>
+      {SK_GAME_KEYS.map((k) => (
+        <div key={k} className="sz-card flex flex-col overflow-hidden">
+          <Skeleton className="aspect-video w-full rounded-none" />
+          <div className="flex flex-col gap-2 p-5">
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="mt-3 h-[2.8rem] w-full" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+type ReactHandler = (
+  target: 'threads' | 'comments',
+  id: string,
+  emoji: string,
+  mine: boolean,
+) => void
 
 function ReactionBar({
   target,
@@ -516,11 +837,29 @@ function ReactionBar({
   target: 'threads' | 'comments'
   id: string
   reactions: HubThreadView['reactions']
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  /** `null` = sem interação (visitante): só as contagens, sem botão. */
+  onReact: ReactHandler | null
 }) {
   const byEmoji = new Map(reactions.map((r) => [r.emoji, r]))
+  if (!onReact) {
+    const counted = reactions.filter((r) => r.count > 0)
+    if (!counted.length) return <span />
+    return (
+      <ul aria-label="Reações" className="flex flex-wrap items-center gap-1.5">
+        {counted.map((r) => (
+          <li
+            key={r.emoji}
+            className="inline-flex min-h-[2.4rem] items-center gap-1 rounded-full bg-background px-2.5 text-[0.9rem]"
+          >
+            <span>{r.emoji}</span>
+            <span>{r.count}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
   return (
-    <div className="flex flex-wrap items-center gap-1">
+    <div className="flex flex-wrap items-center gap-1.5">
       {QUICK_EMOJIS.map((emoji) => {
         const r = byEmoji.get(emoji)
         const mine = r?.reactedByMe ?? false
@@ -528,10 +867,12 @@ function ReactionBar({
           <button
             type="button"
             key={emoji}
+            aria-pressed={mine}
             onClick={() => onReact(target, id, emoji, mine)}
-            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs transition-colors ${
-              mine ? 'border-primary bg-primary/10' : 'border-border hover:bg-muted/60'
-            }`}
+            className={cn(
+              'inline-flex min-h-[2.4rem] min-w-[2.4rem] items-center justify-center gap-1 rounded-full border-2 px-2.5 text-[0.9rem] transition-colors',
+              mine ? 'border-primary bg-(--acao-tint)' : 'border-border bg-card hover:bg-muted',
+            )}
           >
             <span>{emoji}</span>
             {r && r.count > 0 ? <span>{r.count}</span> : null}
@@ -539,6 +880,31 @@ function ReactionBar({
         )
       })}
     </div>
+  )
+}
+
+function ReportButton({ onClick, compact = false }: { onClick: () => void; compact?: boolean }) {
+  if (compact)
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-label="Denunciar"
+        title="Denunciar"
+        className="inline-flex size-[2.4rem] flex-none items-center justify-center rounded-[0.6rem] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <Flag aria-hidden className="size-[1.1rem]" />
+      </button>
+    )
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="sz-btn-quiet sz-btn-sm bg-transparent px-2.5 text-muted-foreground"
+    >
+      <Flag aria-hidden />
+      Denunciar
+    </button>
   )
 }
 
@@ -550,37 +916,49 @@ function CommentCard({
 }: {
   comment: HubCommentView
   authorLabel: (authorId: string | null) => string
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact: ReactHandler | null
   onReport: (target: 'threads' | 'comments', id: string) => void
 }) {
+  const author = comment.authorDisplayName ?? authorLabel(comment.authorId)
   return (
-    <Card className="space-y-2 p-3">
-      <p className="text-xs text-muted-foreground">
-        {authorLabel(comment.authorId)}
-        {comment.pending ? ' · aguardando aprovação' : ''}
-      </p>
-      <div className="lesson-prose">{renderUgcMarkdown(comment.body)}</div>
-      <AttachmentList attachments={comment.attachments} />
-      <div className="flex items-center justify-between">
-        <ReactionBar
-          target="comments"
-          id={comment.id}
-          reactions={comment.reactions}
-          onReact={onReact}
-        />
-        <button
-          type="button"
-          onClick={() => onReport('comments', comment.id)}
-          className="text-xs text-muted-foreground hover:text-foreground"
-        >
-          Denunciar
-        </button>
+    <div className="flex gap-3">
+      <AuthorAvatar
+        label={author}
+        own={authorLabel(comment.authorId) === 'Você'}
+        photoUrl={comment.authorAvatarUrl}
+        journey={comment.authorJourney}
+      />
+      <div
+        className={cn(
+          'flex min-w-0 flex-1 flex-col gap-1.5 rounded-[0.8rem] px-4 py-3',
+          comment.pending ? 'border-2 border-border border-dashed' : 'bg-background',
+        )}
+      >
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.85rem]">
+          <strong>{author}</strong>
+          {comment.authorJourney ? <StageLine badge={comment.authorJourney} /> : null}
+          <span className="text-muted-foreground">{timeAgo(comment.createdAt)}</span>
+          {comment.pending ? (
+            <span className="sz-chip sz-chip-aviso">Aguardando aprovação</span>
+          ) : null}
+        </p>
+        <div className="lesson-prose">{renderUgcMarkdown(comment.body)}</div>
+        <AttachmentList attachments={comment.attachments} />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <ReactionBar
+            target="comments"
+            id={comment.id}
+            reactions={comment.reactions}
+            onReact={onReact}
+          />
+          <ReportButton compact onClick={() => onReport('comments', comment.id)} />
+        </div>
       </div>
-    </Card>
+    </div>
   )
 }
 
-function ThreadDetail({
+export function ThreadDetail({
   thread,
   comments,
   newComments,
@@ -593,10 +971,13 @@ function ThreadDetail({
   commentAttachments,
   setCommentAttachments,
   onBack,
+  backLabel,
+  paned,
   onSend,
   onReact,
   onReport,
   authorLabel,
+  canInteract = true,
 }: {
   thread: HubThreadView
   comments: HubCommentView[]
@@ -610,46 +991,89 @@ function ThreadDetail({
   commentAttachments: UploadedAttachment[]
   setCommentAttachments: (v: UploadedAttachment[]) => void
   onBack: () => void
+  backLabel: string
+  /** No fórum, a conversa é a terceira coluna no computador (e fica presa ao rolar). */
+  paned: boolean
   onSend: () => void
-  onReact: (target: 'threads' | 'comments', id: string, emoji: string, mine: boolean) => void
+  onReact: ReactHandler | null
   onReport: (target: 'threads' | 'comments', id: string) => void
   authorLabel: (authorId: string | null) => string
+  /** `false` (visitante do Mural): sem comentar nem reagir, com o recado da continuidade. */
+  canInteract?: boolean
 }) {
   const total = comments.length + newComments.length
+  const reactHandler = canInteract ? onReact : null
+  const author = thread.authorDisplayName ?? authorLabel(thread.authorId)
+  const ref = useRef<HTMLElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  // Uma coisa por vez (celular, ou o Mural): a conversa abre no lugar da lista e o topo dela
+  // precisa aparecer, senão a pessoa fica no meio da página onde estava a lista. O foco vem para o
+  // título, porque o botão que abriu sumiu com a lista. A `key` do tópico remonta o componente a
+  // cada conversa aberta.
+  useEffect(() => {
+    const el = ref.current
+    if (!el || (paned && window.matchMedia('(min-width: 80rem)').matches)) return
+    if (el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: 'start' })
+    titleRef.current?.focus({ preventScroll: true })
+  }, [paned])
   return (
-    <div className="space-y-4">
+    <article
+      ref={ref}
+      aria-label="Conversa aberta"
+      className={cn(
+        'sz-card flex min-w-0 scroll-mt-[8rem] flex-col gap-5 p-5 md:p-7',
+        paned &&
+          'xl:sticky xl:top-[5rem] xl:max-h-[calc(100dvh-6rem)] xl:overflow-y-auto xl:overscroll-contain',
+      )}
+    >
       <button
         type="button"
         onClick={onBack}
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className={cn(
+          'inline-flex min-h-[2.4rem] items-center gap-2 self-start font-bold text-foreground hover:text-(--link)',
+          paned && 'xl:hidden',
+        )}
       >
-        <ArrowLeft className="size-4" /> Tópicos
+        <ArrowLeft aria-hidden className="size-5" /> {backLabel}
       </button>
 
-      <Card className="space-y-3 p-4">
-        <h2 className="text-lg font-bold">{thread.title}</h2>
-        <p className="text-xs text-muted-foreground">{authorLabel(thread.authorId)}</p>
-        <div className="lesson-prose">{renderUgcMarkdown(thread.body)}</div>
-        <AttachmentList attachments={thread.attachments} />
-        <div className="flex items-center justify-between">
-          <ReactionBar
-            target="threads"
-            id={thread.id}
-            reactions={thread.reactions}
-            onReact={onReact}
+      <header className="flex flex-col gap-2.5">
+        <h2 ref={titleRef} tabIndex={-1} className="sz-h2 focus-visible:outline-none">
+          {thread.title}
+        </h2>
+        <div className="flex items-center gap-3">
+          <AuthorAvatar
+            label={author}
+            own={authorLabel(thread.authorId) === 'Você'}
+            photoUrl={thread.authorAvatarUrl}
+            journey={thread.authorJourney}
           />
-          <button
-            type="button"
-            onClick={() => onReport('threads', thread.id)}
-            className="text-xs text-muted-foreground hover:text-foreground"
-          >
-            Denunciar
-          </button>
+          <span className="flex flex-col">
+            <strong>{author}</strong>
+            {thread.authorJourney ? <StageLine badge={thread.authorJourney} /> : null}
+            <span className="text-[0.85rem] text-muted-foreground">
+              {timeAgo(thread.createdAt)}
+            </span>
+          </span>
         </div>
-      </Card>
+      </header>
+      <div className="lesson-prose">{renderUgcMarkdown(thread.body)}</div>
+      <AttachmentList attachments={thread.attachments} />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <ReactionBar
+          target="threads"
+          id={thread.id}
+          reactions={thread.reactions}
+          onReact={reactHandler}
+        />
+        <ReportButton onClick={() => onReport('threads', thread.id)} />
+      </div>
 
-      <div className="space-y-3">
-        <h3 className="text-sm font-semibold text-muted-foreground">
+      <section
+        aria-label="Comentários"
+        className="flex flex-col gap-3.5 border-border border-t pt-5"
+      >
+        <h3 className="sz-h4">
           {total} comentário{total === 1 ? '' : 's'}
         </h3>
         {comments.map((c) => (
@@ -657,57 +1081,65 @@ function ThreadDetail({
             key={c.id}
             comment={c}
             authorLabel={authorLabel}
-            onReact={onReact}
+            onReact={reactHandler}
             onReport={onReport}
           />
         ))}
         {hasMoreComments ? (
-          <div className="flex justify-center">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onLoadMoreComments}
-              disabled={loadingMoreComments}
-            >
-              {loadingMoreComments ? 'Carregando…' : 'Carregar mais comentários'}
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={onLoadMoreComments}
+            disabled={loadingMoreComments}
+            className="sz-btn-outline sz-btn-sm self-center"
+          >
+            {loadingMoreComments ? 'Carregando…' : 'Carregar mais comentários'}
+          </button>
         ) : null}
         {newComments.map((c) => (
           <CommentCard
             key={c.id}
             comment={c}
             authorLabel={authorLabel}
-            onReact={onReact}
+            onReact={reactHandler}
             onReport={onReport}
           />
         ))}
-      </div>
+      </section>
 
-      {thread.isLocked ? (
-        <Card className="p-3 text-center text-sm text-muted-foreground">
+      {!canInteract ? (
+        <ReadOnlyNote origem={thread.isShowcase ? 'mural-visitante' : 'comunidade-visitante'} />
+      ) : thread.isLocked ? (
+        <p className="sz-soft p-4 text-center text-muted-foreground">
           Tópico trancado para novos comentários.
-        </Card>
+        </p>
       ) : (
-        <Card className="space-y-2 p-3">
+        <div className="flex flex-col gap-2.5">
+          <p className="sz-label">Escreva um comentário</p>
           <RichEditor
             value={commentBody}
             onChange={setCommentBody}
             ariaLabel="Comentário"
             compact
           />
-          <AttachmentUploader
-            value={commentAttachments}
-            onChange={setCommentAttachments}
-            disabled={busy}
-          />
-          <div className="flex justify-end">
-            <Button size="sm" onClick={onSend} disabled={busy || !commentBody.trim()}>
-              <Send className="size-4" /> Comentar
-            </Button>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="flex-1 basis-[11rem]">
+              <AttachmentUploader
+                value={commentAttachments}
+                onChange={setCommentAttachments}
+                disabled={busy}
+              />
+            </div>
+            <button
+              type="button"
+              className="sz-btn ml-auto"
+              onClick={onSend}
+              disabled={busy || !commentBody.trim()}
+            >
+              <Send aria-hidden /> Comentar
+            </button>
           </div>
-        </Card>
+        </div>
       )}
-    </div>
+    </article>
   )
 }

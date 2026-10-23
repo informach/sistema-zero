@@ -1,15 +1,23 @@
-import { resolve } from 'node:path'
+import { realpathSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import { dirname, resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
 // Dev server LOCAL do package (não deployado). Adaptado do vite.config do repo
 // de origem (sistema-zero-studio/apps/studio): mantém plugins, optimizeDeps,
-// worker es e os headers de cross-origin isolation que o WebContainer (aba
-// Terminal) exige; dropa o bloco build/manualChunks e a CSP de preview, que
-// eram otimizações do deploy standalone — a CSP de produção é responsabilidade
-// do app consumidor (ver docs/embedding.md).
+// worker es e os headers de cross-origin isolation que o WebContainer exige.
+// Bundler e CSP de produção pertencem ao app consumidor (ver docs/embedding.md).
 const here = import.meta.dirname
+// Resolve from the original Core package, not Vite's temporary bundled config or a store layout.
+const coreRequire = createRequire(resolve(here, '../../core/package.json'))
+const coreZodDirectory = realpathSync(dirname(coreRequire.resolve('zod/package.json')))
+const coreZodPathPattern = coreZodDirectory
+  .split(/[\\/]/)
+  .map((segment) => segment.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  .join('[\\\\/]')
+const coreZodModules = new RegExp(`^${coreZodPathPattern}[\\\\/]`)
 // Forward slashes: paths com backslash (Windows) não casam no glob de
 // optimizeDeps.entries — o crawl silenciosamente não acha nada e o Vite
 // re-otimiza (com full reload) na primeira navegação ao editor.
@@ -75,6 +83,11 @@ export default defineConfig({
       '@monaco-editor/react',
       '@babel/parser',
       'monaco-editor/esm/vs/editor/editor.api.js',
+      'monaco-editor/esm/vs/editor/contrib/contextmenu/browser/contextmenu.js',
+      'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneCommandsQuickAccess.js',
+      'monaco-editor/esm/vs/editor/standalone/browser/quickAccess/standaloneGotoLineQuickAccess.js',
+      'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js',
+      'monaco-editor/esm/vs/editor/contrib/folding/browser/folding.js',
       'monaco-editor/esm/vs/basic-languages/css/css.contribution.js',
       'monaco-editor/esm/vs/basic-languages/html/html.contribution.js',
       'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js',
@@ -104,6 +117,77 @@ export default defineConfig({
   },
   worker: {
     format: 'es',
+  },
+  build: {
+    rolldownOptions: {
+      output: {
+        // Shared chunks must keep React and their dependencies initialized first,
+        // including smaller hosts that import only the standalone preview.
+        strictExecutionOrder: true,
+        codeSplitting: {
+          includeDependenciesRecursively: false,
+          groups: [
+            {
+              // Group only the static entry graph. Rolldown 1.1 otherwise emits
+              // tiny shared helpers separately; dynamic editor imports stay lazy.
+              name: 'studio-initial',
+              tags: ['$initial'],
+            },
+            {
+              // Editor models, material/factory leaves, UI contexts and canonical runtime/preview
+              // metadata share this boundary. Stores, validators and migrations keep their own
+              // splitting; initial format/JSON/guard contracts must never be selected here.
+              // Turtle contributes only its import-free extension descriptor, never a Python VM,
+              // report producer or deployment client. Core's resolved Zod package was already
+              // shared by every editor mode and absent from the project list; its separate
+              // Studio/IR counterpart retains automatic splitting. Resolve the package rather
+              // than depending on an installer store layout or repeating Core's version.
+              // The catalog's provided-module schemas and text renderers belong to this same
+              // boundary; splitting them with projectFactory creates a chunk initialization cycle.
+              // Material metadata, byte manifests and bounded GLB facts share the asset boundary.
+              // Keep Pro examples/operations, renderers and Python payloads outside it.
+              name: 'studio-editor-contracts',
+              test: new RegExp(
+                [
+                  /(?:[\\/]src[\\/](?:monaco[\\/]modelPaths|core[\\/](?:assetBinary|project|blankProject|projectAssets|pintaImageAsset|proAssets|proModelMetadata|proPaths|proAssetPaths|proProject)|creations[\\/]content-fingerprint|preview[\\/](?:limits|scriptIntegrity|types)|studio[\\/](?:observation|code-observation|pro-runtime|pro-revision|runtime-environment|examples-visibility|layoutContext|portable-path|python-learning|python-source-positions|python-material-policy)|state[\\/]pythonProjectLayout|runtime[\\/]types|hooks[\\/](?:useMeasuredWidth|useDebounced)|components[\\/](?:layout[\\/](?:TabStrip|layoutBreakpoints)|preview[\\/]playerOriginAdapter|assets[\\/]has3DConsumer))\.tsx?$|[\\/]core[\\/]src[\\/]studio[\\/](?:project-identity|pinta-image|project-environment|runtime-catalog|python-provided-modules|python-provided-modules-render|python-preview-input|python-preview-reference|pro-artifact)\.ts$|[\\/]studio[\\/]src[\\/]runtime[\\/]python[\\/]turtle[\\/]contract\.ts$|[\\/]zustand[\\/]esm[\\/](?:vanilla|react)[\\/]shallow\.mjs$)/
+                    .source,
+                  coreZodModules.source,
+                ].join('|'),
+              ),
+            },
+            {
+              // Both validators run at the same document boundary. Keep the dispatch and
+              // legacy validator together; Python's refinement remains a dynamic import.
+              name: 'studio-document-validation',
+              test: /[\\/](?:studio[\\/]src[\\/](?:state[\\/](?:editableProjectValidation|projectValidation|proTree)|preview[\\/](?:permissionGuard|csp)|core[\\/]proAssistance)|core[\\/]src[\\/]studio[\\/](?:pro-assistance|project-pro-metadata))\.ts$/,
+            },
+            {
+              // Blockly-only presentation remains absent from source-only modes.
+              name: 'studio-blockly-presentation',
+              test: /(?:[\\/]studio[\\/]src[\\/](?:blockly[\\/](?:theme|themeColors|blocks[\\/]mutatorEvents)|components[\\/]blocks[\\/]blocklyHistory)\.ts$|[\\/]blockly[\\/]msg[\\/]pt-br\.m?js$)/,
+            },
+            {
+              // Coalesce shared modules already reachable through the editor's
+              // static imports. Never follow a dynamic import into a lazy mode.
+              minShareCount: 2,
+              name(id, context) {
+                const visited = new Set<string>()
+                const pending = [r('../src/studio/StudioEditor.tsx')]
+                while (pending.length) {
+                  const current = pending.pop()!
+                  if (current === id) return 'studio-editor-shared'
+                  if (visited.has(current)) continue
+                  visited.add(current)
+                  const info = context.getModuleInfo(current)
+                  if (info) pending.push(...info.importedIds)
+                }
+                return null
+              },
+            },
+          ],
+        },
+      },
+    },
   },
   server: {
     port: 5173,

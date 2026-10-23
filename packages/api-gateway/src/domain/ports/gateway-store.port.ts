@@ -54,6 +54,15 @@ export interface GatewayStore {
    */
   recordOutcome(key: string, ok: boolean, windowMs: number, now?: number): Promise<BreakerCounters>
 
+  /** Atomically settles only the current half-open token, including its gate and counters. */
+  settleCircuitTrial(
+    keys: { state: string; gate: string; counts: string },
+    token: string,
+    outcome: 'success' | 'failure' | 'cancel',
+    now: number,
+    ttlMs: number,
+  ): Promise<boolean>
+
   reset(key?: string): Promise<void>
   get<T>(key: string): Promise<T | null>
   set<T>(key: string, value: T, ttlMs: number): Promise<void>

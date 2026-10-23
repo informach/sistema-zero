@@ -9,7 +9,7 @@ describe('rodapé da aula entre os menus abertos', () => {
   test('Kids usa a mesma largura do menu e recua somente no desktop', () => {
     const css = source('src/app/globals.css')
     const sidebar = source('src/components/kids/app-sidebar.tsx')
-    const fallback = source('src/components/kids/focus-mode.tsx')
+    const fallback = source('../member-shell/src/components/creator/focus-mode.tsx')
     const layout = source('src/app/(app)/layout.tsx')
 
     expect(layout).toContain('kids-shell-row')

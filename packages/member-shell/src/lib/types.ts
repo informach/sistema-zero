@@ -2,6 +2,8 @@ import type {
   LessonLearningProgress,
   LessonRequirement,
   LessonSection,
+  SectionCompletion,
+  SectionCompletionView,
   SectionProgressView,
 } from '@sistemazero/core/learning'
 import type {
@@ -9,6 +11,7 @@ import type {
   SceneVozes,
   ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
+import type { AmbassadorShareUrls } from '@sistemazero/core/referrals'
 
 // "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
 export type {
@@ -26,13 +29,7 @@ export type {
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-import type {
-  AnyBlockLevel,
-  CheckResult,
-  IDEMode,
-  LessonActivity,
-  Project,
-} from '@sistemazero/studio'
+import type { AnyBlockLevel, IDEMode, EditableStudioProject as Project } from '@sistemazero/studio'
 
 // ── Sessão / usuário (claims do JWT do auth) ────────────────────────────────
 
@@ -87,6 +84,11 @@ export interface ProfileView {
   birthDate: string | null
   /** Perfil público entre crianças (opt-in dos pais). */
   publicProfileEnabled: boolean
+  /**
+   * A criança pode falar em vez de escrever para a equipe (opt-in dos pais, 14/10/2026). OPCIONAL
+   * para tolerar o auth antigo: só `=== true` liga.
+   */
+  voiceInputEnabled?: boolean
   sortOrder: number
 }
 
@@ -157,6 +159,8 @@ export interface CourseMilestonesView {
  * "Todos os cursos" da plataforma com a flag de acesso do aluno.
  */
 export interface CatalogCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -263,6 +267,8 @@ export interface CertificateValidationView {
 
 /** Item de `GET /members/courses` → `{ courses: MyCourseView[] }`. */
 export interface MyCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -479,6 +485,7 @@ export interface EbookBlock {
  * conclusão da aula até ser enviada — `studioState` reflete se já enviou.
  */
 export interface StudioBlock {
+  pythonLevel?: 1 | 2 | 3
   gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
@@ -493,8 +500,6 @@ export interface StudioBlock {
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
-  /** Atividade com auto-correção (fase 2). Vai ao aluno (feedback instantâneo). */
-  activity?: LessonActivity
   /**
    * Nome do projeto contínuo (cadeia). Quando presente, o editor carrega a última
    * entrega do aluno no bloco contínuo da aula anterior da mesma cadeia (carryover).
@@ -602,10 +607,6 @@ export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
-  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
-  lastScore?: number | null
-  /** Atingiu a nota de corte (sticky). */
-  passed?: boolean
   /**
    * O professor já conferiu ESTA entrega. Reenviar volta para `false` (a versão
    * nova ainda não foi olhada). Não tem relação com a nota: é o professor
@@ -637,7 +638,7 @@ export interface OwnPintaSubmissionView {
 }
 
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
-/** `lesson-*` = o rascunho do Estúdio/Pinta DENTRO da fase (um item por bloco, 10/10/2026). */
+/** `lesson-*` = o rascunho do Estúdio/Pinta DENTRO da aula (um item por bloco, 10/10/2026). */
 export type CreationToolView = 'studio' | 'pinta' | 'molda' | 'lesson-studio' | 'lesson-pinta'
 
 /** Uma linha do índice `GET /members/creations/:tool` (sem o blob). */
@@ -656,7 +657,7 @@ export interface CreationSummaryView {
   syncedAt: string
   /** ISO presente apenas para uma lápide de exclusão. */
   deletedAt?: string | null
-  /** Impressão digital do conteúdo da revisão corrente (rascunhos da fase). */
+  /** Impressão digital do conteúdo da revisão corrente (rascunhos da aula). */
   contentFingerprint?: string | null
 }
 
@@ -718,10 +719,6 @@ export interface CreationDownloadTicketView {
 /** `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission`. */
 export interface StudioSubmissionResultView {
   submittedAt: string
-  /** Auto-correção (presentes só quando o bloco tem atividade). */
-  score?: number
-  passed?: boolean
-  results?: CheckResult[]
   gamification?: GamificationDelta | null
 }
 
@@ -775,6 +772,9 @@ export type BadgeSlug =
   | 'room-decorator-5'
   | 'avatar-style-5'
   | 'mural-commenter-10'
+  // Cursos ao vivo (14/10/2026): 1º encontro recebido e "Oficina completa" (com troféu).
+  | 'live-first-encounter'
+  | 'live-course-complete'
 
 /**
  * Delta de UMA ação (complete/quiz aprovado) — vem NA resposta da ação (a UI
@@ -847,7 +847,8 @@ export interface ProfileAvatarView {
   /** Foto do avatar 3D (`null` = boneco padrão). */
   photoUrl: string | null
   /** Slug do nível p/ a aura. */
-  level: StudentLevelSlug
+  level: StudentLevelSlug | null
+  journeyUnavailable?: true
 }
 
 /** Resposta de `GET /members/avatars` — mapa profileId → avatar+nível. */
@@ -869,6 +870,9 @@ export interface HubMyThreadView {
 
 /** `GET /members/gamification/me` — widgets (sidebar/home) e vitrine do perfil. */
 export interface GamificationMeView {
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
+  kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+  kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
   xp: number
   /** Revisão curta das ferramentas conquistadas; presente na vitrine kids. */
   studioUnlockRevision?: string
@@ -893,14 +897,25 @@ export interface GamificationMeView {
   /** Catálogo COMPLETO na ordem do members — bloqueada tem `unlockedAt: null`. */
   badges: { slug: string; unlockedAt: string | null }[]
   /**
-   * Nível do aluno (rank). Opcional p/ tolerar members antigo — a UI cai em `noob`.
+   * Posto derivado da política persistida. null é prévia de equipe, nunca criança Noob.
    */
-  level?: StudentLevelView
+  level: StudentLevelView | null
   /**
    * Colocação no ranking de XP da VITRINE do app (rankings adult/kids são
    * separados). Presente só quando pedido com `withRanking` (página de perfil).
    */
   ranking?: { position: number; totalStudents: number }
+}
+
+/**
+ * A etapa da jornada ADULTA de outra pessoa nas listas (ranking, liga, Mural, Clube), para o anel
+ * da cor: `position` 1..`total` (`total` = etapas + 1; a última é a Lenda, `title` null). Só vem de
+ * quem mostra o perfil ou do próprio viewer; ausente sem jornada configurada.
+ */
+export interface AdultJourneyBadgeView {
+  position: number
+  total: number
+  title: string | null
 }
 
 /** Linha pública/redigida do ranking geral acumulado. */
@@ -910,12 +925,16 @@ export interface RankingEntryView {
   isMe: boolean
   firstName: string | null
   photoUrl: string | null
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** Presente somente quando o perfil kids é público por opt-in dos pais. */
   profileId?: string
+  /** A etapa da jornada adulta (só no adulto, de quem mostra o perfil ou do próprio viewer). */
+  journey?: AdultJourneyBadgeView
 }
 
 export interface RankingLeaderboardView {
+  audience?: 'adult'
   items: RankingEntryView[]
   total: number
   limit: number
@@ -938,6 +957,7 @@ export interface MissionView {
   periodKey: string
 }
 export interface MissionsMeView {
+  audience?: 'adult'
   daily: MissionView[]
   weekly: MissionView[]
   monthly: MissionView[]
@@ -954,6 +974,7 @@ export interface StudioUnlocksView {
 
 /** Desafio do MÊS (game jam kids) — mirror do `ChallengeMeView` do members. */
 export interface ChallengeMeView {
+  audience?: 'adult'
   challenge: {
     /** `m:YYYY-MM` (mês civil SP) — a MESMA chave que o hub valida no publish. */
     key: string
@@ -991,14 +1012,18 @@ export interface LeagueEntryView {
   isMe: boolean
   /** Foto do avatar 3D (`null`/ausente → boneco padrão). */
   photoUrl?: string | null
-  /** Slug do nível p/ a aura (ausente → Noob/Faísca). */
-  levelSlug?: StudentLevelSlug
+  /** Posto canônico; null quando a jornada Kids está indisponível. */
+  levelSlug?: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** 1º nome do colega (só a vitrine kids revela; ausente → "Colega"). */
   firstName?: string | null
   /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
   profileId?: string
+  /** A etapa da jornada adulta (só no adulto, de quem mostra o perfil ou do próprio viewer). */
+  journey?: AdultJourneyBadgeView
 }
 export interface LeagueMeView {
+  audience?: 'adult'
   tier: string
   weekKey: string
   promotionCount: number
@@ -1141,6 +1166,9 @@ export interface PublicProfileIdentity {
 
 /** Dado de jogo do perfil público (members) — sem identidade. */
 export interface PublicProfileGameView {
+  audience?: 'adult'
+  displayName?: string
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
   profileId: string
   xp: number
   ranking: { position: number; totalStudents: number } | null
@@ -1222,7 +1250,7 @@ export interface ParentReportPrefsView {
 }
 
 /**
- * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro na área dos pais) —
+ * Embaixador do presente (auto-cadastro na área dos pais do Kids e em Meu perfil do adulto) —
  * mirror do `GET/POST /referrals/me/ambassador` do @sistemazero/referrals.
  */
 export interface AmbassadorEnrollmentView {
@@ -1232,8 +1260,16 @@ export interface AmbassadorEnrollmentView {
     status: string
     /** Página do embaixador (capability-URL absoluta do funil). */
     pageUrl: string
-    /** Link de bolsa compartilhável (`/bolsa/<code>` no funil). */
+    /**
+     * Link do presente Kids (`/bolsa/<code>` no funil). Fica por compatibilidade: é o mesmo que
+     * `shareUrls.kids`, e um referrals anterior a 20/10/2026 só manda este.
+     */
     shareUrl: string | null
+    /**
+     * Um link por público (20/10/2026): `kids` para uma família, `adult` para um adulto.
+     * Ausente em respostas antigas: aí só existe o `shareUrl` (Kids).
+     */
+    shareUrls?: AmbassadorShareUrls
     pixKeySet: boolean
   }
   stats?: { redemptionsCompleted: number; invitesSent: number }
@@ -1262,6 +1298,7 @@ export interface AmbassadorEnrollmentView {
  */
 /** Mirror do `AiCreditsView` do members (e do `@sistemazero/core/ai-credits`). */
 export interface AiCreditsView {
+  studioSource?: 'platform' | 'openrouter'
   dayLimit: number
   dayRemaining: number
   monthLimit: number
@@ -1282,6 +1319,11 @@ export interface AiUsageConsumeView {
 }
 
 export interface ZappyStoredResponseView {
+  programmingLanguage?: 'javascript' | 'python'
+  intent?: import('@sistemazero/core/studio').StudioTutorIntent
+  kind?: 'classic' | 'pro'
+  fileReferences?: import('@sistemazero/core/studio').StudioTutorFileReference[]
+  sourceRevision?: number
   id: string
   text: string
   scope:
@@ -1450,10 +1492,18 @@ export interface EbookDownloadView {
 /** `GET /members/courses/:slug/lessons/:lessonId` (busca por ID, não slug). */
 export interface LessonDetailView {
   requirements?: LessonRequirement[]
-  sections?: Pick<
+  /**
+   * As partes da aula. Para a criança a conclusão chega como VISTA: os objetivos do projeto trazem
+   * rótulo, dica e se são extra, nunca a regra (essa fica no members, que confere). A prévia do
+   * Admin monta a aula do documento de autoria, que tem a regra inteira; o `LessonSections`
+   * converte para a vista antes de qualquer coisa chegar à tela.
+   */
+  sections?: (Pick<
     LessonSection,
-    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
-  >[]
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+  > & {
+    completion?: SectionCompletionView | SectionCompletion
+  })[]
   /** Presentation of an unconfigured lesson; completion still uses its original gates. */
   legacyLayout?: boolean
   structureRevision?: string | null
@@ -1656,6 +1706,8 @@ export interface HubThreadView {
    */
   authorAvatarUrl?: string | null
   authorLevel?: StudentLevelSlug | null
+  /** Adulto: a etapa da jornada de quem mostra o perfil (o anel da cor). */
+  authorJourney?: AdultJourneyBadgeView | null
   /** Capa do projeto (URL pública) — só na vitrine. */
   coverImageUrl: string | null
   /**
@@ -1674,7 +1726,7 @@ export interface HubThreadView {
    * de `authorId`); COSMÉTICO por contrato — o gate real do remix é a checagem no clique
    * sobre o snapshot jogável. Ausente/`null` = post antigo ou sem projeto.
    */
-  studioMeta?: { pro: boolean; extensions: string[] } | null
+  studioMeta?: import('@sistemazero/core/studio/public-metadata').StudioPublicProjectMetadata | null
   reactions: HubReaction[]
   attachments: HubAttachmentView[]
   lastActivityAt: string
@@ -1717,6 +1769,8 @@ export interface TeacherMessageView {
   /** Nome de EXIBIÇÃO do professor; `null` no aluno (a UI mostra "Você"). */
   authorName: string | null
   body: string
+  /** O texto veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
+  spoken?: boolean
   createdAt: string
 }
 
@@ -1774,6 +1828,8 @@ export interface HubCommentView {
   /** Foto do avatar 3D + slug do nível (aura), em lote pelo BFF — só KIDS. Ver `HubThreadView`. */
   authorAvatarUrl?: string | null
   authorLevel?: StudentLevelSlug | null
+  /** Adulto: a etapa da jornada de quem mostra o perfil (o anel da cor). */
+  authorJourney?: AdultJourneyBadgeView | null
   body: string
   status: HubContentStatus
   pending: boolean
@@ -1798,240 +1854,41 @@ export interface HubPage<T> {
  */
 export type HubThreadSort = 'recent' | 'plays'
 
-// ── Pensa (planejador de jogos — metodologia ZERO) ──────────────────────────
-// Mirror do contrato público de `members`. O Pensa descreve e audita o plano;
-// Pinta e Estúdio são os únicos donos da execução e do progresso.
+// Projection returned only to the authenticated Pensa BFF. Public Pensa contracts
+// are exported by @sistemazero/core/pensa; progress is persisted by Members.
 
-export type PensaStage = 'z' | 'e' | 'r' | 'o' | 'done'
-export type PensaProjectStatus = 'active' | 'archived'
-export type PensaArtifactType =
-  | 'idea'
-  | 'game_design'
-  | 'visual_direction'
-  | 'task_plan'
-  | 'plan_review'
-export type PensaArtifactStatus = 'draft' | 'validated'
-export type PensaTaskDestination = 'pinta' | 'studio' | 'molda'
-export type PensaTaskStatus = 'planned' | 'in_progress' | 'completed'
-export type PensaTaskCategory = 'art' | 'setup' | 'gameplay' | 'scene' | 'ui' | 'polish'
-export type PensaArtKind = 'sprite' | 'background' | 'tileset' | 'tilemap'
-
-export interface PensaCycleView {
-  id: string
-  number: number
-  goal: string | null
-  stage: PensaStage
-  zCompletedAt: string | null
-  eCompletedAt: string | null
-  rCompletedAt: string | null
-  oCompletedAt: string | null
-}
-
-/** `owner` = meu plano; `member` = entrei pelo código de um colega (equipe, 26/09/2026). */
-export type PensaProjectRole = 'owner' | 'member'
-
-export interface PensaProjectListView {
-  id: string
-  name: string
-  status: PensaProjectStatus
-  /** Ciclo CORRENTE (maior number) — o card da lista mostra "Versão N" + etapa. */
-  cycleNumber: number
-  stage: PensaStage
-  createdAt: string
-  updatedAt: string
-  role: PensaProjectRole
-  team: {
-    /** Quantos convidados a equipe tem (o dono não conta). */
-    memberCount: number
-    /** 1º nome do dono, só para `member` (best-effort: `null` = "um colega"). */
-    ownerFirstName: string | null
+export interface PensaTeamCapabilitiesView {
+  /** Quem PROGRAMA: o jogo mora no Estúdio dela, então a paleta e o inventário são os dela. */
+  code: {
+    profileId: string
+    /** Posto do perfil; null somente para preview explícito da própria equipe. */
+    level: string | null
+    journey?: import('@sistemazero/core/journey').AdultJourneyView
+    kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+    kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
+    /** Os blocos que ela conquistou nos cursos (a paleta do Estúdio livre dela). */
+    blocks: string[]
+    /** Posse pela CONTA dela (a chave-mestra não conta). */
+    access: { studio: boolean; pinta: boolean; molda: boolean }
+    /** As criações vivas dela (até 200 por ferramenta), no formato de `GET /members/creations/:tool`. */
+    creations: { pinta: CreationIndexView[]; molda: CreationIndexView[] }
   }
+  /** Quem cuida das ARTES (os papéis efetivos: sem ninguém, quem programa). */
+  art: Array<{
+    profileId: string
+    level: string | null
+    journey?: import('@sistemazero/core/journey').AdultJourneyView
+    kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+    kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
+    access: { pinta: boolean; molda: boolean }
+  }>
 }
 
-export interface PensaArtifactIndexEntry {
-  type: PensaArtifactType
-  stage: PensaStage
-  version: number
-  status: PensaArtifactStatus
-  createdAt: string
-}
-
-export interface PensaProjectDetailView {
-  id: string
-  name: string
-  status: PensaProjectStatus
-  createdAt: string
-  updatedAt: string
-  /** Ordenados por number ASC. */
-  cycles: PensaCycleView[]
-  currentCycle: PensaCycleView
-  /** Latest por type, do ciclo CORRENTE. */
-  artifactsIndex: PensaArtifactIndexEntry[]
-  role: PensaProjectRole
-  /** O CÓDIGO não vem aqui (só na rota de membros, para o dono): só se está ligado. */
-  team: { memberCount: number; shareEnabled: boolean }
-}
-
-/** Uma pessoa da equipe do plano: 1º nome e foto best-effort (sem nome = "Colega"). */
-export interface PensaTeamPersonView {
-  profileId: string
-  firstName: string | null
-  photoUrl: string | null
-  /** `null` para o dono (ele não "entrou"). */
-  joinedAt: string | null
-}
-
-export interface PensaProjectMembersView {
-  role: PensaProjectRole
-  viewerProfileId: string
-  /** Só para o dono; `null` para membro ou com o código desligado. */
-  shareCode: string | null
-  maxMembers: number
-  owner: PensaTeamPersonView
-  members: PensaTeamPersonView[]
-}
-
-/** O código gerado (`code`) e como ele aparece na tela (`display`, com o prefixo). */
-export interface PensaShareView {
-  code: string
-  display: string
-}
-
-export interface PensaChatMessage {
-  role: 'user' | 'assistant'
-  content: string
-  at: string
-}
-
-/** Estado das decisões essenciais da etapa Z. */
-export interface PensaZState {
-  answered: {
-    idea: boolean
-    objective: boolean
-    controls: boolean
-    outcome: boolean
-    dimension: boolean
-  }
-  ready: boolean
-}
-
-export interface PensaArtifactView {
-  id: string
-  stage: PensaStage
-  type: PensaArtifactType
-  version: number
-  status: PensaArtifactStatus
-  content: unknown
-  createdAt: string
-}
-
-export interface PensaStageView {
-  stage: PensaStage
-  conversation: { messages: PensaChatMessage[]; summary: string | null; messageCount: number }
-  state: Record<string, unknown>
-  artifacts: PensaArtifactView[]
-  tasks: PensaTaskView[]
-  nextTaskId: string | null
-}
-
-export interface PensaGuideItem {
-  id: string
-  text: string
-  hint?: string
-  required: boolean
-}
-
-export interface PensaTaskGuide {
-  steps: PensaGuideItem[]
-  criteria: PensaGuideItem[]
-}
-
-export interface PensaPintaTaskContext {
-  kind: 'pinta'
-  assetId: string
-  artKind: PensaArtKind
-  style: 'pixel' | 'vector' | 'either'
-  preset?: string
-  palette: Array<{ role: string; color: string }>
-  appearance: string
-  animations: string[]
-  states: string[]
-  usage: string
-  requiresStudioUse: boolean
-}
-
-export interface PensaStudioBlockReference {
-  id: string
-  label: string
-  category: string
-  subcategory: string
-  // ⚠️ Espelha `ServerBlockCatalogEntry['area']` do @sistemazero/studio. Área
-  // nova lá exige a mesma aqui, senão o planner do Pensa deixa de compilar.
-  area: 'structure' | 'appearance' | 'molds' | 'start' | 'events' | 'loops' | 'value'
-  extension: string | null
-}
-
-export interface PensaStudioTaskContext {
-  kind: 'studio'
-  dimension: '2d' | '3d'
-  visualAssetIds: string[]
-  blockIds: string[]
-  blocks: PensaStudioBlockReference[]
-  mechanicDocumentIds: string[]
-  extensionIds: string[]
-}
-
-export interface PensaMoldaTaskContext {
-  kind: 'molda'
-  /** Inventory reference; the finished creation keeps its own stable ID. */
-  assetId: string
-  artKind: 'model' | 'texture' | 'sky'
-  appearance: string
-  usage: string
-  palette: Array<{ role: string; color: string }>
-}
-export type PensaTaskContext =
-  | PensaPintaTaskContext
-  | PensaStudioTaskContext
-  | PensaMoldaTaskContext
-export type PensaTaskOutputRef =
-  | {
-      kind: 'molda_asset'
-      assetId: string
-      assetName?: string
-      assetKind: 'model' | 'texture' | 'sky'
-    }
-  | { kind: 'pinta_asset'; assetId: string; assetName?: string; usedInStudioAt?: string }
-  | { kind: 'studio_project'; projectId: string; saveRevision?: string }
-
-/** Cartão de Criação compartilhado pelo plano e pela ferramenta de destino. */
-export interface PensaTaskView {
-  id: string
-  title: string
-  summary: string | null
-  destination: PensaTaskDestination
-  category: PensaTaskCategory
-  estimatedMinutes: number
-  position: number
-  dependencies: string[]
-  guide: PensaTaskGuide
-  context: PensaTaskContext
-  progress: {
-    status: PensaTaskStatus
-    completedStepIds: string[]
-    completedCriteriaIds: string[]
-    outputRef: PensaTaskOutputRef | null
-    startedAt: string | null
-    completedAt: string | null
-    updatedAt: string | null
-  }
+export interface CreationDownloadUrlView {
+  downloadUrl: string
   revision: number
-  supersedesTaskId: string | null
-}
-
-export interface PensaTaskHandoffView {
-  task: PensaTaskView
-  project: { id: string; name: string }
-  cycle: { id: string; number: number; goal: string | null }
-  capability: { owned: boolean; blockedReason: string | null }
+  bytes: number
+  item: CreationSummaryView
+  parts: Array<{ hash: string; bytes: number; url: string }>
+  serverNow: string
 }

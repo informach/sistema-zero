@@ -1,0 +1,807 @@
+{
+  "source": "Base da Lua original, Mundo 3D",
+  "method": "Posicionamento nativo apenas para enquadrar a cena; movimento e coleta por teclado, sem atribuir moedas ou concluir missão artificialmente. Observador somente de leitura e renderização final nativa.",
+  "errors": [],
+  "states": [
+    {
+      "name": "08-base-e-foguete",
+      "coins": 0,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": false
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": false
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": false
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": false
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": false
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": false
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": false
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": false
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": false
+        }
+      ],
+      "person": {
+        "x": 2,
+        "y": 0,
+        "z": -7,
+        "yaw": 3.141592653589793,
+        "vy": 0,
+        "airborne": false,
+        "vis": 0,
+        "phase": 0,
+        "speed": 0
+      },
+      "fireworkRockets": 0,
+      "particles": 0,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n⭐ Missão: Pegue 12 moedas na cratera\n⬆",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "05-andar",
+      "coins": 0,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": false
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": false
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": false
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": false
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": false
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": false
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": false
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": false
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": false
+        }
+      ],
+      "person": {
+        "x": 39.616,
+        "y": 1.935596997737884,
+        "z": 28.5,
+        "yaw": 4.71238898038469,
+        "vy": 0,
+        "airborne": false,
+        "vis": 2.2414330741747874,
+        "phase": 0.40675731288092737,
+        "speed": 4
+      },
+      "fireworkRockets": 0,
+      "particles": 0,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n⭐ Missão: Pegue 12 moedas na cratera\n⬆",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "05-recolher",
+      "coins": 1,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": false
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": false
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": false
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": false
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": false
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": false
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": false
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": false
+        }
+      ],
+      "person": {
+        "x": 37.824,
+        "y": 2.2946928024292,
+        "z": 28.5,
+        "yaw": 4.71238898038469,
+        "vy": 0,
+        "airborne": false,
+        "vis": 3.962014269820261,
+        "phase": 3.638596622425428,
+        "speed": 4
+      },
+      "fireworkRockets": 0,
+      "particles": 0,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n⭐ Missão: Pegue 12 moedas na cratera\n⬆\n🪙 1",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "05-contar",
+      "coins": 3,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": false
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": false
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": false
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": false
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": false
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": true
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": false
+        }
+      ],
+      "person": {
+        "x": 35.07697170958711,
+        "y": 2.7100900805491213,
+        "z": 24.242200749444777,
+        "yaw": 3.7971889803846928,
+        "vy": 0,
+        "airborne": false,
+        "vis": 3.99925873113467,
+        "phase": 14.692140500926666,
+        "speed": 4
+      },
+      "fireworkRockets": 0,
+      "particles": 0,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n⭐ Missão: Pegue 12 moedas na cratera\n⬆\n🪙 3",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "04-recolhendo",
+      "coins": 5,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": false
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": false
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": false
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": false
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": false
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": true
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": true
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": true
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": false
+        }
+      ],
+      "person": {
+        "x": 27.170763264862988,
+        "y": 2.0718657587064704,
+        "z": 22.875330596054887,
+        "yaw": 4.878788980384689,
+        "vy": 0,
+        "airborne": false,
+        "vis": 3.9558239505426926,
+        "phase": 31.837968648444978,
+        "speed": 4
+      },
+      "fireworkRockets": 0,
+      "particles": 0,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n⭐ Missão: Pegue 12 moedas na cratera\n⬆\n🪙 5",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "06-lugares",
+      "coins": 8,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": false
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": false
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": false
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": false
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": true
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": true
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": true
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": true
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": true
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": true
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": false
+        }
+      ],
+      "person": {
+        "x": 22.845944258473708,
+        "y": 0.10419247989309034,
+        "z": 32.76559177742242,
+        "yaw": 6.376388980384684,
+        "vy": 0,
+        "airborne": false,
+        "vis": 3.0412095971338635,
+        "phase": 56.40313879877519,
+        "speed": 0
+      },
+      "fireworkRockets": 0,
+      "particles": 0,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n⭐ Missão: Pegue 12 moedas na cratera\n⬆\n🪙 8",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "06-resposta-final",
+      "coins": 12,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": true
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": true
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": true
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": true
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": true
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": true
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": true
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": true
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": true
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": true
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": true
+        }
+      ],
+      "person": {
+        "x": 35.8888543189396,
+        "y": 2.0290768498016916,
+        "z": 34.772633883804886,
+        "yaw": 8.497988980384687,
+        "vy": 0,
+        "airborne": false,
+        "vis": 3.996893933971107,
+        "phase": 88.69890136897394,
+        "speed": 4
+      },
+      "fireworkRockets": 1,
+      "particles": 182,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n🏆 Todas as missões completas!\n⬆\n🪙 12\n🏆 Conquista: Astronauta",
+      "camera": "Câmera nativa seguir/topo"
+    },
+    {
+      "name": "04-fogos",
+      "coins": 12,
+      "coinStates": [
+        {
+          "x": 38,
+          "z": 30,
+          "y": 3.170303265253702,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 34,
+          "y": 2.971991889780399,
+          "taken": true
+        },
+        {
+          "x": 34,
+          "z": 36.92820323027551,
+          "y": 3.0591567002967386,
+          "taken": true
+        },
+        {
+          "x": 30,
+          "z": 38,
+          "y": 3.520747264226277,
+          "taken": true
+        },
+        {
+          "x": 26,
+          "z": 36.92820323027551,
+          "y": 3.6385114287417424,
+          "taken": true
+        },
+        {
+          "x": 23.07179676972449,
+          "z": 34,
+          "y": 1.6826174260407933,
+          "taken": true
+        },
+        {
+          "x": 22,
+          "z": 30,
+          "y": 0.04957411686579416,
+          "taken": true
+        },
+        {
+          "x": 23.071796769724493,
+          "z": 26,
+          "y": 0.3876749775796754,
+          "taken": true
+        },
+        {
+          "x": 25.999999999999996,
+          "z": 23.071796769724493,
+          "y": 2.4829893154525955,
+          "taken": true
+        },
+        {
+          "x": 30,
+          "z": 22,
+          "y": 3.982635736465454,
+          "taken": true
+        },
+        {
+          "x": 34,
+          "z": 23.071796769724493,
+          "y": 3.7700248340048685,
+          "taken": true
+        },
+        {
+          "x": 36.92820323027551,
+          "z": 25.999999999999996,
+          "y": 3.5018365499629702,
+          "taken": true
+        }
+      ],
+      "quests": [
+        {
+          "name": "moedas",
+          "desc": "Pegue 12 moedas na cratera",
+          "done": true
+        }
+      ],
+      "person": {
+        "x": 35.8888543189396,
+        "y": 2.0290768498016916,
+        "z": 34.772633883804886,
+        "yaw": 8.497988980384687,
+        "vy": 0,
+        "airborne": false,
+        "vis": 0.00020840567393089194,
+        "phase": 90.09229636641344,
+        "speed": 0
+      },
+      "fireworkRockets": 0,
+      "particles": 262,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\n🏆 Todas as missões completas!\n⬆\n🪙 12\n🏆 Conquista: Astronauta",
+      "camera": "Enquadramento amplo do renderizador para incluir os fogos"
+    }
+  ]
+}

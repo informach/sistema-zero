@@ -24,7 +24,20 @@ export interface CustomerTicketCursor {
  * próprio SQL para que um id de ticket nunca atravesse a fronteira da conta.
  */
 export interface CustomerTicketRepository {
-  createWithInitialMessage(input: { ticket: Ticket; message: TicketMessage }): Promise<void>
+  command(input: {
+    ticketId: string
+    owner: CustomerTicketOwner
+    action: 'handoff' | 'resolve'
+    commandKey: string
+    at: Date
+  }): Promise<Ticket | null>
+  createWithInitialMessage(input: {
+    ticket: Ticket
+    message: TicketMessage
+    commandKey: string
+    commandHash: string
+    aiEnabled: boolean
+  }): Promise<{ ticket: Ticket; message: TicketMessage }>
   listOwned(filter: CustomerTicketsFilter): Promise<{ items: Ticket[]; total: number }>
   byIdOwned(id: string, owner: CustomerTicketOwner): Promise<Ticket | null>
   appendCustomerMessage(input: {
@@ -33,5 +46,7 @@ export interface CustomerTicketRepository {
     message: TicketMessage
     at: Date
     aiEnabled: boolean
+    commandKey: string
+    commandHash: string
   }): Promise<{ ticket: Ticket; message: TicketMessage } | null>
 }

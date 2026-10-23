@@ -1,7 +1,12 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import {
+  PRODUCTION_APPLICATION_NAMES,
+  PRODUCTION_GITHUB_SOURCES,
+  productionSource,
+} from '../../.railway/production-sources'
 import {
   railwayCliVersion,
   railwayEnvironments,
@@ -10,6 +15,44 @@ import {
 } from './railway-config.mjs'
 
 const tree = 'a'.repeat(40)
+
+describe('dependências embarcadas no deploy', () => {
+  test.each([
+    ['community', 'molda'],
+    ['community', 'pensa'],
+    ['members', 'studio'],
+  ])('%s acompanha mudanças do pacote %s', (service, dependency) => {
+    const config = JSON.parse(
+      readFileSync(new URL(`../../.railway/services/${service}.json`, import.meta.url), 'utf8'),
+    ) as { build: { watchPatterns: string[] } }
+    expect(config.build.watchPatterns).toContain(`/packages/${dependency}/**`)
+    const workflow = readFileSync(
+      new URL('../../.github/workflows/ci.yml', import.meta.url),
+      'utf8',
+    )
+    const selection = workflow
+      .split('\n')
+      .find((line) => line.trimStart().startsWith(`packages/${dependency}/*)`))
+    expect(selection).toMatch(new RegExp(`\\badd ${service}(?:;|\\s)`))
+  })
+})
+
+describe('configuração operacional da IA do Estúdio', () => {
+  test.each([
+    ['members', 'STUDIO_AI_VAULT_KEYS'],
+    ['members', 'STUDIO_AI_VAULT_ACTIVE_ID'],
+    ['members', 'STUDIO_AI_CALLBACK_ORIGINS'],
+    ['community-kids', 'STUDIO_AI_RECONCILE_CRON_SECRET'],
+    ['community-kids', 'FUNNEL_URL'],
+  ])('preserva %s.%s nos dois ambientes', (service, key) => {
+    const source = readFileSync(new URL('../../.railway/variables.ts', import.meta.url), 'utf8')
+    const common = source.slice(0, source.indexOf('const extra:'))
+    const declaration = common.match(new RegExp(`  '?${service}'?: \\[([\\s\\S]*?)\\n  \\]`))
+    expect(declaration).not.toBeNull()
+    expect(declaration?.[1]).toContain(`'${key}'`)
+  })
+})
+
 function plan(changes: unknown[] = []) {
   return {
     kind: 'railway.config.plan',
@@ -70,8 +113,8 @@ describe('execução do plano Railway', () => {
   })
 
   test('aplica mudanças permitidas pelo plano fixado antes de conferir o estado remoto', () => {
-    const f = execution(plan([build]))
-    runConfig('apply', 'production', f.path, f.exec)
+    const f = execution({ ...plan([build]), environmentId: railwayEnvironments.staging })
+    runConfig('apply', 'staging', f.path, f.exec)
     expect(f.calls.filter((call) => call[0] === 'railway' && call[1] === 'config')).toEqual([
       ['railway', 'config', 'apply', '--plan', f.path, '--yes'],
       ['railway', 'config', 'plan', '--detailed-exit-code'],
@@ -79,10 +122,26 @@ describe('execução do plano Railway', () => {
   })
 
   test.each([false, true])('divergência remota bloqueia o deploy com mudanças=%s', (changed) => {
-    const f = execution(plan(changed ? [build] : []), true)
-    expect(() => runConfig('apply', 'production', f.path, f.exec)).toThrow(
+    const f = execution(
+      { ...plan(changed ? [build] : []), environmentId: railwayEnvironments.staging },
+      true,
+    )
+    expect(() => runConfig('apply', 'staging', f.path, f.exec)).toThrow(
       'Update Postgres networking',
     )
+  })
+
+  test('produção recusa config apply real antes de qualquer mutação; check vazio é readonly', () => {
+    const changed = execution(plan([build]))
+    expect(() => runConfig('apply', 'production', changed.path, changed.exec)).toThrow(
+      'onda operacional',
+    )
+    expect(changed.calls.some((call) => call[0] === 'railway' && call[1] === 'config')).toBe(false)
+    const empty = execution(plan())
+    runConfig('check', 'production', empty.path, empty.exec)
+    expect(empty.calls.filter((call) => call[0] === 'railway' && call[1] === 'config')).toEqual([
+      ['railway', 'config', 'plan', '--detailed-exit-code'],
+    ])
   })
 
   test('mudança no banco é recusada antes de executar qualquer apply', () => {
@@ -135,30 +194,70 @@ describe('gate do plano Railway', () => {
       )
     }
   })
-  test('produção exige main e Wait for CI; staging e Fiscal mantêm publicação controlada', () => {
-    const source = {
-      ...build,
-      field: 'source',
-      after: { type: 'github', repo: 'informach/sistema-zero', branch: 'main', checkSuites: true },
+  test.each([
+    'production',
+    'staging',
+  ])('qualquer atualização de origem exige operação explícita em %s', (environment) => {
+    for (const address of ['service.members', 'service.admin', 'service.fiscal']) {
+      for (const after of [
+        { type: 'github', repo: 'informach/sistema-zero', branch: 'main' },
+        { type: 'github', repo: 'informach/sistema-zero' },
+        { type: 'github', repo: 'informach/sistema-zero', branch: 'main', checkSuites: true },
+        { type: 'github', repo: 'informach/sistema-zero', branch: 'main', checkSuites: false },
+        null,
+      ]) {
+        const source = { ...build, address, field: 'source', after }
+        const saved = { ...plan([source]), environmentId: railwayEnvironments[environment] }
+        expect(() => validatePinnedPlan(saved, environment, tree)).toThrow('escopo')
+        const executionFixture = execution(saved)
+        expect(() =>
+          runConfig('apply', environment, executionFixture.path, executionFixture.exec),
+        ).toThrow('escopo')
+        expect(
+          executionFixture.calls.some((call) => call[0] === 'railway' && call[1] === 'config'),
+        ).toBe(false)
+      }
     }
-    expect(validatePinnedPlan(plan([source]), 'production', tree)).toBe(1)
-    for (const after of [
-      { ...source.after, branch: 'staging' },
-      { ...source.after, checkSuites: false },
-    ]) {
-      expect(() => validatePinnedPlan(plan([{ ...source, after }]), 'production', tree)).toThrow(
-        'gatilho',
-      )
+  })
+})
+
+describe('origens de produção qualificadas após native off', () => {
+  test('toda aplicação tem um literal fechado e nomes novos recusam antes de criar recursos', () => {
+    const services = readdirSync(new URL('../../.railway/services/', import.meta.url))
+      .filter((name) => name.endsWith('.json'))
+      .map((name) => name.slice(0, -5))
+      .sort()
+    expect([...PRODUCTION_APPLICATION_NAMES].sort()).toEqual(services)
+    for (const name of services) {
+      const source = productionSource(name)
+      expect(source).toMatchObject({ type: 'github', repo: 'informach/sistema-zero' })
+      expect(Object.hasOwn(source, 'checkSuites')).toBe(false)
     }
-    expect(() =>
-      validatePinnedPlan(plan([{ ...source, address: 'service.fiscal' }]), 'production', tree),
-    ).toThrow('gatilho')
-    expect(() =>
-      validatePinnedPlan(
-        { ...plan([source]), environmentId: railwayEnvironments.staging },
-        'staging',
-        tree,
-      ),
-    ).toThrow('gatilho')
+    expect(() => productionSource('novo-servico')).toThrow('sem origem')
+    expect(() => productionSource('toString')).toThrow('sem origem')
+  })
+  test('branch ausente permanece ausente, sem o default main do helper GitHub', () => {
+    const absent = [
+      'fiscal',
+      'helpdesk',
+      'helpdesk-app',
+      'hub',
+      'marketing',
+      'marketing-app',
+      'referrals',
+    ]
+    expect(
+      Object.entries(PRODUCTION_GITHUB_SOURCES)
+        .filter(([, source]) => !Object.hasOwn(source, 'branch'))
+        .map(([name]) => name)
+        .sort(),
+    ).toEqual(absent)
+    for (const name of PRODUCTION_APPLICATION_NAMES) {
+      const source = productionSource(name)
+      if (Object.hasOwn(source, 'branch')) expect(source.branch).toBe('main')
+    }
+    expect(productionSource('members').rootDirectory).toBe('/')
+    expect(Object.hasOwn(productionSource('helpdesk'), 'rootDirectory')).toBe(false)
+    expect(Object.hasOwn(productionSource('helpdesk'), 'branch')).toBe(false)
   })
 })

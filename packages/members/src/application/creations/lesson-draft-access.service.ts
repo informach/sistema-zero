@@ -1,4 +1,5 @@
 import { isGalleryBlock } from '@sistemazero/core/learning'
+import type { CourseAudience } from '../../domain/course/course'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
 import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import {
@@ -55,17 +56,20 @@ export class LessonDraftAccessService {
   }
 
   async assert(input: {
+    audience?: CourseAudience
     userId: string
     accountId: string
     privileged: boolean
     tool: LessonCreationTool
     blockId: string
+    /** Context/grant decisions must re-read current lesson and section access. */
+    fresh?: boolean
   }): Promise<void> {
     if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(input.blockId))
       throw new ValidationError('Identificador de bloco inválido')
-    const cacheKey = `${input.userId}:${input.tool}:${input.blockId}`
+    const cacheKey = `${input.audience ?? 'kids'}:${input.userId}:${input.tool}:${input.blockId}`
     const now = this.clock()
-    if ((this.allowedUntil.get(input.accountId)?.get(cacheKey) ?? 0) > now) return
+    if (!input.fresh && (this.allowedUntil.get(input.accountId)?.get(cacheKey) ?? 0) > now) return
     // Uma revogação que chega no meio das consultas abaixo não pode ser desfeita pelo fim delas.
     const since = toolOwnershipGeneration()
     const lessonId = await this.courses.findBlockLessonId(input.blockId)
@@ -83,7 +87,9 @@ export class LessonDraftAccessService {
       lesson.courseId,
       input.privileged,
       input.userId,
+      { lessonId: lesson.id },
     )
+    if (course.audience !== (input.audience ?? 'kids')) throw new LessonNotFoundError()
     await assertLessonUnlocked(
       this.courses,
       this.progress,

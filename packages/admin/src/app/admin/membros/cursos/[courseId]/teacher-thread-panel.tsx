@@ -7,6 +7,7 @@ import { MessagesSquare, Send } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -144,6 +145,7 @@ export function TeacherThreadPanel({
                 >
                   <p className="mb-0.5 font-medium text-muted-foreground text-xs">
                     {teacher ? (m.authorName ?? 'Você') : studentName}
+                    {!teacher && m.spoken ? <SpokenChip /> : null}
                   </p>
                   {teacher ? (
                     // Recado do PROFESSOR = markdown rico (negrito/listas/print/código); o

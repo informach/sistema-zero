@@ -41,8 +41,13 @@ function NetworkCard({
   series: FollowersSeriesView
 }) {
   const accounts = summary.accounts.filter((a) => a.network === network)
-  const followers = accounts.reduce((sum, a) => sum + a.followers, 0)
-  const delta = followersDeltaByNetwork(series, network)
+  const observed = accounts.filter((a) => a.followers !== null)
+  const followers = observed.length
+    ? observed.reduce((sum, a) => sum + (a.followers ?? 0), 0)
+    : null
+  const delta = accounts.every((a) => series.series.some((s) => s.accountId === a.accountId))
+    ? followersDeltaByNetwork(series, network)
+    : null
   const totals = summary.networkTotals.find((t) => t.network === network)
   return (
     <Card>
@@ -54,9 +59,22 @@ function NetworkCard({
           ) : null}
         </div>
         <div className="flex items-end gap-2">
-          <p className="text-2xl font-bold tabular-nums">{NUMBER_FMT.format(followers)}</p>
+          <p className="text-2xl font-bold tabular-nums">
+            {followers === null ? '—' : NUMBER_FMT.format(followers)}
+          </p>
           <span className="pb-0.5 text-xs text-muted-foreground">seguidores</span>
         </div>
+        {observed.length < accounts.length ? (
+          <p className="text-xs text-muted-foreground">
+            Dados disponíveis em {observed.length}/{accounts.length} contas. Ausência não representa
+            zero.
+          </p>
+        ) : null}
+        {network === 'youtube' ? (
+          <p className="text-xs text-muted-foreground">
+            A contagem de inscritos do YouTube é arredondada pela plataforma.
+          </p>
+        ) : null}
         <DeltaLine delta={delta} />
         <div className="grid grid-cols-2 gap-x-4 gap-y-1 border-t border-border pt-3 text-xs text-muted-foreground">
           <TotalsItem label="Posts (28d)" value={totals?.posts} />
@@ -64,6 +82,13 @@ function NetworkCard({
           <TotalsItem label="Likes" value={totals?.likes} />
           <TotalsItem label="Comentários" value={totals?.comments} />
         </div>
+        {totals ? (
+          <p className="text-[10px] text-muted-foreground">
+            Posts com dados: views {totals.observedPosts.views}/{totals.posts}; likes{' '}
+            {totals.observedPosts.likes}/{totals.posts}; comentários {totals.observedPosts.comments}
+            /{totals.posts}. Totais somam somente dados disponíveis.
+          </p>
+        ) : null}
       </CardContent>
     </Card>
   )
@@ -71,7 +96,9 @@ function NetworkCard({
 
 function DeltaLine({ delta }: { delta: number | null }) {
   if (delta === null) {
-    return <p className="text-xs text-muted-foreground">Sem variação no período ainda</p>
+    return (
+      <p className="text-xs text-muted-foreground">Dados insuficientes para calcular a variação</p>
+    )
   }
   const positive = delta >= 0
   const Icon = positive ? TrendingUp : TrendingDown
@@ -89,12 +116,12 @@ function DeltaLine({ delta }: { delta: number | null }) {
   )
 }
 
-function TotalsItem({ label, value }: { label: string; value: number | undefined }) {
+function TotalsItem({ label, value }: { label: string; value: number | null | undefined }) {
   return (
     <p className="flex items-center justify-between gap-2">
       <span>{label}</span>
       <span className="font-medium tabular-nums text-foreground">
-        {value === undefined ? '—' : NUMBER_FMT.format(value)}
+        {value == null ? '—' : NUMBER_FMT.format(value)}
       </span>
     </p>
   )

@@ -1,4 +1,30 @@
 export const ptBR: Record<string, string> = {
+  'pro.navigation': 'Explorar o projeto',
+  'pro.files': 'Arquivos',
+  'pro.search': 'Buscar',
+  'pro.materials': 'Materiais',
+  'pro.searchFiles': 'Encontrar um arquivo',
+  'pro.searchContent': 'Encontrar no código do projeto',
+  'pro.byName': 'Nome',
+  'pro.byContent': 'Conteúdo',
+  'pro.searchLimited': 'Primeiros {count} resultados. Refine sua busca.',
+  'pro.searchCount': '{count} resultados',
+  'pro.searchHint': 'Digite um nome ou uma parte do código.',
+  'pro.breadcrumb': 'Localização do arquivo',
+  'pro.pinTab': 'Fixar aba',
+  'pro.closeOtherTabs': 'Fechar outras abas',
+  'pro.organizeCode': 'Formatar documento',
+  'pro.quickOpen': 'Abrir arquivo rapidamente',
+  'pro.quickOpenHint':
+    '↑ ↓ para escolher · Enter para abrir · Esc para voltar. Até 100 arquivos; digite parte do caminho para filtrar.',
+  'pro.noFiles': 'Nenhum arquivo encontrado.',
+  'pro.symbols': 'Símbolos do arquivo',
+  'pro.references': 'Localizar referências',
+  'pro.renameSymbol': 'Renomear símbolo',
+  'pro.commands': 'Comandos…',
+  'pro.guides': 'Guias',
+  'pro.searchGuides': 'Buscar nos guias deste projeto',
+  'pro.noGuides': 'Nenhum guia compatível com os arquivos atuais e esta busca.',
   'app.name': 'Sistema Zero Studio',
   'app.tagline': 'Do bloco ao código. Da ideia ao sistema.',
   'app.loading': 'Carregando…',
@@ -12,6 +38,9 @@ export const ptBR: Record<string, string> = {
   'topbar.saving': 'Salvando…',
   'topbar.download': 'Baixar o código',
   'topbar.downloading': 'Baixando…',
+  'topbar.downloadFailed': 'Não foi possível baixar a fonte',
+  'topbar.downloadWarnings': 'Fonte baixada: confira estes avisos',
+  'topbar.closeDownloadNotice': 'Voltar ao editor',
   'topbar.extensions': 'Extensões',
   // ⚠️ O item NÃO publica: ele baixa um .zip pronto para pôr no ar (o `ExportDialog`
   // termina num download). "Publicar na internet" prometia o ato e competia com o
@@ -20,7 +49,7 @@ export const ptBR: Record<string, string> = {
   'topbar.exportStudio': 'Baixar o projeto',
   'topbar.cloudSync': 'Trazer o que eu enviei',
   'topbar.convertPro': 'Virar profissional',
-  'topbar.ai': 'IA',
+  'topbar.ai': 'Zappy',
   'topbar.rename': 'Renomear projeto',
   'topbar.projects': 'Meus projetos',
   'topbar.more': 'Mais opções',
@@ -59,7 +88,7 @@ export const ptBR: Record<string, string> = {
 
   'panel.console': 'Console',
   'panel.terminal': 'Terminal',
-  'panel.ai': 'IA',
+  'panel.ai': 'Zappy',
   'panel.preview': 'Pré-visualização',
   'panel.extensions': 'Extensões oficiais',
 
@@ -105,14 +134,14 @@ export const ptBR: Record<string, string> = {
 
   'console.clear': 'Limpar',
   'console.empty': 'Sem mensagens. Use console.log para registrar algo.',
+  'console.emptyPython': 'Sem mensagens. Use print para mostrar algo aqui.',
   'console.message': '1 mensagem',
   'console.messages': '{count} mensagens',
   'console.showBlock': 'Ver o bloco que causou o erro',
 
-  'ai.placeholder':
-    'O ajudante de IA ainda está em construção. Logo ele chega para criar junto com você!',
+  'ai.placeholder': 'O Zappy ainda não está disponível neste espaço.',
   'ai.sendDisabled': 'Chegando em breve',
-  'ai.title': 'Assistente IA (prévia)',
+  'ai.title': 'Zappy',
 
   'project.newName': 'Meu projeto',
   'project.new': 'Novo projeto',
@@ -211,6 +240,9 @@ export const ptBR: Record<string, string> = {
   'kits.search.label': 'Buscar jogos',
   'kits.search.placeholder': 'Nome, gênero ou conceito…',
   'kits.filter.difficulty': 'Dificuldade',
+  'kits.filter.language': 'Linguagem',
+  'kits.python.loading': 'Consultando os ambientes Python…',
+  'kits.python.unavailable': 'Python ainda não está disponível neste ambiente.',
   'kits.filter.experience': 'Tipo',
   'kits.filter.all': 'Todos',
   'kits.difficulty.beginner': 'Primeiros passos',
@@ -244,6 +276,30 @@ export const ptBR: Record<string, string> = {
   'pintaImport.kind.tileset': '🧩 peças',
   'pintaImport.kind.tilemap': '🗺️ mapa',
   'pintaImport.close': 'Fechar',
+  'pintaImport.image.choose': 'Escolher imagem',
+  'pintaImport.image.chooseAnother': 'Escolher outra imagem',
+  'pintaImport.image.selection': 'Escolher a imagem do desenho',
+  'pintaImport.image.animation': 'Animação',
+  'pintaImport.image.frame': 'Quadro',
+  'pintaImport.image.tile': 'Peça',
+  'pintaImport.image.scale': 'Tamanho',
+  'pintaImport.image.staticFrame':
+    'Este quadro é uma imagem parada. A posição escolhida acompanha a ordem dos quadros no Pinta.',
+  'pintaImport.image.fullMap':
+    'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
+  'pintaImport.image.preparing': 'Preparando a imagem…',
+  'pintaImport.image.preview': 'Prévia da imagem escolhida',
+  'pintaImport.image.add': 'Adicionar imagem',
+  'pintaImport.image.update': 'Atualizar esta imagem',
+  'pintaImport.image.review': 'Rever imagem escolhida',
+  'pintaImport.image.back': 'Voltar',
+  'pintaImport.image.unavailable': 'Não é possível preparar imagens do Pinta neste ambiente agora.',
+  'pintaImport.image.needsTileset':
+    'Este mapa precisa do conjunto de peças dele. Recupere o conjunto no Pinta.',
+  'pintaImport.image.selectionMissing':
+    'Esta animação, quadro ou peça não está disponível. Escolha novamente.',
+  'pintaImport.image.selectionChanged':
+    'A imagem recebida não corresponde à sua escolha. Confira a seleção novamente.',
 
   'moldaImport.button': '🧊 Trazer do Molda',
   'moldaImport.title': 'Trazer do Molda',
@@ -272,6 +328,31 @@ export const ptBR: Record<string, string> = {
   'moldaImport.kind.sky': '🌤️ céu',
   'moldaImport.close': 'Fechar',
 
+  'teamImport.button': '👥 Trazer da equipe',
+  'teamImport.title': 'Trazer da equipe',
+  'teamImport.subtitle': 'As artes que a sua equipe fez nas missões deste plano.',
+  'teamImport.search.label': 'Buscar artes da equipe',
+  'teamImport.search.placeholder': 'Nome da arte, da missão ou de quem fez…',
+  'teamImport.loading': 'Buscando as artes da sua equipe…',
+  'teamImport.loadError': 'Não consegui buscar as artes da equipe agora.',
+  'teamImport.retry': 'Tentar de novo',
+  'teamImport.importError': 'Não consegui trazer essa arte agora. Tente de novo.',
+  'teamImport.empty':
+    'Ninguém da equipe terminou uma arte ainda. Quando alguém concluir uma missão de arte, ela aparece aqui.',
+  'teamImport.noResults': 'Nenhuma arte combina com essa busca.',
+  'teamImport.add': 'Adicionar ao projeto',
+  'teamImport.adding': 'Trazendo…',
+  'teamImport.inProject': '✓ no projeto',
+  'teamImport.again': 'Trazer de novo',
+  'teamImport.refreshed': 'Pronto! {name} está no seu jogo do jeito que está agora.',
+  'teamImport.by': 'Feita por {name}',
+  'teamImport.mission': 'Missão: {title}',
+  'teamImport.kind.drawing': '🎨 desenho',
+  'teamImport.kind.model': '🧊 modelo',
+  'teamImport.kind.texture': '🧱 textura',
+  'teamImport.kind.sky': '🌤️ céu',
+  'teamImport.close': 'Fechar',
+
   'editor.fontSize.increase': 'Aumentar fonte do editor',
   'editor.fontSize.decrease': 'Diminuir fonte do editor',
   'editor.fontSize.reset': 'Restaurar tamanho padrão',
@@ -288,6 +369,11 @@ export const ptBR: Record<string, string> = {
   'code.advancedBlock': 'Código avançado',
 
   'export.title': 'Exportar para publicação',
+  'export.pythonTitle': 'Baixar para jogar no navegador',
+  'export.pythonDescription': 'Baixe uma versão do seu projeto para jogar no navegador.',
+  'export.pythonSourceNote': 'Para continuar programando no VS Code, use Baixar fonte.',
+  'export.pythonUnavailable':
+    'A exportação web Python não está disponível neste ambiente. Você pode baixar a fonte para continuar no computador.',
   'export.description':
     'Gera um arquivo ZIP pronto para publicar no Railway (o site mais o Dockerfile e o passo a passo).',
   'export.minify': 'Minificar o código (recomendado)',
@@ -303,10 +389,10 @@ export const ptBR: Record<string, string> = {
 
   'convert.title': 'Virar profissional?',
   'convert.body':
-    'No projeto profissional você programa como os profissionais de verdade: vários arquivos e pastas, editando tudo pelo Código. Os blocos ficam para trás. Esta ação não pode ser desfeita.',
+    'No modo Pro você trabalha com código, arquivos, pastas e bibliotecas. Antes de converter, vamos guardar uma cópia completa deste jogo em Blocos na sua lista de projetos.',
   'convert.legacyTitle': 'Este projeto precisa virar profissional',
   'convert.legacyBody':
-    'Este projeto tem {count} arquivo(s) além dos três básicos, que o modo Blocos e Ponte não edita. Quer transformá-lo num projeto profissional (Vite) para trabalhar com todos eles? Esta ação não pode ser desfeita.',
+    'Este projeto tem {count} arquivo(s) além dos três básicos. No modo Pro você pode editar todos eles. Vamos guardar uma cópia completa do original em Blocos antes de converter.',
   'convert.confirm': 'Virar profissional',
   'convert.cancel': 'Cancelar',
   'convert.later': 'Agora não',
@@ -328,7 +414,9 @@ export const ptBR: Record<string, string> = {
   'share.step.describe.label': 'Descrição do projeto',
   'share.step.describe.placeholder':
     'Ex.: Um jogo de nave que desvia dos asteroides para fazer pontos.',
-  'share.step.describe.generate': 'Escrever com ajuda da IA',
+  // Quem escreve o rascunho é o Zappy: a rota `/api/studio/describe` do member-shell usa o
+  // modelo e os créditos dele (`purpose: 'tutor'`). O recurso tem nome, nunca "IA" (20/10/2026).
+  'share.step.describe.generate': 'Escrever com ajuda do Zappy',
   'share.step.describe.regenerate': 'Escrever de novo',
   'share.step.describe.generating': 'Escrevendo…',
   'share.step.describe.failed':
@@ -342,11 +430,11 @@ export const ptBR: Record<string, string> = {
   'share.step.title.label': 'Título',
   'share.step.review.heading': 'Confira antes de publicar',
   'share.publishing': 'Publicando…',
-  'share.success.heading': 'Publicado! 🎉',
+  'share.success.heading': 'Seu jogo está no Mural! 🎉',
   'share.success.body': 'Seu projeto já está no Mural dos Criadores.',
   'share.success.openMural': 'Ver no Mural',
   'share.success.openPlay': 'Abrir o jogo',
-  'share.success.copyLink': 'Copiar link',
+  'share.success.copyLink': 'Copiar link de jogar',
   'share.success.copied': 'Link copiado!',
   // Modal único de compartilhar (redesenho 06/2026).
   'share.intro':
@@ -373,7 +461,7 @@ export const ptBR: Record<string, string> = {
   'share.ai.capped': 'Você já pediu algumas ideias. Agora é só deixar o texto do seu jeito. 😊',
   'share.ai.quota.day': 'As ideias de hoje acabaram! Escreva você mesmo a descrição. ✍️',
   'share.ai.quota.month': 'As ideias deste mês acabaram! Escreva você mesmo a descrição. ✍️',
-  'share.ai.button': 'Gerar resumo com a IA',
+  'share.ai.button': 'Gerar resumo com o Zappy',
   'share.error': 'Não foi possível publicar: {reason}',
   'share.cancel': 'Cancelar',
   'share.back': 'Voltar',

@@ -1,13 +1,18 @@
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseTrail } from '@/components/kids/course-trail'
 import { KidsBand } from '@/components/kids/kids-band'
-import { journeyLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
+import {
+  journeyLockLevel,
+  journeyLockReason,
+  KidsLockedCourse,
+} from '@/components/kids/kids-locked-course'
 import { PublicationStatus } from '@/components/kids/publication-status'
 import { courseBadge } from '@/lib/course-badge'
 import { resolveCourseBack } from '@/lib/course-return'
-import { getMyCourse } from '@/server/members'
+import { getGamificationReadonly, getMyCourse } from '@/server/members'
 import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
@@ -21,12 +26,15 @@ export default async function CoursePage({
   searchParams: Promise<{ de?: string }>
 }) {
   const [{ slug }, { de }] = await Promise.all([params, searchParams])
-  // A gamificação saiu daqui em 14/08: ela só existia para desempatar a trilha do
-  // Iniciante 2D, que era dividido entre Faísca e Construtor(a). Agora cada degrau tem
-  // um dono e o destino sai só do curso. (O layout segue buscando o que precisa.)
-  const { status, body } = await getMyCourse(slug)
+  const [{ status, body }, gamification] = await Promise.all([
+    getMyCourse(slug),
+    getGamificationReadonly().catch(() => null),
+  ])
   if (status === 404 || status === 403) notFound()
-  if (status === 423) return <KidsLockedCourse reason={journeyLockReason(body)} />
+  if (status === 423)
+    return (
+      <KidsLockedCourse reason={journeyLockReason(body)} requiredLevel={journeyLockLevel(body)} />
+    )
   if (status !== 200 || !body) throw new Error('Falha ao carregar o curso')
   const course = body
 
@@ -36,7 +44,11 @@ export default async function CoursePage({
       ? await shell.hub.myShowcaseDeliveryReadonly(course.id).catch(() => null)
       : null
   const deliveryState = delivery?.status === 200 ? delivery.body?.state : null
-  const back = resolveCourseBack(de, course)
+  const back = resolveCourseBack(
+    de,
+    course,
+    kidsJourneyAccess(gamification?.status === 200 ? gamification.body : null),
+  )
   return (
     <>
       <KidsBand tone="creme" innerClassName="pt-6 pb-2 md:pt-8 md:pb-2">
@@ -48,7 +60,7 @@ export default async function CoursePage({
         </div>
       </KidsBand>
 
-      {/* A régua saiu: quem separa as seções agora é a troca de FAIXA. */}
+      {/* A régua saiu: quem separa as partes agora é a troca de FAIXA. */}
       {pendingPublication && (deliveryState === 'pending' || deliveryState === 'delivered') ? (
         <KidsBand tone="amarelo">
           <PublicationStatus state={deliveryState} />
@@ -57,7 +69,7 @@ export default async function CoursePage({
         <KidsBand tone="amarelo">
           <section id="publicar" className="kids-carta scroll-mt-20 p-6 md:p-7">
             <p className="font-extrabold text-primary text-xs uppercase tracking-[0.12em]">
-              Fases concluídas · publicação pendente
+              Aulas concluídas · publicação pendente
             </p>
             <h2 className="sz-display mt-2 text-xl md:text-[1.625rem]">
               Seu projeto também faz parte da conquista
@@ -69,8 +81,8 @@ export default async function CoursePage({
               </p>
             ) : null}
             <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-              Abra a fase do projeto, confira a versão que você criou e use Compartilhar no Estúdio.
-              Depois que a publicação for confirmada, esta aventura contará na sua jornada.
+              Abra a aula do projeto, confira a versão que você criou e use Compartilhar no Estúdio.
+              Depois que a publicação for confirmada, este curso contará na sua jornada.
             </p>
             {course.showcaseLessonId ? (
               <Link
@@ -81,7 +93,7 @@ export default async function CoursePage({
               </Link>
             ) : (
               <p className="mt-3 text-sm text-muted-foreground">
-                A fase de publicação não está disponível agora. O que você concluiu continua
+                A aula de publicação não está disponível agora. O que você concluiu continua
                 guardado.
                 <Link href="/recados" className="ml-1 font-bold text-primary underline">
                   Falar com a equipe

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'bun:test'
-import type { ClassifyResult, DraftResult } from '../../src/application/ai/prompts'
+import type { ClassifyResult } from '../../src/application/ai/prompts'
 import { TicketAiService } from '../../src/application/ai/ticket-ai.service'
 import { FakeLlmClient } from '../fakes/ai'
+import { testAnswers } from '../fakes/answers'
 import { InMemoryMessageRepository, InMemoryTicketRepository } from '../fakes/in-memory'
 import { makeMessage, makeTicket } from '../helpers'
 
@@ -13,7 +14,13 @@ const CLS: ClassifyResult = {
   flags: { reembolso: false, juridico: false },
   summary: 'Cliente não consegue acessar o curso.',
 }
-const DRAFT: DraftResult = { reply: 'Oi, vou te ajudar com o acesso.', kbCoverage: 'covered' }
+const DRAFT = {
+  citationIds: ['11111111-1111-4111-8111-111111111111'],
+  clarification: false,
+  reason: 'supported',
+  reply: 'Oi, vou te ajudar com o acesso.',
+  kbCoverage: 'covered',
+}
 
 function build(llmConfigured = true) {
   const tickets = new InMemoryTicketRepository()
@@ -24,10 +31,9 @@ function build(llmConfigured = true) {
     llm,
     tickets,
     messages,
-    async () => [],
+    testAnswers(llm),
     {
       maxThreadChars: 24_000,
-      maxKbChars: 12_000,
     },
     () => new Date(),
   )

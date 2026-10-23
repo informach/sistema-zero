@@ -6,6 +6,7 @@ const UUID_PATTERN = '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{
 const UUID = t.String({ pattern: UUID_PATTERN })
 
 export const IdParams = t.Object({ id: UUID })
+export const AdultCommunityAccessBody = t.Object({ userId: UUID, accountId: UUID })
 export const AccountDeletionFinalizeBody = t.Object({
   accountId: UUID,
   userIds: t.Array(UUID, { minItems: 1, maxItems: 51 }),
@@ -180,12 +181,38 @@ export const ShowcaseThreadBody = t.Object({
  * sobre o snapshot jogável). Vem do BFF, que o deriva do projeto SANEADO — mas a
  * rota é alcançável na borda, então NUNCA tratar como fronteira de segurança.
  */
-export const StudioMetaBody = t.Object({
+const StudioRuntimeMetadata = t.Object({
+  profileId: t.String({ minLength: 1, maxLength: 96, pattern: '^[a-z0-9][a-z0-9._-]*$' }),
+  releaseId: t.String({ minLength: 1, maxLength: 96, pattern: '^[a-z0-9][a-z0-9._-]*$' }),
+  manifestSha256: t.String({ pattern: '^[a-f0-9]{64}$' }),
+})
+const StudioMetadataCommon = {
   pro: t.Boolean(),
-  extensions: t.Array(t.String({ minLength: 1, maxLength: 64 }), { maxItems: 8 }),
+  extensions: t.Array(t.String({ minLength: 1, maxLength: 128 }), { maxItems: 8 }),
+}
+export const StudioMetaBody = t.Union([
+  t.Object({
+    ...StudioMetadataCommon,
+    programmingLanguage: t.Optional(t.Literal('javascript')),
+    runtime: t.Optional(StudioRuntimeMetadata),
+  }),
+  t.Object({
+    ...StudioMetadataCommon,
+    programmingLanguage: t.Literal('python'),
+    runtime: StudioRuntimeMetadata,
+  }),
+])
+
+const StudioPublisherBody = t.Object({
+  authorId: UUID,
+  accountId: UUID,
+  audience: t.Union([t.Literal('kids'), t.Literal('adult')]),
 })
 
 export const ShowcaseThreadStudioBody = t.Object({
+  reservationId: UUID,
+  snapshotHash: t.String({ pattern: '^[a-f0-9]{64}$' }),
+  publisher: StudioPublisherBody,
   spaceSlug: SLUG,
   lessonId: UUID,
   blockId: UUID,
@@ -207,6 +234,17 @@ export const ShowcaseThreadStudioBody = t.Object({
  * do header confiável; `clientIdempotencyKey` dedup-a duplo-clique (republicar = post novo).
  */
 export const ShowcaseThreadStudioStandaloneBody = t.Object({
+  reservationId: UUID,
+  snapshotHash: t.String({ pattern: '^[a-f0-9]{64}$' }),
+  publisher: StudioPublisherBody,
+  liveWorkspace: t.Optional(
+    t.Object({
+      id: UUID,
+      revision: t.Number({ minimum: 1, multipleOf: 1 }),
+      playId: UUID,
+      publicationToken: t.String({ minLength: 1, maxLength: 4096 }),
+    }),
+  ),
   spaceSlug: SLUG,
   title: t.String({ minLength: 1, maxLength: 200 }),
   description: t.String({ minLength: 1, maxLength: 280 }),
@@ -222,6 +260,16 @@ export const ShowcaseThreadStudioStandaloneBody = t.Object({
   studioMeta: t.Optional(t.Union([StudioMetaBody, t.Null()])),
 })
 
+export const ShowcaseThreadStudioPrepareBody = t.Omit(ShowcaseThreadStudioBody, [
+  'reservationId',
+  'playId',
+  'coverImageUrl',
+])
+export const ShowcaseThreadStudioStandalonePrepareBody = t.Omit(
+  ShowcaseThreadStudioStandaloneBody,
+  ['reservationId', 'playId', 'coverImageUrl'],
+)
+
 /** Paginação por cursor opaco (listagem de tópicos). */
 export const ThreadListQuery = t.Object({
   cursor: t.Optional(t.String({ maxLength: 500 })),
@@ -234,6 +282,7 @@ export const ThreadListQuery = t.Object({
 
 /** Query do resolve do /jogar: `count=1` = conta a jogada (hit fundido no UPDATE). */
 export const PlayResolveQuery = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   count: t.Optional(t.Literal('1')),
 })
 
@@ -249,6 +298,7 @@ export const ShowcaseByAuthorsBody = t.Object({
 
 // Perfil público kids: vitrine INTEIRA de UM autor (sem janela), com capa.
 export const ShowcaseByAuthorBody = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   authorId: UUID,
   limit: t.Optional(t.Integer({ minimum: 1, maximum: 50 })),
 })
@@ -268,6 +318,7 @@ export const ActivityByAuthorsBody = t.Object({
  * members recusar self-remix. Anti-farm do marco `studio_remix`.
  */
 export const PlayCheckBody = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   playId: UUID,
 })
 

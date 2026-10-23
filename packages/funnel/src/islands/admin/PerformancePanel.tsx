@@ -7,17 +7,26 @@ interface Step {
   count: number
   fromTop: number
   fromPrev: number
+  /** Ramo do quiz: a etapa é recuada, e "da etapa" compara dentro do ramo. */
+  branch?: string
 }
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`
 
-export default function PerformancePanel({ funnel }: { funnel: string }) {
+/** `scope`: query do recorte do quiz (`quiz=atual`, `manchete=<id>`), montada pelo painel. */
+export default function PerformancePanel({
+  funnel,
+  scope = '',
+}: {
+  funnel: string
+  scope?: string
+}) {
   const [steps, setSteps] = useState<Step[] | null>(null)
   const [total, setTotal] = useState(0)
   const [erro, setErro] = useState(false)
 
   useEffect(() => {
-    const qs = funnel ? `?funnel=${encodeURIComponent(funnel)}` : ''
+    const qs = funnel ? `?funnel=${encodeURIComponent(funnel)}${scope ? `&${scope}` : ''}` : ''
     apiGet<{ total: number; steps: Step[] }>(`/api/admin/funnel${qs}`)
       .then((d) => {
         setTotal(d.total)
@@ -30,7 +39,7 @@ export default function PerformancePanel({ funnel }: { funnel: string }) {
         }
         setErro(true)
       })
-  }, [funnel])
+  }, [funnel, scope])
 
   if (erro) return <p className="text-red-400">Falha ao carregar o funil.</p>
   if (!steps) return <p className="text-muted">Carregando…</p>
@@ -58,7 +67,10 @@ export default function PerformancePanel({ funnel }: { funnel: string }) {
 
       <div className="flex flex-col gap-2">
         {steps.map((s, i) => (
-          <div key={s.name} className="card p-3.5">
+          <div
+            key={s.name}
+            className={`card p-3.5 ${s.branch ? 'ml-5 border-l-4 border-l-cyan/50' : ''}`}
+          >
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-sm font-medium text-ink">{s.label}</span>
               <span className="text-sm text-muted">

@@ -52,6 +52,55 @@ import type {
 } from '../../../viewport/sceneViewportTypes'
 import { SceneWorkshop } from './SceneWorkshop'
 
+function openMoreComponentTools() {
+  fireEvent.click(screen.getByRole('button', { name: 'Mais ferramentas' }))
+}
+
+function openUvAdvanced() {
+  const details = screen
+    .getByText(COPY.scene.uvAdvanced, { selector: 'summary' })
+    .closest('details')!
+  act(() => {
+    details.open = true
+    fireEvent(details, new Event('toggle'))
+  })
+}
+
+function openRigAdvanced() {
+  const details = within(screen.getByRole('region', { name: 'Área Ossos e pesos' }))
+    .getByText('Ajustes avançados', { selector: 'summary' })
+    .closest('details')!
+  act(() => {
+    details.open = true
+    fireEvent(details, new Event('toggle'))
+  })
+}
+
+async function materialsWorkspaceButton() {
+  fireEvent.click(await screen.findByRole('button', { name: 'Opções' }))
+  return screen.getByRole('button', { name: 'Materiais' })
+}
+
+function componentPanel() {
+  const panel = document.querySelector('.mld-component-root')
+  if (!(panel instanceof HTMLElement)) throw new Error('Missing component panel')
+  return within(panel)
+}
+
+function openComponentAdjustments() {
+  openMoreComponentTools()
+  fireEvent.click(screen.getByRole('button', { name: 'Mais ajustes da malha' }))
+}
+
+function openComponentWeights() {
+  openMoreComponentTools()
+  fireEvent.click(
+    within(screen.getByRole('region', { name: 'Mais ferramentas' })).getByRole('button', {
+      name: 'Ossos e pesos',
+    }),
+  )
+}
+
 function setup(
   asset = migrateLegacyModel(makeModel()).document,
   persistedEditor?: SceneEditorStore,
@@ -318,16 +367,13 @@ describe('scene workshop integration', () => {
       expect(editor.getState().canUndo).toBe(false)
       // A peça já tem pintura só dela: entrar na aba Pintar não muda nada no documento.
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        appearance.open = true
-        fireEvent(appearance, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       const choose = await screen.findByRole('combobox', { name: COPY.scene.materialChoose })
       const image = asset.images[0]!,
         material = asset.materials.find((entry) => entry.colorImageId === image.id)!
       fireEvent.change(choose, { target: { value: material.id } })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       const updates = ports.at(-1)!.documentUpdates,
         selected = ports.at(-1)!.selected
@@ -765,7 +811,7 @@ describe('scene workshop integration', () => {
     }
   })
 
-  test('two-bone controls cancel on close, Escape in a field, selection, time, blur, context loss; thumbnail metadata preserves the pending pose', async () => {
+  test('assisted poses cancel explicitly, resolve time changes and survive selection, blur, context loss and thumbnail metadata', async () => {
     const source = makeSceneTwoBoneFixture(),
       { editor, view, ports, openInspector } = setup(source),
       copy = COPY.scene.twoBone
@@ -834,6 +880,10 @@ describe('scene workshop integration', () => {
           if (kind === 'thumbnail') editor.getState().setThumb('latest')
         })
         if (kind === 'escape') expect(document.activeElement).toBe(summary)
+        if (kind === 'time')
+          expect(
+            screen.queryByRole('dialog', { name: 'Esta pose ainda não foi marcada' }),
+          ).toBeNull()
         expect({
           kind,
           disabled: (
@@ -841,10 +891,12 @@ describe('scene workshop integration', () => {
               name: COPY.scene.animationPoseRecord,
             }) as HTMLButtonElement
           ).disabled,
-        }).toEqual({ kind, disabled: kind !== 'thumbnail' })
+        }).toEqual({ kind, disabled: ['close', 'escape', 'time'].includes(kind) })
         expect(editor.getState().asset.animations).toBe(source.animations)
         expect(editor.getState().contentRevision).toBe(0)
         expect(editor.getState().canUndo).toBe(false)
+        if (!['close', 'escape', 'time'].includes(kind))
+          fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationPoseCancel }))
       }
       expect(editor.getState().asset.thumb).toBe('latest')
     } finally {
@@ -972,11 +1024,14 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
       openInspector()
-      const trigger = screen.getByRole('button', { name: copy.open }),
+      const trigger = within(
+          screen.getByRole('navigation', { name: 'Áreas da oficina' }),
+        ).getByRole('button', { name: 'Ossos e pesos' }),
         open = async () => {
           trigger.focus()
           fireEvent.click(trigger)
-          const modal = within(screen.getByRole('dialog', { name: copy.title }))
+          const modal = within(screen.getByRole('region', { name: 'Área Ossos e pesos' }))
+          openRigAdvanced()
           await waitFor(() => expect(modal.queryByText(copy.linked)).not.toBeNull())
           return modal
         }
@@ -994,7 +1049,7 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset).toBe(source)
       expect(editor.getState().canUndo).toBe(false)
       fireEvent.click(modal.getByRole('button', { name: copy.confirmAddJoint }))
-      expect(screen.queryByRole('dialog', { name: copy.title })).toBeNull()
+      expect(screen.queryByRole('region', { name: 'Área Ossos e pesos' })).toBeNull()
       expect(document.activeElement).toBe(trigger)
       const added = editor.getState().asset
       expect(added.skins![0]!.joints).toHaveLength(3)
@@ -1053,6 +1108,7 @@ describe('scene workshop integration', () => {
           )
       })
       openInspector()
+      openComponentWeights()
       const summary = screen.getByText(copy.title),
         details = summary.closest('details')!,
         panel = within(details)
@@ -1128,6 +1184,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editSkinBase }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.vertex }))
       openInspector()
+      openComponentWeights()
       const details = screen.getByText(copy.title).closest('details')!,
         panel = within(details)
       act(() => {
@@ -1170,6 +1227,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.vertex }))
       act(() => ports.at(-1)!.callbacks.selectComponent!('v_1_0', false))
       openInspector()
+      openComponentWeights()
       const details = screen.getByText(copy.title).closest('details')!,
         panel = within(details),
         toggle = (open: boolean) =>
@@ -1274,6 +1332,30 @@ describe('scene workshop integration', () => {
     }
   })
 
+  test('opening bones for a bound piece shows the manipulable supports immediately', async () => {
+    const fixture = makeSceneSkinFixture(),
+      { id, ...input } = fixture.input,
+      source = createSceneSkin(fixture.document, input, () => id),
+      { editor, view, ports, openInspector } = setup(source)
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      act(() => ports.at(-1)!.callbacks.select('part-0', false))
+      openInspector()
+      const trigger = within(
+        screen.getByRole('navigation', { name: 'Áreas da oficina' }),
+      ).getByRole('button', { name: 'Ossos e pesos' })
+      expect(ports.at(-1)!.supports).toBe(false)
+      fireEvent.click(trigger)
+      expect(ports.at(-1)!.supports).toBe(true)
+      expect(editor.getState().asset).toBe(source)
+      fireEvent.click(screen.getByRole('button', { name: 'Fechar área' }))
+      expect(ports.at(-1)!.supports).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
   test('weights limit the chosen mixture to four existing bones and removal never silently redistributes force', async () => {
     const fixture = makeSceneSkinFixture(),
       { id, ...input } = fixture.input
@@ -1294,6 +1376,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.vertex }))
       act(() => ports.at(-1)!.callbacks.selectComponent!('v_1_0', false))
       openInspector()
+      openComponentWeights()
       const details = screen.getByText(copy.title).closest('details')!,
         panel = within(details)
       act(() => {
@@ -1342,11 +1425,14 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
       openInspector()
-      const trigger = screen.getByRole('button', { name: copy.open })
+      const trigger = within(
+        screen.getByRole('navigation', { name: 'Áreas da oficina' }),
+      ).getByRole('button', { name: 'Ossos e pesos' })
       trigger.focus()
       fireEvent.click(trigger)
-      const dialog = screen.getByRole('dialog', { name: copy.title }),
+      const dialog = screen.getByRole('region', { name: 'Área Ossos e pesos' }),
         modal = within(dialog)
+      openRigAdvanced()
       await waitFor(() => expect(modal.queryByText(copy.intro)).not.toBeNull())
       expect(dialog.contains(document.activeElement)).toBe(true)
       expect(
@@ -1363,7 +1449,7 @@ describe('scene workshop integration', () => {
       fireEvent.keyDown(dialog, { key: 'z', ctrlKey: true })
       expect(editor.getState().asset).toBe(source)
       fireEvent.click(modal.getByRole('button', { name: copy.apply }))
-      expect(screen.queryByRole('dialog', { name: copy.title })).toBeNull()
+      expect(screen.queryByRole('region', { name: 'Área Ossos e pesos' })).toBeNull()
       expect(document.activeElement).toBe(trigger)
       expect(editor.getState().asset.skins?.[0]?.nodeId).toBe('part-0')
       expect(editor.getState().asset.nodes).toBe(source.nodes)
@@ -1373,14 +1459,15 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
       const linked = editor.getState().asset
       fireEvent.click(trigger)
-      const bound = within(screen.getByRole('dialog', { name: copy.title }))
+      const bound = within(screen.getByRole('region', { name: 'Área Ossos e pesos' }))
+      openRigAdvanced()
       await waitFor(() => expect(bound.queryByText(copy.linked)).not.toBeNull())
       expect(bound.queryByRole('button', { name: copy.prepare })).toBeNull()
       fireEvent.click(bound.getByRole('button', { name: copy.remove }))
       expect(bound.getByText(copy.removeHint)).not.toBeNull()
       expect(editor.getState().asset).toBe(linked)
-      fireEvent.keyDown(document, { key: 'Escape' })
-      expect(screen.queryByRole('dialog', { name: copy.title })).toBeNull()
+      fireEvent.keyDown(bound.getByRole('button', { name: copy.close }), { key: 'Escape' })
+      expect(screen.queryByRole('region', { name: 'Área Ossos e pesos' })).toBeNull()
       expect(document.activeElement).toBe(trigger)
       expect(editor.getState().asset).toBe(linked)
     } finally {
@@ -1401,21 +1488,26 @@ describe('scene workshop integration', () => {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
       openInspector()
-      fireEvent.click(screen.getByRole('button', { name: copy.open }))
-      const modal = within(screen.getByRole('dialog', { name: copy.title }))
+      fireEvent.click(
+        within(screen.getByRole('navigation', { name: 'Áreas da oficina' })).getByRole('button', {
+          name: 'Ossos e pesos',
+        }),
+      )
+      const modal = within(screen.getByRole('region', { name: 'Área Ossos e pesos' }))
+      openRigAdvanced()
       await waitFor(() => expect(modal.queryByText(copy.locked)).not.toBeNull())
       expect(
         (modal.getByRole('button', { name: copy.prepare }) as HTMLButtonElement).disabled,
       ).toBe(true)
       act(() => ports.at(-1)!.callbacks.select('upper', false))
-      expect(screen.queryByRole('dialog', { name: copy.title })).toBeNull()
+      expect(screen.queryByText(copy.locked)).toBeNull()
       expect(editor.getState().asset).toBe(source)
       act(() =>
         editor.getState().commit({ ...fixture, nodes: [{ ...fixture.nodes[0]!, parentId: null }] }),
       )
       act(() => ports.at(-1)!.callbacks.select('part-0', false))
-      fireEvent.click(screen.getByRole('button', { name: copy.open }))
-      const empty = within(screen.getByRole('dialog', { name: copy.title }))
+      const empty = within(screen.getByRole('region', { name: 'Área Ossos e pesos' }))
+      openRigAdvanced()
       await waitFor(() => expect(empty.queryByText(copy.noJoints)).not.toBeNull())
       expect(empty.queryAllByRole('checkbox')).toHaveLength(0)
       expect(
@@ -1531,8 +1623,13 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: copy.glbExport.open }))
       expect(screen.queryByRole('dialog', { name: copy.glbExport.title })).toBeNull()
       expect(screen.getByText(copy.animationPosePending)).toBeTruthy()
-      fireEvent.click(screen.getByRole('button', { name: copy.animationPoseCancel }))
-      fireEvent.click(screen.getByRole('button', { name: copy.glbExport.open }))
+      fireEvent.click(
+        within(screen.getByRole('dialog', { name: 'Esta pose ainda não foi marcada' })).getByRole(
+          'button',
+          { name: copy.animationPoseCancel },
+        ),
+      )
+      // Discard resumes the original request exactly once and opens the export review.
       expect(
         (screen.getByRole('button', { name: copy.animationPoseRecord }) as HTMLButtonElement)
           .disabled,
@@ -1626,7 +1723,7 @@ describe('scene workshop integration', () => {
     }
   })
 
-  test('pose drafts cannot survive selection, seek, blur, hidden page, context loss or Escape, and late pointer-up never auto-records', async () => {
+  test('poses concluídas sobrevivem à seleção e interrupções; trocar o instante pede decisão e soltar o ponteiro depois não grava', async () => {
     const { editor, view, ports, openInspector } = setup(animatedScene())
     const copy = COPY.scene
     try {
@@ -1704,11 +1801,8 @@ describe('scene workshop integration', () => {
       const before = editor.getState().asset,
         port = ports.at(-1)!,
         updates = port.documentUpdates
-      const details = screen.getByText(copy.animationPresetTitle).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      const details = screen.getByText(copy.animationPresetTitle).closest('section')!
+      fireEvent.click(within(details).getByRole('button', { name: copy.animationPresetTitle }))
       const presets = within(details)
       fireEvent.change(presets.getByLabelText(copy.animationPresetKind), {
         target: { value: 'spin' },
@@ -1764,7 +1858,81 @@ describe('scene workshop integration', () => {
     }
   })
 
-  test('animation preset drafts cannot survive parameter, selection, clip, revision, visibility or graphics-context changes', async () => {
+  test('fechar movimentos prontos preserva a prévia até uma decisão, e ajustes mantêm direção e limites válidos', async () => {
+    const { editor, view, ports } = setup(animatedScene())
+    const copy = COPY.scene
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      const summary = await screen.findByText(copy.animationPresetTitle)
+      fireEvent.click(summary)
+      const presets = within(summary.closest('section')!)
+      fireEvent.change(presets.getByLabelText(copy.animationPresetDistance), {
+        target: { value: '-8' },
+      })
+      fireEvent.click(presets.getByRole('button', { name: copy.animationPresetPrepare }))
+      fireEvent.click(presets.getByRole('button', { name: 'Menos intenso' }))
+      fireEvent.click(summary)
+      const decision = screen.getByRole('dialog', { name: 'Este movimento ainda está em prévia' })
+      fireEvent.click(within(decision).getByRole('button', { name: 'Continuar ajustando' }))
+      expect(presets.queryByRole('button', { name: copy.animationPresetConfirm }) !== null).toBe(
+        true,
+      )
+      fireEvent.change(presets.getByLabelText(copy.animationDuration), { target: { value: '3' } })
+      // Mudar os campos não descarta o movimento já preparado.
+      fireEvent.click(presets.getByRole('button', { name: copy.animationPresetConfirm }))
+      // O movimento pronto é gravado em espaço local, rígido: a chave é o repouso do corpo
+      // (y = 1) mais o deslocamento ajustado, -8 com "Menos intenso" = -6.4.
+      const ajustado = editor.getState().content.animations!.at(-1)!
+      expect(ajustado.space).toBe('local')
+      expect(ajustado.tracks[0]!.keys[1]!.value[1]).toBe(1 + -6.4)
+      fireEvent.change(presets.getByLabelText(copy.animationPresetKind), {
+        target: { value: 'sway' },
+      })
+      fireEvent.change(presets.getByLabelText(copy.animationPresetAngle), {
+        target: { value: '90' },
+      })
+      fireEvent.click(presets.getByRole('button', { name: copy.animationPresetPrepare }))
+      for (let count = 0; count < 3; count++)
+        fireEvent.click(presets.getByRole('button', { name: 'Mais intenso' }))
+      fireEvent.click(presets.getByRole('button', { name: copy.animationPresetConfirm }))
+      expect(editor.getState().content.animations).toHaveLength(3)
+      expect(presets.queryByRole('alert') === null).toBe(true)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('guardar movimento do modelo inteiro e retomar Pintar conserva a seleção do conjunto', async () => {
+    const { editor, view, ports } = setup(animatedScene())
+    const copy = COPY.scene
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      fireEvent.click(await screen.findByText(copy.animationPresetTitle))
+      fireEvent.click(screen.getByRole('button', { name: 'Modelo inteiro' }))
+      fireEvent.click(screen.getByRole('button', { name: copy.animationPresetNames.bounce }))
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const decision = screen.getByRole('dialog', { name: 'Este movimento ainda está em prévia' })
+      fireEvent.click(within(decision).getByRole('button', { name: 'Guardar este movimento' }))
+      const clip = editor.getState().content.animations!.at(-1)!
+      expect(ports.at(-1)!.selected).toEqual([clip.tracks[0]!.nodeId])
+      expect(
+        editor.getState().content.nodes.find((node) => node.id === clip.tracks[0]!.nodeId)?.kind,
+      ).toBe('group')
+      expect(
+        screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }).getAttribute('aria-pressed'),
+      ).toBe('true')
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('animation preset drafts resolve deliberate context changes and invalidate on source or environment changes', async () => {
     const { editor, view, ports, openInspector } = setup(animatedScene())
     const copy = COPY.scene
     try {
@@ -1773,18 +1941,11 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: copy.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
       await waitFor(() => expect(screen.queryByText(copy.animationPresetTitle) !== null).toBe(true))
-      const details = screen.getByText(copy.animationPresetTitle).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      const details = screen.getByText(copy.animationPresetTitle).closest('section')!
+      fireEvent.click(within(details).getByRole('button', { name: copy.animationPresetTitle }))
       const presets = within(details)
       const before = editor.getState().asset
       for (const cancel of [
-        () =>
-          fireEvent.change(presets.getByLabelText(copy.animationDuration), {
-            target: { value: '3' },
-          }),
         () =>
           fireEvent.keyDown(screen.getByRole('region', { name: copy.title }), { key: 'Escape' }),
         () => act(() => window.dispatchEvent(new Event('blur'))),
@@ -1800,7 +1961,11 @@ describe('scene workshop integration', () => {
         },
         () => fireEvent.click(screen.getByRole('button', { name: copy.select('asa') })),
         () =>
-          fireEvent.change(screen.getByLabelText(copy.animationChoose), { target: { value: '' } }),
+          fireEvent.click(
+            screen.getByRole('button', {
+              name: `Escolher movimento ${before.animations![0]!.name}`,
+            }),
+          ),
         () => act(() => ports.at(-1)!.callbacks.contextLost(true)),
       ]) {
         fireEvent.click(presets.getByRole('button', { name: copy.animationPresetPrepare }))
@@ -1808,14 +1973,28 @@ describe('scene workshop integration', () => {
           true,
         )
         cancel()
-        expect(presets.queryByRole('button', { name: copy.animationPresetConfirm })).toBeNull()
+        const decision = screen.queryByRole('dialog', {
+          name: 'Este movimento ainda está em prévia',
+        })
+        if (decision) {
+          expect(
+            presets.queryByRole('button', { name: copy.animationPresetConfirm }) !== null,
+          ).toBe(true)
+          expect(editor.getState().asset).toBe(before)
+          fireEvent.click(within(decision).getByRole('button', { name: 'Descartar prévia' }))
+        }
+        expect(presets.queryByRole('button', { name: copy.animationPresetConfirm }) === null).toBe(
+          true,
+        )
         expect(editor.getState().asset).toBe(before)
         expect(editor.getState().canUndo).toBe(false)
       }
       act(() => ports.at(-1)!.callbacks.contextLost(false))
       fireEvent.click(presets.getByRole('button', { name: copy.animationPresetPrepare }))
       act(() => editor.getState().commit({ ...before, name: 'Outra revisão' }))
-      expect(presets.queryByRole('button', { name: copy.animationPresetConfirm })).toBeNull()
+      expect(presets.queryByRole('button', { name: copy.animationPresetConfirm }) === null).toBe(
+        true,
+      )
       expect(editor.getState().asset.animations).toEqual(before.animations)
     } finally {
       view.unmount()
@@ -1965,7 +2144,7 @@ describe('scene workshop integration', () => {
     }
   })
 
-  test('pose-set close, Escape, transport and context changes cancel review without losing source data', async () => {
+  test('pose-set explicit cancellation clears review; selection and interruptions retain completed adjustments', async () => {
     const { editor, view, ports, openInspector } = setup(makeSceneTwoBoneFixture())
     const copy = COPY.scene,
       setCopy = copy.poseSet
@@ -2015,12 +2194,19 @@ describe('scene workshop integration', () => {
             ports.at(-1)!.callbacks.contextLost(false)
           }
         })
+        if (reason === 'seek') {
+          expect(
+            screen.queryByRole('dialog', { name: 'Esta pose ainda não foi marcada' }),
+          ).toBeNull()
+        }
         expect(
           (screen.getByRole('button', { name: copy.animationPoseRecord }) as HTMLButtonElement)
             .disabled,
-        ).toBe(reason !== 'thumbnail')
+        ).toBe(['close', 'escape', 'seek'].includes(reason))
         expect(editor.getState().asset.animations).toEqual(source.animations)
         expect(editor.getState().canUndo).toBe(false)
+        const cancel = screen.queryByRole('button', { name: copy.animationPoseCancel })
+        if (cancel && !(cancel as HTMLButtonElement).disabled) fireEvent.click(cancel)
       }
     } finally {
       view.unmount()
@@ -2107,17 +2293,10 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
       await screen.findByText(copy.poseSet.title, { selector: 'summary' })
       if (kind === 'direct') {
-        const trigger = screen.getByRole('button', { name: copy.glbExport.open })
-        act(() => {
-          expect(ports.at(-1)!.callbacks.transform!.begin()).toBe(true)
-          // A captured click can arrive before React has rendered the disabled state.
-          fireEvent.click(trigger)
-        })
-        expect(screen.queryByRole('dialog', { name: copy.glbExport.title })).toBeNull()
-        expect((trigger as HTMLButtonElement).disabled).toBe(true)
         act(() => {
           const transform = ports.at(-1)!.callbacks.transform!,
             delta = identityMatrix()
+          expect(transform.begin()).toBe(true)
           delta[12] = 0.25
           expect(transform.preview(delta)).toBe(true)
           transform.end(true)
@@ -2141,16 +2320,25 @@ describe('scene workshop integration', () => {
       const before = editor.getState().asset,
         pose = ports.at(-1)!.poses.at(-1)
       const trigger = screen.getByRole('button', { name: copy.glbExport.open }) as HTMLButtonElement
-      expect(trigger.disabled).toBe(true)
-      expect(screen.getByText(copy.glbExport.pendingPose)).toBeTruthy()
+      expect(trigger.disabled).toBe(false)
       fireEvent.click(trigger)
-      expect(screen.queryByRole('dialog', { name: copy.glbExport.title })).toBeNull()
+      expect(screen.queryByRole('dialog', { name: copy.glbExport.title }) === null).toBe(true)
+      fireEvent.click(
+        within(screen.getByRole('dialog', { name: 'Esta pose ainda não foi marcada' })).getByRole(
+          'button',
+          { name: 'Continuar ajustando' },
+        ),
+      )
       expect(ports.at(-1)!.poses.at(-1)).toBe(pose)
       expect(editor.getState().asset).toBe(before)
       expect(editor.getState().canUndo).toBe(false)
-      fireEvent.click(screen.getByRole('button', { name: copy.animationPoseRecord }))
-      expect(trigger.disabled).toBe(false)
       fireEvent.click(trigger)
+      fireEvent.click(
+        within(screen.getByRole('dialog', { name: 'Esta pose ainda não foi marcada' })).getByRole(
+          'button',
+          { name: copy.animationPoseRecord },
+        ),
+      )
       expect(screen.getByRole('dialog', { name: copy.glbExport.title })).toBeTruthy()
     } finally {
       view.unmount()
@@ -2190,6 +2378,9 @@ describe('scene workshop integration', () => {
       expect(screen.getByRole('alert').textContent).toContain('mesmo instante')
       fireEvent.change(screen.getByLabelText(copy.animationOffset), { target: { value: '0.5' } })
       fireEvent.click(screen.getByRole('button', { name: copy.animationKeysCopy }))
+      expect(editor.getState().asset).toBe(before)
+      expect(editor.getState().canUndo).toBe(false)
+      fireEvent.click(screen.getByRole('button', { name: 'Aplicar ajuste' }))
       expect(
         editor.getState().asset.animations?.[0]?.tracks[0]?.keys.map((key) => key.time),
       ).toEqual([0, 0.5, 1.123456789123, 2])
@@ -2198,11 +2389,13 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset.animations).toEqual(before.animations)
       range('0', '0')
       fireEvent.click(screen.getByRole('button', { name: copy.animationKeysMove }))
+      fireEvent.click(screen.getByRole('button', { name: 'Aplicar ajuste' }))
       expect(
         editor.getState().asset.animations?.[0]?.tracks[0]?.keys.map((key) => key.time),
       ).toEqual([0.5, 1.123456789123, 2])
       range('0.5', '0.5')
       fireEvent.click(screen.getByRole('button', { name: copy.animationKeysRemove }))
+      fireEvent.click(screen.getByRole('button', { name: 'Aplicar ajuste' }))
       expect(
         editor.getState().asset.animations?.[0]?.tracks[0]?.keys.map((key) => key.time),
       ).toEqual([1.123456789123, 2])
@@ -2249,7 +2442,7 @@ describe('scene workshop integration', () => {
       fireEvent.change(screen.getByLabelText(COPY.scene.animationSeconds), {
         target: { value: '1.123456789123' },
       })
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationSeek }))
+      fireEvent.blur(screen.getByLabelText(COPY.scene.animationSeconds))
       fireEvent.change(screen.getByLabelText(COPY.scene.animationAxes.translation[0]!), {
         target: { value: '1.23456789123' },
       })
@@ -2263,10 +2456,11 @@ describe('scene workshop integration', () => {
       expect(document.activeElement).toBe(record)
       expect(screen.queryByRole('alert')?.textContent ?? null).toBeNull()
       expect(editor.getState().asset.animations?.[0]?.tracks[0]?.keys).toEqual([
+        { time: 0, value: [0, 1, 0], interpolation: 'smooth' },
         {
           time: 1.123456789123,
           value: [1.23456789123, -2.98765432123, 0],
-          interpolation: 'linear',
+          interpolation: 'smooth',
         },
       ])
       expect(editor.getState().asset.nodes).toBe(original.nodes)
@@ -2274,9 +2468,11 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.animations?.[0]?.tracks).toEqual([])
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
-      expect(editor.getState().asset.animations?.[0]?.tracks[0]?.keys[0]?.time).toBe(1.123456789123)
+      expect(editor.getState().asset.animations?.[0]?.tracks[0]?.keys[1]?.time).toBe(1.123456789123)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationRemoveKey }))
-      expect(editor.getState().asset.animations?.[0]?.tracks).toEqual([])
+      expect(
+        editor.getState().asset.animations?.[0]?.tracks[0]?.keys.map((key) => key.time),
+      ).toEqual([0])
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.modelMode }))
       expect(screen.queryByRole('region', { name: COPY.scene.animationTimeline })).toBeNull()
       expect(screen.getByRole('button', { name: COPY.scene.remove })).toBeTruthy()
@@ -2299,6 +2495,7 @@ describe('scene workshop integration', () => {
         ),
       )
       const before = editor.getState().asset
+      fireEvent.click(screen.getByRole('button', { name: 'Canais de corpo' }))
       fireEvent.keyDown(
         screen.getByRole('button', {
           name: COPY.scene.animationStrip(COPY.scene.animationChannels.translation, 3),
@@ -2322,17 +2519,19 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset).toBe(before)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationDuplicate }))
       expect(editor.getState().asset.animations).toHaveLength(2)
-      const select = screen.getByLabelText(COPY.scene.animationChoose) as HTMLSelectElement
-      expect(editor.getState().asset.animations?.[1]?.id).toBe(select.value)
+      const active = screen.getByRole('button', { name: /^Escolher movimento /, pressed: true })
+      expect(active.textContent).toContain(editor.getState().asset.animations![1]!.name)
+      const row = active.parentElement!
+      fireEvent.click(within(row).getByRole('button', { name: 'Renomear' }))
       const rename = screen.getByLabelText(COPY.scene.animationRename)
       fireEvent.change(rename, { target: { value: 'Acenar' } })
       fireEvent.submit(rename.closest('form')!)
       expect(editor.getState().asset.animations?.[1]?.name).toBe('Acenar')
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationDelete }))
+      fireEvent.click(within(row).getByRole('button', { name: COPY.scene.animationDelete }))
       expect(editor.getState().asset.animations).toHaveLength(1)
-      expect((screen.getByLabelText(COPY.scene.animationChoose) as HTMLSelectElement).value).toBe(
-        'clip',
-      )
+      expect(
+        screen.getByRole('button', { name: /^Escolher movimento /, pressed: true }).textContent,
+      ).toContain(before.animations![0]!.name)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationPlay }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.modelMode }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
@@ -2359,6 +2558,13 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByLabelText(COPY.scene.animationRetime))
       fireEvent.change(screen.getByLabelText(COPY.scene.animationFps), { target: { value: '60' } })
       fireEvent.submit(duration.closest('form')!)
+      expect(editor.getState().asset).toBe(before)
+      fireEvent.click(
+        within(screen.getByRole('region', { name: 'Prévia dos ajustes do movimento' })).getByRole(
+          'button',
+          { name: COPY.scene.animationApply },
+        ),
+      )
       expect(editor.getState().asset.animations?.[0]).toMatchObject({ duration: 4, fps: 60 })
       expect(editor.getState().asset.animations?.[0]?.tracks[0]?.keys[1]?.time).toBe(2.246913578246)
       fireEvent.change(screen.getByLabelText(COPY.scene.animationAxes.translation[0]!), {
@@ -2416,14 +2622,11 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.faceAll }))
-      const details = screen.getByText(COPY.scene.uvTitle).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(screen.getByRole('button', { name: 'Pintura da face' }))
       await waitFor(() =>
         expect(screen.queryByRole('img', { name: COPY.scene.uvCanvas }) !== null).toBe(true),
       )
+      openUvAdvanced()
       const more = screen.getByText(COPY.scene.uvReorganize).closest('details')!
       const toggle = (open: boolean) => {
         act(() => {
@@ -2534,12 +2737,12 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      const toggle = (open: boolean) =>
-        act(() => {
-          appearance.open = open
-          fireEvent(appearance, new Event('toggle'))
-        })
+      await materialsWorkspaceButton()
+      const toggle = (open: boolean) => {
+        if (open && !screen.queryByRole('button', { name: 'Materiais' }))
+          fireEvent.click(screen.getByRole('button', { name: 'Opções' }))
+        fireEvent.click(screen.getByRole('button', { name: open ? 'Materiais' : 'Fechar área' }))
+      }
       toggle(true)
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
@@ -2639,11 +2842,7 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        appearance.open = true
-        fireEvent(appearance, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -2657,6 +2856,7 @@ describe('scene workshop integration', () => {
         target: { value: '1' },
       })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       expect(screen.queryByRole('button', { name: COPY.scene.flipbookPlay }) === null).toBe(true)
       expect(
@@ -2694,7 +2894,7 @@ describe('scene workshop integration', () => {
           expect(filled[y * image.width + x]).toBe(x >= bounds.x0 && y <= bounds.y1 ? 7 : 1)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintPencil }))
-      fireEvent.keyDown(canvas, { key: ' ' })
+      fireEvent.keyDown(canvas, { key: 'Enter' })
       expect(editor.getState().asset.images[0]!.layers[0]!.pixels[0]).toBe(7)
     } finally {
       view.unmount()
@@ -2712,11 +2912,7 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        appearance.open = true
-        fireEvent(appearance, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -2778,11 +2974,12 @@ describe('scene workshop integration', () => {
         ).toBe('1')
       }
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       const color = screen.getByLabelText(COPY.scene.paintColor) as HTMLInputElement
       expect(color.value).toBe(imageKind === 'normal' ? '#8080ff' : '#ffffff')
       fireEvent.change(color, { target: { value: '#5a5a5a' } })
-      fireEvent.keyDown(canvas, { key: ' ' })
+      fireEvent.keyDown(canvas, { key: 'Enter' })
       expect(editor.getState().asset.images.at(-1)!.layers[0]!.pixels.slice(0, 4)).toEqual(
         new Uint8Array([90, 90, 90, 255]),
       )
@@ -2807,12 +3004,12 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      const toggle = (open: boolean) =>
-        act(() => {
-          appearance.open = open
-          fireEvent(appearance, new Event('toggle'))
-        })
+      await materialsWorkspaceButton()
+      const toggle = (open: boolean) => {
+        if (open && !screen.queryByRole('button', { name: 'Materiais' }))
+          fireEvent.click(screen.getByRole('button', { name: 'Opções' }))
+        fireEvent.click(screen.getByRole('button', { name: open ? 'Materiais' : 'Fechar área' }))
+      }
       toggle(true)
       await waitFor(() =>
         expect(screen.queryByRole('button', { name: COPY.scene.atlasPrepare }) !== null).toBe(true),
@@ -2887,11 +3084,7 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        appearance.open = true
-        fireEvent(appearance, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -2902,6 +3095,7 @@ describe('scene workshop integration', () => {
         target: { value: material.id },
       })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       const key = (key: string) => fireEvent.keyDown(canvas, { key })
       const shapes = screen.getByText(COPY.scene.paintShapes).closest('details')!
@@ -2910,9 +3104,9 @@ describe('scene workshop integration', () => {
         fireEvent(shapes, new Event('toggle'))
       })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.select }))
-      key(' ')
+      key('Enter')
       key('ArrowRight')
-      key(' ')
+      key('Enter')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.stamp }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintStampCapture }))
       expect(editor.getState().canUndo).toBe(false)
@@ -2932,7 +3126,7 @@ describe('scene workshop integration', () => {
       for (let i = 0; i < 4; i++) key('ArrowRight')
       key('ArrowUp')
       key('ArrowUp')
-      key(' ')
+      key('Enter')
       key('ArrowRight')
       key('ArrowUp')
       const contour = canvas.querySelector('svg rect')!
@@ -2941,7 +3135,7 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset).toBe(source)
       key('Escape')
       expect(editor.getState().canUndo).toBe(false)
-      key(' ')
+      key('Enter')
       key('ArrowRight')
       key('Enter')
       await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
@@ -2968,18 +3162,14 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
-  test('gradient requires explicit conversion, uses selected bounds and separate undo; picker samples exact layer color without history', async () => {
+  test('gradient requires explicit conversion and separate undo; picker samples the composite over the piece background without history', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        appearance.open = true
-        fireEvent(appearance, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -2992,14 +3182,15 @@ describe('scene workshop integration', () => {
         target: { value: material.id },
       })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       const key = (key: string) => fireEvent.keyDown(canvas, { key })
       fireEvent.click(swatch(editor, 5))
-      key(' ')
+      key('Enter')
       const painted = editor.getState().asset
       fireEvent.click(swatch(editor, 7))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintPicker }))
-      key(' ')
+      key('Enter')
       expect(editor.getState().asset).toBe(painted)
       expect(swatch(editor, 5).getAttribute('aria-pressed')).toBe('true')
       expect(
@@ -3024,11 +3215,11 @@ describe('scene workshop integration', () => {
       const converted = editor.getState().asset
       expect(converted.images[0]!.encoding).toBe('rgba')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.select }))
-      key(' ')
+      key('Enter')
       key('ArrowRight')
       key('ArrowRight')
       key('ArrowUp')
-      key(' ')
+      key('Enter')
       expect(editor.getState().asset).toBe(converted)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.gradient }))
       const color = view.container.querySelector<HTMLInputElement>('input[name="paintColorRgba"]')!
@@ -3039,7 +3230,7 @@ describe('scene workshop integration', () => {
       fireEvent.change(screen.getByRole('slider', { name: COPY.scene.paintGradientEndAlpha }), {
         target: { value: '0' },
       })
-      key(' ')
+      key('Enter')
       key('ArrowLeft')
       key('ArrowLeft')
       expect(editor.getState().asset).toBe(converted)
@@ -3062,10 +3253,11 @@ describe('scene workshop integration', () => {
         expect(ports.at(-1)!.callbacks.paint!.begin({ point: [1, 1], region: 'face' })).toBe(false),
       )
       expect(editor.getState().asset).toBe(result)
-      expect(color.value).toBe('#ff0000')
+      // Half-opaque red over the blue base (#003fad), as displayed on the piece.
+      expect(color.value).toBe('#801f56')
       expect(
         (screen.getByRole('slider', { name: COPY.scene.paintAlpha }) as HTMLInputElement).value,
-      ).toBe('128')
+      ).toBe('255')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(converted.images)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
@@ -3083,11 +3275,7 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const appearance = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        appearance.open = true
-        fireEvent(appearance, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -3100,6 +3288,7 @@ describe('scene workshop integration', () => {
         target: { value: material.id },
       })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       const shapes = screen.getByText(COPY.scene.paintShapes).closest('details')!
       act(() => {
@@ -3109,7 +3298,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.rectangle }))
       fireEvent.click(screen.getByRole('checkbox', { name: COPY.scene.paintShapeFilled }))
       const key = (key: string) => fireEvent.keyDown(canvas, { key })
-      key(' ')
+      key('Enter')
       key('ArrowRight')
       key('ArrowRight')
       key('ArrowUp')
@@ -3119,7 +3308,7 @@ describe('scene workshop integration', () => {
       key('Escape')
       expect(canvas.querySelector('svg rect') === null).toBe(true)
       expect(editor.getState().canUndo).toBe(false)
-      key(' ')
+      key('Enter')
       key('ArrowRight')
       key('ArrowRight')
       key('ArrowUp')
@@ -3144,26 +3333,27 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(source.images)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintShapeTools.select }))
-      key(' ')
+      key('Enter')
       key('ArrowLeft')
       key('ArrowLeft')
       key('ArrowDown')
-      key(' ')
+      key('Enter')
       expect(editor.getState().canUndo).toBe(false)
       expect(screen.queryByText(COPY.scene.paintSelectedArea) !== null).toBe(true)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintPencil }))
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[1] }))
       key('ArrowLeft')
-      key(' ')
+      key('Enter')
       expect(editor.getState().canUndo).toBe(false)
       key('ArrowRight')
-      key(' ')
+      key('Enter')
       expect(editor.getState().asset.images[0]!.layers[0]!.pixels[2 * image.width + 2]).toBe(7)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(source.images)
       expect(screen.queryByText(COPY.scene.paintSelectedArea) !== null).toBe(true)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintClearSelection }))
       key('ArrowLeft')
-      key(' ')
+      key('Enter')
       expect(editor.getState().asset.images[0]!.layers[0]!.pixels[2 * image.width + 1]).toBe(7)
       expect(editor.getState().canUndo).toBe(true)
     } finally {
@@ -3178,11 +3368,8 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.width[1] }))
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -3195,9 +3382,10 @@ describe('scene workshop integration', () => {
         target: { value: material.id },
       })
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.paintLayer }))
+      fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
       const canvas = await screen.findByRole('button', { name: COPY.scene.paintCanvas })
       fireEvent.keyDown(canvas, { key: 'ArrowRight' })
-      fireEvent.keyDown(canvas, { key: ' ' })
+      fireEvent.keyDown(canvas, { key: 'Enter' })
       expect(editor.getState().asset.images[0]!.layers[0]!.pixels[1]).toBe(7)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.images).toEqual(source.images)
@@ -3229,12 +3417,12 @@ describe('scene workshop integration', () => {
       expect(
         screen.getByRole('button', { name: COPY.scene.paintFill }).getAttribute('aria-pressed'),
       ).toBe('true')
-      fireEvent.keyDown(canvas, { key: ' ' })
+      fireEvent.keyDown(canvas, { key: 'Enter' })
       expect(screen.queryByText(COPY.scene.imageTaskBusy)).not.toBeNull()
       fireEvent.keyDown(canvas, { key: 'Escape' })
       expect(editor.getState().asset.images).toEqual(source.images)
       expect(screen.queryByRole('button', { name: COPY.scene.paintCanvas })).not.toBeNull()
-      fireEvent.keyDown(canvas, { key: ' ' })
+      fireEvent.keyDown(canvas, { key: 'Enter' })
       await waitFor(() => expect(screen.queryByText(COPY.scene.imageTaskBusy) === null).toBe(true))
       expect(editor.getState().asset.images[0]).toEqual(
         fillSceneImage(
@@ -3258,7 +3446,7 @@ describe('scene workshop integration', () => {
       )
       expect(
         view.container.querySelector<HTMLInputElement>('input[name="paintColorRgba"]')?.value,
-      ).toBe('#78dc52')
+      ).toBe('#fff609')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       // De volta às cores da paleta: a amostra escolhida volta a valer, e a cor livre some.
       expect(view.container.querySelector('input[name="paintColorRgba"]')).toBeNull()
@@ -3286,11 +3474,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.materials).toEqual(before.materials)
       fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-      const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() =>
         expect(screen.queryByRole('combobox', { name: COPY.scene.materialChoose }) !== null).toBe(
           true,
@@ -3370,11 +3554,7 @@ describe('scene workshop integration', () => {
         }),
       )
       expect(screen.queryByRole('alert')).toBeNull()
-      const details = (await screen.findByText(COPY.scene.appearanceTitle)).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(await materialsWorkspaceButton())
       await waitFor(() => expect(screen.queryByText(COPY.scene.materialLocked) !== null).toBe(true))
       expect(
         screen.getByRole('button', { name: COPY.scene.imageLayerAdd }).closest('fieldset')!
@@ -3420,16 +3600,13 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
-      const details = screen.getByText(COPY.scene.uvTitle).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(screen.getByRole('button', { name: 'Pintura da face' }))
       await waitFor(() =>
         expect(screen.queryByRole('img', { name: COPY.scene.uvCanvas }) !== null).toBe(true),
       )
       const ids = ['f_1_0', 'f_0_0']
       act(() => ports.at(-1)!.callbacks.selectComponents!(ids, false))
+      openUvAdvanced()
       fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.uvCornerChoose }), {
         target: { value: '1' },
       })
@@ -3441,7 +3618,6 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.geometries).toEqual(source.geometries)
       expect(editor.getState().canUndo).toBe(false)
-      fireEvent.click(screen.getByRole('checkbox', { name: COPY.scene.uvCornerEnable }))
       fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.uvCornerStep }), {
         target: { value: '0.1' },
       })
@@ -3500,15 +3676,12 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       expect(screen.queryByRole('img', { name: COPY.scene.uvCanvas })).toBeNull()
-      const details = screen.getByText(COPY.scene.uvTitle).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(screen.getByRole('button', { name: 'Pintura da face' }))
       await waitFor(() =>
         expect(screen.queryByRole('img', { name: COPY.scene.uvCanvas }) !== null).toBe(true),
       )
       const source = editor.getState().asset
+      openUvAdvanced()
       fireEvent.change(screen.getByRole('combobox', { name: COPY.scene.uvFace }), {
         target: { value: 'f_0_0' },
       })
@@ -3556,15 +3729,12 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
-      const details = screen.getByText(COPY.scene.uvTitle).closest('details')!
-      act(() => {
-        details.open = true
-        fireEvent(details, new Event('toggle'))
-      })
+      fireEvent.click(screen.getByRole('button', { name: 'Pintura da face' }))
       await waitFor(() =>
         expect(screen.queryByRole('img', { name: COPY.scene.uvCanvas }) !== null).toBe(true),
       )
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.faceAll }))
+      openUvAdvanced()
       const more = screen.getByText(COPY.scene.uvReorganize).closest('details')!
       act(() => {
         more.open = true
@@ -3615,7 +3785,7 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
-      fireEvent.click(screen.getByText(COPY.scene.meshCheck))
+      fireEvent.click(screen.getByRole('button', { name: 'Conferir a peça' }))
       const before = editor.getState().asset
       const inspect = () => screen.getByRole('button', { name: COPY.scene.meshCheckRun })
       const repair = () =>
@@ -3641,10 +3811,7 @@ describe('scene workshop integration', () => {
       const ready = () =>
         waitFor(() => expect(confirm().hasAttribute('disabled')).toBe(false), { timeout: 4000 })
       fireEvent.click(repair())
-      expect(
-        screen.getByRole('button', { name: COPY.scene.componentModes.face }).closest('fieldset')
-          ?.disabled,
-      ).toBe(true)
+      expect(screen.queryByRole('button', { name: COPY.scene.facePreview.extrude })).toBeNull()
       await ready()
       expect(document.activeElement === confirm()).toBe(true)
       const previewNode = editor.getState().asset.nodes.find((n) => n.id === 'body')!
@@ -3690,7 +3857,7 @@ describe('scene workshop integration', () => {
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
-      fireEvent.click(screen.getByText(COPY.scene.meshCheck))
+      fireEvent.click(screen.getByRole('button', { name: 'Conferir a peça' }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.meshCheckRun }))
       const replacement = {
         ...grid,
@@ -3757,7 +3924,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
-      fireEvent.click(screen.getByText(COPY.scene.pathCreateTitle))
+      openComponentAdjustments()
       const points = ['v_000', 'v_010', 'v_110', 'v_100']
       act(() =>
         points.forEach((id, i) => {
@@ -3783,18 +3950,15 @@ describe('scene workshop integration', () => {
     }
   })
 
-  test('path creation copies a chain and edits radius, caps and stable control points with separate undo steps', async () => {
+  test('path creation from a primitive copies a chain without converting its source, and edits settings with separate undo steps', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
-      act(() =>
-        editor.getState().commit(convertSceneNodesToMesh(editor.getState().asset, ['body'])),
-      )
       openInspector()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
-      fireEvent.click(screen.getByText(COPY.scene.pathCreateTitle))
+      openComponentAdjustments()
       expect(
         screen.getByRole('button', { name: COPY.scene.pathCreate }).hasAttribute('disabled'),
       ).toBe(true)
@@ -3813,6 +3977,7 @@ describe('scene workshop integration', () => {
       const created = editor.getState().asset
       expect(created.nodes).toHaveLength(before.nodes.length + 1)
       expect(created.geometries[0]).toBe(before.geometries[0])
+      expect(created.geometries[0]!.kind).toBe('box')
       const path = created.geometries.at(-1)!
       if (path.kind !== 'path') throw new Error('Missing path')
       expect(path.radius).toBe(0.2)
@@ -3869,6 +4034,7 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
+      openComponentAdjustments()
       fireEvent.click(screen.getByText(COPY.scene.bevel))
       const apply = () => screen.getByRole('button', { name: COPY.scene.applyBevel })
       expect(apply().hasAttribute('disabled')).toBe(true)
@@ -3922,7 +4088,8 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes[mode] }))
-      fireEvent.click(screen.getByText(COPY.scene.planeCut))
+      openComponentAdjustments()
+      fireEvent.click(screen.getByText('Divisão por valores'))
       const field = screen.getByRole('spinbutton', { name: COPY.scene.planeCutPosition })
       const apply = screen.getByRole('button', { name: COPY.scene.applyPlaneCut })
       const before = editor.getState().asset
@@ -4028,6 +4195,7 @@ describe('scene workshop integration', () => {
       act(() => ports.at(-1)!.callbacks.selectComponent?.('v_2_2', false))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.rotate }))
       const before = editor.getState().asset
+      openComponentAdjustments()
       fireEvent.click(screen.getByRole('checkbox', { name: COPY.scene.softMovement }))
       expect(screen.getByRole('button', { name: COPY.scene.rotate }).hasAttribute('disabled')).toBe(
         true,
@@ -4113,8 +4281,8 @@ describe('scene workshop integration', () => {
       if (first.kind !== 'mesh') throw new Error('Missing mesh')
       expect(Object.keys(first.faces)).toHaveLength(size * size * 2 + size * 4)
       change('0')
-      await ready()
-      expect(editor.getState().asset).toBe(before)
+      await waitFor(() => expect(editor.getState().asset).toBe(before))
+      expect(confirm().hasAttribute('disabled')).toBe(true)
       change('0.25')
       await ready()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.previewCancel }))
@@ -4143,13 +4311,16 @@ describe('scene workshop integration', () => {
       if (mesh.kind !== 'mesh') throw new Error('Missing mesh')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       act(() => ports.at(-1)!.callbacks.selectComponent?.(Object.keys(mesh.faces)[0]!, false))
+      openMoreComponentTools()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.faceActions.detach }))
+      fireEvent.click(componentPanel().getByRole('button', { name: 'Faces' }))
       const detached = editor.getState().asset
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.vertex }))
       expect(
         screen.getByRole('button', { name: COPY.scene.weldPoints }).hasAttribute('disabled'),
       ).toBe(true)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentAll.vertex }))
+      openComponentAdjustments()
       expect(screen.queryByText(COPY.scene.weldImpact(4, 4, 1, 0)) !== null).toBe(true)
       expect(editor.getState().asset).toBe(detached)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.weldPoints }))
@@ -4166,7 +4337,7 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
-  test('a strip cut selects its new lines, keeps materials and is a single undo from the edge panel', async () => {
+  test('a strip cut selects its resulting faces, keeps materials and is a single undo from the edge panel', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
@@ -4180,7 +4351,14 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
       const seed = [...meshComponentEdges(mesh).keys()][0]!
       act(() => ports.at(-1)!.callbacks.selectComponent?.(seed, false))
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.cutRing }))
+      fireEvent.click(
+        within(screen.getByRole('region', { name: COPY.scene.componentTitles.edge })).getByRole(
+          'button',
+          { name: 'Cortar' },
+        ),
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Em volta' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Aplicar corte' }))
       const after = editor.getState().asset
       const result = after.geometries[0]!
       if (result.kind !== 'mesh') throw new Error('Missing mesh')
@@ -4188,9 +4366,8 @@ describe('scene workshop integration', () => {
       expect(Object.keys(result.vertices)).toHaveLength(12)
       expect(after.images).toBe(before.images)
       expect(after.materials).toBe(before.materials)
-      expect(ports.at(-1)!.faces?.ids).toHaveLength(4)
-      for (const id of ports.at(-1)!.faces!.ids)
-        expect(meshComponentEdges(result).has(id)).toBe(true)
+      expect(ports.at(-1)!.faces?.ids).toHaveLength(8)
+      for (const id of ports.at(-1)!.faces!.ids) expect(Object.hasOwn(result.faces, id)).toBe(true)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.geometries).toEqual(before.geometries)
     } finally {
@@ -4224,11 +4401,14 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset).toBe(before)
       const pair = [corners[0]!.vertexId, corners[2]!.vertexId]
       act(() => ports.at(-1)!.callbacks.selectComponents?.(pair, false))
-      fireEvent.click(screen.getByRole('button', { name: COPY.scene.connectPoints.line }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.createFaceEdge.label }))
+      fireEvent.click(screen.getByRole('button', { name: /^Aplicar$/ }))
       const line = editor.getState().asset.geometries[0]!
       if (line.kind !== 'mesh') throw new Error('Missing mesh')
       expect(line.faces).toBe(mesh.faces)
       expect(line.looseEdges).toHaveLength(1)
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.vertex }))
+      act(() => ports.at(-1)!.callbacks.selectComponents?.(pair, false))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.connectPoints.cut }))
       const result = editor.getState().asset.geometries[0]!
       if (result.kind !== 'mesh') throw new Error('Missing mesh')
@@ -4256,6 +4436,7 @@ describe('scene workshop integration', () => {
       if (mesh.kind !== 'mesh') throw new Error('Missing mesh')
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       act(() => ports.at(-1)!.callbacks.selectComponent?.(Object.keys(mesh.faces)[0]!, false))
+      openMoreComponentTools()
       fireEvent.click(screen.getByText(COPY.scene.componentMoreSelection))
       const choose = (action: keyof typeof COPY.scene.componentSelectionActions) =>
         fireEvent.click(
@@ -4267,10 +4448,13 @@ describe('scene workshop integration', () => {
       expect(ports.at(-1)!.faces?.ids).toHaveLength(1)
       choose('invert')
       expect(ports.at(-1)!.faces?.ids).toHaveLength(5)
+      fireEvent.click(componentPanel().getByRole('button', { name: 'Faces' }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
       act(() =>
         ports.at(-1)!.callbacks.selectComponent?.([...meshComponentEdges(mesh).keys()][0]!, false),
       )
+      openMoreComponentTools()
+      fireEvent.click(screen.getByText(COPY.scene.componentMoreSelection))
       choose('ring')
       expect(ports.at(-1)!.faces?.ids).toHaveLength(4)
       expect(ports.at(-1)!.faces?.mode).toBe('edge')
@@ -4295,11 +4479,13 @@ describe('scene workshop integration', () => {
       const oldEdges = meshComponentEdges(mesh)
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       act(() => ports.at(-1)!.callbacks.selectComponent?.(Object.keys(mesh.faces)[0]!, false))
+      openMoreComponentTools()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.faceActions.triangulate }))
       const triangles = editor.getState().asset
       const divided = triangles.geometries[0]!
       if (divided.kind !== 'mesh') throw new Error('Missing mesh')
       const diagonal = [...meshComponentEdges(divided).keys()].find((id) => !oldEdges.has(id))!
+      fireEvent.click(componentPanel().getByRole('button', { name: 'Faces' }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.componentModes.edge }))
       act(() => ports.at(-1)!.callbacks.selectComponent?.(diagonal, false))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.dissolveEdges }))
@@ -4328,6 +4514,7 @@ describe('scene workshop integration', () => {
       const faceId = Object.keys(mesh.faces)[0]!
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       act(() => ports.at(-1)!.callbacks.selectComponent?.(faceId, false))
+      openMoreComponentTools()
       expect(
         screen.getByRole('button', { name: COPY.scene.faceActions.merge }).hasAttribute('disabled'),
       ).toBe(true)
@@ -4488,7 +4675,7 @@ describe('scene workshop integration', () => {
         expect(callbacks.transform!.begin()).toBe(true)
       })
       const edgeMode = screen.getByRole('button', { name: COPY.scene.componentModes.edge })
-      expect(edgeMode.closest('fieldset')?.disabled).toBe(true)
+      expect(edgeMode.matches(':disabled')).toBe(true)
       fireEvent.click(edgeMode)
       expect(ports.at(-1)!.faces?.mode).toBe('vertex')
       act(() => {
@@ -4549,7 +4736,8 @@ describe('scene workshop integration', () => {
       await ready()
       expect(ports.at(-1)!.faces?.ids).toHaveLength(16)
       fireEvent.change(input, { target: { value: '0' } })
-      await ready()
+      await waitFor(() => expect(editor.getState().asset).toBe(source))
+      expect(confirm().hasAttribute('disabled')).toBe(true)
       expect(editor.getState().asset === source).toBe(true)
       expect(ports.at(-1)!.faces?.ids).toEqual(['px'])
       fireEvent.change(input, { target: { value: '1.5' } })
@@ -4713,6 +4901,7 @@ describe('scene workshop integration', () => {
         callbacks.transform!.begin()
         callbacks.transform!.preview(delta)
       })
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.finishFaces }))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.duplicate }))
       expect(editor.getState().asset.geometries.slice(0, source.geometries.length)).toEqual(
         source.geometries,
@@ -4727,7 +4916,7 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
-  test('surface previews support confirm/undo and cancel on Escape, blur, context loss and inspector close', async () => {
+  test('surface previews support confirm/undo and cancel on Escape, blur, context loss and returning to pieces', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
       await waitFor(() => expect(ports.length).toBeGreaterThan(0))
@@ -4766,9 +4955,11 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset.geometries).toEqual(source.geometries)
       act(() => callbacks.contextLost(false))
       start('1')
-      fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.inspector.close }))
+      fireEvent.click(componentPanel().getByRole('button', { name: 'Faces' }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.finishFaces }))
       expect(editor.getState().asset.geometries).toEqual(source.geometries)
-      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      act(() => callbacks.selectComponent?.('px', false))
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.facePreview.inset }))
       fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.insetAmount }), {
         target: { value: '25' },
@@ -4794,11 +4985,10 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
       const callbacks = ports.at(-1)!.callbacks
       expect(ports.at(-1)!.faces).toEqual({ nodeId: 'body', mode: 'face' as const, ids: [] })
-      expect(screen.getByRole('button', { name: COPY.scene.remove }).hasAttribute('disabled')).toBe(
-        true,
-      )
+      expect(screen.queryByRole('button', { name: COPY.scene.remove }) === null).toBe(true)
       act(() => callbacks.selectComponent?.('px', false))
       expect(screen.getByText(COPY.scene.faceCount(1))).toBeDefined()
+      openMoreComponentTools()
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.faceActions.triangulate }))
       expect(ports.at(-1)!.faces!.ids).toHaveLength(2)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
@@ -4819,8 +5009,10 @@ describe('scene workshop integration', () => {
       expect(editor.getState().asset.geometries).toEqual(source.geometries)
       fireEvent.keyDown(section, { key: 'Escape' })
       expect(ports.at(-1)!.faces).toBeNull()
-      expect(document.activeElement).toBe(
-        screen.getByRole('button', { name: COPY.scene.editFaces }),
+      await waitFor(() =>
+        expect(
+          document.activeElement === screen.getByRole('button', { name: COPY.scene.editFaces }),
+        ).toBe(true),
       )
       act(() => callbacks.selectComponent?.('px', false))
       expect(ports.at(-1)!.faces).toBeNull()
@@ -4904,14 +5096,12 @@ describe('scene workshop integration', () => {
       })
       expect(editor.getState().asset).not.toBe(before)
       expect(editor.getState().canUndo).toBe(false)
-      const input = screen.getByRole('textbox', { name: COPY.scene.nodeName })
-      fireEvent.change(input, { target: { value: 'Braço' } })
-      fireEvent.submit(input.closest('form')!)
-      const named = editor.getState().asset
-      expect(named.nodes[0]?.transform).toEqual(before.nodes[0]?.transform)
-      expect(named.nodes[0]?.name).toBe('Braço')
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.duplicate }))
+      const duplicated = editor.getState().asset
+      expect(duplicated.nodes[0]?.transform).toEqual(before.nodes[0]?.transform)
+      expect(duplicated.nodes).toHaveLength(before.nodes.length + 1)
       act(() => callbacks.end(true))
-      expect(editor.getState().asset).toBe(named)
+      expect(editor.getState().asset).toBe(duplicated)
       act(() => editor.getState().undo())
       expect(editor.getState().asset.nodes).toEqual(before.nodes)
       expect(editor.getState().canUndo).toBe(false)
@@ -4962,19 +5152,25 @@ describe('scene workshop integration', () => {
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.group }))
       expect(editor.getState().asset.nodes).toHaveLength(3)
       expect(editor.getState().contentRevision).toBe(1)
-      const input = screen.getByRole('textbox', { name: COPY.scene.nodeName })
+      fireEvent.keyDown(screen.getByRole('button', { name: COPY.scene.select('Grupo') }), {
+        key: 'F2',
+      })
+      const input = screen.getByRole('textbox', { name: 'Renomear Grupo na árvore' })
       fireEvent.change(input, { target: { value: 'Meu robô' } })
-      fireEvent.submit(input.closest('form')!)
+      fireEvent.keyDown(input, { key: 'Enter' })
       expect(editor.getState().asset.nodes.at(-1)?.name).toBe('Meu robô')
-      const x = screen.getByRole('spinbutton', { name: `${COPY.scene.move} X` })
+      const x = screen.getByRole('spinbutton', { name: 'Posição X' })
       fireEvent.change(x, { target: { value: '3' } })
-      fireEvent.submit(x.closest('form')!)
+      fireEvent.blur(x)
       expect(editor.getState().contentRevision).toBe(3)
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
       expect(editor.getState().asset.nodes.at(-1)?.name).toBe('Meu robô')
       fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.isolation.toggle }))
       expect(ports.at(-1)?.isolated).toEqual([editor.getState().asset.nodes.at(-1)?.id ?? ''])
-      fireEvent.keyDown(screen.getByRole('textbox', { name: COPY.scene.nodeName }), {
+      fireEvent.keyDown(screen.getByRole('button', { name: COPY.scene.select('Meu robô') }), {
+        key: 'F2',
+      })
+      fireEvent.keyDown(screen.getByRole('textbox', { name: 'Renomear Meu robô na árvore' }), {
         key: 'Delete',
       })
       expect(editor.getState().asset.nodes).toHaveLength(3)
@@ -4995,7 +5191,7 @@ describe('scene workshop integration', () => {
       const port = ports.at(-1)
       if (!port) throw new Error('No viewport')
       act(() => port.callbacks.select('body', false))
-      fireEvent.click(screen.getByRole('checkbox', { name: COPY.scene.locked }))
+      fireEvent.click(screen.getByRole('button', { name: 'Travar corpo' }))
       const before = editor.getState().asset
       fireEvent.click(screen.getByRole('button', { name: COPY.scene.remove }))
       expect(editor.getState().asset).toBe(before)

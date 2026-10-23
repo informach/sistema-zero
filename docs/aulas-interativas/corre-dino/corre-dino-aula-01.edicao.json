@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-caderno",
+    "video-uma-vez-e-sempre",
+    "video-limite-da-tela",
+    "video-area-e-tela",
+    "video-borda",
+    "video-coordenadas",
+    "video-criar-e-mostrar",
+    "video-criar-dino",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-borda-K1",
+      "clipe": "video-borda",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.",
+      "ancoraDepois": "Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a",
+      "falaPrincipal": "Qual cor vai aparecer melhor?",
+      "falaPersonagem": "Qual cor vai aparecer melhor?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-coordenadas-K1",
+      "clipe": "video-coordenadas",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Quando eu aumento só o x, para 300, o Dino vai para a direita, e o y continua igual. O x conta de um lado para o outro.",
+      "ancoraDepois": "Quando eu aumento só o y, para 200, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y",
+      "falaPrincipal": "E para fazer ele descer?",
+      "falaPersonagem": "E para fazer ele descer?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-criar-e-mostrar-K1",
+      "clipe": "video-criar-e-mostrar",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado.",
+      "ancoraDepois": "Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha",
+      "falaPrincipal": "Como eu faço ele aparecer?",
+      "falaPersonagem": "Como eu faço ele aparecer?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-criar-dino-K1",
+      "clipe": "video-criar-dino",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.",
+      "ancoraDepois": "Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. Confira se ficou assim: dentro de Ao iniciar, primeiro",
+      "falaPrincipal": "Escolhi a cor, mas cadê o Dino?",
+      "falaPersonagem": "Escolhi a cor, mas cadê o Dino?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

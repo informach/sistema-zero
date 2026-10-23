@@ -68,7 +68,7 @@ test('importa som histórico e remove o bloco da categoria após apagar e recarr
   await page.keyboard.press('Delete')
   await expect(sound).toHaveCount(0)
   await expect
-    .poll(async () => JSON.stringify((await records(page))[`sz:v2:project-blocks:${id}`]))
+    .poll(async () => JSON.stringify((await records(page))[`sz:v3:project-blocks:${id}`]))
     .not.toContain('sz_g2d_play_fx')
   await page.getByRole('treeitem', { name: '🧰 Blocos deste jogo', exact: true }).click()
   await expect(page.locator('.blocklyToolboxFlyout')).not.toContainText('efeito')
@@ -78,9 +78,9 @@ test('importa som histórico e remove o bloco da categoria após apagar e recarr
   await page.getByRole('treeitem', { name: '🧰 Blocos deste jogo', exact: true }).click()
   await expect(page.locator('.blocklyToolboxFlyout')).not.toContainText('efeito')
   const saved = await records(page)
-  expect(saved[`sz:v2:project-meta:${id}`].formatVersion).toBe(2)
-  expect(saved[`sz:v2:project-meta:${id}`].projectTools).toContain('sz_g2d_play_fx')
-  expect(JSON.stringify(saved[`sz:v2:project-blocks:${id}`])).not.toContain('sz_g2d_play_jump')
+  expect(saved[`sz:v3:project-meta:${id}`].formatVersion).toBe(2)
+  expect(saved[`sz:v3:project-meta:${id}`].projectTools).toContain('sz_g2d_play_fx')
+  expect(JSON.stringify(saved[`sz:v3:project-blocks:${id}`])).not.toContain('sz_g2d_play_jump')
 })
 
 test('importação desconhecida preserva a lista sem criar uma cópia incompleta', async ({
@@ -93,7 +93,7 @@ test('importação desconhecida preserva a lista sem criar uma cópia incompleta
   await expect(page.getByRole('dialog')).toContainText('Importação')
   await expect(page).toHaveURL('/')
   expect(
-    Object.keys(await records(page)).filter((key) => key.startsWith('sz:v2:project-meta:')),
+    Object.keys(await records(page)).filter((key) => key.startsWith('sz:v3:project-meta:')),
   ).toEqual([])
 })
 
@@ -156,10 +156,10 @@ test('rascunhos das áreas antigas continuam editáveis e inativos depois de sal
   await expect(page.locator('.blocklyBlockCanvas > [data-id="draft-animation"]')).toBeAttached()
   const saved = await records(page)
   const id = decodeURIComponent(new URL(page.url()).pathname.split('/').at(-1)!)
-  expect(JSON.stringify(saved[`sz:v2:project-blocks:${id}`])).toContain('aindaNaoCriado')
-  expect(saved[`sz:v2:project-state:${id}`].ir.behavior.start).toEqual([])
-  expect(typeof saved[`sz:v2:project-files:${id}`].files['script.js']).toBe('string')
-  expect(saved[`sz:v2:project-files:${id}`].files['script.js']).not.toContain('aindaNaoCriado')
+  expect(JSON.stringify(saved[`sz:v3:project-blocks:${id}`])).toContain('aindaNaoCriado')
+  expect(saved[`sz:v3:project-state:${id}`].ir.behavior.start).toEqual([])
+  expect(typeof saved[`sz:v3:project-files:${id}`].files['script.js']).toBe('string')
+  expect(saved[`sz:v3:project-files:${id}`].files['script.js']).not.toContain('aindaNaoCriado')
 })
 
 test('original local incompleto aparece preservado sem bloquear os demais projetos', async ({
@@ -190,6 +190,6 @@ test('original local incompleto aparece preservado sem bloquear os demais projet
   ).toBeVisible()
   const saved = await records(page)
   expect(saved['sz:project-assets:incompleto']).toEqual({ assets: [] })
-  expect(saved['sz:v2:project-meta:antigo'].formatVersion).toBe(2)
+  expect(saved['sz:v3:project-meta:antigo'].formatVersion).toBe(2)
   expect(Object.keys(saved).some((key) => key.startsWith('sz:project-backup:antigo:'))).toBe(true)
 })

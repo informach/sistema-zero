@@ -53,13 +53,18 @@ describe.skipIf(!testDatabaseUrl)('DrizzleToolUsageRepository: joins e predicado
       results jsonb,
       checked_at timestamptz,
       passed_at timestamptz,
-      message varchar(1000)
+      message varchar(1000),
+      message_spoken boolean not null default false
     )`)
     for (const col of [
       'id uuid',
       'block_id uuid',
       'submitted_at timestamptz',
+      // O insert deste arquivo nomeia `project`: sem ele aqui, quebra quando a
+      // `user-data-purge` cria a tabela mínima antes (medido num banco novo, 14/10/2026).
+      'project jsonb',
       'content_fingerprint varchar(70)',
+      'message_spoken boolean not null default false',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,

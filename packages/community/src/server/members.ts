@@ -4,9 +4,11 @@ import { shell } from './shell'
 
 export const {
   listMyCourses,
+  getAvatarReadonly,
   listCatalog,
   getMyCourse,
   getLesson,
+  openLessonStudio,
   resolveAttachment,
   resolveEbook,
   markLessonComplete,

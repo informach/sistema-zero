@@ -41,9 +41,14 @@ export function quizDefinition(funnel: FunnelDef): QuizDefinition | null {
     questions: quiz.steps.map((step, index) => ({
       id: step.key,
       title: step.titulo,
-      position: index + 1,
+      // Num quiz com ramos, cada ramo continua a contagem das perguntas comuns.
+      position:
+        quiz.steps.slice(0, index).filter((s) => !s.ramo || s.ramo === step.ramo).length + 1,
       type: step.tipo,
       revision: hash(step),
+      ...(step.ramo ? { branch: quiz.branches?.[step.ramo] ?? step.ramo } : {}),
+      ...(step.condicional ? { conditional: true } : {}),
+      ...(step.rotuloCurto ? { shortLabel: step.rotuloCurto } : {}),
       options:
         'opcoes' in step
           ? step.opcoes.map(({ value, label }) => ({ value, label }))

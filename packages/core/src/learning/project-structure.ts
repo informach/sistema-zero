@@ -1,6 +1,10 @@
+import { DomainError } from '../errors'
+import { isExecutionRule } from './project-execution'
 import {
   isProjectBlockPattern,
+  normalizeProjectFieldText,
   type ProjectBlockPattern,
+  type ProjectFieldRange,
   type SectionStructureRule,
 } from './section-progression'
 
@@ -19,6 +23,27 @@ const enabled = (n: Record<string, unknown>) =>
   n.enabled !== false &&
   !(Array.isArray(n.disabledReasons) && n.disabledReasons.length)
 
+/** Blockly serializes numbers as either numbers or decimal text, never JS expressions. */
+function fieldNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
+  if (
+    typeof value !== 'string' ||
+    !/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(value.trim())
+  )
+    return undefined
+  const number = Number(value)
+  return Number.isFinite(number) ? number : undefined
+}
+
+function inRange(value: unknown, range: ProjectFieldRange): boolean {
+  const number = fieldNumber(value)
+  return (
+    number !== undefined &&
+    (range.min === undefined || (range.minExclusive ? number > range.min : number >= range.min)) &&
+    (range.max === undefined || (range.maxExclusive ? number < range.max : number <= range.max))
+  )
+}
+
 function literal(node: unknown): unknown {
   if (!record(node) || !enabled(node) || !record(node.fields)) return undefined
   const key = (
@@ -34,6 +59,16 @@ function literal(node: unknown): unknown {
   )[String(node.type)]
   if (!key) return undefined
   return node.fields[key] ?? node.fields.VALUE
+}
+
+/** A bounded reader could not inspect all relevant source; this is never a failed objective. */
+export class ProjectStructureAnalysisLimitError extends DomainError {
+  readonly code = 'PROJECT_CHECK_ANALYSIS_LIMIT'
+  constructor() {
+    super(
+      'Não consegui conferir todo o código deste projeto. Peça ajuda à equipe; nenhum resultado foi guardado.',
+    )
+  }
 }
 
 /** Only connected, enabled blocks inside an actual project area count. */
@@ -75,25 +110,53 @@ function matchesBlock(
     const inputs = record(node.inputs) ? node.inputs : {}
     return (
       (!pattern.beforeBlock || follows(node, pattern.beforeBlock)) &&
+      (!pattern.beforePattern ||
+        chainMatches(pattern.beforePattern, record(node.next) ? node.next.block : undefined)) &&
       Object.entries(pattern.fields ?? {}).every(
         ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
       ) &&
+      (!pattern.fieldAlternatives ||
+        pattern.fieldAlternatives.some((alternative) =>
+          Object.entries(alternative).every(
+            ([key, value]) => Object.hasOwn(fields, key) && String(fields[key]) === String(value),
+          ),
+        )) &&
       Object.entries(pattern.fieldOptions ?? {}).every(
         ([key, options]) => Object.hasOwn(fields, key) && options.includes(String(fields[key])),
       ) &&
+      Object.entries(pattern.fieldRanges ?? {}).every(
+        ([key, range]) => Object.hasOwn(fields, key) && inRange(fields[key], range),
+      ) &&
+      Object.entries(pattern.fieldText ?? {}).every(([key, criterion]) => {
+        const value = fields[key]
+        if (!Object.hasOwn(fields, key) || typeof value !== 'string' || value.trim().length === 0)
+          return false
+        if (!criterion.containsAll) return true
+        const words = ` ${normalizeProjectFieldText(value)} `
+        return criterion.containsAll.every((group) =>
+          group.some((phrase) => words.includes(` ${normalizeProjectFieldText(phrase)} `)),
+        )
+      }) &&
       Object.entries(pattern.inputs ?? {}).every(([key, value]) => {
         const actual = literal(child(inputs[key]))
         return actual !== undefined && String(actual) === String(value)
       }) &&
-      Object.entries(pattern.inputBlocks ?? {}).every(([key, expected]) => {
-        let current = child(inputs[key])
-        while (record(current) && spend()) {
-          if (patternMatches(expected, current)) return true
-          current = record(current.next) ? current.next.block : undefined
-        }
-        return false
+      Object.entries(pattern.inputBlocks ?? {}).every(([key, expected]) =>
+        chainMatches(expected, child(inputs[key])),
+      ) &&
+      Object.entries(pattern.inputBlocksAll ?? {}).every(([key, patterns]) => {
+        const head = child(inputs[key])
+        return patterns.every((expected) => chainMatches(expected, head))
       })
     )
+  }
+  function chainMatches(expected: ProjectBlockPattern, head: unknown): boolean {
+    let current = head
+    while (record(current) && spend()) {
+      if (patternMatches(expected, current)) return true
+      current = record(current.next) ? current.next.block : undefined
+    }
+    return false
   }
   let count = 0
   const stack: { node: unknown; area: string; ancestors: string[] }[] = []
@@ -180,14 +243,51 @@ export function evaluateProjectStructure(
   return false
 }
 
+/**
+ * A verificação de uma parte: o resultado de cada objetivo e se a parte PASSOU, que é todos os
+ * OBRIGATÓRIOS cumpridos nesta mesma verificação (extras nunca trancam). Sem obrigatório não há o
+ * que passar: a publicação recusa parte só com extras.
+ */
+export function evaluateSectionObjectives(
+  checks: readonly { id: string; rule: SectionStructureRule; optional?: true }[],
+  project: unknown,
+  valueBlockTypes?: ReadonlySet<string>,
+): { results: { checkId: string; passed: boolean; optional: boolean }[]; passed: boolean } {
+  return summarizeSectionObjectives(
+    checks.map((check) => ({
+      checkId: check.id,
+      passed: evaluateProjectStructure(check.rule, project, valueBlockTypes),
+      optional: Boolean(check.optional),
+    })),
+  )
+}
+
+/**
+ * A régua de "a parte passou": todos os OBRIGATÓRIOS passaram (e existe ao menos um). Exportada
+ * para quem avalia com outro leitor (o Estúdio lê também o código) não reescrever a regra.
+ */
+export function summarizeSectionObjectives<R extends { passed: boolean; optional: boolean }>(
+  results: R[],
+): { results: R[]; passed: boolean } {
+  const required = results.filter((result) => !result.optional)
+  return { results, passed: required.length > 0 && required.every((result) => result.passed) }
+}
+
 export function evaluateSectionProject(
-  checks: readonly { id: string; label: string; rule: SectionStructureRule }[],
+  checks: readonly import('./section-progression').SectionProjectCheck[],
   project: unknown,
   valueBlockTypes?: ReadonlySet<string>,
 ) {
+  if (checks.some((check) => check.programmingLanguage === 'python'))
+    throw new Error(
+      'Objetivos Python precisam da inspeção Python; o avaliador JavaScript não se aplica.',
+    )
   return checks.map((check) => ({
     checkId: check.id,
     label: check.label,
-    passed: evaluateProjectStructure(check.rule, project, valueBlockTypes),
+    passed:
+      check.programmingLanguage !== 'python' &&
+      !isExecutionRule(check.rule) &&
+      evaluateProjectStructure(check.rule, project, valueBlockTypes),
   }))
 }

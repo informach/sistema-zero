@@ -1,0 +1,1 @@
+CREATE INDEX "editorial_monitor_entries_source_idx" ON "marketing"."editorial_monitor_entries" USING btree ("watchlist_id","source_key","observed_at" DESC NULLS LAST,"id" DESC NULLS LAST);

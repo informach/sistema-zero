@@ -1,6 +1,7 @@
 import { envelope } from '@sistemazero/core/http'
 import { type GiftSource, sanitizeGiftAttribution } from '@sistemazero/core/referrals'
 import { Elysia, t } from 'elysia'
+import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
 import type { CreateInviteService } from '../../application/invites/create-invite.service'
 import type { RedeemScholarshipService } from '../../application/redeem-scholarship/redeem-scholarship.service'
@@ -10,6 +11,7 @@ import type { ReferralRepository } from '../../domain/ports/referral-repository.
 import { assertInternalCaller } from './auth'
 
 const TOKEN_PATTERN = '^[A-Za-z0-9_-]{16,64}$'
+const AUDIENCE = t.Union([t.Literal('kids'), t.Literal('adult')])
 
 export interface InternalRoutesDeps {
   repo: ReferralRepository
@@ -17,6 +19,8 @@ export interface InternalRoutesDeps {
   invite: CreateInviteService
   funnelPublicUrl: string
   campaigns?: CampaignAdminService
+  /** Cria o código adulto do embaixador sob demanda (`shareUrls`). */
+  ambassadors?: AmbassadorAdminService
   bonusAmountCents?: number
   internalToken?: string
 }
@@ -59,8 +63,10 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         const source: GiftSource = campaign
           ? campaignSource(campaign)
           : { kind: record.ownerKind, name: record.displayName }
+        // O público vem do código (campanha → público da campanha) e decide qual curso consultar.
+        const audience = campaign?.audience ?? record.audience
         const availability =
-          state === 'active' ? await deps.redeem.giftAvailability() : 'unavailable'
+          state === 'active' ? await deps.redeem.giftAvailability(audience) : 'unavailable'
         if (availability === 'upstream_error') {
           set.status = 502
           return envelope('UPSTREAM_ERROR', 'Não foi possível consultar o presente agora')
@@ -74,6 +80,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           startsAt: campaign?.startsAt.toISOString() ?? null,
           endsAt: campaign?.endsAt.toISOString() ?? null,
           giftAvailable: availability === 'available',
+          audience,
         }
       },
       { params: t.Object({ code: t.String({ minLength: 1, maxLength: 64 }) }) },
@@ -91,11 +98,19 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         // nunca quem assinou. A régua do que é visível vive no repo/domínio
         // (filtro no SQL, ANTES do limit — canceladas não empurram bônus reais
         // para fora da página).
-        const visible = await deps.repo.listAmbassadorVisibleConversions(ambassador.id, 50)
+        const [visible, shareUrls] = await Promise.all([
+          deps.repo.listAmbassadorVisibleConversions(ambassador.id, 50),
+          // O código adulto nasce aqui quando falta (idempotente e seguro em corrida).
+          deps.ambassadors
+            ? deps.ambassadors.shareUrls(ambassador)
+            : Promise.resolve({ kids: `${base}/bolsa/${ambassador.code}`, adult: null }),
+        ])
         return {
           name: ambassador.name,
           code: ambassador.code,
+          // `shareUrl` continua sendo o link Kids (compatível com o funil anterior).
           shareUrl: `${base}/bolsa/${ambassador.code}`,
+          shareUrls,
           stats: ambassador.stats,
           bonus: {
             amountCents: deps.bonusAmountCents,
@@ -139,6 +154,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           pageToken: params.token,
           name: body.name,
           email: body.email,
+          audience: body.audience ?? 'kids',
         })
         switch (result.kind) {
           case 'sent':
@@ -152,7 +168,15 @@ export function internalRoutes(deps: InternalRoutesDeps) {
             return envelope('INVITE_ALREADY_SENT', 'Esse e-mail já recebeu o convite')
           case 'already_redeemed':
             set.status = 409
-            return envelope('EMAIL_ALREADY_REDEEMED', 'Esse e-mail já resgatou a bolsa')
+            return envelope('EMAIL_ALREADY_REDEEMED', 'Este e-mail já resgatou este presente.')
+          case 'gift_unavailable':
+            // Presente do público sem configuração (adulto sem `COMMUNITY_URL`): nenhum
+            // convite sai para um link que não abre.
+            set.status = 503
+            return envelope(
+              'GIFT_UNAVAILABLE',
+              'Este presente ainda não está disponível para convites.',
+            )
           case 'daily_limit':
             set.status = 429
             return envelope('INVITE_DAILY_LIMIT', 'Limite diário de convites atingido')
@@ -166,6 +190,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         body: t.Object({
           name: t.String({ minLength: 2, maxLength: 120 }),
           email: t.String({ pattern: EMAIL_PATTERN, maxLength: 254 }),
+          /** Público do presente convidado; ausente = `kids`. */
+          audience: t.Optional(AUDIENCE),
         }),
       },
     )
@@ -197,10 +223,13 @@ export function internalRoutes(deps: InternalRoutesDeps) {
             return envelope('CODE_NOT_FOUND', 'Código não encontrado')
           case 'already_redeemed':
             set.status = 409
-            return envelope('SCHOLARSHIP_ALREADY_REDEEMED', 'Esse e-mail já resgatou a bolsa')
+            return envelope(
+              'SCHOLARSHIP_ALREADY_REDEEMED',
+              'Este e-mail já resgatou este presente.',
+            )
           case 'gift_unavailable':
             set.status = 503
-            return envelope('GIFT_UNAVAILABLE', 'O curso indicado ainda está em preparação')
+            return envelope('GIFT_UNAVAILABLE', 'O cadastro por este link ainda não abriu.')
           case 'campaign_unavailable':
             set.status = 410
             return envelope(

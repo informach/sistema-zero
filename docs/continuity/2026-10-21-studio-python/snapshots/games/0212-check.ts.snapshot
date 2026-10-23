@@ -1,0 +1,124 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
+import { basename, resolve } from 'node:path'
+import { decodeGameObservations } from '../../../../experiments/studio-python-runtime/qualification/game_observations'
+
+// Prospective CACHE checker of ended artifacts only. No host/game/browser code.
+// Root supplies the actual reviewed seal SHA after preparation; no receipt SHA guessed.
+const [evidenceArgument, planArgument, sealArgument] = process.argv.slice(2)
+assert(evidenceArgument && /^--plan-sha=[a-f0-9]{64}$/.test(planArgument ?? '') && /^--seal-sha=[a-f0-9]{64}$/.test(sealArgument ?? ''), 'Usage: check.ts <ended-evidence-dir> --plan-sha=<reviewed> --seal-sha=<reviewed>')
+const evidence = resolve(evidenceArgument), namespace = resolve(evidence, '..')
+assert.equal(basename(namespace), 'games-space12-q05-q07-r1')
+assert.equal(basename(evidence), 'evidence')
+const sha = (b: string | Uint8Array) => createHash('sha256').update(b).digest('hex')
+const inputs: any[] = []
+async function load(path: string) { const bytes = await readFile(path); inputs.push({ path, sha256: sha(bytes) }); return JSON.parse(bytes.toString()) }
+const plan = await load(resolve(namespace, 'plan.json'))
+assert.equal(inputs.at(-1).sha256, planArgument.slice(11))
+const proposed = await readFile(resolve(import.meta.dirname, '../space12-q05-q07-operator-parameters-r1/plan.proposed.json'))
+assert.equal(sha(proposed), planArgument.slice(11), 'Actual plan must equal reviewed parameter proposal')
+const seal = await load(resolve(namespace, 'seal.json'))
+assert.equal(inputs.at(-1).sha256, sealArgument.slice(11))
+const receipt = await load(resolve(evidence, 'receipt.json'))
+const report = await load(resolve(evidence, 'browser/report.json'))
+const admission = await load(resolve(evidence, 'browser/host-admission.json'))
+const authority = await load(resolve(evidence, 'authority.json'))
+assert.equal(receipt.state, 'PASS-PENDING-REVIEW'); assert.equal(receipt.stopped, null); assert.deepEqual(receipt.errors, [])
+for (const field of ['stable', 'hostNormal', 'observedReleased']) assert.equal(receipt[field], true)
+for (const field of ['forced', 'cleanupUnknown']) assert.equal(receipt[field], false)
+assert.equal(receipt.roots.length, 2)
+for (const child of [...receipt.roots, { result: receipt.samplerResult }]) { assert.equal(child.result.code, 0); assert.equal(child.result.signal, null); assert.equal(child.result.logsDrained, true) }
+assert(receipt.portsAfter.length === 2 && receipt.portsAfter.every((p: any) => p.free))
+assert.equal(receipt.elapsedMs, Date.parse(receipt.endedAt) - Date.parse(receipt.startedAt))
+assert(receipt.elapsedMs <= plan.policy.totalMs && report.stats.duration <= plan.policy.suiteMs)
+assert(Date.parse(receipt.endedAt) <= Date.parse(authority.windowEnd))
+assert.equal(admission.authoritySha256, inputs.find(i => i.path.endsWith('authority.json')).sha256)
+const freeze = await load(plan.sourceFreeze)
+assert.equal(inputs.at(-1).sha256, '3981ae0671a32b0f4f893a8e17fc9c0bc494155ea346e707cd33ecfe8e3fe900')
+assert.equal(admission.freezeSha256, inputs.at(-1).sha256); assert.equal(freeze.files.length, 28)
+for (const file of freeze.files) assert.equal(sha(await readFile(file.path)), file.sha256)
+assert.equal(admission.distribution.hash, 'a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a')
+assert.equal(authority.releaseManifestSha256, '0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e')
+assert.deepEqual([report.stats.expected, report.stats.unexpected, report.stats.flaky, report.stats.skipped], [3, 0, 0, 0]); assert.equal(report.errors?.length ?? 0, 0)
+assert(receipt.peaks.minimumObservedFreeBytes >= plan.policy.floorFreeMiB * 1024 ** 2)
+assert.equal(receipt.peaks.privateBytesPeak, null)
+const cases: any[] = []
+function visit(suite: any) { for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) cases.push({ title: spec.title, test }); for (const child of suite.suites ?? []) visit(child) }
+visit(report); assert.equal(cases.length, 3)
+const scenarios = ['Q05', 'Q06', 'Q07']
+assert.deepEqual(cases.map(c => c.title), scenarios.map(s => `portable Space Arena instrumented ${s} preserves authored rules`))
+assert.deepEqual(cases.map(c => c.title), plan.expectedTitles)
+const observer = await readFile('experiments/studio-python-runtime/qualification/space_arena_observer.py', 'utf8')
+const driver = await readFile('experiments/studio-python-runtime/qualification/space_arena_browser.py', 'utf8')
+const reviewed = []
+for (const [index, scenario] of scenarios.entries()) {
+  const item = cases[index], test = item.test
+  assert.equal(test.status, 'expected'); assert.equal(test.projectName, 'chrome'); assert.equal(test.results.length, 1)
+  const result = test.results[0]; assert.equal(result.status, 'passed'); assert.equal(result.errors?.length ?? 0, 0)
+  const attachments = Object.fromEntries(result.attachments.filter((a: any) => a.contentType === 'application/json').map((a: any) => [a.name, JSON.parse(Buffer.from(a.body, 'base64').toString())]))
+  const identity = attachments['space-source-identity'], state = attachments['space-final-state']
+  assert.equal(identity.baseline.variant.version, 'portable-audio-1.2.0')
+  assert.equal(identity.baseline.variant.entrypointSha256, 'd9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3')
+  assert.equal(identity.baseline.runtime.manifestSha256, authority.releaseManifestSha256)
+  assert.equal(identity.baseline.files.length, 29)
+  assert.equal(identity.fixture.scenario, scenario)
+  assert.equal(identity.fixture.observerSha256, sha(observer))
+  assert.equal(identity.fixture.driverSha256, sha(driver.replace('CONFIG = {"scenario": "Q02", "seed": 2026}', `CONFIG = ${JSON.stringify({ scenario, seed: 2026 })}`)))
+  assert.equal(state.status, 'completed'); assert.equal(state.error, undefined); assert(state.events.length < 2048)
+  assert(state.events.every((e: any, i: number) => e.sequence > 0 && (!i || e.sequence === state.events[i - 1].sequence + 1)))
+  const ce = state.events.filter((e: any) => e.type === 'console')
+  assert(ce.every((e: any) => e.omittedChars === 0 && e.omittedLines === 0))
+  const text = ce.map((e: any) => e.text).join(''); assert(text.endsWith('\n'))
+  assert(!text.includes('Traceback (most recent call last)'), 'Callback traceback must remain negative')
+  const observations: any[] = decodeGameObservations(text, '__SZ_SPACE_QA__')
+  const of = (kind: string) => observations.filter(e => e.kind === kind)
+  const one = (kind: string) => { assert.equal(of(kind).length, 1); return of(kind)[0] }
+  const installed = one('installed'), complete = one('complete'), frames = of('rendered-frame')
+  assert.deepEqual(installed.pools, { enemies: 25, missiles: 30, stars: 20, powerups: 5 })
+  assert.deepEqual(installed.particles, [30, 20]); assert.equal(installed.step, 0)
+  const expectedFrames = [2, 1, 20][index]!, expectedClears = [3, 2, 21][index]!
+  assert.equal(frames.length, expectedFrames)
+  assert.deepEqual(frames.map(f => f.step), Array.from({ length: expectedFrames }, (_, i) => i))
+  assert.equal(complete.step, expectedFrames)
+  assert.equal(complete.clearWitnesses.length, expectedClears)
+  assert(complete.clearWitnesses.every((c: any) => c.before > 0 && c.after === 0 && c.penItemsAfter === 1))
+  let details: any
+  assert.equal(complete.methodWitnesses.length, 0)
+  if (scenario === 'Q05') {
+    const pickup = one('pickup-upgrade'), penalty = one('missile-powerup-penalty')
+    assert.equal(pickup.missiles, 31) // Legitimate authored upgrade, not a reduced pool.
+    for (const [key, expected] of Object.entries({ thrust: 5.25, max_fuel: 220, damage: 5.5 })) assert(Math.abs(pickup.first[key] - expected) < 1e-9)
+    assert.equal(pickup.first.fuel, 200) // Current fuel differs from the new maximum at pickup.
+    assert.equal(pickup.first.state, 'ready')
+    assert.equal(frames[0].player.score, 0)
+    assert.equal(penalty.score, -50)
+    assert.deepEqual(penalty.sounds, ['powerup.wav', 'explosion.wav', 'explosion.wav'])
+    assert.deepEqual(complete.sounds, penalty.sounds)
+    details = { pickup, penalty, sourceAssertions: 'All original30 missile identities retained in order,31st allowed onlyQ05; upgrades checked for every missile and penalty missile reset/fuel=max by pinned observer.' }
+  } else if (scenario === 'Q06') {
+    const ai = one('ai-camera')
+    assert.equal(ai.enemies.length, 6)
+    assert.deepEqual(ai.enemies.map((e: any) => [e.x, e.dx, e.dy, e.type]), [[60, -.05, -.05, 'hunter'], [100, 0, 0, 'hunter'], [60, 0, 0, 'hunter'], [100, 0, 0, 'mine'], [60, .03, -.03, 'surveillance'], [100, 0, 0, 'surveillance']])
+    assert(ai.enemies.every((e: any) => Math.abs(e.dx) <= 3 && Math.abs(e.dy) <= 3))
+    assert.deepEqual(ai.camera, { x: -70, y: -35, visible: false })
+    assert.deepEqual(of('authored-binding-invocation').map(e => [e.key, e.release]), [['s', false], ['c', false], ['C', false]])
+    assert.equal(complete.radarWitnesses.length, 7)
+    assert(complete.radarWitnesses.some((e: any) => e.sprite === 'Player' && e.color === 'white'))
+    assert(complete.radarWitnesses.some((e: any) => e.sprite === 'Enemy'))
+    assert.deepEqual(complete.sounds, [])
+    details = ai
+  } else {
+    const life = of('particle-lifetime')
+    assert.equal(life.length, 20)
+    assert.deepEqual(life.map(e => e.step), Array.from({ length: 20 }, (_, i) => i))
+    assert.equal(life[0].active, 50); assert.equal(life.at(-1).active, 0)
+    assert(life.every((e, i) => e.active >= 0 && e.active <= (i ? life[i - 1].active : 50)))
+    assert.deepEqual(complete.sounds, ['explosion.wav'])
+    details = { activeParticles: life.map(e => e.active), sourceAssertions: 'Pinned observer verifies all50 original particles: initial colors/offsets/10..20 lifetime, real position integration/damping.85/reset and inactive stability on every frame.' }
+  }
+  reviewed.push({ scenario, durationMs: result.duration, frames: expectedFrames, clears: expectedClears, completeStep: complete.step, complete, details })
+}
+for (const input of inputs) assert.equal(sha(await readFile(input.path)), input.sha256)
+await writeFile(resolve(import.meta.dirname, 'actual-review.json'), JSON.stringify({ state: 'ACTUAL-SPACE12-Q05-Q07-LIMITED-PASS', at: new Date().toISOString(), inputs, sourceFreezeSha256: admission.freezeSha256, matchedPins: 28, reviewed, cleanup: { observedReleased: receipt.observedReleased, forced: receipt.forced, ports: receipt.portsAfter }, peaks: receipt.peaks, newGameExecution: false, rootMutation: false, scope: 'Three declared causal fixtures of1.2 only, clear-first exact counts. No trusted input/raster/full-game/FPS/native/hosted/Mural/SDK image acceptance; previous1.1 evidence untouched.' }, null, 2), { flag: 'wx' })
+console.log(JSON.stringify(reviewed.map(r => ({ scenario: r.scenario, frames: r.frames, clears: r.clears, completeStep: r.completeStep, durationMs: r.durationMs }))))

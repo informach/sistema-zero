@@ -25,10 +25,10 @@
 
 **Files:**
 
-- Modify: `docs/aulas-interativas/BRIEFING.md`
-- Modify: `docs/aulas-interativas/ESPEC-MANIFESTO.md`
-- Modify: `docs/aulas-interativas/ESPEC-ROTEIRO.md`
-- Modify: `docs/aulas-interativas/README.md`
+- Modify: `docs/aulas-interativas-tecnico/BRIEFING.md`
+- Modify: `docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md`
+- Modify: `docs/aulas-interativas-tecnico/ESPEC-ROTEIRO.md`
+- Modify: `docs/aulas-interativas-tecnico/historico-organizacao.md`
 - Modify: `docs/orientacao-cursos-jogos.md`
 - Modify: `packages/admin/CLAUDE.md`
 - Modify: `packages/member-shell/CLAUDE.md`
@@ -46,8 +46,8 @@
 
 **Files:**
 
-- Modify: `docs/aulas-interativas/qa/validar-manifestos.ts`
-- Create: `docs/aulas-interativas/qa/novo-modelo.ts`
+- Modify: `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`
+- Create: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`
 
 - [x] Criar um registro explícito das aulas migradas, inicialmente `desafio-dia-1.manifesto.json`.
 - [x] Para essas aulas, reprovar seção com mais de um vídeo ou mais de um diálogo.
@@ -62,9 +62,9 @@
 
 **Files:**
 
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.md`
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json`
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
 
 - [x] Consolidar a aula em vitórias de 3–5 minutos, sem microseções de um encaixe.
 - [x] Manter somente palpites que satisfazem os seis critérios do design.
@@ -82,7 +82,7 @@
 
 - Verify: all files above
 
-- [x] Rodar `bun docs/aulas-interativas/qa/validar-manifestos.ts desafio-dia-1`.
+- [x] Rodar `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts desafio-dia-1`.
 - [x] Rodar o validador de roteiros e as verificações de paridade existentes.
 - [x] Contar seções, vídeos, falas, quizzes e critérios do piloto por script.
 - [x] Revisar linguagem infantil, repetição, ritmo, caminhos de ferramenta e continuidade com o Dia 2.

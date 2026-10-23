@@ -1,0 +1,62 @@
+{
+  "id": "P53",
+  "format": "Imagem única",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/11-p51-a-p60.md",
+  "sectionHash": "a68fcbd9bb01652f8b9db1597266a2109e6dd657eaa0c67a855ce3668d2a4457",
+  "errors": [],
+  "checkedAt": "2026-10-15T08:31:58.829Z",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "layout": {
+    "quote": {
+      "left": 64,
+      "right": 1016,
+      "top": 187,
+      "bottom": 534.78125,
+      "height": 347.78125
+    },
+    "portrait": {
+      "left": 170,
+      "right": 910,
+      "top": 600,
+      "bottom": 1200,
+      "height": 600
+    },
+    "byline": {
+      "left": 64,
+      "right": 1016,
+      "top": 1217,
+      "bottom": 1255.390625,
+      "height": 38.390625
+    },
+    "footer": {
+      "left": 64,
+      "right": 1016,
+      "top": 1286,
+      "bottom": 1316,
+      "height": 30
+    },
+    "marks": [
+      {
+        "size": "110px",
+        "family": "Nunito, Arial, sans-serif",
+        "weight": "800",
+        "color": "rgb(255, 219, 86)"
+      },
+      {
+        "size": "110px",
+        "family": "Nunito, Arial, sans-serif",
+        "weight": "800",
+        "color": "rgb(255, 219, 86)"
+      }
+    ],
+    "image": {
+      "width": 960,
+      "height": 1280
+    }
+  },
+  "mobileNoOverflow": true
+}

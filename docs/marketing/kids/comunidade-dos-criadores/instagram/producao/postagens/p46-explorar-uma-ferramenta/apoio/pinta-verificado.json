@@ -1,0 +1,23 @@
+{
+  "source": "Pinta real, navegador isolado, desenho demonstrativo da equipe",
+  "shape": {
+    "id": "quadrado",
+    "fill": "#003fad",
+    "stroke": null,
+    "opacity": 1,
+    "rotation": 0,
+    "type": "rect",
+    "x": 32,
+    "y": 32,
+    "w": 64,
+    "h": 64,
+    "rx": 0
+  },
+  "steps": [
+    "abrir desenho",
+    "ler dicas",
+    "Selecionar",
+    "selecionar quadrado",
+    "Preenchimento: azul escuro"
+  ]
+}

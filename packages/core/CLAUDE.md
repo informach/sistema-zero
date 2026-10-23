@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/core
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+Requisitos, capacidades e tierAccess normais vêm da política persistida e do earned; não usar
+CREATOR_JOURNEY_LEVELS como autorizador Kids. A tabela fixa ainda serve ao relatório Adult.
+Nomes/ordem/limites de 49 posições são metadata estrutural, não requisitos dinâmicos. Seed é artefato de
+provisionamento, sem fallback leitor. Posto/capacidades e 21 direitos por etapa são monotônicos;
+expanded implica entry, reward não. Pausa retém a regra e congela novos postos/ferramentas.
+
+O resolvedor Kids antigo e a tabela rank→faixa Molda sem consumidor produtivo foram movidos
+para fixtures de teste, conservando a prova de paridade. MoldaToolBand continua vocabulário
+estrutural; KIDS_MOLDA_BAND_CAPABILITIES traduz capacidade em faixa. Currículo, matrícula,
+paletas e JS/Python mantêm seus contratos. Não remover helpers Adult ou migrar documentos de
+projeto sob o pretexto de limpar a jornada. Gates/rollout integrados continuam pendentes.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/API que encostar aqui — não confie só na
 > memória. Para pesquisa e padrões, use o **MCP do Octocode**.
@@ -15,6 +29,62 @@ Guia operacional deste package. Leia antes de editar.
 > As 56 cenas não têm `script` nem executor de demonstração;
 > palpite, pistas e pergunta final continuam anexados à experimentação. Menções a
 > demonstração ou pergunta curta nas notas históricas abaixo não descrevem mais o contrato.
+
+## Jornada Kids configurável — núcleo canônico (18/10/2026)
+
+`journey/kids-policy.ts`, `kids-projection.ts` e `kids-validation.ts` definem uma única
+política Kids versionada: `active`/`paused`, sete avanços e sete regras de acesso às etapas.
+O seed persistido reproduz os oito postos/49 posições; não existe modo/fallback legado no
+leitor normal. O oráculo anterior fica nos testes de paridade. Adult continua independente.
+Posto, capacidade global, licença, paleta curricular e linguagem/runtime são conceitos separados.
+
+Pausa retém requisitos e regras de base, congela posto/app capabilities e admite expansão
+pedagógica pela conclusão real da base sob posto congelado. Earned preserva entry/expanded/reward
+por etapa: expanded implica entry; reward não implica entry. A mesma elegibilidade pura alimenta
+projeção/congelamento e autorização. `resolveKidsJourneyCourseLocks` processa um lote com uma
+projeção e cache limitado por etapa; o resolver singular delega ao lote.
+
+Catálogo desconhecido nunca equivale a base ausente. Requisitos de slot preservam o retrato do
+curso histórico; requisito por courseId não herda outro ocupante da posição. Pro depende de
+Estúdio, sem dependência técnica da Ponte. `KidsJourneyCourseFact.graduationOnly` deriva de
+`course.level === 'lenda'`: formatura não pode ser requisito para chegar ao topo, mas mantém
+acesso por matrícula sem novo gate. Curso normal fora da escada também pode ter `tier: null`.
+
+Focados atuais: canonical/policy/parity/pause/journey/journey-state, 60 testes/2772 asserções.
+Novos consumidores Members estão em migração isolada; isso não qualifica a integração completa.
+
+## Créditos do Zappy e do Pensa: o recurso tem nome (20/10/2026)
+
+`ai-credits/credits.ts` (`resolveAiCredits`) é o medidor dos dois apps. Pedido da dona: a tela
+nomeia o RECURSO, nunca "IA" solta. Kids (padrão) conta **ideias** ("✨ 13 ideias hoje", rótulo
+"Ajuda do Zappy: …"). Adulto (`audience: 'adult'`) conta **créditos**: "13 créditos hoje",
+"Créditos sem limite", "Os créditos de hoje acabaram", leitor de tela "Zappy e Pensa: …" e o
+esgotado "… só sem o Zappy e o Pensa até renovar." (a mesma frase do painel de Meu perfil da
+comunidade). Teste: `credits.test.ts` reprova "IA"/"pedido" em toda frase adulta. ⚠️ O
+`pensa/src/components/AiCredits.test.tsx` (outro pacote) fixa a unidade adulta.
+
+## Posição na jornada adulta (19/10/2026)
+
+`adultJourneyPosition(view)` (`journey/adult-policy.ts`): a etapa atual é a primeira não concluída
+(`{position, total, stageId, title}`); com todas concluídas, `position = total = stages + 1` e
+`title: null` (a Lenda). Jornada não configurada ou vazia → `null`. A view de cada etapa traz
+também `requirements` e `capabilities` (cópias, nunca aliases da política). É a régua única que o
+members (listas) e o community (anel, chip, página da etapa) usam.
+
+**Piso (20/10/2026):** `projectAdultJourney(policy, version, milestones, frozen, reachedPosition)`
+recebe a posição mais alta já alcançada (gravada pelo members em `adult_journey_reached`). Etapas
+abaixo do piso saem `completed` (sem `missing`) e contam como anteriores concluídas; a posição vira
+`max(calculada, piso)`, limitada a `stages + 1`. O piso não concede capacidade (só conclusão real e
+`frozen`). Piso inválido (`null`, < 2, não inteiro) é ignorado (`normalizeAdultJourneyFloor`).
+
+## Objetivos que RODAM o jogo (18/10/2026)
+
+`learning/project-execution.ts`: as regras `behavior`/`functionReturns`/`script`
+(`isSectionExecutionRule`, limites em `EXECUTION_LIMITS`), o contrato do executor
+(`ExecutionObjectiveRequest`, `ExecutionObservation`, `ProjectCheckResponse`) e a régua ÚNICA de
+julgamento (`judgeExecutionObservation`, com o motivo para a equipe). `SectionProjectCheck.rule` é
+`SectionObjectiveRule` (estrutura OU execução); `isSectionCompletion` aceita até 8 de execução por
+parte; `projectObjectiveKind` dá `game`/`function`/`script`. Testes: `tests/project-execution.test.ts`.
 
 ## Impressão do conteúdo e "envio em dia" (10/10/2026)
 
@@ -43,6 +113,51 @@ entrega à equipe. Duas peças do core sustentam isso:
   (envio antigo, rascunho que nunca subiu), deixa passar: o critério lembra a criança, nunca a
   prende por algo que o sistema não sabe. A pendência nova é `'submission-outdated'`.
 - Teste: `tests/submission-up-to-date.test.ts` (impressão, régua e autoria).
+
+## Cursos ao vivo: modalidade e anotações da professora (14/10/2026)
+
+`course/modality` (gravado ou ao vivo; só o gravado entra na Jornada) e
+`LessonSection.teacherNotes` (até `TEACHER_NOTES_MAX`). `isTeacherNotes` é a régua única: o
+`validateLessonSections` e o `isLearningManifest` a usam, e a mensagem fala em "parte" (o guarda
+de vocabulário do Kids varre o `core/src`). A view do aluno nunca leva o campo: quem garante é o
+members (ver o CLAUDE.md de lá).
+
+## Oficinas ao vivo: contrato de 14/10/2026 (`src/live/`)
+
+Campos novos, todos opcionais para o cliente tolerar servidor antigo: `LiveLessonPlan.studio`
+(`LiveStudioConfig`, a curadoria do bloco Estúdio), controles `cancel`, `admit-all` e
+`lower-hands.before`, `LiveControlRequest.expectedVersion` opcional (só as transições o
+conferem), `LiveUpdateCohort`, `LiveCohort.teacherNames`, `LiveOccurrence.conductorId`,
+`LiveSessionSummary.occurrenceState`/`recordingPublished`, `LiveLessonAccessView.canEnterLobby`,
+`LiveRoomView.planRevision` só com plano, `LiveWorkspaceView.readOnly`,
+`LiveMediaPublication.displayName`, `LiveChatMessage.authorId: string | null` (colegas sem id na
+visão da criança) e os estados de gravação `empty` e `unavailable`. ⚠️ Estado novo em
+`LiveRecordingState` quebra quem indexa um objeto de rótulos pelo estado (o member-shell tem um).
+Regras e motivos: `packages/members/CLAUDE.md`, seção das oficinas.
+Cursos ao vivo (lote de 14/10): `LiveRecordingSourceView` (`{ storageKey, bucket, title? }`, o
+bucket REAL do gravador) e `LiveWorkspaceView.studio` (a curadoria do bloco Estúdio da aula
+publicada, na abertura por bloco). Só acréscimos.
+
+## Pensa: definição, plano funcional e progresso (16/10/2026)
+
+`@sistemazero/core/pensa` contém os schemas estritos e tipos inferidos do contrato único.
+`PensaGameDefinition` registra intenção, requisitos, elementos e adaptações; `PensaPlan` organiza
+missões de configuração, funcionalidade, arte, integração e teste. Missão contém objetivo,
+regras e conferências, sem instruções de cliques ou montagem de blocos.
+
+`validatePensaPlan` exige cobertura integral, ordem de dependências, executor real e teste final.
+Capacidades pertencem a cada pessoa, nunca à união fictícia dos desbloqueios da equipe.
+`analyzePensaChange` e `invalidatePensaProgress` preservam entregas e pedem reconferência nas
+partes afetadas. `reconcilePensaMissionVersions` atribui versões de conteúdo no servidor.
+`resolvePensaAvailability` e `nextPensaMissionFor` calculam a próxima ação, inclusive quando uma
+missão concluída precisa ser conferida novamente. Pro dispensa configuração de extensões.
+
+O draft admite sugestões pendentes e adaptações sem recibo. Somente o aceite explícito gera
+revisão aceita e recibos atribuídos pelo servidor. O navegador não define capacidades,
+autoria, datas de aceite ou evidência técnica de configuração.
+
+Sem contratos, aliases ou leitores do Pensa anterior. Limites ficam em `PENSA_LIMITS`;
+regressões comportamentais em `tests/pensa.test.ts`. O core continua sem framework/banco.
 
 ## O que é
 
@@ -89,7 +204,7 @@ por conveniência, mas prefira o subpath. Os subpaths são declarados no campo `
 | `/time` | calendário civil compartilhado, sem converter data de negócio em instante UTC | `sao-paulo` |
 | `/learning/scene` | as **45** cenas de aula: ações, catálogo, motor, avaliação, **elenco** (`cast`: nomes E figura, `actorFigure`), **cenário** (`cenario`: qual JOGO a cena retrata — o fundo, o chão e o elenco de fábrica), **caso e missão** (`setup`) e o que a cena diz de si (`readout`). ⚠️ Cena nova: checklist em "Cenas de aula" abaixo (o TS reprova o que faltar, o palco do member-shell incluído) | `actions` · `state` · `engine` · `nucleo` · `atelie` · `pistas` · `pilha` · `catalog` · `evaluate` · `readout` · `cast` · `cenario` · `questions` · `session` · `index` |
 | `/creations` | contratos puros de identidade/armazenamento compartilhados por apps e serviços | `object-deletion` · `pinta-palette-library` · `storage-keys` |
-| `/journey` | a **Jornada do Criador** (antes "Carreira", renomeada em 22/09/2026): catálogo dos 8 postos, os 7 degraus e as **49 posições** (1 na entrada + 8 × 6), a política de trava pedagógica (`resolveJourneyCourseLock`) e o estado de um curso na jornada. ⚠️ Os nomes internos dizem `journey`; os CAMPOS de rede seguem `careerSlot`/`careerLock` e as colunas seguem `career_slot` — contrato antigo, mantido de propósito (ver `docs/jornada-do-criador.md`) | `catalog` · `state` · `index` |
+| `/journey` | **Jornada do Criador**: identidades estruturais dos oito postos/sete etapas/49 posições, contrato Kids canônico e projeção da política publicada (`resolveKidsJourneyCourseLock`), capacidades e estado curricular do curso. O resolvedor Kids antigo existe só em fixture de teste. Campos de curso `careerSlot`/`careerLock` e coluna `career_slot` continuam sendo contratos curriculares legítimos (ver `docs/jornada-do-criador.md`) | `catalog` · `kids-policy` · `kids-projection` · `kids-validation` · `kids-tools` · `kids-seed` · `adult-policy` · `state` · `index` |
 
 ## Cenas de aula (`src/learning/scene/`)
 

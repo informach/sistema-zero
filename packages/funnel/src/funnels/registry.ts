@@ -9,14 +9,18 @@
 
 import type { ZodType } from 'zod'
 import type { HeroVariacao } from '../content/hero-perfil'
+import type { LegalDoc } from '../content/legal'
 import type { QuizStep } from '../content/quiz-config'
 import type { ResultProfile } from '../content/result-profiles'
+import type { ResultadoConversa } from '../content/resultado-conversa'
 import type { SalesSections } from '../content/sales-sections'
 import type { QuizAnswers, QuizAnswerValue } from '../lib/quiz-types'
 
 export type { QuizAnswers } from '../lib/quiz-types'
 
+import { COMUNIDADE_ADULTO } from './comunidade-adulto'
 import { COMUNIDADE_DOS_CRIADORES } from './comunidade-dos-criadores'
+import { DESAFIO_ADULTO } from './desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from './desafio-primeiro-jogo'
 import { NO_COMANDO_DA_IA } from './no-comando-da-ia'
 
@@ -41,7 +45,7 @@ export interface FunnelLanding {
 }
 export interface FunnelQuiz {
   version?: string
-  presentation?: 'comunidade' | 'desafio'
+  presentation?: 'comunidade' | 'comunidade-adulto' | 'desafio-kids' | 'desafio-adulto'
   steps: QuizStep[]
   total: number
   /** Validação do valor por chave (server-side). Chaves fora daqui são rejeitadas. */
@@ -54,6 +58,54 @@ export interface FunnelQuiz {
   activeSteps?: (answers: QuizAnswers) => QuizStep[]
   applyAnswer?: (answers: QuizAnswers, key: string, value: QuizAnswerValue) => QuizAnswers | null
   isComplete?: (answers: QuizAnswers) => boolean
+  /**
+   * Variantes da manchete da entrada (teste A/B): id → rótulo do /admin. A ilha grava a variante
+   * exibida em `attribution.quizHeadline`, e Performance/Perfis filtram por ela.
+   */
+  headlines?: Record<string, string>
+  /** A manchete padrão do teste A/B: no /admin ela conta também os leads sem registro. */
+  defaultHeadline?: string
+  /** Perguntas de versões anteriores, só para o /admin rotular respostas de leads antigos. */
+  legacySteps?: QuizStep[]
+  /**
+   * Ramos do quiz (id → rótulo do /admin), na ordem em que o /admin os mostra. As perguntas de um
+   * ramo levam o mesmo id em `ramo`. Um ramo sem perguntas é uma saída (ex.: "18 ou mais").
+   */
+  branches?: Record<string, string>
+  /**
+   * O ramo que as respostas abrem (id de `branches`), ou null antes da escolha. Ao entrar num
+   * ramo, o servidor grava o evento `entrou_ramo_<id>`, a primeira etapa do ramo no /admin.
+   */
+  branchOf?: (answers: QuizAnswers) => string | null
+  /**
+   * O resultado em conversa (Comunidade e Desafio, Kids e adulto): a carta montada pelas respostas, ou null
+   * quando o quiz não tem resultado para elas. A /resultado desenha com `ResultadoConversa`.
+   */
+  conversa?: (answers: QuizAnswers) => ResultadoConversa | null
+}
+
+/** Evento de servidor gravado quando o lead entra num ramo do quiz (etapa do /admin). */
+export const branchEventName = (branch: string): string => `entrou_ramo_${branch}`
+
+/** A manchete pedida na URL (`?manchete=`), se o quiz a declara; senão, a padrão. */
+export function quizHeadlineId(
+  quiz: FunnelQuiz | undefined,
+  param: string | null | undefined,
+): string | undefined {
+  if (param && Object.hasOwn(quiz?.headlines ?? {}, param)) return param
+  return quiz?.defaultHeadline
+}
+
+/** O endereço do quiz que mantém a manchete que a pessoa viu (o padrão não leva parâmetro). */
+export function quizPathWithHeadline(
+  basePath: string,
+  quiz: FunnelQuiz | undefined,
+  headline: string | null | undefined,
+): string {
+  const id = quizHeadlineId(quiz, headline)
+  return id && id !== quiz?.defaultHeadline
+    ? `${basePath}/quiz?manchete=${encodeURIComponent(id)}`
+    : `${basePath}/quiz`
 }
 export interface FunnelHero {
   padrao: HeroVariacao
@@ -69,6 +121,11 @@ export interface FunnelResult {
   destaque?: string
   /** Rótulos legíveis por perfil (aba Perfis do /admin). */
   perfilLabels: Record<string, string>
+  /**
+   * Perfis de versões anteriores do quiz: a aba Perfis os mostra só quando há leads com eles,
+   * com o prefixo "(quiz anterior)".
+   */
+  legacyPerfilLabels?: Record<string, string>
   /** Renderiza o corpo do perfil resolvendo marcadores com as respostas. Opcional. */
   renderCorpo?: (corpo: string, answers: QuizAnswers) => string
 }
@@ -82,8 +139,24 @@ export interface FunnelObrigado {
    * "Obrigado por assumir o comando." (NCI). Por funil: o Desafio fala da criança.
    */
   intro?: string
+  /** Título da confirmação aprovada. Ausente → "Pagamento confirmado!". */
+  titulo?: string
+  /**
+   * Frase depois da `intro` na confirmação aprovada. Ausente → "O seu acesso ao <produto> está a
+   * caminho do seu e-mail."
+   */
+  acesso?: string
+  /** Título da lista de passos. Ausente → "Como acessar". */
+  passosTitulo?: string
+  /** Rótulo do botão para a área de membros. Ausente → "Ir para a área de membros →". */
+  botao?: string
   entrega: string[]
   passos: FunnelObrigadoPasso[]
+}
+/** Abertura do checkout acima do card do produto (o título vira o h1 da página). */
+export interface FunnelCheckoutIntro {
+  titulo: string
+  paragrafos: string[]
 }
 
 export interface FunnelContent {
@@ -94,6 +167,8 @@ export interface FunnelContent {
   sales?: SalesSections
   /** Conteúdo da /obrigado. */
   obrigado: FunnelObrigado
+  /** Abertura do checkout (opcional: sem ela, o card do produto é o h1 da página). */
+  checkout?: FunnelCheckoutIntro
   /** Quiz (opcional — funil sem quiz entra direto na oferta). */
   quiz?: FunnelQuiz
   /** Hero da oferta por perfil (só faz sentido com quiz). */
@@ -127,6 +202,16 @@ export interface FunnelOfferContract {
   guaranteeDays: number | null
 }
 
+/** O Termo de Uso da oferta do funil (um por oferta) e a versão gravada em cada compra. */
+export interface FunnelLegal {
+  termos: LegalDoc
+  /**
+   * Versão aceita no checkout, congelada no snapshot da compra (`termsVersion`). Mudou o texto do
+   * Termo? Suba a versão (ex.: a data), senão uma compra nova grava a versão antiga.
+   */
+  termsVersion: string
+}
+
 export interface FunnelDef {
   audience: Audience
   /** Slug do produto (kebab-case), 2º segmento da URL. */
@@ -139,6 +224,12 @@ export interface FunnelDef {
   // `FUNNEL_OFFER_<KEY>` (obrigatória, fail-fast — ver `lib/env.ts`/`server/offer.ts`),
   // resolvida por `resolveOfferSlug(env, key)`. Trocar de oferta/campanha = só mudar a env.
   productName: string
+  /**
+   * Nome da cobrança da oferta PRINCIPAL (descrição do pagamento e da assinatura), quando difere do
+   * nome exibido. A Comunidade adulta cobra como "Comunidade dos Criadores (adultos)", o mesmo nome
+   * da oferta irmã no catálogo: é por ele que Compras e a área dos pais separam adulto de Kids.
+   */
+  chargeName?: string
   productSku: string
   /** Prefixo das imagens do funil em /public (ex.: `/img/no-comando-da-ia`). */
   imagesBase: string
@@ -164,6 +255,8 @@ export interface FunnelDef {
    */
   offerContract?: FunnelOfferContract
   steps: FunnelSteps
+  /** Termo de Uso da oferta, em `${basePath}/termos`. A Política de Privacidade é única. */
+  legal: FunnelLegal
   content: FunnelContent
   /** Oferta de upsell (pós-compra), quando `steps.upsell`. */
   upsell?: FunnelExtraOffer
@@ -182,6 +275,11 @@ export function funnelKey(audience: string, produto: string): string {
  */
 export const FUNNELS: Record<string, FunnelDef> = {
   [NO_COMANDO_DA_IA.key]: NO_COMANDO_DA_IA,
+  // DEPOIS do NCI: a landing /pro redireciona ao PRIMEIRO funil pro do map.
+  [COMUNIDADE_ADULTO.key]: COMUNIDADE_ADULTO,
+  // O Desafio adulto (21/10/2026) entra depois: o `/pro` segue no NCI. A env
+  // `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção.
+  [DESAFIO_ADULTO.key]: DESAFIO_ADULTO,
   [DESAFIO_PRIMEIRO_JOGO.key]: DESAFIO_PRIMEIRO_JOGO,
   // DEPOIS do Desafio: a landing /kids redireciona ao PRIMEIRO funil kids do map
   // ([audience]/index.astro) — a ordem preserva o destino atual do tráfego.
@@ -213,6 +311,16 @@ export function getFunnelByKey(key: string | null | undefined): FunnelDef | null
   return FUNNELS[key] ?? null
 }
 
+/**
+ * True para os dois funis do Desafio do Primeiro Jogo (Kids e adulto): a mesma oferta de 30 dias,
+ * com a capa do checkout, a /obrigado que informa a data final e o e-mail com a data
+ * (`challenge-access-approved` no Kids, `challenge-access-approved-adult` no adulto; ver
+ * `welcome-email.ts`).
+ */
+export function isDesafioFunnel(key: string | null | undefined): boolean {
+  return key === DESAFIO_PRIMEIRO_JOGO.key || key === DESAFIO_ADULTO.key
+}
+
 /** True se `value` é uma chave de funil conhecida (validação de entrada do cliente). */
 export function isFunnelKey(value: unknown): value is string {
   return typeof value === 'string' && Object.hasOwn(FUNNELS, value)
@@ -230,21 +338,53 @@ export interface AdminFunnelInfo {
   answerOptions?: Record<string, Record<string, string>>
   /** Rótulo por perfil — p/ a aba Perfis. */
   perfilLabels: Record<string, string>
+  /** Quiz versionado: filtros "só o quiz atual" e "manchete" de Performance/Perfis. */
+  quiz?: {
+    version: string
+    headlines: { id: string; label: string }[]
+    /** Ramos do quiz, na ordem do funil (Performance encadeia cada um à parte). */
+    branches?: { id: string; label: string }[]
+  }
 }
+
+/** Prefixo das respostas de versões anteriores do quiz (`legacySteps`) no /admin. */
+export const LEGACY_ANSWER_PREFIX = '(quiz anterior) '
 
 /** Rótulo (pergunta/campo) por chave de resposta do quiz de um funil. */
 function quizAnswerLabels(f: FunnelDef): Record<string, string> {
   const labels: Record<string, string> = {}
-  for (const step of f.content.quiz?.steps ?? []) {
+  const quiz = f.content.quiz
+  const current = new Set((quiz?.steps ?? []).map((s) => s.key))
+  for (const step of quiz?.legacySteps ?? [])
+    if (!current.has(step.key)) labels[step.key] = `${LEGACY_ANSWER_PREFIX}${step.titulo}`
+  for (const step of quiz?.steps ?? []) {
     if (step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled') {
       labels[step.campo1.key] = step.campo1.label
       labels[step.campo2.key] = step.campo2.label
       labels[step.resultadoKey] = step.titulo
     } else {
-      labels[step.key] = step.titulo
+      // A pergunta de um ramo leva o nome do ramo: "Menor de 9 · Ela já lê?".
+      const branch = step.ramo ? quiz?.branches?.[step.ramo] : undefined
+      labels[step.key] = branch ? `${branch} · ${step.titulo}` : step.titulo
     }
   }
   return labels
+}
+
+/**
+ * Opções fechadas por chave, para mostrar respostas sem códigos internos. Numa chave que existe
+ * em mais de uma versão, os mapas se somam e, no mesmo valor, vale o rótulo de hoje: a resposta
+ * antiga com um valor que saiu continua legível.
+ */
+function quizAnswerOptions(f: FunnelDef): Record<string, Record<string, string>> {
+  const options: Record<string, Record<string, string>> = {}
+  for (const step of [...(f.content.quiz?.legacySteps ?? []), ...(f.content.quiz?.steps ?? [])])
+    if (step.tipo === 'selecao')
+      options[step.key] = {
+        ...options[step.key],
+        ...Object.fromEntries(step.opcoes.map((o) => [o.value, o.label])),
+      }
+  return options
 }
 
 /** Lista dos funis p/ o seletor do /admin + rótulos por funil (respostas/perfis). */
@@ -253,14 +393,33 @@ export function adminFunnelList(): AdminFunnelInfo[] {
     key: f.key,
     label: `${AUDIENCE_LABEL[f.audience]} · ${f.productName}`,
     answerLabels: quizAnswerLabels(f),
-    answerOptions: Object.fromEntries(
-      (f.content.quiz?.steps ?? []).flatMap((step) =>
-        step.tipo === 'selecao'
-          ? [[step.key, Object.fromEntries(step.opcoes.map((o) => [o.value, o.label]))]]
-          : [],
+    answerOptions: quizAnswerOptions(f),
+    perfilLabels: {
+      ...Object.fromEntries(
+        Object.entries(f.content.result?.legacyPerfilLabels ?? {}).map(([id, label]) => [
+          id,
+          `${LEGACY_ANSWER_PREFIX}${label}`,
+        ]),
       ),
-    ),
-    perfilLabels: f.content.result?.perfilLabels ?? {},
+      ...(f.content.result?.perfilLabels ?? {}),
+    },
+    quiz: f.content.quiz?.version
+      ? {
+          version: f.content.quiz.version,
+          headlines: Object.entries(f.content.quiz.headlines ?? {}).map(([id, label]) => ({
+            id,
+            label,
+          })),
+          ...(f.content.quiz.branches
+            ? {
+                branches: Object.entries(f.content.quiz.branches).map(([id, label]) => ({
+                  id,
+                  label,
+                })),
+              }
+            : {}),
+        }
+      : undefined,
   }))
 }
 

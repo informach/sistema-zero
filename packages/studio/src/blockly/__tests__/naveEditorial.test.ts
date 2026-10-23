@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
-import { isLearningManifest } from '@sistemazero/core/learning'
+import { isLearningManifest, type SectionProjectCheck } from '@sistemazero/core/learning'
 import {
   type Block,
   courseProjects,
-} from '../../../../../docs/aulas-interativas/qa/nave-contra-asteroides-projetos-qa'
+} from '../../../../../docs/aulas-interativas-tecnico/qa/nave-contra-asteroides-projetos-qa'
 import {
   type ExampleHarness,
   exampleHarness,
@@ -19,6 +19,14 @@ import { buildIRFromWorkspace } from '../buildIR'
 import { evaluateStudioSectionProject } from '../projectCheckAuthoring'
 import { ensureBlocklyInitialized } from '../setup'
 
+function javascriptChecks(checks: readonly SectionProjectCheck[]) {
+  return checks.map((check) => {
+    if (check.programmingLanguage === 'python')
+      throw new Error('This editorial fixture requires JavaScript objectives')
+    return check
+  })
+}
+
 beforeAll(() => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameTwoDBlocks)
@@ -29,7 +37,7 @@ function manifest(day: number) {
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/aulas/nave-contra-asteroides-dia-${day}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/nave-contra-asteroides/nave-contra-asteroides-dia-${day}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -45,9 +53,10 @@ function gameFor(day: number) {
     for (const section of manifest(day).sections)
       if (section.completion?.projectChecks)
         expect(
-          evaluateStudioSectionProject(section.completion.projectChecks, saved).filter(
-            (c) => !c.passed,
-          ),
+          evaluateStudioSectionProject(
+            javascriptChecks(section.completion.projectChecks),
+            saved,
+          ).filter((c) => !c.passed),
         ).toEqual([])
     return exampleHarness({ ...asteroidsExample, ir: buildIRFromWorkspace(workspace) }, () => 0.1)
   } finally {
@@ -188,7 +197,7 @@ function all(value: unknown): Block[] {
     ...Object.values(object).flatMap(all),
   ]
 }
-const mistakes = [
+const creativeChoices = [
   {
     day: 2,
     name: 'shot event plays jump instead of shoot',
@@ -205,6 +214,60 @@ const mistakes = [
         'shoot'
     },
   },
+]
+function deliveryResults(day: number, project: (typeof projects)[number]) {
+  const workspace = new Blockly.Workspace()
+  try {
+    Blockly.serialization.workspaces.load(project.blocksState, workspace)
+    return evaluateStudioSectionProject(
+      javascriptChecks(
+        manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
+      ),
+      { blocksState: Blockly.serialization.workspaces.save(workspace) },
+    )
+  } finally {
+    workspace.dispose()
+  }
+}
+test.each(creativeChoices)('accepts creative choice: $name', ({ day, edit }) => {
+  const project = structuredClone(projects[day]!)
+  edit(all(project))
+  expect(deliveryResults(day, project).filter((check) => !check.passed)).toEqual([])
+})
+test.each([
+  { day: 2, fx: 'shoot', checkId: 'efeito-tiro' },
+  { day: 3, fx: 'explosion', checkId: 'efeito-explosao' },
+])('day $day: $checkId requires an effect in its own event', ({ day, fx, checkId }) => {
+  const project = structuredClone(projects[day]!)
+  const nodes = all(project)
+  const effect = nodes.find((block) => block.type === 'sz_g2d_play_fx' && block.fields?.FX === fx)
+  const prior = nodes.find((block) => block.next?.block === effect)
+  if (!effect || !prior) throw new Error('Expected an authored effect in a statement chain')
+  // Remove only the effect, keeping every following statement connected.
+  if (effect.next) prior.next = effect.next
+  else delete prior.next
+  delete effect.next
+  expect(deliveryResults(day, project).find((check) => check.checkId === checkId)).toMatchObject({
+    passed: false,
+  })
+
+  const events = nodes.find((block) => block.type === 'sz_frame_events')
+  let lastEvent = events?.inputs?.CHILDREN?.block
+  if (!lastEvent) throw new Error('Expected the authored events area')
+  while (lastEvent.next) lastEvent = lastEvent.next.block
+  lastEvent.next = {
+    block: {
+      type: 'sz_g2d_on_key',
+      fields: { KEY: 'Enter' },
+      inputs: { BODY: { block: effect } },
+    },
+  }
+  // The identical effect on Enter cannot fulfill the shot or collision objective.
+  expect(deliveryResults(day, project).find((check) => check.checkId === checkId)).toMatchObject({
+    passed: false,
+  })
+})
+const mistakes = [
   {
     day: 5,
     name: 'victory checked after defeat reverses the simultaneous outcome',
@@ -285,7 +348,9 @@ test.each(mistakes)('rejects learner error: $name', ({ day, edit }) => {
   edit(all(project))
   expect(
     evaluateStudioSectionProject(
-      manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
+      javascriptChecks(
+        manifest(day).sections.find((s) => s.intent === 'delivery')!.completion!.projectChecks!,
+      ),
       project,
     ).some((c) => !c.passed),
   ).toBe(true)

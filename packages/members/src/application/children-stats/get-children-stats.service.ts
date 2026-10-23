@@ -1,7 +1,9 @@
+import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import {
   CREATIVE_TOOL_LEVELS,
   type CreativeToolId,
   creativeToolAvailability,
+  kidsCreativeToolAvailability,
   type ParentJourneyView,
 } from '@sistemazero/core/journey'
 import type { LearningTopicSummary } from '@sistemazero/core/learning'
@@ -9,6 +11,7 @@ import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import { computeStudentLevel } from '../../domain/gamification/levels'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import {
   type GamificationRepository,
@@ -19,6 +22,8 @@ import type { LearningRepository } from '../../domain/ports/learning-repository.
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import type { AccessCheckService } from '../access-check/access-check.service'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
+import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 
 /** Janela "Esta semana" (semana civil SP corrente, parcial) de um filho. */
 export interface ChildWeekStatsView {
@@ -66,7 +71,8 @@ export interface ChildStatsView {
 /**
  * Resumo de progresso de CADA FILHO (perfil) p/ a área dos pais (kids). Escopo-CONTA:
  * só devolve os perfis cujo `account_id` (na gamificação) bate com o `accountId` pedido
- * — perfil de OUTRA conta (ou sem nenhuma atividade) NÃO volta, nada de progresso vaza.
+ * — perfil de OUTRA conta NÃO volta. Registro Kids materializado inclui criança sem XP;
+ * ausência de registro de uma atividade própria é indisponibilidade, nunca perda de posto.
  * Por filho: xp/streak/badges + cursos (em andamento/concluídos, sobre os cursos
  * publicados da vitrine) + projetos do Estúdio + colocação no ranking.
  */
@@ -79,23 +85,30 @@ export class GetChildrenStatsService {
     private readonly accessCheck: AccessCheckService,
     private readonly learning: LearningRepository,
     private readonly clock: () => Date,
+    private readonly kidsProfiles: Pick<KidsJourneyProfilesService, 'getOwnedStates'>,
     /** Jogos da semana no Mural (S2S direto, best-effort — `null` degrada). */
     private readonly hub?: HubGateway,
   ) {}
 
   async execute(
-    accountId: string,
-    profileIds: string[],
+    inputAccountId: string,
+    inputProfileIds: string[],
     opts: { audience: CourseAudience },
   ): Promise<ChildStatsView[]> {
-    if (profileIds.length === 0) return []
     const { audience } = opts
+    const accountId =
+      audience === 'kids' ? IdentityUuidSchema.parse(inputAccountId) : inputAccountId
+    const profileIds = inputProfileIds.map((id) =>
+      audience === 'kids' ? IdentityUuidSchema.parse(id) : id,
+    )
+    if (profileIds.length === 0) return []
 
     // 1) AUTORIZA + xp/streak num passo: só perfis da CONTA (account_id). Perfil de
     //    outra conta não volta (defesa em profundidade); sem atividade tb não volta.
-    const [authorized, learningProfiles] = await Promise.all([
+    const [authorized, learningProfiles, kidsStates] = await Promise.all([
       this.gamification.listByAccount(accountId, profileIds, audience),
       this.learning.listProfileIdsByAccount(accountId, audience),
+      audience === 'kids' ? this.kidsProfiles.getOwnedStates(accountId, profileIds) : null,
     ])
     // Uma primeira descoberta já é atividade, mesmo antes de qualquer prêmio de XP.
     // O elo de conta vem da persistência autenticada, nunca do perfil pedido pelo cliente.
@@ -114,6 +127,24 @@ export class GetChildrenStatsService {
           vacationTo: null,
         })
       }
+    }
+    if (kidsStates) {
+      for (const record of authorized)
+        if (!kidsStates.has(record.userId)) throw new KidsJourneyUnavailableError()
+      for (const profileId of kidsStates.keys())
+        if (!authorized.some((record) => record.userId === profileId))
+          authorized.push({
+            userId: profileId,
+            accountId,
+            xp: 0,
+            streakCurrent: 0,
+            streakBest: 0,
+            lastActivityDate: null,
+            coinBalance: 0,
+            streakFreezes: 0,
+            vacationFrom: null,
+            vacationTo: null,
+          })
     }
     if (authorized.length === 0) return []
     const authorizedIds = authorized.map((rec) => rec.userId)
@@ -182,7 +213,9 @@ export class GetChildrenStatsService {
           ),
           this.gamification.countBadgesUnlockedInPeriod(profileId, audience, weekFrom, now),
           this.studio.countSubmittedInPeriodByAudience(profileId, audience, weekFrom, now),
-          this.gamification.listJourneyCourseState(profileId, audience),
+          audience === 'adult'
+            ? this.gamification.listJourneyCourseState(profileId, 'adult')
+            : null,
           this.learning.weeklyTopics(accountId, profileId, audience, weekFrom, now),
         ])
 
@@ -196,27 +229,57 @@ export class GetChildrenStatsService {
           else if (done > 0) coursesInProgress++
         }
 
-        const level = computeStudentLevel(journeyState.qualified)
+        const kids = kidsStates?.get(profileId)
+        if (audience === 'kids' && !kids) throw new KidsJourneyUnavailableError()
+        const level = kids
+          ? kidsStudentLevel(kids.journey)
+          : computeStudentLevel(journeyState!.qualified)
+        const pendingIds = kids
+          ? new Set(
+              kids.milestones
+                .filter(
+                  (milestone) =>
+                    milestone.completed &&
+                    !milestone.showcased &&
+                    kids.journey.missing.some(
+                      (requirement) =>
+                        requirement.milestone === 'showcase' &&
+                        (requirement.kind === 'course'
+                          ? requirement.courseId === milestone.courseId
+                          : requirement.tier === milestone.qualifiedTier &&
+                            requirement.slot === milestone.qualifiedSlot),
+                    ),
+                )
+                .map((milestone) => milestone.courseId),
+            )
+          : null
         return {
           career: {
             level: level.slug,
             nextLevel: level.next,
             pendingPublications: published
               .filter((course) => {
-                const milestones = journeyState.milestones.get(course.id)
+                if (pendingIds) return pendingIds.has(course.id)
+                const milestones = journeyState!.milestones.get(course.id)
                 return course.careerSlot !== null && milestones?.completed && !milestones.showcased
               })
               .map((course) => ({ courseSlug: course.slug, title: course.title })),
-            tools: toolIds.map((id) => ({
-              id,
-              owned: ownedTools.has(id),
-              requiredLevel: CREATIVE_TOOL_LEVELS[id],
-              state: creativeToolAvailability({
-                tool: id,
-                owned: ownedTools.has(id),
-                level: level.slug,
-              }),
-            })),
+            tools: toolIds.map((id) => {
+              const owned = ownedTools.has(id)
+              if (kids)
+                return {
+                  id,
+                  owned,
+                  ...kidsCreativeToolAvailability({ tool: id, owned, journey: kids.journey }),
+                }
+              // Adult still uses its existing course report; do not remove its legitimate helper.
+              return {
+                id,
+                owned,
+                requiredLevel: CREATIVE_TOOL_LEVELS[id],
+                state: creativeToolAvailability({ tool: id, owned, level: level.slug }),
+              }
+            }),
           },
           learningTopics,
           profileId,

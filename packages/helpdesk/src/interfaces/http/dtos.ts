@@ -1,4 +1,6 @@
 import {
+  KNOWLEDGE_AUDIENCES,
+  KNOWLEDGE_PRODUCTS,
   TICKET_CATEGORIES,
   TICKET_PORTALS,
   TICKET_PRIORITIES,
@@ -38,6 +40,7 @@ const TICKET_TRIAGE_FILTER = t.Union(TRIAGE_FILTERS.map((value) => t.Literal(val
 const TICKET_TRIAGE_DECISION = t.Union([t.Literal('human'), t.Literal('system')])
 
 export const TicketsQuery = t.Object({
+  handlingMode: t.Optional(t.Union([t.Literal('human'), t.Literal('assistant')])),
   status: t.Optional(TICKET_STATUS),
   category: t.Optional(TICKET_CATEGORY),
   triage: t.Optional(TICKET_TRIAGE_FILTER),
@@ -59,6 +62,7 @@ export const TicketPatchBody = t.Object({
 })
 
 export const ReplyBody = t.Object({
+  draftRunId: t.Optional(t.Union([UUID, t.Null()])),
   body: t.String({ minLength: 1, maxLength: 50_000 }),
   version: VERSION,
 })
@@ -84,6 +88,7 @@ export const CustomerTicketsQuery = t.Object({
 // DTO, e é isso que deixa app e helpdesk deployarem em qualquer ordem (o BFF
 // manda `portal` antes de o helpdesk conhecê-lo → ignorado, não 422).
 export const CustomerTicketCreateBody = t.Object({
+  idempotencyKey: UUID,
   subject: t.String({ minLength: 3, maxLength: 300 }),
   body: t.String({ minLength: 1, maxLength: 10_000 }),
   category: t.Optional(TICKET_CATEGORY),
@@ -92,6 +97,7 @@ export const CustomerTicketCreateBody = t.Object({
 })
 
 export const CustomerTicketMessageBody = t.Object({
+  idempotencyKey: UUID,
   body: t.String({ minLength: 1, maxLength: 10_000 }),
 })
 
@@ -101,17 +107,42 @@ export const KbQuery = t.Object({
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
 
-export const KbCreateBody = t.Object({
-  title: t.String({ minLength: 1, maxLength: 300 }),
-  content: t.String({ minLength: 1, maxLength: 50_000 }),
-  published: t.Optional(t.Boolean()),
-})
+const KnowledgeFields = {
+  audience: t.Optional(t.Union(KNOWLEDGE_AUDIENCES.map((v) => t.Literal(v)))),
+  product: t.Optional(t.Union(KNOWLEDGE_PRODUCTS.map((v) => t.Literal(v)))),
+  ownerName: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  origin: t.Optional(t.String({ minLength: 1, maxLength: 1000 })),
+  validUntil: t.Optional(t.Union([t.String({ format: 'date-time' }), t.Null()])),
+}
+export const KbCreateBody = t.Object(
+  {
+    title: t.String({ minLength: 1, maxLength: 300 }),
+    content: t.String({ minLength: 1, maxLength: 50_000 }),
+    ...KnowledgeFields,
+  },
+  { additionalProperties: false },
+)
 
-export const KbPatchBody = t.Object({
-  title: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
-  content: t.Optional(t.String({ minLength: 1, maxLength: 50_000 })),
-  published: t.Optional(t.Boolean()),
-  version: VERSION,
+export const KbPatchBody = t.Object(
+  {
+    title: t.Optional(t.String({ minLength: 1, maxLength: 300 })),
+    content: t.Optional(t.String({ minLength: 1, maxLength: 50_000 })),
+    ...KnowledgeFields,
+    version: VERSION,
+  },
+  { additionalProperties: false },
+)
+export const KbPublishBody = t.Object(
+  { revisionId: UUID, version: VERSION },
+  { additionalProperties: false },
+)
+export const KbRetryBody = t.Object({ revisionId: UUID }, { additionalProperties: false })
+export const KbVersionBody = t.Object({ version: VERSION }, { additionalProperties: false })
+export const KbSearchQuery = t.Object({
+  query: t.String({ minLength: 1, maxLength: 2000 }),
+  audience: t.Union(KNOWLEDGE_AUDIENCES.map((v) => t.Literal(v))),
+  product: t.Union(KNOWLEDGE_PRODUCTS.map((v) => t.Literal(v))),
+  limit: t.Optional(t.Numeric({ minimum: 1, maximum: 12 })),
 })
 
 // ── OAuth / Conexão ──────────────────────────────────────────────────────────

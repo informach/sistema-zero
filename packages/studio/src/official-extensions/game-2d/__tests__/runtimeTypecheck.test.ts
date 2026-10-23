@@ -44,6 +44,7 @@ interface SZGameTileMapAssetMetadata {
 
 interface Window {
   SZGame2D: GameTwoDRuntimeApi
+  __SZSTUDIO_RUNTIME_INSPECTORS?: Record<string, () => unknown>
   SZGameUIFont: { id: string; family: string; install(): void }
   __SZProjectLifecycle?: {
     run(
@@ -409,7 +410,11 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +12: shared projection/decorations, mold event, pause host and family cleanup.
   // +6 (full review 02/10): o painel e o drawHud recebem `hud` e `controls` (4), e as duas
   // varreduras novas das pistas (recriar só destrói cópias; o rodapé lê os controles).
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1484)
+  // +4: observação opt-in, em `_inspectOwnData(object, key)` e
+  // `_inspectGroupItems(group, limit)`; os quatro têm tipos JSDoc explícitos.
+  // +1: `_inspectSpriteBounds(sprite)` tem tipo JSDoc e reutiliza a projeção oficial.
+  // +1: `_inspectSpritePosition(sprite)` tem JSDoc GameTwoDSprite explícito.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1490)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

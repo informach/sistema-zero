@@ -1,0 +1,101 @@
+{
+  "kind": "production-python-runtime-delivery-execution-evidence",
+  "version": 1,
+  "recordedAt": "2026-10-22T23:32:08.757Z",
+  "sourceCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+  "environment": "production",
+  "state": "RUNTIME_API_DELIVERY_AND_EXTERNAL_CLEANUP_VERIFIED",
+  "workerVersion": "1fb3fff1-053c-4199-b936-a5bd5c63f206",
+  "migrationTag": "v2-python-inspection-jobs",
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sz-studio-runtime-qa@sha256:7e881384684120a0e5993f2972f7ceddca8849fa9d463053ddc8ed0c7d5b6ee1",
+  "runtimeFingerprint": "ae46e781102489c22e9fe4ccd92af4c3a2c1a5b0c0597ecb985ac13472c579da",
+  "preservedJavaScriptNamespace": "b17aa818b81b4a5e820c8c12261e7f50",
+  "newInspectionNamespace": "5ddf207522394d2883b1661f60930000",
+  "planSha256": "7564f45956986cd464570cd619606066c30e05d329bd9d6050d549405d139fd9",
+  "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+  "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+  "delivery": {
+    "state": "PASSED",
+    "metadataVerified": true,
+    "gzipRepresentationsVerified": 12
+  },
+  "execution": {
+    "state": "API_PASSED",
+    "startedAt": "2026-10-22T23:23:59.154Z",
+    "endedAt": "2026-10-22T23:25:49.133Z",
+    "checks": 28,
+    "cases": [
+      {
+        "name": "inspection-no-execution",
+        "oraclePassed": true,
+        "inputRetirementConfirmed": true,
+        "previewRetirementConfirmed": false
+      },
+      {
+        "name": "compile-rejection",
+        "oraclePassed": true,
+        "inputRetirementConfirmed": true,
+        "previewRetirementConfirmed": false
+      },
+      {
+        "name": "turtle-input-and-capture",
+        "oraclePassed": true,
+        "inputRetirementConfirmed": true,
+        "previewRetirementConfirmed": true,
+        "capture": {
+          "sha256": "1e070f0738cbd4ea111821a0c5a864cc5ec8fd187e9148f58bcad7cc8b802503",
+          "byteLength": 2961,
+          "width": 320,
+          "height": 240,
+          "frameSequence": 8
+        }
+      }
+    ],
+    "logicalCleanupConfirmed": true,
+    "remoteOutcomeUnknown": false
+  },
+  "externalPhysicalCleanup": {
+    "observedAt": "2026-10-22T23:26:11.518Z",
+    "completedAt": "2026-10-22T23:26:30.521Z",
+    "physicalInstances": 0,
+    "active": 0,
+    "assigned": 0,
+    "scheduling": 0,
+    "starting": 0
+  },
+  "scopeLimits": {
+    "membersCatalogActivated": false,
+    "languageServiceFinalMigrationQualified": false,
+    "hostedUIQualified": false,
+    "publicGameExecutionQualified": false,
+    "performanceQualified": false,
+    "busyCancellationQualified": false,
+    "platformReleaseComplete": false
+  },
+  "evidence": [
+    {
+      "privateReceipt": "production-runtime-execution-root-r1/proof/receipt.json",
+      "sha256": "e57fc57c256391ec916129f3741eaa18c6de133f7b7dbb2e1eb3f118f5458d35"
+    },
+    {
+      "privateReceipt": "production-delivery-root-r1/proof/receipt.json",
+      "sha256": "ade2cc8e9ba70d82c75c6c5c2a3bb766adf50d6231607b7beb4babcfec0fa746"
+    },
+    {
+      "privateReceipt": "production-cf-post-runtime-qualification-root-r1/receipt.json",
+      "sha256": "b83cf010bd056a00cf10fe98d98059cfd9af7c82651e720aab56ccced69f8d8a"
+    },
+    {
+      "privateReceipt": "production-r2-preparation-r1/upload-root-r1/result.json",
+      "sha256": "9ddb63f0eeb312a74b71308b608e726b6bee73b55299b69bceb7ca858ebf0d32"
+    },
+    {
+      "privateReceipt": "production-r2-preparation-r1/readback-root-r1/result.json",
+      "sha256": "09e43eb108bfb62b7a23fb66c0b9300e318ad362362a49684566a56e8ddd5c5e"
+    },
+    {
+      "privateReceipt": "production-r2-preparation-r1/lifecycle-root-r2-receipt.json",
+      "sha256": "c2d16e1073ac63f3d15690793320c0fceb834e620c8376750e56679dfb52c5d0"
+    }
+  ]
+}

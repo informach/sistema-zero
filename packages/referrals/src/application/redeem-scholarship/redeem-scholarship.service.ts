@@ -2,13 +2,20 @@ import { randomBytes } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import {
   type GiftAttribution,
+  type GiftAudience,
   type GiftMuralAccess,
   type GiftSource,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
 import { CampaignUnavailableError, campaignSource, campaignState } from '../../domain/campaign'
 import { isValidCode, normalizeCode, normalizeEmail } from '../../domain/codes'
-import { isMuralTrialGranted, scholarshipExpiresAt } from '../../domain/gift-policy'
+import {
+  DEFAULT_ADULT_GIFT_COURSE_SLUG,
+  type GiftTarget,
+  giftWelcomeLink,
+  isMuralTrialGranted,
+  scholarshipExpiresAt,
+} from '../../domain/gift-policy'
 import { normalizePhone, splitName } from '../../domain/names'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type {
@@ -56,11 +63,30 @@ export const LEGACY_TEMPLATE_KEYS: Readonly<Record<string, string>> = {
 export interface RedeemOptions {
   /** Curso kids concedido pela indicação, sem a assinatura da Comunidade. */
   courseSlug: string
-  /** Base do app kids (a bolsa v1 é kids) p/ o link de senha/cursos. */
+  /** Base do app kids p/ o link de senha/área dos pais. */
   kidsCommunityUrl: string
+  /** Curso do presente adulto (env `SCHOLARSHIP_ADULT_COURSE_SLUG`). */
+  adultCourseSlug?: string
+  /**
+   * Base do app adulto (env `COMMUNITY_URL`). Ausente = presente adulto INDISPONÍVEL
+   * (503 GIFT_UNAVAILABLE, `giftAvailable:false`); o Kids segue funcionando.
+   */
+  communityUrl?: string | null
   leaseMs: number
   campaigns?: CampaignRepository
 }
+
+/** E-mails de boas-vindas do presente adulto (sempre com o Mural adulto por sete dias). */
+const ADULT_WELCOME_TEMPLATES = {
+  scholarship: {
+    created: 'referrals-scholarship-welcome-adult',
+    existing: 'referrals-scholarship-existing-adult',
+  },
+  campaign: {
+    created: 'referrals-campaign-welcome-adult',
+    existing: 'referrals-campaign-existing-adult',
+  },
+} as const
 
 /**
  * Resgate do curso-presente — disponibilidade → CONTA → GRANT → E-MAIL:
@@ -82,10 +108,37 @@ export class RedeemScholarshipService {
     private readonly genPassword: () => string = () => randomBytes(32).toString('base64url'),
   ) {}
 
+  /** Curso e app de cada público. */
+  target(audience: GiftAudience): GiftTarget {
+    return audience === 'adult'
+      ? {
+          courseSlug: this.opts.adultCourseSlug ?? DEFAULT_ADULT_GIFT_COURSE_SLUG,
+          appUrl: this.opts.communityUrl ?? null,
+        }
+      : { courseSlug: this.opts.courseSlug, appUrl: this.opts.kidsCommunityUrl }
+  }
+
+  /** Curso gravado no resgate (retomada conserva o curso) ou o atual do público. */
+  private courseOf(redemption: RedemptionRecord): string {
+    return redemption.courseSlug ?? this.target(redemption.audience).courseSlug
+  }
+
   async giftAvailability(
-    courseSlug = this.opts.courseSlug,
+    audience: GiftAudience = 'kids',
+    courseSlug?: string,
   ): Promise<'available' | 'unavailable' | 'upstream_error'> {
-    const res = await this.gateway.getGiftAvailability(courseSlug)
+    const target = this.target(audience)
+    if (!target.appUrl) {
+      // Fail-closed: sem o app do público não há para onde mandar a pessoa.
+      this.logger.warn('referrals.gift_audience_unconfigured', { audience })
+      return 'unavailable'
+    }
+    const slug = courseSlug ?? target.courseSlug
+    // Kids sem query: a consulta continua idêntica à de antes do presente adulto.
+    const res =
+      audience === 'adult'
+        ? await this.gateway.getGiftAvailability(slug, 'adult')
+        : await this.gateway.getGiftAvailability(slug)
     if (res.status !== 200) {
       this.logger.warn('referrals.gift_availability_failed', { status: res.status })
       return 'upstream_error'
@@ -109,14 +162,19 @@ export class RedeemScholarshipService {
     const name = input.name.trim().slice(0, 120)
     const phone = normalizePhone(input.phone)
 
+    // O público vem do código: campanha → público da campanha; embaixador → o do código.
+    const campaign =
+      codeRecord.ownerKind === 'campaign' && codeRecord.campaignId
+        ? ((await this.opts.campaigns?.findById(codeRecord.campaignId)) ?? null)
+        : null
+    const audience = campaign?.audience ?? codeRecord.audience
+
     // Resgate novo só começa quando o curso está publicado. O 409 de um resgate
     // concluído continua reconhecível mesmo se o curso sair do catálogo depois.
-    const existing = await this.repo.findRedemptionByEmail(email)
+    // "Já resgatado" é por público: o mesmo e-mail pode ter um presente Kids e um adulto.
+    const existing = await this.repo.findRedemptionByEmail(email, audience)
     let source: GiftSource = { kind: codeRecord.ownerKind, name: codeRecord.displayName }
     if (!existing && codeRecord.ownerKind === 'campaign') {
-      const campaign = codeRecord.campaignId
-        ? await this.opts.campaigns?.findById(codeRecord.campaignId)
-        : null
       if (!campaign) return { kind: 'code_not_found' }
       const state = campaignState(campaign, this.now())
       if (state === 'draft') return { kind: 'code_not_found' }
@@ -124,22 +182,23 @@ export class RedeemScholarshipService {
       source = campaignSource(campaign)
     }
     if (existing?.status !== 'completed') {
-      const availability = await this.giftAvailability(existing?.courseSlug ?? this.opts.courseSlug)
+      const availability = await this.giftAvailability(audience, existing?.courseSlug ?? undefined)
       if (availability === 'unavailable') return { kind: 'gift_unavailable' }
       if (availability === 'upstream_error') return { kind: 'upstream_error' }
     }
 
-    // Claim da bolsa: 1 por e-mail, GLOBAL. Conflito devolve a linha existente —
+    // Claim da bolsa: 1 por e-mail e público. Conflito devolve a linha existente —
     // completed = 409; pending/failed = RETOMADA (o 1º claim vence o code_id).
     let claim: Awaited<ReturnType<ReferralRepository['insertRedemption']>>
     try {
       claim = await this.repo.insertRedemption({
         codeId: codeRecord.id,
         email,
+        audience,
         name,
         phone,
         sourceSnapshot: source,
-        courseSlug: this.opts.courseSlug,
+        courseSlug: this.target(audience).courseSlug,
         attribution: sanitizeGiftAttribution(input.attribution),
       })
     } catch (error) {
@@ -225,12 +284,14 @@ export class RedeemScholarshipService {
       }
       const res = await this.gateway.grantManualCourse({
         userId,
-        courseRef: redemption.courseSlug ?? this.opts.courseSlug,
+        courseRef: this.courseOf(redemption),
         sourceId: `scholarship:${redemption.id}`,
         expiresAt: expiresAt?.toISOString() ?? null,
         // A versão do presente integra a chave: uma entrega antiga da OFERTA
         // não pode deduplicar o novo grant do CURSO no members.
-        deliveryId: `scholarship:course:${redemption.courseSlug ?? this.opts.courseSlug}:${redemption.id}`,
+        deliveryId: `scholarship:course:${this.courseOf(redemption)}:${redemption.id}`,
+        // Só o adulto leva o campo: o corpo Kids continua byte a byte o de antes.
+        ...(redemption.audience === 'adult' ? { audience: 'adult' as const } : {}),
       })
       if (res.status === 409) {
         // Terminal: matrícula manual revogada/expirada do mesmo produto exige
@@ -287,9 +348,11 @@ export class RedeemScholarshipService {
           ? await this.gateway.grantMuralTrial({
               userId,
               sourceId: `scholarship:${redemption.id}`,
-              courseRef: redemption.courseSlug ?? this.opts.courseSlug,
+              courseRef: this.courseOf(redemption),
               expiresAt: muralExpiresAt.toISOString(),
               deliveryId: `scholarship:mural-trial:${redemption.id}`,
+              // Adulto: o Mural adulto pelo mesmo prazo do curso.
+              ...(redemption.audience === 'adult' ? { audience: 'adult' as const } : {}),
             })
           : await this.gateway.grantMuralVisitor({
               userId,
@@ -354,11 +417,23 @@ export class RedeemScholarshipService {
         this.logger.warn('referrals.redeem_welcome_expired', { redemptionId: redemption.id })
         return 'unknown'
       }
+      const appUrl = this.target(redemption.audience).appUrl
+      if (!appUrl) {
+        // App do público sem configuração: nada é reivindicado, a próxima submissão retoma.
+        this.logger.warn('referrals.redeem_welcome_unconfigured', {
+          redemptionId: redemption.id,
+          audience: redemption.audience,
+        })
+        return 'failed'
+      }
       if (!(await this.repo.claimRedemptionWelcome(redemption.id, this.now())))
         return redemption.welcomeAcceptedAt ? 'accepted' : 'unknown'
       const { firstName } = splitName(redemption.name)
-      const base = this.opts.kidsCommunityUrl.replace(/\/$/, '')
       const idempotencyKey = `scholarship-welcome:${redemption.id}`
+      const adult = redemption.audience === 'adult'
+      const adultTemplates =
+        ADULT_WELCOME_TEMPLATES[source.kind === 'campaign' ? 'campaign' : 'scholarship']
+      const validade = expiresAt ? formatValidade(expiresAt) : ''
 
       let send: GatewayResult
       if (buyerCreated) {
@@ -379,8 +454,9 @@ export class RedeemScholarshipService {
         send = await this.sendWithFallback(
           redemption.id,
           {
-            templateKey:
-              redemption.muralVisitorPolicy === 'trial'
+            templateKey: adult
+              ? adultTemplates.created
+              : redemption.muralVisitorPolicy === 'trial'
                 ? source.kind === 'campaign'
                   ? 'referrals-campaign-welcome-mural-trial'
                   : 'referrals-scholarship-welcome-mural-trial'
@@ -395,12 +471,11 @@ export class RedeemScholarshipService {
             variables: {
               nome: firstName,
               ...(source.kind === 'campaign'
-                ? {
-                    campanha: source.name,
-                    validade: expiresAt ? formatValidade(expiresAt) : '',
-                  }
-                : { indicador: source.name }),
-              link: `${base}/redefinir-senha?token=${encodeURIComponent(token)}`,
+                ? { campanha: source.name, validade }
+                : adult
+                  ? { indicador: source.name, validade }
+                  : { indicador: source.name }),
+              link: giftWelcomeLink(redemption.audience, appUrl, token),
             },
           },
           idempotencyKey,
@@ -411,8 +486,9 @@ export class RedeemScholarshipService {
         send = await this.sendWithFallback(
           redemption.id,
           {
-            templateKey:
-              redemption.muralVisitorPolicy === 'trial'
+            templateKey: adult
+              ? adultTemplates.existing
+              : redemption.muralVisitorPolicy === 'trial'
                 ? source.kind === 'campaign'
                   ? 'referrals-campaign-existing-mural-trial'
                   : 'referrals-scholarship-existing-mural-trial'
@@ -427,14 +503,13 @@ export class RedeemScholarshipService {
             variables: {
               nome: firstName,
               ...(source.kind === 'campaign'
-                ? {
-                    campanha: source.name,
-                    validade: expiresAt ? formatValidade(expiresAt) : '',
-                  }
-                : expiresAt
-                  ? { indicador: source.name }
-                  : {}),
-              link: `${base}/login/responsavel`,
+                ? { campanha: source.name, validade }
+                : adult
+                  ? { indicador: source.name, validade }
+                  : expiresAt
+                    ? { indicador: source.name }
+                    : {}),
+              link: giftWelcomeLink(redemption.audience, appUrl, null),
             },
           },
           idempotencyKey,

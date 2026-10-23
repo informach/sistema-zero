@@ -57,6 +57,25 @@ function matchesRevision(
 export function guardedWrite(
   withStore: UseStore,
   assets: readonly MoldaAsset[],
+  maxBytes: number | Promise<number> | (() => Promise<number>),
+  expectedRevisions?: ReadonlyMap<string, number | null>,
+): Promise<boolean> {
+  let owned: MoldaAsset[]
+  try {
+    for (const asset of assets) assertMoldaDocumentWritable(asset)
+    owned = structuredClone([...assets])
+  } catch (error) {
+    return Promise.reject(error)
+  }
+  const expected = expectedRevisions ? new Map(expectedRevisions) : undefined
+  if (typeof maxBytes === 'number') return writeOwned(withStore, owned, maxBytes, expected)
+  const capacity = typeof maxBytes === 'function' ? maxBytes() : maxBytes
+  return capacity.then((bytes) => writeOwned(withStore, owned, bytes, expected))
+}
+
+function writeOwned(
+  withStore: UseStore,
+  assets: readonly MoldaAsset[],
   maxBytes: number,
   expectedRevisions?: ReadonlyMap<string, number | null>,
 ): Promise<boolean> {

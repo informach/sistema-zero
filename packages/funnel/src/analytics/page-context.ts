@@ -5,6 +5,8 @@ import type { PageContext } from './types'
 export function analyticsPage(path: string): PageContext | null {
   if (!/^\/[a-z0-9/_-]*$/.test(path) || path.length > 220) return null
   const normalized = path.replace(/\/$/, '') || '/'
+  // `/como-funciona` virou 301 em 20/10/2026 e não gera eventos novos; segue reconhecida para o painel
+  // abrir os dados de antes.
   if (normalized === '/' || normalized === '/como-funciona')
     return {
       id: normalized === '/' ? 'bio' : 'como-funciona',

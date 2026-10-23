@@ -1,0 +1,31 @@
+[
+  {
+    "slide": 1,
+    "file": "01-ideia-no-papel.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "references": [],
+    "selected": true,
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-09a3c7d6-3352-4a16-845c-6bd250aefbef.png"
+  },
+  {
+    "slide": 2,
+    "file": "02-escolher-o-comeco.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "references": [
+      "01-ideia-no-papel.png",
+      "02-estudio-vazio.png"
+    ],
+    "selected": true,
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0c6eb3e6-cc3f-4620-8004-e9460e0229ca.png"
+  },
+  {
+    "slide": 6,
+    "file": "06-duas-listas.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "references": [
+      "01-ideia-no-papel.png"
+    ],
+    "selected": true,
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0f210fbd-f66c-4990-a45f-0a2c6237bba6.png"
+  }
+]

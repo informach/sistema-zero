@@ -5,6 +5,7 @@ import type { PendingReplyMessage } from '../../src/domain/ports/reply-delivery-
 import type { TicketMessage } from '../../src/domain/ticket/ticket-message'
 import type { DbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleMessageRepository } from '../../src/infrastructure/persistence/drizzle/message.repository'
 import { DrizzleReplyDeliveryRepository } from '../../src/infrastructure/persistence/drizzle/reply-delivery.repository'
 import {
   portalNotificationOutbox,
@@ -82,6 +83,8 @@ integration('DrizzleReplyDeliveryRepository', () => {
     const [beforeConfirmation] = await connection.db.select().from(tickets)
     expect(beforeConfirmation?.messageCount).toBe(1)
 
+    const messageRepo = new DrizzleMessageRepository(connection.db)
+    const initial = (await messageRepo.page(ticket.id, { limit: 50, publicOnly: true }))[0]!
     const delivered = await repository.markSent({
       messageId: pending.id,
       gmailMessageId: 'gm-reply-confirmed',
@@ -89,6 +92,12 @@ integration('DrizzleReplyDeliveryRepository', () => {
       at: ticket.createdAt,
     })
     expect(delivered?.message.deliveryState).toBe('sent')
+    const incremental = await messageRepo.page(ticket.id, {
+      limit: 50,
+      publicOnly: true,
+      after: { position: initial.position },
+    })
+    expect(incremental.map((m) => m.id)).toEqual([pending.id])
     expect(delivered?.ticket.messageCount).toBe(2)
 
     const [messageCount] = await connection.db
@@ -281,5 +290,39 @@ integration('DrizzleReplyDeliveryRepository', () => {
       at: ticket.createdAt,
     })
     expect(blocked.status).toBe('pending')
+  })
+  it('confirmação tardia não pausa SLA de inbound recebido depois da intenção', async () => {
+    const ticket = makeTicket({ messageCount: 1 })
+    await connection.db.insert(tickets).values(ticket)
+    const message = {
+      ...makeMessage(ticket.id),
+      gmailMessageId: null,
+      rfc822MessageId: '<late-customer@test>',
+      direction: 'outbound' as const,
+      sentVia: 'human' as const,
+      deliveryState: 'pending' as const,
+      deliveryLastError: null,
+      createdAt: ticket.createdAt,
+    }
+    await repository.createIntent({
+      ticketId: ticket.id,
+      expectedVersion: 0,
+      message,
+      at: ticket.createdAt,
+    })
+    const inboundAt = new Date(ticket.createdAt.getTime() + 1000)
+    await connection.db
+      .update(tickets)
+      .set({ status: 'open', lastInboundAt: inboundAt })
+      .where(eq(tickets.id, ticket.id))
+    const sent = await repository.markSent({
+      messageId: message.id,
+      gmailMessageId: 'late-message',
+      gmailThreadId: ticket.gmailThreadId!,
+      at: new Date(inboundAt.getTime() + 1000),
+    })
+    expect(sent?.message.deliveryState).toBe('sent')
+    expect(sent?.ticket.status).toBe('open')
+    expect(sent?.ticket.lastInboundAt).toEqual(inboundAt)
   })
 })

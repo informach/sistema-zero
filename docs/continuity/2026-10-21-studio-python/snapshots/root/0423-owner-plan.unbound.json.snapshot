@@ -1,0 +1,1075 @@
+{
+  "version": 1,
+  "kind": "hosted-js-pro-node-job",
+  "resourceProfile": "hosted-functional-2048",
+  "functionalOnly": true,
+  "performanceQualified": false,
+  "attemptId": null,
+  "directory": null,
+  "node": {
+    "path": "C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe",
+    "bytes": 93882184,
+    "sha256": "ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c"
+  },
+  "chrome": {
+    "version": "155.0.8059.85",
+    "path": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+    "bytes": 4720792,
+    "sha256": "de999bce6a1c954df71a8f15bf751b336172f55ac1a0325bb0580cbc2121268c"
+  },
+  "binding": null,
+  "pins": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\install_media_pack.ps1",
+      "bytes": 174,
+      "sha256": "bc20f049badf021e3a53bdb4156603caa5ef482c9a9a251f927605e676a44171"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\install_webkit_wsl.ps1",
+      "bytes": 1464,
+      "sha256": "bc61beda37a808eef27d39ce684baa792f6d17737a25a432b1a84d3b591ab815"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_chrome_beta_linux.sh",
+      "bytes": 1214,
+      "sha256": "1516fd36def44bfcf87855850322a54e3b26e863a82fbdf2a44a5f5134f7eedf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_chrome_beta_mac.sh",
+      "bytes": 560,
+      "sha256": "42d0572860dcecb094d409b879e469292c58a7645085357156453a6299315770"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_chrome_beta_win.ps1",
+      "bytes": 957,
+      "sha256": "b6d9e44742feafb98d5edc56fa20042949973cf30d141a1c5b4fb384096967c5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_chrome_stable_linux.sh",
+      "bytes": 1209,
+      "sha256": "8b578baa16f286f17d6a29cc8998a7a16f2635b7fb018f9473d5c498e0be450f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_chrome_stable_mac.sh",
+      "bytes": 516,
+      "sha256": "8532b8ff7600f208aada15584978fa91baffb0d4bb77bd30332ec827de501d72"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_chrome_stable_win.ps1",
+      "bytes": 923,
+      "sha256": "3d96c4e2f4ebbb3fad44cf3ba58d9cf90af1c9fb3073e3b27d45a74cf005515b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_beta_linux.sh",
+      "bytes": 1491,
+      "sha256": "50a5fb48211ce0dc524e17e18547f40e863c1732555ca288cbc69cd6cb55ae2a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_beta_mac.sh",
+      "bytes": 374,
+      "sha256": "a280a4d02c2c908a6a523b781dd953bcf438689ceb4723133255b0d11955b124"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_beta_win.ps1",
+      "bytes": 874,
+      "sha256": "b173c378a59f0cc38033cee702de1f44f09276c9b2270d1a650ebe66ee312433"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_dev_linux.sh",
+      "bytes": 1486,
+      "sha256": "38e74c2ac8a403c512590d11d20742773d338d8b68b02022b209a9d8a6e03d7c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_dev_mac.sh",
+      "bytes": 369,
+      "sha256": "48d96b6d58b4a1a42e116545b523f4efd25edac1f3fa323a97eb596fa3bb654a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_dev_win.ps1",
+      "bytes": 869,
+      "sha256": "46f7f98c81cb0abe687d7f4a5afea9b897a38d2a6dd6f6662fbd847f7a22bd51"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_stable_linux.sh",
+      "bytes": 1504,
+      "sha256": "db2fb3492a689ee5472ec159fef6a5efb7a62f1f513339350813c9d1334ba8d2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_stable_mac.sh",
+      "bytes": 368,
+      "sha256": "e176bc37da1a3e5b5cde36b941ed6134f7d5ee784587d034140cf40c53456b27"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\bin\\reinstall_msedge_stable_win.ps1",
+      "bytes": 856,
+      "sha256": "40bb5fcbfcebbbe2ce43c6e736e7c5deefc5be03b6e9c6914423c06ec1f591be"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\browsers.json",
+      "bytes": 1941,
+      "sha256": "af53e32ffe35a024ddb34563700956b01ada00ac7e9270ba5df0604ec57e38e1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\cli.js",
+      "bytes": 839,
+      "sha256": "f1c4075aef116c766092250d7f37b3249a7cee6465d953207fc38c8f6145becd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\index.d.ts",
+      "bytes": 634,
+      "sha256": "7a8ec10b0834eb7183e4bfcd929838ac77583828e343211bb73676d1e47f6f01"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\index.js",
+      "bytes": 1117,
+      "sha256": "dca9d1e7d21c43390b59d79d55df309cf5d195edc668c35862bb4db67e116fc0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\index.mjs",
+      "bytes": 1063,
+      "sha256": "3d36e2132d3c8b62397d23f0bb4177336aaee503203ae2a2c90fbeb5bf3317dd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\bootstrap.js",
+      "bytes": 3100,
+      "sha256": "0e3cc200f6e99557e953b6caace213e652750d1da0e800b92ed94f459a33ef59"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\coreBundle.js",
+      "bytes": 3206963,
+      "sha256": "f74353fcb8e406756a70a6af0dfc4a5069acd577e35ec9d923ccf36ac009c2f5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\entry\\cliDaemon.js",
+      "bytes": 197,
+      "sha256": "062f256fb29a7bf91793a014b9c3f1f9cf2dc6b12e40a8a2ebba88a630ae16a0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\entry\\dashboardApp.js",
+      "bytes": 108,
+      "sha256": "209962c6eaeef11629f226d6a2ab33ec7a2480754242b6e19590a9e6eb71d126"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\entry\\mcp.js",
+      "bytes": 442,
+      "sha256": "cc87dc0020cb41caebbf04f50e42bc7835b033a6d80e9c3f0a3d0b3dbdf341c7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\entry\\oopBrowserDownload.js",
+      "bytes": 120,
+      "sha256": "87567cdbd67dd2f50bb232d47d3784701ece7c81e39c0287bb7d1b466b68cf06"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\package.js",
+      "bytes": 2112,
+      "sha256": "9f938e1d44a0dd231b1660ca62f7dae964859b79cbdc370b8542c5d375ca3c05"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\server\\chromium\\appIcon.png",
+      "bytes": 16565,
+      "sha256": "6ba994f05c5cf18e22d9b6bef9898fbdec6ad4d4d77f5187d0609cb42d72d01e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\server\\deviceDescriptorsSource.json",
+      "bytes": 54181,
+      "sha256": "933d568bfa2d50de5805ce52f55a33509c66c8b8b7aa2c07a82d5475c39fe851"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\server\\electron\\loader.js",
+      "bytes": 4821,
+      "sha256": "8c99c632a9fcef9d691160954d01acdf374ba15566e153bef7fb61b0d3796e6d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\serverRegistry.js",
+      "bytes": 247054,
+      "sha256": "b7173eb632bdbf34a6aa137b55e50fbdc95acda4851480423afe6caa86cc48b7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\serverRegistry.js.LICENSE",
+      "bytes": 18617,
+      "sha256": "5cf540fe55a2ba9bcf0eb76e739b454faa8581e2f1a0f777602ef0855534302e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\channelSessions.js",
+      "bytes": 7087,
+      "sha256": "6b9c613e87340f48ad7182addd7495a8ff3fbe55feb1bbd0ce04f59f1552e126"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\cli.js",
+      "bytes": 153,
+      "sha256": "dfde8e9dfde30c4b3914eb25ba1c5a8524ec64651d866171d75cd7b41a827180"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\help.json",
+      "bytes": 35416,
+      "sha256": "baf768247fc0cfaa6d1122c6437d957ddfa9cb05ce30effaeb9f4e8d68383b69"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\minimist.js",
+      "bytes": 4106,
+      "sha256": "1d200627373a367e0097f1abeaaa4d67cde2c33f2e5efca5cb55222c7667adc3"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\output.js",
+      "bytes": 11685,
+      "sha256": "b10abeea2ea7455577314dd16a71c70c9024af3df9e604094b0ae18675adf73c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\program.js",
+      "bytes": 15020,
+      "sha256": "0aa50a2f2c2a2b2b12c6b08baa2ed358aa748ac713966b9982e585dcb9e19d3f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\registry.js",
+      "bytes": 6670,
+      "sha256": "2fc4761b10cb2587bf8bb8b861d083ee212833084045d4e2121955873557386a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\session.js",
+      "bytes": 9948,
+      "sha256": "3d132cf57ed1db9b228e6218ecebb36910147c24cf6613a86ea138cf2c682f97"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\element-attributes.md",
+      "bytes": 665,
+      "sha256": "bf19aa4671e0a50a0fefa9c790f39124e803060eefe395042b723c29fcb7faa2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\playwright-tests.md",
+      "bytes": 1690,
+      "sha256": "c5b0719fef2cfdff50bd744051b2f9afc119775db4b48e9b2882c1cf3886797c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\request-mocking.md",
+      "bytes": 2182,
+      "sha256": "54e801c9663fc2b6d68ceb058cb1c360724c2499f42acc7852a68e83e5b5f37c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\running-code.md",
+      "bytes": 5642,
+      "sha256": "d95c539a5990b71d02d8bdf1d9414df16191eb6cff95b0063820518b7a13dcb2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\session-management.md",
+      "bytes": 5671,
+      "sha256": "cd3e261b8763bf952f1e371b876cb78d054379afec85482f9250633e1b7e6c44"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\spec-driven-testing.md",
+      "bytes": 11578,
+      "sha256": "48cfac3c178c24c75c19f0c59bab8ee05fd50c110b9916446992ffd4b17a7d1e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\storage-state.md",
+      "bytes": 5198,
+      "sha256": "1122778c9b13b44bddebb4476a7f99d918afd31757be8b4fade3cb09c3d48c99"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\test-generation.md",
+      "bytes": 4585,
+      "sha256": "2a9c4d94effa31b05cf367dfa8bbace8874a3bc9799987ad2b03269af224d299"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\tracing.md",
+      "bytes": 3440,
+      "sha256": "792e0ac7705e56ac48df84c0f5400221ce86107897c671590a64a4ea6a82508e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\references\\video-recording.md",
+      "bytes": 5385,
+      "sha256": "0cea7708999aa663701917615889a84cbc05200718bb161de9a5366a826c2b4d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\cli-client\\skill\\SKILL.md",
+      "bytes": 11263,
+      "sha256": "75143af12b0201983322b9ddfca7aaee32d4ee8e03189f8d2a23aba1d6295c23"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\dashboard\\appIcon.png",
+      "bytes": 18945,
+      "sha256": "38037bcf18c7f9b950da2e1a2d8800d38fb27637ccda293d38368a3704b67f18"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\trace\\SKILL.md",
+      "bytes": 4712,
+      "sha256": "df85506bfa8a445c961efa1ac244cca733667b717711bcc99c1f93994c29d5dc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\utils\\extension.js",
+      "bytes": 3132,
+      "sha256": "c07d365ccff8c7fab3d65848bc01616c74e422f3be7b1c0e7b587b84ef866ada"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\tools\\utils\\socketConnection.js",
+      "bytes": 3317,
+      "sha256": "973c2bea70a1f1445f4673f99e9fa351e50a2ec9fd93d7381b2c41bb4de764dd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\utilsBundle.js",
+      "bytes": 3093405,
+      "sha256": "5c42363c10d2f2f5bc91e07feaa9fa5f417a1a55e6559448d0c20d66f73db9e0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\utilsBundle.js.LICENSE",
+      "bytes": 107836,
+      "sha256": "8807264f1ac7f9950a93bf134d5ba28ebd52371fdfda54c75e87d10fdf13aa6e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\codicon-DCmgc-ay.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\firefox-1bWoP6pv.svg",
+      "bytes": 7488,
+      "sha256": "3f3742d1e78c0db6c2d3531250f70c30675ee5310de32fa89befaf738c54efd0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\firefox-beta-k3eOH_eK.svg",
+      "bytes": 9280,
+      "sha256": "7eab5ffdc25903ba33a7202f7fffa1999f119c7be45a39e9e703c118904f917a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\firefox-nightly-Cp5nfeDT.svg",
+      "bytes": 9143,
+      "sha256": "f311c074b0fa999fcd6b73441301fb54ee87a48ff3bf05f318647928110476da"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\index-BY2S1tHT.css",
+      "bytes": 142433,
+      "sha256": "4e741ba6be0fb15305f6dfd907e245e68554f6dbd5282a58dcc1e9d2493eb917"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\index-DpEq2p62.js",
+      "bytes": 331408,
+      "sha256": "120037d62d91187eb3a2ac4e4534742c32a04b10f15ac938e06fcf5f261a659f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\assets\\safari-na3_-uQk.svg",
+      "bytes": 5254,
+      "sha256": "80fd72ca5eb8545f1981277b31f4f92951d469d4efebd078e4086b676fe517dc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\index.html",
+      "bytes": 1078,
+      "sha256": "0f3061205ab98917439bbc7a4bc06e75a201d04e6c89f4b0ff9da5961010d5ca"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\dashboard\\playwright-logo.svg",
+      "bytes": 5645,
+      "sha256": "511524a1c145819303a18fb71870a4307c3e740f9e9722f7686a2b42b0995b6c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\htmlReport\\index.html",
+      "bytes": 464,
+      "sha256": "ce7c098020a0eb9ce10edd416245ea6da50dfeaab18dfd0a2176979d22643be6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\htmlReport\\report.css",
+      "bytes": 108330,
+      "sha256": "3298f11062d5112516c8b3fa2368c6138b4700aa9fa215bb5fc0a1f0efe94e3f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\htmlReport\\report.js",
+      "bytes": 415587,
+      "sha256": "d354496707a505d2d5d58f67ad4216cdf681233b47f2e028dbfdd1e197126792"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\assets\\codeMirrorModule-BHYmBp6h.js",
+      "bytes": 313009,
+      "sha256": "954a850a323b8c35d071a149aee3504ef8ed4f3989e42debc3fe93a782f55288"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\assets\\codeMirrorModule-DYBRYzYX.css",
+      "bytes": 6421,
+      "sha256": "70bf421a13e87857ca684bfa2cc55f06d7c5a50f71253a3ff1d74769b14a957e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\assets\\codicon-DCmgc-ay.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\assets\\index-4ZiSSCmn.css",
+      "bytes": 92234,
+      "sha256": "4278e600a533667369328e9eb52a212693d52e46072ec37228e0ef8621a48ead"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\assets\\index-DA10QRaq.js",
+      "bytes": 364880,
+      "sha256": "184fed3d752d1764bd26b9e8ccf735ce109cd69b3ed62c2f403e6865662bab10"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\index.html",
+      "bytes": 1078,
+      "sha256": "6e87705cd06a9347ab8f623acd675ef38dae96886b2db3f656d87c2e6cef4828"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\recorder\\playwright-logo.svg",
+      "bytes": 5033,
+      "sha256": "6b0a4367bdeab10995bc239278f04c68c10e48adbec15e799e01909a0d66dcb9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\assets\\codeMirrorModule-Ds_H_9Yq.js",
+      "bytes": 313054,
+      "sha256": "97273402dd9c1dbe012459a05a57d5f81fcf900828c7db1e8a33d2d1b8f73e17"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\assets\\defaultSettingsView-D31xz8zv.js",
+      "bytes": 649133,
+      "sha256": "89918f149a8f31f3f0931be88224ce73991c11b328aaf96f6c8553af243d36f1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\assets\\urlMatch-BYQrIQwR.js",
+      "bytes": 819,
+      "sha256": "168c4dee4815ea8d3c131a504033cd23d4b15aefa0209dd10ad3f643e8f1d8a7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\assets\\xtermModule-CsJ4vdCR.js",
+      "bytes": 292244,
+      "sha256": "4aa82b0448cef1cf951bbe0ac80bf2d2b7c5d279dd74bcc798a9e563e98e5295"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\codeMirrorModule.DYBRYzYX.css",
+      "bytes": 6421,
+      "sha256": "70bf421a13e87857ca684bfa2cc55f06d7c5a50f71253a3ff1d74769b14a957e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\codicon.DCmgc-ay.ttf",
+      "bytes": 80340,
+      "sha256": "0f1d5219934e96e83b8db162d60b4d8c09b5de1e7d38031cbafe4a3c0f2889c9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\defaultSettingsView.BDKsFU3c.css",
+      "bytes": 110856,
+      "sha256": "0a7ab260fedb13141b5635b80704878e37adba89198a16d43b83972e981ca648"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\index.BCnMPevh.js",
+      "bytes": 6591,
+      "sha256": "b7b21f6a648db1af9b77717e1be7bbf0ecb09e0e23e596c815b7b84661de4b87"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\index.CzXZzn5A.css",
+      "bytes": 2111,
+      "sha256": "4ec2a3d49db259ce9025cb4fa48d73b1afd58215e567eef3b4a4cbf76c1674d9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\index.html",
+      "bytes": 2363,
+      "sha256": "86a5792cff2ecf975e580491d8593e322104711946efd765edd250039a2e2f3d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\manifest.webmanifest",
+      "bytes": 429,
+      "sha256": "d8540500603a32a39fe7e5a0375dc0f9ebafd11118e06a846db7efc608223ab9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\playwright-logo.svg",
+      "bytes": 5033,
+      "sha256": "6b0a4367bdeab10995bc239278f04c68c10e48adbec15e799e01909a0d66dcb9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\snapshot.html",
+      "bytes": 389,
+      "sha256": "11c80efe4f4424fa59004bcc71fed77a420d2da5f199790e355c30a5b965d0cd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\snapshot.v8KI4P3m.js",
+      "bytes": 660,
+      "sha256": "97a3cd6d67aaac66efc838d7d743ac51bbf7d272e1287981c11758fca21a0657"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\sw.bundle.js",
+      "bytes": 95469,
+      "sha256": "eb666dd23c07d2305f216af443a83ee71e06433e0d5b9da2927a9fee18aa2ab9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\uiMode.Btcz36p_.css",
+      "bytes": 60239,
+      "sha256": "bfe8330cc78eeb1b1c4d8983aab7068d725526e407903ee19e515996250cb221"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\uiMode.C2Efnu2P.js",
+      "bytes": 38201,
+      "sha256": "fcde5934289592310ce4db673b29df510adcdbc0c028264e0c8d3605ec253ee8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\uiMode.html",
+      "bytes": 727,
+      "sha256": "5f17cd4e1ddcf1915c15487b7b4e6a4a812ca6fd79ecedea97ef0dd2900dd635"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\vite\\traceViewer\\xtermModule.DYP7pi_n.css",
+      "bytes": 4150,
+      "sha256": "7c5a01f382f76539fc9b4db6b18e18a7035741845fd14968c5cdc0a7e373d817"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\lib\\xdg-open",
+      "bytes": 25778,
+      "sha256": "2e79a4d5171dd384d20a75b023dfe0e9f4330cdb5d441f6c3859a11fce3db51a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\LICENSE",
+      "bytes": 11601,
+      "sha256": "45873d00a0dd243596deb4aa23b2493b3d1f0671921bf2538ea431d7380220eb"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\NOTICE",
+      "bytes": 254,
+      "sha256": "6d602191187b35b9b01d2cffa01c8469c2c8d9de8a96f1bf868e0f264f51c81d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\package.json",
+      "bytes": 876,
+      "sha256": "6f7b58cc55449321279f11ca97d4e451c391738b77db32cdbcedf02851e3f097"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\README.md",
+      "bytes": 120,
+      "sha256": "d16ff7f8e38fa1fc954f695ad551cdc118d9c9bdd5f3d83203901f4c317d7d7e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\ThirdPartyNotices.txt",
+      "bytes": 676,
+      "sha256": "a549d329bad8806fe279f0ecae0fc0270dec7e7c2dc8ec10f90e394f7c32b144"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\types\\protocol.d.ts",
+      "bytes": 812393,
+      "sha256": "681cf9768031b874fafdd81a20e8a20ca6c92a5cbf12e86532a69182e315b065"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\types\\structs.d.ts",
+      "bytes": 2103,
+      "sha256": "32727845ab5bd8a9ef3e4844c567c09f6d418fcf0f90d381c00652a6f23e7f6e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\types\\types.d.ts",
+      "bytes": 1013672,
+      "sha256": "e5b810845dedef5aa0d682efa61be20dcb2e28c27a64ff5cc4cfc122f3f3980f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+      "bytes": 93882184,
+      "sha256": "ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c"
+    },
+    {
+      "path": "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+      "bytes": 4720792,
+      "sha256": "de999bce6a1c954df71a8f15bf751b336172f55ac1a0325bb0580cbc2121268c"
+    },
+    {
+      "path": "C:\\Program Files\\WindowsApps\\Microsoft.PowerShell_7.6.7.0_x64__8wekyb3d8bbwe\\pwsh.exe",
+      "bytes": 301360,
+      "sha256": "fa2c8bb1e35cdd62ad15cd06a1d8f2c5961e9725a9bfa1e7cfd2c322f49e9619"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-native-browser-owner.ps1",
+      "bytes": 13289,
+      "sha256": "97af6e4314844f37e9adde4fb7f4f2b78c442d4ed4e62d6225ede7589d5fd9b4"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-native-browser-common.ps1",
+      "bytes": 7841,
+      "sha256": "20b1c7e354dda7984e4cc8e08ccacd261ccc4b49e59cffacb25701a75491aa79"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-native-browser-worker.mjs",
+      "bytes": 4822,
+      "sha256": "82701a8116a1159429d14e28857598ea27732dd9213106e2a650e46beb2435f2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-windows-job.ps1",
+      "bytes": 9795,
+      "sha256": "37b44ce8b08d119c3c8b6ce527a9711faed2ac5b231aa7ee4ae8bb025b539511"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-windows-job.cs",
+      "bytes": 12125,
+      "sha256": "160736a821f204e3202f8a2315052633d797a1bfd6948b31255e4e166ba64c2d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\package.json",
+      "bytes": 1293,
+      "sha256": "dc2ed7b3925f20a8b8e3f08d6423aad11213c9aaf6d33f798bb3e025f4be8773"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\Dockerfile",
+      "bytes": 775,
+      "sha256": "26259cdfb921cb1d0f7ee57c16dd9d3cc746cfbbd16a960ed0afb953e27801f7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\package.json",
+      "bytes": 1738,
+      "sha256": "3fc14891655d74e1963b8fbbd97311863e274c990c190eb794044c63686f88aa"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\bun.lock",
+      "bytes": 539814,
+      "sha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\infrastructure\\persistence\\drizzle\\db.ts",
+      "bytes": 1542,
+      "sha256": "9f6ccc552467ff9fadfffbcc749103a249838e15efd03c477030cf7817983fc2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\infrastructure\\persistence\\drizzle\\schema.ts",
+      "bytes": 24434,
+      "sha256": "b71b3b5454a37156aad5b7cccabe7e2f48ec19e4ffa06dc05758345543f1da46"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\infrastructure\\persistence\\drizzle\\user.repository.ts",
+      "bytes": 9007,
+      "sha256": "414a3abe515584995130ab35a507c537f8c311665b8172ed6cbb6f53fba398c0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\infrastructure\\security\\bun-password-hasher.ts",
+      "bytes": 798,
+      "sha256": "9e1f8534db7695d6632cbc2570c65cc14ef4becb650bfab4d9d1311b788e7cb0"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\user\\user.aggregate.ts",
+      "bytes": 9196,
+      "sha256": "e49e209a6af75b9fa3d7ba7a87c4bec962e8d0bb85e3877e9880a7a9bbe4742c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\user\\user.errors.ts",
+      "bytes": 2209,
+      "sha256": "e0f56235ea9f9e8d1cf0ab584e40d90fd364949c24fc1ed9cbf05166c4e916be"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\user\\user.events.ts",
+      "bytes": 547,
+      "sha256": "0fab004ad8e50a6eaa25af167940c82159f9a2a41aa4209521bba88a1d1970a9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\user\\user.role.ts",
+      "bytes": 1124,
+      "sha256": "769f221e12f8470dc41a251bfec22ea801eb6d3891b935f99fc1385fe610b4de"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\user\\user.status.ts",
+      "bytes": 681,
+      "sha256": "f2828c45e6469b6291b2e0dc368c56b09d02f39104a2d454e355decc393a3945"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\value-objects\\email.ts",
+      "bytes": 807,
+      "sha256": "a4fd8981fd30fe858128e8d9545059d7467aee44e7627a06f88eec84ae8c35e3"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\value-objects\\password-policy.ts",
+      "bytes": 914,
+      "sha256": "fb48abfb1c84610e01b00268efd588f3d74c1a45d2d5490a4c23e1059f819f31"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\shared\\aggregate-root.ts",
+      "bytes": 671,
+      "sha256": "b07760330b5a14278b0bfeab46bc7dab68411720857579a41a743c310f07dec6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\shared\\entity.ts",
+      "bytes": 403,
+      "sha256": "986b782da5d4a5f003401cea0b8c252e3caaf8aeef42d4e20ed0181dc8d074aa"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\auth\\src\\domain\\shared\\domain-event.ts",
+      "bytes": 628,
+      "sha256": "c4b28e39216fbeb7a5d526106dd77ca89ac4ca1d7388d96d8c8b77f4d0ea9085"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\errors\\index.ts",
+      "bytes": 32,
+      "sha256": "8de2165838e92da7fe8faa06664168ee1fc6ae2e979a63bf3de570ec89f11c90"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\core\\src\\errors\\domain-errors.ts",
+      "bytes": 785,
+      "sha256": "c981a3ddd7d7f128ac66a9475109b089fd8304a009999e69b7d500bd139a39f7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community\\src\\app\\(auth)\\login\\login-form.tsx",
+      "bytes": 12480,
+      "sha256": "c18270f998396aba23230676435cd567bf899ec6cbecab006970b28151a98215"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community\\src\\app\\(app)\\estudio\\page.tsx",
+      "bytes": 2190,
+      "sha256": "788fac1301fda262bb7bde195e1f803a582632cddf0fe515229d380752a6e194"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\components\\creator\\studio-full-client.tsx",
+      "bytes": 34782,
+      "sha256": "6fd382a6876d57dc3e86bc9c2b6436b22252fc08c6da37ed9173233be89bc38c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\components\\creator\\studio-pro-client.tsx",
+      "bytes": 11786,
+      "sha256": "cabecc0de6914c87438ca4b26cf89b63229a4f863333843dcd7c6b32e1aa49bf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\lib\\studio-tier.ts",
+      "bytes": 4442,
+      "sha256": "6db1f0ac4e20e6e3d7a18804b4cf7dc7dfc9f534c72a3f282e30f7bd1c4a85cd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\lib\\pro-toolchain.ts",
+      "bytes": 1430,
+      "sha256": "9ee18dbdf0c9c342fc6f67a2edbfda4439e148380f8932d917b77fe13b584dcd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\member-shell\\src\\server\\free-pro-toolchain.ts",
+      "bytes": 2995,
+      "sha256": "432842b811a9556e58de8bf56c4751d57d04f49ba42562ba52e4815a52678759"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\projects\\ProjectList.tsx",
+      "bytes": 38257,
+      "sha256": "0be3dbdcc9dc9990c6ff32583a53a51c91a75896e2bf0645dc53b0c44182ae0f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\components\\projects\\ProjectCard.tsx",
+      "bytes": 20197,
+      "sha256": "263cb3948403eb04b07e170f88d34a8dbf5523a753c7dea86e209c9f8a467660"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\components\\projects\\ImportButton.tsx",
+      "bytes": 6807,
+      "sha256": "e3e61bcd80c3adc5ce9ab6c3901c0e79daf88eb9dc16cb13590c518b94cee7fc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\components\\projects\\NewProjectModal.tsx",
+      "bytes": 15782,
+      "sha256": "39a185c470d3b6dc333bbe74fc2af6ca02dbe23801b771059264ea26b196bd7e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\components\\layout\\Topbar.tsx",
+      "bytes": 25052,
+      "sha256": "0f8549d61df4d55433c4a0493a846c81df98ec80b3dfa4d7c0f75fab7fa301c6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\modes\\pro\\ProPreview.tsx",
+      "bytes": 24495,
+      "sha256": "05d02e7b09427196cb60f2bd367cfcd5fdc0fc6e3a5b54f7fe3199f7d3837b11"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\core\\proProject.ts",
+      "bytes": 3786,
+      "sha256": "ea31b700b89687cbb2670168d8ffcc0e52a358ce44c3d45cc9dc1374ed956c6e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\state\\editableProjectValidation.ts",
+      "bytes": 2056,
+      "sha256": "7ee21ba541368dd59bb312d8db5849d5ba6c235eb5cc75da0fdc2e8367e9df2d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\sourceDownload.ts",
+      "bytes": 850,
+      "sha256": "fd8fe166b79de18d59f467aca464f0008928119b2c305dc1ae02a3706e567b03"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\sourceExport.ts",
+      "bytes": 6028,
+      "sha256": "6535c1e0e6106daabac3237d6592dd750845685582ea8c9d0a6c72900fbc65bc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\export\\fileMap.ts",
+      "bytes": 19550,
+      "sha256": "8445366dd4e661803e1611c65311e8d947581ffac681e4cf2ec0f84846b488aa"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\src\\core\\proAssetPaths.ts",
+      "bytes": 746,
+      "sha256": "b0778094a961be59bba69eeafd0b7d1c0b2ca3bc7b0c648acf965592325d5a28"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-hosted-9e33-r1\\fixture.json",
+      "bytes": 1672,
+      "sha256": "5c6a0ed4b69967bfefdc3188abb575201351d66b0e84bdc750836fc20e197d50"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-hosted-9e33-r1\\expected-package-lock.json",
+      "bytes": 28589,
+      "sha256": "96dd72bfc06e84c213549e9e1a8bfba7f21addddf06fc2f73f21c4422156f665"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-hosted-members-9e33-r5\\legacy-package.json",
+      "bytes": 259,
+      "sha256": "cbbbde54531e8be4b0dfd96f73757f509d432bae0bab5e46abec70c448796dbf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\staging-bootstrap-aggregate-r3\\root-final-r1\\all18-ready.json",
+      "bytes": 5142,
+      "sha256": "d4a64118343f9f27432e50d39c0fa6fd4e19e0447ae666a56cfe8797514e72f7"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-actor-discovery-r1\\receipt-r4.json",
+      "bytes": 919,
+      "sha256": "e6df2310282cba361df43564aea6e1b55d118534cfdb0b839f7daebeec204f1a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-deploy-snapshot-r1\\receipt.json",
+      "bytes": 6586,
+      "sha256": "a6f36550d1d4721885158f07a75cc869adebde7e5d9b89282a8b47eba753bc84"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r1\\plan.json",
+      "bytes": 16109,
+      "sha256": "cd8a4b4df406ec5d1dc81581140bcdd4fc04a4eb134f1b822e7e60529caf2e37"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r1\\preparation-receipt.json",
+      "bytes": 2183,
+      "sha256": "efccdf65865201e21bc04800b8b14518fe9163bb7ea630b5ff7bb783f53fa17f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r2\\delta-receipt.json",
+      "bytes": 2865,
+      "sha256": "67c183ef88c3436cdb1ec3c173f623bab5ae121478de3c6fd387a701c6d9aa76"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r2\\ui-selector-receipt.json",
+      "bytes": 1734,
+      "sha256": "edd0c237de1fd9873598631dfc394d637a9ded0af1cb0ed8b4c86af1eef363b2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\derive-pro-legacy-staging-ui-r3.mjs",
+      "bytes": 9774,
+      "sha256": "6c10f4e5d9303775a9a379450d645419982c5f16ad26da1e3e31bff85e995327"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\railway-backlog-face-r5\\oauth-session.mjs",
+      "bytes": 5340,
+      "sha256": "c6f9728b9150c1a63c97cb44c24f89e06e3f4435d4079bcd2ca5f9e8dee222f2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\remote.mjs",
+      "bytes": 3961,
+      "sha256": "72a6e6fa83f5d526a508fd0158f3a622ea43b359f8175b7edfdb81129e930361"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\run.mjs",
+      "bytes": 8709,
+      "sha256": "d537acd7c01eb5850f3ea76806c103176d2080a27df42d2deab6ca43e72cb73b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\ui.mjs",
+      "bytes": 7033,
+      "sha256": "023e39e5f8681c2eefde2d14c46105f7e110995306daf918b614d7007cccf5dc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\contract.mjs",
+      "bytes": 4017,
+      "sha256": "84985b74b44ca7f3fb2a141035e2625a0c233c50baa0af037241bd5a9555d8fd"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\prepare-fixture.ts",
+      "bytes": 1986,
+      "sha256": "6da53a49a35e1f2062ef40625140e2ee091be033e9d8bfcc07e3edcd83ae4fb3"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\prepare-plan.mjs",
+      "bytes": 6992,
+      "sha256": "4f42e23755ca192880c09b00a5f23f87f0ac558f2f2de06c80abe14dbe2bcec5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\control.test.mjs",
+      "bytes": 4851,
+      "sha256": "55cff5040409c78f951536af043fe807e91274cd045e43461885237a833ff7c9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\legacy.szproject.json",
+      "bytes": 2372,
+      "sha256": "a2ebacf4f985cede068ccf64580e1a0614eba124fd384af13d47bb8ab73d30e8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\fixture-check.json",
+      "bytes": 998,
+      "sha256": "2e4e6a65c99197dee6f1b5b20b3fe0728ee79adead1fe50caa6ee2da4bc39cfc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\README.md",
+      "bytes": 3236,
+      "sha256": "3ed4913eb658070e60d511427679add28368362534263e8fa82b502e6678da30"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\provider-context.mjs",
+      "bytes": 4452,
+      "sha256": "07115a951bf77dcffa0176fab8c14752aba3bb0e52be04ecfa878d65c8cae453"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\caller-bridge.mjs",
+      "bytes": 2028,
+      "sha256": "b70553a1172260ef3688985748093ad8cdf03d428a20689154db9a756edb1208"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\provider-context.test.mjs",
+      "bytes": 4948,
+      "sha256": "83a6493ca189f0d82f4c2e4ca4c0111a0dc3308d5b6116400b7bcb3b8bda5dc8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\provider-projection-child.mjs",
+      "bytes": 2365,
+      "sha256": "a30ec2979c9c5cadd0650aa7ada88c3295b7406d3a7c96c728455b3bbb5d0356"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\oauth-session.mjs",
+      "bytes": 5345,
+      "sha256": "8de9c03692d3dd055328ed066d295669d925e8375982a443b08cd4486ab41907"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\oauth-context.mjs",
+      "bytes": 528,
+      "sha256": "9681e162beea8a57117dae73e2132faebfbc1c84a01b77d42e604d35a9d0af26"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\context-control.test.mjs",
+      "bytes": 2464,
+      "sha256": "244636d4f51cfc7e0f16a047b6ec2d3e43f4a48761fe77ff522bf4739dd35916"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\ADAPTER-INTERFACE.md",
+      "bytes": 3641,
+      "sha256": "9853a955c766415ea19185e245686045e7bf7b65b5178e67bf42aee2f851583b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\derivation.json",
+      "bytes": 1168,
+      "sha256": "b4c31bd2afa5f6e9687eb2bba2a9179e1af68d797944d75e1e9c76ba6009dee1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-webcontainer-profile-r1\\profile.mjs",
+      "bytes": 7388,
+      "sha256": "916ac8959738480978e4ac8fc0c4e1fcaf5d2508a60ea838a306fa58f16ac5e1"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\plan.json",
+      "bytes": 20374,
+      "sha256": "12c255b11245539dcfde886b594230822624878e4e56fa2e1500fa77c80430e9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\preparation-receipt.json",
+      "bytes": 464,
+      "sha256": "9d4c4aea5106095639e2f175e11fef32ca2f9508353463670d146579cd68cc79"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-caller-r4\\run.mjs",
+      "bytes": 8439,
+      "sha256": "c7f3b002a847009c7155c26cacb53d91d14a5c8a9e0981e2f100bab488dfee1f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-caller-r4\\prepare.mjs",
+      "bytes": 4169,
+      "sha256": "1cade4b2cdbe4f7bca8e55f376f0cd7cdb29bce0beb1183598cbabb7ee30b21e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-caller-r4\\functional-contract.mjs",
+      "bytes": 716,
+      "sha256": "d8cbe4d866ead53ec19765388a1f8d3ac66282e6f1f42ee069f691b7e0b8bec9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\studio\\package.json",
+      "bytes": 7252,
+      "sha256": "1324421f3acad86d71c7f8541913eeadea5d7cb5073654b9be3d7dfa0916de25"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\fflate@0.8.3\\node_modules\\fflate\\lib\\node.cjs",
+      "bytes": 92380,
+      "sha256": "befa44cd80a1da830179db9e57930050a2e460ca3df13f0b05f83f52b1491818"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\fflate@0.8.3\\node_modules\\fflate\\package.json",
+      "bytes": 3543,
+      "sha256": "5922d8150b307bc0e4e441491c779c45379e9913d348848fca8d5cf02db4d134"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\packages\\community-kids\\package.json",
+      "bytes": 2804,
+      "sha256": "f0c3bd1e0801106605b681789ff3deac9766045c5fa5871611ce28c484cdccb3"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\index.js",
+      "bytes": 648,
+      "sha256": "499da5dd8585212108a1443793de31ebc061ca7db02343f107955f261180cdfc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\package.json",
+      "bytes": 754,
+      "sha256": "cf92117ef1d8cbf1e4b2dffb63a0da552c0173bd6052f0f45711c0f00b79dc99"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\test.js",
+      "bytes": 806,
+      "sha256": "b97fa53a6ab864f51c9c48b5e4647d0acae45ba2948c5d78e38bfeb56755d974"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\index.js",
+      "bytes": 34490,
+      "sha256": "36faa53b7c6fa8f76788f2bcfa21d72edc22e5f528c45328b71d07e215d79a32"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\errorContext.js",
+      "bytes": 4619,
+      "sha256": "7fdc8216d80ba10c5edea9617463da2e76ba56d966a14a963176952415d03871"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\util.js",
+      "bytes": 15242,
+      "sha256": "f7734786062157d60ed0388f1f9fcf3507d811327fb3b287576dfdfd9670f083"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\common\\index.js",
+      "bytes": 113886,
+      "sha256": "3d90db5e5823c18827bce6bb5e05531511d6e0a31efe8c0188eeb07900539cfe"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\globals.js",
+      "bytes": 1935,
+      "sha256": "f5922eb1fb6051900157492eb9c218e62d07378eed135bca4b2f173ed1184d1c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\package.js",
+      "bytes": 2013,
+      "sha256": "544a18417ea51dd4c8a9f3dbc4e2b47e46c80f452e0cd23d55e9b3680bc6241e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\package.json",
+      "bytes": 1559,
+      "sha256": "8be9edc5642a8c761b677e7af8b9937f36c0443a91e14765877716d70034e5bf"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\matchers\\expect.js",
+      "bytes": 526071,
+      "sha256": "10b9442388bd9cfaae64e3f76c74081548687ab89e7d1f1ea20c93de6bd02358"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\lib\\mcp\\test\\browserBackend.js",
+      "bytes": 4889,
+      "sha256": "7143473e53c8b76720e42efab95f55227807590d2818104223d5df6ac46b681e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright@1.60.0\\node_modules\\playwright\\index.js",
+      "bytes": 648,
+      "sha256": "4e98f65f0a9d9bcab8cffc0c5cfdd87fd3f5b0be74fc494ff166a466b204cd44"
+    }
+  ],
+  "providerEntry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\provider-context.mjs",
+  "playwrightEntry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\playwright-core@1.60.0\\node_modules\\playwright-core\\index.mjs",
+  "scenarioEntry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r6\\run.mjs",
+  "uiModules": [
+    {
+      "name": "fflate",
+      "entry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\fflate@0.8.3\\node_modules\\fflate\\lib\\node.cjs",
+      "packagePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\fflate@0.8.3\\node_modules\\fflate\\package.json",
+      "version": "0.8.3"
+    },
+    {
+      "name": "@playwright/test",
+      "entry": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\index.js",
+      "packagePath": "C:\\Users\\tocha\\projects\\sistema-zero-python\\node_modules\\.bun\\@playwright+test@1.60.0\\node_modules\\@playwright\\test\\package.json",
+      "version": "1.60.0"
+    }
+  ]
+}

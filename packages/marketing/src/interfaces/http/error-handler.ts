@@ -14,6 +14,20 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  OBJECT_INACCESSIBLE: 404,
+  ENGAGEMENT_UNAVAILABLE: 409,
+  DIRECTORY_UNAVAILABLE: 503,
+  OPERATION_REUSED: 409,
+  IMPORT_CONFLICT: 409,
+  DEPENDENCY_MISSING: 409,
+  ASSET_UNCONFIRMED: 409,
+  LEASE_EXPIRED: 409,
+  DEVICE_REVOKED: 403,
+  CONTEXT_CHANGED: 409,
+  CONTEXT_TOO_LARGE: 400,
+  DESKTOP_REQUIRED: 409,
+  RETRY_REQUIRES_USER: 409,
+  ATTEMPTS_EXHAUSTED: 409,
   VALIDATION_ERROR: 400,
   ASSET_TOO_LARGE: 400,
   ASSET_TYPE_NOT_ALLOWED: 400,
@@ -49,6 +63,7 @@ export function buildErrorResponse(input: {
   code: string | number
   error: unknown
   logger: Logger
+  privateContext?: boolean
 }): { status: number; body: ErrorEnvelope } {
   const { error, code } = input
 
@@ -79,6 +94,11 @@ export function buildErrorResponse(input: {
   if (code === 'NOT_FOUND')
     return { status: 404, body: envelope('NOT_FOUND', 'Recurso não encontrado') }
 
+  if (input.privateContext) {
+    // SQL errors can contain bound DM payloads; neither logs nor exception tracking receive them.
+    input.logger.error('engagement.http.failed', { code: 'INTERNAL_ERROR' })
+    return { status: 500, body: envelope('INTERNAL_ERROR', 'Erro interno') }
+  }
   // Erro inesperado: loga com stack + Sentry (o espelho de log pula 'unhandled.error').
   Sentry.captureException(error)
   input.logger.error('unhandled.error', { error: serializeError(error) })

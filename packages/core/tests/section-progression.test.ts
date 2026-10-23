@@ -146,10 +146,10 @@ describe('section progression', () => {
     )
     expect(state.percent).toBeCloseTo(100 / 3)
     expect(state.sections.map((s) => s.status)).toEqual(['completed', 'available', 'locked'])
-    expect(state.sections[2]?.pending).toEqual(['Conclua a seção anterior'])
+    expect(state.sections[2]?.pending).toEqual(['Conclua a parte anterior'])
     // Os itens TIPADOS (30/09/2026): a seção travada é `locked`; texto cru vira `other`.
     expect(state.sections[2]?.pendingItems).toEqual([
-      { kind: 'locked', text: 'Conclua a seção anterior' },
+      { kind: 'locked', text: 'Conclua a parte anterior' },
     ])
     expect(state.sections[1]?.pendingItems).toEqual([])
     expect(state.sections[0]?.pendingItems).toEqual([])

@@ -3,6 +3,8 @@ import { structuredBytes } from '../core/structuredBytes'
 import type { MoldaSceneDocument } from '../scene/document'
 import { type CreateDocumentEditorStoreOptions, createDocumentEditorStore } from './editorStore'
 import type { createScenePersistence } from './scenePersistence'
+import { createSceneRecoveryController } from './sceneRecoveryController'
+import type { SceneRecoveryPersistence } from './sceneRecoveryPersistence'
 import { createSceneStorageObserver } from './sceneStorageObserver'
 
 export class SceneSaveConflictError extends Error {
@@ -19,7 +21,7 @@ export function createSceneEditorStore(
   persistence: Pick<
     ReturnType<typeof createScenePersistence>,
     'save' | 'readIndexRevision' | 'subscribe'
-  >,
+  > & { recovery?: SceneRecoveryPersistence },
   options: Pick<
     CreateDocumentEditorStoreOptions<MoldaSceneDocument>,
     'autosaveMs' | 'byteBudget' | 'now' | 'onSaved'
@@ -56,7 +58,25 @@ export function createSceneEditorStore(
       },
     },
   })
-  return Object.assign(editor, { storage })
+  const recovery = persistence.recovery
+    ? createSceneRecoveryController(
+        editor,
+        persistence.recovery,
+        () => expectedRevision,
+        () => persistence.readIndexRevision(id),
+      )
+    : undefined
+  if (recovery) {
+    const flush = editor.getState().flush
+    editor.setState({
+      async flush() {
+        await recovery.flush()
+        await flush()
+        await recovery.flush()
+      },
+    })
+  }
+  return Object.assign(editor, { storage, recovery })
 }
 
 export type SceneEditorStore = ReturnType<typeof createSceneEditorStore>

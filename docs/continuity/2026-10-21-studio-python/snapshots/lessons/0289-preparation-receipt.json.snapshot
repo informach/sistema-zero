@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-10-21T08:06:05.735558+00:00",
+  "sourceHorizon": "5503f6a245d2f2434fc91289fba05bbf6f229f29",
+  "onlyWrites": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\hosted-js-lesson-prep-r1",
+  "proposalDiffSha256": "6fd65882cd0ea783cdd4915173bd971bc7d3544495d7a008a02ba76f4a75be86",
+  "pinsSha256": "dec12bbd53c3d71d3b3b720a42ef3e73f64b1e679d12345ab7bc76b3041ffbf7",
+  "pinCount": 34,
+  "sourceMatches": true,
+  "noExecution": true,
+  "noApi": true,
+  "noBrowser": true,
+  "noServices": true,
+  "noCredentialsReadOrCopied": true,
+  "noCompiler": true,
+  "noMerge": true,
+  "noPush": true,
+  "proposalNotAppliedOrTested": true
+}

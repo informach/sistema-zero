@@ -1,0 +1,1330 @@
+/*
+ * comunidade-adulto.css: a página de oferta ADULTA da Comunidade dos Criadores
+ * (`pro/comunidade-dos-criadores`), desenho "arcade / nostalgia" aprovado em 19/10/2026
+ * (docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/PaginaAdulto.html).
+ *
+ * Tudo prefixado por `.cda`. As cores do desenho são declaradas UMA vez, como tokens `--cda-*` em
+ * `theme-arcade.css` (o tema adulto, compartilhado com o quiz, o resultado e o checkout); aqui só
+ * se usam as variáveis (transparências por `color-mix in oklab`).
+ * Itens coloridos recebem `.cor-<nome>`, que define `--cor`.
+ */
+.cda {
+  position: relative;
+  background: var(--cda-fundo);
+  color: var(--cda-texto);
+  font-family: var(--cda-corpo);
+  font-size: 1.25rem;
+  line-height: 1.6;
+  overflow-x: clip;
+}
+
+/* ── Bases ──────────────────────────────────────────────────────────────────── */
+.cda p,
+.cda h1,
+.cda h2,
+.cda h3,
+.cda figure,
+.cda ul,
+.cda ol {
+  margin: 0;
+}
+.cda ul,
+.cda ol {
+  padding: 0;
+  list-style: none;
+}
+.cda img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.cda :focus-visible {
+  outline: 3px solid var(--cda-texto);
+  outline-offset: 3px;
+}
+.cda .cor-amarelo {
+  --cor: var(--cda-amarelo);
+}
+.cda .cor-rosa {
+  --cor: var(--cda-rosa);
+}
+.cda .cor-azul {
+  --cor: var(--cda-azul);
+}
+.cda .cor-verde {
+  --cor: var(--cda-verde);
+}
+.cda .cor-menta {
+  --cor: var(--cda-menta);
+}
+.cda .cor-dourado {
+  --cor: var(--cda-dourado);
+}
+
+.cda .cda-pular {
+  position: absolute;
+  left: 1rem;
+  top: -5rem;
+  z-index: 60;
+  padding: 0.75rem 1rem;
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  font-weight: 700;
+  border: 3px solid var(--cda-fundo);
+}
+.cda .cda-pular:focus {
+  top: 1rem;
+}
+
+.cda .cda-wrap {
+  width: 100%;
+  max-width: 75rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 4vw, 2.5rem);
+}
+
+/* ── Tipografia ─────────────────────────────────────────────────────────────── */
+.cda .cda-rotulo {
+  font-family: var(--cda-pixel);
+  font-weight: 400;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--cor, var(--cda-verde));
+}
+.cda .cda-rotulo--pequeno {
+  font-size: 0.875rem;
+}
+.cda .cda-rotulo--13 {
+  font-size: 0.8125rem;
+}
+.cda .cda-rotulo--12 {
+  font-size: 0.75rem;
+}
+.cda .cda-rotulo--18 {
+  font-size: 1.125rem;
+}
+.cda .cda-h1 {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: clamp(2.2rem, 4.4vw, 3.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+}
+.cda .cda-destaque {
+  color: var(--cda-amarelo);
+}
+.cda .cda-h2 {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  line-height: 1.1;
+}
+.cda .cda-h2--menor {
+  font-size: clamp(1.7rem, 2.8vw, 2.3rem);
+}
+.cda .cda-h2--oferta {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.08;
+}
+.cda .cda-h2--duvidas {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  margin-bottom: 0.5rem;
+}
+.cda .cda-h2--fechamento {
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.06;
+}
+.cda .cda-h3 {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+  line-height: 1.12;
+}
+.cda .cda-suave {
+  color: var(--cda-texto-suave);
+}
+.cda .cda-texto-18 {
+  font-size: 1.125rem;
+}
+.cda .cda-garantia {
+  font-size: 0.9375rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .cda-legenda {
+  font-size: 0.9375rem;
+  color: var(--cda-legenda);
+}
+.cda .cda-legenda--centro {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+.cda .cda-nota {
+  color: var(--cda-legenda);
+}
+.cda .cda-nota--14 {
+  font-size: 0.875rem;
+}
+.cda .cda-nota--16 {
+  font-size: 1rem;
+}
+.cda .cda-largura-860 {
+  max-width: 53.75rem;
+}
+
+/* ── Botão: amarelo, contorno escuro e sombra rosa deslocada ───────────────── */
+.cda .cda-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  /* As alturas do desenho somam a borda (caixa sem border-box): 56 + 6 px. */
+  min-height: 3.875rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  border: 3px solid var(--cda-fundo);
+  box-shadow: 5px 5px 0 var(--cda-rosa);
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.cda .cda-btn:hover {
+  translate: -1px -1px;
+  box-shadow: 6px 6px 0 var(--cda-rosa);
+}
+.cda .cda-btn:active {
+  translate: 3px 3px;
+  box-shadow: 2px 2px 0 var(--cda-rosa);
+}
+.cda .cda-btn svg {
+  flex: none;
+}
+.cda .cda-btn--compacta {
+  min-height: 3.375rem;
+  padding: 0.375rem 1.25rem;
+  box-shadow: 4px 4px 0 var(--cda-rosa);
+}
+.cda .cda-btn--grande {
+  min-height: 4.125rem;
+  padding: 0.5rem 1.625rem;
+  font-size: 1.02em;
+  box-shadow: 6px 6px 0 var(--cda-rosa);
+}
+.cda .cda-btn--larga {
+  padding-inline: 1.75rem;
+}
+.cda .cda-btn--barra {
+  min-height: 3.375rem;
+  padding: 0.375rem 1.125rem;
+  font-size: 1rem;
+  box-shadow: none;
+}
+.cda .cda-acao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.875rem 1.5rem;
+}
+
+/* ── Topo ───────────────────────────────────────────────────────────────────── */
+.cda .cda-topo {
+  background: var(--cda-fundo);
+  border-bottom: 2px solid var(--cda-linha);
+}
+.cda .cda-topo__linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.875rem;
+}
+.cda .cda-topo__marca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  text-decoration: none;
+}
+.cda .cda-topo__marca img {
+  width: auto;
+  height: 1.125rem;
+}
+.cda .cda-topo__selo {
+  padding: 0.25rem 0.5rem;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.cda .cda-topo__nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.375rem;
+  font-size: 1.0625rem;
+}
+.cda .cda-topo__link {
+  color: var(--cda-texto);
+  font-weight: 700;
+  text-decoration: none;
+}
+.cda .cda-topo__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* ── Seções ─────────────────────────────────────────────────────────────────── */
+.cda .cda-secao {
+  background: var(--cda-fundo);
+  border-bottom: 2px solid var(--cda-linha);
+}
+.cda .cda-secao > .cda-wrap {
+  padding-block: 3.75rem;
+}
+.cda .cda-secao--fundo-2 {
+  background: var(--cda-fundo-2);
+}
+.cda .cda-secao--grade {
+  background-color: var(--cda-fundo);
+  background-image: repeating-linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--cda-branco) 2.5%, transparent) 0 1px,
+    transparent 1px 4px
+  );
+}
+.cda .cda-coluna {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.cda .cda-coluna--larga {
+  gap: 1.875rem;
+}
+.cda .cda-coluna--etapas {
+  gap: 1.75rem;
+}
+.cda .cda-cabeca {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cda .cda-cabeca--larga {
+  gap: 0.75rem;
+  max-width: 53.75rem;
+}
+.cda .cda-cabeca--media {
+  gap: 0.75rem;
+  max-width: 51.25rem;
+}
+.cda .cda-cabeca--ampla {
+  gap: 0.75rem;
+  max-width: 56.25rem;
+}
+.cda .cda-cabeca--justa {
+  gap: 0.5rem;
+}
+.cda .cda-cabeca--oferta {
+  gap: 1.125rem;
+}
+
+/* Duas colunas que quebram em uma (as bases do flex vêm do desenho). */
+.cda .cda-dupla {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2.5rem;
+}
+.cda .cda-dupla > * {
+  min-width: 0;
+}
+.cda .cda-dupla--problema > :first-child {
+  flex: 1 1 35rem;
+}
+.cda .cda-dupla--problema > :last-child {
+  flex: 1 1 23.75rem;
+}
+.cda .cda-dupla--base {
+  gap: 2.75rem;
+}
+.cda .cda-dupla--base > :first-child {
+  flex: 1 1 26.25rem;
+  gap: 1rem;
+}
+.cda .cda-dupla--base > :last-child {
+  flex: 1 1 28.75rem;
+}
+.cda .cda-dupla--comunidade > :first-child {
+  flex: 1 1 30rem;
+}
+.cda .cda-dupla--comunidade > :last-child {
+  flex: 1 1 26.25rem;
+}
+.cda .cda-dupla--fundadores > :first-child {
+  flex: 1 1 27.5rem;
+}
+.cda .cda-dupla--fundadores > :last-child {
+  flex: 1 1 28.75rem;
+}
+.cda .cda-dupla--oferta {
+  align-items: flex-start;
+  gap: 3rem;
+}
+.cda .cda-dupla--oferta > :first-child {
+  flex: 1 1 25rem;
+}
+.cda .cda-dupla--oferta > :last-child {
+  flex: 1 1 27.5rem;
+}
+
+/* ── Herói ──────────────────────────────────────────────────────────────────── */
+.cda .cda-hero {
+  background-color: var(--cda-fundo);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in oklab, var(--cda-branco) 3.5%, transparent) 0 1px,
+      transparent 1px 4px
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      color-mix(in oklab, var(--cda-azul) 18%, transparent),
+      transparent 55%
+    );
+}
+.cda .cda-hero > .cda-wrap {
+  padding-block: 3.25rem 3.75rem;
+}
+.cda .cda-hero__grade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3rem;
+}
+.cda .cda-hero__texto {
+  flex: 1 1 28.75rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.cda .cda-hero__texto > .cda-rotulo {
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+}
+.cda .cda-hero__lead {
+  font-size: 1.04em;
+  color: var(--cda-texto-suave);
+}
+.cda .cda-hero__acao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+.cda .cda-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  font-size: 1.125rem;
+}
+.cda .cda-checks li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+.cda .cda-check {
+  flex: none;
+  margin-top: 0.3125rem;
+  fill: none;
+  stroke: var(--cda-verde);
+  stroke-width: 3;
+  stroke-linecap: square;
+}
+.cda .cda-checks--cartao {
+  font-size: 1.0625rem;
+}
+.cda .cda-checks--cartao li {
+  gap: 0.625rem;
+}
+.cda .cda-checks--cartao .cda-check {
+  margin-top: 0.25rem;
+}
+.cda .cda-requisitos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem 1.375rem;
+  font-size: 1rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .cda-requisitos li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.cda .cda-quadradinho {
+  flex: none;
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--cor);
+}
+
+/* O "monitor" com a tela de título por cima da prévia do jogo. */
+.cda .cda-monitor {
+  flex: 1 1 31.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cda .cda-monitor__moldura {
+  width: 100%;
+  padding: 1.125rem 1.125rem 1.625rem;
+  background: var(--cda-carta);
+  border: 3px solid var(--cda-linha-forte);
+  border-radius: 1.75rem;
+  box-shadow: 0 30px 60px color-mix(in oklab, var(--cda-preto) 50%, transparent);
+}
+.cda .cda-monitor__barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0.375rem 0.625rem;
+  font-family: var(--cda-pixel);
+  font-size: 0.875rem;
+  color: var(--cda-verde);
+}
+.cda .cda-coracoes {
+  display: flex;
+  gap: 0.375rem;
+  color: var(--cda-rosa);
+}
+.cda .cda-coracoes svg {
+  display: block;
+  fill: currentColor;
+}
+.cda .cda-monitor__tela {
+  position: relative;
+  overflow: clip;
+  background: var(--cda-preto);
+  border: 3px solid var(--cda-fundo);
+  border-radius: 1rem;
+}
+.cda .cda-monitor__tela img {
+  width: 100%;
+  aspect-ratio: 1100 / 909;
+  object-fit: cover;
+  opacity: 0.5;
+}
+.cda .cda-monitor__titulo {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklab, var(--cda-fundo) 25%, transparent),
+    color-mix(in oklab, var(--cda-fundo) 80%, transparent)
+  );
+}
+.cda .cda-monitor__jogo {
+  font-family: var(--cda-pixel);
+  font-size: clamp(1.375rem, 2.6vw, 2.25rem);
+  line-height: 1.2;
+  color: var(--cda-amarelo);
+  text-shadow: 4px 4px 0 var(--cda-fundo);
+}
+.cda .cda-monitor__autoria,
+.cda .cda-monitor__start {
+  font-family: var(--cda-pixel);
+  font-size: clamp(0.8125rem, 1.2vw, 1rem);
+  text-shadow: 2px 2px 0 var(--cda-fundo);
+}
+.cda .cda-monitor__autoria {
+  color: var(--cda-texto);
+}
+.cda .cda-monitor__autoria span {
+  color: var(--cda-verde);
+}
+.cda .cda-monitor__start {
+  margin-top: 0.75rem;
+  color: var(--cda-rosa);
+}
+.cda .cda-monitor__canto {
+  position: absolute;
+  bottom: 0.75rem;
+  font-family: var(--cda-pixel);
+  font-size: 0.6875rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .cda-monitor__canto--esq {
+  left: 0.875rem;
+}
+.cda .cda-monitor__canto--dir {
+  right: 0.875rem;
+}
+.cda .cda-monitor__linhas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: repeating-linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--cda-preto) 18%, transparent) 0 1px,
+    transparent 1px 3px
+  );
+}
+.cda .cda-monitor__pe {
+  width: 34%;
+  height: 1.375rem;
+  background: var(--cda-carta);
+  border: 3px solid var(--cda-linha-forte);
+  border-top: 0;
+  border-radius: 0 0 0.875rem 0.875rem;
+}
+@keyframes cda-piscar {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0;
+  }
+}
+/* Quatro piscadas (menos de 5 s) e para: texto que pisca sem fim fere o WCAG 2.2.2. */
+.cda .cda-pisca {
+  animation: cda-piscar 1.1s steps(1) 4;
+}
+
+/* ── O que trava ────────────────────────────────────────────────────────────── */
+.cda .cda-trava {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1.5rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-amarelo);
+  box-shadow: 8px 8px 0 var(--cda-rosa);
+}
+.cda .cda-trava p:not(.cda-rotulo) {
+  font-size: 1.1875rem;
+}
+
+/* ── Cartas com faixa colorida ──────────────────────────────────────────────── */
+.cda .cda-cartas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(20.625rem, 100%), 1fr));
+  gap: 1.125rem;
+}
+.cda .cda-cartas--passos {
+  grid-template-columns: repeat(auto-fit, minmax(min(18.75rem, 100%), 1fr));
+}
+.cda .cda-carta {
+  display: flex;
+  flex-direction: column;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-carta--escura {
+  background: var(--cda-fundo);
+}
+.cda .cda-carta__faixa {
+  height: 0.5rem;
+  background: var(--cor);
+}
+.cda .cda-carta__faixa--grossa {
+  height: 0.625rem;
+}
+.cda .cda-carta__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+}
+.cda .cda-carta__corpo h3 {
+  font-size: 1.3125rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.cda .cda-carta__corpo p:not(.cda-rotulo) {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+.cda .cda-carta__corpo--passo {
+  padding: 1.125rem;
+}
+.cda .cda-carta__corpo--passo h3 {
+  font-size: 1.375rem;
+  line-height: 1.2;
+}
+.cda .cda-carta__corpo--passo p:not(.cda-rotulo) {
+  font-size: 1rem;
+}
+
+/* ── Regras que você já conhece ─────────────────────────────────────────────── */
+.cda .cda-regras {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13.125rem, 100%), 1fr));
+  gap: 1rem;
+}
+.cda .cda-regra {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 5px 5px 0 var(--cor);
+}
+.cda .cda-regra p {
+  font-size: 1.0625rem;
+}
+.cda .cda-regra code {
+  padding: 0.5rem;
+  background: var(--cda-codigo);
+  color: var(--cda-legenda);
+  font-family: var(--cda-pixel);
+  font-size: 0.75rem;
+}
+
+/* ── Como funciona ──────────────────────────────────────────────────────────── */
+.cda .cda-pratica {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 2.5rem;
+}
+.cda .cda-passos {
+  flex: 1 1 26.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.cda .cda-passos li {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha);
+}
+.cda .cda-passos__numero {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  background: var(--cor);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 1.25rem;
+}
+.cda .cda-passos__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+.cda .cda-passos__texto strong {
+  font-size: 1.25rem;
+}
+.cda .cda-passos__texto span {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+.cda .cda-pratica__lado {
+  flex: 1 1 31.25rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.cda .cda-janela {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.cda .cda-janela__quadro {
+  overflow: clip;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-janela__barra {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--cda-carta);
+}
+.cda .cda-janela__barra span {
+  width: 0.625rem;
+  height: 0.625rem;
+  background: var(--cda-rosa);
+}
+.cda .cda-janela__barra span:nth-child(2) {
+  background: var(--cda-amarelo);
+}
+.cda .cda-janela__barra span:nth-child(3) {
+  background: var(--cda-verde);
+}
+.cda .cda-janela__quadro img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+}
+.cda .cda-nota-tracejada {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1rem;
+  background: var(--cda-carta);
+  border: 3px dashed var(--cda-amarelo);
+}
+.cda .cda-nota-tracejada p:not(.cda-rotulo) {
+  font-size: 1.125rem;
+}
+.cda .cda-nota-tracejada--larga {
+  max-width: 58.625rem;
+}
+
+/* Os primeiros jogos. */
+.cda .cda-classicos {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.75rem;
+  border-top: 2px solid var(--cda-linha);
+}
+.cda .cda-jogos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(12.5rem, 100%), 1fr));
+  gap: 0.875rem;
+}
+.cda .cda-jogo {
+  display: flex;
+  flex-direction: column;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-jogo img,
+.cda .cda-jogo__marcador {
+  height: 8.125rem;
+  border-bottom: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-jogo img {
+  width: 100%;
+  object-fit: cover;
+  object-position: left;
+}
+.cda .cda-jogo__marcador {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.75rem;
+  background: var(--cda-carta);
+  color: var(--cda-verde);
+  font-family: var(--cda-pixel);
+  font-size: 1rem;
+  text-align: center;
+}
+.cda .cda-jogo figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 0.875rem;
+}
+.cda .cda-jogo figcaption strong {
+  font-size: 1.0625rem;
+}
+.cda .cda-jogo figcaption span {
+  font-size: 0.9375rem;
+  color: var(--cda-texto-suave);
+}
+
+/* ── Etapas: a escada e as três fases ───────────────────────────────────────── */
+.cda .cda-escada {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.cda .cda-escada__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.625rem 1.375rem;
+}
+.cda .cda-escada__titulo {
+  font-size: 1.1875rem;
+  font-weight: 700;
+}
+.cda .cda-escada__legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.875rem;
+  color: var(--cda-legenda);
+}
+.cda .cda-escada__legenda > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+.cda .cda-escada__marca {
+  width: 0.6em;
+  height: 0.6em;
+  background: var(--cor);
+}
+.cda .cda-escada__etapas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(9.375rem, 100%), 1fr));
+  gap: 0.75rem;
+}
+.cda .cda-etapa {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--cda-fundo);
+  border: 2px solid var(--cda-linha-forte);
+}
+.cda .cda-etapa__faixa {
+  height: 0.5rem;
+  background: var(--cor);
+}
+.cda .cda-etapa__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0.875rem;
+}
+.cda .cda-etapa__corpo strong {
+  font-size: 1.0625rem;
+  line-height: 1.2;
+}
+.cda .cda-etapa__nivel {
+  font-size: 0.8125rem;
+  color: var(--cda-legenda);
+}
+.cda .cda-etapa__libera {
+  font-size: 0.875rem;
+  color: var(--cda-branco);
+}
+.cda .cda-etapa__libera > span {
+  color: var(--cda-dourado);
+}
+.cda .cda-etapa--lenda {
+  background: var(--cda-fundo-lenda);
+  border-color: var(--cda-dourado);
+}
+.cda .cda-fases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(20rem, 100%), 1fr));
+  gap: 1.125rem;
+}
+.cda .cda-fase {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-fase img {
+  width: 100%;
+  height: 9.375rem;
+  object-fit: cover;
+  border-bottom: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-fase figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1rem;
+}
+.cda .cda-fase figcaption strong {
+  font-size: 1.1875rem;
+  line-height: 1.2;
+}
+.cda .cda-fase__texto {
+  font-size: 0.9375rem;
+  color: var(--cda-texto-suave);
+}
+
+/* ── Comunidade (multiplayer) ───────────────────────────────────────────────── */
+.cda .cda-mural {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cda .cda-mural__quadro {
+  overflow: clip;
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 8px 8px 0 var(--cda-amarelo);
+}
+.cda .cda-mural__quadro img {
+  width: 100%;
+  height: 20.625rem;
+  object-fit: cover;
+  object-position: top;
+}
+.cda .cda-lugares {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  font-size: 1.125rem;
+}
+.cda .cda-lugares li {
+  display: flex;
+  gap: 0.75rem;
+}
+.cda .cda-lugares__marca {
+  flex: none;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-top: 0.625rem;
+  background: var(--cor);
+}
+.cda .cda-caixa {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 1rem;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha);
+}
+.cda .cda-caixa h3:not(.cda-rotulo) {
+  font-size: 1.1875rem;
+  font-weight: 700;
+}
+.cda .cda-caixa > p {
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+
+/* ── Para quem é ────────────────────────────────────────────────────────────── */
+.cda .cda-perfis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1.375rem;
+}
+.cda .cda-perfil {
+  flex: 1 1 23.75rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.375rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-perfil ul {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-left: 1.25rem;
+  list-style: disc;
+  font-size: 1.125rem;
+}
+
+/* ── Fundadores ─────────────────────────────────────────────────────────────── */
+.cda .cda-fundadores__foto img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 3px solid var(--cda-linha-forte);
+  box-shadow: 8px 8px 0 var(--cda-azul);
+}
+
+/* ── Oferta e planos ────────────────────────────────────────────────────────── */
+.cda .cda-oferta {
+  background-image: repeating-linear-gradient(
+    0deg,
+    color-mix(in oklab, var(--cda-branco) 3%, transparent) 0 1px,
+    transparent 1px 4px
+  );
+}
+.cda .cda-oferta > .cda-wrap {
+  padding-block: 4.25rem;
+}
+.cda .cda-caixa--depois {
+  gap: 0.75rem;
+  padding: 1.125rem;
+}
+.cda .cda-depois {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 1.0625rem;
+}
+.cda .cda-depois li {
+  display: flex;
+  gap: 0.625rem;
+}
+.cda .cda-depois__numero {
+  flex: none;
+  margin-top: 0.1875rem;
+  font-family: var(--cda-pixel);
+  font-size: 0.875rem;
+  color: var(--cda-amarelo);
+}
+.cda .cda-caixa--garantia {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.875rem;
+}
+.cda .cda-caixa--garantia > p {
+  color: var(--cda-texto);
+}
+/* O cupom da URL: o aviso de que foi recebido, ou o alerta quando não vale. */
+.cda .cda-cupom {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border: 3px solid var(--cda-linha);
+  background: var(--cda-fundo-2);
+  color: var(--cda-texto);
+  font-weight: 700;
+}
+.cda .cda-cupom--alerta {
+  border-color: var(--cda-amarelo);
+}
+.cda .cda-oferta__lado {
+  display: flex;
+  justify-content: center;
+}
+.cda .cda-cartao {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 35.375rem;
+  background: var(--cda-carta);
+  border: 3px solid var(--cda-fundo);
+  box-shadow: 10px 10px 0 var(--cda-amarelo);
+}
+.cda .cda-cartao__topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.125rem;
+  background: var(--cda-linha-forte);
+  font-family: var(--cda-pixel);
+}
+.cda .cda-cartao__marca {
+  font-size: 1rem;
+  color: var(--cda-verde);
+}
+.cda .cda-cartao__empresa {
+  font-size: 0.75rem;
+  color: var(--cda-texto-apoio);
+}
+.cda .cda-cartao__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.5rem;
+}
+.cda .cda-planos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(11.875rem, 100%), 1fr));
+  gap: 0.875rem;
+}
+.cda .cda-plano {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--cda-fundo-2);
+  border: 3px solid var(--cda-linha-forte);
+}
+.cda .cda-plano--anual {
+  border-color: var(--cda-amarelo);
+}
+.cda .cda-plano__selo {
+  position: absolute;
+  top: -0.9375rem;
+  right: 0.625rem;
+  padding: 0.25rem 0.5rem;
+  background: var(--cda-rosa);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.cda .cda-plano__preco {
+  font-family: var(--cda-titulo);
+  font-weight: 700;
+  font-size: 2.25rem;
+  line-height: 1;
+  color: var(--cda-texto);
+}
+.cda .cda-plano__preco span {
+  font-size: 1rem;
+}
+.cda .cda-plano--anual .cda-plano__preco {
+  color: var(--cda-amarelo);
+}
+.cda .cda-plano__texto {
+  font-size: 0.9375rem;
+  color: var(--cda-texto-suave);
+}
+.cda .cda-plano__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 3.625rem;
+  margin-top: auto;
+  padding: 0.375rem 0.75rem;
+  background: transparent;
+  color: var(--cda-texto);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  border: 3px solid var(--cda-azul);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+.cda .cda-plano__btn:hover {
+  background: color-mix(in oklab, var(--cda-azul) 18%, transparent);
+}
+.cda .cda-plano--anual .cda-plano__btn {
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  border-color: var(--cda-fundo);
+}
+.cda .cda-plano--anual .cda-plano__btn:hover {
+  background: var(--cda-dourado);
+}
+.cda .cda-plano__garantia {
+  font-size: 0.875rem;
+  color: var(--cda-legenda);
+  text-align: center;
+}
+.cda .cda-cartao__nota {
+  font-size: 0.9375rem;
+  color: var(--cda-legenda);
+  text-align: center;
+}
+
+/* ── Dúvidas ────────────────────────────────────────────────────────────────── */
+.cda .cda-duvidas {
+  max-width: 56.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+.cda .cda-duvida {
+  padding: 0.875rem 1.25rem;
+  background: var(--cda-fundo);
+  border: 3px solid var(--cda-linha);
+}
+.cda .cda-duvida summary {
+  min-height: 2rem;
+  font-size: 1.1875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.cda .cda-duvida p {
+  margin-top: 0.75rem;
+  font-size: 1.0625rem;
+  color: var(--cda-texto-suave);
+}
+
+/* ── Fechamento ─────────────────────────────────────────────────────────────── */
+.cda .cda-fechamento {
+  background: var(--cda-fundo);
+}
+.cda .cda-fechamento__corpo {
+  max-width: 62.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding-block: 4.25rem;
+  text-align: center;
+}
+.cda .cda-fechamento__texto {
+  max-width: 40rem;
+}
+.cda .cda-legal {
+  border-top: 2px solid var(--cda-linha);
+}
+.cda .cda-legal__linha {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 1rem 1.125rem;
+  padding-block: 1.625rem;
+  font-size: 0.9375rem;
+}
+.cda .cda-legal a {
+  color: var(--cda-texto);
+  text-decoration: underline;
+}
+
+/* ── Barra fixa do celular (padrão `.kof-mobar`) ────────────────────────────── */
+.cda .cda-barra {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 1rem calc(0.625rem + env(safe-area-inset-bottom));
+  background: var(--cda-fundo);
+  border-top: 3px solid var(--cda-amarelo);
+  translate: 0 100%;
+  /* Escondida, ela também some para a pintura e para o leitor de tela. */
+  visibility: hidden;
+  transition:
+    translate 0.25s ease,
+    visibility 0s linear 0.25s;
+}
+.cda .cda-barra.is-visible {
+  translate: 0 0;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.cda .cda-barra__preco {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.cda .cda-barra__preco strong {
+  font-size: 1rem;
+  color: var(--cda-texto);
+}
+.cda .cda-barra__preco span {
+  font-size: 0.8125rem;
+  color: var(--cda-texto-apoio);
+}
+
+@media (max-width: 760px) {
+  .cda .cda-topo__link {
+    display: none;
+  }
+  .cda .cda-barra {
+    display: flex;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cda .cda-pisca {
+    animation: none;
+  }
+}
+@media print {
+  .cda .cda-barra {
+    display: none;
+  }
+}

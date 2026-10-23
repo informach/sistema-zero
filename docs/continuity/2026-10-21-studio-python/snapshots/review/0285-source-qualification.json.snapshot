@@ -1,0 +1,172 @@
+{
+  "at": "2026-10-20T23:22:49.8224167Z",
+  "head": "face8acef32f1e924f1461557e82716ea7acc3dc",
+  "run": 39514471699,
+  "attempt": 1,
+  "runURL": "https://github.com/informach/sistema-zero/actions/runs/39514471699",
+  "base": "8430486236649740f5f5a9b261c5aee91c64af19",
+  "baseQualificationSha256": "ea574ddb53d6f2c12494f1d2f5722bead9faa75be8482c1e7b26be1cef2b7cb4",
+  "compareFiles": 19,
+  "qaPins": [
+    {
+      "path": "packages/studio/e2e/smoke.spec.ts",
+      "gitBlob": "b87a41919f4d651e7823523bd894e6e57ae5da12",
+      "deleted": false,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/studio/playground/LandingApp.tsx",
+      "gitBlob": "188a7f70cc758cf82576f20e6a734219aeba9f52",
+      "deleted": false,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/studio/playground/editorNavigation.ts",
+      "gitBlob": null,
+      "deleted": true,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/studio/src/playground-navigation.test.ts",
+      "gitBlob": "4b5a04fae6c37cc888800177081c78be68060609",
+      "deleted": false,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/ui/tests/tool-chrome.test.ts",
+      "gitBlob": "9ebbf2d22c7c8c9d809eef783122737dbe14a11d",
+      "deleted": false,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/studio/playground/initialQuery.ts",
+      "gitBlob": "d1f7281a77a674b5ef7c3afde9fec70a0cd17c9d",
+      "deleted": false,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/studio/e2e/pro-workspace.spec.ts",
+      "gitBlob": "851378653b384c751db29472f5ffa7bc9fc353a1",
+      "deleted": false,
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/studio/playground/App.tsx",
+      "gitBlob": "ff659971b09b9c0c673bbb3ef041542edbb0d6bd",
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    },
+    {
+      "path": "packages/ui/src/styles/tool-chrome.css",
+      "gitBlob": "aa69caff4aa8bcc00872af4cc22701e1cfecb759",
+      "method": "Complete immutable GitHub compare vs verified a5ac: unchanged"
+    }
+  ],
+  "newVite": {
+    "path": "packages/studio/playground/vite.config.ts",
+    "gitBlob": "db96966ce0d79b42e397acf619033023d6009a64",
+    "sha256": "aa3268fee6d77a06d5a4d64b3ee9f1927c522c71cf17e4d0792eef9459d33a7b",
+    "matchesRootExpected": true,
+    "capturedPath": ".cache/authoring-js-ci-843048-r1/vite.config.843048.ts"
+  },
+  "newViteSha256Verified": "aa3268fee6d77a06d5a4d64b3ee9f1927c522c71cf17e4d0792eef9459d33a7b",
+  "method": "Complete immutable compare19files: no Studio/Core/production-runtime/locks delta; all9QA/App/CSS and Vite/provider source pins unchanged",
+  "changedPins": [
+    {
+      "filename": "docs/superpowers/plans/2026-10-20-liberacao-js-python-admin.md",
+      "sha": "e4ad9daf2d804ff131bfa539ffe35c6ca40e2efb",
+      "status": "modified"
+    },
+    {
+      "filename": "experiments/studio-python-l0/corpus/space-arena.json",
+      "sha": "d8edbc3ae7671e8546d7979ef59189454d814036",
+      "status": "modified"
+    },
+    {
+      "filename": "experiments/studio-python-runtime/gameVariants.ts",
+      "sha": "b846ba70af656918f0d9eef2c862d9b3ed52bbb7",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/admin/tests/e2e/python-lesson-fixture.ts",
+      "sha": "e544c8e8aeb9088161c0622c3bcbb041cbc73249",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1",
+      "sha": "bcb686a7094278575f5e0eb8ff49ed992d4e82fc",
+      "status": "added"
+    },
+    {
+      "filename": "packages/admin/tests/e2e/python-lesson-supervisor-control.ps1",
+      "sha": "0cb1ea702b814ed5a0e9845aa7649ba9dfe9f51d",
+      "status": "added"
+    },
+    {
+      "filename": "packages/admin/tests/e2e/python-lessons-acceptance.md",
+      "sha": "b295911827b66dba5c4359cde05fe05f42cf1107",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/admin/tests/project-pattern-editor.test.tsx",
+      "sha": "ce2736def63d3571a5b4a51f5f9fb47bdf72f627",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/admin/tests/python-lesson-admission.test.ts",
+      "sha": "e9740a76884e1dfaba50a5cc907b5f5eb2071999",
+      "status": "added"
+    },
+    {
+      "filename": "packages/admin/tests/python-lesson-fixture.test.ts",
+      "sha": "acef4ec4d4fbb14a727c6128c5137ffe20b0bd46",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/admin/tests/studio-pro-authoring.test.ts",
+      "sha": "c32adac5ace1bbe3bc0beaced2f34cbc9920d67e",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/python-lesson-admin.ts",
+      "sha": "9b13904fdfcf9d44503850fbe0483abfaed88148",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/python-lesson-admission.ts",
+      "sha": "5522a43941332cb3b138e86d05bf32475268c128",
+      "status": "added"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/python-lesson-kids.ts",
+      "sha": "9d9d778ad40d05b9bc9753cbec21426bb19a39fc",
+      "status": "modified"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1",
+      "sha": "3698bfe3301c925ace4b229a03fae780a91bae10",
+      "status": "added"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1",
+      "sha": "e526fe05f4cc61d72aae10167659a886d16851ba",
+      "status": "added"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/windows/python-lesson-process-ownership.ps1",
+      "sha": "25278617a05583df993d3456add796d57b7f0a66",
+      "status": "added"
+    },
+    {
+      "filename": "packages/community-kids/tests/e2e/windows/python-lesson-windows-entry.mjs",
+      "sha": "024bcfd6cf08e04ff7dc5ff13b0a0edfa10145cc",
+      "status": "added"
+    },
+    {
+      "filename": "packages/members/tests/integration/learning-scene-setup.test.ts",
+      "sha": "27434d9a8d9cd74962b99c1e43b194d6e4c5e95a",
+      "status": "modified"
+    }
+  ],
+  "rootReported": "3TSfixture fixes, Members2/10 Admin10/65, Biome3 and review; additional authorized lessonQA and2Spaceexperiments; no newCIpass inferred",
+  "scope": "New exactCI gates/types/eight targets and actual five-service canonical selection/order/barrier/errors pending. Previous843terminal preserved as typefail/deployskipped; no transfer of passes, no localheavy/CIactions/provider/privateHTTP"
+}

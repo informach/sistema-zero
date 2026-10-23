@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
 import type { CreationCleanupService } from '../../../application/admin/creation-cleanup/creation-cleanup.service'
 import { assertInternalCaller } from '../auth'
-import { CreationCleanupFailureBody, IdParams } from '../dtos'
+import { CreationCleanupClaimBody, CreationCleanupFailureBody, IdParams } from '../dtos'
 
 /** Endpoints S2S consumidos pelo worker do member-shell (autenticado via gateway HMAC). */
 export function creationCleanupRoutes(deps: {
@@ -12,14 +12,20 @@ export function creationCleanupRoutes(deps: {
     .onTransform(({ headers }) =>
       assertInternalCaller(headers['x-internal-token'], deps.internalToken),
     )
-    .post('/claim', async ({ set }) => {
-      const job = await deps.cleanup.claim()
-      if (!job) {
-        set.status = 204
-        return
-      }
-      return { job }
-    })
+    .post(
+      '/claim',
+      async ({ body, set }) => {
+        // `{ scopes: ['pensa'] }` = o worker sabe que limpeza de plano NÃO finaliza a conta.
+        // Sem corpo (worker antigo, rollback do Kids) ele nunca recebe job de plano.
+        const job = await deps.cleanup.claim(body?.scopes ?? [])
+        if (!job) {
+          set.status = 204
+          return
+        }
+        return { job }
+      },
+      { body: CreationCleanupClaimBody },
+    )
     .post(
       '/:id/complete',
       async ({ params }) => ({ completed: await deps.cleanup.complete(params.id) }),

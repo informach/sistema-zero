@@ -4,6 +4,7 @@ import type { CatalogCourseView } from '../src/lib/types'
 
 function course(over: Partial<CatalogCourseView> & { courseSlug: string }): CatalogCourseView {
   return {
+    courseId: `course-${over.courseSlug}`,
     title: over.courseSlug,
     subtitle: null,
     coverImageUrl: null,

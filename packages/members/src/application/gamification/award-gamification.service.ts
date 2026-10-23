@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { Logger } from '@sistemazero/core/logging'
 import type { CourseAudience } from '../../domain/course/course'
 import { CHALLENGE_ENTRY_XP, challengeSourceId } from '../../domain/gamification/challenges'
@@ -5,12 +6,11 @@ import { COIN_VALUES, quizPassedCoins } from '../../domain/gamification/coins'
 import { localDateSaoPaulo, quizPassedXp, XP_VALUES } from '../../domain/gamification/gamification'
 import {
   avatarPartSourceId,
+  objectiveExtraSourceId,
   roomItemSourceId,
   studioActivityDaySourceId,
   studioPublishDaySourceId,
 } from '../../domain/gamification/source-id'
-import { pensaStageSourceId } from '../../domain/pensa/gamification'
-import type { PensaWorkStage } from '../../domain/pensa/pensa'
 import type {
   AwardXpEventInput,
   GamificationRepository,
@@ -28,7 +28,7 @@ import { type GamificationDeltaView, toGamificationDeltaView } from '../mappers/
  */
 export class AwardGamificationService {
   constructor(
-    private readonly repo: GamificationRepository,
+    private readonly repo: Pick<GamificationRepository, 'award'>,
     private readonly clock: () => Date,
     private readonly logger: Logger,
   ) {}
@@ -46,6 +46,8 @@ export class AwardGamificationService {
     unitCompleted: boolean
     courseCompleted: boolean
     privileged: boolean
+    /** Curso AO VIVO conclui como `live_course_complete`, nunca como marco da Jornada. */
+    modality?: CourseModality
   }): Promise<GamificationDeltaView | null> {
     const events: AwardXpEventInput[] = [
       {
@@ -69,8 +71,14 @@ export class AwardGamificationService {
     }
     // Curso 100% → MARCO no ledger (amount 0): conta cursos concluídos p/ as
     // badges course-complete/-2/-3 (derivadas no repositório, dedupe por curso).
+    // Curso AO VIVO (14/10/2026): o marco é `live_course_complete` ("Oficina completa" + troféu)
+    // e nunca o da Jornada; o XP das aulas segue a mesma régua do gravado.
     if (input.courseCompleted) {
-      events.push({ sourceType: 'course_complete', sourceId: input.courseId, amount: 0 })
+      events.push({
+        sourceType: input.modality === 'live' ? 'live_course_complete' : 'course_complete',
+        sourceId: input.courseId,
+        amount: 0,
+      })
     }
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
@@ -145,26 +153,40 @@ export class AwardGamificationService {
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
-  async awardStudioPassed(input: {
+  /**
+   * "Verificar esta parte" (18/10/2026). Os obrigatórios cumpridos pela primeira vez pagam o
+   * `studio_passed` do bloco Estúdio da parte (o mesmo prêmio que a auto-correção antiga dava:
+   * mantém as conquistas do Estúdio alcançáveis); cada extra cumprido paga `objective_extra`.
+   * O ledger deduplica os dois pelo sourceId, então verificar de novo não refarma.
+   */
+  async awardSectionObjectives(input: {
     userId: string
-    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
     accountId: string
-    blockId: string
-    score: number
-    /** Vitrine do CURSO — TODA a gamificação é segregada por audiência. */
+    lessonId: string
+    sectionId: string
+    /** Bloco Estúdio da parte; sem ele, os obrigatórios não pagam `studio_passed`. */
+    workspaceBlockId: string | null
+    requiredPassed: boolean
+    /** Ids dos objetivos EXTRAS que passaram nesta verificação. */
+    extraPassed: readonly string[]
     audience: CourseAudience
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    // Mesma régua do quiz aprovado (base + bônus por nota); fonte distinta no
-    // ledger (`studio_passed`) → idempotente por bloco, independente do quiz.
-    const events: AwardXpEventInput[] = [
-      {
+    const events: AwardXpEventInput[] = []
+    if (input.requiredPassed && input.workspaceBlockId)
+      events.push({
         sourceType: 'studio_passed',
-        sourceId: input.blockId,
-        amount: quizPassedXp(input.score),
-        coins: quizPassedCoins(input.score),
-      },
-    ]
+        sourceId: input.workspaceBlockId,
+        amount: quizPassedXp(100),
+        coins: quizPassedCoins(100),
+      })
+    for (const checkId of input.extraPassed)
+      events.push({
+        sourceType: 'objective_extra',
+        sourceId: objectiveExtraSourceId(input.lessonId, input.sectionId, checkId),
+        amount: XP_VALUES.OBJECTIVE_EXTRA,
+      })
+    if (!events.length) return null
     return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
   }
 
@@ -266,44 +288,31 @@ export class AwardGamificationService {
     )
   }
 
-  /**
-   * Advance do Pensa bem-sucedido: fechar uma ETAPA (z→e/e→r/r→o) credita
-   * `pensa_stage_complete`; fechar o CICLO (o→done) credita SÓ o
-   * `pensa_cycle_complete` — a aprovação do plano vale o prêmio MAIOR, sem acumular
-   * com o de etapa (decisão do plano). Idempotência pelo ledger: a etapa usa
-   * um uuid DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId` — e o
-   * ciclo usa o próprio cycleId; um replay do award nunca duplica.
-   */
-  async awardPensaAdvance(input: {
+  /** Durable milestone intention; the event ID is the idempotent ledger key. */
+  async awardPensaMilestone(input: {
     userId: string
-    /** CONTA do responsável (sessão de perfil). Default → userId no caller. */
     accountId: string
-    cycleId: string
-    /** Etapa que FECHOU (o `from` do advance). */
-    from: PensaWorkStage
-    /** Audiência do PROJETO Pensa — TODA a gamificação é segregada por vitrine. */
-    audience: CourseAudience
+    audience?: CourseAudience
+    eventId: string
+    projectCompleted: boolean
+    xp: number
+    coins: number
     privileged: boolean
   }): Promise<GamificationDeltaView | null> {
-    const events: AwardXpEventInput[] =
-      input.from === 'o'
-        ? [
-            {
-              sourceType: 'pensa_cycle_complete',
-              sourceId: input.cycleId,
-              amount: XP_VALUES.PENSA_CYCLE_COMPLETE,
-              coins: COIN_VALUES.PENSA_CYCLE_COMPLETE,
-            },
-          ]
-        : [
-            {
-              sourceType: 'pensa_stage_complete',
-              sourceId: pensaStageSourceId(input.cycleId, input.from),
-              amount: XP_VALUES.PENSA_STAGE_COMPLETE,
-              coins: COIN_VALUES.PENSA_STAGE_COMPLETE,
-            },
-          ]
-    return this.award(input.userId, input.accountId, input.audience, events, input.privileged)
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience ?? 'kids',
+      [
+        {
+          sourceType: input.projectCompleted ? 'pensa_cycle_complete' : 'pensa_stage_complete',
+          sourceId: input.eventId,
+          amount: input.xp,
+          coins: input.coins,
+        },
+      ],
+      input.privileged,
+    )
   }
 
   /**
@@ -318,6 +327,7 @@ export class AwardGamificationService {
     userId: string
     accountId: string
     audience: CourseAudience
+    publishedAt?: Date
     monthKey: string
   }): Promise<GamificationDeltaView | null> {
     return this.award(
@@ -332,6 +342,8 @@ export class AwardGamificationService {
         },
       ],
       false,
+      true,
+      { occurredAt: input.publishedAt },
     )
   }
 
@@ -409,9 +421,11 @@ export class AwardGamificationService {
     accountId: string
     audience: CourseAudience
     /** playId público do post no Mural (uuid do hub). */
+    publishedAt?: Date
     playId: string
   }): Promise<GamificationDeltaView | null> {
-    const dayKey = localDateSaoPaulo(this.clock())
+    const occurredAt = input.publishedAt ? new Date(input.publishedAt.getTime()) : this.clock()
+    const dayKey = localDateSaoPaulo(occurredAt)
     return this.award(
       input.userId,
       input.accountId,
@@ -426,6 +440,8 @@ export class AwardGamificationService {
         },
       ],
       false,
+      true,
+      { occurredAt, standalonePublicationId: input.playId },
     )
   }
 
@@ -511,6 +527,28 @@ export class AwardGamificationService {
   }
 
   /**
+   * MARCO `live_encounter` (amount 0, 14/10/2026): a criança foi RECEBIDA num encontro de
+   * curso ao vivo. sourceId = a ocorrência → idempotente por criança + encontro (entrar de novo
+   * na mesma sala não conta duas vezes). Deriva a conquista `live-first-encounter` e alimenta a
+   * missão semanal `live_encounter`. Sem XP de presença (decisão da dona): amount 0 não move XP
+   * nem streak. `privileged: false`: quem é recebida na sala é a criança. Fail-open.
+   */
+  async awardLiveEncounter(input: {
+    userId: string
+    accountId: string
+    occurrenceId: string
+    audience: CourseAudience
+  }): Promise<GamificationDeltaView | null> {
+    return this.award(
+      input.userId,
+      input.accountId,
+      input.audience,
+      [{ sourceType: 'live_encounter', sourceId: input.occurrenceId, amount: 0 }],
+      false,
+    )
+  }
+
+  /**
    * `failOpen` (padrão) é para quando a gamificação é EFEITO COLATERAL de outra
    * coisa: concluir aula não pode cair porque o XP falhou. Quem chama com
    * `failOpen: false` é o caso em que o award É a operação inteira — aí engolir o
@@ -524,14 +562,18 @@ export class AwardGamificationService {
     events: AwardXpEventInput[],
     privileged: boolean,
     failOpen = true,
+    origin: { occurredAt?: Date; standalonePublicationId?: string } = {},
   ): Promise<GamificationDeltaView | null> {
-    const now = this.clock()
+    const now = origin.occurredAt ? new Date(origin.occurredAt.getTime()) : this.clock()
     try {
       const result = await this.repo.award({
         userId,
         accountId,
         audience,
         events,
+        ...(origin.standalonePublicationId
+          ? { standalonePublicationId: origin.standalonePublicationId }
+          : {}),
         today: localDateSaoPaulo(now),
         now,
         privileged,

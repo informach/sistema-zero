@@ -1,0 +1,57 @@
+[
+  {
+    "slide": 1,
+    "file": "01-atividade-pronta-v2.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-116400b3-579e-4c8a-9bf3-86ab67dae9be.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ],
+    "sha256": "a1214b496d6dbded64485df7e7ddeb3d83f79547e82afb97b5b73f2ea4f3ad43",
+    "sourceSha256": "a1214b496d6dbded64485df7e7ddeb3d83f79547e82afb97b5b73f2ea4f3ad43"
+  },
+  {
+    "slide": 2,
+    "file": "02-uma-escolha.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-7e669a51-8bbd-48b1-aa96-f253f1efcb47.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ],
+    "sha256": "131f921d825c77b38035acd12161dedb87c09d601ba49d2f39bdad69a4f69b8c",
+    "sourceSha256": "131f921d825c77b38035acd12161dedb87c09d601ba49d2f39bdad69a4f69b8c"
+  },
+  {
+    "slide": 3,
+    "file": "03-comparar-versoes.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-dc595d7f-467e-43fe-999d-bd688e280eb0.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-abe1bbc4-c177-45d3-8fef-43b5b28ce0f7.png"
+    ],
+    "sha256": "64fc1fd9b8b513fbb74a5c14edd83a2de360ed419e1d2a2c6166a55d1c39c5a3",
+    "sourceSha256": "64fc1fd9b8b513fbb74a5c14edd83a2de360ed419e1d2a2c6166a55d1c39c5a3"
+  },
+  {
+    "slide": 6,
+    "file": "06-mostrar-a-diferenca.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-f428fc38-4781-460d-8fd9-c14f43f93d80.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ],
+    "sha256": "e34b9d2c1cddea55108e8dd975635cc4ea1e2d9aca09016cdf9fdadddbd14769",
+    "sourceSha256": "e34b9d2c1cddea55108e8dd975635cc4ea1e2d9aca09016cdf9fdadddbd14769"
+  },
+  {
+    "slide": 7,
+    "file": "07-ouvir-a-explicacao.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-66fd6cf1-a1f7-43d5-a9a0-917674159235.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-0dbb5148-8dea-40db-9adb-d030f84be6ff.png"
+    ],
+    "sha256": "14fd47f9c2d5d1da1aac21cf928bea1eef9ffdd20273020c78ab30ad78e27508",
+    "sourceSha256": "14fd47f9c2d5d1da1aac21cf928bea1eef9ffdd20273020c78ab30ad78e27508"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "type": "sz_gk_rpg_foe_hit_all",
+  "text": "O inimigo Dragao acerta TODO o time (dano 22)",
+  "fields": {
+    "name": "Dragao"
+  },
+  "saved": {
+    "type": "sz_gk_rpg_foe_hit_all",
+    "id": "cY.eMxN?Fi,D%t!mAJ-F",
+    "fields": {
+      "NAME": "Dragao"
+    },
+    "inputs": {
+      "DMG": {
+        "shadow": {
+          "type": "sz_val_number",
+          "id": "niPz9Aaw$%SgN!qy@}h6",
+          "fields": {
+            "NUM": 22
+          }
+        }
+      }
+    }
+  }
+}

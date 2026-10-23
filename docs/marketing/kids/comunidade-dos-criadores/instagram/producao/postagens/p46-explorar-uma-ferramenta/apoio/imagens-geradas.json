@@ -1,0 +1,36 @@
+[
+  {
+    "slide": 1,
+    "file": "01-explorar.png",
+    "references": [
+      "01-pinta-aberto.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-3369e6c3-a9cf-40e7-9daa-a79cff7f67ff.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  },
+  {
+    "slide": 3,
+    "file": "03-procurar-ajuda.png",
+    "references": [
+      "01-explorar.png",
+      "03-pinta-dicas.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-78cf07d0-3978-4518-9f61-c2eae1326b51.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  },
+  {
+    "slide": 7,
+    "file": "07-resultado.png",
+    "references": [
+      "01-explorar.png",
+      "03-procurar-ajuda.png",
+      "07-pinta-azul.png"
+    ],
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-148df43e-4c52-4481-b661-418df4e0ee55.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "selected": true
+  }
+]
+

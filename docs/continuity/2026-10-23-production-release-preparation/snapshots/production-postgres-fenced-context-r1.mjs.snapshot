@@ -1,0 +1,115 @@
+/** Root only, import-inert. Observe five affected processes; never claim a cluster-wide fence. */
+import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { lstat, readFile } from 'node:fs/promises';
+import { dirname, relative, resolve, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { SERVICES, ORDER, PINS, projectContext, baselineContext, compareSnapshot, preserveMaps, validateHttp, nativeEnvironment } from './production-maintenance-reload-r2.mjs';
+import { main as httpMain, targetFromReceipt } from './production-maintenance-http-r2.mjs';
+import { projectServices } from './staging-members-image-reload-r1.mjs';
+import { PG, verifyDatabaseTarget, projectOutput } from './production-postgres-execution-preflight-r1.mjs';
+export { SERVICES, ORDER, PINS, PG, nativeEnvironment };
+const CACHE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(CACHE, '../..');
+export const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+export const SOURCES = Object.freeze({
+  'production-maintenance-reload-r2.mjs': '8f7f9f971fa328c66cefe879f8e90ae0949902c2ac0d0182a9e8e9ae758ea513',
+  'production-maintenance-http-r2.mjs': '1e5aa41ca694c8e9fc8c7ce8d6f61aa5dd57a9df4a17bacd7a3cabfc4142ea7f',
+  'production-maintenance-store-r1.mjs': '86ed82e9cca0b47c1bdeec4f14ef5a8ac18e7c72055ecf512baab7bd60a28de4',
+  'staging-members-image-reload-r1.mjs': 'ee81fdf4b005ff3ad6937f403c9ff7f8eb302b1315fbdc2ca8ca814a3eccff85',
+  'production-postgres-execution-preflight-r1.mjs': 'f0502c6ccea1598468df94a08bb825fdb551ac7b817cd67f324b9a856bd4bab7',
+  'production-postgres-execution-preflight-r1.sh': '4db9fd8a3c02527cedd17e0200083192668602086cfe76569706c26041c777dd',
+  'production-postgres-metadata-r3.mjs': '511639952415cfb94ebbc24e97063f2bc0b6f023de38104097dec3864e1d7616',
+});
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const obj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+const keys = (v, expected) => obj(v) && same(Object.keys(v).sort(), [...expected].sort());
+const hash = v => typeof v === 'string' && /^[a-f0-9]{64}$/.test(v);
+const ref = v => keys(v, ['path', 'sha256']) && typeof v.path === 'string' && v.path.startsWith('.cache/python-reference-games/') && hash(v.sha256);
+export function check(ok, code) { if (!ok) throw new Error(code); }
+export async function readPinned(r) {
+  check(ref(r), 'REFERENCE_INVALID'); const path = resolve(ROOT, r.path), rel = relative(CACHE, path), s = await lstat(path);
+  check(rel && !rel.startsWith('..') && !rel.includes(':') && s.isFile() && !s.isSymbolicLink() && s.size <= 2097152, 'REFERENCE_PATH');
+  const bytes = await readFile(path); check(sha(bytes) === r.sha256, 'REFERENCE_HASH'); return JSON.parse(bytes.toString('utf8'));
+}
+export function validateManifest(value) {
+  check(keys(value, ['kind', 'version', 'projectId', 'environmentId', 'verifyReceipts']) && value.kind === 'production-postgres-affected-fence-input' && value.version === 1 && value.projectId === PINS.project && value.environmentId === PINS.environment && keys(value.verifyReceipts, ORDER), 'FENCE_MANIFEST_INVALID');
+  check(Object.values(value.verifyReceipts).every(ref) && new Set(Object.values(value.verifyReceipts).map(r => resolve(ROOT, r.path).toLowerCase())).size === 5, 'FENCE_REFERENCE_ALIASED');
+  return value;
+}
+export function validateTargetProof(service, verify, applied, http, now = Date.now(), historical = false) {
+  const t = SERVICES[service]; check(t && verify?.kind === 'production-maintenance-reload' && verify.version === 1 && verify.mode === 'verify' && verify.service === service && verify.projectId === PINS.project && verify.environmentId === PINS.environment && verify.operatorSha256 === SOURCES['production-maintenance-reload-r2.mjs'] && verify.state === 'OLD_IMAGE_FULL_MAINTENANCE_VERIFIED' && verify.remoteOutcomeUnknown === false && verify.qualified === true && ['imageVerified', 'oldRetired', 'snapshotVerified', 'fullHttpVerified'].every(k => verify[k] === true), 'VERIFY_NOT_QUALIFIED');
+  check(applied?.service === service && applied.operatorSha256 === verify.operatorSha256 && same(verify.candidate, applied.candidate), 'VERIFY_APPLY_IDENTITY_CHANGED');
+  const target = targetFromReceipt(applied);
+  check(ref(verify.applyReceipt) && ref(verify.httpReceipt) && same(http.reloadReceipt, verify.applyReceipt), 'HTTP_APPLY_REFERENCE_CHANGED');
+  validateHttp(http, service, applied.candidate, historical ? Date.parse(verify.finishedAt) : now);
+  return target;
+}
+export function validateFreshHttp(service, http, applied, appliedRef, now = Date.now()) {
+  check(same(http.reloadReceipt, appliedRef), 'HTTP_APPLY_REFERENCE_CHANGED'); validateHttp(http, service, applied.candidate, now);
+}
+export function validatePg(raw) {
+  const s = raw?.pg, d = s?.activeDeployments?.[0], pending = raw?.pgPending;
+  check(s?.serviceId === PG.serviceId && s.environmentId === PINS.environment && s.activeDeployments?.length === 1 && s.latestDeployment?.id === PG.deploymentId && pending?.edges?.length === 0 && pending.pageInfo?.hasNextPage === false, 'PG_CONTEXT_CHANGED');
+  check(d?.id === PG.deploymentId && d.projectId === PINS.project && d.environmentId === PINS.environment && d.serviceId === PG.serviceId && d.snapshotId === PG.snapshotId && d.status === 'SUCCESS' && d.deploymentStopped === false && d.meta?.imageDigest === PG.imageDigest && Array.isArray(d.instances) && d.instances.filter(i => i.status === 'RUNNING').length === 1 && d.instances.some(i => i.id === PG.instanceId && i.status === 'RUNNING') && d.instances.every(i => ['RUNNING', 'REMOVED'].includes(i.status)), 'PG_PIN_CHANGED');
+  return PG;
+}
+export function assertContext(context, proofs) { baselineContext(context, 'members', proofs); return context; }
+export function preserveObservation(a, b) {
+  check(same(a.public.context, b.public.context) && same(a.public.postgres, b.public.postgres) && same(a.public.metadata, b.public.metadata), 'FENCE_OR_PG_CHANGED_DURING_DUMP');
+  preserveMaps(a.maps, b.maps, 'members');
+  check(same(a.services, b.services) && ['PGDATABASE', 'PGUSER', 'PGPASSWORD', 'PGHOST', 'PGPORT', 'RAILWAY_PRIVATE_DOMAIN'].every(k => a.pgVars[k] === b.pgVars[k]), 'DATABASE_OR_CONFIGURATION_CHANGED');
+}
+export function eraseObservation(value) {
+  for (const item of Object.values(value?.maps ?? {})) for (const map of Object.values(item)) for (const k of Object.keys(map)) delete map[k];
+  for (const k of Object.keys(value?.pgVars ?? {})) delete value.pgVars[k];
+}
+/** Read-only API/SSH. Original VERIFY proofs bind targets; new context/snapshot/HTTP prove freshness. */
+export async function observeFence(manifestRef, run, checkpoint = async () => {}) {
+  check(process.versions.node === '24.22.0' && !process.versions.bun && /^production-postgres-final-[a-z0-9-]{1,45}$/.test(run), 'NODE_OR_RUN_INVALID');
+  for (const [name, expected] of Object.entries(SOURCES)) check(sha(await readFile(join(CACHE, name))) === expected, 'SOURCE_PIN_CHANGED');
+  const manifest = validateManifest(await readPinned(manifestRef)), proofs = {}, applied = {}, targets = {};
+  for (const service of ORDER) {
+    const v = await readPinned(manifest.verifyReceipts[service]), a = await readPinned(v.applyReceipt), h = await readPinned(v.httpReceipt);
+    targets[service] = validateTargetProof(service, v, a, h, Date.now(), true); proofs[service] = v; applied[service] = a;
+  }
+  const startedAt = new Date().toISOString(), deadline = Date.now() + 300000, cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe');
+  const native = (args, input = '', timeout = 20000) => new Promise((yes, no) => {
+    check(Date.now() < deadline, 'FENCE_DEADLINE');
+    const p = execFile(cli, args, { cwd: ROOT, env: nativeEnvironment(process.env), windowsHide: true, encoding: 'utf8', timeout: Math.min(timeout, deadline - Date.now()), maxBuffer: 8388608 }, (e, out) => e ? no(new Error('READ_ONLY_CLI_UNCONFIRMED')) : yes(out));
+    p.stdin?.on('error', () => {}); p.stdin?.end(input);
+  });
+  const api = async (q, variables) => { check(/^query\b/.test(q) && !/\bmutation\b/.test(q), 'QUERY_REQUIRED'); const r = JSON.parse(await native(['api', '--compact', q, '--variables', '@-'], JSON.stringify(variables))); check(r.data && !r.errors, 'API_UNCONFIRMED'); return r.data; };
+  check((await native(['--version'])).trim() === 'railway 5.62.1', 'CLI_VERSION');
+  const names = Object.keys(SERVICES), fields = 'id projectId environmentId serviceId createdAt status deploymentStopped canRedeploy snapshotId meta instances{id status}';
+  const pending = serviceId => ({ projectId: PINS.project, environmentId: PINS.environment, serviceId, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } });
+  const vars = { e: PINS.environment, pgInput: pending(PG.serviceId), ...Object.fromEntries(names.map((s, i) => [`i${i}`, pending(SERVICES[s].id)])) };
+  const q = `query($e:String!,$pgInput:DeploymentListInput!,${names.map((_, i) => `$i${i}:DeploymentListInput!`).join(',')}){${names.map((s, i) => `s${i}:serviceInstance(serviceId:"${SERVICES[s].id}",environmentId:$e){serviceId environmentId preDeployCommand startCommand resolvedFileConfig{deploymentId commitHash fileManifest}activeDeployments{${fields}}latestDeployment{${fields}}}p${i}:deployments(first:20,input:$i${i}){edges{node{${fields}}}pageInfo{hasNextPage}}o${i}:deployment(id:"${SERVICES[s].deployment}"){${fields}}`).join('\n')}pg:serviceInstance(serviceId:"${PG.serviceId}",environmentId:$e){serviceId environmentId activeDeployments{${fields}}latestDeployment{id}}pgPending:deployments(first:20,input:$pgInput){edges{node{id}}pageInfo{hasNextPage}}}`;
+  const context = async () => { const raw = await api(q, vars); return { context: assertContext(projectContext(raw), proofs), postgres: validatePg(raw) }; };
+  const before = await context(), httpReceipts = {};
+  for (const service of ORDER) {
+    const ref = proofs[service].applyReceipt, httpRun = `production-maintenance-http-${run.slice('production-postgres-'.length)}-${service}`;
+    check(await httpMain([httpRun, ref.path, ref.sha256]) === 0, 'FRESH_HTTP_UNCONFIRMED');
+    const path = `.cache/python-reference-games/${httpRun}/receipt.json`, bytes = await readFile(resolve(ROOT, path));
+    httpReceipts[service] = { path, sha256: sha(bytes) }; validateFreshHttp(service, JSON.parse(bytes), applied[service], ref);
+    await checkpoint({ service, receipt: httpReceipts[service] });
+  }
+  let result;
+  try {
+    const raw = await api(`query($p:String!,$e:String!){${names.map((s, i) => `d${i}:variables(projectId:$p,environmentId:$e,serviceId:"${SERVICES[s].id}",unrendered:true)r${i}:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:"${SERVICES[s].id}")`).join('\n')}pgVars:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:"${PG.serviceId}")}`, { p: PINS.project, e: PINS.environment });
+    result = { maps: Object.fromEntries(names.map((s, i) => [s, { declared: raw[`d${i}`], rendered: raw[`r${i}`] }])), pgVars: raw.pgVars, services: projectServices(await api('query($p:String!){project(id:$p){id services(first:50){edges{node{id name projectId deletedAt}}pageInfo{hasNextPage}}}}', { p: PINS.project })) };
+    for (const s of names) {
+      check(result.maps[s].declared?.RELEASE_MAINTENANCE_MODE === 'full' && result.maps[s].rendered?.RELEASE_MAINTENANCE_MODE === 'full', 'MAINTENANCE_MODE_CHANGED');
+      const snapshot = (await api('query($d:String!){deploymentSnapshot(deploymentId:$d){id variables}}', { d: targets[s].deploymentId })).deploymentSnapshot;
+      compareSnapshot(snapshot, targets[s].snapshotId, result.maps[s].declared, result.services);
+    }
+    const target = verifyDatabaseTarget(result.maps.members.rendered, result.pgVars);
+    const program = await readFile(join(CACHE, 'production-postgres-execution-preflight-r1.sh'));
+    const metadata = projectOutput(await native(['ssh', '--project', PINS.project, '--environment', PINS.environment, '--service', PG.serviceId, '--deployment-instance', PG.instanceId, '--identity-file', 'C:/Users/tocha/.ssh/id_ed25519', '--', 'sh', '-s'], program, 35000));
+    const after = await context(); check(same(before, after), 'FENCE_CHANGED_DURING_OBSERVATION');
+    for (const service of ORDER) validateFreshHttp(service, await readPinned(httpReceipts[service]), applied[service], proofs[service].applyReceipt);
+    await readPinned(manifestRef); for (const service of ORDER) await readPinned(manifest.verifyReceipts[service]);
+    result.public = { kind: 'production-postgres-affected-fence-observation', startedAt, finishedAt: new Date().toISOString(), manifest: manifestRef, verifyReceipts: manifest.verifyReceipts, httpReceipts, targets, ...after, metadata, databaseTarget: target,
+      snapshotsMatchCurrent: true, affectedWritersFenced: true, allProductionWritersFenced: false, publicEdgeQualified: false, providerMutations: 0 };
+    return result;
+  } catch (e) { eraseObservation(result); throw e; }
+}

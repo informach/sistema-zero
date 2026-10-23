@@ -1,0 +1,32 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+export const sha=b=>createHash('sha256').update(b).digest('hex');
+export const serviceContexts=Object.freeze(Object.fromEntries(Object.entries({"auth":{"serviceId":"8c57d71d-3a8e-48f1-9627-63f1528b9a48","deploymentId":"fb235891-3fdc-4562-8db7-815543580ad1","commitSha":"8c0bb250dc7660869c247f799f126e99e0e93d9c"},"members":{"serviceId":"aa282801-ffba-477c-af6d-394b2f4f9af9","deploymentId":"b5c4b311-134c-4c6b-b070-d325b52ac17b","commitSha":"8c0bb250dc7660869c247f799f126e99e0e93d9c"},"community":{"serviceId":"9df1b493-4cea-4b36-bec8-7299f054c17d","deploymentId":"4172b78d-9f50-429d-820d-eaa106b105d2","commitSha":"8c0bb250dc7660869c247f799f126e99e0e93d9c"}}).map(([name,value])=>[name,Object.freeze(value)])));
+export const context=Object.freeze({"RAILWAY_PROJECT_ID":"415d5a1c-5f75-432c-8445-b395d0977ce3","RAILWAY_ENVIRONMENT_ID":"f634cff6-aafb-4804-8b69-172fad4e946e","RAILWAY_SERVICE_ID":"8c57d71d-3a8e-48f1-9627-63f1528b9a48","RAILWAY_DEPLOYMENT_ID":"fb235891-3fdc-4562-8db7-815543580ad1","RAILWAY_GIT_COMMIT_SHA":"8c0bb250dc7660869c247f799f126e99e0e93d9c"});
+export const origin='https://community-staging-66f2.up.railway.app';
+export const appDeployments=Object.freeze({community:serviceContexts.community.deploymentId,members:serviceContexts.members.deploymentId});
+export function validateBinding(value,planSha,now=Date.now()){
+ assert.deepEqual(Object.keys(value).sort(),['attemptId','browserChannel','createExclusiveStaff','expiresAt','observedAt','planSha256','serviceContexts','windowOwner']);
+ assert.match(value.attemptId,/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/);
+ assert.deepEqual(value.serviceContexts,serviceContexts);assert.equal(value.planSha256,planSha);
+ // Each service has its own exact deployment/source tuple; no global target fallback.
+ assert.equal(value.browserChannel,'chrome');assert.equal(value.createExclusiveStaff,true);assert.equal(value.windowOwner,'Root');
+ const at=Date.parse(value.observedAt),until=Date.parse(value.expiresAt);assert(Number.isFinite(at)&&at<=now&&now-at<=300000);assert(until>now&&until-at<=900000);
+ return value;
+}
+export function secretEnvelope(attemptId,password){assert.match(password,/^[a-f0-9]{64}$/);return JSON.stringify({attemptId,password})+'\n';}
+export function acceptRemoteLine(line,expected){
+ assert(Buffer.byteLength(line)<=4096);const v=JSON.parse(line);
+ assert.equal(v.attemptId,expected.attemptId);assert.equal(v.actorId,expected.actorId);
+ if(v.kind==='ready'){
+  assert.deepEqual(Object.keys(v).sort(),['kind','attemptId','actorId','contextVerified','sourcePinsVerified','absenceVerified'].sort());
+  assert.equal(v.contextVerified,true);assert.equal(v.sourcePinsVerified,true);assert.equal(v.absenceVerified,true);
+ }else{
+  assert.equal(v.kind,'terminal');assert.equal(typeof v.ok,'boolean');assert.equal(typeof v.created,'boolean');assert.equal(typeof v.dbClosed,'boolean');assert.equal(v.emailOutbound,false);
+  const allowed=new Set(['kind','ok','phase','attemptId','actorId','created','role','active','passwordSet','dbClosed','emailOutbound','accountRetained','creationOutcome']);
+  assert(Object.keys(v).every(k=>allowed.has(k)));assert(['context','sources','absence','secret-input','hash','create','readback','close','complete'].includes(v.phase));
+  if(v.ok){assert.equal(v.created,true);assert.equal(v.role,'staff');assert.equal(v.active,true);assert.equal(v.passwordSet,true);assert.equal(v.dbClosed,true);assert.equal(v.phase,'complete');}
+ }
+ return v;
+}
+export function makeSecretSender(expected,generate,send){let ready=false,secret=null,sent=false;return {onReady(value){assert.equal(ready,false);assert.equal(acceptRemoteLine(JSON.stringify(value),expected).kind,'ready');ready=true;secret=generate();const body=secretEnvelope(expected.attemptId,secret);sent=true;send(body);},hasSent(){return sent;},password(){assert(ready&&secret);return secret;},forget(){secret=null;}};}

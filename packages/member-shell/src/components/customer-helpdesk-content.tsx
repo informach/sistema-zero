@@ -5,6 +5,8 @@ import { Button } from '@sistemazero/ui/button'
 import { Card, CardContent } from '@sistemazero/ui/card'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { MessageCircleMore, Plus } from 'lucide-react'
+import { useState } from 'react'
+import { apiGet } from '../lib/api'
 import {
   CUSTOMER_TICKET_CATEGORY_LABEL,
   CUSTOMER_TICKET_STATUS_LABEL,
@@ -37,18 +39,73 @@ export function CustomerTicketStatusBadge({ status }: { status: CustomerTicketSt
 }
 
 export function CustomerConversationMessage({ message }: { message: CustomerTicketMessageView }) {
-  const fromCustomer = message.direction !== 'outbound'
+  const fromCustomer = message.authorKind === 'customer'
+  const [source, setSource] = useState<{ title: string; text: string } | null>(null)
+  const [sourceError, setSourceError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  async function showSource(id: string) {
+    setLoading(true)
+    setSourceError(null)
+    setSource(null)
+    try {
+      setSource(await apiGet(`/api/helpdesk/portal/tickets/${message.ticketId}/sources/${id}`))
+    } catch {
+      setSourceError('Esta fonte não está disponível para consulta. A equipe pode ajudar.')
+    } finally {
+      setLoading(false)
+    }
+  }
   return (
     <article
       className={`rounded-xl border p-4 shadow-sm ${fromCustomer ? 'border-border bg-card' : 'border-primary/20 bg-primary/5'}`}
     >
       <header className="flex flex-wrap items-center gap-2 text-sm">
-        <strong>{fromCustomer ? 'Você' : (message.fromName ?? 'Equipe Sistema Zero')}</strong>
+        <strong>
+          {fromCustomer
+            ? 'Você'
+            : message.authorKind === 'assistant'
+              ? 'Assistente de IA'
+              : (message.fromName ?? 'Equipe Sistema Zero')}
+        </strong>
         <time dateTime={message.createdAt} className="text-muted-foreground">
           {formatWhen(message.createdAt)}
         </time>
       </header>
       <p className="mt-2 whitespace-pre-wrap text-sm leading-6">{message.bodyText}</p>
+      {message.citations.length ? (
+        <section className="mt-3 flex flex-wrap gap-2" aria-label="Fontes da resposta">
+          {message.citations.map((c) => (
+            <Button
+              key={c.id}
+              variant="outline"
+              size="sm"
+              disabled={loading}
+              onClick={() => void showSource(c.id)}
+            >
+              {c.title} · {c.section}
+            </Button>
+          ))}
+        </section>
+      ) : null}
+      {loading ? (
+        <p role="status" className="mt-2 text-sm">
+          Consultando fonte…
+        </p>
+      ) : null}
+      {sourceError ? (
+        <p role="alert" className="mt-2 text-sm">
+          {sourceError}
+        </p>
+      ) : null}
+      {source ? (
+        <aside className="mt-3 rounded-lg border p-3">
+          <strong>{source.title}</strong>
+          <p className="whitespace-pre-wrap text-sm">{source.text}</p>
+          <Button variant="ghost" size="sm" onClick={() => setSource(null)}>
+            Fechar fonte
+          </Button>
+        </aside>
+      ) : null}
     </article>
   )
 }

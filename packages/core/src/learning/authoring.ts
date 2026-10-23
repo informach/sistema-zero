@@ -1,4 +1,10 @@
 import type { LessonSection } from './index'
+import {
+  applyStudioProjectExampleChange,
+  preserveStudioExampleContent,
+  pruneLessonStudioExamples,
+  type StudioProjectExampleChange,
+} from './studio-project-example-change'
 
 export interface DraftBlockContent {
   kind: string
@@ -58,6 +64,7 @@ export interface LessonDraft<T extends { kind: string } = DraftBlockContent> {
 }
 /** Content travels per block; moving a tool never retransmits its project. */
 export type LessonDraftChange<T extends { kind: string } = DraftBlockContent> =
+  | StudioProjectExampleChange
   | { type: 'block'; block: DraftBlock<T>; sectionId?: string | null }
   | { type: 'remove-block'; blockId: string }
   | { type: 'structure'; sections: LessonSection[] }
@@ -81,6 +88,8 @@ export function applyLessonDraftChange<T extends { kind: string }>(
   change: LessonDraftChange<T>,
 ): LessonDraftDocument<T> {
   switch (change.type) {
+    case 'studio-example':
+      return applyStudioProjectExampleChange(document, change)
     case 'metadata':
       return {
         ...document,
@@ -93,7 +102,7 @@ export function applyLessonDraftChange<T extends { kind: string }>(
     case 'planned-videos':
       return { ...document, plannedVideos: change.plannedVideos }
     case 'structure':
-      return { ...document, sections: change.sections }
+      return pruneLessonStudioExamples({ ...document, sections: change.sections })
     case 'remove-block':
       return {
         ...document,
@@ -115,7 +124,12 @@ export function applyLessonDraftChange<T extends { kind: string }>(
         plannedVideos: document.plannedVideos.filter((v) => v.blockId !== change.blockId),
       }
     case 'block': {
-      const existing = document.blocks.some((b) => b.id === change.block.id)
+      const previous = document.blocks.find((b) => b.id === change.block.id)
+      const existing = previous !== undefined
+      const nextBlock = {
+        ...change.block,
+        content: preserveStudioExampleContent(change.block.content, previous?.content),
+      }
       /**
        * ⚠️⚠️ **Todo bloco pertence a UMA seção.** Não existe mais lugar fora delas: o que era
        * "materiais de apoio" virou o bloco `materials`, que mora numa seção como qualquer outro.
@@ -132,8 +146,8 @@ export function applyLessonDraftChange<T extends { kind: string }>(
           (v) => v.blockId !== change.block.id || change.block.content.kind === 'video',
         ),
         blocks: existing
-          ? document.blocks.map((b) => (b.id === change.block.id ? change.block : b))
-          : [...document.blocks, change.block],
+          ? document.blocks.map((b) => (b.id === nextBlock.id ? nextBlock : b))
+          : [...document.blocks, nextBlock],
         sections: destino
           ? document.sections.map((s) =>
               s.id === destino.id ? { ...s, blockIds: [...s.blockIds, change.block.id] } : s,
@@ -250,5 +264,7 @@ export function restoreFromPublished<T extends { kind: string }>(
     attachments.splice(Math.min(i, attachments.length), 0, { ...anexo })
   }
 
-  return { ...draft, blocks, sections, plannedVideos, attachments }
+  // A partial restore can bring a private binding whose original part was removed or
+  // retargeted locally. Restore the block, but never guess a new pedagogical association.
+  return pruneLessonStudioExamples({ ...draft, blocks, sections, plannedVideos, attachments })
 }

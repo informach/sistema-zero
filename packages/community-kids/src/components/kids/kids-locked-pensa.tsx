@@ -1,23 +1,42 @@
+import type { JourneyLevelSlug } from '@sistemazero/core/journey'
 import { KidsLockedProduct } from './kids-locked-product'
 
-/** Gostinho do que a criança encontra no Pensa quando liberar. */
+/**
+ * O que a criança faz no Pensa, na ordem (Canvas "Estados", 20/10/2026). A prévia antiga
+ * prometia "desenhar as telas e o fluxo do jogo", que o Pensa de hoje não faz.
+ */
 const PREVIEW = [
-  { emoji: '💡', text: 'Transforme a sua ideia num plano' },
-  { emoji: '🗺️', text: 'Desenhe as telas e o fluxo do jogo' },
-  { emoji: '✅', text: 'Organize as missões pra construir' },
+  { emoji: '1', text: 'Conte a ideia do jogo, escrevendo ou falando' },
+  { emoji: '2', text: 'Confira o plano que o Zappy monta com você' },
+  { emoji: '3', text: 'Construa uma missão de cada vez no Estúdio, no Pinta e no Molda' },
 ] as const
 
 /**
- * Tela do Pensa BLOQUEADO (sem o produto): o item aparece no menu, mas a criança ainda
- * não tem acesso. Wrapper fino do `KidsLockedProduct` (prévia + CTA da Comunidade dos
- * Criadores, a assinatura que libera o Pensa).
+ * Tela do Pensa BLOQUEADO (a conta não tem o produto): o item aparece no menu,
+ * mas a criança ainda não tem acesso. Wrapper fino do `KidsLockedProduct` (prévia + cartão
+ * da Comunidade dos Criadores, onde o Pensa abre no posto que a política diz, `opensAt`).
  */
-export function KidsLockedPensa() {
+export function KidsLockedPensa({
+  opensAt = null,
+  earned = false,
+}: {
+  opensAt?: JourneyLevelSlug | null
+  /** A criança já conquistou a ferramenta na Jornada: a frase diz que ela volta a abrir. */
+  earned?: boolean
+}) {
   return (
     <KidsLockedProduct
+      product="pensa"
+      opensAt={opensAt}
+      earned={earned}
       title="Pensa"
-      intro="O Pensa é onde você planeja o seu jogo antes de construir: a ideia, as telas e as missões! 💡✨"
+      intro={
+        earned
+          ? 'Você já conquistou o Pensa. Nada do que você planejou aqui se perde: tudo volta a abrir junto com o acesso à Comunidade.'
+          : 'No Pensa você conta a ideia de um jogo e o Zappy ajuda a dividir em missões. Depois, cada missão vira uma parte do jogo.'
+      }
       preview={PREVIEW}
+      numbered
     />
   )
 }

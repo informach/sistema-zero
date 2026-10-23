@@ -1,5 +1,5 @@
 /**
- * Qual versão o Estúdio ou o Pinta da fase abre, quando o rascunho também mora na conta
+ * Qual versão o Estúdio ou o Pinta da aula abre, quando o rascunho também mora na conta
  * (10/10/2026). Pura, e por isso testável caso a caso: é a regra que decide se a criança vê o
  * trabalho de outro computador ou o deste.
  *

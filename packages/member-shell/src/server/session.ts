@@ -13,6 +13,7 @@ import { cache } from 'react'
 import { parseActClaim, parseProfileClaim } from '../lib/act'
 import { expireCookieOptions, type SessionCookieNames } from '../lib/cookies'
 import { getEnv, isProd } from '../lib/env'
+import { learnerIdentity } from '../lib/learner-identity'
 import type { SessionUser } from '../lib/types'
 
 /** Par de tokens devolvido pelo @sistemazero/auth (via gateway). */
@@ -243,11 +244,13 @@ export function createSessionModule(
     }
     try {
       const { payload } = await jwtVerify(access, verificationKey(), verifyOptions())
-      return claimsToUser(payload)
+      const user = claimsToUser(payload)
+      return learnerIdentity(user, 'adult') ? user : null
     } catch (err) {
       if (err instanceof errors.JWTExpired) {
         try {
-          return claimsToUser(decodeJwt(access))
+          const user = claimsToUser(decodeJwt(access))
+          return learnerIdentity(user, 'adult') ? user : null
         } catch {
           return null
         }
@@ -266,6 +269,9 @@ export function createSessionModule(
   }
 
   function forApp(verdict: AccessVerdict): AccessVerdict {
+    if (verdict.ok && audience === 'adult' && !learnerIdentity(verdict.user, 'adult')) {
+      return { ok: false, expired: false }
+    }
     // A sessão de suporte é uma capacidade separada, emitida pelo Admin.
     // Sessões Kids antigas sem contexto precisam entrar pelo novo fluxo.
     if (verdict.ok && audience === 'kids' && !verdict.user.kids && !verdict.user.act) {

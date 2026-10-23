@@ -7,6 +7,7 @@ import type {
   SettingsView as SharedSettingsView,
   TicketView as SharedTicketView,
 } from '@sistemazero/helpdesk-contracts'
+import { HANDOFF_REASONS, type PublicCitation } from '@sistemazero/helpdesk-contracts'
 import type { GmailConnection } from '../domain/connection/gmail-connection'
 import type { KbArticle } from '../domain/kb/kb-article'
 import type { HelpdeskSettings } from '../domain/settings/settings'
@@ -19,6 +20,9 @@ const iso = (d: Date | null): string | null => (d ? d.toISOString() : null)
 export function toTicketView(ticket: Ticket, now?: Date): SharedTicketView {
   const sla = now ? ticketSla(ticket, now) : null
   return {
+    replyChannel: ticket.source === 'portal' && ticket.gmailThreadId === null ? 'portal' : 'email',
+    handlingMode: ticket.handlingMode,
+    handoffReason: ticket.handoffReason,
     id: ticket.id,
     version: ticket.version,
     source: ticket.source,
@@ -37,6 +41,7 @@ export function toTicketView(ticket: Ticket, now?: Date): SharedTicketView {
     messageCount: ticket.messageCount,
     aiSummary: ticket.aiSummary,
     aiSummaryAt: iso(ticket.aiSummaryAt),
+    aiDraftRunId: ticket.aiDraftRunId,
     aiDraft: ticket.aiDraft,
     aiDraftAt: iso(ticket.aiDraftAt),
     aiDraftEdited: ticket.aiDraftEdited,
@@ -63,6 +68,8 @@ export type TicketView = SharedTicketView
 
 export function toMessageView(message: TicketMessage): SharedMessageView {
   return {
+    aiRunId: message.aiRunId,
+    draftEdited: message.draftEdited,
     id: message.id,
     ticketId: message.ticketId,
     kind: message.kind,
@@ -102,6 +109,15 @@ export type MessageView = SharedMessageView
  */
 export function toCustomerTicketView(ticket: Ticket): SharedCustomerTicketView {
   return {
+    handlingMode: ticket.handlingMode,
+    assistantState: ['resolved', 'closed'].includes(ticket.status)
+      ? 'resolved'
+      : ticket.handlingMode === 'assistant'
+        ? ticket.status === 'waiting'
+          ? 'waiting_customer'
+          : 'thinking'
+        : 'human',
+    handoffMessage: ticket.handoffReason ? HANDOFF_REASONS[ticket.handoffReason] : null,
     id: ticket.id,
     version: ticket.version,
     source: ticket.source,
@@ -121,11 +137,21 @@ export type CustomerTicketView = SharedCustomerTicketView
  * equipe, os cabeçalhos de e-mail e o `gmailInternalDate`. A visibilidade
  * `internal` já é barrada antes, no service — esta função é a segunda tranca.
  */
-export function toCustomerMessageView(message: TicketMessage): SharedCustomerMessageView {
+export function toCustomerMessageView(
+  message: TicketMessage,
+  citations: PublicCitation[] = [],
+): SharedCustomerMessageView {
   if (message.visibility !== 'customer' || message.kind === 'note') {
     throw new Error('Mensagem interna não pode ser projetada para o portal')
   }
   return {
+    authorKind:
+      message.direction !== 'outbound'
+        ? 'customer'
+        : message.sentVia === 'ai'
+          ? 'assistant'
+          : 'team',
+    citations,
     id: message.id,
     ticketId: message.ticketId,
     kind: message.kind,
@@ -144,7 +170,15 @@ export function toKbArticleView(article: KbArticle): SharedKbArticleView {
     version: article.version,
     title: article.title,
     content: article.content,
-    published: article.published,
+    published: article.publishedRevisionId !== null,
+    draftRevisionId: article.draftRevisionId,
+    publishedRevisionId: article.publishedRevisionId,
+    audience: article.audience,
+    product: article.product,
+    ownerName: article.ownerName,
+    origin: article.origin,
+    validUntil: iso(article.validUntil),
+    archived: article.archived,
     createdBy: article.createdBy,
     createdByName: article.createdByName,
     createdAt: article.createdAt.toISOString(),

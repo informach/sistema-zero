@@ -66,6 +66,7 @@ export function createProxyStage(deps: ProxyStageDeps): Stage {
         // Corpo segue como stream (zero-copy). O teto é enforçado pelo
         // `maxRequestBodySize` do Bun.serve — não por pipe (frágil no Bun).
         body: ctx.upstreamBody,
+        signal: ctx.request.signal,
         timeoutMs: route.timeoutMs ?? service.timeoutMs,
         retry: {
           maxRetries: route.retries ?? service.retry.maxRetries,

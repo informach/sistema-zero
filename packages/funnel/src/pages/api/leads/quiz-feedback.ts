@@ -1,9 +1,9 @@
 import type { APIRoute } from 'astro'
-import { communityQuizFeedback } from '../../../server/community-quiz-feedback'
 import { getDeps } from '../../../server/deps'
+import { quizFeedback } from '../../../server/quiz-feedback'
 
 export const prerender = false
 export const POST: APIRoute = ({ request }) => {
   const { repo, env } = getDeps()
-  return communityQuizFeedback(request, { repo, secureCookie: env.NODE_ENV === 'production' })
+  return quizFeedback(request, { repo, secureCookie: env.NODE_ENV === 'production' })
 }

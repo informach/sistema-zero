@@ -1,8 +1,7 @@
-/** Internal v2 persistence. Public writer activation still belongs to the rollout gate. */
+/** Persistência do formato de cena usado pela oficina padrão. */
 import type { UseStore } from 'idb-keyval'
 import { MoldaUnsupportedVersionError } from '../core/documentVersion'
 import { isMoldaAssetId } from '../core/id'
-import { MOLDA_LIMITS } from '../core/limits'
 import type { MoldaSceneDocument } from '../scene/document'
 import { number, requireScene, SceneValidationError } from '../scene/validation'
 import { readRecords } from './readRecords'
@@ -11,6 +10,8 @@ import { mutateSceneBlobStorage } from './sceneBlobWrite'
 import { readSceneIndexRevision } from './sceneIndexRevision'
 import { readSceneSummary, type SceneStoredSummary } from './sceneMetadata'
 import { inspectInlineSceneRecords, type SceneStoredRead } from './sceneRecordInspection'
+import { createSceneRecoveryPersistence } from './sceneRecoveryPersistence'
+import { sceneStorageCapacity } from './sceneStorageCapacity'
 import { type SceneStorageChange, subscribeSceneStorageChanges } from './sceneStorageChannel'
 import { SCENE_RECOVERY_KEY_PREFIX, SCENE_SUMMARY_KEY_PREFIX } from './storageKeys'
 
@@ -22,11 +23,8 @@ function assetId(id: string) {
 }
 
 /** Every mutation compares storage revision and writes in one transaction. No unguarded save. */
-export function createScenePersistence(
-  withStore: UseStore,
-  maxBytes = MOLDA_LIMITS.maxGalleryBytes,
-) {
-  number(maxBytes, 'maxBytes', 1, Number.MAX_SAFE_INTEGER, true)
+export function createScenePersistence(withStore: UseStore, maxBytes?: number) {
+  if (maxBytes !== undefined) number(maxBytes, 'maxBytes', 1, Number.MAX_SAFE_INTEGER, true)
   const read = async (id: string, signal?: AbortSignal): Promise<SceneStoredRead> => {
     signal?.throwIfAborted()
     assetId(id)
@@ -39,9 +37,18 @@ export function createScenePersistence(
     expectedRevision: number | null,
     action: 'save' | 'restore' | 'delete',
     input?: MoldaSceneDocument,
-  ) => mutateSceneBlobStorage(withStore, maxBytes, id, expectedRevision, action, input)
+  ) =>
+    mutateSceneBlobStorage(
+      withStore,
+      maxBytes ?? sceneStorageCapacity,
+      id,
+      expectedRevision,
+      action,
+      input,
+    )
 
   return {
+    recovery: createSceneRecoveryPersistence(withStore),
     read,
     readIndexRevision: (id: string) => readSceneIndexRevision(withStore, id),
     subscribe: (listener: (change: SceneStorageChange) => void, signal?: AbortSignal) =>

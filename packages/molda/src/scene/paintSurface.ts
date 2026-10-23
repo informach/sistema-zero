@@ -16,13 +16,13 @@
  *    cor, pinta nela. ⚠️ Pintura existente nunca se move.
  * 6. Só quando o material não tem imagem nenhuma, distribui as faces DELE numa folha: forma e
  *    tubo em prateleiras (um bloco por superfície, no tamanho da pele do editor antigo, e a bola
- *    ou a superfície única com a folha inteira); malha por `autoMeshUv`. Face torta devolve
+ *    ou a superfície única com a folha inteira); malha com grade métrica em pixels. Face torta devolve
  *    `crooked` e só é dividida em triângulos com consentimento: nunca pinta sobreposto em silêncio.
  * 7. Cria a imagem indexada vazia e liga ao material.
  */
 import { newId } from '../core/id'
 import type { ShapeFaceId, Vec3 } from '../core/model'
-import { faceUnits, skinDim } from '../model/shapes'
+import { faceUnits } from '../model/shapes'
 import { copySceneMaterialForNode, createSceneColorImage } from './appearanceCommands'
 import { sceneAppearanceUsage } from './appearanceUsage'
 import { allocateSceneId, finishSceneCommand } from './commandContext'
@@ -41,11 +41,12 @@ import { packSceneShelves } from './imageAtlas'
 import type { ScenePaintTarget } from './imagePaint'
 import { SCENE_LIMITS } from './limits'
 import { sceneMaterialImageIds } from './materialImages'
+import type { AffineMatrix } from './matrix'
 import { inspectMeshFaceFrame } from './meshFaceFrame'
 import { editMeshFaces } from './meshFaces'
-import { autoMeshUv } from './meshUvAuto'
+import { pixelExtent, pixelMeshUv } from './meshPixelUv'
 import { cachedParametricMesh } from './parametricGeometry'
-import { triangulateFace } from './triangulate'
+import { surfacePixelScale } from './surfacePixelScale'
 import { requireScene } from './validation'
 
 export interface ScenePaintSurfaceRequest {
@@ -220,6 +221,7 @@ function layOutShape(
   node: MeshNode,
   geometry: ScenePrimitiveGeometry | ScenePathGeometry,
   materialId: string,
+  world: Readonly<AffineMatrix>,
   nextId: () => string,
 ) {
   const tpu = document.settings.texelsPerUnit
@@ -227,25 +229,39 @@ function layOutShape(
     .filter(([, id]) => id === materialId)
     .map(([key]) => key as ShapeFaceId)
   requireScene(keys.length, 'material', 'Essa peça não mostra esse material em face nenhuma.')
+  const stretch = surfacePixelScale(geometry, world)
   const sizes = keys.map((key) => {
     const [u, v] = surfaceUnits(geometry, key)
-    return { width: skinDim(u, tpu), height: skinDim(v, tpu) }
+    const factor = stretch.get(key) ?? [1, 1]
+    const uPixels = u * factor[0]! * tpu,
+      vPixels = v * factor[1]! * tpu
+    const width = tpu === 1 ? pixelExtent(uPixels) : Math.max(1, Math.round(uPixels))
+    const height = tpu === 1 ? pixelExtent(vPixels) : Math.max(1, Math.round(vPixels))
+    requireScene(
+      Number.isFinite(width) &&
+        Number.isFinite(height) &&
+        width <= SCENE_LIMITS.imageSide &&
+        height <= SCENE_LIMITS.imageSide,
+      'images',
+      'Essa forma não cabe na textura com esse tamanho de pixel. Use uma densidade menor ou divida a peça.',
+    )
+    return { width, height, u: tpu === 1 ? uPixels : width, v: tpu === 1 ? vPixels : height }
   })
   let width: number
   let height: number
   let transforms: SceneUvTransform[]
   if (keys.length === 1) {
-    // A bola, e toda superfície única, fica com a folha inteira: UV identidade, sem margem.
+    // A superfície única dispensa margens; medidas fracionadas cobrem parte do último pixel.
     ;({ width, height } = sizes[0]!)
-    transforms = [{ origin: [0, 0], u: [1, 0], v: [0, 1] }]
+    transforms = [{ origin: [0, 0], u: [sizes[0]!.u / width, 0], v: [0, sizes[0]!.v / height] }]
   } else {
     const layout = packSceneShelves(sizes)
     requireScene(layout, 'images', 'A pintura desta peça não cabe numa folha só.')
     ;({ width, height } = layout)
-    transforms = layout.slots.map((slot) => ({
+    transforms = layout.slots.map((slot, i) => ({
       origin: [slot.x / width, slot.y / height],
-      u: [slot.width / width, 0],
-      v: [0, slot.height / height],
+      u: [sizes[i]!.u / width, 0],
+      v: [0, sizes[i]!.v / height],
     }))
   }
   const surfaces = { ...geometry.surfaces }
@@ -263,48 +279,13 @@ function layOutShape(
   }
 }
 
-function faceArea(mesh: SceneMeshGeometry, id: string) {
-  const points = mesh.faces[id]!.corners.map(({ vertexId }) => mesh.vertices[vertexId]!)
-  const result = triangulateFace(points)
-  if (result.status !== 'ok') return 0
-  let area = 0
-  for (const [a, b, c] of result.triangles) {
-    const p = points[a]!,
-      q = points[b]!,
-      r = points[c]!
-    const u = [q[0] - p[0], q[1] - p[1], q[2] - p[2]],
-      w = [r[0] - p[0], r[1] - p[1], r[2] - p[2]]
-    area +=
-      Math.hypot(
-        u[1]! * w[2]! - u[2]! * w[1]!,
-        u[2]! * w[0]! - u[0]! * w[2]!,
-        u[0]! * w[1]! - u[1]! * w[0]!,
-      ) / 2
-  }
-  return area
-}
-
-/**
- * O lado da folha quadrada da malha: a área das faces na densidade da criação, com folga para as
- * prateleiras, e pelo menos 6 pixels por face (2 de margem, para o balde não vazar para a vizinha).
- */
-function meshSheetSide(mesh: SceneMeshGeometry, ids: readonly string[], texelsPerUnit: number) {
-  let area = 0
-  for (const id of ids) area += faceArea(mesh, id)
-  const wanted = Math.max(
-    16,
-    Math.sqrt(area * texelsPerUnit * texelsPerUnit * 2),
-    Math.ceil(Math.sqrt(ids.length)) * 6,
-  )
-  return Math.min(SCENE_LIMITS.imageSide, 2 ** Math.ceil(Math.log2(wanted)))
-}
-
 function layOutMesh(
   document: MoldaSceneDocument,
   node: MeshNode,
   mesh: SceneMeshGeometry,
   materialId: string,
   request: ScenePaintSurfaceRequest,
+  world: Readonly<AffineMatrix>,
   nextId: () => string,
 ):
   | { status: 'crooked'; faces: string[] }
@@ -332,8 +313,9 @@ function layOutMesh(
       // Face sem área não desenha e não recebe folha; a UV dela fica como estava.
       const ids = uses(working).filter((key) => inspectMeshFaceFrame(working, key) === 'ok')
       requireScene(ids.length, 'faces', 'Essa peça não tem faces com área para pintar.')
-      side = meshSheetSide(working, ids, document.settings.texelsPerUnit)
-      return autoMeshUv(working, ids, 2 / side)
+      const plan = pixelMeshUv(working, ids, document.settings.texelsPerUnit, world)
+      side = plan.width
+      return plan.mesh
     },
     nextId,
   )
@@ -379,11 +361,31 @@ export function ensureScenePaintSurface(
   let width: number
   let height: number
   if (geometry.kind === 'mesh') {
-    const laid = layOutMesh(next, node, geometry, materialId, request, nextId)
+    const laid = layOutMesh(
+      next,
+      node,
+      geometry,
+      materialId,
+      request,
+      usage.index.scene.worldMatrices.get(node.id)!,
+      nextId,
+    )
     if (laid.status === 'crooked') return laid
     next = laid.document
     width = height = laid.side
-  } else ({ document: next, width, height } = layOutShape(next, node, geometry, materialId, nextId))
+  } else
+    ({
+      document: next,
+      width,
+      height,
+    } = layOutShape(
+      next,
+      node,
+      geometry,
+      materialId,
+      usage.index.scene.worldMatrices.get(node.id)!,
+      nextId,
+    ))
   next = createSceneColorImage(
     next,
     materialId,

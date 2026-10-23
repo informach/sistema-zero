@@ -1,6 +1,31 @@
 # Calendário editorial: 60 postagens, 30 dores e 30 desejos
 
+**Atualização de 20/10/2026:** o feed ganhou duas linhas novas, Adultos e Por dentro dos jogos (ver [Três linhas](#três-linhas-a-partir-de-20102026)). O texto a seguir descreve a linha Famílias.
+
 **Revisão de clareza: 13/10/2026.** São **60 publicações principais**, uma para cada uma das 30 dores e dos 30 desejos: **30 carrosséis, 18 Reels e 12 imagens únicas**. Há seis extras de acompanhamento e vinte sequências de quatro stories. Os três fixados e as 14 peças ManyChat ficam separados. As 57 peças restantes receberam a mesma revisão aprovada em P01, P07 e P34, preservadas integralmente.
+
+## Três linhas a partir de 20/10/2026
+
+O perfil passou a falar com pais e com adultos que querem fazer jogos ([posicionamento](README.md#posicionamento)). O feed tem agora três linhas:
+
+| Linha | Para quem | Peças | Onde está a copy |
+| --- | --- | --- | --- |
+| **Famílias** | Pais de crianças de 9 a 14 anos (a faixa para a qual as 60 foram escritas) | P01 a P60, extras E01 a E06, stories ST01 a ST20 | Fichas listadas abaixo; nada mudou nelas |
+| **Adultos** | Quem tem 18 anos ou mais e sempre quis fazer um jogo | PA01 a PA06 (primeiras seis) | [16 · Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md) |
+| **Por dentro dos jogos** | Os dois públicos: a regra escondida atrás de algo que todo mundo já jogou | PD01 a PD06 (primeiras seis) | [16 · Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md) |
+
+**Hipótese de ritmo:** três posts por semana. Dois vêm da fila da linha Famílias, na ordem da tabela de vinte semanas abaixo. O terceiro alterna entre Adultos e Por dentro dos jogos. Com esse ritmo, as 60 publicações da linha Famílias passam a ocupar 30 semanas, e as vinte semanas abaixo continuam valendo como ordem da fila, não como datas.
+
+| Semana | Famílias | Famílias | Terceiro post |
+| --- | --- | --- | --- |
+| 1 | P01 | P07 | PA01 · Você tem uma ideia de jogo há anos. |
+| 2 | P16 | P34 | PD02 · O placar só soma porque alguém escreveu: acertou, mais um. |
+| 3 | P03 | P51 | PA02 · Você começa um jogo e não termina. |
+| 4 | P04 | P37 | PD01 · Toda fase difícil tem uma regra escondida. |
+
+Depois da semana 4, seguir alternando: PA03, PD03, PA04, PD05, PA05, PD06, PA06 e PD04 (PD04 longe de P42, que usa o mesmo jogo; PD01 longe de P08). Os stories ST01 a ST20 seguem uma sequência por semana.
+
+**Como medir:** depois de quatro semanas, comparar os cliques dos dois cartões da bio, `bio-quiz-adulto` e `bio-quiz-infantil`, com o período anterior e entre si, junto com seguidores e salvamentos de cada linha. Se um público não aparecer, ajustar a proporção. É uma hipótese; não há meta nem resultado esperado escrito aqui.
 
 ## Direção do conteúdo
 
@@ -40,6 +65,7 @@ R, I e H nas fichas distinguem relatos, interpretações e hipóteses. A pesquis
 | ST01–ST20 | [80 telas de stories](postagens/04-stories.md) |
 | E01–E06 | [Seis extras de acompanhamento](postagens/07-extras-para-familias.md) |
 | Direct | [Postagens ManyChat](04-postagens-manychat.md), a categoria de conversão |
+| PA01–PA06 · PD01–PD06 | [Linhas Adultos e Por dentro dos jogos](postagens/16-linhas-adulto-e-por-dentro.md), com a palavra adulta MEUJOGO para direct (só documentada) |
 | Régua de copy | [Guia de copy](postagens/13-guia-de-copy.md) |
 | Demonstrações | [Vitrine de exemplos](postagens/14-vitrine-de-exemplos.md); o que capturar está na linha Produção de cada ficha |
 | Produção | [Direção visual](postagens/05-direcao-visual-e-producao.md) e [estado das mídias](producao/postagens/README.md) |
@@ -49,7 +75,7 @@ Todas as peças têm copy literal, legenda e direção visual. Os Reels também 
 
 ## Vinte semanas sugeridas
 
-Três posts por semana e uma sequência de stories. A ordem abaixo intercala dores e desejos, evitando publicar blocos de trinta problemas seguidos de trinta aspirações. Os IDs organizam a cobertura, não a ordem de publicação. A primeira semana começa quando os materiais estiverem prontos. Não há datas, horários, responsáveis por gravação ou capacidade de produção presumidos.
+Fila da linha Famílias. Até 20/10/2026, eram três posts dessa linha por semana; agora são dois, mais um das linhas novas (ver [Três linhas](#três-linhas-a-partir-de-20102026)). A ordem abaixo intercala dores e desejos, evitando publicar blocos de trinta problemas seguidos de trinta aspirações. Os IDs organizam a cobertura, não a ordem de publicação. A primeira semana começa quando os materiais estiverem prontos. Não há datas, horários, responsáveis por gravação ou capacidade de produção presumidos.
 
 | Semana | Primeira publicação | Segunda publicação | Terceira publicação | Stories |
 | --- | --- | --- | --- | --- |
@@ -107,7 +133,7 @@ As publicações do calendário terminam no convite para seguir o perfil. As sei
 - **Capturas preparadas** das versões da equipe no Estúdio (lista na linha Produção de cada ficha), feitas e conferidas antes da arte.
 - **P01 da tarde** (com o André na capa) foi substituído e arquivado; a versão atual usa criança fictícia. **P34** já voltou aos retratos reais do Daniel e do Rafael.
 
-**Copy e direção completas:** 60 principais e 20 sequências de quatro stories; seis extras permanecem disponíveis. **Mídias produzidas:** [P01, P07, P34 e P04](producao/postagens/index.html), com 29 PNGs em 4:5, legendas e textos alternativos. P04 foi produzido em 14/10/2026 com a copy revisada; fontes, prompts e verificações em sua pasta `apoio`. As três referências anteriores conservam `apoio/v4` para copy e `apoio/v3` para fontes visuais. As outras peças aguardam produção. As revisões da noite mudaram textos e direção de imagem e fizeram cinco trocas de semana no calendário (ver acima). Nenhuma peça foi publicada, agendada ou enviada por mensagem nesta revisão.
+**Copy e direção completas:** 60 principais e 20 sequências de quatro stories; seis extras permanecem disponíveis. **Mídias produzidas:** [P01, P07, P34, P04, P37, P20, P31, P40, P44, P05, P11, P35, P46, P28, P54, P55, P13, P50, P52, P09, P42, P25, P18, P21, P15, P48, P26, P23, P57 e P60](producao/postagens/index.html), com 220 PNGs em 4:5, legendas e textos alternativos. P04, P37, P20, P31, P40, P44, P05, P11, P35, P46, P28, P54, P55, P13, P50, P52, P09, P42, P25, P18, P21, P15, P48, P26, P23 e P57 foram produzidos em 14/10/2026 com a copy revisada; fontes, prompts e verificações em suas pastas `apoio`. As três referências anteriores conservam `apoio/v4` para copy e `apoio/v3` para fontes visuais. As outras peças aguardam produção. As revisões da noite mudaram textos e direção de imagem e fizeram cinco trocas de semana no calendário (ver acima). Nenhuma peça foi publicada, agendada ou enviada por mensagem nesta revisão.
 
 Na produção, confirmar capturas reais, acesso, legibilidade e correspondência entre imagem e fala. As demonstrações precisam mostrar a ação descrita; não substituir ilustração por uma segunda cópia do texto. Os relatos usam os vídeos fornecidos e não recebem falas sintetizadas. [Direção e fontes](postagens/05-direcao-visual-e-producao.md).
 
@@ -118,3 +144,5 @@ A função da peça define o que observar. Dicas: salvamentos e relatos de uso. 
 Depois de sete dias, registrar alcance, salvamentos, compartilhamentos e retenção disponível. Comparar peças de função e formato semelhantes, considerando o alcance. Depois de 28 dias, observar conversas, cliques e compras atribuíveis quando houver dados. Comentário com palavra-chave não equivale a compra. Link comum da bio não identifica sozinho o post que despertou interesse.
 
 Para as oito hipóteses, observar primeiro se a situação é reconhecida espontaneamente e o que os responsáveis contam. Não concluir que uma dor é comum ou que houve mudança na aprendizagem a partir de curtidas.
+
+**Imagens únicas produzidas:** [P03 · Tela na rotina de trabalho](producao/postagens/p03-tela-na-rotina-de-trabalho/index.html), segunda publicação da semana 2; [P14 · Ideias em um jogo](producao/postagens/p14-ideias-em-um-jogo/index.html), primeira publicação da semana 4; [P33 · Alegria de criar](producao/postagens/p33-alegria-de-criar/index.html), primeira publicação da semana 6; [P38 · Explicar uma preferência](producao/postagens/p38-explicar-uma-preferencia/index.html), terceira publicação da semana 7; [P49 · Guardar a primeira tentativa](producao/postagens/p49-guardar-a-primeira-tentativa/index.html), segunda publicação da semana 8; [P53 · Mostrar o jogo para a mãe](producao/postagens/p53-mostrar-o-jogo-para-a-mae/index.html), segunda publicação da semana 10; e [P08 · Uma derrota não conta tudo](producao/postagens/p08-uma-derrota-nao-conta-tudo/index.html), segunda publicação da semana 11. Cada peça tem um PNG em 1080 × 1350, legenda, texto alternativo e prévia. Somadas aos carrosséis, o conjunto tem **227 PNGs em 37 publicações**. Próxima imagem única: **P29**, terceira publicação da semana 12. Nenhuma publicação ou agendamento realizado.

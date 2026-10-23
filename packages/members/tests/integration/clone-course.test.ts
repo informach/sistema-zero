@@ -28,8 +28,8 @@ describe('clone de curso para a outra plataforma', () => {
     expect(view.audience).toBe('adult')
     expect(view.careerSlot).toBeNull()
     expect(view.clonedFrom).toBe('curso-kids')
-    // Currículo do Estúdio é conceito kids — o clone ADULTO não o carrega.
-    expect(view.studioUnlockBlocks).toEqual([])
+    // Os dois públicos usam a paleta por curso; o clone gravado preserva o currículo.
+    expect(view.studioUnlockBlocks).toEqual(['sz_g2d_x'])
     // A página de vendas copiada sobrevive no metadata.
     expect(view.salesPageUrl).toBe('https://vendas')
 
@@ -98,7 +98,8 @@ describe('clone de curso para a outra plataforma', () => {
     expect(await readJson(res)).toEqual({
       error: {
         code: 'CLONE_SAME_AUDIENCE',
-        message: 'O curso só pode ser clonado para a outra plataforma',
+        message:
+          'O clone precisa ir para a outra plataforma ou para a outra modalidade (gravado ou ao vivo)',
       },
     })
     expect(courses.courses).toHaveLength(before)

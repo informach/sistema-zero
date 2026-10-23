@@ -1,0 +1,16 @@
+{
+  "name": "studio-python-l0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:runtime": "bun prepare.ts",
+    "probe": "node probe.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.60.0",
+    "@types/bun": "1.3.11",
+    "@types/node": "24.10.1",
+    "pyright": "1.1.414",
+    "typescript": "5.9.3"
+  }
+}

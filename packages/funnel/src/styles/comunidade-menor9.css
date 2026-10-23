@@ -1,0 +1,1186 @@
+/*
+ * comunidade-menor9.css: o layout da página "criar junto", para crianças menores de 9 anos
+ * (ComunidadeMenor9Body.astro, 20/10/2026). Porte do desenho aprovado em
+ * docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/PaginaMenor9.html.
+ *
+ * Regras: tudo sob `.cm9`; nenhuma cor própria, só os aliases `--kof-*` de kids-oferta.css. Os
+ * pastéis do desenho são misturas `in oklab` desses aliases com a carta branca, declaradas uma
+ * vez em `--cm9-*`. Nada de regra marcada como importante; `overflow-x: clip` nos invólucros (nunca `hidden`).
+ */
+
+.cm9 {
+  /* Creme do fundo, a partir do amarelo de apoio. */
+  --cm9-creme: color-mix(in oklab, var(--kof-amarelo-fundo) 35%, var(--kof-carta));
+  --cm9-rosa: color-mix(in oklab, var(--kof-rosa-clara) 50%, var(--kof-carta));
+  --cm9-azul: color-mix(in oklab, var(--kof-azul) 25%, var(--kof-carta));
+  --cm9-menta: color-mix(in oklab, var(--kof-verde) 12%, var(--kof-menta));
+  --cm9-menta-fundo: color-mix(in oklab, var(--kof-menta) 70%, var(--kof-carta));
+  --cm9-amarelo: color-mix(in oklab, var(--kof-amarelo) 70%, var(--kof-amarelo-fundo));
+  --cm9-lilas: color-mix(in oklab, var(--kof-roxo) 10%, var(--kof-lilas));
+  /* Laranja pastel do CTA: o laranja da marca puxado para o rosa e o amarelo (tinta sobre ele: 8:1). */
+  --cm9-laranja: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--kof-laranja) 30%, var(--kof-rosa-clara)) 40%,
+    var(--kof-amarelo)
+  );
+  /* A cor da ênfase do título (3,6:1 sobre o creme, texto grande). */
+  --cm9-acento: color-mix(in oklab, var(--kof-vermelho) 80%, var(--kof-amarelo));
+  --cm9-margem: clamp(16px, 4vw, 40px);
+  --cm9-degrau: 5px;
+  background: var(--cm9-creme);
+  color: var(--kof-tinta);
+  font-family: var(--kof-corpo);
+  font-size: 1.1875rem;
+  line-height: 1.6;
+  overflow-x: clip;
+}
+.cm9 .cm9-wrap {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--cm9-margem);
+}
+.cm9 .cm9-wrap--estreita {
+  max-width: 900px;
+}
+.cm9 .cm9-wrap--media {
+  max-width: 1100px;
+}
+
+/* ── Foco visível: contorno na tinta, que aparece sobre todos os pastéis ─────── */
+.cm9 a:focus-visible,
+.cm9 button:focus-visible,
+.cm9 summary:focus-visible {
+  outline: 3px solid var(--kof-tinta);
+  outline-offset: 3px;
+}
+.cm9 .cm9-pular {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 60;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  background: var(--kof-tinta);
+  color: var(--kof-carta);
+  font-weight: 800;
+  text-decoration: none;
+}
+.cm9 .cm9-pular:focus {
+  top: 1rem;
+}
+
+/* ── Topo (dois elos para vencer o `.theme-kids header` do global.css) ─────────── */
+.cm9 .cm9-topo {
+  background: var(--cm9-creme);
+  border-bottom: 0;
+}
+.cm9 .cm9-topo__barra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-block: 16px;
+}
+.cm9 .cm9-marca {
+  display: flex;
+  align-items: center;
+  border-radius: 8px;
+}
+.cm9 .cm9-marca img {
+  display: block;
+  width: auto;
+  height: 22px;
+}
+.cm9 .cm9-topo__nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  font-size: 17px;
+  font-weight: 800;
+}
+.cm9 .cm9-topo__link {
+  color: var(--kof-tinta);
+  text-decoration: none;
+  border-radius: 8px;
+}
+.cm9 .cm9-topo__link:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+/* ── Botão laranja (o CTA da página), com o degrau na tinta ─────────────────── */
+.cm9 .cm9-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 56px;
+  padding: 0 26px;
+  border-radius: 999px;
+  background: var(--cm9-laranja);
+  color: var(--kof-tinta);
+  font-family: var(--kof-corpo);
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  box-shadow: 0 var(--cm9-degrau) 0 var(--kof-tinta);
+  translate: 0 0;
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.cm9 .cm9-cta:hover {
+  translate: 0 -1px;
+  box-shadow: 0 calc(var(--cm9-degrau) + 1px) 0 var(--kof-tinta);
+}
+.cm9 .cm9-cta:active {
+  translate: 0 3px;
+  box-shadow: 0 1px 0 var(--kof-tinta);
+}
+.cm9 .cm9-cta--grande {
+  min-height: 60px;
+  padding: 0 28px;
+  font-size: 1.02em;
+}
+.cm9 .cm9-cta--topo {
+  --cm9-degrau: 4px;
+  min-height: 48px;
+  padding: 0 22px;
+}
+.cm9 .cm9-cta--barra {
+  --cm9-degrau: 3px;
+  flex: none;
+  min-height: 48px;
+  padding: 0 18px;
+  font-size: 16px;
+}
+/* Texto logo abaixo do botão 3D: o respiro soma a altura do degrau. */
+.cm9 .cm9-acao {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+.cm9 .cm9-acao--linha {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px 24px;
+}
+.cm9 .cm9-nota {
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--kof-tinta-suave);
+}
+
+/* ── Seções, fundos e as ondas que as separam ───────────────────────────────── */
+.cm9 .cm9-sec {
+  overflow-x: clip;
+}
+.cm9 .cm9-sec--creme {
+  background: var(--cm9-creme);
+}
+.cm9 .cm9-sec--branco {
+  background: var(--kof-carta);
+}
+.cm9 .cm9-sec--amarelo-fundo {
+  background: var(--kof-amarelo-fundo);
+}
+.cm9 .cm9-sec--menta {
+  background: var(--cm9-menta-fundo);
+}
+.cm9 .cm9-sec--amarelo {
+  background: var(--cm9-amarelo);
+}
+.cm9 .cm9-sec--rosa {
+  background: var(--kof-rosa-fundo);
+}
+.cm9 .cm9-sec--laranja {
+  background: var(--cm9-laranja);
+}
+.cm9 .cm9-sec--azul {
+  background: var(--cm9-azul);
+}
+/* A onda tem a cor da PRÓXIMA seção; o -1px some com a fresta de arredondamento entre as duas. */
+.cm9 .cm9-onda {
+  display: block;
+  width: 100%;
+  height: 50px;
+  margin-bottom: -1px;
+}
+.cm9 .cm9-onda--branco {
+  color: var(--kof-carta);
+}
+.cm9 .cm9-onda--creme {
+  color: var(--cm9-creme);
+}
+.cm9 .cm9-onda--amarelo-fundo {
+  color: var(--kof-amarelo-fundo);
+}
+.cm9 .cm9-onda--menta {
+  color: var(--cm9-menta-fundo);
+}
+.cm9 .cm9-onda--amarelo {
+  color: var(--cm9-amarelo);
+}
+.cm9 .cm9-onda--rosa {
+  color: var(--kof-rosa-fundo);
+}
+.cm9 .cm9-onda--laranja {
+  color: var(--cm9-laranja);
+}
+.cm9 .cm9-corpo {
+  padding-block: 28px 48px;
+}
+.cm9 .cm9-corpo--justo {
+  padding-block: 24px 44px;
+}
+.cm9 .cm9-corpo--planos {
+  padding-block: 24px 48px;
+}
+.cm9 .cm9-pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.cm9 .cm9-pilha--larga {
+  gap: 26px;
+}
+.cm9 .cm9-pilha--sessao {
+  gap: 24px;
+}
+.cm9 .cm9-pilha--justa {
+  gap: 20px;
+}
+.cm9 .cm9-cabeca {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 860px;
+}
+.cm9 .cm9-cabeca--larga {
+  gap: 12px;
+  max-width: 840px;
+}
+.cm9 .cm9-cabeca--justa {
+  gap: 8px;
+  max-width: 880px;
+}
+
+/* ── Tipografia ─────────────────────────────────────────────────────────────── */
+.cm9 .cm9-h1,
+.cm9 .cm9-h2 {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--kof-tinta);
+}
+/* As quebras de linha do desenho: sem o `text-wrap: balance` que o global.css põe nos títulos. */
+.cm9 h1,
+.cm9 h2,
+.cm9 h3 {
+  text-wrap: wrap;
+}
+.cm9 .cm9-h1 {
+  font-size: clamp(2.4rem, 5vw, 3.9rem);
+  line-height: 1.02;
+}
+.cm9 .cm9-h2 {
+  font-size: clamp(1.9rem, 3.2vw, 2.6rem);
+  line-height: 1.05;
+}
+.cm9 .cm9-h2--m {
+  font-size: clamp(2rem, 3.4vw, 2.7rem);
+  line-height: 1.04;
+}
+.cm9 .cm9-h2--p {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  line-height: 1.06;
+}
+.cm9 .cm9-h2--planos {
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  line-height: 1.04;
+}
+.cm9 .cm9-h2--fim {
+  font-size: clamp(2rem, 3.6vw, 3rem);
+  line-height: 1.02;
+}
+.cm9 .cm9-texto {
+  margin: 0;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-texto--tinta {
+  color: var(--kof-tinta);
+}
+.cm9 .cm9-texto--forte {
+  color: var(--kof-tinta);
+  font-weight: 800;
+}
+
+/* ── Herói ──────────────────────────────────────────────────────────────────── */
+.cm9 .cm9-heroi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+  padding-block: 36px;
+}
+.cm9 .cm9-heroi__texto {
+  flex: 1 1 460px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.cm9 .cm9-selo {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 18px;
+  border-radius: 999px;
+  background: var(--cm9-rosa);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.cm9 .cm9-selo svg {
+  flex: none;
+}
+.cm9 .cm9-enfase {
+  position: relative;
+  display: inline-block;
+  color: var(--cm9-acento);
+}
+.cm9 .cm9-enfase__onda {
+  position: absolute;
+  left: 0;
+  bottom: -8px;
+  width: 100%;
+  height: 16px;
+  color: var(--cm9-amarelo);
+  pointer-events: none;
+}
+.cm9 .cm9-lead {
+  margin: 0;
+  font-size: 1.06em;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-beneficios {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 800;
+}
+.cm9 .cm9-beneficios li {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.cm9 .cm9-bolinha {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: var(--kof-tinta);
+}
+.cm9 .cm9-fundo--rosa {
+  background: var(--cm9-rosa);
+}
+.cm9 .cm9-fundo--amarelo {
+  background: var(--cm9-amarelo);
+}
+.cm9 .cm9-fundo--menta {
+  background: var(--cm9-menta);
+}
+.cm9 .cm9-fundo--azul {
+  background: var(--cm9-azul);
+}
+.cm9 .cm9-fundo--lilas {
+  background: var(--cm9-lilas);
+}
+.cm9 .cm9-fundo--laranja {
+  background: var(--cm9-laranja);
+}
+.cm9 .cm9-requisitos {
+  font-size: 16px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-heroi__arte {
+  flex: 1 1 480px;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 520px;
+}
+.cm9 .cm9-heroi__mancha {
+  position: absolute;
+  inset: 30px 6% 10px;
+  background: var(--cm9-amarelo);
+  border-radius: 58% 42% 55% 45% / 48% 58% 42% 52%;
+}
+.cm9 .cm9-heroi__circulo {
+  position: absolute;
+  border-radius: 50%;
+}
+.cm9 .cm9-heroi__circulo--azul {
+  right: 2%;
+  top: 0;
+  width: 120px;
+  height: 120px;
+  background: var(--cm9-azul);
+}
+.cm9 .cm9-heroi__circulo--menta {
+  left: 0;
+  bottom: 40px;
+  width: 90px;
+  height: 90px;
+  background: var(--cm9-menta);
+}
+.cm9 .cm9-estrela {
+  position: absolute;
+}
+.cm9 .cm9-estrela path {
+  stroke: var(--kof-tinta);
+}
+.cm9 .cm9-estrela--rosa {
+  left: 10%;
+  top: 20px;
+  width: 44px;
+  height: 44px;
+}
+.cm9 .cm9-estrela--rosa path {
+  fill: var(--cm9-rosa);
+}
+.cm9 .cm9-estrela--branca {
+  right: 16%;
+  bottom: 60px;
+  width: 32px;
+  height: 32px;
+}
+.cm9 .cm9-estrela--branca path {
+  fill: var(--kof-carta);
+}
+.cm9 .cm9-heroi__ilustra {
+  position: relative;
+  display: block;
+  width: 78%;
+  max-width: 400px;
+  height: auto;
+}
+.cm9 .cm9-balao {
+  position: absolute;
+  right: 0;
+  top: 56px;
+  width: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cm9 .cm9-balao__fala {
+  margin: 0;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 14px;
+  border: 3px solid var(--kof-tinta);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.cm9 .cm9-balao__icone {
+  flex: none;
+  color: var(--cm9-acento);
+}
+.cm9 .cm9-balao__zappy {
+  width: 120px;
+  height: 120px;
+  margin-top: -6px;
+  object-fit: contain;
+}
+
+/* ── O problema (texto + a carta lilás) ─────────────────────────────────────── */
+.cm9 .cm9-problema {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 36px;
+  align-items: center;
+}
+.cm9 .cm9-problema__texto {
+  flex: 1 1 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* A base soma o recheio (26px de cada lado), como no desenho em content-box. */
+.cm9 .cm9-problema__destaque {
+  flex: 1 1 412px;
+  min-width: 0;
+  margin: 0;
+  padding: 26px;
+  border-radius: 36px 36px 36px 12px;
+  background: var(--cm9-lilas);
+  font-family: var(--kof-display);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+/* ── Grades de cartas brancas ───────────────────────────────────────────────── */
+.cm9 .cm9-grade {
+  --cm9-coluna: 320px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(var(--cm9-coluna), 100%), 1fr));
+  gap: 16px;
+}
+.cm9 .cm9-grade--papeis {
+  --cm9-coluna: 280px;
+  gap: 22px;
+}
+.cm9 .cm9-grade--cuidados {
+  --cm9-coluna: 240px;
+}
+.cm9 .cm9-grade--regras {
+  --cm9-coluna: 260px;
+  gap: 14px;
+}
+.cm9 .cm9-carta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px;
+  border-radius: 28px;
+  background: var(--kof-carta);
+}
+.cm9 .cm9-carta__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 0;
+}
+.cm9 .cm9-carta__texto {
+  margin: 0;
+  font-size: 17px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-carta--cuidado {
+  padding: 18px;
+}
+.cm9 .cm9-carta--cuidado .cm9-carta__titulo {
+  font-size: 21px;
+  line-height: 1.1;
+}
+.cm9 .cm9-carta--cuidado .cm9-carta__texto,
+.cm9 .cm9-carta--regra .cm9-carta__texto {
+  color: var(--kof-tinta);
+}
+.cm9 .cm9-carta--regra {
+  gap: 0;
+  padding: 18px;
+  border-radius: 24px;
+}
+.cm9 .cm9-carta--regra .cm9-carta__titulo {
+  font-size: 20px;
+  line-height: 1.6;
+}
+
+/* ── Cartas coloridas (os papéis e as peças) ────────────────────────────────── */
+.cm9 .cm9-papel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 24px;
+  border-radius: 36px 36px 36px 12px;
+}
+.cm9 .cm9-papel--rosa {
+  background: var(--cm9-rosa);
+}
+.cm9 .cm9-papel--azul {
+  background: var(--cm9-azul);
+  border-radius: 36px 36px 12px 36px;
+}
+.cm9 .cm9-papel--menta {
+  background: var(--cm9-menta);
+  border-radius: 12px 36px 36px;
+}
+.cm9 .cm9-papel__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+}
+.cm9 .cm9-papel__zappy {
+  display: block;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--kof-carta);
+  object-fit: contain;
+}
+.cm9 .cm9-papel__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.cm9 .cm9-papel__texto {
+  margin: 0;
+  font-size: 17px;
+}
+
+/* ── Uma sessão: passos, as duas telas e o relato ───────────────────────────── */
+.cm9 .cm9-sessao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: center;
+}
+.cm9 .cm9-sessao__texto {
+  flex: 1 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.cm9 .cm9-passos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cm9 .cm9-passo {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 14px 18px;
+  border-radius: 24px;
+  background: var(--kof-carta);
+}
+.cm9 .cm9-passo__num {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  font-family: var(--kof-display);
+  font-size: 22px;
+  font-weight: 800;
+}
+.cm9 .cm9-passo__texto {
+  font-size: 17px;
+}
+.cm9 .cm9-sessao__telas {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.cm9 .cm9-polaroide {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 4px solid var(--kof-tinta);
+  border-radius: 26px;
+  background: var(--kof-carta);
+  rotate: -2deg;
+}
+.cm9 .cm9-polaroide--direita {
+  rotate: 2deg;
+}
+.cm9 .cm9-polaroide img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1280 / 800;
+  object-fit: cover;
+  border-radius: 18px;
+}
+.cm9 .cm9-polaroide figcaption {
+  font-size: 15px;
+  font-weight: 800;
+  text-align: center;
+}
+.cm9 .cm9-relato {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 28px;
+  align-items: center;
+  padding: 18px 22px;
+  border: 4px solid var(--kof-tinta);
+  border-radius: 28px;
+  background: var(--kof-carta);
+  box-shadow: 6px 6px 0 var(--cm9-rosa);
+}
+.cm9 .cm9-relato__retrato {
+  flex: none;
+  width: 120px;
+  height: 120px;
+  border: 4px solid var(--cm9-amarelo);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cm9 .cm9-relato__texto {
+  flex: 1 1 420px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cm9 .cm9-relato__intro {
+  margin: 0;
+  font-size: 16px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-relato__citacao {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cm9 .cm9-relato__fala {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--kof-tinta);
+}
+.cm9 .cm9-relato__fala p {
+  margin: 0;
+}
+.cm9 .cm9-relato__legenda {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--kof-tinta-suave);
+}
+
+/* ── As peças: a tela da Jornada, os próximos jogos e os fundadores ─────────── */
+.cm9 .cm9-pecas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-start;
+}
+.cm9 .cm9-jornada {
+  flex: 1 1 466px;
+  min-width: 0;
+  margin: 0;
+  overflow: clip;
+  border: 3px solid var(--kof-tinta);
+  border-radius: 24px;
+  background: var(--kof-carta);
+  box-shadow: 8px 8px 0 var(--cm9-amarelo);
+}
+.cm9 .cm9-jornada img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-bottom: 3px solid var(--kof-tinta);
+}
+.cm9 .cm9-jornada figcaption {
+  padding: 12px 16px;
+  font-size: 15px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-pecas__lado {
+  flex: 1 1 380px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cm9 .cm9-pecas__texto {
+  margin: 0;
+  font-size: 17px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-jogos {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.cm9 .cm9-jogo {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cm9 .cm9-jogo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: left;
+  border: 3px solid var(--kof-tinta);
+  border-radius: 14px;
+}
+.cm9 .cm9-jogo figcaption {
+  font-size: 13px;
+  font-weight: 800;
+  text-align: center;
+}
+.cm9 .cm9-continua {
+  margin: 0;
+  padding: 14px 18px;
+  border-radius: 20px;
+  background: var(--cm9-creme);
+  font-size: 17px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-fundadores {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  max-width: 788px;
+  padding: 14px;
+  border-radius: 24px;
+  background: var(--kof-sup2);
+}
+.cm9 .cm9-fundadores img {
+  flex: none;
+  width: 96px;
+  height: 72px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+.cm9 .cm9-fundadores p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--kof-tinta-suave);
+}
+
+/* ── Planos ─────────────────────────────────────────────────────────────────── */
+.cm9 .cm9-planos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+.cm9 .cm9-plano {
+  position: relative;
+  flex: 1 1 352px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 26px;
+  border-radius: 36px;
+  background: var(--kof-carta);
+  box-shadow: 0 6px 0 var(--kof-tinta);
+}
+.cm9 .cm9-plano--anual {
+  background: var(--cm9-amarelo);
+}
+.cm9 .cm9-plano__selo {
+  position: absolute;
+  top: -16px;
+  right: 22px;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 3px solid var(--kof-tinta);
+  border-radius: 999px;
+  background: var(--cm9-rosa);
+  font-size: 14px;
+  font-weight: 800;
+}
+.cm9 .cm9-plano__nome {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.cm9 .cm9-plano__preco {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+}
+.cm9 .cm9-plano__preco span {
+  font-size: 20px;
+  font-weight: 700;
+}
+.cm9 .cm9-plano__texto {
+  margin: 0;
+  font-size: 16px;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-plano--anual .cm9-plano__texto {
+  color: var(--kof-tinta);
+}
+.cm9 .cm9-plano__botao {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 18px;
+  border: 3px solid var(--kof-tinta);
+  border-radius: 999px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font: inherit;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+  translate: 0 0;
+  transition: translate 0.12s ease;
+}
+.cm9 .cm9-plano__botao:hover {
+  translate: 0 -1px;
+}
+.cm9 .cm9-plano__botao--escuro {
+  background: var(--kof-tinta);
+  color: var(--kof-carta);
+}
+.cm9 .cm9-plano__nota {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .cm9-depois {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: stretch;
+}
+.cm9 .cm9-depois__passos {
+  flex: 1 1 500px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px 20px;
+  border-radius: 28px;
+  background: var(--kof-carta);
+}
+.cm9 .cm9-depois__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.cm9 .cm9-depois ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 16px;
+}
+.cm9 .cm9-depois li {
+  display: flex;
+  gap: 10px;
+}
+.cm9 .cm9-depois__num {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 800;
+}
+.cm9 .cm9-garantia {
+  flex: 1 1 400px;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 28px;
+  background: var(--kof-carta);
+  font-size: 17px;
+}
+.cm9 .cm9-garantia svg {
+  flex: none;
+  color: var(--kof-verde);
+}
+/* O cupom da URL: o aviso de que foi recebido, ou o alerta quando não vale. */
+.cm9 .cm9-cupom {
+  margin: 0;
+  padding: 12px 20px;
+  border-radius: 20px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+.cm9 .cm9-cupom--alerta {
+  background: var(--kof-amarelo-fundo);
+}
+
+/* ── Dúvidas ────────────────────────────────────────────────────────────────── */
+.cm9 .cm9-duvidas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cm9 .cm9-duvidas .cm9-h2 {
+  margin-bottom: 8px;
+}
+.cm9 .cm9-duvida {
+  padding: 14px 20px;
+  border-radius: 24px;
+  background: var(--kof-carta);
+}
+.cm9 .cm9-duvida summary {
+  min-height: 32px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.cm9 .cm9-duvida p {
+  margin: 10px 0 0;
+  font-size: 17px;
+  color: var(--kof-tinta-suave);
+}
+
+/* ── Convite final e a faixa da marca ───────────────────────────────────────── */
+.cm9 .cm9-fim {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 52px;
+}
+.cm9 .cm9-fim__texto {
+  flex: 1 1 520px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cm9 .cm9-fim__texto .cm9-cta {
+  align-self: flex-start;
+  margin-bottom: 4px;
+}
+.cm9 .cm9-fim__zappy {
+  flex: none;
+  width: 180px;
+  height: 180px;
+  object-fit: contain;
+}
+.cm9 .cm9-faixa {
+  background: var(--kof-navy);
+}
+.cm9 .cm9-faixa__corpo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 32px;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: 24px;
+  font-size: 15px;
+  color: var(--kof-navy-texto);
+}
+.cm9 .cm9-faixa img {
+  display: block;
+  width: auto;
+  height: 18px;
+}
+.cm9 .cm9-faixa__links {
+  display: flex;
+  gap: 18px;
+}
+.cm9 .cm9-faixa a {
+  color: var(--kof-carta);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  border-radius: 4px;
+}
+.cm9 .cm9-faixa a:focus-visible {
+  outline-color: var(--kof-carta);
+}
+
+/* ── Barra fixa do celular (receita `.kof-mobar`), no laranja da página ─────── */
+.cm9 .kof-mobar.cm9-barra {
+  gap: 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  border-top: 3px solid var(--kof-tinta);
+  box-shadow: none;
+}
+.cm9 .kof-mobar.cm9-barra .kof-mobar__preco {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .kof-mobar.cm9-barra .kof-mobar__preco strong {
+  font-family: var(--kof-corpo);
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--kof-tinta);
+}
+
+@media (max-width: 760px) {
+  .cm9 .cm9-topo__link {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cm9 .cm9-cta,
+  .cm9 .cm9-cta:hover,
+  .cm9 .cm9-cta:active,
+  .cm9 .cm9-plano__botao,
+  .cm9 .cm9-plano__botao:hover {
+    translate: 0 0;
+    transition: none;
+  }
+}

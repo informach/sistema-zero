@@ -2,6 +2,7 @@ import { GLTF_IMPORT_COPY as copy } from '../../../core/gltfImportCopy'
 import { GLTF_IMPORT_ISSUE_COPY } from '../../../core/gltfImportIssueCopy'
 import type { GltfConversionReport } from '../../../import/gltfConversionReport'
 import type { GltfNativeOptions } from '../../../import/gltfNativeDocument'
+import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneImportOriginalFiles } from './SceneImportOriginalFiles'
 import { SceneImportPreview } from './SceneImportPreview'
@@ -149,7 +150,8 @@ export function SceneGltfImportPanel({
   canAdopt,
   blocked = false,
 }: SceneImportPanelProps) {
-  const task = useSceneGltfImport(editor, { canAdopt }),
+  const { can } = useMoldaToolAccess()
+  const task = useSceneGltfImport(editor, { canAdopt, allowOptions: can('files.interop') }),
     { view } = task,
     { stage, bundle, inspection } = view,
     busy = stage.kind === 'busy' || stage.kind === 'reading-files'
@@ -293,7 +295,9 @@ export function SceneGltfImportPanel({
             ) : (
               <p className="text-sm">{copy.noScenes}</p>
             ))}
-          <CompatibilityOptions options={view.options} change={task.setOptions} />
+          {can('files.interop') && (
+            <CompatibilityOptions options={view.options} change={task.setOptions} />
+          )}
           <p className="text-sm leading-relaxed text-mld-muted">{copy.original}</p>
           <SceneImportOriginalFiles bundle={bundle} name="gltfOriginal" />
         </>

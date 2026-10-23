@@ -1,5 +1,7 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, mock, spyOn, test } from 'bun:test'
+import { StudioReservationRetirementSchema } from '@sistemazero/core/studio/publication-reservation'
 import { WatermarkUnavailableError } from '../src/server/watermark-error'
+import { reservationFixture } from './fixtures/studio-reservation'
 
 mock.module('server-only', () => ({}))
 const { mediaErrorResponse, WATERMARK_RETRY_AFTER_SECONDS } = await import('../src/server/media')
@@ -13,6 +15,38 @@ const { WatermarkQueueAbortedError, WatermarkQueueBusyError } = await import(
  * o cliente lê como defeito e ainda dispara Sentry por carga normal).
  */
 describe("mediaErrorResponse × fila da marca d'água", () => {
+  for (const environment of ['production', 'development']) {
+    test(`reservation protocol diagnostics are ${environment === 'production' ? 'redacted' : 'available'} in ${environment}`, async () => {
+      const previous = process.env.NODE_ENV
+      const log = spyOn(console, 'error').mockImplementation(() => {})
+      try {
+        Object.assign(process.env, { NODE_ENV: environment })
+        const invalid = StudioReservationRetirementSchema.safeParse({
+          ...reservationFixture(),
+          deliveryId: 'not-the-reservation-delivery',
+        })
+        expect(invalid.success).toBe(false)
+        if (invalid.success) throw new Error('Expected a real protocol validation failure')
+        expect(invalid.error.message).toContain('Entrega divergente da reserva.')
+        const response = mediaErrorResponse(invalid.error)
+        expect(response.status).toBe(500)
+        const body = (await response.json()) as { error: { code: string; message: string } }
+        expect(body.error.code).toBe('MEDIA_ERROR')
+        if (environment === 'production') {
+          expect(body.error.message).toBe('Falha na operação de mídia.')
+          expect(JSON.stringify(body)).not.toContain('Entrega divergente')
+          expect(JSON.stringify(body)).not.toContain('deliveryId')
+        } else {
+          expect(body.error.message).toContain('Entrega divergente da reserva.')
+          expect(body.error.message).toContain('deliveryId')
+        }
+      } finally {
+        if (previous === undefined) delete process.env.NODE_ENV
+        else Object.assign(process.env, { NODE_ENV: previous })
+        log.mockRestore()
+      }
+    })
+  }
   test('fila cheia → 503 + Retry-After + código WATERMARK_BUSY', async () => {
     const res = mediaErrorResponse(new WatermarkQueueBusyError())
     expect(res.status).toBe(503)

@@ -561,7 +561,7 @@ https://sistemazero.com.br/kids/desafio-primeiro-jogo/oferta?utm_source=instagra
 - **Regra da nave** (`game-3d-advanced/__gen_cacaEstelarProfissional.ts`): os estados são vagando, perseguindo e fugindo. A nave persegue a menos de 14 unidades e desiste a partir de 22; foge por 1,5 s ao levar dano e depois volta a perseguir.
 - **Distância de produção:** fica abaixo do limite de 22. Com 30, a nave alternaria entre perseguir e vagar quadro a quadro, por isso o texto não usa 30. É uma hipótese falada, no condicional. Se a arte mostrar a variante com 20, preparar uma cópia, executar e declarar a adaptação.
 - **Enquadramento:** a fuga e a perseguição, sem foco em explosão.
-- **Ajuda:** existem o botão Verificar esta parte nas partes de construção do Desafio (`docs/aulas-interativas/modulos-desafio-primeiro-jogo.md`) e o “Preciso de ajuda”, com resposta por mensagem e possível espera (`offer-copy.ts`, seção ajuda).
+- **Ajuda:** existem o botão Verificar esta parte nas partes de construção do Desafio (`docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md`) e o “Preciso de ajuda”, com resposta por mensagem e possível espera (`offer-copy.ts`, seção ajuda).
 - **Fala da Flávia:** saiu desta peça, porque é a base do P41.
 - **Mesma semana:** não publicar na semana do P36, do P41, do P42 ou do P46 (mudar várias coisas juntas, a autonomia, que é o assunto do P41, a Caça Estelar e programas novos).
 - **Formato:** o carrossel passa de 9 para 10 slides (revisão 4): cada um dos três momentos ganhou o seu slide, para a imagem participar.

@@ -15,6 +15,7 @@ test('empty start is truly empty, explicitly named and independently identified'
   expect(a.images).toEqual([])
   expect(readSceneDocument(a).status).toBe('valid')
   expect(a.formatVersion).toBe(2)
+  expect(a.settings.texelsPerUnit).toBe(1)
 })
 
 for (const templateId of MOLDA_TEMPLATE_IDS) {

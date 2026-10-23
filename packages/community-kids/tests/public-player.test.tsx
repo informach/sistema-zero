@@ -1,10 +1,16 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
+import type { StudioProjectPlayerProps } from '@sistemazero/studio/player'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { forwardRef } from 'react'
+import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
 
-const MockPlayer = forwardRef<HTMLIFrameElement>(function MockPlayer(_props, ref) {
-  return <iframe ref={ref} title="Jogo de teste" />
-})
+let reportFailure: StudioProjectPlayerProps['onError']
+const MockPlayer = forwardRef<HTMLIFrameElement, Pick<StudioProjectPlayerProps, 'onError'>>(
+  function MockPlayer(props, ref) {
+    reportFailure = props.onError
+    return <iframe ref={ref} title="Jogo de teste" />
+  },
+)
 mock.module('@sistemazero/studio/player', () => ({ StudioProjectPlayer: MockPlayer }))
 
 const { PublicPlayer } = await import('../src/components/kids/public-player')
@@ -77,6 +83,26 @@ function aspectOf(el: Element | null): number {
 }
 
 describe('player público', () => {
+  test('a Python runtime error is distinct from a missing public game and renders bounded text safely', async () => {
+    fakeCelular()
+    const { project } = await pythonEnvironmentFixture('classic')
+    globalThis.fetch = Object.assign(
+      mock(async () =>
+        Response.json(project, { headers: { 'X-Studio-Python-Revision': 'a'.repeat(64) } }),
+      ),
+      { preconnect: originalFetch.preconnect },
+    )
+    const view = await renderPlayer()
+    await act(async () => {
+      reportFailure?.(new Error(`Imagem inválida <img src=x>\n${'x'.repeat(3000)}`))
+    })
+    expect(screen.getByText('Não foi possível executar este jogo.')).toBeTruthy()
+    expect(screen.queryByText('Não encontramos este jogo.')).toBeNull()
+    const detail = screen.getByText(/Imagem inválida/)
+    expect(detail.textContent).toHaveLength(2000)
+    expect(detail.querySelector('img') === null).toBe(true)
+    expect(view.container.querySelector('iframe') === null).toBe(true)
+  })
   test('a escolha manual oculta controles ativados automaticamente no mobile', async () => {
     fakeCelular()
     await renderPlayer()
@@ -204,5 +230,31 @@ describe('player público', () => {
     await screen.findByText('Segundo jogo')
 
     expect(screen.queryByText('Alice')).toBeNull()
+  })
+})
+
+describe('perfil publicado na página pública (R09)', () => {
+  for (const kind of ['classic', 'pro'] as const)
+    test(`Python ${kind} mostra o perfil do próprio documento publicado, sem outra busca`, async () => {
+      fakeCelular()
+      const { project } = await pythonEnvironmentFixture(kind)
+      const fetcher = mock(async () =>
+        Response.json(project, { headers: { 'X-Studio-Python-Revision': 'a'.repeat(64) } }),
+      )
+      globalThis.fetch = Object.assign(fetcher, { preconnect: originalFetch.preconnect })
+      const view = await renderPlayer()
+      const badge = view.container.querySelector('[data-runtime-profile]')
+      expect(badge?.textContent).toBe(
+        `${kind === 'pro' ? 'Python Pro' : 'Python Clássico'}. Perfil python-test, versão test-1`,
+      )
+      expect(badge?.getAttribute('title')).toBe('Perfil python-test, versão test-1')
+      // O rótulo sai do documento que o player já baixou: nenhuma chamada a mais.
+      expect(fetcher).toHaveBeenCalledTimes(1)
+    })
+
+  test('JavaScript continua como era: sem selo de perfil nem identidade de runtime', async () => {
+    fakeCelular()
+    const view = await renderPlayer()
+    expect(view.container.querySelector('[data-runtime-profile]')).toBeNull()
   })
 })

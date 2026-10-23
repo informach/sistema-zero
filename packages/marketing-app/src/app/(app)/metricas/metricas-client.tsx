@@ -1,5 +1,10 @@
 'use client'
 
+import {
+  bestTimesSchema,
+  followersSeriesSchema,
+  metricsSummarySchema,
+} from '@sistemazero/marketing-contracts'
 import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Hourglass, Plug } from 'lucide-react'
@@ -31,6 +36,10 @@ type BestTimesPeriod = (typeof BEST_TIMES_PERIODS)[number]
  * (CTA p/ Conexões) e "conectado, aguardando a primeira coleta".
  */
 export function MetricasClient() {
+  const [attempt, setAttempt] = useState(0)
+  return <MetricsData key={attempt} onRetry={() => setAttempt((value) => value + 1)} />
+}
+function MetricsData({ onRetry }: { onRetry: () => void }) {
   const [state, setState] = useState<{
     summary: MetricsSummaryView
     accounts: AccountsResponse
@@ -42,14 +51,13 @@ export function MetricasClient() {
   const [bestTimesNetwork, setBestTimesNetwork] = useState<SocialNetwork | null>(null)
   const [bestTimesDays, setBestTimesDays] = useState<BestTimesPeriod>(180)
   const [failed, setFailed] = useState(false)
-  const [reloadKey, setReloadKey] = useState(0)
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadKey` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
   useEffect(() => {
     let alive = true
     setFailed(false)
     Promise.all([
-      apiGet<MetricsSummaryView>('/api/marketing/metrics/summary'),
+      apiGet<unknown>('/api/marketing/metrics/summary').then((value) =>
+        metricsSummarySchema.parse(value),
+      ),
       apiGet<AccountsResponse>('/api/marketing/accounts'),
     ])
       .then(([summary, accounts]) => {
@@ -62,19 +70,21 @@ export function MetricasClient() {
     return () => {
       alive = false
     }
-  }, [reloadKey])
+  }, [])
 
   // Série de seguidores refaz a busca ao trocar rede/período (dado do backend).
   useEffect(() => {
     let alive = true
+    setSeries(null)
     const params = new URLSearchParams({ days: String(days) })
     if (network) params.set('network', network)
-    apiGet<FollowersSeriesView>(`/api/marketing/metrics/followers-series?${params}`)
+    apiGet<unknown>(`/api/marketing/metrics/followers-series?${params}`)
+      .then((value) => followersSeriesSchema.parse(value))
       .then((view) => {
         if (alive) setSeries(view)
       })
       .catch(() => {
-        if (alive) setSeries({ series: [] })
+        if (alive) setFailed(true)
       })
     return () => {
       alive = false
@@ -84,14 +94,16 @@ export function MetricasClient() {
   // Melhores horários: mesmo padrão (agregado no backend, filtros refazem).
   useEffect(() => {
     let alive = true
+    setBestTimes(null)
     const params = new URLSearchParams({ days: String(bestTimesDays) })
     if (bestTimesNetwork) params.set('network', bestTimesNetwork)
-    apiGet<BestTimesView>(`/api/marketing/metrics/best-times?${params}`)
+    apiGet<unknown>(`/api/marketing/metrics/best-times?${params}`)
+      .then((value) => bestTimesSchema.parse(value))
       .then((view) => {
         if (alive) setBestTimes(view)
       })
       .catch(() => {
-        if (alive) setBestTimes({ cells: [], totalPosts: 0 })
+        if (alive) setFailed(true)
       })
     return () => {
       alive = false
@@ -104,7 +116,7 @@ export function MetricasClient() {
         <p className="text-sm text-destructive" role="alert">
           Não foi possível carregar as métricas.
         </p>
-        <Button variant="outline" onClick={() => setReloadKey((key) => key + 1)}>
+        <Button variant="outline" onClick={onRetry}>
           Tentar de novo
         </Button>
       </div>
@@ -126,7 +138,9 @@ export function MetricasClient() {
   const connectedNetworks = new Set(
     accounts.items.filter((a) => a.status === 'connected').map((a) => a.network),
   )
-  const hasData = summary.accounts.length > 0 || summary.topPublications.length > 0
+  const hasData =
+    summary.accounts.some((account) => account.capturedAt !== null) ||
+    summary.topPublications.length > 0
 
   if (!hasData && connectedNetworks.size === 0) {
     return (
@@ -164,6 +178,22 @@ export function MetricasClient() {
 
   return (
     <div className="space-y-5">
+      <p className="text-xs text-muted-foreground">
+        Os resultados das peças criadas na bancada estão em cada entrega da própria{' '}
+        <Link href="/bancada" className="underline">
+          bancada
+        </Link>
+        .
+      </p>
+      {summary.coverage.topTruncated ? (
+        <p className="text-xs text-muted-foreground">
+          Ranking calculado sobre as {summary.coverage.limit} publicações mais recentes dos últimos
+          90 dias.
+          {summary.coverage.totalsTruncated
+            ? ' Os totais de 28 dias também são parciais.'
+            : ' Os totais de 28 dias incluem todas as publicações desse intervalo.'}
+        </p>
+      ) : null}
       <NetworkCards summary={summary} series={series} />
 
       <div className="space-y-2">
@@ -218,6 +248,12 @@ export function MetricasClient() {
         <div className="rounded-xl border border-border bg-card p-4">
           <BestTimesHeatmap view={bestTimes} />
         </div>
+        {bestTimes.coverage.truncated ? (
+          <p className="text-xs text-muted-foreground">
+            Recorte das {bestTimes.coverage.limit} publicações mais recentes para a rede e o período
+            selecionados.
+          </p>
+        ) : null}
         <p className="text-xs text-muted-foreground">
           Cada célula é um horário da semana (fuso de São Paulo). Quanto mais forte a cor, mais
           views por post as publicações daquele horário somaram no período.

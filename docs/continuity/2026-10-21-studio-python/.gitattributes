@@ -1,0 +1,2 @@
+snapshots/** -text -whitespace
+original-transfer-inventory.json.snapshot -text -whitespace

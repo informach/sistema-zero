@@ -1,10 +1,12 @@
 import { expect, test } from 'bun:test'
-import { extrudeMeshFaces } from '../scene/meshExtrude'
+import type { Vec3 } from '../core/model'
+import { extrudeMeshFaces, prepareMeshExtrusion } from '../scene/meshExtrude'
 import { insetMeshFaces } from '../scene/meshInset'
 import { subdivideMeshFaces } from '../scene/meshSubdivide'
 import { thickenMeshFaces } from '../scene/meshThickness'
 import { primitiveMesh } from '../scene/primitiveMesh'
 import { readSceneGeometry } from '../scene/readGeometry'
+import { makeSceneWheelSelection } from '../testing/sceneWheelSelection'
 import { packSceneMesh } from './sceneMeshPacket'
 import {
   readSceneSurfaceApply,
@@ -57,6 +59,10 @@ test.each([
   'thickness',
 ] as const)('real %s worker keeps stable IDs and produces the same geometry as the pure operation', async (tool) => {
   const source = { ...fixture(), tool }
+  if (tool === 'inset') {
+    source.mesh = makeSceneWheelSelection().mesh
+    source.faceIds = Object.keys(source.mesh.faces).filter((id) => id.startsWith('top:'))
+  }
   if (tool === 'thickness') {
     source.mesh.faces = { px: source.mesh.faces.px! }
   }
@@ -115,6 +121,47 @@ test.each([
     session.update(amounts[0]!)
     await done
     expect(source).toEqual(original)
+  } finally {
+    session.dispose()
+  }
+}, 5000)
+
+test('the real extrusion worker applies and returns the captured Move offset even at zero normal amount', async () => {
+  const source = fixture()
+  const offset: Vec3 = [1, 0.5, -0.25]
+  let resolve!: () => void
+  let reject!: (error: unknown) => void
+  const done = new Promise<void>((yes, no) => {
+    resolve = yes
+    reject = no
+  })
+  const session = createSceneSurfaceSession({
+    source,
+    onBusy: () => {},
+    onError: reject,
+    onResult: (mesh, amount, captured) => {
+      const prepared = prepareMeshExtrusion(source.mesh, source.faceIds)
+      try {
+        expect(amount).toBe(0)
+        expect(captured).toEqual(offset)
+        const generated = Object.keys(mesh.vertices).find(
+          (id) => !Object.hasOwn(source.mesh.vertices, id),
+        )!
+        const prefix = generated.slice(0, generated.lastIndexOf(':') + 1)
+        let next = 0
+        expect(mesh).toEqual(prepared.apply(0, () => `${prefix}${++next}`, offset))
+        expect(Object.keys(mesh.faces)).toHaveLength(10)
+        resolve()
+      } catch (error) {
+        reject(error)
+      } finally {
+        prepared.dispose()
+      }
+    },
+  })
+  try {
+    expect(session.update(0, offset)).toBe(true)
+    await done
   } finally {
     session.dispose()
   }
@@ -343,6 +390,15 @@ test('strict worker parser rejects missing references, repeated corners, unknown
   expect(() => readSceneSurfaceInit({ ...init, idSeed: 'a'.repeat(65) })).toThrow()
   expect(() => readSceneSurfaceInit({ ...init, documentId: 'invalid:asset' })).toThrow()
   expect(() => readSceneSurfaceApply({ type: 'apply', requestId: 1, amount: NaN })).toThrow()
+  expect(
+    readSceneSurfaceApply({ type: 'apply', requestId: 1, amount: 0, offset: [1, 0, -1] }).offset,
+  ).toEqual([1, 0, -1])
+  expect(() =>
+    readSceneSurfaceApply({ type: 'apply', requestId: 1, amount: 0, offset: [1, 0] }),
+  ).toThrow()
+  expect(() =>
+    readSceneSurfaceApply({ type: 'apply', requestId: 1, amount: 0, offset: [1, Infinity, 0] }),
+  ).toThrow()
   const invalid = structuredClone(source.mesh)
   invalid.faces.px!.corners[0]!.vertexId = 'missing'
   expect(() => readSceneGeometry(invalid)).toThrow('Vértice ausente')

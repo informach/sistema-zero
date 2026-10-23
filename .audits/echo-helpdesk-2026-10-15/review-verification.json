@@ -1,0 +1,50 @@
+{
+  "date": "2026-10-15",
+  "scope": "Review de proposta; sem implementação de funcionalidades",
+  "executed": [
+    {
+      "name": "focused-validation",
+      "exitCode": 0,
+      "output": "bun test v1.3.11 (af24e281)\n\ntests\\unit\\ai-worker.test.ts:\n(pass) AiWorker > claima pending, roda o pipeline e fecha em done [16.00ms]\n(pass) AiWorker > sem ticket pending → no-op\n(pass) AiWorker > reclama um lease processing expirado depois de um crash do worker\n(pass) AiWorker > falha transitória com tentativas < teto → backoff (pending)\n(pass) AiWorker > falha no teto de tentativas → failed\n(pass) AiWorker > não persiste resultado antigo nem fecha a geração criada por um inbound concorrente\n\ntests\\unit\\kb-context.test.ts:\n(pass) selectRelevantKbArticles > prioriza artigos relacionados e respeita o orçamento renderizado\n(pass) selectRelevantKbArticles > não injeta artigos quando não há correspondência lexical\n\ntests\\unit\\portal-notification-worker.test.ts:\n(pass) PortalNotificationWorker > recupera falha transitória com backoff e entrega usando a mesma idempotency key\n(pass) PortalNotificationWorker > reclama um job processing cujo lease venceu após crash\n(pass) PortalNotificationWorker > stop aguarda a entrega em voo mesmo quando outros intervalos vencem [63.00ms]\n\ntests\\unit\\portal-reply-notification.test.ts:\n(pass) aviso de resposta do portal (puro) > link por app: kids → /pais/ajuda/atendimento, adult → /ajuda; nulo (legado) cai no adulto\n(pass) aviso de resposta do portal (puro) > saudação usa só o primeiro nome e sobrevive a nome nulo ou só espaços\n(pass) aviso de resposta do portal (puro) > monta o envio: template, destinatário, variáveis do template e chave por MENSAGEM\n(pass) aviso de resposta do portal (puro) > solicitante sem nome: destinatário com fallback neutro e saudação sem nome, nunca pedaço de e-mail\n(pass) aviso de resposta do portal (puro) > anti-vácuo: duas respostas no mesmo ticket são dois avisos (chaves diferentes)\n\ntests\\unit\\prompts.test.ts:\n(pass) buildThreadText > inclui só e-mails, marca Cliente/Equipe e tira citação do inbound\n(pass) buildThreadText > ignora inbound não-humano (o modelo lia o autoresponder como \"Cliente\")\n(pass) buildThreadText > clampa mantendo a cauda quando passa do limite\n(pass) buildDraftPrompt > sem KB: omite o bloco da base\n(pass) buildDraftPrompt > com KB: injeta os artigos\n(pass) buildClassifyPrompt > isola a conversa como entrada não confiável\n(pass) buildClassifyPrompt > mantém Studio como dimensão própria do baseline do piloto\n(pass) buildClassifyPrompt > aceita a categoria studio no contrato estruturado\n\ntests\\unit\\ticket-ai.service.test.ts:\n(pass) TicketAiService > summarize persiste categoria/prioridade/resumo e fecha em done\n(pass) TicketAiService > NÃO sobrescreve categoria escolhida à mão\n(pass) TicketAiService > NÃO sobrescreve prioridade já definida\n(pass) TicketAiService > regenerateDraft persiste o rascunho\n(pass) TicketAiService > runPipeline classifica E rascunha (ordem classify→draft)\n(pass) TicketAiService > sem IA configurada → AiNotConfiguredError\n(pass) TicketAiService > recusa resumo e rascunho de ticket automatizado antes de chamar o modelo\n(pass) TicketAiService > summarize devolve conflito se a conversa muda durante a chamada ao modelo\n\ntests\\unit\\ticket-sla.test.ts:\n(pass) ticket SLA > uses the configured target for priority and enters risk at the final quarter\n(pass) ticket SLA > falls back to normal priority, records breaches, and sorts them first\n(pass) ticket SLA > pauses the clock for tickets that are waiting or already finished\n\n 35 pass\n 0 fail\n 88 expect() calls\nRan 35 tests across 7 files. [1305.00ms]\n"
+    },
+    {
+      "name": "portal-validation",
+      "exitCode": 0,
+      "output": "bun test v1.3.11 (af24e281)\n\ntests\\customer-helpdesk-pagination.test.ts:\n(pass) paginação do portal de atendimento > preserva a primeira página, anexa a próxima e remove duplicatas por id\n\ntests\\helpdesk-routes.test.ts:\n(pass) BFF do portal de atendimento > encaminha o cursor opaco da próxima página sem expor offset mutável [15.00ms]\n(pass) BFF do portal de atendimento > valida a criação e encaminha o payload permitido + o `portal` deste app ao Helpdesk\n(pass) BFF do portal de atendimento > recusa id inválido antes de chamar o gateway\n(pass) BFF do portal de atendimento > recusa mensagem fora do contrato antes de chamar o gateway\n(pass) BFF do portal de atendimento > não permite que impersonação somente-leitura crie chamado\n\n 6 pass\n 0 fail\n 12 expect() calls\nRan 6 tests across 2 files. [676.00ms]\n"
+    },
+    {
+      "name": "reproduce",
+      "exitCode": 0,
+      "output": "{\n  \"date\": \"2026-10-15\",\n  \"fixtureOnly\": true,\n  \"networkCalls\": 0,\n  \"portalContext\": {\n    \"reproduced\": true,\n    \"portalText\": \"Assunto: Ajuda\",\n    \"emailText\": \"Assunto: Ajuda\\n\\nCliente: Nao consigo abrir a aula de programacao\"\n  },\n  \"kbTruncation\": {\n    \"reproduced\": true,\n    \"selectedArticles\": 1,\n    \"sourceContainsAnswer\": true,\n    \"selectedContainsAnswer\": false,\n    \"selectedChars\": 179,\n    \"fixtureBudget\": 200,\n    \"productionDefaultBudget\": 12000\n  },\n  \"echoOwnership\": {\n    \"reproduced\": true,\n    \"readForeignThread\": \"thread-b\",\n    \"agentCalledForForeignThread\": \"thread-b\",\n    \"expectedBehavior\": \"Both handlers should reject a thread owned by another session\",\n    \"scope\": \"Real handler source; mocked Convex and Agent dependencies; no deployment test\"\n  }\n}\n"
+    }
+  ],
+  "summary": {
+    "testsPassed": 41,
+    "testsFailed": 0,
+    "assertions": 100,
+    "findingsReproduced": 3
+  },
+  "notExecuted": [
+    "PostgreSQL real",
+    "Build completo dos apps",
+    "QA de browser",
+    "LLM/Gmail reais",
+    "Migrations",
+    "Deploy"
+  ],
+  "integrity": {
+    "status": "verified",
+    "inventoryFilesChecked": 382,
+    "mismatches": [],
+    "localLinksChecked": 23,
+    "brokenLinks": [],
+    "trailingWhitespaceDocuments": [],
+    "documents": [
+      ".audits/architectural-analysis-2026-10-15-echo-helpdesk.md",
+      "docs/plans/2026-10-15-helpdesk-ia-kb-proposta-revisada.md"
+    ],
+    "proposalReviewFindings": 14,
+    "sourceChangesDetected": 0,
+    "note": "382 arquivos do inventário inicial com os mesmos hashes. Nenhuma alteração de código de produto executada pela revisão."
+  }
+}

@@ -57,6 +57,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         author_id uuid,
         author_name text,
         body varchar(8000) not null,
+        spoken boolean not null default false,
          created_at timestamptz not null
        );
        create table if not exists members.teacher_thread_staff_reads (
@@ -85,6 +86,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
         add column if not exists author_id uuid,
         add column if not exists author_name text,
         add column if not exists body varchar(8000) not null default '',
+        add column if not exists spoken boolean not null default false,
         add column if not exists created_at timestamptz not null default now();
       -- A leitura junta com courses para devolver o título do curso. Outros arquivos da
       -- pasta criam esta tabela com colunas diferentes (alguns com slug/title NOT NULL sem
@@ -216,6 +218,54 @@ describe.skipIf(!testDatabaseUrl)('DrizzleTeacherThreadRepository no Postgres re
     } finally {
       await conn.sql`delete from members.teacher_threads where id in (${threadId}, ${orfaId})`
       await conn.sql`delete from members.courses where id = ${courseId}`
+    }
+  })
+
+  test('voz para texto: `spoken` é gravado e volta; sem o campo, a coluna nasce `false`', async () => {
+    const repo = new DrizzleTeacherThreadRepository(conn.db)
+    const userId = randomUUID()
+    const now = new Date('2027-06-03T12:00:00.000Z')
+    const threadId = await repo.ensureThread({
+      userId,
+      accountId: userId,
+      audience: 'kids',
+      contextType: 'general',
+      contextRef: null,
+      now,
+    })
+    try {
+      const falada = await repo.appendMessage({
+        threadId,
+        authorRole: 'student',
+        authorId: userId,
+        authorName: null,
+        body: 'Falei isto',
+        spoken: true,
+        now,
+      })
+      expect(falada.spoken).toBe(true)
+      await repo.appendMessage({
+        threadId,
+        authorRole: 'student',
+        authorId: userId,
+        authorName: null,
+        body: 'Digitei isto',
+        now: new Date(now.getTime() + 1_000),
+      })
+      // Linha gravada por SQL cru (o caminho dos recados em lote): o DEFAULT da coluna vale.
+      await conn.sql`
+        insert into members.teacher_messages (id, thread_id, author_role, author_id, body, created_at)
+        values (${randomUUID()}, ${threadId}, 'teacher', ${randomUUID()}, 'Da equipe',
+                ${new Date(now.getTime() + 2_000).toISOString()})`
+
+      const { messages } = await repo.listMessages(threadId)
+      expect(messages.map((m) => [m.body, m.spoken])).toEqual([
+        ['Falei isto', true],
+        ['Digitei isto', false],
+        ['Da equipe', false],
+      ])
+    } finally {
+      await conn.sql`delete from members.teacher_threads where id = ${threadId}`
     }
   })
 })

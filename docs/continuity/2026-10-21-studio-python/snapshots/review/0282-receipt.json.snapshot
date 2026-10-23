@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-20T20:42:42.117Z",
+  "ownCommittedHead": "5277d4fed7384009b220c9e7997be4f1bc93ecc0",
+  "baseline": "Explicit five-path cache composition of own5277 QA plus immutable upstream172 query/prop and CRLF; not a full integrated repository",
+  "patch": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-172-convergence-r1\\qa-convergence.patch",
+    "sha256": "7a6413f78125dbf3ff34cf372263c05999433bb67e28aad80a3ac694168085aa",
+    "files": 5,
+    "appliedToOwnCacheOnly": true,
+    "resultingBytesMatchCandidates": true
+  },
+  "pins": [
+    {
+      "path": "packages/studio/e2e/smoke.spec.ts",
+      "gitBlob": "b87a41919f4d651e7823523bd894e6e57ae5da12",
+      "sha256": "3396088b5a761a2a7168b5cfcb1a88b20d625d99b5a5fba0e5dd51f7916a2ab4"
+    },
+    {
+      "path": "packages/studio/playground/LandingApp.tsx",
+      "gitBlob": "188a7f70cc758cf82576f20e6a734219aeba9f52",
+      "sha256": "2d3480fa412895e052d92ff3352303572c4e859ca83d1f11dd172c04328c4d51"
+    },
+    {
+      "path": "packages/studio/playground/editorNavigation.ts",
+      "deleted": true
+    },
+    {
+      "path": "packages/studio/src/playground-navigation.test.ts",
+      "gitBlob": "4b5a04fae6c37cc888800177081c78be68060609",
+      "sha256": "2bf350369ebb216ca469dd75b57ab91a3ca05a94c10128527f11c82a5c68cbe7"
+    },
+    {
+      "path": "packages/ui/tests/tool-chrome.test.ts",
+      "gitBlob": "9ebbf2d22c7c8c9d809eef783122737dbe14a11d",
+      "sha256": "6804907930a1ace5847f802d7cf6a280b0a7c2b0f527ac50f7fc2e64f0897ece"
+    },
+    {
+      "path": "packages/studio/playground/initialQuery.ts",
+      "prerequisite": true,
+      "gitBlob": "d1f7281a77a674b5ef7c3afde9fec70a0cd17c9d",
+      "sha256": "2f38e4228d3dd5d7d229424b89e487ad9b25fe6c122efb3abcebfe208a54370e"
+    },
+    {
+      "path": "packages/studio/e2e/pro-workspace.spec.ts",
+      "prerequisite": true,
+      "gitBlob": "851378653b384c751db29472f5ffa7bc9fc353a1",
+      "sha256": "9307a729cf930d6e6a898ea772990933804e38b69de196ba70fd9cc7e5391f39"
+    }
+  ],
+  "verification": {
+    "query": "4 tests /12 asserts, real initialQuery via four short isolated Bun children, postformat PASS",
+    "css": "3 tests /23 asserts on proposed calc CSS cache fixture, postformat PASS; original172 unchanged test2fail preserved",
+    "biome": "check --write via stdin on four candidate files, exit0; writes only cache",
+    "independentReview": "authoring_review approved five-path source delta; no browser execution"
+  },
+  "limits": [
+    "No source worktree or RootWIP mutated",
+    "Production CSS and App are Root-owned prerequisites; no production CSS in patch",
+    "CSS source geometry is not DOM non-remount acceptance",
+    "Actual seven JS/Pensa plus Pro browser outcomes still pending a coordinated integrated CI",
+    "Stacked overflow scrollbar near1024 is unexecuted residual outside this patch",
+    "Original negative import-query-cache harness preserved; not a product failure"
+  ]
+}

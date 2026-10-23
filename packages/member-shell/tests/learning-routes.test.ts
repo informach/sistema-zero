@@ -110,10 +110,11 @@ describe('learning BFF boundary', () => {
     const { routes, calls } = setup()
     const section = { params: Promise.resolve({ lessonId, sectionId: blockId }) }
     const payload = { revision: lessonId, project: { blocksState: { blocks: [] } } }
-    expect((await routes.learningProjectCheck.POST(request(payload), section)).status).toBe(200)
+    const submission = request(payload)
+    expect((await routes.learningProjectCheck.POST(submission, section)).status).toBe(200)
     expect(calls[0]).toEqual({
       path: `/members/lessons/${lessonId}/sections/${blockId}/project-check`,
-      opts: { method: 'POST', body: payload },
+      opts: { method: 'POST', body: payload, signal: submission.signal, timeoutMs: 165_000 },
     })
     expect(
       (await routes.learningProjectCheck.POST(request(payload, 'other-profile'), section)).status,
@@ -134,6 +135,45 @@ describe('learning BFF boundary', () => {
         )
       ).status,
     ).toBe(413)
+    expect(calls).toHaveLength(1)
+  })
+  test('project checks forward a complete live context and reject partial or forged context', async () => {
+    const { routes, calls } = setup()
+    const section = { params: Promise.resolve({ lessonId, sectionId: blockId }) }
+    const liveContext = {
+      context: {
+        kind: 'live',
+        workspaceId: blockId,
+        sessionId: lessonId,
+        blockId,
+        deviceId: user.id,
+        writerEpoch: 3,
+      },
+      expectedWorkspaceRevision: 7,
+    }
+    const payload = { revision: lessonId, project: { id: blockId }, liveContext }
+    const submission = request(payload)
+    expect((await routes.learningProjectCheck.POST(submission, section)).status).toBe(200)
+    expect(calls[0]?.opts).toEqual({
+      method: 'POST',
+      body: payload,
+      signal: submission.signal,
+      timeoutMs: 165_000,
+    })
+    for (const changed of [
+      { ...liveContext, context: { ...liveContext.context, sessionId: null } },
+      { ...liveContext, context: { ...liveContext.context, blockId: null } },
+      { ...liveContext, context: { ...liveContext.context, author: true } },
+      { ...liveContext, expectedWorkspaceRevision: -1 },
+    ])
+      expect(
+        (
+          await routes.learningProjectCheck.POST(
+            request({ ...payload, liveContext: changed }),
+            section,
+          )
+        ).status,
+      ).toBe(400)
     expect(calls).toHaveLength(1)
   })
   test('navigation, help and attempts use the same session boundary and strict contracts', async () => {

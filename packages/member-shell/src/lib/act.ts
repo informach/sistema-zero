@@ -23,6 +23,14 @@ export function actorLabel(act: ActClaim): string {
   return act.name ?? act.email ?? 'um administrador'
 }
 
+/**
+ * Qualquer sessão de suporte (leitura OU escrita). A oficina ao vivo recusa toda ação nessa
+ * sessão: o atendente entraria na sala com o nome da criança, como a fala para a equipe já faz.
+ */
+export function isSupportSession(user: { act?: ActClaim } | null | undefined): boolean {
+  return Boolean(user?.act)
+}
+
 /** Só bloqueia mutações quando a sessão de suporte não foi elevada explicitamente. */
 export function isReadonlyImpersonation(user: { act?: ActClaim } | null | undefined): boolean {
   return Boolean(user?.act && user.act.mode !== 'write')

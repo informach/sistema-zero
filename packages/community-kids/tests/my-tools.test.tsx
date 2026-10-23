@@ -19,7 +19,7 @@ function detalhes(): HTMLDetailsElement[] {
 }
 
 describe('MyTools', () => {
-  test('sem ferramenta nenhuma a seção some', () => {
+  test('sem ferramenta nenhuma a parte some', () => {
     const { container } = render(<MyTools drawers={[]} studioOwned />)
     expect(container.firstChild).toBeNull()
   })

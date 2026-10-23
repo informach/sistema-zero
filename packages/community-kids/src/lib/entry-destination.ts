@@ -15,7 +15,7 @@ export function safeParentDestination(value: string | null | undefined): string 
   return /^\/(?:pais|responsavel)(?:\/|\?|$)/.test(value) ? value : null
 }
 
-/** Destino de estudo pedido no link (uma fase, o Estúdio…), ou `null` sem destino próprio. */
+/** Destino de estudo pedido no link (uma aula, o Estúdio…), ou `null` sem destino próprio. */
 export function requestedStudyDestination(value: string | null | undefined): string | null {
   const destination = safeStudyDestination(value ?? null)
   return destination === '/' ? null : destination
@@ -23,7 +23,7 @@ export function requestedStudyDestination(value: string | null | undefined): str
 
 /**
  * Depois do login do responsável: o `next` adulto, se veio um; senão a área dos pais. Quando
- * o link era de uma fase (área da criança), a área dos pais recebe `?aluno=` para orientar a
+ * o link era de uma aula (área da criança), a área dos pais recebe `?aluno=` para orientar a
  * troca segura e levar a criança até lá depois. `child` é o atalho antigo de reautenticação.
  */
 export function parentLoginDestination(search: string): string {

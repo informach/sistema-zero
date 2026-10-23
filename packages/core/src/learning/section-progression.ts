@@ -1,17 +1,63 @@
+import { compareContentFingerprints } from '../creations/content-fingerprint'
 import { isInteractiveBlock, type LessonSection } from './index'
 import { isPlatformAction, type PlatformAction } from './platform-action'
+import {
+  EXECUTION_LIMITS,
+  isExecutionRule,
+  isSectionExecutionRule,
+  type SectionExecutionRule,
+} from './project-execution'
+import {
+  isSectionPythonProjectCheck,
+  type SectionPythonProjectCheck,
+  sectionProjectChecksEnvironmentIssue,
+} from './python-project-checks'
 import type { LessonRequirementReason } from './requirements'
+
+export interface ProjectFieldRange {
+  min?: number
+  max?: number
+  minExclusive?: true
+  maxExclusive?: true
+}
+
+export interface ProjectFieldText {
+  nonBlank: true
+  /** Every group requires one of its explicit phrases; this is not semantic analysis. */
+  containsAll?: string[][]
+}
+
+/** Words only: punctuation separates phrases, and accents/case do not prescribe spelling. */
+export function normalizeProjectFieldText(value: string): string {
+  return (
+    value
+      .normalize('NFKD')
+      .replace(/\p{M}/gu, '')
+      .toLowerCase()
+      .match(/[\p{L}\p{N}]+/gu) ?? []
+  ).join(' ')
+}
 
 export interface ProjectBlockPattern {
   blockType: string
   fields?: Record<string, string | number | boolean>
   /** A field may match any of these explicit names, e.g. alternative lit lighthouse images. */
   fieldOptions?: Record<string, string[]>
+  /** Finite numeric bounds on a field; an exclusive bound requires its endpoint. */
+  fieldRanges?: Record<string, ProjectFieldRange>
+  /** Accept the learner's own nonblank text without prescribing its contents. */
+  fieldText?: Record<string, ProjectFieldText>
+  /** One complete field map must match; keys are identical in every alternative. */
+  fieldAlternatives?: Record<string, string | number | boolean>[]
   inputs?: Record<string, string | number | boolean>
   /** A later enabled sibling in this same statement chain, never another branch. */
   beforeBlock?: string
+  /** A complete later enabled sibling in this same chain; exclusive with beforeBlock. */
+  beforePattern?: ProjectBlockPattern
   /** Match an active child in this named input, keeping all conditions on that same child. */
   inputBlocks?: Record<string, ProjectBlockPattern>
+  /** Every pattern matches the same socket chain. This does not require distinct occurrences. */
+  inputBlocksAll?: Record<string, ProjectBlockPattern[]>
 }
 
 export type SectionStructureRule =
@@ -27,11 +73,116 @@ export type SectionStructureRule =
       count?: number
     })
 
-export interface SectionProjectCheck {
+/**
+ * A regra de um objetivo: ESTRUTURA (o que o projeto tem, conferido na hora) ou EXECUÇÃO (o que o
+ * jogo faz quando roda, conferido pelo `studio-runtime`; ver `project-execution.ts`).
+ */
+export type SectionObjectiveRule = SectionStructureRule | SectionExecutionRule
+
+export interface SectionJavaScriptProjectCheck {
+  id: string
+  programmingLanguage?: 'javascript'
+  /** A frase que a criança lê na lista "Objetivos desta parte". */
+  label: string
+  rule: SectionObjectiveRule
+  /** O que dizer quando o objetivo ainda não foi cumprido (a criança lê). */
+  hint?: string
+  /**
+   * EXTRA: um desafio a mais. Não tranca a parte e dá XP uma vez quando cumprido. Sem o campo, o
+   * objetivo é obrigatório para seguir (todos os objetivos anteriores a 18/10/2026).
+   */
+  optional?: true
+}
+
+/**
+ * O jeito de conferir, na língua da autoria (o Admin e a lista da criança usam o mesmo nome):
+ * um bloco, uma ideia de programação, o que o jogo faz (`game`), a resposta de uma função
+ * (`function`) ou uma regra em JavaScript (`script`).
+ */
+export type ProjectObjectiveKind = 'block' | 'idea' | 'game' | 'function' | 'script'
+
+export function projectObjectiveKind(rule: SectionObjectiveRule): ProjectObjectiveKind {
+  switch (rule.type) {
+    case 'usesBlock':
+      return 'block'
+    case 'behavior':
+      return 'game'
+    case 'functionReturns':
+      return 'function'
+    case 'script':
+      return 'script'
+    default:
+      return 'idea'
+  }
+}
+
+/** Os objetivos que precisam RODAR o jogo (e por isso do executor). */
+export function executionProjectChecks<T extends { rule: { type: string } }>(
+  checks: readonly T[] | undefined,
+): T[] {
+  return (checks ?? []).filter((check) => isExecutionRule(check.rule))
+}
+
+/**
+ * O que a CRIANÇA recebe de cada objetivo: nunca a regra. Com os objetivos de execução a regra
+ * carrega a resposta esperada, e mesmo a de estrutura não é da conta do navegador dela.
+ */
+export interface ProjectObjectiveView {
   id: string
   label: string
-  rule: SectionStructureRule
+  hint?: string
+  optional?: true
+  kind: ProjectObjectiveKind
 }
+
+export function projectObjectiveView(check: SectionProjectCheck): ProjectObjectiveView {
+  return {
+    id: check.id,
+    label: check.label,
+    ...(check.hint ? { hint: check.hint } : {}),
+    ...(check.optional ? { optional: true as const } : {}),
+    kind: check.programmingLanguage === 'python' ? 'idea' : projectObjectiveKind(check.rule),
+  }
+}
+
+/** A conclusão como a criança a recebe: a mesma, com os objetivos trocados pela vista. */
+export type SectionCompletionView = Omit<SectionCompletion, 'projectChecks'> & {
+  projectChecks?: ProjectObjectiveView[]
+}
+
+export function sectionCompletionView(completion: SectionCompletion): SectionCompletionView {
+  return {
+    version: completion.version,
+    blockIds: [...completion.blockIds],
+    ...(completion.materialItems
+      ? {
+          materialItems: completion.materialItems.map((item) => ({
+            blockId: item.blockId,
+            itemIds: [...item.itemIds],
+          })),
+        }
+      : {}),
+    ...(completion.platformAction ? { platformAction: completion.platformAction } : {}),
+    ...(completion.submissionUpToDate ? { submissionUpToDate: completion.submissionUpToDate } : {}),
+    ...(completion.projectChecks
+      ? { projectChecks: completion.projectChecks.map(projectObjectiveView) }
+      : {}),
+  }
+}
+
+/** Os objetivos que TRANCAM a parte. */
+export function requiredProjectChecks<T extends { optional?: true }>(
+  checks: readonly T[] | undefined,
+): T[] {
+  return (checks ?? []).filter((check) => !check.optional)
+}
+
+/** O resultado guardado de cada objetivo na última verificação (por revisão da parte). */
+export interface ProjectObjectiveResult {
+  id: string
+  passed: boolean
+}
+export type SectionProjectCheck = SectionJavaScriptProjectCheck | SectionPythonProjectCheck
 
 /** Presence on every section opts a published lesson into sequential progression. */
 export interface SectionCompletion {
@@ -55,13 +206,18 @@ export interface SectionProgressRecord {
   revision: string
   completedAt: string | null
   projectPassed: boolean
+  /**
+   * O último resultado de cada objetivo (da última verificação desta revisão). Ausente na
+   * gravação = mantém o que estava guardado; só a verificação o escreve.
+   */
+  objectiveResults?: ProjectObjectiveResult[] | null
 }
 
 /**
- * Por que a seção ainda não fechou, TIPADO (30/09/2026): o `kind` é o que escolhe o ícone e a cor
+ * Por que a parte ainda não fechou, TIPADO (30/09/2026): o `kind` é o que escolhe o ícone e a cor
  * na faixa "o que falta para seguir" do rodapé da aula. As razões de requisito vêm de
  * `lessonCompletionRequirements`; `platform-action`, `project-check` e `authoring` são as outras
- * três coisas que o members acrescenta; `locked` é a seção que espera a anterior; `lesson` é o
+ * três coisas que o members acrescenta; `locked` é a parte que espera a anterior; `lesson` é o
  * motivo do "Concluir aula" travado que o player conhece; `other` é um texto sem razão (fixtures).
  */
 export type SectionPendingKind =
@@ -91,8 +247,13 @@ export interface SectionProgressView {
     pending: string[]
     /** As mesmas frases, com o `kind`: é o que a faixa do rodapé lê. */
     pendingItems: SectionPendingItem[]
+    /** O resultado de cada objetivo na última "Verificar esta parte" desta revisão. */
+    objectives?: ProjectObjectiveResult[]
   }>
 }
+
+/** Teto da dica de um objetivo. */
+export const PROJECT_CHECK_HINT_MAX = 300
 
 const record = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v)
@@ -101,28 +262,114 @@ const label = (v: unknown): v is string =>
 
 /** Authors save half-filled objectives; an empty block type is the placeholder, not a broken draft. */
 const blockName = (v: unknown): v is string => typeof v === 'string' && v.length <= 200
+const fieldLiteral = (value: unknown) =>
+  typeof value === 'boolean' ||
+  (typeof value === 'number' && Number.isFinite(value)) ||
+  (typeof value === 'string' && value.length <= 200)
+
+export function isProjectFieldRange(value: unknown): value is ProjectFieldRange {
+  if (
+    !record(value) ||
+    Object.keys(value).some((key) => !['min', 'max', 'minExclusive', 'maxExclusive'].includes(key))
+  )
+    return false
+  const { min, max, minExclusive, maxExclusive } = value
+  if (min === undefined && max === undefined) return false
+  if (min !== undefined && (typeof min !== 'number' || !Number.isFinite(min))) return false
+  if (max !== undefined && (typeof max !== 'number' || !Number.isFinite(max))) return false
+  if (minExclusive !== undefined && (minExclusive !== true || min === undefined)) return false
+  if (maxExclusive !== undefined && (maxExclusive !== true || max === undefined)) return false
+  return !(
+    typeof min === 'number' &&
+    typeof max === 'number' &&
+    (min > max || (min === max && (minExclusive || maxExclusive)))
+  )
+}
+
+export function isProjectFieldText(value: unknown): value is ProjectFieldText {
+  if (
+    !record(value) ||
+    !Object.hasOwn(value, 'nonBlank') ||
+    value.nonBlank !== true ||
+    Object.keys(value).some((key) => key !== 'nonBlank' && key !== 'containsAll')
+  )
+    return false
+  const groups = value.containsAll
+  return (
+    groups === undefined ||
+    (Array.isArray(groups) &&
+      groups.length >= 1 &&
+      groups.length <= 10 &&
+      groups.every(
+        (alternatives) =>
+          Array.isArray(alternatives) &&
+          alternatives.length >= 1 &&
+          alternatives.length <= 10 &&
+          alternatives.every(
+            (phrase) =>
+              typeof phrase === 'string' &&
+              phrase.length >= 1 &&
+              phrase.length <= 120 &&
+              normalizeProjectFieldText(phrase).length > 0,
+          ),
+      ))
+  )
+}
 
 export function isProjectBlockPattern(value: unknown): value is ProjectBlockPattern {
   let remaining = 64
   function valid(v: unknown, depth: number): boolean {
     if (!record(v) || !blockName(v.blockType) || depth > 4 || --remaining < 0) return false
     if (v.beforeBlock !== undefined && !label(v.beforeBlock)) return false
+    if (v.beforePattern !== undefined) {
+      if (v.beforeBlock !== undefined || !valid(v.beforePattern, depth + 1)) return false
+    }
     if (
       ![v.fields, v.inputs].every(
         (values) =>
           values === undefined ||
           (record(values) &&
             Object.keys(values).length <= 20 &&
-            Object.entries(values).every(
-              ([key, val]) =>
-                label(key) &&
-                (typeof val === 'boolean' ||
-                  (typeof val === 'number' && Number.isFinite(val)) ||
-                  (typeof val === 'string' && val.length <= 200)),
-            )),
+            Object.entries(values).every(([key, val]) => label(key) && fieldLiteral(val))),
       )
     )
       return false
+    const constrainedFields = new Set<string>()
+    for (const map of [v.fields, v.fieldOptions, v.fieldRanges, v.fieldText]) {
+      if (map === undefined) continue
+      if (!record(map) || Object.keys(map).length > 20) return false
+      for (const key of Object.keys(map)) {
+        if (!label(key) || constrainedFields.has(key)) return false
+        constrainedFields.add(key)
+      }
+    }
+    if (v.fieldAlternatives !== undefined) {
+      if (
+        !Array.isArray(v.fieldAlternatives) ||
+        !v.fieldAlternatives.length ||
+        v.fieldAlternatives.length > 10
+      )
+        return false
+      let names: string[] | undefined
+      for (const alternative of v.fieldAlternatives) {
+        if (!record(alternative)) return false
+        const keys = Object.keys(alternative)
+        if (
+          !keys.length ||
+          keys.length > 20 ||
+          !keys.every(
+            (key) => label(key) && !constrainedFields.has(key) && fieldLiteral(alternative[key]),
+          )
+        )
+          return false
+        if (
+          names &&
+          (keys.length !== names.length || !names.every((key) => Object.hasOwn(alternative, key)))
+        )
+          return false
+        names ??= keys
+      }
+    }
     if (
       v.fieldOptions !== undefined &&
       (!record(v.fieldOptions) ||
@@ -130,7 +377,6 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
         !Object.entries(v.fieldOptions).every(
           ([key, options]) =>
             label(key) &&
-            !(record(v.fields) && Object.hasOwn(v.fields, key)) &&
             Array.isArray(options) &&
             options.length > 0 &&
             options.length <= 50 &&
@@ -139,17 +385,34 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
         ))
     )
       return false
-    return (
-      v.inputBlocks === undefined ||
-      (record(v.inputBlocks) &&
-        Object.keys(v.inputBlocks).length <= 20 &&
-        Object.entries(v.inputBlocks).every(
-          ([key, child]) =>
-            label(key) &&
-            !(record(v.inputs) && Object.hasOwn(v.inputs, key)) &&
-            valid(child, depth + 1),
-        ))
-    )
+    if (record(v.fieldRanges) && !Object.values(v.fieldRanges).every(isProjectFieldRange))
+      return false
+    if (record(v.fieldText) && !Object.values(v.fieldText).every(isProjectFieldText)) return false
+    const constrainedInputs = new Set(record(v.inputs) ? Object.keys(v.inputs) : [])
+    for (const kind of ['inputBlocks', 'inputBlocksAll'] as const) {
+      const sockets = v[kind]
+      if (sockets === undefined) continue
+      if (
+        !record(sockets) ||
+        Object.keys(sockets).length > 20 ||
+        (kind === 'inputBlocksAll' && !Object.keys(sockets).length)
+      )
+        return false
+      for (const [key, child] of Object.entries(sockets)) {
+        if (!label(key) || constrainedInputs.has(key)) return false
+        constrainedInputs.add(key)
+        if (kind === 'inputBlocks') {
+          if (!valid(child, depth + 1)) return false
+        } else if (
+          !Array.isArray(child) ||
+          !child.length ||
+          child.length > 20 ||
+          !child.every((pattern) => valid(pattern, depth + 1))
+        )
+          return false
+      }
+    }
+    return true
   }
   return valid(value, 0)
 }
@@ -157,11 +420,16 @@ export function isProjectBlockPattern(value: unknown): value is ProjectBlockPatt
 /** A placeholder still without a block, at the top or in any connected socket, is an editorial warning. */
 function hasBlankBlockType(pattern: ProjectBlockPattern): boolean {
   return (
-    !label(pattern.blockType) || Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType)
+    !label(pattern.blockType) ||
+    (pattern.beforePattern !== undefined && hasBlankBlockType(pattern.beforePattern)) ||
+    Object.values(pattern.inputBlocks ?? {}).some(hasBlankBlockType) ||
+    Object.values(pattern.inputBlocksAll ?? {}).some((patterns) => patterns.some(hasBlankBlockType))
   )
 }
 
 export function isSectionCompletion(v: unknown): v is SectionCompletion {
+  if (record(v) && (Object.hasOwn(v, 'projectExamples') || Object.hasOwn(v, 'solutionProject')))
+    return false
   if (
     !record(v) ||
     v.version !== 1 ||
@@ -193,14 +461,26 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
   }
   if (v.projectChecks === undefined) return true
   if (!Array.isArray(v.projectChecks) || v.projectChecks.length > 20) return false
+  // Cada objetivo de execução abre o jogo do zero num navegador: o teto é por parte.
+  if (
+    v.projectChecks.filter(
+      (c) => record(c) && record(c.rule) && isExecutionRule(c.rule as { type: string }),
+    ).length > EXECUTION_LIMITS.maxObjectives
+  )
+    return false
   return (
     new Set(v.projectChecks.map((c) => (record(c) ? c.id : null))).size ===
       v.projectChecks.length &&
     v.projectChecks.every((c) => {
+      if (record(c) && c.programmingLanguage === 'python') return isSectionPythonProjectCheck(c)
       if (
         !record(c) ||
+        (c.programmingLanguage !== undefined && c.programmingLanguage !== 'javascript') ||
         !label(c.id) ||
         !(typeof c.label === 'string' && c.label.length <= 200) ||
+        (c.hint !== undefined &&
+          !(typeof c.hint === 'string' && c.hint.length <= PROJECT_CHECK_HINT_MAX)) ||
+        (c.optional !== undefined && c.optional !== true) ||
         !record(c.rule)
       )
         return false
@@ -225,6 +505,10 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
         case 'definesFunction':
         case 'callsFunction':
           return typeof c.rule.name === 'string' && c.rule.name.length <= 200
+        case 'behavior':
+        case 'functionReturns':
+        case 'script':
+          return isSectionExecutionRule(c.rule)
         default:
           return false
       }
@@ -255,7 +539,6 @@ export function isFinalProjectSection(
 export function sectionCompletionIssues(
   sections: LessonSection[],
   blocks: { id: string; content: unknown }[],
-  options: { purpose?: 'publication' | 'playback' } = {},
 ): Array<{ sectionId: string; message: string }> {
   if (!hasSectionProgression(sections)) return []
   return sections.flatMap((s) => {
@@ -270,16 +553,20 @@ export function sectionCompletionIssues(
         'Uma entrega pela galeria não é um espaço de trabalho incorporado. Coloque o bloco na seção de entrega.',
       )
     if (!isSectionCompletion(c)) {
-      add('Configure os critérios de conclusão desta seção.')
+      add('Configure os critérios de conclusão desta parte.')
       return issues
     }
     if (
       !c.blockIds.length &&
-      !c.projectChecks?.length &&
+      !requiredProjectChecks(c.projectChecks).length &&
       !c.platformAction &&
       !c.submissionUpToDate
     )
-      add('Esta seção precisa de uma checagem ou objetivo verificável.')
+      add(
+        c.projectChecks?.length
+          ? 'Objetivos extras não trancam a parte. Marque ao menos um objetivo como obrigatório ou escolha outro critério.'
+          : 'Esta parte precisa de uma checagem ou objetivo verificável.',
+      )
     if (
       blocks.some(
         (block) =>
@@ -289,7 +576,7 @@ export function sectionCompletionIssues(
           !c.blockIds.includes(block.id),
       )
     )
-      add('Inclua a emissão do certificado como critério desta seção.')
+      add('Inclua a emissão do certificado como critério desta parte.')
     if (
       c.platformAction &&
       (c.blockIds.length ||
@@ -342,8 +629,7 @@ export function sectionCompletionIssues(
           add('Um arquivo obrigatório foi removido ou ainda não foi enviado.')
         }
       } else if (content.kind === 'ebook') {
-        if (s.intent !== 'material')
-          add('Use a seção Material do curso para exigir abrir o livro ou baixar o PDF.')
+        if (s.intent !== 'material') add('Use a parte Material do curso para exigir abrir o livro.')
       } else if (content.kind === 'quiz') {
         if (
           typeof content.passingScore !== 'number' ||
@@ -356,18 +642,6 @@ export function sectionCompletionIssues(
         if (content.purpose === 'experiment' || !['closing', 'delivery'].includes(s.intent))
           add(
             'A entrega obrigatória do projeto deve ficar em Entrega e compartilhamento ou no fechamento.',
-          )
-        if (
-          options.purpose !== 'playback' &&
-          content.kind === 'studio' &&
-          record(content.activity) &&
-          typeof content.activity.passingScore === 'number' &&
-          content.activity.passingScore > 0 &&
-          Array.isArray(content.activity.checks) &&
-          content.activity.checks.some((check) => !record(check) || check.kind !== 'structure')
-        )
-          add(
-            'Para exigir aprovação do projeto nesta seção, use apenas checagens estruturais. Deixe testes de execução como formativos ou acrescente uma pergunta corrigida pelo servidor.',
           )
       } else add('Use uma pergunta, desafio ou entrega como critério de conclusão.')
     }
@@ -387,14 +661,24 @@ export function sectionCompletionIssues(
       c.projectChecks?.some(
         (check) =>
           !label(check.label) ||
-          (check.rule.type === 'usesBlock'
-            ? hasBlankBlockType(check.rule)
-            : check.rule.type === 'usesLoop'
-              ? false
-              : !label(check.rule.name)),
+          (check.programmingLanguage === 'python'
+            ? false
+            : check.rule.type === 'usesBlock'
+              ? hasBlankBlockType(check.rule)
+              : check.rule.type === 'usesLoop' ||
+                  check.rule.type === 'behavior' ||
+                  check.rule.type === 'script'
+                ? false
+                : !label(check.rule.name)),
       )
     )
       add('Preencha o objetivo e o nome esperado na verificação do Estúdio.')
+    if (c.projectChecks?.length) {
+      const workspace = blocks.find((block) => block.id === s.workspaceBlockId)
+      const project = record(workspace?.content) ? workspace.content.initialProject : undefined
+      const issue = sectionProjectChecksEnvironmentIssue(c.projectChecks, project)
+      if (issue) add(issue)
+    }
     if (
       s.intent === 'material' &&
       (c.platformAction ||
@@ -412,7 +696,7 @@ export function sectionCompletionIssues(
         ))
     )
       add(
-        'Em Material do curso, escolha o livro, os arquivos para baixar ou o vídeo desta seção. Separe quiz e entrega de projeto em outra seção.',
+        'Em Material do curso, escolha o livro, os arquivos para baixar ou o vídeo desta parte. Separe quiz e entrega de projeto em outra seção.',
       )
     if (
       c.projectChecks?.length &&
@@ -424,10 +708,10 @@ export function sectionCompletionIssues(
           !b.content.gallery,
       )
     )
-      add('A verificação de projeto precisa de um Estúdio incorporado nesta seção.')
+      add('A verificação de projeto precisa de um Estúdio incorporado nesta parte.')
     if (c.submissionUpToDate && !submissionUpToDateWorkspace(sections, blocks, s.id))
       add(
-        'O envio em dia precisa de um Estúdio ou Pinta incorporado nesta seção, já entregue numa seção de entrega anterior.',
+        'O envio em dia precisa de um Estúdio ou Pinta incorporado nesta parte, já entregue numa seção de entrega anterior.',
       )
     for (const b of blocks) {
       if (!s.blockIds.includes(b.id) || !record(b.content)) continue
@@ -482,6 +766,8 @@ export type SubmissionFreshness = 'missing' | 'outdated' | 'fresh'
  * ⚠️ Faltando a impressão de qualquer lado (envio antigo, rascunho que nunca subiu, navegador sem
  * `crypto.subtle`), a régua deixa passar: ela existe para lembrar a criança, nunca para prendê-la
  * por uma informação que o sistema não tem.
+ * Versões diferentes também são incomparáveis: migrar o formato não comprova que o aluno
+ * editou o programa. O próximo envio e rascunho usam a mesma régua e retomam a conferência.
  */
 export function submissionFreshness(input: {
   submission: { fingerprint: string | null; submittedAt: Date } | null
@@ -491,7 +777,7 @@ export function submissionFreshness(input: {
   const sent = input.submission.fingerprint
   const draft = input.draft
   if (!sent || !draft?.fingerprint) return 'fresh'
-  if (draft.fingerprint === sent) return 'fresh'
+  if (compareContentFingerprints(draft.fingerprint, sent) !== 'different') return 'fresh'
   return draft.syncedAt.getTime() > input.submission.submittedAt.getTime() ? 'outdated' : 'fresh'
 }
 
@@ -512,8 +798,23 @@ export function sectionProgressView(
   completedIds: ReadonlySet<string>,
   /** Texto cru vira `kind: 'other'`; o members manda itens tipados. */
   pending: ReadonlyMap<string, readonly (string | SectionPendingItem)[]>,
+  /**
+   * Curso AO VIVO: nenhuma parte fica trancada pela anterior. Durante o encontro quem conduz é a
+   * professora (ela abre as partes na sala); depois, a criança vai no próprio ritmo.
+   */
+  options: {
+    freeOrder?: boolean
+    /** O último resultado de cada objetivo por seção (só os da revisão atual). */
+    objectiveResults?: ReadonlyMap<string, readonly ProjectObjectiveResult[]>
+  } = {},
 ): SectionProgressView {
   let available = true
+  const objetivos = (id: string) => {
+    const results = options.objectiveResults?.get(id)
+    return results?.length
+      ? { objectives: results.map((r) => ({ id: r.id, passed: r.passed })) }
+      : {}
+  }
   const states = sections.map((s) => {
     if (completedIds.has(s.id))
       return {
@@ -522,14 +823,15 @@ export function sectionProgressView(
         status: 'completed' as const,
         pending: [],
         pendingItems: [],
+        ...objetivos(s.id),
       }
     const status = available ? ('available' as const) : ('locked' as const)
-    available = false
-    // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma seção com
+    available = Boolean(options.freeOrder)
+    // ⚠️ Sem repetidos: `lessonCompletionRequirements` cria UM requisito por bloco, e uma parte com
     // três descobertas obrigatórias virava três "Termine o experimento" (review do lote 2).
     const itens: SectionPendingItem[] =
       status === 'locked'
-        ? [{ kind: 'locked', text: 'Conclua a seção anterior' }]
+        ? [{ kind: 'locked', text: 'Conclua a parte anterior' }]
         : semRepetidos(
             (pending.get(s.id) ?? []).map((item) =>
               typeof item === 'string' ? { kind: 'other', text: item } : item,
@@ -541,6 +843,7 @@ export function sectionProgressView(
       status,
       pending: itens.map((item) => item.text),
       pendingItems: itens,
+      ...(status === 'locked' ? {} : objetivos(s.id)),
     }
   })
   const completed = states.filter((s) => s.status === 'completed').length

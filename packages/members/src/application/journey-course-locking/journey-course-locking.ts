@@ -1,60 +1,41 @@
-import { type QualifiedJourneySlots, resolveJourneyCourseLock } from '@sistemazero/core/journey'
+import type { JourneyCourseLock } from '@sistemazero/core/journey'
 import type { Course } from '../../domain/course/course'
 import { courseTier } from '../../domain/gamification/levels'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { JourneyCourseLockView } from '../mappers/views'
 
-/**
- * Projeta as travas pedagógicas sem misturá-las com matrícula/comercial.
- * O mapa de cursos-base permite à interface explicar exatamente o próximo passo.
- */
-export function journeyLocksForCourses(
+/** Presentation only. Authorization comes from the canonical policy/earned snapshot. */
+export function journeyLockViews(
   courses: readonly Course[],
-  qualified: QualifiedJourneySlots,
-  enabled: boolean,
+  locks: ReadonlyMap<string, JourneyCourseLock> | null,
 ): Map<string, JourneyCourseLockView> {
-  if (!enabled) return new Map()
-
+  if (locks === null) return new Map() // Explicit Adult/team bypass at the caller.
   const foundationByTier = new Map<string, string>()
   for (const course of courses) {
-    if (course.level !== 'lenda' && course.audience === 'kids' && course.careerSlot === 1) {
-      const tier = courseTier(course.level, course.track)
+    if (course.audience === 'kids' && course.status === 'published' && course.careerSlot === 1) {
+      const tier = course.level === 'lenda' ? null : courseTier(course.level, course.track)
       if (tier) foundationByTier.set(tier, course.slug)
     }
   }
-
-  const locks = new Map<string, JourneyCourseLockView>()
-  for (const course of courses) {
-    // Curso `lenda` é FORA da jornada → nunca tem trava pedagógica (a régua de ver é o
-    // nó da Lenda no mapa, não o careerLock).
-    if (course.level === 'lenda') {
-      locks.set(course.id, { locked: false })
-      continue
-    }
-    // Par (level, track) que não é degrau da jornada (ex.: `primeiros-passos` + `3d`)
-    // fica FORA dela, como o `lenda`: não trava nada.
-    const tier = courseTier(course.level, course.track)
-    if (!tier) {
-      locks.set(course.id, { locked: false })
-      continue
-    }
-    // Sem um curso-base publicado na etapa, a trava falha aberta — vale p/ as
-    // posições 2+ (foundation-first) E p/ o bônus-recompensa (tier-reward):
-    // sem base não há nada a concluir para liberar.
-    const lock = resolveJourneyCourseLock(
-      qualified,
-      tier,
-      course.careerSlot,
-      foundationByTier.has(tier),
-      course.journeyRole,
-    )
-    locks.set(course.id, {
-      locked: lock.locked,
-      ...(lock.reason ? { reason: lock.reason } : {}),
-      ...(lock.requiredLevel ? { requiredLevel: lock.requiredLevel } : {}),
-      ...(lock.locked && lock.reason === 'foundation-first' && foundationByTier.has(tier)
-        ? { foundationCourseSlug: foundationByTier.get(tier) }
-        : {}),
-    })
-  }
-  return locks
+  return new Map(
+    courses.map((course): [string, JourneyCourseLockView] => {
+      const lock = locks.get(course.id)
+      if (!lock) throw new KidsJourneyUnavailableError()
+      const tier = course.level === 'lenda' ? null : courseTier(course.level, course.track)
+      return [
+        course.id,
+        {
+          locked: lock.locked,
+          ...(lock.reason ? { reason: lock.reason } : {}),
+          ...(lock.requiredLevel ? { requiredLevel: lock.requiredLevel } : {}),
+          ...(lock.locked &&
+          lock.reason === 'foundation-first' &&
+          tier &&
+          foundationByTier.has(tier)
+            ? { foundationCourseSlug: foundationByTier.get(tier) }
+            : {}),
+        },
+      ]
+    }),
+  )
 }

@@ -2,11 +2,11 @@ import { expect, type Page, test } from '@playwright/test'
 
 // Modelo D2 (src/core/modes.ts): projeto BÁSICO expõe só Blocos + Ponte — o
 // editor de código do clássico vive na PONTE; projeto PROFISSIONAL (radio
-// "Profissional" no modal "+ Novo projeto") expõe só Código (árvore Vite +
+// "Pro (código)" no modal "+ Novo projeto") expõe só Código (árvore Vite +
 // WebContainer). Nenhum projeto mostra os 3 modos ao mesmo tempo.
 
-async function createProject(page: Page): Promise<void> {
-  await page.goto('/')
+async function createProject(page: Page, initialPath = '/'): Promise<void> {
+  await page.goto(initialPath)
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
@@ -15,7 +15,7 @@ async function createProject(page: Page): Promise<void> {
 async function createProProject(page: Page): Promise<void> {
   await page.goto('/')
   await page.getByRole('button', { name: '+ Novo projeto' }).first().click()
-  await page.getByText('Profissional', { exact: true }).click()
+  await page.getByText('Pro (código)', { exact: true }).click()
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   // Esconde o preview: no PRO ele bota um WebContainer + npm install em
@@ -280,13 +280,11 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(flyout).toContainText('Enquanto estiver rodando')
   })
 
-  test('AIPanel (projeto PRO) mostra badge MOCK por padrão', async ({ page }) => {
-    // A aba IA só existe no modo Código (D2) → projeto profissional.
+  test('Pro standalone não oferece um segundo painel de IA local', async ({ page }) => {
     await createProProject(page)
-    await expect(page.getByRole('tab', { name: 'Console' })).toBeVisible()
-    await page.getByRole('tab', { name: 'IA' }).click()
-    await expect(page.getByText('mock', { exact: true })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Configurar IA' }).first()).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Console', exact: true })).toBeVisible()
+    await expect(page.getByRole('tab', { name: 'IA' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Configurar IA' })).toHaveCount(0)
   })
 
   test('Modo Ponte tem blocos + Monaco + preview', async ({ page }) => {
@@ -295,6 +293,114 @@ test.describe('Sistema Zero Studio — smoke', () => {
     await expect(page.getByRole('tab', { name: 'Console' })).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'index.html' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'script.js' })).toBeVisible()
+  })
+
+  test('Pensa: recolher e abrir preserva editor e histórico', async ({ page }, testInfo) => {
+    test.setTimeout(60_000)
+    await createProject(page, '/?missao=adiada')
+    await expect(
+      page.getByRole('button', { name: 'Mostrar missão de demonstração', exact: true }),
+    ).toBeVisible()
+    await openBridgeScript(page)
+    const codigo = page.locator('.monaco-editor .view-lines').first()
+    const workspace = await page.getByLabel('Espaço de trabalho do Blockly').elementHandle()
+    const monaco = await page.locator('.monaco-editor').first().elementHandle()
+    if (!workspace || !monaco) throw new Error('Editores reais indisponíveis')
+    const mission = page.getByRole('complementary', { name: 'Missão do Pensa', exact: true })
+    await expect(mission).toHaveCount(0)
+    const source = 'document.body.dataset.pensa = "preservado";\n// '
+    const marker = 'controlepensa'
+    await page.keyboard.insertText(source)
+
+    async function sameEditors() {
+      expect(
+        await workspace!.evaluate(
+          (original) =>
+            original.isConnected &&
+            original === document.querySelector('[aria-label="Espaço de trabalho do Blockly"]'),
+        ),
+      ).toBe(true)
+      expect(
+        await monaco!.evaluate(
+          (original) =>
+            original.isConnected && original === document.querySelector('.monaco-editor'),
+        ),
+      ).toBe(true)
+    }
+
+    await codigo.click()
+    await page.keyboard.press('ControlOrMeta+End')
+    // Uma palavra só, como o controle de Undo existente: um grupo de digitação.
+    await page.keyboard.type(marker)
+    await expect(codigo).toContainText(marker)
+
+    // O gesto desfazível precede a chegada: não basta preservar só o histórico posterior.
+    await page.getByRole('button', { name: 'Mostrar missão de demonstração', exact: true }).click()
+    await expect(mission).toBeVisible()
+    await sameEditors()
+    await expect(codigo).toContainText('preservado')
+    await expect(codigo).toContainText(marker)
+    const toggle = mission.getByRole('button', { name: /Fazer o herói pular/ })
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await sameEditors()
+    await expect(codigo).toContainText(marker)
+    await toggle.click()
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true')
+    await sameEditors()
+
+    await page.getByRole('button', { name: 'Remover missão de demonstração', exact: true }).click()
+    await expect(mission).toHaveCount(0)
+    await sameEditors()
+    await page.getByRole('button', { name: 'Mostrar missão de demonstração', exact: true }).click()
+    await expect(mission).toBeVisible()
+    await sameEditors()
+    await expect(codigo).toContainText(marker)
+    await page.getByRole('button', { name: 'Desfazer', exact: true }).click()
+    await expect(codigo).not.toContainText(marker)
+    await expect(codigo).toContainText('preservado')
+    await sameEditors()
+    await page.getByRole('button', { name: 'Refazer', exact: true }).click()
+    await expect(codigo).toContainText(marker)
+
+    const projectId = decodeURIComponent(new URL(page.url()).pathname.split('/editor/')[1] ?? '')
+    expect(projectId).not.toBe('')
+    const savedScript = () =>
+      page.evaluate(async (id) => {
+        const db: IDBDatabase = await new Promise((resolve, reject) => {
+          const request = indexedDB.open('sistema-zero-studio')
+          request.onsuccess = () => resolve(request.result)
+          request.onerror = () => reject(request.error)
+        })
+        try {
+          const stored = await new Promise<{ files?: Record<string, string> } | undefined>(
+            (resolve, reject) => {
+              const request = db
+                .transaction('kv', 'readonly')
+                .objectStore('kv')
+                .get(`sz:v3:project-files:${id}`)
+              request.onsuccess = () => resolve(request.result)
+              request.onerror = () => reject(request.error)
+            },
+          )
+          return stored?.files?.['script.js']?.replace(/\r\n/g, '\n') ?? null
+        } finally {
+          db.close()
+        }
+      }, projectId)
+    await page.getByRole('button', { name: 'Mais opções' }).click()
+    await page.getByRole('menuitem', { name: 'Salvar', exact: true }).click()
+    await expect.poll(savedScript).toBe(source + marker)
+    await page.getByRole('button', { name: 'Sistema Zero Studio', exact: true }).click()
+    await expect(page).toHaveURL('/')
+    await page.getByRole('button', { name: 'Abrir', exact: true }).first().click()
+    await expect(page).toHaveURL(/\/editor\//)
+    // Reabrir é uma montagem intencional; a identidade acima só vale para a sessão aberta.
+    await page.getByRole('button', { name: 'Ponte', exact: true }).click()
+    await page.getByRole('button', { name: 'script.js', exact: true }).first().click()
+    await expect(codigo).toContainText(marker)
+    await expect.poll(savedScript).toBe(source + marker)
+    await page.screenshot({ path: testInfo.outputPath('pensa-editor-source-preserved.png') })
   })
 
   test('Código digitado na Ponte sobrevive à troca IMEDIATA para Blocos', async ({ page }) => {
@@ -381,14 +487,14 @@ test.describe('Sistema Zero Studio — smoke', () => {
   test('Terminal (PRO) aparece como CTA sem quebrar a IDE', async ({ page }) => {
     // A aba Terminal só existe no modo Código (D2) → projeto profissional.
     await createProProject(page)
-    await page.getByRole('tab', { name: 'Terminal' }).click()
+    await page.getByRole('button', { name: 'Terminal', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Carregar terminal real' })).toBeVisible()
   })
 
   test('Terminal real inicializa WebContainer e monta arquivos do projeto', async ({ page }) => {
     test.slow()
     await createProProject(page)
-    await page.getByRole('tab', { name: 'Terminal' }).click()
+    await page.getByRole('button', { name: 'Terminal', exact: true }).click()
     await page.getByRole('button', { name: 'Carregar terminal real' }).click()
 
     await expect(page.locator('.xterm')).toBeVisible({ timeout: 60_000 })

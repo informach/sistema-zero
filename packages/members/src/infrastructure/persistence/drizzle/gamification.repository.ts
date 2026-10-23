@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { ForbiddenError } from '@sistemazero/core/http'
 import {
   and,
   count,
@@ -30,9 +31,11 @@ import {
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  liveCourseBadgeSlugs,
+  liveEncounterBadgeSlugs,
   muralCommenterBadgeSlugs,
-  pensaCycleBadgeSlugs,
-  pensaStageBadgeSlugs,
+  pensaDefinitionBadgeSlugs,
+  pensaProjectBadgeSlugs,
   playsBadgeSlugs,
   quizPerfectBadgeSlugs,
   remixBadgeSlugs,
@@ -71,6 +74,8 @@ import {
 } from '../../../domain/ports/gamification-repository.port'
 import { TROPHY_FOR_BADGE, TROPHY_SHELF_ITEM_ID } from '../../../domain/room/room-catalog'
 import type { Database } from './db'
+import { beginLockedKidsJourneyMilestone } from './kids-journey.repository'
+import { lockLearningOwner } from './learning-owner-lock'
 import { contentMissionOpportunities } from './mission-opportunities'
 import {
   avatarInventory,
@@ -85,7 +90,10 @@ import {
   xpEvents,
 } from './schema'
 import { DrizzleStudioUnlockRepository } from './studio-unlock.repository'
-import { eligibleStudioGrants } from './studio-unlock-eligibility'
+import {
+  eligibleStudioGrants,
+  studioGrantCompletionMatchesCourse,
+} from './studio-unlock-eligibility'
 
 type CoinSourceTypeValue = (typeof coinEvents.sourceType.enumValues)[number]
 
@@ -109,11 +117,12 @@ function entitlementInAudience(audience: CourseAudience) {
   return and(eq(courses.slug, entitlements.courseRef), eq(courses.audience, audience))
 }
 
-function publishedCourseSourceInAudience(audience: CourseAudience) {
+function publishedStudioGrantSourceInAudience(audience: CourseAudience) {
   return and(
     eq(courses.id, xpEvents.sourceId),
     eq(courses.audience, audience),
     eq(courses.status, 'published'),
+    studioGrantCompletionMatchesCourse(),
   )
 }
 
@@ -128,11 +137,40 @@ function activeAudienceAccessPredicate(audience: CourseAudience, now: Date) {
   )
 }
 
+type AwardTransaction = Parameters<Parameters<Database['transaction']>[0]>[0]
+
 export class DrizzleGamificationRepository implements GamificationRepository {
   constructor(private readonly db: Database) {}
 
   async award(input: AwardInput): Promise<AwardResult> {
-    return this.db.transaction(async (tx) => {
+    return this.db.transaction(this.awardOperation(input))
+  }
+
+  /** Infrastructure unit of work: the outbox and award must share one SQL transaction. */
+  async awardInTransaction(tx: AwardTransaction, input: AwardInput): Promise<AwardResult> {
+    return this.awardOperation(input)(tx)
+  }
+
+  private awardOperation(input: AwardInput) {
+    input = structuredClone(input)
+    return async (tx: AwardTransaction) => {
+      // Same ownership/account fence and lock order as learning, journey and purge.
+      // A delivery after deletion is terminally acknowledged without recreating data.
+      try {
+        await lockLearningOwner(tx, { userId: input.userId, accountId: input.accountId })
+      } catch (error) {
+        if (!(error instanceof ForbiddenError)) throw error
+        return {
+          xpAwarded: 0,
+          totalXp: 0,
+          streak: { current: 0, best: 0, extended: false, freezesConsumed: 0 },
+          newEvents: [],
+          badgesUnlocked: [],
+          coinsAwarded: 0,
+          coinBalance: 0,
+          coinsCapped: false,
+        }
+      }
       // Serializa o award POR ALUNO: dois completes simultâneos não correm no
       // read-then-upsert do perfil. Namespace 'gamification:' distinto do lock
       // de quiz ('userId:blockId') — o espaço de advisory locks é global ao
@@ -146,24 +184,34 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // no ledger — o rank do aluno deixa de depender do curso ao vivo, então
       // re-nivelar/apagar o curso depois NUNCA rebaixa o rank. Demais sources não
       // têm degrau (null).
-      const courseMarcoIds = input.events
+      const requestedMarcoIds = input.events
         .filter((e) => e.sourceType === 'course_complete' || e.sourceType === 'course_showcased')
         .map((e) => e.sourceId)
       const tierByCourseId = new Map<
         string,
         { level: CourseLevel; track: CourseTrack; careerSlot: number | null }
       >()
-      if (courseMarcoIds.length > 0) {
+      // Curso AO VIVO nunca gera marco da Jornada (14/10/2026): `course_complete` e
+      // `course_showcased` de um curso `live` são descartados AQUI, numa régua só para todos os
+      // caminhos (conclusão de aula, certificado e o webhook do Mural). O curso ao vivo concluído
+      // vira `live_course_complete` em quem o pede (`awardLessonCompletion`).
+      const liveCourseIds = new Set<string>()
+      if (requestedMarcoIds.length > 0) {
         const tierRows = await tx
           .select({
             id: courses.id,
             level: courses.level,
             track: courses.track,
             careerSlot: courses.careerSlot,
+            modality: courses.modality,
           })
           .from(courses)
-          .where(inArray(courses.id, courseMarcoIds))
+          .where(inArray(courses.id, requestedMarcoIds))
         for (const r of tierRows) {
+          if (r.modality === 'live') {
+            liveCourseIds.add(r.id)
+            continue
+          }
           tierByCourseId.set(r.id, {
             level: r.level,
             track: r.track,
@@ -171,14 +219,55 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           })
         }
       }
+      const [publication] = input.standalonePublicationId
+        ? await tx
+            .select({ id: xpEvents.id })
+            .from(xpEvents)
+            .where(
+              and(
+                eq(xpEvents.userId, input.userId),
+                eq(xpEvents.sourceType, 'studio_published'),
+                eq(xpEvents.sourceId, input.standalonePublicationId),
+              ),
+            )
+            .limit(1)
+        : []
+      const events = (publication ? [] : input.events).filter(
+        (e) =>
+          !(
+            (e.sourceType === 'course_complete' || e.sourceType === 'course_showcased') &&
+            liveCourseIds.has(e.sourceId)
+          ),
+      )
+      const courseMarcoIds = requestedMarcoIds.filter((id) => !liveCourseIds.has(id))
+      // Curriculum rewards are independent from recorded-course journey milestones and product access.
+      const curriculumIds = [
+        ...new Set([
+          ...courseMarcoIds,
+          ...input.events
+            .filter((event) => event.sourceType === 'live_course_complete')
+            .map((event) => event.sourceId),
+        ]),
+      ]
+
+      // Account/owner and gamification locks are already held before every read above.
+      // Add the shared Kids policy only for recorded-course milestones; ordinary XP,
+      // Adult and filtered live milestones remain independent of Kids policy.
+      const reconcileKidsJourney =
+        input.audience === 'kids' && courseMarcoIds.length > 0
+          ? await beginLockedKidsJourneyMilestone(tx, {
+              userId: input.userId,
+              accountId: input.accountId,
+            })
+          : null
 
       // Ledger idempotente: só os eventos realmente NOVOS voltam do RETURNING.
       const newEvents =
-        input.events.length > 0
+        events.length > 0
           ? await tx
               .insert(xpEvents)
               .values(
-                input.events.map((e) => ({
+                events.map((e) => ({
                   id: randomUUID(),
                   userId: input.userId,
                   audience: input.audience,
@@ -203,10 +292,14 @@ export class DrizzleGamificationRepository implements GamificationRepository {
 
       // Freeze the earned curriculum in the SAME transaction as its milestone.
       // Retried events also reconcile existing qualifying courses; no first GET is required.
-      if (courseMarcoIds.length > 0) {
-        const grants = await eligibleStudioGrants(tx, input.userId, input.audience, courseMarcoIds)
+      if (curriculumIds.length > 0) {
+        const grants = await eligibleStudioGrants(tx, input.userId, input.audience, curriculumIds)
         await new DrizzleStudioUnlockRepository(tx).saveGrants(input.userId, input.audience, grants)
       }
+
+      // Same TX and shared version as the milestone, including a deduplicated replay.
+      // Live milestones were filtered above and must not create Kids journey concessions.
+      if (reconcileKidsJourney && courseMarcoIds.length > 0) await reconcileKidsJourney()
 
       // Todas as badges são DERIVADAS do estado (ledger/streak) — sem candidatas
       // do caller (o dedupe do user_badges torna o re-check inócuo).
@@ -268,12 +361,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
       // Badges do PENSA: 1ª etapa concluída (é sempre a Z = 1ª Carta da Ideia) e
       // 1º/3º ciclo lançado — contados pelo ledger, como as demais de maestria.
       if (newEvents.some((e) => e.sourceType === 'pensa_stage_complete')) {
-        for (const slug of pensaStageBadgeSlugs(await countByType('pensa_stage_complete'))) {
+        for (const slug of pensaDefinitionBadgeSlugs(await countByType('pensa_stage_complete'))) {
           badgeCandidates.add(slug)
         }
       }
       if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
-        for (const slug of pensaCycleBadgeSlugs(await countByType('pensa_cycle_complete'))) {
+        for (const slug of pensaProjectBadgeSlugs(await countByType('pensa_cycle_complete'))) {
           badgeCandidates.add(slug)
         }
       }
@@ -334,6 +427,17 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           badgeCandidates.add(slug)
         }
       }
+      // Cursos ao vivo (14/10/2026): 1º encontro recebido e curso ao vivo inteiro concluído.
+      if (newEvents.some((e) => e.sourceType === 'live_encounter')) {
+        for (const slug of liveEncounterBadgeSlugs(await countByType('live_encounter'))) {
+          badgeCandidates.add(slug)
+        }
+      }
+      if (newEvents.some((e) => e.sourceType === 'live_course_complete')) {
+        for (const slug of liveCourseBadgeSlugs(await countByType('live_course_complete'))) {
+          badgeCandidates.add(slug)
+        }
+      }
 
       const [profile] = await tx
         .select()
@@ -346,6 +450,12 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         )
         .limit(1)
 
+      const historical = Boolean(
+        profile?.lastActivityDate && profile.lastActivityDate > input.today,
+      )
+      const lastActivityDate = historical ? profile!.lastActivityDate : input.today
+      const updatedAt =
+        profile?.updatedAt && profile.updatedAt > input.now ? profile.updatedAt : input.now
       const xpAwarded = newEvents.reduce((sum, e) => sum + e.amount, 0)
       let totalXp = profile?.xp ?? 0
       let streak = {
@@ -370,24 +480,28 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         const monthKey = input.today.slice(0, 7)
         const currentFreezes = profile?.streakFreezes ?? 0
         const grantsFreeFreeze =
-          profile?.freezeGrantedMonth !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+          !historical &&
+          (!profile?.freezeGrantedMonth || profile.freezeGrantedMonth < monthKey) &&
+          currentFreezes < MAX_STREAK_FREEZES
         const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
         // Avança o marcador só quando o grátis entrou; senão PRESERVA o anterior p/ o
         // benefício continuar disponível numa atividade futura em que haja espaço no teto.
         const freezeGrantedMonthNext = grantsFreeFreeze
           ? monthKey
           : (profile?.freezeGrantedMonth ?? null)
-        streak = advanceStreak(
-          {
-            streakCurrent: profile?.streakCurrent ?? 0,
-            streakBest: profile?.streakBest ?? 0,
-            lastActivityDate: profile?.lastActivityDate ?? null,
-            freezes: freezesBefore,
-            vacationFrom: profile?.vacationFrom ?? null,
-            vacationTo: profile?.vacationTo ?? null,
-          },
-          input.today,
-        )
+        streak = historical
+          ? streak
+          : advanceStreak(
+              {
+                streakCurrent: profile?.streakCurrent ?? 0,
+                streakBest: profile?.streakBest ?? 0,
+                lastActivityDate: profile?.lastActivityDate ?? null,
+                freezes: freezesBefore,
+                vacationFrom: profile?.vacationFrom ?? null,
+                vacationTo: profile?.vacationTo ?? null,
+              },
+              input.today,
+            )
         const freezesAfter = freezesBefore - streak.freezesConsumed
         totalXp += xpAwarded
 
@@ -413,8 +527,32 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             }))
           : []
         // Teto diário: reseta o acumulado se virou o dia civil SP; aplica só à rotina.
-        const earnedTodayBase =
-          profile?.coinsEarnedDate === input.today ? (profile?.coinsEarnedToday ?? 0) : 0
+        const historicalWallet = Boolean(
+          profile?.coinsEarnedDate && profile.coinsEarnedDate > input.today,
+        )
+        const [historicalCoins] = historicalWallet
+          ? await tx
+              .select({ total: sum(coinEvents.amount) })
+              .from(coinEvents)
+              .where(
+                and(
+                  eq(coinEvents.userId, input.userId),
+                  eq(coinEvents.audience, input.audience),
+                  inArray(
+                    coinEvents.sourceType,
+                    Object.values(COIN_TYPE_FOR_XP).filter(
+                      (value): value is CoinSourceTypeValue => value !== undefined,
+                    ),
+                  ),
+                  sql`(${coinEvents.createdAt} at time zone 'America/Sao_Paulo')::date = ${input.today}::date`,
+                ),
+              )
+          : []
+        const earnedTodayBase = historicalWallet
+          ? Number(historicalCoins?.total ?? 0)
+          : profile?.coinsEarnedDate === input.today
+            ? (profile.coinsEarnedToday ?? 0)
+            : 0
         const cap = applyDailyCap(
           routine.map((c) => c.amount),
           earnedTodayBase,
@@ -503,16 +641,16 @@ export class DrizzleGamificationRepository implements GamificationRepository {
             xp: totalXp,
             streakCurrent: streak.current,
             streakBest: streak.best,
-            lastActivityDate: input.today,
+            lastActivityDate,
             privileged: input.privileged,
             coinBalance,
-            coinsEarnedToday: earnedTodayNext,
-            coinsEarnedDate: input.today,
+            coinsEarnedToday: historicalWallet ? profile!.coinsEarnedToday : earnedTodayNext,
+            coinsEarnedDate: historicalWallet ? profile!.coinsEarnedDate : input.today,
             lifetimeCoinsEarned: newLifetime,
             streakFreezes: freezesAfter,
             freezeGrantedMonth: freezeGrantedMonthNext,
             createdAt: input.now,
-            updatedAt: input.now,
+            updatedAt,
           })
           .onConflictDoUpdate({
             target: [gamificationProfiles.userId, gamificationProfiles.audience],
@@ -524,15 +662,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
               xp: totalXp,
               streakCurrent: streak.current,
               streakBest: streak.best,
-              lastActivityDate: input.today,
+              lastActivityDate,
               privileged: input.privileged,
               coinBalance,
-              coinsEarnedToday: earnedTodayNext,
-              coinsEarnedDate: input.today,
+              coinsEarnedToday: historicalWallet ? profile!.coinsEarnedToday : earnedTodayNext,
+              coinsEarnedDate: historicalWallet ? profile!.coinsEarnedDate : input.today,
               lifetimeCoinsEarned: newLifetime,
               streakFreezes: freezesAfter,
               freezeGrantedMonth: freezeGrantedMonthNext,
-              updatedAt: input.now,
+              updatedAt,
             },
           })
         for (const slug of streakBadgeSlugs(streak.current)) badgeCandidates.add(slug)
@@ -593,7 +731,7 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         coinBalance,
         coinsCapped,
       }
-    })
+    }
   }
 
   async spendCoins(input: SpendCoinsInput): Promise<SpendCoinsResult> {
@@ -901,6 +1039,30 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     return result
   }
 
+  async listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>> {
+    const events = await this.db
+      .select({ courseId: xpEvents.sourceId, type: xpEvents.sourceType })
+      .from(xpEvents)
+      .where(
+        and(
+          eq(xpEvents.userId, userId),
+          eq(xpEvents.audience, audience),
+          inArray(xpEvents.sourceType, ['course_complete', 'course_showcased']),
+        ),
+      )
+    const milestones = new Map<string, CourseMilestones>()
+    for (const event of events) {
+      const value = milestones.get(event.courseId) ?? { completed: false, showcased: false }
+      if (event.type === 'course_complete') value.completed = true
+      if (event.type === 'course_showcased') value.showcased = true
+      milestones.set(event.courseId, value)
+    }
+    return milestones
+  }
+
   /** Uma consulta, um snapshot: a trava e os selos nunca observam versões diferentes do ledger. */
   async listJourneyCourseState(
     userId: string,
@@ -971,9 +1133,8 @@ export class DrizzleGamificationRepository implements GamificationRepository {
   }
 
   /**
-   * Blocos liberados pelos cursos ELEGÍVEIS: bônus Kids precisa só de
-   * `course_complete`; curso Kids com posição e curso Adult precisam também de
-   * `course_showcased`. Lê `courses.metadata.studioUnlockBlocks`.
+   * Recorded Kids courses with a position need completion + Mural; bonus Kids and Adult
+   * need completion. Live courses need their own live_course_complete, without Mural.
    * ⚠️ `courses` entra por INNER join (≠ do `listQualifyingJourneySlots`, que usa LEFT):
    * aqui o dado vem do curso VIVO, então curso apagado simplesmente não contribui —
    * quem impede a perda é o snapshot em `studio_block_grants`. Bônus e `lenda` CONTAM
@@ -990,8 +1151,11 @@ export class DrizzleGamificationRepository implements GamificationRepository {
     const showcased = alias(xpEvents, 'studio_revision_sc')
     const eligible =
       audience === 'kids'
-        ? and(isNotNull(courses.id), or(isNull(courses.careerSlot), isNotNull(showcased.id)))
-        : and(isNotNull(courses.id), isNotNull(showcased.id))
+        ? and(
+            isNotNull(courses.id),
+            or(eq(courses.modality, 'live'), isNull(courses.careerSlot), isNotNull(showcased.id)),
+          )
+        : isNotNull(courses.id)
     const rows = await this.db
       .select({
         courseId: xpEvents.sourceId,
@@ -1000,9 +1164,10 @@ export class DrizzleGamificationRepository implements GamificationRepository {
         courseUpdatedAt: courses.updatedAt,
         liveCourseId: courses.id,
         careerSlot: courses.careerSlot,
+        modality: courses.modality,
       })
       .from(xpEvents)
-      .leftJoin(courses, publishedCourseSourceInAudience(audience))
+      .leftJoin(courses, publishedStudioGrantSourceInAudience(audience))
       .leftJoin(
         showcased,
         and(
@@ -1012,21 +1177,15 @@ export class DrizzleGamificationRepository implements GamificationRepository {
           eq(showcased.sourceId, xpEvents.sourceId),
         ),
       )
-      .where(
-        and(
-          eq(xpEvents.userId, userId),
-          eq(xpEvents.audience, audience),
-          eq(xpEvents.sourceType, 'course_complete'),
-          eligible,
-        ),
-      )
+      .where(and(eq(xpEvents.userId, userId), eq(xpEvents.audience, audience), eligible))
 
     return studioUnlockRevision(
       rows.map((row) => ({
         courseId: row.courseId,
         completedAt: row.completedAt,
         showcasedAt:
-          audience === 'kids' && row.liveCourseId !== null && row.careerSlot === null
+          (audience === 'adult' || row.modality === 'live' || row.careerSlot === null) &&
+          row.liveCourseId !== null
             ? null
             : row.showcasedAt,
         courseUpdatedAt: row.courseUpdatedAt,

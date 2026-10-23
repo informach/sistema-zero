@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { KIDS_SCREEN_BAND } from '@/components/kids/kids-screen'
 import { KidsMascot } from '@/components/kids/mascot'
-import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
+import { comunidadeContinuarUrl } from '@/lib/links'
 import { endRenovationVisits } from '@/lib/platform-renovation-visit'
 import { KidsRecado } from './kids-recado'
 
@@ -118,7 +118,7 @@ export function ProfilesNotIncluded() {
           // do `KidsLockedProduct`). Dividir a linha com os secundários espremia a pílula.
           <div className="flex w-full flex-col items-stretch gap-3">
             <a
-              href={COMUNIDADE_OFERTA_URL}
+              href={comunidadeContinuarUrl('perfis-nao-incluidos')}
               target="_blank"
               rel="noopener noreferrer"
               // Altura MÍNIMA, não fixa: o rótulo é longo e, no celular, quebra em duas

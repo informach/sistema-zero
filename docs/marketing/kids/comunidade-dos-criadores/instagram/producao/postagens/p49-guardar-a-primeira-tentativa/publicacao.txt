@@ -1,0 +1,12 @@
+P49 · Guardar a primeira tentativa
+Imagem única · Segunda publicação da semana 8 · W19 · Tradução de criança
+
+Arquivo: 01-p49.png, 1080 × 1350, proporção 4:5, sRGB.
+Legenda: legenda.txt. Texto alternativo: texto-alternativo.txt.
+CTA na legenda: seguir o perfil. Sem palavra-chave ou ManyChat.
+
+Duas capturas reais de um jogo demonstrativo da equipe, executado no Jogo 2D do Estúdio. Não é projeto ou resultado de um aluno. O cenário e a raposa são assets novos, gerados pela ferramenta nativa de imagens; foram incorporados ao jogo antes da captura. Não há retrato de pessoa real ou fictícia nesta peça.
+Na primeira versão a raposa anda. A segunda acrescenta o comando de pular. Cenário, personagem, caixa, posições iniciais e demais regras são iguais. As linhas pontilhadas acompanham posições medidas nas execuções. Cada captura mostra um instante escolhido para tornar a ação visível.
+Guardar uma foto ou um vídeo é a orientação da legenda. A postagem não anuncia histórico automático de versões na plataforma. A autoria da demonstração está na legenda e no texto alternativo, sem rodapé técnico na arte.
+
+Não publicado nem agendado. Próxima imagem única: P53, segunda publicação da semana 10.

@@ -3,7 +3,7 @@ import { Texto } from './scene-canvas'
 
 /**
  * As frases do `aviso` do jogo do Farol, as MESMAS do projeto que a criança monta
- * (`docs/aulas-interativas/qa/desafio-farol-projeto.ts`). A cena mostra o que o jogo dela vai mostrar.
+ * (`docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`). A cena mostra o que o jogo dela vai mostrar.
  */
 export const AVISOS_DO_FAROL = {
   inicio: 'Encontre a chave e vá ao farol.',
@@ -38,7 +38,7 @@ export function AvisoDoFarol({ texto }: { texto: string }) {
   )
 }
 
-/** As famílias de bloco do Estúdio, nas cores do Caderno do Aluno (evento, Jogo 2D, Programação). */
+/** As famílias de bloco do Estúdio, nas cores do Passo a passo do projeto (evento, Jogo 2D, Programação). */
 type BlocoDaRegra = 'evento' | 'jogo' | 'programa'
 
 export type PassoDaRegra = {

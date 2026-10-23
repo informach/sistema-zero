@@ -1,0 +1,338 @@
+---
+// Página de oferta do Desafio do Primeiro Jogo para adultos (`pro/desafio-primeiro-jogo`, proposta
+// aprovada de 21/10/2026, quadro DesafioAdulto). Copy em `desafio-adulto/oferta/pagina.ts`; veste o
+// tema arcade da página adulta da Comunidade (layout `.cda` em comunidade-adulto.css, tokens em
+// theme-arcade.css) e as peças próprias do Desafio em desafio-adulto.css. Pagamento único: o
+// preço vem do catálogo pela rota, com o cupom já cotado (a mesma regra das páginas Kids).
+import atkinsonCorpo from '@fontsource/atkinson-hyperlegible-next/files/atkinson-hyperlegible-next-latin-400-normal.woff2?url'
+import bricolageTitulo from '@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2?url'
+import silkscreenPixel from '@fontsource/silkscreen/files/silkscreen-latin-400-normal.woff2?url'
+import '../../../styles/comunidade-adulto.css'
+import '../../../styles/desafio-adulto.css'
+import { PAGINA_DESAFIO_ADULTO as P } from '../../../funnels/desafio-adulto/oferta/pagina'
+import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
+import PreCheckoutModal from '../../../islands/PreCheckoutModal'
+import BaseLayout from '../../../layouts/BaseLayout.astro'
+import { funnelLinkWithAttribution } from '../../../lib/lead-attribution'
+import { funnelOgImage } from '../../../lib/seo'
+import { getDeps } from '../../../server/deps'
+import type { OfferPageData } from '../../../server/offer-page'
+import Footer from '../../Footer.astro'
+import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import DesafioIcone from './DesafioIcone.astro'
+
+type Props = OfferPageData['bodyProps']
+const { f, productName, priceReais, ofertaUrl, coupon } = Astro.props
+const preco = precoDoDesafio(priceReais, coupon)
+const fill = (texto: string) => preencherPreco(texto, preco)
+const img = (src: string) => `/img/${src}`
+const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
+const contaUrl = getDeps().env.COMMUNITY_URL
+const tela = P.hero.tela
+
+const CORES_FASES = ['azul', 'rosa', 'verde', 'amarelo']
+const ICONES_FASES = ['setas', 'chave', 'farol', 'certificado'] as const
+const ICONES_GANHA = ['porta', 'planejar', 'tentar', 'estrela'] as const
+const CORES_GANHA = ['amarelo', 'verde', 'azul', 'rosa']
+const CORES_PERFIS = ['amarelo', 'rosa', 'azul']
+const CAMINHO = [
+  { icone: 'farol', cor: 'amarelo' },
+  { icone: 'play', cor: 'azul' },
+  { icone: 'lampada', cor: 'rosa' },
+] as const
+---
+
+<BaseLayout title={P.seoTitle} description={P.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-arcade">
+  <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={img(P.capa)} />
+  {[bricolageTitulo, atkinsonCorpo, silkscreenPixel].map((href) => <link slot="head" rel="preload" as="font" href={href} type="font/woff2" crossorigin="anonymous" />)}
+  <link slot="head" rel="preload" as="image" href={img(tela.imagem.src)} fetchpriority="high" />
+  <div class="cda da">
+    <a class="cda-pular" href="#conteudo">{P.topo.pular}</a>
+    <header class="cda-topo">
+      <div class="cda-wrap cda-topo__linha">
+        <a class="cda-topo__marca" href="#topo" aria-label={P.topo.marcaAria}>
+          <img src="/logo_dark.svg" alt={P.topo.logoAlt} width="515" height="44" decoding="async" />
+          <span class="cda-topo__selo">{P.topo.selo}</span>
+        </a>
+        <nav class="cda-topo__nav" aria-label={P.topo.navAria}>
+          {P.topo.links.map((l) => <a class="cda-topo__link" href={l.href}>{l.label}</a>)}
+          <a class="cda-btn cda-btn--compacta" href="#oferta" data-analytics-id="desafio-adulto-topo-oferta">{P.topo.cta}</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="cda-secao cda-hero" aria-labelledby="da-titulo" data-analytics-id="desafio-adulto-hero">
+        <div class="cda-wrap cda-hero__grade">
+          <div class="cda-hero__texto">
+            <p class="cda-rotulo cor-verde">{P.hero.rotulo}<span class="cda-pisca" aria-hidden="true">_</span></p>
+            <h1 id="da-titulo" class="cda-h1">{P.hero.titulo.antes}<span class="cda-destaque">{P.hero.titulo.destaque}</span>{P.hero.titulo.depois}</h1>
+            <p class="cda-hero__lead">{P.hero.texto}</p>
+            <ul class="cda-checks">
+              {P.hero.beneficios.map((b) => (
+                <li><svg class="cda-check" aria-hidden="true" width="22" height="22" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg><span>{b}</span></li>
+              ))}
+            </ul>
+            <div class="da-acoes">
+              <a class="cda-btn cda-btn--grande" href="#oferta" data-analytics-id="desafio-adulto-hero-oferta">{P.cta}</a>
+              <a class="da-link" href="#jogo">{P.hero.linkSecundario}</a>
+            </div>
+            <p class="cda-garantia">{fill(P.condicoes)}</p>
+          </div>
+          <div class="da-hero__visual">
+            <figure class="da-tela">
+              <div class="da-tela__barra"><span>{tela.rotulo}</span><span>{tela.jogador}</span></div>
+              <img src={img(tela.imagem.src)} alt={tela.imagem.alt} width={tela.imagem.width} height={tela.imagem.height} loading="eager" decoding="async" fetchpriority="high" />
+              <figcaption class="cda-legenda">{tela.legenda}</figcaption>
+            </figure>
+            <span class="da-faixa">{P.hero.faixa}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cda-secao cda-secao--fundo-2" aria-labelledby="da-jeitos" data-analytics-id="desafio-adulto-jeitos">
+        <div class="cda-wrap da-pilha">
+          <div class="cda-cabeca cda-cabeca--larga">
+            <h2 id="da-jeitos" class="cda-h2">{P.jeitos.titulo}</h2>
+            <p class="cda-suave">{P.jeitos.texto}</p>
+          </div>
+          <div class="da-jeitos">
+            <div class="da-jeito">
+              <svg class="da-ilustra" role="img" aria-label={P.jeitos.so.alt} viewBox="0 0 300 190"><rect class="da-f-linha-forte" x="105" y="6" width="90" height="176" rx="14"></rect><rect class="da-f-fundo" x="113" y="20" width="74" height="146" rx="6"></rect><rect class="da-f-cinza" x="121" y="30" width="58" height="30"></rect><rect class="da-f-cinza" x="121" y="66" width="58" height="30"></rect><rect class="da-f-cinza" x="121" y="102" width="58" height="30"></rect><rect class="da-f-cinza" x="121" y="138" width="58" height="22"></rect><path class="da-s-apoio" d="M225 50 v40 M215 78 l10 12 l10 -12 M225 104 v40 M215 132 l10 12 l10 -12" stroke-width="5" fill="none" stroke-linecap="square"></path></svg>
+              <h3 class="da-jeito__titulo">{P.jeitos.so.titulo}</h3>
+              <p>{P.jeitos.so.texto}</p>
+            </div>
+            <div class="da-jeito da-jeito--fazer">
+              <svg class="da-ilustra" role="img" aria-label={P.jeitos.fazer.alt} viewBox="0 0 300 190"><rect class="da-f-carta da-s-azul" x="20" y="30" width="260" height="150" stroke-width="4"></rect><rect class="da-f-rosa" x="36" y="48" width="96" height="20"></rect><rect class="da-f-dourado" x="48" y="74" width="96" height="20"></rect><rect class="da-f-amarelo" x="48" y="100" width="80" height="20"></rect><rect class="da-f-rosa" x="36" y="126" width="96" height="20"></rect><path class="da-f-rosa" d="M210 54 l10 16 h-20 z"></path><path class="da-f-texto" d="M202 70 h16 l5 86 h-26 z"></path><path class="da-s-rosa" d="M201 92 h18 M199 118 h22 M198 142 h24" stroke-width="6"></path><path class="da-s-amarelo" d="M180 64 l-16 -6 M240 64 l16 -6 M178 82 h-16 M242 82 h16" stroke-width="5" stroke-linecap="square"></path><path class="da-f-amarelo" d="M150 0 a14 14 0 0 1 8 25 l0 6 l-16 0 l0 -6 a14 14 0 0 1 8 -25 z"></path></svg>
+              <h3 class="da-jeito__titulo">{P.jeitos.fazer.titulo}</h3>
+              <p>{P.jeitos.fazer.texto}</p>
+            </div>
+          </div>
+          <p class="da-frase">{P.jeitos.frase}</p>
+        </div>
+      </section>
+
+      <section id="jogo" class="cda-secao" aria-labelledby="da-jogo" data-analytics-id="desafio-adulto-farol">
+        <div class="cda-wrap da-pilha">
+          <div class="cda-cabeca cda-cabeca--larga">
+            <p class="cda-rotulo cor-verde">{P.jogo.rotulo}</p>
+            <h2 id="da-jogo" class="cda-h2">{P.jogo.titulo}</h2>
+          </div>
+          <ol class="da-fases">
+            {P.jogo.fases.map((fase, i) => (
+              <li class:list={['da-fase', `cor-${CORES_FASES[i]}`, { 'da-fase--fim': i === P.jogo.fases.length - 1 }]}>
+                <span class="cda-rotulo cda-rotulo--pequeno">{fase.rotulo}</span>
+                <span class="da-fase__icone" aria-hidden="true"><DesafioIcone nome={ICONES_FASES[i]!} tamanho={48} /></span>
+                <h3 class="da-fase__titulo">{fase.titulo}</h3>
+                <p class="da-fase__texto">{fase.texto}</p>
+              </li>
+            ))}
+          </ol>
+          <div class="da-blocos">
+            <img src={img(P.jogo.blocos.imagem.src)} alt={P.jogo.blocos.imagem.alt} width={P.jogo.blocos.imagem.width} height={P.jogo.blocos.imagem.height} loading="lazy" decoding="async" />
+            <div class="cda-cabeca">
+              <h3 class="cda-h3">{P.jogo.blocos.titulo}</h3>
+              {P.jogo.blocos.paragrafos.map((p) => <p class="cda-suave">{p}</p>)}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="aula" class="cda-secao cda-secao--fundo-2" aria-labelledby="da-aula" data-analytics-id="desafio-adulto-aula">
+        <div class="cda-wrap da-pilha">
+          <div class="cda-cabeca cda-cabeca--larga">
+            <p class="cda-rotulo cor-verde">{P.aula.rotulo}</p>
+            <h2 id="da-aula" class="cda-h2">{P.aula.titulo}</h2>
+          </div>
+          <ol class="da-passos">
+            {P.aula.passos.map((passo) => (
+              <li>
+                <figure class="da-passo">
+                  <img src={img(passo.imagem.src)} alt={passo.imagem.alt} width={passo.imagem.width} height={passo.imagem.height} loading="lazy" decoding="async" />
+                  <figcaption><strong>{passo.titulo}</strong><span>{passo.texto}</span></figcaption>
+                </figure>
+              </li>
+            ))}
+          </ol>
+          <p class="cda-legenda">{P.aula.nota}</p>
+        </div>
+      </section>
+
+      <section class="cda-secao" aria-labelledby="da-ganha" data-analytics-id="desafio-adulto-ganha">
+        <div class="cda-wrap da-pilha">
+          <div class="cda-cabeca cda-cabeca--larga">
+            <p class="cda-rotulo cor-verde">{P.ganha.rotulo}</p>
+            <h2 id="da-ganha" class="cda-h2">{P.ganha.titulo}</h2>
+          </div>
+          <ul class="da-habilidades">
+            {P.ganha.habilidades.map((h, i) => (
+              <li class:list={['da-habilidade', `cor-${CORES_GANHA[i]}`]}>
+                <span class="da-habilidade__icone" aria-hidden="true"><DesafioIcone nome={ICONES_GANHA[i]!} tamanho={44} /></span>
+                <h3 class="da-habilidade__titulo">{h.titulo}</h3>
+                <p class="da-habilidade__texto">{h.texto}</p>
+              </li>
+            ))}
+          </ul>
+          <div class="da-faixa-texto">
+            <strong>{P.ganha.faixa.titulo}</strong>
+            <span>{P.ganha.faixa.texto}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="cda-secao cda-secao--fundo-2" aria-labelledby="da-quem" data-analytics-id="desafio-adulto-quem">
+        <div class="cda-wrap cda-dupla">
+          <div class="cda-cabeca da-quem">
+            <p class="cda-rotulo cor-verde">{P.quem.rotulo}</p>
+            <h2 id="da-quem" class="cda-h2">{P.quem.titulo}</h2>
+            <ul class="da-perfis">
+              {P.quem.perfis.map((perfil, i) => (
+                <li class={`cor-${CORES_PERFIS[i]}`}><span class="cda-rotulo">{perfil.marca}</span><span>{perfil.texto}</span></li>
+              ))}
+            </ul>
+            <p class="cda-suave">{P.quem.requisito}</p>
+          </div>
+          <figure class="da-caderno">
+            <img src={img(P.quem.caderno.imagem.src)} alt={P.quem.caderno.imagem.alt} width={P.quem.caderno.imagem.width} height={P.quem.caderno.imagem.height} loading="lazy" decoding="async" />
+            <figcaption class="cda-legenda">{P.quem.caderno.legenda}</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="cda-secao" aria-labelledby="da-fundadores" data-analytics-id="desafio-adulto-fundadores">
+        <div class="cda-wrap cda-dupla cda-dupla--fundadores">
+          <figure class="cda-fundadores__foto">
+            <img src={img(P.fundadores.imagem.src)} alt={P.fundadores.imagem.alt} width={P.fundadores.imagem.width} height={P.fundadores.imagem.height} loading="lazy" decoding="async" />
+          </figure>
+          <div class="cda-cabeca">
+            <p class="cda-rotulo cor-verde">{P.fundadores.rotulo}</p>
+            <h2 id="da-fundadores" class="cda-h2 cda-h2--menor">{P.fundadores.titulo}</h2>
+            {P.fundadores.paragrafos.map((p) => <p class="cda-suave">{p}</p>)}
+          </div>
+        </div>
+      </section>
+
+      <section id="oferta" class="cda-secao cda-secao--grade" aria-labelledby="da-oferta" data-analytics-id="desafio-adulto-oferta">
+        <div class="cda-wrap cda-dupla cda-dupla--oferta">
+          <div class="cda-cabeca cda-cabeca--oferta">
+            <p class="cda-rotulo cor-verde">{P.oferta.rotulo}<span class="cda-pisca" aria-hidden="true">_</span></p>
+            <h2 id="da-oferta" class="cda-h2 cda-h2--oferta">{P.oferta.titulo}</h2>
+            {preco.aviso && <p class:list={['cda-cupom', { 'cda-cupom--alerta': preco.aviso.alerta }]} role={preco.aviso.alerta ? 'alert' : undefined}>{preco.aviso.texto}</p>}
+            <div class="cda-caixa cda-caixa--depois">
+              <h3 class="cda-rotulo cda-rotulo--pequeno cor-verde">{P.oferta.depoisTitulo}</h3>
+              <ol class="cda-depois">
+                {P.oferta.depois.map((passo, i) => <li><span class="cda-depois__numero" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span><span>{passo}</span></li>)}
+              </ol>
+            </div>
+            <p class="da-ja-tem">{P.oferta.jaTem} <a href={contaUrl} data-analytics-id="desafio-adulto-acesso-existente">{P.oferta.jaTemLink}</a></p>
+          </div>
+          <div class="da-cartao">
+            <span class="da-cartao__selo">{P.oferta.selo}</span>
+            <p class="da-cartao__preco">{preco.precoCheio && <s class="da-cheio">{preco.precoCheio}</s>}{preco.preco}<span> {P.oferta.sufixo}</span></p>
+            <p class="cda-suave">{fill(P.oferta.porDia)}</p>
+            <ul class="cda-checks cda-checks--cartao" aria-label={P.oferta.incluiLabel}>
+              {P.oferta.inclui.map((item) => (
+                <li><svg class="cda-check" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></svg><span>{item}</span></li>
+              ))}
+            </ul>
+            <button type="button" class="cda-btn cda-btn--grande da-cartao__btn" data-checkout-cta data-analytics-id="desafio-adulto-oferta-comprar">{P.cta}</button>
+            <p class="da-cartao__garantia"><DesafioIcone nome="escudo" tamanho={24} /><span>{P.oferta.garantia}</span></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="cda-secao cda-secao--fundo-2" aria-labelledby="da-caminho" data-analytics-id="desafio-adulto-continuidade">
+        <div class="cda-wrap da-pilha">
+          <div class="cda-cabeca">
+            <p class="cda-rotulo cor-verde">{P.caminho.rotulo}</p>
+            <h2 id="da-caminho" class="cda-h2">{P.caminho.titulo}</h2>
+          </div>
+          <ol class="da-caminho">
+            {P.caminho.passos.map((passo, i) => (
+              <li class:list={['da-caminho__passo', `cor-${CAMINHO[i]!.cor}`]}>
+                <span class="da-caminho__icone" aria-hidden="true"><DesafioIcone nome={CAMINHO[i]!.icone} tamanho={40} /></span>
+                <strong>{passo.titulo}</strong>
+                <span>{passo.texto}</span>
+              </li>
+            ))}
+          </ol>
+          <p class="cda-suave">{P.caminho.texto} <a class="da-link" href={link('/pro/comunidade-dos-criadores/oferta')} data-analytics-id="desafio-adulto-comunidade">{P.caminho.link}</a></p>
+        </div>
+      </section>
+
+      <section id="duvidas" class="cda-secao" aria-labelledby="da-duvidas" data-analytics-id="desafio-adulto-duvidas">
+        <div class="cda-wrap cda-duvidas">
+          <h2 id="da-duvidas" class="cda-h2 cda-h2--duvidas">{P.duvidas.titulo}</h2>
+          {P.duvidas.itens.map((item) => (
+            <details class="cda-duvida">
+              <summary>{item.pergunta}</summary>
+              <p>{fill(item.resposta)}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section class="cda-fechamento" aria-labelledby="da-fim" data-analytics-id="desafio-adulto-convite">
+        <div class="cda-wrap cda-fechamento__corpo">
+          <h2 id="da-fim" class="cda-h2 cda-h2--fechamento">{P.fechamento.titulo}</h2>
+          <p class="cda-suave cda-fechamento__texto">{fill(P.fechamento.texto)}</p>
+          <button type="button" class="cda-btn cda-btn--grande cda-btn--larga" data-checkout-cta data-analytics-id="desafio-adulto-convite-comprar">{P.fechamento.cta}</button>
+        </div>
+        <nav class="cda-legal" aria-label={P.fechamento.legal.aria}>
+          <div class="cda-wrap cda-legal__linha">
+            <a href={P.fechamento.legal.termos.href}>{P.fechamento.legal.termos.label}</a>
+            <a href={P.fechamento.legal.privacidade.href}>{P.fechamento.legal.privacidade.label}</a>
+          </div>
+        </nav>
+      </section>
+    </main>
+
+    <div class="cda-barra" data-cda-barra aria-hidden="true">
+      <p class="cda-barra__preco"><strong>{preco.preco}</strong><span>{P.barra.sufixo}</span></p>
+      <a class="cda-btn cda-btn--barra" href="#oferta" tabindex="-1">{P.barra.cta}</a>
+    </div>
+  </div>
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />
+</BaseLayout>
+
+<script>
+  // Barra fixa do celular (a mesma da página adulta da Comunidade): aparece depois da primeira dobra
+  // e some com a oferta ou o rodapé à vista. Sem JS ela nasce escondida e `aria-hidden`.
+  const barra = document.querySelector<HTMLElement>('[data-cda-barra]')
+  const oferta = document.getElementById('oferta')
+  const rodape = document.querySelector('footer')
+  if (barra && oferta && 'IntersectionObserver' in window) {
+    const link = barra.querySelector('a')
+    let ofertaAVista = false
+    let rodapeAVista = false
+    let roladoAlemDaDobra = false
+    let ultimo: boolean | null = null
+    const aplicar = () => {
+      const mostra = roladoAlemDaDobra && !ofertaAVista && !rodapeAVista
+      if (mostra === ultimo) return
+      ultimo = mostra
+      barra.classList.toggle('is-visible', mostra)
+      barra.setAttribute('aria-hidden', mostra ? 'false' : 'true')
+      link?.setAttribute('tabindex', mostra ? '0' : '-1')
+    }
+    new IntersectionObserver(
+      ([e]) => {
+        ofertaAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      },
+      { rootMargin: '0px 0px -40% 0px' },
+    ).observe(oferta)
+    if (rodape)
+      new IntersectionObserver(([e]) => {
+        rodapeAVista = Boolean(e?.isIntersecting)
+        aplicar()
+      }).observe(rodape)
+    const aoRolar = () => {
+      roladoAlemDaDobra = window.scrollY > window.innerHeight * 0.9
+      aplicar()
+    }
+    window.addEventListener('scroll', aoRolar, { passive: true })
+    aoRolar()
+  }
+</script>

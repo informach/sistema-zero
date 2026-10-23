@@ -21,7 +21,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > da oferta com expand → backfill → constraints, ver Invariantes da oferta). Seed
 > (`scripts/seed.ts`): **No Comando da IA** (ebook, R$37) · **Estúdio Completo** (kids, R$97 —
 > **`kind: 'tool'`/Ferramenta**, entrega `accessType:'community'` courseRef `estudio-completo`; o seed
-> RECONCILIA o kind legado `community`→`tool` de forma idempotente) · **Pensa** (kids, R$97 —
+> apenas relata diferenças de kind, preservando a autoria existente) · **Pensa** (kids, R$97 —
 > `kind: 'tool'`, entrega `community` courseRef `pensa`; o app de PLANEJAMENTO guiado/metodologia
 > ZERO — a chave casa com o gate do members no create de projeto do Pensa e com o
 > `/members/access?refs=pensa` da página `/pensa`; oferta padrão `pensa`, ajustável no painel —
@@ -60,7 +60,24 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > ligadas por `content.altOffer` nos DOIS sentidos, ambas com `maxProfiles: 2` + `guaranteeDays: 7`
 > e SEM cupom/parcelas — a MENSAL é a oferta do funil `/kids/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`); o `maxProfiles` é injetado no fulfillment do
-> componente PRIMÁRIO (a chave-mestra) pelo `getEntitlements`. ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
+> componente PRIMÁRIO (a chave-mestra) pelo `getEntitlements`. **Comunidade dos Criadores ADULTA**
+> (`comunidade-dos-criadores-adulto`, 20/10/2026 — combo com as chaves ADULTAS de
+> `docs/plans/2026-10-18-comunidade-adulta-operacao.md`): chave-mestra **`todos-os-cursos-adultos`**
+> (`all_courses`, `sellable:false`, `isPrimary`; não concede vaga em oficina) + ferramentas
+> `adult-estudio-completo`, `adult-pinta`, `adult-molda`, `adult-pensa` (`kind:'tool'`, entrega
+> `community`, as chaves de `creativeToolAccessRef` do core; sem oferta própria) + espaços
+> `adult-clube-dos-criadores` e `adult-mural-dos-criadores` **+ 2 ofertas irmãs ativas**
+> `comunidade-dos-criadores-adulto-mensal` (R$ 97, intervalo 1) e `-anual` (R$ 797, intervalo 12,
+> compareAt R$ 1.164), `altOffer` nos dois sentidos, garantia 7 dias, SEM `maxProfiles`/cupom/parcelas
+> — a MENSAL é a oferta do funil `/pro/comunidade-dos-criadores`
+> (env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`). Preço inicial igual ao Kids (decisão da dona).
+> **Desafio do Primeiro Jogo ADULTO** (`desafio-primeiro-jogo-adulto`, 21/10/2026 — `kind:'course'`,
+> courseRef `desafio-primeiro-jogo-adulto`) **+ oferta ATIVA `desafio-primeiro-jogo-adulto-30-dias`**, a
+> MESMA do Kids (R$ 67, `one_time`/`fixed`/30 dias, garantia 7, `allowsCoupon`) com o Mural ADULTO
+> completo como item — a oferta do funil `/pro/desafio-primeiro-jogo`
+> (env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO`). O members concede o Mural adulto visitante depois do prazo.
+> A compra adulta não amplia direito Kids e vice-versa; a jornada adulta (Admin → Professor →
+> Jornada adulta) decide quando cada ferramenta abre. ⚠️ A CHAVE de comunidade (= slug) casa com o `accessConfig`
 > `community_gated` do servidor homônimo no hub e com o `/members/access`. **`tool` é só TAXONOMIA do
 > produto** — a entrega/acesso segue por `fulfillment.accessType`, NÃO há accessType `tool` no members.
 > ⚠️ Os CURSOS (`no-comando-da-ia`, `desafio-primeiro-jogo`) NÃO são seedados (members é DEV-only) —
@@ -313,9 +330,14 @@ migration faz `CREATE SCHEMA "catalog"`.
 
 Serviço próprio no projeto `sistema-zero` via **`packages/catalog/railway.json`** (config-as-code:
 Dockerfile `oven/bun:1` com build context = RAIZ do repo, watchPatterns catalog/core/lockfile,
-healthcheck **`/readyz`**). `preDeployCommand` roda **`db:deploy` = migrate + seed** (o seed é
-idempotente — checa por sku/slug e pula; rodar a cada deploy é seguro e dispensa acesso manual ao
-banco interno). **SEM domínio público por design** — o catálogo só é alcançado pelo gateway e pelo
+healthcheck **`/readyz`**). `preDeployCommand` roda **`db:deploy` = somente migrations**. Seed comercial
+é explícito: `bun run db:seed plan`, `status`, e depois `apply`. Sem argumento, apenas planeja.
+As definições aprovadas vivem em `scripts/catalog-seed-definitions.ts`; o relatório inclui preços,
+status e referências. Apply cria somente ausentes, preserva alterações do Admin e relata drift.
+Conflitos de identidade ou novas ofertas dependentes de produtos divergentes ficam bloqueados.
+Nenhum curso/conquista/aluno é criado pelo seed. Ver
+[operação dos seeds](../../docs/superpowers/plans/2026-10-22-platform-production-seeds.md).
+**SEM domínio público por design** — o catálogo só é alcançado pelo gateway e pelo
 members via private networking (`catalog.railway.internal:3003`). Envs de prod: `NODE_ENV=production`
 (todo o fail-closed depende disso), `PORT=3003`, `DATABASE_URL=${{Postgres.DATABASE_URL}}`,
 `DATABASE_POOL_MAX`, `INTERNAL_API_TOKEN` (≥16; o MESMO valor vira `CATALOG_INTERNAL_TOKEN` no

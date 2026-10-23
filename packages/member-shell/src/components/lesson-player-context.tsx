@@ -4,14 +4,22 @@ import type {
   LearningBlockProgress,
   LessonLearningProgress,
   PlatformActionResult,
+  ProjectObjectiveResult,
+  ProjectObjectiveView,
   VideoWatchCoverage,
 } from '@sistemazero/core/learning'
 import { createContext, type ReactNode, useContext } from 'react'
 import type { LessonDraftCloud } from '../lib/lesson-draft-cloud'
+import type { LiveLessonWorkspace } from '../lib/live/lesson-slot'
 import type { DialogueSpeech } from './dialogue-block'
 
 /** O que um player de vídeo da aula sabe fazer a pedido de fora (o flutuante e o aviso). */
-export type LessonVideoControls = { play: () => void; pause: () => void }
+export type LessonVideoControls = {
+  play: () => void
+  pause: () => void
+  /** Leva o vídeo a um instante (os capítulos da gravação ao vivo). Opcional por player. */
+  seek?: (seconds: number) => void
+}
 
 /**
  * Contexto provido pelo `LessonPlayer` aos blocos da aula (evita prop-drilling
@@ -31,11 +39,17 @@ export interface LessonPlayerContextValue {
   ) => ReactNode
   renderActionEvidence?: (result: PlatformActionResult) => ReactNode
   refreshAfterLearning?: () => void
+  /**
+   * Os objetivos da parte cujo projeto é o deste bloco Estúdio: a VISTA (rótulo, dica, extra), o
+   * resultado guardado da última verificação (`savedResults`, da mesma revisão) e o que é preciso
+   * para conferir de novo. Quem confere é o servidor.
+   */
   sectionProjectCheck?: {
     sectionId: string
     revision: string
     blockId: string
-    objectives?: { id: string; label: string }[]
+    objectives?: ProjectObjectiveView[]
+    savedResults?: ProjectObjectiveResult[]
   }
   submissionAllowedBlockIds?: string[]
   learningProgress?: LessonLearningProgress
@@ -52,6 +66,12 @@ export interface LessonPlayerContextValue {
    * por perfil — irmãos no mesmo navegador não misturam o trabalho. `null` fora do player.
    */
   viewerId: string | null
+  /**
+   * A criança pode FALAR em vez de escrever para a equipe (14/10/2026): mostra o botão "Falar" no
+   * pedido de ajuda e no recado do envio. Só o Kids passa, com a fala ligada pelos pais e no
+   * servidor; o adulto e o Admin nunca passam.
+   */
+  voiceInput?: boolean
   /** Posição salva do vídeo (segundos) para retomar de onde parou. */
   initialPositionSeconds: number | null
   /** A cada `timeupdate` do vídeo (o consumidor faz o throttle de persistência). */
@@ -83,10 +103,16 @@ export interface LessonPlayerContextValue {
   /** Re-renderiza a página após o envio do projeto do Estúdio (destrava o gate). */
   refreshAfterStudio?: () => void
   /**
-   * O rascunho do Estúdio e do Pinta da fase guardado na conta (10/10/2026). Só o app que sabe
+   * O rascunho do Estúdio e do Pinta da aula guardado na conta (10/10/2026). Só o app que sabe
    * falar com a nuvem o passa (hoje o Kids); sem ele os blocos ficam só com o rascunho local.
    */
   lessonDrafts?: LessonDraftCloud | null
+  /**
+   * Aula de curso AO VIVO na sala (14/10/2026): o bloco Estúdio abre o projeto ao vivo da criança
+   * (lease, revisões, ajuda da professora) em vez do rascunho local + "Enviar para a equipe". Só a
+   * sala passa; as aulas gravadas nunca.
+   */
+  liveWorkspace?: LiveLessonWorkspace | null
 }
 
 const LessonPlayerContext = createContext<LessonPlayerContextValue | null>(null)

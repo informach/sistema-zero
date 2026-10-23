@@ -1,0 +1,23 @@
+P46 · Os botões mudam de lugar. Surgem programas novos. Seu filho também pode aprender como começar a explorar uma ferramenta.
+Calendário comum · semana 9 · terceiro post · série Teste em casa · desejo W16.
+Instagram · carrossel · 7 imagens · 1080 × 1350 · proporção 4:5.
+
+Ordem: 01-p46.png, 02-p46.png, 03-p46.png, 04-p46.png, 05-p46.png, 06-p46.png, 07-p46.png.
+Legenda integral: legenda.txt.
+Textos alternativos: texto-alternativo.txt.
+Prévia: index.html ou previa.png.
+Montagem editável: montagem.html.
+Copy vigente: ../../../postagens/10-p41-a-p50.md, seção P46.
+
+Convite: seguir @criecomhelenaejulio, no slide final e no fechamento da legenda.
+Criança e pai fictícios nas cenas geradas. As telas fornecidas para compor os monitores vieram do Pinta real.
+Slide 2: desenho de demonstração da equipe aberto no Pinta, com a forma selecionada e a paleta ao lado.
+Slide 3: consulta à orientação; abaixo da fotografia, trecho ampliado da dica nativa.
+Slide 4: movimento real da Mini plataforma, antes e depois de apertar a seta para a direita, com o comando nativo correspondente. O texto fixo de controles foi ocultado somente nessas duas capturas para não cobrir o personagem.
+Slide 5: Mini plataforma no pulo, com os controles nativos visíveis. A borda inferior funciona como chão; esse exemplo não tem plataformas separadas.
+Slide 6: Salto nas Nuvens, com herói no ar, câmera nativa seguindo por trás e moeda à frente.
+As demonstrações não são trabalhos de alunos nem promessa de curso específico.
+Na publicação manual, aplicar as orientações vigentes da conta para identificação de mídia gerada.
+
+Estado: produzido e conferido localmente. Não publicado ou agendado.
+Próximo carrossel: P28, terceiro post da semana 10.

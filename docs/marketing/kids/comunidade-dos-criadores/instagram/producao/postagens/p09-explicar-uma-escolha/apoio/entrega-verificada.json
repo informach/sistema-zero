@@ -1,0 +1,412 @@
+{
+  "id": "P09",
+  "checkedAt": "2026-10-14T19:09:53.705Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 827202,
+      "sha256": "0ca01951a8b045283aea3dca7351fbc812c638dec9677e846b98a138f9dbaaf6"
+    },
+    {
+      "file": "02-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1011562,
+      "sha256": "3d16519d84ae9c889ab21ec4d0d398ae5f538b41b16f52b0d8c3b48506d42032"
+    },
+    {
+      "file": "03-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1117762,
+      "sha256": "e4a3bc030df47e07ba19175e80bd40bf7816d576f588c3f05a048c1a8c9b0cc4"
+    },
+    {
+      "file": "04-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 94936,
+      "sha256": "7f520932847e0954a271e95f406ecf92dbb2f809b6224c3890b6abe342255a2b"
+    },
+    {
+      "file": "05-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 120494,
+      "sha256": "63b4330d7489bc3ec7070426f4027d8ee03ed5c03f0abfb9c7fc92770a581468"
+    },
+    {
+      "file": "06-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 852795,
+      "sha256": "ea96200d6da195db654a5257443b5dfaa4ec9dfb919bc764aa3a45e64fe1fd11"
+    },
+    {
+      "file": "07-p09.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 917612,
+      "sha256": "1ac263a42950188362d89348824621e45a3eb329b761f02866d6f8b998470d58"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p09.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p09.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-atividade-pronta-v2.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-dois-pares.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-uma-escolha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-comparar-versoes.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-duas-cartas-abertas.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-original-primeira.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-sem-espera-primeira.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-original-segunda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-sem-espera-segunda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-bloco-espera.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-mostrar-a-diferenca.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-original-momento.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-sem-espera-momento.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-ouvir-a-explicacao.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/01-p01-a-p10.md#p09",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "sem-espera.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "sem-espera.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "05-bloco-espera.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    }
+  ],
+  "copyLinter": {
+    "slides": "Sete slides sem achados mecânicos.",
+    "caption": "Um apontamento da regra 3: pergunta no gancho. Revisado como falso positivo, pois “Por que você escolheu isso?” é a pergunta citada na afirmação que compara formas de conversar. A legenda aprovada foi preservada."
+  },
+  "visualReview": "Sete slides conferidos na grade; capa, comparação e cena com monitor também individualmente. Família fictícia consistente, imagem 3 corrigida para dois braços e duas mãos. Capturas reais inseridas nas telas; quatro quadros da comparação legíveis. Nenhuma foto repetida entre slides.",
+  "game": {
+    "onlyWaitRemoved": true,
+    "waitSeconds": 0.7,
+    "sameShuffle": true,
+    "sameSecondCard": true,
+    "originalVisible": [
+      "🍇",
+      "🍌"
+    ],
+    "withoutWaitVisible": [],
+    "coverPairs": 2,
+    "captures": 10
+  },
+  "carouselCount": 20,
+  "pngCount": 146,
+  "textBounds": [
+    {
+      "text": "A atividade ficou pronta.",
+      "within": true
+    },
+    {
+      "text": "Mas sua filha sabe explicar uma escolha que fez?",
+      "within": true
+    },
+    {
+      "text": "Pode ser uma cor, um desenho ou uma regra do jogo.",
+      "within": true
+    },
+    {
+      "text": "Pergunte: “Por que você colocou isso aqui?” e dê tempo para ela responder.",
+      "within": true
+    },
+    {
+      "text": "Criando jogos, ela consegue testar a própria explicação.",
+      "within": true
+    },
+    {
+      "text": "Se diz que uma regra é importante, pode mudar essa regra e observar o resultado.",
+      "within": true
+    },
+    {
+      "text": "Neste jogo da memória, duas cartas diferentes ficam abertas por um instante antes de fechar.",
+      "within": true
+    },
+    {
+      "text": "Esse tempo permite ver os desenhos e tentar lembrar onde estão.",
+      "within": true
+    },
+    {
+      "text": "Quando tiramos a espera, as cartas fecham rápido demais para observar a segunda figura.",
+      "within": true
+    },
+    {
+      "text": "O teste mostra para que aquela instrução serve.",
+      "within": true
+    },
+    {
+      "text": "Se explicar com palavras for difícil, peça para ela mostrar no jogo.",
+      "within": true
+    },
+    {
+      "text": "Vocês podem comparar as duas versões e conversar sobre o que mudou.",
+      "within": true
+    },
+    {
+      "text": "A conversa ajuda você a acompanhar o que ela está entendendo.",
+      "within": true
+    },
+    {
+      "text": "Siga @criecomhelenaejulio para conhecer formas de participar das descobertas da sua filha.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 8,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "bdfb7a026af41953fecc0aaf7c55b7f6dfeb72782dfc9da28a001889cfbc58a2",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P42",
+  "published": false
+}

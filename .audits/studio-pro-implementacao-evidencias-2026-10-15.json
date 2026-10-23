@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-15",
+  "status": "partial-implementation-verified-locally",
+  "plan": "docs/superpowers/plans/2026-10-15-studio-pro-implementacao.md",
+  "typescript": "5.9.3",
+  "testRuns": [
+    {
+      "scope": "studio-selected-regressions",
+      "files": 17,
+      "passed": 183,
+      "failed": 0,
+      "assertions": 485
+    },
+    {
+      "scope": "member-shell-tutor-and-pro-loader",
+      "files": 2,
+      "passed": 76,
+      "failed": 0,
+      "assertions": 328
+    },
+    {
+      "scope": "studio-runtime",
+      "files": 4,
+      "passed": 16,
+      "failed": 0,
+      "assertions": 57
+    },
+    {
+      "scope": "members-zappy-history-and-http",
+      "files": 3,
+      "passed": 13,
+      "failed": 0,
+      "assertions": 28
+    },
+    {
+      "scope": "kids-cloud-regressions",
+      "files": 1,
+      "passed": 44,
+      "failed": 0,
+      "assertions": 192
+    },
+    {
+      "scope": "studio-bundle-budget",
+      "files": 1,
+      "passed": 1,
+      "failed": 0,
+      "assertions": 27
+    }
+  ],
+  "browser": {
+    "environment": "Chrome, compiled production playground, localhost:5197",
+    "authenticatedKidsHostTested": false,
+    "checks": [
+      "npm manifests and lock synchronized back to editor",
+      "terminal-created source persisted after exit and reopen",
+      "three and @types/three plus GLTFLoader resolved",
+      "phaser 3.90.0 declarations resolved alongside three and mitt 3.0.1",
+      "intentional wrong type retained TS2322",
+      "hover returned THREE.Mesh generic type",
+      "autocomplete offered actual mesh members",
+      "go-to-definition opened closed project file at matching line",
+      "npm uninstall mitt restored TS2307",
+      "npm install mitt@3.0.1 cleared missing-module diagnostic",
+      "final rebuilt playground reopened persisted fixture without TS markers or browser console errors/warnings"
+    ],
+    "warmReinstallRecognition": {
+      "package": "mitt@3.0.1",
+      "samples": 1,
+      "afterNpmExitMs": 1276,
+      "isPercentileOrHostBenchmark": false
+    },
+    "temporarySourceEditsRestored": true
+  },
+  "notVerified": [
+    "Docker image build/runtime permissions in deployed sandbox",
+    "authenticated Kids host end-to-end",
+    "reference hardware and reduced-device performance budgets",
+    "30-minute soak and 20 preview lifecycle cycles"
+  ],
+  "notImplemented": [
+    "complete binary asset manifest and local/remote/export materialization",
+    "conversion preserving original project",
+    "family usage cost ledger and responsible adult OpenRouter connection",
+    "new curated GameDev kits and construction skills",
+    "revision-based AI builder and immutable Pro publishing"
+  ],
+  "historicalSnapshot": true,
+  "supersededBy": ".audits/studio-pro-final-evidence-2026-10-15.json"
+}

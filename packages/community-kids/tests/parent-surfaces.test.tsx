@@ -2,7 +2,12 @@ import { afterEach, describe, expect, mock, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import { FamilyAiCredits } from '../src/app/pais/_components/ai-credits-card'
+import {
+  AI_DISCLOSURE,
+  AiTransparencyNotice,
+  CREDIT_USES,
+  FamilyAiCredits,
+} from '../src/app/pais/_components/ai-credits-card'
 import { ChildProgress } from '../src/app/pais/_components/child-progress'
 import { ParentSubscriptions, PurchaseHistory } from '../src/app/pais/_components/purchase-history'
 import type { ChildrenStats } from '../src/app/pais/_components/use-children-stats'
@@ -165,7 +170,7 @@ describe('os cartões da conta', () => {
     await waitFor(() => expect((toggle as HTMLInputElement).checked).toBe(false))
   })
 
-  test('o uso da IA da família aparece com a barra do mês', async () => {
+  test('os créditos do Zappy e do Pensa da família aparecem com a barra do mês, o que gasta e as ideias', async () => {
     installFetch((path) => {
       if (path === '/api/parents/ai-credits')
         return Response.json({
@@ -184,6 +189,28 @@ describe('os cartões da conta', () => {
       await screen.findByRole('progressbar', { name: '36 de 100 usados neste mês' }),
     ).toBeTruthy()
     expect(screen.getByText(/Hoje: 3 de 10/)).toBeTruthy()
+    expect(
+      screen.getByRole('heading', { name: 'Créditos do Zappy e do Pensa neste mês' }),
+    ).toBeTruthy()
+    expect(screen.getByText(CREDIT_USES)).toBeTruthy()
+    expect(screen.getByText(/descrição automática ao publicar no Mural/)).toBeTruthy()
+    expect(screen.getByText('Na tela da criança, os créditos aparecem como ideias.')).toBeTruthy()
+    // O aviso de transparência mora FORA do cartão (que some em falha e para a equipe).
+    expect(screen.queryByText(AI_DISCLOSURE)).toBeNull()
+  })
+
+  test('o aviso de transparência aparece sozinho e a Conta o monta fora do cartão de créditos', () => {
+    render(<AiTransparencyNotice />)
+    expect(screen.getByRole('heading', { name: 'Quem responde à criança' })).toBeTruthy()
+    expect(screen.getByText(AI_DISCLOSURE)).toBeTruthy()
+    expect(AI_DISCLOSURE).toContain('assistentes virtuais')
+    expect(AI_DISCLOSURE).toContain('As falas do Zappy nas aulas são escritas pela nossa equipe')
+    const conta = readFileSync(
+      join(import.meta.dir, '..', 'src', 'app', 'pais', 'conta', 'account-client.tsx'),
+      'utf8',
+    )
+    expect(conta).toContain('<FamilyAiCredits />')
+    expect(conta).toContain('<AiTransparencyNotice />')
   })
 
   test('pagina as compras e cancela a assinatura com confirmação', async () => {
@@ -233,6 +260,101 @@ describe('os cartões da conta', () => {
     await waitFor(() => expect(screen.queryByText('Plano da família')).toBeNull())
   })
 
+  test('só a Comunidade Kids Encerrada mostra como continuar', async () => {
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions')
+        return Response.json({
+          items: [
+            {
+              ...subscription,
+              id: 'kids',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-05-01T12:00:00.000Z',
+            },
+            {
+              ...subscription,
+              id: 'adulto',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores (adultos)',
+              createdAt: '2026-07-01T12:00:00.000Z',
+            },
+            // Uma cobrança que nunca confirmou não segura o botão.
+            {
+              ...subscription,
+              id: 'pendente',
+              status: 'PENDING',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-08-01T12:00:00.000Z',
+            },
+          ],
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    render(<ParentSubscriptions />)
+    expect((await screen.findAllByText('Encerrada')).length).toBe(2)
+    const links = screen.getAllByRole('link', { name: /Ver como continuar/ })
+    // Só a da Comunidade Kids encerrada: a adulta não leva à continuidade do Kids.
+    expect(links).toHaveLength(1)
+    expect(links[0]?.getAttribute('href')).toBe(
+      'https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=pais-assinatura',
+    )
+  })
+
+  test('Cancelada ou outra Kids ativa: sem o botão (o acesso ainda vale)', async () => {
+    const recent = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString()
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions')
+        return Response.json({
+          items: [
+            {
+              ...subscription,
+              id: 'velha',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-01-01T12:00:00.000Z',
+            },
+            {
+              ...subscription,
+              id: 'cancelada',
+              status: 'CANCELED',
+              description: 'Comunidade dos Criadores',
+              lastChargeAt: recent,
+              canceledAt: recent,
+              createdAt: '2026-06-01T12:00:00.000Z',
+            },
+          ],
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    const { unmount } = render(<ParentSubscriptions />)
+    expect(await screen.findByText('Cancelada')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /Ver como continuar/ })).toBeNull()
+    expect(screen.getByText('O acesso continua até o fim do período já pago.')).toBeTruthy()
+    unmount()
+
+    installFetch((path) => {
+      if (path === '/api/payments/my/subscriptions')
+        return Response.json({
+          items: [
+            {
+              ...subscription,
+              id: 'velha',
+              status: 'EXPIRED',
+              description: 'Comunidade dos Criadores',
+              createdAt: '2026-01-01T12:00:00.000Z',
+            },
+            { ...subscription, id: 'ativa', description: 'Comunidade dos Criadores' },
+          ],
+        })
+      throw new Error(`fetch de teste não previsto: ${path}`)
+    })
+    render(<ParentSubscriptions />)
+    expect(await screen.findByText('Encerrada')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: /Ver como continuar/ })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Cancelar assinatura' })).toHaveLength(1)
+  })
+
   test('falhas não deixam esqueleto nem derrubam a conta', async () => {
     installFetch((path) => {
       if (path === '/api/payments/my/subscriptions') return Response.json({ items: [] })
@@ -249,7 +371,7 @@ describe('os cartões da conta', () => {
     )
     expect(await screen.findByText(/Nenhuma compra ainda/)).toBeTruthy()
     await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /Ajuda da IA neste mês/ })).toBeNull()
+      expect(screen.queryByRole('heading', { name: /Créditos do Zappy e do Pensa/ })).toBeNull()
       expect(screen.queryByRole('switch')).toBeNull()
     })
   })

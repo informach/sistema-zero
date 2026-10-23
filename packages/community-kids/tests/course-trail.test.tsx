@@ -109,7 +109,7 @@ describe('CourseTrail', () => {
     // Antes de esconder os módulos vazios, os banners deles preenchiam a página.
     // Sem o recado, a criança veria o cabeçalho do curso e um vão mudo.
     render(<CourseTrail course={course([moduleOf('m1', []), moduleOf('m2', [])])} />)
-    expect(screen.getByText(/As fases estão sendo preparadas/)).toBeTruthy()
+    expect(screen.getByText(/As aulas estão sendo preparadas/)).toBeTruthy()
     expect(screen.queryByText(/Mundo 1/)).toBeNull()
     // E o título do módulo em preparo não vaza junto com o recado.
     expect(screen.queryByText(/Modulo m1/)).toBeNull()
@@ -119,7 +119,7 @@ describe('CourseTrail', () => {
     render(<CourseTrail course={course([moduleOf('m1', [lesson('a')])])} />)
     expect(screen.getByText(/Mundo 1/)).toBeTruthy()
     expect(screen.getByText('Modulo m1')).toBeTruthy()
-    expect(screen.queryByText(/As fases estão sendo preparadas/)).toBeNull()
+    expect(screen.queryByText(/As aulas estão sendo preparadas/)).toBeNull()
   })
 
   test('não desenha bolinhas entre aulas nem antes do baú', () => {

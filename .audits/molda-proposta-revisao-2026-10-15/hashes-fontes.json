@@ -1,0 +1,58 @@
+[
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda\\WhatsApp Image 2026-10-14 at 13.23.26 (3).jpeg",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\01-modelar-mover.jpeg",
+    "OriginalSHA256": "FD41AABB72D16DAB5F77BC9DE53A2C17CC405E2BEA137031FB6242990534C53E",
+    "CopySHA256": "FD41AABB72D16DAB5F77BC9DE53A2C17CC405E2BEA137031FB6242990534C53E",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda\\WhatsApp Image 2026-10-14 at 13.23.26 (2).jpeg",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\02-modelar-pivo.jpeg",
+    "OriginalSHA256": "A328B9F20F0E5782150CBEFD43F5DF69BB0A1C5501BD2838795337EFA6EBD623",
+    "CopySHA256": "A328B9F20F0E5782150CBEFD43F5DF69BB0A1C5501BD2838795337EFA6EBD623",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda\\WhatsApp Image 2026-10-14 at 13.23.26 (1).jpeg",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\03-modelar-cortar.jpeg",
+    "OriginalSHA256": "D84A85F7B79034518A56C0B1A3CBB266E4A4B64146BFB386B5B737DACBA11EDE",
+    "CopySHA256": "D84A85F7B79034518A56C0B1A3CBB266E4A4B64146BFB386B5B737DACBA11EDE",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda\\WhatsApp Image 2026-10-14 at 13.23.26 (4).jpeg",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\04-pintar.jpeg",
+    "OriginalSHA256": "734F1A8BA625D0634C1AAC25EEB0650DC8FAED6D9B1C5860B8C879DF54E03D09",
+    "CopySHA256": "734F1A8BA625D0634C1AAC25EEB0650DC8FAED6D9B1C5860B8C879DF54E03D09",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda\\WhatsApp Image 2026-10-14 at 13.23.26.jpeg",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\05-animar.jpeg",
+    "OriginalSHA256": "3AA9CCF2782E914205CCC8B1BCD9F8B0140CBF9C6E193C5E5109F7A99F23E6E3",
+    "CopySHA256": "3AA9CCF2782E914205CCC8B1BCD9F8B0140CBF9C6E193C5E5109F7A99F23E6E3",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda-ferramenta-pivo-spec.md",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\molda-ferramenta-pivo-spec.md",
+    "OriginalSHA256": "2ECB74ED1FB9C7860FB58B68BE78C0DBE586FED452DFB01DE6006DBFAA26C1E9",
+    "CopySHA256": "2ECB74ED1FB9C7860FB58B68BE78C0DBE586FED452DFB01DE6006DBFAA26C1E9",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda-ferramenta-cortar-spec.md",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\molda-ferramenta-cortar-spec.md",
+    "OriginalSHA256": "6E2F9E339F0F5F99838781707C8C2862B4D09DC9BA31D21B883C27D82E640170",
+    "CopySHA256": "6E2F9E339F0F5F99838781707C8C2862B4D09DC9BA31D21B883C27D82E640170",
+    "Equal": true
+  },
+  {
+    "Original": "C:\\Users\\tocha\\Downloads\\molda-animar-spec.md",
+    "Copy": "docs\\plans\\references\\2026-10-15-molda-fidelidade\\molda-animar-spec.md",
+    "OriginalSHA256": "4A8E9D3656434CFF571A99E9469B3591AD121D074F6B7CCB14534A6EE1BA26D2",
+    "CopySHA256": "4A8E9D3656434CFF571A99E9469B3591AD121D074F6B7CCB14534A6EE1BA26D2",
+    "Equal": true
+  }
+]

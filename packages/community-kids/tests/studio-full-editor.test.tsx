@@ -4,6 +4,7 @@ import type {
   StudioMoldaLibraryAdapter,
   StudioPintaLibraryAdapter,
   StudioShareAdapter,
+  StudioTeamLibraryAdapter,
 } from '@sistemazero/studio'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
@@ -58,12 +59,14 @@ const tier = {
 function renderEditor(libraries: {
   pinta?: StudioPintaLibraryAdapter
   molda?: StudioMoldaLibraryAdapter
+  team?: StudioTeamLibraryAdapter
 }) {
   lastEditorProps = undefined
   return render(
     <StudioFullEditor
       mod={mod}
       projectId="p1"
+      viewerId="viewer-test"
       onExit={() => {}}
       share={{} as StudioShareAdapter}
       tutor={undefined}
@@ -74,6 +77,7 @@ function renderEditor(libraries: {
       taskSession={undefined}
       pintaLibrary={libraries.pinta}
       moldaLibrary={libraries.molda}
+      teamLibrary={libraries.team}
     />,
   )
 }
@@ -101,6 +105,18 @@ test('"Editar o desenho" só vai ao Estúdio COM a posse do Pinta, e "Editar a c
   expect(lastEditorProps?.onEditDrawing).toBeUndefined()
   expect(typeof lastEditorProps?.onEditCreation).toBe('function')
   expect(lastEditorProps?.moldaLibrary).toBe(molda)
+})
+
+test('"Trazer da equipe" chega ao Estúdio quando o host o tem, e não existe sem ele', async () => {
+  const withoutTeam = renderEditor({})
+  await waitFor(() => expect(lastEditorProps).toBeDefined())
+  expect(lastEditorProps?.teamLibrary).toBeUndefined()
+  withoutTeam.unmount()
+
+  const team = {} as StudioTeamLibraryAdapter
+  renderEditor({ team })
+  await waitFor(() => expect(lastEditorProps).toBeDefined())
+  expect(lastEditorProps?.teamLibrary).toBe(team)
 })
 
 test('o XP de criar não atualiza a página com o jogo aberto: a barra só se atualiza quando o editor sai', async () => {
@@ -202,6 +218,7 @@ function StudioPresenceHarness() {
         <StudioFullEditor
           mod={mod}
           projectId="p1"
+          viewerId="viewer-test"
           onExit={() => setEditorOpen(false)}
           share={{} as StudioShareAdapter}
           tutor={undefined}

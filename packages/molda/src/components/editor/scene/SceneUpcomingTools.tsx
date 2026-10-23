@@ -27,7 +27,7 @@ export function SceneUpcomingTools({
   if (!groups.size) return null
   return (
     <details
-      className={`w-full rounded-lg border border-mld-border border-dashed text-sm ${className}`}
+      className={`mld-upcoming w-full rounded-lg border border-mld-border border-dashed text-sm ${className}`}
     >
       <summary className="flex min-h-11 cursor-pointer items-center px-3 font-bold text-mld-muted">
         {SCENE_TOOL_ACCESS_COPY.upcoming}

@@ -48,7 +48,7 @@ describe.skipIf(!testDatabaseUrl)('lessonHasGatingBlock: espelho SQL × domínio
   })
 
   beforeEach(async () => {
-    await conn.sql.unsafe('truncate table members.lesson_blocks')
+    await conn.sql.unsafe('truncate table members.lesson_blocks cascade')
   })
 
   const insert = async (kind: string, content: unknown) => {

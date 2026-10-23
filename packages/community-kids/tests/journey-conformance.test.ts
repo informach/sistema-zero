@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { CREATOR_JOURNEY_LEVELS } from '../../core/src/journey/catalog'
-import { LEVEL_STUDY, LEVEL_TIER } from '../src/lib/journey-map'
+import { LEVEL_STUDY, LEVEL_TIER } from './fixtures/legacy-journey-map'
 
 /**
  * Conformância do Mapa da Jornada kids × core. O kids NÃO importa o core em runtime —

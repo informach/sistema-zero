@@ -22,6 +22,18 @@ export class FakeLlmClient implements LlmClient {
     this.calls.push(input as LlmCompleteInput<unknown>)
     if (this.error) throw this.error
     if (this.queue.length === 0) throw new LlmError('FakeLlm: fila vazia', 'invalid_output')
-    return this.queue.shift() as T
+    await input.beforeAttempt?.(1)
+    const result = input.schema.parse(await this.queue.shift())
+    await input.onAttempt?.({
+      attempt: 1,
+      model: 'fake',
+      providerId: null,
+      inputTokens: null,
+      outputTokens: null,
+      costUsd: null,
+      durationMs: 0,
+      outcome: 'completed',
+    })
+    return result
   }
 }

@@ -1,0 +1,131 @@
+{
+  "kind": "studio.python.local-sdk-turtle-preview",
+  "version": 1,
+  "command": "bun tests/python-sdk-smoke.ts --linux-docker --preview --turtle",
+  "cliSha256": "63f2f53644400f180e4b5d05e68ecf6c2e5d8afb6ea4c6ac83e073a021b15448",
+  "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+  "qualificationReleaseManifestSha256": "681d8c6da438820102482778a9dcc174123ca5c918f98c36dc7299fab93965e5",
+  "qualificationReleaseIsStagingRelease": false,
+  "verified": true,
+  "validated": true,
+  "durationMs": 25023,
+  "report": {
+    "version": 1,
+    "projectId": "sdk-proof",
+    "recipe": {
+      "version": 1,
+      "observeMs": 1000,
+      "stdin": [
+        "Lia"
+      ],
+      "keys": [
+        "Space"
+      ],
+      "clicks": [
+        {
+          "x": 0.25,
+          "y": 0.25,
+          "button": "left"
+        }
+      ],
+      "requireGraphics": true
+    },
+    "status": "passed",
+    "inspection": {
+      "version": 1,
+      "revision": "997faea0bbcb342ac0875480daab1a430bd61391fc48dacd9629f211f175792f",
+      "runtimeManifestSha256": "681d8c6da438820102482778a9dcc174123ca5c918f98c36dc7299fab93965e5",
+      "pythonVersion": "3.14.2",
+      "status": "passed",
+      "files": [
+        {
+          "path": "main.py",
+          "sha256": "6ffffe1102dbc7a6ec41498ee3c79511f3b24b51e088c847bc0c3ab436483586",
+          "status": "passed",
+          "diagnostics": []
+        },
+        {
+          "path": "empty.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "status": "passed",
+          "diagnostics": []
+        },
+        {
+          "path": "helper.py",
+          "sha256": "2468b86b10aa5c0d6da1a269341ea01567e43c1201633d1bc6d00fbe1871e654",
+          "status": "passed",
+          "diagnostics": []
+        }
+      ]
+    },
+    "execution": {
+      "version": 1,
+      "projectId": "sdk-proof",
+      "revision": "997faea0bbcb342ac0875480daab1a430bd61391fc48dacd9629f211f175792f",
+      "runtimeManifestSha256": "681d8c6da438820102482778a9dcc174123ca5c918f98c36dc7299fab93965e5",
+      "pythonVersion": "3.14.2",
+      "instanceId": "a962d4f6-e849-4f37-a5b0-5de17a123c7c",
+      "runId": "3a311490-81c2-4a52-a3e2-4baade0828a7",
+      "recipe": {
+        "version": 1,
+        "observeMs": 1000,
+        "stdin": [
+          "Lia"
+        ],
+        "keys": [
+          "Space"
+        ],
+        "clicks": [
+          {
+            "x": 0.25,
+            "y": 0.25,
+            "button": "left"
+          }
+        ],
+        "requireGraphics": true
+      },
+      "status": "passed",
+      "started": true,
+      "stopped": true,
+      "stateBeforeStop": "running",
+      "observedDurationMs": 1299,
+      "stdout": "Nome?ola Lia\nkey-fired\nclick-fired\n",
+      "stderr": "",
+      "omittedChars": 0,
+      "errors": [],
+      "input": {
+        "stdinRequests": 1,
+        "stdinSubmitted": 1,
+        "keysDispatched": 1,
+        "clicksDispatched": 1
+      },
+      "capture": {
+        "path": "python-playtest.png",
+        "sha256": "d41aa7876579fdfe087fe91fbcb23152e9bb7e69595945c339c53371466a1973",
+        "byteLength": 2602,
+        "width": 320,
+        "height": 240,
+        "frameSequence": 7
+      }
+    }
+  },
+  "state": {
+    "created": 1,
+    "execStarted": 2,
+    "execFinished": 2,
+    "destroyStarted": 1,
+    "destroyFinished": 1
+  },
+  "preview": {
+    "storedFiles": 9,
+    "resetAvailable": true,
+    "inputCleanupPreserved": true,
+    "discardResetDenied": true
+  },
+  "cleanup": {
+    "after": []
+  },
+  "hostedAcceptance": false,
+  "registryImageIdentityQualifiedByThisProof": false,
+  "audioAudibilityAccepted": false
+}

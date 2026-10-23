@@ -1,0 +1,56 @@
+[
+  {
+    "slide": 1,
+    "file": "01-celular.png",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape 3:2 editorial photograph for an Instagram carousel for Brazilian parents, Crie com Helena e Júlio.\nCreate a believable fictional Brazilian girl about 12 years old, light-medium brown skin, a straight dark chin-length bob with soft bangs, warm brown eyes, wearing a plain mustard yellow cotton t-shirt and blue jeans. She sits comfortably on a cream fabric sofa at home, playing a generic colorful game on a smartphone held horizontally with both hands. We can see her attentive face and the phone's display. One thumb large in the near foreground, naturally pressing a virtual movement control. Smartphone shows an ORIGINAL GENERIC simple colorful platform game with little blue character, green islands and gold coins; no famous game, no logos, no video/social feed, no coding editor.\nComposition: diagonal over-shoulder view from slightly in front/side, medium close shot; girl face at upper left and her hands and phone in foreground lower right, focus both readable. This is everyday skill with a phone, not a comparison of bad vs good behavior. Natural relaxed concentration, no distress, no posing to camera. Correct fingers, realistic device size and hand scale.\nWarm modest Brazilian living room with cream walls, blue cushion and a leafy plant, soft daylight. Premium candid photography, natural skin and fabric texture, saturated but realistic warm colors. Full image, no frame, no overlay text, no brand logo, no watermark. Leave slide copy for later layout.",
+    "references": [],
+    "selected": true
+  },
+  {
+    "slide": 2,
+    "file": "02-mouse.png",
+    "prompt": "Create ONE fresh landscape editorial photograph, 1536x1024, for Brazilian parents, a professional Instagram carousel. This is slide 2 showing WHY a laptop and mouse are useful for making games. The first reference provides the fictional girl's appearance and warm home only: same approx 12-year-old Brazilian girl with medium light-brown skin, straight dark bob haircut with soft fringe, mustard yellow t-shirt, same identity. Do NOT reuse that phone scene. Second reference is our REAL proprietary game creation platform UI: preserve this exact design faithfully on the laptop display, block workspace left, live purple 3D game on the right, blue rounded top controls, real categories; do not invent a different platform, generic code, brand or toolbar. Create new camera angle: close editorial shot from slightly above and behind the girl's RIGHT shoulder at a warm wood desk, face only a subtle partial profile upper-left, main emphasis is a full OPEN silver notebook screen at center plus her right hand correctly holding a separate blue mouse to the right. Her left hand rests near the built-in keyboard. Screen and mouse are clearly visible, coherent real-world size, laptop front faces the child, no mirrored placement. Screen square and readable enough to recognize our exact layout. She is selecting or dragging blocks with the mouse, attentive relaxed posture. Cream walls, blue curtain, plant softly blurred, natural daylight. Human hands anatomically correct, five fingers, natural wrists. High-end candid photography, warm approachable ordinary family home, not a classroom or stock ad pose. Tight useful framing, not lots of blank wall. All key scene elements within the center 90%, horizontal 3:2 crop. NO editorial words, callouts, watermarks, captions, logos, phone, arrows, floating UI or fake text over photo. Only UI text inherently in reference screen. Output a single finished photo.",
+    "references": [
+      "01-celular.png",
+      "03-editor-completo.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 3,
+    "file": "03-teclado.png",
+    "prompt": "Create ONE fresh landscape editorial photograph 1536x1024 for slide 3 of a Brazilian family game-creation carousel. First reference: preserve same fictional girl approx12, light-medium brown skin, straight dark bob with soft fringe, mustard yellow t-shirt, warm ordinary home. Second reference: actual proprietary platform UI; on notebook screen reproduce this exact layout and content faithfully: colored native blocks on left, purple running 3D game right, blue controls at top. No other platform, generic code, invented UI or branding. New composition for the topic KEYBOARD AND MOUSE: high three-quarter TOP-DOWN angle over the wood desk. Her LEFT hand clearly placed over W A S D region of laptop built-in keyboard with natural five fingers; her RIGHT hand operates a separate blue mouse on desk right. Both hands and all fingers anatomically correct, coherent forearms. The laptop screen is visible in upper half and the keyboard + hands large in lower half. Just a small part of girl's mustard sleeve and top of dark hair near left edge; not a repeat of a full profile at screen. Show physical action of testing a game with keyboard and mouse. Laptop faces the child, screen tilted normally, no backwards keyboard, no duplicate hands or mice. Bright warm daylight, soft blue curtain blur, desk notebook and small potted plant at far upper left. Natural photorealistic editorial detail, sharp enough to recognize keyboard keys and our specific platform layout. No text overlays, titles, captions, arrows, labels, logos, watermarks, phone or tablet. Avoid empty wall or fake holograms. Keep all essential objects inside center90% for horizontal3:2 crop. Single finished photo.",
+    "references": [
+      "01-celular.png",
+      "03-editor-completo.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 5,
+    "file": "05-equipamento.png",
+    "prompt": "Use case: illustration-story. Asset: wide 3:2 editorial equipment illustration for Brazilian parenting carousel, refined friendly 3D clay style.\nShow one open unbranded silver laptop angled slightly toward viewer in the center, a separate dark cobalt blue mouse on the right, and a compact standalone keyboard in front. On the laptop screen show ONLY a simple generic browser window symbol: rounded blue outline, three neutral small dots, an address-bar shape, plain cream webpage with a small blue globe icon and a small unobtrusive Wi-Fi arc mark. No real app screenshots, no logos, no recognizable browser brand, no programming text.\nOrganize the objects in a pleasing, spacious coherent still life on warm cream/off-white background; soft shadows, matte tactile surfaces, cobalt blue and warm yellow accent, polished editorial 3D illustration. Everything entirely visible with breathing room. Notebook keyboard and separate keyboard can both be visible; this represents mouse and keyboard inputs for a computer, not a required shopping bundle.\nNo text anywhere, no labels, no numerals, no arrows, no price, no checkmarks, no watermark, no border. We will add short labels separately in layout.",
+    "references": [],
+    "selected": true
+  },
+  {
+    "slide": 6,
+    "file": "06-horario.png",
+    "prompt": "Create ONE new photoreal editorial landscape photograph,1536x1024, of a SHARED FAMILY COMPUTER and a simple agreed schedule. Reference1 gives the warm ordinary Brazilian living-room style with cream sofa, blue accents, wood furniture, leafy plant; do not include that girl or anyone else. Reference2 is exact real proprietary game creation platform; display it faithfully on the notebook screen (actual native blocks left, purple game right, blue top controls), not an invented interface or generic code. Scene: uncluttered compact study desk in one corner of this living room, silver unbranded laptop open, separate blue mouse right, natural window light, cream sofa visible out-of-focus behind. Beside the laptop at RIGHT, a small physical yellow paper note held upright on a simple little stand, facing camera and large enough to read, handwritten in neat dark blue EXACTLY: \"terça e quinta\" on first line and \"17h\" on second line. No other words on note. Make the note an obvious reminder of a family agreement, not a school timetable, no date. Note and laptop must both be sharp and fully visible. Family objects subtly suggest shared use: two closed notebooks, a cup of pencils. No people, no phone/tablet, no classroom, no expensive futuristic equipment, no brand logos. Straight-on three-quarter composition at desk height, note in right third, notebook in left two-thirds, all objects occupy large part of frame, minimize empty wall. High quality natural interior photograph, realistic screen light/reflections with legible platform layout. No overlay captions, editorials, watermark, title, border or fake floating UI. Only exact handwritten schedule on physical note and existing UI text on screen. Landscape3:2 single scene.",
+    "references": [
+      "01-celular.png",
+      "03-editor-completo.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 7,
+    "file": "07-criar.png",
+    "prompt": "Create ONE NEW finished landscape editorial photograph1536x1024, closing photo of a Brazilian Instagram carousel about children making games on a computer. Reference1 is fictional girl's exact visual identity: ~12 years old, light medium-brown skin, straight dark bob haircut with soft bangs, brown eyes, mustard yellow t-shirt and jeans. SAME girl, do not alter identity. Reference2 is our ACTUAL platform UI that must be reproduced faithfully on silver notebook display: colored native blocks left, running purple 3D game right, blue header controls. No invented app, generic code, other platform or brand. This MUST be a different composition from close views of hands and screen: warm medium WIDE SIDE VIEW from across the desk, girl's FULL FACE in clear three-quarter profile on LEFT half, laptop angled on RIGHT, built-in keyboard and separate blue mouse on wood desk. She sits naturally on a blue chair with her right hand on mouse, left hand lightly on keyboard, concentrating with a small relaxed smile as she tests the game. Camera sees child's face and the FRONT of notebook screen at realistic three-quarter angle, screen faces child, correct physical geometry. Ordinary family living room in background, cream sofa, leafy plant, soft late afternoon light. Authentic quiet involvement, no celebration, trophy, thumbs up, advertising pose or staring at camera. Place face, screen and hands within central90% of frame for 3:2 crop. Realistic correct five-finger hands, no duplicate arms or devices. Clear colorful but natural photography, blue and mustard touches. NO words outside native screen UI, no caption, headline, watermark, logo, phone/tablet, floating icons, labels or graphic overlay. Single scene, not montage.",
+    "references": [
+      "01-celular.png",
+      "03-editor-completo.png"
+    ],
+    "selected": true
+  }
+]

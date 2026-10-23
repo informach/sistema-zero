@@ -64,9 +64,8 @@ export class GetMemberActivityService {
         lessonId: s.lessonId,
         lessonTitle: s.lessonTitle,
         courseTitle: s.courseTitle,
-        score: s.score,
-        passed: s.passed,
         message: s.message,
+        messageSpoken: s.messageSpoken,
       })),
     ]
 

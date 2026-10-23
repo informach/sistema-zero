@@ -1,12 +1,21 @@
 ---
-import type { ReferralGiftView } from '@sistemazero/core/referrals'
+// Prévia do presente para o Admin (`/bolsa/previa?audience=kids|adult&title=…`): só apresentação
+// escapada e datas, sem buscar campanha nem aceitar cadastro. O código `previa` é reservado no
+// referrals. `audience` ausente ou desconhecido = `kids`.
+import { isGiftAudience, type ReferralGiftView } from '@sistemazero/core/referrals'
+import PresenteAdultoLayout from '../../components/referrals/PresenteAdultoLayout.astro'
+import PresenteAdultoOferta from '../../components/referrals/PresenteAdultoOferta.astro'
 import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
 import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
+import { PRESENTE_KIDS } from '../../content/presente'
+import { PRESENTE_ADULTO } from '../../content/presente-adulto'
 import { getEnv } from '../../lib/env'
 export const prerender = false
 Astro.response.headers.set('cache-control', 'private, no-store')
 const params = Astro.url.searchParams
 const context = params.get('context')
+const audienceParam = params.get('audience')
+const audience = isGiftAudience(audienceParam) ? audienceParam : 'kids'
 const validDate = (value: string | null) =>
   value && Number.isFinite(Date.parse(value)) ? new Date(value).toISOString() : null
 const gift: ReferralGiftView = {
@@ -15,6 +24,7 @@ const gift: ReferralGiftView = {
   ownerKind: 'campaign',
   state: 'active',
   giftAvailable: true,
+  audience,
   source: {
     kind: 'campaign',
     name: (params.get('title') || 'Uma experiência gratuita no Sistema Zero').slice(0, 160),
@@ -24,5 +34,15 @@ const gift: ReferralGiftView = {
   startsAt: validDate(params.get('startsAt')),
   endsAt: validDate(params.get('endsAt')),
 }
+const env = getEnv()
+const semBarra = (url: string) => url.replace(/\/$/, '')
 ---
-<PresenteLayout title="Prévia da campanha | Sistema Zero" description="Prévia sem cadastro do presente Cadê Todo Mundo?."><PresenteOferta gift={gift} kind="ready" communityUrl={getEnv().KIDS_COMMUNITY_URL.replace(/\/$/, '')} preview /></PresenteLayout>
+{audience === 'adult' ? (
+  <PresenteAdultoLayout title={PRESENTE_ADULTO.previaTitle} description={PRESENTE_ADULTO.description}>
+    <PresenteAdultoOferta gift={gift} kind="ready" communityUrl={semBarra(env.COMMUNITY_URL)} preview />
+  </PresenteAdultoLayout>
+) : (
+  <PresenteLayout title={PRESENTE_KIDS.previaTitle} description={PRESENTE_KIDS.description}>
+    <PresenteOferta gift={gift} kind="ready" communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} preview />
+  </PresenteLayout>
+)}

@@ -1,0 +1,60 @@
+[
+  {
+    "slide": 1,
+    "file": "01-futebol-e-ideia.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-756fac30-e160-4036-b881-08ca72a9f50d.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [],
+    "sha256": "d22445e1fd36aeccb55ddee4d0a3b79f0f49342d381bd66c711550091fefee2f",
+    "sourceSha256": "d22445e1fd36aeccb55ddee4d0a3b79f0f49342d381bd66c711550091fefee2f"
+  },
+  {
+    "slide": 2,
+    "file": "02-explicar-a-ideia.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-928c2ed2-a00a-4aa2-bd53-7d4927642b73.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-756fac30-e160-4036-b881-08ca72a9f50d.png"
+    ],
+    "sha256": "59f9f11d150e90921bccc7cb4ff21fd5b3bd3896271ef2e64816dd4501c7fcd1",
+    "sourceSha256": "59f9f11d150e90921bccc7cb4ff21fd5b3bd3896271ef2e64816dd4501c7fcd1"
+  },
+  {
+    "slide": 3,
+    "file": "03-ideia-do-chute.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-94b2dc71-d74c-4050-99ac-55bf6efe9ccd.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [],
+    "sha256": "3aeba43f2842abb983617d9c3a2614d84b329a72c45df2c2bf5fe8a3cf1a17e5",
+    "sourceSha256": "3aeba43f2842abb983617d9c3a2614d84b329a72c45df2c2bf5fe8a3cf1a17e5"
+  },
+  {
+    "slide": 4,
+    "file": "04-duas-escolhas.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-d578cd85-cab7-41f4-85fe-6f5676e4e1b2.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [],
+    "sha256": "926f44f79104d71776ab99398aa7d91a0fbdd9aca6b5f81200532daa93178e64",
+    "sourceSha256": "926f44f79104d71776ab99398aa7d91a0fbdd9aca6b5f81200532daa93178e64"
+  },
+  {
+    "slide": 8,
+    "file": "08-plano-do-campo.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-b2bf934a-cdf6-4065-bf8a-b8e5add46322.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [],
+    "sha256": "23de643ad047e2073976c3ea52bc6e4c97fd07f2e97d088a125c2f5e02ac3cee",
+    "sourceSha256": "23de643ad047e2073976c3ea52bc6e4c97fd07f2e97d088a125c2f5e02ac3cee"
+  },
+  {
+    "slide": 9,
+    "file": "09-mais-uma-ideia.png",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-f250a133-325f-4899-95c3-43a6bf1ce5b7.png",
+    "tool": "image_gen.imagegen — native",
+    "references": [
+      "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-756fac30-e160-4036-b881-08ca72a9f50d.png"
+    ],
+    "sha256": "dd319d119c21c7cce8f185516e8809c8f19d26912265177913fc222ac2197a78",
+    "sourceSha256": "dd319d119c21c7cce8f185516e8809c8f19d26912265177913fc222ac2197a78"
+  }
+]

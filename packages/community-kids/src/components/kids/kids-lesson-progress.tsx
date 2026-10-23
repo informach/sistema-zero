@@ -8,7 +8,7 @@ import { type AtividadeDaAula, type PosicaoNaAula, vistaProgressoAula } from '@/
  * ⚠️ Ela não pode sumir: o esqueleto (`loading.tsx`) reserva o espaço dela, então uma
  * barra ausente vira um vão no cartão do topo. Foi o que aconteceu com a conta de
  * EQUIPE e com toda aula legada, para as quais o members não manda `sectionProgress`.
- * Sem NADA a medir (uma seção só e nenhuma atividade obrigatória) ela vira o
+ * Sem NADA a medir (uma parte só e nenhuma atividade obrigatória) ela vira o
  * espaçador, porque inventar um número seria pior que não mostrar nenhum.
  */
 export function KidsLessonProgress({
@@ -27,7 +27,7 @@ export function KidsLessonProgress({
       <div
         className="sz-progress flex-1"
         role="progressbar"
-        aria-label="Progresso da fase"
+        aria-label="Progresso da aula"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(vista.percent)}

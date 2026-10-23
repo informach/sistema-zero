@@ -1,0 +1,1359 @@
+{
+  "version": 1,
+  "python": "3.14.2",
+  "tk": "8.6.15",
+  "upstreamSha256": "6074e63c2aab6998418e55b0ebc74c8a64c2813a8c079e12a0fbee8ddf2c13c5",
+  "status": "contract-under-conformance",
+  "entries": [
+    {
+      "owner": "Screen",
+      "name": "addshape",
+      "signature": "(name, shape=None)",
+      "canonical": "register_shape",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "bgcolor",
+      "signature": "(*args)",
+      "canonical": "bgcolor",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "bgpic",
+      "signature": "(picname=None)",
+      "canonical": "bgpic",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "bye",
+      "signature": "()",
+      "canonical": "bye",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "clear",
+      "signature": "()",
+      "canonical": "clear",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "clearscreen",
+      "signature": "()",
+      "canonical": "clear",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "colormode",
+      "signature": "(cmode=None)",
+      "canonical": "colormode",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "delay",
+      "signature": "(delay=None)",
+      "canonical": "delay",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "exitonclick",
+      "signature": "()",
+      "canonical": "exitonclick",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "getshapes",
+      "signature": "()",
+      "canonical": "getshapes",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "listen",
+      "signature": "(xdummy=None, ydummy=None)",
+      "canonical": "listen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "mainloop",
+      "signature": "()",
+      "canonical": "mainloop",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "onclick",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onclick",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "onkey",
+      "signature": "(fun, key)",
+      "canonical": "onkey",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "onkeypress",
+      "signature": "(fun, key=None)",
+      "canonical": "onkeypress",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "onkeyrelease",
+      "signature": "(fun, key)",
+      "canonical": "onkey",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "onscreenclick",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onclick",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "ontimer",
+      "signature": "(fun, t=0)",
+      "canonical": "ontimer",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "register_shape",
+      "signature": "(name, shape=None)",
+      "canonical": "register_shape",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "reset",
+      "signature": "()",
+      "canonical": "reset",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "resetscreen",
+      "signature": "()",
+      "canonical": "reset",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "setup",
+      "signature": "(width=0.5, height=0.75, startx=None, starty=None)",
+      "canonical": "setup",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "title",
+      "signature": "(titlestring)",
+      "canonical": "title",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "tracer",
+      "signature": "(n=None, delay=None)",
+      "canonical": "tracer",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "turtles",
+      "signature": "()",
+      "canonical": "turtles",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "update",
+      "signature": "()",
+      "canonical": "update",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "window_height",
+      "signature": "()",
+      "canonical": "window_height",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Screen",
+      "name": "window_width",
+      "signature": "()",
+      "canonical": "window_width",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "back",
+      "signature": "(distance)",
+      "canonical": "back",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "backward",
+      "signature": "(distance)",
+      "canonical": "back",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "begin_fill",
+      "signature": "()",
+      "canonical": "begin_fill",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "bk",
+      "signature": "(distance)",
+      "canonical": "back",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "circle",
+      "signature": "(radius, extent=None, steps=None)",
+      "canonical": "circle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "clear",
+      "signature": "()",
+      "canonical": "clear",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "clearstamp",
+      "signature": "(stampid)",
+      "canonical": "clearstamp",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "clearstamps",
+      "signature": "(n=None)",
+      "canonical": "clearstamps",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "clone",
+      "signature": "()",
+      "canonical": "clone",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "color",
+      "signature": "(*args)",
+      "canonical": "color",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "distance",
+      "signature": "(x, y=None)",
+      "canonical": "distance",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "dot",
+      "signature": "(size=None, *color)",
+      "canonical": "dot",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "down",
+      "signature": "()",
+      "canonical": "pendown",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "end_fill",
+      "signature": "()",
+      "canonical": "end_fill",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "fd",
+      "signature": "(distance)",
+      "canonical": "forward",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "fillcolor",
+      "signature": "(*args)",
+      "canonical": "fillcolor",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "filling",
+      "signature": "()",
+      "canonical": "filling",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "forward",
+      "signature": "(distance)",
+      "canonical": "forward",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "getscreen",
+      "signature": "()",
+      "canonical": "getscreen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "goto",
+      "signature": "(x, y=None)",
+      "canonical": "goto",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "heading",
+      "signature": "()",
+      "canonical": "heading",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "hideturtle",
+      "signature": "()",
+      "canonical": "hideturtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "home",
+      "signature": "()",
+      "canonical": "home",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "ht",
+      "signature": "()",
+      "canonical": "hideturtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "isdown",
+      "signature": "()",
+      "canonical": "isdown",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "isvisible",
+      "signature": "()",
+      "canonical": "isvisible",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "left",
+      "signature": "(angle)",
+      "canonical": "left",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "lt",
+      "signature": "(angle)",
+      "canonical": "left",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "onclick",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onclick",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "ondrag",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "ondrag",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "onrelease",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onrelease",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "pd",
+      "signature": "()",
+      "canonical": "pendown",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "pencolor",
+      "signature": "(*args)",
+      "canonical": "pencolor",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "pendown",
+      "signature": "()",
+      "canonical": "pendown",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "pensize",
+      "signature": "(width=None)",
+      "canonical": "pensize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "penup",
+      "signature": "()",
+      "canonical": "penup",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "pos",
+      "signature": "()",
+      "canonical": "pos",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "position",
+      "signature": "()",
+      "canonical": "pos",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "pu",
+      "signature": "()",
+      "canonical": "penup",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "reset",
+      "signature": "()",
+      "canonical": "reset",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "right",
+      "signature": "(angle)",
+      "canonical": "right",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "rt",
+      "signature": "(angle)",
+      "canonical": "right",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "seth",
+      "signature": "(to_angle)",
+      "canonical": "setheading",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "setheading",
+      "signature": "(to_angle)",
+      "canonical": "setheading",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "setpos",
+      "signature": "(x, y=None)",
+      "canonical": "goto",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "setposition",
+      "signature": "(x, y=None)",
+      "canonical": "goto",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "setx",
+      "signature": "(x)",
+      "canonical": "setx",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "sety",
+      "signature": "(y)",
+      "canonical": "sety",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "shape",
+      "signature": "(name=None)",
+      "canonical": "shape",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "shapesize",
+      "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
+      "canonical": "shapesize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "showturtle",
+      "signature": "()",
+      "canonical": "showturtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "speed",
+      "signature": "(speed=None)",
+      "canonical": "speed",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "st",
+      "signature": "()",
+      "canonical": "showturtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "stamp",
+      "signature": "()",
+      "canonical": "stamp",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "towards",
+      "signature": "(x, y=None)",
+      "canonical": "towards",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "turtlesize",
+      "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
+      "canonical": "shapesize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "up",
+      "signature": "()",
+      "canonical": "penup",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "width",
+      "signature": "(width=None)",
+      "canonical": "pensize",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "write",
+      "signature": "(arg, move=False, align='left', font=('Arial', 8, 'normal'))",
+      "canonical": "write",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "xcor",
+      "signature": "()",
+      "canonical": "xcor",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Turtle",
+      "name": "ycor",
+      "signature": "()",
+      "canonical": "ycor",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "Shape",
+      "name": "addcomponent",
+      "signature": "(poly, fill, outline=None)",
+      "canonical": "addcomponent",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "addshape",
+      "signature": "(name, shape=None)",
+      "canonical": "register_shape",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "bgcolor",
+      "signature": "(*args)",
+      "canonical": "bgcolor",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "bgpic",
+      "signature": "(picname=None)",
+      "canonical": "bgpic",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "bye",
+      "signature": "()",
+      "canonical": "bye",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "clearscreen",
+      "signature": "()",
+      "canonical": "clear",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "colormode",
+      "signature": "(cmode=None)",
+      "canonical": "colormode",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "delay",
+      "signature": "(delay=None)",
+      "canonical": "delay",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "exitonclick",
+      "signature": "()",
+      "canonical": "exitonclick",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "getshapes",
+      "signature": "()",
+      "canonical": "getshapes",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "listen",
+      "signature": "(xdummy=None, ydummy=None)",
+      "canonical": "listen",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "mainloop",
+      "signature": "()",
+      "canonical": "mainloop",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "onkey",
+      "signature": "(fun, key)",
+      "canonical": "onkey",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "onkeypress",
+      "signature": "(fun, key=None)",
+      "canonical": "onkeypress",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "onkeyrelease",
+      "signature": "(fun, key)",
+      "canonical": "onkey",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "onscreenclick",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onclick",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "ontimer",
+      "signature": "(fun, t=0)",
+      "canonical": "ontimer",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "register_shape",
+      "signature": "(name, shape=None)",
+      "canonical": "register_shape",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "resetscreen",
+      "signature": "()",
+      "canonical": "reset",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "setup",
+      "signature": "(width=0.5, height=0.75, startx=None, starty=None)",
+      "canonical": "setup",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "title",
+      "signature": "(titlestring)",
+      "canonical": "title",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "tracer",
+      "signature": "(n=None, delay=None)",
+      "canonical": "tracer",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "turtles",
+      "signature": "()",
+      "canonical": "turtles",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "update",
+      "signature": "()",
+      "canonical": "update",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "window_height",
+      "signature": "()",
+      "canonical": "window_height",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "window_width",
+      "signature": "()",
+      "canonical": "window_width",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "back",
+      "signature": "(distance)",
+      "canonical": "back",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "backward",
+      "signature": "(distance)",
+      "canonical": "back",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "begin_fill",
+      "signature": "()",
+      "canonical": "begin_fill",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "bk",
+      "signature": "(distance)",
+      "canonical": "back",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "circle",
+      "signature": "(radius, extent=None, steps=None)",
+      "canonical": "circle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "clear",
+      "signature": "()",
+      "canonical": "clear",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "clearstamp",
+      "signature": "(stampid)",
+      "canonical": "clearstamp",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "clearstamps",
+      "signature": "(n=None)",
+      "canonical": "clearstamps",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "clone",
+      "signature": "()",
+      "canonical": "clone",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "color",
+      "signature": "(*args)",
+      "canonical": "color",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "distance",
+      "signature": "(x, y=None)",
+      "canonical": "distance",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "dot",
+      "signature": "(size=None, *color)",
+      "canonical": "dot",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "down",
+      "signature": "()",
+      "canonical": "pendown",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "end_fill",
+      "signature": "()",
+      "canonical": "end_fill",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "fd",
+      "signature": "(distance)",
+      "canonical": "forward",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "fillcolor",
+      "signature": "(*args)",
+      "canonical": "fillcolor",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "filling",
+      "signature": "()",
+      "canonical": "filling",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "forward",
+      "signature": "(distance)",
+      "canonical": "forward",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "getscreen",
+      "signature": "()",
+      "canonical": "getscreen",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "goto",
+      "signature": "(x, y=None)",
+      "canonical": "goto",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "heading",
+      "signature": "()",
+      "canonical": "heading",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "hideturtle",
+      "signature": "()",
+      "canonical": "hideturtle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "home",
+      "signature": "()",
+      "canonical": "home",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "ht",
+      "signature": "()",
+      "canonical": "hideturtle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "isdown",
+      "signature": "()",
+      "canonical": "isdown",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "isvisible",
+      "signature": "()",
+      "canonical": "isvisible",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "left",
+      "signature": "(angle)",
+      "canonical": "left",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "lt",
+      "signature": "(angle)",
+      "canonical": "left",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "onclick",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onclick",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "ondrag",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "ondrag",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "onrelease",
+      "signature": "(fun, btn=1, add=None)",
+      "canonical": "onrelease",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "pd",
+      "signature": "()",
+      "canonical": "pendown",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "pencolor",
+      "signature": "(*args)",
+      "canonical": "pencolor",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "pendown",
+      "signature": "()",
+      "canonical": "pendown",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "pensize",
+      "signature": "(width=None)",
+      "canonical": "pensize",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "penup",
+      "signature": "()",
+      "canonical": "penup",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "pos",
+      "signature": "()",
+      "canonical": "pos",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "position",
+      "signature": "()",
+      "canonical": "pos",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "pu",
+      "signature": "()",
+      "canonical": "penup",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "right",
+      "signature": "(angle)",
+      "canonical": "right",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "reset",
+      "signature": "()",
+      "canonical": "reset",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "rt",
+      "signature": "(angle)",
+      "canonical": "right",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "seth",
+      "signature": "(to_angle)",
+      "canonical": "setheading",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "setheading",
+      "signature": "(to_angle)",
+      "canonical": "setheading",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "setpos",
+      "signature": "(x, y=None)",
+      "canonical": "goto",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "setposition",
+      "signature": "(x, y=None)",
+      "canonical": "goto",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "setx",
+      "signature": "(x)",
+      "canonical": "setx",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "sety",
+      "signature": "(y)",
+      "canonical": "sety",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "shape",
+      "signature": "(name=None)",
+      "canonical": "shape",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "shapesize",
+      "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
+      "canonical": "shapesize",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "showturtle",
+      "signature": "()",
+      "canonical": "showturtle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "speed",
+      "signature": "(speed=None)",
+      "canonical": "speed",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "st",
+      "signature": "()",
+      "canonical": "showturtle",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "stamp",
+      "signature": "()",
+      "canonical": "stamp",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "towards",
+      "signature": "(x, y=None)",
+      "canonical": "towards",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "turtlesize",
+      "signature": "(stretch_wid=None, stretch_len=None, outline=None)",
+      "canonical": "shapesize",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "up",
+      "signature": "()",
+      "canonical": "penup",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "width",
+      "signature": "(width=None)",
+      "canonical": "pensize",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "write",
+      "signature": "(arg, move=False, align='left', font=('Arial', 8, 'normal'))",
+      "canonical": "write",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "xcor",
+      "signature": "()",
+      "canonical": "xcor",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "ycor",
+      "signature": "()",
+      "canonical": "ycor",
+      "receiver": "Turtle",
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "Screen",
+      "signature": "()",
+      "canonical": "Screen",
+      "receiver": null,
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "Turtle",
+      "signature": "(shape='classic', undobuffersize=1000, visible=True)",
+      "canonical": "Turtle",
+      "receiver": null,
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "Shape",
+      "signature": "(type_, data=None)",
+      "canonical": "Shape",
+      "receiver": null,
+      "fixtureFamily": null
+    },
+    {
+      "owner": "turtle",
+      "name": "done",
+      "signature": "()",
+      "canonical": "mainloop",
+      "receiver": "Screen",
+      "fixtureFamily": null
+    }
+  ]
+}

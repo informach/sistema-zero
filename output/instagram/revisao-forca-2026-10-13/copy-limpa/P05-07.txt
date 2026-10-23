@@ -1,3 +1,0 @@
-Esta vila foi feita no nosso Estúdio. A Guia pergunta “O que você quer ser quando crescer?” e mostra dois botões: Padeiro e Mecânico.
-
-Cada resposta tem um bloco por trás.

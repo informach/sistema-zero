@@ -1,0 +1,59 @@
+{
+  "states": [
+    {
+      "scene": "castelo",
+      "name": "initial",
+      "x": 148,
+      "y": 150,
+      "w": 24,
+      "h": 24,
+      "color": "#f97316"
+    },
+    {
+      "scene": "castelo",
+      "name": "capture",
+      "x": 200,
+      "y": 177,
+      "w": 24,
+      "h": 24,
+      "color": "#f97316"
+    },
+    {
+      "scene": "rua",
+      "name": "initial",
+      "x": 148,
+      "y": 150,
+      "w": 24,
+      "h": 24,
+      "color": "#f97316"
+    },
+    {
+      "scene": "rua",
+      "name": "capture",
+      "x": 77,
+      "y": 174,
+      "w": 24,
+      "h": 24,
+      "color": "#f97316"
+    }
+  ],
+  "checks": [
+    {
+      "scene": "castelo",
+      "allDirections": true
+    },
+    {
+      "scene": "castelo",
+      "rightBoundary": true
+    },
+    {
+      "scene": "rua",
+      "allDirections": true
+    },
+    {
+      "scene": "rua",
+      "rightBoundary": true
+    }
+  ],
+  "errors": []
+}

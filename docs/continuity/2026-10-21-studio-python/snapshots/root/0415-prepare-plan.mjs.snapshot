@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {resolve,dirname} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {brotliCompressSync} from 'node:zlib';
+import {context,origin,appDeployments,serviceContexts,sha} from './contract.mjs';
+const here=dirname(fileURLToPath(import.meta.url)),root=resolve(here,'../../..');
+const authPaths=[
+'packages/auth/package.json','packages/auth/Dockerfile','packages/core/package.json','bun.lock',
+'packages/auth/src/infrastructure/persistence/drizzle/db.ts','packages/auth/src/infrastructure/persistence/drizzle/schema.ts','packages/auth/src/infrastructure/persistence/drizzle/user.repository.ts',
+'packages/auth/src/infrastructure/security/bun-password-hasher.ts','packages/auth/src/domain/user/user.aggregate.ts','packages/auth/src/domain/user/user.errors.ts','packages/auth/src/domain/user/user.events.ts','packages/auth/src/domain/user/user.role.ts','packages/auth/src/domain/user/user.status.ts',
+'packages/auth/src/domain/value-objects/email.ts','packages/auth/src/domain/value-objects/password-policy.ts','packages/auth/src/domain/shared/aggregate-root.ts','packages/auth/src/domain/shared/entity.ts','packages/auth/src/domain/shared/domain-event.ts',
+'packages/core/src/errors/index.ts','packages/core/src/errors/domain-errors.ts'];
+const uiPaths=[
+'packages/community/src/app/(auth)/login/login-form.tsx','packages/community/src/app/(app)/estudio/page.tsx',
+'packages/member-shell/src/components/creator/studio-full-client.tsx','packages/member-shell/src/components/creator/studio-pro-client.tsx',
+'packages/member-shell/src/lib/studio-tier.ts','packages/member-shell/src/lib/pro-toolchain.ts','packages/member-shell/src/server/free-pro-toolchain.ts',
+'packages/studio/src/projects/ProjectList.tsx','packages/studio/src/components/projects/ProjectCard.tsx','packages/studio/src/components/projects/ImportButton.tsx','packages/studio/src/components/projects/NewProjectModal.tsx',
+'packages/studio/src/components/layout/Topbar.tsx','packages/studio/src/modes/pro/ProPreview.tsx','packages/studio/src/core/proProject.ts','packages/studio/src/state/editableProjectValidation.ts',
+'packages/studio/src/export/sourceDownload.ts','packages/studio/src/export/sourceExport.ts','packages/studio/src/export/fileMap.ts','packages/studio/src/core/proAssetPaths.ts'];
+for(const path of uiPaths){assert(readFileSync(resolve(root,path)).equals(execFileSync('git',['show',context.RAILWAY_GIT_COMMIT_SHA+':'+path],{cwd:root,encoding:null,stdio:['ignore','pipe','pipe']})),'UI source differs from qualified Git 8c0: '+path);}
+const cacheInputs=[
+'.cache/studio-python-l0/pro-legacy-hosted-9e33-r1/fixture.json',
+'.cache/studio-python-l0/pro-legacy-hosted-9e33-r1/expected-package-lock.json',
+'.cache/studio-python-l0/pro-legacy-hosted-members-9e33-r5/legacy-package.json',
+'.cache/studio-python-l0/staging-bootstrap-aggregate-r3/root-final-r1/all18-ready.json',
+'.cache/studio-python-l0/pro-legacy-staging-actor-discovery-r1/receipt-r4.json',
+'.cache/studio-python-l0/pro-legacy-staging-ui-deploy-snapshot-r1/receipt.json',
+'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r1/plan.json',
+'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r1/preparation-receipt.json',
+'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r2/delta-receipt.json',
+'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r2/ui-selector-receipt.json',
+'.cache/studio-python-l0/derive-pro-legacy-staging-ui-r3.mjs',
+'.cache/studio-python-l0/railway-backlog-face-r5/oauth-session.mjs'];
+const parentPlan=JSON.parse(readFileSync(resolve(root,'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r1/plan.json')));
+for(const p of parentPlan.pins.filter(p=>p.scope==='root')){const b=readFileSync(resolve(root,p.path));assert.equal(b.length,p.bytes);assert.equal(sha(b),p.sha256);}
+const authPins=authPaths.map(path=>{
+ const current=readFileSync(resolve(root,path));
+ const deployed=execFileSync('git',['show',context.RAILWAY_GIT_COMMIT_SHA+':'+path],{cwd:root,encoding:null,stdio:['ignore','pipe','pipe']});
+ assert(current.equals(deployed),'Auth input differs from exact qualified Git 8c0: '+path);
+ assert(current.equals(execFileSync('git',['show','face8acef32f1e924f1461557e82716ea7acc3dc:'+path],{cwd:root,encoding:null,stdio:['ignore','pipe','pipe']})),'Auth historical bytes drift: '+path);
+ return {path,bytes:deployed.length,sha256:sha(deployed)};
+});
+const pin=(scope,path)=>{const b=readFileSync(resolve(scope==='root'?root:here,path));return {scope,path,bytes:b.length,sha256:sha(b)}};
+const qa=['remote.mjs','run.mjs','ui.mjs','contract.mjs','prepare-fixture.ts','prepare-plan.mjs','control.test.mjs','legacy.szproject.json','fixture-check.json','README.md','provider-context.mjs','caller-bridge.mjs','provider-context.test.mjs','provider-projection-child.mjs','oauth-session.mjs','oauth-context.mjs','context-control.test.mjs','ADAPTER-INTERFACE.md','derivation.json'];
+const pins=[...new Set([...authPaths,...uiPaths,...cacheInputs])].map(p=>pin('root',p)).concat(qa.map(p=>pin('qa',p)));
+const cli={path:'C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe',sha256:'f9351033614c86882332a5c82e1856b21792b176ebf84a9417dfd1362c425177'};
+assert.equal(sha(readFileSync(cli.path)),cli.sha256);
+const spec={attemptId:'00000000-0000-4000-8000-000000000001',actorId:'00000000-0000-4000-8000-000000000002',email:'qa-pro-00000000-0000-4000-8000-000000000002@example.invalid',role:'staff',context,pins:authPins};
+const loader="const{brotliDecompressSync}=await import('node:zlib');await import('data:text/javascript;base64,'+brotliDecompressSync(Buffer.from('"+brotliCompressSync(Buffer.from('const SPEC='+JSON.stringify(spec)+';\n'+readFileSync(resolve(here,'remote.mjs'),'utf8'))).toString('base64')+"','base64')).toString('base64'));";
+assert(Buffer.byteLength(loader)<24576);
+const plan={kind:'offline-owned-staff-legacy-pro-ui',schemaVersion:1,rootHead:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),origin,context,appDeployments,serviceContexts,cli,
+ expectedLockPath:cacheInputs[1],authPins,pins,remoteLoaderBytes:Buffer.byteLength(loader),maxLoaderBytes:24576,
+ bounds:{remoteMs:45000,sshMs:60000,uiMs:180000,overallMs:300000,stdoutBytes:16384,stderrBytes:16384,secretInputBytes:512,downloadBytes:1048576},
+ ownership:{adapter:'Root reviewed Node + Job helper; caller integration pending',browserMiB:1024,osReserveMiB:512,browserLaunchHere:false,standaloneExecute:false,accountRetained:true},
+ evidenceScope:'Offline preparation only. No account, login, provider request, browser, BFF or UI execution.'};
+writeFileSync(resolve(here,'plan.json'),JSON.stringify(plan,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({passed:true,planSha256:sha(readFileSync(resolve(here,'plan.json'))),pins:pins.length,authPins:authPins.length,loaderBytes:plan.remoteLoaderBytes,authParity8c0:true,providerCalls:0}));
+

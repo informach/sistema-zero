@@ -1,3 +1,0 @@
-Nesta corrida do nosso Estúdio, completar a volta significa passar pelos cinco anéis na ordem.
-
-Quem cria monta essa sequência para o jogo reconhecer o percurso.

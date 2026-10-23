@@ -78,49 +78,82 @@ function DemoHostChrome({ children }: { children: JSX.Element }): JSX.Element {
 const hostDemo = new URLSearchParams(window.location.search).get('host') === '1'
 
 /**
- * `?tarefa=1` monta um brief de mentira (o que o kids monta a partir do handoff do
+ * `?missao=1` monta uma missão de demonstração (o que o Kids recebe no handoff do
  * Pensa), para ver o painel — e o "Voltar ao plano" — no navegador sem banco.
  * `onReturnToPlan` só loga: aqui não há para onde navegar.
  *
- * `?tarefa=falha` faz a volta REJEITAR, para conferir que nada navega e o recado
+ * `?missao=falha` faz a volta rejeitar, para conferir que nada navega e o recado
  * aparece no painel.
  */
-const taskDemo = new URLSearchParams(window.location.search).get('tarefa')
+const taskDemo = new URLSearchParams(window.location.search).get('missao')
 const DEMO_TASK: PintaTaskSession = {
-  taskId: 'tarefa-demo',
-  project: { id: 'plano-demo', name: 'Bosque encantado' },
-  cycle: { id: 'ciclo-demo', number: 1, goal: 'Desenhar a turma do jogo' },
-  title: 'Desenhar a heroína',
-  summary: 'A personagem que a criança controla.',
-  brief: {
-    assetId: 'heroina',
-    artKind: 'sprite',
-    style: 'pixel',
-    palette: [
-      { role: 'roupa', color: '#aa33cc' },
-      { role: 'pele', color: '#f2c4a0' },
+  project: { id: '10000000-0000-4000-8000-000000000001', name: 'Bosque encantado' },
+  mission: {
+    id: '10000000-0000-4000-8000-000000000002',
+    contentRevision: 1,
+    stageId: '10000000-0000-4000-8000-000000000003',
+    position: 0,
+    title: 'Desenhe a heroína',
+    objective: 'Crie a personagem que o jogador controla.',
+    kind: 'asset',
+    destination: 'pinta',
+    requirementIds: ['10000000-0000-4000-8000-000000000004'],
+    dependencyIds: [],
+    assetSlotIds: ['10000000-0000-4000-8000-000000000005'],
+    rules: [{ id: 'appearance', text: 'Ela é pequena, ágil e tem uma capa roxa.' }],
+    checks: [
+      {
+        id: 'silhouette',
+        action: 'Veja a personagem no tamanho do jogo.',
+        expected: 'Dá para reconhecer sua silhueta.',
+      },
     ],
-    appearance: 'Pequena, ágil e com capa roxa.',
-    animations: ['andar'],
-    states: ['parada'],
-    usage: 'Personagem principal',
-    requiresStudioUse: false,
-  },
-  guide: {
-    steps: [{ id: 'desenhar', text: 'Desenhar a personagem de frente', required: true }],
-    criteria: [{ id: 'silhueta', text: 'Dá para reconhecer de longe', required: true }],
   },
   progress: {
+    missionId: '10000000-0000-4000-8000-000000000002',
+    progressRevision: 0,
     status: 'in_progress',
-    completedStepIds: [],
-    completedCriteriaIds: [],
-    startedAt: '2026-09-17T12:00:00.000Z',
+    validity: 'current',
+    assigneeProfileId: null,
+    completedByProfileId: null,
+    deliveries: [],
+    verification: null,
+    resumeNote: null,
+    startedAt: null,
     completedAt: null,
-    updatedAt: '2026-09-17T12:00:00.000Z',
-    outputRef: null,
   },
-  onProgress: async (input) => {
-    console.log('[playground] onProgress', input)
+  assetSlots: [
+    {
+      id: '10000000-0000-4000-8000-000000000005',
+      name: 'Heroína',
+      kind: 'sprite',
+      description: 'A personagem de capa roxa.',
+      source: 'create',
+      existing: null,
+    },
+  ],
+  references: [],
+  blockedReason: null,
+  collapsed: false,
+  onCollapsedChange() {},
+  async onComplete() {
+    console.log('[playground] conferir missão')
+  },
+  async onReopen() {
+    console.log('[playground] reabrir missão')
+  },
+  async onNextMission() {
+    console.log('[playground] continuar caminho')
+  },
+  nextMissionLabel: 'Voltar ao plano',
+  onNeedHelp() {
+    console.log('[playground] abrir ajuda')
+  },
+  async onBindCreation(input) {
+    console.log('[playground] ligar criação', input)
+  },
+  async onSaveNote(note) {
+    console.log('[playground] guardar nota', note)
   },
   onReturnToPlan: () => {
     if (taskDemo === 'falha') throw new Error('Falha de mentira do playground.')
@@ -128,51 +161,58 @@ const DEMO_TASK: PintaTaskSession = {
   },
 }
 
-const app = (
-  <PintaApp
-    adapter={{
-      sendToStudio: async (asset) => {
-        console.log('[playground] sendToStudio', {
-          id: asset.id,
-          name: asset.name,
-          width: asset.width,
-          height: asset.height,
-          dataUrlChars: asset.dataUrl.length,
-          // Mapa: a grade DEVE trazer as camadas da frente (nada some por aqui).
-          grid: asset.tilemap?.grid,
-        })
-        return { ok: true }
-      },
-      sendGameToStudio: async (asset) => {
-        console.log('[playground] sendGameToStudio', {
-          name: asset.name,
-          hasTilemap: Boolean(asset.tilemap),
-          hasFront: Boolean(asset.tilemapFront),
-          grid: asset.tilemap?.grid,
-          frontGrid: asset.tilemapFront?.grid,
-        })
-        return { ok: true }
-      },
-      // Reenvio automático ao salvar: no app de verdade o host só atualiza o
-      // que JÁ está na biblioteca do Estúdio; aqui devolve sempre "atualizei"
-      // para dar como ver o aviso no cabeçalho.
-      resyncToStudio: async (asset) => {
-        console.log('[playground] resyncToStudio', {
-          id: asset.id,
-          name: asset.name,
-          dataUrlChars: asset.dataUrl.length,
-        })
-        return { updated: true }
-      },
-      // Deep link do botão "Editar" do Estúdio: `?desenho=<id>`.
-      ...(new URLSearchParams(window.location.search).get('desenho')
-        ? { initialAssetId: new URLSearchParams(window.location.search).get('desenho') ?? '' }
-        : {}),
-      onOpenStudio: () => console.log('[playground] onOpenStudio'),
-      ...(taskDemo ? { taskSession: DEMO_TASK } : {}),
-    }}
-  />
-)
+function PintaDemo() {
+  const [collapsed, setCollapsed] = useState(false)
+  return (
+    <PintaApp
+      adapter={{
+        sendToStudio: async (asset) => {
+          console.log('[playground] sendToStudio', {
+            id: asset.id,
+            name: asset.name,
+            width: asset.width,
+            height: asset.height,
+            dataUrlChars: asset.dataUrl.length,
+            // Mapa: a grade DEVE trazer as camadas da frente (nada some por aqui).
+            grid: asset.tilemap?.grid,
+          })
+          return { ok: true }
+        },
+        sendGameToStudio: async (asset) => {
+          console.log('[playground] sendGameToStudio', {
+            name: asset.name,
+            hasTilemap: Boolean(asset.tilemap),
+            hasFront: Boolean(asset.tilemapFront),
+            grid: asset.tilemap?.grid,
+            frontGrid: asset.tilemapFront?.grid,
+          })
+          return { ok: true }
+        },
+        // Reenvio automático ao salvar: no app de verdade o host só atualiza o
+        // que JÁ está na biblioteca do Estúdio; aqui devolve sempre "atualizei"
+        // para dar como ver o aviso no cabeçalho.
+        resyncToStudio: async (asset) => {
+          console.log('[playground] resyncToStudio', {
+            id: asset.id,
+            name: asset.name,
+            dataUrlChars: asset.dataUrl.length,
+          })
+          return { updated: true }
+        },
+        // Deep link do botão "Editar" do Estúdio: `?desenho=<id>`.
+        ...(new URLSearchParams(window.location.search).get('desenho')
+          ? { initialAssetId: new URLSearchParams(window.location.search).get('desenho') ?? '' }
+          : {}),
+        onOpenStudio: () => console.log('[playground] onOpenStudio'),
+        ...(taskDemo
+          ? { taskSession: { ...DEMO_TASK, collapsed, onCollapsedChange: setCollapsed } }
+          : {}),
+      }}
+    />
+  )
+}
+
+const app = <PintaDemo />
 
 createRoot(root).render(
   <StrictMode>

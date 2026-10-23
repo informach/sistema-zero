@@ -1,0 +1,36 @@
+{
+  "id": "P44",
+  "title": "Uma conta pode decidir quanto dura a batalha de um jogo. Seu filho pode escolher os números e testar o resultado.",
+  "slides": [
+    [
+      "Uma conta pode decidir quanto dura a batalha de um jogo.",
+      "Seu filho pode escolher os números e testar o resultado."
+    ],
+    [
+      "Imagine um monstrinho com vinte pontos de vida.",
+      "Cada ataque tira oito. Quantos ataques são necessários para vencer?"
+    ],
+    [
+      "Depois do primeiro, restam doze. Depois do segundo, restam quatro.",
+      "É preciso um terceiro ataque para terminar a batalha."
+    ],
+    [
+      "Ao criar o jogo, a criança escolhe a força do ataque.",
+      "Na nossa demonstração, uma instrução faz o ataque tirar oito pontos de vida."
+    ],
+    [
+      "Agora imagine que cada ataque tire dez.",
+      "Dois ataques já acabam com os vinte pontos. A batalha ficou mais curta."
+    ],
+    [
+      "Quem cria pode fazer essa conta antes de testar.",
+      "Depois joga para ver se a luta ficou como imaginou."
+    ],
+    [
+      "Assim, os números ajudam a tomar uma decisão sobre o jogo.",
+      "Siga o perfil para ver mais coisas que as crianças podem aprender criando."
+    ]
+  ],
+  "caption": "Na criação de um jogo, mudar um número pode mudar toda a duração de uma batalha.\n\nSe o monstrinho tem vinte pontos de vida e cada ataque tira oito, dois ataques deixam quatro pontos. Com dez por ataque, a luta acaba no segundo. A conta ajuda a prever o resultado antes de jogar.\n\nQuem está criando pode perguntar: quero uma batalha mais curta ou mais longa? Então escolhe um valor, testa e compara. A matemática aparece como parte de uma decisão sobre algo que a criança está construindo.\n\nSiga o perfil para conhecer outros exemplos de aprendizado na criação de jogos.",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/10-p41-a-p50.md"
+}

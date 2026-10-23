@@ -1,0 +1,277 @@
+# Manutenção Pensa: cinco serviços, armazenamento e reload antigo — plano privado R1
+
+PREPARADO SOMENTE OFFLINE. Nenhuma chamada Railway/SQL/HTTP, variável, redeploy,
+processo ou migração foi executada nesta tarefa. Nenhum script mutador foi criado.
+Este documento exige revisão de Root antes da implementação do operador ou abertura
+da janela. A referência Git local é `1f71cd1f4721e2828ea72a18d687e90882d7e223`.
+
+## Decisão técnica e lacuna que não pode virar pressuposto
+
+`RELEASE_MAINTENANCE_MODE=full` é uma barreira de **startup da aplicação**. O
+launcher instalado serve manutenção sem importar o app. Não intercepta o
+preDeploy do Railway. Members e Hub antigos declaram, respectivamente,
+`bun run --filter @sistemazero/members db:migrate` e
+`bun run --filter @sistemazero/hub db:migrate`; ambos resolvem `drizzle-kit migrate`.
+
+`deploymentRedeploy(id: ..., usePreviousImageTag: true)` seleciona reutilização de
+imagem, **não é um argumento skipPreDeploy**. O schema público capturado confirma
+assinatura `Deployment!` e o booleano, cuja descrição é nula. Os pilotos locais
+observados demonstraram mesma imagem/configuração nova/retirada, mas NÃO registraram
+uma prova específica de execução ou omissão do preDeploy. Portanto a conclusão
+aqui não é “o preDeploy foi pulado”: planejar que ele pode/exige executar e manter
+seu comando antigo explícito. Não há confirmação offline do comportamento interno
+do servidor para a combinação desse argumento com preDeploy. Não usar o nome do
+argumento ou `noBuild` como prova de ausência de SQL.
+
+O efeito pretendido é **zero migrations novas**, não “zero chamada SQL”: se o
+journal instalado termina no mesmo hash/marca do journal real do banco, o migrator
+antigo não tem migrations pendentes. Ainda pode consultar o journal e fazer DDL
+idempotente de bootstrap/abrir transação. A imagem Members antiga só contém até
+0101; não contém os SQL destrutivos 0126/0128. Esta proteção depende de conferir o
+journal realmente instalado, o banco correto e os comandos efetivos antes de
+disparar o reload. O guard não pode existir só no polling posterior.
+
+Gates que ainda precisam de leitura Root antes do primeiro reload:
+
+1. Projetar os preDeploys atuais e os `meta.serviceManifest`/`resolvedFileConfig`
+   dos cinco deployments. O recibo de launcher não projetou preDeploy; ausência
+   dessa evidência não equivale a ausência do comando. Recusar comando divergente,
+   preDeploy inesperado nos três Next, imagem externa/config novo ou source drift.
+2. Por leitura restrita na imagem antiga exata, confirmar hash e última entrada do
+   `_journal.json` instalado de Members e Hub; sem carregar app/migrator.
+3. Ler journals do banco correto em transação READ ONLY, sem dados pessoais.
+   Exigir igualdade de hash e marca esperada; se estiver atrás, à frente ou
+   divergente, parar para decisão específica. Não deixar o reload “corrigir” isso.
+4. Se Root exigir prova de **nenhum SQL** no primeiro reload, este caminho sem
+   mudança de preDeploy não satisfaz esse requisito. Seria necessário outro plano
+   explícito/revisado para preDeploy temporário; não há tal alteração autorizada
+   ou implementada aqui. Não usar RELEASE_SCHEMA_STAGE=hold: o preDeploy atual
+   não chama o wrapper histórico que lê essa variável.
+
+### Fronteiras antigas verificadas em Git, ainda a conferir na imagem/DB frescos
+
+| Serviço | Última migration da imagem-fonte | Marca `when` | SHA-256 SQL |
+|---|---|---:|---|
+| Members | `0101_content_fingerprints` | 1791666505573 | `aeec373386062616efe036d4bc0da327cb05f9f7b6f8259bec32e8ac6a00fe91` |
+| Hub | `0013_mural_sort_indexes` | 1789121671089 | `e2e7500e33be126202adb61a18f4ad7e583ece8dbffe7b6552060501cf4ef9bd` |
+
+SHA do journal Git Members: `9c071735d6bf89d5a4c8d43737563dc18d98d07b3ff9144bc1e578a05e3f14f6`.
+Hub: `aba8998be5b74b9433f7deffb4004d187afedc5c268c921d052df8121240daf3`.
+O recibo de contagem Members histórico confirmou precisamente o hash/marca0101
+acima; não é leitura fresca e não cobre o journal Hub. Queries futuras fechadas:
+
+```sql
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SET LOCAL statement_timeout = '10s';
+SELECT to_regclass('drizzle.members_migrations'), to_regclass('drizzle.hub_migrations');
+-- Executar somente se a tabela correspondente foi confirmada existente:
+SELECT hash, created_at FROM drizzle.members_migrations ORDER BY created_at DESC LIMIT 1;
+SELECT hash, created_at FROM drizzle.hub_migrations ORDER BY created_at DESC LIMIT 1;
+COMMIT;
+```
+
+Não executar esses SELECTs via credencial/caminho descobertos pelo documento.
+Root deve usar o transporte restrito de contagem existente revisado para o alvo
+fresco. Ausência de tabela é uma negativa honesta, não um journal vazio aceito.
+
+## Identidade e prova instalada disponíveis
+
+Projeto `415d5a1c-5f75-432c-8445-b395d0977ce3`; ambiente produção
+`19c212a5-85c0-493c-9630-a7a0569e8412`. Railway CLI nativa5.62.1, Node24.22.0.
+Os alvos abaixo são fatos do recibo concluído em `2026-10-23T01:38:56.488Z`, NÃO
+aliases dinâmicos “latest”. Revalidar imediatamente antes de cada mutação.
+
+| Serviço | Service ID | Deployment antigo observado | Commit antigo | Digest antigo |
+|---|---|---|---|---|
+| Members | `aa282801-ffba-477c-af6d-394b2f4f9af9` | `9d8368c2-d915-4dbf-898c-28c2b7978133` | `6f93dcbfe8f176017b7b1ace5114d480ad5853b1` | `sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847` |
+| Kids | `fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f` | `48c12111-5bb3-449a-90d4-525af1f51aa8` | `91d3e99aae0b602e9ad5548efb2106355f9fe801` | `sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed` |
+| Adult | `9df1b493-4cea-4b36-bec8-7299f054c17d` | `9b8cf594-86f8-4534-bde9-000d433fd836` | `e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28` | `sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74` |
+| Admin | `e00eca0b-5323-4424-9b58-fdb073cfce82` | `10c8d309-1f50-4b52-aa47-693543b010f1` | `6f93dcbfe8f176017b7b1ace5114d480ad5853b1` | `sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8` |
+| Hub | `00b27b18-0587-460b-ba90-b6b24c423e45` | `ba08042b-d2bf-4063-87e7-97ea452cf030` | `a270417ba4acffe97629793bb3fb62ac0e134519` | `sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241` |
+
+Todos os cinco arquivos `/app/scripts/release/start.mjs` foram lidos no contexto
+SSH exato e têm 2726bytes, SHA `9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f`.
+Isso fecha a antiga lacuna de presença/bytes do launcher. Não comprova modo full,
+argv do PID1, retiradas antigas, zero writers ou journal instalado. Members/Hub
+apresentam startCommand explícito coerente. Nos três Next, override ausente + CMD
+Git é evidência da receita, não uma inspeção do argv/configOCI. Confirmar a
+manutenção **efetiva por HTTP** depois é obrigatório. Não inventar PID/instance ID;
+usar todos os IDs reais lidos e exigir aposentadoria dos antigos.
+
+## Reuso permitido, sem executar os operadores staging em produção
+
+- `platform-production-config-r1.ts`: aproveitar o padrão RAM/stdin, leituras de
+  contexto antes/depois, comparação byte a byte, `skip-deploys`, checkpoint
+  fsync e parada em ACK incerto. Não usar sua CLI diretamente: seus grupos são
+  apenas adult-builder/adult-cleanup/kids-funnel/vault/reconcile e ele pode gerar
+  chaves desses grupos; não admite maintenance nem Admin. Não adicionar `full`
+  ao grupo de segredos ou reaproveitar um intent/recibo de outra operação.
+- `staging-members-image-reload-r1.mjs`: reaproveitar `qualify`, contexto
+  único+zero pending, comparação de todos os mapas declarados/resolvidos,
+  normalização restrita de referência inteira por inventário completo,
+  `acknowledge`, fences e `evaluatePoll`, intent único global antes de send,
+  ACK desconhecido sem replay e reader posterior. Não executar a CLI atual:
+  fixa ambiente staging, deployment/imagem bc2, quatro chaves novas obrigatórias,
+  callback/origem staging e validador de configuração Python staging.
+- O futuro adaptador de manutenção deve conter allowlist desses cinco serviços,
+  pins antigos individuais, **uma única chave** modificável e intents próprios
+  permanentes por serviço/operação. Não reutilizar TARGET_KEYS das quatro chaves
+  de staging, não descartar diferenças DATABASE_URL/RAILWAY_* e não trocar
+  segredo, produto, catálogo, host, source, domínio, watchPattern ou comando.
+- Variáveis podem diferir do snapshot antigo por configurações já armazenadas
+  legitimamente (vault/URLs/catálogo etc.). Exigir plano explícito de diferenças
+  aprovado por Root ANTES de reload, sem inferir que toda diferença é manutenção.
+  Entre check/apply todas as outras variáveis atuais ficam idênticas em RAM;
+  snapshot novo deve corresponder ao mapa declarado atual completo. Nenhum valor
+  ou hash secreto vai ao recibo.
+- Os timeouts240/300s dos pilotos tiveram negativas preservadas; não copiar esse
+  limite como duração comprovada. Supervisor novo deve ser combinado antes da
+  execução (proposta15min por reload, sem retry). Um timeout encerra a observação,
+  não cancela/reverte automaticamente o deployment: reader somente leitura
+  reconcilia o mesmo ACK/ID. Nunca disparar um segundo reload para “tentar passar”.
+
+## Sequência operacional proposta e gates
+
+### 0. Antes da indisponibilidade
+
+Staging/candidatas/CI aprovados, source novo congelado e imagens prontas; plano
+SDK/árvore/configuração aceitos por Root; triggers/CD/outros operadores sem
+concorrência; backups/restauração ensaiados e recuperação definida. Confirmar os
+cinco contextos atuais (ativo=último, uniqueSUCCESS, zero pending), imagens, mapas
+RAM, comandos e journals acima. Verificar filas externas/reentrega de eventos de
+pagamento/entitlement e prazo compatível com a janela; não bloquear seus emissores
+nem descartar eventos. Nenhum deployment novo de Members pode começar ainda.
+
+### 1. Armazenar full, sem carregar serviços
+
+Uma gravação por serviço, todas com intents persistentes e leitura posterior.
+Valor único: UTF-8 `full`, pela entrada stdin; campos restantes preservados.
+Se já estiver `full`, não regravar silenciosamente: registrar e reconciliar a
+situação atual antes de continuar. `off` ou ausência só são aceitos como estado
+inicial conhecido; outro valor recusa. Comando nativo exato para o futuro wrapper:
+
+```text
+<railway.exe 5.62.1> variable set RELEASE_MAINTENANCE_MODE --stdin --skip-deploys
+  --project 415d5a1c-5f75-432c-8445-b395d0977ce3
+  --environment 19c212a5-85c0-493c-9630-a7a0569e8412
+  --service <um Service ID da tabela, validado fresco> --json
+```
+
+Executar via `execFile`/stdin e capturar stdout/stderr só em RAM, conforme o
+operador de configuração. Não fazer pipe que imprima as respostas/variáveis.
+Não copiar o comando sem intent global wx+fsync e checkpoint pré-envio. Recibo
+final dessa fase deve dizer CONFIGURATION_STORED_NO_RELOAD e comprovar que todos
+os deployments/instances permaneceram os mesmos. `skip-deploys` não fecha writers.
+ACK perdido para imediatamente; um readback igual não autoriza nova gravação ou
+avanço automático. A intenção não é removida por novo check/hash/run.
+
+### 2. Carregar full nas imagens antigas — um serviço por vez
+
+Ordem proposta para janela geral: **Kids → Adult → Admin → Hub → Members**.
+As três interfaces param de iniciar trabalhos novos antes do backend; Members
+continua atendendo até o último passo, mas a barreira só existe após TODOS os
+antigos escritores pertinentes estarem retirados. A ordem não preserva cursos
+online durante a manutenção. Congelar só Members seria menor para SQL, porém não
+cobriria IA/R2/processos front em voo nem apresentação uniforme.
+
+Para cada alvo antigo revalidado da tabela, mutação oficial única:
+
+```graphql
+mutation PensaOldImageMaintenance($id:String!) {
+  deploymentRedeploy(id:$id,usePreviousImageTag:true) { id status snapshotId }
+}
+```
+
+Invocação exata do futuro wrapper, valores JSON somente em stdin:
+
+```text
+<railway.exe 5.62.1> api --compact '<GraphQL literal acima>' --variables @-
+stdin: {"id":"<deployment antigo exato, validado fresco da tabela>"}
+```
+
+Antes de send: repetir identidade/config/journalgate; reservar intent fixo por
+serviço+old-image-maintenance, sem nome de run/hash na exclusividade. Depois:
+nenhum outro POST, só polling limitado/diagnóstico. Exigir ID novo retornado,
+mesmo commit e digest antigos, snapshot novo completo com full, uniqueSUCCESS,
+zero pending, deployment antigo REMOVED+deploymentStopped e nenhuma instância
+antiga RUNNING/STARTING. Se aparecer terceiro ID/source/config inesperado,
+parar; não “acompanhar latest” nem fabricar ID. Igualdade de digest não prova
+que o provider não fez rebuild; conservar o limite `noBuildProven=false` se não
+houver evidência suficiente. A operação não seleciona fonte nova.
+
+Provar com GETs limitados aos hosts/rotas reais já pinados por Root:
+
+- `/readyz` Members/Hub ou `/api/healthz` Next: HTTP200,
+  JSON exato `{ "status": "maintenance" }`, `x-release-maintenance: full`.
+- Uma rota GET normal sem ação: HTTP503, JSON
+  `error.code=RELEASE_MAINTENANCE`, mesmo header e `cache-control:no-store`.
+- Não aceitar SUCCESS/health200 genérico como manutenção, não seguir redirect
+  para outro domínio, não chamar POST de usuário/IA/cleanup como probe.
+
+O host HTTP exato de Members/Hub deve vir do inventário atual (público ou sonda
+interna autorizada), não de porta/domínio deduzidos. Essa preparação não inventa
+URLs internas nem startCommand/PID alternativo.
+
+### 3. Confirmar cerca, dados e objetos antes da migração destrutiva
+
+Repetir inventário dos cinco, exigir manutenção real e antigas réplicas retiradas.
+Só então contagem Pensa read-only fresca com novo deployment de manutenção,
+backup definitivo e prova de recuperação. O operador de contagem r1 fixa o ID
+antigo: precisa de revisão explícita dos pins, não remover seu guard de identidade.
+`pensa-maintenance.ts preflight` exige0125 e não serve diretamente para o banco
+0101; não usar `--workers-fenced`/`--no-child-data` como mecanismo de bloqueio.
+
+Não assumir que desligar processos desfez efeitos externos: geração IA já
+aceita pode continuar/cobrar; cleanup R2 já iniciado pode terminar fora do banco.
+Preservar reservas/ledger/resultados de ACK e reconciliar uso pelo fluxo aprovado,
+sem liberar/copiar ledger às cegas. PUT assinado antigo tem TTL600s: esperar
+validade desde a última emissão possível é só um gate para novos requests, não
+prova término de upload iniciado. Definir recorte R2/backup de objetos e exigir
+observação pertinente; não fazer DELETE/rotação/cópia automática nesta fase.
+
+### 4. Só após aceite explícito da barreira: código novo e reabertura
+
+Implantar Members novo em full executa o **preDeploy novo**, incluindo a cadeia
+pendente e 0126/0128; esse é o ponto destrutivo deliberado, posterior à contagem e
+backup. 0126 também materializa deletion_jobs/releases de reservas/referências,
+não é apenas DELETE; 0128 remove tabelas/tipos. Registrar journal e sentinelas,
+sem apagar marca de migração. Os serviços continuam cercados enquanto a revisão
+compatível dos fronts é instalada. Nunca reabrir Members novo com Kids antigo
+atendendo contratos de ciclos/artefatos.
+
+Reabrir dependências e hosts compatíveis por plano de rollout/admissão da raiz;
+`off` também precisa de carga no processo, intents e prova de aplicação real,
+não maintenance200. Erro antes de migração: cancelar promoção nova ou restaurar
+serviços antigos somente por decisão explícita. Erro após migração: manter full,
+usar recuperação ensaiada; trocar imagem não desfaz o schema nem restaura dados.
+Não reabrir por temporizador e não religar triggers por conveniência.
+
+## Estimativa honesta
+
+Referências históricas limitadas: Hub ~5m05 até observação completa e Members
+~12m37; ambos tiveram negativas de polling originais preservadas. Não são p95,
+SLA nem prova da duração do preDeploy. Cinco reloads antigos seriais podem
+consumir aproximadamente25–65min se os tempos se repetirem. Somar retirada,
+contagem/backup, janela de uploads pertinente, migração e carga/reabertura nova.
+Para planejar a janela geral serial, reservar provisoriamente **90–180min**, a
+reestimar por Root antes de anunciar. Não é duração garantida ou limite que
+permite reabrir sem gates; requer margem se a cadeia nova não foi ensaiada com
+backup recente. A estimativa60–90 do documento anterior não deve ser reutilizada
+como teto desta sequência serial ampliada.
+
+## Pins locais desta revisão
+
+Hashes dos bytes lidos, relativos a `.cache/python-reference-games/`:
+
+- `production-pensa-writer-freeze-offline-r1.md`: `5c00bdd2d14d3af41a3c334559258b05d120bc2ea2451b16f5b0c476e537cbf3`.
+- `production-pensa-writer-images-readonly-r2-final.json`: `309b0351b9853149947ce432fb615fdb01868054bc963c6fb61d0062fdbf86de`.
+- `production-pensa-counts-result-r1/receipt.json`: `e061a3bbb54811eb8220de37ad50c07b6cd95d12b5d349f3ac4d8e9711e47643`.
+- `platform-production-config-r1.ts`: `40f214cb3c82ee1d1b7e8169339edd8cb8e59aff157ef6137614b2d39cb6d3e0`.
+- `staging-members-image-reload-r1.mjs`: `ee81fdf4b005ff3ad6937f403c9ff7f8eb302b1315fbdc2ca8ca814a3eccff85`.
+- `staging-members-image-reload-r1.md`: `25225ae903a6e4401af61aaac654cb4a4ca804cd35b5ce9ab9f5d4ee857e7e43`.
+- `staging-hub-image-reload-r2.mjs`: `c3749291795e70246624836d41f24b34338d4ce1ef2fea0a3a173e998b985014`.
+- `staging-four-reloads-schema-r1.json`: `05302fc05a2b8f20f710d9510ddb880b45b28c05aaea82879909e083b78331ac`.
+- `staging-four-reloads-plan-r1.md`: `2fffb1fa95c545d7c9ae2efc58679a7d6201a0daee39feffd1b1cf3fd800d4f3`.
+
+Nenhum recibo foi modificado. As provas de launcher são fatos executados por Root,
+não ensaio de manutenção desta tarefa. Nenhum comando deste documento foi aplicado.

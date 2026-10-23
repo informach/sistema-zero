@@ -6,6 +6,30 @@ import { readSceneGlbRequest, type SceneGlbRequest } from './sceneGlbProtocol'
 const INTERPOLATIONS = ['step', 'linear', 'smooth'] as const
 const STRIDE = 5 // time + up to four Double components; unused vector component is zero.
 
+interface PackedPivot {
+  keyIndex: number
+  incomingPivot: number[]
+  incomingPivotInterpolation?: (typeof INTERPOLATIONS)[number]
+}
+
+/** Sparse metadata: legacy tracks keep their compact numeric transport unchanged. */
+function readPivot(raw: unknown, channel: string): Omit<PackedPivot, 'keyIndex'> {
+  const key = v.record(raw, 'pivot')
+  v.requireScene(channel === 'rotation', 'pivot', 'O centro de giro pertence ao canal de rotação.')
+  return {
+    incomingPivot: v.tuple(key.incomingPivot, 3, 'incomingPivot'),
+    ...(key.incomingPivotInterpolation === undefined
+      ? {}
+      : {
+          incomingPivotInterpolation: v.choice(
+            key.incomingPivotInterpolation,
+            INTERPOLATIONS,
+            'incomingPivotInterpolation',
+          ),
+        }),
+  }
+}
+
 /** Private worker transport only. Not a document version, import format or persisted schema. */
 function packAnimations(clips: readonly SceneAnimationClip[]) {
   v.requireScene(clips.length <= SCENE_LIMITS.animationClips, 'clips', 'Muitos movimentos.')
@@ -32,9 +56,18 @@ function packAnimations(clips: readonly SceneAnimationClip[]) {
       tracks: clip.tracks.map((track) => {
         const { keys, ...metadata } = track
         const size = track.channel === 'rotation' ? 4 : 3
-        for (const key of keys) {
+        const pivots: PackedPivot[] = []
+        for (const [keyIndex, key] of keys.entries()) {
           // Packing may not coerce malformed caller data into valid keys or hide unknown fields.
-          v.record(key, 'key', ['time', 'value', 'interpolation'])
+          v.record(key, 'key', [
+            'time',
+            'value',
+            'interpolation',
+            'incomingPivot',
+            'incomingPivotInterpolation',
+          ])
+          if (key.incomingPivot !== undefined || key.incomingPivotInterpolation !== undefined)
+            pivots.push({ keyIndex, ...readPivot(key, track.channel) })
           v.requireScene(
             typeof key.time === 'number' && Array.isArray(key.value) && key.value.length === size,
             'key',
@@ -51,7 +84,7 @@ function packAnimations(clips: readonly SceneAnimationClip[]) {
           v.requireScene(curve >= 0, 'key.interpolation', 'Curva inválida.')
           curves[cursor++] = curve
         }
-        return { ...metadata, keyCount: keys.length }
+        return { ...metadata, keyCount: keys.length, ...(pivots.length ? { pivots } : {}) }
       }),
     })),
   }
@@ -100,10 +133,22 @@ function unpackAnimations(raw: unknown) {
     return {
       ...clip,
       tracks: tracks.map((raw) => {
-        const track = v.record(raw, 'track', ['nodeId', 'channel', 'keyCount'])
+        const track = v.record(raw, 'track', ['nodeId', 'channel', 'keyCount', 'pivots'])
         const count = v.number(track.keyCount, 'keyCount', 1, curves.length - cursor, true)
         const channel = v.choice(track.channel, ['translation', 'rotation', 'scale'], 'channel')
-        const keys = Array.from({ length: count }, () => {
+        const pivots = new Map<number, Omit<PackedPivot, 'keyIndex'>>()
+        let previous = -1
+        for (const raw of track.pivots === undefined ? [] : v.list(track.pivots, 'pivots', count)) {
+          const pivot = v.record(raw, 'pivot', [
+            'keyIndex',
+            'incomingPivot',
+            'incomingPivotInterpolation',
+          ])
+          const keyIndex = v.number(pivot.keyIndex, 'keyIndex', previous + 1, count - 1, true)
+          pivots.set(keyIndex, readPivot(pivot, channel))
+          previous = keyIndex
+        }
+        const keys = Array.from({ length: count }, (_, keyIndex) => {
           const offset = cursor * STRIDE
           const interpolation = INTERPOLATIONS[curves[cursor++]!]
           v.requireScene(interpolation !== undefined, 'curve', 'Curva inválida.')
@@ -112,6 +157,7 @@ function unpackAnimations(raw: unknown) {
           return {
             time: values[offset],
             interpolation,
+            ...pivots.get(keyIndex),
             value:
               channel === 'rotation'
                 ? [values[offset + 1], values[offset + 2], values[offset + 3], values[offset + 4]]

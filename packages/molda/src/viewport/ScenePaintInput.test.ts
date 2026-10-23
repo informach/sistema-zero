@@ -1,10 +1,11 @@
 import { expect, test } from 'bun:test'
-import { OrthographicCamera } from 'three'
+import { Mesh, OrthographicCamera, ShaderMaterial, Vector3 } from 'three'
 import { createSceneMaterialImage } from '../scene/appearanceCommands'
 import { addSceneMirror, addScenePrimitive } from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
 import type { ScenePaintSample } from '../scene/imagePaint'
+import { type AffineMatrix, transformPoint } from '../scene/matrix'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { ensureScenePaintSurface } from '../scene/paintSurface'
 import { scenePaintFaceBounds } from '../scene/paintSurfaceBounds'
@@ -51,16 +52,19 @@ function fixture() {
     resource,
     {
       begin: (sample) => {
+        if ('kind' in sample) throw new Error('Expected the explicit layer paint path')
         begins.push(sample)
         return true
       },
       move: (sample) => {
+        if (sample && 'kind' in sample) throw new Error('Expected the explicit layer paint path')
         moves.push(sample)
       },
       end: (commit) => {
         ends.push(commit)
       },
     },
+    () => document,
   )
   input.setTarget(target)
   const event = (
@@ -127,6 +131,30 @@ test.each([
     expect(f.begins[0]!.point[1]).toBeLessThan(2)
     f.event('pointerup', 2, 206.25, 206.25)
     expect(f.ends.at(-1)).toBe(true)
+    f.input.setGuideSettings({ grid: true, cursor: true, brush: 2, ink: [90, 80, 70, 255] })
+    f.event('pointermove', 2, 206.25, 206.25)
+    f.input.draw()
+    const guide = f.input.guides.root.children[0]
+    expect(guide).toBeInstanceOf(Mesh)
+    if (!(guide instanceof Mesh) || !Array.isArray(guide.material))
+      throw new Error('Missing guides')
+    const guideMaterial = guide.material.find((entry) => entry.visible)
+    if (!(guideMaterial instanceof ShaderMaterial)) throw new Error('Missing guide material')
+    expect(guideMaterial.uniforms.resolution!.value.toArray()).toEqual([4, 2])
+    expect(guideMaterial.uniforms.brushRect!.value.x).toBeGreaterThanOrEqual(0)
+    const geometry = guide.geometry
+    let disposed = 0
+    geometry.addEventListener('dispose', () => {
+      disposed++
+    })
+    f.input.draw()
+    expect(f.input.guides.root.children[0]).toBe(guide)
+    expect(disposed).toBe(0)
+    f.input.setEnabled(false)
+    f.input.draw()
+    expect(disposed).toBe(1)
+    expect(f.input.guides.root.children).toHaveLength(0)
+    expect(f.document()).toBe(source)
   } finally {
     f.close()
   }
@@ -343,6 +371,7 @@ test('na folha que a aba Pintar prepara, cada amostra leva o limite da face toca
     resource,
     {
       begin: (sample) => {
+        if ('kind' in sample) throw new Error('Expected the explicit layer paint path')
         begins.push(sample)
         return true
       },
@@ -395,8 +424,8 @@ test('na folha que a aba Pintar prepara, cada amostra leva o limite da face toca
   }
 })
 
-test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio, não', () => {
-  function run(shift: number, symmetry = false) {
+test('espelho de pintura acompanha o meio local, independente do pivô e de pais afins, reflexão e simetria', () => {
+  function run(shift: number, symmetry = false, parent = false) {
     let n = 0
     const base = migrateLegacyModel(makeModel({ parts: [] })).document
     const withBox = addScenePrimitive(base, 'box', 'caixa', () => `m${++n}`)
@@ -415,9 +444,33 @@ test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio,
           : node,
       ),
     }
-    const source = symmetry
-      ? addSceneMirror(moved, nodeId, { axis: 'x', offset: 0, nextId: () => `m${++n}` })
+    const nested = parent
+      ? {
+          ...moved,
+          nodes: [
+            {
+              id: 'parent',
+              name: 'Pai afim',
+              kind: 'group' as const,
+              parentId: null,
+              hidden: false,
+              locked: false,
+              transform: {
+                kind: 'affine' as const,
+                matrix: [0, 0, 2, 0, 0.3, 1.5, 0.2, 0, 3, 0, 0.1, 0, 4, 0, -3, 1] as AffineMatrix,
+              },
+            },
+            ...moved.nodes.map((node) =>
+              node.id === nodeId
+                ? { ...node, parentId: 'parent', pivot: [7, -3, 5] as [number, number, number] }
+                : node,
+            ),
+          ],
+        }
       : moved
+    const source = symmetry
+      ? addSceneMirror(nested, nodeId, { axis: 'x', offset: 0, nextId: () => `m${++n}` })
+      : nested
     const prepared = ensureScenePaintSurface(source, { nodeId }, () => `m${++n}`)
     if (prepared.status !== 'ready') throw new Error('Superfície ausente.')
     const index = indexSceneDocument(prepared.document)
@@ -430,9 +483,14 @@ test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio,
     canvas.getBoundingClientRect = () => new DOMRect(0, 0, 400, 400)
     window.document.body.append(canvas)
     const camera = new OrthographicCamera(-4, 4, 4, -4, 0.1, 100)
-    camera.position.set(0, 20, 0)
-    camera.up.set(0, 0, -1)
-    camera.lookAt(0, 0, 0)
+    const world = index.scene.worldMatrices.get(nodeId)!
+    const origin = new Vector3(...transformPoint(world, [0, 0, 0]))
+    camera.position.set(...transformPoint(world, [0, 20, 0]))
+    camera.up
+      .set(...transformPoint(world, [0, 0, -1]))
+      .sub(origin)
+      .normalize()
+    camera.lookAt(origin)
     camera.updateMatrixWorld(true)
     const begins: ScenePaintSample[] = []
     const input = new ScenePaintInput(
@@ -442,6 +500,7 @@ test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio,
       resource,
       {
         begin: (sample) => {
+          if ('kind' in sample) throw new Error('Expected the explicit layer paint path')
           begins.push(sample)
           return true
         },
@@ -452,10 +511,12 @@ test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio,
     try {
       input.setTarget(prepared.target)
       input.setMirror(true)
-      // x = shift + 0.3 no mundo, perto do meio da tampa de cima.
-      const clientX = 200 + (shift + 0.3) * 50
+      // The same authorial point through a reflected, sheared, non-uniform parent.
+      const point = new Vector3(...transformPoint(world, [0.3, 1, 0.17])).project(camera)
+      const clientX = (point.x + 1) * 200,
+        clientY = (1 - point.y) * 200
       canvas.dispatchEvent(
-        new PointerEvent('pointerdown', { pointerId: 1, clientX, clientY: 206.25, button: 0 }),
+        new PointerEvent('pointerdown', { pointerId: 1, clientX, clientY, button: 0 }),
       )
       return begins[0]!
     } finally {
@@ -470,8 +531,17 @@ test('espelho de pintura: a peça no meio ganha o ponto refletido; fora do meio,
   expect(centered.mirror!.point[1]).toBe(centered.point[1])
   expect(centered.mirror!.point[0]).toBeLessThan(centered.point[0])
   expect(centered.mirror!.bounds).toEqual(centered.bounds!)
-  // Duas unidades para o lado: o ponto refletido cai no vazio, fora da peça. Nada espelhado.
-  expect(run(2).mirror).toBeUndefined()
-  // A peça espelhada pela Simetria já leva a pintura para o outro lado: o espelho não repete.
-  expect(run(2, true).mirror).toBeUndefined()
+  expect(run(2).mirror).toEqual(centered.mirror)
+  expect(run(2, true).mirror).toEqual(centered.mirror)
+  const affine = run(2, false, true)
+  expect(affine.mirror!.bounds).toEqual(affine.bounds!)
+  expect(affine.mirror!.region).toBe(centered.mirror!.region)
+  // The larger placed surface now receives more texels. Its reflected model point is unchanged.
+  for (const sample of [centered.mirror!, affine.mirror!]) {
+    const bounds = sample.bounds!
+    expect(sample.point).toEqual([
+      bounds.x0 + Math.floor(0.35 * (bounds.x1 - bounds.x0 + 1)),
+      bounds.y0 + Math.floor(0.585 * (bounds.y1 - bounds.y0 + 1)),
+    ])
+  }
 })

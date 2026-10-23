@@ -98,8 +98,8 @@
 ### Task 3: Projeto preparado e regras do jogo
 
 **Files:**
-- Create: `docs/aulas-interativas/qa/desafio-farol-projeto.ts`
-- Create: `docs/aulas-interativas/qa/desafio-farol-projeto.test.ts`
+- Create: `docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`
+- Create: `docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.test.ts`
 
 **Interfaces:** `montarProjetoFarol(etapa: 'dia-1' | 'dia-2' | 'dia-3')` returns a valid local `Project` snapshot. `dia-1` has scene/art infrastructure but no authored movement, pickup or door rule; fallback `dia-2` includes Day 1 rules, and fallback `dia-3` includes Days 1–2 rules.
 
@@ -114,19 +114,19 @@
   expect(JSON.stringify(d2.ir)).toContain('g2d:topDown')
   expect(JSON.stringify(d3.ir)).toContain('g2d:onOverlap')
   ```
-- [ ] **Step 2: Run the test and confirm the failure.** Run `bun test docs/aulas-interativas/qa/desafio-farol-projeto.test.ts`.
+- [ ] **Step 2: Run the test and confirm the failure.** Run `bun test docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.test.ts`.
 - [ ] **Step 3: Implement art and IR in one source.** Build a 640×360 game with local SVG data URLs from `farol-assets.ts`, usable by `sz_g2d_create_image_sprite`. Use the real `g2d:enableClassicControls`, `g2d:topDown`, `g2d:onOverlap`, state and conditional IR supported by the current Studio. Keep the four control buttons clear of the key and lighthouse. Generate Blockly workspace and project files from the same IR, as `cade-todo-mundo-projeto.ts` does.
 - [ ] **Step 4: Run project tests, Studio typecheck and asset sanitizer.** Confirm touch directions affect the player, collision is edge-triggered, the key cannot be collected twice, reset is predictable, and no remote image URL is required.
 
 ### Task 4: Três dias, roteiro e manifesto em paridade
 
 **Files:**
-- Create: `docs/aulas-interativas/qa/gerar-desafio-farol.ts`
-- Create: `docs/aulas-interativas/qa/desafio-farol-manifestos.test.ts`
-- Create: `docs/aulas-interativas/aulas/desafio-dia-1.md`, `desafio-dia-1.roteiro.md`, `desafio-dia-1.manifesto.json`
-- Create: `docs/aulas-interativas/aulas/desafio-dia-2.md`, `desafio-dia-2.roteiro.md`, `desafio-dia-2.manifesto.json`
-- Create: `docs/aulas-interativas/aulas/desafio-dia-3.md`, `desafio-dia-3.roteiro.md`, `desafio-dia-3.manifesto.json`
-- Modify: `docs/aulas-interativas/qa/novo-modelo.ts` and `validar-manifestos.ts`
+- Create: `docs/aulas-interativas-tecnico/qa/gerar-desafio-farol.ts`
+- Create: `docs/aulas-interativas-tecnico/qa/desafio-farol-manifestos.test.ts`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`, `desafio-dia-1.roteiro.md`, `desafio-dia-1.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.md`, `desafio-dia-2.roteiro.md`, `desafio-dia-2.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.md`, `desafio-dia-3.roteiro.md`, `desafio-dia-3.manifesto.json`
+- Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts` and `validar-manifestos.ts`
 
 **Interfaces:** Three version-5 manifests under `courseSlug: 'desafio-primeiro-jogo'`, with `lessonSlug: 'dia-1' | 'dia-2' | 'dia-3'`, `chain: 'desafio-primeiro-jogo'`, an initialProject fallback per day, `allowedModes: ['blocks']` and project checks for each authored rule.
 
@@ -139,19 +139,19 @@
   }
   expect(day3.blocks.some((b: { content?: { activity?: { scene?: string } } }) => b.content?.activity?.scene === 'lighthouse-key')).toBe(true)
   ```
-- [ ] **Step 2: Run those tests and confirm the failure.** Run `bun test docs/aulas-interativas/qa/desafio-farol-manifestos.test.ts`.
+- [ ] **Step 2: Run those tests and confirm the failure.** Run `bun test docs/aulas-interativas-tecnico/qa/desafio-farol-manifestos.test.ts`.
 - [ ] **Step 3: Write each lesson proposal and spoken script.** Day 1 introduces the game and four-direction movement; Day 2 begins from movement and makes touching the key meaningful; Day 3 starts with the locked door, explains a condition with a familiar analogy, lets the person compare states in the experiment, then shows every block in the Studio. Narration starts with concrete context, defines each new term before use, repeats the full palette path, and never uses a nonexistent Play button. Keep production directions outside spoken quotations.
 - [ ] **Step 4: Generate the manifests from the authored sequence.** Use `plannedVideo` for every recording; embed the Day 3 `lighthouse-key` scene only after Task 2. Project sections require 90% of their video and a valid project/submission; the concept section requires video and both discoveries. Keep actual Studio block paths and defaults synchronized with `REFERENCIA-BLOCOS-JOGO-2D.json`.
-- [ ] **Step 5: Validate paridade.** Compare every section title and video count in proposal, script and manifest. Run generator, targeted tests and `bun docs/aulas-interativas/qa/validar-manifestos.ts desafio-dia`.
+- [ ] **Step 5: Validate paridade.** Compare every section title and video count in proposal, script and manifest. Run generator, targeted tests and `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts desafio-dia`.
 
 ### Task 5: Introdução, certificado, módulos e materiais
 
 **Files:**
-- Modify: `docs/aulas-interativas/aulas/desafio-introducao.md`, `.roteiro.md`, `.manifesto.json`
-- Modify: `docs/aulas-interativas/aulas/desafio-certificado.md`, `.roteiro.md`, `.manifesto.json`
-- Modify: `docs/aulas-interativas/modulos-desafio-primeiro-jogo.md`, `README.md`, `BRIEFING.md` only where old directions contradict the approved course
-- Create: `docs/aulas-interativas/recursos/desafio-farol/gerar-materiais.py`
-- Create: `output/pdf/desafio-farol-caderno.pdf`, `output/pdf/desafio-farol-mapa-responsaveis.pdf`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-introducao.md`, `.roteiro.md`, `.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.md`, `.roteiro.md`, `.manifesto.json`
+- Modify: `docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md`, `README.md`, `BRIEFING.md` only where old directions contradict the approved course
+- Create: `docs/aulas-interativas-tecnico/recursos/desafio-farol/gerar-materiais.py`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/mapa-da-aventura.pdf`, `output/pdf/desafio-farol-mapa-responsaveis.pdf`
 - Create or extend: manifest and content tests for intro/certificate
 
 **Interfaces:** Existing slugs `boas-vindas` and `certificado` remain. The intro has three sections; certificate has issuance and adult-facing next steps. Materials are optional and referenced in the manifesto with `items: []` until manually attached in admin.
@@ -166,7 +166,7 @@
 
 **Files:** all files touched by Tasks 1–5.
 
-- [ ] **Step 1: Run fresh verification.** `bun docs/aulas-interativas/qa/validar-manifestos.ts`; targeted course, scene and Jogo 2D tests; `bun run --cwd packages/core test`; `bun run --cwd packages/member-shell test`; `bun run --cwd packages/studio typecheck`; `bun run --cwd packages/core typecheck`; `bun run --cwd packages/member-shell typecheck`; Biome on touched code; `git diff --check`.
+- [ ] **Step 1: Run fresh verification.** `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`; targeted course, scene and Jogo 2D tests; `bun run --cwd packages/core test`; `bun run --cwd packages/member-shell test`; `bun run --cwd packages/studio typecheck`; `bun run --cwd packages/core typecheck`; `bun run --cwd packages/member-shell typecheck`; Biome on touched code; `git diff --check`.
 - [ ] **Step 2: Review as a child.** On phone/touch and desktop/keyboard, confirm the four buttons are visible and usable, no extras appear, movement is smooth, the key is collected once, the door stays locked without it, reset works and the final lighthouse/boat feedback is legible. Expand and reduce the Studio; confirm no control covers essential content.
 - [ ] **Step 3: Review as author/admin.** Compare script against real button and block labels; import each manifest into a disposable draft only if a safe non-production environment is available; verify project continuity, progress gates, material attachment needs and certificate. Do not publish or push/deploy automatically.
 - [ ] **Step 4: Report exact evidence and remaining manual work.** Distinguish tests from browser rehearsal, list videos and attachments still needed, and preserve unrelated worktree changes.

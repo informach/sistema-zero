@@ -1,0 +1,408 @@
+/*
+ * presente-kids.css: a página de recebimento do presente Kids (`/bolsa/<codigo>`, público `kids`),
+ * Canvas "Presente Kids e adulto · proposta" (quadro RecebimentoKids, 20/10/2026). Veste o layout da
+ * página de 9 a 17 (`comunidade-917.css`, `.c917`): topo, herói pontilhado, etiquetas, cartas, botões
+ * e dúvidas vêm de lá. Aqui ficam só as peças próprias do presente (`.pk-*`) e o formulário da ilha
+ * `BolsaResgate` (`.bz-*`), sem cor própria: só os aliases `--kof-*`/`--c9-*`.
+ */
+
+/* ── Cores das etiquetas que a 9 a 17 não tem (fundos claros da paleta) ─────── */
+.c917 .pk-cor--azul-fundo {
+  --c9-cor: var(--kof-azul-fundo);
+}
+.c917 .pk-cor--rosa-fundo {
+  --c9-cor: var(--kof-rosa-fundo);
+}
+.c917 .pk-lado-24 {
+  gap: 24px;
+  align-items: stretch;
+}
+.c917 .pk-cta {
+  align-self: flex-start;
+}
+
+/* ── Herói: a moldura do jogo com o rótulo e o Zappy ────────────────────────── */
+.c917 .pk-destaque {
+  background: var(--c9-verde);
+}
+.c917 .pk-origem {
+  max-width: 100%;
+}
+.c917 .pk-heroi__visual {
+  flex: 1 1 500px;
+  min-width: 0;
+  padding: 26px 10px 10px 0;
+}
+.c917 .pk-figura {
+  position: relative;
+  margin: 0;
+  padding: 18px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  box-shadow: 10px 10px 0 var(--c9-amarelo);
+  transform: rotate(0.8deg);
+}
+.c917 .pk-figura__rotulo {
+  position: absolute;
+  top: -20px;
+  left: 22px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--kof-navy);
+  color: var(--kof-carta);
+  font-family: var(--kof-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+  transform: rotate(-2deg);
+}
+.c917 .pk-figura > img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 12px;
+  aspect-ratio: 1264 / 723;
+  border: var(--c9-borda);
+  border-radius: 12px;
+  object-fit: cover;
+}
+.c917 .pk-figura figcaption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  color: var(--c9-suave);
+  font-size: 1rem;
+}
+.c917 .pk-figura figcaption img {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+.c917 .pk-figura__destaque {
+  color: var(--c9-tinta);
+}
+.c917 .pk-prazo {
+  margin: 0;
+  color: var(--c9-tinta);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+/* ── Telas com contorno e sombra na cor do capítulo ─────────────────────────── */
+.c917 .pk-tela {
+  display: block;
+  flex: 1 1 520px;
+  min-width: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border: var(--c9-borda);
+  border-radius: 18px;
+  background: var(--kof-carta);
+  box-shadow: 8px 8px 0 var(--c9-cor);
+  object-fit: cover;
+  object-position: left top;
+}
+.c917 .pk-tela--topo {
+  object-position: top;
+}
+.c917 .pk-tela--larga {
+  flex-basis: 560px;
+}
+.c917 .pk-passos {
+  display: flex;
+  flex: 1 1 360px;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.c917 .pk-nota {
+  margin: 0;
+  padding: 16px 18px;
+  border: var(--c9-borda);
+  border-radius: 16px;
+  background: var(--kof-amarelo-fundo);
+  font-weight: 700;
+}
+.c917 .pk-texto-largo {
+  max-width: 860px;
+}
+.c917 .pk-foto {
+  flex: 1 1 380px;
+  min-width: 0;
+  max-width: 460px;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+.c917 .pk-pontilhado {
+  background-color: var(--kof-chao);
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--c9-tinta) 10%, var(--kof-chao)) 1.5px,
+    var(--kof-chao) 1.5px
+  );
+  background-size: 22px 22px;
+}
+.c917 .pk-duvida {
+  background: var(--kof-chao);
+}
+.c917 .pk-previa {
+  margin: 0;
+  padding: 16px 18px;
+  border: var(--c9-borda);
+  border-radius: 16px;
+  background: var(--kof-menta);
+  font-size: 1rem;
+}
+
+/* ── Estados sem formulário (fechado, pausado, encerrado, link inválido) ─────── */
+.c917 .pk-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+  box-shadow: 6px 6px 0 var(--c9-cor);
+}
+.c917 .pk-estado__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.c917 .pk-estado--pagina {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.c917 .pk-link {
+  align-self: flex-start;
+  border-radius: 6px;
+  color: var(--c9-tinta);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--c9-azul);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 5px;
+}
+.c917 .pk-retomar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.c917 .pk-retomar summary {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 20px;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  background: var(--kof-carta);
+  font-weight: 800;
+  cursor: pointer;
+  list-style: none;
+}
+.c917 .pk-retomar summary::-webkit-details-marker {
+  display: none;
+}
+.c917 .pk-retomar p {
+  margin: 0;
+  color: var(--c9-suave);
+}
+
+/* ── O formulário (`BolsaResgate`) ──────────────────────────────────────────── */
+.c917 .pk-form {
+  flex: 1 1 480px;
+  min-width: 0;
+}
+.c917 .bz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px;
+  border: var(--c9-borda);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+  box-shadow: 8px 8px 0 var(--c9-tinta);
+}
+.c917 .bz-card--resultado {
+  box-shadow: 8px 8px 0 var(--c9-verde);
+}
+.c917 .bz-aviso {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--kof-azul-fundo);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.c917 .bz-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.c917 .bz-rotulo {
+  font-size: 1rem;
+  font-weight: 800;
+}
+.c917 .bz-opcional {
+  color: var(--c9-suave);
+  font-weight: 600;
+}
+.c917 .bz-input {
+  min-height: 54px;
+  padding: 0 16px;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  background: var(--kof-carta);
+  color: var(--c9-tinta);
+  font: inherit;
+  font-size: 1.0625rem;
+}
+.c917 .bz-input::placeholder {
+  color: var(--c9-suave);
+}
+.c917 .bz-input:focus-visible {
+  outline: 3px solid var(--c9-foco);
+  outline-offset: 2px;
+}
+.c917 .bz-input--erro {
+  border-color: var(--kof-vermelho);
+}
+.c917 .bz-erro,
+.c917 .bz-alerta {
+  margin: 0;
+  color: var(--kof-vermelho);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.c917 .bz-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 54px;
+  padding: 0 22px;
+  border: var(--c9-borda);
+  border-radius: 14px;
+  background: var(--c9-azul);
+  color: var(--kof-carta);
+  font: inherit;
+  font-weight: 800;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 4px 4px 0 var(--c9-tinta);
+}
+.c917 .bz-btn--enviar {
+  min-height: 60px;
+  margin-top: 6px;
+  font-size: 1.125rem;
+  box-shadow: 5px 5px 0 var(--c9-tinta);
+}
+.c917 .bz-btn:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.c917 .bz-btn:focus-visible,
+.c917 .bz-link:focus-visible,
+.c917 .bz-nota a:focus-visible {
+  outline: 3px solid var(--c9-foco);
+  outline-offset: 3px;
+}
+.c917 .bz-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  color: var(--c9-tinta);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: var(--c9-azul);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.c917 .bz-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.c917 .bz-nota {
+  margin: 0;
+  color: var(--c9-suave);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.c917 .bz-nota a {
+  border-radius: 4px;
+  color: var(--kof-acao);
+}
+.c917 .bz-selo {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border: var(--c9-borda);
+  border-radius: 10px;
+  background: var(--c9-verde);
+  font-size: 0.875rem;
+  font-weight: 800;
+}
+.c917 .bz-titulo,
+.c917 .bz-estado__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.c917 .bz-titulo:focus {
+  outline: none;
+}
+.c917 .bz-texto {
+  margin: 0;
+  color: var(--c9-suave);
+  font-size: 1.0625rem;
+}
+.c917 .bz-texto strong {
+  color: var(--c9-tinta);
+}
+.c917 .bz-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border: var(--c9-borda);
+  border-radius: 16px;
+  background: var(--kof-amarelo-fundo);
+}
+.c917 .bz-estado__titulo {
+  font-size: 1.375rem;
+}
+
+/* No celular o botão do topo quebrava para uma linha só dele: o herói já abre com o botão e a barra
+   fixa assume depois da dobra. */
+@media (max-width: 520px) {
+  .c917 .pk-topo-cta {
+    display: none;
+  }
+}
+@media (max-width: 760px) {
+  .c917 .pk-corpo {
+    padding-bottom: 84px;
+  }
+  .c917 .pk-figura {
+    transform: none;
+  }
+}

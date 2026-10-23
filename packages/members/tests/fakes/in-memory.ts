@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import { type AvatarConfig, defaultAvatarConfig } from '../../src/domain/avatar/avatar-config'
 import type { CertificateRecord } from '../../src/domain/certificate/certificate'
+import { blockRevisionFingerprint } from '../../src/domain/course/block-revision'
 import {
   type Course,
   type CourseAudience,
@@ -18,6 +19,7 @@ import {
 import {
   CloneSameAudienceError,
   CourseConflictError,
+  CourseModalityLockedError,
   DuplicateSlugError,
   JourneySlotConflictError,
   NoShowcaseBlockError,
@@ -27,8 +29,13 @@ import {
   isCompletionGatingBlock,
   type PintaBlock,
   pintaAssetKindOf,
+  toMemberFacingStudioContent,
 } from '../../src/domain/course/lesson-block'
 import { type QuizAttemptSummary, quizGateFingerprint } from '../../src/domain/course/quiz'
+import {
+  assertNoLegacyStudioExamples,
+  preserveStudioExamplesForLegacyWrite,
+} from '../../src/domain/course/studio-project-examples'
 import {
   EntitlementAggregate,
   type EntitlementState,
@@ -47,9 +54,12 @@ import {
   clubeBadgeSlugs,
   coinsSaverBadgeSlugs,
   courseBadgeSlugs,
+  liveCourseBadgeSlugs,
+  liveEncounterBadgeSlugs,
+  localDateSaoPaulo,
   muralCommenterBadgeSlugs,
-  pensaCycleBadgeSlugs,
-  pensaStageBadgeSlugs,
+  pensaDefinitionBadgeSlugs,
+  pensaProjectBadgeSlugs,
   playsBadgeSlugs,
   quizPerfectBadgeSlugs,
   remixBadgeSlugs,
@@ -116,6 +126,7 @@ import {
   type SpendCoinsResult,
   type XpEventInput,
 } from '../../src/domain/ports/gamification-repository.port'
+import type { LearningOwner } from '../../src/domain/ports/learning-repository.port'
 import type { ParentReportRepository } from '../../src/domain/ports/parent-report-repository.port'
 import type { ProcessedWebhookRepository } from '../../src/domain/ports/processed-webhook-repository.port'
 import type {
@@ -138,6 +149,7 @@ import type {
   StudioSubmissionRepository,
   StudioSubmissionState,
   StudioSubmissionSummary,
+  StudioSubmissionWriteResult,
 } from '../../src/domain/ports/studio-submission-repository.port'
 import type {
   StudioBlockGrant,
@@ -160,6 +172,12 @@ import {
   TROPHY_FOR_BADGE,
   TROPHY_SHELF_ITEM_ID,
 } from '../../src/domain/room/room-catalog'
+import {
+  reconcileStudioChainEnvironment,
+  type StudioChainCandidate,
+  type StudioChainEnvironment,
+  studioChainCandidate,
+} from '../../src/domain/studio/chain-environment'
 
 export const silentLogger: Logger = {
   debug() {},
@@ -172,25 +190,8 @@ function cloneState(s: EntitlementState): EntitlementState {
   return { ...s, snapshot: { ...s.snapshot } }
 }
 
-function stableJson(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`
-  if (value && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
-      a.localeCompare(b),
-    )
-    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableJson(v)}`).join(',')}}`
-  }
-  return JSON.stringify(value) ?? 'undefined'
-}
-
 // Espelho do Drizzle: editar bloco NUNCA apaga entregas — quiz apaga TENTATIVAS
-// quando as questões/nota mudam; Estúdio zera SÓ a correção quando a ATIVIDADE
-// muda (o projeto do aluno fica); Pinta não toca a entrega.
-
-function studioActivityFingerprint(content: LessonBlockContent): string {
-  if (content.kind !== 'studio') return 'none'
-  return stableJson(content.activity ?? null)
-}
+// quando as questões/nota mudam; Estúdio e Pinta não tocam a entrega.
 
 function isActive(s: EntitlementState, now: Date): boolean {
   return s.status === 'active' && (s.expiresAt === null || s.expiresAt.getTime() > now.getTime())
@@ -431,13 +432,16 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   courses: Course[] = []
+  /** Cursos com turma das oficinas (`live_cohorts.document->>'courseId'`), semeável por teste. */
+  readonly liveCohortCourseIds = new Set<string>()
   modules: Module[] = []
   lessons: Lesson[] = []
   blocks: LessonBlock[] = []
   attachments: LessonAttachment[] = []
   onQuizGateChanged?: (blockId: string) => void
-  onStudioActivityChanged?: (blockId: string) => void
   private readonly pintaChainLocks = new Map<string, Promise<void>>()
+  private readonly studioAuthoringLocks = new Map<string, Promise<void>>()
+  private readonly studioChainEnvironments = new Map<string, StudioChainEnvironment | null>()
 
   async findCourseBySlug(slug: string): Promise<Course | null> {
     return this.courses.find((c) => c.slug === slug) ?? null
@@ -454,7 +458,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]> {
     const set = new Set(slugs)
     return this.courses
-      .filter((c) => set.has(c.slug) && isCourseAccessible(c.status))
+      .filter((c) => set.has(c.slug) && isCourseAccessible(c.status) && c.modality === 'recorded')
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
@@ -471,7 +475,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   async listPublishedCourses(audience: CourseAudience): Promise<Course[]> {
     // Espelha o Drizzle: ordem PADRÃO das vitrines = criação (mais antigos primeiro).
     return this.courses
-      .filter((c) => c.status === 'published' && c.audience === audience)
+      .filter(
+        (c) => c.status === 'published' && c.audience === audience && c.modality === 'recorded',
+      )
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
   }
 
@@ -486,7 +492,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         c.audience === audience &&
         c.level === level &&
         c.track === track &&
-        c.careerSlot === 1,
+        c.careerSlot === 1 &&
+        c.modality === 'recorded',
     )
   }
 
@@ -517,7 +524,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
 
   async findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null> {
     const lesson = this.lessons.find((l) => l.id === lessonId)
     if (!lesson) return null
@@ -525,7 +532,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       ...lesson,
       blocks: this.blocks
         .filter((b) => b.lessonId === lessonId)
-        .sort((a, b) => a.sortOrder - b.sortOrder),
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((block) =>
+          block.content.kind === 'studio' && !opts?.includePrivateStudioAuthoring
+            ? { ...block, content: toMemberFacingStudioContent(block.content) }
+            : block,
+        ),
       attachments:
         opts?.includeAttachments === false
           ? []
@@ -645,6 +657,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     }
     if (filter.status) all = all.filter((c) => c.status === filter.status)
     if (filter.audience) all = all.filter((c) => c.audience === filter.audience)
+    if (filter.modality) all = all.filter((c) => c.modality === filter.modality)
     all.sort((a, b) => a.title.localeCompare(b.title))
     return { items: all.slice(filter.offset, filter.offset + filter.limit), total: all.length }
   }
@@ -671,7 +684,8 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<Course | null> {
     const src = this.courses.find((c) => c.id === sourceCourseId)
     if (!src) return null
-    if (src.audience === overrides.audience) throw new CloneSameAudienceError()
+    if (src.audience === overrides.audience && src.modality === overrides.modality)
+      throw new CloneSameAudienceError()
     if (
       src.version !== overrides.expectedSourceVersion ||
       src.audience !== overrides.expectedSourceAudience
@@ -680,7 +694,6 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     }
     if (this.courses.some((c) => c.slug === overrides.slug)) throw new DuplicateSlugError()
     const metadata: Record<string, unknown> = { ...(src.metadata ?? {}), clonedFrom: src.slug }
-    if (overrides.dropStudioUnlockBlocks) delete metadata.studioUnlockBlocks
     const now = new Date()
     const clone: Course = {
       ...src,
@@ -690,6 +703,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       title: overrides.title,
       status: 'draft',
       audience: overrides.audience,
+      modality: overrides.modality,
       careerSlot: null,
       journeyRole: 'reward',
       metadata,
@@ -742,6 +756,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       track,
       careerSlot,
       journeyRole,
+      modality,
       ...rest
     } = fields
     // Mirror do `buildCourseMetadata` do repo Drizzle: as DUAS chaves geridas pelo form
@@ -766,6 +781,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
       track: track ?? '2d',
       careerSlot: careerSlot ?? null,
       journeyRole: journeyRole ?? (careerSlot == null ? 'reward' : 'positioned'),
+      modality: modality ?? 'recorded',
       metadata: Object.keys(metadata).length > 0 ? metadata : null,
       createdAt: now,
       updatedAt: now,
@@ -781,6 +797,9 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     if (this.courses.some((c) => c.id !== course.id && c.slug === course.slug)) {
       throw new DuplicateSlugError()
     }
+    // Mirror do SQL: trocar a modalidade só sem turma das oficinas.
+    if (this.courses[idx]?.modality !== course.modality && this.liveCohortCourseIds.has(course.id))
+      throw new CourseModalityLockedError()
     if (
       course.careerSlot != null &&
       this.courses.some(
@@ -839,15 +858,24 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   async deleteModule(id: string): Promise<boolean> {
-    if (!this.modules.some((m) => m.id === id)) return false
     const courseId = this.modules.find((m) => m.id === id)?.courseId
-    if (courseId) this.assertShowcaseRemains(courseId, { moduleId: id })
-    const lessonIds = new Set(this.lessons.filter((l) => l.moduleId === id).map((l) => l.id))
-    this.modules = this.modules.filter((m) => m.id !== id)
-    this.lessons = this.lessons.filter((l) => l.moduleId !== id)
-    this.blocks = this.blocks.filter((b) => !lessonIds.has(b.lessonId))
-    this.attachments = this.attachments.filter((a) => !lessonIds.has(a.lessonId))
-    return true
+    if (!courseId) return false
+    return this.withStudioAuthoringLock(courseId, async () => {
+      this.assertShowcaseRemains(courseId, { moduleId: id })
+      const lessonIds = new Set(this.lessons.filter((l) => l.moduleId === id).map((l) => l.id))
+      await this.claimStudioChains(
+        courseId,
+        [],
+        this.blocks
+          .filter((block) => lessonIds.has(block.lessonId))
+          .flatMap((block) => studioChainCandidate(block.content)),
+      )
+      this.modules = this.modules.filter((m) => m.id !== id)
+      this.lessons = this.lessons.filter((l) => l.moduleId !== id)
+      this.blocks = this.blocks.filter((b) => !lessonIds.has(b.lessonId))
+      this.attachments = this.attachments.filter((a) => !lessonIds.has(a.lessonId))
+      return true
+    })
   }
 
   async listModuleIds(courseId: string): Promise<string[]> {
@@ -897,13 +925,22 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   }
 
   async deleteLesson(id: string): Promise<boolean> {
-    if (!this.lessons.some((l) => l.id === id)) return false
     const courseId = this.lessons.find((l) => l.id === id)?.courseId
-    if (courseId) this.assertShowcaseRemains(courseId, { lessonId: id })
-    this.lessons = this.lessons.filter((l) => l.id !== id)
-    this.blocks = this.blocks.filter((b) => b.lessonId !== id)
-    this.attachments = this.attachments.filter((a) => a.lessonId !== id)
-    return true
+    if (!courseId) return false
+    return this.withStudioAuthoringLock(courseId, async () => {
+      this.assertShowcaseRemains(courseId, { lessonId: id })
+      await this.claimStudioChains(
+        courseId,
+        [],
+        this.blocks
+          .filter((block) => block.lessonId === id)
+          .flatMap((block) => studioChainCandidate(block.content)),
+      )
+      this.lessons = this.lessons.filter((l) => l.id !== id)
+      this.blocks = this.blocks.filter((b) => b.lessonId !== id)
+      this.attachments = this.attachments.filter((a) => a.lessonId !== id)
+      return true
+    })
   }
 
   async listLessonIds(moduleId: string): Promise<string[]> {
@@ -925,6 +962,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
     kind: LessonBlockKind,
     content: LessonBlockContent,
   ): Promise<LessonBlock> {
+    assertNoLegacyStudioExamples(content)
     const courseId = this.lessons.find((l) => l.id === lessonId)?.courseId
     if (courseId && kind === 'coming_soon') this.assertShowcaseRemains(courseId, { lessonId })
     const sortOrder = this.blocks
@@ -949,6 +987,7 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
   ): Promise<LessonBlock | null> {
     const b = this.blocks.find((x) => x.id === id)
     if (!b) return null
+    content = preserveStudioExamplesForLegacyWrite(content, b.content)
     const courseId = this.lessons.find((l) => l.id === b.lessonId)?.courseId
     if (courseId && !(content.kind === 'studio' && content.showcase?.enabled))
       this.assertShowcaseRemains(
@@ -956,13 +995,12 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         kind === 'coming_soon' ? { lessonId: b.lessonId } : { blockId: id },
       )
     const quizGateChanged = quizGateFingerprint(b.content) !== quizGateFingerprint(content)
-    const studioActivityChanged =
-      studioActivityFingerprint(b.content) !== studioActivityFingerprint(content)
+    const sameQuestion =
+      b.kind === kind && blockRevisionFingerprint(b.content) === blockRevisionFingerprint(content)
     b.kind = kind
     b.content = content
-    b.contentRevision = randomUUID().replaceAll('-', '')
+    if (!sameQuestion) b.contentRevision = randomUUID().replaceAll('-', '')
     if (quizGateChanged) this.onQuizGateChanged?.(id)
-    if (studioActivityChanged) this.onStudioActivityChanged?.(id)
     return b
   }
 
@@ -1043,6 +1081,66 @@ export class InMemoryCourseRepository implements CourseRepository, ContentAdminR
         lessonTitle: lesson?.title ?? '',
         assetKind: pintaAssetKindOf(b.content as PintaBlock),
       }))
+  }
+
+  async withStudioAuthoringLock<T>(
+    courseId: string,
+    operation: (repository: ContentAdminRepository) => Promise<T>,
+  ): Promise<T> {
+    const previous = this.studioAuthoringLocks.get(courseId) ?? Promise.resolve()
+    let release = () => {}
+    const gate = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    const current = previous.then(() => gate)
+    this.studioAuthoringLocks.set(courseId, current)
+    await previous
+    const before = new Map(
+      [...this.studioChainEnvironments].filter(([key]) => key.startsWith(`${courseId}:`)),
+    )
+    try {
+      return await operation(this)
+    } catch (error) {
+      for (const key of this.studioChainEnvironments.keys())
+        if (key.startsWith(`${courseId}:`)) this.studioChainEnvironments.delete(key)
+      for (const [key, value] of before) this.studioChainEnvironments.set(key, value)
+      throw error
+    } finally {
+      release()
+      if (this.studioAuthoringLocks.get(courseId) === current)
+        this.studioAuthoringLocks.delete(courseId)
+    }
+  }
+
+  async claimStudioChains(
+    courseId: string,
+    candidates: StudioChainCandidate[],
+    retiring: StudioChainCandidate[] = [],
+  ) {
+    const chains = [...new Set([...candidates, ...retiring].map((item) => item.chain))]
+    const lessonIds = new Set(
+      this.lessons.filter((lesson) => lesson.courseId === courseId).map((lesson) => lesson.id),
+    )
+    const history = this.blocks
+      .filter((block) => lessonIds.has(block.lessonId))
+      .flatMap((block) => studioChainCandidate(block.content))
+    for (const chain of chains) {
+      const key = `${courseId}:${chain}`
+      const projects = history.filter((item) => item.chain === chain).map((item) => item.project)
+      const environment = reconcileStudioChainEnvironment(
+        chain,
+        this.studioChainEnvironments.get(key),
+        projects.length
+          ? projects
+          : retiring.filter((item) => item.chain === chain).map((item) => item.project),
+        candidates.filter((item) => item.chain === chain).map((item) => item.project),
+      )
+      if (!this.studioChainEnvironments.has(key)) this.studioChainEnvironments.set(key, environment)
+    }
+  }
+
+  async findStudioBlockChain(blockId: string) {
+    return studioChainCandidate(this.blocks.find((block) => block.id === blockId)?.content)
   }
 
   async withPintaChainLock<T>(
@@ -1596,22 +1694,11 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     }
   }
 
-  /** Espelho do reset de correção do updateBlock (a entrega FICA, a nota cai). */
-  resetCorrectionByBlockId(blockId: string): void {
-    for (const s of this.submissions) {
-      if (s.blockId !== blockId) continue
-      s.score = null
-      s.results = null
-      s.checkedAt = null
-      s.passedAt = null
-    }
-  }
-
   /** Upsert por (user, block) — reenvio sobrescreve projeto/data/correção. */
   async upsert(
     submission: StudioSubmissionRecord & { accountId: string },
-    options?: { preservePassedAt?: boolean; revision?: string; galleryRequestId?: string },
-  ): Promise<void> {
+    options?: { revision?: string; galleryRequestId?: string },
+  ): Promise<StudioSubmissionWriteResult> {
     const existing = this.submissions.find(
       (s) => s.userId === submission.userId && s.blockId === submission.blockId,
     )
@@ -1628,7 +1715,7 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           isGallerySubmission(existing?.project) &&
           existing.project.requestId === options.galleryRequestId
         )
-          return
+          return { duplicateGallery: true, receipt: gallerySubmissionReceipt(existing) }
         throw new LearningConflictError()
       }
       this.galleryRequests.set(key, options.galleryRequestId)
@@ -1640,23 +1727,14 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       existing.previousSubmittedAt = existing.submittedAt
       existing.project = submission.project
       existing.submittedAt = submission.submittedAt
-      existing.score = submission.score ?? null
-      existing.results = submission.results ?? null
-      existing.checkedAt = submission.checkedAt ?? null
-      existing.passedAt =
-        options?.preservePassedAt && existing.passedAt
-          ? existing.passedAt
-          : (submission.passedAt ?? null)
       existing.message = submission.message ?? null
+      existing.messageSpoken = submission.messageSpoken ?? false
       existing.contentFingerprint = submission.contentFingerprint ?? null
     } else {
       this.submissions.push({
         ...submission,
-        score: submission.score ?? null,
-        results: submission.results ?? null,
-        checkedAt: submission.checkedAt ?? null,
-        passedAt: submission.passedAt ?? null,
         message: submission.message ?? null,
+        messageSpoken: submission.messageSpoken ?? false,
         contentFingerprint: submission.contentFingerprint ?? null,
         previousProject: null,
         previousSubmittedAt: null,
@@ -1683,9 +1761,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
     s.submittedAt = s.previousSubmittedAt
     s.previousProject = project
     s.previousSubmittedAt = submittedAt
-    s.score = null
-    s.results = null
-    s.checkedAt = null
     s.contentFingerprint = null
     return true
   }
@@ -1714,8 +1789,6 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       if (s.userId !== userId || !set.has(s.blockId)) continue
       map.set(s.blockId, {
         submittedAt: s.submittedAt,
-        score: s.score ?? null,
-        passed: s.passedAt != null,
         reviewedAt: s.reviewedAt ?? null,
         contentFingerprint: s.contentFingerprint ?? null,
       })
@@ -1731,10 +1804,8 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         userId: s.userId,
         accountId: s.accountId ?? null,
         submittedAt: s.submittedAt,
-        score: s.score ?? null,
-        checkedAt: s.checkedAt ?? null,
-        passed: s.passedAt != null,
         message: s.message ?? null,
+        messageSpoken: s.messageSpoken ?? false,
       }))
   }
 
@@ -1755,10 +1826,8 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
             lessonTitle: lesson?.title ?? '',
             moduleTitle: mod?.title ?? '',
             submittedAt: s.submittedAt,
-            score: s.score ?? null,
-            checkedAt: s.checkedAt ?? null,
-            passed: s.passedAt != null,
             message: s.message ?? null,
+            messageSpoken: s.messageSpoken ?? false,
           } satisfies StudioSubmissionCourseRow,
         }
       })
@@ -1816,10 +1885,8 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
           courseTitle: course?.title ?? '',
           audience: course?.audience ?? 'adult',
           submittedAt: s.submittedAt,
-          score: s.score ?? null,
-          checkedAt: s.checkedAt ?? null,
-          passed: s.passedAt != null,
           message: s.message ?? null,
+          messageSpoken: s.messageSpoken ?? false,
           answered: this.answeredKeys.has(`${s.userId}:${s.blockId}`),
           // Espelha a régua do SQL: o carimbo só vale para a entrega ATUAL.
           reviewed: s.reviewedAt != null && s.reviewedAt >= s.submittedAt,
@@ -1859,11 +1926,8 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
       ? {
           project: s.project,
           submittedAt: s.submittedAt,
-          score: s.score ?? null,
-          results: s.results ?? null,
-          checkedAt: s.checkedAt ?? null,
-          passedAt: s.passedAt ?? null,
           message: s.message ?? null,
+          messageSpoken: s.messageSpoken ?? false,
           reviewedAt: s.reviewedAt ?? null,
           previousSubmittedAt: s.previousSubmittedAt ?? null,
         }
@@ -1935,10 +1999,9 @@ export class InMemoryStudioSubmissionRepository implements StudioSubmissionRepos
         lessonId: s.lessonId,
         lessonTitle: null,
         courseTitle: this.courses?.courses.find((c) => c.id === s.courseId)?.title ?? null,
-        score: s.score ?? null,
-        passed: s.checkedAt == null ? null : s.passedAt != null,
         submittedAt: s.submittedAt,
         message: s.message ?? null,
+        messageSpoken: s.messageSpoken ?? false,
       }))
   }
 }
@@ -2021,6 +2084,7 @@ export class InMemoryTeacherThreadRepository implements TeacherThreadRepository 
       authorId: input.authorId ?? null,
       authorName: input.authorName ?? null,
       body: input.body,
+      spoken: input.spoken ?? false,
       createdAt: input.now,
     }
     this.messages.push(record)
@@ -2307,6 +2371,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     private readonly sources?: {
       entitlements: InMemoryEntitlementRepository
       courses: InMemoryCourseRepository
+      studioUnlocks?: InMemoryStudioUnlockRepository
       // Inventários p/ a compra ATÔMICA (`spendCoins` + posse na mesma "transação" — mirror
       // do prod, onde os repos partilham o `db`). Opcionais: testes de erro não os exigem.
       avatar?: InMemoryAvatarRepository
@@ -2340,7 +2405,15 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     if (this.failAlways) throw new Error('gamification indisponível (fake)')
 
     const newEvents: AwardXpEventInput[] = []
-    for (const e of input.events) {
+    const publication =
+      input.standalonePublicationId &&
+      this.events.some(
+        (event) =>
+          event.userId === input.userId &&
+          event.sourceType === 'studio_published' &&
+          event.sourceId === input.standalonePublicationId,
+      )
+    for (const e of publication ? [] : input.events) {
       // UNIQUE continua (user, sourceType, sourceId) — um source pertence a UM curso.
       const dup = this.events.some(
         (x) =>
@@ -2353,6 +2426,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         e.sourceType === 'course_complete' || e.sourceType === 'course_showcased'
           ? this.sources?.courses.courses.find((c) => c.id === e.sourceId)
           : undefined
+      // Mirror do SQL: curso AO VIVO nunca gera marco da Jornada (descartado no award).
+      if (marcoCourse?.modality === 'live') continue
       this.events.push({
         ...e,
         userId: input.userId,
@@ -2363,6 +2438,25 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         createdAt: input.now,
       })
       newEvents.push(e)
+    }
+
+    const curriculumIds = new Set(
+      input.events
+        .filter(
+          (event) =>
+            event.sourceType === 'course_complete' ||
+            event.sourceType === 'course_showcased' ||
+            event.sourceType === 'live_course_complete',
+        )
+        .map((event) => event.sourceId),
+    )
+    if (this.sources?.studioUnlocks && curriculumIds.size) {
+      const grants = await this.listStudioUnlocksByCourse(input.userId, input.audience)
+      await this.sources.studioUnlocks.saveGrants(
+        input.userId,
+        input.audience,
+        grants.filter((grant) => curriculumIds.has(grant.courseId)),
+      )
     }
 
     const badgeCandidates = new Set<BadgeSlug>()
@@ -2394,14 +2488,14 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         badgeCandidates.add(slug)
       }
     }
-    // Pensa (mirror do Drizzle): 1ª etapa (Carta da Ideia) + 1º/3º ciclo lançado.
+    // Pensa: first accepted definition and verified project milestones.
     if (newEvents.some((e) => e.sourceType === 'pensa_stage_complete')) {
-      for (const slug of pensaStageBadgeSlugs(countByType('pensa_stage_complete'))) {
+      for (const slug of pensaDefinitionBadgeSlugs(countByType('pensa_stage_complete'))) {
         badgeCandidates.add(slug)
       }
     }
     if (newEvents.some((e) => e.sourceType === 'pensa_cycle_complete')) {
-      for (const slug of pensaCycleBadgeSlugs(countByType('pensa_cycle_complete'))) {
+      for (const slug of pensaProjectBadgeSlugs(countByType('pensa_cycle_complete'))) {
         badgeCandidates.add(slug)
       }
     }
@@ -2451,9 +2545,21 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         badgeCandidates.add(slug)
       }
     }
+    // Cursos ao vivo (mirror do Drizzle): 1º encontro + curso ao vivo inteiro.
+    if (newEvents.some((e) => e.sourceType === 'live_encounter')) {
+      for (const slug of liveEncounterBadgeSlugs(countByType('live_encounter'))) {
+        badgeCandidates.add(slug)
+      }
+    }
+    if (newEvents.some((e) => e.sourceType === 'live_course_complete')) {
+      for (const slug of liveCourseBadgeSlugs(countByType('live_course_complete'))) {
+        badgeCandidates.add(slug)
+      }
+    }
 
     const key = this.profileKey(input.userId, input.audience)
     const profile = this.profiles.get(key)
+    const historical = Boolean(profile?.lastActivityDate && profile.lastActivityDate > input.today)
     const xpAwarded = newEvents.reduce((sum, e) => sum + e.amount, 0)
     let totalXp = profile?.xp ?? 0
     let streak = {
@@ -2474,19 +2580,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       const monthKey = input.today.slice(0, 7)
       const currentFreezes = profile?.streakFreezes ?? 0
       const grantsFreeFreeze =
-        this.freezeMonths.get(key) !== monthKey && currentFreezes < MAX_STREAK_FREEZES
+        !historical &&
+        (!this.freezeMonths.get(key) || this.freezeMonths.get(key)! < monthKey) &&
+        currentFreezes < MAX_STREAK_FREEZES
       const freezesBefore = currentFreezes + (grantsFreeFreeze ? 1 : 0)
-      streak = advanceStreak(
-        {
-          streakCurrent: profile?.streakCurrent ?? 0,
-          streakBest: profile?.streakBest ?? 0,
-          lastActivityDate: profile?.lastActivityDate ?? null,
-          freezes: freezesBefore,
-          vacationFrom: profile?.vacationFrom ?? null,
-          vacationTo: profile?.vacationTo ?? null,
-        },
-        input.today,
-      )
+      streak = historical
+        ? streak
+        : advanceStreak(
+            {
+              streakCurrent: profile?.streakCurrent ?? 0,
+              streakBest: profile?.streakBest ?? 0,
+              lastActivityDate: profile?.lastActivityDate ?? null,
+              freezes: freezesBefore,
+              vacationFrom: profile?.vacationFrom ?? null,
+              vacationTo: profile?.vacationTo ?? null,
+            },
+            input.today,
+          )
       const freezesAfter = freezesBefore - streak.freezesConsumed
       if (grantsFreeFreeze) this.freezeMonths.set(key, monthKey)
       totalXp += xpAwarded
@@ -2506,7 +2616,20 @@ export class InMemoryGamificationRepository implements GamificationRepository {
           }))
         : []
       const wallet = this.wallets.get(key) ?? { earnedToday: 0, earnedDate: null, lifetime: 0 }
-      const earnedTodayBase = wallet.earnedDate === input.today ? wallet.earnedToday : 0
+      const historicalWallet = Boolean(wallet.earnedDate && wallet.earnedDate > input.today)
+      const earnedTodayBase = historicalWallet
+        ? this.coinEvents
+            .filter(
+              (event) =>
+                event.userId === input.userId &&
+                event.audience === input.audience &&
+                Object.values(COIN_TYPE_FOR_XP).some((type) => type === event.sourceType) &&
+                localDateSaoPaulo(event.createdAt) === input.today,
+            )
+            .reduce((total, event) => total + event.amount, 0)
+        : wallet.earnedDate === input.today
+          ? wallet.earnedToday
+          : 0
       const cap = applyDailyCap(
         routine.map((c) => c.amount),
         earnedTodayBase,
@@ -2544,8 +2667,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       coinBalance = (profile?.coinBalance ?? 0) + coinsAwarded
       const newLifetime = wallet.lifetime + coinsAwarded
       this.wallets.set(key, {
-        earnedToday: earnedTodayBase + cap.totalGranted,
-        earnedDate: input.today,
+        earnedToday: historicalWallet ? wallet.earnedToday : earnedTodayBase + cap.totalGranted,
+        earnedDate: historicalWallet ? wallet.earnedDate : input.today,
         lifetime: newLifetime,
       })
 
@@ -2555,7 +2678,7 @@ export class InMemoryGamificationRepository implements GamificationRepository {
         xp: totalXp,
         streakCurrent: streak.current,
         streakBest: streak.best,
-        lastActivityDate: input.today,
+        lastActivityDate: historical ? profile!.lastActivityDate : input.today,
         coinBalance,
         streakFreezes: freezesAfter,
         // Férias é preservada (set/limpa só via setVacation) — award nunca a altera.
@@ -2737,6 +2860,23 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       .map((b) => ({ badgeSlug: b.badgeSlug, unlockedAt: b.unlockedAt }))
   }
 
+  async listCourseMilestones(
+    userId: string,
+    audience: CourseAudience,
+  ): Promise<Map<string, CourseMilestones>> {
+    const milestones = new Map<string, CourseMilestones>()
+    for (const event of this.events) {
+      if (event.userId !== userId || event.audience !== audience) continue
+      if (event.sourceType !== 'course_complete' && event.sourceType !== 'course_showcased')
+        continue
+      const value = milestones.get(event.sourceId) ?? { completed: false, showcased: false }
+      if (event.sourceType === 'course_complete') value.completed = true
+      else value.showcased = true
+      milestones.set(event.sourceId, value)
+    }
+    return milestones
+  }
+
   /** Mirror do SQL: cursos com AMBOS os marcos (complete ∩ showcased) por DEGRAU (nível×eixo). */
   async listQualifyingJourneySlots(
     userId: string,
@@ -2795,8 +2935,8 @@ export class InMemoryGamificationRepository implements GamificationRepository {
   }
 
   /**
-   * Mirror do SQL: curso Kids bônus fica elegível com `course_complete`; curso com
-   * posição e qualquer curso Adult continuam exigindo também `course_showcased`.
+   * Mirror do SQL: gravado Kids com posição exige Mural; bônus Kids e Adult só conclusão.
+   * Oficina exige seu próprio `live_course_complete`, sem Mural.
    * Lê `metadata.studioUnlockBlocks` do curso VIVO — o snapshot preserva o que já
    * foi servido quando o curso some ou muda de classificação.
    */
@@ -2809,11 +2949,26 @@ export class InMemoryGamificationRepository implements GamificationRepository {
       mine.filter((e) => e.sourceType === 'course_showcased').map((e) => e.sourceId),
     )
     const out: { courseId: string; blocks: string[] }[] = []
-    for (const ce of mine.filter((e) => e.sourceType === 'course_complete')) {
+    for (const ce of mine.filter(
+      (e) => e.sourceType === 'course_complete' || e.sourceType === 'live_course_complete',
+    )) {
       const course = this.sources?.courses.courses.find((c) => c.id === ce.sourceId)
-      if (course?.status !== 'published' || course.audience !== audience) continue
+      if (
+        course?.status !== 'published' ||
+        course.audience !== audience ||
+        (course.modality === 'recorded'
+          ? ce.sourceType !== 'course_complete'
+          : ce.sourceType !== 'live_course_complete')
+      )
+        continue
       const bonusKids = audience === 'kids' && course.careerSlot === null
-      if (!bonusKids && !showcased.has(ce.sourceId)) continue
+      if (
+        course.modality === 'recorded' &&
+        audience === 'kids' &&
+        !bonusKids &&
+        !showcased.has(ce.sourceId)
+      )
+        continue
       const raw = (course.metadata as Record<string, unknown> | null | undefined)
         ?.studioUnlockBlocks
       if (!Array.isArray(raw)) continue
@@ -2836,24 +2991,35 @@ export class InMemoryGamificationRepository implements GamificationRepository {
     )
     return studioUnlockRevision(
       mine
-        .filter((event) => event.sourceType === 'course_complete')
+        .filter(
+          (event) =>
+            event.sourceType === 'course_complete' || event.sourceType === 'live_course_complete',
+        )
         .flatMap((completed) => {
           const showcase = showcased.get(completed.sourceId)
           const foundCourse = this.sources?.courses.courses.find(
             (item) => item.id === completed.sourceId,
           )
           const course =
-            foundCourse?.status === 'published' && foundCourse.audience === audience
+            foundCourse?.status === 'published' &&
+            foundCourse.audience === audience &&
+            (foundCourse.modality === 'recorded'
+              ? completed.sourceType === 'course_complete'
+              : completed.sourceType === 'live_course_complete')
               ? foundCourse
               : undefined
           if (!course) return []
           const bonusKids = audience === 'kids' && course.careerSlot === null
-          if (!bonusKids && !showcase) return []
+          if (course.modality === 'recorded' && audience === 'kids' && !bonusKids && !showcase)
+            return []
           return [
             {
               courseId: completed.sourceId,
               completedAt: completed.createdAt,
-              showcasedAt: bonusKids ? null : (showcase?.createdAt ?? null),
+              showcasedAt:
+                audience === 'adult' || course.modality === 'live' || bonusKids
+                  ? null
+                  : (showcase?.createdAt ?? null),
               courseUpdatedAt: course?.updatedAt ?? null,
             },
           ]
@@ -3497,6 +3663,14 @@ export class InMemoryAvatarRepository implements AvatarRepository {
 export class InMemoryStudioUnlockRepository implements StudioUnlockRepository {
   readonly grants: { userId: string; audience: CourseAudience; grant: StudioBlockGrant }[] = []
 
+  async freezeGrants(
+    owner: LearningOwner,
+    audience: CourseAudience,
+    grants: readonly StudioBlockGrant[],
+  ): Promise<void> {
+    await this.saveGrants(owner.userId, audience, grants)
+  }
+
   async listGrants(userId: string, audience: CourseAudience): Promise<StudioBlockGrant[]> {
     return this.grants
       .filter((row) => row.userId === userId && row.audience === audience)
@@ -3626,4 +3800,5 @@ export class FakeCatalogGateway implements CatalogGateway {
 }
 
 import { isGallerySubmission } from '@sistemazero/core/learning'
+import { gallerySubmissionReceipt } from '../../src/domain/learning/gallery-receipt'
 import { LearningConflictError } from '../../src/domain/learning/learning.errors'

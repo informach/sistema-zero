@@ -3,7 +3,7 @@
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
 import { isEmbeddedAppPath } from '@/lib/embedded-app-path'
-import { isLessonPath } from '@/lib/lesson-path'
+import { isLessonPath, isLiveRoomPath } from '@/lib/lesson-path'
 
 /**
  * Container do conteúdo da área do aluno. TRÊS regimes:
@@ -76,7 +76,8 @@ export function MainContainer({ children }: { children: ReactNode }) {
   // A aula guarda o padding (não virou faixas) e o fundo azul-claro liso das
   // telas-modelo de 11/09/2026: a textura de pontinhos (`kids-field`) saiu com o resto
   // da decoração de fundo.
-  if (isLessonPath(pathname)) {
+  // A sala da oficina ao vivo é a aula com a transmissão: o mesmo regime (14/10/2026).
+  if (isLessonPath(pathname) || isLiveRoomPath(pathname)) {
     return (
       <main
         id="main-content"

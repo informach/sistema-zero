@@ -63,6 +63,17 @@ const league: LeagueMeView = {
   entries: [{ position: 1, weeklyXp: 40, isMe: true, firstName: 'Lia' }],
 }
 
+test('ranking preserves unavailable rank as an explicit state instead of showing a new Faísca', () => {
+  const unavailable: RankingLeaderboardView = {
+    ...ranking,
+    items: ranking.items.map((entry) => ({ ...entry, levelSlug: null })),
+    me: ranking.me ? { ...ranking.me, levelSlug: null } : null,
+  }
+  render(<RankingHub initialRanking={unavailable} league={league} />)
+  expect(screen.queryAllByText('Faísca').length).toBe(0)
+  expect(screen.getAllByText('Posto indisponível').length).toBeGreaterThan(0)
+})
+
 afterEach(() => {
   globalThis.fetch = originalFetch
 })
@@ -80,6 +91,10 @@ describe('central de ranking kids', () => {
     // telas-modelo), e só uma vez: ela não está na página carregada.
     expect(screen.getByText('Lia')).toBeTruthy()
     expect(screen.getAllByText('você')).toHaveLength(1)
+    // A aura do nível (19/10/2026): o pódio passa o nível de cada um ao avatar.
+    const avatar = screen.getByRole('img', { name: 'Avatar de Bia' })
+    expect(avatar.className).toContain('kids-aura')
+    expect(avatar.getAttribute('style')).toContain('--kids-aura-cor: var(--level-coder)')
   })
 
   test('o pódio DIZ o lugar de cada um (o desenho troca a ordem e o placar tem empate)', () => {
@@ -115,7 +130,7 @@ describe('central de ranking kids', () => {
 
   test('quanto vale cada coisa: o jogo publicado só entra para quem pode publicar', () => {
     const { unmount } = render(<RankingHub initialRanking={ranking} league={league} />)
-    expect(screen.getByText('Terminar uma fase')).toBeTruthy()
+    expect(screen.getByText('Terminar uma aula')).toBeTruthy()
     expect(screen.getByText('+10 XP')).toBeTruthy()
     expect(screen.queryByText('Publicar um jogo no Mural')).toBeNull()
     unmount()

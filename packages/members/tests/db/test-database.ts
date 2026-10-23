@@ -1,4 +1,6 @@
 import postgres from 'postgres'
+import { prepareLiveTestSchema } from './live-test-schema'
+import { studioMigrationTableStatements } from './studio-migration-tables'
 
 const DEFAULT_TEST_DB_NAME = 'sistemazero_test'
 const FALLBACK_URL = 'postgres://postgres:postgres@localhost:5433/sistemazero'
@@ -59,7 +61,42 @@ export async function prepareTestDatabase(
 
 /** Sparse repository fixtures share the current block read model, without production foreign keys. */
 async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
+  // A database built by real migrations owns its schema. Sparse fixtures must not replace
+  // production views (their historical column order differs) or synthesize missing tables.
+  const [migrated] = await database`select to_regclass('drizzle.members_migrations') as name`
+  if (migrated?.name) return
   await database`create schema if not exists members`
+  await prepareLiveTestSchema(database)
+  // Quotas and account deletion now also reach Studio Pro. These independent
+  // migrations supply their real contracts to every sparse repository fixture.
+  await database.begin(async (transaction) => {
+    await transaction`select pg_advisory_xact_lock(16012026, 116)`
+    for (const [table, migration] of [
+      ['adult_profiles', '0132_useful_jigsaw.sql'],
+      ['adult_journey_policy', '0131_adult_journey_policy.sql'],
+      ['adult_journey_reached', '0138_adult_journey_reached.sql'],
+      ['kids_journey_policy', '0136_kids_journey_policy.sql'],
+      ['studio_ai_accounts', '0116_groovy_shriek.sql'],
+      ['studio_ai_runs', '0117_absurd_jimmy_woo.sql'],
+      ['studio_builder_jobs', '0120_cool_the_fallen.sql'],
+      ['studio_builder_project_deletions', '0124_superb_karen_page.sql'],
+    ]) {
+      const [present] = await transaction`select to_regclass(${`members.${table}`}) as name`
+      if (present?.name) continue
+      const source = await Bun.file(
+        new URL(
+          `../../src/infrastructure/persistence/drizzle/migrations/${migration}`,
+          import.meta.url,
+        ),
+      ).text()
+      for (const statement of source.split('--> statement-breakpoint'))
+        if (statement.trim()) await transaction.unsafe(statement)
+    }
+    const [gallery] = await transaction`select to_regclass('members.gallery_copy_attempts') as name`
+    if (!gallery?.name)
+      for (const statement of await studioMigrationTableStatements(['gallery_copy_attempts']))
+        await transaction.unsafe(statement)
+  })
   await database.unsafe(`create table if not exists members.lesson_blocks (
     id uuid primary key, lesson_id uuid not null, kind text not null,
     sort_order integer not null default 0, content jsonb not null,
@@ -72,6 +109,13 @@ async function prepareBlockReadModel(database: ReturnType<typeof postgres>) {
   )`)
   // A coluna `support_block_ids` saiu na migration 0091: todo bloco pertence a uma seção.
   await database`alter table members.lesson_structures drop column if exists support_block_ids`
+  // Cursos ao vivo (0113): quem já criou `members.courses` neste banco compartilhado ganha a
+  // modalidade antes do próximo arquivo; cada arquivo que cria a tabela também a acrescenta.
+  await database.unsafe(`do $$ begin
+    if to_regclass('members.courses') is not null then
+      alter table members.courses add column if not exists modality text not null default 'recorded';
+    end if;
+  end $$`)
   await database.unsafe(`create or replace view members.active_lesson_blocks as
     select id,lesson_id,kind,sort_order,content,content_revision,archived_at from members.lesson_blocks where archived_at is null`)
 }

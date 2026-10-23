@@ -1,0 +1,23 @@
+{
+  "errors": [],
+  "header": {
+    "mode": "Componente original em estado controlado; sem conta conectada e sem teste de nuvem.",
+    "saving": {
+      "text": "Guardando na sua conta…",
+      "state": "saving"
+    },
+    "saved": {
+      "text": "Guardado na sua conta",
+      "state": "saved"
+    }
+  },
+  "editor": {
+    "block": "sz_g2d_top_down",
+    "text": "Mover sprite heroi em 4 direções com setas, velocidade 3",
+    "project": "Herói que anda",
+    "canvas": {
+      "width": 502,
+      "height": 377
+    }
+  }
+}

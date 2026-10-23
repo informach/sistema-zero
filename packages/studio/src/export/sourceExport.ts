@@ -1,7 +1,11 @@
-import type { Project } from '#core'
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import type { StudioRuntimeCatalog } from '@sistemazero/core/studio/runtime-catalog'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { buildClassicFileMap, buildProFileMap, type ExportFileMap } from './fileMap'
 import { identityMinifiers } from './minify'
+import { proSourceInstructions } from './proSourceInstructions'
 import { sanitizeBaseFilename } from './sanitize'
+import { captureSourceExportCatalog } from './sourceRuntimeCatalog'
 import { zipFiles } from './zip'
 
 export interface SourceFilesResult {
@@ -14,6 +18,12 @@ export interface SourceExportResult {
   blob: Blob
   filename: string
   warnings: string[]
+}
+
+export interface SourceExportOptions {
+  signal?: AbortSignal
+  /** Host-owned metadata only; absence must not prevent rescuing the source snapshot. */
+  runtimeCatalog?: StudioRuntimeCatalog | null
 }
 
 /**
@@ -66,13 +76,22 @@ Divirta-se programando! 🚀
  * Acrescenta um `LEIA-ME.txt` explicando como rodar. NÃO inclui Dockerfile/
  * railway.json (isso é coisa do pacote de deploy, não do "continuar editando").
  */
-export async function buildSourceFiles(project: Project): Promise<SourceFilesResult> {
+export async function buildSourceFiles(
+  project: Project,
+  options: SourceExportOptions = {},
+): Promise<SourceFilesResult> {
+  if (isPythonProject(project)) {
+    const captured = copyStudioProjectJson(project)
+    const runtimeCatalog = captureSourceExportCatalog(options.runtimeCatalog)
+    const { buildPythonSourceFiles } = await import('./pythonSource')
+    return buildPythonSourceFiles(captured, runtimeCatalog)
+  }
   const isPro = project.kind === 'pro' && !!project.tree
   const warnings: string[] = []
   const files: ExportFileMap = {}
 
   if (isPro) {
-    const built = buildProFileMap(project)
+    const built = await buildProFileMap(project, { purpose: 'source' })
     warnings.push(...built.warnings)
     Object.assign(files, built.files)
   } else {
@@ -86,7 +105,13 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
     }
   }
 
-  files['LEIA-ME.txt'] = LEIA_ME
+  const instructions = isPro ? proSourceInstructions(files, project.proMeta?.devScript) : null
+  if (instructions) warnings.push(...instructions.warnings)
+
+  // A documentação escrita pelo autor faz parte da fonte e deve permanecer intacta.
+  if (!('LEIA-ME.txt' in files)) {
+    files['LEIA-ME.txt'] = instructions?.text ?? LEIA_ME
+  }
   return { files, warnings }
 }
 
@@ -95,13 +120,19 @@ export async function buildSourceFiles(project: Project): Promise<SourceFilesRes
  * `exportProject`, o nome NÃO leva `-deploy` (é o projeto para continuar, não para
  * publicar).
  */
-export async function exportProjectSource(project: Project): Promise<SourceExportResult> {
-  const { files, warnings } = await buildSourceFiles(project)
-  const bytes = await zipFiles(files)
+export async function exportProjectSource(
+  project: Project,
+  options: SourceExportOptions = {},
+): Promise<SourceExportResult> {
+  options.signal?.throwIfAborted()
+  const name = project.name
+  const { files, warnings } = await buildSourceFiles(project, options)
+  options.signal?.throwIfAborted()
+  const bytes = await zipFiles(files, options)
   // Cópia para um Uint8Array com ArrayBuffer "comum" (o retorno do fflate pode ser
   // SharedArrayBuffer, que o Blob recusa) — mesmo cuidado do exportProject.
   const blobBytes = new Uint8Array(bytes.byteLength)
   blobBytes.set(bytes)
   const blob = new Blob([blobBytes], { type: 'application/zip' })
-  return { blob, filename: `${sanitizeBaseFilename(project.name)}.zip`, warnings }
+  return { blob, filename: `${sanitizeBaseFilename(name)}.zip`, warnings }
 }

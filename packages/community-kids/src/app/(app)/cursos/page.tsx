@@ -1,14 +1,17 @@
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { Sparkles } from 'lucide-react'
 import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { JourneyMap } from '@/components/kids/journey-map'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { KidsMascot } from '@/components/kids/mascot'
-import { journeyProgress } from '@/lib/journey-horizon'
-import { coursesForLevel, tierCompletionByLevel } from '@/lib/journey-map'
+import { accessibleJourneyLevels, coursesForLevel, tierCompletionByLevel } from '@/lib/journey-map'
+import { canonicalJourneyProgress, canonicalPendingCourses } from '@/lib/journey-presentation'
 import { levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
-import type { StudentLevelSlug } from '@/lib/types'
 import {
   checkStudioAccessReadonly,
   getGamificationReadonly,
@@ -16,38 +19,23 @@ import {
   listCatalog,
   listMyCourses,
 } from '@/server/members'
-import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
-/**
- * Mapa da Jornada (24/07): a página de cursos É o mapa — serpentina com os
- * níveis (Faísca→Lenda); clicar num nível liberado abre `/cursos/trilha/[level]`
- * com a listagem daquela trilha. Sem busca/filtros aqui (decisão da usuária).
- * Gamificação fora (`level` nulo) → cai na grade clássica simples (o mapa
- * precisa do nível p/ pintar os nós). O mapa desenha até o HORIZONTE do catálogo
- * (ver `lib/journey-horizon.ts`), por isso o `courses` vai junto.
- *
- * Desenho das telas-modelo (11/09/2026): o cabeçalho centralizado leva o chip amarelo
- * "Você é <posto>" e a frase do próximo marco (moravam dentro do mapa), e a página fecha
- * no lilás com as AVENTURAS da trilha atual em cartões deitados, com o progresso de cada
- * uma. O mapa continua com os medalhões de verdade (`public/jornada/*.webp`).
- */
+/** Map and trails read the canonical published view; curricular counters remain separate. */
 export default async function CatalogPage() {
-  const [{ status, body }, gamification, studioRes, session, mineRes, unlocksRes] =
-    await Promise.all([
-      listCatalog(),
-      getGamificationReadonly(),
-      // Posse do Estúdio Completo (produto vendido à parte): só com ela o estado
-      // "em dia" oferece criar um jogo. Best-effort — soluço só esconde o atalho.
-      checkStudioAccessReadonly().catch(() => null),
-      getSession(),
-      // O progresso das aventuras (aulas feitas) mora em "Meus cursos"; o catálogo é vitrine.
-      // Best-effort: sem ele, o cartão cai no "Liberado" + "Acessar aventura".
-      listMyCourses().catch(() => null),
-      // Os blocos conquistados: sem nenhum, o Estúdio livre está trancado e o atalho some.
-      getStudioUnlocksReadonly().catch(() => null),
-    ])
+  const [{ status, body }, gamification, studioRes, mineRes, unlocksRes] = await Promise.all([
+    listCatalog(),
+    getGamificationReadonly(),
+    // Posse do Estúdio Completo (produto vendido à parte): só com ela o estado
+    // "em dia" oferece criar um jogo. Best-effort — soluço só esconde o atalho.
+    checkStudioAccessReadonly().catch(() => null),
+    // O progresso das aventuras (aulas feitas) mora em "Meus cursos"; o catálogo é vitrine.
+    // Best-effort: sem ele, o cartão cai no "Liberado" + "Acessar aventura".
+    listMyCourses().catch(() => null),
+    // Os blocos conquistados: sem nenhum, o Estúdio livre está trancado e o atalho some.
+    getStudioUnlocksReadonly().catch(() => null),
+  ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const courses = body?.courses ?? []
   /**
@@ -57,24 +45,41 @@ export default async function CatalogPage() {
    * segunda busca a fazer nem um "progresso desconhecido" a tratar: se o catálogo carregou,
    * o contador é confiável; se não carregou, a página inteira já falhou acima.
    */
-  const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
-  const completionByLevel = tierCompletionByLevel(courses)
+  const journey = kidsJourneyAccess(gamification.status === 200 ? gamification.body : null)
+  if (!journey)
+    return (
+      <KidsBand tone="creme">
+        <p role="status">
+          Sua jornada está indisponível agora. Suas conquistas continuam guardadas. Tente novamente
+          daqui a pouco.
+        </p>
+      </KidsBand>
+    )
+  const completionByLevel = tierCompletionByLevel(courses, journey)
   // ⚠️ POSSE não basta: o Estúdio LIVRE só abre no Construtor (`freeStudio`) e com algum
   // bloco conquistado. Sem isso o "em dia" → "Criar um jogo meu" cairia na tela de Estúdio
   // trancado. Clique morto: por isso o atalho exige as três (ver `canOpenFreeStudio`).
   const studioOwned = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
-    level?.slug,
-    session?.role,
+    journey,
     unlocksRes,
   )
 
-  if (level) {
-    const current = levelInfo(level.slug)
+  if (!isKidsStaffPreview(journey)) {
+    const level = journey.earned.level
+    const current = levelInfo(level)
     const CurrentIcon = current.icon
-    const progress = journeyProgress(level, courses)
-    const aventuras = coursesForLevel(level.slug, courses)
-    const trilha = completionByLevel[level.slug as StudentLevelSlug]
+    const progress = canonicalJourneyProgress(journey)
+    const aventuras = coursesForLevel(level, courses, journey)
+    const trailIds = new Set(aventuras.map((course) => course.courseId))
+    const coursesById = new Map(courses.map((course) => [course.courseId, course]))
+    const requiredOutsideTrail = canonicalPendingCourses(journey).flatMap((requirement) => {
+      const course = coursesById.get(requirement.courseId)
+      return course && !trailIds.has(course.courseId)
+        ? [{ course, milestone: requirement.milestone }]
+        : []
+    })
+    const trilha = completionByLevel[level]
     const mine = new Map(
       (mineRes?.status === 200 ? (mineRes.body?.courses ?? []) : []).map((c) => [c.courseSlug, c]),
     )
@@ -85,17 +90,17 @@ export default async function CatalogPage() {
         <KidsBand tone="creme">
           <div className="flex flex-col items-center text-center">
             <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">
-              Aventuras da Jornada do Criador
+              Cursos da Jornada do Criador
             </h1>
             <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-              De Faísca a Lenda. Toque num nível para ver as aventuras da trilha dele!
+              De Faísca a Lenda. Toque num nível para ver os cursos da trilha dele!
             </p>
             {/* O amarelo é cor de fundo e não segue o tema; a tinta escura dá 8,73:1 nele. */}
             <span className="mt-5 inline-flex items-center gap-2 rounded-full bg-(--sz-kids-amarelo) px-4 py-2 font-extrabold text-(--sz-kids-tinta) text-[0.9375rem]">
               <CurrentIcon className="size-4" aria-hidden />
               Você é {current.label}
             </span>
-            {progress.kind === 'pending' ? (
+            {progress.hint ? (
               <p className="mt-4 max-w-2xl font-extrabold text-[0.9375rem]">{progress.hint}</p>
             ) : null}
           </div>
@@ -103,32 +108,60 @@ export default async function CatalogPage() {
         {/* O mapa é a tela inteira: faixa azul-céu do começo ao fim, como na
             referência, com a fita e os medalhões por cima dela. */}
         <KidsBand tone={aventuras.length > 0 ? 'ceu' : 'lilas'}>
-          {/* Recorte de 3 campos: o mapa é CLIENTE e a view inteira mandaria título,
-              capa e URL de vendas de todos os cursos no payload para calcular o horizonte. */}
+          {/* O cliente recebe a política e os postos com aventuras acessíveis, sem todo o catálogo. */}
           <JourneyMap
-            level={level}
-            courses={courses.map((c) => ({
-              level: c.level,
-              track: c.track,
-              careerSlot: c.careerSlot,
-            }))}
+            journey={journey}
+            accessibleLevels={accessibleJourneyLevels(journey, courses)}
             completionByLevel={completionByLevel}
             studioOwned={studioOwned}
           />
         </KidsBand>
+        {requiredOutsideTrail.length > 0 ? (
+          <KidsBand tone="lilas">
+            <section aria-labelledby="proximas-aventuras">
+              <KidsSectionHeader
+                id="proximas-aventuras"
+                title="Próximos cursos"
+                subtitle="Estes cursos fazem parte do seu próximo passo."
+              />
+              <ul className="grid gap-4">
+                {requiredOutsideTrail.map(({ course, milestone }) => (
+                  <li key={course.courseId}>
+                    <p className="mb-2 font-semibold text-sm">
+                      {milestone === 'complete'
+                        ? 'Termine este curso.'
+                        : 'Termine e publique o seu jogo no Mural.'}
+                    </p>
+                    <CatalogCourseCard
+                      layout="linha"
+                      course={course}
+                      mine={mine.get(course.courseSlug) ?? null}
+                      salesUrl={course.salesPageUrl}
+                      foundationTitle={
+                        course.careerLock?.foundationCourseSlug
+                          ? (titleBySlug.get(course.careerLock.foundationCourseSlug) ?? null)
+                          : null
+                      }
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </KidsBand>
+        ) : null}
         {aventuras.length > 0 ? (
           <KidsBand tone="lilas">
             <section aria-labelledby="aventuras-da-trilha">
               <KidsSectionHeader
                 id="aventuras-da-trilha"
-                title={`Aventuras da trilha ${current.label}`}
-                subtitle="Toque numa aventura para abrir."
+                title={`Cursos da trilha ${current.label}`}
+                subtitle="Toque num curso para abrir."
                 actions={
                   trilha && trilha.total > 0 ? (
                     <span className="inline-flex h-10 items-center gap-2 rounded-full bg-card px-4 font-extrabold text-sm">
                       <Sparkles className="size-4 text-primary" aria-hidden />
                       {trilha.done} de {trilha.total}{' '}
-                      {trilha.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+                      {trilha.total === 1 ? 'curso pronto' : 'cursos prontos'}
                     </span>
                   ) : undefined
                 }
@@ -160,18 +193,16 @@ export default async function CatalogPage() {
   return (
     <>
       <KidsBand tone="creme">
-        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Todas as aventuras</h1>
+        <h1 className="sz-display text-[clamp(2rem,3.4vw,2.8125rem)]">Prévia dos cursos</h1>
         <p className="mt-2.5 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-          Suas aventuras: as que já são suas e as que você ainda pode ganhar.
+          Visualização da equipe. Esta prévia não concede postos ou conquistas.
         </p>
       </KidsBand>
       <KidsBand tone="lilas">
         {courses.length === 0 ? (
           <div className="kids-carta flex flex-col items-center gap-4 px-6 py-12 text-center">
             <KidsMascot expression="thinking" className="kid-float size-16" />
-            <p className="sz-display text-xl">
-              As aventuras estão a caminho! Volte daqui a pouquinho.
-            </p>
+            <p className="sz-display text-xl">Os cursos estão a caminho! Volte daqui a pouco.</p>
           </div>
         ) : (
           <CatalogGrid courses={courses} />
@@ -181,7 +212,7 @@ export default async function CatalogPage() {
   )
 }
 
-/** Grade clássica (fallback sem gamificação) — mesma dos cards do catálogo. */
+/** Explicit, authorized staff preview, without a virtual child rank. */
 function CatalogGrid({
   courses,
 }: {

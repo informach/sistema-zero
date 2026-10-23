@@ -1,0 +1,59 @@
+# Final backup after the five affected services enter maintenance
+
+Prepared offline for Root. No maintenance, provider call, dump or clone was executed during this preparation. Future deployment IDs are deliberately absent. All existing r1 rehearsal, binary transport, dump shell, and clone-r2 artifacts remain unchanged.
+
+## Input created only from actual maintenance receipts
+
+Root creates a **new** JSON file inside `.cache/python-reference-games/` after all five maintenance reloads have genuinely passed. It has exactly these fields:
+
+- `kind`: `production-postgres-affected-fence-input`
+- `version`: `1`
+- `projectId`: `415d5a1c-5f75-432c-8445-b395d0977ce3`
+- `environmentId`: `19c212a5-85c0-493c-9630-a7a0569e8412`
+- `verifyReceipts`: exactly `kids`, `adult`, `admin`, `hub`, `members`, each containing `{path, sha256}` of that service's real `production-maintenance-reload-r2` **VERIFY** receipt.
+
+Paths are relative to the worktree and must stay inside the private cache. Each SHA is the actual file hash. An alias of another file, an APPLY alone, a rehearsal receipt, an unqualified VERIFY or a receipt for a different service cannot supply a target. The adapter follows the VERIFY's pinned APPLY and original HTTP references and checks their identity, image, snapshot and source bindings. It never invents a new deployment or updates an old target pin.
+
+The original per-service VERIFY is historical identity evidence after its turn. Do **not** rerun the old Kids VERIFY after the other four reloads: its original plan correctly expects those other services' old deployments. The new adapter reuses the canonical validators over all five new targets instead of relaxing that historic plan. Freshness comes from new observations immediately around this dump, not from advancing an old receipt's date.
+
+## Root execution
+
+From `C:/Users/tocha/projects/sistema-zero-python-review-fixes`, after review of the actual manifest and its SHA:
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' `
+  '.cache/python-reference-games/production-postgres-final-backup-r1.mjs' `
+  'production-postgres-final-root-r1' `
+  $actualFiveVerifyManifestPath $actualFiveVerifyManifestSha256 `
+  $publicAgeRecipient $newFinalCiphertextAbsolutePath $recoveredIdentityAbsolutePath
+```
+
+The `.age` destination must be a new file outside `C:/Users/tocha/projects`; never reuse or rename the rehearsal archive as final. The recovered identity also remains outside Git with the already reviewed ACL. Only its path and the public recipient enter the command. This operator does not generate keys, alter configuration, reload a service, invoke migrations, upload ciphertext or execute recovery against production.
+
+## What runs
+
+1. Validate manifest/source hashes and derive the five new targets from actual VERIFY/APPLY/HTTP receipts. PG stays independently pinned to deployment `03647ac9-88bd-449e-852d-4ce80137177c`, snapshot `88686eeb-f927-4da7-ba10-374c9808b775`, instance `31fd85c1-4bcc-44c6-a360-d7f487a7d229` and its existing image. The old Members deployment is no longer used as the new Members target.
+2. Observe all five current contexts and old retirement using canonical `projectContext` and `baselineContext`: exact new candidate, one SUCCESS active deployment, no pending deployment, exact image/commit/snapshot/commands and one expected RUNNING instance; each original deployment and its instances retired.
+3. Run the existing HTTP-r2 reader serially for all five exact new instances. Each produces a **new** receipt. Local `/readyz` must prove maintenance and `/` must prove full 503 blocking. All five proofs must still be within five minutes when this observation completes. The original observed HTTP state is never substituted for these new probes.
+4. Read declared/rendered variables and current deployment snapshots in RAM only. Require `RELEASE_MAINTENANCE_MODE=full` in both maps and each exact snapshot equal to current authored configuration, using canonical reference normalization. Check Members' DB target against PG's environment using the existing validator. Run the pinned PG read-only metadata script, then recheck all five contexts and PG. No raw maps, passwords, URLs, headers or errors are persisted.
+5. Immediately perform one encrypted custom-format `pg_dump` through the already qualified binary transport, with a distinct output. Then repeat steps 2–4 in new output directories. Compare contexts, metadata, declared/rendered maps and PG connection identity before/after in RAM. Any drift disqualifies the archive; nothing retries automatically.
+6. Reuse the complete authenticated-EOF check, clone-r2 durable owner checkpoint, isolated PG18 full restore, technical oracles, own-CID removal, and final authenticated-EOF check from the actual rehearsal. No new restore engine is introduced.
+
+The public projection of each new observation is embedded in the new final receipt. HTTP subreceipts also have distinct names. The output directory and ciphertext file are exclusive; existing evidence is never overwritten. Failure preserves the attempt and any partial ciphertext, without an automatic second dump.
+
+## Receipt and scope
+
+Only complete success produces `FINAL_AFFECTED_WRITERS_BACKUP_RESTORE_VERIFIED`, `restoreQualified:true`, `finalPreMigrationBackup:true` and `fenceVerifiedAroundCapture:true` in `.cache/python-reference-games/production-postgres-final-root-r1/receipt.json`.
+
+`affectedWritersFenced:true` means the five affected application services were proved in full maintenance around capture. `allProductionWritersFenced:false` remains explicit: other production services, including Auth or payments in their own schemas, may continue. This is one consistent database snapshot. It does not promise a whole-platform pause, unchanged later rows, a cluster-wide rollback or automatic restore. Ownership/ACL and cluster-role recovery remain outside the existing logical restore proof.
+
+The operator never runs migration 0126/0128 or declares their separate gates satisfied. Root must keep the affected services fenced until the reviewed migration sequence. A later release/unfence invalidates using the observations as a current fence. `durableCopyQualified:false`, `clusterRollbackQualified:false`, `sourceRowsSnapshotComparison:false` and `migrationExecuted:false` remain explicit. Upload/download and recovered-key verification for this **new final archive** are separate durable-storage steps; the rehearsal's R2 object is not accepted as final evidence.
+
+## Offline validation
+
+Six causal pure tests passed with Node24.22.0 in 91.44 ms: five-target identity, absent/wrong receipt kind, canonical path alias, cross-service proof, one target/image drift, third pending deployment, old instance still running, false/stale/wrong-target HTTP, independent PG snapshot drift and changed configuration without leaking its value. These tests do not claim the future maintenance receipts exist or the final backup ran.
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' --test `
+  '.cache/python-reference-games/production-postgres-fenced-context-r1.test.mjs'
+```

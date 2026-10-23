@@ -1,5 +1,5 @@
-import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
-import type { PensaHostChrome } from '@sistemazero/pensa'
+import { afterAll, afterEach, describe, expect, it, mock, spyOn } from 'bun:test'
+import type { PensaHostAdapter, PensaHostChrome } from '@sistemazero/pensa'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 
 /**
@@ -12,6 +12,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 const actualNavigation = await import('next/navigation')
 const actualPensa = await import('@sistemazero/pensa')
 let pathname = '/pensa'
+let lastAdapter: PensaHostAdapter
 let lastChrome: PensaHostChrome | null | undefined
 
 const router = {
@@ -24,10 +25,13 @@ const router = {
 }
 
 function ObservedPensaApp({
+  adapter,
   onWorkspaceChange,
 }: {
+  adapter: PensaHostAdapter
   onWorkspaceChange?: (active: boolean) => void
 }) {
+  lastAdapter = adapter
   const chrome = actualPensa.usePensaHostChrome()
   lastChrome = chrome
   return (
@@ -86,7 +90,7 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     setViewportWidth(1280)
     render(
       <FocusModeProvider viewerId="perfil-1">
-        <PensaClient pintaOwned studioAvailable />
+        <PensaClient />
         <FocusModeToggle target="nav" />
       </FocusModeProvider>,
     )
@@ -104,7 +108,7 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     setViewportWidth(500)
     render(
       <FocusModeProvider viewerId="perfil-1">
-        <PensaClient pintaOwned studioAvailable />
+        <PensaClient />
       </FocusModeProvider>,
     )
     await waitFor(() => {
@@ -118,7 +122,7 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     setViewportWidth(1280)
     render(
       <FocusModeProvider viewerId="perfil-1">
-        <PensaClient pintaOwned studioAvailable />
+        <PensaClient />
         <FocusModeToggle target="nav" />
       </FocusModeProvider>,
     )
@@ -129,4 +133,71 @@ describe('pensa-client: o chrome do host chega ao Pensa', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Voltar aos planos de teste' }))
     expect(screen.getByRole('button', { name: 'Mostrar menu' })).toBeDefined()
   })
+})
+
+it('preserves the canonical API error for definitive refusals in project care', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-1">
+      <PensaClient viewerId="perfil-1" />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('pensa-app')
+  const original = globalThis.fetch
+  globalThis.fetch = Object.assign(
+    async () =>
+      Response.json(
+        { error: { code: 'REVISION_CONFLICT', message: 'A tentativa foi encerrada.' } },
+        { status: 409 },
+      ),
+    { preconnect: original.preconnect },
+  )
+  try {
+    const result = lastAdapter.transport.request('/projects/test/checkpoints', { method: 'POST' })
+    await expect(result).rejects.toBeInstanceOf(actualPensa.PensaApiError)
+    await expect(result).rejects.toMatchObject({ status: 409, code: 'REVISION_CONFLICT' })
+  } finally {
+    globalThis.fetch = original
+  }
+})
+
+it('opens Pro missions and games through a full navigation, preserving classic routing', async () => {
+  render(
+    <FocusModeProvider viewerId="perfil-1">
+      <PensaClient />
+    </FocusModeProvider>,
+  )
+  await screen.findByTestId('pensa-app')
+  const navigation = spyOn(window.location, 'assign').mockImplementation(() => {})
+  router.push.mockClear()
+  try {
+    lastAdapter.onOpenMission({
+      missionId: 'mission',
+      destination: 'studio',
+      studioProjectId: 'pensa-plan',
+      studioAuthoring: 'code',
+    })
+    expect(navigation).toHaveBeenLastCalledWith('/estudio/pro/pensa-plan?missao=mission')
+    lastAdapter.onOpenGame?.({
+      projectId: 'p-l-a-n',
+      studioAuthoring: 'code',
+      studioProjectId: 'pensa-plan',
+    })
+    expect(navigation).toHaveBeenLastCalledWith('/estudio/pro/pensa-plan')
+    expect(router.push).not.toHaveBeenCalled()
+    lastAdapter.onOpenGame?.({
+      projectId: 'p-l-a-n',
+      studioAuthoring: 'blocks',
+      studioProjectId: 'pensa-plan',
+    })
+    expect(router.push).toHaveBeenLastCalledWith('/estudio?projeto=pensa-plan')
+    lastAdapter.onOpenMission({
+      missionId: 'classic',
+      destination: 'studio',
+      studioProjectId: 'pensa-plan',
+      studioAuthoring: 'blocks',
+    })
+    expect(router.push).toHaveBeenLastCalledWith('/estudio?missao=classic')
+  } finally {
+    navigation.mockRestore()
+  }
 })

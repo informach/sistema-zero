@@ -49,7 +49,7 @@ describe('BlocksMode × preview no estreito', () => {
    * uma preferência velha de desktop. Se ela apagasse a aba, quem desligou o preview
    * no computador abriria no celular sem preview E sem botão para trazer de volta.
    */
-  it('a aba de preview sobrevive a showPreview=false', () => {
+  it('a aba de preview sobrevive a showPreview=false', async () => {
     useProjectStore.setState({
       project: createEmptyProject('project-narrow', 'Projeto'),
       isDirty: false,
@@ -57,13 +57,13 @@ describe('BlocksMode × preview no estreito', () => {
     })
     useUIStore.setState({ showPreview: false })
 
-    const { getByTitle } = render(
+    const { findByTitle } = render(
       <StudioLayoutProvider value={narrow}>
         <BlocksMode />
       </StudioLayoutProvider>,
     )
 
-    expect(getByTitle('preview')).toBeTruthy()
+    expect(await findByTitle('preview')).toBeTruthy()
   })
 })
 
@@ -277,7 +277,7 @@ describe('BlocksMode', () => {
       // Época fechada: os blocos agora refletem os arquivos.
       expect(state.bridgeBlocksSyncedEpoch).toBe(1)
       // O código digitado NUNCA é regenerado por cima.
-      expect(state.project?.files['script.js']).toBe(typed)
+      expect(state.project?.files?.['script.js']).toBe(typed)
     })
   })
 

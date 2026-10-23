@@ -3,11 +3,20 @@ import type { LeadAttributionV1 } from '../lib/lead-attribution'
 import type { QuizAnswers } from '../lib/quiz-types'
 import type { PurchasedOfferSnapshotV1 } from '../server/purchased-offer-snapshot'
 import type { Database } from './client'
-import { funnelEvents, leadPayments, leads, processedWebhooks } from './schema'
+import {
+  analyticsQuizDefinitions,
+  funnelEvents,
+  leadPayments,
+  leads,
+  processedWebhooks,
+} from './schema'
 
 export type Lead = typeof leads.$inferSelect
 /** Campos do lead atualizáveis via updateLead (contato/funil/perfil; respostas em quiz_answers). */
 export type LeadUpdate = Partial<typeof leads.$inferInsert>
+/** O funil cuja assinatura continua a jornada do Desafio (`recordCommunitySubscription`). */
+export const COMMUNITY_KIDS_FUNNEL = 'kids/comunidade-dos-criadores'
+
 export interface QuizAnswerEvent {
   step: string
   metadata: Record<string, unknown>
@@ -182,8 +191,11 @@ export interface FunnelRepo {
   ): Promise<void>
   listLeads(limit: number, offset: number, filter?: LeadFilter): Promise<Lead[]>
   countLeads(filter?: Pick<LeadFilter, 'q' | 'funnel' | 'eventCode'>): Promise<number>
-  /** Conversão por evento; `funnel` opcional restringe aos leads daquele funil. */
-  eventCounts(funnel?: string): Promise<EventCount[]>
+  /**
+   * Conversão por evento; `funnel` opcional restringe aos leads daquele funil e `scope` (só com
+   * funil) ao quiz atual e/ou a uma manchete do teste A/B.
+   */
+  eventCounts(funnel?: string, scope?: QuizScope): Promise<EventCount[]>
   /** Conversão por evento first-touch, sempre em leads únicos. */
   attributedEventCounts(eventCode: string, funnel?: string): Promise<EventCount[]>
   /** Distribuição do valor efetivamente cobrado, pelo snapshot da cobrança paga. */
@@ -194,12 +206,38 @@ export interface FunnelRepo {
   ): Promise<number>
   /** Atribui uma assinatura da Comunidade à jornada anterior do Desafio. */
   recordCommunitySubscription(sourceLeadId: string, buyerUserId: string): Promise<void>
-  /** Contagem de leads por `perfil_resultado` (ignora nulos); `funnel` opcional filtra. */
-  perfilCounts(funnel?: string): Promise<PerfilCount[]>
+  /** Contagem de leads por `perfil_resultado` (ignora nulos); `funnel` e `scope` opcionais filtram. */
+  perfilCounts(funnel?: string, scope?: QuizScope): Promise<PerfilCount[]>
   /** True se o delivery id já foi processado (dedupe de webhook). */
   isWebhookProcessed(deliveryId: string): Promise<boolean>
   /** Insere o delivery id; retorna false se já existia (webhook duplicado). */
   markWebhookProcessed(deliveryId: string, paymentId: string | null): Promise<boolean>
+}
+
+/**
+ * Recorte das métricas de um quiz versionado no /admin. `quizVersion`: só os leads que abriram
+ * aquela versão (pela definição gravada na criação do lead). `headline`: só quem viu aquela
+ * manchete (`attribution.quizHeadline`); a manchete padrão também conta os leads sem registro.
+ */
+export interface QuizScope {
+  quizVersion?: string
+  headline?: string
+  headlineIsDefault?: boolean
+}
+
+function quizScopeWhere(scope?: QuizScope): SQL[] {
+  const where: SQL[] = []
+  if (scope?.quizVersion)
+    where.push(
+      sql`exists (select 1 from ${analyticsQuizDefinitions} where ${analyticsQuizDefinitions.id} = ${leads.quizDefinitionId} and ${analyticsQuizDefinitions.definition}->>'version' = ${scope.quizVersion})`,
+    )
+  if (scope?.headline)
+    where.push(
+      scope.headlineIsDefault
+        ? sql`coalesce(${leads.attribution}->>'quizHeadline', ${scope.headline}) = ${scope.headline}`
+        : sql`${leads.attribution}->>'quizHeadline' = ${scope.headline}`,
+    )
+  return where
 }
 
 export function createFunnelRepo(db: Database): FunnelRepo {
@@ -522,7 +560,7 @@ export function createFunnelRepo(db: Database): FunnelRepo {
       return row?.n ?? 0
     },
 
-    async eventCounts(funnel) {
+    async eventCounts(funnel, scope) {
       const cols = {
         eventName: funnelEvents.eventName,
         leads: sql<number>`count(distinct ${funnelEvents.leadId})::int`,
@@ -533,7 +571,7 @@ export function createFunnelRepo(db: Database): FunnelRepo {
           .select(cols)
           .from(funnelEvents)
           .innerJoin(leads, eq(funnelEvents.leadId, leads.id))
-          .where(eq(leads.funnel, funnel))
+          .where(and(eq(leads.funnel, funnel), ...quizScopeWhere(scope)))
           .groupBy(funnelEvents.eventName)
       }
       return db.select(cols).from(funnelEvents).groupBy(funnelEvents.eventName)
@@ -639,11 +677,19 @@ export function createFunnelRepo(db: Database): FunnelRepo {
 
     async recordCommunitySubscription(sourceLeadId, buyerUserId) {
       const [source] = await db
-        .select({ offerRef: leads.offerRef, paidAt: leads.paidAt })
+        .select({ funnel: leads.funnel, offerRef: leads.offerRef, paidAt: leads.paidAt })
         .from(leads)
         .where(eq(leads.id, sourceLeadId))
         .limit(1)
-      if (!source?.offerRef?.includes('comunidade') || !source.paidAt) return
+      // Só a assinatura Kids continua a jornada do Desafio: a Comunidade adulta também tem
+      // "comunidade" na oferta, e um adulto que já comprou o Desafio para o filho não é o
+      // responsável assinando a continuação.
+      if (
+        source?.funnel !== COMMUNITY_KIDS_FUNNEL ||
+        !source.offerRef?.includes('comunidade') ||
+        !source.paidAt
+      )
+        return
       const [target] = await db
         .select({
           id: leads.id,
@@ -690,9 +736,11 @@ export function createFunnelRepo(db: Database): FunnelRepo {
         .onConflictDoNothing()
     },
 
-    async perfilCounts(funnel) {
+    async perfilCounts(funnel, scope) {
       const notNull = sql`${leads.perfilResultado} is not null`
-      const where = funnel ? and(notNull, eq(leads.funnel, funnel)) : notNull
+      const where = funnel
+        ? and(notNull, eq(leads.funnel, funnel), ...quizScopeWhere(scope))
+        : notNull
       const rows = await db
         .select({
           perfil: leads.perfilResultado,

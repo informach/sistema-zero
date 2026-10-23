@@ -1,4 +1,19 @@
-import { PLATFORM_ACTIONS } from '@sistemazero/core/learning'
+import { ValidationError } from '@sistemazero/core/errors'
+import {
+  EXECUTION_COMPARES,
+  EXECUTION_GAME_FIELDS,
+  EXECUTION_KEYS,
+  EXECUTION_LIMITS,
+  type ExecutionStepValidationContext,
+  isExecutionJson,
+  isExecutionStep,
+  isSectionExecutionRule,
+  PLATFORM_ACTIONS,
+  PROJECT_CHECK_HINT_MAX,
+  SectionProjectLiveContextSchema,
+  SectionPythonProjectCheckDraftSchema,
+  TEACHER_NOTES_MAX,
+} from '@sistemazero/core/learning'
 import {
   LIGHTHOUSE_POSITION,
   LIGHTHOUSE_WALK_SPEEDS,
@@ -15,10 +30,24 @@ import {
   SHEET_CROP_WIDTHS,
   SYMMETRY_PIECES,
 } from '@sistemazero/core/learning/scene'
-import { t } from 'elysia'
-import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
+import { getSchemaValidator, t } from 'elysia'
+import {
+  fieldAlternativesSchema,
+  fieldOptionsSchema,
+  fieldRangesSchema,
+  fieldTextSchema,
+  ProjectBlockRelationshipsSchema,
+} from './project-pattern.schema'
 
 const Id = t.String({ format: 'uuid' })
+const ExecutionJsonValue = t
+  .Transform(t.Unknown())
+  .Decode((value) => {
+    if (!isExecutionJson(value))
+      throw new ValidationError('O caso de função precisa usar valores JSON dentro do limite.')
+    return value
+  })
+  .Encode((value) => value)
 const Label = t.String({ minLength: 1, maxLength: 2000 })
 const Choices = t.Array(t.Object({ id: t.String({ minLength: 1, maxLength: 80 }), label: Label }), {
   minItems: 2,
@@ -631,66 +660,247 @@ export const InteractiveBlockSchema = t.Object({
    */
   semPerguntaFinal: t.Optional(t.Literal(true)),
 })
-const SectionRule = t.Union([
-  t.Object({ type: t.Literal('usesLoop') }),
-  t.Object({
-    type: t.Literal('usesBlock'),
-    blockType: t.String({ maxLength: 200 }),
-    area: t.Optional(
-      t.Union(
-        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
-          t.Literal(area),
+function sectionRuleSchema(context: ExecutionStepValidationContext) {
+  const ExecutionSteps = t.Array(
+    t.Union([
+      t.Object({
+        action: t.Literal('wait'),
+        ms: t.Integer({ minimum: 0, maximum: EXECUTION_LIMITS.maxWaitMs }),
+      }),
+      t.Object({
+        action: t.Literal('press'),
+        key: t.Union(EXECUTION_KEYS.map((key) => t.Literal(key))),
+        holdMs: t.Optional(t.Integer({ minimum: 0, maximum: EXECUTION_LIMITS.maxHoldMs })),
+      }),
+      t.Object({
+        action: t.Literal('click'),
+        x: t.Number({ minimum: 0, maximum: EXECUTION_LIMITS.maxCoordinate }),
+        y: t.Number({ minimum: 0, maximum: EXECUTION_LIMITS.maxCoordinate }),
+      }),
+      t
+        .Transform(
+          t.Object(
+            { action: t.Literal('clickTarget'), target: t.Unknown() },
+            { additionalProperties: true },
+          ),
+        )
+        .Decode((value) => {
+          if (!isExecutionStep(value, context))
+            throw new ValidationError('O clique em alvo tem valores inválidos.')
+          return value
+        })
+        .Encode((value) => value),
+    ]),
+    { maxItems: EXECUTION_LIMITS.maxSteps },
+  )
+  // Keep historical transport unchanged for existing targets. Directional rules
+  // are selected from the raw envelope BEFORE normalization can erase evidence.
+  const ExistingBehavior = t.Object({
+    type: t.Literal('behavior'),
+    steps: ExecutionSteps,
+    expect: t.Object({
+      target: t.Union([
+        t.Object({ kind: t.Literal('value'), path: t.String({ minLength: 1, maxLength: 200 }) }),
+        t.Object({ kind: t.Literal('text') }),
+        t.Object({ kind: t.Literal('console') }),
+        t.Object({
+          kind: t.Literal('game'),
+          field: t.Union(EXECUTION_GAME_FIELDS.map((field) => t.Literal(field))),
+        }),
+      ]),
+      compare: t.Union(EXECUTION_COMPARES.map((compare) => t.Literal(compare))),
+      value: t.Optional(
+        t.Union([t.String({ maxLength: EXECUTION_LIMITS.maxTextChars }), t.Number(), t.Boolean()]),
+      ),
+    }),
+  })
+  const existingBehaviorValidator = getSchemaValidator(ExistingBehavior, { normalize: true })
+  const Behavior = t
+    .Transform(
+      t.Object(
+        {
+          type: t.Literal('behavior'),
+          steps: t.Unknown(),
+          expect: t.Unknown(),
+          observation: t.Optional(t.Unknown()),
+        },
+        { additionalProperties: true },
+      ),
+    )
+    .Decode((value) => {
+      const expect = value.expect
+      const target =
+        typeof expect === 'object' && expect !== null && 'target' in expect
+          ? expect.target
+          : undefined
+      const relative =
+        typeof expect === 'object' &&
+        expect !== null &&
+        'compare' in expect &&
+        (expect.compare === 'increased' || expect.compare === 'decreased')
+      const canonicalBehavior =
+        relative ||
+        Object.hasOwn(value, 'observation') ||
+        (typeof target === 'object' &&
+          target !== null &&
+          'kind' in target &&
+          target.kind === 'spritePosition')
+      if (canonicalBehavior) {
+        if (!isSectionExecutionRule(value, context))
+          throw new ValidationError('O objetivo de movimento tem valores inválidos.')
+        return value
+      }
+      // Explicit target dispatch, never a fallback after a rejected new rule.
+      const parsed = existingBehaviorValidator.safeParse(value)
+      if (!parsed.success) throw new ValidationError('O objetivo tem valores inválidos.')
+      return parsed.data
+    })
+    .Encode((value) => value)
+  return t.Union([
+    t.Object({ type: t.Literal('usesLoop') }),
+    t.Object({
+      type: t.Literal('usesBlock'),
+      blockType: t.String({ maxLength: 200 }),
+      area: t.Optional(
+        t.Union(
+          (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
+            t.Literal(area),
+          ),
         ),
       ),
+      withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+      ...ProjectBlockRelationshipsSchema,
+      fields: t.Optional(
+        t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+          maxProperties: 20,
+        }),
+      ),
+      // Declarado: sem ele, salvar a estrutura apagava a lista de valores aceitos (06/10/2026).
+      fieldOptions: t.Optional(fieldOptionsSchema()),
+      fieldRanges: t.Optional(fieldRangesSchema()),
+      fieldText: t.Optional(fieldTextSchema()),
+      fieldAlternatives: t.Optional(fieldAlternativesSchema()),
+      inputs: t.Optional(
+        t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
+          maxProperties: 20,
+        }),
+      ),
+    }),
+    ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
+      t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
     ),
-    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
-    ...ProjectBlockRelationshipsSchema,
-    fields: t.Optional(
-      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
-        maxProperties: 20,
-      }),
+    // Objetivos que RODAM o jogo (etapa 3, 18/10/2026). Declarados campo a campo: o `normalize` do
+    // Elysia apagaria o que não estivesse aqui. Os limites finos (soma das esperas, tamanho dos
+    // valores) são do core (`isSectionExecutionRule`), que a publicação confere.
+    Behavior,
+    t.Object({
+      type: t.Literal('functionReturns'),
+      name: t.String({ minLength: 1, maxLength: 100 }),
+      module: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+      cases: t.Array(
+        t.Object({
+          args: t.Array(ExecutionJsonValue, { maxItems: EXECUTION_LIMITS.maxArgs }),
+          expected: ExecutionJsonValue,
+        }),
+        { minItems: 1, maxItems: EXECUTION_LIMITS.maxCases },
+      ),
+    }),
+    t.Object({
+      type: t.Literal('script'),
+      steps: ExecutionSteps,
+      code: t.String({ minLength: 1, maxLength: EXECUTION_LIMITS.maxScriptChars }),
+    }),
+  ])
+}
+export const SectionRule = sectionRuleSchema('final')
+
+function sectionCompletionSchema(rule: typeof SectionRule) {
+  return t.Object({
+    // Retain these forbidden legacy/misplaced fields through normalization so domain
+    // validation rejects them instead of silently acknowledging a lossy write.
+    projectExamples: t.Optional(t.Unknown()),
+    solutionProject: t.Optional(t.Unknown()),
+    version: t.Literal(1),
+    blockIds: t.Array(Id, { maxItems: 200 }),
+    materialItems: t.Optional(
+      t.Array(
+        t.Object({
+          blockId: Id,
+          itemIds: t.Array(Id, { minItems: 1, maxItems: 20 }),
+        }),
+        { maxItems: 20 },
+      ),
     ),
-    // Declarado: sem ele, salvar a estrutura apagava a lista de valores aceitos (06/10/2026).
-    fieldOptions: t.Optional(fieldOptionsSchema()),
-    inputs: t.Optional(
-      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
-        maxProperties: 20,
-      }),
+    platformAction: t.Optional(t.Union(PLATFORM_ACTIONS.map((action) => t.Literal(action)))),
+    /** "Envio em dia" (10/10/2026): o último envio precisa ser igual ao projeto de agora. */
+    submissionUpToDate: t.Optional(t.Literal(true)),
+    projectChecks: t.Optional(
+      t.Array(
+        t.Union([
+          t
+            .Transform(
+              t.Object(
+                {
+                  id: t.String({ minLength: 1, maxLength: 128 }),
+                  label: t.String({ maxLength: 200 }),
+                  hint: t.Optional(t.String({ maxLength: PROJECT_CHECK_HINT_MAX })),
+                  optional: t.Optional(t.Literal(true)),
+                  programmingLanguage: t.Literal('python'),
+                  profileId: t.String({ minLength: 1, maxLength: 128 }),
+                  rule: t.Unknown(),
+                },
+                { additionalProperties: false },
+              ),
+            )
+            .Decode((value) => SectionPythonProjectCheckDraftSchema.parse(value))
+            .Encode((value) => value),
+          t.Object({
+            id: t.String({ minLength: 1, maxLength: 200 }),
+            label: t.String({ maxLength: 200 }),
+            programmingLanguage: t.Optional(t.Literal('javascript')),
+            rule,
+            // Declarados de propósito (18/10/2026): o `normalize` do Elysia apagaria a dica e a marca
+            // de extra em silêncio, e o objetivo extra viraria obrigatório no rascunho.
+            hint: t.Optional(t.String({ maxLength: PROJECT_CHECK_HINT_MAX })),
+            optional: t.Optional(t.Literal(true)),
+          }),
+        ]),
+        { maxItems: 20 },
+      ),
     ),
-  }),
-  ...(['declaresVariable', 'definesFunction', 'callsFunction'] as const).map((type) =>
-    t.Object({ type: t.Literal(type), name: t.String({ maxLength: 200 }) }),
-  ),
-])
-export const SectionCompletionSchema = t.Object({
-  version: t.Literal(1),
-  blockIds: t.Array(Id, { maxItems: 200 }),
-  materialItems: t.Optional(
-    t.Array(
-      t.Object({
-        blockId: Id,
-        itemIds: t.Array(Id, { minItems: 1, maxItems: 20 }),
-      }),
-      { maxItems: 20 },
-    ),
-  ),
-  platformAction: t.Optional(t.Union(PLATFORM_ACTIONS.map((action) => t.Literal(action)))),
-  /** "Envio em dia" (10/10/2026): o último envio precisa ser igual ao projeto de agora. */
-  submissionUpToDate: t.Optional(t.Literal(true)),
-  projectChecks: t.Optional(
-    t.Array(
-      t.Object({
-        id: t.String({ minLength: 1, maxLength: 200 }),
-        label: t.String({ maxLength: 200 }),
-        rule: SectionRule,
-      }),
-      { maxItems: 20 },
-    ),
+  })
+}
+export const SectionCompletionSchema = sectionCompletionSchema(SectionRule)
+/** Private authoring only. Publication and execution keep the final rule schema. */
+export const SectionCompletionDraftSchema = sectionCompletionSchema(sectionRuleSchema('draft'))
+export const SectionProjectParams = t.Object({ lessonId: Id, sectionId: Id })
+/** "Testar agora" da autoria: objetivos contra um projeto (o inicial ou o gabarito), sem guardar. */
+export const ProjectChecksTestBody = t.Object({
+  project: t.Unknown(),
+  /** O projeto inicial do bloco: a base das ideias de código ("só conta o que mudou"). */
+  initialProject: t.Optional(t.Unknown()),
+  checks: t.Array(
+    t.Object({
+      id: t.String({ minLength: 1, maxLength: 200 }),
+      rule: SectionRule,
+      optional: t.Optional(t.Literal(true)),
+    }),
+    { minItems: 1, maxItems: 20 },
   ),
 })
-export const SectionProjectParams = t.Object({ lessonId: Id, sectionId: Id })
-export const SectionProjectBody = t.Object({ revision: Id, project: t.Unknown() })
+export const SectionProjectBody = t.Object({
+  revision: Id,
+  project: t.Unknown(),
+  liveContext: t.Optional(
+    t
+      .Transform(t.Unknown())
+      .Decode((value) => SectionProjectLiveContextSchema.parse(value))
+      .Encode((value) => value),
+  ),
+})
 export const LessonSectionSchema = t.Object({
+  projectExamples: t.Optional(t.Unknown()),
+  solutionProject: t.Optional(t.Unknown()),
   id: Id,
   title: t.String({ minLength: 1, maxLength: 200 }),
   objective: t.String({ maxLength: 2000 }),
@@ -708,6 +918,10 @@ export const LessonSectionSchema = t.Object({
   externalTool: t.Nullable(t.Union([t.Literal('estudio'), t.Literal('pinta')])),
   completion: t.Optional(SectionCompletionSchema),
   pendingMedia: t.Array(t.String({ minLength: 1, maxLength: 2000 }), { maxItems: 20 }),
+  // Anotações da professora (cursos ao vivo, 14/10/2026). Declaradas aqui de propósito: o
+  // `normalize` do Elysia tiraria o campo do rascunho em silêncio. Só a autoria e a rota da
+  // professora as leem; a view do aluno NUNCA leva o campo (`GetLessonService`).
+  teacherNotes: t.Optional(t.String({ maxLength: TEACHER_NOTES_MAX })),
 })
 export const LearningStructureBody = t.Object({
   expectedRevision: t.Nullable(Id),
@@ -720,6 +934,8 @@ export const LearningHelpBody = t.Object({
   requestId: t.Optional(t.String({ format: 'uuid' })),
   sectionId: Id,
   body: t.String({ minLength: 1, maxLength: 8000 }),
+  /** Pedido FALADO e transcrito pelo servidor (voz para texto). Ausente = digitado. */
+  spoken: t.Optional(t.Boolean()),
 })
 const Answers = t.Record(
   t.String({ pattern: '^[a-zA-Z][\\w-]{0,79}$' }),

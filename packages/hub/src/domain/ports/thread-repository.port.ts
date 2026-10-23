@@ -1,6 +1,11 @@
 import type { CursorPos } from '../../application/cursor'
 import type { Comment, ContentStatus, Thread, ThreadStudioMeta } from '../thread/thread'
 import type { ShowcasePublishedArgs } from './members-gateway.port'
+import type { StudioPublicationEvent } from './studio-event-repository.port'
+import type {
+  StudioReservationInput,
+  StudioReservationOutcome,
+} from './studio-reservation-repository.port'
 
 export type ContentTransitionOutcome = 'updated' | 'not_found' | 'invalid_state'
 
@@ -30,6 +35,8 @@ export interface CreateThreadInput {
 
 /** Criação de um post de VITRINE (Mural) — auto-publicado pela criança (idempotente). */
 export interface CreateShowcaseThreadInput {
+  studioEvents?: readonly StudioPublicationEvent[]
+  authorAccountId?: string
   /** Persisted atomically with the thread for durable journey notification. Absent on standalone games. */
   coursePublication?: ShowcasePublishedArgs
   id: string
@@ -127,6 +134,12 @@ export interface AuthorActivity {
 }
 
 export interface ThreadRepository {
+  prepareStudioPublication(input: StudioReservationInput): Promise<StudioReservationOutcome>
+  finalizeStudioPublication(
+    reservationId: string,
+    reservation: StudioReservationInput,
+    thread: CreateShowcaseThreadInput,
+  ): Promise<{ thread: Thread; deduped: boolean }>
   createThread(input: CreateThreadInput): Promise<Thread>
   /**
    * Cria (ou recupera) um post de vitrine de forma IDEMPOTENTE pela `idempotencyKey`.
@@ -147,6 +160,7 @@ export interface ThreadRepository {
   hasVisibleShowcasePlayId(
     playId: string,
     countHit?: boolean,
+    audience?: 'adult' | 'kids',
   ): Promise<{
     visible: boolean
     authorDisplayName: string | null
@@ -154,6 +168,11 @@ export interface ThreadRepository {
     authorAccountId: string | null
     playsCount: number
   }>
+  /** Maintenance-only reference, including reversible hidden/pending states. */
+  showcaseCoverReference(
+    playId: string,
+    audience: 'adult' | 'kids',
+  ): Promise<{ status: ContentStatus | 'absent'; coverImageUrl: string | null }>
   /** Agregado da jornada: posts de vitrine visíveis do autor + soma das jogadas. */
   showcaseStatsByAuthor(authorId: string): Promise<{ published: number; plays: number }>
   /**
@@ -182,6 +201,7 @@ export interface ThreadRepository {
   listShowcaseByAuthor(
     authorId: string,
     limit: number,
+    audience?: 'adult' | 'kids',
   ): Promise<
     Array<{
       title: string
@@ -208,7 +228,7 @@ export interface ThreadRepository {
   updateThread(thread: Thread): Promise<boolean>
 
   // ── Moderação (status/flags) ──
-  /** Muda o status do tópico somente a partir de `fromStatuses` (guard atômico). */
+  /** Guard atômico; deleted/rejected de vitrine gravam a outbox de artefatos na mesma TX. */
   setThreadStatus(
     id: string,
     status: ContentStatus,

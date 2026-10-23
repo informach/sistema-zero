@@ -1,0 +1,7 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/corridaTabuleiroExample.ts",
+  "sha256": "1f0872a5217fe90cb7d0857a99e8085fa2fa0246975f5fccb6aeeb75a6ebc84e",
+  "example": "corridaTabuleiroExample",
+  "runtime": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+  "change": "Cópia de demonstração: apenas desenho da trilha e das casas no canvas. Regras, sorteio, coordenadas, peões, pontuação e turnos originais. Rótulo 7 editorial na montagem."
+}

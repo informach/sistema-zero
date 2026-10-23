@@ -1,0 +1,26 @@
+{
+  "date": "2026-10-15",
+  "fixtureOnly": true,
+  "networkCalls": 0,
+  "portalContext": {
+    "reproduced": true,
+    "portalText": "Assunto: Ajuda",
+    "emailText": "Assunto: Ajuda\n\nCliente: Nao consigo abrir a aula de programacao"
+  },
+  "kbTruncation": {
+    "reproduced": true,
+    "selectedArticles": 1,
+    "sourceContainsAnswer": true,
+    "selectedContainsAnswer": false,
+    "selectedChars": 179,
+    "fixtureBudget": 200,
+    "productionDefaultBudget": 12000
+  },
+  "echoOwnership": {
+    "reproduced": true,
+    "readForeignThread": "thread-b",
+    "agentCalledForForeignThread": "thread-b",
+    "expectedBehavior": "Both handlers should reject a thread owned by another session",
+    "scope": "Real handler source; mocked Convex and Agent dependencies; no deployment test"
+  }
+}

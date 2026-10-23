@@ -1,29 +1,21 @@
 'use client'
 
-import { creativeToolAvailability } from '@sistemazero/core/journey'
+import type { KidsJourneyView } from '@sistemazero/core/journey'
 import { Check, Lock, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { useId, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
-import {
-  hasHorizonNode,
-  type JourneyCatalogEntry,
-  type JourneyProgress,
-  journeyHorizon,
-  journeyProgress,
-  levelsBeyondHorizon,
-  visibleJourneyLevels,
-} from '@/lib/journey-horizon'
-import {
-  journeyNodeState,
-  LEVEL_TIER,
-  nodeShowsCheck,
-  type TierCompletion,
-} from '@/lib/journey-map'
+import { hasHorizonNode, levelsBeyondHorizon } from '@/lib/journey-horizon'
+import { journeyNodeState, nodeShowsCheck, type TierCompletion } from '@/lib/journey-map'
 import { buildJourneyGeometry, type JourneyGeometry, type JourneyPoint } from '@/lib/journey-path'
+import {
+  type CanonicalJourneyProgress,
+  canonicalJourneyProgress,
+  canonicalVisibleJourneyLevels,
+} from '@/lib/journey-presentation'
 import { LEVEL_INFO } from '@/lib/level-info'
-import type { StudentLevelSlug, StudentLevelView } from '@/lib/types'
+import type { StudentLevelSlug } from '@/lib/types'
 import { JourneyHorizonNode } from './journey-horizon-node'
 import { useWiggle } from './use-wiggle'
 
@@ -37,44 +29,37 @@ import { useWiggle } from './use-wiggle'
  * alinham em qualquer largura.
  *
  * ⭐ **HORIZONTE DO CATÁLOGO:** o mapa desenha só até onde o catálogo de hoje consegue levar
- * (`journeyHorizon`) e fecha com o nó "E tem muito mais pela frente". Enquanto os 49 cursos não
+ * (readiness da política publicada) e fecha com o nó "E tem muito mais pela frente". Enquanto os 49 cursos não
  * existem, a alternativa seria uma fileira de cadeados prometendo cursos que ninguém gravou. Quando
  * o catálogo enche, o horizonte vira a Lenda, o nó de fechamento some e este componente volta a
  * desenhar os 8 medalhões de sempre, sem ninguém desligar nada.
  */
 export function JourneyMap({
-  level,
-  courses,
+  journey,
+  accessibleLevels = [],
   completionByLevel,
   studioOwned = false,
 }: {
-  level: StudentLevelView
-  /** Recorte do catálogo publicado (3 campos) — define o horizonte e o contador honesto.
-   *  ⚠️ Recorte, não a view inteira: isto atravessa a fronteira servidor→cliente. */
-  courses: readonly JourneyCatalogEntry[]
-  /**
-   * Quantas aventuras de CADA trilha já estão prontas, de quantas existem — bônus incluído.
-   * Calculado no servidor (`tierCompletionByLevel`) sobre os marcos que vêm no PRÓPRIO
-   * catálogo: ou ele carregou, e isto é confiável, ou a página já falhou antes.
-   * ⚠️ Segue opcional para o ✓ ter um caminho posicional em qualquer estado torto.
-   */
+  journey: KidsJourneyView
+  /** Only bounded trail identities cross the server/client boundary, never the whole catalog. */
+  accessibleLevels?: readonly StudentLevelSlug[]
   completionByLevel?: Record<StudentLevelSlug, TierCompletion>
-  /** Estúdio Completo comprado? Só com posse o estado "em dia" oferece o atalho de criar. */
   studioOwned?: boolean
 }) {
-  const progress = journeyProgress(level, courses)
+  const progress = canonicalJourneyProgress(journey)
+  const level = journey.earned.level
   /**
-   * ⚠️ "Em dia" precisa olhar a TRILHA, não só a régua da jornada. O `journeyProgress` só
-   * conhece as posições obrigatórias: com um bônus novo por fazer ele diz `up-to-date`
+   * ⚠️ "Em dia" precisa olhar a TRILHA, não só a régua da jornada. O progresso canônico conhece
+   * os requisitos da política: com um bônus novo por fazer ele diz `up-to-date`
    * enquanto o contador do medalhão mostra "8 de 9". O card afirmaria "você já fez tudo
    * que está pronto por aqui" — exatamente a mentira que este contador existe para matar.
    */
-  const currentTrilha = completionByLevel?.[level.slug as StudentLevelSlug]
+  const currentTrilha = completionByLevel?.[level]
   const trilhaComplete = !currentTrilha || currentTrilha.done >= currentTrilha.total
-  const visible = visibleJourneyLevels(level.slug, journeyHorizon(courses))
+  const visible = canonicalVisibleJourneyLevels(journey, accessibleLevels)
   const showHorizon = hasHorizonNode(visible)
   const beyond = levelsBeyondHorizon(visible)
-  const currentIndex = Math.max(0, visible.indexOf(level.slug as StudentLevelSlug))
+  const currentIndex = Math.max(0, visible.indexOf(level))
   const nodeCount = visible.length + (showHorizon ? 1 : 0)
   const geo = buildJourneyGeometry(nodeCount, currentIndex)
 
@@ -97,7 +82,8 @@ export function JourneyMap({
             slug={slug}
             point={geo.points[index] ?? { x: 50, y: 0 }}
             viewHeight={geo.viewHeight}
-            state={journeyNodeState(level.slug, slug)}
+            state={journeyNodeState(level, slug)}
+            canOpen={journeyNodeState(level, slug) !== 'locked' || accessibleLevels.includes(slug)}
             progress={progress}
             completion={completionByLevel?.[slug]}
           />
@@ -112,15 +98,7 @@ export function JourneyMap({
       </ol>
 
       {progress.kind === 'up-to-date' && trilhaComplete ? (
-        <UpToDate
-          studioOwned={
-            creativeToolAvailability({
-              tool: 'estudio-completo',
-              owned: studioOwned,
-              level: level.slug,
-            }) === 'available'
-          }
-        />
+        <UpToDate studioOwned={studioOwned} />
       ) : null}
     </section>
   )
@@ -141,7 +119,7 @@ function UpToDate({ studioOwned }: { studioOwned: boolean }) {
       </span>
       <p className="sz-display mt-4 text-xl md:text-2xl">Você está em dia!</p>
       <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
-        Você já fez tudo que está pronto por aqui. Novas aventuras estão sendo criadas!
+        Você já fez tudo que está pronto por aqui. Novos cursos estão sendo criados!
       </p>
       {studioOwned ? (
         <Link href="/estudio" className="sz-btn-gradient mt-5 px-6">
@@ -249,21 +227,22 @@ function JourneyNode({
   viewHeight,
   state,
   progress,
+  canOpen,
   completion,
 }: {
   slug: StudentLevelSlug
   point: JourneyPoint
   viewHeight: number
   state: ReturnType<typeof journeyNodeState>
-  progress: JourneyProgress
+  progress: CanonicalJourneyProgress
+  canOpen: boolean
   completion?: TierCompletion
 }) {
   const info = LEVEL_INFO[slug]
-  const tier = LEVEL_TIER[slug]
   const [artBroken, setArtBroken] = useState(false)
   const progressDescriptionId = useId()
   const { wiggling, wiggle } = useWiggle()
-  const locked = state === 'locked'
+  const locked = !canOpen
   const Icon = info.icon
   const showCheck = nodeShowsCheck(state, completion)
 
@@ -343,22 +322,27 @@ function JourneyNode({
         </span>
         {/* ⚠️ NADA de nome de degrau ("Iniciante 2D") aqui: é vocabulário de quem MONTA o
             curso, não de quem faz. Para a criança o nó já se chama Faísca, Construtor(a)… */}
-        {!tier && state !== 'locked' ? (
+        {slug === 'god' && state !== 'locked' ? (
           <span className="text-[11px] text-muted-foreground">O topo da jornada!</span>
         ) : null}
         {/* Marcos do degrau: a criança vê o passo a passo se mexer a cada curso publicado,
             em vez de esperar 8 cursos pelo próximo posto. O contador conta só o que EXISTE.
-            ⭐ Aparece TAMBÉM nos postos já vencidos: é assim que uma aventura publicada num
+            ⭐ Aparece TAMBÉM nos postos já vencidos: é assim que um curso publicada num
             degrau antigo se anuncia ("8 de 9"). Sem isso ela ficaria invisível, porque a
             criança já passou dali e o medalhão só mostrava o ✓. */}
-        {completion && completion.total > 0 && (state === 'current' || state === 'done') ? (
+        {state === 'locked' && canOpen ? (
+          <span className="text-[11px] text-muted-foreground">
+            Cursos liberados · posto por conquistar
+          </span>
+        ) : null}
+        {completion && completion.total > 0 && canOpen ? (
           <span
             id={progressDescriptionId}
             className="flex flex-col items-center gap-1 font-semibold text-[11px] text-muted-foreground"
           >
             <ProgressDots done={completion.done} total={completion.total} color={info.colorVar} />
             {completion.done} de {completion.total}{' '}
-            {completion.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+            {completion.total === 1 ? 'curso pronto' : 'cursos prontos'}
             {state === 'done' && completion.done < completion.total ? (
               <span className="rounded-full bg-card px-2 py-0.5 text-foreground">
                 {completion.total - completion.done} para explorar · conquista mantida
@@ -404,32 +388,6 @@ function JourneyNode({
         >
           {inner}
         </button>
-      </li>
-    )
-  }
-
-  // Lenda (god): não estuda um degrau, mas TEM trilha — os cursos bônus da formatura
-  // (nível `lenda`). Liberada (a criança é Lenda) → navega como os demais.
-  if (!tier) {
-    if (slug === 'god') {
-      return (
-        <li className={rowClass} style={positionStyle}>
-          <Link
-            href="/cursos/trilha/god"
-            aria-label={`Abrir as aventuras bônus da ${info.label}`}
-            aria-describedby={
-              completion && completion.total > 0 ? progressDescriptionId : undefined
-            }
-            className="relative block"
-          >
-            {inner}
-          </Link>
-        </li>
-      )
-    }
-    return (
-      <li className={rowClass} style={positionStyle}>
-        <span className="relative block">{inner}</span>
       </li>
     )
   }

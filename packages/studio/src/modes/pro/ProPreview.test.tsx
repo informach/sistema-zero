@@ -1,6 +1,14 @@
 import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import type { JSX } from 'react'
+import { type JSX, StrictMode } from 'react'
+import { prepareRuntimeDependencyLock } from '../../../../studio-runtime/src/dependency-lock'
+import { createEmptyProject } from '../../core/project'
+import { listProSessionApplications, undoProApplication } from '../../state/proRevision'
+import {
+  StudioProCandidatePreviewProvider,
+  useProCandidatePreview,
+} from '../../studio/pro-candidate-preview'
+import { StudioProDependenciesProvider, StudioProRuntimeProvider } from '../../studio/pro-runtime'
 
 // mock.module NÃO é isolado por arquivo: captura o módulo real do provider e
 // restaura no afterAll para não vazar o stub do useProWebContainer.
@@ -9,6 +17,9 @@ const realProvider = { ...(await import('./ProWebContainerProvider')) }
 // Controle do `npm install` falso: `exit` é um deferred (resolvemos à mão DEPOIS
 // do unmount, encenando a corrida que termina com a instância já cancelada).
 let installSpawned = false
+let mountError: string | null = null
+let failMount = false
+let mountAttempts = 0
 let resolveInstallExit: (code: number) => void = () => {}
 const installKill = mock(() => undefined)
 // Dispara o `server-ready` do container falso (capturado no wc.on) — leva o
@@ -47,17 +58,20 @@ function makeFakeContainer() {
 // com useCallback): é dep do efeito do ProPreview, então uma nova referência a
 // cada render re-dispara o efeito → setState → re-render → loop infinito
 // ("Maximum update depth exceeded").
-const stableEnsureMounted = async () => makeFakeContainer()
+const stableEnsureMounted = async () => {
+  mountAttempts++
+  return failMount ? null : makeFakeContainer()
+}
 mock.module('./ProWebContainerProvider', () => ({
   ...realProvider,
   useProWebContainer: () => ({
     ensureMounted: stableEnsureMounted,
-    error: null,
+    error: mountError,
   }),
 }))
 
 const { ProPreview } = await import('./ProPreview')
-const { useProjectStore } = await import('../../state/projectStore')
+const { useProjectStore, useProjectStoreApi } = await import('../../state/projectStore')
 const { useLogsStore } = await import('../../state/logsStore')
 const { resolveStudioConfig, resolvePreviewSecurity, resolveLearning, StudioConfigProvider } =
   await import('../../studio/config')
@@ -88,10 +102,207 @@ describe('ProPreview — install órfão no cancelamento', () => {
     installKill.mockClear()
     setPreviewScript.mockClear()
     installSpawned = false
+    failMount = false
+    mountError = null
+    mountAttempts = 0
     resolveInstallExit = () => {}
     fireServerReady = () => {}
     useProjectStore.setState({ project: null })
     useLogsStore.getState().clear()
+  })
+
+  it('repairs before remote execution, preserves Undo until explicit retry and survives StrictMode', async () => {
+    const project = {
+      ...createEmptyProject('old-pro', 'Antigo'),
+      kind: 'pro' as const,
+      mode: 'code' as const,
+      proMeta: { templateId: 'vanilla-vite' as const, devScript: 'dev' },
+      tree: {
+        'index.html': { kind: 'file' as const, content: '<main>Meu jogo</main>' },
+        'package.json': {
+          kind: 'file' as const,
+          content: JSON.stringify({
+            private: true,
+            scripts: { dev: 'vite' },
+            devDependencies: { vite: '8.0.16' },
+          }),
+        },
+        'package-lock.json': { kind: 'file' as const, content: '{}' },
+      },
+    }
+    useProjectStore.getState().setProject(project)
+    const prepare = mock(async ({ packageJson }: { packageJson: string }) =>
+      prepareRuntimeDependencyLock(packageJson),
+    )
+    const build = mock(async () => ({ html: '<main>Ambiente atualizado</main>' }))
+    const runtime = { build, prepareDependencies: prepare }
+    let store!: ReturnType<typeof useProjectStoreApi>
+    function Probe() {
+      store = useProjectStoreApi()
+      return <Harness />
+    }
+    const view = render(
+      <StrictMode>
+        <StudioProRuntimeProvider value={runtime}>
+          <Probe />
+        </StudioProRuntimeProvider>
+      </StrictMode>,
+    )
+    await waitFor(() =>
+      expect(view.container.querySelector('iframe')?.srcdoc).toContain('Ambiente atualizado'),
+    )
+    expect(installSpawned).toBe(false)
+    const beforeUndoCalls = prepare.mock.calls.length
+    const application = listProSessionApplications(store, project.id)[0]!
+    await act(async () => {
+      await undoProApplication(store, project.id, application.record.operationId)
+    })
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Tentar novamente' })).toBeTruthy(),
+    )
+    expect(useProjectStore.getState().project!.tree).toEqual(project.tree)
+    expect(view.container.querySelector('iframe')).toBeNull()
+    expect(prepare.mock.calls.length).toBe(beforeUndoCalls)
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar novamente' }))
+    await waitFor(() =>
+      expect(view.container.querySelector('iframe')?.srcdoc).toContain('Ambiente atualizado'),
+    )
+    expect(prepare.mock.calls.length).toBe(beforeUndoCalls + 1)
+  })
+
+  it('blocks legacy local execution without a host and accepts the separate authenticated Full callback', async () => {
+    const project = {
+      ...createEmptyProject('old-full', 'Antigo'),
+      kind: 'pro' as const,
+      mode: 'code' as const,
+      proMeta: { templateId: 'vanilla-vite' as const, devScript: 'dev' },
+      tree: {
+        'package.json': {
+          kind: 'file' as const,
+          content: JSON.stringify({ devDependencies: { vite: '8.0.16' } }),
+        },
+        'index.html': { kind: 'file' as const, content: '<main>Meu jogo</main>' },
+      },
+    }
+    useProjectStore.getState().setProject(project)
+    const view = render(<Harness />)
+    await waitFor(() =>
+      expect(screen.getByText(/continua disponível para abrir e exportar/)).toBeTruthy(),
+    )
+    expect(installSpawned).toBe(false)
+    expect(mountAttempts).toBe(0)
+    view.unmount()
+    const prepare = mock(async ({ packageJson }: { packageJson: string }) =>
+      prepareRuntimeDependencyLock(packageJson),
+    )
+    render(
+      <StudioProDependenciesProvider value={prepare}>
+        <Harness />
+      </StudioProDependenciesProvider>,
+    )
+    await waitFor(() => expect(installSpawned).toBe(true))
+    expect(prepare).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses the supplied remote executor without COEP or a WebContainer mount', async () => {
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'crossOriginIsolated')
+    Object.defineProperty(globalThis, 'crossOriginIsolated', { configurable: true, value: false })
+    const build = mock(async () => ({ html: '<main>Execução remota</main>' }))
+    useProjectStore.setState({
+      project: {
+        id: 'live-pro',
+        kind: 'pro',
+        mode: 'code',
+        name: 'Oficina',
+        createdAt: 1,
+        updatedAt: 1,
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        ir: null,
+        blocksState: null,
+        installedExtensions: [],
+        tree: { 'index.html': { kind: 'file', content: '<main>Oficina</main>' } },
+        proMeta: { templateId: 'vanilla-js', devScript: 'dev' },
+      },
+    })
+    try {
+      const view = render(
+        <StudioProRuntimeProvider value={{ build }}>
+          <Harness />
+        </StudioProRuntimeProvider>,
+      )
+      await waitFor(() =>
+        expect(view.container.querySelector('iframe')?.srcdoc).toContain('Execução remota'),
+      )
+      expect(build).toHaveBeenCalledTimes(1)
+      expect(mountAttempts).toBe(0)
+      expect(installSpawned).toBe(false)
+    } finally {
+      if (descriptor) Object.defineProperty(globalThis, 'crossOriginIsolated', descriptor)
+      else Reflect.deleteProperty(globalThis, 'crossOriginIsolated')
+    }
+  })
+
+  it('switches only the game document while retaining the local dev-server and mounted controller', async () => {
+    useProjectStore.setState({
+      project: { id: 'local-candidate', name: 'Atual', kind: 'pro', mode: 'code' } as never,
+    })
+    let api!: ReturnType<typeof useProCandidatePreview>
+    function Probe() {
+      api = useProCandidatePreview()
+      return null
+    }
+    const view = render(
+      <StudioProCandidatePreviewProvider>
+        <Probe />
+        <Harness />
+      </StudioProCandidatePreviewProvider>,
+    )
+    await waitFor(() => expect(installSpawned).toBe(true))
+    act(() => resolveInstallExit(0))
+    await waitFor(() => expect(screen.getByText(/Subindo o servidor/)).toBeTruthy())
+    act(() => fireServerReady('http://fake.webcontainer.dev/'))
+    const currentFrame = view.container.querySelector('iframe')!
+    act(() => {
+      api.show({
+        projectId: 'local-candidate',
+        jobId: 'job',
+        revisionHash: 'c'.repeat(64),
+        artifact: {
+          id: 'a'.repeat(64),
+          sha256: 'b'.repeat(64),
+          url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+          expiresAt: Date.now() + 60_000,
+        },
+      })
+    })
+    expect(view.container.querySelectorAll('iframe')).toHaveLength(1)
+    expect(currentFrame.isConnected).toBe(false)
+    expect(installKill).toHaveBeenCalledTimes(0)
+    expect(mountAttempts).toBe(1)
+    fireEvent.click(screen.getByRole('button', { name: 'Jogo atual' }))
+    expect(view.container.querySelector('iframe')?.src).toBe('http://fake.webcontainer.dev/')
+    expect(installKill).toHaveBeenCalledTimes(0)
+    expect(mountAttempts).toBe(1)
+    view.unmount()
+    expect(installKill).toHaveBeenCalledTimes(1)
+  })
+
+  it('keeps a mount error visible until an explicit retry, without remounting in a loop', async () => {
+    useProjectStore.setState({
+      project: { id: 'mount-error', name: 'Pro', kind: 'pro', mode: 'code' } as never,
+    })
+    failMount = true
+    const view = render(<Harness />)
+    await screen.findByText('Não foi possível iniciar o ambiente.')
+    mountError = 'ENOENT: serialized filesystem error'
+    view.rerender(<Harness />)
+    await act(async () => {
+      await Promise.resolve()
+    })
+    expect(mountAttempts).toBe(1)
+    expect(installSpawned).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: /Tentar de novo/ }))
+    await waitFor(() => expect(mountAttempts).toBe(2))
   })
 
   it('fase ready: cabeçalho com o nome do projeto + Atualizar que REMONTA o iframe', async () => {

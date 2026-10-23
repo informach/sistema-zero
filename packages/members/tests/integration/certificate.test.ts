@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, lessonCompletionRequirements } from '@sistemazero/core/learning'
+import { caminhoAula } from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { SERIAL_RE } from '../../src/domain/certificate/certificate'
 import type { CertificateBlock } from '../../src/domain/course/lesson-block'
 import { publishBlock } from '../draft-authoring-helpers'
@@ -95,12 +96,7 @@ describe('Certificado — elegibilidade, emissão idempotente e validação', ()
     const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
     grantLifetime(entitlements, { userId: USER, courseRef: slug })
     const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId)
-    const manifest = await Bun.file(
-      new URL(
-        `../../../../docs/aulas-interativas/aulas/${prefix}-certificado.manifesto.json`,
-        import.meta.url,
-      ),
-    ).json()
+    const manifest = await Bun.file(caminhoAula(`${prefix}-certificado.manifesto.json`)).json()
     const content = manifest.blocks.find(
       (b: { content?: { kind: string } }) => b.content?.kind === 'quiz',
     ).content

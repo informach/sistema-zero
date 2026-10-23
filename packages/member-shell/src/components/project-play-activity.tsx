@@ -13,6 +13,7 @@ import { Expand, Minimize2, RotateCcw } from 'lucide-react'
 import { type CSSProperties, type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import { inertOutside } from '../lib/inert-outside'
 import { useReportActivityExpanded } from '../lib/lesson-activity-expansion'
+import { useLearningPresentation } from './learning-execution-context'
 import { useLessonCopy } from './lesson-copy-context'
 import { EXPANDED_EXIT_ATTR, LESSON_FLOAT_ROOT_ATTR, LessonVideoToggle } from './lesson-video-float'
 
@@ -52,6 +53,7 @@ export function ProjectPlayActivityView({
   children?: ReactNode
 }) {
   const { voltarDaAmpliacao } = useLessonCopy()
+  const presentation = useLearningPresentation()
   const iframe = useRef<HTMLIFrameElement>(null)
   const [ready, setReady] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -144,7 +146,7 @@ export function ProjectPlayActivityView({
     if (!expanded || !workspace.current) return
     // O iframe tem navegação de teclado própria. Inert impede que o Tab saia
     // dele e alcance controles da aula que ficaram escondidos sob o modo ampliado.
-    // O lugar do vídeo da seção fica de fora: é ele que flutua por cima do jogo.
+    // O lugar do vídeo da parte fica de fora: é ele que flutua por cima do jogo.
     return inertOutside(workspace.current, `[${LESSON_FLOAT_ROOT_ATTR}]`)
   }, [expanded, workspace])
 
@@ -195,6 +197,7 @@ export function ProjectPlayActivityView({
                 type="button"
                 variant="outline"
                 aria-expanded={expanded}
+                hidden={presentation.keepLessonVisible}
                 // O vídeo flutuante da aula começa abaixo da saída, nunca por cima dela.
                 {...(expanded ? { [EXPANDED_EXIT_ATTR]: '' } : {})}
                 onClick={(event) => {
@@ -227,6 +230,7 @@ export function ProjectPlayActivityView({
                 ref={iframe}
                 tabIndex={0}
                 project={project}
+                originAdapter={presentation.projectOriginAdapter}
                 title={project.name}
                 onError={() => setFailed(true)}
                 onReady={() => setReady(true)}

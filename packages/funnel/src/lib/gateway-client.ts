@@ -88,13 +88,18 @@ export interface ReferralCodeView {
   ownerKind: 'ambassador' | 'account'
   displayName: string
   giftAvailable: boolean
+  /** Público do presente (20/10/2026). Ausente nas respostas antigas: vale `kids`. */
+  audience?: import('@sistemazero/core/referrals').GiftAudience
 }
 
 /** Resposta de `GET /referrals/internal/ambassadors/by-token/:token` (página do embaixador). */
 export interface AmbassadorPageView {
   name: string
   code: string
+  /** O link Kids, mantido para o painel anterior a 20/10/2026. */
   shareUrl: string
+  /** Um link por público (20/10/2026); `null` enquanto aquele link não existe. */
+  shareUrls?: import('@sistemazero/core/referrals').AmbassadorShareUrls
   stats: { redemptionsCompleted: number; invitesSent: number }
 }
 
@@ -461,10 +466,17 @@ export function createGatewayClient(opts: GatewayClientOptions) {
       )
     },
 
-    /** POST …/by-token/:token/invites — a plataforma envia o convite de bolsa por e-mail. */
+    /**
+     * POST …/by-token/:token/invites — a plataforma envia o convite do presente por e-mail.
+     * `audience` ausente = `kids` no referrals (o convite anterior a 20/10/2026).
+     */
     async createAmbassadorInvite(
       token: string,
-      input: { name: string; email: string },
+      input: {
+        name: string
+        email: string
+        audience?: import('@sistemazero/core/referrals').GiftAudience
+      },
     ): Promise<GatewayResult> {
       const rawBody = JSON.stringify(input)
       const path = `/referrals/internal/ambassadors/by-token/${encodeURIComponent(token)}/invites`

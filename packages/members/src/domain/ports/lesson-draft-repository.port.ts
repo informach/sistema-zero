@@ -5,7 +5,17 @@ import type {
   LessonDraftIssue,
 } from '@sistemazero/core/learning'
 
+export interface StudioDraftRuntimeContext {
+  revision: string
+  block: { kind: string | null; environment: unknown; curation: unknown } | null
+}
+
 export interface LessonDraftRepository {
+  /** Existing draft only; no materialization, sources, assets or publication reads. */
+  readStudioRuntimeContext(
+    lessonId: string,
+    blockId: string | null,
+  ): Promise<StudioDraftRuntimeContext | null>
   read(lessonId: string): Promise<LessonDraft>
   change(lessonId: string, authorId: string, command: LessonDraftCommand): Promise<LessonDraft>
   replace(

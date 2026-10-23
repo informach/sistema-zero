@@ -101,7 +101,8 @@ export function PensaUsageCard({ name, usage }: { name: string; usage: PensaUsag
     <UsageCardShell icon={Lightbulb} name={name}>
       <p className="text-sm">
         {usage.projects} {usage.projects === 1 ? 'plano de jogo' : 'planos de jogo'} ·{' '}
-        {usage.cyclesCompleted} {usage.cyclesCompleted === 1 ? 'lançamento' : 'lançamentos'}
+        {usage.projectsCompleted}{' '}
+        {usage.projectsCompleted === 1 ? 'projeto concluído' : 'projetos concluídos'}
       </p>
       <LastActivity iso={usage.lastActivityAt} />
     </UsageCardShell>

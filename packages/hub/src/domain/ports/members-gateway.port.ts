@@ -55,6 +55,8 @@ export interface ShowcasePublishedArgs {
 
 /** Argumentos da notificação "aluno publicou no DESAFIO do mês" (XP + badge). */
 export interface ChallengeEntryArgs {
+  /** Original Hub thread creation time; trusted signed delivery, never browser input. */
+  publishedAt?: string
   /** PERFIL de criança (dono da gamificação) — `x-auth-user-id`. */
   userId: string
   /** CONTA do responsável — `x-auth-account-id ?? userId`. */
@@ -90,6 +92,7 @@ export interface MuralCommentArgs {
 
 /** Argumentos da notificação "publicou jogo STANDALONE no Mural" (retenção pós-cursos). */
 export interface StandaloneShowcaseArgs {
+  publishedAt?: string
   /** PERFIL de criança (dono da gamificação) — `x-auth-user-id`. */
   userId: string
   /** CONTA do responsável — `x-auth-account-id ?? userId`. */
@@ -131,6 +134,19 @@ export interface MuralModerationMessageArgs {
 }
 
 export interface MembersGateway {
+  getAdultCreatorState?(
+    userId: string,
+  ): Promise<{ capabilities: string[]; displayName: string; publicEnabled: boolean }>
+  getLiveMuralAccess(userId: string, accountId: string): Promise<boolean>
+  getLiveShowcaseEligibility(args: {
+    audience?: 'adult' | 'kids'
+    userId: string
+    accountId: string
+    workspaceId: string
+    revision: number
+    playId: string
+    publicationToken: string
+  }): Promise<{ eligible: boolean; title: string; audience?: 'adult' | 'kids' }>
   checkAccess(
     userId: string,
     courseRefs: string[],
@@ -149,7 +165,7 @@ export interface MembersGateway {
    * grava o marco `challenge_entry` (XP + badge). **Best-effort** como o showcase;
    * o members deduplica por mês (sourceId determinístico do monthKey).
    */
-  notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void>
+  notifyChallengeEntry(args: ChallengeEntryArgs, deliveryId?: string): Promise<boolean>
   /**
    * Avisa o members que um conteúdo do Clube foi APROVADO (staff) → recompensa a
    * criança (XP + badge de comunidade). Disparado só na aprovação (conteúdo rejeitado
@@ -168,7 +184,7 @@ export interface MembersGateway {
    * pós-cursos) → marco `studio_published` (missões gated) + XP diário de publicar.
    * **Best-effort**: NUNCA lança; o members deduplica (marco por playId, XP por dia).
    */
-  notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void>
+  notifyStandaloneShowcase(args: StandaloneShowcaseArgs, deliveryId?: string): Promise<boolean>
   /**
    * Avisa o members que um jogo do AUTOR cruzou 10/100 jogadas no /jogar público →
    * marco `play_milestone_10|100` (badges plays-10/plays-100 + troféu). **Best-effort**:

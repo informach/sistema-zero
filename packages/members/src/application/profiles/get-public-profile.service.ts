@@ -1,11 +1,26 @@
+import { DomainError } from '@sistemazero/core/errors'
+import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { canonicalizeAvatarConfig } from '../../domain/avatar/avatar-config'
+import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
+
+class AdultPublicProfileNotFoundError extends DomainError {
+  readonly code = 'CONTENT_NOT_FOUND'
+  constructor() {
+    super('Perfil indisponível.')
+  }
+}
+
 import type { CourseAudience } from '../../domain/course/course'
 import { computeStudentLevel } from '../../domain/gamification/levels'
+import { KidsJourneyUnavailableError } from '../../domain/kids-journey/kids-journey.errors'
 import type { AvatarRepository } from '../../domain/ports/avatar-repository.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
 import type { HubGateway } from '../../domain/ports/hub-gateway.port'
 import type { RoomRepository } from '../../domain/ports/room-repository.port'
 import { canonicalizeRoomState } from '../../domain/room/room-catalog'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
+import { kidsStudentLevel } from '../kids-journey/kids-student-level'
 import type { PublicProfileView } from '../mappers/views'
 
 /**
@@ -31,9 +46,20 @@ export class GetPublicProfileService {
     private readonly room: RoomRepository,
     private readonly hub: HubGateway,
     private readonly clock: () => Date,
+    private readonly kidsProfiles: Pick<KidsJourneyProfilesService, 'getMany'>,
+    private readonly adultProfiles?: AdultProfileRepository,
+    private readonly adultJourney?: AdultJourneyService,
   ) {}
 
-  async execute(profileId: string, audience: CourseAudience): Promise<PublicProfileView> {
+  async execute(inputProfileId: string, audience: CourseAudience): Promise<PublicProfileView> {
+    const profileId =
+      audience === 'kids' ? IdentityUuidSchema.parse(inputProfileId) : inputProfileId
+    const kids =
+      audience === 'kids' ? (await this.kidsProfiles.getMany([profileId])).get(profileId) : null
+    if (audience === 'kids' && !kids) throw new KidsJourneyUnavailableError()
+    const adultProfile = audience === 'adult' ? await this.adultProfiles?.get(profileId) : null
+    if (audience === 'adult' && !adultProfile?.publicEnabled)
+      throw new AdultPublicProfileNotFoundError()
     const [
       profile,
       badges,
@@ -46,14 +72,16 @@ export class GetPublicProfileService {
     ] = await Promise.all([
       this.gamification.getProfile(profileId, audience),
       this.gamification.listBadges(profileId, audience),
-      this.gamification.listQualifyingJourneySlots(profileId, audience),
+      audience === 'adult'
+        ? this.gamification.listQualifyingJourneySlots(profileId, 'adult')
+        : null,
       this.avatar.getConfig(profileId, audience),
       this.avatar.getPhotoUrl(profileId, audience),
       this.room.getState(profileId, audience),
       this.room.listInventory(profileId, audience),
       // Jogos publicados no Mural (best-effort; `null` → seção vazia). O Mural é kids;
       // p/ audiência adult ainda não há vitrine, mas o hub simplesmente devolve vazio.
-      this.hub.listShowcaseByAuthor(profileId, MAX_PUBLIC_GAMES),
+      this.hub.listShowcaseByAuthor(profileId, MAX_PUBLIC_GAMES, audience),
     ])
     // Ranking só faz sentido com perfil (XP); a coorte usa a conta dona do perfil.
     const ranking = profile
@@ -64,10 +92,17 @@ export class GetPublicProfileService {
     const room = roomRaw ? canonicalizeRoomState(roomRaw, new Set(roomInventory)) : null
     return {
       profileId,
+      ...(adultProfile
+        ? {
+            audience: 'adult' as const,
+            displayName: adultProfile.displayName,
+            journey: await this.adultJourney?.get(profileId),
+          }
+        : {}),
       xp: profile?.xp ?? 0,
       ranking,
       // Nível do aluno (rank) — mesma derivação do /gamification/me.
-      level: computeStudentLevel(qualifying),
+      level: kids ? kidsStudentLevel(kids) : computeStudentLevel(qualifying!),
       // listBadges já devolve SÓ as conquistadas (≠ do /gamification/me, que traz o catálogo).
       badges: badges.map((b) => ({ slug: b.badgeSlug, unlockedAt: b.unlockedAt.toISOString() })),
       avatar: { style: equipped.style, slots: equipped.slots },

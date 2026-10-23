@@ -18,14 +18,21 @@ const GATEWAY_TIMEOUT_MS = 60_000
 const AUTH_TIMEOUT_MS = 15_000
 
 export interface GatewayResponse<T = unknown> {
+  retryAfter?: string
   status: number
   body: T
 }
 
 export interface CallOpts {
+  signal?: AbortSignal
   method?: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
   body?: unknown
   query?: Record<string, string | number | undefined | null>
+  /**
+   * Prazo PRÓPRIO desta chamada (padrão 60 s). Só para as rotas que esperam um trabalho longo do
+   * outro lado: o "Verificar esta parte" com objetivos que RODAM o jogo (até ~150 s).
+   */
+  timeoutMs?: number
 }
 
 /** Módulo de chamadas ao gateway de um app (ver `createGatewayModule`). */
@@ -53,7 +60,12 @@ export async function clientForwardHeaders(): Promise<ForwardHeaders> {
   }
 }
 
-async function rawFetch(path: string, opts: CallOpts, access: string | null): Promise<Response> {
+async function rawFetch(
+  path: string,
+  opts: CallOpts,
+  access: string | null,
+  signedConsumer = false,
+): Promise<Response> {
   const env = getEnv()
   const url = new URL(path, env.GATEWAY_URL)
   if (opts.query) {
@@ -66,13 +78,29 @@ async function rawFetch(path: string, opts: CallOpts, access: string | null): Pr
     ...(await clientForwardHeaders()),
   }
   if (access) reqHeaders.authorization = `Bearer ${access}`
+  const rawBody = opts.body === undefined ? '' : JSON.stringify(opts.body)
+  if (signedConsumer) {
+    if (!env.MEMBER_SHELL_HMAC_SECRET)
+      return Response.json({ error: { code: 'SERVICE_UNAVAILABLE' } }, { status: 503 })
+    const timestamp = Math.floor(Date.now() / 1000)
+    const signature = signHmac(
+      env.MEMBER_SHELL_HMAC_SECRET,
+      canonicalHmacMessage({ method: opts.method ?? 'GET', path: url.pathname, body: rawBody }),
+      timestamp,
+    )
+    reqHeaders['x-consumer-id'] = 'member-shell'
+    reqHeaders['x-signature'] = `t=${timestamp},v1=${signature}`
+  }
   try {
     return await fetch(url, {
       method: opts.method ?? 'GET',
       headers: reqHeaders,
-      body: opts.body !== undefined ? JSON.stringify(opts.body) : undefined,
+      body: opts.body !== undefined ? rawBody : undefined,
       cache: 'no-store',
-      signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+      signal: AbortSignal.any([
+        AbortSignal.timeout(opts.timeoutMs ?? GATEWAY_TIMEOUT_MS),
+        ...(opts.signal ? [opts.signal] : []),
+      ]),
     })
   } catch {
     // Timeout / conexão recusada / falha de DNS: NÃO rejeita (rejeição não tratada).
@@ -107,7 +135,11 @@ export async function publicAuthPost<T>(path: string, body: unknown): Promise<Ga
       cache: 'no-store',
       signal: AbortSignal.timeout(AUTH_TIMEOUT_MS),
     })
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   } catch {
     return {
       status: 503,
@@ -128,7 +160,21 @@ export function createGatewayModule(session: SessionModule) {
     opts: CallOpts,
     access: string | null,
     readOnly = false,
+    signedConsumer = false,
   ): Promise<Response> {
+    if (session.audience === 'adult') {
+      const verdict = access ? await session.verifyAccessTokenLocally(access) : null
+      if (!verdict?.ok)
+        return Response.json(
+          {
+            error: {
+              code:
+                verdict && !verdict.ok && verdict.unavailable ? 'AUTH_UNAVAILABLE' : 'UNAUTHORIZED',
+            },
+          },
+          { status: verdict && !verdict.ok && verdict.unavailable ? 503 : 401 },
+        )
+    }
     if (session.audience === 'kids') {
       // ⚠️ Só a verificação LOCAL: o Gateway introspecta no Auth TODA chamada de sessão Kids
       // (sem cache), então a revogação continua imediata e indisponibilidade dele volta como
@@ -154,7 +200,7 @@ export function createGatewayModule(session: SessionModule) {
         )
       }
     }
-    return rawFetch(path, opts, access)
+    return rawFetch(path, opts, access, signedConsumer)
   }
   /**
    * Rotação de tokens (gateway → auth /refresh) via `refreshTokens` (single-flight
@@ -201,7 +247,34 @@ export function createGatewayModule(session: SessionModule) {
       const renewed = await tryRefresh()
       if (renewed) res = await authenticatedFetch(path, opts, renewed)
     }
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
+  }
+
+  /** Student JWT plus the member-shell service proof on the exact same JSON body. */
+  async function gatewayFetchDual<T = unknown>(
+    path: string,
+    opts: CallOpts,
+  ): Promise<GatewayResponse<T>> {
+    if (!getEnv().MEMBER_SHELL_HMAC_SECRET)
+      return { status: 503, body: { error: { code: 'SERVICE_UNAVAILABLE' } } as T }
+    // Capture one immutable JSON value before either transport attempt or token refresh.
+    const stable = opts.body === undefined ? undefined : JSON.parse(JSON.stringify(opts.body))
+    const signedOpts = { ...opts, body: stable }
+    const access = await session.getAccessToken()
+    let res = await authenticatedFetch(path, signedOpts, access, false, true)
+    if (res.status === 401) {
+      const renewed = await tryRefresh()
+      if (renewed) res = await authenticatedFetch(path, signedOpts, renewed, false, true)
+    }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   }
 
   /**
@@ -228,7 +301,11 @@ export function createGatewayModule(session: SessionModule) {
       const renewed = await tryRefresh()
       if (renewed) res = await request(renewed)
     }
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   }
 
   /**
@@ -243,7 +320,11 @@ export function createGatewayModule(session: SessionModule) {
   ): Promise<GatewayResponse<T>> {
     const access = await session.getAccessToken()
     const res = await authenticatedFetch(path, opts, access, true)
-    return { status: res.status, body: await readJson<T>(res) }
+    return {
+      status: res.status,
+      body: await readJson<T>(res),
+      ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+    }
   }
 
   /**
@@ -291,7 +372,10 @@ export function createGatewayModule(session: SessionModule) {
         },
         body: opts.body === undefined ? undefined : rawBody,
         cache: 'no-store',
-        signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+        signal: AbortSignal.any([
+          AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
+          ...(opts.signal ? [opts.signal] : []),
+        ]),
       })
       return { status: response.status, body: await readJson<T>(response) }
     } catch {
@@ -368,6 +452,7 @@ export function createGatewayModule(session: SessionModule) {
   return {
     tryRefresh,
     gatewayFetch,
+    gatewayFetchDual,
     gatewayFetchWithRefreshProof,
     gatewayFetchReadonly,
     gatewayFetchHmac,

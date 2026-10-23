@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+import { useProjectStore } from '../state/projectStore'
 
 /**
  * TRAZER DO MOLDA — capacidade OPCIONAL do host (community-kids) para o Estúdio
@@ -81,7 +82,9 @@ const StudioMoldaLibraryContext = createContext<StudioMoldaLibraryAdapter | null
 
 export const StudioMoldaLibraryProvider = StudioMoldaLibraryContext.Provider
 
-/** Adapter do "Trazer do Molda" (`null` quando o host não passou um). */
+/** Molda is a JavaScript capability until the Python 3D runtime is supported. */
 export function useStudioMoldaLibrary(): StudioMoldaLibraryAdapter | null {
-  return useContext(StudioMoldaLibraryContext)
+  const adapter = useContext(StudioMoldaLibraryContext)
+  const python = useProjectStore((state) => state.project?.programmingLanguage === 'python')
+  return python ? null : adapter
 }

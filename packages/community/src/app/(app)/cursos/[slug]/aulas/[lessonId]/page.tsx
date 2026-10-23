@@ -4,8 +4,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getEnv } from '@/lib/env'
 import type { LessonOutlineView } from '@/lib/types'
-import { getMeReadonly } from '@/server/auth'
-import { getLesson, getMyCourse } from '@/server/members'
+import { getAvatarReadonly, getLesson, getMyCourse } from '@/server/members'
 import { getSession } from '@/server/session'
 import { LessonPlayer } from './lesson-player-client'
 
@@ -40,12 +39,13 @@ export default async function LessonPage({
   params: Promise<{ slug: string; lessonId: string }>
 }) {
   const { slug, lessonId } = await params
-  const [courseRes, lessonRes, session, meRes] = await Promise.all([
+  const [courseRes, lessonRes, session, avatarRes] = await Promise.all([
     getMyCourse(slug),
     getLesson(slug, lessonId),
     getSession(),
-    // Avatar fresco p/ o passo de agradecimento do rating (claims não carregam foto).
-    getMeReadonly(),
+    // A foto do avatar 3D p/ o passo de agradecimento do rating (claims não carregam foto; a foto
+    // enviada saiu na direção de arte de 18/10/2026). Best-effort: sem ela, as iniciais.
+    getAvatarReadonly().catch(() => null),
   ])
   if (courseRes.status === 404 || courseRes.status === 403) notFound()
   if (courseRes.status !== 200 || !courseRes.body) throw new Error('Falha ao carregar o curso')
@@ -57,7 +57,7 @@ export default async function LessonPage({
   if (lessonRes.status !== 200 || !lessonRes.body) throw new Error('Falha ao carregar a aula')
 
   const lesson = lessonRes.body
-  const me = meRes.status === 200 ? meRes.body?.user : undefined
+  const avatarPhotoUrl = avatarRes?.status === 200 ? (avatarRes.body?.photoUrl ?? null) : null
 
   // Próxima aula após concluir; a navegação durante a aula é por seções.
   const flat: LessonOutlineView[] = course.modules.flatMap((m) => m.lessons)
@@ -76,11 +76,15 @@ export default async function LessonPage({
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.email ?? null}
       viewerId={session?.id ?? null}
+      lessonDraftsEnabled={
+        getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)
+      }
+      creationSharingEnabled={Boolean(session?.id) && session?.act?.mode !== 'readonly'}
       viewer={{
         firstName: session?.firstName ?? null,
         lastName: session?.lastName ?? null,
         email: session?.email ?? null,
-        avatarUrl: me?.avatarUrl ?? null,
+        avatarUrl: avatarPhotoUrl,
       }}
       // URL de compartilhar (env é server-only — resolve aqui, igual a /cursos).
       shareUrl={course.salesPageUrl ?? getEnv().FUNNEL_URL ?? null}

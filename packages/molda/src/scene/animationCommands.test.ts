@@ -15,12 +15,87 @@ import {
   type SceneAnimationKeyInput,
   setSceneAnimationKey,
 } from './animationCommands'
-import { groupSceneNodes, setSceneNodeFlag } from './commands'
+import { groupSceneNodes, setSceneNodeFlag, transformSceneNodes } from './commands'
 import type { MoldaSceneDocument } from './document'
 import { sceneToJson } from './documentJson'
 import { SCENE_LIMITS } from './limits'
+import { composeTransform } from './matrix'
 import { readSceneDocument } from './readDocument'
 import { prepareSceneAnimation, sampleSceneAnimationTrack } from './sampleAnimation'
+
+test('a new movement rotates a tall box without shearing its sides', () => {
+  const source = transformSceneNodes(
+    animatedScene(),
+    ['body'],
+    composeTransform({
+      kind: 'trs',
+      translation: [0, 0, 0],
+      rotation: [0, 0, 0, 1],
+      scale: [1, 3, 1],
+    }),
+  )
+  expect(source.nodes.find((node) => node.id === 'body')?.transform.kind).toBe('trs')
+  const created = createSceneAnimation(source, 'Girar', () => 'rigid')
+  expect(created.animations?.find((clip) => clip.id === 'rigid')?.space).toBe('local')
+  const keyed = setSceneAnimationKey(created, 'rigid', {
+    nodeId: 'body',
+    channel: 'rotation',
+    key: {
+      time: 0,
+      value: [0, 0, Math.sin(Math.PI / 8), Math.cos(Math.PI / 8)],
+      interpolation: 'linear',
+    },
+  })
+  const matrix = prepareSceneAnimation(keyed, 'rigid').sample(0, false).worldMatrices.get('body')!
+  const dot = matrix[0]! * matrix[4]! + matrix[1]! * matrix[5]! + matrix[2]! * matrix[6]!
+  expect(dot).toBeCloseTo(0, 10)
+})
+
+test('a genuinely sheared piece keeps its affine matrix when a movement is created', () => {
+  const source = animatedScene()
+  const body = source.nodes.find((node) => node.id === 'body')!
+  body.transform = {
+    kind: 'affine',
+    matrix: [1, 0, 0, 0, 0.3, 3, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1],
+  }
+  const created = createSceneAnimation(source, 'Girar', () => 'sheared', ['body'])
+  expect(created.nodes).toBe(source.nodes)
+  expect(created.animations?.find((clip) => clip.id === 'sheared')?.space).toBe('local-delta')
+})
+
+test('an unrelated sheared piece does not force a resized box into relative rotation', () => {
+  const source = animatedScene()
+  const body = source.nodes.find((node) => node.id === 'body')!
+  body.transform = {
+    kind: 'trs',
+    translation: [0, 0, 0],
+    rotation: [0, 0, 0, 1],
+    scale: [1, 3, 1],
+  }
+  source.nodes.find((node) => node.id === 'wing')!.transform = {
+    kind: 'affine',
+    matrix: [1, 0, 0, 0, 0.3, 2, 0, 0, 0, 0, 1, 0, 4, 0, 0, 1],
+  }
+  const created = createSceneAnimation(source, 'Girar', () => 'rigid', ['body'])
+  expect(created.animations?.at(-1)?.space).toBe('local')
+  const keyed = setSceneAnimationKey(created, 'rigid', {
+    nodeId: 'body',
+    channel: 'rotation',
+    key: {
+      time: 0,
+      value: [0, 0, Math.sin(Math.PI / 8), Math.cos(Math.PI / 8)],
+      interpolation: 'linear',
+    },
+  })
+  const matrix = prepareSceneAnimation(keyed, 'rigid').sample(0, false).worldMatrices.get('body')!
+  expect(matrix[0]! * matrix[4]! + matrix[1]! * matrix[5]! + matrix[2]! * matrix[6]!).toBeCloseTo(
+    0,
+    10,
+  )
+  expect(
+    createSceneAnimation(source, 'Relativo', () => 'relative', ['wing']).animations?.at(-1)?.space,
+  ).toBe('local-delta')
+})
 
 describe('animation authoring commands', () => {
   test('create, rename, duplicate and delete preserve unrelated resources and own copied keys', () => {
@@ -32,8 +107,8 @@ describe('animation authoring commands', () => {
       name: 'Saltar',
       duration: 2,
       fps: 24,
-      loop: true,
-      space: 'local-delta',
+      loop: false,
+      space: 'local',
       tracks: [],
     })
     expect(created.nodes).toBe(source.nodes)

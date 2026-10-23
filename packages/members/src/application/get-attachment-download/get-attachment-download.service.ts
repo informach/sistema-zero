@@ -32,6 +32,7 @@ export class GetAttachmentDownloadService {
       courseSlug,
       privileged,
       userId,
+      { lessonId },
     )
     const lesson = await this.courses.findLessonWithContent(lessonId)
     // Aula rascunho é invisível ao aluno (mesmo por URL direta) → 404.

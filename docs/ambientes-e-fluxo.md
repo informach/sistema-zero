@@ -69,6 +69,15 @@ URLs públicas:
 | Admin | `https://admin-production-aeb0.up.railway.app` | `https://admin-staging-f8fe.up.railway.app` |
 | Área do aluno | `https://comunidade.sistemazero.com.br` | `https://community-staging-66f2.up.railway.app` |
 | API Gateway (borda) | `https://api-gateway-production-592a.up.railway.app` | `https://api-gateway-staging-9fa3.up.railway.app` |
+| Atendimento (helpdesk-app) | `https://atendimento.sistemazero.com.br` | domínio gerado pelo Railway |
+| Marketing (marketing-app) | `https://marketing.sistemazero.com.br` | `https://marketing-app-staging-cb28.up.railway.app` |
+
+Os três consoles da equipe (admin, atendimento e marketing) se apontam pelo menu do avatar, em
+nova aba, e cada um continua com login próprio. As URLs são envs OPCIONAIS de cada app, por
+ambiente: admin `HELPDESK_APP_URL` + `MARKETING_APP_URL`; helpdesk-app `ADMIN_APP_URL` +
+`MARKETING_APP_URL`; marketing-app `ADMIN_APP_URL` + `HELPDESK_APP_URL`. Ausente, o link some.
+O menu também traz sempre os Bastidores da Informach (`https://admin.informach.com.br/`, fixo).
+As seis estão criadas nos dois ambientes e registradas em `.railway/variables.ts`.
 
 > Login no admin/community de **staging**: superadmin próprio (mesmo e-mail de
 > prod, senha separada — gerada no setup e entregue fora do repo).

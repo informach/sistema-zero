@@ -126,4 +126,57 @@ describe('resolveReferralGiftPage', () => {
       })
     }
   })
+
+  test('o público vem do código: ausente é Kids, adult abre a página adulta, outro falha fechado', async () => {
+    const fake = createFakeGateway()
+    const base = {
+      code: 'vo-a9x4',
+      ownerKind: 'ambassador',
+      displayName: 'Marta',
+      giftAvailable: true,
+      source: { kind: 'ambassador', name: 'Marta' },
+      state: 'active',
+      startsAt: null,
+      endsAt: null,
+    }
+    fake.setReferralCodeResult(200, base)
+    expect(await resolveReferralGiftPage(fake.gateway, 'vo-a9x4')).toMatchObject({
+      kind: 'ready',
+      audience: 'kids',
+      gift: { audience: 'kids' },
+    })
+    fake.setReferralCodeResult(200, { ...base, audience: 'adult' })
+    expect(await resolveReferralGiftPage(fake.gateway, 'vo-a9x4')).toMatchObject({
+      kind: 'ready',
+      audience: 'adult',
+      gift: { audience: 'adult', source: { name: 'Marta' } },
+    })
+    fake.setReferralCodeResult(200, { ...base, audience: 'adult', giftAvailable: false })
+    expect(await resolveReferralGiftPage(fake.gateway, 'vo-a9x4')).toMatchObject({
+      kind: 'preparing',
+      audience: 'adult',
+    })
+    for (const audience of ['teen', 'ADULT', 1]) {
+      fake.setReferralCodeResult(200, { ...base, audience })
+      expect(await resolveReferralGiftPage(fake.gateway, 'vo-a9x4')).toEqual({
+        kind: 'unavailable',
+      })
+    }
+  })
+
+  test('a rota escolhe o layout pelo público e a prévia aceita ?audience', async () => {
+    const page = await Bun.file(
+      new URL('../../src/pages/bolsa/[codigo].astro', import.meta.url),
+    ).text()
+    expect(page).toMatch(
+      /page\.audience === 'adult' \?[\s\S]*PresenteAdultoLayout[\s\S]*PresenteAdultoOferta[\s\S]*env\.COMMUNITY_URL/,
+    )
+    expect(page).toMatch(/PresenteLayout[\s\S]*PresenteOferta[\s\S]*env\.KIDS_COMMUNITY_URL/)
+    const previa = await Bun.file(
+      new URL('../../src/pages/bolsa/previa.astro', import.meta.url),
+    ).text()
+    expect(previa).toContain("params.get('audience')")
+    expect(previa).toContain("isGiftAudience(audienceParam) ? audienceParam : 'kids'")
+    expect(previa).toContain('PresenteAdultoOferta')
+  })
 })

@@ -1,0 +1,385 @@
+// PREPARED ONLY: Root must review and explicitly run this operator.
+// No SQL parameter, credential, target override, retry, migration or write operation is accepted.
+// Usage: node production-pensa-counts-r1.mjs self-test
+//        node production-pensa-counts-r1.mjs run --out=<NEW directory under this cache>
+import assert from 'node:assert/strict'
+import { execFile } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { lstat, mkdir, open, readFile } from 'node:fs/promises'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const FILE = fileURLToPath(import.meta.url)
+const CACHE = dirname(FILE)
+const ROOT = resolve(CACHE, '../..')
+export const TARGET = Object.freeze({
+  project: '415d5a1c-5f75-432c-8445-b395d0977ce3',
+  environment: '19c212a5-85c0-493c-9630-a7a0569e8412',
+  service: 'aa282801-ffba-477c-af6d-394b2f4f9af9',
+  deployment: '9d8368c2-d915-4dbf-898c-28c2b7978133',
+  commit: '6f93dcbfe8f176017b7b1ace5114d480ad5853b1',
+})
+const IDENTITY = 'C:/Users/tocha/.ssh/id_ed25519'
+const TERMINAL = ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED']
+const LIMITS = Object.freeze({ operatorMs: 120_000, graphqlMs: 20_000, freshContextMs: 5_000,
+  sshMs: 75_000, remoteMs: 60_000, databaseMs: 45_000, statementMs: 5_000, lockMs: 1_500,
+  stdoutBytes: 128 * 1024, stderrBytes: 128 * 1024 })
+const MIGRATIONS = [
+  { path: 'packages/members/src/infrastructure/persistence/drizzle/migrations/0126_pensa_functional_reset.sql', sha256: '5baaab9f3ef55fb7528db828e199408848dc3cb0855039e4d0f7bba0f2ba28f7' },
+  { path: 'packages/members/src/infrastructure/persistence/drizzle/migrations/0128_pensa_remove_documentary_workflow.sql', sha256: 'a16dd38967349c810c532be4abccb1c302dd747f1179e1b725dba17c92531570' },
+]
+// These are identifiers in source-controlled migrations, never input supplied to the operator.
+// Creations remain intact in 0126; the final query reports only the Pensa-prefixed links, not all creations.
+export const TABLES = Object.freeze([
+  { name: 'pensa_projects', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_projects' },
+  { name: 'pensa_artifacts', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_artifacts' },
+  { name: 'pensa_conversations', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_conversations' },
+  { name: 'pensa_cycles', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_cycles' },
+  { name: 'pensa_journeys', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_journeys' },
+  { name: 'pensa_tasks', columns: ['output_ref'], fields: ['rows', 'with_output_link'], sql: 'SELECT count(*)::text AS rows, count(*) FILTER (WHERE output_ref IS NOT NULL)::text AS with_output_link FROM members.pensa_tasks' },
+  { name: 'pensa_project_members', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_project_members' },
+  { name: 'pensa_project_roles', columns: [], fields: ['rows'], sql: 'SELECT count(*)::text AS rows FROM members.pensa_project_roles' },
+  { name: 'pensa_checkpoints', columns: ['creation_id'], fields: ['rows', 'with_creation_link'], sql: 'SELECT count(*)::text AS rows, count(*) FILTER (WHERE creation_id IS NOT NULL)::text AS with_creation_link FROM members.pensa_checkpoints' },
+  { name: 'pensa_operations', columns: ['kind', 'status', 'output'], fields: ['rows', 'unfinished_restores', 'unfinished_restore_destination_references'], sql: `SELECT count(*)::text AS rows,
+    count(*) FILTER (WHERE kind = 'restore' AND status <> 'succeeded')::text AS unfinished_restores,
+    COALESCE(sum(CASE WHEN kind = 'restore' AND status <> 'succeeded' THEN
+      (SELECT count(*) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(output->'files') = 'array' THEN output->'files' ELSE '[]'::jsonb END) f(value)
+        WHERE f.value->>'destination' IS NOT NULL) ELSE 0 END), 0)::text AS unfinished_restore_destination_references
+    FROM members.pensa_operations` },
+  { name: 'pensa_deletion_jobs', columns: ['completed_at'], fields: ['rows', 'unfinished'], sql: 'SELECT count(*)::text AS rows, count(*) FILTER (WHERE completed_at IS NULL)::text AS unfinished FROM members.pensa_deletion_jobs' },
+  { name: 'ai_usage_reservations', columns: ['project_id', 'status'], fields: ['rows', 'project_linked', 'project_linked_reserved'], sql: "SELECT count(*)::text AS rows, count(*) FILTER (WHERE project_id IS NOT NULL)::text AS project_linked, count(*) FILTER (WHERE project_id IS NOT NULL AND status = 'reserved')::text AS project_linked_reserved FROM members.ai_usage_reservations" },
+  { name: 'private_narrations', columns: ['project_id'], fields: ['rows', 'project_linked'], sql: 'SELECT count(*)::text AS rows, count(*) FILTER (WHERE project_id IS NOT NULL)::text AS project_linked FROM members.private_narrations' },
+  { name: 'creations', columns: ['item_id', 'deleted_at', 'storage_ref', 'pending_revision'], fields: ['pensa_prefixed_links', 'not_deleted', 'with_saved_document', 'with_pending_reservation'], sql: "SELECT count(*)::text AS pensa_prefixed_links, count(*) FILTER (WHERE deleted_at IS NULL)::text AS not_deleted, count(*) FILTER (WHERE storage_ref IS NOT NULL)::text AS with_saved_document, count(*) FILTER (WHERE pending_revision IS NOT NULL)::text AS with_pending_reservation FROM members.creations WHERE item_id LIKE 'pensa-%'" },
+])
+const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
+const fail = (code) => { throw new Error(code) }
+const requireThat = (condition, code) => { if (!condition) fail(code) }
+const CODE = new Set(['arguments-invalid', 'output-outside-cache', 'local-pin-changed', 'cli-version-changed',
+  'identity-unavailable', 'deadline-exhausted', 'provider-read-unconfirmed', 'provider-context-invalid',
+  'provider-pending-deployment', 'provider-active-not-unique', 'context-expired', 'ssh-identity-rejected',
+  'ssh-host-key-rejected', 'ssh-auth-rejected', 'ssh-target-unavailable', 'ssh-timeout', 'ssh-unconfirmed',
+  'remote-receipt-invalid', 'remote-counts-unconfirmed', 'output-failed'])
+const CONTEXT_QUERY = `query($id:String!,$s:String!,$e:String!,$input:DeploymentListInput!){
+  deployment(id:$id){id projectId environmentId serviceId status meta}
+  serviceInstance(serviceId:$s,environmentId:$e){activeDeployments{id status meta}}
+  deployments(input:$input,first:1){edges{node{id status}} pageInfo{hasNextPage}}
+}`
+
+export function validateContext(data) {
+  const d = data?.deployment
+  requireThat(d?.id === TARGET.deployment && d.projectId === TARGET.project && d.environmentId === TARGET.environment &&
+    d.serviceId === TARGET.service && d.status === 'SUCCESS' && d.meta?.commitHash === TARGET.commit, 'provider-context-invalid')
+  const active = data.serviceInstance?.activeDeployments
+  requireThat(Array.isArray(active) && active.length === 1 && active[0].id === TARGET.deployment &&
+    active[0].status === 'SUCCESS' && active[0].meta?.commitHash === TARGET.commit, 'provider-active-not-unique')
+  requireThat(Array.isArray(data.deployments?.edges) && data.deployments.edges.length === 0 &&
+    data.deployments.pageInfo?.hasNextPage === false, 'provider-pending-deployment')
+  return { deploymentMatches: true, uniqueSuccess: true, noPendingDeployments: true }
+}
+
+// Serialized as a fixed program into one SSH command; it accepts no SQL or target argument.
+async function remoteCount(target, tables, nonce, limits) {
+  const checks = {
+    service: process.env.RAILWAY_SERVICE_ID === target.service,
+    deployment: process.env.RAILWAY_DEPLOYMENT_ID === target.deployment,
+    commit: process.env.RAILWAY_GIT_COMMIT_SHA === target.commit,
+    environment: process.env.RAILWAY_ENVIRONMENT_ID === target.environment,
+    project: process.env.RAILWAY_PROJECT_ID === undefined || process.env.RAILWAY_PROJECT_ID === target.project,
+    projectPresent: process.env.RAILWAY_PROJECT_ID !== undefined,
+  }
+  const receipt = { version: 1, nonce, state: 'FAILED', phase: 'context', contextChecks: checks,
+    postgresResolved: false, transaction: null, counts: [], lastMigration: null, failure: null }
+  let client
+  let emitted = false
+  const emit = () => { if (!emitted) { emitted = true; process.stdout.write('SZ_PENSA_COUNTS_V1 ' + JSON.stringify(receipt) + '\n') } }
+  const watchdog = setTimeout(() => {
+    receipt.state = 'FAILED'; receipt.failure = 'remote-deadline'; emit(); process.exit(124)
+  }, limits.remoteMs)
+  let deadline
+  try {
+    if (!checks.service || !checks.deployment || !checks.commit || !checks.environment || !checks.project)
+      throw new Error('context-mismatch')
+    // No dependency import or database connection happens before the artifact checks.
+    if (typeof Bun === 'undefined' || !process.env.DATABASE_URL) throw new Error('runtime-or-database-config-missing')
+    receipt.phase = 'dependency'
+    const modulePath = Bun.resolveSync('postgres', '/app/packages/members')
+    if (!modulePath.startsWith('/app/')) throw new Error('artifact-dependency-invalid')
+    const postgres = (await import(modulePath)).default
+    receipt.postgresResolved = true
+    receipt.phase = 'database'
+    deadline = performance.now() + limits.databaseMs
+    client = postgres(process.env.DATABASE_URL, {
+      max: 1, prepare: false, connect_timeout: 5, idle_timeout: 2, max_lifetime: 60,
+      debug: false, onnotice: () => {},
+      connection: { application_name: 'sz-production-pensa-readonly-counts-r1',
+        default_transaction_read_only: true, statement_timeout: limits.statementMs,
+        lock_timeout: limits.lockMs, idle_in_transaction_session_timeout: 10000 },
+    })
+    const snapshot = await client.begin('isolation level repeatable read read only', async (tx) => {
+      const query = async (text, parameters = []) => {
+        if (performance.now() >= deadline) throw new Error('database-deadline')
+        const result = await tx.unsafe(text, parameters)
+        if (performance.now() >= deadline) throw new Error('database-deadline')
+        return result
+      }
+      const mode = await query("SELECT current_setting('transaction_read_only') AS readonly, current_setting('transaction_isolation') AS isolation")
+      if (mode.length !== 1 || mode[0].readonly !== 'on' || mode[0].isolation !== 'repeatable read')
+        throw new Error('transaction-policy-mismatch')
+      receipt.transaction = { readOnly: true, isolation: 'repeatable read', statementTimeoutMs: limits.statementMs,
+        lockTimeoutMs: limits.lockMs, totalDatabaseDeadlineMs: limits.databaseMs }
+      const counts = []
+      for (const item of tables) {
+        const table = 'members.' + item.name
+        const found = await query('SELECT to_regclass($1)::text AS relation', [table])
+        if (found[0]?.relation === null) { counts.push({ table, status: 'absent', counts: null }); continue }
+        if (found.length !== 1 || typeof found[0].relation !== 'string') throw new Error('relation-response-invalid')
+        if (item.columns.length) {
+          const cols = await query('SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = to_regclass($1) AND attnum > 0 AND NOT attisdropped', [table])
+          const missing = item.columns.filter((column) => !cols.some((row) => row.attname === column))
+          if (missing.length) { counts.push({ table, status: 'missing-columns', missingColumns: missing, counts: null }); continue }
+        }
+        const rows = await query(item.sql)
+        if (rows.length !== 1) throw new Error('count-response-invalid')
+        const values = {}
+        for (const field of item.fields) {
+          const value = rows[0][field]
+          if (typeof value !== 'string' || !/^(0|[1-9][0-9]{0,29})$/.test(value)) throw new Error('count-response-invalid')
+          values[field] = value
+        }
+        counts.push({ table, status: 'counted', counts: values })
+      }
+      const found = await query("SELECT to_regclass('drizzle.members_migrations')::text AS relation")
+      if (found.length !== 1 || (found[0].relation !== null && typeof found[0].relation !== 'string'))
+        throw new Error('relation-response-invalid')
+      let lastMigration = { status: 'absent' }
+      if (found[0]?.relation !== null) {
+        const cols = await query("SELECT attname FROM pg_catalog.pg_attribute WHERE attrelid = to_regclass('drizzle.members_migrations') AND attnum > 0 AND NOT attisdropped")
+        const missing = ['id', 'hash', 'created_at'].filter((column) => !cols.some((row) => row.attname === column))
+        if (missing.length) lastMigration = { status: 'missing-columns', missingColumns: missing }
+        else {
+          const latest = await query('SELECT hash, created_at::text AS created_at FROM drizzle.members_migrations ORDER BY created_at DESC, id DESC LIMIT 1')
+          if (latest.length === 0) lastMigration = { status: 'empty' }
+          else if (latest.length === 1 && /^[a-f0-9]{64}$/.test(latest[0].hash) && /^[0-9]{1,20}$/.test(latest[0].created_at))
+            lastMigration = { status: 'present', sha256: latest[0].hash, createdAt: latest[0].created_at }
+          else throw new Error('migration-response-invalid')
+        }
+      }
+      return { counts, lastMigration }
+    })
+    receipt.counts = snapshot.counts
+    receipt.lastMigration = snapshot.lastMigration
+    receipt.state = snapshot.counts.some((item) => item.status === 'missing-columns') || snapshot.lastMigration.status === 'missing-columns'
+      ? 'READ_COMPLETE_WITH_LIMITS' : 'READ_COMPLETE'
+    receipt.phase = 'complete'
+  } catch (error) {
+    receipt.state = 'FAILED'
+    const own = new Set(['context-mismatch', 'runtime-or-database-config-missing', 'artifact-dependency-invalid',
+      'database-deadline', 'transaction-policy-mismatch', 'relation-response-invalid', 'count-response-invalid', 'migration-response-invalid'])
+    receipt.failure = own.has(error?.message) ? error.message : error?.code === '57014' ? 'statement-timeout'
+      : error?.code === '55P03' ? 'lock-timeout' : receipt.phase === 'dependency' ? 'artifact-dependency-unavailable'
+      : receipt.phase === 'database' ? 'database-read-failed' : 'remote-precondition-failed'
+  } finally {
+    if (client) {
+      try { await client.end({ timeout: 2 }) }
+      catch { receipt.state = 'FAILED'; receipt.failure = receipt.failure ? 'primary-and-close-failed' : 'database-close-failed' }
+    }
+    clearTimeout(watchdog)
+    emit()
+    if (receipt.state === 'FAILED') process.exitCode = 1
+  }
+}
+
+export function buildRemoteScript(nonce) {
+  requireThat(/^[a-f0-9]{32}$/.test(nonce), 'arguments-invalid')
+  return '(' + remoteCount.toString() + ')(' + JSON.stringify(TARGET) + ',' + JSON.stringify(TABLES) + ',' +
+    JSON.stringify(nonce) + ',' + JSON.stringify(LIMITS) + ')'
+}
+
+export function projectRemoteReceipt(stdout, nonce) {
+  const lines = stdout.split(/\r?\n/).filter((line) => line.startsWith('SZ_PENSA_COUNTS_V1 '))
+  requireThat(lines.length === 1, 'remote-receipt-invalid')
+  let value
+  try { value = JSON.parse(lines[0].slice('SZ_PENSA_COUNTS_V1 '.length)) } catch { fail('remote-receipt-invalid') }
+  requireThat(value.version === 1 && value.nonce === nonce && ['FAILED', 'READ_COMPLETE', 'READ_COMPLETE_WITH_LIMITS'].includes(value.state), 'remote-receipt-invalid')
+  requireThat(['context', 'dependency', 'database', 'complete'].includes(value.phase), 'remote-receipt-invalid')
+  const checks = {}
+  for (const field of ['service', 'deployment', 'commit', 'environment', 'project', 'projectPresent']) {
+    requireThat(typeof value.contextChecks?.[field] === 'boolean', 'remote-receipt-invalid')
+    checks[field] = value.contextChecks[field]
+  }
+  requireThat(typeof value.postgresResolved === 'boolean' && Array.isArray(value.counts), 'remote-receipt-invalid')
+  const projected = { version: 1, state: value.state, phase: value.phase, contextChecks: checks,
+    postgresResolved: value.postgresResolved, transaction: null, counts: [], lastMigration: null, failure: null }
+  const remoteFailures = ['context-mismatch', 'runtime-or-database-config-missing', 'artifact-dependency-invalid',
+    'database-deadline', 'transaction-policy-mismatch', 'relation-response-invalid', 'count-response-invalid',
+    'migration-response-invalid', 'statement-timeout', 'lock-timeout', 'artifact-dependency-unavailable',
+    'database-read-failed', 'remote-precondition-failed', 'primary-and-close-failed', 'database-close-failed', 'remote-deadline']
+  if (value.state === 'FAILED') {
+    requireThat(remoteFailures.includes(value.failure), 'remote-receipt-invalid')
+    projected.failure = value.failure
+    return projected
+  }
+  requireThat(['service', 'deployment', 'commit', 'environment', 'project'].every((key) => checks[key]) &&
+    value.phase === 'complete' && value.failure === null && value.postgresResolved &&
+    value.transaction?.readOnly === true && value.transaction.isolation === 'repeatable read' &&
+    value.transaction.statementTimeoutMs === LIMITS.statementMs && value.transaction.lockTimeoutMs === LIMITS.lockMs &&
+    value.transaction.totalDatabaseDeadlineMs === LIMITS.databaseMs && value.counts.length === TABLES.length, 'remote-receipt-invalid')
+  projected.transaction = { readOnly: true, isolation: 'repeatable read', statementTimeoutMs: LIMITS.statementMs,
+    lockTimeoutMs: LIMITS.lockMs, totalDatabaseDeadlineMs: LIMITS.databaseMs }
+  projected.counts = TABLES.map((table, index) => {
+    const item = value.counts[index]
+    requireThat(item.table === 'members.' + table.name && ['absent', 'missing-columns', 'counted'].includes(item.status), 'remote-receipt-invalid')
+    if (item.status === 'absent') return { table: item.table, status: 'absent', counts: null }
+    if (item.status === 'missing-columns') {
+      requireThat(Array.isArray(item.missingColumns) && item.missingColumns.length > 0 &&
+        item.missingColumns.every((column) => table.columns.includes(column)), 'remote-receipt-invalid')
+      return { table: item.table, status: item.status, missingColumns: [...new Set(item.missingColumns)], counts: null }
+    }
+    const counts = {}
+    for (const field of table.fields) {
+      requireThat(typeof item.counts?.[field] === 'string' && /^(0|[1-9][0-9]{0,29})$/.test(item.counts[field]), 'remote-receipt-invalid')
+      counts[field] = item.counts[field]
+    }
+    return { table: item.table, status: 'counted', counts }
+  })
+  const last = value.lastMigration
+  requireThat(['absent', 'empty', 'missing-columns', 'present'].includes(last?.status), 'remote-receipt-invalid')
+  if (last.status === 'present') {
+    requireThat(/^[a-f0-9]{64}$/.test(last.sha256) && /^[0-9]{1,20}$/.test(last.createdAt), 'remote-receipt-invalid')
+    projected.lastMigration = { status: last.status, sha256: last.sha256, createdAt: last.createdAt }
+  } else if (last.status === 'missing-columns') {
+    requireThat(Array.isArray(last.missingColumns) && last.missingColumns.length > 0 &&
+      last.missingColumns.every((name) => ['id', 'hash', 'created_at'].includes(name)), 'remote-receipt-invalid')
+    projected.lastMigration = { status: last.status, missingColumns: [...new Set(last.missingColumns)] }
+  } else projected.lastMigration = { status: last.status }
+  return projected
+}
+
+export async function main(args) {
+  requireThat(args.length === 2 && args[0] === 'run' && args[1].startsWith('--out='), 'arguments-invalid')
+  const output = resolve(args[1].slice('--out='.length))
+  const rel = relative(CACHE, output)
+  requireThat(rel !== '' && !rel.startsWith('..') && !rel.includes(':') && !rel.includes('/') && !rel.includes('\\'), 'output-outside-cache')
+  const railway = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const pkg = JSON.parse(await readFile(join(dirname(railway), '../package.json'), 'utf8'))
+  requireThat(pkg.version === '5.62.1', 'cli-version-changed')
+  const identityStat = await lstat(IDENTITY).catch(() => null)
+  requireThat(identityStat?.isFile() && !identityStat.isSymbolicLink(), 'identity-unavailable')
+  for (const file of MIGRATIONS) requireThat(sha(await readFile(join(ROOT, file.path))) === file.sha256, 'local-pin-changed')
+  const nativeEnv = { ...process.env, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete nativeEnv[key]
+  const deadline = performance.now() + LIMITS.operatorMs
+  const nonce = randomBytes(16).toString('hex')
+  const remoteScript = buildRemoteScript(nonce)
+  await mkdir(output, { recursive: false })
+  const handle = await open(join(output, 'receipt.json'), 'wx')
+  const receipt = { kind: 'production-pensa-pre-migration-counts', version: 1, status: 'RUNNING',
+    startedAt: new Date().toISOString(), completedAt: null, target: TARGET, operatorSha256: sha(await readFile(FILE)),
+    remoteScriptSha256: sha(Buffer.from(remoteScript)), migrations: MIGRATIONS, limits: LIMITS,
+    transport: 'Railway native CLI 5.62.1; existing local OAuth and existing SSH identity',
+    contextObservedAt: null, context: null, sshAttempts: 0, remote: null, failure: null,
+    databaseWritesRequested: false, migrationsApplied: false, cleanupOrDeletionRequested: false,
+    credentialValuesRecorded: false, personalDataRecorded: false, migrationSafetyApproved: false,
+    notes: ['Counts are decimal strings; an absent table is not an empty table.',
+      'Creation links use the documented pensa- prefix and are contextual counts, not a proof of loss.',
+      'No backup, migration, reset, resource cleanup or release decision is performed.'],
+  }
+  const checkpoint = async () => { const text = JSON.stringify(receipt, null, 2) + '\n'; await handle.truncate(0); await handle.write(text, 0, 'utf8'); await handle.sync() }
+  const command = (argv, timeout, stdin) => new Promise((resolveReply, reject) => {
+    const remaining = deadline - performance.now()
+    if (remaining <= 0) return reject(new Error('deadline-exhausted'))
+    const child = execFile(railway, argv, { cwd: ROOT, env: nativeEnv, windowsHide: true, encoding: 'utf8',
+      timeout: Math.max(1, Math.min(timeout, remaining)), maxBuffer: Math.max(LIMITS.stdoutBytes, LIMITS.stderrBytes) },
+    (error, stdout, stderr) => resolveReply({ error, stdout, stderr }))
+    child.stdin.on('error', () => {}) // execFile completion owns transport failure; raw diagnostics remain in RAM.
+    child.stdin.end(stdin)
+  })
+  try {
+    await checkpoint()
+    const version = await command(['--version'], 10_000)
+    requireThat(!version.error && version.stdout.trim() === 'railway 5.62.1', 'cli-version-changed')
+    const vars = { id: TARGET.deployment, s: TARGET.service, e: TARGET.environment,
+      input: { projectId: TARGET.project, environmentId: TARGET.environment, serviceId: TARGET.service,
+        status: { notIn: TERMINAL } } }
+    const response = await command(['api', '--file', '-', '--variables', JSON.stringify(vars), '--compact', '--allow-errors'], LIMITS.graphqlMs, CONTEXT_QUERY)
+    requireThat(!response.error, 'provider-read-unconfirmed')
+    let data
+    try { const body = JSON.parse(response.stdout); requireThat(!body.errors && body.data, 'provider-context-invalid'); data = body.data }
+    catch { fail('provider-context-invalid') }
+    receipt.context = validateContext(data)
+    receipt.contextObservedAt = new Date().toISOString()
+    const observed = performance.now()
+    await checkpoint()
+    requireThat(performance.now() - observed <= LIMITS.freshContextMs, 'context-expired')
+    receipt.sshAttempts = 1
+    await checkpoint()
+    requireThat(performance.now() - observed <= LIMITS.freshContextMs, 'context-expired')
+    const reply = await command(['ssh', '-p', TARGET.project, '-e', TARGET.environment, '-s', TARGET.service,
+      '-i', IDENTITY, '--', 'bun', '--no-env-file', '--cwd', '/app/packages/members', '-e', remoteScript], LIMITS.sshMs)
+    // Only the closed JSON receipt is projected. Neither stdout nor stderr is stored or forwarded.
+    if (reply.stdout.includes('SZ_PENSA_COUNTS_V1 ')) receipt.remote = projectRemoteReceipt(reply.stdout, nonce)
+    if (reply.error) {
+      const diagnostic = reply.stderr
+      fail(/Permission denied \(publickey\)/i.test(diagnostic) ? 'ssh-identity-rejected'
+        : /Host key verification failed|REMOTE HOST IDENTIFICATION HAS CHANGED/i.test(diagnostic) ? 'ssh-host-key-rejected'
+        : /No target found|deployment not found/i.test(diagnostic) ? 'ssh-target-unavailable'
+        : /not authorized|unauthorized|invalid token|token expired|authentication failed/i.test(diagnostic) ? 'ssh-auth-rejected'
+        : reply.error.killed ? 'ssh-timeout' : 'ssh-unconfirmed')
+    }
+    requireThat(receipt.remote && receipt.remote.state !== 'FAILED', 'remote-counts-unconfirmed')
+    receipt.status = receipt.remote.state
+  } catch (error) {
+    receipt.status = 'FAILED'
+    receipt.failure = CODE.has(error?.message) ? error.message : 'output-failed'
+    process.exitCode = 1
+  } finally {
+    receipt.completedAt = new Date().toISOString()
+    try { await checkpoint() } finally { await handle.close() }
+  }
+  process.stdout.write(JSON.stringify({ status: receipt.status, output: join(output, 'receipt.json'),
+    receiptSha256: sha(await readFile(join(output, 'receipt.json'))), sshAttempts: receipt.sshAttempts,
+    failure: receipt.failure, noDatabaseWritesRequested: true }) + '\n')
+}
+
+function selfTest() {
+  const good = () => ({ deployment: { id: TARGET.deployment, projectId: TARGET.project, environmentId: TARGET.environment,
+    serviceId: TARGET.service, status: 'SUCCESS', meta: { commitHash: TARGET.commit } },
+    serviceInstance: { activeDeployments: [{ id: TARGET.deployment, status: 'SUCCESS', meta: { commitHash: TARGET.commit } }] },
+    deployments: { edges: [], pageInfo: { hasNextPage: false } } })
+  assert.equal(validateContext(good()).uniqueSuccess, true)
+  for (const mutate of [x => { x.deployment.environmentId = 'staging' }, x => { x.deployment.meta.commitHash = '0'.repeat(40) },
+    x => { x.serviceInstance.activeDeployments.push(x.serviceInstance.activeDeployments[0]) },
+    x => { x.deployments.edges.push({ node: { id: TARGET.deployment, status: 'BUILDING' } }) },
+    x => { x.deployments.pageInfo.hasNextPage = true }]) {
+    const value = good(); mutate(value); assert.throws(() => validateContext(value))
+  }
+  assert.throws(() => buildRemoteScript('arbitrary SQL'))
+  const source = buildRemoteScript('0'.repeat(32))
+  assert(source.indexOf('context-mismatch') < source.indexOf('Bun.resolveSync'))
+  assert(source.includes("isolation level repeatable read read only"))
+  assert(!/\b(?:INSERT|DELETE|UPDATE|CREATE|DROP|TRUNCATE|ALTER|GRANT)\b/.test(TABLES.map(x => x.sql).join('\n')))
+  assert(TABLES.every(x => x.sql.startsWith('SELECT ') && /^[a-z_]+$/.test(x.name)))
+  assert.equal(new Set(TABLES.map(x => x.name)).size, TABLES.length)
+  const failure = { version: 1, nonce: '0'.repeat(32), state: 'FAILED', phase: 'context',
+    contextChecks: { service: false, deployment: true, commit: true, environment: true, project: true, projectPresent: true },
+    postgresResolved: false, counts: [], failure: 'context-mismatch', privateSecret: 'must-not-be-projected' }
+  const projected = projectRemoteReceipt('SZ_PENSA_COUNTS_V1 ' + JSON.stringify(failure), '0'.repeat(32))
+  assert.equal(projected.failure, 'context-mismatch'); assert(!JSON.stringify(projected).includes('must-not-be-projected'))
+  assert.throws(() => projectRemoteReceipt('SZ_PENSA_COUNTS_V1 ' + JSON.stringify(failure), '1'.repeat(32)))
+  const success = { ...failure, state: 'READ_COMPLETE', phase: 'complete', failure: null, postgresResolved: true,
+    contextChecks: { ...failure.contextChecks, service: true },
+    transaction: { readOnly: true, isolation: 'repeatable read', statementTimeoutMs: LIMITS.statementMs,
+      lockTimeoutMs: LIMITS.lockMs, totalDatabaseDeadlineMs: LIMITS.databaseMs },
+    counts: TABLES.map((table) => ({ table: 'members.' + table.name, status: 'absent', counts: null })),
+    lastMigration: { status: 'absent' } }
+  const parsed = projectRemoteReceipt('SZ_PENSA_COUNTS_V1 ' + JSON.stringify(success), '0'.repeat(32))
+  assert(parsed.counts.every((item) => item.status === 'absent' && item.counts === null))
+  success.counts[0] = { table: 'members.pensa_projects', status: 'counted', counts: { rows: 'do-not-record-row-data' } }
+  assert.throws(() => projectRemoteReceipt('SZ_PENSA_COUNTS_V1 ' + JSON.stringify(success), '0'.repeat(32)))
+  process.stdout.write(JSON.stringify({ status: 'OFFLINE_GUARDS_PASSED', contexts: 6, tableAllowlist: TABLES.length,
+    remoteCalls: 0, sshCalls: 0, databaseCalls: 0, preparedOnly: true }) + '\n')
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) {
+  if (process.argv.length === 3 && process.argv[2] === 'self-test') selfTest()
+  else main(process.argv.slice(2)).catch(() => { process.stderr.write('Prepared operator refused local prerequisites; no raw diagnostic is emitted.\n'); process.exitCode = 1 })
+}

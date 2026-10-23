@@ -1,0 +1,76 @@
+{
+  "id": "P33",
+  "format": "Imagem única",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/09-p31-a-p40.md",
+  "sectionHash": "a45f8345076bdab6981feafbbed3249203cd2bbe92de1dc703c4879f7cd4a17d",
+  "errors": [],
+  "checkedAt": "2026-10-15T00:45:16.481Z",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "layout": {
+    "title": {
+      "left": 64,
+      "right": 1016,
+      "top": 193,
+      "bottom": 308.1875,
+      "height": 115.1875
+    },
+    "panel": {
+      "left": 64,
+      "right": 1016,
+      "top": 370,
+      "bottom": 1210,
+      "height": 840
+    },
+    "testimony": {
+      "left": 580,
+      "right": 980,
+      "top": 466.703125,
+      "bottom": 1046.90625,
+      "height": 580.203125
+    },
+    "byline": {
+      "left": 580,
+      "right": 980,
+      "top": 1076.90625,
+      "bottom": 1113.296875,
+      "height": 36.390625
+    },
+    "quoteArea": {
+      "left": 544,
+      "right": 1016,
+      "top": 370,
+      "bottom": 1210,
+      "height": 840
+    },
+    "footer": {
+      "left": 64,
+      "right": 1016,
+      "top": 1286,
+      "bottom": 1316,
+      "height": 30
+    },
+    "marks": [
+      {
+        "size": "110px",
+        "family": "Nunito, Arial, sans-serif",
+        "weight": "800",
+        "color": "rgb(25, 75, 215)"
+      },
+      {
+        "size": "110px",
+        "family": "Nunito, Arial, sans-serif",
+        "weight": "800",
+        "color": "rgb(25, 75, 215)"
+      }
+    ],
+    "typeSizes": {
+      "intro": 48,
+      "quote": 54
+    }
+  },
+  "mobileNoOverflow": true
+}

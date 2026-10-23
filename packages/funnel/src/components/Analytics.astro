@@ -14,7 +14,7 @@ const release = process.env.RAILWAY_GIT_COMMIT_SHA || 'development'
     <p>Medimos visitas, cliques e etapas para melhorar o site. Ao enviar seus dados no quiz ou na compra, sua navegação pode ser associada ao seu cadastro. As métricas não gravam o que você digita nos campos.</p>
     <p id="sz-metrics-state" role="status"></p>
     <div><button type="button" data-choice="accepted" hidden>Ativar métricas</button><button type="button" data-choice="rejected">Desativar métricas</button><button type="button" id="sz-metrics-close">Fechar</button></div>
-    <a href={`/${funnel?.audience ?? 'kids'}/privacidade`}>Política de privacidade</a>
+    <a href="/privacidade">Política de privacidade</a>
     <p id="sz-metrics-error" role="status" hidden>Não foi possível salvar. Tente novamente.</p>
   </div>
   <p id="sz-metrics-live" class="sz-metrics-visually-hidden" role="status"></p>

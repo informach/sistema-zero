@@ -1,3 +1,4 @@
+import { createAdultProfileRoutes } from './routes/adult-profile'
 import 'server-only'
 import { sessionCookieNames } from './lib/cookies'
 import { paletteCookieName } from './lib/palette-cookie'
@@ -7,11 +8,18 @@ import { createCreationCleanupWorkerRoutes } from './routes/creation-cleanup'
 import { createCreationsRoutes } from './routes/creations'
 import { createHelpdeskRoutes } from './routes/helpdesk'
 import { createHubRoutes } from './routes/hub'
+import { createLiveRoutes } from './routes/live'
 import { createPensaRoutes } from './routes/pensa'
-import { createPensaAiRoutes } from './routes/pensa-ai'
+import { createPrivateNarrationRoutes } from './routes/private-narration'
 import { createStudioRoutes } from './routes/studio'
+import { createStudioAiReconcileRoutes } from './routes/studio-ai-reconcile'
+import { createStudioBuilderRoutes } from './routes/studio-builder'
+import { createStudioBuilderExecutorRoutes } from './routes/studio-builder-executor'
+import { createStudioOpenRouterRoutes } from './routes/studio-openrouter'
+import { createStudioPythonLanguageRoutes } from './routes/studio-python-language'
 import { createStudioZappyRoutes } from './routes/studio-zappy'
 import { createStudyAccessRoutes } from './routes/study-access'
+import { createVoiceRoutes } from './routes/voice'
 import {
   createAuthClient,
   createHubClient,
@@ -67,6 +75,8 @@ export function createShell(cfg: ShellConfig) {
   const hub = createHubClient(gateway, { audience: cfg.audience })
   const media = createMediaModule({ session, gateway })
   const routes = {
+    ...createAdultProfileRoutes({ session, gateway }),
+    ...createLiveRoutes({ session, gateway }),
     ...createStudyAccessRoutes({ session, gateway, study }),
     ...createShellRoutes({
       session,
@@ -80,13 +90,19 @@ export function createShell(cfg: ShellConfig) {
     }),
     ...createHubRoutes({ hub, members, media, session, audience: cfg.audience }),
     ...createHelpdeskRoutes({ gateway, session, audience: cfg.audience }),
-    ...createStudioRoutes({ hub, members, media }),
-    ...createStudioZappyRoutes({ members, session }),
+    ...createStudioRoutes({ hub, members, media, audience: cfg.audience }),
+    ...createStudioPythonLanguageRoutes(media, { members, audience: cfg.audience }),
+    ...createStudioZappyRoutes({ members, session, audience: cfg.audience }),
+    ...createStudioBuilderRoutes({ members, session, audience: cfg.audience }),
+    ...createStudioBuilderExecutorRoutes({ members, audience: cfg.audience }),
+    ...createStudioOpenRouterRoutes({ members, session, cookieBase: cfg.cookieBase }),
+    ...createStudioAiReconcileRoutes({ members }),
     ...createCertificateRoutes({ members, session }),
-    ...createPensaRoutes({ members, session }),
-    ...createPensaAiRoutes({ members, session }),
+    ...createPensaRoutes({ members, session, audience: cfg.audience }),
+    ...createPrivateNarrationRoutes({ members, session, audience: cfg.audience }),
     ...createCreationsRoutes({ members, session }),
     ...createCreationCleanupWorkerRoutes({ gateway }),
+    ...createVoiceRoutes({ session, auth, members, audience: cfg.audience }),
   }
 
   return {

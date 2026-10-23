@@ -1,5 +1,72 @@
 # @sistemazero/studio
 
+## O recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido da dona, o mesmo dos dois apps (vocabulário completo nos CLAUDE.md de `community` e
+`community-kids`): a tela diz **o Zappy**, **o Pensa** e **créditos** (no Kids, na tela da
+criança, **ideias**). Aqui: `ZappyCredits` adulto "Vale para o Zappy e o Pensa." e "O Pensa usa
+os créditos da sua conta."; `ProBuilderPanel` conta "passos do Zappy" (era "chamadas de IA") e
+diz "não gasta créditos/ideias" pela `audience`; `ZappyPanel` "pode gastar mais créditos/ideias";
+`ShareDialog` "Escrever com ajuda do Zappy" / "Gerar resumo com o Zappy" (quem escreve é o
+Zappy: a rota `/api/studio/describe` usa o modelo e os créditos dele). Transparência para a
+criança (decisão da dona): `ZAPPY_KIDS_DISCLOSURE` no topo do painel do Zappy, só fora do adulto:
+"O Zappy é um assistente virtual, não uma pessoa da equipe." A IA de jogo (o computador
+adversário) também saiu da tela: "computador", "robô adversário", "O jeito de lutar do chefe".
+Ficam com "IA" só os prompts do modelo (`ai.ts`) e o módulo legado `src/ai/` (sem consumidor vivo).
+
+## JavaScript e Python no Estúdio (conciliação, 18/10/2026)
+
+`EditableStudioProject` representa as duas linguagens; `Project` continua sendo o tipo JavaScript legado. Projetos sem linguagem explícita continuam JavaScript. Documentos Python usam formato 3 e referência de runtime validada; não enviar seu código ao compilador JavaScript nem converter formatos por cast.
+
+Os módulos Python, a paleta de Programação e a extensão Turtle são carregados conforme a linguagem do projeto. `StudioProjectPlayer` escolhe o player antes de carregar a cadeia de execução, inclusive na página pública. O ambiente Python vem da autorização do contexto (autoria, aula, sala, Estúdio livre ou publicação); nome de perfil e URL enviados pelo navegador não concedem acesso.
+
+Os objetivos da parte substituem a antiga atividade do bloco nas duas linguagens. `src/activity/python.ts` permanece como avaliador interno da simulação formativa do Admin; sua existência não restaura nota, atividade do bloco ou aprovação reportada pelo cliente. O estado e os gates restantes da implementação estão em `docs/superpowers/plans/2026-10-16-studio-python-execution-state.md`; testes funcionais isolados não aprovam desempenho.
+
+> **Objetivos do Estúdio (18/10/2026):** a antiga atividade de auto-correção do bloco saiu ([`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md)): os antigos módulos JavaScript de `src/activity/`
+> (runner, harness, sandbox, nota), `ActivityPanel`, `checksStore`, `studio/activity.ts`, a prop
+> `activity` do `<StudioLesson>`, os tipos `LessonActivity`/`ActivityCheck` e
+> `StudioHandle.getActivityResult()`. Quem confere agora são os objetivos da parte, no SERVIDOR,
+> pelo `server-project-checks` (`evaluateStudioSectionObjectives`; `studioSectionCompletionIssues`
+> recusa obrigatório que o `content.solutionProject` não cumpre). As menções a esses nomes mais
+> abaixo são históricas.
+
+> **Objetivos lidos no código (18/10/2026, etapa 2):** `blockly/codeIdeas.ts` procura as ideias
+> de programação (laço, variável, função, chamada) na árvore sintática do Babel, para os objetivos
+> valerem no projeto Pro (a árvore Vite, sem configuração nem `node_modules`) e no código digitado na
+> Ponte (os nós `rawJS` da IR; sem IR, o `script.js`). `evaluateStudioProjectStructure` tenta o código
+> primeiro e cai no avaliador de blocos; `usesBlock` segue só de blocos e a autoria o recusa no Pro.
+> Com a Ponte liberada, a autoria não exige mais que o bloco da ideia esteja na paleta.
+> ⚠️ **Só conta o que MUDOU desde o projeto inicial** (review da etapa 2): `codeIdeas` CONTA
+> ocorrências e `codeIdeasPass(rule, ideas, baseline)` compara com o `initialProject` (os kits Pro
+> já trazem laço e funções no modelo). Os três avaliadores recebem o `baseline?` opcional; o members,
+> o "Testar agora" e o ensaio passam o projeto inicial do bloco. `studioSectionCompletionIssues`
+> recusa publicar objetivo obrigatório que o projeto inicial já cumpre.
+
+> **Objetivos que RODAM o jogo (18/10/2026, etapa 3):** subpath novo **`./server-check`**
+> (`src/check/serverCheck.ts`, server-safe; o `serverProjectChecks.test.ts` trava o bundle):
+> `prepareClassicCheckDocument(project, scope)` é o documento de prévia de sempre
+> (`renderProjectToPreviewDocAsync`, perfil `strict`) com o **leitor de variáveis** que o
+> `instrumentCheckScript` injeta no `script.js` (no topo do arquivo e no começo de cada
+> `__szProjectRun`: lê pela closure, numa propriedade NÃO enumerável de `globalThis` com nome
+> sorteado `__sz<24 hex>`; nomes `__sz*` do motor ficam de fora; código que não analisa volta
+> igual; as linhas não mudam de número). Para isso o `renderProjectToPreviewDocAsync` ganhou
+> `transformScript` (roda DEPOIS do `prepareProjectForHost`, que refaria o arquivo). Pro:
+> `proCheckSourceFiles`/`proCheckBinaries`. A autoria (`projectCheckAuthoring.issues`) conhece
+> `behavior`/`functionReturns`: 3D clássico (Jogo 3D, Mundo 3D, 3D Avançado ou `import three`)
+> não roda no teste (sem internet); `value` só no clássico; `game` só nos kits Pro; função no Pro
+> pede `module`, no clássico pede a Ponte. `evaluateStudioSectionObjectives(…, executed?)` recebe o
+> resultado do executor; sem ele, objetivo de execução não passa. `studioSectionCompletionIssues`
+> exige o gabarito quando há objetivo de execução e confere inicial/gabarito só na ESTRUTURA (a
+> execução é do "Testar agora"; a publicação não depende do executor). O executor de verdade
+> (Chromium) é testado em `src/check/__tests__/checkRunner.test.ts` (pulado sem Chromium).
+> ⚠️ Review da etapa 3: todo nome interno do leitor começa com `__sz` (um `var g` escondia a
+> variável `g` da criança e o teste lia o `globalThis`), e o leitor é CONGELADO numa propriedade
+> não gravável (o jogo não troca o `get` por um que aprova tudo). A autoria também recusa função
+> em 3D clássico (o arquivo inteiro para na importação do three.js), clique fora da tela do teste
+> (`CHECK_VIEWPORT`, 1024×640), regra em JavaScript fora da Ponte e do Pro ou com erro de escrita
+> (compila sem rodar; com CSP sem `unsafe-eval` não acusa) e parte cujos objetivos de execução
+> somam mais que `EXECUTION_LIMITS.maxSectionWaitMs` (40 s, `executionRuleBudgetMs`).
+
 > **Escrita com namespace explícito (10/10/2026):** `replaceLocalProject(project, {namespace})`
 > captura o armazenamento antes de persistir. Os rascunhos das aulas usam `namespace: ''`, inclusive
 > para cópias de conflito, sem depender do namespace que o Estúdio Completo ativou durante o download.
@@ -49,53 +116,15 @@ IDE educacional embarcável (Sistema Zero Studio) — biblioteca INTERNA do mono
 
 Editor com 3 modos — Blocos (Blockly), Código (Monaco) e Ponte (sync bidirecional blocos⇄código via worker de reverse-parse) — + preview sandbox, console, terminal (WebContainer), painel de IA (OpenRouter) e extensões.
 
-**Tarefas do Pensa:** `StudioEditorProps` aceita `taskSession?: StudioTaskSession`, independente
-de `LessonActivity`. O `TaskGuidePanel` mostra passos, dicas, blocos oficiais e critérios e envia
-progresso pelo callback do host.
-⭐⭐ **Ele RECOLHE por uma seta (18/09/2026).** Era o único dos três guias do Pensa que não
-recolhia, e no celular ele é a faixa do topo, comendo altura da área de criação. O botão mora
-DENTRO do `<h2>` (padrão de disclosure com cabeçalho), 44px, `aria-expanded`; recolhido, o título
-e a pílula de situação FICAM. Quem LEMBRA é o host: o par OPCIONAL
-`collapsed`/`onCollapsedChange` do `StudioTaskSession` desce como DADO (o mesmo idioma do
-`menu.hidden`/`onToggle` do `StudioHostChrome`), porque o pacote não conhece `viewerId` nem
-`localStorage`; sem o par, recolhe sozinho e esquece ao sair.
-⚠ `taskSession` NÃO é latchado no `StudioCore` (ao contrário de `activity`, `share`,
-`onCloudSync` e `onEditDrawing`), e é isso que faz o `collapsed` do host chegar vivo ao painel —
-latchar aquele contrato deixaria a seta MUDA.
-⚠ A margem de baixo é `mb-2 lg:mb-0`: até `lg` o guia é a faixa do topo e encostava no editor; a
-partir daí ele vira coluna lateral `lg:w-80` e quem separa é a borda da direita. O teto de altura
-e a rolagem só valem ABERTO.
-⚠⚠ **A casca do guia é COMPARTILHADA desde 19/09/2026**: `.sz-tool-guide` +
-`.sz-tool-guide--aside` do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Pinta e do Molda
-(ela disse que o painel estava "totalmente fora do design da identidade visual da comunidade", e
-cada um dos três tinha inventado a própria). O `--aside` é deste painel: ele é o único dos três
-que vira coluna, e lá o fio em volta vira o fio do lado que separa do editor — em
-`--sz-tool-line`, nunca no `--sz-tool-card-edge`, que é TRANSPARENTE no claro. Medido no
-playground (o demo `taskSessionDemo`, novo neste lote; ⚠️ a lista reescreve a URL, então abra
-direto em `/editor/<id>?tarefa=1`, e `?tarefa=falha` faz a marcação REJEITAR, que é como se vê o
-recado sobrevivendo ao recolher): 320px de coluna com o fio à direita a partir de 1024px;
-abaixo disso, faixa que rola por dentro (`max-h-64`) com o `mb-2` de respiro. As utilitárias de
-espaçamento seguem LITERAIS no JSX (a receita cuida de cor, fio, canto e tipografia, e os testes
-leem as classes), e o sobretítulo virou "Guia do Pensa", igual nos três — ele SOME recolhido,
-porque ela pediu "só uma linha, o título e a setinha".
-O recado de falha (`syncError`) fica FORA do que recolhe — com o guia recolhido, uma marcação que
-não subiu ficaria invisível e a criança acharia que guardou. AQUI ele é a única coisa que
-sobrevive (não há mais nada a recuperar); nos irmãos sobrevivem também o aviso do desenho ou da
-criação ausente e os botões que o resolvem. A regra dos três, desde 19/09/2026: **recolher esconde
-conteúdo e ação de ROTINA, nunca um problema.**
-⚠️ Quem ROLA é o corpo, nunca o cartão: com o `max-h-64` no `<aside>`, a seta e o recado ficavam
-dentro da área rolável e o recado nascia abaixo da dobra justo quando a criança marca um passo.
-⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta; id ausente é referência pendurada).
-⭐ **E a COLUNA encolhe recolhida** (conserto do full review de 18/09/2026): com o `lg:w-80` fixo
-na base, a partir de `lg` recolher devolvia altura nenhuma e largura nenhuma — 320px de título e
-vazio, com a seta parecendo inerte justo onde a largura é cara. Hoje o `lg:w-80` só vale aberto e
-o recolhido é `lg:w-auto lg:max-w-80`: título longo continua no pior caso de antes, título curto
-devolve o resto. O `mb-2` saiu para a base pelo mesmo motivo (no ramo do aberto, recolhido ele
-voltava a encostar no editor).
-⚠ O sobretítulo "Guia da tarefa" dentro do botão é `aria-hidden`: o `<aside>` em volta já se
-chama assim, e sem isso o leitor anunciava o nome duas vezes. O nome do botão é a TAREFA. O host de `/estudio?tarefa=<id>` cria ou restaura o projeto
-associado e mantém o guia após reload; o Studio não persiste vínculo ou backup no Pensa. Veja
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+**Missões do Pensa:** `StudioEditorProps.taskSession?: StudioTaskSession` recebe o contrato compartilhado `PensaMissionSession` de `@sistemazero/ui/pensa-mission-session`. O nome da prop permanece uma integração de editor; seu conteúdo é a missão canônica, sem passos ou schemas locais.
+
+`TaskGuidePanel` usa `PensaMissionPanel` e mostra objetivo, regras, conferências, referências e anotação “Onde parei”. A preparação instala as extensões recomendadas somente após clique, através de `findExtension`/`installExtension` e da store da instância atual. Extensões já instaladas não duplicam; conflitos aparecem como recado. A mesma criação, assets, código e histórico de undo permanecem no editor.
+
+`withTaskSessionSave` chama o flush antes de concluir, continuar, pedir ajuda ou voltar. Falha de gravação impede a ação e permanece visível com o painel recolhido. A confirmação da gravação na conta e a evidência das extensões são responsabilidade do host/BFF. O Studio não cria progresso fictício nem decide a próxima missão.
+
+A sessão não é latchada no `StudioCore`: uma atualização do progresso substitui o painel sem remontar o editor. O host abre `/estudio?missao=<id>` ou `/estudio/pro/<id>?missao=<id>`, sempre no jogo canônico `pensa-<32 hex>`. A entrada, saída ou troca de jogo Pro usa troca completa de documento; trocar apenas a missão no mesmo jogo mantém o editor montado. O Pro não instala extensões de blocos.
+
+CSS, estados, recolhimento e acessibilidade vêm de `@sistemazero/ui/pensa-mission-panel` e `tool-chrome.css`. Testes: `src/studio/TaskGuidePanel.test.tsx`; salvamento/navegação canônicos ficam em `community-kids/tests/pensa-mission-session.test.tsx`. Especificação: [reestruturação do Pensa](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
 
 **API pública** (`src/index.ts` — TUDO fora dela é interno; Fase 5 somou
 **`importProjectSnapshot(raw, {name?})`** — `src/projects/importSnapshot.ts`, importa um snapshot
@@ -358,6 +387,18 @@ como capa fixa (vence a foto automática); sem escolha, a foto automática segue
   `adoptProjectThumbs`.
 
 ## Gravação de saída: toda transação com `commit()` explícito (11/09/2026)
+
+### Plataformas de prova (15/10/2026)
+
+O CI Linux executa a prova `projectStorageBrowser.test.ts` com `STUDIO_STORAGE_BROWSER=chromium`.
+O job obrigatório `studio-storage-macos` executa o MESMO teste completo em Chromium e WebKit;
+o E2E de WebKit também roda no macOS. Sem a variável, a prova local continua cobrando os dois.
+WORKAROUND do port Linux do WebKit 1.60: com um CAS grande em voo, a recarga perdia o journal
+de saída, mesmo com `commit()` explícito. A reprodução com o mesmo fixture passou em Windows
+e no macOS do run 38838008325; retirar o CAS em voo também fez a reprodução Linux passar.
+Não houve mudança no armazenamento nem redução das asserções. A prova em macOS segue a
+[orientação do Playwright para maior proximidade com Safari](https://playwright.dev/docs/browsers#webkit).
+Ao atualizar o Playwright, repita o fixture completo no Linux antes de retirar esta divisão.
 
 O `PersistenceService` grava o que está pendente no `beforeunload`/`pagehide`, e a gravação SAÍA,
 mas morria com a troca de documento. Três mecanismos, os três consertados no mesmo dia:
@@ -1694,6 +1735,38 @@ ganha os blocos que a usam.
   variável, blocos/gavetas/importmap, runtime síncrono), mais o `blockAudit`/`docDrift`/
   `blocksPedagogy`/`templateGuard`/`runtimeTypecheck` de sempre.
 - ⚠️ Fora do lote, registrado: `export/fileMap.ts` ainda deixa os assets 3D fora do ZIP exportado.
+
+## "Trazer da equipe" (Pensa em equipe, 14/10/2026)
+
+Quem PROGRAMA um plano do Pensa em equipe traz para o jogo as artes que as colegas entregaram nas
+missões do plano (Pinta e Molda). Especificação: `docs/plans/2026-10-16-pensa-reestruturacao-spec.md`.
+
+- **Adapter de host `teamLibrary?: StudioTeamLibraryAdapter`** (`studio/team-library.ts`, molde do
+  `pintaLibrary`: contexto + Provider + prop em `types.ts`/`StudioCore`; tipos ESPELHO, exportados no
+  index). `list()` devolve `{id, assetId?, name, kind ('drawing'|'model'|'texture'|'sky'), byName,
+  missionTitle, thumbDataUrl}`; `import(id, {acceptedReview?})` devolve `{tool: 'pinta', result}` ou
+  `{tool: 'molda', result}` com o MESMO resultado do "Trazer do Pinta"/"Trazer do Molda" (inclusive o
+  `needs-review`). ⚠️ **NÃO é latchado** (o único dos adapters): o host só descobre a equipe DEPOIS de
+  abrir o jogo, e o botão aparece quando ele passa o adapter. O host mantém a referência estável.
+- **Botão "👥 Trazer da equipe"** nas abas Imagens e Modelos 3D (`onOpenTeam`, só com o adapter) →
+  **`TeamImportDialog`** (busca por arte/missão/quem fez, tipo + "Feita por X" + "Missão: Y", gate 3D
+  de modelo e céu pela mesma régua do Molda, consentimento do `needs-review`, guarda de import que
+  termina com outro jogo aberto). Cartão já no jogo = "✓ no projeto" + **"Trazer de novo"** (a colega
+  pode ter mudado a arte: atualiza no lugar, mesmo nome, e avisa no `role="status"`).
+- ⭐ **Um "adicionar ao projeto" só para as três janelas**: `components/assets/addCreationToProject.ts`
+  (`addPintaCreationToProject`/`addMoldaCreationToProject`): `libId personal:<id>` + `libOrigin`, nome
+  único pelo estado ATUAL do store, e a criação que já está no jogo é ATUALIZADA (`updateAssetImage`)
+  em vez de duplicada. `PintaImportDialog` e `MoldaImportDialog` passaram a usá-lo (o Pinta mantém só a
+  guarda do "Atualizar vetor"). Mexeu no adicionar? É aqui, e vale para as três.
+- ⚠️ A arte da colega entra com `libOrigin` da ferramenta dela: com o Pinta/Molda do perfil, o
+  "✏️ Editar" aparece e abre a ferramenta num id que não está na galeria DESTE perfil (o recado de
+  "sumiu" de lá). Aceito nesta fase.
+- Copy: `teamImport.*` (pt-BR e en). ⚠️ "entregar"/"entrega" é palavra da escola no guarda
+  `copy-vocabulario` do kids: a tela diz "fez"/"terminou".
+- Testes: `components/assets/TeamImportDialog.test.tsx` (botão com e sem adapter, lista, desenho pelo
+  caminho do Pinta com animações, "Trazer de novo" no lugar, gate 3D, textura e modelo pelo caminho do
+  Molda, consentimento, not-found, lista que falha/vazia, import atrasado com outro jogo, colisão de
+  nome na instância, réguas puras).
 
 ## Biblioteca pessoal "Meus desenhos" (ponte Pinta → Estúdio, 07/2026)
 
@@ -4484,6 +4557,13 @@ Gerar com `gen:snow-descent` e conferir com `check:snow-descent`. Guia: `docs/jo
   não achada). O servidor serve o BUILD: mudou o código, suba de novo.
 
 ## Home "Meus Jogos" no padrão Pinta (08/2026)
+
+⭐ **Seções do host (15/10/2026):** `ProjectList.sections` (`ProjectListSection`, exportado):
+cada seção tem `key`, `title`, `description?`, `includes(project)` e `action?` (link de verdade
+com `onNavigate`). Os projetos aceitos saem da grade principal e ganham uma faixa com
+`.sz-tool-section-title`; a busca e o filtro de modo valem para todas, o contador conta tudo,
+seção vazia não aparece. O Estúdio não sabe quem cria esses jogos: o kids usa para os jogos dos
+planos do Pensa (`pensa-<32 hex>`). Sem seções, nada muda. Testes em `ProjectList.test.tsx`.
 
 ⭐⭐⭐ **11/09/2026 — o desenho das telas-modelo (a imagem "Meus Jogos" dela, medida a 1440px).**
 A lista virou TRÊS FAIXAS de borda a borda que rolam juntas (o cabeçalho deixou de ficar preso em

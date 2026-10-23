@@ -1,14 +1,44 @@
+import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
+  AdultCreatorCapability,
+  AdultJourneyPolicy,
+  JourneyCourseTier,
+  JourneyLevelSlug,
+  KidsCreatorCapability,
+  KidsJourneyPolicy,
+} from '@sistemazero/core/journey'
+import type {
   LearningAnswers,
+  LearningAttemptView,
+  LearningBlockProgress,
   LearningResult,
   LessonDraftDocument,
   LessonSection,
+  ProjectObjectiveResult,
 } from '@sistemazero/core/learning'
+import type {
+  LiveAssistanceView,
+  LiveCohort,
+  LiveEnrollment,
+  LiveOccurrence,
+  LiveProgram,
+  LiveSession,
+} from '@sistemazero/core/live'
 import type { Palette } from '@sistemazero/core/palette'
+import type { PensaOperationStep, PensaOperationView } from '@sistemazero/core/pensa'
+import type {
+  StudioProAssistanceJournal,
+  StudioProBuilderCost,
+  StudioProBuilderPhase,
+  StudioProBuilderResult,
+  StudioProRevision,
+} from '@sistemazero/core/studio'
 import { isNull, sql } from 'drizzle-orm'
 import {
   type AnyPgColumn,
+  bigint,
   boolean,
   check,
   customType,
@@ -26,15 +56,16 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
+import type { CourseAudience } from '../../../domain/course/course'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
+import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
 import type {
-  PensaChatMessage,
-  PensaTaskContext,
-  PensaTaskGuide,
-  PensaTaskOutputRef,
-} from '../../../domain/pensa/pensa'
+  KidsJourneyAuthCapture,
+  KidsJourneyCatalogCourse,
+  KidsJourneyPreparationStatus,
+} from '../../../domain/ports/kids-journey-repository.port'
 import type { CourseFeedbackAnswers } from '../../../domain/rating/course-rating'
 import type { RoomState } from '../../../domain/room/room-catalog'
 
@@ -182,6 +213,11 @@ export const courses = members.table(
     // abre depois que o aluno assiste ao vídeo uma vez. Desligado por padrão: a autora liga
     // nos cursos de quem está começando. Guia de interface, sem checagem no servidor.
     videoBeforeActivity: boolean('video_before_activity').notNull().default(false),
+    // Modalidade (14/10/2026, migration 0113): GRAVADO (o curso de sempre) ou AO VIVO (só existe
+    // em Oficinas; o acesso vem da vaga na turma). Texto + CHECK, não enum do Postgres: valor novo
+    // de enum não pode ser usado na mesma transação que o cria. Mesma régua de autoria do
+    // `audience`: o UPDATE sem o campo PRESERVA o valor atual.
+    modality: text('modality').$type<CourseModality>().notNull().default('recorded'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
@@ -204,6 +240,12 @@ export const courses = members.table(
     check(
       'courses_journey_role_slot_check',
       sql`(${t.journeyRole} = 'positioned') = (${t.careerSlot} is not null)`,
+    ),
+    check('courses_modality_check', sql`${t.modality} in ('recorded', 'live')`),
+    // Curso ao vivo nunca ocupa posição na Jornada (espelha a validação do `CourseAdminService`).
+    check(
+      'courses_live_off_journey_check',
+      sql`${t.modality} = 'recorded' or ${t.careerSlot} is null`,
     ),
   ],
 )
@@ -355,6 +397,12 @@ export const lessonSectionProgress = members.table(
     revision: varchar('revision', { length: 32 }).notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     projectPassed: boolean('project_passed').notNull().default(false),
+    /**
+     * O último resultado de cada objetivo da parte (`{id, passed}`), da última verificação NESTA
+     * revisão (18/10/2026). É o que faz a lista se lembrar ao reabrir a fase; `null` = nunca
+     * verificou. Só a verificação escreve; concluir a parte não mexe.
+     */
+    objectiveResults: jsonb('objective_results').$type<ProjectObjectiveResult[]>(),
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.lessonId, t.sectionId] }),
@@ -584,6 +632,11 @@ export const studioSubmissions = members.table(
      */
     message: varchar('message', { length: 1000 }),
     /**
+     * O recado acima foi FALADO pela criança e transcrito pelo servidor (14/10/2026). A equipe lê
+     * com boa vontade um erro de transcrição. `false` = digitado, sem recado ou app antigo.
+     */
+    messageSpoken: boolean('message_spoken').notNull().default(false),
+    /**
      * Quando o professor disse "já conferi". Comparado com `submitted_at` (>=), a
      * MESMA régua da resposta do professor: um reenvio da criança reabre a
      * pendência sozinho. `null` = nunca conferida.
@@ -595,6 +648,71 @@ export const studioSubmissions = members.table(
   (t) => [
     uniqueIndex('studio_submissions_user_block_uq').on(t.userId, t.blockId),
     index('studio_submissions_block_idx').on(t.blockId, t.submittedAt),
+  ],
+)
+
+/** Immutable authoring snapshots are shared; a seed with large images is stored once per revision. */
+/** Immutable environment per named course chain; null retires ambiguous legacy history. */
+export const studioCourseChains = members.table(
+  'studio_course_chains',
+  {
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    chain: text('chain').notNull(),
+    environment:
+      jsonb('environment').$type<
+        import('../../../domain/studio/chain-environment').StudioChainEnvironment
+      >(),
+  },
+  (t) => [primaryKey({ columns: [t.courseId, t.chain] })],
+)
+
+export const studioLessonBaselines = members.table(
+  'studio_lesson_baselines',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    lessonId: uuid('lesson_id')
+      .notNull()
+      .references(() => lessons.id, { onDelete: 'cascade' }),
+    courseId: uuid('course_id')
+      .notNull()
+      .references(() => courses.id, { onDelete: 'cascade' }),
+    configuration: jsonb('configuration')
+      .$type<
+        import('../../../domain/studio/lesson-baseline').StudioLessonBaseline['configuration']
+      >()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index('studio_lesson_baselines_block_idx').on(t.blockId),
+    index('studio_lesson_baselines_course_idx').on(t.courseId),
+  ],
+)
+
+/** Per actual block and learner, independent of the currently published template or chain name. */
+export const studioLessonBindings = members.table(
+  'studio_lesson_bindings',
+  {
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    blockId: uuid('block_id')
+      .notNull()
+      .references(() => lessonBlocks.id, { onDelete: 'cascade' }),
+    baselineId: varchar('baseline_id', { length: 64 })
+      .notNull()
+      .references(() => studioLessonBaselines.id, { onDelete: 'cascade' }),
+    workspaceId: uuid('workspace_id').references(() => liveWorkspaces.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.blockId] }),
+    index('studio_lesson_bindings_account_idx').on(t.accountId),
+    index('studio_lesson_bindings_workspace_idx').on(t.workspaceId),
   ],
 )
 
@@ -633,9 +751,8 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   // (sourceId = courseId). Gravado pelo webhook hub→members; combinado com
   // `course_complete` define o curso "qualificado" p/ o nível do aluno.
   'course_showcased',
-  // Pensa (07/2026): etapa do ciclo concluída (z→e/e→r/r→o; sourceId = uuid
-  // DETERMINÍSTICO de (cycleId, stage) — `pensaStageSourceId`) e ciclo LANÇADO
-  // (o→done; sourceId = cycleId). XP real (amount > 0) — movem streak.
+  // Financial source values remain stable. Native Pensa milestones use the
+  // durable execution event ID; final verification grants the project reward.
   'pensa_stage_complete',
   'pensa_cycle_complete',
   // Desafio MENSAL (game jam, 07/2026): publicou no Mural com a tag do mês
@@ -670,6 +787,15 @@ export const xpSourceTypeEnum = members.enum('xp_source_type', [
   'studio_remix',
   'play_milestone_10',
   'play_milestone_100',
+  // Cursos AO VIVO (14/10/2026, migration 0113) — MARCOS (amount 0, nada de XP por presença):
+  // a criança foi recebida num encontro (sourceId = ocorrência; conquista `live-first-encounter`
+  // e missão `live_encounter`) e concluiu todas as aulas de um curso ao vivo (sourceId = curso;
+  // conquista `live-course-complete` + troféu). Nenhum dos dois conta para a Jornada.
+  'live_encounter',
+  'live_course_complete',
+  // Objetivo EXTRA da parte cumprido pela primeira vez (18/10/2026): XP puro (5), sem moeda.
+  // sourceId = uuid determinístico de aula + parte + objetivo (1 vez por objetivo).
+  'objective_extra',
 ])
 
 // Origem de um evento de moeda Zappy (carteira, fatia 06/2026). Faucets (ganho)
@@ -874,8 +1000,8 @@ export const avatarInventory = members.table(
 
 // ── Blocos do Estúdio liberados por CURSO (currículo, 08/2026) ──────────────
 // A paleta do Estúdio livre deixou de ser fixa por NÍVEL e passou a ser a UNIÃO dos
-// blocos dos cursos elegíveis do aluno (`metadata.studioUnlockBlocks`): bônus Kids concluído;
-// curso com posição e curso Adult concluído + publicado no Mural. Esta tabela é o
+// blocos dos cursos elegíveis do aluno (`metadata.studioUnlockBlocks`): gravado Kids com posição
+// concluído + Mural; bônus Kids e Adult concluído; oficina com `live_course_complete`. Esta tabela é o
 // **SNAPSHOT congelado** do que cada curso deu ao aluno quando ele recebeu a ferramenta.
 //
 // ⚠️ Ela existe por UMA razão: **bloco liberado não é revogado**. A união calculada ao
@@ -1041,34 +1167,6 @@ export const certificatesIssued = members.table(
 // anterior integralmente antes de criar este contrato.
 export const pensaProjectKindEnum = members.enum('pensa_project_kind', ['game'])
 export const pensaProjectStatusEnum = members.enum('pensa_project_status', ['active', 'archived'])
-export const pensaStageEnum = members.enum('pensa_stage', ['z', 'e', 'r', 'o', 'done'])
-export const pensaArtifactTypeEnum = members.enum('pensa_artifact_type', [
-  'idea',
-  'game_design',
-  'visual_direction',
-  'task_plan',
-  'plan_review',
-])
-export const pensaArtifactStatusEnum = members.enum('pensa_artifact_status', ['draft', 'validated'])
-export const pensaTaskDestinationEnum = members.enum('pensa_task_destination', [
-  'pinta',
-  'studio',
-  'molda',
-])
-export const pensaTaskStatusEnum = members.enum('pensa_task_status', [
-  'planned',
-  'in_progress',
-  'completed',
-])
-export const pensaTaskCategoryEnum = members.enum('pensa_task_category', [
-  'art',
-  'setup',
-  'gameplay',
-  'scene',
-  'ui',
-  'polish',
-])
-
 export const pensaProjects = members.table(
   'pensa_projects',
   {
@@ -1082,6 +1180,15 @@ export const pensaProjects = members.table(
     status: pensaProjectStatusEnum('status').notNull().default('active'),
     // O código do plano (equipe, 26/09/2026): 6 símbolos sem ambíguos; `null` = desligado.
     shareCode: varchar('share_code', { length: 8 }),
+    paused: boolean('paused').notNull().default(false),
+    activeRevisionId: uuid('active_revision_id'),
+    revisionNumber: integer('revision_number').notNull().default(0),
+    metadataRevision: integer('metadata_revision').notNull().default(0),
+    teamRevision: integer('team_revision').notNull().default(0),
+    executionRevision: integer('execution_revision').notNull().default(0),
+    gameProfileId: uuid('game_profile_id'),
+    gameAccountId: uuid('game_account_id'),
+    gameCreationId: varchar('game_creation_id', { length: 120 }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -1115,121 +1222,252 @@ export const pensaProjectMembers = members.table(
   ],
 )
 
-export const pensaCycles = members.table(
-  'pensa_cycles',
+/**
+ * As FUNÇÕES da equipe no Pensa (14/10/2026): `code` = quem programa (o Estúdio, UMA pessoa
+ * por plano, o índice parcial garante) e `art` = quem faz as artes (Pinta e Molda, zero ou
+ * mais). Sem linha `code`, programa a dona; sem linhas `art`, quem programa também desenha.
+ * The aggregate resolves current members and pins ownership of a started game.
+ * Leaving a team removes assignments and invalidates unavailable art and dependents.
+ */
+export const pensaProjectRoles = members.table(
+  'pensa_project_roles',
+  {
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    role: varchar('role', { length: 8 }).$type<'code' | 'art'>().notNull(),
+    // Quem definiu (a dona): auditoria.
+    assignedBy: uuid('assigned_by').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.profileId, t.role] }),
+    uniqueIndex('pensa_project_roles_code_uq').on(t.projectId).where(sql`${t.role} = 'code'`),
+    index('pensa_project_roles_profile_idx').on(t.profileId),
+    check('pensa_project_roles_role_check', sql`${t.role} in ('code', 'art')`),
+  ],
+)
+
+/** Immutable accepted definition, plan and technical decision. */
+export const pensaProjectRevisions = members.table(
+  'pensa_project_revisions',
   {
     id: uuid('id').primaryKey(),
     projectId: uuid('project_id')
       .notNull()
       .references(() => pensaProjects.id, { onDelete: 'cascade' }),
-    // 1 = MVP ("Versão 1").
     number: integer('number').notNull(),
-    // Objetivo do ciclo (ciclos ≥2).
-    goal: text('goal'),
-    stage: pensaStageEnum('stage').notNull().default('z'),
-    zCompletedAt: timestamp('z_completed_at', { withTimezone: true }),
-    eCompletedAt: timestamp('e_completed_at', { withTimezone: true }),
-    rCompletedAt: timestamp('r_completed_at', { withTimezone: true }),
-    oCompletedAt: timestamp('o_completed_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
-    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    previousRevisionId: uuid('previous_revision_id'),
+    snapshot: jsonb('snapshot').notNull(),
+    acceptedByProfileId: uuid('accepted_by_profile_id').notNull(),
+    acceptedAt: timestamp('accepted_at', { withTimezone: true }).notNull(),
   },
-  (t) => [uniqueIndex('pensa_cycles_project_number_uq').on(t.projectId, t.number)],
+  (t) => [uniqueIndex('pensa_project_revisions_number_uq').on(t.projectId, t.number)],
 )
-
-// 1 linha por (ciclo, etapa); upsert por turno. `message_count` é a contagem
-// TOTAL histórica (não encolhe quando o trim corta mensagens antigas).
-export const pensaConversations = members.table(
-  'pensa_conversations',
+export const pensaPlanDrafts = members.table(
+  'pensa_plan_drafts',
   {
     id: uuid('id').primaryKey(),
-    cycleId: uuid('cycle_id')
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
-    stage: pensaStageEnum('stage').notNull(),
-    messages: jsonb('messages').$type<PensaChatMessage[]>().notNull().default([]),
-    // Sumarização quando o cap corta mensagens antigas.
-    summary: text('summary'),
-    // Etapa z: PensaZState; demais {}.
-    state: jsonb('state').$type<Record<string, unknown>>().notNull().default({}),
-    messageCount: integer('message_count').notNull().default(0),
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    revision: integer('revision').notNull().default(0),
+    status: varchar('status', { length: 24 }).notNull(),
+    data: jsonb('data').notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
-  },
-  (t) => [uniqueIndex('pensa_conversations_cycle_stage_uq').on(t.cycleId, t.stage)],
-)
-
-// Versionados APPEND-ONLY; "latest" = MAX(version) por (cycle, type).
-export const pensaArtifacts = members.table(
-  'pensa_artifacts',
-  {
-    id: uuid('id').primaryKey(),
-    cycleId: uuid('cycle_id')
-      .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
-    stage: pensaStageEnum('stage').notNull(),
-    type: pensaArtifactTypeEnum('type').notNull(),
-    // 1, 2, 3…
-    version: integer('version').notNull(),
-    content: jsonb('content').$type<unknown>().notNull(),
-    status: pensaArtifactStatusEnum('status').notNull().default('draft'),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   },
   (t) => [
-    uniqueIndex('pensa_artifacts_cycle_type_version_uq').on(t.cycleId, t.type, t.version),
-    index('pensa_artifacts_cycle_type_idx').on(t.cycleId, t.type),
+    uniqueIndex('pensa_plan_drafts_active_uq')
+      .on(t.projectId)
+      .where(sql`${t.status} in ('collecting', 'needs_choice', 'ready')`),
   ],
 )
-
-// Cartões de Criação em ordem GLOBAL. `dependencies` referencia somente cartões
-// anteriores (DAG validado no domínio). O contexto é discriminado por destino.
-export const pensaTasks = members.table(
-  'pensa_tasks',
+export const pensaMissionProgress = members.table(
+  'pensa_mission_progress',
+  {
+    missionId: uuid('mission_id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    progressRevision: integer('progress_revision').notNull().default(0),
+    status: varchar('status', { length: 24 }).notNull().default('planned'),
+    validity: varchar('validity', { length: 24 }).notNull().default('current'),
+    assigneeProfileId: uuid('assignee_profile_id'),
+    data: jsonb('data').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('pensa_mission_progress_project_idx').on(t.projectId, t.status),
+    check(
+      'pensa_mission_progress_status_check',
+      sql`${t.status} in ('planned', 'in_progress', 'completed')`,
+    ),
+    check(
+      'pensa_mission_progress_validity_check',
+      sql`${t.validity} in ('current', 'needs_review')`,
+    ),
+  ],
+)
+export const pensaProjectMessages = members.table(
+  'pensa_project_messages',
   {
     id: uuid('id').primaryKey(),
-    cycleId: uuid('cycle_id')
+    projectId: uuid('project_id')
       .notNull()
-      .references(() => pensaCycles.id, { onDelete: 'cascade' }),
-    title: varchar('title', { length: 200 }).notNull(),
-    summary: text('summary'),
-    destination: pensaTaskDestinationEnum('destination').notNull(),
-    category: pensaTaskCategoryEnum('category').notNull(),
-    estimatedMinutes: integer('estimated_minutes').notNull(),
-    position: integer('position').notNull(),
-    dependencies: jsonb('dependencies').$type<string[]>().notNull().default([]),
-    guide: jsonb('guide').$type<PensaTaskGuide>().notNull(),
-    context: jsonb('context').$type<PensaTaskContext>().notNull(),
-    progressStatus: pensaTaskStatusEnum('progress_status').notNull().default('planned'),
-    completedStepIds: jsonb('completed_step_ids').$type<string[]>().notNull().default([]),
-    completedCriteriaIds: jsonb('completed_criteria_ids').$type<string[]>().notNull().default([]),
-    outputRef: jsonb('output_ref').$type<PensaTaskOutputRef>(),
-    startedAt: timestamp('started_at', { withTimezone: true }),
-    completedAt: timestamp('completed_at', { withTimezone: true }),
-    progressUpdatedAt: timestamp('progress_updated_at', { withTimezone: true }),
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    profileId: uuid('profile_id').notNull(),
+    context: varchar('context', { length: 24 }).notNull(),
     revision: integer('revision').notNull().default(1),
-    supersedesTaskId: uuid('supersedes_task_id').references((): AnyPgColumn => pensaTasks.id, {
-      onDelete: 'set null',
-    }),
-    archivedAt: timestamp('archived_at', { withTimezone: true }),
+    data: jsonb('data').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_project_messages_project_idx').on(t.projectId, t.createdAt)],
+)
+/** Minimal reward receipts survive deletion; private command data is redacted. */
+export const pensaExecutionEvents = members.table(
+  'pensa_execution_events',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id').references(() => pensaProjects.id, { onDelete: 'set null' }),
+    projectKey: uuid('project_key').notNull(),
+    requestId: uuid('request_id').notNull(),
+    requestHash: varchar('request_hash', { length: 64 }).notNull(),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    kind: varchar('kind', { length: 64 }).notNull(),
+    data: jsonb('data').notNull(),
+    reward: jsonb('reward'),
+    rewardStatus: varchar('reward_status', { length: 16 }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('pensa_execution_events_request_uq').on(t.requestId),
+    uniqueIndex('pensa_execution_events_milestone_uq')
+      .on(t.projectKey, t.kind)
+      .where(sql`${t.reward} is not null`),
+    index('pensa_execution_events_rewards_idx').on(t.rewardStatus),
+  ],
+)
+export const pensaOperations = members.table(
+  'pensa_operations',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    draftId: uuid('draft_id'),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    kind: varchar('kind', { length: 24 }).$type<PensaOperationView['kind']>().notNull(),
+    step: varchar('step', { length: 24 }).$type<PensaOperationStep>().notNull(),
+    status: varchar('status', { length: 24 }).notNull(),
+    inputRevision: integer('input_revision').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    calls: integer('calls').notNull().default(0),
+    input: jsonb('input').$type<Record<string, unknown>>().notNull(),
+    output: jsonb('output').$type<Record<string, unknown>>().notNull().default({}),
+    leaseId: uuid('lease_id'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    error: text('error'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
   (t) => [
-    index('pensa_tasks_cycle_position_idx').on(t.cycleId, t.position),
-    index('pensa_tasks_cycle_status_idx').on(t.cycleId, t.progressStatus),
+    index('pensa_operations_project_idx').on(t.projectId, t.status),
+    index('pensa_operations_lease_idx').on(t.status, t.leaseUntil),
   ],
 )
 
-// ── Conversas professor↔aluno (canal de retorno — fatia 07/2026) ────────────
-// UMA conversa (thread) entre a EQUIPE (professor) e um ALUNO, opcionalmente
-// ancorada a um CONTEXTO: a entrega do Estúdio, a publicação no Mural ou um recado
-// GERAL. É o canal de VOLTA que faltava (o aluno só falava com o professor; nada
-// voltava): o professor responde "o erro está no bloco X", o aluno responde em
-// texto E reenvia o projeto corrigido. Tabela À PARTE de `studio_submissions` de
-// propósito — o upsert da entrega ("último vence") sobrescreve o projeto a cada
-// reenvio; a conversa em tabela própria SOBREVIVE aos reenvios. `context_ref` é
-// SNAPSHOT SEM FK (blockId da entrega | threadId do hub no Mural | null no geral) —
-// a conversa sobrevive a apagar o bloco/curso/post (como certificados/xp_events).
-// Não-lido por WATERMARK (`*_last_read_at`), não flag por mensagem (mais barato).
+/** Holds count against the shared account quota; only committed delivery increments usage. */
+export const aiUsageReservations = members.table(
+  'ai_usage_reservations',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    projectId: uuid('project_id').references(() => pensaProjects.id, { onDelete: 'set null' }),
+    day: date('day').notNull(),
+    feature: varchar('feature', { length: 40 }).notNull(),
+    status: varchar('status', { length: 16 })
+      .$type<'reserved' | 'committed' | 'released'>()
+      .notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    privileged: boolean('privileged').notNull().default(false),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('ai_usage_reservations_account_idx').on(t.accountId, t.status, t.expiresAt)],
+)
+
+export const pensaCheckpoints = members.table(
+  'pensa_checkpoints',
+  {
+    id: uuid('id').primaryKey(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => pensaProjects.id, { onDelete: 'cascade' }),
+    projectRevisionId: uuid('project_revision_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    creationId: varchar('creation_id', { length: 120 }).notNull(),
+    saveRevision: varchar('save_revision', { length: 120 }).notNull(),
+    snapshot: jsonb('snapshot').notNull(),
+    manifest: jsonb('manifest').$type<Record<string, unknown>>().notNull(),
+    status: varchar('status', { length: 20 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_checkpoints_project_idx').on(t.projectId)],
+)
+
+export const privateNarrations = members.table(
+  'private_narrations',
+  {
+    id: varchar('id', { length: 64 }).primaryKey(),
+    projectId: uuid('project_id'),
+    profileId: uuid('profile_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    chars: integer('chars').notNull(),
+    attempts: integer('attempts').notNull().default(1),
+    status: varchar('status', { length: 20 }).$type<'generating' | 'ready' | 'failed'>().notNull(),
+    leaseId: uuid('lease_id').notNull(),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('private_narrations_account_date_idx').on(t.accountId, t.createdAt)],
+)
+
+/** Tombstone mínimo do plano + limpeza adiada: nenhuma narrativa permanece aqui. */
+export const pensaDeletionJobs = members.table(
+  'pensa_deletion_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    profileId: uuid('profile_id').notNull(),
+    prefixes: jsonb('prefixes').$type<string[]>().notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('pensa_deletion_jobs_due_idx').on(t.completedAt, t.notBefore)],
+)
+
+/** Custo externo tentado, separado dos créditos entregues; sobrevive ao cancelamento do plano. */
+export const pensaProviderUsage = members.table(
+  'pensa_provider_usage',
+  {
+    accountId: uuid('account_id').notNull(),
+    day: date('day').notNull(),
+    calls: integer('calls').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.accountId, t.day] })],
+)
+
 export const teacherThreadContextEnum = members.enum('teacher_thread_context', [
   'studio_submission',
   'mural_publication',
@@ -1356,6 +1594,11 @@ export const teacherMessages = members.table(
     // 8000: o professor escreve markdown com print (URL) + trecho de código; o recado curto
     // do aluno cabe de sobra. Espelha os DTOs `TeacherThreadReplyBody`/`AdminTeacherThreadPostBody`.
     body: varchar('body', { length: 8000 }).notNull(),
+    /**
+     * Turno FALADO pela criança e transcrito pelo servidor (14/10/2026): o Admin avisa a equipe
+     * para ler um erro de transcrição com boa vontade. `false` = digitado (e todo o legado).
+     */
+    spoken: boolean('spoken').notNull().default(false),
     helpContext:
       jsonb('help_context').$type<
         import('../../../domain/ports/teacher-thread-repository.port').TeacherHelpContext
@@ -1419,6 +1662,12 @@ export const zappyMessages = members.table(
     }),
     clientMessageId: uuid('client_message_id'),
     role: varchar('role', { length: 16 }).notNull(),
+    programmingLanguage: varchar('programming_language', {
+      length: 16,
+      enum: ['javascript', 'python'],
+    })
+      .notNull()
+      .default('javascript'),
     content: text('content').notNull(),
     response: jsonb('response').$type<Record<string, unknown> | null>(),
     scope: varchar('scope', { length: 40 }),
@@ -1436,6 +1685,7 @@ export const zappyMessages = members.table(
       .where(sql`${t.clientMessageId} is not null`),
     uniqueIndex('zappy_messages_reply_uq').on(t.replyToId).where(sql`${t.replyToId} is not null`),
     check('zappy_messages_role_ck', sql`${t.role} in ('user', 'assistant')`),
+    check('zappy_messages_language_ck', sql`${t.programmingLanguage} in ('javascript', 'python')`),
   ],
 )
 
@@ -1654,6 +1904,70 @@ export const helpTutorials = members.table(
   ],
 )
 
+// Biblioteca adulta: mesmo contrato editorial, dados independentes do Kids.
+export const adultHelpCollections = members.table(
+  'adult_help_collections',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    title: varchar('title', { length: 60 }).notNull(),
+    description: varchar('description', { length: 240 }).notNull().default(''),
+    icon: varchar('icon', { length: 32 }).notNull(),
+    tone: varchar('tone', { length: 32 }).notNull(),
+    position: integer('position').notNull().default(0),
+    status: varchar('status', { length: 16 }).notNull().default('active'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('adult_help_collections_slug_uq').on(t.slug),
+    check('adult_help_collections_status_check', sql`${t.status} in ('active', 'archived')`),
+  ],
+)
+
+// O tutorial é um JSON inteiro em duas cópias: o admin edita `draft`; "Publicar" copia para
+// `published` (a criança lê SÓ essa) e grava `published_search_text`, o texto achatado e
+// normalizado que a busca do kids (no navegador) e a do Zappy (tsvector, índice criado à mão
+// na migration) leem. `revision` é o lock otimista do PATCH (`expectedRevision`), inteiro
+// porque viaja no corpo. RESTRICT na coleção: coleção com tutorial não é apagável, só arquiva.
+export const adultHelpTutorials = members.table(
+  'adult_help_tutorials',
+  {
+    id: uuid('id').primaryKey(),
+    slug: varchar('slug', { length: 80 }).notNull(),
+    collectionId: uuid('collection_id')
+      .notNull()
+      .references(() => adultHelpCollections.id),
+    status: varchar('status', { length: 16 }).notNull().default('draft'),
+    draft: jsonb('draft').$type<HelpTutorialDocument>().notNull(),
+    published: jsonb('published').$type<HelpTutorialDocument>(),
+    publishedSearchText: text('published_search_text'),
+    revision: integer('revision').notNull().default(1),
+    position: integer('position').notNull().default(0),
+    createdBy: uuid('created_by'),
+    updatedBy: uuid('updated_by'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('adult_help_tutorials_search_idx').using(
+      'gin',
+      sql`to_tsvector('portuguese', coalesce(${t.publishedSearchText}, ''))`,
+    ),
+    uniqueIndex('adult_help_tutorials_slug_uq').on(t.slug),
+    index('adult_help_tutorials_status_collection_idx').on(t.status, t.collectionId, t.position),
+    check(
+      'adult_help_tutorials_status_check',
+      sql`${t.status} in ('draft', 'published', 'archived')`,
+    ),
+    check(
+      'adult_help_tutorials_published_pair',
+      sql`(${t.status} = 'published') = (${t.published} is not null)`,
+    ),
+  ],
+)
+
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──
 // ÍNDICE das criações que os editores LIVRES sobem sozinhos depois do autosave. O
 // blob (o `Project` do Estúdio / o `.pinta.json` do desenho, gzip) vive no R2 UGC
@@ -1688,6 +2002,7 @@ export const creations = members.table(
   'creations',
   {
     id: uuid('id').primaryKey(),
+    audience: text('audience').$type<CourseAudience>().notNull().default('kids'),
     /** Dono: o perfil da criança no kids; a própria conta no adulto. */
     userId: uuid('user_id').notNull(),
     /** Conta responsável (kids: o pai; adulto: = user_id). */
@@ -1746,8 +2061,9 @@ export const creations = members.table(
     syncedAt: timestamp('synced_at', { withTimezone: true }).notNull(),
   },
   (t) => [
-    uniqueIndex('creations_user_tool_item_uq').on(t.userId, t.tool, t.itemId),
-    index('creations_user_tool_idx').on(t.userId, t.tool, t.deletedAt),
+    check('creations_audience_check', sql`${t.audience} in ('adult', 'kids')`),
+    uniqueIndex('creations_user_audience_tool_item_uq').on(t.userId, t.audience, t.tool, t.itemId),
+    index('creations_user_tool_idx').on(t.userId, t.audience, t.tool, t.deletedAt),
     index('creations_tombstone_cleanup_idx').on(t.deletedAt).where(sql`${t.deletedAt} is not null`),
     // Quota por perfil (`usageWith`: count + sum(bytes) dos vivos já confirmados) a cada
     // reserva E commit, sob o advisory lock do perfil: índice PARCIAL com `bytes` como
@@ -1765,6 +2081,34 @@ export const accountDeletionFences = members.table('account_deletion_fences', {
 })
 
 /** Limpeza final pós-TTL dos objetos R2, com lease distribuído e retry durável. */
+export const galleryCopyAttempts = members.table(
+  'gallery_copy_attempts',
+  {
+    generation: uuid('generation').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    snapshot: jsonb('snapshot')
+      .$type<import('@sistemazero/core/learning').GallerySubmission>()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    notBefore: timestamp('not_before', { withTimezone: true }).notNull(),
+    retainedAt: timestamp('retained_at', { withTimezone: true }),
+    retiredAt: timestamp('retired_at', { withTimezone: true }),
+    lockedAt: timestamp('locked_at', { withTimezone: true }),
+    attempts: integer('attempts').notNull().default(0),
+    lastError: text('last_error'),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('gallery_copy_attempts_owner_idx').on(t.userId, t.expiresAt),
+    index('gallery_copy_attempts_due_idx')
+      .on(t.notBefore, t.lockedAt)
+      .where(sql`${t.retainedAt} is null and ${t.completedAt} is null`),
+  ],
+)
+
 export const creationCleanupJobs = members.table(
   'creation_cleanup_jobs',
   {
@@ -1799,7 +2143,874 @@ export const processedWebhooks = members.table(
   (t) => [index('processed_webhooks_processed_at_idx').on(t.processedAt)],
 )
 
+// Live workshops keep their own commercial clock and immutable lesson snapshots.
+// Never create recorded-course entitlements as a side effect of a workshop seat.
+export const livePrograms = members.table('live_programs', {
+  id: uuid('id').primaryKey(),
+  document: jsonb('document').$type<LiveProgram>().notNull(),
+})
+
+export const liveCohorts = members.table(
+  'live_cohorts',
+  {
+    id: uuid('id').primaryKey(),
+    /** Roteiro antigo (`live_programs`). Turma de curso ao vivo (0114) não tem roteiro. */
+    programId: uuid('program_id').references(() => livePrograms.id),
+    /**
+     * O curso AO VIVO da turma (0114). Sem FK de propósito: o curso é lido pela porta
+     * `LiveCoursePort` e a turma guarda o resumo dele no documento. Nulo = turma antiga do
+     * roteiro, arquivada pela 0114 e ignorada pelo serviço.
+     */
+    courseId: uuid('course_id'),
+    document: jsonb('document').$type<LiveCohort>().notNull(),
+  },
+  (t) => [
+    index('live_cohorts_program_idx').on(t.programId),
+    index('live_cohorts_course_idx').on(t.courseId),
+  ],
+)
+
+export const liveSessions = members.table(
+  'live_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    document: jsonb('document').$type<LiveSession>().notNull(),
+  },
+  (t) => [index('live_sessions_cohort_idx').on(t.cohortId)],
+)
+
+export const liveOccurrences = members.table(
+  'live_occurrences',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    document: jsonb('document').$type<LiveOccurrence>().notNull(),
+  },
+  (t) => [
+    index('live_occurrences_session_idx').on(t.sessionId),
+    index('live_occurrences_cohort_idx').on(t.cohortId),
+  ],
+)
+
+export const liveEnrollments = members.table(
+  'live_enrollments',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    accountId: uuid('account_id').notNull(),
+    learnerId: uuid('learner_id'),
+    status: text('status').$type<LiveEnrollment['status']>().notNull(),
+    document: jsonb('document').$type<LiveEnrollment>().notNull(),
+  },
+  (t) => [
+    index('live_enrollments_account_idx').on(t.accountId),
+    index('live_enrollments_cohort_idx').on(t.cohortId),
+    uniqueIndex('live_enrollments_active_learner_uq')
+      .on(t.cohortId, t.learnerId)
+      .where(sql`${t.status} = 'active'`),
+    check('live_enrollments_status_check', sql`${t.status} in ('active', 'revoked')`),
+  ],
+)
+
+export const liveAccessGrants = members.table(
+  'live_access_grants',
+  {
+    id: uuid('id').primaryKey(),
+    enrollmentId: uuid('enrollment_id')
+      .notNull()
+      .references(() => liveEnrollments.id),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    startsAt: timestamp('starts_at', { withTimezone: true }).notNull(),
+    endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+    revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex('live_grants_enrollment_session_uq').on(t.enrollmentId, t.sessionId),
+    index('live_grants_session_idx').on(t.sessionId),
+    check('live_grants_interval_check', sql`${t.endsAt} > ${t.startsAt}`),
+  ],
+)
+
+export const liveAudit = members.table(
+  'live_audit',
+  {
+    id: uuid('id').primaryKey(),
+    cohortId: uuid('cohort_id')
+      .notNull()
+      .references(() => liveCohorts.id),
+    actorId: uuid('actor_id').notNull(),
+    action: varchar('action', { length: 80 }).notNull(),
+    targetId: uuid('target_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [index('live_audit_cohort_idx').on(t.cohortId, t.createdAt)],
+)
+
+export const liveMediaConnections = members.table(
+  'live_media_connections',
+  {
+    id: uuid('id').primaryKey(),
+    occurrenceId: uuid('occurrence_id')
+      .notNull()
+      .references(() => liveOccurrences.id),
+    participationId: text('participation_id').notNull(),
+    actorId: uuid('actor_id').notNull(),
+    deviceId: uuid('device_id').notNull(),
+    generation: integer('generation').notNull(),
+    state: jsonb('state').$type<Record<string, unknown>>().notNull(),
+  },
+  (t) => [index('live_media_occurrence_actor_idx').on(t.occurrenceId, t.actorId)],
+)
+
+export const liveWorkspaces = members.table(
+  'live_workspaces',
+  {
+    id: uuid('id').primaryKey(),
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    revision: integer('revision').notNull().default(0),
+    writerEpoch: integer('writer_epoch').notNull().default(0),
+    writerId: uuid('writer_id').notNull(),
+    writerDeviceId: text('writer_device_id'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    project: jsonb('project').$type<Record<string, unknown>>().notNull(),
+    assistance: jsonb('assistance').$type<LiveAssistanceView | null>(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    /**
+     * Chave do projeto ao vivo por BLOCO (0114): curso + `chain` do bloco Estúdio, ou curso +
+     * id do bloco sem chain. Única por criança. Nula só nos projetos do roteiro antigo.
+     */
+    projectKey: text('project_key'),
+    /** Aulas do curso em que este projeto já abriu (o acesso vale nos encontros delas). */
+    lessonIds: jsonb('lesson_ids').$type<string[]>().notNull().default([]),
+  },
+  (t) => [
+    uniqueIndex('live_workspace_session_learner_uq')
+      .on(t.sessionId, t.learnerId)
+      .where(sql`${t.projectKey} is null`),
+    uniqueIndex('live_workspace_learner_key_uq')
+      .on(t.learnerId, t.projectKey)
+      .where(sql`${t.projectKey} is not null`),
+    index('live_workspaces_account_idx').on(t.accountId),
+  ],
+)
+
+/**
+ * Presence in an encounter (0114): when the teacher and each child were last seen, and when the
+ * child last confirmed what she is doing. A heartbeat writes this small row, never the
+ * occurrence document; every read of the room overlays it on `teachers`, `seenAt` and
+ * `activity.reportedAt`.
+ */
+export const livePresence = members.table(
+  'live_presence',
+  {
+    occurrenceId: uuid('occurrence_id')
+      .notNull()
+      .references(() => liveOccurrences.id, { onDelete: 'cascade' }),
+    actorId: uuid('actor_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    seenAt: timestamp('seen_at', { withTimezone: true }).notNull(),
+    activityAt: timestamp('activity_at', { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.occurrenceId, t.actorId] }),
+    index('live_presence_account_idx').on(t.accountId),
+    index('live_presence_actor_idx').on(t.actorId),
+  ],
+)
+
+export const liveWorkspaceRevisions = members.table(
+  'live_workspace_revisions',
+  {
+    workspaceId: uuid('workspace_id')
+      .notNull()
+      .references(() => liveWorkspaces.id),
+    revision: integer('revision').notNull(),
+    project: jsonb('project').$type<Record<string, unknown>>().notNull(),
+    writerId: uuid('writer_id').notNull(),
+    mutationId: uuid('mutation_id').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.workspaceId, t.revision] }),
+    uniqueIndex('live_workspace_mutation_uq').on(t.workspaceId, t.mutationId),
+  ],
+)
+
+export const liveProjectTemplates = members.table('live_project_templates', {
+  id: uuid('id').primaryKey(),
+  project: jsonb('project').$type<Record<string, unknown>>().notNull(),
+  createdBy: uuid('created_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+
+export const liveRecordingJobs = members.table(
+  'live_recording_jobs',
+  {
+    occurrenceId: uuid('occurrence_id')
+      .primaryKey()
+      .references(() => liveOccurrences.id),
+    jobId: uuid('job_id').notNull(),
+    generation: integer('generation').notNull().default(1),
+    desiredState: text('desired_state').$type<'paused' | 'recording' | 'stopped'>().notNull(),
+    confirmedState: text('confirmed_state')
+      .$type<
+        | 'not_started'
+        | 'starting'
+        | 'recording'
+        | 'paused'
+        | 'processing'
+        | 'review'
+        | 'failed'
+        | 'empty'
+      >()
+      .notNull()
+      .default('not_started'),
+    version: integer('version').notNull().default(0),
+    leaseEndsAt: timestamp('lease_ends_at', { withTimezone: true }).notNull(),
+    commandVersion: integer('command_version').notNull().default(0),
+    manifestKey: text('manifest_key'),
+    replayKey: text('replay_key'),
+    error: text('error'),
+    /** Consecutive failed syncs; reset by any acknowledgement from the recorder. */
+    attempts: integer('attempts').notNull().default(0),
+    /** Exponential backoff: the loop skips the job until this instant. */
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    /** Last acknowledgement (command response or event) from the private recorder. */
+    confirmedAt: timestamp('confirmed_at', { withTimezone: true }),
+    /**
+     * Lease of the newest command sent with desired `recording`. The recorder stops capturing
+     * when its lease ends, so once this passed (plus a margin) nothing can be recording.
+     */
+    recordingLeaseEndsAt: timestamp('recording_lease_ends_at', { withTimezone: true }),
+    /** Terminal: review, empty (no segments) or failed after the retry budget. Never retried. */
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    /**
+     * Linha do tempo dos trechos que o gravador confirmou (0114): instantes de parede e duração
+     * de cada arquivo. É o que transforma a abertura de uma parte em capítulo do vídeo.
+     */
+    segments: jsonb('segments').$type<LiveRecordingSegmentTime[]>(),
+  },
+  (t) => [uniqueIndex('live_recording_job_uq').on(t.jobId)],
+)
+
+/**
+ * Cross-replica serialization of the media reconcile of one occurrence. A short lease row
+ * (never a connection held across provider calls); expired leases are taken over.
+ */
+export const liveMediaReconcileLeases = members.table('live_media_reconcile_leases', {
+  occurrenceId: uuid('occurrence_id').primaryKey(),
+  holder: uuid('holder').notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+})
+
+export const liveReplayPositions = members.table(
+  'live_replay_positions',
+  {
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    version: integer('version').notNull(),
+    positionSeconds: integer('position_seconds').notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.sessionId, t.learnerId, t.version] }),
+    index('live_replay_positions_account_idx').on(t.accountId),
+  ],
+)
+
+export const liveMaterials = members.table('live_materials', {
+  id: uuid('id').primaryKey(),
+  storageKey: text('storage_key').notNull().unique(),
+  fileName: text('file_name').notNull(),
+  title: text('title').notNull(),
+  contentType: text('content_type').notNull(),
+  sizeBytes: integer('size_bytes').notNull(),
+  sha256: text('sha256').notNull(),
+  uploadedBy: uuid('uploaded_by').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+})
+
+export const liveLearningProgress = members.table(
+  'live_learning_progress',
+  {
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    blockId: uuid('block_id').notNull(),
+    revision: uuid('revision').notNull(),
+    document: jsonb('document').$type<LearningBlockProgress>().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.sessionId, t.learnerId, t.blockId, t.revision] }),
+    index('live_learning_progress_account_idx').on(t.accountId),
+  ],
+)
+export const liveLearningAttempts = members.table(
+  'live_learning_attempts',
+  {
+    sessionId: uuid('session_id')
+      .notNull()
+      .references(() => liveSessions.id),
+    learnerId: uuid('learner_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    id: uuid('id').notNull(),
+    document: jsonb('document').$type<LearningAttemptView>().notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.sessionId, t.learnerId, t.id] }),
+    index('live_learning_attempts_account_idx').on(t.accountId),
+  ],
+)
+
+export const studioAiAccounts = members.table(
+  'studio_ai_accounts',
+  {
+    accountId: uuid('account_id').primaryKey(),
+    source: varchar('source', { length: 16 })
+      .$type<StudioAiFundingSource>()
+      .notNull()
+      .default('platform'),
+    credential: text('credential'),
+    keyHash: varchar('key_hash', { length: 64 }),
+    connectedAt: timestamp('connected_at', { withTimezone: true }),
+    externalDailyLimitMicroUsd: integer('external_daily_limit_micro_usd'),
+    externalMonthlyLimitMicroUsd: integer('external_monthly_limit_micro_usd'),
+    revision: integer('revision').notNull().default(0),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check('studio_ai_source_check', sql`${table.source} in ('platform', 'openrouter')`),
+    check(
+      'studio_ai_daily_limit_check',
+      sql`${table.externalDailyLimitMicroUsd} is null or ${table.externalDailyLimitMicroUsd} between 1 and 1000000000`,
+    ),
+    check(
+      'studio_ai_monthly_limit_check',
+      sql`${table.externalMonthlyLimitMicroUsd} is null or ${table.externalMonthlyLimitMicroUsd} between 1 and 1000000000`,
+    ),
+  ],
+)
+
+export const studioAiOAuthStates = members.table(
+  'studio_ai_oauth_states',
+  {
+    stateHash: varchar('state_hash', { length: 64 }).primaryKey(),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => studioAiAccounts.accountId, { onDelete: 'cascade' }),
+    bindingHash: varchar('binding_hash', { length: 64 }).notNull(),
+    verifier: text('verifier').notNull(),
+    callbackUrl: text('callback_url').notNull(),
+    revision: integer('revision').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    uniqueIndex('studio_ai_oauth_account_idx').on(table.accountId),
+    index('studio_ai_oauth_expiry_idx').on(table.expiresAt),
+  ],
+)
+
+export const studioAiRuns = members.table(
+  'studio_ai_runs',
+  {
+    id: uuid('id').primaryKey(),
+    audience: text('audience').$type<CourseAudience>().notNull().default('kids'),
+    accountId: uuid('account_id')
+      .notNull()
+      .references(() => studioAiAccounts.accountId, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    purpose: varchar('purpose', { length: 16 }).$type<'tutor' | 'builder'>().notNull(),
+    model: varchar('model', { length: 160 }).notNull(),
+    source: varchar('source', { length: 16 }).$type<StudioAiFundingSource>().notNull(),
+    keyHash: varchar('key_hash', { length: 64 }),
+    day: date('day', { mode: 'string' }).notNull(),
+    inputBytes: integer('input_bytes').notNull(),
+    maxOutputTokens: integer('max_output_tokens').notNull(),
+    maxAttempts: smallint('max_attempts').notNull(),
+    estimateMicroUsd: bigint('estimate_micro_usd', { mode: 'number' }).notNull(),
+    spentMicroUsd: bigint('spent_micro_usd', { mode: 'number' }).notNull().default(0),
+    priceCaps: jsonb('price_caps')
+      .$type<{ prompt: number; completion: number; request: 0 }>()
+      .notNull(),
+    dispatched: smallint('dispatched').notNull().default(0),
+    allowanceCharged: boolean('allowance_charged').notNull().default(false),
+    privileged: boolean('privileged').notNull(),
+    finishedAt: timestamp('finished_at', { withTimezone: true }),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('studio_ai_runs_account_day_idx').on(table.accountId, table.day),
+    index('studio_ai_runs_day_idx').on(table.day),
+    index('studio_ai_runs_active_idx')
+      .on(table.accountId, table.expiresAt)
+      .where(isNull(table.finishedAt)),
+    check(
+      'studio_ai_runs_bounds',
+      sql`${table.maxAttempts} between 1 and 6 and ${table.dispatched} between 0 and ${table.maxAttempts} and ${table.estimateMicroUsd} > 0 and ${table.spentMicroUsd} >= 0`,
+    ),
+    check('studio_ai_runs_source', sql`${table.source} in ('platform', 'openrouter')`),
+    check(
+      'studio_ai_runs_request',
+      sql`${table.purpose} in ('tutor', 'builder') and ${table.inputBytes} between 1 and 256000 and ${table.maxOutputTokens} between 1 and 8000`,
+    ),
+  ],
+)
+
+export const studioAiAttempts = members.table(
+  'studio_ai_attempts',
+  {
+    runId: uuid('run_id')
+      .notNull()
+      .references(() => studioAiRuns.id, { onDelete: 'cascade' }),
+    attempt: smallint('attempt').notNull(),
+    status: varchar('status', { length: 16 })
+      .$type<'dispatched' | 'uncertain' | 'confirmed' | 'rejected'>()
+      .notNull(),
+    actualMicroUsd: bigint('actual_micro_usd', { mode: 'number' }),
+    generationId: varchar('generation_id', { length: 128 }),
+    promptTokens: integer('prompt_tokens'),
+    completionTokens: integer('completion_tokens'),
+    reconcileAttempts: smallint('reconcile_attempts').notNull().default(0),
+    reconcileClaimId: uuid('reconcile_claim_id'),
+    reconcileAfter: timestamp('reconcile_after', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.runId, table.attempt] }),
+    uniqueIndex('studio_ai_attempt_generation_idx').on(table.generationId),
+    index('studio_ai_attempt_reconcile_idx')
+      .on(table.reconcileAfter, table.createdAt)
+      .where(
+        sql`${table.generationId} is not null and ${table.status} in ('dispatched', 'uncertain')`,
+      ),
+    check(
+      'studio_ai_attempt_state',
+      sql`${table.status} in ('dispatched', 'uncertain', 'confirmed', 'rejected')`,
+    ),
+    check(
+      'studio_ai_attempt_cost',
+      sql`(${table.status} = 'confirmed' and ${table.actualMicroUsd} is not null and ${table.actualMicroUsd} between 0 and 1000000000) or (${table.status} <> 'confirmed' and ${table.actualMicroUsd} is null)`,
+    ),
+    check(
+      'studio_ai_attempt_bounds',
+      sql`${table.attempt} between 1 and 6 and ${table.reconcileAttempts} between 0 and 8 and (${table.promptTokens} is null or ${table.promptTokens} between 0 and 10000000) and (${table.completionTokens} is null or ${table.completionTokens} between 0 and 10000000)`,
+    ),
+  ],
+)
+
+export const studioBuilderJobs = members.table(
+  'studio_builder_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    audience: text('audience').$type<CourseAudience>().notNull().default('kids'),
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    execution: jsonb('execution').$type<{ parentOrigin: string; privileged: boolean }>().notNull(),
+    objective: text('objective').notNull(),
+    model: varchar('model', { length: 160 }).notNull(),
+    binaries: jsonb('binaries')
+      .$type<Record<string, { base64: string; sha256: string }>>()
+      .notNull(),
+    notes: jsonb('notes').$type<string[]>().notNull().default([]),
+    assistance: jsonb('assistance').$type<StudioProAssistanceJournal>(),
+    base: jsonb('base').$type<StudioProRevision>().notNull(),
+    phase: varchar('phase', { length: 16 }).$type<StudioProBuilderPhase>().notNull(),
+    version: integer('version').notNull().default(0),
+    modelCalls: smallint('model_calls').notNull().default(0),
+    validationCalls: smallint('validation_calls').notNull().default(0),
+    leaseToken: uuid('lease_token'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    result: jsonb('result').$type<StudioProBuilderResult>(),
+    error: text('error'),
+    cost: jsonb('cost').$type<StudioProBuilderCost>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index('studio_builder_owner_idx').on(
+      table.accountId,
+      table.userId,
+      table.projectId,
+      table.createdAt,
+    ),
+    index('studio_builder_expiry_idx').on(table.expiresAt),
+    index('studio_builder_queue_idx')
+      .on(table.phase, table.leaseUntil, table.deadlineAt)
+      .where(sql`${table.phase} in ('queued','generating','validating')`),
+    check(
+      'studio_builder_phase',
+      sql`${table.phase} in ('queued','generating','validating','review','failed','cancelled')`,
+    ),
+    check(
+      'studio_builder_bounds',
+      sql`${table.modelCalls} between 0 and 3 and ${table.validationCalls} between 0 and 3 and ${table.version} >= 0 and char_length(${table.objective}) between 1 and 2000 and octet_length(${table.base}::text) <= 3000000 and (${table.result} is null or octet_length(${table.result}::text) <= 3000000)`,
+    ),
+    check(
+      'studio_builder_lease',
+      sql`(${table.leaseToken} is null) = (${table.leaseUntil} is null)`,
+    ),
+    check(
+      'studio_builder_assistance_bounds',
+      sql`${table.assistance} is null or (octet_length(${table.assistance}::text) <= 150000 and jsonb_array_length(${table.assistance}->'events') <= 128)`,
+    ),
+  ],
+)
+
+/** Short deletion fence: an in-flight create cannot resurrect a removed project's jobs. */
+export const studioBuilderProjectDeletions = members.table(
+  'studio_builder_project_deletions',
+  {
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.userId, table.projectId] }),
+    index('studio_builder_project_deletion_expiry_idx').on(table.expiresAt),
+  ],
+)
+
+export const adultStudioBuilderProjectDeletions = members.table(
+  'adult_studio_builder_project_deletions',
+  {
+    accountId: uuid('account_id').notNull(),
+    userId: uuid('user_id').notNull(),
+    projectId: varchar('project_id', { length: 128 }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.accountId, table.userId, table.projectId] }),
+    index('adult_studio_builder_project_deletion_expiry_idx').on(table.expiresAt),
+  ],
+)
+
+export const adultChallengeCustomThemes = members.table('adult_challenge_custom_themes', {
+  id: uuid('id').primaryKey(),
+  emoji: text('emoji').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  // Arquivado sai da lista de ESCOLHA, mas segue valendo em mês que o referencia.
+  archived: boolean('archived').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+})
+
+export const adultChallengeMonthOverrides = members.table(
+  'adult_challenge_month_overrides',
+  {
+    // `m:YYYY-MM` (mês civil de SP) — a MESMA régua do ledger e do hub.
+    monthKey: text('month_key').primaryKey(),
+    // Snapshot do slug do catálogo EM CÓDIGO (sem FK: o catálogo não é tabela).
+    builtinSlug: text('builtin_slug'),
+    // RESTRICT (default): tema custom referenciado não é deletável — só arquiva.
+    customThemeId: uuid('custom_theme_id').references(() => adultChallengeCustomThemes.id),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    // Auditoria leve (quem definiu por último; o audit do gateway é a trilha real).
+    updatedByUserId: uuid('updated_by_user_id'),
+  },
+  (t) => [
+    check(
+      'adult_challenge_month_overrides_one_theme',
+      sql`(${t.builtinSlug} IS NULL) <> (${t.customThemeId} IS NULL)`,
+    ),
+  ],
+)
+
+export const adultProfiles = members.table('adult_profiles', {
+  userId: uuid('user_id').primaryKey(),
+  displayName: varchar('display_name', { length: 60 }).notNull(),
+  publicEnabled: boolean('public_enabled').notNull().default(false),
+  voiceEnabled: boolean('voice_enabled').notNull().default(false),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+})
+
+export const adultJourneyPolicy = members.table(
+  'adult_journey_policy',
+  {
+    id: text('id').primaryKey().default('adult'),
+    version: integer('version').notNull(),
+    policy: jsonb('policy').$type<AdultJourneyPolicy>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    check('adult_journey_policy_id_check', sql`${table.id} = 'adult'`),
+    check('adult_journey_policy_version_check', sql`${table.version} >= 1`),
+  ],
+)
+
+export const adultJourneyGrants = members.table(
+  'adult_journey_grants',
+  {
+    userId: uuid('user_id').notNull(),
+    capability: text('capability').$type<AdultCreatorCapability>().notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    grantedAt: timestamp('granted_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.capability] }),
+    check(
+      'adult_journey_capability_check',
+      sql`${table.capability} in ('studio', 'pinta', 'molda', 'bridge', 'pro', 'ai', 'pensa')`,
+    ),
+  ],
+)
+
+/**
+ * Piso da jornada adulta: a posição mais alta que a pessoa já alcançou. Só sobe (`greatest` no
+ * upsert), gravado junto com o congelamento das capacidades; a leitura usa max(calculada, piso),
+ * então editar a política (curso novo numa etapa concluída) não faz ninguém voltar de etapa.
+ */
+export const adultJourneyReached = members.table(
+  'adult_journey_reached',
+  {
+    userId: uuid('user_id').primaryKey(),
+    position: integer('position').notNull(),
+    policyVersion: integer('policy_version').notNull(),
+    reachedAt: timestamp('reached_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [check('adult_journey_reached_position_check', sql`${table.position} >= 1`)],
+)
+
+// Canonical policy: initializing V0 is explicit; normal readers require published V>=1.
+export const kidsJourneyPolicy = members.table(
+  'kids_journey_policy',
+  {
+    id: text('id').primaryKey().default('kids'),
+    version: integer('version').notNull(),
+    phase: text('phase').$type<'initializing' | 'published'>().notNull(),
+    policy: jsonb('policy').$type<KidsJourneyPolicy>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    check('kids_journey_policy_id_check', sql`${t.id} = 'kids'`),
+    check(
+      'kids_journey_policy_version_check',
+      sql`(${t.phase} = 'initializing' and ${t.version} = 0) or (${t.phase} = 'published' and ${t.version} >= 1)`,
+    ),
+    check(
+      'kids_journey_policy_shape_check',
+      sql`jsonb_typeof(${t.policy}) = 'object' and ${t.policy}->>'schemaVersion' = '1' and ${t.policy}->>'mode' in ('active','paused') and jsonb_typeof(${t.policy}->'steps') = 'array' and jsonb_typeof(${t.policy}->'tierAccess') = 'array'`,
+    ),
+  ],
+)
+
+export const kidsJourneyPreparations = members.table(
+  'kids_journey_preparations',
+  {
+    id: uuid('id').primaryKey(),
+    expectedVersion: integer('expected_version').notNull(),
+    sourcePolicy: jsonb('source_policy').$type<KidsJourneyPolicy>().notNull(),
+    candidatePolicy: jsonb('candidate_policy').$type<KidsJourneyPolicy>().notNull(),
+    draftHash: varchar('draft_hash', { length: 64 }).notNull(),
+    catalogHash: varchar('catalog_hash', { length: 64 }).notNull(),
+    cohortHash: varchar('cohort_hash', { length: 64 }),
+    origin: text('origin').$type<'seed' | 'configuration'>().notNull(),
+    captureStage: text('capture_stage').$type<'auth' | 'members' | 'hashing' | 'done'>().notNull(),
+    captureCursor: uuid('capture_cursor'),
+    authCapture: jsonb('auth_capture').$type<KidsJourneyAuthCapture>(),
+    catalog: jsonb('catalog').$type<readonly KidsJourneyCatalogCourse[]>().notNull(),
+    cursor: uuid('cursor'),
+    upperBound: uuid('upper_bound'),
+    processed: integer('processed').notNull().default(0),
+    status: text('status').$type<KidsJourneyPreparationStatus>().notNull(),
+    actorKind: text('actor_kind').$type<'system' | 'user'>().notNull(),
+    actorId: uuid('actor_id'),
+    reason: varchar('reason', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('kids_journey_preparations_status_idx').on(t.status, t.updatedAt),
+    check('kids_journey_preparations_version_check', sql`${t.expectedVersion} >= 0`),
+    check('kids_journey_preparations_count_check', sql`${t.processed} >= 0`),
+    check(
+      'kids_journey_preparations_status_check',
+      sql`${t.status} in ('capturing','preparing','ready','stale','published')`,
+    ),
+    check(
+      'kids_journey_preparations_reason_check',
+      sql`length(btrim(${t.reason})) between 1 and 500`,
+    ),
+    check(
+      'kids_journey_preparations_hash_check',
+      sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+    check('kids_journey_preparations_catalog_check', sql`jsonb_typeof(${t.catalog}) = 'array'`),
+    check(
+      'kids_journey_preparations_auth_capture_check',
+      sql`${t.authCapture} is null or jsonb_typeof(${t.authCapture}) = 'object'`,
+    ),
+    check(
+      'kids_journey_preparations_actor_check',
+      sql`(${t.actorKind} = 'system' and ${t.actorId} is null and ${t.origin} = 'seed' and ${t.expectedVersion} = 0) or (${t.actorKind} = 'user' and ${t.actorId} is not null and ${t.origin} = 'configuration' and ${t.expectedVersion} >= 1)`,
+    ),
+    check(
+      'kids_journey_preparations_capture_check',
+      sql`${t.captureStage} in ('auth','members','hashing','done') and (${t.status} not in ('preparing','ready','published') or (${t.captureStage} = 'done' and ${t.cohortHash} is not null and ${t.cohortHash} ~ '^[a-f0-9]{64}$'))`,
+    ),
+    check(
+      'kids_journey_preparations_cursor_check',
+      sql`${t.cursor} is null or (${t.upperBound} is not null and ${t.cursor} <= ${t.upperBound})`,
+    ),
+  ],
+)
+
+export const kidsJourneyPreparationOwners = members.table(
+  'kids_journey_preparation_owners',
+  {
+    preparationId: uuid('preparation_id')
+      .notNull()
+      .references(() => kidsJourneyPreparations.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
+    accountId: uuid('account_id'),
+  },
+  (t) => [
+    primaryKey({ columns: [t.preparationId, t.userId] }),
+    index('kids_journey_preparation_owners_account_idx').on(t.accountId),
+  ],
+)
+
+export const kidsJourneyRevisions = members.table(
+  'kids_journey_revisions',
+  {
+    version: integer('version').primaryKey(),
+    previousVersion: integer('previous_version').notNull(),
+    preparationId: uuid('preparation_id')
+      .notNull()
+      .references(() => kidsJourneyPreparations.id),
+    policy: jsonb('policy').$type<KidsJourneyPolicy>().notNull(),
+    draftHash: varchar('draft_hash', { length: 64 }).notNull(),
+    catalogHash: varchar('catalog_hash', { length: 64 }).notNull(),
+    cohortHash: varchar('cohort_hash', { length: 64 }).notNull(),
+    actorKind: text('actor_kind').$type<'system' | 'user'>().notNull(),
+    actorId: uuid('actor_id'),
+    reason: varchar('reason', { length: 500 }).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('kids_journey_revisions_preparation_uq').on(t.preparationId),
+    check(
+      'kids_journey_revisions_version_check',
+      sql`${t.version} >= 1 and ${t.previousVersion} = ${t.version} - 1`,
+    ),
+    check('kids_journey_revisions_reason_check', sql`length(btrim(${t.reason})) between 1 and 500`),
+    check(
+      'kids_journey_revisions_actor_check',
+      sql`(${t.actorKind} = 'system' and ${t.actorId} is null and ${t.version} = 1) or (${t.actorKind} = 'user' and ${t.actorId} is not null and ${t.version} >= 2)`,
+    ),
+    check(
+      'kids_journey_revisions_hash_check',
+      sql`${t.draftHash} ~ '^[a-f0-9]{64}$' and ${t.catalogHash} ~ '^[a-f0-9]{64}$' and ${t.cohortHash} ~ '^[a-f0-9]{64}$'`,
+    ),
+  ],
+)
+
+export const kidsJourneyEarned = members.table(
+  'kids_journey_earned',
+  {
+    userId: uuid('user_id').primaryKey(),
+    accountId: uuid('account_id').notNull(),
+    level: text('level').$type<JourneyLevelSlug>().notNull(),
+    capabilities: jsonb('capabilities').$type<readonly KidsCreatorCapability[]>().notNull(),
+    entryTiers: text('entry_tiers')
+      .array()
+      .$type<JourneyCourseTier[]>()
+      .notNull()
+      .default(sql`array[]::text[]`),
+    expandedTiers: text('expanded_tiers')
+      .array()
+      .$type<JourneyCourseTier[]>()
+      .notNull()
+      .default(sql`array[]::text[]`),
+    rewardTiers: text('reward_tiers')
+      .array()
+      .$type<JourneyCourseTier[]>()
+      .notNull()
+      .default(sql`array[]::text[]`),
+    policyVersion: integer('policy_version').notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    index('kids_journey_earned_account_idx').on(t.accountId),
+    check(
+      'kids_journey_earned_level_check',
+      sql`${t.level} in ('noob','coder','hacker','explorer','elite','architect','champion','god')`,
+    ),
+    check('kids_journey_earned_version_check', sql`${t.policyVersion} >= 0`),
+    check(
+      'kids_journey_earned_access_check',
+      sql`${t.entryTiers} <@ array['primeiros-passos-2d','iniciante-2d','iniciante-3d','intermediario-2d','intermediario-3d','avancado-2d','avancado-3d']::text[] and ${t.rewardTiers} <@ array['primeiros-passos-2d','iniciante-2d','iniciante-3d','intermediario-2d','intermediario-3d','avancado-2d','avancado-3d']::text[] and ${t.expandedTiers} <@ ${t.entryTiers} and cardinality(${t.entryTiers}) <= 7 and cardinality(${t.expandedTiers}) <= 7 and cardinality(${t.rewardTiers}) <= 7`,
+    ),
+    check(
+      'kids_journey_earned_capabilities_check',
+      sql`jsonb_typeof(${t.capabilities}) = 'array' and ${t.capabilities} <@ '["studio","pinta","bridge","pro","ai","pensa","molda","molda-intermediate","molda-professional"]'::jsonb`,
+    ),
+  ],
+)
+
 export const schema = {
+  kidsJourneyPolicy,
+  kidsJourneyPreparations,
+  kidsJourneyPreparationOwners,
+  kidsJourneyRevisions,
+  kidsJourneyEarned,
+  adultChallengeCustomThemes,
+  adultChallengeMonthOverrides,
+  adultProfiles,
+  adultJourneyPolicy,
+  adultJourneyGrants,
+  adultJourneyReached,
+  studioBuilderProjectDeletions,
+  adultStudioBuilderProjectDeletions,
+  studioBuilderJobs,
+  studioAiRuns,
+  studioAiAttempts,
+  studioAiAccounts,
+  studioAiOAuthStates,
+  liveLearningProgress,
+  liveLearningAttempts,
+  livePrograms,
+  liveCohorts,
+  liveSessions,
+  liveOccurrences,
+  liveEnrollments,
+  liveAccessGrants,
+  liveAudit,
+  liveMediaConnections,
+  liveWorkspaces,
+  liveWorkspaceRevisions,
+  livePresence,
+  liveProjectTemplates,
+  liveRecordingJobs,
+  liveReplayPositions,
+  liveMaterials,
   teacherBroadcasts,
   teacherBroadcastRecipients,
   teacherThreadStaffReads,
@@ -1823,6 +3034,9 @@ export const schema = {
   lessonProgress,
   quizAttempts,
   studioSubmissions,
+  studioLessonBaselines,
+  studioLessonBindings,
+  studioCourseChains,
   courseRatings,
   gamificationProfiles,
   xpEvents,
@@ -1837,10 +3051,15 @@ export const schema = {
   roomInventory,
   certificatesIssued,
   pensaProjects,
-  pensaCycles,
-  pensaConversations,
-  pensaArtifacts,
-  pensaTasks,
+  pensaProjectRevisions,
+  pensaPlanDrafts,
+  pensaMissionProgress,
+  pensaProjectMessages,
+  pensaExecutionEvents,
+  pensaOperations,
+  pensaCheckpoints,
+  privateNarrations,
+  aiUsageReservations,
   teacherThreads,
   teacherMessages,
   zappyConversations,
@@ -1854,9 +3073,14 @@ export const schema = {
   challengeMonthOverrides,
   helpCollections,
   helpTutorials,
+  adultHelpCollections,
+  adultHelpTutorials,
   creations,
   accountDeletionFences,
   creationCleanupJobs,
+  galleryCopyAttempts,
+  pensaDeletionJobs,
+  pensaProviderUsage,
   processedWebhooks,
 }
 

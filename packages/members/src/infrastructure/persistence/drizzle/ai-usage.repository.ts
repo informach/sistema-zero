@@ -1,4 +1,4 @@
-import { countDistinct, desc, sql, sum } from 'drizzle-orm'
+import { and, countDistinct, desc, eq, gt, sql, sum } from 'drizzle-orm'
 import type {
   AiUsageMonthStats,
   AiUsageRepository,
@@ -7,7 +7,7 @@ import type {
   ConsumeAiUsageOutcome,
 } from '../../../domain/ports/ai-usage-repository.port'
 import type { Database } from './db'
-import { aiUsageDaily } from './schema'
+import { aiUsageDaily, aiUsageReservations, studioAiRuns } from './schema'
 
 /** Início do mês SEGUINTE a `YYYY-MM` (data sempre VÁLIDA — `${month}-31` não é). */
 function nextMonthStart(month: string): string {
@@ -18,16 +18,16 @@ function nextMonthStart(month: string): string {
 }
 
 /** `db` OU a transação do `consume` — a mesma soma serve os dois caminhos. */
-type Queryable = Database | Parameters<Parameters<Database['transaction']>[0]>[0]
+export type AiUsageQueryable = Database | Parameters<Parameters<Database['transaction']>[0]>[0]
 
 /**
  * Soma do dia e do mês da conta. É prefixo da PK `(account_id, day, feature)`, então
  * varre no máximo ~1 mês de linhas da conta — a query mais barata da casa, sem
  * índice novo.
  */
-async function readTotals(
-  db: Queryable,
-  input: { accountId: string; day: string; month: string },
+export async function readAiUsageTotals(
+  db: AiUsageQueryable,
+  input: { accountId: string; day: string; month: string; now?: Date },
 ): Promise<AiUsageTotals> {
   const [totals] = await db
     .select({
@@ -42,7 +42,42 @@ async function readTotals(
         and ${aiUsageDaily.day} >= ${`${input.month}-01`}
         and ${aiUsageDaily.day} < ${nextMonthStart(input.month)}`,
     )
-  return { usedDay: totals?.usedDay ?? 0, usedMonth: totals?.usedMonth ?? 0 }
+  const [holds] = await db
+    .select({
+      day: sql<number>`count(*) filter (where ${aiUsageReservations.day} = ${input.day})`.mapWith(
+        Number,
+      ),
+      month: sql<number>`count(*)`.mapWith(Number),
+    })
+    .from(aiUsageReservations)
+    .where(
+      and(
+        eq(aiUsageReservations.accountId, input.accountId),
+        eq(aiUsageReservations.status, 'reserved'),
+        gt(aiUsageReservations.expiresAt, input.now ?? new Date()),
+        sql`${aiUsageReservations.day} >= ${`${input.month}-01`} and ${aiUsageReservations.day} < ${nextMonthStart(input.month)}`,
+      ),
+    )
+  const [studioHolds] = await db
+    .select({
+      day: sql<number>`count(*) filter (where ${studioAiRuns.day} = ${input.day})`.mapWith(Number),
+      month: sql<number>`count(*)`.mapWith(Number),
+    })
+    .from(studioAiRuns)
+    .where(
+      and(
+        eq(studioAiRuns.accountId, input.accountId),
+        eq(studioAiRuns.source, 'platform'),
+        eq(studioAiRuns.allowanceCharged, false),
+        sql`${studioAiRuns.finishedAt} is null`,
+        gt(studioAiRuns.expiresAt, input.now ?? new Date()),
+        sql`${studioAiRuns.day} >= ${`${input.month}-01`} and ${studioAiRuns.day} < ${nextMonthStart(input.month)}`,
+      ),
+    )
+  return {
+    usedDay: (totals?.usedDay ?? 0) + (holds?.day ?? 0) + (studioHolds?.day ?? 0),
+    usedMonth: (totals?.usedMonth ?? 0) + (holds?.month ?? 0) + (studioHolds?.month ?? 0),
+  }
 }
 
 export class DrizzleAiUsageRepository implements AiUsageRepository {
@@ -59,7 +94,7 @@ export class DrizzleAiUsageRepository implements AiUsageRepository {
         sql`select pg_advisory_xact_lock(hashtextextended(${`ai-usage:${input.accountId}`}, 0))`,
       )
 
-      const { usedDay, usedMonth } = await readTotals(tx, input)
+      const { usedDay, usedMonth } = await readAiUsageTotals(tx, input)
 
       // Equipe grava mas NUNCA é recusada (visibilidade de custo sem atrito).
       if (!input.privileged) {
@@ -97,7 +132,7 @@ export class DrizzleAiUsageRepository implements AiUsageRepository {
   }
 
   totals(input: { accountId: string; day: string; month: string }): Promise<AiUsageTotals> {
-    return readTotals(this.db, input)
+    return readAiUsageTotals(this.db, input)
   }
 
   async statsForMonth(month: string, today: string, topLimit: number): Promise<AiUsageMonthStats> {

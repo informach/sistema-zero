@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import { SCENE_MODELS, SCENE_QUESTIONS } from '@sistemazero/core/learning/scene'
-import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas/qa/cade-todo-mundo-projeto'
+import { montarProjetoCadeTodoMundoCompleto } from '../../../docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -346,9 +346,10 @@ test('⚠️⚠️ "Experimentar a prévia" CORRIGE de verdade: errar recebe rec
   }
 })
 
-test('numa aula kids a prévia fala o vocabulário da criança ("Voltar à fase")', async () => {
+test('numa aula kids ou adulta a prévia fala a linguagem comum ("Voltar à aula")', async () => {
   // A prévia do bloco montava sem o `LessonCopy` e mostrava a aula infantil com as palavras do
-  // adulto, como a prévia e o ensaio da aula inteira faziam antes de 06/10/2026.
+  // adulto, como a prévia e o ensaio da aula inteira faziam antes de 06/10/2026. Desde a
+  // linguagem comum (21/10/2026) as duas comunidades dizem "aula", e "fase" não volta.
   const bloco: InteractiveBlock = {
     kind: 'interactive',
     title: SCENE_MODELS.world.title,
@@ -360,7 +361,7 @@ test('numa aula kids a prévia fala o vocabulário da criança ("Voltar à fase"
   const botao = (nome: string) =>
     [...document.querySelectorAll('button')].find((x) => x.textContent?.trim() === nome)
   for (const [kids, voltar] of [
-    [true, 'Voltar à fase'],
+    [true, 'Voltar à aula'],
     [false, 'Voltar à aula'],
   ] as const) {
     const b = await montar(bloco, { kids })
@@ -368,6 +369,7 @@ test('numa aula kids a prévia fala o vocabulário da criança ("Voltar à fase"
       await act(async () => botao('Experimentar a prévia')?.click())
       await act(async () => botao('Ampliar experiência')?.click())
       expect(botao(voltar)).toBeTruthy()
+      expect(botao('Voltar à fase')).toBeUndefined()
     } finally {
       await b.fechar()
     }

@@ -1,0 +1,82 @@
+{
+  "kind": "Existing P0 defects reproduced; no implementation fix applied",
+  "createdAt": "2026-10-18T22:34:07.633Z",
+  "durationMs": 13,
+  "cade": {
+    "initial": {
+      "results": [
+        {
+          "checkId": "revelar-ao-toque",
+          "passed": true,
+          "optional": false
+        },
+        {
+          "checkId": "somar-achado",
+          "passed": false,
+          "optional": false
+        }
+      ],
+      "passed": false
+    },
+    "publicationIssue": "O projeto inicial já cumpre o objetivo obrigatório \"Revele o personagem tocado deixando o esconderijo escolhido invisível.\". Mude o objetivo ou o projeto inicial."
+  },
+  "dino": {
+    "withoutHitbox": {
+      "results": [
+        {
+          "checkId": "raio-x",
+          "passed": false,
+          "optional": false
+        },
+        {
+          "checkId": "sem-raio-x",
+          "passed": true,
+          "optional": false
+        }
+      ],
+      "passed": false
+    },
+    "withHitbox": {
+      "results": [
+        {
+          "checkId": "raio-x",
+          "passed": true,
+          "optional": false
+        },
+        {
+          "checkId": "sem-raio-x",
+          "passed": false,
+          "optional": false
+        }
+      ],
+      "passed": false
+    },
+    "conclusion": "Opposing structural rules require different per-part reference snapshots."
+  },
+  "sources": [
+    {
+      "path": "docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json",
+      "sha256": "490b5c507bfa70ee7d04efa5f0a00c679b25cb5d3467bf35641a1cf8f06afb4e"
+    },
+    {
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-10.manifesto.json",
+      "sha256": "3d25b6d290c8d4d5e76fbb6ff158278767087ff64c8729a3d4488601e38a5d88"
+    },
+    {
+      "path": "docs/aulas-interativas/kids/corre-dino/corre-dino-aula-11.manifesto.json",
+      "sha256": "fd8aebc7f9a6d56da53c5c4a9cfb847f89583113dc344314110be61d3ff86173"
+    },
+    {
+      "path": "packages/studio/src/blockly/projectCheckAuthoring.ts",
+      "sha256": "4f9dd05261cf0c93f5e92c92c14e667563d68bb18013d00dd83d933cc2e58bda"
+    },
+    {
+      "path": "packages/core/src/learning/project-structure.ts",
+      "sha256": "b8c81ebfc52a14d91a97d0a9f546a544c95c1d31610b67703068f36ccf359f4a"
+    },
+    {
+      "path": "packages/core/src/learning/section-progression.ts",
+      "sha256": "d7abe98bb78047aeb524c76ce3f7daf78b1dbc9f29209a6d02b1e0f022e54aef"
+    }
+  ]
+}

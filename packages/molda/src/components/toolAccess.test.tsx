@@ -1,10 +1,16 @@
 import { expect, test } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
-import { render, screen } from '@testing-library/react'
+import { render, renderHook, screen } from '@testing-library/react'
+import { type ReactNode, StrictMode } from 'react'
 import type { MoldaToolFamilyId } from '../core/toolFamilies'
 import { DeferredModule } from './editor/DeferredEditor'
-import { MoldaToolAccessProvider, RequiresTool, useMoldaToolAccess } from './toolAccess'
+import {
+  MoldaToolAccessProvider,
+  RequiresTool,
+  useMoldaToolAccess,
+  useMoldaToolGate,
+} from './toolAccess'
 
 function Probe({ family }: { family: MoldaToolFamilyId }) {
   const access = useMoldaToolAccess()
@@ -15,6 +21,31 @@ function Probe({ family }: { family: MoldaToolFamilyId }) {
     </p>
   )
 }
+
+test('revocation and unmount invalidate captured authoring even if access is granted again', () => {
+  let allowed = true
+  const view = renderHook(() => useMoldaToolGate('animate.create'), {
+    wrapper: ({ children }: { children: ReactNode }) => (
+      <StrictMode>
+        <MoldaToolAccessProvider access={{ allow: allowed ? ['animate.create'] : [] }}>
+          {children}
+        </MoldaToolAccessProvider>
+      </StrictMode>
+    ),
+  })
+  const original = view.result.current.canUse
+  expect(original()).toBe(true)
+  allowed = false
+  view.rerender()
+  expect(original()).toBe(false)
+  allowed = true
+  view.rerender()
+  expect(original()).toBe(false)
+  const renewed = view.result.current.canUse
+  expect(renewed()).toBe(true)
+  view.unmount()
+  expect(renewed()).toBe(false)
+})
 
 test('sem provedor, tudo liberado: o playground, os testes e outros hosts', () => {
   render(

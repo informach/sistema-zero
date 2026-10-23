@@ -1,6 +1,12 @@
-import type { CampaignInput, CampaignState, GiftSource } from '@sistemazero/core/referrals'
+import type {
+  CampaignInput,
+  CampaignState,
+  GiftAudience,
+  GiftSource,
+} from '@sistemazero/core/referrals'
 
-export interface CampaignRecord extends Omit<CampaignInput, 'startsAt' | 'endsAt'> {
+export interface CampaignRecord extends Omit<CampaignInput, 'startsAt' | 'endsAt' | 'audience'> {
+  audience: GiftAudience
   id: string
   startsAt: Date
   endsAt: Date
@@ -36,6 +42,17 @@ export class CampaignUnavailableError extends Error {
 }
 
 export class CampaignValidationError extends Error {}
+
+/**
+ * Público só muda em rascunho sem resgates; depois, só duplicando (mesma regra do código).
+ */
+export class CampaignAudienceLockedError extends Error {
+  constructor() {
+    super(
+      'O público de uma campanha só muda enquanto ela está em rascunho e sem cadastros. Duplique a campanha para criar uma edição com outro público.',
+    )
+  }
+}
 
 export class CampaignConflictError extends Error {
   constructor() {

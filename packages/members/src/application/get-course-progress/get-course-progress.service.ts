@@ -23,6 +23,7 @@ export class GetCourseProgressService {
       courseSlug,
       privileged,
       userId,
+      'course',
     )
     // Numerador e denominador sobre o MESMO conjunto (aulas publicadas) — uma
     // conclusão de aula hoje despublicada não conta (senão o percentual infla).

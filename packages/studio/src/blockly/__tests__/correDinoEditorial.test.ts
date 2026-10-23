@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import * as Blockly from 'blockly/core'
 import 'blockly/blocks'
-import { isLearningManifest } from '@sistemazero/core/learning'
+import { isLearningManifest, type SectionProjectCheck } from '@sistemazero/core/learning'
 import {
   type Block,
   courseProjects,
-} from '../../../../../docs/aulas-interativas/qa/corre-dino-projetos-qa'
+} from '../../../../../docs/aulas-interativas-tecnico/qa/corre-dino-projetos-qa'
 import { compileStatements } from '../../generators'
 import { behaviorStatements } from '../../ir'
 import { exampleHarness } from '../../official-extensions/game-2d/__tests__/examplePlaythroughHarness'
@@ -17,6 +17,14 @@ import { registerExtensionBlocks } from '../blocks'
 import { buildIRFromWorkspace } from '../buildIR'
 import { evaluateStudioSectionProject } from '../projectCheckAuthoring'
 import { ensureBlocklyInitialized } from '../setup'
+
+function javascriptChecks(checks: readonly SectionProjectCheck[]) {
+  return checks.map((check) => {
+    if (check.programmingLanguage === 'python')
+      throw new Error('This editorial fixture requires JavaScript objectives')
+    return check
+  })
+}
 
 beforeAll(() => {
   ensureBlocklyInitialized()
@@ -158,7 +166,7 @@ test.each(mistakes)('rejects a plausible learner mistake: $name', ({ lesson, edi
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/aulas/corre-dino-${slug}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -166,7 +174,9 @@ test.each(mistakes)('rejects a plausible learner mistake: $name', ({ lesson, edi
   if (!isLearningManifest(manifest)) throw new Error('Invalid authored lesson')
   const checks = manifest.sections.find((section) => section.intent === 'delivery')!.completion!
     .projectChecks!
-  expect(evaluateStudioSectionProject(checks, project).some((check) => !check.passed)).toBe(true)
+  expect(
+    evaluateStudioSectionProject(javascriptChecks(checks), project).some((check) => !check.passed),
+  ).toBe(true)
 })
 const projects = courseProjects()
 test.each(
@@ -177,7 +187,7 @@ test.each(
     readFileSync(
       resolve(
         import.meta.dir,
-        `../../../../../docs/aulas-interativas/aulas/corre-dino-${slug}.manifesto.json`,
+        `../../../../../docs/aulas-interativas/corre-dino/corre-dino-${slug}.manifesto.json`,
       ),
       'utf8',
     ),
@@ -193,7 +203,9 @@ test.each(
     const checks = manifest.sections.find((section) => section.intent === 'delivery')!.completion!
       .projectChecks!
     expect(
-      evaluateStudioSectionProject(checks, { blocksState: state }).filter((check) => !check.passed),
+      evaluateStudioSectionProject(javascriptChecks(checks), { blocksState: state }).filter(
+        (check) => !check.passed,
+      ),
     ).toEqual([])
     const source = compileStatements(behaviorStatements(buildIRFromWorkspace(workspace)), 0)
     expect(source.length).toBeGreaterThan(50)

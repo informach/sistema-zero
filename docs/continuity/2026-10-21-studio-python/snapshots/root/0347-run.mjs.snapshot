@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict';
+import {spawn} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {readFileSync,writeFileSync,existsSync,renameSync} from 'node:fs';
+import {homedir} from 'node:os';
+import {createRequire} from 'node:module';
+import {resolve,join} from 'node:path';
+import {prepareProviderInCaller} from '../pro-legacy-staging-ui-owned-r6/caller-bridge.mjs';
+import {verifyOffline} from '../pro-legacy-staging-ui-owned-r6/run.mjs';
+import {validateBinding} from '../pro-legacy-staging-ui-owned-r6/contract.mjs';
+import {assertFunctionalProfile,assertFunctionalReceipt} from './functional-contract.mjs';
+const root=resolve(import.meta.dirname,'../../..'),sha=b=>createHash('sha256').update(b).digest('hex');
+const [mode,planPath,planHash,startCutoff,windowEnd]=process.argv.slice(2);
+let receipt,output,provider;const registry=[];
+const save=()=>{try{writeFileSync(output+'.pending',JSON.stringify(receipt,null,2)+'\n');renameSync(output+'.pending',output);}catch{receipt.failure??='receipt-write-failed';receipt.passed=false;throw new Error('caller-checkpoint-refused');}};
+const track=(kind,file,args,options)=>{
+ const child=spawn(file,args,options),entry={kind,pid:child.pid??null,closed:false,code:null,signal:null,error:false,child};registry.push(entry);
+ entry.done=new Promise(resolveClose=>{child.once('error',()=>{entry.error=true;});child.once('close',(code,signal)=>{entry.closed=true;entry.code=code;entry.signal=signal;resolveClose();});});return child;
+};
+const publicRegistry=()=>registry.map(({kind,pid,closed,code,signal,error})=>({kind,pid,closed,code,signal,error}));
+try{
+ assert(['--verify','--execute'].includes(mode));assert.equal(process.argv.length,7);assert(/^[a-f0-9]{64}$/.test(planHash));
+ const bytes=readFileSync(resolve(planPath));assert.equal(sha(bytes),planHash);const plan=JSON.parse(bytes),leaf=verifyOffline();
+ assert.equal(plan.kind,'hosted-js-pro-node-job');assert.equal(plan.version,1);
+ assertFunctionalProfile(plan);
+ const owner=join(root,'packages/community-kids/tests/e2e/windows/python-lesson-native-browser-owner.ps1');
+ const pwsh='C:/Program Files/WindowsApps/Microsoft.PowerShell_7.6.7.0_x64__8wekyb3d8bbwe/pwsh.exe';
+ for(const p of [...plan.pins,plan.node,plan.chrome,plan.binding]){assert(p&&/^[a-f0-9]{64}$/.test(p.sha256));const b=readFileSync(p.path);assert.equal(b.length,p.bytes);assert.equal(sha(b),p.sha256);}
+ for(const path of [owner,pwsh,process.execPath,import.meta.filename,join(import.meta.dirname,'functional-contract.mjs'),join(root,'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/caller-bridge.mjs')])assert.equal(plan.pins.filter(p=>resolve(p.path).toLowerCase()===resolve(path).toLowerCase()).length,1);
+ assert.equal(resolve(process.execPath).toLowerCase(),resolve(plan.node.path).toLowerCase());
+ for(const [packagePath,name,version] of [['packages/studio/package.json','fflate','0.8.3'],['packages/community-kids/package.json','@playwright/test','1.60.0']]){
+  const require=createRequire(join(root,packagePath)),entry=require.resolve(name),metadata=require.resolve(name+'/package.json'),value=require(name);
+  assert.deepEqual(plan.uiModules.find(v=>v.name===name),{name,entry,packagePath:metadata,version});assert.equal(require(metadata).version,version);
+  assert(name==='fflate'?typeof value.unzipSync==='function'&&typeof value.strFromU8==='function':typeof value.expect==='function');
+  for(const path of [entry,metadata,...Object.keys(require.cache)])assert.equal(plan.pins.filter(p=>resolve(p.path).toLowerCase()===resolve(path).toLowerCase()).length,1);
+ }
+ assert.equal(resolve(plan.providerEntry),join(root,'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/provider-context.mjs'));
+ assert.equal(resolve(plan.scenarioEntry),join(root,'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/run.mjs'));
+ const binding=validateBinding(JSON.parse(readFileSync(plan.binding.path,'utf8')),leaf.planSha256);assert.equal(plan.attemptId,binding.attemptId);
+ const cutoff=Date.parse(startCutoff),end=Date.parse(windowEnd);assert(Number.isFinite(cutoff)&&Number.isFinite(end)&&cutoff<end);
+ assert(!existsSync(plan.directory));assert(!existsSync(join(root,'.cache/studio-python-l0/pro-legacy-staging-ui-owned-r6/execution')));
+ output=resolve(planPath)+'.caller-receipt.json';assert(!existsSync(output));
+ if(mode==='--verify')console.log(JSON.stringify({passed:true,mode:'offline',resourceProfile:plan.resourceProfile,functionalOnly:true,performanceQualified:false,planSha256:planHash,providerCalls:0,processStarts:0}));
+ else{
+  const checkTime=()=>{assert(Date.now()<cutoff);assert(end-Date.now()>=360000);assert(Date.now()<Date.parse(binding.expiresAt));};checkTime();
+  receipt={kind:'owned-provider-and-ps-caller',resourceProfile:plan.resourceProfile,functionalOnly:true,performanceQualified:false,startedAt:new Date().toISOString(),planSha256:planHash,attemptId:plan.attemptId,phase:'provider-refresh',failure:null,retained:false,children:[],events:[],secretPersisted:false};save();
+  provider=await prepareProviderInCaller({sourceEnvironment:process.env,sourceHomeDirectory:homedir(),executable:leaf.plan.cli.path,cwd:root,ownedSpawn:(...args)=>track('readonly-cli',...args),checkTime,record:e=>{receipt.events.push(e);receipt.children=publicRegistry();save();}});
+  assert(registry.every(e=>e.closed&&!e.error&&e.code===0&&e.signal===null));checkTime();
+  const env={};for(const [k,v] of Object.entries(process.env))if(['SYSTEMROOT','WINDIR','COMSPEC','PROGRAMFILES','PROGRAMFILES(X86)','TEMP','TMP','PATH'].includes(k.toUpperCase())&&typeof v==='string')env[k]=v;
+  receipt.phase='owner';save();
+  const child=track('ps-owner',pwsh,['-NoLogo','-NoProfile','-NonInteractive','-File',owner,'-Action','Run','-PlanPath',resolve(planPath),'-ExpectedPlanSha256',planHash,'-StartCutoff',startCutoff,'-WindowEnd',windowEnd],{cwd:root,env,windowsHide:true,shell:false,stdio:['pipe','pipe','pipe']});
+  let stdout='',stdoutBytes=0,stderrBytes=0,overflow=false;
+  child.stdout.on('data',b=>{stdoutBytes+=b.length;if(stdoutBytes>16384){overflow=true;stdout='';}else if(!overflow)stdout+=b.toString();});child.stderr.on('data',b=>{stderrBytes+=b.length;});
+  const deadline=setTimeout(()=>{receipt.failure??='owner-close-deadline';receipt.retained=true;receipt.children=publicRegistry();try{save();}catch{}},Math.max(1,end-Date.now()));
+  try{await provider.sendToChild(child,binding.attemptId);await registry.at(-1).done;}finally{clearTimeout(deadline);provider.dispose();}
+  receipt.children=publicRegistry();receipt.stdoutBytes=stdoutBytes;receipt.stderrBytes=stderrBytes;receipt.retained=registry.some(e=>!e.closed);save();
+  assert(Date.now()<end);assert(!receipt.failure&&!overflow&&stderrBytes===0&&registry.every(e=>e.closed&&!e.error&&e.code===0&&e.signal===null));
+  const summary=JSON.parse(stdout);stdout='';assertFunctionalProfile(summary,true);
+  const ownerBytes=readFileSync(join(plan.directory,'receipt.json'));assert(ownerBytes.length<=131072);const result=JSON.parse(ownerBytes);
+  assert.equal(result.planSha256,planHash);assert.equal(result.attemptId,binding.attemptId);assertFunctionalReceipt(result);
+  receipt.ownerReceiptSha256=sha(ownerBytes);receipt.state='PASS-hosted-js-pro-functional';receipt.passed=true;
+ }
+}catch{
+ if(receipt){receipt.failure??=receipt.phase==='provider-refresh'?'provider-refresh-refused':'owner-or-contract-refused';receipt.passed=false;receipt.retained=registry.some(e=>!e.closed);receipt.children=publicRegistry();try{save();}catch{}}
+ else console.log(JSON.stringify({passed:false,phase:'preflight',providerCalls:0}));
+ process.exitCode=1;
+}finally{
+ provider?.dispose();
+ // Timeout remains NEG and retains the real handles; never unref/kill or start
+ // an owner after uncertain refresh. Wait for actual close before final receipt.
+ for(const entry of registry)if(!entry.closed){entry.child.ref();entry.child.stdout?.ref?.();entry.child.stderr?.ref?.();await entry.done;}
+ if(receipt){receipt.retained=registry.some(e=>!e.closed);receipt.children=publicRegistry();receipt.endedAt=new Date().toISOString();try{save();}catch{process.exitCode=1;}console.log(JSON.stringify({passed:receipt.passed===true,state:receipt.passed?'PASS-hosted-js-pro-functional':'NEG',resourceProfile:receipt.resourceProfile,functionalOnly:true,performanceQualified:false,failure:receipt.failure,retained:receipt.retained,children:receipt.children,receiptPath:output}));}
+}

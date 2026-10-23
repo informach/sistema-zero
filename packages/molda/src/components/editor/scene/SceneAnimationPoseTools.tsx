@@ -6,6 +6,7 @@ import {
   pasteSceneAnimationLocalPose,
   type SceneAnimationLocalPose,
 } from '../../../scene/animationPose'
+import { sameSceneContent } from '../../../scene/documentContent'
 import { requireScene } from '../../../scene/validation'
 import { Button } from '../../ui/Button'
 import { SCENE_APPEARANCE_FIELD as field } from './sceneAppearanceForm'
@@ -36,7 +37,7 @@ export function SceneAnimationPoseTools({
   function paste(mirror: boolean) {
     if (!copied) return
     run((source) => {
-      requireScene(source === document, 'source', copy.animationChanged)
+      requireScene(sameSceneContent(source, document), 'source', copy.animationChanged)
       return pasteSceneAnimationLocalPose(
         source,
         clip!.id,

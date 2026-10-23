@@ -64,13 +64,14 @@ export interface GameUiFontBundle {
 /** Carrega SÓ a fonte pedida. Id desconhecido cai no padrão; nunca lança. */
 export async function loadGameUiFont(
   id: unknown = DEFAULT_GAME_UI_FONT,
+  options: { includeThemeVariable?: boolean } = {},
 ): Promise<GameUiFontBundle> {
   const escolhida = gameUiFontIdOrDefault(id)
   const modulo = await CARREGADORES[escolhida]()
   return {
     id: escolhida,
     family: GAME_UI_FONTS[escolhida].family,
-    css: gameUiFontFaceCss(escolhida, modulo.FONTE),
+    css: gameUiFontFaceCss(escolhida, modulo.FONTE, options),
   }
 }
 

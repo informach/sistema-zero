@@ -83,7 +83,7 @@ export function isActivePublication(status: PublicationStatus): boolean {
   return status !== 'canceled'
 }
 
-/** Stories não têm API de publicação em rede nenhuma — sempre modo lembrete. */
+/** O publicador atual do app entrega Stories em modo manual. */
 export function forcesManualMode(format: PublicationFormat): boolean {
   return format === 'ig_story'
 }

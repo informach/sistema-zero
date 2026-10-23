@@ -1,0 +1,63 @@
+/*
+ * Entry CSS do PLAYGROUND (equivale ao globals.css de um app consumidor).
+ * Um consumer real replica as 3 primeiras linhas no css dele — ver
+ * docs/embedding.md.
+ */
+@import "tailwindcss";
+/* Primitivos da marca kids — o host community-kids os importa, então sem isto o
+   playground mostraria só os valores de reserva (creme/quase-preto) e o QA
+   visual mentiria. Relativo de propósito: não cria dependência de package. */
+@import "../../ui/src/styles/theme-kids.css";
+/* Chrome compartilhado das ferramentas (tokens --sz-tool-* + receitas do cabeçalho da lista e
+   do botão do menu): o kids importa; a ProjectList depende dele desde 07/09/2026. */
+@import "../../ui/src/styles/tool-chrome.css";
+@import "../src/styles/studio.css";
+
+@source "../src";
+
+/* Simula as vars do next/font do host: é o que prova a cadeia de fonte do
+   `--font-family-sans` (no kids elas têm nome hasheado). */
+:root {
+  --font-baloo: "Baloo 2";
+  --font-nunito: "Nunito";
+}
+
+/*
+ * Resets de APP standalone — ficam FORA do CSS exportado pelo package porque
+ * um consumer não pode herdar height/margin/scrollbar globais de uma lib.
+ */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+html {
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-sz-bg-soft);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-sz-border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-sz-fg-mute);
+}
+
+button {
+  font-family: inherit;
+}

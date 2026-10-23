@@ -1,0 +1,7 @@
+{
+  "checks": [
+    "texture uses named tools and medium brush; real stroke supports undo and return",
+    "sky slider works by keyboard and supports undo without changing editor conventions"
+  ],
+  "errors": []
+}

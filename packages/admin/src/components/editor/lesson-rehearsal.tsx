@@ -2,6 +2,7 @@
 
 import {
   evaluateLearning,
+  isExecutionRule,
   type LearningAnswers,
   type LearningResult,
   type LessonDraftDocument,
@@ -14,10 +15,10 @@ import { LessonSections } from '@sistemazero/member-shell/components/lesson-sect
 import { ADULT_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy'
 import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids'
 import type { LessonBlockView, LessonDetailView } from '@sistemazero/member-shell/lib/types'
-import type { Project } from '@sistemazero/studio'
+import type { EditableStudioProject } from '@sistemazero/studio'
 import { evaluateStudioSectionProject } from '@sistemazero/studio/server-project-checks'
 import { Button } from '@sistemazero/ui/button'
-import { type ReactNode, useRef, useState } from 'react'
+import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { LessonBlockContent } from '@/lib/types'
 
 interface RehearsalState {
@@ -27,7 +28,8 @@ interface RehearsalState {
   completedBlocks: Set<string>
   completedProjects: Set<string>
   fixtures: Set<string>
-  workspaces: Record<string, Project>
+  workspaces: Record<string, EditableStudioProject>
+  workspaceRevisions: Record<string, string>
 }
 /**
  * A falha que o botão "Falhar na próxima confirmação" simula. Leva `code` como um erro do
@@ -46,6 +48,7 @@ const empty = (): RehearsalState => ({
   completedProjects: new Set(),
   fixtures: new Set(),
   workspaces: {},
+  workspaceRevisions: {},
 })
 
 /** Local-only rehearsal. Native discoveries, quiz and project structure use production evaluators.
@@ -55,6 +58,8 @@ export function LessonRehearsal({
   document,
   renderBlocks,
   kids,
+  authorId,
+  draftRevision,
 }: {
   lesson: LessonDetailView
   document: LessonDraftDocument<LessonBlockContent>
@@ -67,6 +72,8 @@ export function LessonRehearsal({
    * ⚠️ O admin não carrega o CSS do kids: aqui sai a ESTRUTURA certa, sem a pele.
    */
   kids?: boolean
+  authorId?: string
+  draftRevision?: string
 }) {
   const [state, setState] = useState(empty)
   const [epoch, setEpoch] = useState(0)
@@ -77,10 +84,29 @@ export function LessonRehearsal({
     'Comece pela primeira seção. As seguintes respeitam seus critérios.',
   )
   const section = document.sections.find((s) => s.id === sectionId)
+  const context = useMemo(
+    () => ({ document, sectionId, epoch, draftRevision, authorId, lessonId: lesson.id }),
+    [document, sectionId, epoch, draftRevision, authorId, lesson.id],
+  )
+  const inspection = useRef<{
+    controller: AbortController
+    blockId: string
+    project: string
+    context: typeof context
+  } | null>(null)
+  const currentContext = useRef(context)
+  currentContext.current = context
+  useLayoutEffect(
+    () => () => {
+      if (inspection.current?.context === context) inspection.current.controller.abort()
+    },
+    [context],
+  )
   const completed = new Set<string>()
   // Itens TIPADOS (30/09/2026), como o members manda: a faixa "o que falta para seguir" do
   // rodapé escolhe o ícone pelo `kind`, e o ensaio mostra ao professor a mesma faixa (com os
-  // textos DO ENSAIO: o ensaio não passa pelo `lessonCompletionRequirements` do members).
+  // textos DO ENSAIO: o ensaio não passa pelo `lessonCompletionRequirements` do members). Os
+  // textos são os da linguagem comum (21/10/2026), iguais para as duas comunidades.
   const pending = new Map<string, SectionPendingItem[]>()
   for (const s of document.sections) {
     const missing: SectionPendingItem[] = []
@@ -88,14 +114,12 @@ export function LessonRehearsal({
       if (!state.completedBlocks.has(id))
         missing.push({
           kind: 'LEARNING_GATE_INCOMPLETE',
-          text: kids ? 'Termine o que esta parte pede' : 'Realize a atividade desta seção',
+          text: 'Termine o que esta parte pede',
         })
     if (s.completion?.projectChecks?.length && !state.completedProjects.has(s.id))
       missing.push({
         kind: 'project-check',
-        text: kids
-          ? 'Confira o objetivo desta parte no seu projeto'
-          : 'Confira o objetivo no projeto desta seção',
+        text: 'Confira o objetivo desta parte no seu projeto',
       })
     if (s.completion?.platformAction && !state.fixtures.has(s.id))
       missing.push({ kind: 'platform-action', text: 'Verifique a ação da plataforma' })
@@ -228,9 +252,31 @@ export function LessonRehearsal({
             if (grade.passed)
               setState((s) => ({ ...s, completedBlocks: new Set([...s.completedBlocks, blockId]) }))
           },
-          onWorkspaceChange: (blockId, project) =>
-            setState((s) => ({ ...s, workspaces: { ...s.workspaces, [blockId]: project } })),
+          onWorkspaceChange: (blockId, project, draftRevision) => {
+            if (
+              inspection.current?.blockId === blockId &&
+              inspection.current.project !== JSON.stringify(project)
+            )
+              inspection.current.controller.abort()
+            setState((s) => ({
+              ...s,
+              workspaces: { ...s.workspaces, [blockId]: project },
+              workspaceRevisions: draftRevision
+                ? { ...s.workspaceRevisions, [blockId]: draftRevision }
+                : s.workspaceRevisions,
+              completedProjects: new Set(
+                [...s.completedProjects].filter(
+                  (id) =>
+                    !document.sections.some(
+                      (section) => section.id === id && section.workspaceBlockId === blockId,
+                    ),
+                ),
+              ),
+            }))
+          },
           onProjectCheck: async (blockId, project) => {
+            if (currentContext.current !== context)
+              throw new DOMException('O ensaio ou o rascunho mudou.', 'AbortError')
             confirm()
             if (
               !section ||
@@ -238,13 +284,88 @@ export function LessonRehearsal({
               !section.completion?.projectChecks?.length
             )
               return 'Esta seção não tem um objetivo estrutural para conferir.'
-            const checks = evaluateStudioSectionProject(section.completion.projectChecks, project)
-            if (checks.every((c) => c.passed))
+            const criteria = section.completion.projectChecks
+            let checks: { checkId: string; label: string; passed: boolean }[]
+            if (criteria.some((criterion) => criterion.programmingLanguage === 'python')) {
+              if (!authorId || !draftRevision)
+                throw new Error('Salve o rascunho antes de conferir os objetivos Python.')
+              if (criteria.some((criterion) => criterion.programmingLanguage !== 'python'))
+                throw new Error('Os objetivos precisam usar a mesma linguagem do projeto.')
+              inspection.current?.controller.abort()
+              const owner = {
+                controller: new AbortController(),
+                blockId,
+                project: JSON.stringify(project),
+                context,
+              }
+              inspection.current = owner
+              const assertCurrent = () => {
+                owner.controller.signal.throwIfAborted()
+                if (inspection.current !== owner || currentContext.current !== context)
+                  throw new DOMException('O ensaio ou o rascunho mudou.', 'AbortError')
+              }
+              try {
+                const { inspectPythonSectionProject } = await import(
+                  '../studio/inspect-python-section-project'
+                )
+                assertCurrent()
+                checks = await inspectPythonSectionProject({
+                  project,
+                  checks: criteria.filter(
+                    (criterion) => criterion.programmingLanguage === 'python',
+                  ),
+                  scope: {
+                    userId: authorId,
+                    context: {
+                      kind: 'authoring',
+                      lessonId: lesson.id,
+                      draftRevision,
+                      blockId,
+                      purpose: 'rehearsal',
+                    },
+                  },
+                  signal: owner.controller.signal,
+                  assertCurrent,
+                })
+                assertCurrent()
+              } finally {
+                owner.controller.abort()
+                if (inspection.current === owner) inspection.current = null
+              }
+            } else {
+              const initial = lesson.blocks.find((b) => b.id === blockId)?.content as
+                | { initialProject?: unknown }
+                | undefined
+              checks = evaluateStudioSectionProject(
+                criteria.filter((criterion) => criterion.programmingLanguage !== 'python'),
+                project,
+                initial?.initialProject,
+              )
+            }
+            const required = new Set(
+              criteria.filter((criterion) => !criterion.optional).map((criterion) => criterion.id),
+            )
+            if (
+              required.size > 0 &&
+              checks.filter((check) => required.has(check.checkId)).every((c) => c.passed)
+            )
               setState((s) => ({
                 ...s,
                 completedProjects: new Set([...s.completedProjects, section.id]),
               }))
-            return checks.map((c) => `${c.passed ? 'Cumprido' : 'Falta'}: ${c.label}`).join('\n')
+            // Os que RODAM o jogo só o executor confere: o ensaio aponta para o "Testar agora".
+            const runsGame = new Set(
+              section.completion.projectChecks
+                .filter((c) => isExecutionRule(c.rule))
+                .map((c) => c.id),
+            )
+            return checks
+              .map((c) =>
+                runsGame.has(c.checkId)
+                  ? `Roda o jogo (confira no "Testar agora"): ${c.label}`
+                  : `${c.passed ? 'Cumprido' : 'Falta'}: ${c.label}`,
+              )
+              .join('\n')
           },
         }}
       >

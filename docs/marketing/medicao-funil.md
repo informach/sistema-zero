@@ -9,7 +9,7 @@ Implementada no pacote `packages/funnel`, com relatórios em **/admin → Métri
 - Sessões e navegadores medidos, origem e campanha, páginas e versões visitadas.
 - Seções vistas, botões vistos/clicados, abertura de dúvidas e recursos, ampliação de imagens e vídeos HTML nativos.
 - Prints da página pública, pontos de clique sobre os elementos e recorte de seção ou botão.
-- Perguntas vistas e respostas salvas, separadas por produto e versão: Comunidade, Desafio e demais quizzes registrados.
+- Perguntas vistas e respostas salvas, separadas por produto e versão: Comunidade, Desafio e demais quizzes registrados. Desde 21/10/2026 o Desafio tem dois quizzes em conversa, o Kids (`desafio-farol-v5`, com ramos) e o adulto (`desafio-adulto-v1`); ver [quiz-2026-10-21.md](kids/desafio-primeiro-jogo/quiz-2026-10-21.md).
 - Sessões com contato salvo, encaminhamento ao checkout, compra confirmada e receita inicial identificada.
 - Conferência das compras sem vínculo de navegação. Recusa, bloqueadores, outra máquina e histórico anterior podem deixar compras sem vínculo.
 
@@ -60,7 +60,7 @@ Os prints representam o estado padrão da página. Um elemento fechado ou ausent
 
 As larguras de 390 e 1280 px são capturadas antecipadamente. Outras larguras e variantes são descobertas a partir das visitas. Se a página já mudou antes da captura, o sistema não apresenta o layout novo como sendo o antigo. Por isso é necessário executar o processo após publicar e periodicamente. Uma página personalizada, quiz, resultado ou checkout não deve ser fotografada como se fosse a tela de um visitante.
 
-O processo de captura usa um lock no PostgreSQL para evitar execuções sobrepostas, orçamento de dez minutos por execução e limite de 45 segundos por página. Aguarda imagens/fontes por até dez segundos, expande o conteúdo que o navegador renderiza sob demanda e confere versão, altura e posições antes/depois do print. Captura instável, página indisponível ou recurso travado produz falha sinalizada ao cron, sem salvar uma imagem incompatível. `--page=/como-funciona --width=390 --refresh` permite refazer uma captura específica.
+O processo de captura usa um lock no PostgreSQL para evitar execuções sobrepostas, orçamento de dez minutos por execução e limite de 45 segundos por página. Aguarda imagens/fontes por até dez segundos, expande o conteúdo que o navegador renderiza sob demanda e confere versão, altura e posições antes/depois do print. Captura instável, página indisponível ou recurso travado produz falha sinalizada ao cron, sem salvar uma imagem incompatível. `--page=/kids/comunidade-dos-criadores/oferta --width=390 --refresh` permite refazer uma captura específica.
 
 ## Privacidade, confiabilidade e desempenho
 
@@ -101,11 +101,13 @@ Desempenho medido na build local em Chromium, 390 × 844 px, CPU desacelerada 4 
 | `/como-funciona/` | Desativada | 2.072 ms | 0 | 109 ms |
 | `/como-funciona/` | Automática | 2.068 ms | 0 | 105 ms |
 
+Desde 20/10/2026 a `/como-funciona` responde 301 para a seção de experiência da página de 9 a 17 (`/kids/comunidade-dos-criadores/oferta#experiencia`). As linhas acima ficam como registro da medição de 03/10/2026; o `analytics-performance.ts` passou a medir a raiz e a página de 9 a 17, e essa página ainda não tem números próprios registrados aqui. Os mesmos limites valem para ela.
+
 O script passou nos quatro cenários. A coleta automática não tem custo mensurável: com e sem coleta, as medianas ficaram iguais em todas as rodadas da noite.
 
 **Atenção ao ler esse número:** o bloqueio da página longa é praticamente uma tarefa só, a primeira montagem da tela, e oscila muito com a carga da máquina. Na mesma noite, com outras sessões ocupando metade da CPU, as medianas ficaram entre 178 e 207 ms (amostras isoladas chegaram a 639 ms), e a rodada da segunda revisão deu 216 ms. Decomposta no rastreamento do Chrome, essa tarefa gasta quase todo o tempo no layout do texto: o navegador abre várias faces de fonte (a página declara Baloo 2, Nunito e Plus Jakarta Sans em quatro pesos cada, além dos ícones) e molda o texto na primeira montagem. É custo da tipografia da página, não das métricas. Reduzir pesos ou mudar a pré-carga das fontes é decisão de direção de arte, registrada como próximo passo caso seja preciso mais margem em aparelhos fracos.
 
-O ajuste deixado pelo Codex no rodapé de `/como-funciona/` (`content-visibility: auto`) desenha os mesmos pixels a 390 px (a 1280 px muda só o antisserrilhado, por 0,125 px de rolagem), mas não mostrou ganho no A/B feito na mesma build e na mesma hora: 178 × 194 ms sem coleta e 207 × 205 ms com coleta, em nove amostras. Ele continua no CSS e fica a critério da dona: a remoção foi bloqueada pela proteção da sessão por ser trabalho não commitado de outra sessão.
+O ajuste deixado pelo Codex no rodapé de `/como-funciona/` (`content-visibility: auto`; a página saiu em 20/10/2026 e o ajuste com ela) desenha os mesmos pixels a 390 px (a 1280 px muda só o antisserrilhado, por 0,125 px de rolagem), mas não mostrou ganho no A/B feito na mesma build e na mesma hora: 178 × 194 ms sem coleta e 207 × 205 ms com coleta, em nove amostras. Ele continua no CSS e fica a critério da dona: a remoção foi bloqueada pela proteção da sessão por ser trabalho não commitado de outra sessão.
 
 A renderização sob demanda das seções e passos fora da tela, da revisão anterior, continua valendo; o print operacional força a renderização integral. Os limites automatizados não mudaram: LCP mediano ≤ 2.500 ms, CLS ≤ 0,1 e soma mediana do excesso de tarefas sobre 50 ms ≤ 200 ms. Essa última medição cobre a janela observada pelo script; não equivale ao INP nem ao TBT de uma auditoria Lighthouse. As rodadas anteriores com falha estão em `output/analytics/performance-review-initial.json`. São resultados de laboratório local em máquina compartilhada; não garantem tempos em todos os aparelhos e conexões de produção.
 
@@ -118,7 +120,7 @@ A renderização sob demanda das seções e passos fora da tela, da revisão ant
 - Regressões do coletor: elementos privados, tentativa reiniciada, pergunta respondida rapidamente, sessão expirada, início interrompido pela recusa, limite de IDs, versão do layout e desativação com a abertura de sessão retida (o `stop()` só termina quando ela termina e nada é enviado depois).
 - Painel React: visita sintética local com banco/API/coleta reais, print pelo worker, ponto sobre botão e recorte de elemento. Provedor local de identidade usado somente para autenticar o administrador de teste.
 - Captura com imagem travada: encerrou com código de falha em cerca de 15 segundos, sem salvar print.
-- Capturas locais: raiz, `/como-funciona/`, oferta da Comunidade e oferta Pro em celular e desktop. **A oferta do Desafio respondeu 503 localmente** (`offer_unavailable`); nenhum print falso foi criado. O quiz do Desafio passou no teste de navegação.
+- Capturas locais (03/10/2026): raiz, `/como-funciona/` (hoje um 301), oferta da Comunidade e oferta Pro em celular e desktop. **A oferta do Desafio respondeu 503 localmente** (`offer_unavailable`); nenhum print falso foi criado. O quiz do Desafio passou no teste de navegação.
 - O roteiro completo `desafio-farol.ts` passou de novo na terceira revisão: três ofertas, celular/desktop, 19 FAQs, imagens, pré-checkout, cupom, atribuição, quiz/resultados condicionais, recuperação de rede e reinício. Ele usa o painel de privacidade, mas não afirma que a coleta parou; quem prova a desativação são `analytics-preferences.ts` e `analytics-smoke.ts`. Usa o catálogo sintético isolado na porta 3347 e a build na 4347; não comprova a disponibilidade do catálogo real nem cria pagamentos.
 - Botão Privacidade no celular: na oferta da Comunidade a 390 px, com a barra fixa visível, o botão fica 8 px acima dela e não cobre mais "Escolher um plano". Com o pré-checkout aberto, o botão some.
 - Evidências locais: `packages/funnel/output/analytics/`. Scripts de navegador executam com Node/tsx. Para a build isolada, use `bunx astro build --outDir ./.tmp/analytics-review-build`, suba seu servidor em uma porta livre e passe `ANALYTICS_CAPTURE_URL=http://127.0.0.1:<porta>`. `analytics-panel.ts` inicia sua própria instância dessa build e exige `.env` com banco local; `analytics-worker.ts` também exige banco local. `analytics-regressions.ts` usa o servidor Vite para importar o coletor diretamente. Diagnósticos de perfil ficam em `.tmp/`, fora dos arquivos de entrega.
@@ -127,6 +129,8 @@ Achados, correções e contrato com a sessão do Desafio: [revisao-medicao-2026-
 
 ## Entrada do Instagram
 
-`/` agora é a bio curta com avatar existente, posicionamento e três acessos: como funciona (principal), quiz do Desafio e Comunidade com os planos. O quiz da Comunidade fica dentro de `/como-funciona/`, junto da apresentação com prints, percurso de aprendizado, recursos e FAQ. Os links preservam a origem sanitizada; o ajuste de espaçamento das dúvidas foi mantido.
+Desde 20/10/2026, `/` é a bio com dois caminhos, cada um para um quiz: o adulto (`bio-quiz-adulto`, `/pro/comunidade-dos-criadores/quiz`) e o infantil (`bio-quiz-infantil`, `/kids/comunidade-dos-criadores/quiz`). A `/como-funciona` responde 301 para `/kids/comunidade-dos-criadores/oferta#experiencia`, mantendo a query; o painel ainda abre os dados dela de antes do redirecionamento. Os links preservam a origem sanitizada.
+
+Até 20/10/2026, a bio tinha três acessos (como funciona como principal, quiz do Desafio e Comunidade com os planos), e o quiz da Comunidade ficava dentro de `/como-funciona/`, junto da apresentação com prints, percurso de aprendizado, recursos e FAQ.
 
 Reprodução de sessões fica para uma próxima etapa, conforme a escolha do usuário.

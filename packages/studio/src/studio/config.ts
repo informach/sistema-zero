@@ -7,26 +7,23 @@ import {
   type IDEMode,
   normalizeBlockLevel,
 } from '#core'
-import {
-  DEFAULT_HEARTBEAT_TIMEOUT_MS,
-  DEFAULT_LOOP_BUDGET_MS,
-  sanitizeFetchOrigins,
-} from '#preview'
 import type { AIProvider } from '../ai/contracts'
+import { sanitizeFetchOrigins } from '../preview/csp'
+import { DEFAULT_HEARTBEAT_TIMEOUT_MS, DEFAULT_LOOP_BUDGET_MS } from '../preview/limits'
+import { type PythonLearningLevel, resolvePythonLearningLevel } from '../python/learning'
 import type { StudioLimits } from '../state/projectStore'
 
-/** Configuração de IA injetada pelo host. */
+/** @deprecated Compatibility only; configure StudioTutorConfig for the Studio assistant UI. */
 export interface StudioAIConfig {
   /**
    * Provider gerenciado pelo host. Use um adapter que converse com o BFF do
    * produto; segredos de OpenRouter nunca devem atravessar props client-side.
    */
   provider?: AIProvider
-  /** Fixa o modelo (o seletor do Settings some). */
+  /** Legacy model value, retained for existing adapters. */
   model?: string
   /**
-   * Permite o aluno colar a própria chave no Settings (BYOK). Default: true
-   * quando o host NÃO injeta provider; false quando injeta.
+   * Legacy capability value. Studio no longer presents a local credential form.
    */
   allowUserKey?: boolean
 }
@@ -44,7 +41,7 @@ export interface StudioFeatures {
   download?: boolean
   /** Aba Terminal (WebContainer). Default: false — exige COOP/COEP no host. */
   terminal?: boolean
-  /** Aba/painel de IA. `true` = BYOK (mock até ter chave); objeto configura. Default: false. */
+  /** @deprecated Retained for host compatibility; no longer exposes an assistant or local key UI. Use tutor. */
   ai?: boolean | StudioAIConfig
   /**
    * Habilita criar e converter projetos Pro. O tipo do projeto define os modos:
@@ -89,10 +86,13 @@ const DEFAULT_PREVIEW_SECURITY: PreviewSecurityPolicy = resolvePreviewSecurity()
 
 /** Perfil de aprendizado fixado pelo host (divulgação progressiva). */
 export interface LearningConfig {
+  /** Python progression; omitted by older hosts means first steps. */
+  pythonLevel?: PythonLearningLevel
   /** Nível fixado pelo professor. */
   level: BlockLevel
   /** Tipos de bloco sempre visíveis (allowlist da aula). */
   allowBlocks?: readonly string[]
+  grantedBlockIds?: readonly string[]
   /** IDs de extensões que podem ser oferecidas para instalação. */
   allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis. */
@@ -102,9 +102,11 @@ export interface LearningConfig {
 }
 
 export interface LearningConfigInput {
+  pythonLevel?: PythonLearningLevel
   /** Aceita a escala LEGADA de 3 níveis (jsonb de aulas antigas, embutidores antigos). */
   level?: AnyBlockLevel
   allowBlocks?: readonly string[]
+  grantedBlockIds?: readonly string[]
   allowExtensions?: readonly string[]
   allowCategories?: readonly string[]
   allowLevelReveal?: boolean
@@ -118,8 +120,10 @@ export interface LearningConfigInput {
  */
 export function resolveLearning(input?: LearningConfigInput): LearningConfig {
   return {
+    pythonLevel: resolvePythonLearningLevel(input?.pythonLevel),
     level: normalizeBlockLevel(input?.level) ?? DEFAULT_LEARNING_LEVEL,
     allowBlocks: input?.allowBlocks,
+    grantedBlockIds: input?.grantedBlockIds,
     allowExtensions: input?.allowExtensions,
     allowCategories: input?.allowCategories,
     allowLevelReveal: input?.allowLevelReveal ?? true,
@@ -188,7 +192,7 @@ export function resolveStudioConfig(
   }
 }
 
-// Default = comportamento do app standalone (tudo ligado, BYOK) — vale para
+// Legacy configuration defaults remain compatible — these values apply to
 // componentes renderizados FORA de um <Studio> (lista do playground, testes).
 export const STANDALONE_CONFIG: ResolvedStudioConfig = {
   preview: true,

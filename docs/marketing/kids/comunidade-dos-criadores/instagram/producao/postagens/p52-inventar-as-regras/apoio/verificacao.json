@@ -1,0 +1,399 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/11-p51-a-p60.md",
+  "sourceSectionHash": "d5b1c8ec0470b15d4231fecc1ed14f2012e409b5c0f4d566bc3251d4d05fd104",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 82.828125,
+          "height": 82.828125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 227.109375,
+          "bottom": 337.078125,
+          "height": 109.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 2,
+      "file": "02-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 129.90625,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 251.078125,
+          "bottom": 885.734375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 3,
+      "file": "03-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 129.90625,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 251.078125,
+          "bottom": 885.734375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 4,
+      "file": "04-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 64.953125,
+          "height": 64.953125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 218.609375,
+          "bottom": 853.265625,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 5,
+      "file": "05-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo native-game",
+          "top": 295.859375,
+          "bottom": 890.859375,
+          "height": 595,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1061.453125,
+          "bottom": 1116,
+          "height": 54.546875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 6,
+      "file": "06-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 129.90625,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo native-game",
+          "top": 288.40625,
+          "bottom": 848.40625,
+          "height": 560,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 7,
+      "file": "07-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 125.25,
+          "height": 125.25,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "blocks",
+          "top": 276.265625,
+          "bottom": 858.375,
+          "height": 582.109375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1009.375,
+          "bottom": 1116,
+          "height": 106.625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 43
+    },
+    {
+      "number": 8,
+      "file": "08-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 129.90625,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 251.078125,
+          "bottom": 885.734375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1006.90625,
+          "bottom": 1116,
+          "height": 109.09375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    },
+    {
+      "number": 9,
+      "file": "09-p52.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 193.171875,
+          "height": 193.171875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo ",
+          "top": 272.3125,
+          "bottom": 906.96875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 986.09375,
+          "bottom": 1116,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 56
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-futebol-e-ideia.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-explicar-a-ideia.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-ideia-do-chute.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-duas-escolhas.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-batalha.png",
+      "loaded": true,
+      "width": 2776,
+      "height": 1560
+    },
+    {
+      "src": "apoio/06-escolha-do-golpe.png",
+      "loaded": true,
+      "width": 2776,
+      "height": 1560
+    },
+    {
+      "src": "apoio/07-brasa.png",
+      "loaded": true,
+      "width": 1490,
+      "height": 422
+    },
+    {
+      "src": "apoio/07-investida.png",
+      "loaded": true,
+      "width": 1606,
+      "height": 422
+    },
+    {
+      "src": "apoio/08-plano-do-campo.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/09-mais-uma-ideia.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true,
+    "handwriting": true
+  }
+}

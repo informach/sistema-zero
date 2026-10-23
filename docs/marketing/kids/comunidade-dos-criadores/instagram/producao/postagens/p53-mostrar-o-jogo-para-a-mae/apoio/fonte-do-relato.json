@@ -1,0 +1,15 @@
+{
+  "person": "Débora",
+  "role": "Aluna",
+  "fullQuote": "Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.",
+  "usedQuote": "No último dia chamei a minha mãe pra ver o meu jogo.",
+  "source": {
+    "gitRef": "c3c142e8f^",
+    "gitPath": "packages/funnel/src/components/funnel/oferta/DesafioOfertaBody.astro",
+    "commit": "f647c37efd518c6b11ec290ce37abeb4c04be31a"
+  },
+  "confirmation": "Relato confirmado pela responsável nesta conversa para a experiência atual. Identificação pública como aluna, conforme pedido da Helena.",
+  "relationship": "Filha de Helena e Júlio, vínculo registrado internamente. A ficha aprovada identifica apenas como aluna.",
+  "portrait": "Foto real fornecida pela responsável; não é registro do momento de mostrar o jogo.",
+  "generatedSpeech": false
+}

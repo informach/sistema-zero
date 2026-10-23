@@ -18,6 +18,17 @@ Todos os caminhos de código abaixo partem da raiz do repositório. Confira o es
 
 Documentos de planos são histórico de decisões e evidências, não prova automática de implementação. O manual de marketing contém trechos de fases anteriores; confirme no código a disponibilidade de publicação e métricas. Não copie datas, versões de APIs ou preços desses documentos como dados atuais.
 
+## Voz: bater o olho e entender
+
+Regra da dona (20/10/2026), vale para toda copy, em qualquer lugar: “Toda a nossa copy, de todos os lugares, não pode exigir que a pessoa fique pensando, interpretando. Tem que bater o olho e já entender o que quer dizer.”
+
+- Frases literais, com as palavras do próprio público.
+- Nada de metáfora de jogo ou termo técnico que precise ser decifrado.
+- Nenhuma frase que só funciona ao lado de uma imagem.
+- Uma ideia por frase.
+
+As regras de Light Copy continuam em `light-copy-rules.ts`; esta regra vem antes delas.
+
 ## Produtos encontrados na integração de 01/10/2026
 
 - `pro/no-comando-da-ia`: formação para adultos. Conferir módulo e conteúdo próprios.

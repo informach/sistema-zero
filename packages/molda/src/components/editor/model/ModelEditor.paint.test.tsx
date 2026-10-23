@@ -7,7 +7,7 @@ import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { resetMoldaPersistenceForTests } from '../../../state/persistence'
 import { installFakeViewport } from '../../../testing/fakeViewport'
 import { makeModel } from '../../../testing/fixtures'
-import { MoldaApp } from '../../MoldaApp'
+import { LegacyModelEditorHarness } from '../../../testing/LegacyModelEditorHarness'
 
 let fake: ReturnType<typeof installFakeViewport>
 
@@ -37,7 +37,7 @@ function modelOf(asset: MoldaAsset | undefined): MoldaModelAsset {
 
 async function openPaint(): Promise<ReturnType<typeof createMemoryPersistence>> {
   const persistence = createMemoryPersistence([makeModel()])
-  render(<MoldaApp persistence={persistence} adapter={{ initialAssetId: 'model-1' }} />)
+  render(<LegacyModelEditorHarness persistence={persistence} assetId="model-1" />)
   await screen.findByRole('complementary', { name: COPY.editor.model.toolbox })
   await waitFor(() => expect(lastModel().parts).toHaveLength(2))
   fireEvent.click(screen.getByRole('button', { name: COPY.editor.model.mode.paint }))

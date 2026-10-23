@@ -1,0 +1,136 @@
+{
+  "kind": "studio.python.local-sdk-turtle-preview",
+  "runtimeFingerprint": "ae46e781102489c22e9fe4ccd92af4c3a2c1a5b0c0597ecb985ac13472c579da",
+  "runtimeProfileSha256": "b5f6379e4ea93825bca17ab55c510549b98fb1b74a2d196ceaa111710d4191ce",
+  "coreSourceCommit": "d89c00fe1",
+  "sdkOwnImageDigest": "sha256:25a2ffca7e993530048893055d7ec685adcbbf0241a66e65433c36f985f88752",
+  "separateLocalSmokeImageDigest": "sha256:7e881384684120a0e5993f2972f7ceddca8849fa9d463053ddc8ed0c7d5b6ee1",
+  "version": 1,
+  "command": "bun tests/python-sdk-smoke.ts --linux-docker --preview --turtle",
+  "cliSha256": "63f2f53644400f180e4b5d05e68ecf6c2e5d8afb6ea4c6ac83e073a021b15448",
+  "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+  "qualificationReleaseManifestSha256": "681d8c6da438820102482778a9dcc174123ca5c918f98c36dc7299fab93965e5",
+  "qualificationReleaseIsStagingRelease": false,
+  "verified": true,
+  "validated": true,
+  "durationMs": 12103,
+  "report": {
+    "version": 1,
+    "projectId": "sdk-proof",
+    "recipe": {
+      "version": 1,
+      "observeMs": 1000,
+      "stdin": [
+        "Lia"
+      ],
+      "keys": [
+        "Space"
+      ],
+      "clicks": [
+        {
+          "x": 0.25,
+          "y": 0.25,
+          "button": "left"
+        }
+      ],
+      "requireGraphics": true
+    },
+    "status": "passed",
+    "inspection": {
+      "version": 1,
+      "revision": "997faea0bbcb342ac0875480daab1a430bd61391fc48dacd9629f211f175792f",
+      "runtimeManifestSha256": "681d8c6da438820102482778a9dcc174123ca5c918f98c36dc7299fab93965e5",
+      "pythonVersion": "3.14.2",
+      "status": "passed",
+      "files": [
+        {
+          "path": "main.py",
+          "sha256": "6ffffe1102dbc7a6ec41498ee3c79511f3b24b51e088c847bc0c3ab436483586",
+          "status": "passed",
+          "diagnostics": []
+        },
+        {
+          "path": "empty.py",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "status": "passed",
+          "diagnostics": []
+        },
+        {
+          "path": "helper.py",
+          "sha256": "2468b86b10aa5c0d6da1a269341ea01567e43c1201633d1bc6d00fbe1871e654",
+          "status": "passed",
+          "diagnostics": []
+        }
+      ]
+    },
+    "execution": {
+      "version": 1,
+      "projectId": "sdk-proof",
+      "revision": "997faea0bbcb342ac0875480daab1a430bd61391fc48dacd9629f211f175792f",
+      "runtimeManifestSha256": "681d8c6da438820102482778a9dcc174123ca5c918f98c36dc7299fab93965e5",
+      "pythonVersion": "3.14.2",
+      "instanceId": "fc3c06e3-237e-489d-9abb-de6f826bab85",
+      "runId": "75968ad5-4314-4c7b-ac21-eb08e10f41aa",
+      "recipe": {
+        "version": 1,
+        "observeMs": 1000,
+        "stdin": [
+          "Lia"
+        ],
+        "keys": [
+          "Space"
+        ],
+        "clicks": [
+          {
+            "x": 0.25,
+            "y": 0.25,
+            "button": "left"
+          }
+        ],
+        "requireGraphics": true
+      },
+      "status": "passed",
+      "started": true,
+      "stopped": true,
+      "stateBeforeStop": "running",
+      "observedDurationMs": 2358,
+      "stdout": "Nome?ola Lia\nkey-fired\nclick-fired\n",
+      "stderr": "",
+      "omittedChars": 0,
+      "errors": [],
+      "input": {
+        "stdinRequests": 1,
+        "stdinSubmitted": 1,
+        "keysDispatched": 1,
+        "clicksDispatched": 1
+      },
+      "capture": {
+        "path": "python-playtest.png",
+        "sha256": "d41aa7876579fdfe087fe91fbcb23152e9bb7e69595945c339c53371466a1973",
+        "byteLength": 2602,
+        "width": 320,
+        "height": 240,
+        "frameSequence": 7
+      }
+    }
+  },
+  "state": {
+    "created": 1,
+    "execStarted": 2,
+    "execFinished": 2,
+    "destroyStarted": 1,
+    "destroyFinished": 1
+  },
+  "preview": {
+    "storedFiles": 9,
+    "resetAvailable": true,
+    "inputCleanupPreserved": true,
+    "discardResetDenied": true
+  },
+  "cleanup": {
+    "after": []
+  },
+  "hostedAcceptance": false,
+  "registryImageIdentityQualifiedByThisProof": false,
+  "audioAudibilityAccepted": false
+}

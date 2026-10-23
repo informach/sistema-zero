@@ -12,7 +12,7 @@ const lado = (coluna: number) => (coluna === 0 ? 'antes' : 'depois')
 const icone = (coluna: number) => (coluna === 0 ? 'check' : 'add')
 ---
 
-<div class="comparacao kof-reveal" role="table" aria-label="O acesso inicial e a assinatura da Comunidade">
+<div class="comparacao" role="table" aria-label="O acesso inicial e a assinatura da Comunidade">
   <div class="comparacao-cabeca" role="row">
     {comparison.headers.map((header, coluna) => (
       <div class:list={['comparacao-titulo', `comparacao-titulo--${lado(coluna)}`]} role="columnheader">{header}</div>

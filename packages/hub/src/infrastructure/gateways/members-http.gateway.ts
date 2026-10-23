@@ -1,6 +1,9 @@
 import { randomUUID } from 'node:crypto'
+import { ADULT_CREATOR_CAPABILITIES } from '@sistemazero/core/journey'
 import type { Logger } from '@sistemazero/core/logging'
+import { AdultProfilePreferencesSchema } from '@sistemazero/core/profiles'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
+import { z } from 'zod'
 import type {
   ChallengeEntryArgs,
   ClubContributionArgs,
@@ -68,6 +71,64 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
   if (opts.internalToken) headers['x-internal-token'] = opts.internalToken
 
   return {
+    async getAdultCreatorState(userId: string) {
+      const response = await doFetch(
+        `${base}/members/internal/adult-creator-state?${new URLSearchParams({ userId })}`,
+        { headers, signal: AbortSignal.timeout(timeoutMs) },
+      )
+      if (!response.ok) throw new Error('Jornada adulta indisponível')
+      const parsed = z
+        .object({
+          audience: z.literal('adult'),
+          capabilities: z.array(z.enum(ADULT_CREATOR_CAPABILITIES)),
+          identity: AdultProfilePreferencesSchema.pick({ displayName: true, publicEnabled: true }),
+        })
+        .safeParse(await response.json())
+      if (!parsed.success) throw new Error('Contrato de jornada adulta inválido')
+      return { capabilities: parsed.data.capabilities, ...parsed.data.identity }
+    },
+    async getLiveMuralAccess(userId, accountId) {
+      const response = await doFetch(`${base}/members/internal/live/mural-access`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ userId, accountId }),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (!response.ok) return false
+      const body: unknown = await response.json()
+      return Boolean(body && typeof body === 'object' && 'allowed' in body && body.allowed === true)
+    },
+    async getLiveShowcaseEligibility(args) {
+      const response = await doFetch(`${base}/members/internal/live/showcase-eligibility`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(args),
+        signal: AbortSignal.timeout(timeoutMs),
+      })
+      if (response.status === 403 || response.status === 404 || response.status === 409)
+        return { eligible: false, title: '' }
+      if (!response.ok) throw new Error(`members live eligibility respondeu ${response.status}`)
+      const body: unknown = await response.json()
+      if (
+        args.audience === 'adult' &&
+        (!body || typeof body !== 'object' || !('audience' in body) || body.audience !== 'adult')
+      )
+        return { eligible: false, title: '' }
+      if (
+        !body ||
+        typeof body !== 'object' ||
+        !('eligible' in body) ||
+        body.eligible !== true ||
+        !('title' in body) ||
+        typeof body.title !== 'string'
+      )
+        return { eligible: false, title: '' }
+      return {
+        eligible: true,
+        title: body.title,
+        ...(args.audience === 'adult' ? { audience: 'adult' as const } : {}),
+      }
+    },
     async checkAccess(
       userId: string,
       courseRefs: string[],
@@ -132,6 +193,8 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       }
       if (!res.ok) throw new Error(`members showcase-eligibility respondeu ${res.status}`)
       const b = (await res.json()) as Partial<ShowcaseEligibilityResult>
+      if (b.audience !== 'kids' && b.audience !== 'adult')
+        throw new Error('Público da publicação inválido')
       return {
         eligible: Boolean(b.eligible),
         title: typeof b.title === 'string' ? b.title : '',
@@ -160,13 +223,19 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       )
     },
 
-    async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
-      await postSignedWebhook(CHALLENGE_WEBHOOK_PATH, 'challenge', {
-        userId: args.userId,
-        accountId: args.accountId,
-        audience: args.audience,
-        challengeKey: args.challengeKey,
-      })
+    async notifyChallengeEntry(args: ChallengeEntryArgs, deliveryId?: string): Promise<boolean> {
+      return postSignedWebhook(
+        CHALLENGE_WEBHOOK_PATH,
+        'challenge',
+        {
+          userId: args.userId,
+          accountId: args.accountId,
+          audience: args.audience,
+          challengeKey: args.challengeKey,
+          ...(args.publishedAt ? { publishedAt: args.publishedAt } : {}),
+        },
+        deliveryId,
+      )
     },
 
     async notifyClubContribution(args: ClubContributionArgs): Promise<void> {
@@ -188,13 +257,22 @@ export function createMembersHttpGateway(opts: MembersHttpGatewayOptions): Membe
       })
     },
 
-    async notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void> {
-      await postSignedWebhook(STANDALONE_SHOWCASE_WEBHOOK_PATH, 'showcase-standalone', {
-        userId: args.userId,
-        accountId: args.accountId,
-        audience: args.audience,
-        playId: args.playId,
-      })
+    async notifyStandaloneShowcase(
+      args: StandaloneShowcaseArgs,
+      deliveryId?: string,
+    ): Promise<boolean> {
+      return postSignedWebhook(
+        STANDALONE_SHOWCASE_WEBHOOK_PATH,
+        'showcase-standalone',
+        {
+          userId: args.userId,
+          accountId: args.accountId,
+          audience: args.audience,
+          playId: args.playId,
+          ...(args.publishedAt ? { publishedAt: args.publishedAt } : {}),
+        },
+        deliveryId,
+      )
     },
 
     async notifyPlaysMilestone(args: PlaysMilestoneArgs): Promise<void> {

@@ -30,7 +30,7 @@
 
 ### Task 2: Conteúdo dos 28 manifestos
 
-**Files:** `docs/aulas-interativas/aulas/*.manifesto.json`, `docs/aulas-interativas/ESPEC-MANIFESTO.md`.
+**Files:** `docs/aulas-interativas/aulas/*.manifesto.json`, `docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md`.
 
 **Interfaces:** `content.initialProject` usa o formato atual do Estúdio; `content.initialAsset` usa Pinta para editor ou `null` para entrega por galeria; `materials.items` contém apenas anexos reais.
 

@@ -1,0 +1,1249 @@
+# CPU Profile
+
+| Duration | Samples | Interval | Functions |
+|----------|---------|----------|----------|
+| 9.76s | 1298 | 1.0ms | 118 |
+
+**Top 10:** `sha256Base64` 55.7%, `sha256Base64` 20.0%, `encode` 5.9%, `TextEncoder` 2.8%, `sha256Base64` 1.7%, `parseModule` 1.2%, `anonymous` 1.2%, `set` 1.0%, `regExpSplitFast` 1.0%, `resolve` 0.9%
+
+## Hot Functions (Self Time)
+
+| Self% | Self | Total% | Total | Function | Location |
+|------:|-----:|-------:|------:|----------|----------|
+| 55.7% | 5.44s | 55.7% | 5.44s | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:50` |
+| 20.0% | 1.95s | 20.0% | 1.95s | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:51` |
+| 5.9% | 579.3ms | 5.9% | 579.3ms | `encode` | `[native code]` |
+| 2.8% | 280.4ms | 2.8% | 280.4ms | `TextEncoder` | `[native code]` |
+| 1.7% | 173.3ms | 1.7% | 173.3ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:41` |
+| 1.2% | 121.6ms | 2.6% | 253.9ms | `parseModule` | `[native code]` |
+| 1.2% | 118.4ms | 2.8% | 274.1ms | `anonymous` | `[native code]` |
+| 1.0% | 100.0ms | 1.0% | 100.0ms | `set` | `[native code]` |
+| 1.0% | 98.6ms | 1.4% | 146.1ms | `regExpSplitFast` | `[native code]` |
+| 0.9% | 96.7ms | 0.9% | 96.7ms | `resolve` | `[native code]` |
+| 0.8% | 82.4ms | 0.8% | 82.4ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:78` |
+| 0.7% | 74.8ms | 0.7% | 74.8ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:75` |
+| 0.5% | 51.6ms | 0.5% | 51.6ms | `moduleDeclarationInstantiation` | `[native code]` |
+| 0.5% | 51.2ms | 0.5% | 51.2ms | `/missing/iu` | `[native code]` |
+| 0.5% | 49.5ms | 0.5% | 49.5ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:83` |
+| 0.4% | 47.5ms | 0.4% | 47.5ms | `/\r\n\|\r\|\n/` | `[native code]` |
+| 0.4% | 41.8ms | 0.9% | 92.1ms | `search` | `[native code]` |
+| 0.3% | 32.2ms | 0.3% | 32.2ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:74` |
+| 0.3% | 31.4ms | 0.3% | 31.4ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:79` |
+| 0.2% | 28.7ms | 0.2% | 28.7ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:87` |
+| 0.1% | 16.9ms | 88.4% | 8.64s | `filter` | `[native code]` |
+| 0.1% | 16.4ms | 0.1% | 17.4ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:60` |
+| 0.1% | 16.3ms | 4.0% | 396.3ms | `async (anonymous)` | `[native code]` |
+| 0.1% | 16.1ms | 0.4% | 45.9ms | `(anonymous)` | `[native code]` |
+| 0.1% | 16.1ms | 0.1% | 16.1ms | `has` | `[native code]` |
+| 0.1% | 15.9ms | 0.3% | 29.5ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:101` |
+| 0.1% | 15.8ms | 0.1% | 15.8ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:59` |
+| 0.1% | 15.6ms | 0.1% | 15.6ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:54` |
+| 0.1% | 15.5ms | 0.1% | 15.5ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:15` |
+| 0.1% | 15.5ms | 0.1% | 15.5ms | `rotateRight` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts` |
+| 0.1% | 15.4ms | 0.1% | 15.4ms | `fromEntries` | `[native code]` |
+| 0.1% | 15.2ms | 0.1% | 15.2ms | `composedPath` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\Event.js:142` |
+| 0.1% | 14.6ms | 0.1% | 14.6ms | `fetch` | `[native code]` |
+| 0.1% | 14.6ms | 0.1% | 14.6ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:73` |
+| 0.1% | 14.1ms | 95.0% | 9.28s | `evaluate` | `[native code]` |
+| 0.1% | 13.8ms | 0.1% | 13.8ms | `node:util` | `node:util:10` |
+| 0.1% | 13.5ms | 0.1% | 13.5ms | `get buffer` | `[native code]` |
+| 0.1% | 12.7ms | 0.1% | 12.7ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:76` |
+| 0.1% | 12.1ms | 0.1% | 12.1ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\classic\schemas.js` |
+| 0.1% | 11.4ms | 0.1% | 11.4ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\world-3d\blocks.ts` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `bytesToBase64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:16` |
+| 0.0% | 1.0ms | 0.1% | 16.5ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:77` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\utilities\XMLEncodeUtility.js:35` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `rotateRight` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:19` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js` |
+| 0.0% | 997us | 0.0% | 997us | `parseEncodeTrie` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\entities@7.0.1\node_modules\entities\dist\esm\internal\encode-shared.js` |
+| 0.0% | 953us | 0.0% | 953us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\checks.js` |
+| 0.0% | 896us | 0.0% | 896us | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:97` |
+| 0.0% | 859us | 0.0% | 859us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-input-element\HTMLInputElementValueSanitizer.js` |
+| 0.0% | 852us | 0.0% | 852us | `write` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\doc.js` |
+
+## Call Tree (Total Time)
+
+| Total% | Total | Self% | Self | Function | Location |
+|-------:|------:|------:|-----:|----------|----------|
+| 95.1% | 9.29s | 0.0% | 0us | `async asyncModuleEvaluation` | `[native code]` |
+| 95.0% | 9.28s | 0.1% | 14.1ms | `evaluate` | `[native code]` |
+| 91.6% | 8.95s | 0.0% | 0us | `studioTutorSourceHash` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\studio\tutorSafety.ts:176` |
+| 88.4% | 8.64s | 0.1% | 16.9ms | `filter` | `[native code]` |
+| 88.4% | 8.64s | 0.0% | 0us | `currentProDiagnostics` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:14` |
+| 88.4% | 8.64s | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\.cache\profile-workspace.ts:10` |
+| 88.1% | 8.60s | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:16` |
+| 55.7% | 5.44s | 55.7% | 5.44s | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:50` |
+| 20.0% | 1.95s | 20.0% | 1.95s | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:51` |
+| 8.8% | 859.8ms | 0.0% | 0us | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:39` |
+| 5.9% | 579.3ms | 5.9% | 579.3ms | `encode` | `[native code]` |
+| 5.2% | 514.7ms | 0.0% | 0us | `moduleEvaluation` | `[native code]` |
+| 5.1% | 502.8ms | 0.0% | 0us | `link` | `[native code]` |
+| 4.0% | 396.3ms | 0.1% | 16.3ms | `async (anonymous)` | `[native code]` |
+| 3.5% | 345.8ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\.cache\profile-workspace.ts:8` |
+| 2.8% | 280.4ms | 2.8% | 280.4ms | `TextEncoder` | `[native code]` |
+| 2.8% | 274.1ms | 1.2% | 118.4ms | `anonymous` | `[native code]` |
+| 2.6% | 253.9ms | 1.2% | 121.6ms | `parseModule` | `[native code]` |
+| 2.4% | 239.2ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\.cache\profile-workspace.ts:11` |
+| 2.2% | 223.6ms | 0.0% | 0us | `require` | `[native code]` |
+| 2.2% | 223.6ms | 0.0% | 0us | `bound require` | `[native code]` |
+| 1.7% | 173.3ms | 1.7% | 173.3ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:41` |
+| 1.4% | 146.1ms | 0.0% | 0us | `searchProFiles` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\search.ts:38` |
+| 1.4% | 146.1ms | 1.0% | 98.6ms | `regExpSplitFast` | `[native code]` |
+| 1.0% | 100.0ms | 0.0% | 0us | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:42` |
+| 1.0% | 100.0ms | 1.0% | 100.0ms | `set` | `[native code]` |
+| 0.9% | 96.7ms | 0.9% | 96.7ms | `resolve` | `[native code]` |
+| 0.9% | 93.0ms | 0.0% | 0us | `searchProFiles` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\search.ts:41` |
+| 0.9% | 92.1ms | 0.4% | 41.8ms | `search` | `[native code]` |
+| 0.8% | 82.4ms | 0.8% | 82.4ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:78` |
+| 0.7% | 77.9ms | 0.0% | 0us | `async requestImportModule` | `[native code]` |
+| 0.7% | 74.8ms | 0.7% | 74.8ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:75` |
+| 0.5% | 51.6ms | 0.5% | 51.6ms | `moduleDeclarationInstantiation` | `[native code]` |
+| 0.5% | 51.6ms | 0.0% | 0us | `linkAndEvaluateModule` | `[native code]` |
+| 0.5% | 51.2ms | 0.5% | 51.2ms | `/missing/iu` | `[native code]` |
+| 0.5% | 49.5ms | 0.5% | 49.5ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:83` |
+| 0.4% | 47.5ms | 0.4% | 47.5ms | `/\r\n\|\r\|\n/` | `[native code]` |
+| 0.4% | 45.9ms | 0.1% | 16.1ms | `(anonymous)` | `[native code]` |
+| 0.3% | 33.5ms | 0.0% | 0us | `async loadAndEvaluateModule` | `[native code]` |
+| 0.3% | 32.2ms | 0.3% | 32.2ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:74` |
+| 0.3% | 31.4ms | 0.3% | 31.4ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:79` |
+| 0.3% | 30.6ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\CJSImportProcessor.js:4` |
+| 0.3% | 30.6ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:1` |
+| 0.3% | 29.8ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:11` |
+| 0.3% | 29.5ms | 0.1% | 15.9ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:101` |
+| 0.2% | 28.8ms | 0.0% | 0us | `map` | `[native code]` |
+| 0.2% | 28.7ms | 0.2% | 28.7ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:87` |
+| 0.1% | 17.4ms | 0.1% | 16.4ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:60` |
+| 0.1% | 16.5ms | 0.0% | 1.0ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:77` |
+| 0.1% | 16.1ms | 0.1% | 16.1ms | `has` | `[native code]` |
+| 0.1% | 15.8ms | 0.1% | 15.8ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:59` |
+| 0.1% | 15.6ms | 0.1% | 15.6ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:54` |
+| 0.1% | 15.5ms | 0.1% | 15.5ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:15` |
+| 0.1% | 15.5ms | 0.1% | 15.5ms | `rotateRight` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts` |
+| 0.1% | 15.4ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:290` |
+| 0.1% | 15.4ms | 0.1% | 15.4ms | `fromEntries` | `[native code]` |
+| 0.1% | 15.4ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:288` |
+| 0.1% | 15.2ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\tokenizer\readWord.js:5` |
+| 0.1% | 15.2ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\tokenizer\index.js:9` |
+| 0.1% | 15.2ms | 0.0% | 0us | `dispatchEvent` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\EventTarget.js:100` |
+| 0.1% | 15.2ms | 0.1% | 15.2ms | `composedPath` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\Event.js:142` |
+| 0.1% | 15.2ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\window\BrowserWindow.js:723` |
+| 0.1% | 15.2ms | 0.0% | 0us | `#goThroughDispatchEventPhases` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\EventTarget.js:148` |
+| 0.1% | 14.6ms | 0.1% | 14.6ms | `fetch` | `[native code]` |
+| 0.1% | 14.6ms | 0.0% | 0us | `requestInstantiate` | `[native code]` |
+| 0.1% | 14.6ms | 0.0% | 0us | `requestSatisfyUtil` | `[native code]` |
+| 0.1% | 14.6ms | 0.0% | 0us | `requestFetch` | `[native code]` |
+| 0.1% | 14.6ms | 0.1% | 14.6ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:73` |
+| 0.1% | 14.1ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:3` |
+| 0.1% | 13.9ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\transformers\RootTransformer.js:15` |
+| 0.1% | 13.8ms | 0.1% | 13.8ms | `node:util` | `node:util:10` |
+| 0.1% | 13.5ms | 0.1% | 13.5ms | `get buffer` | `[native code]` |
+| 0.1% | 13.4ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:2` |
+| 0.1% | 13.4ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\computeSourceMap.js:1` |
+| 0.1% | 12.7ms | 0.1% | 12.7ms | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:76` |
+| 0.1% | 12.4ms | 0.0% | 0us | `internal:streams/transform` | `internal:streams/transform:2` |
+| 0.1% | 12.4ms | 0.0% | 0us | `internal:streams/lazy_transform` | `internal:streams/lazy_transform:2` |
+| 0.1% | 12.4ms | 0.0% | 0us | `node:crypto` | `node:crypto:2` |
+| 0.1% | 12.4ms | 0.0% | 0us | `internal:streams/duplex` | `internal:streams/duplex:2` |
+| 0.1% | 12.1ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\textIR.ts:8` |
+| 0.1% | 12.1ms | 0.0% | 0us | `ZodString` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\core.js:41` |
+| 0.1% | 12.1ms | 0.1% | 12.1ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\classic\schemas.js` |
+| 0.1% | 12.1ms | 0.0% | 0us | `_string` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\api.js:7` |
+| 0.1% | 12.1ms | 0.0% | 0us | `init` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\core.js:22` |
+| 0.1% | 12.1ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:8` |
+| 0.1% | 12.1ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\traverser\index.js:5` |
+| 0.1% | 12.1ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\index.js:4` |
+| 0.1% | 11.4ms | 0.1% | 11.4ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\world-3d\blocks.ts` |
+| 0.1% | 11.4ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\world-3d\blocks.ts:2723` |
+| 0.0% | 2.8ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\index.ts:15` |
+| 0.0% | 2.8ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\parse.js:6` |
+| 0.0% | 1.9ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:991` |
+| 0.0% | 1.9ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:5` |
+| 0.0% | 1.8ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:6` |
+| 0.0% | 1.8ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\Options.js:1` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\NameManager.js:2` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `bytesToBase64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:16` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\utilities\XMLEncodeUtility.js:35` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `rotateRight` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:19` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:308` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:312` |
+| 0.0% | 1.0ms | 0.0% | 1.0ms | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:316` |
+| 0.0% | 1.0ms | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:4` |
+| 0.0% | 997us | 0.0% | 997us | `parseEncodeTrie` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\entities@7.0.1\node_modules\entities\dist\esm\internal\encode-shared.js` |
+| 0.0% | 997us | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\entities@7.0.1\node_modules\entities\dist\esm\generated\encode-html.js:10` |
+| 0.0% | 956us | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\react@19.2.6\node_modules\react\index.js:6` |
+| 0.0% | 953us | 0.0% | 953us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\checks.js` |
+| 0.0% | 953us | 0.0% | 0us | `runChecks` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:48` |
+| 0.0% | 904us | 0.0% | 0us | `[Symbol.search]` | `[native code]` |
+| 0.0% | 896us | 0.0% | 896us | `sha256Base64` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:97` |
+| 0.0% | 882us | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\tokenizer\index.js:3` |
+| 0.0% | 872us | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\traverser\statement.js:20` |
+| 0.0% | 859us | 0.0% | 859us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-input-element\HTMLInputElementValueSanitizer.js` |
+| 0.0% | 859us | 0.0% | 0us | `(module)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-input-element\HTMLInputElementValueSanitizer.js:6` |
+| 0.0% | 852us | 0.0% | 0us | `(anonymous)` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:990` |
+| 0.0% | 852us | 0.0% | 0us | `generateFastpass` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:878` |
+| 0.0% | 852us | 0.0% | 852us | `write` | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\doc.js` |
+
+## Function Details
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:50` | Self: 55.7% (5.44s) | Total: 55.7% (5.44s) | Samples: 724
+
+**Called by:**
+- `studioTutorSourceHash` (724)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:51` | Self: 20.0% (1.95s) | Total: 20.0% (1.95s) | Samples: 257
+
+**Called by:**
+- `studioTutorSourceHash` (257)
+
+### `encode`
+`[native code]` | Self: 5.9% (579.3ms) | Total: 5.9% (579.3ms) | Samples: 76
+
+**Called by:**
+- `sha256Base64` (76)
+
+### `TextEncoder`
+`[native code]` | Self: 2.8% (280.4ms) | Total: 2.8% (280.4ms) | Samples: 32
+
+**Called by:**
+- `sha256Base64` (32)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:41` | Self: 1.7% (173.3ms) | Total: 1.7% (173.3ms) | Samples: 25
+
+**Called by:**
+- `studioTutorSourceHash` (25)
+
+### `parseModule`
+`[native code]` | Self: 1.2% (121.6ms) | Total: 2.6% (253.9ms) | Samples: 17
+
+**Called by:**
+- `async (anonymous)` (42)
+
+**Calls:**
+- `(anonymous)` (8)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `node:crypto` (1)
+- `(anonymous)` (1)
+- `node:util` (1)
+
+### `anonymous`
+`[native code]` | Self: 1.2% (118.4ms) | Total: 2.8% (274.1ms) | Samples: 24
+
+**Called by:**
+- `require` (53)
+- `internal:streams/transform` (1)
+- `node:crypto` (1)
+- `internal:streams/duplex` (1)
+- `(anonymous)` (1)
+- `internal:streams/lazy_transform` (1)
+
+**Calls:**
+- `(anonymous)` (8)
+- `(anonymous)` (4)
+- `(anonymous)` (4)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `runChecks` (1)
+- `(anonymous)` (1)
+- `internal:streams/transform` (1)
+- `internal:streams/duplex` (1)
+- `(anonymous)` (1)
+- `internal:streams/lazy_transform` (1)
+
+### `set`
+`[native code]` | Self: 1.0% (100.0ms) | Total: 1.0% (100.0ms) | Samples: 13
+
+**Called by:**
+- `sha256Base64` (13)
+
+### `regExpSplitFast`
+`[native code]` | Self: 1.0% (98.6ms) | Total: 1.4% (146.1ms) | Samples: 15
+
+**Called by:**
+- `searchProFiles` (20)
+
+**Calls:**
+- `/\r\n\|\r\|\n/` (5)
+
+### `resolve`
+`[native code]` | Self: 0.9% (96.7ms) | Total: 0.9% (96.7ms) | Samples: 14
+
+**Called by:**
+- `async (anonymous)` (14)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:78` | Self: 0.8% (82.4ms) | Total: 0.8% (82.4ms) | Samples: 15
+
+**Called by:**
+- `studioTutorSourceHash` (15)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:75` | Self: 0.7% (74.8ms) | Total: 0.7% (74.8ms) | Samples: 10
+
+**Called by:**
+- `studioTutorSourceHash` (10)
+
+### `moduleDeclarationInstantiation`
+`[native code]` | Self: 0.5% (51.6ms) | Total: 0.5% (51.6ms) | Samples: 8
+
+**Called by:**
+- `link` (8)
+
+### `/missing/iu`
+`[native code]` | Self: 0.5% (51.2ms) | Total: 0.5% (51.2ms) | Samples: 6
+
+**Called by:**
+- `search` (5)
+- `[Symbol.search]` (1)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:83` | Self: 0.5% (49.5ms) | Total: 0.5% (49.5ms) | Samples: 5
+
+**Called by:**
+- `studioTutorSourceHash` (5)
+
+### `/\r\n\|\r\|\n/`
+`[native code]` | Self: 0.4% (47.5ms) | Total: 0.4% (47.5ms) | Samples: 5
+
+**Called by:**
+- `regExpSplitFast` (5)
+
+### `search`
+`[native code]` | Self: 0.4% (41.8ms) | Total: 0.9% (92.1ms) | Samples: 5
+
+**Called by:**
+- `searchProFiles` (10)
+
+**Calls:**
+- `/missing/iu` (5)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:74` | Self: 0.3% (32.2ms) | Total: 0.3% (32.2ms) | Samples: 4
+
+**Called by:**
+- `studioTutorSourceHash` (4)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:79` | Self: 0.3% (31.4ms) | Total: 0.3% (31.4ms) | Samples: 4
+
+**Called by:**
+- `studioTutorSourceHash` (4)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:87` | Self: 0.2% (28.7ms) | Total: 0.2% (28.7ms) | Samples: 2
+
+**Called by:**
+- `studioTutorSourceHash` (2)
+
+### `filter`
+`[native code]` | Self: 0.1% (16.9ms) | Total: 88.4% (8.64s) | Samples: 2
+
+**Called by:**
+- `currentProDiagnostics` (1140)
+- `(anonymous)` (1)
+
+**Calls:**
+- `(anonymous)` (1137)
+- `has` (1)
+- `(anonymous)` (1)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:60` | Self: 0.1% (16.4ms) | Total: 0.1% (17.4ms) | Samples: 2
+
+**Called by:**
+- `studioTutorSourceHash` (3)
+
+**Calls:**
+- `rotateRight` (1)
+
+### `async (anonymous)`
+`[native code]` | Self: 0.1% (16.3ms) | Total: 4.0% (396.3ms) | Samples: 3
+
+**Called by:**
+- `requestInstantiate` (1)
+- `async (anonymous)` (1)
+
+**Calls:**
+- `parseModule` (42)
+- `resolve` (14)
+- `requestFetch` (1)
+- `async (anonymous)` (1)
+
+### `(anonymous)`
+`[native code]` | Self: 0.1% (16.1ms) | Total: 0.4% (45.9ms) | Samples: 1
+
+**Calls:**
+- `has` (1)
+- `requestSatisfyUtil` (1)
+
+### `has`
+`[native code]` | Self: 0.1% (16.1ms) | Total: 0.1% (16.1ms) | Samples: 2
+
+**Called by:**
+- `(anonymous)` (1)
+- `filter` (1)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:101` | Self: 0.1% (15.9ms) | Total: 0.3% (29.5ms) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (3)
+
+**Calls:**
+- `get buffer` (2)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:59` | Self: 0.1% (15.8ms) | Total: 0.1% (15.8ms) | Samples: 2
+
+**Called by:**
+- `studioTutorSourceHash` (2)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:54` | Self: 0.1% (15.6ms) | Total: 0.1% (15.6ms) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:15` | Self: 0.1% (15.5ms) | Total: 0.1% (15.5ms) | Samples: 1
+
+**Called by:**
+- `filter` (1)
+
+### `rotateRight`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts` | Self: 0.1% (15.5ms) | Total: 0.1% (15.5ms) | Samples: 1
+
+**Called by:**
+- `sha256Base64` (1)
+
+### `fromEntries`
+`[native code]` | Self: 0.1% (15.4ms) | Total: 0.1% (15.4ms) | Samples: 1
+
+**Called by:**
+- `(anonymous)` (1)
+
+### `composedPath`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\Event.js:142` | Self: 0.1% (15.2ms) | Total: 0.1% (15.2ms) | Samples: 1
+
+**Called by:**
+- `#goThroughDispatchEventPhases` (1)
+
+### `fetch`
+`[native code]` | Self: 0.1% (14.6ms) | Total: 0.1% (14.6ms) | Samples: 1
+
+**Called by:**
+- `requestFetch` (1)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:73` | Self: 0.1% (14.6ms) | Total: 0.1% (14.6ms) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (1)
+
+### `evaluate`
+`[native code]` | Self: 0.1% (14.1ms) | Total: 95.0% (9.28s) | Samples: 1
+
+**Called by:**
+- `async asyncModuleEvaluation` (1216)
+- `moduleEvaluation` (11)
+
+**Calls:**
+- `(module)` (1140)
+- `(module)` (45)
+- `(module)` (31)
+- `(module)` (3)
+- `(module)` (1)
+- `(module)` (1)
+- `(module)` (1)
+- `(module)` (1)
+- `(module)` (1)
+- `(module)` (1)
+- `(module)` (1)
+
+### `node:util`
+`node:util:10` | Self: 0.1% (13.8ms) | Total: 0.1% (13.8ms) | Samples: 1
+
+**Called by:**
+- `parseModule` (1)
+
+### `get buffer`
+`[native code]` | Self: 0.1% (13.5ms) | Total: 0.1% (13.5ms) | Samples: 2
+
+**Called by:**
+- `sha256Base64` (2)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:76` | Self: 0.1% (12.7ms) | Total: 0.1% (12.7ms) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\classic\schemas.js` | Self: 0.1% (12.1ms) | Total: 0.1% (12.1ms) | Samples: 1
+
+**Called by:**
+- `init` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\world-3d\blocks.ts` | Self: 0.1% (11.4ms) | Total: 0.1% (11.4ms) | Samples: 1
+
+**Called by:**
+- `map` (1)
+
+### `bytesToBase64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:16` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (1)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:77` | Self: 0.0% (1.0ms) | Total: 0.1% (16.5ms) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (2)
+
+**Calls:**
+- `rotateRight` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\utilities\XMLEncodeUtility.js:35` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `evaluate` (1)
+
+### `rotateRight`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:19` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `sha256Base64` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js` | Self: 0.0% (1.0ms) | Total: 0.0% (1.0ms) | Samples: 1
+
+**Called by:**
+- `(anonymous)` (1)
+
+### `parseEncodeTrie`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\entities@7.0.1\node_modules\entities\dist\esm\internal\encode-shared.js` | Self: 0.0% (997us) | Total: 0.0% (997us) | Samples: 1
+
+**Called by:**
+- `(module)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\checks.js` | Self: 0.0% (953us) | Total: 0.0% (953us) | Samples: 1
+
+**Called by:**
+- `runChecks` (1)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:97` | Self: 0.0% (896us) | Total: 0.0% (896us) | Samples: 1
+
+**Called by:**
+- `studioTutorSourceHash` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-input-element\HTMLInputElementValueSanitizer.js` | Self: 0.0% (859us) | Total: 0.0% (859us) | Samples: 1
+
+**Called by:**
+- `(module)` (1)
+
+### `write`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\doc.js` | Self: 0.0% (852us) | Total: 0.0% (852us) | Samples: 1
+
+**Called by:**
+- `generateFastpass` (1)
+
+### `internal:streams/duplex`
+`internal:streams/duplex:2` | Self: 0.0% (0us) | Total: 0.1% (12.4ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `anonymous` (1)
+
+### `moduleEvaluation`
+`[native code]` | Self: 0.0% (0us) | Total: 5.2% (514.7ms) | Samples: 0
+
+**Called by:**
+- `moduleEvaluation` (80)
+- `async requestImportModule` (7)
+- `async asyncModuleEvaluation` (4)
+
+**Calls:**
+- `moduleEvaluation` (80)
+- `evaluate` (11)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\entities@7.0.1\node_modules\entities\dist\esm\generated\encode-html.js:10` | Self: 0.0% (0us) | Total: 0.0% (997us) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `parseEncodeTrie` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\tokenizer\index.js:3` | Self: 0.0% (0us) | Total: 0.0% (882us) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `init`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\core.js:22` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `ZodString` (1)
+
+**Calls:**
+- `(anonymous)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\NameManager.js:2` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\window\BrowserWindow.js:723` | Self: 0.0% (0us) | Total: 0.1% (15.2ms) | Samples: 0
+
+**Calls:**
+- `dispatchEvent` (1)
+
+### `linkAndEvaluateModule`
+`[native code]` | Self: 0.0% (0us) | Total: 0.5% (51.6ms) | Samples: 0
+
+**Called by:**
+- `async requestImportModule` (6)
+- `async loadAndEvaluateModule` (2)
+
+**Calls:**
+- `link` (8)
+
+### `bound require`
+`[native code]` | Self: 0.0% (0us) | Total: 2.2% (223.6ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (8)
+- `(anonymous)` (8)
+- `(anonymous)` (4)
+- `(anonymous)` (4)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (3)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+
+**Calls:**
+- `require` (53)
+
+### `studioTutorSourceHash`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\studio\tutorSafety.ts:176` | Self: 0.0% (0us) | Total: 91.6% (8.95s) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1137)
+- `(module)` (45)
+
+**Calls:**
+- `sha256Base64` (724)
+- `sha256Base64` (257)
+- `sha256Base64` (108)
+- `sha256Base64` (25)
+- `sha256Base64` (15)
+- `sha256Base64` (13)
+- `sha256Base64` (10)
+- `sha256Base64` (5)
+- `sha256Base64` (4)
+- `sha256Base64` (4)
+- `sha256Base64` (3)
+- `sha256Base64` (3)
+- `sha256Base64` (2)
+- `sha256Base64` (2)
+- `sha256Base64` (2)
+- `sha256Base64` (1)
+- `sha256Base64` (1)
+- `sha256Base64` (1)
+- `bytesToBase64` (1)
+- `sha256Base64` (1)
+
+### `async loadAndEvaluateModule`
+`[native code]` | Self: 0.0% (0us) | Total: 0.3% (33.5ms) | Samples: 0
+
+**Calls:**
+- `async asyncModuleEvaluation` (4)
+- `linkAndEvaluateModule` (2)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:290` | Self: 0.0% (0us) | Total: 0.1% (15.4ms) | Samples: 0
+
+**Called by:**
+- `map` (1)
+
+**Calls:**
+- `fromEntries` (1)
+
+### `requestInstantiate`
+`[native code]` | Self: 0.0% (0us) | Total: 0.1% (14.6ms) | Samples: 0
+
+**Called by:**
+- `requestSatisfyUtil` (1)
+
+**Calls:**
+- `async (anonymous)` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\index.js:4` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (3)
+
+**Calls:**
+- `bound require` (3)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\textIR.ts:8` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `_string` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\traverser\statement.js:20` | Self: 0.0% (0us) | Total: 0.0% (872us) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\transformers\RootTransformer.js:15` | Self: 0.0% (0us) | Total: 0.1% (13.9ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `map`
+`[native code]` | Self: 0.0% (0us) | Total: 0.2% (28.8ms) | Samples: 0
+
+**Called by:**
+- `(module)` (1)
+- `(module)` (1)
+- `(module)` (1)
+- `(anonymous)` (1)
+
+**Calls:**
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+- `(anonymous)` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-input-element\HTMLInputElementValueSanitizer.js:6` | Self: 0.0% (0us) | Total: 0.0% (859us) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `(anonymous)` (1)
+
+### `async requestImportModule`
+`[native code]` | Self: 0.0% (0us) | Total: 0.7% (77.9ms) | Samples: 0
+
+**Calls:**
+- `moduleEvaluation` (7)
+- `linkAndEvaluateModule` (6)
+
+### `internal:streams/transform`
+`internal:streams/transform:2` | Self: 0.0% (0us) | Total: 0.1% (12.4ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `anonymous` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\react@19.2.6\node_modules\react\index.js:6` | Self: 0.0% (0us) | Total: 0.0% (956us) | Samples: 0
+
+**Called by:**
+- `parseModule` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:3` | Self: 0.0% (0us) | Total: 0.1% (14.1ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:5` | Self: 0.0% (0us) | Total: 0.0% (1.9ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (2)
+
+**Calls:**
+- `bound require` (2)
+
+### `node:crypto`
+`node:crypto:2` | Self: 0.0% (0us) | Total: 0.1% (12.4ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (1)
+
+**Calls:**
+- `anonymous` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\.cache\profile-workspace.ts:8` | Self: 0.0% (0us) | Total: 3.5% (345.8ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (45)
+
+**Calls:**
+- `studioTutorSourceHash` (45)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\traverser\index.js:5` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (3)
+
+**Calls:**
+- `bound require` (3)
+
+### `generateFastpass`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:878` | Self: 0.0% (0us) | Total: 0.0% (852us) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1)
+
+**Calls:**
+- `write` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:6` | Self: 0.0% (0us) | Total: 0.0% (1.8ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (2)
+
+**Calls:**
+- `bound require` (2)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\.cache\profile-workspace.ts:11` | Self: 0.0% (0us) | Total: 2.4% (239.2ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (31)
+
+**Calls:**
+- `searchProFiles` (20)
+- `searchProFiles` (11)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:42` | Self: 0.0% (0us) | Total: 1.0% (100.0ms) | Samples: 0
+
+**Called by:**
+- `studioTutorSourceHash` (13)
+
+**Calls:**
+- `set` (13)
+
+### `runChecks`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:48` | Self: 0.0% (0us) | Total: 0.0% (953us) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `(anonymous)` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\world-3d\blocks.ts:2723` | Self: 0.0% (0us) | Total: 0.1% (11.4ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `map` (1)
+
+### `#goThroughDispatchEventPhases`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\EventTarget.js:148` | Self: 0.0% (0us) | Total: 0.1% (15.2ms) | Samples: 0
+
+**Called by:**
+- `dispatchEvent` (1)
+
+**Calls:**
+- `composedPath` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\tokenizer\index.js:9` | Self: 0.0% (0us) | Total: 0.1% (15.2ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (4)
+
+**Calls:**
+- `bound require` (4)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\parser\tokenizer\readWord.js:5` | Self: 0.0% (0us) | Total: 0.1% (15.2ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (4)
+
+**Calls:**
+- `bound require` (4)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:1` | Self: 0.0% (0us) | Total: 0.3% (30.6ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (8)
+
+**Calls:**
+- `bound require` (8)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:312` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `map` (1)
+
+**Calls:**
+- `map` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\computeSourceMap.js:1` | Self: 0.0% (0us) | Total: 0.1% (13.4ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (2)
+
+**Calls:**
+- `bound require` (2)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:2` | Self: 0.0% (0us) | Total: 0.1% (13.4ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (2)
+
+**Calls:**
+- `bound require` (2)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:4` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (1)
+
+**Calls:**
+- `bound require` (1)
+
+### `_string`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\api.js:7` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `(module)` (1)
+
+**Calls:**
+- `ZodString` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:316` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `map` (1)
+
+**Calls:**
+- `filter` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:308` | Self: 0.0% (0us) | Total: 0.0% (1.0ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `map` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\index.ts:15` | Self: 0.0% (0us) | Total: 0.0% (2.8ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (3)
+
+**Calls:**
+- `(anonymous)` (3)
+
+### `requestSatisfyUtil`
+`[native code]` | Self: 0.0% (0us) | Total: 0.1% (14.6ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1)
+
+**Calls:**
+- `requestInstantiate` (1)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\.cache\profile-workspace.ts:10` | Self: 0.0% (0us) | Total: 88.4% (8.64s) | Samples: 0
+
+**Called by:**
+- `evaluate` (1140)
+
+**Calls:**
+- `currentProDiagnostics` (1140)
+
+### `dispatchEvent`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\EventTarget.js:100` | Self: 0.0% (0us) | Total: 0.1% (15.2ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1)
+
+**Calls:**
+- `#goThroughDispatchEventPhases` (1)
+
+### `require`
+`[native code]` | Self: 0.0% (0us) | Total: 2.2% (223.6ms) | Samples: 0
+
+**Called by:**
+- `bound require` (53)
+
+**Calls:**
+- `anonymous` (53)
+
+### `link`
+`[native code]` | Self: 0.0% (0us) | Total: 5.1% (502.8ms) | Samples: 0
+
+**Called by:**
+- `link` (57)
+- `linkAndEvaluateModule` (8)
+
+**Calls:**
+- `link` (57)
+- `moduleDeclarationInstantiation` (8)
+
+### `[Symbol.search]`
+`[native code]` | Self: 0.0% (0us) | Total: 0.0% (904us) | Samples: 0
+
+**Called by:**
+- `searchProFiles` (1)
+
+**Calls:**
+- `/missing/iu` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:991` | Self: 0.0% (0us) | Total: 0.0% (1.9ms) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (2)
+
+**Calls:**
+- `(anonymous)` (1)
+- `anonymous` (1)
+
+### `currentProDiagnostics`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:14` | Self: 0.0% (0us) | Total: 88.4% (8.64s) | Samples: 0
+
+**Called by:**
+- `(module)` (1140)
+
+**Calls:**
+- `filter` (1140)
+
+### `sha256Base64`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts:39` | Self: 0.0% (0us) | Total: 8.8% (859.8ms) | Samples: 0
+
+**Called by:**
+- `studioTutorSourceHash` (108)
+
+**Calls:**
+- `encode` (76)
+- `TextEncoder` (32)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js:990` | Self: 0.0% (0us) | Total: 0.0% (852us) | Samples: 0
+
+**Called by:**
+- `(anonymous)` (1)
+
+**Calls:**
+- `generateFastpass` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\parse.js:6` | Self: 0.0% (0us) | Total: 0.0% (2.8ms) | Samples: 0
+
+**Called by:**
+- `(module)` (3)
+
+**Calls:**
+- `(anonymous)` (2)
+- `(anonymous)` (1)
+
+### `searchProFiles`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\search.ts:38` | Self: 0.0% (0us) | Total: 1.4% (146.1ms) | Samples: 0
+
+**Called by:**
+- `(module)` (20)
+
+**Calls:**
+- `regExpSplitFast` (20)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx:16` | Self: 0.0% (0us) | Total: 88.1% (8.60s) | Samples: 0
+
+**Called by:**
+- `filter` (1137)
+
+**Calls:**
+- `studioTutorSourceHash` (1137)
+
+### `(module)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\game-2d\blocks.ts:288` | Self: 0.0% (0us) | Total: 0.1% (15.4ms) | Samples: 0
+
+**Called by:**
+- `evaluate` (1)
+
+**Calls:**
+- `map` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:8` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (3)
+
+**Calls:**
+- `bound require` (3)
+
+### `ZodString`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\core.js:41` | Self: 0.0% (0us) | Total: 0.1% (12.1ms) | Samples: 0
+
+**Called by:**
+- `_string` (1)
+
+**Calls:**
+- `init` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\index.js:11` | Self: 0.0% (0us) | Total: 0.3% (29.8ms) | Samples: 0
+
+**Called by:**
+- `parseModule` (3)
+
+**Calls:**
+- `bound require` (3)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\Options.js:1` | Self: 0.0% (0us) | Total: 0.0% (1.8ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (2)
+
+**Calls:**
+- `bound require` (2)
+
+### `requestFetch`
+`[native code]` | Self: 0.0% (0us) | Total: 0.1% (14.6ms) | Samples: 0
+
+**Called by:**
+- `async (anonymous)` (1)
+
+**Calls:**
+- `fetch` (1)
+
+### `searchProFiles`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\search.ts:41` | Self: 0.0% (0us) | Total: 0.9% (93.0ms) | Samples: 0
+
+**Called by:**
+- `(module)` (11)
+
+**Calls:**
+- `search` (10)
+- `[Symbol.search]` (1)
+
+### `async asyncModuleEvaluation`
+`[native code]` | Self: 0.0% (0us) | Total: 95.1% (9.29s) | Samples: 0
+
+**Called by:**
+- `async asyncModuleEvaluation` (12)
+- `async loadAndEvaluateModule` (4)
+
+**Calls:**
+- `evaluate` (1216)
+- `async asyncModuleEvaluation` (12)
+- `moduleEvaluation` (4)
+
+### `internal:streams/lazy_transform`
+`internal:streams/lazy_transform:2` | Self: 0.0% (0us) | Total: 0.1% (12.4ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (1)
+
+**Calls:**
+- `anonymous` (1)
+
+### `(anonymous)`
+`C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\sucrase@3.35.1\node_modules\sucrase\dist\CJSImportProcessor.js:4` | Self: 0.0% (0us) | Total: 0.3% (30.6ms) | Samples: 0
+
+**Called by:**
+- `anonymous` (8)
+
+**Calls:**
+- `bound require` (8)
+
+## Files
+
+| Self% | Self | File |
+|------:|-----:|------|
+| 81.7% | 7.98s | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\preview\scriptIntegrity.ts` |
+| 17.5% | 1.71s | `[native code]` |
+| 0.1% | 15.5ms | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\modes\pro\workspace\ProBottomPanel.tsx` |
+| 0.1% | 15.2ms | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\event\Event.js` |
+| 0.1% | 13.8ms | `node:util` |
+| 0.1% | 12.1ms | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\classic\schemas.js` |
+| 0.1% | 11.4ms | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\packages\studio\src\official-extensions\world-3d\blocks.ts` |
+| 0.0% | 1.0ms | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\utilities\XMLEncodeUtility.js` |
+| 0.0% | 1.0ms | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\schemas.js` |
+| 0.0% | 997us | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\entities@7.0.1\node_modules\entities\dist\esm\internal\encode-shared.js` |
+| 0.0% | 953us | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\checks.js` |
+| 0.0% | 859us | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-input-element\HTMLInputElementValueSanitizer.js` |
+| 0.0% | 852us | `C:\Users\tocha\projects\sistema-zero-studio-pro-workspace\node_modules\.bun\zod@4.4.3\node_modules\zod\v4\core\doc.js` |

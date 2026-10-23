@@ -1,0 +1,19 @@
+{
+  "name": "@sistemazero/studio-ai-reconcile-cron",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "types": "wrangler types --include-runtime=false",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test && bun run test:workerd",
+    "test:workerd": "node tests/workerd-proof.mjs",
+    "check": "biome check ."
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260810.1",
+    "@types/bun": "1.3.11",
+    "typescript": "5.9.3",
+    "wrangler": "4.120.1"
+  }
+}

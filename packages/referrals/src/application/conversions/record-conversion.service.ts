@@ -1,6 +1,7 @@
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import { normalizeEmail } from '../../domain/codes'
+import { offerGiftAudience } from '../../domain/gift-policy'
 import type { CatalogClient, PaymentsClient } from '../../domain/ports/clients.port'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 
@@ -79,9 +80,12 @@ export class RecordConversionService {
     const email = normalizeEmail(snapshot.customer?.email ?? '')
     if (!email) return { kind: 'ok' }
 
-    const match = await this.repo.findRedemptionWithCodeByEmail(email)
-    if (match?.redemption.status !== 'completed') return { kind: 'ok' }
-    if (snapshot.paidAt < match.redemption.createdAt) return { kind: 'ok' }
+    // Até um resgate por público. Só conta presente concluído ANTES do pagamento.
+    const paidAt = snapshot.paidAt
+    const candidates = (await this.repo.listRedemptionsWithCodeByEmail(email)).filter(
+      (m) => m.redemption.status === 'completed' && paidAt >= m.redemption.createdAt,
+    )
+    if (candidates.length === 0) return { kind: 'ok' }
 
     const offerId = typeof snapshot.metadata.offerId === 'string' ? snapshot.metadata.offerId : null
     if (!offerId) return { kind: 'ok' } // sem oferta não há como classificar — skip
@@ -100,6 +104,11 @@ export class RecordConversionService {
       return { kind: 'retryable', reason: `oferta ${offerId} não encontrada no catalog` }
     }
     if (!this.config.conversionOfferSlugs.includes(offer.slug)) return { kind: 'ok' }
+    // Assinatura adulta → o presente adulto do e-mail; Kids → o Kids. Quem só tem o presente
+    // do outro público continua contando por ele (o presente levou à assinatura).
+    const audience = offerGiftAudience(offer.slug)
+    const match = candidates.find((m) => m.redemption.audience === audience) ?? candidates[0]
+    if (!match) return { kind: 'ok' }
 
     if (snapshot.subscriptionId) {
       let createdAt: Date | null

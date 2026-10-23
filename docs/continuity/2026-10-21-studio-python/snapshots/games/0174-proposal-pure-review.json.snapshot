@@ -1,0 +1,8 @@
+{
+  "state": "SEPARATE-PROPOSAL-PURE-CONTROLS-PASS-NOT-ACTIVE-NOT-NATIVE",
+  "validControls": 2,
+  "rejectedControls": 9,
+  "proposalSha256": "654028900be986f165e93d0020b546542505506f496a2498b3a6a83f8d3772eb",
+  "originalNativeQpcAtLeast3AssertStillActive": true,
+  "nativeDoesNotImportProposal": true
+}

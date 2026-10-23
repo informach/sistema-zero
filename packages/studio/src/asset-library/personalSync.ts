@@ -25,6 +25,7 @@
  * viaja junto: sem ele o load do projeto DESCARTA o asset.
  */
 
+import { canonicalJson } from '@sistemazero/core/creations'
 import { ulid } from 'ulid'
 import { isValidAssetDataUrl, PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { perfSpanAsync } from '../core/perf'
@@ -38,6 +39,7 @@ import {
   type ProjectStorageScope,
 } from '../state/projectStorageRuntime'
 import type { ProjectStoreApi } from '../state/projectStore'
+import type { StudioPintaLibraryAdapter } from '../studio/pinta-library'
 import {
   getPersonalAsset,
   getPersonalAssets,
@@ -53,6 +55,11 @@ interface DrawingSyncState {
   lastSyncAt: number
   didInitialSweep: boolean
   inFlight: Promise<DrawingSyncResult> | null
+  inFlightAdapter?: StudioPintaLibraryAdapter | null
+  inFlightSignal?: AbortSignal
+  inFlightStore?: ProjectStoreApi
+  token?: object
+  controller?: AbortController
   pendingFailures: string[]
 }
 
@@ -60,6 +67,14 @@ interface DrawingSyncContext {
   namespace: string
   storageScope: ProjectStorageScope
   state: DrawingSyncState
+  canonicalChanged?: boolean
+  callerSignal?: AbortSignal
+  python?: {
+    signal: AbortSignal
+    attemptedOpen: Set<string>
+    current: () => boolean
+    resolver: () => Promise<ReturnType<typeof import('./pintaImageSync').createPintaImageSync>>
+  }
 }
 
 /** Estado independente por perfil + banco capturados. Trocar de perfil nunca compartilha o
@@ -85,6 +100,7 @@ function captureSyncContext(): DrawingSyncContext {
 function isContextActive(context: DrawingSyncContext): boolean {
   return (
     getPersonalAssetsNamespace() === context.namespace &&
+    !context.storageScope.signal?.aborted &&
     captureProjectStorageScope().identity === context.storageScope.identity
   )
 }
@@ -170,7 +186,10 @@ export async function reconcileDrawingsFromRestoredProject(
   // UMA leitura em lote da biblioteca (não uma por asset): o restauro roda dentro do
   // orçamento da descida, e 30 projetos × 5 desenhos eram 150 leituras sequenciais.
   const personalIds = nextAssets
-    .filter((asset): asset is ProjectAsset => !!asset && asset.kind !== 'audio')
+    .filter(
+      (asset): asset is ProjectAsset =>
+        !!asset && asset.kind !== 'audio' && asset.pintaImage === undefined,
+    )
     .map((asset) => personalIdOf(asset))
     .filter((id): id is string => id !== null)
   const drawings =
@@ -179,7 +198,9 @@ export async function reconcileDrawingsFromRestoredProject(
     const asset = nextAssets[index]
     if (!asset) continue
     const id = personalIdOf(asset)
-    if (!id || asset.kind === 'audio') continue
+    // A captured frame is deliberately different from the canonical spritesheet.
+    // It must retain the editable drawing identity, never become a personal copy.
+    if (!id || asset.kind === 'audio' || asset.pintaImage !== undefined) continue
     try {
       const drawing = drawings.get(id) ?? null
       if (!drawing) continue
@@ -250,19 +271,76 @@ async function resolveDrawings(
  * Reconcilia os desenhos do Pinta com TODOS os jogos da criança (o alcance que
  * ela escolheu: não só o que está aberto).
  *
- * Barato no caso comum: se nada mudou desde a última passada desta aba, sai sem
- * tocar no IndexedDB.
+ * Cópias canônicas usam o marcador pessoal para evitar leituras repetidas. Receitas Python
+ * também conferem a proveniência nativa (incluindo tilesets); só rasterizam se ela mudou.
  */
-export function syncDrawingsIntoProjects(storeApi: ProjectStoreApi): Promise<DrawingSyncResult> {
+export function syncDrawingsIntoProjects(
+  storeApi: ProjectStoreApi,
+  options: { pintaLibrary?: StudioPintaLibraryAdapter | null; signal?: AbortSignal } = {},
+): Promise<DrawingSyncResult> {
   const context = captureSyncContext()
-  if (context.state.inFlight) return context.state.inFlight
+  const adapter = options.pintaLibrary
+  if (
+    context.state.inFlight &&
+    context.state.inFlightStore === storeApi &&
+    context.state.inFlightAdapter === adapter &&
+    context.state.inFlightSignal === options.signal &&
+    !options.signal?.aborted &&
+    !context.state.controller?.signal.aborted &&
+    !context.storageScope.signal?.aborted
+  )
+    return context.state.inFlight
   const changedAt = personalAssetsChangedAt(context.namespace)
-  if (context.state.didInitialSweep && changedAt === context.state.lastSyncAt) {
+  context.canonicalChanged =
+    !context.state.didInitialSweep || changedAt !== context.state.lastSyncAt
+  if (options.signal?.aborted || (!context.canonicalChanged && !adapter?.inspectImage)) {
     return Promise.resolve(emptyResult())
   }
+  const token = {}
+  context.state.token = token
+  context.callerSignal = options.signal
+  context.state.controller?.abort()
+  const lifetime = new AbortController()
+  context.state.controller = lifetime
+  const signal = AbortSignal.any([
+    lifetime.signal,
+    ...(options.signal ? [options.signal] : []),
+    ...(context.storageScope.signal ? [context.storageScope.signal] : []),
+  ])
+  const unsubscribe = storeApi.subscribe((state, previous) => {
+    if (
+      state.project?.id !== previous.project?.id ||
+      (state.project?.programmingLanguage ?? 'javascript') !==
+        (previous.project?.programmingLanguage ?? 'javascript') ||
+      state.editingAccess !== previous.editingAccess
+    )
+      lifetime.abort()
+  })
+  let resolver:
+    | Promise<ReturnType<typeof import('./pintaImageSync').createPintaImageSync>>
+    | undefined
+  context.python = {
+    signal,
+    attemptedOpen: new Set(),
+    current: () =>
+      !signal.aborted &&
+      context.state.token === token &&
+      context.namespace === context.storageScope.namespace &&
+      isContextActive(context) &&
+      storeApi.getState().editingAccess === 'author',
+    resolver: () =>
+      (resolver ??= import('./pintaImageSync').then(({ createPintaImageSync }) =>
+        createPintaImageSync(adapter, signal),
+      )),
+  }
   const run = sweep(storeApi, changedAt, context)
+  context.state.inFlightAdapter = adapter
+  context.state.inFlightSignal = options.signal
+  context.state.inFlightStore = storeApi
   context.state.inFlight = run
   return run.finally(() => {
+    unsubscribe()
+    lifetime.abort()
     if (context.state.inFlight === run) context.state.inFlight = null
   })
 }
@@ -295,6 +373,7 @@ async function sweepUnmeasured(
 ): Promise<DrawingSyncResult> {
   const result = emptyResult()
   const drawings = new Map<string, PersonalAsset | null>()
+  let canonicalWritesCompleted = true
 
   // 1) Projeto ABERTO: pela store, para que preview, miniaturas dos blocos e
   //    autosave sigam o caminho normal de uma edição.
@@ -313,6 +392,10 @@ async function sweepUnmeasured(
   }
   let visited = 0
   for (const summary of summaries) {
+    const pythonProject = summary.programmingLanguage === 'python'
+    if (!context.canonicalChanged && !pythonProject) continue
+    if (context.callerSignal?.aborted) break
+    if (pythonProject && !context.python?.current()) continue
     // Cede a thread principal a cada poucos projetos: a varredura roda no foco da aba, logo
     // quando a criança pode estar clicando — um laço de 100 leituras de assets sem respirar
     // travava a tela por segundos. A releitura do projeto aberto continua POR VOLTA.
@@ -327,17 +410,51 @@ async function sweepUnmeasured(
     try {
       const assets = await loadProjectAssetsById(summary.id, context.storageScope)
       if (assets.length === 0) continue
-      await resolveDrawings(assets, drawings, context.namespace)
+      if (context.canonicalChanged)
+        await resolveDrawings(
+          pythonProject ? assets.filter((asset) => asset.pintaImage === undefined) : assets,
+          drawings,
+          context.namespace,
+        )
       // Orçamento do projeto, igual ao da store: sem isto um desenho que cresceu
       // podia empurrar o total acima do teto, e o `sanitizeProjectAssets` do
       // LOAD descarta o que passa — a criança abriria o jogo com imagens
       // faltando, sem nenhum aviso.
       let total = assets.reduce((sum, a) => sum + a.dataUrl.length, 0)
       let changed = false
-      const next = assets.map((asset) => {
+      const next = [...assets]
+      for (let index = 0; index < next.length; index++) {
+        const asset = next[index]
+        if (!asset) continue
+        if (pythonProject && asset.pintaImage !== undefined) {
+          if (!context.python?.current()) break
+          try {
+            const resolver = await context.python.resolver()
+            const replacement = await resolver.reconcile(asset, next)
+            if (!context.python.current()) break
+            if (replacement) {
+              next[index] = replacement
+              total += replacement.dataUrl.length - asset.dataUrl.length
+              changed = true
+            }
+          } catch (error) {
+            if (context.python.current())
+              pushFailure(result, context.state, imageSyncFailure(asset, error))
+          }
+          continue
+        }
+        if (!context.canonicalChanged) continue
         const id = personalIdOf(asset)
         const drawing = id ? (drawings.get(id) ?? null) : null
-        if (!drawingNeedsSync(asset, drawing) || !drawing) return asset
+        if (!drawingNeedsSync(asset, drawing) || !drawing) continue
+        if (asset.pintaImage !== undefined) {
+          pushFailure(
+            result,
+            context.state,
+            'Prepare a imagem usando a receita do Pinta antes de atualizar este material.',
+          )
+          continue
+        }
         // Bytes que o load descartaria não vão ao disco: gravá-los faria o jogo abrir sem
         // a imagem na próxima vez, em silêncio. A recusa aparece como a da cota.
         const merged = mergeDrawingIntoAsset(asset, drawing)
@@ -349,7 +466,7 @@ async function sweepUnmeasured(
               ? `O desenho "${drawing.name}" é inválido ou grande demais e não entrou no jogo "${summary.name}".`
               : `A criação "${drawing.name}" não é um arquivo 3D válido, ou é grande demais, e não entrou no jogo "${summary.name}".`,
           )
-          return asset
+          continue
         }
         const projected = total - asset.dataUrl.length + drawing.dataUrl.length
         if (projected > PROJECT_ASSET_LIMITS.maxAssetsTotalChars) {
@@ -358,15 +475,25 @@ async function sweepUnmeasured(
             context.state,
             `${drawing.kind === 'image' ? 'O desenho' : 'A criação'} "${drawing.name}" cresceu e não cabe mais no jogo "${summary.name}".`,
           )
-          return asset
+          continue
         }
         total = projected
         changed = true
-        return merged
-      })
+        next[index] = merged
+      }
       if (!changed) continue
-      await persistProjectAssets(summary.id, next, context.storageScope)
-      result.updatedInOtherProjects += 1
+      const written = await persistProjectAssets(
+        summary.id,
+        next,
+        context.storageScope,
+        assets,
+        () =>
+          !context.callerSignal?.aborted &&
+          storeApi.getState().project?.id !== summary.id &&
+          (!pythonProject || context.python?.current() === true),
+      )
+      if (written) result.updatedInOtherProjects += 1
+      else if (context.canonicalChanged) canonicalWritesCompleted = false
     } catch {
       // Um projeto ilegível não pode derrubar a varredura dos outros.
     }
@@ -377,8 +504,12 @@ async function sweepUnmeasured(
   //    (comparação de bytes com os desenhos já lidos).
   await syncOpenProject(storeApi, drawings, result, context)
 
-  context.state.lastSyncAt = changedAt
-  context.state.didInitialSweep = true
+  // A pending opening/CAS can refuse a required write. Keep its marker unconsumed so the
+  // next normal focus/hydration sweep can reconcile it; do not retry inside this sweep.
+  if (canonicalWritesCompleted && context.python?.current()) {
+    context.state.lastSyncAt = changedAt
+    context.state.didInitialSweep = true
+  }
   return result
 }
 
@@ -394,25 +525,101 @@ async function syncOpenProject(
   if (!isContextActive(context)) return
   const openProject = storeApi.getState().project
   if (!openProject?.assets?.length) return
-  await resolveDrawings(openProject.assets, drawings, context.namespace)
-  if (!isContextActive(context)) return
-  for (const asset of openProject.assets) {
-    const id = personalIdOf(asset)
-    const drawing = id ? (drawings.get(id) ?? null) : null
-    if (!drawingNeedsSync(asset, drawing) || !drawing) continue
-    const error = storeApi.getState().updateAssetImage(asset.id, {
-      dataUrl: drawing.dataUrl,
-      originalFileName: drawing.originalFileName,
-      width: drawing.width,
-      height: drawing.height,
-      sprite: drawing.sprite,
-      tileset: drawing.tileset,
-      tilemap: drawing.tilemap,
-      libRevision: drawing.updatedAt,
-    })
-    if (error) pushFailure(result, context.state, error)
-    else result.updatedInOpenProject += 1
+  const pythonProject = openProject.programmingLanguage === 'python'
+  let active = storeApi.getState().editingAccess === 'author'
+  const unsubscribe = storeApi.subscribe((state, previous) => {
+    if (
+      state.project?.id !== previous.project?.id ||
+      state.editingAccess !== previous.editingAccess ||
+      (state.project?.programmingLanguage ?? 'javascript') !==
+        (previous.project?.programmingLanguage ?? 'javascript')
+    )
+      active = false
+  })
+  try {
+    if (context.canonicalChanged)
+      await resolveDrawings(
+        pythonProject
+          ? openProject.assets.filter((asset) => asset.pintaImage === undefined)
+          : openProject.assets,
+        drawings,
+        context.namespace,
+      )
+    if (!isContextActive(context)) return
+    for (const asset of openProject.assets) {
+      if (!active || context.callerSignal?.aborted) return
+      if (pythonProject && asset.pintaImage !== undefined) {
+        if (!context.python?.current()) return
+        const attempt = `${openProject.id}\u0000${asset.id}`
+        if (context.python.attemptedOpen.has(attempt)) continue
+        // The second open-project pass must not turn a refused material CAS into a new intent.
+        context.python.attemptedOpen.add(attempt)
+        const before = canonicalJson(asset)
+        try {
+          const resolver = await context.python.resolver()
+          const replacement = await resolver.reconcile(
+            asset,
+            storeApi.getState().project?.assets ?? [],
+          )
+          if (!context.python.current()) return
+          if (!replacement) continue
+          const current = storeApi.getState().project
+          const target = current?.assets?.find((candidate) => candidate.id === asset.id)
+          if (
+            current?.id !== openProject.id ||
+            current.programmingLanguage !== 'python' ||
+            !target ||
+            canonicalJson(target) !== before
+          )
+            continue
+          resolver.assertFits(replacement, current.assets ?? [])
+          const error = storeApi.getState().updateAssetImage(asset.id, {
+            dataUrl: replacement.dataUrl,
+            width: replacement.width,
+            height: replacement.height,
+            pintaImage: replacement.pintaImage,
+          })
+          if (error) pushFailure(result, context.state, error)
+          else result.updatedInOpenProject += 1
+        } catch (error) {
+          if (context.python.current())
+            pushFailure(result, context.state, imageSyncFailure(asset, error))
+        }
+        continue
+      }
+      if (!context.canonicalChanged) continue
+      const id = personalIdOf(asset)
+      const drawing = id ? (drawings.get(id) ?? null) : null
+      if (!drawingNeedsSync(asset, drawing) || !drawing) continue
+      if (asset.pintaImage !== undefined) {
+        pushFailure(
+          result,
+          context.state,
+          'Prepare a imagem usando a receita do Pinta antes de atualizar este material.',
+        )
+        continue
+      }
+      const error = storeApi.getState().updateAssetImage(asset.id, {
+        dataUrl: drawing.dataUrl,
+        originalFileName: drawing.originalFileName,
+        width: drawing.width,
+        height: drawing.height,
+        sprite: drawing.sprite,
+        tileset: drawing.tileset,
+        tilemap: drawing.tilemap,
+        libRevision: drawing.updatedAt,
+      })
+      if (error) pushFailure(result, context.state, error)
+      else result.updatedInOpenProject += 1
+    }
+  } finally {
+    unsubscribe()
   }
+}
+
+function imageSyncFailure(asset: ProjectAsset, error: unknown): string {
+  const reason = error instanceof Error ? error.message : 'Não consegui preparar a imagem agora.'
+  return `A imagem "${asset.name}" foi mantida. ${reason}`
 }
 
 /** Recusa vai para o resultado E para a fila que a janela dos materiais drena. */
@@ -435,6 +642,8 @@ export function mergeDrawingIntoAsset(
   asset: ProjectAsset,
   drawing: PersonalAsset,
 ): ProjectAsset | null {
+  // Legacy canonical copies cannot replace an explicitly derived frame/map.
+  if (asset.pintaImage !== undefined) return null
   const is3D = asset.kind === 'model3d' || asset.kind === 'environment3d'
   // 3D: o nome do arquivo faz parte da validação (extensão × MIME × assinatura), então
   // vale o da criação nova e, sem ele, o que o asset já tinha.
@@ -484,6 +693,7 @@ export function releaseDrawingSyncProfile(namespace: string): void {
   for (const [identity, state] of syncStates) {
     if (!identity.startsWith(`${normalized}\u0000`)) continue
     syncStates.delete(identity)
+    state.controller?.abort()
     state.pendingFailures = []
   }
 }

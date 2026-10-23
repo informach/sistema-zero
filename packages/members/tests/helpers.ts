@@ -4,6 +4,7 @@ import { CheckAccessService } from '../src/application/access/check-access.servi
 import { AccessCheckService } from '../src/application/access-check/access-check.service'
 import { CreationCleanupService } from '../src/application/admin/creation-cleanup/creation-cleanup.service'
 import { PurgeUserDataService } from '../src/application/admin/purge-user-data/purge-user-data.service'
+import { AdultJourneyService } from '../src/application/adult-journey/adult-journey.service'
 import { ConsumeAiUsageService } from '../src/application/ai-usage/consume-ai-usage.service'
 import { GetAiCreditsService } from '../src/application/ai-usage/get-ai-credits.service'
 import { GetAiUsageStatsService } from '../src/application/ai-usage/get-ai-usage-stats.service'
@@ -60,6 +61,9 @@ import { GrantEntitlementService } from '../src/application/grant-entitlement/gr
 import { GrantManualEntitlementService } from '../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { HelpService } from '../src/application/help/help.service'
 import { IssueCertificateService } from '../src/application/issue-certificate/issue-certificate.service'
+import type { KidsJourneyConfigurationService } from '../src/application/kids-journey/kids-journey-configuration.service'
+import { KidsJourneyProfilesService } from '../src/application/kids-journey/kids-journey-profiles.service'
+import { KidsJourneyQueryService } from '../src/application/kids-journey/kids-journey-query.service'
 import { LearningService } from '../src/application/learning/learning.service'
 import { LearningImportService } from '../src/application/learning/learning-import.service'
 import { SectionProgressionService } from '../src/application/learning/section-progression.service'
@@ -68,34 +72,14 @@ import { ListMemberCertificatesService } from '../src/application/list-member-ce
 import { ListMemberRatingsService } from '../src/application/list-member-ratings/list-member-ratings.service'
 import { ListMembersService } from '../src/application/list-members/list-members.service'
 import { ListMyCoursesService } from '../src/application/list-my-courses/list-my-courses.service'
+import { LiveTeacherNotesService } from '../src/application/live-course/teacher-notes.service'
 import { ManageEntitlementService } from '../src/application/manage-entitlement/manage-entitlement.service'
 import { MarkLessonCompleteService } from '../src/application/mark-lesson-complete/mark-lesson-complete.service'
 import { ParentReportPrefsService } from '../src/application/parent-report/report-prefs.service'
-import { AdvancePensaStageService } from '../src/application/pensa/advance-stage.service'
-import { AppendPensaConversationTurnService } from '../src/application/pensa/append-conversation-turn.service'
-import { AppendPensaTasksService } from '../src/application/pensa/append-tasks.service'
-import { CreatePensaCycleService } from '../src/application/pensa/create-cycle.service'
-import { CreatePensaProjectService } from '../src/application/pensa/create-project.service'
-import { DeletePensaProjectService } from '../src/application/pensa/delete-project.service'
-import { DeletePensaTaskService } from '../src/application/pensa/delete-task.service'
-import { GetPensaProjectService } from '../src/application/pensa/get-project.service'
-import { GetPensaStageService } from '../src/application/pensa/get-stage.service'
-import { GetPensaTaskHandoffService } from '../src/application/pensa/get-task-handoff.service'
-import { JoinPensaProjectService } from '../src/application/pensa/join-project.service'
-import { ListPensaProjectMembersService } from '../src/application/pensa/list-project-members.service'
-import { ListPensaProjectsService } from '../src/application/pensa/list-projects.service'
-import { RemovePensaProjectMemberService } from '../src/application/pensa/remove-project-member.service'
-import { ReplacePensaTasksService } from '../src/application/pensa/replace-tasks.service'
-import { SavePensaArtifactService } from '../src/application/pensa/save-artifact.service'
-import {
-  SharePensaProjectService,
-  UnsharePensaProjectService,
-} from '../src/application/pensa/share-project.service'
-import { UpdatePensaProjectService } from '../src/application/pensa/update-project.service'
-import { UpdatePensaTaskService } from '../src/application/pensa/update-task.service'
-import { UpdatePensaTaskProgressService } from '../src/application/pensa/update-task-progress.service'
-import { ValidatePensaArtifactService } from '../src/application/pensa/validate-artifact.service'
+import { PensaProjectService } from '../src/application/pensa/project.service'
+import { PensaTeamService } from '../src/application/pensa/team.service'
 import { GetProfileAllowanceService } from '../src/application/profile-allowance/get-profile-allowance.service'
+import { AdultProfileService } from '../src/application/profiles/adult-profile.service'
 import { GetPublicProfileService } from '../src/application/profiles/get-public-profile.service'
 import { GetProfilesOverviewService } from '../src/application/profiles-overview/get-profiles-overview.service'
 import { RevokeEntitlementService } from '../src/application/revoke-entitlement/revoke-entitlement.service'
@@ -104,6 +88,12 @@ import { GetRoomService } from '../src/application/room/get-room.service'
 import { SaveRoomService } from '../src/application/room/save-room.service'
 import { SaveCourseRatingService } from '../src/application/save-course-rating/save-course-rating.service'
 import { SaveVideoPositionService } from '../src/application/save-video-position/save-video-position.service'
+import { AuthorizeAuthoringRuntimeService } from '../src/application/studio/authorize-authoring-runtime.service'
+import { AuthorizeFreeRuntimeService } from '../src/application/studio/authorize-free-runtime.service'
+import { AuthorizeLessonRuntimeService } from '../src/application/studio/authorize-lesson-runtime.service'
+import { AuthorizePythonAnalysisService } from '../src/application/studio/authorize-python-analysis.service'
+import { FreeStudioAccessService } from '../src/application/studio/free-studio-access.service'
+import { OpenLessonStudioService } from '../src/application/studio/open-lesson-studio.service'
 import { StudioSubmissionsAdminService } from '../src/application/studio-submissions-admin/studio-submissions-admin.service'
 import { GetStudioUnlocksService } from '../src/application/studio-unlocks/get-studio-unlocks.service'
 import { SubmitQuizAttemptService } from '../src/application/submit-quiz-attempt/submit-quiz-attempt.service'
@@ -122,13 +112,23 @@ import type {
   CourseTrack,
 } from '../src/domain/course/course'
 import { EntitlementAggregate } from '../src/domain/entitlement/entitlement.aggregate'
-import { SHARE_CODE_ALPHABET } from '../src/domain/pensa/share-code'
 import type { AuthGateway } from '../src/domain/ports/auth-gateway.port'
 import type { ResolvedOffer } from '../src/domain/ports/catalog-gateway.port'
 import type { HubAuthorActivity, HubGateway } from '../src/domain/ports/hub-gateway.port'
 import type { Env } from '../src/infrastructure/config/env'
+import { createDbConnection } from '../src/infrastructure/persistence/drizzle/db'
+import { DrizzleGamificationRepository } from '../src/infrastructure/persistence/drizzle/gamification.repository'
+import { DrizzlePensaCheckpointsRepository } from '../src/infrastructure/persistence/drizzle/pensa-checkpoints.repository'
+import { DrizzlePensaNarrationsRepository } from '../src/infrastructure/persistence/drizzle/pensa-narrations.repository'
+import { DrizzlePensaOperationsRepository } from '../src/infrastructure/persistence/drizzle/pensa-operations.repository'
+import { DrizzlePensaProjectCommands } from '../src/infrastructure/persistence/drizzle/pensa-project.commands'
+import { DrizzlePensaProjectRepository } from '../src/infrastructure/persistence/drizzle/pensa-project.repository'
+import { DrizzlePensaRewardsRepository } from '../src/infrastructure/persistence/drizzle/pensa-rewards.repository'
+import { DrizzlePensaTeamRepository } from '../src/infrastructure/persistence/drizzle/pensa-team.repository'
 import { EncryptedRankingCursorCodec } from '../src/infrastructure/security/ranking-cursor.codec'
 import { createServer } from '../src/interfaces/http/server'
+import { InMemoryAdultJourneyRepository } from './fakes/adult-journey-in-memory'
+import { InMemoryAdultProfileRepository } from './fakes/adult-profile-in-memory'
 import { InMemoryAiUsageRepository } from './fakes/ai-usage-in-memory'
 import { InMemoryChallengeConfigRepository } from './fakes/challenge-config-in-memory'
 import { InMemoryCreationsRepository } from './fakes/creations-in-memory'
@@ -156,9 +156,11 @@ import {
   InMemoryVideoPositionRepository,
   silentLogger,
 } from './fakes/in-memory'
+import { InMemoryKidsJourneySnapshots } from './fakes/kids-journey-in-memory'
 import { InMemoryLearningRepository } from './fakes/learning-in-memory'
 import { InMemoryLessonDraftRepository } from './fakes/lesson-draft-in-memory'
-import { InMemoryPensaRepository } from './fakes/pensa-in-memory'
+import { InMemoryLiveLessonAccess } from './fakes/live-lesson-access-in-memory'
+import { InMemoryStudioLessonBindingRepository } from './fakes/studio-lesson-binding-in-memory'
 import { InMemoryToolUsageRepository } from './fakes/tool-usage-in-memory'
 
 export const WEBHOOK_SECRET = 'test-gateway-secret-0123456789ab'
@@ -167,6 +169,7 @@ export function buildApp(
   opts: {
     now?: Date
     internalToken?: string
+    kidsJourneyConfiguration?: KidsJourneyConfigurationService
     requireAdmin?: boolean
     /** Limites da quota de IA (default 50/dia + 500/mês — os de produção). */
     aiLimits?: { daily: number; monthly: number }
@@ -175,6 +178,22 @@ export function buildApp(
     zappy?: ZappyHistoryService
     /** Contas já cercadas por exclusão (simula a barreira durável do Postgres). */
     deletedAccountIds?: string[]
+    /** O executor dos objetivos que rodam o jogo (o studio-runtime); sem ele, 503. */
+    projectExecutor?: import('../src/domain/ports/project-execution-checker.port').ProjectExecutionChecker
+    studioAuthoringPolicy?: import('../src/domain/studio/authoring-policy').StudioAuthoringPolicy
+    studioRuntimePolicy?: import('../src/domain/studio/runtime-policy').StudioRuntimePolicy
+    pythonActivities?: Pick<
+      import('../src/application/studio/python-activity-inspection.service').PythonActivityInspectionService,
+      'grade'
+    >
+    sectionPythonLive?: Pick<
+      import('../src/application/live/live-workspace.service').LiveWorkspaceService,
+      'forSession'
+    >
+    galleryStudioSource?: Pick<
+      import('../src/application/learning/studio-gallery-source.service').StudioGallerySourceService,
+      'load'
+    >
   } = {},
 ) {
   // Cache de posse das criações é por processo: cada app de teste começa limpo.
@@ -190,27 +209,33 @@ export function buildApp(
   const quizAttempts = new InMemoryQuizAttemptRepository()
   const studioSubmissions = new InMemoryStudioSubmissionRepository(courses)
   courses.onQuizGateChanged = (blockId) => quizAttempts.deleteByBlockId(blockId)
-  courses.onStudioActivityChanged = (blockId) => studioSubmissions.resetCorrectionByBlockId(blockId)
   const ratings = new InMemoryCourseRatingRepository()
   const certificates = new InMemoryCertificateRepository()
   const avatar = new InMemoryAvatarRepository()
   const room = new InMemoryRoomRepository()
   const studioUnlocks = new InMemoryStudioUnlockRepository()
   // gamification recebe avatar/room p/ a compra ATÔMICA (spendCoins concede a posse junto).
-  const gamification = new InMemoryGamificationRepository({ entitlements, courses, avatar, room })
+  const gamification = new InMemoryGamificationRepository({
+    entitlements,
+    courses,
+    avatar,
+    room,
+    studioUnlocks,
+  })
+  const adultProfileRepository = new InMemoryAdultProfileRepository()
+  const adultJourneyRepository = new InMemoryAdultJourneyRepository(gamification)
+  const adultJourney = new AdultJourneyService(adultJourneyRepository, courses, clock)
+  const adultProfile = new AdultProfileService(adultProfileRepository, clock, avatar, adultJourney)
   const parentReports = new InMemoryParentReportRepository()
   const processed = new InMemoryProcessedWebhookRepository()
   const catalog = new FakeCatalogGateway()
-  const pensa = new InMemoryPensaRepository()
-  // Códigos de plano DETERMINÍSTICOS (a sequência é previsível nos testes; o índice único
-  // do fake continua valendo).
-  let shareCodeSeq = 0
-  const nextShareCode = () => {
-    shareCodeSeq += 1
-    const a = SHARE_CODE_ALPHABET
-    return `AAAA${a[Math.floor(shareCodeSeq / a.length) % a.length]}${a[shareCodeSeq % a.length]}`
-  }
   const creations = new InMemoryCreationsRepository()
+  const adultCreations = new InMemoryCreationsRepository('adult', creations.rows)
+  // As artes da equipe (Pensa) consultam o índice das criações.
+  const pensa = {
+    projects: new Map<string, { userId: string; updatedAt: Date; [key: string]: unknown }>(),
+    completedProjects: new Set<string>(),
+  }
   const teacherThreadsRepo = new InMemoryTeacherThreadRepository(courses)
   const teacherThreads = new TeacherThreadsService(teacherThreadsRepo, clock)
   const aiUsage = new InMemoryAiUsageRepository()
@@ -218,6 +243,9 @@ export function buildApp(
   const helpCollections = new InMemoryHelpCollectionRepository()
   const helpTutorials = new InMemoryHelpTutorialRepository(helpCollections)
   const help = new HelpService(helpCollections, helpTutorials, clock)
+  const adultHelpCollections = new InMemoryHelpCollectionRepository()
+  const adultHelpTutorials = new InMemoryHelpTutorialRepository(adultHelpCollections)
+  const adultHelp = new HelpService(adultHelpCollections, adultHelpTutorials, clock)
   const consumeAiUsage = new ConsumeAiUsageService({
     aiUsage,
     dailyLimit: opts.aiLimits?.daily ?? 50,
@@ -231,7 +259,18 @@ export function buildApp(
     clock,
   })
 
-  const checkAccess = new CheckAccessService(courses, entitlements, gamification, clock)
+  // Curso ao vivo: as vagas (grants) das oficinas, semeáveis por teste.
+  const liveLessonAccess = new InMemoryLiveLessonAccess(courses)
+  const kidsJourneySnapshots = new InMemoryKidsJourneySnapshots(courses, gamification)
+  const kidsJourneyQuery = new KidsJourneyQueryService(kidsJourneySnapshots)
+  const kidsJourneyProfiles = new KidsJourneyProfilesService(kidsJourneySnapshots, kidsJourneyQuery)
+  const checkAccess = new CheckAccessService(
+    courses,
+    entitlements,
+    kidsJourneyQuery,
+    clock,
+    liveLessonAccess,
+  )
   const awardGamification = new AwardGamificationService(gamification, clock, silentLogger)
   const accessCheck = new AccessCheckService(entitlements, clock)
   const grant = new GrantEntitlementService({
@@ -251,7 +290,10 @@ export function buildApp(
   } = { items: null }
   // Play-check do REMIX, semeável por teste: playId → {visible, authorId}. Ausente
   // do mapa → null (hub indisponível — o service NÃO grava o marco, fail-closed).
-  const hubPlays = new Map<string, { visible: boolean; authorId: string | null }>()
+  const hubPlays = new Map<
+    string,
+    { visible: boolean; authorId: string | null; audience?: 'adult' | 'kids' }
+  >()
   // Jogos publicados por PERFIL (perfil público kids), semeável por teste. Ausente do
   // mapa → null (hub indisponível → o service degrada p/ `games: []`).
   const hubGamesByAuthor = new Map<
@@ -261,7 +303,11 @@ export function buildApp(
   // Participação Clube/Mural por autor (ficha admin), semeável por teste.
   // `items: null` (default) = hub indisponível → cartões clube/mural viram null.
   const hubActivityByAuthors: { items: HubAuthorActivity[] | null } = { items: null }
+  const adultCommunityAvailability = { value: true }
   const hub: HubGateway = {
+    async canUseAdultShowcase() {
+      return adultCommunityAvailability.value
+    },
     async notifyAccessChanged(userId, event) {
       hubCalls.push({ userId, event })
     },
@@ -289,8 +335,10 @@ export function buildApp(
           },
       )
     },
-    async checkPlay(playId) {
-      return hubPlays.get(playId) ?? null
+    async checkPlay(playId, audience = 'kids') {
+      const play = hubPlays.get(playId)
+      if (!play) return null
+      return (play.audience ?? 'kids') === audience ? play : { visible: false, authorId: null }
     },
   }
 
@@ -319,7 +367,11 @@ export function buildApp(
     },
   }
 
-  const avatarsByProfiles = new GetAvatarsByProfilesService(avatar, gamification)
+  const avatarsByProfiles = new GetAvatarsByProfilesService(
+    avatar,
+    gamification,
+    kidsJourneyProfiles,
+  )
   const ranking = new ListRankingService(gamification, avatarsByProfiles, clock)
   const getRankingLeaderboard = new GetRankingLeaderboardService(
     gamification,
@@ -327,6 +379,8 @@ export function buildApp(
     clock,
     authGateway,
     new EncryptedRankingCursorCodec(WEBHOOK_SECRET),
+    adultProfileRepository,
+    adultJourney,
   )
 
   const env = {
@@ -336,6 +390,7 @@ export function buildApp(
   } as unknown as Env
 
   const learningRepository = new InMemoryLearningRepository()
+  const studioBindings = new InMemoryStudioLessonBindingRepository()
   const preferencesRepository = new InMemoryProfilePreferencesRepository()
   const sectionProgression = new SectionProgressionService(
     learningRepository,
@@ -346,6 +401,17 @@ export function buildApp(
     new PlatformActionService(avatar, room, preferencesRepository),
     certificates,
     creations,
+    async (courseId) => (await courses.findCourseById(courseId))?.modality ?? 'recorded',
+    awardGamification,
+    opts.projectExecutor,
+    async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
+    opts.pythonActivities
+      ? {
+          inspections: opts.pythonActivities,
+          bindings: studioBindings,
+          live: opts.sectionPythonLive,
+        }
+      : undefined,
   )
   const learning = new LearningService(
     learningRepository,
@@ -356,7 +422,18 @@ export function buildApp(
     teacherThreads,
     sectionProgression,
   )
-  const drafts = new InMemoryLessonDraftRepository(courses, learningRepository)
+  const drafts = new InMemoryLessonDraftRepository(
+    courses,
+    learningRepository,
+    opts.studioAuthoringPolicy,
+  )
+  const lessonDraftAccess = new LessonDraftAccessService(
+    courses,
+    checkAccess,
+    progress,
+    sectionProgression,
+    () => clock().getTime(),
+  )
   const submitStudio = new SubmitStudioProjectService(
     checkAccess,
     courses,
@@ -368,22 +445,71 @@ export function buildApp(
     () => randomUUID(),
     clock,
     sectionProgression,
+    studioBindings,
+  )
+  const authorizeAuthoringRuntime = new AuthorizeAuthoringRuntimeService(
+    drafts,
+    opts.studioRuntimePolicy,
+  )
+  const getStudioUnlocks = new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger)
+  const authorizeFreeRuntime = new AuthorizeFreeRuntimeService(
+    new FreeStudioAccessService(accessCheck, getStudioUnlocks, kidsJourneyQuery, adultJourney),
+    opts.studioRuntimePolicy,
+    opts.studioAuthoringPolicy,
+    () => clock().getTime(),
+  )
+  const openLessonStudio = new OpenLessonStudioService(lessonDraftAccess, courses, studioBindings)
+  const authorizeLessonRuntime = new AuthorizeLessonRuntimeService(
+    openLessonStudio,
+    opts.studioRuntimePolicy,
+    () => clock().getTime(),
+  )
+  const galleryCopies = new InMemoryGalleryCopyRepository()
+  const gallery = new GalleryDeliveryService(
+    courses,
+    checkAccess,
+    progress,
+    sectionProgression,
+    creations,
+    studioSubmissions,
+    submitStudio,
+    galleryCopies,
+    opts.galleryStudioSource,
+  )
+  const getMissions = new GetMissionsService(
+    gamification,
+    accessCheck,
+    clock,
+    new ListMyCoursesService(
+      entitlements,
+      courses,
+      progress,
+      positions,
+      gamification,
+      clock,
+      kidsJourneyQuery,
+    ),
+    kidsJourneyQuery,
+    liveLessonAccess,
+    adultJourney,
+    hub,
   )
   const app = createServer({
+    kidsJourney: opts.kidsJourneyConfiguration
+      ? { service: opts.kidsJourneyConfiguration, internalToken: opts.internalToken }
+      : undefined,
+    pythonAnalysis: new AuthorizePythonAnalysisService({
+      authoring: authorizeAuthoringRuntime,
+      free: authorizeFreeRuntime,
+      lesson: authorizeLessonRuntime,
+    }),
     learning: {
-      gallery: new GalleryDeliveryService(
-        courses,
-        checkAccess,
-        progress,
-        sectionProgression,
-        creations,
-        studioSubmissions,
-        submitStudio,
-      ),
+      gallery,
       preferences: new ProfilePreferencesService(preferencesRepository, clock),
       learning,
       imports: new LearningImportService(drafts, courses),
       drafts,
+      authorizeStudioRuntime: authorizeAuthoringRuntime,
       internalToken: opts.internalToken,
       requireAdminEnabled: true,
     },
@@ -394,6 +520,7 @@ export function buildApp(
     },
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
     members: {
+      adultJourney,
       listMyCourses: new ListMyCoursesService(
         entitlements,
         courses,
@@ -401,8 +528,15 @@ export function buildApp(
         positions,
         gamification,
         clock,
+        kidsJourneyQuery,
       ),
-      listCatalog: new ListCatalogService(courses, entitlements, gamification, clock),
+      listCatalog: new ListCatalogService(
+        courses,
+        entitlements,
+        gamification,
+        clock,
+        kidsJourneyQuery,
+      ),
       accessCheck: new AccessCheckService(entitlements, clock),
       getMyCourse: new GetMyCourseService(
         checkAccess,
@@ -456,12 +590,16 @@ export function buildApp(
         sectionProgression,
       ),
       submitStudio,
+      authorizeFreeRuntime,
+      openLessonStudio,
+      authorizeLessonRuntime,
       getStudioCarryover: new GetStudioCarryoverService(
         checkAccess,
         courses,
         progress,
         studioSubmissions,
         sectionProgression,
+        studioBindings,
       ),
       getOwnStudioSubmission: new GetOwnStudioSubmissionService(
         checkAccess,
@@ -501,22 +639,40 @@ export function buildApp(
         learningRepository,
         sectionProgression,
       ),
-      getGamification: new GetGamificationService(gamification, clock),
+      getGamification: new GetGamificationService(
+        gamification,
+        clock,
+        kidsJourneyQuery,
+        kidsJourneyProfiles,
+        adultJourney,
+      ),
       getChallenge: new GetChallengeService(gamification, challengeConfig, clock),
-      getStudioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
-      getMissions: new GetMissionsService(
+      getStudioUnlocks,
+      getMissions,
+      claimMission: new ClaimMissionService(
         gamification,
         accessCheck,
         clock,
-        new ListMyCoursesService(entitlements, courses, progress, positions, gamification, clock),
+        liveLessonAccess,
+        getMissions,
       ),
-      claimMission: new ClaimMissionService(gamification, accessCheck, clock),
       claimUnitChest: new ClaimUnitChestService(checkAccess, courses, progress, awardGamification),
-      recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification),
-      recordStudioActivity: new RecordStudioActivityDayService(accessCheck, awardGamification),
+      recordRemix: new RecordStudioRemixService(accessCheck, hub, awardGamification, adultJourney),
+      recordStudioActivity: new RecordStudioActivityDayService(
+        accessCheck,
+        awardGamification,
+        adultJourney,
+      ),
       buyStreakFreeze: new BuyStreakFreezeService(gamification, () => randomUUID(), clock),
       setVacation: new SetVacationService(gamification, clock),
-      getLeague: new GetLeagueService(gamification, clock, avatarsByProfiles, authGateway),
+      getLeague: new GetLeagueService(
+        gamification,
+        clock,
+        avatarsByProfiles,
+        authGateway,
+        adultProfileRepository,
+        adultJourney,
+      ),
       getRankingLeaderboard,
       childrenStats: new GetChildrenStatsService(
         gamification,
@@ -526,6 +682,7 @@ export function buildApp(
         new AccessCheckService(entitlements, clock),
         learningRepository,
         clock,
+        kidsJourneyProfiles,
         hub,
       ),
       parentReportPrefs: new ParentReportPrefsService(parentReports, clock),
@@ -534,48 +691,113 @@ export function buildApp(
       equipAvatar: new EquipAvatarService(avatar, clock),
       setAvatarPhoto: new SetAvatarPhotoService(avatar, clock),
       getAvatarsByProfiles: avatarsByProfiles,
-      getPublicProfile: new GetPublicProfileService(gamification, avatar, room, hub, clock),
+      getPublicProfile: new GetPublicProfileService(
+        gamification,
+        avatar,
+        room,
+        hub,
+        clock,
+        kidsJourneyProfiles,
+        adultProfileRepository,
+        adultJourney,
+      ),
       getRoom: new GetRoomService(room, gamification),
       saveRoom: new SaveRoomService(room, clock),
       buyRoomItem: new BuyRoomItemService(room, gamification, awardGamification, clock),
       internalToken: opts.internalToken,
     },
-    pensa: {
-      listProjects: new ListPensaProjectsService(pensa, authGateway),
-      createProject: new CreatePensaProjectService(pensa, () => randomUUID(), clock),
-      getProject: new GetPensaProjectService(pensa),
-      updateProject: new UpdatePensaProjectService(pensa, clock),
-      deleteProject: new DeletePensaProjectService(pensa),
-      createCycle: new CreatePensaCycleService(pensa, () => randomUUID(), clock),
-      getStage: new GetPensaStageService(pensa),
-      appendConversationTurn: new AppendPensaConversationTurnService(pensa, clock),
-      saveArtifact: new SavePensaArtifactService(pensa, () => randomUUID(), clock),
-      validateArtifact: new ValidatePensaArtifactService(pensa, clock),
-      advanceStage: new AdvancePensaStageService(pensa, awardGamification, clock),
-      replaceTasks: new ReplacePensaTasksService(pensa, () => randomUUID(), clock),
-      appendTasks: new AppendPensaTasksService(pensa, () => randomUUID(), clock),
-      updateTask: new UpdatePensaTaskService(pensa, () => randomUUID(), clock),
-      deleteTask: new DeletePensaTaskService(pensa, clock),
-      getTaskHandoff: new GetPensaTaskHandoffService(pensa),
-      updateTaskProgress: new UpdatePensaTaskProgressService(pensa, clock),
-      shareProject: new SharePensaProjectService(pensa, clock, () => nextShareCode()),
-      unshareProject: new UnsharePensaProjectService(pensa, clock),
-      joinProject: new JoinPensaProjectService(pensa, clock),
-      listProjectMembers: new ListPensaProjectMembersService(pensa, authGateway, avatarsByProfiles),
-      removeProjectMember: new RemovePensaProjectMemberService(pensa, clock),
-      accessCheck: new AccessCheckService(entitlements, clock),
-      getGamification: new GetGamificationService(gamification, clock),
+    pensa: (() => {
+      // Other-domain tests do not exercise Pensa persistence. Native Pensa tests
+      // use a real disposable database in their own fixture, rather than a second rule engine.
+      const repo = new DrizzlePensaProjectRepository(
+        createDbConnection('postgres://postgres@127.0.0.1:1/pensa_unconfigured_test').db,
+        clock,
+      )
+      const limits = { dailyLimit: 20, monthlyLimit: 200 }
+      const commands = new DrizzlePensaProjectCommands(repo, limits)
+      const projects = new PensaProjectService(commands)
+      const team = new PensaTeamService(
+        new DrizzlePensaTeamRepository({
+          projects: commands,
+          authGateway,
+          avatars: avatarsByProfiles,
+          accessCheck,
+          gamification: new GetGamificationService(
+            gamification,
+            clock,
+            kidsJourneyQuery,
+            kidsJourneyProfiles,
+            adultJourney,
+          ),
+          studioUnlocks: new GetStudioUnlocksService(gamification, studioUnlocks, silentLogger),
+          creations,
+          creationDownload: new GetCreationDownloadService(creations),
+          adultCreations,
+          adultCreationDownload: new GetCreationDownloadService(adultCreations),
+          adultProfiles: adultProfileRepository,
+        }),
+      )
+      return {
+        adultJourney,
+        store: repo,
+        projects,
+        team,
+        operations: new DrizzlePensaOperationsRepository(commands, limits),
+        checkpoints: new DrizzlePensaCheckpointsRepository(repo),
+        narrations: new DrizzlePensaNarrationsRepository(repo),
+        rewards: new DrizzlePensaRewardsRepository(
+          repo.db,
+          (tx) =>
+            new AwardGamificationService(
+              {
+                award: (input) =>
+                  new DrizzleGamificationRepository(repo.db).awardInTransaction(tx, input),
+              },
+              clock,
+              silentLogger,
+            ),
+        ),
+        accessCheck,
+        getGamification: new GetGamificationService(
+          gamification,
+          clock,
+          kidsJourneyQuery,
+          kidsJourneyProfiles,
+          adultJourney,
+        ),
+        credits: aiCredits,
+        internalToken: opts.internalToken,
+      }
+    })(),
+    adultProfiles: { service: adultProfile, internalToken: opts.internalToken },
+    adultJourney: {
+      service: adultJourney,
+      profiles: adultProfile,
       internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
     },
     creations: {
+      adult: {
+        list: new ListCreationsService(adultCreations),
+        reserveUpload: new ReserveCreationUploadService(
+          adultCreations,
+          new AccessCheckService(entitlements, clock),
+          clock,
+          new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression, () =>
+            clock().getTime(),
+          ),
+          adultJourney,
+        ),
+        commitUpload: new CommitCreationUploadService(adultCreations, clock),
+        getDownload: new GetCreationDownloadService(adultCreations),
+        remove: new DeleteCreationService(adultCreations, clock),
+      },
       list: new ListCreationsService(creations),
       reserveUpload: new ReserveCreationUploadService(
         creations,
         new AccessCheckService(entitlements, clock),
         clock,
-        new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression, () =>
-          clock().getTime(),
-        ),
+        lessonDraftAccess,
       ),
       commitUpload: new CommitCreationUploadService(creations, clock),
       getDownload: new GetCreationDownloadService(creations),
@@ -612,7 +834,12 @@ export function buildApp(
         new InMemoryToolUsageRepository(pensa, creations, studioSubmissions, courses),
         hub,
       ),
-      profilesOverview: new GetProfilesOverviewService(gamification, studioSubmissions, clock),
+      profilesOverview: new GetProfilesOverviewService(
+        gamification,
+        studioSubmissions,
+        clock,
+        kidsJourneyProfiles,
+      ),
       getMemberActivity: new GetMemberActivityService(
         progress,
         positions,
@@ -621,7 +848,13 @@ export function buildApp(
       ),
       listMemberCertificates: new ListMemberCertificatesService(certificates),
       listMemberRatings: new ListMemberRatingsService(ratings),
-      getGamification: new GetGamificationService(gamification, clock),
+      getGamification: new GetGamificationService(
+        gamification,
+        clock,
+        kidsJourneyQuery,
+        kidsJourneyProfiles,
+        adultJourney,
+      ),
       ranking,
       analytics: new GetCourseAnalyticsService(new InMemoryAnalyticsRepository(courses, progress)),
       aiUsageStats: new GetAiUsageStatsService(aiUsage, clock),
@@ -653,6 +886,7 @@ export function buildApp(
     content: {
       requireAdminEnabled: opts.requireAdmin ?? false,
       internalToken: opts.internalToken,
+      studioAuthoringPolicy: opts.studioAuthoringPolicy,
       // O fake InMemoryCourseRepository implementa CourseRepository E ContentAdminRepository.
       courses: new CourseAdminService(courses, courses),
       modules: new ModuleAdminService(courses, courses),
@@ -678,16 +912,40 @@ export function buildApp(
       validateCertificate: new ValidateCertificateService(certificates),
       internalToken: opts.internalToken,
     },
+    adultHelp: {
+      help: adultHelp,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
     help: {
       help,
+      internalToken: opts.internalToken,
+      requireAdminEnabled: opts.requireAdmin ?? false,
+    },
+    liveCourse: {
+      teacherNotes: new LiveTeacherNotesService(courses, learningRepository, liveLessonAccess),
       internalToken: opts.internalToken,
       requireAdminEnabled: opts.requireAdmin ?? false,
     },
   })
 
   return {
+    kidsJourneySnapshots,
+    kidsJourneyProfiles,
+    kidsJourneyQuery,
+    adultJourney,
+    adultJourneyRepository,
+    adultProfile,
+    adultProfileRepository,
+    adultCommunityAvailability,
+    adultHelp,
     learning,
+    gallery,
+    galleryCopies,
+    drafts,
+    studioBindings,
     learningRepository,
+    liveLessonAccess,
     app,
     entitlements,
     courses,
@@ -695,11 +953,13 @@ export function buildApp(
     positions,
     quizAttempts,
     studioSubmissions,
+    submitStudio,
     teacherThreadsRepo,
     ratings,
     certificates,
     gamification,
     avatar,
+    studioUnlocks,
     room,
     pensa,
     creations,
@@ -757,6 +1017,7 @@ export function seedSampleCourse(
     track,
     careerSlot,
     journeyRole,
+    modality: 'recorded',
     metadata: null,
     createdAt: now,
     updatedAt: now,
@@ -1119,4 +1380,5 @@ export function signedWebhookHeaders(
 import { GalleryDeliveryService } from '../src/application/learning/gallery-delivery.service'
 import { PlatformActionService } from '../src/application/learning/platform-action.service'
 import { ProfilePreferencesService } from '../src/application/profile-preferences/profile-preferences.service'
+import { InMemoryGalleryCopyRepository } from './fakes/gallery-copy'
 import { InMemoryProfilePreferencesRepository } from './fakes/profile-preferences-in-memory'

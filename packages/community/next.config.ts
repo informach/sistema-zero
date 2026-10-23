@@ -1,5 +1,10 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  studioPythonCspOrigins,
+  withStudioPublishedProCsp,
+  withStudioPythonCsp,
+} from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -7,6 +12,7 @@ import type { NextConfig } from 'next'
 const monorepoRoot = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 
 const isDev = process.env.NODE_ENV !== 'production'
+const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAME_ORIGINS, isDev)
 
 /**
  * CSP da área do aluno (defesa em profundidade — não há sink de HTML cru: o
@@ -23,38 +29,46 @@ const isDev = process.env.NODE_ENV !== 'production'
  * — iframe de vídeo nunca aponta p/ host arbitrário; srcdoc não passa por
  * frame-src). `worker-src blob:` é o pdf.js do livro 3D (worker do bundle).
  */
-const csp = [
-  "default-src 'self'",
-  "base-uri 'self'",
-  "object-src 'none'",
-  "frame-ancestors 'none'",
-  "form-action 'self'",
-  // `blob:` p/ o preview/iframe do bloco `studio` (editor embarcável @sistemazero/studio).
-  "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
-  // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data: https:",
-  // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-  // `data:` pelo MESMO motivo do `script-src` abaixo: o som que o aluno envia ao
-  // Estúdio é embutido como `data:audio/…` e tocado dentro do iframe `srcdoc`,
-  // que herda esta CSP. Sem ele o som carrega e não toca, em silêncio.
-  "media-src 'self' blob: data: https:",
-  "style-src 'self' 'unsafe-inline' https:",
-  // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
-  // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA
-  // esta CSP (só RESTRINGE, nunca relaxa) — sem `data:`, o preview não executa o código.
-  `script-src 'self' 'unsafe-inline' data: https:${isDev ? " 'unsafe-eval'" : ''}`,
-  "connect-src 'self' https:",
-  "worker-src 'self' blob:",
-  ...(isDev ? [] : ['upgrade-insecure-requests']),
-].join('; ')
+const pythonCsp = withStudioPythonCsp(
+  [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    // `blob:` p/ o preview/iframe do bloco `studio` (editor embarcável @sistemazero/studio).
+    "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
+    // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data: https:",
+    // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
+    // `data:` pelo MESMO motivo do `script-src` abaixo: o som que o aluno envia ao
+    // Estúdio é embutido como `data:audio/…` e tocado dentro do iframe `srcdoc`,
+    // que herda esta CSP. Sem ele o som carrega e não toca, em silêncio.
+    "media-src 'self' blob: data: https:",
+    "style-src 'self' 'unsafe-inline' https:",
+    // `data:` p/ o preview do Estúdio (bloco `studio`): o script.js do aluno é injetado
+    // como `<script src="data:text/javascript;base64,…">` no iframe `srcdoc`, que HERDA
+    // esta CSP (só RESTRINGE, nunca relaxa) — sem `data:`, o preview não executa o código.
+    // Molda compila o Manifold em WASM neste documento. A navegação Next desde
+    // /criar conserva a CSP inicial; a permissão precisa existir na política base.
+    // Esta keyword permite apenas WASM, mantendo eval JavaScript restrito ao dev.
+    `script-src 'self' 'unsafe-inline' data: https: 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ''}`,
+    "connect-src 'self' https:",
+    "worker-src 'self' blob:",
+    ...(isDev ? [] : ['upgrade-insecure-requests']),
+  ].join('; '),
+  pythonFrameOrigins,
+)
+// Next client navigation keeps the original document policy for every Pro consumer.
+const csp = withStudioPublishedProCsp(pythonCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev)
 
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: csp },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Entrada por voz no Pensa usa o microfone desta origem; câmera continua restrita à sala.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
   // Isolamento de janela/recurso (defesa em profundidade). COOP corta a referência
   // de janela de um abridor cross-origin; CORP barra que outra origem embuta as
   // respostas autenticadas como subrecurso (sondagem por timing). COEP fica OFF de
@@ -93,6 +107,8 @@ const nextConfig: NextConfig = {
     // `lesson-blocks` do member-shell referencia o `PintaBlockView`, então o bundler do adulto
     // precisa compilar o pacote mesmo que nenhuma aula daqui use o bloco.
     '@sistemazero/pinta',
+    '@sistemazero/molda',
+    '@sistemazero/pensa',
     'three',
   ],
   // Security headers em TODAS as respostas (inclui `/api/me/avatar` e estáticos,
@@ -100,6 +116,61 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
+      {
+        source: '/((?!estudio/pro/).*)',
+        headers: [{ key: 'Content-Security-Policy', value: csp }],
+      },
+      {
+        source: '/estudio/pro/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: csp
+              .replace(
+                /script-src[^;]+/,
+                "script-src 'self' 'unsafe-inline' data: https: 'unsafe-eval' 'wasm-unsafe-eval' blob:",
+              )
+              .replace(
+                "frame-src 'self' blob:",
+                "frame-src 'self' blob: https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com",
+              ),
+          },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
+      },
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' }],
+      },
+      {
+        source: '/avatar3d/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+      {
+        source: '/avatar3d/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400' }],
+      },
+      // ⭐ A SALA da oficina ao vivo (curso ao vivo, 14/10/2026), como no Kids: câmera e
+      // tela liberadas SÓ nesta rota, além do microfone e do jogo num documento temporário do R2
+      // privado (o `frame-src`). O cabeçalho vale para o documento carregado: a sala se abre e se
+      // deixa por navegação COMPLETA (`<a>`), nunca por `<Link>` (a aba seguiria com a câmera
+      // liberada nas outras telas). A regra vem DEPOIS da geral: a chave repetida vence.
+      {
+        source: '/oficinas/aulas/:id',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: csp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
+      },
       // Kill-switch do service worker fantasma (public/sw.js): o update-check do
       // navegador precisa SEMPRE buscar a versão nova — nunca servir do cache HTTP.
       {

@@ -1,6 +1,10 @@
 /** Validação compartilhada de projetos. Sem React, Blockly, disco ou efeitos de gravação. */
 
-import { STUDIO_PARTS_FORMAT, STUDIO_PARTS_VERSION } from '@sistemazero/core/studio'
+import {
+  STUDIO_PARTS_FORMAT,
+  STUDIO_PARTS_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio/project-format'
 import { ulid } from 'ulid'
 import {
   createEmptyProject,
@@ -34,6 +38,7 @@ import {
   hasValidBehaviorAreasStateVersion,
 } from '../blockly/blocksStateVersion'
 import { WEB_BLOCK_TYPES_BY_CATEGORY } from '../codecs/web/registry'
+import type { EditableStudioProject } from '../core/editableProject'
 import {
   assertProjectContentPreserved,
   CURRENT_PROJECT_FORMAT_VERSION,
@@ -53,6 +58,7 @@ import {
 import { isCampaignStageExtraState } from '../official-extensions/game-2d-advanced/campaignSchema'
 import { STUDENT_BASELINE_PERMISSIONS } from '../preview/permissionGuard'
 import { CANVAS3D_BLOCK_TYPES } from '../three/canvas3dContract'
+import { copyLocalRevision } from './projectStorageRevision'
 import { sanitizeProMeta, sanitizeProTree } from './proTree'
 
 const MAX_PROJECT_NAME_CHARS = 200
@@ -991,6 +997,18 @@ export function sanitizeStoredProject(
       'Este projeto precisa ser convertido antes da abertura.',
     )
   const r = copyDocument(raw)
+  const project = sanitizeJavaScriptProjectPayload(r, requestedId, proBuildLimits)
+  if (!project) return null
+  assertProjectContentPreserved(raw, project)
+  return copyLocalRevision(raw as { id: string }, project)
+}
+
+/** Payload validation is shared by the legacy reader and the explicit v3 adapter. */
+export function sanitizeJavaScriptProjectPayload(
+  r: Record<string, unknown>,
+  requestedId?: string,
+  proBuildLimits?: StudioProBuildLimits,
+): Project | null {
   // `requestedId` (load por chave interna do IndexedDB) é confiável — usado como
   // está. Sem ele (caminho do host `initialProject`/`sanitizeProjectForHost`), o
   // id vem do corpo NÃO confiável e precisa ser limitado/saneado.
@@ -1016,8 +1034,8 @@ export function sanitizeStoredProject(
   const extraFiles = limitCombinedExtraFiles(files, sanitizeImportedExtraFiles(r.extraFiles))
 
   // Modo profissional: aceita `kind:'pro'` só com `tree` válida + `proMeta`.
-  // Qualquer falha REBAIXA para classic (o `files` canônico vazio-válido evita
-  // crash). `node_modules` nunca passa (barrado em normalizeProPath).
+  // O chamador recusa qualquer perda pelo assertProjectContentPreserved; uma
+  // árvore inválida nunca é aberta como classic. `node_modules` não passa.
   let tree: ProjectTree | undefined
   let proMeta: ProProjectMeta | undefined
   if (r.kind === 'pro') {
@@ -1056,7 +1074,6 @@ export function sanitizeStoredProject(
   }
   const coverAssetName = sanitizeCoverAssetName(r.coverAssetName)
   if (coverAssetName) project.coverAssetName = coverAssetName
-  assertProjectContentPreserved(raw, project)
   return project
 }
 
@@ -1077,7 +1094,8 @@ export async function prepareProjectForHost(
   options: { proBuildLimits?: StudioProBuildLimits } = {},
 ): Promise<Project | null> {
   if (raw == null) return null
-  return sanitizeProjectForHost(await prepareProjectDocument(raw), options)
+  const project = sanitizeProjectForHost(await prepareProjectDocument(raw), options)
+  return project && typeof raw === 'object' ? copyLocalRevision(raw as Project, project) : project
 }
 
 export function getAllowedBlocklyBlockTypes(
@@ -1722,7 +1740,7 @@ export async function sanitizeCloudProjectSnapshot(
 }
 
 /** Confere o programa efetivamente enviado antes de promover a revisão na nuvem. */
-export function validateStudioCreationSnapshot(raw: unknown, expectedId: string): Project {
+function studioCreationProgram(raw: unknown): unknown {
   let document = raw
   if (isDocumentRecord(raw) && 'format' in raw) {
     if (
@@ -1739,7 +1757,14 @@ export function validateStudioCreationSnapshot(raw: unknown, expectedId: string)
       throw new ProjectDocumentError('invalid-document', 'O manifesto de recursos é inválido.')
     document = raw.program
   }
-  const project = sanitizeProjectForHost(document)
+  return document
+}
+
+function assertStudioCreationIdentity(
+  document: unknown,
+  project: EditableStudioProject | null,
+  expectedId: string,
+): asserts project is EditableStudioProject {
   if (
     !project ||
     !isDocumentRecord(document) ||
@@ -1750,5 +1775,33 @@ export function validateStudioCreationSnapshot(raw: unknown, expectedId: string)
       'invalid-document',
       'O conteúdo enviado não pertence a esta criação.',
     )
+}
+
+/** Mantém a leitura síncrona dos projetos JavaScript legados. */
+export function validateStudioCreationSnapshot(raw: unknown, expectedId: string): Project {
+  const document = studioCreationProgram(raw)
+  const project = sanitizeProjectForHost(document)
+  assertStudioCreationIdentity(document, project, expectedId)
+  return project
+}
+
+/** Confere JS legado ou v3 com o mesmo leitor estrito usado para abrir no editor. */
+export async function validateEditableStudioCreationSnapshot(
+  raw: unknown,
+  expectedId: string,
+): Promise<EditableStudioProject> {
+  const document = studioCreationProgram(raw)
+  if (projectFormatVersion(document) !== STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
+    return validateStudioCreationSnapshot(raw, expectedId)
+
+  let project: EditableStudioProject | null
+  try {
+    const { prepareEditableStudioProject } = await import('./editableProjectValidation')
+    project = await prepareEditableStudioProject(document)
+  } catch (error) {
+    if (error instanceof ProjectDocumentError) throw error
+    throw new ProjectDocumentError('invalid-document', 'O projeto enviado é inválido.')
+  }
+  assertStudioCreationIdentity(document, project, expectedId)
   return project
 }

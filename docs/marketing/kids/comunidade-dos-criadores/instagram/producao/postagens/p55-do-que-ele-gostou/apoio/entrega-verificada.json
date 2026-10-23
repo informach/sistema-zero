@@ -1,0 +1,69 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 865338
+    },
+    {
+      "file": "02-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 923782
+    },
+    {
+      "file": "03-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 787336
+    },
+    {
+      "file": "04-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 119217
+    },
+    {
+      "file": "05-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 895708
+    },
+    {
+      "file": "06-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 960843
+    },
+    {
+      "file": "07-p55.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1049308
+    }
+  ],
+  "copyMatchesCurrentSource": true,
+  "copyAdjustment": null,
+  "fontsLoaded": true,
+  "localLinks": 73,
+  "shortAltWithOrigin": 7,
+  "demonstration": {
+    "originalStudio": true,
+    "colorChangedThroughUi": true,
+    "resultCheckedInCanvas": true,
+    "highResolutionCapture": true,
+    "accountData": false
+  },
+  "artDirection": "Seis cenas geradas com a mesma família fictícia. Capturas nativas do Estúdio no slide 4. Todas as artes inspecionadas, incluindo capa e fechamento; nenhuma imagem reutilizada entre slides.",
+  "generatedTool": "image_gen.imagegen",
+  "limitations": [
+    "As cenas com pessoas são geradas. As telas nelas foram recriadas a partir de capturas reais.",
+    "O slide 4 mostra uma demonstração no Estúdio local; não é uma aula publicada nem trabalho de aluno.",
+    "Revisão editorial e verificação da produção não são teste de conversão."
+  ],
+  "errors": [],
+  "scope": "Produção local do P55, sem publicação, agendamento, commit ou deploy.",
+  "nextCarousel": "P13"
+}

@@ -1,19 +1,12 @@
 ---
-import ComunidadeQuizLayout from '../../../components/funnel/ComunidadeQuizLayout.astro'
-import ComunidadeResultado from '../../../components/funnel/ComunidadeResultado.astro'
-import DesafioQuizLayout from '../../../components/funnel/DesafioQuizLayout.astro'
-import DesafioResultado from '../../../components/funnel/DesafioResultado.astro'
-import { quizRevision } from '../../../funnels/comunidade-dos-criadores/quiz/engine'
-import { buildCommunityResult } from '../../../funnels/comunidade-dos-criadores/quiz/result'
-import { buildDesafioResult } from '../../../funnels/desafio-primeiro-jogo/quiz/result'
+import ResultadoConversa from '../../../components/funnel/resultado/ResultadoConversa.astro'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
-import { getFunnel, isQuizComplete } from '../../../funnels/registry'
+import { getFunnel, isQuizComplete, quizPathWithHeadline } from '../../../funnels/registry'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import { funnelLinkWithAttribution } from '../../../lib/lead-attribution'
 import { getLeadId } from '../../../lib/lead-session'
 import { funnelOgImage } from '../../../lib/seo'
 import { getDeps } from '../../../server/deps'
-import { desafioQuizPrice } from '../../../server/desafio-price'
 import { quizSessionToken } from '../../../server/quiz-session'
 
 export const prerender = false
@@ -38,41 +31,36 @@ const lead = await repo.getLead(leadId)
 if (!lead) return Astro.redirect(quizUrl)
 if (!leadBelongsToFunnel(lead.funnel, f.key)) return Astro.redirect(quizUrl)
 
-// Resultado aberto sem o quiz respondido: volta pro quiz (sem resultado vazio).
+// Resultado aberto sem o quiz respondido: volta pro quiz (sem resultado vazio), mantendo a
+// manchete do teste A/B que a pessoa viu.
 const answers = lead.quizAnswers ?? {}
-if (!isQuizComplete(quiz, answers)) return Astro.redirect(quizUrl)
+const headline = lead.attribution?.quizHeadline
+const leadQuizUrl =
+  headline && headline !== quiz.defaultHeadline && Object.hasOwn(quiz.headlines ?? {}, headline)
+    ? `${quizUrl}${quizUrl.includes('?') ? '&' : '?'}manchete=${encodeURIComponent(headline)}`
+    : quizUrl
+if (!isQuizComplete(quiz, answers)) return Astro.redirect(leadQuizUrl)
 
-const communityResult = quiz.presentation === 'comunidade' ? buildCommunityResult(answers) : null
-const desafioResult = quiz.presentation === 'desafio' ? buildDesafioResult(answers) : null
-if (quiz.presentation === 'desafio' && !desafioResult) return Astro.redirect(quizUrl)
-const desafioPrice = desafioResult ? await desafioQuizPrice(f) : null
-if (quiz.presentation === 'comunidade' && !communityResult) return Astro.redirect(quizUrl)
+const revision = typeof answers._quiz_revision === 'number' ? answers._quiz_revision : 0
+// Resultado em conversa (Comunidade e Desafio, Kids e adulto): a carta montada pelo funil.
+const carta = quiz.conversa ? quiz.conversa(answers) : null
+if (quiz.conversa && !carta) return Astro.redirect(leadQuizUrl)
+// O botão leva a atribuição da URL (UTMs, `event_code` e o `cupom` do anúncio, que a oferta só lê
+// da própria URL); a ilha do quiz chega aqui com ela.
+const conversa = carta && {
+  ...carta,
+  blocos: carta.blocos.map((b) =>
+    b.tipo === 'cta' ? { ...b, href: funnelLinkWithAttribution(b.href, Astro.url) } : b,
+  ),
+}
 
+// Uma linha por revisão: recarregar a carta não repete o evento.
 await repo.insertEvent(
   lead.id,
   'viu_resultado',
   'resultado',
-  communityResult
-    ? {
-        quiz_version: answers._quiz_version,
-        revision: quizRevision(answers),
-        perfil_principal: communityResult.decision.profile,
-        estado: communityResult.decision.state,
-        adequacao: communityResult.decision.adequacy,
-        destino: communityResult.offerPath,
-      }
-    : desafioResult
-      ? {
-          quiz_version: answers._quiz_version,
-          revision: quizRevision(answers),
-          perfil_principal: desafioResult.decision.principal,
-          estado: desafioResult.decision.state,
-          adequacao: desafioResult.decision.adequacy,
-          proximo_passo: desafioResult.decision.next,
-          destino: desafioResult.decision.offerPath,
-        }
-      : undefined,
-  desafioResult ? `${lead.id}:desafio-result:${quizRevision(answers)}` : undefined,
+  conversa ? conversa.evento : undefined,
+  conversa ? `${lead.id}:viu-resultado:${revision}` : undefined,
 )
 
 // Perfil: usa o persistido (se válido p/ este funil) ou roda o motor do funil agora
@@ -80,11 +68,10 @@ await repo.insertEvent(
 const stored =
   lead.perfilResultado && lead.perfilResultado in result.profiles ? lead.perfilResultado : null
 const perfil = stored ?? quiz.computePerfil(answers)
-if (!communityResult && !desafioResult && !stored)
-  await repo.updateLead(lead.id, { perfilResultado: perfil })
+if (!conversa && !stored) await repo.updateLead(lead.id, { perfilResultado: perfil })
 
 const bloco = perfil ? result.profiles[perfil] : undefined
-if (!communityResult && !desafioResult && !bloco) return Astro.redirect(quizUrl)
+if (!conversa && !bloco) return Astro.redirect(quizUrl)
 const rc = (s: string) => (result.renderCorpo ? result.renderCorpo(s, answers) : s)
 // Resultado em blocos (`secoes`) quando o funil os define; senão, corpo corrido (fallback).
 // Seção que resolve vazia (ex.: bloco de custo condicional omitido) é descartada.
@@ -101,14 +88,10 @@ const ofertaHref = `${f.basePath}/oferta?perfil=${perfil}${querSeg}`
 const fecho = rc(result.fecho)
 ---
 
-{desafioResult ? (
-  <DesafioQuizLayout title="Seu primeiro passo com jogos | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} showExperienceLink>
-    <DesafioResultado result={desafioResult} basePath={f.basePath} priceLabel={desafioPrice}/>
-  </DesafioQuizLayout>
-) : communityResult ? (
-  <ComunidadeQuizLayout title="Seu ponto de partida | Sistema Zero" description={f.seoDescription} imagesBase={f.imagesBase} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)}>
-    <ComunidadeResultado result={communityResult} imagesBase={f.imagesBase} basePath={f.basePath} funnel={f.key} revision={quizRevision(answers)} sessionToken={quizSessionToken(lead.id)} />
-  </ComunidadeQuizLayout>
+{conversa ? (
+  <BaseLayout title="Seu resultado | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} noindex={true} htmlClass={f.theme ? `theme-${f.theme}` : undefined}>
+    <ResultadoConversa resultado={conversa} quizPath={quizPathWithHeadline(f.basePath, quiz, headline)} revision={revision} sessionToken={quizSessionToken(lead.id)} restartLabel={f.audience === 'kids' ? 'Responder pensando em outra criança' : undefined} />
+  </BaseLayout>
 ) : bloco && (<BaseLayout
   title={`Seu mapa de criação | ${f.productName}`}
   description={f.seoDescription}

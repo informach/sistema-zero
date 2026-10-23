@@ -1,0 +1,146 @@
+import { execFile } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { open, readFile } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+// Private inventory only: GraphQL queries and an identity-guarded filesystem hash.
+// No application import, variables query, SQL, configuration change or deployment.
+const file = fileURLToPath(import.meta.url), directory = dirname(file), root = resolve(directory, '../..')
+const project = '415d5a1c-5f75-432c-8445-b395d0977ce3'
+const environment = '19c212a5-85c0-493c-9630-a7a0569e8412'
+const expectedLauncherSha256 = '9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f'
+const targets = [
+  { name: 'Members', service: 'aa282801-ffba-477c-af6d-394b2f4f9af9', package: 'members', runtime: 'bun', command: 'bun scripts/release/start.mjs packages/members/src/index.ts', deployment: '9d8368c2-d915-4dbf-898c-28c2b7978133', commit: '6f93dcbfe8f176017b7b1ace5114d480ad5853b1', digest: 'sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847' },
+  { name: 'Kids', service: 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f', package: 'community-kids', runtime: 'node', command: 'node scripts/release/start.mjs packages/community-kids/boot-check.mjs --require-creation-cleanup', deployment: '48c12111-5bb3-449a-90d4-525af1f51aa8', commit: '91d3e99aae0b602e9ad5548efb2106355f9fe801', digest: 'sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed' },
+  { name: 'Adult', service: '9df1b493-4cea-4b36-bec8-7299f054c17d', package: 'community', runtime: 'node', command: 'node scripts/release/start.mjs packages/community/boot-check.mjs', deployment: '9b8cf594-86f8-4534-bde9-000d433fd836', commit: 'e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28', digest: 'sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74' },
+  { name: 'Admin', service: 'e00eca0b-5323-4424-9b58-fdb073cfce82', package: 'admin', runtime: 'node', command: 'node scripts/release/start.mjs packages/admin/boot-check.mjs', deployment: '10c8d309-1f50-4b52-aa47-693543b010f1', commit: '6f93dcbfe8f176017b7b1ace5114d480ad5853b1', digest: 'sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8' },
+  { name: 'Hub', service: '00b27b18-0587-460b-ba90-b6b24c423e45', package: 'hub', runtime: 'bun', command: 'bun scripts/release/start.mjs packages/hub/src/index.ts', deployment: 'ba08042b-d2bf-4063-87e7-97ea452cf030', commit: 'a270417ba4acffe97629793bb3fb62ac0e134519', digest: 'sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241' },
+]
+const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+const env = { ...process.env }
+for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+Object.assign(env, { CI: 'true', NO_COLOR: '1' })
+const hash = bytes => createHash('sha256').update(bytes).digest('hex')
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+const guard = (condition, code) => { if (!condition) throw new Refusal(code) }
+const startedAt = new Date().toISOString(), deadline = Date.now() + 360000
+let queryCount = 0, sshCount = 0
+const native = (argv, input = '', executable = cli, timeout = 20000) => new Promise((accept, reject) => {
+  if (Date.now() >= deadline) return reject(new Refusal('READ_DEADLINE'))
+  const child = execFile(executable, argv, { cwd: root, env, windowsHide: true, encoding: 'utf8', timeout: Math.min(timeout, deadline - Date.now()), maxBuffer: 8388608 }, (error, stdout, stderr) => {
+    if (!error) return accept(stdout)
+    if(argv[0]==='ssh')console.log(JSON.stringify({diagnostic:'SSH_FAILURE_CLASSIFICATION',exitCode:typeof error.code==='number'?error.code:null,errorCode:typeof error.code==='string'&&/^[A-Z_]+$/.test(error.code)?error.code:null,signal:error.signal??null,killed:Boolean(error.killed),stderrBytes:Buffer.byteLength(stderr??''),stdoutBytes:Buffer.byteLength(stdout??''),stderrCategories:Object.fromEntries(['connect','connection','socket','handshake','deployment','instance','active','key','identity','agent','permission','credentials','token','auth','proxy','spawn','access','stdin','stdout','pipe','terminal','argument','usage','shell','syntax','environment','service','project','panic','missing','read','write','config','ssh','error','failed','not found','timeout','refused'].map(word=>[word,(stderr??'').toLowerCase().includes(word)]))}))
+    const code = /unexpected argument|unrecognized option|Unknown option|invalid value/i.test(stderr) ? 'CLI_ARGUMENT_REJECTED' : /syntax error|unexpected token/i.test(stderr) ? 'REMOTE_SHELL_SYNTAX' : /tty|terminal/i.test(stderr) ? 'TTY_REQUIRED' : /No target found|deployment not found|instance not found|No deployment found/i.test(stderr) ? 'SSH_TARGET_UNAVAILABLE' : /not authorized|unauthorized|invalid token|token expired|authentication failed/i.test(stderr) ? 'SSH_AUTH_REJECTED' : /No such file|not found|cannot find/i.test(stderr) ? 'SSH_COMMAND_OR_PATH_NOT_FOUND' : /failed to spawn|executable|ssh binary/i.test(stderr) ? 'SSH_EXECUTABLE_UNAVAILABLE' : error.killed ? 'COMMAND_TIMEOUT' : /Permission denied \(publickey\)/i.test(stderr) ? 'SSH_IDENTITY_REJECTED' : /Host key verification failed|REMOTE HOST IDENTIFICATION HAS CHANGED/i.test(stderr) ? 'SSH_HOST_KEY_REJECTED' : 'COMMAND_UNCONFIRMED'
+    reject(new Refusal(code))
+  })
+  child.stdin?.on('error', () => {}); child.stdin?.end(input)
+})
+async function api(query, variables) {
+  guard(/^query\b/.test(query) && !/\bmutation\b/.test(query), 'READ_ONLY_QUERY')
+  queryCount++
+  const response = JSON.parse(await native(['api', '--compact', query, '--variables', '@-'], JSON.stringify(variables)))
+  guard(response.data && !response.errors, 'QUERY_UNCONFIRMED')
+  return response.data
+}
+const fields = 'id status snapshotId deploymentStopped projectId environmentId serviceId meta instances{id status}'
+const contextQuery = `query($e:String!,$s:String!,$input:DeploymentListInput!){serviceInstance(environmentId:$e,serviceId:$s){serviceId environmentId startCommand resolvedFileConfig{deploymentId commitHash fileManifest} activeDeployments{${fields}} latestDeployment{${fields}}}deployments(first:20,input:$input){edges{node{id status}}pageInfo{hasNextPage}}}`
+function safeCommand(value, target) {
+  return { present: value !== null && value !== undefined && value !== '', matchesExpected: value === target.command, value: value === target.command ? target.command : null, unrecognized: value !== null && value !== undefined && value !== '' && value !== target.command }
+}
+async function context(target) {
+  const raw = await api(contextQuery, { e: environment, s: target.service, input: { projectId: project, environmentId: environment, serviceId: target.service, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } })
+  const instance = raw.serviceInstance, latest = instance?.latestDeployment
+  guard(instance?.serviceId === target.service && instance.environmentId === environment, 'SERVICE_IDENTITY_CHANGED')
+  guard(latest && latest.projectId === project && latest.environmentId === environment && latest.serviceId === target.service, 'DEPLOYMENT_IDENTITY_CHANGED')
+  guard(latest.status === 'SUCCESS' && latest.deploymentStopped === false && instance.activeDeployments?.length === 1 && instance.activeDeployments[0].id === latest.id && instance.activeDeployments[0].status === 'SUCCESS', 'ACTIVE_DEPLOYMENT_NOT_UNIQUE_SUCCESS')
+  guard(raw.deployments?.edges?.length === 0 && raw.deployments.pageInfo?.hasNextPage === false, 'PENDING_DEPLOYMENT')
+  guard(/^[a-f0-9]{40}$/.test(latest.meta?.commitHash) && /^sha256:[a-f0-9]{64}$/.test(latest.meta?.imageDigest), 'IMAGE_METADATA_UNCONFIRMED')
+  guard(Array.isArray(latest.instances) && latest.instances.length >= 1 && latest.instances.length <= 8 && latest.instances.every(value => /^[a-f0-9-]{36}$/.test(value.id) && /^[A-Z_]+$/.test(value.status)), 'DEPLOYMENT_INSTANCES_UNCONFIRMED')
+  const manifest = latest.meta?.serviceManifest?.deploy
+  return { observedAt: new Date().toISOString(), deploymentId: latest.id, snapshotId: latest.snapshotId, status: latest.status, commit: latest.meta.commitHash, imageDigest: latest.meta.imageDigest, uniqueActive: true, noPending: true, instances: latest.instances,
+    configuredStartCommand: safeCommand(instance.startCommand, target), deploymentManifestStartCommand: safeCommand(manifest?.startCommand, target), deploymentManifestHasStartCommandField: Object.hasOwn(manifest ?? {}, 'startCommand'),
+    fileConfig: { deploymentMatches: instance.resolvedFileConfig?.deploymentId === latest.id, commitMatches: instance.resolvedFileConfig?.commitHash === latest.meta.commitHash, startCommand: safeCommand(instance.resolvedFileConfig?.fileManifest?.deploy?.startCommand, target) },
+    unchangedFromHistoricalInventory: latest.id === target.deployment && latest.meta.commitHash === target.commit && latest.meta.imageDigest === target.digest }
+}
+async function remoteHash(target, nonce) {
+  const checks = { project: process.env.RAILWAY_PROJECT_ID === target.project, environment: process.env.RAILWAY_ENVIRONMENT_ID === target.environment, service: process.env.RAILWAY_SERVICE_ID === target.service, deployment: process.env.RAILWAY_DEPLOYMENT_ID === target.deployment, commit: process.env.RAILWAY_GIT_COMMIT_SHA === target.commit }
+  const result = { nonce, checks, state: 'IDENTITY_REFUSED' }
+  try {
+    if (Object.values(checks).every(value => value === true)) {
+      const fs = require('node:fs'), crypto = require('node:crypto')
+      const path = '/app/scripts/release/start.mjs', stat = fs.lstatSync(path)
+      if (!stat.isFile() || stat.size < 1 || stat.size > 262144) throw new Error('FILE_SHAPE')
+      const bytes = fs.readFileSync(path)
+      result.sha256 = crypto.createHash('sha256').update(bytes).digest('hex')
+      result.bytes = bytes.byteLength
+      result.state = 'INSTALLED_LAUNCHER_HASHED'
+    }
+  } catch { result.state = 'FILE_READ_UNCONFIRMED' }
+  process.stdout.write('SZ_LAUNCHER_HASH_V2 ' + JSON.stringify(result) + '\n')
+}
+async function inspect(target) {
+  const result = { name: target.name, serviceId: target.service, state: 'READING', applicationImported: false, sqlExecuted: false }
+  try {
+    const before = await context(target); result.before = before
+    const snapshot = (await api('query($d:String!){deploymentSnapshot(deploymentId:$d){id createdAt updatedAt}}', { d: before.deploymentId })).deploymentSnapshot
+    guard(snapshot?.id === before.snapshotId, 'SNAPSHOT_IDENTITY_CHANGED'); result.snapshot = snapshot
+    const launcher = await native(['show', `${before.commit}:scripts/release/start.mjs`], '', 'git')
+    const dockerfile = await native(['show', `${before.commit}:packages/${target.package}/Dockerfile`], '', 'git')
+    const commands = [...dockerfile.matchAll(/^CMD\s+(\[.*\])\s*$/gm)].map(match => JSON.parse(match[1]))
+    guard(commands.length === 1 && Array.isArray(commands[0]) && commands[0].every(value => typeof value === 'string'), 'GIT_DOCKER_CMD_UNCONFIRMED')
+    const gitCommand = commands[0].join(' ')
+    result.gitRecipe = { commit: before.commit, launcherPath: 'scripts/release/start.mjs', launcherSha256: hash(Buffer.from(launcher)), launcherMatchesOfflineReport: hash(Buffer.from(launcher)) === expectedLauncherSha256, dockerfilePath: `packages/${target.package}/Dockerfile`, dockerfileSha256: hash(Buffer.from(dockerfile)), dockerCmd: safeCommand(gitCommand, target), launcherMentionedInDockerfile: dockerfile.includes('scripts/release/start.mjs') }
+    guard(result.gitRecipe.launcherMatchesOfflineReport && result.gitRecipe.dockerCmd.matchesExpected, 'HISTORICAL_RECIPE_CHANGED')
+    guard(!before.configuredStartCommand.unrecognized && !before.deploymentManifestStartCommand.unrecognized && !before.fileConfig.startCommand.unrecognized, 'START_COMMAND_UNRECOGNIZED')
+    const fresh = await context(target)
+    guard(fresh.deploymentId === before.deploymentId && fresh.commit === before.commit && fresh.imageDigest === before.imageDigest && JSON.stringify(fresh.instances) === JSON.stringify(before.instances), 'CONTEXT_CHANGED_BEFORE_SSH')
+    const running = fresh.instances.filter(value => value.status === 'RUNNING')
+    guard(running.length === 1, 'RUNNING_INSTANCE_NOT_UNIQUE')
+    const nonce = randomBytes(16).toString('hex'), selected = running[0]
+    const remoteTarget = { project, environment, service: target.service, deployment: before.deploymentId, commit: before.commit }
+    const script = `(${remoteHash.toString()})(${JSON.stringify(remoteTarget)},${JSON.stringify(nonce)})`
+    sshCount++
+    const runtimeArguments = target.runtime === 'bun' ? ['bun', '--no-env-file', '-e', script] : ['node', '-e', script]
+    try {
+      const stdout = await native(['ssh', '-p', project, '-e', environment, '-s', target.service, '-d', selected.id, '-i', join(process.env.USERPROFILE, '.ssh/id_ed25519'), '--', ...runtimeArguments], '', cli, 30000)
+      const lines = stdout.split(/\r?\n/).filter(value => value.startsWith('SZ_LAUNCHER_HASH_V2 '))
+      guard(lines.length === 1, 'REMOTE_RECEIPT_MISSING')
+      const remote = JSON.parse(lines[0].slice('SZ_LAUNCHER_HASH_V2 '.length))
+      guard(remote.nonce === nonce && ['INSTALLED_LAUNCHER_HASHED', 'IDENTITY_REFUSED', 'FILE_READ_UNCONFIRMED'].includes(remote.state), 'REMOTE_RECEIPT_INVALID')
+      guard(remote.checks && ['project', 'environment', 'service', 'deployment', 'commit'].every(key => typeof remote.checks[key] === 'boolean'), 'REMOTE_IDENTITY_PROJECTION_INVALID')
+      result.ssh = { selectedInstanceId: selected.id, instanceCount: fresh.instances.length, state: remote.state, identityChecks: Object.fromEntries(['project', 'environment', 'service', 'deployment', 'commit'].map(key => [key, remote.checks[key]])) }
+      if (remote.state === 'INSTALLED_LAUNCHER_HASHED') {
+        guard(Object.values(result.ssh.identityChecks).every(Boolean) && /^[a-f0-9]{64}$/.test(remote.sha256) && Number.isSafeInteger(remote.bytes) && remote.bytes >= 1 && remote.bytes <= 262144, 'REMOTE_HASH_INVALID')
+        Object.assign(result.ssh, { launcherSha256: remote.sha256, launcherBytes: remote.bytes, equalsGitRecipe: remote.sha256 === result.gitRecipe.launcherSha256 })
+      }
+    } catch (error) { result.ssh = { selectedInstanceId: selected.id, instanceCount: fresh.instances.length, state: 'SSH_UNCONFIRMED', failureCode: error instanceof Refusal ? error.code : 'REMOTE_RESPONSE_UNCONFIRMED' } }
+    const after = await context(target); result.after = after
+    guard(after.deploymentId === before.deploymentId && after.snapshotId === before.snapshotId && after.commit === before.commit && after.imageDigest === before.imageDigest && JSON.stringify(after.instances) === JSON.stringify(before.instances) && JSON.stringify(after.configuredStartCommand) === JSON.stringify(before.configuredStartCommand) && JSON.stringify(after.deploymentManifestStartCommand) === JSON.stringify(before.deploymentManifestStartCommand), 'CONTEXT_CHANGED_DURING_READ')
+    result.entrypointEvidence = { command: target.command, deploymentManifestExplicit: before.deploymentManifestStartCommand.matchesExpected, configuredExplicit: before.configuredStartCommand.matchesExpected, otherwiseDockerRecipeOnly: !before.deploymentManifestStartCommand.present, runningProcessArgvInspected: false, imageConfigInspected: false }
+    result.state = result.ssh.state === 'INSTALLED_LAUNCHER_HASHED' && result.ssh.equalsGitRecipe ? 'FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED' : 'FRESH_IMAGE_VERIFIED_INSTALLED_LAUNCHER_UNCONFIRMED'
+  } catch (error) { result.state = 'READ_UNCONFIRMED'; result.failureCode = error instanceof Refusal ? error.code : 'SANITIZED_LOCAL_OR_PROVIDER_FAILURE' }
+  console.log(JSON.stringify({ service: target.name, state: result.state, failureCode: result.failureCode ?? result.ssh?.failureCode ?? null }))
+  return result
+}
+async function main() {
+  guard(process.versions.node === '24.22.0', 'NODE_VERSION')
+  guard((await native(['--version'])).trim() === 'railway 5.62.1', 'RAILWAY_VERSION')
+  const report = await readFile(join(directory, 'production-pensa-writer-freeze-offline-r1.md'))
+  guard(hash(report) === '5c00bdd2d14d3af41a3c334559258b05d120bc2ea2451b16f5b0c476e537cbf3', 'OFFLINE_REPORT_CHANGED')
+  const receipt = { kind: 'production-pensa-writer-images-readonly', version: 2, supplementalTo: 'production-pensa-writer-images-readonly-r2.json', originalReceiptSha256: '954acf3a73fef856412fb1e845e1e246f43c4ae6bc6d494d093d9805e59a6957', startedAt, projectId: project, environmentId: environment, cli: '5.62.1', node: process.versions.node, offlineReportSha256: hash(report), mutations: 0, variablesQueried: false, rawMetadataPersisted: false, credentialsPersisted: false, sqlCalls: 0, applicationImports: 0, maintenanceStarted: false, maximumConcurrency: 1, localTransport: 'Existing native process environment; Railway credential overrides removed; no environment values serialized', targets: [], limits: [
+    'DeploymentSnapshot exposes identity/timestamps/variables only. Variables are not queried. startCommand is projected from the active deployment serviceManifest and current service instance, not invented as a snapshot field.',
+    'Git Docker CMD plus an absent Railway override is a source recipe. This reader does not inspect OCI image configuration or the running process argv and does not label that inference as binary entrypoint attestation.',
+    'SSH explicitly selects a deployment instance and checks project/environment/service/deployment/commit in RAM before hashing only /app/scripts/release/start.mjs. No application or database dependency is loaded.',
+    'One selected instance per service is inspected. Fresh unique active deployment and instance inventory are checked before and after; this is not a continuous process/writer fence.',
+    'A matching installed launcher proves file presence/bytes, not activation of maintenance mode, retirement of old processes, or absence of Pensa writes.',
+    'No provider configuration, secrets, arbitrary command text, raw metadata, remote stdout/stderr or environment values are stored.'
+  ] }
+  for (const target of targets) receipt.targets.push(await inspect(target))
+  receipt.state = receipt.targets.every(value => value.state === 'FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED') ? 'FIVE_ACTIVE_IMAGES_AND_INSTALLED_LAUNCHERS_VERIFIED' : receipt.targets.every(value => value.state.startsWith('FRESH_IMAGE_')) ? 'FIVE_ACTIVE_IMAGES_VERIFIED_WITH_SSH_LIMITS' : 'PARTIAL_READ_UNCONFIRMED'
+  Object.assign(receipt, { finishedAt: new Date().toISOString(), queryCount, sshCount, sourceSha256: hash(await readFile(file)) })
+  const path = join(directory, 'production-pensa-writer-images-readonly-r2-final.json'), handle = await open(path, 'wx', 0o600)
+  try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+  console.log(JSON.stringify({ state: receipt.state, receiptSha256: hash(await readFile(path)), queryCount, sshCount, mutations: 0 }))
+}
+main().catch(error => { console.error(error instanceof Refusal ? error.code : 'READ_ONLY_INVENTORY_LOCAL_FAILURE'); process.exitCode = 1 })

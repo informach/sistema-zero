@@ -25,8 +25,8 @@
 
 **Files:**
 - Create: `packages/member-shell/tests/scene-experience-layout.test.tsx`
-- Modify: `docs/aulas-interativas/BRIEFING.md`
-- Modify: `docs/aulas-interativas/ESPEC-MANIFESTO.md`
+- Modify: `docs/aulas-interativas-tecnico/BRIEFING.md`
+- Modify: `docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md`
 
 **Interfaces:**
 - Consumes: composição JSX existente de `SceneActivity` e a regra aprovada na especificação.
@@ -104,7 +104,7 @@ Expected: PASS no formato e lint; o teste funcional continua falhando apenas pel
 - [ ] **Step 5: Commit**
 
 ```bash
-git add docs/aulas-interativas/BRIEFING.md docs/aulas-interativas/ESPEC-MANIFESTO.md packages/member-shell/tests/scene-experience-layout.test.tsx
+git add docs/aulas-interativas-tecnico/BRIEFING.md docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md packages/member-shell/tests/scene-experience-layout.test.tsx
 git commit -m "test(learning): proteger ordem das experiencias"
 ```
 

@@ -32,6 +32,7 @@ const StudioSubmissionViewer = dynamic(
 )
 
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { canBackgroundRefreshPage, createForegroundPriority } from '@/lib/latest-wins'
@@ -315,12 +316,10 @@ export function EntregasClient() {
                   {s.message ? (
                     <Badge variant="outline">
                       <MessageSquare className="size-3" /> Recado
+                      {s.messageSpoken ? (
+                        <SpokenChip className="ml-1 border-0 bg-transparent px-0 py-0" />
+                      ) : null}
                     </Badge>
-                  ) : null}
-                  {s.score !== null ? (
-                    <span className={`text-xs ${s.passed ? 'text-success' : 'text-destructive'}`}>
-                      {s.score}/100
-                    </span>
                   ) : null}
                   <span className="ml-auto shrink-0 text-xs text-muted-foreground">
                     {formatDate(s.submittedAt)}

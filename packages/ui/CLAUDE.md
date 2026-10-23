@@ -72,43 +72,14 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    limpeza do lote (11/09/2026), junto com os tokens que só elas liam (`--sz-tool-control` e as
    sombras duras `--sz-tool-shadow-*`/`-shade`); o contrato trava a ausência e VARRE o código dos
    pacotes consumidores (classe sem receita não quebra teste nenhum: o botão só sai sem desenho).
-   ⭐⭐ **A família `.sz-tool-guide` (19/09/2026)** — `__head|__kicker|__title|__body|__foot|__alert`
-   mais o `--aside` — veste o GUIA DA TAREFA do Pensa dentro das oficinas. Não existe "o painel":
-   são TRÊS componentes (`TaskBriefPanel` no pinta, `TaskGuidePanel` no studio, `MoldaTaskGuide`
-   no community-kids), e cada um tinha inventado a própria casca (fio de 2px no acento, fio da
-   marca, faixa sem canto) até ela dizer que aquilo estava "totalmente fora do design da
-   identidade visual da comunidade". A receita é a do `.sz-tool-card` — cartão branco, fio
-   `--sz-tool-card-edge`, canto de 20px —, CHAPADA (o relevo é das galerias), com 14/18px de
-   respiro no cabeçalho. ⚠️ Margem, largura e teto de altura ficam no CONSUMIDOR: variam por
-   painel e os testes do Pinta e do Estúdio os leem como classe literal. ⚠️ Os três só nascem com
-   uma sessão de tarefa do Pensa, que só existe no community-kids e nos playgrounds — os mesmos
-   hosts que já importam esta folha (o bloco de aula do Pinta, o `studio-embed` do admin e a
-   comunidade adulta nunca montam uma); classe sem folha não desenha NADA, ao contrário de token,
-   que tem fallback. ⚠️ O `--aside` (só o Estúdio, que vira coluna lateral no `lg`) usa
-   `--sz-tool-line` na divisória, nunca o `--sz-tool-card-edge`, que é TRANSPARENTE no claro: uma
-   borda de cartão some de propósito, uma divisória não pode. ⚠️ A tinta do `__alert` mistura um
-   quinto da tinta de texto no vermelho (o truque da barra do Pinta): o vermelho puro sobre o
-   fundo rosado dele dava 4,25:1 no escuro; com a mistura, 6,31 no claro e 5,74 no escuro
-   (medido). Contrato em `tests/tool-chrome.test.ts`, que também VARRE os três arquivos-fonte —
-   a regressão a evitar é alguém mexer em um e deixar os outros dois para trás. ⚠️ Ela vê
-   PRESENÇA e a cor do recado, não divergência fina: um ganhar uma peça nova e os outros não
-   continua passando.
-   **Full review do lote (19/09/2026), o que ele mudou na receita:** o cartão e o título DIVIDEM a
-   regra do `.sz-tool-card` em vez de copiá-la (eram dois blocos byte a byte iguais, e mudar um
-   deixava o outro para trás em silêncio); o sobretítulo e a situação subiram para **12px**, o
-   piso da casa para criança (nasceram em 11 e 10px, este último herdado de uma utilitária que
-   existia só no Estúdio — promovê-la à folha teria espalhado o tamanho errado); o cabeçalho
-   ganhou `> :first-child { flex: 1 1 auto }` (sem ele a situação flutuava no MEIO da linha no
-   Molda, que tem três filhos) e um respiro menor quando é CONTÊINER em vez de botão (o do
-   Estúdio embrulha um botão com alvo próprio e somava 72px contra os ~47px dos irmãos); o raio
-   inteiro no cabeçalho passou a valer só `:only-child` (aberto, o hover desenhava dois entalhes
-   arredondados sobre o corpo); o botão de DENTRO do cabeçalho ganhou o mesmo hover e o mesmo
-   anel de foco (o do Estúdio não tinha nenhum dos dois); e nasceu o `__alert--warn`, porque
-   vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou" — o vermelho ficou para
-   `role="alert"`. ⚠️ Dois testes do contrato eram VÁCUO e foram provados por mutação: um lia a
-   classe no CORPO da regra do relevo (ela vive no seletor, e são quatro regras, não uma) e outro
-   recortava o `@media` do `--aside` até o FIM do arquivo (esvaziar a media passava verde, e o
-   fio do lado sumiria a partir de 1024px).
+   **Missões funcionais do Pensa:** `PensaMissionContent` (`@sistemazero/ui/pensa-mission-content`) renderiza objetivo, recomendação de preparação, regras e formas de conferir. Recebe `PensaMission` do core; não aceita passos, checklists de implementação ou schemas alternativos.
+
+   `/pensa-mission-panel` exporta `PensaMissionLayout` e `PensaMissionPanel` (redesenho de 20/10/2026: **a missão nunca cobre a oficina**). `PensaMissionLayout` envolve a oficina e recebe o painel como IRMÃO: sem painel, estilos inline e a MESMA árvore (a oficina não remonta quando a missão chega); com painel (`has-panel`), a folha decide. A medida é a largura da área (`container: sz-mission / inline-size`, não o viewport): a partir de `68.75rem` (1100px) o painel é coluna de 360px (`22.5rem`) à direita e recolhe para um trilho de 64px (`writing-mode: vertical-rl`); abaixo, faixa EMBAIXO da oficina, a linha rola e a oficina tem piso `min(34rem, calc(100% - 4.875rem))` com `overflow-y: clip`. Recolhido com recado (`has-alert`), a coluna fica com a linha e os recados. Nada é `absolute`/`fixed`. Um único `<h2><button>` troca entre topo e trilho, então o foco sobrevive. Abrir pela linha recolhida chama `scrollIntoView({ block: 'nearest' })` no painel (na faixa estreita o conteúdo nascia fora da vista; na coluna é no-op), e concluir leva o foco ao recado "Missão pronta" por efeito sobre `done` (o host aplica a resposta do servidor depois de o clique resolver; um `setTimeout` perdia essa corrida e o foco caía no corpo). Pronta e sem próxima missão, o "Voltar ao plano" do rodapé some: a ação principal já tem esse nome. `PensaMissionPanel` desenha o topo âmbar ("Pensa · jogo · missão N de M", título, selo da oficina e do estado), a linha lilás de equipe, a nota (`note="inline"|"folded"`), "Ajuda para esta missão", o rodapé com as ações e o recado "Missão pronta. A próxima é …". `PensaMissionContent` ganhou a variante `panel` (a `card`, padrão, continua a do Pensa). `PensaMissionSession` (`/pensa-mission-session`) é o contrato de callbacks usado pelo Studio, Pinta e host do Molda, com os campos opcionais de exibição `order`, `nextMission` e `handoffTo` (o host os lê do plano; ausentes, nenhum número é inventado). Cada oficina acrescenta somente controles nativos de instalação ou associação de criações.
+
+   A preparação usa “Já preparei”; resultados funcionais usam “Conferi e está pronto”; a reconferência usa “Conferi de novo”. Não transforme a declaração da criança em certificação automática do programa: o host envia a criação salva e o servidor confere as evidências que consegue observar.
+
+   O tema vem exclusivamente dos tokens `--sz-tool-*`. Os tons da missão (`--sz-tool-sig-pensa-tint|-ink|-step`, os `-tint|-ink` de cada oficina, `--sz-tool-sig-ok-tint`, `--sz-tool-on-tint`) são constantes derivadas da assinatura por `color-mix(in oklab, …)`, com a cadeia caindo na paleta gerada (`--sz-yellow-surface`, `--sz-mint`, `--sz-lilac`, `--sz-ink`) fora do kids. ⚠️ `--sz-tool-on-sig-pensa` é a tinta ESCURA do âmbar (33% da assinatura com preto), nunca o `--sz-kids-cta-tinta`, que é a tinta branca da ação e reprovava o contraste no ladrilho. Os botões com degrau do painel usam classes próprias, porque o contrato proíbe sombra em `.sz-tool-pill` fora das faixas. Recolhido, título/estado e erros permanecem; o corpo não deixa referências ARIA para IDs ausentes. A folha possui uma camada `components`. Testes em `tests/tool-chrome.test.ts` (layout, trilho, faixa, piso de 12px, constantes) e `tests/pensa-mission-panel.test.tsx` (marcação de cada estado e a árvore estável do layout).
+
    Ficaram `--sz-tool-border`/`--sz-tool-radius-card` (o `.pin-panel` do Pinta lê) e o
    `--sz-tool-cta-gradient` (pinta.css e pensa.css leem).
    ⭐ **Paleta do Pen (11/09/2026):** `--sz-tool-accent`/`--sz-tool-cta` leem `--sz-kids-acao`
@@ -130,7 +101,7 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    ⚠️⚠️ **Hoje NENHUMA peça do produto usa esse padrão:** o Pensa o tinha no
    `.pensa-project-card__open` e o DESFEZ em 19/09/2026, a pedido dela ("os cards de projeto no
    pensa não é clicavel"), junto com o `cursor` do ancestral e o `z-index` do irmão. As travas de
-   17 e 18/09 em `packages/pensa/src/styles/tokens.test.ts` foram substituídas pelas do avesso
+   17 e 18/09 foram substituídas pela regra de cartões estáveis
    ("o cartão do plano NÃO é clicável"). Quem for ressuscitar o padrão reabre as três coisas de
    uma vez — prefira botões com alvo próprio. ⚠️⚠️ **E o cartão `--new` também NÃO anda
    (14/09/2026):** cartão de grade tem aresta longa, e 1px de movimento faz o ponteiro parado na
@@ -206,7 +177,13 @@ TOPO trata Esc/Tab; **o card é capado à viewport (`max-h-[calc(100dvh-6rem)]` 
 e rodapé FIXOS, só o corpo rola** — conteúdo alto (ex.: o Estúdio embutido na autoria de bloco) não
 transborda nem corta o topo, e o footer Salvar/Cancelar fica sempre visível; **largura via
 `className`** — default `max-w-lg`, sobrescreva p/ conteúdo largo, ex. `max-w-7xl` no bloco Estúdio)
-· info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
+· **console-user-menu** (`@sistemazero/ui/console-user-menu` — o menu do avatar dos TRÊS
+consoles internos (admin, helpdesk-app, marketing-app), que eram cópias: `ConsoleUserMenu` com
+`user`, `fallbackInitial`, `logoutPath`, `dropdownSide` e `apps`; o grupo "Apps" abre os outros
+consoles em nova aba, `rel="noopener noreferrer"`. A lista sai de **`@sistemazero/ui/console-apps`**
+(puro: `consoleAppLinks(atual, urls)` tira o console atual e as URLs ausentes e fecha SEMPRE com
+`INFORMACH_BACKSTAGE`, os Bastidores da Informach, URL fixa `https://admin.informach.com.br/`
+porque é a mesma em todo ambiente; nomes e ordem únicos; `tests/console-apps.test.ts`)) · info-tooltip · input · label (`Field` com `tooltip?`; **o erro vira
 `role="alert"` ligado por `aria-describedby` + `aria-invalid` no controle** — clona o filho) ·
 pagination · password-input (**olho alcançável por teclado**, `aria-pressed`) · progress · select ·
 **skeleton** (`@sistemazero/ui/skeleton` —

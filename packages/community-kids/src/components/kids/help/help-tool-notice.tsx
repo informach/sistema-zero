@@ -1,4 +1,4 @@
-import type { CreativeToolId, ToolAvailability } from '@sistemazero/core/journey'
+import type { CreativeToolId, JourneyLevelSlug, ToolAvailability } from '@sistemazero/core/journey'
 import { ExternalLink, Info } from 'lucide-react'
 import Link from 'next/link'
 import { HELP_TOOL_INFO } from '@/lib/help-collections'
@@ -10,19 +10,36 @@ import { HELP_TOOL_INFO } from '@/lib/help-collections'
  *  - liberada: o atalho "Abrir o Pinta";
  *  - ainda não incluída neste perfil: a frase diz isso e nada mais;
  *  - abre mais adiante na jornada: idem.
- * A régua é a MESMA do menu (`creativeToolAvailability`, resolvida no servidor); a página só
+ * A régua é a MESMA do menu (`getCreativeTools`, resolvida no servidor); a página só
  * mostra o que ela respondeu. `unavailable` (a consulta falhou) não mostra nada: um soluço de
  * rede não pode dizer à criança que ela não tem a ferramenta.
  */
 export function HelpToolNotice({
   tool,
   state,
+  requiredLevel,
+  studioCurriculum,
 }: {
   tool: CreativeToolId
   state: ToolAvailability | null
+  requiredLevel?: JourneyLevelSlug | null
+  studioCurriculum?: 'ready' | 'empty' | 'unavailable'
 }) {
   const info = HELP_TOOL_INFO[tool]
   if (!state || state === 'unavailable') return null
+  if (state === 'available' && studioCurriculum && studioCurriculum !== 'ready') {
+    return (
+      <p
+        className="sz-help-tool-notice text-foreground text-sm"
+        role={studioCurriculum === 'unavailable' ? 'status' : undefined}
+      >
+        {studioCurriculum === 'empty'
+          ? 'Você já conquistou o Estúdio. Os blocos para criar vêm dos seus cursos.'
+          : 'Você já conquistou o Estúdio. Não foi possível consultar seus blocos agora.'}{' '}
+        Você pode ler este passo a passo mesmo assim.
+      </p>
+    )
+  }
   if (state === 'available') {
     return (
       <p className="sz-help-tool-notice flex flex-wrap items-center gap-3 text-foreground text-sm">
@@ -39,7 +56,7 @@ export function HelpToolNotice({
     )
   }
   const motivo =
-    state === 'career-locked'
+    state === 'career-locked' && requiredLevel
       ? `O ${info.label} abre mais adiante na sua jornada.`
       : `O ${info.label} ainda não está liberado neste perfil.`
   return (

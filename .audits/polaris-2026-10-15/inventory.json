@@ -1,0 +1,6484 @@
+[
+  {
+    "file": ".gitignore",
+    "bytes": 527,
+    "lines": null,
+    "sha256": "f7d19c31637bdf85760c305cff1cb0146df765b7f5e715dbd20ad9ea3eab3be5",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "README.md",
+    "bytes": 7929,
+    "lines": null,
+    "sha256": "65a95e9213120b6c857d482c5b52a93c77bebe7467bcd7167cb26f64e3394784",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "components.json",
+    "bytes": 516,
+    "lines": null,
+    "sha256": "2a05ba0d585be6cffed53da01bed6db327472ebbd4ed26d3222c786281407400",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "convex/_generated/api.d.ts",
+    "bytes": 1236,
+    "lines": 58,
+    "sha256": "12e5754e7348f38a28030682c000c6077165e62c5abea065a6f5e4a62af0eac4",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/_generated/api.js",
+    "bytes": 480,
+    "lines": 24,
+    "sha256": "f513058549831e85376f8d19cafaf2a4a770b6eb1b859fb371141f2c9dec0d70",
+    "exports": [
+      "api",
+      "components",
+      "internal"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/server"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/_generated/dataModel.d.ts",
+    "bytes": 1736,
+    "lines": 61,
+    "sha256": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/_generated/server.d.ts",
+    "bytes": 5600,
+    "lines": 144,
+    "sha256": "b0c8d708aaa165b10633bb6181dea1af4b9976a71ad001d75f42785ddfbca458",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/_generated/server.js",
+    "bytes": 3696,
+    "lines": 94,
+    "sha256": "aea87b3ee367e0e870f3da81ffce8babd8ea1aea695a1e38689841aebc09a1e8",
+    "exports": [
+      "action",
+      "httpAction",
+      "internalAction",
+      "internalMutation",
+      "internalQuery",
+      "mutation",
+      "query"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/server"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/auth.config.ts",
+    "bytes": 202,
+    "lines": 11,
+    "sha256": "6e9f26d63546da14fa0778b1a8c1037a78fbc221800bec37c053b9cc1ca5e5d6",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/server"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/auth.ts",
+    "bytes": 266,
+    "lines": 12,
+    "sha256": "306d1866cce3d9b1b2f32cee52a573384f2b8f677e41e6904103f00d20770b19",
+    "exports": [
+      "verifyAuth"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "./_generated/server"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/server.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "convex/conversations.ts",
+    "bytes": 2762,
+    "lines": 118,
+    "sha256": "0623a88674219688b3ddf47bd5e7a0c5b2d19daa0826ba6b0478443020eea172",
+    "exports": [
+      "create",
+      "getById",
+      "getByProject",
+      "getMessages"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/values"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./_generated/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./auth"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/server.js",
+      "convex/auth.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "convex/files.ts",
+    "bytes": 9814,
+    "lines": 397,
+    "sha256": "393f55fd465fbbd4738aa5bb0600328262d01107f12d2980d1f003198acdc69e",
+    "exports": [
+      "createFile",
+      "createFolder",
+      "deleteFile",
+      "getFile",
+      "getFilePath",
+      "getFiles",
+      "getFolderContents",
+      "renameFile",
+      "updateFile"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/values"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./_generated/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./auth"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/server.js",
+      "convex/auth.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "convex/projects.ts",
+    "bytes": 2687,
+    "lines": 123,
+    "sha256": "9338d073e224ec5f8717598436d06a865e8c17e33db464e86a0eaa9a12c41959",
+    "exports": [
+      "create",
+      "get",
+      "getById",
+      "getPartial",
+      "rename",
+      "updateSettings"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/values"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./_generated/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./auth"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/server.js",
+      "convex/auth.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "convex/schema.ts",
+    "bytes": 1880,
+    "lines": 68,
+    "sha256": "80c2af15d44da1254a4e82fe3a5393953ed846b6563ead4ca0f38917862bacc7",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "convex/values"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "convex/system.ts",
+    "bytes": 14769,
+    "lines": 633,
+    "sha256": "68e0bd1369eb7f80da791c54b0609304b5badcfc95538162790de0544710af03",
+    "exports": [
+      "cleanup",
+      "createBinaryFile",
+      "createFile",
+      "createFiles",
+      "createFolder",
+      "createMessage",
+      "createProject",
+      "createProjectWithConversation",
+      "deleteFile",
+      "generateUploadUrl",
+      "getConversationById",
+      "getFileById",
+      "getProcessingMessages",
+      "getProjectFiles",
+      "getProjectFilesWithUrls",
+      "getRecentMessages",
+      "renameFile",
+      "updateConversationTitle",
+      "updateExportStatus",
+      "updateFile",
+      "updateImportStatus",
+      "updateMessageContent",
+      "updateMessageStatus"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/values"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./_generated/server"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/server.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "eslint.config.mjs",
+    "bytes": 465,
+    "lines": 19,
+    "sha256": "870f1adccecf3051cbcd9fd307cef51d7633cf510979c181a81f4b1797273493",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "eslint/config"
+      },
+      {
+        "kind": "import-statement",
+        "path": "eslint-config-next/core-web-vitals"
+      },
+      {
+        "kind": "import-statement",
+        "path": "eslint-config-next/typescript"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "next.config.ts",
+    "bytes": 1789,
+    "lines": 59,
+    "sha256": "624f2d4c2ce40648efecb133bb044004f7805dad25ff8fb75007e05b9e99dea9",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@sentry/nextjs"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "package-lock.json",
+    "bytes": 746965,
+    "lines": null,
+    "sha256": "8c52573b4823b4ce6f956858cde55046155b64485dffebc41ab0efc0f5bd8595",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "package.json",
+    "bytes": 3602,
+    "lines": null,
+    "sha256": "e6a3099319b59eb5d7ab01a6d93b8a7299f9ac3254c7a7b516b720f3d59988b0",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "postcss.config.mjs",
+    "bytes": 94,
+    "lines": 8,
+    "sha256": "dfac7ac2d86d326a0e5adb024e7943c181393ed17a5fcb8f0315b24c7da6ddde",
+    "exports": [
+      "default"
+    ],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "public/file.svg",
+    "bytes": 391,
+    "lines": null,
+    "sha256": "2b67812c325c199a02536cdbeea0c593a72f707d323b72ee3e08dbab06753bd4",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "public/globe.svg",
+    "bytes": 1035,
+    "lines": null,
+    "sha256": "b614b9bf183925957661ac851498fe1d8029fd43a62fbfed86f9e2624a57e7cf",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "public/logo-alt.svg",
+    "bytes": 396,
+    "lines": null,
+    "sha256": "29b80dc98fe55dab5108b7a56ca1eac013380a4d06d3376897164f16225c6799",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "public/logo.svg",
+    "bytes": 3786,
+    "lines": null,
+    "sha256": "ec47699c1ae9a35711abc1b7160fb00d707be91b355b8b18a14409ffebc62735",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "public/next.svg",
+    "bytes": 1375,
+    "lines": null,
+    "sha256": "55995dfad6ecb4945a1e856ddca03c5e16aa5bf13fd21b4df6a74ae79357bcfc",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "public/vercel.svg",
+    "bytes": 128,
+    "lines": null,
+    "sha256": "f081337b2fee635b455b63275406a3e7f39d6a014e25ad90dab5a67e62a12ac4",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "public/window.svg",
+    "bytes": 385,
+    "lines": null,
+    "sha256": "644768c4aaeb4767bce293344eeb0c125fb804a94d801440424072202d85e3a1",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "sentry.edge.config.ts",
+    "bytes": 1138,
+    "lines": 26,
+    "sha256": "e55593284f321466e3e28565ca77b09de6ca8b40ff318f7cde18bd68624ea8d1",
+    "exports": [],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@sentry/nextjs"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "sentry.server.config.ts",
+    "bytes": 983,
+    "lines": 25,
+    "sha256": "2c49d96f2b0e3dd263c04b7480077e3ce9ff1b7f1e7cc2e01078c622e6753a1d",
+    "exports": [],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@sentry/nextjs"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/github/export/cancel/route.ts",
+    "bytes": 1263,
+    "lines": 54,
+    "sha256": "e96e5c6225ba6b668ed211de95c4a9ae6ccd5d5841be374bcf52c4a08a45973c",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "src/inngest/client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/github/export/reset/route.ts",
+    "bytes": 1094,
+    "lines": 46,
+    "sha256": "eda0a780d8403e078e1b1296ac5ca0a8c0e6f90260cbb2a370c7cda871404b3c",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/github/export/route.ts",
+    "bytes": 1732,
+    "lines": 70,
+    "sha256": "86a497e322a7ceb5d97f4eccc20c1c5d9c1cebe0dab058b3b93fad41238671df",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/inngest/client.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/github/import/route.ts",
+    "bytes": 2055,
+    "lines": 88,
+    "sha256": "9098d6acc072b920472800a228b6fbc46abb9e05c341b1c59d4825d4fcb3b7bf",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "src/inngest/client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/inngest/route.ts",
+    "bytes": 519,
+    "lines": 16,
+    "sha256": "bdd8355dfec3e3bc5199ee33512deed242c47830603383f04d3035ec647b2ce9",
+    "exports": [
+      "GET",
+      "POST",
+      "PUT"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "inngest/next"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/conversations/inngest/process-message"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/inngest/import-github-repo"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/inngest/export-to-github"
+      }
+    ],
+    "localImports": [
+      "src/inngest/client.ts",
+      "src/features/conversations/inngest/process-message.ts",
+      "src/features/projects/inngest/import-github-repo.ts",
+      "src/features/projects/inngest/export-to-github.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/messages/cancel/route.ts",
+    "bytes": 1739,
+    "lines": 73,
+    "sha256": "a7e67a7c9c7d191320dc084932d0d534effcfb08d899fd8c067aa41cd8f9cada",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/inngest/client.ts",
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/messages/route.ts",
+    "bytes": 2813,
+    "lines": 118,
+    "sha256": "749ac18222f48682d1a4461ca0859049a9896406d977c933e97329d5ce938988",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/inngest/client.ts",
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/projects/create-with-prompt/route.ts",
+    "bytes": 2175,
+    "lines": 94,
+    "sha256": "f97f3ffca821b645c2be12e4e40bb1382cf9bbf98958fa01133d88601df2b89b",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "unique-names-generator"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/conversations/constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      }
+    ],
+    "localImports": [
+      "src/features/conversations/constants.ts",
+      "src/inngest/client.ts",
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/quick-edit/route.ts",
+    "bytes": 3048,
+    "lines": 119,
+    "sha256": "b9d8d3237d7008a83d521b35b354c3427ec8b31e5c8e886f9bf6388e58343828",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "ai"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@ai-sdk/anthropic"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/firecrawl"
+      }
+    ],
+    "localImports": [
+      "src/lib/firecrawl.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/api/suggestion/route.ts",
+    "bytes": 2791,
+    "lines": 100,
+    "sha256": "f61b931b3faf7e47781b9930ffd14f0d1b9bf0aec2892e514fba853c51a51a70",
+    "exports": [
+      "POST"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ai"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/server"
+      },
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@ai-sdk/anthropic"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/app/favicon.ico",
+    "bytes": 25931,
+    "lines": null,
+    "sha256": "2b8ad2d33455a8f736fc3a8ebf8f0bdea8848ad4c0db48a2833bd0f9cd775932",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/app/global-error.tsx",
+    "bytes": 681,
+    "lines": 28,
+    "sha256": "030977b48d77c010524bc46b80025360711c3e85da2e6e94dae817c1ac61e023",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@sentry/nextjs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/error"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/app/globals.css",
+    "bytes": 4961,
+    "lines": null,
+    "sha256": "3e9779287e0fe143f034383f335cd879d531386540c94d2ba4338439cc3e023d",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/app/layout.tsx",
+    "bytes": 968,
+    "lines": 44,
+    "sha256": "f15c249feb0677fdca1244e3d3655c3bd278cc9b8c12e84a6bced7de080e68ec",
+    "exports": [
+      "default",
+      "metadata"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "next/font/google"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/sonner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/providers"
+      },
+      {
+        "kind": "import-statement",
+        "path": "allotment/dist/style.css"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./globals.css"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/sonner.tsx",
+      "src/components/providers.tsx",
+      "src/app/globals.css"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/page.tsx",
+    "bytes": 150,
+    "lines": 8,
+    "sha256": "df5c6384c21c68b2ea49121ee3e97bc5d1754b0c732602c9222288f5fecab69a",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/components/projects-view"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/components/projects-view.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/projects/[projectId]/layout.tsx",
+    "bytes": 472,
+    "lines": 24,
+    "sha256": "1fce1a474d426848cba94eac644a51fe8b03947ff320ff450c11cd51646f3b97",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/components/project-id-layout"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/components/project-id-layout.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/app/projects/[projectId]/page.tsx",
+    "bytes": 380,
+    "lines": 15,
+    "sha256": "0424daf2aa6509655159b238e39e600b2a8614e25baf9eb17e9d5db4fa0b726c",
+    "exports": [
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/components/project-id-view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/components/project-id-view.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ai-elements/artifact.tsx",
+    "bytes": 3331,
+    "lines": 148,
+    "sha256": "d73559a7df3538d3c06f8bf8af64818398d602dbe91f2b1b46a49d0dcc6e43e6",
+    "exports": [
+      "Artifact",
+      "ArtifactAction",
+      "ArtifactActions",
+      "ArtifactClose",
+      "ArtifactContent",
+      "ArtifactDescription",
+      "ArtifactHeader",
+      "ArtifactTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/tooltip"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/tooltip.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/canvas.tsx",
+    "bytes": 547,
+    "lines": 23,
+    "sha256": "44ee4eb9fd199120da84a6efe5bdbb09ad32203123ce464f0c821f1d57ac19b9",
+    "exports": [
+      "Canvas"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react/dist/style.css"
+      }
+    ],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/chain-of-thought.tsx",
+    "bytes": 6309,
+    "lines": 232,
+    "sha256": "dc1200a59c027dd95eea9bda27fda1e717360f7c896e6df25211a47aaba1bfd4",
+    "exports": [
+      "ChainOfThought",
+      "ChainOfThoughtContent",
+      "ChainOfThoughtHeader",
+      "ChainOfThoughtImage",
+      "ChainOfThoughtSearchResult",
+      "ChainOfThoughtSearchResults",
+      "ChainOfThoughtStep"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-use-controllable-state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/badge"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/badge.tsx",
+      "src/components/ui/collapsible.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/checkpoint.tsx",
+    "bytes": 1591,
+    "lines": 69,
+    "sha256": "de2fe8bce08c2758c6ad043bb71d9cbcdab3d37103d039362145afcbd2c5ed5d",
+    "exports": [
+      "Checkpoint",
+      "CheckpointIcon",
+      "CheckpointTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/separator"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/tooltip"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/separator.tsx",
+      "src/components/ui/tooltip.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/code-block.tsx",
+    "bytes": 4446,
+    "lines": 179,
+    "sha256": "aa091ef9223f57632f80ec0410bf30c2bfcc5c98d70d1b872e18de15b2cf51e6",
+    "exports": [
+      "CodeBlock",
+      "CodeBlockCopyButton",
+      "highlightCode"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "shiki"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/confirmation.tsx",
+    "bytes": 3776,
+    "lines": 177,
+    "sha256": "7c8a540beb6860871392602cbfad29983eaab1ab5104aa426700c23a2ccf5790",
+    "exports": [
+      "Confirmation",
+      "ConfirmationAccepted",
+      "ConfirmationAction",
+      "ConfirmationActions",
+      "ConfirmationRejected",
+      "ConfirmationRequest",
+      "ConfirmationTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/alert"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/alert.tsx",
+      "src/components/ui/button.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/connection.tsx",
+    "bytes": 570,
+    "lines": 29,
+    "sha256": "3da80a551da8a7eb4949a0b64b5329af463037dc15e6945e60ae66dcd903e71f",
+    "exports": [
+      "Connection"
+    ],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/context.tsx",
+    "bytes": 9760,
+    "lines": 409,
+    "sha256": "ceaf01f1c95aac2609d7968591a753454202bffec895fd463cd45e9df1d8bd36",
+    "exports": [
+      "Context",
+      "ContextCacheUsage",
+      "ContextContent",
+      "ContextContentBody",
+      "ContextContentFooter",
+      "ContextContentHeader",
+      "ContextInputUsage",
+      "ContextOutputUsage",
+      "ContextReasoningUsage",
+      "ContextTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/hover-card"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/progress"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "tokenlens"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/hover-card.tsx",
+      "src/components/ui/progress.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/controls.tsx",
+    "bytes": 573,
+    "lines": 19,
+    "sha256": "bb5612a4ffeed5088c0934aabf2f11913f5ad3136e95f609109b09355ccddcbe",
+    "exports": [
+      "Controls"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/conversation.tsx",
+    "bytes": 2499,
+    "lines": 101,
+    "sha256": "3bb9ee948956c2f6be118bcd8c48f5c21f84973f0cc4497ef49d4685b36b1689",
+    "exports": [
+      "Conversation",
+      "ConversationContent",
+      "ConversationEmptyState",
+      "ConversationScrollButton"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "use-stick-to-bottom"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ai-elements/edge.tsx",
+    "bytes": 3167,
+    "lines": 141,
+    "sha256": "aabd264637475dd6af9ff9d001970450da808070262c35f283a856fac1853169",
+    "exports": [
+      "Edge"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react"
+      }
+    ],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/image.tsx",
+    "bytes": 480,
+    "lines": 25,
+    "sha256": "53cda095ba74c7d657ebaa9f911925a1bc161aa2b9645d2e5f699767661184df",
+    "exports": [
+      "Image"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/inline-citation.tsx",
+    "bytes": 6567,
+    "lines": 289,
+    "sha256": "584d9c5c1c4a6ae30cc0d9187bc6b5136892c3e8282d668515a876b8eb010cf0",
+    "exports": [
+      "InlineCitation",
+      "InlineCitationCard",
+      "InlineCitationCardBody",
+      "InlineCitationCardTrigger",
+      "InlineCitationCarousel",
+      "InlineCitationCarouselContent",
+      "InlineCitationCarouselHeader",
+      "InlineCitationCarouselIndex",
+      "InlineCitationCarouselItem",
+      "InlineCitationCarouselNext",
+      "InlineCitationCarouselPrev",
+      "InlineCitationQuote",
+      "InlineCitationSource",
+      "InlineCitationText"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/badge"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/carousel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/hover-card"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/badge.tsx",
+      "src/components/ui/carousel.tsx",
+      "src/components/ui/hover-card.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/loader.tsx",
+    "bytes": 2201,
+    "lines": 97,
+    "sha256": "e176c30d61fe1f09e6819eac1d547c1b7bf0db3bfb521bfb263153c792562f2e",
+    "exports": [
+      "Loader"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/message.tsx",
+    "bytes": 10879,
+    "lines": 450,
+    "sha256": "8c29a1bebcb6ba889497e2fc2e6f36c1ea3e79817f9cabc31513fdf9676f9efa",
+    "exports": [
+      "Message",
+      "MessageAction",
+      "MessageActions",
+      "MessageAttachment",
+      "MessageAttachments",
+      "MessageBranch",
+      "MessageBranchContent",
+      "MessageBranchNext",
+      "MessageBranchPage",
+      "MessageBranchPrevious",
+      "MessageBranchSelector",
+      "MessageContent",
+      "MessageResponse",
+      "MessageToolbar"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button-group"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/tooltip"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "streamdown"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/button-group.tsx",
+      "src/components/ui/tooltip.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ai-elements/model-selector.tsx",
+    "bytes": 4812,
+    "lines": 206,
+    "sha256": "228f326d2e6667a880ec9220524ff704024e39b843e1dd8637b4bb720b2b3bdd",
+    "exports": [
+      "ModelSelector",
+      "ModelSelectorContent",
+      "ModelSelectorDialog",
+      "ModelSelectorEmpty",
+      "ModelSelectorGroup",
+      "ModelSelectorInput",
+      "ModelSelectorItem",
+      "ModelSelectorList",
+      "ModelSelectorLogo",
+      "ModelSelectorLogoGroup",
+      "ModelSelectorName",
+      "ModelSelectorSeparator",
+      "ModelSelectorShortcut",
+      "ModelSelectorTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/command"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/command.tsx",
+      "src/components/ui/dialog.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/node.tsx",
+    "bytes": 1976,
+    "lines": 72,
+    "sha256": "87560e6c1240d340f670ad8ec6ec54a67ad45868485aa47e10fb6c9b0a92c211",
+    "exports": [
+      "Node",
+      "NodeAction",
+      "NodeContent",
+      "NodeDescription",
+      "NodeFooter",
+      "NodeHeader",
+      "NodeTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/card"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/card.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/open-in-chat.tsx",
+    "bytes": 16493,
+    "lines": 366,
+    "sha256": "baed61ccaa9902260f60da1fd55a52041d9397107fa23388262ad93b079f56ac",
+    "exports": [
+      "OpenIn",
+      "OpenInChatGPT",
+      "OpenInClaude",
+      "OpenInContent",
+      "OpenInCursor",
+      "OpenInItem",
+      "OpenInLabel",
+      "OpenInScira",
+      "OpenInSeparator",
+      "OpenInT3",
+      "OpenInTrigger",
+      "OpenInv0"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/dropdown-menu"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/dropdown-menu.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/panel.tsx",
+    "bytes": 401,
+    "lines": 16,
+    "sha256": "cecadda0af7dc89b9fdf25acaa2617d8cbe1426d46afa86760f8c761fce4e515",
+    "exports": [
+      "Panel"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/plan.tsx",
+    "bytes": 3436,
+    "lines": 143,
+    "sha256": "09d70f4657335463219c42d1975506ad51d1fc26b166166e4140902282e8178f",
+    "exports": [
+      "Plan",
+      "PlanAction",
+      "PlanContent",
+      "PlanDescription",
+      "PlanFooter",
+      "PlanHeader",
+      "PlanTitle",
+      "PlanTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/card"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./shimmer"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/card.tsx",
+      "src/components/ui/collapsible.tsx",
+      "src/lib/utils.ts",
+      "src/components/ai-elements/shimmer.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/prompt-input.tsx",
+    "bytes": 37979,
+    "lines": 1417,
+    "sha256": "c39fab488b3e03e99311f6437ab347c7633b40f5a20c77f08aa2937057dcaa6f",
+    "exports": [
+      "PromptInput",
+      "PromptInputActionAddAttachments",
+      "PromptInputActionMenu",
+      "PromptInputActionMenuContent",
+      "PromptInputActionMenuItem",
+      "PromptInputActionMenuTrigger",
+      "PromptInputAttachment",
+      "PromptInputAttachments",
+      "PromptInputBody",
+      "PromptInputButton",
+      "PromptInputCommand",
+      "PromptInputCommandEmpty",
+      "PromptInputCommandGroup",
+      "PromptInputCommandInput",
+      "PromptInputCommandItem",
+      "PromptInputCommandList",
+      "PromptInputCommandSeparator",
+      "PromptInputFooter",
+      "PromptInputHeader",
+      "PromptInputHoverCard",
+      "PromptInputHoverCardContent",
+      "PromptInputHoverCardTrigger",
+      "PromptInputProvider",
+      "PromptInputSelect",
+      "PromptInputSelectContent",
+      "PromptInputSelectItem",
+      "PromptInputSelectTrigger",
+      "PromptInputSelectValue",
+      "PromptInputSpeechButton",
+      "PromptInputSubmit",
+      "PromptInputTab",
+      "PromptInputTabBody",
+      "PromptInputTabItem",
+      "PromptInputTabLabel",
+      "PromptInputTabsList",
+      "PromptInputTextarea",
+      "PromptInputTools",
+      "usePromptInputAttachments",
+      "usePromptInputController",
+      "useProviderAttachments"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/command"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/dropdown-menu"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/hover-card"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input-group"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/select"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "nanoid"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/command.tsx",
+      "src/components/ui/dropdown-menu.tsx",
+      "src/components/ui/hover-card.tsx",
+      "src/components/ui/input-group.tsx",
+      "src/components/ui/select.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ai-elements/queue.tsx",
+    "bytes": 6232,
+    "lines": 275,
+    "sha256": "ecfd6a5f78e5aa0685d88ae900f67eba639ffda7c1305c5b5329ee7beb064e1d",
+    "exports": [
+      "Queue",
+      "QueueItem",
+      "QueueItemAction",
+      "QueueItemActions",
+      "QueueItemAttachment",
+      "QueueItemContent",
+      "QueueItemDescription",
+      "QueueItemFile",
+      "QueueItemImage",
+      "QueueItemIndicator",
+      "QueueList",
+      "QueueSection",
+      "QueueSectionContent",
+      "QueueSectionLabel",
+      "QueueSectionTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/scroll-area"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/collapsible.tsx",
+      "src/components/ui/scroll-area.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/reasoning.tsx",
+    "bytes": 5292,
+    "lines": 182,
+    "sha256": "8181c1c4911a237becfa1816519691fe709a53d8449adc63e37492d0fe008c10",
+    "exports": [
+      "Reasoning",
+      "ReasoningContent",
+      "ReasoningTrigger",
+      "useReasoning"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-use-controllable-state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "streamdown"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./shimmer"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/collapsible.tsx",
+      "src/lib/utils.ts",
+      "src/components/ai-elements/shimmer.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/shimmer.tsx",
+    "bytes": 1599,
+    "lines": 66,
+    "sha256": "7bb163a79981864c004c35e3059608e486cc33fac0da5cde6c1b112ffc8b3f67",
+    "exports": [
+      "Shimmer"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "motion/react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/sources.tsx",
+    "bytes": 1858,
+    "lines": 78,
+    "sha256": "99ec3be1614088f3a436701da05246e288e5f7c47129c5a109fd44e08e722b25",
+    "exports": [
+      "Source",
+      "Sources",
+      "SourcesContent",
+      "SourcesTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/collapsible.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/suggestion.tsx",
+    "bytes": 1269,
+    "lines": 57,
+    "sha256": "3bdfa3a7ae1f7f711ba6f05c4eee9051cbd249c9f49dd91af6d07f735ca5bdab",
+    "exports": [
+      "Suggestion",
+      "Suggestions"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/scroll-area"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/scroll-area.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/task.tsx",
+    "bytes": 2345,
+    "lines": 88,
+    "sha256": "1b566d9cda580442691acd5725a55c4c8e77edad3fe0181a51d3b222ae92a74c",
+    "exports": [
+      "Task",
+      "TaskContent",
+      "TaskItem",
+      "TaskItemFile",
+      "TaskTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/collapsible.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/tool.tsx",
+    "bytes": 4727,
+    "lines": 164,
+    "sha256": "4b0893c18dc86620f8b3db6bec10f95cac7c5e0a00f8014377eb60fcdb917684",
+    "exports": [
+      "Tool",
+      "ToolContent",
+      "ToolHeader",
+      "ToolInput",
+      "ToolOutput"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/badge"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./code-block"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/badge.tsx",
+      "src/components/ui/collapsible.tsx",
+      "src/lib/utils.ts",
+      "src/components/ai-elements/code-block.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/toolbar.tsx",
+    "bytes": 442,
+    "lines": 17,
+    "sha256": "2f24af7cd4e37cba5031ba9e933549e98a8ed5ba64be062cefbeedba7d2c1521",
+    "exports": [
+      "Toolbar"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xyflow/react"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ai-elements/web-preview.tsx",
+    "bytes": 6703,
+    "lines": 264,
+    "sha256": "eed21ffd907a5089e2cb65a91ef6f8adbb2f6f265477cd1125116542aefe64f6",
+    "exports": [
+      "WebPreview",
+      "WebPreviewBody",
+      "WebPreviewConsole",
+      "WebPreviewNavigation",
+      "WebPreviewNavigationButton",
+      "WebPreviewUrl"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/collapsible"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/tooltip"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/collapsible.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/tooltip.tsx",
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/providers.tsx",
+    "bytes": 1197,
+    "lines": 43,
+    "sha256": "0150feba3deff4f3ea4d4efe341269cfadadb4b92d0c6c699a30a15b0adecf7d",
+    "exports": [
+      "Providers"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "convex/react-clerk"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/auth/components/unauthenticated-view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/auth/components/auth-loading-view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./theme-provider"
+      }
+    ],
+    "localImports": [
+      "src/features/auth/components/unauthenticated-view.tsx",
+      "src/features/auth/components/auth-loading-view.tsx",
+      "src/components/theme-provider.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/theme-provider.tsx",
+    "bytes": 294,
+    "lines": 11,
+    "sha256": "8fdc279037702d7c59906bb941f10d90ebb174cd4a8f5ca7494eba189b9239c4",
+    "exports": [
+      "ThemeProvider"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next-themes"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/accordion.tsx",
+    "bytes": 2053,
+    "lines": 67,
+    "sha256": "7251e973cc6896411e3348c1e9cd10bb359934b0e766055c9a3439b07b775edc",
+    "exports": [
+      "Accordion",
+      "AccordionContent",
+      "AccordionItem",
+      "AccordionTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-accordion"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/alert-dialog.tsx",
+    "bytes": 3864,
+    "lines": 158,
+    "sha256": "59967c334f56dd44100e49b1fc18db428e7f15f5a28b9c2c4f9a3b7dcb4db4b7",
+    "exports": [
+      "AlertDialog",
+      "AlertDialogAction",
+      "AlertDialogCancel",
+      "AlertDialogContent",
+      "AlertDialogDescription",
+      "AlertDialogFooter",
+      "AlertDialogHeader",
+      "AlertDialogOverlay",
+      "AlertDialogPortal",
+      "AlertDialogTitle",
+      "AlertDialogTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-alert-dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/alert.tsx",
+    "bytes": 1614,
+    "lines": 67,
+    "sha256": "49d8311589b810b106aada8ef7b13f70b2b1f68cfce4e1458b7f31a191f420e9",
+    "exports": [
+      "Alert",
+      "AlertDescription",
+      "AlertTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/aspect-ratio.tsx",
+    "bytes": 280,
+    "lines": 12,
+    "sha256": "6a75117416aa89200cf31e8d61643b428e812f479caea857c80004b26d893e79",
+    "exports": [
+      "AspectRatio"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-aspect-ratio"
+      }
+    ],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/avatar.tsx",
+    "bytes": 1097,
+    "lines": 54,
+    "sha256": "e8672934f1c315f36cdae39380454ba8c2da62aca420dfb827d96693091419c4",
+    "exports": [
+      "Avatar",
+      "AvatarFallback",
+      "AvatarImage"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-avatar"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/badge.tsx",
+    "bytes": 1633,
+    "lines": 47,
+    "sha256": "e7455feb113b38c59456ba29a9ec264b5ffa1daae8883866332ad637ffd57c31",
+    "exports": [
+      "Badge",
+      "badgeVariants"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/breadcrumb.tsx",
+    "bytes": 2357,
+    "lines": 110,
+    "sha256": "22f3f4c13ed1085c4131379bfccc6fb173a474f861636bc2736506820153aa08",
+    "exports": [
+      "Breadcrumb",
+      "BreadcrumbEllipsis",
+      "BreadcrumbItem",
+      "BreadcrumbLink",
+      "BreadcrumbList",
+      "BreadcrumbPage",
+      "BreadcrumbSeparator"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/button-group.tsx",
+    "bytes": 2209,
+    "lines": 84,
+    "sha256": "ccbf09097f5ebf2eec86f1a96cb92e8dd39d251ebb5867394196c8b4fec68a5c",
+    "exports": [
+      "ButtonGroup",
+      "ButtonGroupSeparator",
+      "ButtonGroupText",
+      "buttonGroupVariants"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/separator"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/separator.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/button.tsx",
+    "bytes": 2322,
+    "lines": 65,
+    "sha256": "6b853e647e0f44b3813768f28e54844394b2942c220010bacfd90b450ae45953",
+    "exports": [
+      "Button",
+      "buttonVariants"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/calendar.tsx",
+    "bytes": 7793,
+    "lines": 221,
+    "sha256": "c8e67d15d8622135b72045d974a3234ea99f5ffcc1b981eafea8847a14ae1f12",
+    "exports": [
+      "Calendar",
+      "CalendarDayButton"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-day-picker"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/card.tsx",
+    "bytes": 1987,
+    "lines": 93,
+    "sha256": "2040cdff27cd1ed771e0ebbd15abcd73d31f2f1e4be6664bd6816fffd2a87476",
+    "exports": [
+      "Card",
+      "CardAction",
+      "CardContent",
+      "CardDescription",
+      "CardFooter",
+      "CardHeader",
+      "CardTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/carousel.tsx",
+    "bytes": 5556,
+    "lines": 242,
+    "sha256": "b7ea0dda3903d972c186f739e23da61f547bc83b5a0bf13b16856577846d5fc3",
+    "exports": [
+      "Carousel",
+      "CarouselContent",
+      "CarouselItem",
+      "CarouselNext",
+      "CarouselPrevious"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "embla-carousel-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/chart.tsx",
+    "bytes": 10069,
+    "lines": 358,
+    "sha256": "39a2fde544144e0ed0e3e7f76eb3f3988f570f849f30f62208c6f3e2fc4e3e4f",
+    "exports": [
+      "ChartContainer",
+      "ChartLegend",
+      "ChartLegendContent",
+      "ChartStyle",
+      "ChartTooltip",
+      "ChartTooltipContent"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "recharts"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/checkbox.tsx",
+    "bytes": 1219,
+    "lines": 33,
+    "sha256": "a8292972a5b81eff164f621ac0bb66f4ed4419d1599e2d4901968e216574677f",
+    "exports": [
+      "Checkbox"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-checkbox"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/collapsible.tsx",
+    "bytes": 800,
+    "lines": 34,
+    "sha256": "c2c74dc3e99482d00a57de673b56920860c2ff4b330373d783843f505dc11dae",
+    "exports": [
+      "Collapsible",
+      "CollapsibleContent",
+      "CollapsibleTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-collapsible"
+      }
+    ],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/command.tsx",
+    "bytes": 4818,
+    "lines": 185,
+    "sha256": "4fb4f8f95dfbe884ae598661b80e541d62eacdfe2101beab58819ab58b96c2ea",
+    "exports": [
+      "Command",
+      "CommandDialog",
+      "CommandEmpty",
+      "CommandGroup",
+      "CommandInput",
+      "CommandItem",
+      "CommandList",
+      "CommandSeparator",
+      "CommandShortcut"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "cmdk"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/dialog"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/dialog.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/context-menu.tsx",
+    "bytes": 8274,
+    "lines": 253,
+    "sha256": "70e547a9bececcc98adf2fbfb2cae05c99179707ab0edb1ddfb5d2de329dab42",
+    "exports": [
+      "ContextMenu",
+      "ContextMenuCheckboxItem",
+      "ContextMenuContent",
+      "ContextMenuGroup",
+      "ContextMenuItem",
+      "ContextMenuLabel",
+      "ContextMenuPortal",
+      "ContextMenuRadioGroup",
+      "ContextMenuRadioItem",
+      "ContextMenuSeparator",
+      "ContextMenuShortcut",
+      "ContextMenuSub",
+      "ContextMenuSubContent",
+      "ContextMenuSubTrigger",
+      "ContextMenuTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-context-menu"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/dialog.tsx",
+    "bytes": 3995,
+    "lines": 144,
+    "sha256": "bd07164f172aafffb93861e4b1a3be4249f5a8739f24454864f2cf9c0c46758d",
+    "exports": [
+      "Dialog",
+      "DialogClose",
+      "DialogContent",
+      "DialogDescription",
+      "DialogFooter",
+      "DialogHeader",
+      "DialogOverlay",
+      "DialogPortal",
+      "DialogTitle",
+      "DialogTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/drawer.tsx",
+    "bytes": 4255,
+    "lines": 136,
+    "sha256": "0c9464ed4f95207ff6ec0b8f433f550388ea0fe57fecd36bbe100b084ee46a3e",
+    "exports": [
+      "Drawer",
+      "DrawerClose",
+      "DrawerContent",
+      "DrawerDescription",
+      "DrawerFooter",
+      "DrawerHeader",
+      "DrawerOverlay",
+      "DrawerPortal",
+      "DrawerTitle",
+      "DrawerTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "vaul"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/dropdown-menu.tsx",
+    "bytes": 8424,
+    "lines": 258,
+    "sha256": "e1564b0912361081da39e1ee61d5759a75aa4e2e8d28a90f5e229921addb4083",
+    "exports": [
+      "DropdownMenu",
+      "DropdownMenuCheckboxItem",
+      "DropdownMenuContent",
+      "DropdownMenuGroup",
+      "DropdownMenuItem",
+      "DropdownMenuLabel",
+      "DropdownMenuPortal",
+      "DropdownMenuRadioGroup",
+      "DropdownMenuRadioItem",
+      "DropdownMenuSeparator",
+      "DropdownMenuShortcut",
+      "DropdownMenuSub",
+      "DropdownMenuSubContent",
+      "DropdownMenuSubTrigger",
+      "DropdownMenuTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-dropdown-menu"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/empty.tsx",
+    "bytes": 2396,
+    "lines": 105,
+    "sha256": "584b491f9eb69f8041b3d3732a4d139f5af01de19a00b7a97656c7af7a78716a",
+    "exports": [
+      "Empty",
+      "EmptyContent",
+      "EmptyDescription",
+      "EmptyHeader",
+      "EmptyMedia",
+      "EmptyTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/field.tsx",
+    "bytes": 6159,
+    "lines": 249,
+    "sha256": "85da2b11f91b5209995294fe1ee3661137a3fb7f9bdcc0b5dfe06ac86cc932d0",
+    "exports": [
+      "Field",
+      "FieldContent",
+      "FieldDescription",
+      "FieldError",
+      "FieldGroup",
+      "FieldLabel",
+      "FieldLegend",
+      "FieldSeparator",
+      "FieldSet",
+      "FieldTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/label"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/separator"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/label.tsx",
+      "src/components/ui/separator.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/form.tsx",
+    "bytes": 3764,
+    "lines": 168,
+    "sha256": "a12f73507ab613e9d797979b988a15e32d23458fc8dd4ba71b922aeee977a3b6",
+    "exports": [
+      "Form",
+      "FormControl",
+      "FormDescription",
+      "FormField",
+      "FormItem",
+      "FormLabel",
+      "FormMessage",
+      "useFormField"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-hook-form"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/label"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/label.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/hover-card.tsx",
+    "bytes": 1532,
+    "lines": 45,
+    "sha256": "031f6a309d87c8e42a2282fccc277dde75e373de8c93dad881582c9dc13e05d0",
+    "exports": [
+      "HoverCard",
+      "HoverCardContent",
+      "HoverCardTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-hover-card"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/input-group.tsx",
+    "bytes": 5065,
+    "lines": 171,
+    "sha256": "c0df02569e483db8ee86bd51b3b392a1ba62b276604d8c7ea90a9efc5faa9e25",
+    "exports": [
+      "InputGroup",
+      "InputGroupAddon",
+      "InputGroupButton",
+      "InputGroupInput",
+      "InputGroupText",
+      "InputGroupTextarea"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/textarea"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/textarea.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/input-otp.tsx",
+    "bytes": 2254,
+    "lines": 78,
+    "sha256": "35d561c352fde4e34fc3481839649728300c01cfadac62aa84c375d6d812f4de",
+    "exports": [
+      "InputOTP",
+      "InputOTPGroup",
+      "InputOTPSeparator",
+      "InputOTPSlot"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "input-otp"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/input.tsx",
+    "bytes": 962,
+    "lines": 22,
+    "sha256": "56b7fd30208addbcc2468cfda4f5bc0a55342211deaab61ee35b1c352b1622f1",
+    "exports": [
+      "Input"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/item.tsx",
+    "bytes": 4494,
+    "lines": 194,
+    "sha256": "6d64b756260749245b3a1f292e2aaf2774d7ec0b8bb99403eb8c1be31bd26900",
+    "exports": [
+      "Item",
+      "ItemActions",
+      "ItemContent",
+      "ItemDescription",
+      "ItemFooter",
+      "ItemGroup",
+      "ItemHeader",
+      "ItemMedia",
+      "ItemSeparator",
+      "ItemTitle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/separator"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/separator.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/kbd.tsx",
+    "bytes": 862,
+    "lines": 29,
+    "sha256": "886e04c83aaa016dfce924e461aa38aa68a9f5c83bdaedd6209dc358c32a8f22",
+    "exports": [
+      "Kbd",
+      "KbdGroup"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/label.tsx",
+    "bytes": 611,
+    "lines": 25,
+    "sha256": "9ec42c8a57e82311118b794318409ee02b2cebfa49ba6cce8457cff6448cd471",
+    "exports": [
+      "Label"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-label"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/menubar.tsx",
+    "bytes": 8394,
+    "lines": 277,
+    "sha256": "d3c5b6060323b78aef1b32650e22d3d951d1b125404f76ffb967ed80446a3ddd",
+    "exports": [
+      "Menubar",
+      "MenubarCheckboxItem",
+      "MenubarContent",
+      "MenubarGroup",
+      "MenubarItem",
+      "MenubarLabel",
+      "MenubarMenu",
+      "MenubarPortal",
+      "MenubarRadioGroup",
+      "MenubarRadioItem",
+      "MenubarSeparator",
+      "MenubarShortcut",
+      "MenubarSub",
+      "MenubarSubContent",
+      "MenubarSubTrigger",
+      "MenubarTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-menubar"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/navigation-menu.tsx",
+    "bytes": 6664,
+    "lines": 169,
+    "sha256": "d71f57fe0f365541fbf5d00196b0b78a461d8c4f38d35293e5754680d93b9245",
+    "exports": [
+      "NavigationMenu",
+      "NavigationMenuContent",
+      "NavigationMenuIndicator",
+      "NavigationMenuItem",
+      "NavigationMenuLink",
+      "NavigationMenuList",
+      "NavigationMenuTrigger",
+      "NavigationMenuViewport",
+      "navigationMenuTriggerStyle"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-navigation-menu"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/pagination.tsx",
+    "bytes": 2717,
+    "lines": 128,
+    "sha256": "374ad135c3d4ff3ec080a0009cd9745cdd0e12faa89d2b0e86074f11e5127fd1",
+    "exports": [
+      "Pagination",
+      "PaginationContent",
+      "PaginationEllipsis",
+      "PaginationItem",
+      "PaginationLink",
+      "PaginationNext",
+      "PaginationPrevious"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/popover.tsx",
+    "bytes": 1635,
+    "lines": 49,
+    "sha256": "29a217781737bbf5c430859b3de46097a44ada81c4143c2d05543d2167de0ee1",
+    "exports": [
+      "Popover",
+      "PopoverAnchor",
+      "PopoverContent",
+      "PopoverTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-popover"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/progress.tsx",
+    "bytes": 740,
+    "lines": 32,
+    "sha256": "e7a89220fb49e18d6613956781cfd5eb38d5da36379e93f5fc90ccec127dc871",
+    "exports": [
+      "Progress"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-progress"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/radio-group.tsx",
+    "bytes": 1466,
+    "lines": 46,
+    "sha256": "b12ca5cef859dd75b274337234bae66e413b0f97845243254a1dedcb2d7a7237",
+    "exports": [
+      "RadioGroup",
+      "RadioGroupItem"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-radio-group"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/scroll-area.tsx",
+    "bytes": 1645,
+    "lines": 59,
+    "sha256": "1c5d0b242d0513848f4bfa9b57ba7f438d9b1120617029941bfaa137196ecead",
+    "exports": [
+      "ScrollArea",
+      "ScrollBar"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-scroll-area"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/select.tsx",
+    "bytes": 6358,
+    "lines": 191,
+    "sha256": "71459423cd653def7dc3b55e2b5fd583955903ecc6c4a32889303c496e36f198",
+    "exports": [
+      "Select",
+      "SelectContent",
+      "SelectGroup",
+      "SelectItem",
+      "SelectLabel",
+      "SelectScrollDownButton",
+      "SelectScrollUpButton",
+      "SelectSeparator",
+      "SelectTrigger",
+      "SelectValue"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-select"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/separator.tsx",
+    "bytes": 699,
+    "lines": 29,
+    "sha256": "e9dddbd8dbbc0eccd683306481b0f0bbc8e2b60ea97817416ebb9fe7fbbbdca8",
+    "exports": [
+      "Separator"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-separator"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/sheet.tsx",
+    "bytes": 4090,
+    "lines": 140,
+    "sha256": "3d6a560c635fd91094e43191ecf73b124ccb2537e6060f85d5d31fcf68150e74",
+    "exports": [
+      "Sheet",
+      "SheetClose",
+      "SheetContent",
+      "SheetDescription",
+      "SheetFooter",
+      "SheetHeader",
+      "SheetTitle",
+      "SheetTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/sidebar.tsx",
+    "bytes": 21638,
+    "lines": 727,
+    "sha256": "6074d8027b4bc9ea2d5eb1527a8528a7fa69df96f6261b9c6441c3980d41700f",
+    "exports": [
+      "Sidebar",
+      "SidebarContent",
+      "SidebarFooter",
+      "SidebarGroup",
+      "SidebarGroupAction",
+      "SidebarGroupContent",
+      "SidebarGroupLabel",
+      "SidebarHeader",
+      "SidebarInput",
+      "SidebarInset",
+      "SidebarMenu",
+      "SidebarMenuAction",
+      "SidebarMenuBadge",
+      "SidebarMenuButton",
+      "SidebarMenuItem",
+      "SidebarMenuSkeleton",
+      "SidebarMenuSub",
+      "SidebarMenuSubButton",
+      "SidebarMenuSubItem",
+      "SidebarProvider",
+      "SidebarRail",
+      "SidebarSeparator",
+      "SidebarTrigger",
+      "useSidebar"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slot"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/hooks/use-mobile"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/separator"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/sheet"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/skeleton"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/tooltip"
+      }
+    ],
+    "localImports": [
+      "src/hooks/use-mobile.ts",
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/separator.tsx",
+      "src/components/ui/sheet.tsx",
+      "src/components/ui/skeleton.tsx",
+      "src/components/ui/tooltip.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/skeleton.tsx",
+    "bytes": 276,
+    "lines": 14,
+    "sha256": "f2aea81d8baf2b621945382aabac150e3db40f20d19ac1abea7aff805f1dc33c",
+    "exports": [
+      "Skeleton"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/slider.tsx",
+    "bytes": 1996,
+    "lines": 64,
+    "sha256": "640996327017c3977e3c61eee8ec55230fa0bec509d0f4b44bdc9acdd8eca138",
+    "exports": [
+      "Slider"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-slider"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/sonner.tsx",
+    "bytes": 1034,
+    "lines": 41,
+    "sha256": "13ccc9b0fe4248e622f83a1d3b2f0566b72b5e04162d7d0c8db8945ecc71b55f",
+    "exports": [
+      "Toaster"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next-themes"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/spinner.tsx",
+    "bytes": 331,
+    "lines": 17,
+    "sha256": "3e6e6e8d37fb4069f8e43e55318f8db06fbc36e6c8be0096da3c9337c1c798b9",
+    "exports": [
+      "Spinner"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/switch.tsx",
+    "bytes": 1177,
+    "lines": 32,
+    "sha256": "17f2390d98e8ce4d9e90155eac1918266914d6a9ada7c276b5d1c917cef0e969",
+    "exports": [
+      "Switch"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-switch"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/table.tsx",
+    "bytes": 2448,
+    "lines": 117,
+    "sha256": "7b8c7a952cf49e78aafe5f628c3bd90f7e01bd5602eb5d3650bef5727a8186d7",
+    "exports": [
+      "Table",
+      "TableBody",
+      "TableCaption",
+      "TableCell",
+      "TableFooter",
+      "TableHead",
+      "TableHeader",
+      "TableRow"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/tabs.tsx",
+    "bytes": 1969,
+    "lines": 67,
+    "sha256": "e8469e599381cf021ce751c27cca3d8cb06440a45665ca9c2ef2efb0acef1fd9",
+    "exports": [
+      "Tabs",
+      "TabsContent",
+      "TabsList",
+      "TabsTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-tabs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/textarea.tsx",
+    "bytes": 759,
+    "lines": 19,
+    "sha256": "de4e9fb0fd8e8ed10ea2e475ffe202a922ffe77e3f3edb2c517b0781447ad1b4",
+    "exports": [
+      "Textarea"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/components/ui/toggle-group.tsx",
+    "bytes": 2314,
+    "lines": 84,
+    "sha256": "b9301b40e787de05d27bc2b1c6da80604dbdb7b1b4eef83d660f9f7becaf355c",
+    "exports": [
+      "ToggleGroup",
+      "ToggleGroupItem"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-toggle-group"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/toggle"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/toggle.tsx"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/toggle.tsx",
+    "bytes": 1570,
+    "lines": 48,
+    "sha256": "b201563ea8cdef3680a3d9bf272cfc5918a5ab6e1079d7ff8d6273df7fce2849",
+    "exports": [
+      "Toggle",
+      "toggleVariants"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-toggle"
+      },
+      {
+        "kind": "import-statement",
+        "path": "class-variance-authority"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/components/ui/tooltip.tsx",
+    "bytes": 1892,
+    "lines": 62,
+    "sha256": "cbc12f4086448f8a307ed5fbb160f79467c84a44c48ca0dbd2c62e39a2db6f5d",
+    "exports": [
+      "Tooltip",
+      "TooltipContent",
+      "TooltipProvider",
+      "TooltipTrigger"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@radix-ui/react-tooltip"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/auth/components/auth-loading-view.tsx",
+    "bytes": 246,
+    "lines": 10,
+    "sha256": "9275f4d5d8590b7d66074eb94d5bf47e064a268f6ff7323fc8811a608ff9cf4e",
+    "exports": [
+      "AuthLoadingView"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/spinner"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/spinner.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/auth/components/unauthenticated-view.tsx",
+    "bytes": 1052,
+    "lines": 40,
+    "sha256": "5bc09605aeff8ac7fc82b27773d4bf230306eec26ea3c4e0db5280170252007a",
+    "exports": [
+      "UnauthenticatedView"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/item"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/item.tsx",
+      "src/components/ui/button.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/components/conversation-sidebar.tsx",
+    "bytes": 6654,
+    "lines": 229,
+    "sha256": "3b339d016d3edbfeb92914bfc751d4b0c7e7e8d36f72ddcfb5bb219a717637e0",
+    "exports": [
+      "ConversationSidebar"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ai-elements/conversation"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ai-elements/message"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ai-elements/prompt-input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-conversations"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./past-conversations-dialog"
+      }
+    ],
+    "localImports": [
+      "src/components/ai-elements/conversation.tsx",
+      "src/components/ai-elements/message.tsx",
+      "src/components/ai-elements/prompt-input.tsx",
+      "src/components/ui/button.tsx",
+      "src/features/conversations/hooks/use-conversations.ts",
+      "src/features/conversations/constants.ts",
+      "src/features/conversations/components/past-conversations-dialog.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/components/past-conversations-dialog.tsx",
+    "bytes": 1909,
+    "lines": 69,
+    "sha256": "0eb9257fbb3db49d68e0af650d610d20e370849853fc7bf2623ffa7871b2ea38",
+    "exports": [
+      "PastConversationsDialog"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "date-fns"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/command"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-conversations"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/command.tsx",
+      "src/features/conversations/hooks/use-conversations.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/constants.ts",
+    "bytes": 62,
+    "lines": 2,
+    "sha256": "d049f3a0f4a625ee6872e018b7f1b07b9d451c0054e6a4e003e0cfd9fb84e7cb",
+    "exports": [
+      "DEFAULT_CONVERSATION_TITLE"
+    ],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/hooks/use-conversations.ts",
+    "bytes": 736,
+    "lines": 24,
+    "sha256": "ba6a8e3df4937c5602103fb9d10a7430331d587d66c6d38fd263928fc3d866b4",
+    "exports": [
+      "useConversation",
+      "useConversations",
+      "useCreateConversation",
+      "useMessages"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/constants.ts",
+    "bytes": 1757,
+    "lines": 34,
+    "sha256": "60894c864ffc63e04bd7a055a0414e3aa27347f636abed215bce9ed8bf8ab0ed",
+    "exports": [
+      "CODING_AGENT_SYSTEM_PROMPT",
+      "TITLE_GENERATOR_SYSTEM_PROMPT"
+    ],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/process-message.ts",
+    "bytes": 7512,
+    "lines": 229,
+    "sha256": "98e845e32df1a237cc825975412b7f7e420a2c255b9961005f2fcff1947d4052",
+    "exports": [
+      "processMessage"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "inngest"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/read-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/list-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/update-file"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/create-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/create-folder"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/rename-file"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/delete-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tools/scrape-urls"
+      }
+    ],
+    "localImports": [
+      "src/inngest/client.ts",
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js",
+      "src/features/conversations/inngest/constants.ts",
+      "src/features/conversations/constants.ts",
+      "src/features/conversations/inngest/tools/read-files.ts",
+      "src/features/conversations/inngest/tools/list-files.ts",
+      "src/features/conversations/inngest/tools/update-file.ts",
+      "src/features/conversations/inngest/tools/create-files.ts",
+      "src/features/conversations/inngest/tools/create-folder.ts",
+      "src/features/conversations/inngest/tools/rename-file.ts",
+      "src/features/conversations/inngest/tools/delete-files.ts",
+      "src/features/conversations/inngest/tools/scrape-urls.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/create-files.ts",
+    "bytes": 3441,
+    "lines": 105,
+    "sha256": "72eb0b83a5dbd82f532dd3cac8635c383a20b05ec8f26b2f567d56c45928501d",
+    "exports": [
+      "createCreateFilesTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/create-folder.ts",
+    "bytes": 2497,
+    "lines": 77,
+    "sha256": "b2ca04fcbaa4fca0a7b22f9f4a0075728a873506150fea4cb0b5689b8380e524",
+    "exports": [
+      "createCreateFolderTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/delete-files.ts",
+    "bytes": 2320,
+    "lines": 84,
+    "sha256": "c667e7328ec63aa8e35dbdb6eb14bfc6e4adb5ae1a674ff4a003b8036d1de98e",
+    "exports": [
+      "createDeleteFilesTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/list-files.ts",
+    "bytes": 1698,
+    "lines": 54,
+    "sha256": "d744b1e42ac7e8976e337a0f57a31c3f7636b2cfd1b636dda9a2b86e602632a3",
+    "exports": [
+      "createListFilesTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/read-files.ts",
+    "bytes": 1945,
+    "lines": 65,
+    "sha256": "4df7e3b9c77a43447beaddbb8ae7311222a696880e6a7ca461d2941745f728d5",
+    "exports": [
+      "createReadFilesTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/rename-file.ts",
+    "bytes": 1853,
+    "lines": 62,
+    "sha256": "b8242e27647d61ed42969b749f36c5843cd1500abaa165f2f632c6538d3827f0",
+    "exports": [
+      "createRenameFileTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/scrape-urls.ts",
+    "bytes": 1907,
+    "lines": 63,
+    "sha256": "85b1b25c298330364b978c3f1aeff00efe7219925a0c9ea529865fac45633ddc",
+    "exports": [
+      "createScrapeUrlsTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/firecrawl"
+      }
+    ],
+    "localImports": [
+      "src/lib/firecrawl.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/conversations/inngest/tools/update-file.ts",
+    "bytes": 1942,
+    "lines": 67,
+    "sha256": "aae9727a6f89286a6ea0b3a0d911486710c45cab175055732c25438909f75dbd",
+    "exports": [
+      "createUpdateFileTool"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/agent-kit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/components/code-editor.tsx",
+    "bytes": 2008,
+    "lines": 70,
+    "sha256": "df90cb18d90615f6f4df1dd2dcd55fcfbbf8e64cb356d7b2a54fd8130eaa4026",
+    "exports": [
+      "CodeEditor"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/theme-one-dark"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/commands"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@replit/codemirror-indentation-markers"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/minimap"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/theme"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/language-extension"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/custom-setup"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/suggestion"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/quick-edit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../extensions/selection-tooltip"
+      }
+    ],
+    "localImports": [
+      "src/features/editor/extensions/minimap.ts",
+      "src/features/editor/extensions/theme.ts",
+      "src/features/editor/extensions/language-extension.ts",
+      "src/features/editor/extensions/custom-setup.ts",
+      "src/features/editor/extensions/suggestion/index.ts",
+      "src/features/editor/extensions/quick-edit/index.ts",
+      "src/features/editor/extensions/selection-tooltip.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/components/editor-view.tsx",
+    "bytes": 2720,
+    "lines": 81,
+    "sha256": "f46feb07a9f5019a9da7a5793ecdffe72782aef8450ea58959a55ccc05931db7",
+    "exports": [
+      "EditorView"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "next/image"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/hooks/use-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./code-editor"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-editor"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./top-navigation"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./file-breadcrumbs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/hooks/use-files.ts",
+      "src/features/editor/components/code-editor.tsx",
+      "src/features/editor/hooks/use-editor.ts",
+      "src/features/editor/components/top-navigation.tsx",
+      "src/features/editor/components/file-breadcrumbs.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/components/file-breadcrumbs.tsx",
+    "bytes": 2112,
+    "lines": 74,
+    "sha256": "56953448ec730ba0e13a8c40fd677170f843c7dfe513c1b27b66b1bb99294fed",
+    "exports": [
+      "FileBreadcrumbs"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@react-symbols/icons/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/hooks/use-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/editor/hooks/use-editor"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/breadcrumb"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/hooks/use-files.ts",
+      "src/features/editor/hooks/use-editor.ts",
+      "src/components/ui/breadcrumb.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/components/top-navigation.tsx",
+    "bytes": 2732,
+    "lines": 103,
+    "sha256": "480fadfdc12f4eee20ebf624c274e374293a83d333205fa8398a682899f595da",
+    "exports": [
+      "TopNavigation"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/scroll-area"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/hooks/use-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-editor"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/spinner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@react-symbols/icons/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/scroll-area.tsx",
+      "src/features/projects/hooks/use-files.ts",
+      "src/features/editor/hooks/use-editor.ts",
+      "src/lib/utils.ts",
+      "src/components/ui/spinner.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/custom-setup.ts",
+    "bytes": 2291,
+    "lines": 71,
+    "sha256": "25715ec72f8f15a818ca070ef26198b58d990560f860593b895b98c4414c0358",
+    "exports": [
+      "customSetup"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/language"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/commands"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/search"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/autocomplete"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lint"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/language-extension.ts",
+    "bytes": 967,
+    "lines": 36,
+    "sha256": "2bd51dc52cc6e6a6e0afd6ceb12d862e0e46b8e62e5ca39545d7d7cbe19b8ab7",
+    "exports": [
+      "getLanguageExtension"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lang-javascript"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lang-html"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lang-css"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lang-json"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lang-markdown"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/lang-python"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/minimap.ts",
+    "bytes": 284,
+    "lines": 15,
+    "sha256": "6783cb2cba821052ed888cdf3b1773ddd63272ec503bf7165d4e29c73e88b718",
+    "exports": [
+      "minimap"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@replit/codemirror-minimap"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/quick-edit/fetcher.ts",
+    "bytes": 1054,
+    "lines": 45,
+    "sha256": "eb8e63f11182af449eaefa17d5fcb938e625c3855b6697dde678b3621c3b4e1b",
+    "exports": [
+      "fetcher"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/quick-edit/index.ts",
+    "bytes": 5605,
+    "lines": 203,
+    "sha256": "dabd8cabb197b0cea2aed04c4e44205a7827ab7d8badea8a2e292315e6664b92",
+    "exports": [
+      "quickEdit",
+      "quickEditState",
+      "showQuickEditEffect"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./fetcher"
+      }
+    ],
+    "localImports": [
+      "src/features/editor/extensions/quick-edit/fetcher.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/selection-tooltip.ts",
+    "bytes": 2809,
+    "lines": 97,
+    "sha256": "f864bbc10bcb2ab89b3aac10692fdc838a85960357e0deb2513df8e7982e46ca",
+    "exports": [
+      "selectionTooltip"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./quick-edit"
+      }
+    ],
+    "localImports": [
+      "src/features/editor/extensions/quick-edit/index.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/suggestion/fetcher.ts",
+    "bytes": 1249,
+    "lines": 50,
+    "sha256": "138520e6f38c28d2a22c65a3aaa9ccee77bb6cbbc612189ab31d2e6d62f71064",
+    "exports": [
+      "fetcher"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/suggestion/index.ts",
+    "bytes": 6738,
+    "lines": 224,
+    "sha256": "13fed9c5a064c83280916d930bf39f67cbbdb31acbfe6110c91376a623f0faa0",
+    "exports": [
+      "suggestion"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/state"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./fetcher"
+      }
+    ],
+    "localImports": [
+      "src/features/editor/extensions/suggestion/fetcher.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/extensions/theme.ts",
+    "bytes": 356,
+    "lines": 16,
+    "sha256": "10f3b1a7a702762d37b5c32c64dc1163785f1b02d29060d11dd18363c17c95c0",
+    "exports": [
+      "customTheme"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@codemirror/view"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/hooks/use-editor.ts",
+    "bytes": 1104,
+    "lines": 46,
+    "sha256": "f44ce91f6a4202f82d21a6f3c2bf91c45d575321a1c199b6b21c6e5d13544ba2",
+    "exports": [
+      "useEditor"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../store/use-editor-store"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/editor/store/use-editor-store.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/editor/store/use-editor-store.ts",
+    "bytes": 3312,
+    "lines": 121,
+    "sha256": "9ddda170b04c0319612c724351268e31007efc762239a19263406f7965372d5d",
+    "exports": [
+      "useEditorStore"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zustand"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/preview/components/preview-settings-popover.tsx",
+    "bytes": 4682,
+    "lines": 157,
+    "sha256": "36dcdb6b989294699a54d6625dd032a28605274fb7f30fdd92b986c6191b3978",
+    "exports": [
+      "PreviewSettingsPopover"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@tanstack/react-form"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/hooks/use-projects"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/popover"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/field"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/hooks/use-projects.ts",
+      "src/components/ui/button.tsx",
+      "src/components/ui/popover.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/field.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/preview/components/preview-terminal.tsx",
+    "bytes": 2145,
+    "lines": 82,
+    "sha256": "f4d57bd65f3c885b3ef20b8e54ccbc11bdd232ceffac313c961a4f6e1c579078",
+    "exports": [
+      "PreviewTerminal"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xterm/xterm"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xterm/addon-fit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@xterm/xterm/css/xterm.css"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/preview/hooks/use-webcontainer.ts",
+    "bytes": 5030,
+    "lines": 188,
+    "sha256": "e9462e3956c635cf90525fe440d727fa6d7087ea996f042d581a26249005fd0b",
+    "exports": [
+      "useWebContainer"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@webcontainer/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/preview/utils/file-tree"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/hooks/use-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/preview/utils/file-tree.ts",
+      "src/features/projects/hooks/use-files.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/preview/utils/file-tree.ts",
+    "bytes": 1856,
+    "lines": 76,
+    "sha256": "e83cab96d6a52c8eb98da09e30ba6032477c2458d6bd261f78f527717135a31d",
+    "exports": [
+      "buildFileTree",
+      "getFilePath"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@webcontainer/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/export-popover.tsx",
+    "bytes": 10232,
+    "lines": 334,
+    "sha256": "ea1e01b9696d2939efb6d2e6eff7dc5173cc1813f9b53ed8dbb9e2be68e92367",
+    "exports": [
+      "ExportPopover"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@tanstack/react-form"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-icons/fa"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/popover"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/field"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/select"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/textarea"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-projects"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/link"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/popover.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/field.tsx",
+      "src/components/ui/select.tsx",
+      "src/components/ui/textarea.tsx",
+      "src/features/projects/hooks/use-projects.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/constants.ts",
+    "bytes": 399,
+    "lines": 11,
+    "sha256": "b3c3a5a66f67e22113ba45df6de81e455f2d7367fa1edf9e49560cccb80bd39f",
+    "exports": [
+      "BASE_PADDING",
+      "LEVEL_PADDING",
+      "getItemPadding"
+    ],
+    "imports": [],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/create-input.tsx",
+    "bytes": 1632,
+    "lines": 62,
+    "sha256": "b0cf7292d62a31f902ce26456e5942898291a31e9fc887059c024a99f2aca646",
+    "exports": [
+      "CreateInput"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@react-symbols/icons/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./constants"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/components/file-explorer/constants.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/index.tsx",
+    "bytes": 3867,
+    "lines": 136,
+    "sha256": "8183389bc4699f09cf766365583c9eac02e7232b8e163da2f4660b16ee5a7444",
+    "exports": [
+      "FileExplorer"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/scroll-area"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../hooks/use-projects"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../hooks/use-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./create-input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./loading-row"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tree"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx",
+      "src/components/ui/scroll-area.tsx",
+      "src/features/projects/hooks/use-projects.ts",
+      "src/features/projects/hooks/use-files.ts",
+      "src/features/projects/components/file-explorer/create-input.tsx",
+      "src/features/projects/components/file-explorer/loading-row.tsx",
+      "src/features/projects/components/file-explorer/tree.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/loading-row.tsx",
+    "bytes": 493,
+    "lines": 24,
+    "sha256": "d2ab01da1e5b1139905cc5968b237980b2c32020528b8e995bf4911bfbea56be",
+    "exports": [
+      "LoadingRow"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/spinner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./constants"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/spinner.tsx",
+      "src/features/projects/components/file-explorer/constants.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/rename-input.tsx",
+    "bytes": 2189,
+    "lines": 79,
+    "sha256": "e7b19e934ffed6100e2351329a96174284ab8edb9386112a9f45ba237633e9ea",
+    "exports": [
+      "RenameInput"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@react-symbols/icons/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      }
+    ],
+    "localImports": [
+      "src/features/projects/components/file-explorer/constants.ts",
+      "src/lib/utils.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/tree-item-wrapper.tsx",
+    "bytes": 2518,
+    "lines": 101,
+    "sha256": "cf2fd411c2166e515c93a730d2f8f764605ff69d597af52c16373f22daa2c98c",
+    "exports": [
+      "TreeItemWrapper"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/context-menu"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/context-menu.tsx",
+      "src/features/projects/components/file-explorer/constants.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/file-explorer/tree.tsx",
+    "bytes": 5787,
+    "lines": 234,
+    "sha256": "83c1eba75aad9ffa7f2cd5b3a1a4bc424937b4558b4cfbc5083cab6bae363552",
+    "exports": [
+      "Tree"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@react-symbols/icons/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/projects/hooks/use-files"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/editor/hooks/use-editor"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./constants"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./loading-row"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./create-input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./rename-input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./tree-item-wrapper"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/features/projects/hooks/use-files.ts",
+      "src/features/editor/hooks/use-editor.ts",
+      "src/features/projects/components/file-explorer/constants.ts",
+      "src/features/projects/components/file-explorer/loading-row.tsx",
+      "src/features/projects/components/file-explorer/create-input.tsx",
+      "src/features/projects/components/file-explorer/rename-input.tsx",
+      "src/features/projects/components/file-explorer/tree-item-wrapper.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/import-github-dialog.tsx",
+    "bytes": 4594,
+    "lines": 158,
+    "sha256": "9678db3f1a5a4aa5af459874bcad5d57dd09dd4c933033ff4c9951a0d562d7d4",
+    "exports": [
+      "ImportGithubDialog"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "zod"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/navigation"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@tanstack/react-form"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/field"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/button.tsx",
+      "src/components/ui/dialog.tsx",
+      "src/components/ui/input.tsx",
+      "src/components/ui/field.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/navbar.tsx",
+    "bytes": 4694,
+    "lines": 157,
+    "sha256": "11f63e275800ce9a2b18387eb37856ef275832202e4c3160c4d5734b0b50fe45",
+    "exports": [
+      "Navbar"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "next/link"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/image"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/font/google"
+      },
+      {
+        "kind": "import-statement",
+        "path": "date-fns"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/tooltip"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/breadcrumb"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-projects"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/tooltip.tsx",
+      "src/components/ui/breadcrumb.tsx",
+      "src/components/ui/button.tsx",
+      "src/lib/utils.ts",
+      "src/features/projects/hooks/use-projects.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/new-project-dialog.tsx",
+    "bytes": 2450,
+    "lines": 94,
+    "sha256": "de70ac9fd87a9cee250891f2603361758229d1eda57407d19e786f74fc2cde18",
+    "exports": [
+      "NewProjectDialog"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "sonner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "next/navigation"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ai-elements/prompt-input"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/dialog.tsx",
+      "src/components/ai-elements/prompt-input.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/preview-view.tsx",
+    "bytes": 4380,
+    "lines": 127,
+    "sha256": "27a0a9272a562919c71bc9452a49cbbaed5d93f1447e8b210875da6edcb47bbb",
+    "exports": [
+      "PreviewView"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "allotment"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/preview/hooks/use-webcontainer"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/preview/components/preview-settings-popover"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/preview/components/preview-terminal"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-projects"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/preview/hooks/use-webcontainer.ts",
+      "src/features/preview/components/preview-settings-popover.tsx",
+      "src/features/preview/components/preview-terminal.tsx",
+      "src/components/ui/button.tsx",
+      "src/features/projects/hooks/use-projects.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/project-id-layout.tsx",
+    "bytes": 1267,
+    "lines": 49,
+    "sha256": "a3a7ebb8d29e28d4cc5adf7087c4b9dd830524c1afdc3277fec3d280c4ea6cc8",
+    "exports": [
+      "ProjectIdLayout"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "allotment"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/conversations/components/conversation-sidebar"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./navbar"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/features/conversations/components/conversation-sidebar.tsx",
+      "src/features/projects/components/navbar.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/project-id-view.tsx",
+    "bytes": 2625,
+    "lines": 95,
+    "sha256": "dd20737fa13c30224993fb2fe17df0fdf59ca75a1dc45e303b25a2d34136e88a",
+    "exports": [
+      "ProjectIdView"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "allotment"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-icons/fa"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/features/editor/components/editor-view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./file-explorer"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./preview-view"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./export-popover"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/features/editor/components/editor-view.tsx",
+      "src/features/projects/components/file-explorer/index.tsx",
+      "src/features/projects/components/preview-view.tsx",
+      "src/features/projects/components/export-popover.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/projects-command-dialog.tsx",
+    "bytes": 2079,
+    "lines": 77,
+    "sha256": "94c635316dd18bbf6449aca06592d8394c4f1b7fae4f8c96c6a4ee1620db7d68",
+    "exports": [
+      "ProjectsCommandDialog"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "next/navigation"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-icons/fa"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/command"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-projects"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/command.tsx",
+      "src/features/projects/hooks/use-projects.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/projects-list.tsx",
+    "bytes": 4053,
+    "lines": 140,
+    "sha256": "b481bd3a830adc232f70e949af7fee81508f6b51b403f439960ec3819a7adfe0",
+    "exports": [
+      "ProjectsList"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "next/link"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-icons/fa"
+      },
+      {
+        "kind": "import-statement",
+        "path": "date-fns"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/kbd"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/spinner"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../hooks/use-projects"
+      }
+    ],
+    "localImports": [
+      "src/components/ui/kbd.tsx",
+      "src/components/ui/spinner.tsx",
+      "src/components/ui/button.tsx",
+      "src/features/projects/hooks/use-projects.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/components/projects-view.tsx",
+    "bytes": 4082,
+    "lines": 128,
+    "sha256": "99ca1459f2b93bccec75104e1cbfd473100741cb1ce74352f982482d08cab934",
+    "exports": [
+      "ProjectsView"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "next/font/google"
+      },
+      {
+        "kind": "import-statement",
+        "path": "lucide-react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react-icons/fa"
+      },
+      {
+        "kind": "import-statement",
+        "path": "react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/utils"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/button"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/components/ui/kbd"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./projects-list"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./projects-command-dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./import-github-dialog"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./new-project-dialog"
+      }
+    ],
+    "localImports": [
+      "src/lib/utils.ts",
+      "src/components/ui/button.tsx",
+      "src/components/ui/kbd.tsx",
+      "src/features/projects/components/projects-list.tsx",
+      "src/features/projects/components/projects-command-dialog.tsx",
+      "src/features/projects/components/import-github-dialog.tsx",
+      "src/features/projects/components/new-project-dialog.tsx"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/hooks/use-files.ts",
+    "bytes": 4593,
+    "lines": 163,
+    "sha256": "6204305179b965c7356fddac16b6445f88c3de6b01b756386599bcb46ae3747b",
+    "exports": [
+      "useCreateFile",
+      "useCreateFolder",
+      "useDeleteFile",
+      "useFile",
+      "useFilePath",
+      "useFiles",
+      "useFolderContents",
+      "useRenameFile",
+      "useUpdateFile"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/hooks/use-projects.ts",
+    "bytes": 2229,
+    "lines": 86,
+    "sha256": "e3f8d8fa037ecf705c6c6b76b83199d291ff2f84fd779268a4e6665747039592",
+    "exports": [
+      "useCreateProject",
+      "useProject",
+      "useProjects",
+      "useProjectsPartial",
+      "useRenameProject",
+      "useUpdateProjectSettings"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/react"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/inngest/export-to-github.ts",
+    "bytes": 6801,
+    "lines": 246,
+    "sha256": "0d18534b236ed6fd99dd68fe0ed8268e125d815065dd04a154e2d0973698ba98",
+    "exports": [
+      "exportToGithub"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "octokit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "inngest"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "src/inngest/client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/features/projects/inngest/import-github-repo.ts",
+    "bytes": 5568,
+    "lines": 194,
+    "sha256": "644ed9f28b83760d52258b4152a58c4241935fa435fe9ca7b51e12d3375c6e31",
+    "exports": [
+      "importGithubRepo"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ky"
+      },
+      {
+        "kind": "import-statement",
+        "path": "octokit"
+      },
+      {
+        "kind": "import-statement",
+        "path": "isbinaryfile"
+      },
+      {
+        "kind": "import-statement",
+        "path": "inngest"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/convex-client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/inngest/client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/api"
+      },
+      {
+        "kind": "import-statement",
+        "path": "../../../../convex/_generated/dataModel"
+      }
+    ],
+    "localImports": [
+      "src/lib/convex-client.ts",
+      "src/inngest/client.ts",
+      "convex/_generated/api.js"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/hooks/use-mobile.ts",
+    "bytes": 565,
+    "lines": 20,
+    "sha256": "ad0936f84f1df79d3697bfbff9c18f8ad58431c1cbaf2359c6a853b0fcc9f28b",
+    "exports": [
+      "useIsMobile"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "react"
+      }
+    ],
+    "localImports": [],
+    "reachable": false
+  },
+  {
+    "file": "src/inngest/client.ts",
+    "bytes": 240,
+    "lines": 9,
+    "sha256": "154e79b750ff55912ffced85ba8320ebe48d0ca00cf5dac23eed24f9bd9b726b",
+    "exports": [
+      "inngest"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "inngest"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@inngest/middleware-sentry"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/inngest/functions.ts",
+    "bytes": 1604,
+    "lines": 58,
+    "sha256": "3cbd268dc889fd0af861a722006abea8912fe8ecb02afb82bc41c65fdfcbcc45",
+    "exports": [
+      "demoError",
+      "demoGenerate"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "ai"
+      },
+      {
+        "kind": "import-statement",
+        "path": "./client"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@ai-sdk/anthropic"
+      },
+      {
+        "kind": "import-statement",
+        "path": "@/lib/firecrawl"
+      }
+    ],
+    "localImports": [
+      "src/inngest/client.ts",
+      "src/lib/firecrawl.ts"
+    ],
+    "reachable": false
+  },
+  {
+    "file": "src/instrumentation-client.ts",
+    "bytes": 1283,
+    "lines": 32,
+    "sha256": "d738b925cf2679b56808bf4d536ee33f579f91d6b6ed159ef06e6074502ac25a",
+    "exports": [
+      "onRouterTransitionStart"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@sentry/nextjs"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/instrumentation.ts",
+    "bytes": 328,
+    "lines": 14,
+    "sha256": "4a351bb98c1ab7fed481670c78277c9321e014cb6d8aeaf73a6649d3611708df",
+    "exports": [
+      "onRequestError",
+      "register"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@sentry/nextjs"
+      },
+      {
+        "kind": "dynamic-import",
+        "path": "../sentry.server.config"
+      },
+      {
+        "kind": "dynamic-import",
+        "path": "../sentry.edge.config"
+      }
+    ],
+    "localImports": [
+      "sentry.server.config.ts",
+      "sentry.edge.config.ts"
+    ],
+    "reachable": true
+  },
+  {
+    "file": "src/lib/convex-client.ts",
+    "bytes": 137,
+    "lines": 6,
+    "sha256": "c57f448f38c25c1f95ffba91c320ee28df247949c58eaf0353a4360be78df45d",
+    "exports": [
+      "convex"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "convex/browser"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/lib/firecrawl.ts",
+    "bytes": 136,
+    "lines": 6,
+    "sha256": "1b2caeeedc9474f8c75002533f24b63adeb33edf52e6f386bbfbd8286daeb4bf",
+    "exports": [
+      "firecrawl"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@mendable/firecrawl-js"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/lib/utils.ts",
+    "bytes": 166,
+    "lines": 7,
+    "sha256": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+    "exports": [
+      "cn"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "clsx"
+      },
+      {
+        "kind": "import-statement",
+        "path": "tailwind-merge"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "src/proxy.ts",
+    "bytes": 397,
+    "lines": 12,
+    "sha256": "44b96136f75273abd58a972301b359b02bb982763a20a8b2bda9edba33ccf0d9",
+    "exports": [
+      "config",
+      "default"
+    ],
+    "imports": [
+      {
+        "kind": "import-statement",
+        "path": "@clerk/nextjs/server"
+      }
+    ],
+    "localImports": [],
+    "reachable": true
+  },
+  {
+    "file": "tsconfig.json",
+    "bytes": 670,
+    "lines": null,
+    "sha256": "5c51df4c59f4510d8c7dadf07a5c32132228826a3b331da5e286207b4df7ef9c",
+    "exports": [],
+    "imports": [],
+    "localImports": [],
+    "reachable": false
+  }
+]

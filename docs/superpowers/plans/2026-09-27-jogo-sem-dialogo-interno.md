@@ -19,9 +19,9 @@
 ## Task 1: Apresentação compacta e conteúdo da abertura
 
 - [x] Em `packages/member-shell/src/components/learning-activity.tsx`, renderizar o trecho de `content.instructions` somente quando `a.type !== 'project-play'`.
-- [x] Em `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`, inserir `dialogue('ponte-a1-jogo', 'Experimente o jogo pronto! Quando terminar, avance para a próxima seção.')` após `video-a1-abertura` e incluir sua chave em `blockKeys`, sem mudar `completion.blockIds`.
+- [x] Em `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`, inserir `dialogue('ponte-a1-jogo', 'Experimente o jogo pronto! Quando terminar, avance para a próxima seção.')` após `video-a1-abertura` e incluir sua chave em `blockKeys`, sem mudar `completion.blockIds`.
 - [x] Preservar o jogo normal, sem orientação adicional no palco; os botões continuam sendo Jogar de novo e Ampliar jogo.
-- [x] Regenerar os manifestos com `bun docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts` e atualizar a direção e o roteiro da primeira seção.
+- [x] Regenerar os manifestos com `bun docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts` e atualizar a direção e o roteiro da primeira seção.
 - [x] Ajustar a expectativa existente de `blockKeys` em `cade-todo-mundo-manifestos.test.ts` para vídeo, ponte e jogo.
 - [x] Rodar os testes existentes de manifesto, projeto, jogador, chip e divisão; checar tipos do member-shell e formatação dos arquivos alterados; conferir a interface e a partida real.
 

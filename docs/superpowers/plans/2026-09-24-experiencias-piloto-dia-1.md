@@ -4,7 +4,7 @@
 
 **Goal:** Equilibrar a cena no layout dividido e tornar as quatro outras experiências do Dia 1 claras, observáveis e concluíveis sem antecipar seus resultados.
 
-**Architecture:** O layout é compartilhado em `packages/member-shell/src/styles/scene.css`; o conteúdo autoral fica no manifesto do piloto. A regra de revisão fica em `docs/aulas-interativas/BRIEFING.md`. Não mudar o motor das cenas se os percursos já passarem.
+**Architecture:** O layout é compartilhado em `packages/member-shell/src/styles/scene.css`; o conteúdo autoral fica no manifesto do piloto. A regra de revisão fica em `docs/aulas-interativas-tecnico/BRIEFING.md`. Não mudar o motor das cenas se os percursos já passarem.
 
 **Tech Stack:** React, CSS, Bun test, Playwright, manifesto JSON.
 
@@ -35,10 +35,10 @@
 ### Task 2: Percursos didáticos do manifesto
 
 **Files:**
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
 - Modify: `packages/core/tests/learning.test.ts`
 - Modify: `packages/member-shell/tests/scene-sem-pergunta.test.tsx`, se sua expectativa de coordenadas depender da pergunta removida.
-- Modify: `docs/aulas-interativas/BRIEFING.md`
+- Modify: `docs/aulas-interativas-tecnico/BRIEFING.md`
 
 **Interfaces:** Mantém `LearningManifest`, os IDs das cinco experiências, metas, vídeos e cenas. Só o conteúdo de `instructions`, `checkpoint` de coordenadas e a flag `semPerguntaFinal` mudam.
 

@@ -429,11 +429,14 @@ export default function RespostasTable({
               <DetailItem label="Perfil" wide>
                 <PerfilBadge label={perfilLabel(selected)} />
               </DetailItem>
-              {Object.entries(selectedAnswers).map(([key, value]) => (
-                <DetailItem key={key} label={selectedAnswerLabels[key] ?? key} wide>
-                  {answerDisplay(key, value, selectedAnswerOptions?.[key])}
-                </DetailItem>
-              ))}
+              {/* `_quiz_version` e `_quiz_revision` são controle interno, não respostas. */}
+              {Object.entries(selectedAnswers)
+                .filter(([key]) => !key.startsWith('_quiz_'))
+                .map(([key, value]) => (
+                  <DetailItem key={key} label={selectedAnswerLabels[key] ?? key} wide>
+                    {answerDisplay(key, value, selectedAnswerOptions?.[key])}
+                  </DetailItem>
+                ))}
             </DetailSection>
 
             <DetailSection title="Sessão">

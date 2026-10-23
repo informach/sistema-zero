@@ -1,5 +1,33 @@
 # Como fazer: a biblioteca de ajuda do Kids
 
+## Revisão de 20/10/2026: 78 tutoriais, conferidos no código de staging
+
+O lote foi refeito a partir do código de `origin/staging` de 20/10/2026, depois do Pensa v2, do Molda
+novo, dos objetivos únicos da parte, das Oficinas ao vivo e da jornada configurável. São **78
+tutoriais**: Plataforma 33, Estúdio 11, Pinta 13, Pensa 11 e Molda 10.
+
+- **Reescritos:** os cinco do Pensa (o fluxo de planos, cartões e "Concluir tarefa" saiu; agora são o
+  plano do jogo, o caminho Z, E, R, O e as missões) e dois do Molda (criar e montar e pintar, com os
+  rótulos da oficina nova). Os slugs ficaram, porque as fases e o Zappy apontam para eles.
+- **Atualizados:** os que tinham rótulo ou caminho velho (objetivos da parte, rascunho guardado na
+  conta, **Trazer foto**, folha de animações no Pinta, selo **Salvo** do Molda, item **Oficinas** no
+  menu, jornada com etapas configuráveis e outros).
+- **Novos (30):** Plataforma: verificar os objetivos da parte, concluir a fase e abrir o baú, ouvir o
+  Zappy, continuar em outro aparelho, entrar numa oficina, rever uma oficina, missões e moedas, arrumar
+  o quarto. Estúdio: perguntar ao Zappy, achar e organizar blocos, Desafio do mês, recomeçar o projeto
+  da fase. Pinta: animar, montar um mapa, trocar a paleta, organizar desenhos, trazer uma imagem,
+  baixar imagem ou GIF. Pensa: conferir o plano, preparar o jogo, mudar uma parte, tirar dúvida com o
+  Zappy, jogar em equipe, voltar uma versão. Molda: pintar de perto, apagar e vazar, movimento
+  pronto, animar com poses, mudar a forma, trazer um modelo 3D.
+- Houve full review do lote inteiro contra o código (66 achados, nenhum alto, todos corrigidos), e o
+  `validar.ts` passa.
+- **Nada foi publicado ainda.** Os prints novos estão em `prints/2026-10-20/` e o passo a passo para
+  subir as imagens, importar e publicar, com a lista do que falta capturar e por quê, está em
+  [PRINTS-2026-10-20.md](PRINTS-2026-10-20.md). [PRINTS-A-REFAZER-2026-10-06.md](PRINTS-A-REFAZER-2026-10-06.md)
+  ficou como histórico.
+- A exceção do validador para "etapa" e "tarefa" no Pensa e a regra do **Guia do Pensa** não
+  correspondem mais a nenhuma tela; ficaram no `validar.ts` porque não atrapalham.
+
 ## Acesso infantil por aparelho: conteúdo preparado em 10/10/2026
 
 O rascunho local tem **47 tutoriais**. Para a nova entrada da criança, entraram três tutoriais
@@ -14,7 +42,7 @@ descrita abaixo é histórica.
   **Entrar para criar**, **Tenho um código**, **Pedir código**, **Autorizar aparelho**,
   **Neste aparelho**, **Em outro aparelho**, **Gerar código**, **Copiar**, **Renovar prazo**,
   **Encerrar acesso** e os avisos exatos da entrada. A lista inteira, com as fontes, está na
-  [referência da plataforma](../aulas-interativas/REFERENCIA-PLATAFORMA.md), seção "A entrada".
+  [referência da plataforma](../aulas-interativas-tecnico/REFERENCIA-PLATAFORMA.md), seção "A entrada".
 - "Aluno" fica fora dos tutoriais: os rótulos da entrada agora são **Eu sou criador(a)** e
   **Ir para a área da criança** (este, no guia do responsável).
 - Os dois guias do responsável moram na mesma biblioteca da criança. Hoje `/como-fazer` só abre
@@ -54,7 +82,7 @@ Voz de "você", frases curtas, um passo por cartão. Sem travessão. Sem jargão
 
 1. **Nome de botão só do jeito que está na tela**, em negrito: **Próxima parte**, **Mais opções**,
    **Usar no Estúdio**. Antes de escrever, confira em
-   `docs/aulas-interativas/REFERENCIA-PLATAFORMA.md` (o menu, as ações de plataforma, o menu ⋯ do
+   `docs/aulas-interativas-tecnico/REFERENCIA-PLATAFORMA.md` (o menu, as ações de plataforma, o menu ⋯ do
    Estúdio, a lista de projetos, o Pinta), em `packages/studio/src/core/i18n/pt-BR.ts`, em
    `packages/pinta/src/core/copy.ts`, em `packages/pensa/src/components/{PensaApp,TaskPlan}.tsx`
    e no Molda (`core/copy.ts`, `core/sceneFirstStepsCopy.ts`). Os rótulos da fase no Kids (rodapé,
@@ -106,10 +134,10 @@ Os 42 tutoriais estão publicados em staging e produção. Na atualização de 2
 de cada ambiente. Houve backup, comparação com a versão anterior, transação pelo HelpService
 e 44 leituras HTTP 200 por ambiente. Recibos locais: `.cache/activity-*-help-*.json`.
 O mapa está em
-[revisão do curso](../aulas-interativas/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
+[revisão do curso](../aulas-interativas-tecnico/REVISAO-LINGUAGEM-CADE-TODO-MUNDO-2026-09-27.md).
 
 Na revisão de **06/10/2026** os 42 tutoriais passaram para o **vocabulário da aventura**, o mesmo
-das telas do Kids ([Diretrizes pedagógicas](../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md),
+das telas do Kids ([Diretrizes pedagógicas](../aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md),
 seção 6): fase, parte, aventura, equipe, Mapa da Aventura e Explorar no lugar de aula, seção, curso,
 professor, Caderno do Aluno e Aprender. Mudaram 13 títulos, resumos, passos, textos alternativos,
 palavras alternativas e os nomes dos botões; slugs, ids dos passos, links e imagens ficaram iguais.
@@ -144,7 +172,7 @@ imagem.
 os slugs cruzados (`related` e links no corpo). Também confere o vocabulário da aventura, que é
 regra só da criança e por isso não mora no core (o core é dividido com o Admin e com a comunidade
 adulta): palavras da escola e concordância ("o fase", "na Mundo") no título, no resumo, nos passos
-e no texto alternativo, com a mesma régua dos manifestos (`docs/aulas-interativas/qa/palavras-da-escola.ts`),
+e no texto alternativo, com a mesma régua dos manifestos (`docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`),
 "toque em" num botão em negrito e "guia" como pessoa (`GUIA_PESSOA`, a mesma régua). As `keywords` e o endereço dos links ficam de fora: a busca
 precisa achar "aula" e "professor". No Pensa, "etapa" e "tarefa" passam: são os nomes do método
 ZERO e do cartão do plano, e trocar "etapa" é decisão em aberto. Rode antes de importar; o CI

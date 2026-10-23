@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-apelidos", "video-colisao", "video-fecho"],
+  "intervencoes": [
+    {
+      "id": "video-apelidos-K1",
+      "clipe": "video-apelidos",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.",
+      "ancoraDepois": "Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando. Agora eu clico em",
+      "falaPrincipal": "Eu só acertei uma. Por que sumiram todas?",
+      "falaPersonagem": "Eu só acertei uma. Por que sumiram todas?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-colisao-K1",
+      "clipe": "video-colisao",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.",
+      "ancoraDepois": "Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e",
+      "falaPrincipal": "Como ele sabe qual tiro acertou qual pedra?",
+      "falaPersonagem": "Como ele sabe qual tiro acertou qual pedra?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

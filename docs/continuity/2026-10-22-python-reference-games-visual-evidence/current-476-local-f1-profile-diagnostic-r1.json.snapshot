@@ -1,0 +1,910 @@
+{
+  "kind": "studio-python-f1-local-cpu-profile-diagnostic-archive",
+  "version": 1,
+  "qualification": "diagnostic-only-not-f1-acceptance",
+  "sourceCommit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+  "baselineCommit": "44d562192531542ba49779e1d8e877182abd9f74",
+  "pins": {
+    "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+    "profileId": "python-browser",
+    "releaseId": "2026-10-22-visual-games-3",
+    "releaseManifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+    "providerHostSha256": "1e11aab9054e85a21ef030dc2b16f281d396e678a99e58c8b91756f0de2afea4",
+    "pythonVersion": "3.14.2",
+    "pyodideVersion": "314.0.7",
+    "runtimeFeatures": [
+      "turtle-compound-shapes"
+    ]
+  },
+  "execution": {
+    "fixture": "Real Studio room editor/runtime, controlled local actors/storage, native UI editing; edited-phase traces.",
+    "browserFamily": "Chrome",
+    "browserVersion": "155.0.8059.85",
+    "nodeVersion": "24.22.0",
+    "bunVersion": "1.4.3",
+    "repetitionsPerKind": 1,
+    "kinds": [
+      "classic",
+      "pro"
+    ],
+    "startedAt": "2026-10-22T18:01:10.8807355Z",
+    "finishedAt": "2026-10-22T18:02:01.5990341Z",
+    "network": {
+      "bytesPerSecond": 2500000,
+      "responseDelayMs": 80,
+      "scope": "runtime responses only"
+    },
+    "cpuProfiling": true,
+    "functionalTestsPassed": 2,
+    "functionalTestsFailed": 0,
+    "exitCode": 1,
+    "expectedReporterRejection": {
+      "field": "cpuProfiling",
+      "expected": false,
+      "observed": true,
+      "invalidEvidenceCount": 2
+    },
+    "diagnosticCaptureComplete": true,
+    "f1BudgetAccepted": false,
+    "cleanupConfirmedForRecordedOwnedPidsAndPorts": true,
+    "forcedTermination": false,
+    "referencePcAcceptance": false,
+    "hostedAcceptance": false,
+    "nativeMemoryAttributionQualified": false
+  },
+  "baselineUnchanged": {
+    "functionalTestsPassed": 60,
+    "samplesPerKind": 30,
+    "proEditedP95Ms": 1629.8,
+    "editedBudgetMs": 1500,
+    "accepted": false,
+    "profilingDoesNotRequalifyBaseline": true,
+    "safeCausalCorrectionIdentified": false
+  },
+  "privateReceiptIdentity": {
+    "receiptSha256": "5d2f70d132420160024d9e035978dcc63d95723b4f6b7339b2a6ad494eb99715",
+    "reporterSha256": "84e9ad4253ed7ff1fbd1113cb7d216fe9da673b8e19eeaab3aba4945626ae3d0",
+    "analysisSha256": "fcafe241aa065c3375510f59d1e6d8278908b07a43bc7a5ec7449f02265561ce",
+    "privacyReviewSha256": "1b46ab80774cd6d2e7c36e8076907865025a0a3d7dcfc707d0f0c69703938a72"
+  },
+  "transformation": {
+    "extractorVersion": 1,
+    "extractorLanguage": "Python",
+    "extractorEncoding": "UTF-8",
+    "extractorSourceSha256": "9515258a3ce5fb26a2ec8d5f702e2a71ffe08a6c5e80b95561c02d255bf61481",
+    "extractorSourceUtf8": "# F1 diagnostic trace projection v1. Standard library only; no network/subprocesses.\n# CLI: python extractor.py classic|pro ORIGINAL.json OUTPUT.json.gz\n# Restore this source as exact UTF-8 from the manifest and verify its SHA-256.\nimport collections\nimport copy\nimport gzip\nimport hashlib\nimport io\nimport json\nimport pathlib\nimport re\nimport sys\nimport urllib.parse\nEXPECTED = {'classic': '76dbd0191c93199390b7e6d01d0b9fb648420731eedff7d5780bda28a1e3f187', 'pro': '69ce5ff0dd230bc6985e801c22869fc0c009f81e2836fa881e5c4947cc70ebb8'}\nTIMELINE_NAMES = ['AnimationTimeline::serviceAnimations', 'ArrayBufferSweeper Finished', 'AsyncTask Run', 'AsyncTask Scheduled', 'BackgroundJSStreamManager::OnFinishStreaming', 'BackgroundJSStreamManager::RunScriptStreamingTask', 'BackgroundJSStreamManager::TryStartStreamingTask', 'BackgroundProcessor::MaybeStartProcessingResponse', 'Blink.Accessibility.UpdateTime', 'Blink.Animate.UpdateTime', 'Blink.CompositingCommit.UpdateTime', 'Blink.CompositingInputs.UpdateTime', 'Blink.ForcedStyleAndLayout.UpdateTime', 'Blink.IntersectionObservation.UpdateTime', 'Blink.Layout.UpdateTime', 'Blink.Paint.UpdateTime', 'Blink.PrePaint.UpdateTime', 'Blink.Style.UpdateTime', 'Blink.UpdateViewportIntersection.UpdateTime', 'Canvas2DBitmapProvider::CreateSkSurface', 'Canvas2DBitmapProvider::Snapshot', 'Canvas2DBitmapProvider::WritePixels', 'Canvas2DResourceProvider::ProduceCanvasResource', 'Canvas2DResourceProvider::Snapshot', 'CanvasRenderingContext2D::FinalizeFrame', 'CanvasResource::PrepareTransferableResource', 'CanvasResourceSharedImage::Bitmap', 'ClearNonTrivialWeakRefs started', 'ClearStringTableJob started', 'ClearTrivialWeakRefJob started', 'ClearTrustedWeakRefJob started', 'ClearWeaknessProcessor start', 'CommitLoad', 'ComputeWeaknessProcessor start', 'ConcurrentMarking::RunMajor Finished', 'ConcurrentMarking::RunMajor Preempted', 'ContextCreatedNotification', 'CpuProfiler::StartProfiling', 'CullRectUpdate', 'DOMWindow::DoPostMessage', 'Document::BeginLifecycleUpdatesIfRenderingReady', 'Document::CancelParsing', 'Document::DispatchBeforeUnloadEvent', 'Document::DispatchUnloadEvents', 'Document::Document', 'Document::FinishedParsing', 'Document::Initialize', 'Document::OpenForNavigation', 'Document::SetReadyState', 'Document::SetURL', 'Document::UpdateStyleAndLayout', 'Document::rebuildLayoutTree', 'Document::recalcStyle', 'Document::shutdown', 'Document::updateActiveStyle', 'Document::updateStyle', 'Document::updateStyleInvalidationIfNeeded', 'EvaluateScript', 'EventDispatch', 'EventHandler::HitTestResultAtLocation', 'EventHandler::handleMouseMoveEvent', 'EventHandler::handleMousePressEvent', 'EventHandler::handleMouseReleaseEvent', 'FireAnimationFrame', 'FireIdleCallback', 'Frame::Detach', 'FrameRequestCallbackCollection::ExecuteFrameCallbacks', 'FunctionCall', 'GetImageData', 'HTMLDocumentParser::AttemptToEnd', 'HTMLDocumentParser::DeferredPumpTokenizerIfPossible', 'HTMLDocumentParser::DispatchLinkHeaderPreloads', 'HTMLDocumentParser::DocumentElementAvailable', 'HTMLDocumentParser::EndIfDelayed', 'HTMLDocumentParser::FinishAppend', 'HTMLDocumentParser::Flush', 'HTMLDocumentParser::HTMLDocumentParser', 'HTMLDocumentParser::MaybeFetchQueuedPreloads', 'HTMLDocumentParser::NotifyScriptLoaded', 'HTMLDocumentParser::PrepareToStopParsing', 'HTMLDocumentParser::PumpTokenizer', 'HTMLDocumentParser::PumpTokenizerIfPossible', 'HTMLDocumentParser::RunScriptsForPausedTreeBuilder', 'HTMLDocumentParser::ScanAndPreload', 'HTMLDocumentParser::ScheduleEndIfDelayed', 'HTMLDocumentParser::SchedulePumpTokenizer', 'HTMLDocumentParser::append', 'HTMLDocumentParser::appendBytes', 'HTMLDocumentParser::~HTMLDocumentParser', 'HTMLParserScriptRunner ExecuteScript', 'HTMLParserScriptRunner::execute', 'HTMLParserScriptRunner::executeScriptsWaitingForParsing', 'HTMLPreloadScanner::AppendToEnd', 'HTMLPreloadScanner::HTMLPreloadScanner', 'HTMLPreloadScanner::scan', 'HTMLPreloadScanner::~HTMLPreloadScanner', 'HandlePostMessage', 'HitTest', 'InlineNode::FindSvgTextChunks', 'InlineNode::SetTextWithOffset', 'InlineNode::ShapeTextIncludingFirstLine', 'InstallConditionalFeatures', 'Layerize', 'Layout', 'LayoutView::HitTest', 'LayoutView::commitPendingSelection', 'LocalDOMWindow::DispatchMessageEventWithOriginCheck', 'LocalFrame::PostMessageEvent', 'LocalFrame::SetContextPaused', 'LocalFrameView::BeginLifecycleUpdates', 'LocalFrameView::DidFinishLifecycleUpdate', 'LocalFrameView::HandleLoadCompleted', 'LocalFrameView::NotifyResizeObservers', 'LocalFrameView::PropagateFrameRects', 'LocalFrameView::RunAccessibilitySteps', 'LocalFrameView::RunCompositingInputsLifecyclePhase', 'LocalFrameView::RunPaintLifecyclePhase', 'LocalFrameView::RunPrePaintLifecyclePhase', 'LocalFrameView::RunStyleAndLayoutLifecyclePhases', 'LocalFrameView::UpdateLifecyclePhases - start of lifecycle tasks', 'LocalFrameView::UpdateStyleAndLayout', 'LocalFrameView::UpdateViewportIntersectionsForSubtree', 'LocalFrameView::WillStartLifecycleUpdate', 'LocalFrameView::layout', 'LocalFrameView::performLayout', 'LocalFrameView::performPostLayoutTasks', 'LocalFrameView::pushPaintArtifactToCompositor', 'LocalWindowProxy::CreateContext', 'LocalWindowProxy::Initialize', 'LocalWindowProxy::SetupWindowPrototypeChain', 'LocalWindowProxy::UpdateDocumentProperty', 'Major concurrent marking rescheduled', 'Major concurrent marking started', 'MajorGC', 'MemoryCache::evict', 'MessagePort::Accept', 'MinorGC', 'MouseEventManager::handleMouseDraggedEvent', 'MouseEventManager::handleMousePressEvent', 'OverlayInterstitialAdDetector::MaybeFireDetection', 'PageAnimator::serviceScriptedAnimations', 'PageEvacuationJob started', 'Paint', 'PaintArtifactCompositor::Update', 'PaintController::commitNewDisplayItems', 'Parallel scavenge started', 'ParseHTML', 'PendingScript::ExecuteScriptBlock', 'PointersUpdatingJob started', 'PrePaint', 'RemoteWindowProxy::Initialize', 'Resource::appendData', 'ResourceFetcher::requestResource', 'ResourceLoadPriorityOptimizer::UpdateImagePrioritiesAndSpeculativeDecodes', 'ResponseBodyLoader::DidCancelLoadingBody', 'ResponseBodyLoader::DidFinishLoadingBody', 'ResponseBodyLoader::OnStateChange', 'Responsiveness.Renderer.UserInteraction', 'RootScrollerController::PerformRootScrollerSelection', 'ScrollAnchor::FindAnchor', 'ScrollAnchor::SerializeAnchor', 'ScrollableArea::SetScrollOffset', 'SelectionController::handleMousePressEvent', 'SelectionController::handleMousePressEventSingleClick', 'SelectionController::handleMouseReleaseEvent', 'SerializedScriptValueFactory::create', 'SerializedScriptValueFactory::deserialize', 'StickyAdDetector::MaybeFireDetection', 'StyleEngine::clearResolver', 'StyleEngine::updateActiveStyleSheets', 'SvgTextLayoutAlgorithm::Layout', 'Sweeper::ConcurrentMajorSweeper Finished', 'TextResourceDecoder::Decode', 'TimerBase::run', 'TimerFire', 'UpdateLayoutTree', 'V8.DeoptimizeCode', 'V8.DeserializeContext', 'V8.DeserializeIsolate', 'V8.GCFinalizeMC', 'V8.GCIncrementalMarking', 'V8.GCIncrementalMarkingStart', 'V8.GCPhantomHandleProcessingCallback', 'V8.GCScavenger', 'V8.GC_BACKGROUND_FULL_ARRAY_BUFFER_SWEEP', 'V8.GC_BACKGROUND_SAFEPOINT', 'V8.GC_BACKGROUND_YOUNG_ARRAY_BUFFER_SWEEP', 'V8.GC_CONSERVATIVE_STACK_SCANNING', 'V8.GC_HEAP_EMBEDDER_TRACING_EPILOGUE', 'V8.GC_HEAP_ENSURE_SWEEPING_COMPLETED', 'V8.GC_HEAP_EPILOGUE', 'V8.GC_HEAP_EPILOGUE_SAFEPOINT', 'V8.GC_HEAP_EXTERNAL_EPILOGUE', 'V8.GC_HEAP_EXTERNAL_PROLOGUE', 'V8.GC_HEAP_EXTERNAL_SECOND_PASS_CALLBACKS', 'V8.GC_HEAP_EXTERNAL_WEAK_GLOBAL_HANDLES', 'V8.GC_HEAP_PROLOGUE', 'V8.GC_HEAP_PROLOGUE_SAFEPOINT', 'V8.GC_MARK_COMPACTOR', 'V8.GC_MC_BACKGROUND_EVACUATE_COPY', 'V8.GC_MC_BACKGROUND_EVACUATE_UPDATE_POINTERS', 'V8.GC_MC_BACKGROUND_MARKING', 'V8.GC_MC_BACKGROUND_SWEEPING', 'V8.GC_MC_CLEAR', 'V8.GC_MC_CLEAR_EXTERNAL_STRING_TABLE', 'V8.GC_MC_CLEAR_FLUSHABLE_BYTECODE', 'V8.GC_MC_CLEAR_FLUSHED_JS_FUNCTIONS', 'V8.GC_MC_CLEAR_JOIN_JOB', 'V8.GC_MC_CLEAR_JS_WEAK_REFERENCES', 'V8.GC_MC_CLEAR_MAPS', 'V8.GC_MC_CLEAR_STRING_TABLE', 'V8.GC_MC_CLEAR_SWEEP_EXTERNAL_POINTER_TABLE', 'V8.GC_MC_CLEAR_SWEEP_JS_DISPATCH_TABLE', 'V8.GC_MC_CLEAR_SWEEP_TRUSTED_POINTER_TABLE', 'V8.GC_MC_CLEAR_SWEEP_WASM_CODE_POINTER_TABLE', 'V8.GC_MC_CLEAR_WEAK_COLLECTIONS', 'V8.GC_MC_CLEAR_WEAK_GLOBAL_HANDLES', 'V8.GC_MC_CLEAR_WEAK_LISTS', 'V8.GC_MC_CLEAR_WEAK_REFERENCES_NON_TRIVIAL', 'V8.GC_MC_CLEAR_WEAK_REFERENCES_TRIVIAL', 'V8.GC_MC_CLEAR_WEAK_REFERENCES_TRUSTED', 'V8.GC_MC_COMPLETE_SWEEPING', 'V8.GC_MC_EPILOGUE', 'V8.GC_MC_EVACUATE', 'V8.GC_MC_EVACUATE_CLEAN_UP', 'V8.GC_MC_EVACUATE_COPY', 'V8.GC_MC_EVACUATE_COPY_PARALLEL', 'V8.GC_MC_EVACUATE_EPILOGUE', 'V8.GC_MC_EVACUATE_PROLOGUE', 'V8.GC_MC_EVACUATE_REBALANCE', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS_CLIENT_HEAPS', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS_PARALLEL', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS_POINTER_TABLES', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS_SLOTS_MAIN', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS_TO_NEW_ROOTS', 'V8.GC_MC_EVACUATE_UPDATE_POINTERS_WEAK', 'V8.GC_MC_FINISH', 'V8.GC_MC_FINISH_SWEEP_ARRAY_BUFFERS', 'V8.GC_MC_INCREMENTAL', 'V8.GC_MC_INCREMENTAL_EMBEDDER_TRACING', 'V8.GC_MC_INCREMENTAL_EXTERNAL_EPILOGUE', 'V8.GC_MC_INCREMENTAL_EXTERNAL_PROLOGUE', 'V8.GC_MC_INCREMENTAL_START', 'V8.GC_MC_MARK', 'V8.GC_MC_MARK_CLIENT_HEAPS', 'V8.GC_MC_MARK_EMBEDDER_PROLOGUE', 'V8.GC_MC_MARK_EMBEDDER_TRACING', 'V8.GC_MC_MARK_FINISH_INCREMENTAL', 'V8.GC_MC_MARK_FULL_CLOSURE_PARALLEL', 'V8.GC_MC_MARK_FULL_CLOSURE_SERIAL', 'V8.GC_MC_MARK_RETAIN_MAPS', 'V8.GC_MC_MARK_ROOTS', 'V8.GC_MC_MARK_WEAK_CLOSURE_EPHEMERON_MARKING', 'V8.GC_MC_PROLOGUE', 'V8.GC_MC_SWEEP', 'V8.GC_MC_SWEEP_NEW_LO', 'V8.GC_MC_SWEEP_START_JOBS', 'V8.GC_MINOR_MS_BACKGROUND_SWEEPING', 'V8.GC_SCAVENGER', 'V8.GC_SCAVENGER_BACKGROUND_SCAVENGE_PARALLEL', 'V8.GC_SCAVENGER_BACKGROUND_TRACED_HANDLES_COMPUTE_WEAKNESS_PARALLEL', 'V8.GC_SCAVENGER_BACKGROUND_TRACED_HANDLES_RESET_PARALLEL', 'V8.GC_SCAVENGER_COMPLETE_SWEEP_ARRAY_BUFFERS', 'V8.GC_SCAVENGER_FREE_REMEMBERED_SET', 'V8.GC_SCAVENGER_RESIZE_NEW_SPACE', 'V8.GC_SCAVENGER_SCAVENGE', 'V8.GC_SCAVENGER_SCAVENGE_COLLECT_OLD_TO_NEW_PAGES', 'V8.GC_SCAVENGER_SCAVENGE_FINALIZE', 'V8.GC_SCAVENGER_SCAVENGE_PARALLEL', 'V8.GC_SCAVENGER_SCAVENGE_PARALLEL_PHASE', 'V8.GC_SCAVENGER_SCAVENGE_RESTORE_AND_QUARANTINE_PINNED', 'V8.GC_SCAVENGER_SCAVENGE_ROOTS', 'V8.GC_SCAVENGER_SCAVENGE_WEAK_GLOBAL_HANDLES_IDENTIFY', 'V8.GC_SCAVENGER_SCAVENGE_WEAK_GLOBAL_HANDLES_PROCESS', 'V8.GC_SCAVENGER_SWEEP_ARRAY_BUFFERS', 'V8.GC_SCAVENGER_TRACED_HANDLES_COMPUTE_WEAKNESS_PARALLEL', 'V8.GC_SCAVENGER_TRACED_HANDLES_RESET_PARALLEL', 'V8.GC_TIME_TO_SAFEPOINT', 'V8PerIsolateData::Initialize', 'VisualViewport::setSize', 'WebFrameWidgetImpl::BeginMainFrame', 'WebFrameWidgetImpl::UpdateLifecycle', 'WebLocalFrameImpl::createChildframe', 'WebLocalFrameImpl::createFrameView', 'YieldParserForScriptLoad', 'auto blink::RemoteFrameView::SetViewportIntersection(const mojom::blink::ViewportIntersectionState &)::(lambda)::operator()()::(lambda)::operator()(uint32_t) const', 'v8.callFunction', 'v8.compile', 'v8.compileModule', 'v8.evaluateModule', 'v8.newInstance', 'v8.parseOnBackground', 'v8.parseOnBackgroundParsing', 'v8.parseOnBackgroundWaiting', 'v8.produceCache', 'v8.produceModuleCache', 'v8.run']\nCATEGORIES = ['blink', 'blink,benchmark', 'blink,benchmark,rail,disabled-by-default-blink.debug.layout', 'blink,blink.resource', 'blink,blink_style', 'blink,devtools.timeline', 'blink,loading', 'blink,rail', 'blink.user_timing', 'devtools.timeline', 'devtools.timeline,disabled-by-default-v8.gc', 'devtools.timeline,v8', 'disabled-by-default-v8.cpu_profiler', 'v8', 'v8,devtools.timeline', 'v8,devtools.timeline,disabled-by-default-v8.compile']\nSAFE_BASENAMES = ['ProWorkspace-DjtaZEdr.js', 'PythonClassicMode-DwSdWkZ_.js', 'PythonCodeMode-n--iKU2D.js', 'PythonEditorPreview-DJiUW_Pp.js', 'PythonSourceEditor-DEHp0my0.js', 'StudioEditor-59D9zzFy.js', '_sz_turtle_backend.py', '_sz_turtle_colors.py', '_sz_turtle_limits.py', 'analysis-frame.mjs', 'analysis-worker.mjs', 'blockly-DeuTwL_n.js', 'boot-reader.mjs', 'bootResourceHost-BjXn_C05.js', 'bottomTabs-CPm-6miZ.js', 'catalog-CkJ9C74k.js', 'cn-BrylQflp.js', 'content-fingerprint-CkTVNl1d.js', 'contextEnvironment-CRedaoUK.js', 'contextEnvironmentCore-BW3i7Tov.js', 'controller-9MR2w0dO.js', 'controller-TcYJq0re.js', 'editor-BWimssVN.js', 'editor.api-Bx3n2d9h.js', 'frame.mjs', 'nodes-Zx46qMN1.js', 'observation-BNKLBnWE.js', 'persistence-BaGHiRgY.js', 'portable-path-Ba5y8eRv.js', 'project-capabilities-CcdGUnM-.js', 'project-continuity-Ce0-Whas.js', 'project-document-CeTzE4XL.js', 'projectStore-us9OTWgL.js', 'provider-CaO1-26j.js', 'pyodide.asm.mjs', 'pyodide.mjs', 'python-dependency-policy-CewlrFEd.js', 'python-runtime-distribution-Bak2oazg.js', 'pythonProjectValidation-Dyf7-FZj.js', 'react-B1GEbTQo.js', 'react-BQdL-_wy.js', 'registry-B95c9GR-.js', 'runtime-authorization-BkVwPFH4.js', 'runtime-catalog-CUKkz9MZ.js', 'runtime-identity-DaUVRFrO.js', 'schemas-BnqV3WKm.js', 'schemas-JYSZsLNF.js', 'snapshot-BuaDTBFP.js', 'structuralCodec-qdIpoZBb.js', 'turtle-protocol.mjs', 'turtle-renderer.mjs', 'turtle.py', 'uiStore-FzvNQ3v3.js', 'useFormatIssueLogger-CwTlfkSY.js', 'webFiles-v8DIWlrX.js', 'worker.mjs', 'workers-BLHfgwCz.js']\nCODE_TYPES = ['JS', 'other', 'wasm']\nNETWORK = ['ResourceSendRequest', 'ResourceWillSendRequest', 'ResourceReceiveResponse', 'ResourceReceivedData', 'ResourceFinish']\nMARKS = ['studio-python-execute-click', 'studio-python-first-useful-pixels']\n\nHULL = {'cat','dur','id','name','ph','pid','s','tdur','tid','ts','tts'}\nNETWORK_FIELDS = {\n 'ResourceSendRequest': {'fetchPriorityHint','frame','initiator','isLinkPreload','priority','renderBlocking','requestId','requestMethod','resourceType','url'},\n 'ResourceWillSendRequest': {'requestId'},\n 'ResourceReceiveResponse': {'connectionId','connectionReused','encodedDataLength','frame','fromCache','fromServiceWorker','headers','mimeType','protocol','requestId','responseTime','statusCode','timing'},\n 'ResourceReceivedData': {'encodedDataLength','frame','requestId'},\n 'ResourceFinish': {'decodedBodyLength','didFail','encodedDataLength','finishTime','requestId'},\n}\nTIMING = {'connectEnd','connectStart','dnsEnd','dnsStart','proxyEnd','proxyStart','pushEnd','pushStart','receiveHeadersEnd','receiveHeadersStart','requestTime','sendEnd','sendStart','sslEnd','sslStart','workerReady','workerStart'}\nSENSITIVE_KEY = re.compile(r'(?i)^(metadata|headers|authorization|proxy-authorization|cookie|set-cookie|postData|postDataEntries|requestBody|responseBody|payload|command_line|sessionId|scriptSource|sourceText|innerHTML|outerHTML|textContent|inputValue)$')\nSENSITIVE_VALUE = re.compile(r'(?i)(?:^[A-Z]:[/\\\\]|[/\\\\]Users[/\\\\]|/home/|\\bBearer\\s+[A-Za-z0-9._~+/-]{8,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|\\bgh[pousr]_[A-Za-z0-9]{20,}|\\bgithub_pat_[A-Za-z0-9_]{20,}|\\b(?:AKIA|ASIA)[0-9A-Z]{16}\\b|\\beyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\b|[\\w.+-]+@[\\w.-]+\\.[a-z]{2,})')\n\ndef require(ok,message):\n if not ok:raise ValueError(message)\n\ndef encode(value):\n return (json.dumps(value,ensure_ascii=False,allow_nan=False,separators=(',',':'))+'\\n').encode('utf-8')\n\ndef sha(value):\n return hashlib.sha256(value).hexdigest()\n\ndef group(event):\n name=event.get('name')\n if name in ['Profile','ProfileChunk']:return 'cpu'\n if name in NETWORK:return 'network'\n if name in MARKS:return 'mark'\n if event.get('ph') in ['X','B','E']:\n  require(name in TIMELINE_NAMES,'Unreviewed timeline name')\n  return 'timeline'\n return None\n\ndef urls(event):\n if event['name']=='ResourceSendRequest':yield event['args']['data']['url']\n if event['name']=='ProfileChunk':\n  for node in event['args']['data']['cpuProfile'].get('nodes',[]):\n   if node['callFrame'].get('url'):yield node['callFrame']['url']\n\ndef resource_label(url):\n parsed=urllib.parse.urlsplit(url)\n require(not parsed.username and not parsed.password,'Userinfo not allowed')\n if parsed.scheme in ['http','https']:\n  require(parsed.hostname in ['localhost','127.0.0.1','::1'],'External URL not reviewed')\n  name=parsed.path.rsplit('/',1)[-1]\n  return ('script',name) if name in SAFE_BASENAMES else ('local-request','resource')\n if parsed.scheme=='wasm':return ('wasm','module.wasm')\n if parsed.scheme=='blob':\n  opaque=bool(re.fullmatch(r'null/[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}',parsed.path))\n  nested=urllib.parse.urlsplit(parsed.path)\n  require(opaque or nested.hostname in ['localhost','127.0.0.1','::1'],'Unreviewed blob origin')\n  return ('blob','resource')\n require(parsed.scheme=='about' and parsed.path=='blank','Unreviewed URL form')\n return ('blank','resource')\n\ndef url_map(selected):\n mapping={};descriptors=[]\n for event in selected:\n  for original in urls(event):\n   if original in mapping:continue\n   kind,name=resource_label(original)\n   replacement='https://trace.invalid/resource/%04d/%s'%(len(mapping)+1,name)\n   mapping[original]=replacement\n   descriptors.append({'url':replacement,'resourceClass':kind,'approvedBasename':name})\n require(len(mapping)==len(set(mapping.values())),'Pseudonym collision')\n return mapping,descriptors\n\ndef validate_cpu(data,name):\n require(data.get('source')=='Internal','Unreviewed CPU source')\n if name=='Profile':\n  require(set(data)=={'source','startTime'} and type(data['startTime']) is int,'Profile schema changed')\n  return\n require(set(data)<={'columns','cpuProfile','lines','source','timeDeltas'},'ProfileChunk schema changed')\n profile=data['cpuProfile']\n require(set(profile)<={'nodes','samples','trace_ids'},'CPU profile schema changed')\n require(all(type(x) is int for x in profile['samples']+data['timeDeltas']),'Samples/deltas changed type')\n require(len(profile['samples'])==len(data['timeDeltas']),'Sample/delta count differs')\n for field in ['lines','columns']:\n  if field in data:require(all(type(x) is int for x in data[field]),'CPU positions changed type')\n for key,value in profile.get('trace_ids',{}).items():\n  require(key.isdigit() and type(value) is int,'CPU correlation schema changed')\n for node in profile.get('nodes',[]):\n  require(set(node)<={'callFrame','id','parent'} and type(node['id']) is int,'CPU node schema changed')\n  require('parent' not in node or type(node['parent']) is int,'CPU parent changed type')\n  frame=node['callFrame']\n  require(set(frame)<={'codeType','functionName','scriptId','columnNumber','lineNumber','url'},'CallFrame schema changed')\n  require(frame['codeType'] in CODE_TYPES and isinstance(frame['functionName'],str) and type(frame['scriptId']) is int,'CPU symbol changed type')\n  for field in ['lineNumber','columnNumber']:\n   if field in frame:require(type(frame[field]) is int,'CPU position changed type')\n\ndef project(event,mapping):\n category=group(event)\n require(category is not None,'Unselected event')\n require(set(event)<=HULL|{'args'} and event['cat'] in CATEGORIES,'Event envelope changed')\n result={key:copy.deepcopy(value) for key,value in event.items() if key!='args'}\n for key in ['pid','tid','ts','tts','dur','tdur']:\n  if key in result:require(type(result[key]) in [int,float],'Timing identity changed type')\n if category=='timeline':\n  result['args']={}\n  return result\n require(set(event.get('args',{}))=={'data'},'Event args changed')\n data=copy.deepcopy(event['args']['data'])\n if category=='cpu':\n  validate_cpu(data,event['name'])\n  for node in data.get('cpuProfile',{}).get('nodes',[]):\n   frame=node['callFrame']\n   if frame.get('url'):frame['url']=mapping[frame['url']]\n elif category=='network':\n  require(set(data)<=NETWORK_FIELDS[event['name']],'Network data schema changed')\n  data.pop('headers',None);data.pop('initiator',None)\n  if 'url' in data:data['url']=mapping[data['url']]\n  if 'timing' in data:\n   require(set(data['timing'])<=TIMING and all(type(v) in [int,float] for v in data['timing'].values()),'Network timing schema changed')\n  for key,value in data.items():\n   if key not in ['url','timing']:\n    require(type(value) in [int,float,bool,str],'Network payload changed')\n    if isinstance(value,str):require(bool(re.fullmatch(r'[A-Za-z0-9_./+;-]*',value)),'Unreviewed network string')\n else:\n  require(set(data)=={'callTime','navigationId','sampleTraceId','startTime'},'Mark schema changed')\n  require(bool(re.fullmatch(r'[a-fA-F0-9]{32}',data['navigationId'])),'Navigation identity changed')\n result['args']={'data':data}\n return result\n\ndef leaves(value,path=()):\n if isinstance(value,dict):\n  for key,child in value.items():yield from leaves(child,path+(key,))\n elif isinstance(value,list):\n  for index,child in enumerate(value):yield from leaves(child,path+(index,))\n else:yield path,value\n\ndef privacy(document,mapping):\n require(set(document)=={'traceEvents'},'Global metadata is forbidden')\n allowed=set(mapping.values());url_count=0\n for path,value in leaves(document):\n  require(not any(isinstance(key,str) and SENSITIVE_KEY.fullmatch(key) for key in path),'Forbidden field')\n  if not isinstance(value,str):continue\n  require(not SENSITIVE_VALUE.search(value),'Potential personal or credential data')\n  require('\\n' not in value and '\\r' not in value,'Multiline content forbidden')\n  if path and path[-1]=='url':\n   require(value=='' or value in allowed,'Unmapped URL')\n   if value:\n    parsed=urllib.parse.urlsplit(value)\n    require(parsed.hostname=='trace.invalid' and not parsed.query and not parsed.fragment and not parsed.username and not parsed.password,'Unsafe pseudonym')\n    url_count+=1\n  elif '://' in value:raise ValueError('URL outside allowlisted field')\n for event in document['traceEvents']:require(event['ph']!='M','Metadata events forbidden')\n return {'forbiddenFields':0,'sensitiveValuePatternMatches':0,'originalUrls':0,'queryOrFragmentUrls':0,'metadataEvents':0,'pseudonymUrlOccurrences':url_count}\n\ndef original_projection(event):\n # Independent equivalence projection: only declared field omissions.\n result=copy.deepcopy(event)\n if group(event)=='timeline':result['args']={}\n if group(event)=='network':\n  result['args']['data'].pop('headers',None)\n  result['args']['data'].pop('initiator',None)\n return result\n\ndef restore_urls(event,reverse):\n result=copy.deepcopy(event)\n if result['name']=='ResourceSendRequest':result['args']['data']['url']=reverse[result['args']['data']['url']]\n if result['name']=='ProfileChunk':\n  for node in result['args']['data']['cpuProfile'].get('nodes',[]):\n   frame=node['callFrame']\n   if frame.get('url'):frame['url']=reverse[frame['url']]\n return result\n\ndef verify(original,derived,mapping):\n selected=[e for e in original['traceEvents'] if group(e)]\n require(len(selected)==len(derived['traceEvents']),'Selected count differs')\n reverse={v:k for k,v in mapping.items()}\n require(len(reverse)==len(mapping),'URL map is not injective')\n expected_numbers=[];actual_numbers=[]\n for index,(before,after) in enumerate(zip(selected,derived['traceEvents'])):\n  expected=original_projection(before)\n  require(expected==restore_urls(after,reverse),'Ordered retained projection differs')\n  for path,value in leaves(expected):\n   if type(value) in [int,float,bool]:expected_numbers.append([index,list(path),type(value).__name__,value])\n  for path,value in leaves(after):\n   if type(value) in [int,float,bool]:actual_numbers.append([index,list(path),type(value).__name__,value])\n expected_numbers.sort(key=lambda row:(row[0],json.dumps(row[1])))\n actual_numbers.sort(key=lambda row:(row[0],json.dumps(row[1])))\n require(expected_numbers==actual_numbers,'Numeric values or positions differ')\n return {'orderedSelectedEventProjectionEqual':True,'numericProjectionEqual':True,'numericLeafCount':len(actual_numbers),'numericProjectionSha256':sha(encode(actual_numbers)),'urlMapInjective':True,'distinctPseudonymCount':len(mapping),'privacy':privacy(derived,mapping)}\n\ndef measurements(document,case):\n events=document['traceEvents'];marks={name:[e for e in events if e['name']==name] for name in MARKS}\n require(all(len(items)==1 for items in marks.values()),'Expected exactly one of each mark')\n start=marks[MARKS[0]][0]['ts'];end=marks[MARKS[1]][0]['ts']\n roles={'classic':{'host':[24452,28588],'frame':[28148,13012],'executionWorker':[28148,23036]},'pro':{'host':[3336,15872],'frame':[8252,26996],'executionWorker':[8252,20708]}}[case]\n candidates=[e for e in events if e['name']=='MessagePort::Accept' and [e['pid'],e['tid']]==roles['executionWorker'] and start<=e['ts']<=end and 'dur' in e]\n longest=max(candidates,key=lambda e:e['dur'])\n intervals=sorted((max(start,e['ts']),min(end,e['ts']+e['dur'])) for e in events if e['ph']=='X' and [e['pid'],e['tid']]==roles['host'] and e['ts']<end and e['ts']+e['dur']>start)\n total=0;left=right=None\n for a,b in intervals:\n  if left is None:left,right=a,b\n  elif a<=right:right=max(right,b)\n  else:total+=right-left;left,right=a,b\n if left is not None:total+=right-left\n return {'rolesPidTid':roles,'executeMarkTsUs':start,'firstUsefulPixelsMarkTsUs':end,'markIntervalUs':end-start,'hostCompleteEventUnionWithinMarksUs':total,'longestExecutionWorkerMessagePortWithinMarks':{k:longest[k] for k in ['pid','tid','ts','dur','tts','tdur'] if k in longest}}\n\ndef deterministic_gzip(body):\n buffer=io.BytesIO()\n with gzip.GzipFile(fileobj=buffer,mode='wb',filename='',mtime=0,compresslevel=9) as stream:stream.write(body)\n return buffer.getvalue()\n\ndef counts(document):\n events=document['traceEvents'];chunks=[e for e in events if e['name']=='ProfileChunk']\n return {'events':len(events),'groups':dict(collections.Counter(group(e) for e in events)),'phases':dict(collections.Counter(e['ph'] for e in events)),'profiles':sum(e['name']=='Profile' for e in events),'profileChunks':len(chunks),'nodes':sum(len(e['args']['data']['cpuProfile'].get('nodes',[])) for e in chunks),'samples':sum(len(e['args']['data']['cpuProfile']['samples']) for e in chunks),'timeDeltas':sum(len(e['args']['data']['timeDeltas']) for e in chunks),'networkEvents':{n:sum(e['name']==n for e in events) for n in NETWORK},'marks':{n:sum(e['name']==n for e in events) for n in MARKS}}\n\ndef extract(raw,case):\n require(case in EXPECTED and sha(raw)==EXPECTED[case],'Original identity mismatch')\n original=json.loads(raw)\n require(set(original)=={'traceEvents','metadata'},'Original top-level schema changed')\n selected=[e for e in original['traceEvents'] if group(e)]\n mapping,resources=url_map(selected)\n derived={'traceEvents':[project(e,mapping) for e in selected]}\n validation=verify(original,derived,mapping)\n before=measurements(original,case);after=measurements(derived,case)\n require(before==after,'Measurements changed')\n body=encode(derived);packed=deterministic_gzip(body)\n require(gzip.decompress(packed)==body and packed==deterministic_gzip(body),'Gzip roundtrip/determinism failed')\n controls={}\n for label in ['cpuSample','networkTiming','markTimestamp','metadataInjection','headerInjection']:\n  changed=copy.deepcopy(derived)\n  if label=='cpuSample':\n   event=next(e for e in changed['traceEvents'] if e['name']=='ProfileChunk' and e['args']['data']['cpuProfile']['samples'])\n   event['args']['data']['cpuProfile']['samples'][0]=-999\n  elif label=='networkTiming':\n   event=next(e for e in changed['traceEvents'] if e['name']=='ResourceReceiveResponse' and 'timing' in e['args']['data'])\n   event['args']['data']['timing']['receiveHeadersEnd']=-999\n  elif label=='markTimestamp':\n   next(e for e in changed['traceEvents'] if e['name']==MARKS[0])['ts']=-999\n  elif label=='metadataInjection':changed['metadata']={'command_line':'redacted-test'}\n  else:\n   next(e for e in changed['traceEvents'] if e['name']=='ResourceReceiveResponse')['args']['data']['headers']=[]\n  try:verify(original,changed,mapping)\n  except (ValueError,KeyError):controls[label]=True\n  else:raise ValueError('Negative control escaped')\n validation.update({'causalNegativeControlsRejected':controls,'measurementsEqual':True,'gzipRoundtripExact':True,'gzipDeterministic':True,'rawSha256MatchesExpected':True})\n return {'body':body,'gzip':packed,'summary':{'originalSha256':sha(raw),'originalBytes':len(raw),'jsonSha256':sha(body),'jsonBytes':len(body),'gzipSha256':sha(packed),'gzipBytes':len(packed),'originalEventCount':len(original['traceEvents']),'retained':counts(derived),'discardedEventCount':len(original['traceEvents'])-len(selected),'discardedPhaseCounts':dict(collections.Counter(e['ph'] for e in original['traceEvents'] if not group(e))),'validation':validation,'measurements':after,'resources':resources}}\n\ndef main():\n require(len(sys.argv)==4,'Usage: extractor.py classic|pro ORIGINAL.json OUTPUT.json.gz')\n case,input_path,output_path=sys.argv[1:]\n result=extract(pathlib.Path(input_path).read_bytes(),case);output=pathlib.Path(output_path)\n if output.exists():require(output.read_bytes()==result['gzip'],'Refusing to overwrite different bytes')\n else:\n  with output.open('xb') as stream:stream.write(result['gzip'])\n print(json.dumps(result['summary'],ensure_ascii=False,allow_nan=False))\n\nif __name__=='__main__':main()\n",
+    "restoreInstructions": [
+      "Decode this JSON snapshot and write transformation.extractorSourceUtf8 as UTF-8 without BOM or newline conversion. Verify extractorSourceSha256 before execution.",
+      "Run the reviewed source with case, matching private original JSON and desired gzip output. Pinned original SHA-256 is mandatory; different existing output bytes are refused.",
+      "No network, packages or services are required. Gzip uses mtime=0 and an empty original filename. Exact compressed reproduction can depend on zlib version; the uncompressed JSON identity and semantic assertions are authoritative."
+    ],
+    "originalsRetainedPrivatelyUnmodified": true,
+    "numericFidelity": "All retained numeric values, positions, order and primitive types are compared against the original after declared field omissions. No rounding, time rebasing, profile merging or sample cropping.",
+    "urlMapping": "One ordinal per distinct original URL in first-selected-event encounter order. Injective within each trace, not joined across traces. Only reviewed static basenames survive. Original URL map, route, query, fragments and session identifiers are not archived.",
+    "included": [
+      "All Profile/ProfileChunk, including nodes, parents, source symbols/positions, samples, timeDeltas, lines/columns and numeric trace_ids.",
+      "All original X/B/E events matching frozen event-name/category allowlists; full envelope timing/correlation, empty args.",
+      "Five allowlisted Resource event classes, preserving numeric timing/length/cache/status fields and request correlation; URLs pseudonymized.",
+      "Exactly two execution/presentation marks with original times and browser-local correlation fields."
+    ],
+    "discarded": [
+      "All global metadata, process/thread metadata events, command line, user/filesystem directories and hardware/antivirus fingerprint.",
+      "All HTTP headers and network initiator objects, including initiator source locations.",
+      "All args from X/B/E timeline events: DOM/selectors, source URL arguments, layout detail, callback/task details and arbitrary strings/values.",
+      "All other events, including counters and async/flow events outside the explicit selection. Numeric trace_ids remain, but the full async graph is not retained."
+    ],
+    "privacyLimits": [
+      "Reviewed projection of two pinned fixtures, not a general-purpose sanitizer or proof that arbitrary inputs contain no secrets. Different bytes or unknown schemas are rejected.",
+      "CPU function symbols, static bundle basenames, source positions, browser-generated process/thread/request/navigation identifiers and event clocks remain for attribution/correlation. These are not account/session query identifiers.",
+      "No request/response bodies or source text were observed in the originals; they are not included by this projection.",
+      "This is not the full original trace. Omitted DOM/layout arguments, counters, metadata and async/initiator correlations cannot be recovered.",
+      "Chrome DevTools/Perfetto viewer import was not executed. Chrome Trace Event schema and exact profile/network projections were validated offline; viewer UX is not claimed."
+    ],
+    "restorationToolchain": {
+      "pythonImplementation": "CPython",
+      "pythonVersion": "3.14.2",
+      "zlibCompileVersion": "1.3.1.zlib-ng",
+      "zlibRuntimeVersion": "1.3.1.zlib-ng",
+      "gzipCompressionLevel": 9,
+      "gzipMtime": 0,
+      "gzipFilename": "",
+      "jsonEncoding": "UTF-8",
+      "jsonNewline": "LF",
+      "jsonEnsureAscii": false,
+      "jsonSeparators": [
+        ",",
+        ":"
+      ]
+    }
+  },
+  "artifacts": [
+    {
+      "case": "classic",
+      "archiveFile": "f1-profile-sanitized-classic-r1.json.gz",
+      "originalSha256": "76dbd0191c93199390b7e6d01d0b9fb648420731eedff7d5780bda28a1e3f187",
+      "originalBytes": 4101385,
+      "jsonSha256": "1ce8b7d3189a01d82e31b087fc9e3bfb11e14567cf1e07498b0987bc0dcd4392",
+      "jsonBytes": 3492583,
+      "gzipSha256": "ee67e920a66840f0d2260aae13d1ea99014186fdb1763fe2965724fda5f2e040",
+      "gzipBytes": 267609,
+      "originalEventCount": 14325,
+      "retained": {
+        "events": 11957,
+        "groups": {
+          "timeline": 11396,
+          "mark": 2,
+          "network": 85,
+          "cpu": 474
+        },
+        "phases": {
+          "X": 11396,
+          "I": 87,
+          "P": 474
+        },
+        "profiles": 4,
+        "profileChunks": 470,
+        "nodes": 7837,
+        "samples": 8741,
+        "timeDeltas": 8741,
+        "networkEvents": {
+          "ResourceSendRequest": 17,
+          "ResourceWillSendRequest": 1,
+          "ResourceReceiveResponse": 18,
+          "ResourceReceivedData": 31,
+          "ResourceFinish": 18
+        },
+        "marks": {
+          "studio-python-execute-click": 1,
+          "studio-python-first-useful-pixels": 1
+        }
+      },
+      "discardedEventCount": 2368,
+      "discardedPhaseCounts": {
+        "M": 33,
+        "I": 576,
+        "R": 44,
+        "s": 570,
+        "f": 570,
+        "b": 250,
+        "e": 250,
+        "n": 75
+      },
+      "validation": {
+        "orderedSelectedEventProjectionEqual": true,
+        "numericProjectionEqual": true,
+        "numericLeafCount": 134572,
+        "numericProjectionSha256": "72b0c37060972d6d7680ad9a255109444997bcd16038120ecb3d771c303854e6",
+        "urlMapInjective": true,
+        "distinctPseudonymCount": 59,
+        "privacy": {
+          "forbiddenFields": 0,
+          "sensitiveValuePatternMatches": 0,
+          "originalUrls": 0,
+          "queryOrFragmentUrls": 0,
+          "metadataEvents": 0,
+          "pseudonymUrlOccurrences": 7435
+        },
+        "causalNegativeControlsRejected": {
+          "cpuSample": true,
+          "networkTiming": true,
+          "markTimestamp": true,
+          "metadataInjection": true,
+          "headerInjection": true
+        },
+        "measurementsEqual": true,
+        "gzipRoundtripExact": true,
+        "gzipDeterministic": true,
+        "rawSha256MatchesExpected": true
+      },
+      "measurements": {
+        "rolesPidTid": {
+          "host": [
+            24452,
+            28588
+          ],
+          "frame": [
+            28148,
+            13012
+          ],
+          "executionWorker": [
+            28148,
+            23036
+          ]
+        },
+        "executeMarkTsUs": 90333398585,
+        "firstUsefulPixelsMarkTsUs": 90334524551,
+        "markIntervalUs": 1125966,
+        "hostCompleteEventUnionWithinMarksUs": 162535,
+        "longestExecutionWorkerMessagePortWithinMarks": {
+          "pid": 28148,
+          "tid": 23036,
+          "ts": 90334386349,
+          "dur": 44252,
+          "tts": 441524,
+          "tdur": 42215
+        }
+      },
+      "resources": [
+        {
+          "url": "https://trace.invalid/resource/0001/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0002/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0003/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0004/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0005/frame.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "frame.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0006/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0007/turtle-renderer.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "turtle-renderer.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0008/pyodide.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "pyodide.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0009/pyodide.asm.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "pyodide.asm.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0010/boot-reader.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "boot-reader.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0011/worker.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "worker.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0012/turtle-protocol.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "turtle-protocol.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0013/turtle.py",
+          "resourceClass": "script",
+          "approvedBasename": "turtle.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0014/_sz_turtle_backend.py",
+          "resourceClass": "script",
+          "approvedBasename": "_sz_turtle_backend.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0015/_sz_turtle_colors.py",
+          "resourceClass": "script",
+          "approvedBasename": "_sz_turtle_colors.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0016/_sz_turtle_limits.py",
+          "resourceClass": "script",
+          "approvedBasename": "_sz_turtle_limits.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0017/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0018/editor-BWimssVN.js",
+          "resourceClass": "script",
+          "approvedBasename": "editor-BWimssVN.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0019/editor.api-Bx3n2d9h.js",
+          "resourceClass": "script",
+          "approvedBasename": "editor.api-Bx3n2d9h.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0020/workers-BLHfgwCz.js",
+          "resourceClass": "script",
+          "approvedBasename": "workers-BLHfgwCz.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0021/useFormatIssueLogger-CwTlfkSY.js",
+          "resourceClass": "script",
+          "approvedBasename": "useFormatIssueLogger-CwTlfkSY.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0022/PythonSourceEditor-DEHp0my0.js",
+          "resourceClass": "script",
+          "approvedBasename": "PythonSourceEditor-DEHp0my0.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0023/projectStore-us9OTWgL.js",
+          "resourceClass": "script",
+          "approvedBasename": "projectStore-us9OTWgL.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0024/react-B1GEbTQo.js",
+          "resourceClass": "script",
+          "approvedBasename": "react-B1GEbTQo.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0025/persistence-BaGHiRgY.js",
+          "resourceClass": "script",
+          "approvedBasename": "persistence-BaGHiRgY.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0026/cn-BrylQflp.js",
+          "resourceClass": "script",
+          "approvedBasename": "cn-BrylQflp.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0027/bottomTabs-CPm-6miZ.js",
+          "resourceClass": "script",
+          "approvedBasename": "bottomTabs-CPm-6miZ.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0028/uiStore-FzvNQ3v3.js",
+          "resourceClass": "script",
+          "approvedBasename": "uiStore-FzvNQ3v3.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0029/react-BQdL-_wy.js",
+          "resourceClass": "script",
+          "approvedBasename": "react-BQdL-_wy.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0030/PythonEditorPreview-DJiUW_Pp.js",
+          "resourceClass": "script",
+          "approvedBasename": "PythonEditorPreview-DJiUW_Pp.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0031/provider-CaO1-26j.js",
+          "resourceClass": "script",
+          "approvedBasename": "provider-CaO1-26j.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0032/snapshot-BuaDTBFP.js",
+          "resourceClass": "script",
+          "approvedBasename": "snapshot-BuaDTBFP.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0033/content-fingerprint-CkTVNl1d.js",
+          "resourceClass": "script",
+          "approvedBasename": "content-fingerprint-CkTVNl1d.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0034/contextEnvironmentCore-BW3i7Tov.js",
+          "resourceClass": "script",
+          "approvedBasename": "contextEnvironmentCore-BW3i7Tov.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0035/schemas-BnqV3WKm.js",
+          "resourceClass": "script",
+          "approvedBasename": "schemas-BnqV3WKm.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0036/controller-TcYJq0re.js",
+          "resourceClass": "script",
+          "approvedBasename": "controller-TcYJq0re.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0037/registry-B95c9GR-.js",
+          "resourceClass": "script",
+          "approvedBasename": "registry-B95c9GR-.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0038/project-capabilities-CcdGUnM-.js",
+          "resourceClass": "script",
+          "approvedBasename": "project-capabilities-CcdGUnM-.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0039/pythonProjectValidation-Dyf7-FZj.js",
+          "resourceClass": "script",
+          "approvedBasename": "pythonProjectValidation-Dyf7-FZj.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0040/python-dependency-policy-CewlrFEd.js",
+          "resourceClass": "script",
+          "approvedBasename": "python-dependency-policy-CewlrFEd.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0041/webFiles-v8DIWlrX.js",
+          "resourceClass": "script",
+          "approvedBasename": "webFiles-v8DIWlrX.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0042/bootResourceHost-BjXn_C05.js",
+          "resourceClass": "script",
+          "approvedBasename": "bootResourceHost-BjXn_C05.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0043/PythonClassicMode-DwSdWkZ_.js",
+          "resourceClass": "script",
+          "approvedBasename": "PythonClassicMode-DwSdWkZ_.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0044/blockly-DeuTwL_n.js",
+          "resourceClass": "script",
+          "approvedBasename": "blockly-DeuTwL_n.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0045/analysis-frame.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "analysis-frame.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0046/analysis-worker.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "analysis-worker.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0047/module.wasm",
+          "resourceClass": "wasm",
+          "approvedBasename": "module.wasm"
+        },
+        {
+          "url": "https://trace.invalid/resource/0048/module.wasm",
+          "resourceClass": "wasm",
+          "approvedBasename": "module.wasm"
+        },
+        {
+          "url": "https://trace.invalid/resource/0049/module.wasm",
+          "resourceClass": "wasm",
+          "approvedBasename": "module.wasm"
+        },
+        {
+          "url": "https://trace.invalid/resource/0050/controller-9MR2w0dO.js",
+          "resourceClass": "script",
+          "approvedBasename": "controller-9MR2w0dO.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0051/catalog-CkJ9C74k.js",
+          "resourceClass": "script",
+          "approvedBasename": "catalog-CkJ9C74k.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0052/structuralCodec-qdIpoZBb.js",
+          "resourceClass": "script",
+          "approvedBasename": "structuralCodec-qdIpoZBb.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0053/nodes-Zx46qMN1.js",
+          "resourceClass": "script",
+          "approvedBasename": "nodes-Zx46qMN1.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0054/python-runtime-distribution-Bak2oazg.js",
+          "resourceClass": "script",
+          "approvedBasename": "python-runtime-distribution-Bak2oazg.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0055/portable-path-Ba5y8eRv.js",
+          "resourceClass": "script",
+          "approvedBasename": "portable-path-Ba5y8eRv.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0056/runtime-catalog-CUKkz9MZ.js",
+          "resourceClass": "script",
+          "approvedBasename": "runtime-catalog-CUKkz9MZ.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0057/schemas-JYSZsLNF.js",
+          "resourceClass": "script",
+          "approvedBasename": "schemas-JYSZsLNF.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0058/resource",
+          "resourceClass": "blob",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0059/StudioEditor-59D9zzFy.js",
+          "resourceClass": "script",
+          "approvedBasename": "StudioEditor-59D9zzFy.js"
+        }
+      ]
+    },
+    {
+      "case": "pro",
+      "archiveFile": "f1-profile-sanitized-pro-r1.json.gz",
+      "originalSha256": "69ce5ff0dd230bc6985e801c22869fc0c009f81e2836fa881e5c4947cc70ebb8",
+      "originalBytes": 3351711,
+      "jsonSha256": "8b8d5acc5a146ac9e02d3ee316f0eef6883d46f7d6c1ff05aae555f3a0bd4ed6",
+      "jsonBytes": 2904752,
+      "gzipSha256": "60adb2cecae99fc031e573023dc32914e2645367cc17a4b4d73660f600d71739",
+      "gzipBytes": 231061,
+      "originalEventCount": 8929,
+      "retained": {
+        "events": 6889,
+        "groups": {
+          "timeline": 6300,
+          "mark": 2,
+          "network": 92,
+          "cpu": 495
+        },
+        "phases": {
+          "X": 6300,
+          "I": 94,
+          "P": 495
+        },
+        "profiles": 3,
+        "profileChunks": 492,
+        "nodes": 8664,
+        "samples": 8268,
+        "timeDeltas": 8268,
+        "networkEvents": {
+          "ResourceSendRequest": 19,
+          "ResourceWillSendRequest": 1,
+          "ResourceReceiveResponse": 20,
+          "ResourceReceivedData": 32,
+          "ResourceFinish": 20
+        },
+        "marks": {
+          "studio-python-execute-click": 1,
+          "studio-python-first-useful-pixels": 1
+        }
+      },
+      "discardedEventCount": 2040,
+      "discardedPhaseCounts": {
+        "M": 33,
+        "I": 307,
+        "R": 44,
+        "s": 488,
+        "f": 488,
+        "b": 294,
+        "e": 294,
+        "n": 92
+      },
+      "validation": {
+        "orderedSelectedEventProjectionEqual": true,
+        "numericProjectionEqual": true,
+        "numericLeafCount": 109403,
+        "numericProjectionSha256": "b619888e347ad7c8fc1062bb87cc53e394301c85f1b1db1558dbbaf0db64c3c6",
+        "urlMapInjective": true,
+        "distinctPseudonymCount": 55,
+        "privacy": {
+          "forbiddenFields": 0,
+          "sensitiveValuePatternMatches": 0,
+          "originalUrls": 0,
+          "queryOrFragmentUrls": 0,
+          "metadataEvents": 0,
+          "pseudonymUrlOccurrences": 8341
+        },
+        "causalNegativeControlsRejected": {
+          "cpuSample": true,
+          "networkTiming": true,
+          "markTimestamp": true,
+          "metadataInjection": true,
+          "headerInjection": true
+        },
+        "measurementsEqual": true,
+        "gzipRoundtripExact": true,
+        "gzipDeterministic": true,
+        "rawSha256MatchesExpected": true
+      },
+      "measurements": {
+        "rolesPidTid": {
+          "host": [
+            3336,
+            15872
+          ],
+          "frame": [
+            8252,
+            26996
+          ],
+          "executionWorker": [
+            8252,
+            20708
+          ]
+        },
+        "executeMarkTsUs": 90347100699,
+        "firstUsefulPixelsMarkTsUs": 90348379761,
+        "markIntervalUs": 1279062,
+        "hostCompleteEventUnionWithinMarksUs": 53808,
+        "longestExecutionWorkerMessagePortWithinMarks": {
+          "pid": 8252,
+          "tid": 20708,
+          "ts": 90347721007,
+          "dur": 448012,
+          "tts": 114197,
+          "tdur": 423130
+        }
+      },
+      "resources": [
+        {
+          "url": "https://trace.invalid/resource/0001/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0002/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0003/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0004/frame.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "frame.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0005/turtle-renderer.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "turtle-renderer.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0006/pyodide.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "pyodide.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0007/pyodide.asm.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "pyodide.asm.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0008/boot-reader.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "boot-reader.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0009/worker.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "worker.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0010/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0011/turtle-protocol.mjs",
+          "resourceClass": "script",
+          "approvedBasename": "turtle-protocol.mjs"
+        },
+        {
+          "url": "https://trace.invalid/resource/0012/turtle.py",
+          "resourceClass": "script",
+          "approvedBasename": "turtle.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0013/_sz_turtle_backend.py",
+          "resourceClass": "script",
+          "approvedBasename": "_sz_turtle_backend.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0014/_sz_turtle_colors.py",
+          "resourceClass": "script",
+          "approvedBasename": "_sz_turtle_colors.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0015/_sz_turtle_limits.py",
+          "resourceClass": "script",
+          "approvedBasename": "_sz_turtle_limits.py"
+        },
+        {
+          "url": "https://trace.invalid/resource/0016/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0017/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0018/resource",
+          "resourceClass": "local-request",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0019/editor-BWimssVN.js",
+          "resourceClass": "script",
+          "approvedBasename": "editor-BWimssVN.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0020/editor.api-Bx3n2d9h.js",
+          "resourceClass": "script",
+          "approvedBasename": "editor.api-Bx3n2d9h.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0021/workers-BLHfgwCz.js",
+          "resourceClass": "script",
+          "approvedBasename": "workers-BLHfgwCz.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0022/useFormatIssueLogger-CwTlfkSY.js",
+          "resourceClass": "script",
+          "approvedBasename": "useFormatIssueLogger-CwTlfkSY.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0023/ProWorkspace-DjtaZEdr.js",
+          "resourceClass": "script",
+          "approvedBasename": "ProWorkspace-DjtaZEdr.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0024/projectStore-us9OTWgL.js",
+          "resourceClass": "script",
+          "approvedBasename": "projectStore-us9OTWgL.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0025/react-B1GEbTQo.js",
+          "resourceClass": "script",
+          "approvedBasename": "react-B1GEbTQo.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0026/cn-BrylQflp.js",
+          "resourceClass": "script",
+          "approvedBasename": "cn-BrylQflp.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0027/react-BQdL-_wy.js",
+          "resourceClass": "script",
+          "approvedBasename": "react-BQdL-_wy.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0028/bottomTabs-CPm-6miZ.js",
+          "resourceClass": "script",
+          "approvedBasename": "bottomTabs-CPm-6miZ.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0029/registry-B95c9GR-.js",
+          "resourceClass": "script",
+          "approvedBasename": "registry-B95c9GR-.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0030/PythonEditorPreview-DJiUW_Pp.js",
+          "resourceClass": "script",
+          "approvedBasename": "PythonEditorPreview-DJiUW_Pp.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0031/controller-TcYJq0re.js",
+          "resourceClass": "script",
+          "approvedBasename": "controller-TcYJq0re.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0032/project-capabilities-CcdGUnM-.js",
+          "resourceClass": "script",
+          "approvedBasename": "project-capabilities-CcdGUnM-.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0033/schemas-BnqV3WKm.js",
+          "resourceClass": "script",
+          "approvedBasename": "schemas-BnqV3WKm.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0034/runtime-identity-DaUVRFrO.js",
+          "resourceClass": "script",
+          "approvedBasename": "runtime-identity-DaUVRFrO.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0035/provider-CaO1-26j.js",
+          "resourceClass": "script",
+          "approvedBasename": "provider-CaO1-26j.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0036/snapshot-BuaDTBFP.js",
+          "resourceClass": "script",
+          "approvedBasename": "snapshot-BuaDTBFP.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0037/pythonProjectValidation-Dyf7-FZj.js",
+          "resourceClass": "script",
+          "approvedBasename": "pythonProjectValidation-Dyf7-FZj.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0038/project-document-CeTzE4XL.js",
+          "resourceClass": "script",
+          "approvedBasename": "project-document-CeTzE4XL.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0039/contextEnvironmentCore-BW3i7Tov.js",
+          "resourceClass": "script",
+          "approvedBasename": "contextEnvironmentCore-BW3i7Tov.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0040/runtime-authorization-BkVwPFH4.js",
+          "resourceClass": "script",
+          "approvedBasename": "runtime-authorization-BkVwPFH4.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0041/runtime-catalog-CUKkz9MZ.js",
+          "resourceClass": "script",
+          "approvedBasename": "runtime-catalog-CUKkz9MZ.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0042/portable-path-Ba5y8eRv.js",
+          "resourceClass": "script",
+          "approvedBasename": "portable-path-Ba5y8eRv.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0043/content-fingerprint-CkTVNl1d.js",
+          "resourceClass": "script",
+          "approvedBasename": "content-fingerprint-CkTVNl1d.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0044/bootResourceHost-BjXn_C05.js",
+          "resourceClass": "script",
+          "approvedBasename": "bootResourceHost-BjXn_C05.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0045/python-runtime-distribution-Bak2oazg.js",
+          "resourceClass": "script",
+          "approvedBasename": "python-runtime-distribution-Bak2oazg.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0046/resource",
+          "resourceClass": "blob",
+          "approvedBasename": "resource"
+        },
+        {
+          "url": "https://trace.invalid/resource/0047/contextEnvironment-CRedaoUK.js",
+          "resourceClass": "script",
+          "approvedBasename": "contextEnvironment-CRedaoUK.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0048/project-continuity-Ce0-Whas.js",
+          "resourceClass": "script",
+          "approvedBasename": "project-continuity-Ce0-Whas.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0049/PythonCodeMode-n--iKU2D.js",
+          "resourceClass": "script",
+          "approvedBasename": "PythonCodeMode-n--iKU2D.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0050/observation-BNKLBnWE.js",
+          "resourceClass": "script",
+          "approvedBasename": "observation-BNKLBnWE.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0051/webFiles-v8DIWlrX.js",
+          "resourceClass": "script",
+          "approvedBasename": "webFiles-v8DIWlrX.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0052/module.wasm",
+          "resourceClass": "wasm",
+          "approvedBasename": "module.wasm"
+        },
+        {
+          "url": "https://trace.invalid/resource/0053/module.wasm",
+          "resourceClass": "wasm",
+          "approvedBasename": "module.wasm"
+        },
+        {
+          "url": "https://trace.invalid/resource/0054/persistence-BaGHiRgY.js",
+          "resourceClass": "script",
+          "approvedBasename": "persistence-BaGHiRgY.js"
+        },
+        {
+          "url": "https://trace.invalid/resource/0055/StudioEditor-59D9zzFy.js",
+          "resourceClass": "script",
+          "approvedBasename": "StudioEditor-59D9zzFy.js"
+        }
+      ]
+    }
+  ]
+}

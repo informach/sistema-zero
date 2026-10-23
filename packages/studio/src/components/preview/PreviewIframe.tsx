@@ -11,33 +11,33 @@ import {
   type ProjectAsset,
   soundManifest,
 } from '#core'
+import { loadExtensionBootstrapScripts, uniqueExtensionIds } from '#extensions'
 import {
-  type ExtensionPermission,
-  loadExtensionBootstrapScripts,
-  uniqueExtensionIds,
-} from '#extensions'
-import { findExtension } from '#official-extensions'
-import {
-  buildPreviewDoc,
   isPreviewMessage,
   isPreviewSnapshotMessage,
   isPreviewStorageWriteMessage,
   PREVIEW_SNAPSHOT_REQUEST,
   sanitizePreviewStorageData,
-  withCoreImports,
 } from '#preview'
 import { Button } from '#ui'
+import { javaScriptProject } from '../../core/editableProject'
 import { resolveCoverAsset } from '../../cover/coverAsset'
 import { rememberProjectSnapshot } from '../../cover/latestSnapshot'
 import { useDebounced } from '../../hooks/useDebounced'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { loadGameUiFont } from '../../official-extensions/gameUiFont'
 import { resolveGameUiFontId } from '../../official-extensions/gameUiFonts/resolve'
+import {
+  buildJavaScriptClassicDocument,
+  resolveJavaScriptClassicExtensions,
+} from '../../runtime/javascript/classicDocument'
 import { loadGameStorage, writeGameStorage } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioExecution } from '../../studio/observation'
+import { validateIsolatedPreviewUrl } from './playerOriginAdapter'
 import {
   estimatePreviewInputChars,
   PREVIEW_RENDER_INPUT_LIMIT_CHARS,
@@ -81,6 +81,8 @@ export function chosenCoverPausesSnapshots(
 }
 
 export function PreviewIframe(): JSX.Element {
+  const execution = useStudioExecution()
+  const fullProject = useProjectStore((s) => javaScriptProject(s.project))
   const {
     projectId,
     html,
@@ -94,16 +96,17 @@ export function PreviewIframe(): JSX.Element {
     hasChosenCover,
   } = useProjectStore(
     useShallow((s) => ({
-      projectId: s.project?.id ?? null,
-      hasChosenCover: chosenCoverPausesSnapshots(s.project),
-      html: s.project?.files['index.html'] ?? '',
-      css: s.project?.files['style.css'] ?? '',
-      js: s.project?.files['script.js'] ?? '',
-      ir: s.project?.ir ?? null,
-      projectName: s.project?.name ?? '',
-      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-      extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
-      assets: s.project?.assets ?? EMPTY_ASSETS,
+      projectId: javaScriptProject(s.project)?.id ?? null,
+      hasChosenCover: chosenCoverPausesSnapshots(javaScriptProject(s.project)),
+      html: javaScriptProject(s.project)?.files['index.html'] ?? '',
+      css: javaScriptProject(s.project)?.files['style.css'] ?? '',
+      js: javaScriptProject(s.project)?.files['script.js'] ?? '',
+      ir: javaScriptProject(s.project)?.ir ?? null,
+      projectName: javaScriptProject(s.project)?.name ?? '',
+      installedExtensions:
+        javaScriptProject(s.project)?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      extraFiles: javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRA_FILES,
+      assets: javaScriptProject(s.project)?.assets ?? EMPTY_ASSETS,
     })),
   )
   const pushLog = useLogsStore((s) => s.push)
@@ -245,6 +248,7 @@ export function PreviewIframe(): JSX.Element {
   }
 
   const handleTogglePreviewRunning = () => {
+    if (execution.editingAccess === 'observer') return
     if (previewRunning) {
       setPreviewRunning(false)
       return
@@ -258,6 +262,7 @@ export function PreviewIframe(): JSX.Element {
   }
 
   const handleRefresh = () => {
+    if (execution.editingAccess === 'observer') return
     // Atualizar implica executar: se estava parado, religa o Play.
     // Descarrega a última escrita ao mirror antes de o doc ser reconstruído.
     processStorageNow()
@@ -300,13 +305,14 @@ export function PreviewIframe(): JSX.Element {
     scripts: string[]
   }>({ key: '', status: 'ready', scripts: [] })
 
+  const extensionContext = useMemo(
+    () => resolveJavaScriptClassicExtensions(debouncedIds ? debouncedIds.split(',') : []),
+    [debouncedIds],
+  )
+
   useEffect(() => {
     void runtimeAttempt
-    const ids = debouncedIds ? debouncedIds.split(',') : []
-    const extensions = ids.flatMap((id) => {
-      const extension = findExtension(id)
-      return extension ? [extension] : []
-    })
+    const { extensions } = extensionContext
     if (extensions.length === 0) {
       setExtensionRuntimeState({ key: debouncedIds, status: 'ready', scripts: [] })
       return
@@ -324,7 +330,7 @@ export function PreviewIframe(): JSX.Element {
     return () => {
       active = false
     }
-  }, [debouncedIds, runtimeAttempt])
+  }, [debouncedIds, runtimeAttempt, extensionContext])
 
   // ⚠️ A escolha sai do JS JÁ DEBOUNCED, não da IR: varrer a árvore do Reino Zero
   // (32 grades) a cada tecla seria caro, e o script gerado é a mesma verdade — o
@@ -357,29 +363,7 @@ export function PreviewIframe(): JSX.Element {
     extensionRuntimeState.key === debouncedIds && extensionRuntimeState.status === 'loading'
   const extensionScripts = extensionRuntimesReady ? extensionRuntimeState.scripts : []
 
-  // Módulos ESM declarados pelas extensões instaladas (specifier → URL pinada,
-  // ex.: three via CDN). Entram no importmap; as origens vão para o script-src.
-  const extensionImports = useMemo(() => {
-    const ids = debouncedIds ? debouncedIds.split(',') : []
-    const imports: Record<string, string> = {}
-    for (const id of ids) {
-      const ext = findExtension(id)
-      if (ext?.runtime.esmImports) Object.assign(imports, ext.runtime.esmImports)
-    }
-    return imports
-  }, [debouncedIds])
-
-  // União das permissions declaradas pelas extensões instaladas — o
-  // permissionGuard usa isto + a baseline do aluno para liberar/travar rede.
-  const installedPermissions = useMemo(() => {
-    const ids = debouncedIds ? debouncedIds.split(',') : []
-    const perms = new Set<ExtensionPermission>()
-    for (const id of ids) {
-      const ext = findExtension(id)
-      if (ext) for (const p of ext.manifest.permissions) perms.add(p)
-    }
-    return Array.from(perms)
-  }, [debouncedIds])
+  const { extensionImports, installedPermissions } = extensionContext
 
   // Manifesto de assets (nome → dataUrl) semeado no preview. Recomputa só quando a
   // lista de assets muda (add/remover/renomear) — não a cada tecla. Não entra no
@@ -425,11 +409,19 @@ export function PreviewIframe(): JSX.Element {
 
   useEffect(() => {
     if (!projectId || !previewRunning || previewPaused) return
+    if (!execution.autoRun || execution.editingAccess === 'observer') return
     if (autoStartedProjectId.current === projectId) return
     if (loadedSrcDoc !== PAUSED_PREVIEW_DOC) return
     autoStartedProjectId.current = projectId
     setRenderNonce((n) => n + 1)
-  }, [projectId, previewRunning, previewPaused, loadedSrcDoc])
+  }, [
+    projectId,
+    previewRunning,
+    previewPaused,
+    loadedSrcDoc,
+    execution.autoRun,
+    execution.editingAccess,
+  ])
 
   useEffect(() => {
     if (renderLargePreviewForInput && renderLargePreviewForInput !== previewBudgetInput) {
@@ -474,6 +466,7 @@ export function PreviewIframe(): JSX.Element {
   }, [projectId, previewRunning, previewPaused, hasChosenCover])
 
   const doc = useMemo(() => {
+    if (execution.editingAccess === 'observer') return PAUSED_PREVIEW_DOC
     // Parar (Play desligado): esvazia o iframe → mata setInterval/timers em execução.
     if (!previewRunning) return PAUSED_PREVIEW_DOC
     if (previewPaused) return PAUSED_PREVIEW_DOC
@@ -482,22 +475,20 @@ export function PreviewIframe(): JSX.Element {
     if (!gameUiFontReady) return PAUSED_PREVIEW_DOC
     // Aguarda hidratar o estado salvo antes do 1º build (ver storageReady acima).
     if (projectId && !storageReady) return PAUSED_PREVIEW_DOC
-    const base = buildPreviewDoc({
+    const base = buildJavaScriptClassicDocument({
       html: debouncedHtml,
       css: debouncedCss,
       js: debouncedJs,
-      extensionScripts,
+      resources: {
+        extensionScripts,
+        extensionImports,
+        installedPermissions,
+        gameUiFont: gameUiFontState.bundle ?? undefined,
+      },
       extraFiles: debouncedExtraFiles,
-      // A fonte escolhida (só ela vem carregada). O gate acima garante que o bundle
-      // já chegou: sem ele o documento sairia com a família padrão e o jogo trocaria
-      // de letra no meio, ao próximo render.
-      gameUiFont: gameUiFontState.bundle ?? undefined,
       parentOrigin: typeof window !== 'undefined' ? window.location.origin : undefined,
-      installedPermissions,
       fetchAllowedOrigins: previewSecurity.fetchAllowedOrigins,
       loopBudgetMs: previewSecurity.loopBudgetMs,
-      // + o three.js do NÚCLEO (Canvas 3D) se o código o importa — lazy: 2D não paga.
-      extensionImports: withCoreImports(extensionImports, debouncedJs),
       // Semeia o estado salvo (lido do ref: deliberadamente FORA das deps do memo
       // — uma escrita não deve reconstruir o doc e recarregar o preview).
       localStorageSnapshot: gameStorageRef.current,
@@ -537,7 +528,80 @@ export function PreviewIframe(): JSX.Element {
     models3dManifest,
     previewSecurity,
     renderNonce,
+    execution.editingAccess,
   ])
+
+  const [remoteDocument, setRemoteDocument] = useState<{
+    document: string
+    url: string | null
+    error: string | null
+  } | null>(null)
+  const originAdapter = execution.originAdapter
+  const projectForOrigin = useRef(fullProject)
+  projectForOrigin.current = fullProject
+  useEffect(() => {
+    if (!originAdapter || doc === PAUSED_PREVIEW_DOC || !projectForOrigin.current) return
+    const project = projectForOrigin.current
+    const controller = new AbortController()
+    let active = true
+    let publishedUrl: string | null = null
+    const release = (url: string) => {
+      void Promise.resolve(originAdapter.releasePreviewUrl?.(url)).catch(() => {})
+    }
+    const publishTimer = setTimeout(() => {
+      void originAdapter
+        .createPreviewUrl({
+          project,
+          document: doc,
+          signal: controller.signal,
+        })
+        .then(
+          (url) => {
+            publishedUrl = url
+            if (!active) {
+              release(url)
+              return
+            }
+            try {
+              const validated = validateIsolatedPreviewUrl(url, window.location.origin)
+              setRemoteDocument({ document: doc, url: validated, error: null })
+            } catch (error) {
+              release(url)
+              publishedUrl = null
+              setRemoteDocument({
+                document: doc,
+                url: null,
+                error:
+                  error instanceof Error ? error.message : 'Não foi possível abrir o jogo isolado.',
+              })
+            }
+          },
+          (error: unknown) => {
+            if (active)
+              setRemoteDocument({
+                document: doc,
+                url: null,
+                error:
+                  error instanceof Error
+                    ? error.message
+                    : 'Não foi possível abrir o jogo isolado. Tente reproduzir novamente.',
+              })
+          },
+        )
+    }, 250)
+    return () => {
+      active = false
+      clearTimeout(publishTimer)
+      controller.abort()
+      if (publishedUrl) release(publishedUrl)
+    }
+  }, [doc, originAdapter])
+  const isolatedUrl = remoteDocument?.document === doc ? remoteDocument.url : null
+  const requiresRemoteDocument = Boolean(originAdapter) || execution.requireIsolatedPreview
+  const effectiveDoc = requiresRemoteDocument ? PAUSED_PREVIEW_DOC : doc
+  useEffect(() => {
+    iframeRef.current?.contentWindow?.postMessage({ type: 'sz:audio', muted: execution.muted }, '*')
+  }, [execution.muted])
 
   const docIsLive = doc !== PAUSED_PREVIEW_DOC
 
@@ -648,6 +712,7 @@ export function PreviewIframe(): JSX.Element {
     <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg">
       <div className="flex items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
         <Button
+          data-live-target={previewRunning ? 'studio-stop' : 'studio-run'}
           size="sm"
           variant={previewRunning ? 'ghost' : 'primary'}
           onClick={handleTogglePreviewRunning}
@@ -688,11 +753,16 @@ export function PreviewIframe(): JSX.Element {
       <iframe
         ref={iframeRef}
         title="Pré-visualização"
-        srcDoc={doc}
+        src={isolatedUrl ?? undefined}
+        srcDoc={isolatedUrl ? undefined : effectiveDoc}
         onLoad={() => {
           setLoadedSrcDoc(iframeRef.current?.getAttribute('srcdoc') ?? null)
           lastHeartbeatRef.current = Date.now()
           setPreviewStalled(false)
+          iframeRef.current?.contentWindow?.postMessage(
+            { type: 'sz:audio', muted: execution.muted },
+            '*',
+          )
           // Foca o jogo após um Play/Atualizar explícito, para que as setas do
           // teclado cheguem ao iframe sem o aluno precisar clicar no canvas. Só
           // após ação explícita (a flag não é setada em reload por edição).
@@ -710,6 +780,15 @@ export function PreviewIframe(): JSX.Element {
         allow="fullscreen"
         className="h-full w-full flex-1 bg-white"
       />
+      {doc !== PAUSED_PREVIEW_DOC && requiresRemoteDocument && !isolatedUrl && (
+        <p role="status" className="absolute inset-x-0 bottom-0 bg-sz-panel p-3 text-sm text-sz-fg">
+          {!originAdapter
+            ? 'O ambiente de execução desta sala ainda não está configurado.'
+            : remoteDocument?.document === doc && remoteDocument.error
+              ? remoteDocument.error
+              : 'Preparando o jogo no ambiente isolado…'}
+        </p>
+      )}
       {previewRunning && extensionRuntimesLoading && (
         <div
           role="status"

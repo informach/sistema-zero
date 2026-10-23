@@ -1,5 +1,6 @@
-import type { Project } from '#core'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import type { ProjectSummary } from '../state/persistence'
+import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 
 /**
  * Adapter de persistência do <Studio>. `'local'` usa a implementação
@@ -12,6 +13,8 @@ export interface StudioPersistenceAdapter {
    * perfis mantêm o mesmo id de projeto na mesma página.
    */
   scopeIdentity?: string
+  /** Holds local closed-project writers until this exact opening hydrates or is cancelled. */
+  beginOpening?(id: string, options?: { signal?: AbortSignal }): () => void
   /** Carrega um projeto por id (usado pelo host/ProjectList; o Studio em si recebe initialProject). */
   load(id: string): Promise<Project | null>
   /**
@@ -21,6 +24,12 @@ export interface StudioPersistenceAdapter {
   loadBlocksState?(project: Project): Promise<Project['blocksState']>
   /** Persiste o snapshot completo. Chamado no debounce do autosave e no salvar explícito. */
   save(project: Project): Promise<void>
+  /** Local CAS capability; custom/remote adapters do not imply durable local undo. */
+  localScope?: ProjectStorageScope
+  /** Exit-only recovery write. Resolving confirms the draft, not the live document. */
+  flushOnExit?(project: Project, options?: { incompleteBlocks?: boolean }): Promise<void>
+  /** Optional durable outbox. Called immediately on edits, before remote autosave debounce. */
+  stage?(project: Project): Promise<void>
   /**
    * `true` quando o próprio armazenamento aplica os `save` do mesmo projeto na ORDEM em que
    * foram chamados, mesmo com vários em voo. É o caso do adapter local: o IndexedDB executa as

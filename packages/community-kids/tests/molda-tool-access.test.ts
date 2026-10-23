@@ -1,40 +1,53 @@
 import { describe, expect, test } from 'bun:test'
-import { MOLDA_TOOL_BAND_LEVELS } from '../../core/src/journey/state'
 import {
-  MOLDA_TOOL_BANDS,
-  MOLDA_TOOL_FAMILIES,
-  moldaToolFamilyIds,
-} from '../../molda/src/core/toolFamilies'
-import { JOURNEY_REWARD_INFO } from '../src/lib/journey-rewards'
+  initialKidsJourneyPolicy,
+  JOURNEY_COURSE_TIERS,
+  type JourneyLevelSlug,
+  journeySlotsForTier,
+  type KidsJourneyView,
+  projectKidsJourney,
+} from '@sistemazero/core/journey'
+import { MOLDA_TOOL_BAND_LEVELS } from '../../core/tests/fixtures/legacy-kids-tool-levels'
+import { MOLDA_TOOL_BANDS, moldaToolFamilyIds } from '../../molda/src/core/toolFamilies'
 import { LEVEL_ORDER } from '../src/lib/level-info'
-import { MOLDA_BAND_PROMISES, moldaFeatureList, moldaLevelGain } from '../src/lib/molda-level-gain'
 import {
-  MOLDA_BEYOND_HORIZON,
-  moldaPreviewLevel,
-  moldaToolAccessFor,
-  moldaToolAccessRestricted,
-} from '../src/lib/molda-tool-access'
-
-/**
- * O portão do Molda por posto: a criança recebe as famílias das faixas que o posto dela já
- * abriu, e a oficina anuncia o que vem depois (e quando). A equipe e a Lenda recebem tudo.
- */
+  MOLDA_BAND_PROMISES,
+  moldaCapabilitiesGain,
+  moldaFeatureList,
+} from '../src/lib/molda-level-gain'
+import { MOLDA_BEYOND_HORIZON, moldaToolAccessFor } from '../src/lib/molda-tool-access'
+import { JOURNEY_REWARD_INFO } from './fixtures/legacy-journey-rewards'
+import { kidsStaffPreview } from './kids-journey-fixtures'
 
 const basic = moldaToolFamilyIds(['basic'])
 const intermediate = moldaToolFamilyIds(['intermediate'])
 const professional = moldaToolFamilyIds(['professional'])
+const catalog = JOURNEY_COURSE_TIERS.flatMap((tier, index) =>
+  Array.from({ length: journeySlotsForTier(tier) }, (_, slot) => ({
+    id: `00000000-0000-4000-8000-${String(index * 10 + slot + 1).padStart(12, '0')}`,
+    audience: 'kids' as const,
+    modality: 'recorded' as const,
+    status: 'published' as const,
+    tier,
+    slot: slot + 1,
+    journeyRole: 'positioned' as const,
+    graduationOnly: false,
+    hasShowcaseBlock: true,
+  })),
+)
+function seedView(level: JourneyLevelSlug): KidsJourneyView {
+  return projectKidsJourney({
+    policy: initialKidsJourneyPolicy(),
+    policyVersion: 1,
+    catalog,
+    milestones: [],
+    earned: { level, capabilities: [], courseAccess: { entry: [], expanded: [], reward: [] } },
+  })
+}
 
 describe('moldaToolAccessFor', () => {
-  test('as faixas do pacote são as do core, na mesma ordem', () => {
-    expect(Object.keys(MOLDA_TOOL_BAND_LEVELS)).toEqual([...MOLDA_TOOL_BANDS])
-    // Toda família do pacote cai em exatamente uma faixa.
-    expect([...basic, ...intermediate, ...professional].sort()).toEqual(
-      MOLDA_TOOL_FAMILIES.map((family) => family.id).sort(),
-    )
-  })
-
-  test('os 8 postos, criança e equipe, com o catálogo inteiro', () => {
-    const esperado: Record<(typeof LEVEL_ORDER)[number], readonly string[] | 'tudo'> = {
+  test('seed keeps all eight rank boundaries and only explicit preview opens every family', () => {
+    const expected = {
       noob: [],
       coder: [],
       hacker: [],
@@ -42,92 +55,98 @@ describe('moldaToolAccessFor', () => {
       elite: basic,
       architect: [...basic, ...intermediate],
       champion: [...basic, ...intermediate],
-      god: 'tudo',
+      god: 'all',
+    } as const
+    for (const level of LEVEL_ORDER) {
+      const access = moldaToolAccessFor({ journey: seedView(level) })
+      if (expected[level] === 'all') expect(access).toBeUndefined()
+      else expect(access?.allow).toEqual(expected[level])
     }
-    for (const levelSlug of LEVEL_ORDER) {
-      const child = moldaToolAccessFor({ levelSlug, role: 'student', horizon: 'god' })
-      const want = esperado[levelSlug]
-      if (want === 'tudo') expect(child, levelSlug).toBeUndefined()
-      else expect(child?.allow, levelSlug).toEqual(want)
-      for (const role of ['superadmin', 'admin', 'staff'])
-        expect(
-          moldaToolAccessFor({ levelSlug, role, horizon: 'god' }),
-          `${role} ${levelSlug}`,
-        ).toBeUndefined()
+    const full = {
+      ...kidsStaffPreview,
+      capabilities: [
+        ...kidsStaffPreview.capabilities,
+        'molda-intermediate',
+        'molda-professional',
+      ] as const,
     }
+    expect(moldaToolAccessFor({ journey: full })).toBeUndefined()
   })
 
-  test('o Explorador(a) vê o que abre no Arquiteto(a) e na Lenda, com o nome do posto', () => {
-    const access = moldaToolAccessFor({ levelSlug: 'explorer', role: 'student', horizon: 'god' })
-    expect(access?.upcoming).toEqual([
+  test('basic controls include component editing and imports without intermediate or professional tools', () => {
+    const access = moldaToolAccessFor({ journey: seedView('explorer') })!
+    for (const id of [
+      'model.coordinates',
+      'model.pivot',
+      'model.components',
+      'model.cut',
+      'model.locator',
+      'model.reference',
+      'files.import',
+    ])
+      expect(access.allow).toContain(id)
+    for (const id of ['model.precise', 'files.interop', 'animate.batch', 'model.skin', 'paint.uv'])
+      expect(access.allow).not.toContain(id)
+  })
+
+  test('published seed announcements retain the actual reachable rank names', () => {
+    expect(moldaToolAccessFor({ journey: seedView('explorer') })?.upcoming).toEqual([
       { when: 'Abrem no nível Arquiteto(a) de Mundos', families: intermediate },
       { when: 'Abrem no nível Lenda', families: professional },
     ])
-    const architect = moldaToolAccessFor({
-      levelSlug: 'architect',
-      role: 'student',
-      horizon: 'god',
-    })
-    expect(architect?.upcoming).toEqual([{ when: 'Abrem no nível Lenda', families: professional }])
   })
 
-  test('o que passa do horizonte do catálogo não promete posto: vira a frase do mapa', () => {
-    const access = moldaToolAccessFor({
-      levelSlug: 'explorer',
-      role: 'student',
-      horizon: 'explorer',
-    })
-    // As duas faixas além do horizonte viram um grupo só, sem nome de posto.
+  test('custom capabilities and their future award replace all fixed rank thresholds', () => {
+    const journey = seedView('noob')
+    journey.earned.capabilities = ['molda', 'molda-intermediate']
+    journey.advances = journey.advances.map((advance) => ({
+      ...advance,
+      capabilities: advance.level === 'hacker' ? ['molda-professional'] : [],
+    }))
+    const access = moldaToolAccessFor({ journey })
+    expect(access?.allow).toEqual([...basic, ...intermediate])
     expect(access?.upcoming).toEqual([
-      { when: MOLDA_BEYOND_HORIZON, families: [...intermediate, ...professional] },
+      { when: 'Abrem no nível Inventor(a)', families: professional },
     ])
-    const middle = moldaToolAccessFor({
-      levelSlug: 'explorer',
-      role: 'student',
-      horizon: 'architect',
-    })
-    expect(middle?.upcoming).toEqual([
-      { when: 'Abrem no nível Arquiteto(a) de Mundos', families: intermediate },
-      { when: MOLDA_BEYOND_HORIZON, families: professional },
-    ])
+    expect(
+      moldaToolAccessFor({
+        journey: {
+          ...seedView('god'),
+          earned: { ...journey.earned, level: 'god', capabilities: [] },
+        },
+      })?.allow,
+    ).toEqual([])
   })
 
-  test('catálogo desconhecido (null) não nomeia posto nenhum', () => {
-    const access = moldaToolAccessFor({ levelSlug: 'explorer', role: 'student', horizon: null })
-    expect(access?.upcoming).toEqual([
-      { when: MOLDA_BEYOND_HORIZON, families: [...intermediate, ...professional] },
+  test('unknown horizon, removed awards and paused progression do not promise a fixed future rank', () => {
+    for (const journey of [
+      {
+        ...seedView('explorer'),
+        readiness: { status: 'incomplete' as const, horizon: null, issues: [] },
+      },
+      { ...seedView('explorer'), advances: [] },
+      { ...seedView('explorer'), mode: 'paused' as const },
     ])
-    expect(access?.allow).toEqual(basic)
-  })
-
-  test('moldaToolAccessRestricted diz se há o que trancar (a página só espera o catálogo aí)', () => {
-    for (const levelSlug of LEVEL_ORDER) {
-      const restricted = moldaToolAccessRestricted({ levelSlug, role: 'student' })
-      expect(restricted, levelSlug).toBe(
-        moldaToolAccessFor({ levelSlug, role: 'student', horizon: 'god' }) !== undefined,
-      )
-    }
-    expect(moldaToolAccessRestricted({ levelSlug: 'explorer', role: 'admin' })).toBe(false)
-  })
-
-  test('?nivel= só vale para a equipe, e só num posto em que o Molda abre', () => {
-    expect(moldaPreviewLevel('explorer', 'superadmin')).toBe('explorer')
-    expect(moldaPreviewLevel('architect', 'staff')).toBe('architect')
-    expect(moldaPreviewLevel('explorer', 'student')).toBeNull()
-    expect(moldaPreviewLevel('explorer', undefined)).toBeNull()
-    expect(moldaPreviewLevel('coder', 'admin')).toBeNull()
-    expect(moldaPreviewLevel('rei', 'admin')).toBeNull()
-    expect(moldaPreviewLevel(['explorer'], 'admin')).toBeNull()
+      expect(moldaToolAccessFor({ journey })?.upcoming).toEqual([
+        { when: MOLDA_BEYOND_HORIZON, families: [...intermediate, ...professional] },
+      ])
   })
 })
 
-describe('moldaLevelGain', () => {
-  test('cada posto que abre uma faixa diz o que o Molda ganhou; os outros, nada', () => {
-    expect(moldaLevelGain('explorer')).toContain('oficina 3D')
-    expect(moldaLevelGain('architect')).toContain('a malha')
-    expect(moldaLevelGain('god')).toContain('os ossos')
-    for (const slug of ['noob', 'coder', 'hacker', 'elite', 'champion', undefined, 'rei'])
-      expect(moldaLevelGain(slug), String(slug)).toBeNull()
+describe('moldaCapabilitiesGain', () => {
+  test('o seed mantém as faixas nos mesmos postos, comparando capacidades reais anteriores e atuais', () => {
+    for (const level of LEVEL_ORDER) {
+      const index = LEVEL_ORDER.indexOf(level)
+      const previous = LEVEL_ORDER[index - 1]
+      const gain = moldaCapabilitiesGain(
+        previous ? seedView(previous).earned.capabilities : [],
+        seedView(level).earned.capabilities,
+      )
+      if (level === 'explorer') expect(gain).toContain('oficina 3D')
+      else if (level === 'architect') expect(gain).toContain('a malha')
+      else if (level === 'god') expect(gain).toContain('os ossos')
+      else expect(gain, level).toBeNull()
+    }
   })
 })
 
@@ -146,7 +165,14 @@ describe('a promessa do Molda é uma só e é verdade', () => {
   test('a comemoração e as recompensas da jornada dizem a mesma lista', () => {
     for (const band of MOLDA_TOOL_BANDS) {
       const level = MOLDA_TOOL_BAND_LEVELS[band]
-      expect(moldaLevelGain(level), band).toContain(moldaFeatureList(band))
+      const previous = LEVEL_ORDER[LEVEL_ORDER.indexOf(level as JourneyLevelSlug) - 1]
+      expect(
+        moldaCapabilitiesGain(
+          previous ? seedView(previous).earned.capabilities : [],
+          seedView(level as JourneyLevelSlug).earned.capabilities,
+        ),
+        band,
+      ).toContain(moldaFeatureList(band))
       if (band === 'basic') continue
       expect(
         JOURNEY_REWARD_INFO[level as keyof typeof JOURNEY_REWARD_INFO].description,

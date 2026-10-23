@@ -72,6 +72,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       const [attachment] = await this.db
         .select({
           courseId: courses.id,
+          modality: courses.modality,
           lessonId: lessons.id,
           url: lessonAttachments.url,
           label: lessonAttachments.label,
@@ -89,6 +90,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         courseId: attachment.courseId,
         lessonId: attachment.lessonId,
         blockRevision: createHash('md5').update(attachment.url).digest('hex'),
+        modality: attachment.modality,
       }
     }
     if (kind !== 'block') return null
@@ -98,6 +100,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         courseId: courses.id,
         lessonId: lessons.id,
         blockRevision: lessonBlocks.contentRevision,
+        modality: courses.modality,
       })
       .from(lessonBlocks)
       .innerJoin(lessons, eq(lessons.id, lessonBlocks.lessonId))
@@ -294,6 +297,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
       where ${zappyKnowledgeSources.sourceRef} = 'block:' || ${lessonBlocks.id}::text
         and ${courses.audience} = 'kids'
         and ${courses.status} = 'published'
+        and ${courses.modality} = 'recorded'
         and ${lessons.isPublished} = true
         and (
           (${zappyKnowledgeSources.sourceType} = 'rich-text' and ${lessonBlocks.content}->>'kind' in ('rich_text', 'dialogue'))
@@ -309,6 +313,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
         and ${zappyKnowledgeSources.sourceType} = 'student-notebook'
         and ${courses.audience} = 'kids'
         and ${courses.status} = 'published'
+        and ${courses.modality} = 'recorded'
         and ${lessons.isPublished} = true
         and ${lessonAttachments.zappyStudentNotebook} = true
         and (
@@ -405,6 +410,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           ),
           eq(lessons.isPublished, true),
           eq(courses.status, 'published'),
+          eq(courses.modality, 'recorded'),
           or(
             sql`${vector} @@ ${tsQuery}`,
             sql`${zappyKnowledgeChunks.normalizedText} ilike ${`%${query}%`}`,
@@ -424,12 +430,16 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     }))
   }
 
+  // Curso AO VIVO (14/10/2026) fica fora da base didática inteira: busca, reindexação,
+  // relatório e a faxina do `reconcilePublishedSources` filtram `modality = 'recorded'`. O que
+  // a autora sincronizar de uma aula ao vivo nunca é servido e sai no próximo reconcile.
   async listPublishedKidsBlocks(
     input: { after?: string; limit?: number } = {},
   ): Promise<PublishedZappyBlock[]> {
     const clauses = [
       eq(courses.audience, 'kids'),
       eq(courses.status, 'published'),
+      eq(courses.modality, 'recorded'),
       eq(lessons.isPublished, true),
       // Aula EM PRODUÇÃO ("em breve") fica FORA da base didática: o conteúdo dela não
       // é servido ao aluno, então o tutor também não pode falar dele. Aqui a aula só
@@ -465,6 +475,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
     const clauses = [
       eq(courses.audience, 'kids'),
       eq(courses.status, 'published'),
+      eq(courses.modality, 'recorded'),
       eq(lessons.isPublished, true),
       eq(lessonAttachments.zappyStudentNotebook, true),
       sql`(lower(trim(split_part(${lessonAttachments.fileType}, ';', 1))) = 'application/pdf'
@@ -510,6 +521,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           and(
             eq(courses.audience, 'kids'),
             eq(courses.status, 'published'),
+            eq(courses.modality, 'recorded'),
             eq(lessons.isPublished, true),
           ),
         ),
@@ -542,6 +554,7 @@ export class DrizzleZappyKnowledgeRepository implements ZappyKnowledgeRepository
           and(
             eq(courses.audience, 'kids'),
             eq(courses.status, 'published'),
+            eq(courses.modality, 'recorded'),
             eq(lessons.isPublished, true),
             or(
               and(

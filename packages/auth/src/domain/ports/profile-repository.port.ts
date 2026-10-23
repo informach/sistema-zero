@@ -1,10 +1,22 @@
 import type { ProfileAggregate } from '../profile/profile.aggregate'
+import type { ProfileDetailsDecision, ProfileDetailsState } from '../profile/profile-details'
+
+export interface ProfileOwner {
+  profileId: string
+  accountUserId: string
+}
 
 /** Resultado do create atômico sob teto: o perfil persistido ou o limite batido. */
 export type CreateProfileOutcome =
-  | { outcome: 'created'; profile: ProfileAggregate }
+  | { outcome: 'created' | 'reused'; profile: ProfileAggregate }
   | { outcome: 'limit_reached' }
   | { outcome: 'account_inactive' }
+  | { outcome: 'request_conflict' }
+
+export interface ProfileCreationRequest {
+  requestId: string
+  requestHash: string
+}
 
 /** Filtro da busca UNIFICADA do painel (criança OU responsável). Paginação já coerida. */
 export interface SearchProfilesFilter {
@@ -42,10 +54,16 @@ export interface ProfileWithAccountRow {
  * furado por dois creates simultâneos.
  */
 export interface ProfileRepository {
+  /** Parent grade, including durable pending profiles; never use for session/ownership authorization. */
+  listForParent(accountUserId: string): Promise<ProfileAggregate[]>
   /** Perfis ATIVOS da conta, na ordem da grade (`sortOrder`). */
   listActiveByAccount(accountUserId: string): Promise<ProfileAggregate[]>
   /** Por id (qualquer status). `null` se não existe. */
   findById(id: string): Promise<ProfileAggregate | null>
+  findByCreationRequest(
+    accountUserId: string,
+    requestId: string,
+  ): Promise<{ profile: ProfileAggregate; requestHash: string } | null>
   /** Lote por ids, inclusive arquivados (suporte administrativo e histórico). */
   listByIds(ids: string[]): Promise<ProfileAggregate[]>
   /** Lote por ids, SÓ ativos (report dos pais — saudação das crianças). Ausentes são omitidos. */
@@ -65,7 +83,16 @@ export interface ProfileRepository {
    * conta os ativos e insere só se `count < maxProfiles`. Atribui o `sortOrder`
    * (max+1). Devolve o perfil persistido OU `limit_reached`.
    */
-  createWithinLimit(profile: ProfileAggregate, maxProfiles: number): Promise<CreateProfileOutcome>
-  /** Persiste edição/arquivamento (UPDATE por id). `false` se a linha sumiu. */
-  update(profile: ProfileAggregate): Promise<boolean>
+  createWithinLimit(
+    profile: ProfileAggregate,
+    maxProfiles: number,
+    request: ProfileCreationRequest,
+  ): Promise<CreateProfileOutcome>
+  /** Local account/profile locks; decide is synchronous and must never perform I/O. */
+  editDetails(
+    owner: ProfileOwner,
+    decide: (current: ProfileDetailsState) => ProfileDetailsDecision,
+  ): Promise<ProfileAggregate | null>
+  /** Archive only lifecycle state and cancel pending admission atomically; never restore or rewrite details. */
+  archiveOwned(owner: ProfileOwner, now: Date): Promise<boolean>
 }

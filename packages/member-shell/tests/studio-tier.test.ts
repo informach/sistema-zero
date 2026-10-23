@@ -1,11 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import {
-  remixRequirementFromSnapshot,
-  resolveStudioTier,
-  studioTierCoversRemix,
-} from '../src/lib/studio-tier'
+import { remixRequirementFromSnapshot, studioTierCoversRemix } from '../src/lib/studio-tier'
+import { resolveStudioTier } from './fixtures/legacy-studio-tier'
 
-describe('resolveStudioTier — ferramentas conquistadas', () => {
+describe('frozen migration reference — ferramentas conquistadas', () => {
   test('Faísca usa o Estúdio apenas dentro das aulas', () => {
     const tier = resolveStudioTier('noob', undefined)
     expect(tier.freeStudio).toBe(false)
@@ -98,6 +95,15 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
     ).toBe(false)
     expect(
       studioTierCoversRemix(resolveStudioTier('god', undefined), { pro: true, extensions: [] }),
+    ).toBe(false)
+    expect(
+      studioTierCoversRemix(
+        resolveStudioTier('god', undefined, {
+          blocks: ['sz_js_array_push'],
+          extensions: [],
+        }),
+        { pro: true, extensions: [] },
+      ),
     ).toBe(true)
     expect(
       studioTierCoversRemix(resolveStudioTier('noob', 'admin'), { pro: true, extensions: [] }),
@@ -122,7 +128,7 @@ describe('remix do Mural — cobertura de ferramentas por nível', () => {
  * aluno tem a união dos que concluiu + publicou. O NÍVEL continua decidindo o MODO (Estúdio
  * livre, Ponte, Pro). Sem reserva desde 02/10/2026: sem curso, sem blocos.
  */
-describe('resolveStudioTier — paleta pelo currículo', () => {
+describe('frozen migration reference — paleta pelo currículo', () => {
   const unlocks = {
     blocks: ['sz_g2d_create_ship', 'sz_g2d_on_key'],
     extensions: ['game-2d'],

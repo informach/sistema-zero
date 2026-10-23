@@ -8,14 +8,19 @@ export const XP_VALUES = {
   QUIZ_SCORE_BONUS_MAX: 10,
   /** Baú de fim de unidade (todas as aulas publicadas do módulo concluídas). */
   UNIT_COMPLETE: 25,
-  /** Pensa: etapa do ciclo concluída (advance z→e, e→r, r→o). */
+  /** Pensa: marcos do plano funcional e da construção. */
   PENSA_STAGE_COMPLETE: 15,
-  /** Pensa: ciclo LANÇADO (advance o→done) — vale o prêmio maior, sem acumular com a etapa. */
+  /** Pensa: projeto completo conferido na missão final. */
   PENSA_CYCLE_COMPLETE: 30,
   /** Clube: tópico APROVADO pela equipe (XP puro, sem moeda — sem torneira p/ farmar). */
   CLUBE_THREAD: 5,
   /** Clube: comentário APROVADO pela equipe. */
   CLUBE_COMMENT: 3,
+  /**
+   * Objetivo EXTRA da parte cumprido pela primeira vez (18/10/2026): um desafio a mais, que não
+   * tranca nada. XP puro e pequeno, sem moeda (cada objetivo paga uma vez só).
+   */
+  OBJECTIVE_EXTRA: 5,
   /**
    * Publicou jogo standalone no Mural — XP DIÁRIO (1×/dia pelo sourceId
    * determinístico do dia civil SP, `studioPublishDaySourceId`): a âncora de
@@ -200,18 +205,17 @@ export function coinsSaverBadgeSlugs(lifetimeCoins: number): BadgeSlug[] {
 }
 
 /**
- * Badges por nº de ETAPAS do Pensa concluídas (ledger `pensa_stage_complete`).
- * A 1ª etapa concluída é SEMPRE a Z — a 1ª Carta da Ideia validada.
+ * Conquista pela primeira definição aceita; usa o ledger financeiro histórico.
  */
-export function pensaStageBadgeSlugs(stagesCompleted: number): BadgeSlug[] {
-  return stagesCompleted >= 1 ? ['pensa-first-idea'] : []
+export function pensaDefinitionBadgeSlugs(milestonesCompleted: number): BadgeSlug[] {
+  return milestonesCompleted >= 1 ? ['pensa-first-idea'] : []
 }
 
-/** Badges por nº de planos de versão aprovados (ledger `pensa_cycle_complete`). */
-export function pensaCycleBadgeSlugs(cyclesCompleted: number): BadgeSlug[] {
+/** Conquistas por projetos completos conferidos; preserva os slugs financeiros. */
+export function pensaProjectBadgeSlugs(projectsCompleted: number): BadgeSlug[] {
   const slugs: BadgeSlug[] = []
-  if (cyclesCompleted >= 1) slugs.push('pensa-first-launch')
-  if (cyclesCompleted >= 3) slugs.push('pensa-creator-3')
+  if (projectsCompleted >= 1) slugs.push('pensa-first-launch')
+  if (projectsCompleted >= 3) slugs.push('pensa-creator-3')
   return slugs
 }
 
@@ -258,4 +262,14 @@ export function avatarStyleBadgeSlugs(partsBought: number): BadgeSlug[] {
 /** Badge de apoio aos colegas: comentários APROVADOS no Mural (ledger `mural_comment`). */
 export function muralCommenterBadgeSlugs(approvedComments: number): BadgeSlug[] {
   return approvedComments >= 10 ? ['mural-commenter-10'] : []
+}
+
+/** Conquista do 1º encontro AO VIVO em que a criança foi recebida (ledger `live_encounter`). */
+export function liveEncounterBadgeSlugs(encounters: number): BadgeSlug[] {
+  return encounters >= 1 ? ['live-first-encounter'] : []
+}
+
+/** "Oficina completa": um curso ao vivo inteiro concluído (ledger `live_course_complete`). */
+export function liveCourseBadgeSlugs(completedLiveCourses: number): BadgeSlug[] {
+  return completedLiveCourses >= 1 ? ['live-course-complete'] : []
 }

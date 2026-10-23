@@ -1,3 +1,4 @@
+import type { KidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { canOpenFreeStudio, type StudioUnlocksResult } from './studio-cta'
 
 /**
@@ -7,14 +8,12 @@ import { canOpenFreeStudio, type StudioUnlocksResult } from './studio-cta'
  */
 export function canOpenPensaStudioTask({
   studioProductOwned,
-  levelSlug,
-  role,
+  journey,
   unlocks,
 }: {
   studioProductOwned: boolean
-  levelSlug: string | undefined
-  role: string | undefined
+  journey: KidsJourneyAccess | null
   unlocks: StudioUnlocksResult | null
 }): boolean {
-  return canOpenFreeStudio(studioProductOwned, levelSlug, role, unlocks)
+  return canOpenFreeStudio(studioProductOwned, journey, unlocks)
 }

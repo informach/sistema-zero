@@ -1,0 +1,1 @@
+ALTER TABLE "helpdesk"."kb_articles" DROP COLUMN "published";

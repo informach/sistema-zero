@@ -114,7 +114,7 @@ export function StudyDeviceManager({
   accountId: string
   /** A lista real a cada leitura: o cartão da criança e o guia dos pais seguem ela. */
   onGrants: (profileId: string, grants: StudyGrantView[]) => void
-  /** Entrada do aluno depois da troca segura (com o `next` de uma fase, quando houver). */
+  /** Entrada do aluno depois da troca segura (com o `next` de uma aula, quando houver). */
   studentDestination?: string
 }) {
   const [grants, setGrants] = useState<StudyGrantView[] | null>(null)

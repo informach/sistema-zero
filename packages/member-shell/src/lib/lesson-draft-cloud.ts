@@ -1,5 +1,5 @@
 /**
- * O rascunho do Estúdio e do Pinta DENTRO da fase, guardado na conta (10/10/2026).
+ * O rascunho do Estúdio e do Pinta DENTRO da aula, guardado na conta (10/10/2026).
  *
  * Este arquivo reúne o CONTRATO entre os blocos da aula (aqui no member-shell) e quem sabe falar
  * com a nuvem (o app: hoje só o Kids implementa, em `lib/lesson-draft-cloud.ts` de lá). O bloco
@@ -140,7 +140,7 @@ export interface LessonDraftCoordinator {
     editor: LessonDraftEditor,
   ): () => void
   /**
-   * Salva os editores da fase, sobe o rascunho e só então roda `action` (o pedido de avançar ou
+   * Salva os editores da aula, sobe o rascunho e só então roda `action` (o pedido de avançar ou
    * concluir). `confirm` = os blocos das partes com "envio em dia" que esta ação fecha: eles
    * precisam chegar à conta (ou bater com o envio); os demais sobem em tentativa, com teto.
    * Duas ações na mesma fase entram em fila, nunca se atropelam.
@@ -167,7 +167,7 @@ export class LessonDraftSaveError extends Error {
    * `PAGE_OUTDATED` = a versão da conta é de um editor mais novo: só a página atualizada guarda.
    */
   readonly code: 'LESSON_DRAFT_NOT_SAVED' | 'VIEWER_CHANGED' | 'PAGE_OUTDATED'
-  /** Repetir não adianta: só abrindo a fase de novo. */
+  /** Repetir não adianta: só abrindo a aula de novo. */
   readonly viewerChanged: boolean
   /** Repetir não adianta: só atualizando a página (ou enviando de novo). */
   readonly outdated: boolean
@@ -178,7 +178,7 @@ export class LessonDraftSaveError extends Error {
     const outdated = code === LESSON_DRAFT_OUTDATED
     super(
       viewerChanged
-        ? 'O perfil mudou. Abra a fase de novo.'
+        ? 'O perfil mudou. Abra a aula de novo.'
         : outdated
           ? 'Esta página ficou desatualizada. Clique em Atualizar, no aviso do Estúdio ou do Pinta, ou clique em Enviar de novo para a equipe receber a versão nova. Nada se perde.'
           : 'Não consegui guardar suas últimas mudanças na conta. Tente de novo, ou clique em Enviar de novo para a equipe receber a versão nova.',

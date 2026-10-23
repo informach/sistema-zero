@@ -1,0 +1,597 @@
+{
+  "state": "ACTUAL-SPACE12-Q05-Q07-LIMITED-PASS",
+  "at": "2026-10-20T23:25:07.837Z",
+  "inputs": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q05-q07-r1\\plan.json",
+      "sha256": "5db1fee279fb0fbcc77445bafde7952a9344c55ad6e244a756305a9e4612be60"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q05-q07-r1\\seal.json",
+      "sha256": "69005f7cea99f641f43804ca30826ff6ec102e90cc8d34991c9c777fc42f1407"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q05-q07-r1\\evidence\\receipt.json",
+      "sha256": "ed65e9ef14116f54c413d954b000009d85bad2300258b22b625927d4e519f20e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q05-q07-r1\\evidence\\browser\\report.json",
+      "sha256": "a3edeea9f108512eed4a7a5c50a9553d92d02237d9c515f57b5ace97aa755593"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q05-q07-r1\\evidence\\browser\\host-admission.json",
+      "sha256": "97515a88317fbf39031d2249a149b26f3b3cac13e4bdca155af1d8e1f08347c2"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\games-space12-q05-q07-r1\\evidence\\authority.json",
+      "sha256": "433e1ea425b95e017fc900046edb444df0268d97780ba310dd943e85a67fcd19"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\current-host-browser-package-r7\\source-freeze.json",
+      "sha256": "3981ae0671a32b0f4f893a8e17fc9c0bc494155ea346e707cd33ecfe8e3fe900"
+    }
+  ],
+  "sourceFreezeSha256": "3981ae0671a32b0f4f893a8e17fc9c0bc494155ea346e707cd33ecfe8e3fe900",
+  "matchedPins": 28,
+  "reviewed": [
+    {
+      "scenario": "Q05",
+      "durationMs": 18131,
+      "frames": 2,
+      "clears": 3,
+      "completeStep": 2,
+      "complete": {
+        "kind": "complete",
+        "step": 2,
+        "clock": 15.0034,
+        "sounds": [
+          "powerup.wav",
+          "explosion.wav",
+          "explosion.wav"
+        ],
+        "clearWitnesses": [
+          {
+            "before": 3,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 24,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 25,
+            "after": 0,
+            "penItemsAfter": 1
+          }
+        ],
+        "methodWitnesses": [],
+        "radarWitnesses": [
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          }
+        ]
+      },
+      "details": {
+        "pickup": {
+          "kind": "pickup-upgrade",
+          "step": 0,
+          "clock": 14.9493,
+          "missiles": 31,
+          "first": {
+            "x": 0,
+            "y": 0,
+            "dx": 0,
+            "dy": 0,
+            "heading": 0,
+            "da": 0,
+            "thrust": 5.25,
+            "state": "ready",
+            "fuel": 200,
+            "max_fuel": 220.00000000000003,
+            "damage": 5.5
+          }
+        },
+        "penalty": {
+          "kind": "missile-powerup-penalty",
+          "step": 1,
+          "clock": 15,
+          "score": -50,
+          "sounds": [
+            "powerup.wav",
+            "explosion.wav",
+            "explosion.wav"
+          ]
+        },
+        "sourceAssertions": "All original30 missile identities retained in order,31st allowed onlyQ05; upgrades checked for every missile and penalty missile reset/fuel=max by pinned observer."
+      }
+    },
+    {
+      "scenario": "Q06",
+      "durationMs": 16961,
+      "frames": 1,
+      "clears": 2,
+      "completeStep": 1,
+      "complete": {
+        "kind": "complete",
+        "step": 1,
+        "clock": 14.947,
+        "sounds": [],
+        "clearWitnesses": [
+          {
+            "before": 3,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 36,
+            "after": 0,
+            "penItemsAfter": 1
+          }
+        ],
+        "methodWitnesses": [],
+        "radarWitnesses": [
+          {
+            "sprite": "Enemy",
+            "x": 407.5,
+            "y": -200,
+            "shape": "mine.gif",
+            "color": "orange"
+          },
+          {
+            "sprite": "Enemy",
+            "x": 412.5,
+            "y": -200,
+            "shape": "hunter.gif",
+            "color": "red"
+          },
+          {
+            "sprite": "Enemy",
+            "x": 407.5,
+            "y": -200,
+            "shape": "surveillance.gif",
+            "color": "red"
+          },
+          {
+            "sprite": "Enemy",
+            "x": 412.5,
+            "y": -200,
+            "shape": "surveillance.gif",
+            "color": "pink"
+          },
+          {
+            "sprite": "Enemy",
+            "x": 407.5,
+            "y": -200,
+            "shape": "mine.gif",
+            "color": "orange"
+          },
+          {
+            "sprite": "Enemy",
+            "x": 412.5,
+            "y": -200,
+            "shape": "hunter.gif",
+            "color": "red"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          }
+        ]
+      },
+      "details": {
+        "kind": "ai-camera",
+        "step": 0,
+        "clock": 14.9423,
+        "enemies": [
+          {
+            "x": 60,
+            "y": 0,
+            "dx": -0.05,
+            "dy": -0.05,
+            "heading": 0,
+            "da": 0,
+            "thrust": 0,
+            "state": "active",
+            "health": 13,
+            "type": "hunter"
+          },
+          {
+            "x": 100,
+            "y": 0,
+            "dx": 0,
+            "dy": 0,
+            "heading": 0,
+            "da": 0,
+            "thrust": 0,
+            "state": "active",
+            "health": 30,
+            "type": "hunter"
+          },
+          {
+            "x": 60,
+            "y": 0,
+            "dx": 0,
+            "dy": 0,
+            "heading": 0,
+            "da": 0,
+            "thrust": 0,
+            "state": "active",
+            "health": 29,
+            "type": "hunter"
+          },
+          {
+            "x": 100,
+            "y": 0,
+            "dx": 0,
+            "dy": 0,
+            "heading": 0,
+            "da": 0,
+            "thrust": 0,
+            "state": "active",
+            "health": 28,
+            "type": "mine"
+          },
+          {
+            "x": 60,
+            "y": 0,
+            "dx": 0.03,
+            "dy": -0.03,
+            "heading": 0,
+            "da": 0,
+            "thrust": 0,
+            "state": "active",
+            "health": 28,
+            "type": "surveillance"
+          },
+          {
+            "x": 100,
+            "y": 0,
+            "dx": 0,
+            "dy": 0,
+            "heading": 0,
+            "da": 0,
+            "thrust": 0,
+            "state": "active",
+            "health": 29,
+            "type": "surveillance"
+          }
+        ],
+        "camera": {
+          "x": -70,
+          "y": -35,
+          "visible": false
+        }
+      }
+    },
+    {
+      "scenario": "Q07",
+      "durationMs": 17922,
+      "frames": 20,
+      "clears": 21,
+      "completeStep": 20,
+      "complete": {
+        "kind": "complete",
+        "step": 20,
+        "clock": 15.3299,
+        "sounds": [
+          "explosion.wav"
+        ],
+        "clearWitnesses": [
+          {
+            "before": 3,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 73,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 72,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 66,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 63,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 58,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 50,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 42,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 36,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 34,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 31,
+            "after": 0,
+            "penItemsAfter": 1
+          },
+          {
+            "before": 28,
+            "after": 0,
+            "penItemsAfter": 1
+          }
+        ],
+        "methodWitnesses": [],
+        "radarWitnesses": [
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          },
+          {
+            "sprite": "Player",
+            "x": 400,
+            "y": -200,
+            "shape": "triangle",
+            "color": "white"
+          }
+        ]
+      },
+      "details": {
+        "activeParticles": [
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          50,
+          49,
+          43,
+          40,
+          35,
+          27,
+          19,
+          13,
+          11,
+          8,
+          5,
+          0
+        ],
+        "sourceAssertions": "Pinned observer verifies all50 original particles: initial colors/offsets/10..20 lifetime, real position integration/damping.85/reset and inactive stability on every frame."
+      }
+    }
+  ],
+  "cleanup": {
+    "observedReleased": true,
+    "forced": false,
+    "ports": [
+      {
+        "port": 5297,
+        "free": true
+      },
+      {
+        "port": 61918,
+        "free": true
+      }
+    ]
+  },
+  "peaks": {
+    "sampledOwnedRssBytes": 2321317888,
+    "sampledHostTreeRssBytes": 245534720,
+    "sampledBrowserTreeRssBytes": 1928450048,
+    "minimumObservedFreeBytes": 2999033856,
+    "privateBytesPeak": null
+  },
+  "newGameExecution": false,
+  "rootMutation": false,
+  "scope": "Three declared causal fixtures of1.2 only, clear-first exact counts. No trusted input/raster/full-game/FPS/native/hosted/Mural/SDK image acceptance; previous1.1 evidence untouched."
+}

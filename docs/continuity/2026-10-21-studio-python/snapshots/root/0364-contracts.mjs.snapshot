@@ -1,0 +1,35 @@
+import { createHash } from 'node:crypto'
+export const LINUX_PLAN_SHA='b9692fc308f85b097f5658f06ba0b03510869a1efc781cf291fcb21d02bca7aa'
+export const DISTRIBUTION='996e6097c599d21c5d92fc7e9f03145f155d080a2d83f6d4aaa6a25785c0afd7'
+export const RELEASE='56204780388c78e8ecf978da984eca182ed4ac958e78c63a22ac286210ab7880'
+export const FILES=Object.freeze([
+  Object.freeze({path:'LICENSE-pyodide.txt',bytes:16725,sha256:'1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5'}),
+  Object.freeze({path:'LICENSE-python.txt',bytes:13804,sha256:'b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231'}),
+])
+const invalid=()=>new Error('Credential protocol rejected')
+const canonical=value=>Array.isArray(value)?'['+value.map(canonical).join(',')+']':value&&typeof value==='object'?'{'+Object.keys(value).sort().map(key=>JSON.stringify(key)+':'+canonical(value[key])).join(',')+'}':JSON.stringify(value)
+const sha=value=>createHash('sha256').update(value).digest('hex')
+function tokenShape(value){return value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).sort().join(',')==='token,type'&&['oauth','api_token'].includes(value.type)&&typeof value.token==='string'&&value.token.length>0&&value.token.length<=8192&&/^[\x21-\x7e]+$/.test(value.token)}
+export function parseWranglerTokenJson(bytes){
+  try {if(!(typeof bytes==='string'||bytes instanceof Uint8Array))throw invalid();const body=typeof bytes==='string'?bytes:Buffer.from(bytes).toString('utf8');if(Buffer.byteLength(body)>16384)throw invalid();const value=JSON.parse(body);if(!tokenShape(value))throw invalid();return Object.freeze({type:value.type,token:value.token})}catch{throw invalid()}
+}
+function metaValid(meta){return meta&&typeof meta==='object'&&/^[a-f0-9]{16}$/.test(meta.runId)&&/^[a-f0-9]{64}$/.test(meta.nonce)}
+export function encodeCredentialFrame(record,meta){
+  try {if(!metaValid(meta)||!tokenShape(record))throw invalid();return Buffer.from(JSON.stringify({version:1,kind:'r2-two-object-credential',runId:meta.runId,nonce:meta.nonce,type:record.type,token:record.token})+'\n')}catch{throw invalid()}
+}
+export function parseCredentialFrame(bytes,meta){
+  try {if(!metaValid(meta)||!(bytes instanceof Uint8Array)||bytes.length>16384)throw invalid();const body=Buffer.from(bytes).toString('utf8');if(!body.endsWith('\n')||body.indexOf('\n')!==body.length-1||body.includes('\r'))throw invalid();const value=JSON.parse(body);if(!value||typeof value!=='object'||Object.keys(value).sort().join(',')!=='kind,nonce,runId,token,type,version'||value.version!==1||value.kind!=='r2-two-object-credential'||value.runId!==meta.runId||value.nonce!==meta.nonce||!tokenShape({type:value.type,token:value.token}))throw invalid();const token=Object.freeze({type:value.type,token:value.token});if(encodeCredentialFrame(token,meta).toString()!==body)throw invalid();return token}catch{throw invalid()}
+}
+export function validateLinuxPromotionPlan(plan){
+  const reject=()=>{throw new Error('Pinned Linux promotion plan rejected')}
+  try {
+    if(!plan||plan.planSha256!==LINUX_PLAN_SHA)reject()
+    const {planSha256,...body}=plan
+    if(sha(canonical(body))!==LINUX_PLAN_SHA)reject()
+    if(plan.input.distribution.directory!==`/proof/distribution/${DISTRIBUTION}`||plan.input.distribution.sha256!==DISTRIBUTION||plan.input.environment!=='production')reject()
+    const target=plan.input.target
+    if(target.accountId!=='bcc0f2d44140e05b69152cba326132f8'||target.bucketName!=='sistemazero-studio-artifacts'||target.runtimeOrigin!=='https://sistemazero-studio-runtime.helena-bcc.workers.dev')reject()
+    if(plan.prefix!==`runtimes/${RELEASE}/`||plan.deployment.release.manifestSha256!==RELEASE||canonical(plan.deployment.distribution.files.slice(0,2))!==canonical(FILES))reject()
+    return Object.freeze({planSha256,keys:Object.freeze(FILES.map(file=>`${plan.prefix}files/${file.path}`)),thirdKey:`${plan.prefix}files/LICENSE-tk.txt`})
+  }catch{reject()}
+}

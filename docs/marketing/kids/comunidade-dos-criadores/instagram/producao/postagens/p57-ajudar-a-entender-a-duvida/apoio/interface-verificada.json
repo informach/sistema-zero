@@ -1,0 +1,20 @@
+{
+  "errors": [],
+  "video": {
+    "time": 18,
+    "duration": 56.766667,
+    "paused": true
+  },
+  "check": "✓ Cumprido: Coloque a área Ao iniciar no projeto.\nFalta: Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nConfira os blocos pedidos nesta parte e tente novamente.",
+  "studioText": "Prepare a tela e crie o Dino · \n,\nPrepare a tela do jogo\nSeu projeto no Estúdio\nRecomeçar\nExpandir\nCorre, Dino!\nSalvo\nModo de edição\nBlocos\nBlocos\nPré-visualização\n🔎 Pesquisar\n🗂️ Áreas do projeto\n🧰 Blocos deste jogo\nProgramação\nJogo 2D\n⚙️ Ao iniciar\n⏹ Parar\n⟳ Atualizar\nCorre, Dino!\nExecutando\n✓ Cumprido: Coloque a área Ao iniciar no projeto.\nFalta: Prepare a tela de 480 por 270 dentro de Ao iniciar.\nVerificar esta parte\n\nConfira os blocos pedidos nesta parte e tente novamente.\n\nContinue construindo. Você envia o projeto no fim da fase.\n\nPara seguir: Confira o objetivo desta parte no seu projeto\nAnterior\nPrepare a tela do jogo\nPreciso de ajuda\nPróxima parte",
+  "paraSeguirCount": 1,
+  "paraSeguir": "Para seguir: Confira o objetivo desta parte no seu projeto",
+  "instruction": "Clique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo. Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.\n\nOuvir",
+  "voice": {
+    "available": true,
+    "buttonVisible": true,
+    "mode": "Fallback nativo da experiência para voz do navegador; não foi injetado áudio fictício."
+  },
+  "hint": "Pista 1 de 3. Tela de 800 por 480, com a borda escondida. Aperte o botão da borda.",
+  "sceneText": "EXPERIMENTE\n\nEscolha o tamanho da tela\nAmpliar experiência\nSUA VEZ\nDescobertas 0 de 3\nLARGURA\n800\nALTURA\n480\nBORDA\nescondida\nDesfazer\nRecomeçar\n\nTela de 800 por 480, com a borda escondida.\n\nClique em Ligue a borda. Com a borda visível, mude a largura para 600 e a altura para 300. Observe o retângulo. Depois coloque largura 480 e altura 270. Compare com o tamanho anterior.\n\nOuvir\n\nPista 1 de 3. Tela de 800 por 480, com a borda escondida. Aperte o botão da borda.\n\nSUA VEZ\n\nLigue a borda\nlargura da tela\n−\n+\n\nAbre quando a borda estiver à vista.\n\naltura da tela\n−\n+\n\nAbre quando a borda estiver à vista.\n\nO QUE VOCÊ JÁ DESCOBRIU\nDescoberta 1, trancada.\nAinda tem uma descoberta aqui.\nDescoberta 2, trancada.\nAinda tem uma descoberta aqui.\nDescoberta 3, trancada.\nAinda tem uma descoberta aqui.\nUma pista\nConferir\n\nTentar salvar\n\nSem internet agora. Pode continuar: a gente guarda quando voltar.\n\nPista 1 de 3. Tela de 800 por 480, com a borda escondida. Aperte o botão da borda."
+}

@@ -1,0 +1,27 @@
+P40 · Seu filho sabe o caminho. Consegue explicar para outra pessoa chegar?
+Produção: 14/10/2026
+Estado: produzido para revisão. Não publicado e não agendado.
+
+FORMATO
+Carrossel com sete PNGs, 1080 × 1350, proporção 4:5.
+Usar 01-p40.png a 07-p40.png em ordem, legenda.txt integralmente e o texto alternativo curto de cada slide.
+
+ARQUIVOS
+index.html: prévia e links.
+previa.png: visão dos sete slides.
+montagem.html: composição editável com imagens e fontes locais.
+apoio: imagens de origem, capturas, copy, prompts e verificações.
+
+IMAGENS
+Mãe e menino fictícios em cenas geradas. O mapa é inventado, sem nome ou localização real de escola.
+O monitor no encerramento usa uma captura do Estúdio como referência de composição. Não atribuir a demonstração à criança como autoria ou depoimento real.
+Slides 4–6 usam capturas diretas da Corrida do Pôr do Sol. Números e setas são marcações editoriais. O indicador de ponto 3/5 é real e mostra o próximo anel esperado.
+Seguir a orientação editorial vigente de identificação de mídia gerada ao publicar manualmente; não acrescentar rodapés nas artes.
+
+CONVITE
+Seguir @criecomhelenaejulio para conhecer mais exemplos de criação de jogos.
+Sem palavra-chave ManyChat ou chamada de oferta nesta postagem.
+
+CALENDÁRIO
+Terceiro post da semana 5. Próximo carrossel: P44, segundo post da semana 6.
+Os demais formatos mantêm seu estado anterior.

@@ -13,8 +13,15 @@ import {
   sanitizeFilename,
   UGC_IMAGE_INPUT_MIME,
 } from '../lib/hub-attachments'
-import { attachAuthorAvatars, collectAuthorIds, redactAuthors } from '../lib/hub-redact'
+import {
+  type AdultPublicIdentity,
+  attachAdultPublicIdentities,
+  attachAuthorAvatars,
+  collectAuthorIds,
+  redactAuthors,
+} from '../lib/hub-redact'
 import { stripImageMarkdown } from '../lib/markdown'
+import { showcaseFailureBody } from '../lib/showcase-failure'
 import type { HubAttachmentKind } from '../lib/types'
 import type { HubClient, MembersAudience, MembersClient } from '../server/clients'
 import type { GatewayResponse } from '../server/gateway'
@@ -104,8 +111,8 @@ export function createHubRoutes(deps: {
   audience: MembersAudience
 }) {
   const { hub, members, media, session, audience } = deps
-  // Só o Clube/Mural KIDS mostra rosto+aura+nome de todos; o fórum adulto segue com a
-  // redação clássica (nome só quando público, sem avatar).
+  // Só o Clube/Mural KIDS mostra rosto+aura+nome de todos; no adulto, nome, foto e a etapa da
+  // jornada (o anel da cor) só de quem mostra o perfil.
   const revealAuthors = audience === 'kids'
   // Id do viewer p/ redigir o autor de terceiros (null = sem sessão → tudo redigido).
   const viewerId = async (): Promise<string | null> => (await session.getSession())?.id ?? null
@@ -120,7 +127,24 @@ export function createHubRoutes(deps: {
     r: GatewayResponse,
     vid: string | null,
   ): Promise<NextResponse> => {
-    if (!revealAuthors) return okRedacted(r, vid)
+    if (!revealAuthors) {
+      const ids = [...collectAuthorIds(r.body)]
+      const identities = new Map<string, AdultPublicIdentity>()
+      try {
+        for (let offset = 0; offset < ids.length; offset += 100) {
+          const response = await members.getAdultPublicIdentities(ids.slice(offset, offset + 100))
+          if (response.status === 200)
+            for (const { userId, ...identity } of response.body?.identities ?? [])
+              identities.set(userId, identity)
+        }
+      } catch {
+        /* Public identities fail closed; the forum remains readable. */
+      }
+      return NextResponse.json(
+        redactAuthors(attachAdultPublicIdentities(r.body, identities), vid),
+        { status: r.status },
+      )
+    }
     const ids = [...collectAuthorIds(r.body)]
     if (ids.length > 0) {
       try {
@@ -656,6 +680,10 @@ export function createHubRoutes(deps: {
         blockId,
         coverImageUrl,
       })
+      if (r.status !== 200)
+        return NextResponse.json(showcaseFailureBody(r.body, 'SHOWCASE_FAILED'), {
+          status: r.status,
+        })
       return ok(r)
     },
   }

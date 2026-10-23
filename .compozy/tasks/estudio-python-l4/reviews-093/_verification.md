@@ -1,0 +1,23 @@
+# Admin Python activity authoring — scoped review
+
+093001 VALID/pending. Implementação corebuilder+wrapper e deltaspriorizados do LessonEditor lidos: checks4tipos, draftsJSONcontrolled/percriterion, recipeonlyserialized, resetlinguagemexplícito, profile/Turtle feedback, labelsassociadas. Sem produção/permanentes editados. Portátil093 anterior foi clean sempasta; esta rodada existe só após reproAdminconfirmada.
+
+`bun test ./.cache/review093-admin-race.test.tsx` cwdAdmin:exit1/0pass1fail/7asserts,766ms. LessonEditor real com Studio.save gateado; clicarVoltar→digitarJSONinválido '[' enquanto savependente→release fechaeditor/textareaundefined. Esperado manterdraftvisível. Cachefixture derivada da permanente lesson-editor-review apenasadaptaimportpaths+portasave, não navegador/Studioexecutorreal. Gate liberado/Reactunmountfinally. Primeira tentativa falhou porque .cache não existia e fixture não foi criada; corrigida somentecacheantesprova válida.
+
+Proxycancelamento está em WIP separado, fora deste recorte; não reflagado. AdminTSCroot36806 foi relatadoEXIT2 emfixtureEditableProject desconhecido; root corrige separadamente, sem typecheck próprio do revisor. Awaitfix e revalidação; não declarar sublote/featureglobal concluídos.
+
+Repro atual após primeiro patchref: `bun test ./.cache/review093-admin-race.test.tsx` cwdAdmin:1pass1fail/18asserts exit1. Original invalidação durante save passa, draft '[' e aria-invalidtrue continuamvisíveis; últimaassertcacheusa aria-invalid porque toast é fora docontainer, não enfraquece sintomaoriginal de mantertexto/editor. Segundo cenário ABA (save1pendente→save2fecha→reabreMESMOid/env→save1resolve) ainda fecha novaabertura;266ms. Contextfieldsiguais não identificam lifetime aposentado. Extensão enviada root, mesma093001pending, não diretório extra.
+
+Permanentes Admin `bun test tests/python-activity-builder.test.ts tests/lesson-editor-review.test.ts` cwdAdmin:2parentpass/2asserts exit0, filhos3+5cases existentes. Primeira invocação por engano cwdroot não achoufixtureschildren; rerun correto passou, não bugapp/harnessqualificado. Restante builder/wrapper semnovoachado confirmado: Core IDs regex exclui ':' e evita colisão de clearDrafts; resetlanguage explícito preservaenunciado/literalkeys; profile/Turtle banner, schema bounded, recipeonlyserialize e Fieldlabels lidos. Sembrowser/SDK/proxyE2E.
+
+## Encerramento após geração de abertura — 1/1/0
+
+093001 resolvida. Leitura integral dos novos guards: currentBlockEditor usa identidade porobjeto estável enquanto id/open/lesson iguais na mesma abertura; transição cria objeto novo. close/restauração retiram owner sincronamente antes setState. currentCapture inclui editorOwner e contexto/ambiente; captureEditors valida referência ativa antes/depois save, relê draftsJSON/form/callback atuais e só então captura. Mudança normal de critério não recria owner, preservando edições válidas. Não reabre outra rodada nem inclui Proxy WIP.
+
+Prova própria fresh `bun test ./.cache/review093-admin-race.test.tsx`, cwdAdmin:3pass0fail/26asserts exit0. (1) JSONinválido durante save mantém campo '['/aria-invalidtrue aberto; (2) save1pendente→save2fecha→reabreMESMO bloco→save1resolve não fecha novaabertura; (3) JSONválido editado durante save é capturado da versão atual e permitefechar, args/expected conservam own __proto__. Mesmos gates de origem, sem substituir await por timerfixo nem alterar produto. Portas save/storage/HTTP controladas e DOM realLessonEditor; não browser/Studioexecutorreal.
+
+Permanentes conferidos e executados independentemente `bun test ./tests/fixtures/lesson-editor-review.fixture.tsx`:7pass0fail/37asserts exit0. Inclui duas regressões093 +cincooriginals(validationcorrigida, lessonidentity, restore, certificado, gallery). A primeira tentativa semprefixo./ foi tratada como filtro e não encontrou fixture; execução corrigida é explícita. Tempo23.16s sobcarga compartilhada, não qualificação de desempenho. Processo próprio83099 terminado exit0; gates/unmount/fetchrestore emfinally, nenhum processo próprio ativo.
+
+Biome fresh3files LessonEditor/ActivityBuilder/PythonActivityBuilder:exit0/Checked3/no fixes,1warning noImgElement preexistente. Tentativa anterior exit1 por formatter durantepatch foi resolvida sem alterar produto pelo revisor. YAML/readback exige1VALIDmedium/resolved e meta1/1/0.
+
+Limites finais: typecheckAdminroot7877 separado/aindaativo no recorte; nenhum typecheck/build/browser/SDK próprio, nenhum produto/permanente editado. Prova DOM não qualifica navegação browser, pipelineMembers/Proxycancelamento, deploy/performance ou featureglobal. Próxima revisão Proxy depende de aviso/testes root.

@@ -72,7 +72,7 @@ describe('renderCertificatePdf', () => {
       config: {
         title: 'Certificado de Criador',
         introLine: 'Certificamos que',
-        coursePhrase: 'completou a aventura Cadê Todo Mundo?',
+        coursePhrase: 'completou o curso Cadê Todo Mundo?',
         bodyText: 'Programou o toque que revela os personagens e a contagem dos achados.',
       },
       verifyUrl: '',
@@ -81,7 +81,7 @@ describe('renderCertificatePdf', () => {
     // Anti-vácuo: a extração acha o nome, então a ausência abaixo quer dizer alguma coisa.
     expect(texto).toContain(hex('Maria Silva'))
     expect(texto).toContain(hex('CERTIFICADO DE CRIADOR'))
-    expect(texto).toContain(hex('completou a aventura Cad'))
+    expect(texto).toContain(hex('completou o curso Cad'))
     expect(texto).not.toContain(hex('concluiu'))
     expect(texto).not.toContain(hex('Curso de L'))
     expect(texto).toContain(hex('Programou o toque'))

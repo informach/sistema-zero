@@ -25,7 +25,13 @@ export class SetAvatarPhotoService {
   ): Promise<{ photoUrl: string }> {
     if (
       this.allowedPrefixes.length > 0 &&
-      !this.allowedPrefixes.some((prefix) => photoUrl.startsWith(prefix))
+      !this.allowedPrefixes.some((prefix) => {
+        const scoped =
+          audience === 'adult' && prefix.endsWith('/avatar3d/')
+            ? `${prefix.slice(0, -'/avatar3d/'.length)}/avatar3d-adult/`
+            : prefix
+        return photoUrl.startsWith(scoped)
+      })
     ) {
       throw new AvatarInvalidError('A foto do avatar precisa vir do armazenamento da plataforma')
     }

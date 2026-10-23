@@ -1,6 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import type { CampaignAuditView, CampaignInput, CampaignView } from '@sistemazero/core/referrals'
-import { CampaignConflictError, type CampaignRecord } from '../../src/domain/campaign'
+import {
+  CampaignAudienceLockedError,
+  CampaignConflictError,
+  type CampaignRecord,
+} from '../../src/domain/campaign'
 import type { CampaignRepository } from '../../src/domain/ports/campaign-repository.port'
 import type { InMemoryReferralRepository } from './in-memory'
 
@@ -12,6 +16,7 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     if (this.referrals.codes.some((code) => code.code === input.code)) return null
     const value: CampaignRecord = {
       ...input,
+      audience: input.audience ?? 'kids',
       id: randomUUID(),
       startsAt: new Date(input.startsAt),
       endsAt: new Date(input.endsAt),
@@ -29,6 +34,7 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       ownerEmail: null,
       displayName: input.publicTitle,
       status: 'active',
+      audience: value.audience,
       createdAt: new Date(),
     })
     this.audits.set(value.id, [
@@ -46,13 +52,26 @@ export class InMemoryCampaignRepository implements CampaignRepository {
     const value = this.items.find((item) => item.id === id)
     if (!value) return null
     if (value.updatedAt.toISOString() !== expectedUpdatedAt) throw new CampaignConflictError()
+    const audience = input.audience ?? value.audience
+    if (value.status !== 'draft' && audience !== value.audience)
+      throw new CampaignAudienceLockedError()
+    const ownCode = this.referrals.codes.find((item) => item.campaignId === id)
+    if (
+      audience !== value.audience &&
+      this.referrals.redemptions.some((r) => r.codeId === ownCode?.id)
+    )
+      throw new CampaignAudienceLockedError()
     Object.assign(value, input, {
+      audience,
       startsAt: new Date(input.startsAt),
       endsAt: new Date(input.endsAt),
       updatedAt: new Date(Math.max(Date.now(), value.updatedAt.getTime() + 1)),
     })
     const code = this.referrals.codes.find((item) => item.campaignId === id)
-    if (code) code.displayName = input.publicTitle
+    if (code) {
+      code.displayName = input.publicTitle
+      code.audience = audience
+    }
     this.audits.get(id)?.unshift({
       id: randomUUID(),
       action: 'updated',

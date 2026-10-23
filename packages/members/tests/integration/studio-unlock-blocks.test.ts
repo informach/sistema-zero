@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { pythonCourseBlockClosure } from '@sistemazero/studio/python-course-unlocks'
 import { buildApp } from '../helpers'
 
 type App = ReturnType<typeof buildApp>['app']
@@ -45,6 +46,46 @@ async function patchCourse(app: App, id: string, body: Record<string, unknown>) 
  * é justamente o tipo de regra que se perde numa refatoração do form.
  */
 describe('Members HTTP — currículo do Estúdio no curso', () => {
+  test('Python and JavaScript retain their exact IDs through create, omitted PATCH and replacement', async () => {
+    const { app } = buildApp()
+    const python = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+    const studioUnlockBlocks = ['sz_g2d_create_ship', ...python]
+    const created = await createCourse(app, { studioUnlockBlocks })
+    expect(created.studioUnlockBlocks).toEqual(studioUnlockBlocks)
+    const preserved = await readJson(
+      await patchCourse(app, created.id, { ...COURSE, title: 'Misto' }),
+    )
+    expect(preserved.studioUnlockBlocks).toEqual(studioUnlockBlocks)
+    const updated = await readJson(
+      await patchCourse(app, created.id, {
+        ...COURSE,
+        studioUnlockBlocks: ['sz_py_pass'],
+      }),
+    )
+    expect(updated.studioUnlockBlocks).toEqual(['sz_py_pass'])
+  })
+
+  test.each([
+    { ids: ['sz_py_unknown'] },
+    { ids: ['sz_py_turtle_module_forward'] },
+    { ids: ['sz_py_pass', 'sz_py_pass'] },
+  ])('POST and PATCH refuse invalid or incomplete Python rewards without expanding or replacing them: %j', async ({
+    ids,
+  }) => {
+    const { app, courses } = buildApp()
+    const created = await createCourse(app, { studioUnlockBlocks: ['sz_g2d_create_ship'] })
+    const before = structuredClone(courses.courses)
+    const invalid = await send(app, '/members/admin/courses', 'POST', {
+      ...COURSE,
+      slug: 'invalid-python',
+      studioUnlockBlocks: ids,
+    })
+    expect(invalid.status).toBe(400)
+    const updated = await patchCourse(app, created.id, { ...COURSE, studioUnlockBlocks: ids })
+    expect(updated.status).toBe(400)
+    expect(courses.courses).toEqual(before)
+  })
+
   test('vai e volta pela API (create → view)', async () => {
     const { app } = buildApp()
     const created = await createCourse(app, {

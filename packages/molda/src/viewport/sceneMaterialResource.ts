@@ -1,4 +1,4 @@
-import { DoubleSide, FrontSide, MeshStandardMaterial, SRGBColorSpace } from 'three'
+import { DoubleSide, FrontSide, MeshStandardMaterial, ShaderChunk, SRGBColorSpace } from 'three'
 import type { SceneRgba } from '../scene/composite'
 import type { SceneMaterial } from '../scene/document'
 import type { SceneMaterialImageKind } from '../scene/materialImages'
@@ -15,6 +15,26 @@ export interface PreparedSceneMaterial {
 export class SceneMaterialResource {
   readonly material = new MeshStandardMaterial()
   private disposed = false
+
+  constructor() {
+    // With MSAA, a covered fragment's center may lie outside its triangle. Sampling
+    // UV there reads the next atlas tile, leaving dots around an erased plane.
+    // Centroid interpolation samples inside the covered triangle without shrinking UVs.
+    this.material.onBeforeCompile = (shader) => {
+      shader.vertexShader = shader.vertexShader.replace(
+        '#include <uv_pars_vertex>',
+        ShaderChunk.uv_pars_vertex.replace('varying vec2 vMapUv;', 'centroid varying vec2 vMapUv;'),
+      )
+      shader.fragmentShader = shader.fragmentShader.replace(
+        '#include <uv_pars_fragment>',
+        ShaderChunk.uv_pars_fragment.replace(
+          'varying vec2 vMapUv;',
+          'centroid varying vec2 vMapUv;',
+        ),
+      )
+    }
+    this.material.customProgramCacheKey = () => 'molda-centroid-color-uv-v1'
+  }
 
   update({ source, base, maps }: PreparedSceneMaterial): void {
     if (this.disposed) throw new Error('Material já descartado.')

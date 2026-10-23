@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "createdUTC": "2026-10-20T18:17:35.3103814Z",
+  "receipt": ".cache/authoring-review-receipt-r4.json",
+  "receiptSha256": "c36c90bd503e957e51fe67dc8b8760dfa100b4862ed4797dd2c5131b1600dc39",
+  "independentReviewer": "/root/authoring_review",
+  "disposition": "approved-within-recorded-scope",
+  "reviewedReadOnly": true,
+  "artifactsMatched": 21,
+  "extraArtifacts": 0,
+  "inputsMatched": 5,
+  "cases": {
+    "msedge": 8,
+    "chrome": 8,
+    "reportErrors": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "failed": 0
+  },
+  "identityCleanup": {
+    "reused": 0,
+    "alive": 0,
+    "checked": 29,
+    "listeners": 0
+  },
+  "languageSessions": {
+    "attachments": 8,
+    "observedOpened": 3,
+    "observedAlive": 0,
+    "collectionErrors": 0,
+    "cleanupErrors": 0,
+    "limit": "Observed HTTP language leases only; local parser frames have separate close/unmount and host cleanup boundary",
+    "observedClosed": 3
+  },
+  "source": {
+    "diffEmptyBeforeAfter": true,
+    "head": "44a27bde60c6ccc5cc8d68e75310f54d172deafe",
+    "windowRespected": true
+  },
+  "preservedNegative": ".cache/authoring-browser-r4/",
+  "limits": [
+    "JavaScript browser coverage is default selection only, not full JS suite",
+    "Source uses Monaco executeEdits plus actual UI/CtrlS; no physical typing or Turtle execution claim in R20 cases",
+    "No general dynamic imports guarantee",
+    "No mobile/performance/other hosts/infra/lessons/Admin/live/Mural acceptance"
+  ]
+}

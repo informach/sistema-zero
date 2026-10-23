@@ -1,3 +1,4 @@
+import { metricCount } from '../../../domain/metrics/availability'
 import {
   type FbPostStats,
   type FbReelPublishing,
@@ -165,12 +166,17 @@ export class MetaClient implements MetaApi {
     pageId: string
     imageUrl: string
     caption: string
+    alt: string | null
   }): Promise<string> {
     const body = await this.call<{ id?: string; post_id?: string }>({
       method: 'POST',
       path: `/${input.pageId}/photos`,
       accessToken: input.accessToken,
-      params: { url: input.imageUrl, caption: input.caption },
+      params: {
+        url: input.imageUrl,
+        caption: input.caption,
+        ...(input.alt === null ? {} : { alt_text_custom: input.alt }),
+      },
       context: 'fb photos',
     })
     const postId = body.post_id ?? body.id
@@ -276,7 +282,7 @@ export class MetaClient implements MetaApi {
   async getIgAccountStats(input: {
     accessToken: string
     igUserId: string
-  }): Promise<{ followers: number; raw: Record<string, unknown> }> {
+  }): Promise<{ followers: number | null; raw: Record<string, unknown> }> {
     const body = await this.call<{ followers_count?: number; media_count?: number }>({
       method: 'GET',
       path: `/${input.igUserId}`,
@@ -284,7 +290,7 @@ export class MetaClient implements MetaApi {
       params: { fields: 'followers_count,media_count' },
       context: 'ig conta (stats)',
     })
-    return { followers: Number(body.followers_count ?? 0), raw: { ...body } }
+    return { followers: metricCount(body.followers_count), raw: { ...body } }
   }
 
   async getIgMediaStats(input: {
@@ -319,17 +325,17 @@ export class MetaClient implements MetaApi {
       for (const id of batch) {
         const item = body[id]
         if (!item) continue
-        const insights = new Map<string, number>()
+        const insights = new Map<string, number | null>()
         for (const metric of item.insights?.data ?? []) {
-          if (metric.name) insights.set(metric.name, Number(metric.values?.[0]?.value ?? 0))
+          if (metric.name) insights.set(metric.name, metricCount(metric.values?.[0]?.value))
         }
         map.set(id, {
-          views: insights.get('views') ?? 0,
-          reach: insights.has('reach') ? (insights.get('reach') ?? 0) : null,
-          likes: Number(item.like_count ?? 0),
-          comments: Number(item.comments_count ?? 0),
-          shares: insights.get('shares') ?? 0,
-          saves: insights.get('saved') ?? 0,
+          views: insights.get('views') ?? null,
+          reach: insights.has('reach') ? (insights.get('reach') ?? null) : null,
+          likes: metricCount(item.like_count),
+          comments: metricCount(item.comments_count),
+          shares: insights.get('shares') ?? null,
+          saves: insights.get('saved') ?? null,
           raw: { ...item },
         })
       }
@@ -340,7 +346,7 @@ export class MetaClient implements MetaApi {
   async getFbPageStats(input: {
     accessToken: string
     pageId: string
-  }): Promise<{ followers: number; raw: Record<string, unknown> }> {
+  }): Promise<{ followers: number | null; raw: Record<string, unknown> }> {
     const body = await this.call<{ followers_count?: number }>({
       method: 'GET',
       path: `/${input.pageId}`,
@@ -348,7 +354,7 @@ export class MetaClient implements MetaApi {
       params: { fields: 'followers_count' },
       context: 'fb página (stats)',
     })
-    return { followers: Number(body.followers_count ?? 0), raw: { ...body } }
+    return { followers: metricCount(body.followers_count), raw: { ...body } }
   }
 
   async getFbPostStats(input: {
@@ -383,9 +389,9 @@ export class MetaClient implements MetaApi {
         const item = body[id]
         if (!item) continue
         map.set(id, {
-          likes: Number(item.reactions?.summary?.total_count ?? 0),
-          comments: Number(item.comments?.summary?.total_count ?? 0),
-          shares: Number(item.shares?.count ?? 0),
+          likes: metricCount(item.reactions?.summary?.total_count),
+          comments: metricCount(item.comments?.summary?.total_count),
+          shares: metricCount(item.shares?.count),
           raw: { ...item },
         })
       }

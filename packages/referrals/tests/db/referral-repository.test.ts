@@ -3,7 +3,11 @@ import path from 'node:path'
 import type { CampaignInput } from '@sistemazero/core/referrals'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
-import { CampaignConflictError, CampaignUnavailableError } from '../../src/domain/campaign'
+import {
+  CampaignAudienceLockedError,
+  CampaignConflictError,
+  CampaignUnavailableError,
+} from '../../src/domain/campaign'
 import { DrizzleCampaignRepository } from '../../src/infrastructure/persistence/drizzle/campaign.repository'
 import {
   createDbConnection,
@@ -109,6 +113,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   test('atualização de convites antigos: simula, exige concessão confirmada e preserva prazo e e-mail', async () => {
     const { code } = await seedCode()
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: code.id,
       email: 'trial-upgrade@example.com',
       name: 'Responsável',
@@ -156,7 +161,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
       expect((await run()).exitCode).toBe(0)
       expect(calls).toHaveLength(0)
       expect((await run(true)).exitCode).toBe(1)
-      expect((await repo.findRedemptionByEmail(redemption.email))?.muralVisitorPolicy).toBe(
+      expect((await repo.findRedemptionByEmail(redemption.email, 'kids'))?.muralVisitorPolicy).toBe(
         'visitor',
       )
       upstreamStatus = 200
@@ -168,7 +173,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
         courseRef: 'cade-todo-mundo',
         expiresAt: new Date(started.getTime() + 7 * 86_400_000).toISOString(),
       })
-      const upgraded = await repo.findRedemptionByEmail(redemption.email)
+      const upgraded = await repo.findRedemptionByEmail(redemption.email, 'kids')
       expect(upgraded?.muralVisitorPolicy).toBe('trial')
       expect(upgraded?.createdAt).toEqual(started)
       expect(upgraded?.welcomeSentAt).toEqual(started)
@@ -201,6 +206,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     const claim = {
       codeId: code.id,
       email: 'familia@example.com',
+      audience: 'kids' as const,
       name: 'Família',
       phone: null,
       courseSlug: 'cade-todo-mundo',
@@ -284,7 +290,13 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
 
   test('insertRedemption: corrida no UNIQUE(email) → exatamente 1 criada', async () => {
     const { code } = await seedCode()
-    const input = { codeId: code.id, email: 'paula@example.com', name: 'Paula', phone: null }
+    const input = {
+      codeId: code.id,
+      email: 'paula@example.com',
+      audience: 'kids' as const,
+      name: 'Paula',
+      phone: null,
+    }
     const results = await Promise.all([
       repo.insertRedemption(input),
       repo.insertRedemption(input),
@@ -299,7 +311,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     expect(ids.size).toBe(1) // todos veem a MESMA linha
 
     await connection.sql`update referrals.scholarship_redemptions set access_duration_days = null, mural_visitor_policy = null where email = 'paula@example.com'`
-    const historical = await repo.findRedemptionByEmail('paula@example.com')
+    const historical = await repo.findRedemptionByEmail('paula@example.com', 'kids')
     expect(historical?.accessDurationDays).toBeNull()
     expect(historical?.muralVisitorPolicy).toBeNull()
   })
@@ -307,6 +319,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   test('curso e visita ao Mural têm checkpoints persistidos independentes', async () => {
     const { code } = await seedCode()
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: code.id,
       email: 'visita@example.com',
       name: 'Visita',
@@ -314,14 +327,14 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     })
     const when = new Date()
     await repo.markCourseGranted(redemption.id, when)
-    const pending = await repo.findRedemptionByEmail('visita@example.com')
+    const pending = await repo.findRedemptionByEmail('visita@example.com', 'kids')
     expect(pending?.status).toBe('pending')
     expect(pending?.grantedAt?.toISOString()).toBe(when.toISOString())
     expect(pending?.muralVisitorGrantedAt).toBeNull()
 
     await repo.markMuralVisitorGranted(redemption.id, when)
     await repo.markRedemptionGranted(redemption.id, when)
-    const completed = await repo.findRedemptionByEmail('visita@example.com')
+    const completed = await repo.findRedemptionByEmail('visita@example.com', 'kids')
     expect(completed?.status).toBe('completed')
     expect(completed?.muralVisitorGrantedAt?.toISOString()).toBe(when.toISOString())
   })
@@ -329,6 +342,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   test('lease do resgate é atômico: 2 concorrentes → 1 vence', async () => {
     const { code } = await seedCode()
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: code.id,
       email: 'paula@example.com',
       name: 'Paula',
@@ -355,6 +369,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
   test('claim do welcome: só a 1ª execução vence; release reabre', async () => {
     const { code } = await seedCode()
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: code.id,
       email: 'p@example.com',
       name: 'P',
@@ -457,6 +472,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     })
 
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: code.id,
       email: 'paula@example.com',
       name: 'Paula',
@@ -465,6 +481,7 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     await repo.markRedemptionGranted(redemption.id, new Date())
     // Resgate ainda pending NÃO conta (só `completed`).
     await repo.insertRedemption({
+      audience: 'kids',
       codeId: code.id,
       email: 'pendente@example.com',
       name: 'Pendente',
@@ -482,5 +499,206 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     expect(stats).toEqual({ redemptionsCompleted: 1, invitesSent: 1 })
     const byToken = await repo.findAmbassadorByToken(ambassador.pageToken)
     expect(byToken?.stats).toEqual(stats)
+  })
+
+  // ── Presente Kids e adulto (0005) ─────────────────────────────────────────
+
+  test('UNIQUE (email, audience): um Kids e um adulto convivem; corrida no adulto → 1', async () => {
+    const { ambassador, code } = await seedCode()
+    const adult = await repo.ensureAmbassadorCode({
+      ambassadorId: ambassador.id,
+      audience: 'adult',
+      code: 'cida-ad45',
+    })
+    if (adult?.kind !== 'ok') throw new Error('seed adulto')
+    const kids = await repo.insertRedemption({
+      codeId: code.id,
+      audience: 'kids',
+      email: 'ana@example.com',
+      name: 'Ana',
+      phone: null,
+    })
+    const input = {
+      codeId: adult.code.id,
+      audience: 'adult' as const,
+      email: 'ana@example.com',
+      name: 'Ana',
+      phone: null,
+      courseSlug: 'cade-todo-mundo-adulto',
+    }
+    const results = await Promise.all([
+      repo.insertRedemption(input),
+      repo.insertRedemption(input),
+      repo.insertRedemption(input),
+    ])
+    expect(kids.created).toBe(true)
+    expect(results.filter((r) => r.created)).toHaveLength(1)
+    expect(new Set(results.map((r) => r.redemption.id)).size).toBe(1)
+    expect(results[0]?.redemption.audience).toBe('adult')
+    expect((await repo.findRedemptionByEmail('ana@example.com', 'kids'))?.id).toBe(
+      kids.redemption.id,
+    )
+    expect((await repo.findRedemptionByEmail('ana@example.com', 'adult'))?.courseSlug).toBe(
+      'cade-todo-mundo-adulto',
+    )
+    const both = await repo.listRedemptionsWithCodeByEmail('ana@example.com')
+    expect(both.map((m) => [m.redemption.audience, m.code.audience])).toEqual([
+      ['kids', 'kids'],
+      ['adult', 'adult'],
+    ])
+  })
+
+  test('código adulto do embaixador: corrida cria UM; colisão de código é distinguida', async () => {
+    const { ambassador, code } = await seedCode()
+    const results = await Promise.all(
+      ['cida-a2b3', 'cida-c4d5', 'cida-e6f7', 'cida-g8h9'].map((candidate) =>
+        repo.ensureAmbassadorCode({
+          ambassadorId: ambassador.id,
+          audience: 'adult',
+          code: candidate,
+        }),
+      ),
+    )
+    const ok = results.flatMap((r) => (r?.kind === 'ok' ? [r] : []))
+    expect(ok).toHaveLength(4)
+    expect(ok.filter((r) => r.created)).toHaveLength(1)
+    expect(new Set(ok.map((r) => r.code.id)).size).toBe(1)
+    const codes = await repo.listCodesByAmbassador(ambassador.id)
+    expect(codes.map((c) => c.audience)).toEqual(['kids', 'adult'])
+    expect(codes[1]?.ownerEmail).toBe('cida@example.com')
+
+    // O `code` das leituras do embaixador continua sendo o Kids (sem linha duplicada).
+    expect((await repo.findAmbassadorByToken(ambassador.pageToken))?.code).toBe(code.code)
+    expect((await repo.listAmbassadors({ limit: 10, offset: 0 })).items).toHaveLength(1)
+
+    const other = await repo.createAmbassadorWithCode({
+      name: 'Rui',
+      email: 'rui@example.com',
+      pageToken: crypto.randomUUID().repeat(2),
+      code: 'rui-k2m3',
+    })
+    if (other.kind !== 'created') throw new Error('seed')
+    expect(
+      await repo.ensureAmbassadorCode({
+        ambassadorId: other.ambassador.id,
+        audience: 'adult',
+        code: code.code,
+      }),
+    ).toEqual({ kind: 'code_collision' })
+    expect(
+      await repo.ensureAmbassadorCode({
+        ambassadorId: crypto.randomUUID(),
+        audience: 'adult',
+        code: 'ninguem-a2b3',
+      }),
+    ).toBeNull()
+
+    // Desativar o embaixador desativa os DOIS códigos.
+    await repo.updateAmbassador(ambassador.id, { status: 'disabled' })
+    expect((await repo.listCodesByAmbassador(ambassador.id)).map((c) => c.status)).toEqual([
+      'disabled',
+      'disabled',
+    ])
+  })
+
+  test('CHECK de público: valor fora de kids/adult é recusado nas três tabelas', async () => {
+    const { code } = await seedCode()
+    const attempts = [
+      () => connection.sql`update referrals.codes set panel_audience = 'pro' where id = ${code.id}`,
+      () =>
+        connection.sql`insert into referrals.scholarship_redemptions (code_id, email, name, audience) values (${code.id}, 'x@example.com', 'X', 'pro')`,
+      () =>
+        connection.sql`insert into referrals.campaigns (name, public_title, context, starts_at, ends_at, audience) values ('A', 'A', 'event', now(), now() + interval '1 day', 'pro')`,
+    ]
+    for (const attempt of attempts) {
+      try {
+        await attempt()
+        expect.unreachable('deveria ter violado o CHECK de público')
+      } catch (error) {
+        expect(collectErrorText(error)).toContain('audience_check')
+      }
+    }
+  })
+
+  test('campanha: público grava no código; trava fora do rascunho sob o lock', async () => {
+    const campaigns = new DrizzleCampaignRepository(connection.db)
+    const input: CampaignInput = {
+      name: 'Feira adulta',
+      publicTitle: 'Feira de jogos',
+      description: '',
+      context: 'event',
+      code: 'feira-adulta',
+      startsAt: new Date(Date.now() - 60_000).toISOString(),
+      endsAt: new Date(Date.now() + 3_600_000).toISOString(),
+      status: 'draft',
+      channel: 'feira',
+      audience: 'adult',
+    }
+    const created = await campaigns.create(input, 'Operador')
+    if (!created) throw new Error('seed')
+    expect(created.audience).toBe('adult')
+    expect((await repo.findCodeByCode('feira-adulta'))?.audience).toBe('adult')
+
+    const kids = await campaigns.update(
+      created.id,
+      { ...input, audience: 'kids', status: 'active' },
+      'Operador',
+      created.updatedAt.toISOString(),
+    )
+    expect(kids?.audience).toBe('kids')
+    expect((await repo.findCodeByCode('feira-adulta'))?.audience).toBe('kids')
+    try {
+      await campaigns.update(
+        created.id,
+        { ...input, audience: 'adult', status: 'active' },
+        'Operador',
+        kids!.updatedAt.toISOString(),
+      )
+      expect.unreachable('deveria travar o público')
+    } catch (error) {
+      expect(error).toBeInstanceOf(CampaignAudienceLockedError)
+    }
+    const history = await campaigns.history(created.id)
+    expect(history.find((h) => h.action === 'updated')?.changes.audience).toBe('kids')
+
+    // Voltar ao rascunho não destrava o público de uma campanha que já tem cadastro.
+    const code = await repo.findCodeByCode('feira-adulta')
+    await repo.insertRedemption({
+      codeId: code!.id,
+      email: 'ana@example.com',
+      audience: 'kids',
+      name: 'Ana',
+      phone: null,
+    })
+    const draft = await campaigns.update(
+      created.id,
+      { ...input, audience: 'kids', status: 'draft' },
+      'Operador',
+      kids!.updatedAt.toISOString(),
+    )
+    expect(draft?.status).toBe('draft')
+    try {
+      await campaigns.update(
+        created.id,
+        { ...input, audience: 'adult', status: 'draft' },
+        'Operador',
+        draft!.updatedAt.toISOString(),
+      )
+      expect.unreachable('rascunho com cadastro deveria travar o público')
+    } catch (error) {
+      expect(error).toBeInstanceOf(CampaignAudienceLockedError)
+    }
+    expect((await repo.findCodeByCode('feira-adulta'))?.audience).toBe('kids')
+  })
+
+  test('código adulto de embaixador desativado nasce desativado', async () => {
+    const { ambassador } = await seedCode()
+    await repo.updateAmbassador(ambassador.id, { status: 'disabled' })
+    const result = await repo.ensureAmbassadorCode({
+      ambassadorId: ambassador.id,
+      audience: 'adult',
+      code: 'cida-z9y8',
+    })
+    expect(result).toMatchObject({ kind: 'ok', created: true, code: { status: 'disabled' } })
   })
 })

@@ -204,6 +204,7 @@ describe('derived scene geometry', () => {
     const built = buildSceneGeometry(source)
     expect(built.issues).toEqual([{ faceId: 'face', code: 'precision' }])
     expect(built.positions).toHaveLength(0)
+    expect(built.componentFaceIds).toHaveLength(0)
     expect(source).toEqual(original)
   })
 })

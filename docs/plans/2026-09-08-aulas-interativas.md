@@ -60,7 +60,7 @@ Aluno de 9–16 anos, alternando entre observar, experimentar e construir. A int
 
 ## Verificação e entrega
 
-Evidências e limites estão em [qa/verification-report.md](../aulas-interativas/qa/verification-report.md). A implementação foi enviada para `staging` no commit `aab691c5`, com CI e deploy concluídos. O trabalho de Molda no checkout original continua separado.
+Evidências e limites estão em [qa/verification-report.md](../aulas-interativas-tecnico/qa/verification-report.md). A implementação foi enviada para `staging` no commit `aab691c5`, com CI e deploy concluídos. O trabalho de Molda no checkout original continua separado.
 
 Verificação final: suíte global em sequência com 14.333 testes aprovados, 979 no Members com banco real, 16 cenários Playwright e builds de Kids, Adult e admin aprovados. Navegação autenticada e produção dos vídeos seguem as limitações registradas no relatório de QA.
 

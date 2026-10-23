@@ -1,0 +1,49 @@
+{
+  "state": "MAPPINGS-ONLY-NO-DESTROY",
+  "gateQualified": false,
+  "worker": "sistemazero-studio-language-staging",
+  "accountId": "bcc0f2d44140e05b69152cba326132f8",
+  "workerVersion": "2606bc1c-fc5d-4702-9ea8-6995955ff06e",
+  "ownerNamespace": "bf106446ef9e495997e39a02f008a526",
+  "sandboxNamespace": "fb9d81d3e52b489faf23ed8c74cea71a",
+  "applicationId": "a03225c7-85d7-4bd6-9919-a63ba03178af",
+  "inventorySha256": "d6f837396bc9a684f318fa5b1d87afb5f2743ffedcba5f9a2a0492c2b14b4464",
+  "startedAt": "2026-10-22T15:48:20.120Z",
+  "remoteStarted": true,
+  "acknowledgements": [
+    {
+      "sessionName": "language-08bc7d1bdf0555f56f0fcb79e48bace3",
+      "expectedInstanceId": "25d1600878a6ef1746c195a0f4d8d4a144a6b20295594fbb4f5812044c7c3eac",
+      "derivedDoId": "25d1600878a6ef1746c195a0f4d8d4a144a6b20295594fbb4f5812044c7c3eac",
+      "mappingMatched": true,
+      "destroyAcknowledged": false
+    },
+    {
+      "sessionName": "language-79fc6b3cb5975335cad66ef931530862",
+      "expectedInstanceId": "2c57fc1d6fdd0368add2d3ec83c06b65f17e9dd84e02453b96115ddf0b091158",
+      "derivedDoId": "2c57fc1d6fdd0368add2d3ec83c06b65f17e9dd84e02453b96115ddf0b091158",
+      "mappingMatched": true,
+      "destroyAcknowledged": false
+    },
+    {
+      "sessionName": "language-ba66df839a260f1ee2b52989e948c0f4",
+      "expectedInstanceId": "c0ba05b2b418a017ae5e82e3e5de13a0497139c9965677d1574bbff14f87ced7",
+      "derivedDoId": "c0ba05b2b418a017ae5e82e3e5de13a0497139c9965677d1574bbff14f87ced7",
+      "mappingMatched": true,
+      "destroyAcknowledged": false
+    },
+    {
+      "sessionName": "language-71793722eb6b64ef72a85cae73e31ebc",
+      "expectedInstanceId": "c8eeaa9e82a743a90681c1b0f4c1934d47fc97d9928f4a41d6dae95071a04441",
+      "derivedDoId": "c8eeaa9e82a743a90681c1b0f4c1934d47fc97d9928f4a41d6dae95071a04441",
+      "mappingMatched": true,
+      "destroyAcknowledged": false
+    }
+  ],
+  "primary": null,
+  "previewStopped": true,
+  "previewStopState": "confirmed",
+  "cleanupFailure": null,
+  "externalReadbackRequired": true,
+  "finishedAt": "2026-10-22T15:48:26.646Z"
+}

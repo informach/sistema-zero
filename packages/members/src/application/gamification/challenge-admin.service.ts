@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import type { CourseAudience } from '../../domain/course/course'
 import {
   builtinThemeBySlug,
   CHALLENGE_THEMES,
@@ -83,11 +84,13 @@ export class ChallengeAdminService {
     return { key, window }
   }
 
-  async listMonths(): Promise<{ months: ChallengeMonthAdminView[] }> {
+  async listMonths(
+    audience: CourseAudience = 'kids',
+  ): Promise<{ months: ChallengeMonthAdminView[] }> {
     const now = this.clock()
     const window = monthKeysFrom(now, MONTH_WINDOW)
     const currentKey = window[0] as string
-    const overrides = await this.repo.listOverridesWithThemes(window)
+    const overrides = await this.repo.listOverridesWithThemes(window, audience)
     const byKey = new Map(overrides.map((o) => [o.monthKey, o]))
     return {
       months: window.map((key) => this.monthView(key, currentKey, byKey.get(key) ?? null)),
@@ -98,6 +101,7 @@ export class ChallengeAdminService {
     month: string,
     cmd: SetChallengeMonthCommand,
     actorUserId: string | null,
+    audience: CourseAudience = 'kids',
   ): Promise<ChallengeMonthAdminView> {
     const hasBuiltin = typeof cmd.builtinSlug === 'string'
     const hasCustom = typeof cmd.customThemeId === 'string'
@@ -110,39 +114,47 @@ export class ChallengeAdminService {
       throw new ChallengeThemeNotFoundError()
     }
     if (hasCustom) {
-      const theme = await this.repo.findCustomTheme(cmd.customThemeId as string)
+      const theme = await this.repo.findCustomTheme(cmd.customThemeId as string, audience)
       if (!theme) throw new ChallengeThemeNotFoundError()
       if (theme.archived) throw new ChallengeThemeArchivedError()
     }
 
     await this.repo.upsertOverride({
       monthKey: key,
+      audience,
       builtinSlug: hasBuiltin ? (cmd.builtinSlug as string) : null,
       customThemeId: hasCustom ? (cmd.customThemeId as string) : null,
       updatedByUserId: actorUserId,
       now: this.clock(),
     })
-    const override = await this.repo.findOverrideWithTheme(key)
+    const override = await this.repo.findOverrideWithTheme(key, audience)
     return this.monthView(key, window[0] as string, override)
   }
 
-  async clearMonth(month: string): Promise<ChallengeMonthAdminView> {
+  async clearMonth(
+    month: string,
+    audience: CourseAudience = 'kids',
+  ): Promise<ChallengeMonthAdminView> {
     const { key, window } = this.assertEditableKey(month)
-    await this.repo.deleteOverride(key)
+    await this.repo.deleteOverride(key, audience)
     return this.monthView(key, window[0] as string, null)
   }
 
-  async listThemes(): Promise<ChallengeThemesAdminView> {
-    const custom = await this.repo.listCustomThemes()
+  async listThemes(audience: CourseAudience = 'kids'): Promise<ChallengeThemesAdminView> {
+    const custom = await this.repo.listCustomThemes(audience)
     return {
       builtin: [...CHALLENGE_THEMES],
       custom: custom.map(toChallengeThemeAdminView),
     }
   }
 
-  async createTheme(cmd: CreateChallengeThemeCommand): Promise<ChallengeThemeAdminView> {
+  async createTheme(
+    cmd: CreateChallengeThemeCommand,
+    audience: CourseAudience = 'kids',
+  ): Promise<ChallengeThemeAdminView> {
     const record = await this.repo.createCustomTheme({
       id: this.newId(),
+      audience,
       emoji: cmd.emoji,
       title: cmd.title,
       description: cmd.description,
@@ -154,8 +166,9 @@ export class ChallengeAdminService {
   async updateTheme(
     id: string,
     patch: PatchChallengeThemeCommand,
+    audience: CourseAudience = 'kids',
   ): Promise<ChallengeThemeAdminView> {
-    const record = await this.repo.updateCustomTheme(id, patch, this.clock())
+    const record = await this.repo.updateCustomTheme(id, patch, this.clock(), audience)
     if (!record) throw new ChallengeThemeNotFoundError()
     return toChallengeThemeAdminView(record)
   }

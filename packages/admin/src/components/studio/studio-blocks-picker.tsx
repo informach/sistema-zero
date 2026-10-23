@@ -16,23 +16,38 @@ import { parseStudioBlocksImport } from '@/lib/lesson-block-import'
 export function StudioBlocksPicker({
   value,
   onChange,
+  onImport,
+  catalog: suppliedCatalog,
+  error,
 }: {
   value: string[]
   onChange: (next: string[]) => void
+  /** Course rewards close their dependencies when replacing the imported selection. */
+  onImport?: (next: string[]) => void
+  /** Undefined keeps the standalone JS course picker; null means host metadata is loading. */
+  catalog?: readonly BlockCatalogEntry[] | null
+  error?: string | null
 }) {
-  const [catalog, setCatalog] = useState<readonly BlockCatalogEntry[] | null>(null)
+  const [legacyCatalog, setCatalog] = useState<readonly BlockCatalogEntry[] | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const catalog = suppliedCatalog === undefined ? legacyCatalog : suppliedCatalog
   const [query, setQuery] = useState('')
   const [mode, setMode] = useState<'manual' | 'import'>('manual')
 
   useEffect(() => {
+    if (suppliedCatalog !== undefined) return
     let active = true
-    void import('@sistemazero/studio').then((mod) => {
-      if (active) setCatalog(mod.BLOCK_CATALOG)
-    })
+    void import('@sistemazero/studio')
+      .then((mod) => {
+        if (active) setCatalog(mod.BLOCK_CATALOG)
+      })
+      .catch(() => {
+        if (active) setLoadError('Não foi possível carregar os blocos JavaScript.')
+      })
     return () => {
       active = false
     }
-  }, [])
+  }, [suppliedCatalog])
 
   const selected = useMemo(() => new Set(value), [value])
 
@@ -65,6 +80,11 @@ export function StudioBlocksPicker({
     () => ({ blocks: (catalog ?? []).slice(0, 2).map((entry) => entry.type) }),
     [catalog],
   )
+  // A staged JSON import belongs to the catalog that validated it, including pending confirms.
+  const importCatalogKey = useMemo(
+    () => JSON.stringify((catalog ?? []).map((entry) => entry.type).sort()),
+    [catalog],
+  )
   const catalogDownload = useMemo(
     () => ({
       blocks: (catalog ?? []).map((entry) => ({
@@ -83,6 +103,12 @@ export function StudioBlocksPicker({
     onChange([...next])
   }
 
+  if (error || (suppliedCatalog === undefined && loadError))
+    return (
+      <p role="alert" className="text-sm text-destructive">
+        {error ?? loadError}
+      </p>
+    )
   if (!catalog) {
     return (
       <div className="flex items-center gap-2 rounded-lg border border-border p-3 text-muted-foreground text-sm">
@@ -93,6 +119,12 @@ export function StudioBlocksPicker({
 
   return (
     <div className="flex flex-col gap-3">
+      {value.some((id) => !catalog.some((entry) => entry.type === id)) ? (
+        <p role="alert" className="text-sm text-destructive">
+          A seleção salva contém blocos indisponíveis neste ambiente ou nas extensões instaladas.
+          Revise a lista antes de publicar.
+        </p>
+      ) : null}
       <Tabs
         value={mode}
         onChange={(next) => setMode(next as 'manual' | 'import')}
@@ -105,6 +137,7 @@ export function StudioBlocksPicker({
       {mode === 'import' ? (
         <div role="tabpanel" aria-label="Importar lista de blocos por JSON">
           <JsonImportPanel
+            key={importCatalogKey}
             parse={(text) => parseStudioBlocksImport(text, catalog)}
             example={importExample}
             exampleFilename="modelo-blocos-studio.json"
@@ -165,7 +198,7 @@ export function StudioBlocksPicker({
               )
             }}
             onApply={(imported) => {
-              onChange(imported.blocks)
+              ;(onImport ?? onChange)(imported.blocks)
               setMode('manual')
             }}
           />

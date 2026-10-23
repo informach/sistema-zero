@@ -169,6 +169,7 @@ export interface PublicationView {
   assetIds: string[]
   /** O vídeo já subiu ao provedor (metadados congelam; reagendar vira resync). */
   hasRemoteVideo: boolean
+  mediaFrozen: boolean
   publishedAt: string | null
   createdAt: string
   updatedAt: string
@@ -214,56 +215,11 @@ export interface AccountsResponse {
 
 // ── Métricas (dashboard F3 — CONTRATO fixo com o backend) ──
 
-/** Resposta de `GET /marketing/metrics/summary`. */
-export interface MetricsSummaryView {
-  /** Card por conta CONECTADA com snapshot (followers = último coletado). */
-  accounts: Array<{
-    accountId: string
-    network: SocialNetwork
-    displayName: string
-    followers: number
-    capturedAt: string
-  }>
-  /** Totais dos últimos 28 dias por rede. */
-  networkTotals: Array<{
-    network: SocialNetwork
-    posts: number
-    views: number
-    likes: number
-    comments: number
-  }>
-  /** Top 10 por views na janela de 90 dias. */
-  topPublications: Array<{
-    publicationId: string
-    contentId: string
-    contentTitle: string
-    network: SocialNetwork
-    format: PublicationFormat
-    publishedAt: string | null
-    views: number
-    likes: number
-    comments: number
-    capturedAt: string
-  }>
-}
-
-/** Resposta de `GET /marketing/metrics/best-times?network=&days=` (heatmap). */
-export interface BestTimesView {
-  /** Só células COM posts. `dow` 0=domingo..6=sábado; `hour` 0..23 (SP). */
-  cells: Array<{ dow: number; hour: number; posts: number; views: number; likes: number }>
-  totalPosts: number
-}
-
-/** Resposta de `GET /marketing/metrics/followers-series?network=&days=`. */
-export interface FollowersSeriesView {
-  series: Array<{
-    accountId: string
-    network: SocialNetwork
-    displayName: string
-    /** 1 ponto por dia (SP) = último snapshot do dia. */
-    points: Array<{ date: string; followers: number }>
-  }>
-}
+export type {
+  BestTimesView,
+  FollowersSeriesView,
+  MetricsSummaryView,
+} from '@sistemazero/marketing-contracts'
 
 // ── IA da copy (F5) ──
 
@@ -287,7 +243,7 @@ export interface AiScriptView {
 
 /** Resposta de `GET /marketing/publications/:id/metrics` (histórico por publicação). */
 export interface PublicationMetricsView {
-  snapshots: Array<{ capturedAt: string; views: number; likes: number; comments: number }>
+  snapshots: import('@sistemazero/marketing-contracts').PublicationMetricsSnapshot[]
 }
 
 // ── Google Drive (importação → biblioteca) ──

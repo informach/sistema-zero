@@ -9,7 +9,7 @@ export const MOLDA_GALLERY_ZIP_ENTRY = 'galeria.molda.json'
  * ilimitado de uma entrada externa. O ZIP em si pode ser maior: o leitor só
  * puxa a entrada canônica e nunca carrega os `.glb`/`.hdr`.
  */
-export const MAX_BACKUP_FILE_BYTES = MOLDA_LIMITS.maxGalleryBytes * 2
+export const MAX_BACKUP_FILE_BYTES = MOLDA_LIMITS.maxDocumentBytes * 2
 
 /** Maior contagem não reservada ao marcador ZIP64 no EOCD clássico. */
 export const MAX_CLASSIC_ZIP_ENTRIES = 0xfffe

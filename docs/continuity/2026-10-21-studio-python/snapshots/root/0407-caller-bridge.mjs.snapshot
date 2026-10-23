@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {join,win32} from 'node:path';
+import {createHash} from 'node:crypto';
+import {invokeCli,validateCliResult} from './oauth-session.mjs';
+import {captureRailwayProvider} from './provider-context.mjs';
+
+// Actual owning caller runs this BEFORE spawning its isolated Node/browser.
+// ownedSpawn must retain CLI handles in the existing owner; this module creates
+// no supervisor. A retained/failed readonly CLI forbids starting the scenario.
+export async function prepareProviderInCaller({sourceEnvironment,sourceHomeDirectory,executable,cwd,ownedSpawn,checkTime,record}){
+ let result=null;
+ try{
+  assert.equal(typeof ownedSpawn,'function');assert.equal(typeof checkTime,'function');assert.equal(typeof record,'function');
+  assert(win32.isAbsolute(sourceHomeDirectory));
+  const profile=Object.entries(sourceEnvironment).find(([key])=>key.toUpperCase()==='USERPROFILE')?.[1];
+  assert.equal(win32.normalize(sourceHomeDirectory).toLowerCase(),win32.normalize(profile).toLowerCase());
+  assert.equal(createHash('sha256').update(readFileSync(executable)).digest('hex'),'f9351033614c86882332a5c82e1856b21792b176ebf84a9417dfd1362c425177');
+  checkTime();
+  result=await invokeCli({spawn:ownedSpawn,executable,cwd,env:sourceEnvironment,onStart:e=>record({phase:'provider-readonly-start',...e}),onClose:e=>record({phase:'provider-readonly-close',...e})});
+  checkTime();validateCliResult(result);result.stdout='';
+  // Official CLI handles config locking/rotation. The fresh value is read once
+  // into RAM from the explicitly captured original home, never the QA home.
+  const config=JSON.parse(readFileSync(join(sourceHomeDirectory,'.railway','config.json'),'utf8'));
+  checkTime();
+  const provider=captureRailwayProvider({sourceEnvironment,sourceHomeDirectory,oauthConfig:config});
+  delete config.user.accessToken;
+  return provider;
+ }catch{
+  throw new Error('provider-caller-context-refused');
+ }finally{
+  if(result)result.stdout='';
+ }
+}
+

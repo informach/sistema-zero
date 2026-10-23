@@ -1,6 +1,8 @@
-import type {
-  CreationCleanupJob,
-  CreationCleanupRepository,
+import {
+  CREATION_CLEANUP_SCOPES,
+  type CreationCleanupJob,
+  type CreationCleanupRepository,
+  type CreationCleanupScope,
 } from '../../../domain/ports/creation-cleanup-repository.port'
 
 const LEASE_MS = 10 * 60_000
@@ -18,9 +20,16 @@ export class CreationCleanupService {
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
-  claim(): Promise<CreationCleanupJob | null> {
+  /**
+   * `scopes` = o que o worker declarou entender. Sem declaração, só a limpeza de conta.
+   * Escopo desconhecido é ignorado (worker mais novo que o members não derruba a fila).
+   */
+  claim(scopes: readonly string[] = []): Promise<CreationCleanupJob | null> {
     const now = this.clock()
-    return this.repo.claimDue(now, new Date(now.getTime() - LEASE_MS))
+    const known = CREATION_CLEANUP_SCOPES.filter((scope: CreationCleanupScope) =>
+      scopes.includes(scope),
+    )
+    return this.repo.claimDue(now, new Date(now.getTime() - LEASE_MS), known)
   }
 
   complete(id: string): Promise<boolean> {

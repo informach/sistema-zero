@@ -16,11 +16,13 @@ import type { ListMemberCertificatesService } from '../../../application/list-me
 import type { ListMemberRatingsService } from '../../../application/list-member-ratings/list-member-ratings.service'
 import type { ListMembersService } from '../../../application/list-members/list-members.service'
 import type { ManageEntitlementService } from '../../../application/manage-entitlement/manage-entitlement.service'
+import type { GetPensaFunnelService } from '../../../application/pensa/pensa-funnel.service'
 import type { GetProfilesOverviewService } from '../../../application/profiles-overview/get-profiles-overview.service'
 import type { TeacherBroadcastsService } from '../../../application/teacher-threads/teacher-broadcasts.service'
 import type { TeacherThreadsService } from '../../../application/teacher-threads/teacher-threads.service'
 import type { GetMemberToolUsageService } from '../../../application/tool-usage/get-member-tool-usage.service'
 import type { RevokeCertificateService } from '../../../application/validate-certificate/validate-certificate.service'
+import { ContentNotFoundError } from '../../../domain/course/course.errors'
 import { InvalidEntitlementCommandError } from '../../../domain/entitlement/entitlement.errors'
 import type { HubGateway } from '../../../domain/ports/hub-gateway.port'
 import {
@@ -52,6 +54,7 @@ import {
   ListMembersQuery,
   ManageEntitlementBody,
   MemberDetailQuery,
+  PensaFunnelQuery,
   ProfilesOverviewQuery,
   parseProfileIds,
   parseRankingUserIds,
@@ -83,6 +86,8 @@ export interface AdminRoutesDeps {
   analytics: GetCourseAnalyticsService
   /** Agregados de uso de IA (quota por conta) p/ o painel acompanhar o custo. */
   aiUsageStats: GetAiUsageStatsService
+  /** Onde as crianças param no Pensa (contagens, sem texto). Opcional nos testes. */
+  pensaFunnel?: GetPensaFunnelService
   grantManual: GrantManualEntitlementService
   manageEntitlement: ManageEntitlementService
   /** Canal de retorno professor↔aluno (caixa de entrada + responder). */
@@ -169,17 +174,13 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       )
       // Gamificação do APRENDIZE (ficha admin): XP/nível/streak/badges/coins da vitrine
       // pedida. O `:userId` é o aprendiz (conta=adult / perfil=kids — o BFF passa a
-      // audiência certa). Read-only: sem ranking (`accountId`=userId é irrelevante) nem
+      // audiência certa). Read-only: owner Kids vem do registro canônico; sem ranking nem
       // passe de equipe (o painel sempre vê o estado REAL do aluno).
       .get(
         '/members/:userId/gamification',
         async ({ params, query, headers }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.getGamification.execute(params.userId, params.userId, {
-            audience: query.audience ?? 'adult',
-            withRanking: false,
-            privileged: false,
-          })
+          return deps.getGamification.inspect(params.userId, query.audience ?? 'adult')
         },
         { params: UserIdParams, query: AdminGamificationQuery },
       )
@@ -252,6 +253,17 @@ export function adminRoutes(deps: AdminRoutesDeps) {
           return deps.aiUsageStats.execute(query.month)
         },
         { query: AiUsageStatsQuery },
+      )
+      // O funil do Pensa (15/10/2026): jogos criados no período e onde param (perguntas
+      // respondidas por toque ou do jeito delas, proposta, começo escolhido, missão, teste).
+      .get(
+        '/pensa/funnel',
+        async ({ query, headers }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          if (!deps.pensaFunnel) throw new ContentNotFoundError('Funil do Pensa indisponível.')
+          return deps.pensaFunnel.execute(query.days)
+        },
+        { query: PensaFunnelQuery },
       )
       // ── Conversas com o aluno (canal de retorno) ─────────────────────────────
       // Caixa de entrada do professor (todas as conversas, filtros) + abrir/responder
@@ -387,46 +399,59 @@ export function adminRoutes(deps: AdminRoutesDeps) {
       // ── Desafio do mês (Sala do Professor) ────────────────────────────────
       // Janela de meses com o tema RESOLVIDO (definido pelo professor ou
       // sorteado como fallback), override por mês e biblioteca de temas custom.
-      .get('/challenge/months', async ({ headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.challengeAdmin.listMonths()
-      })
+      .get(
+        '/challenge/months',
+        async ({ headers, query }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.listMonths(query.audience ?? 'kids')
+        },
+        { query: AudienceQuery },
+      )
       .put(
         '/challenge/months/:month',
-        async ({ params, body, headers }) => {
+        async ({ params, body, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.challengeAdmin.setMonth(params.month, body, resolveOptionalUserId(headers))
+          return deps.challengeAdmin.setMonth(
+            params.month,
+            body,
+            resolveOptionalUserId(headers),
+            query.audience ?? 'kids',
+          )
         },
-        { params: ChallengeMonthParams, body: ChallengeOverrideBody },
+        { params: ChallengeMonthParams, body: ChallengeOverrideBody, query: AudienceQuery },
       )
       .delete(
         '/challenge/months/:month',
-        async ({ params, headers }) => {
+        async ({ params, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.challengeAdmin.clearMonth(params.month)
+          return deps.challengeAdmin.clearMonth(params.month, query.audience ?? 'kids')
         },
-        { params: ChallengeMonthParams },
+        { params: ChallengeMonthParams, query: AudienceQuery },
       )
-      .get('/challenge/themes', async ({ headers }) => {
-        requireAdmin(headers, deps.requireAdminEnabled)
-        return deps.challengeAdmin.listThemes()
-      })
+      .get(
+        '/challenge/themes',
+        async ({ headers, query }) => {
+          requireAdmin(headers, deps.requireAdminEnabled)
+          return deps.challengeAdmin.listThemes(query.audience ?? 'kids')
+        },
+        { query: AudienceQuery },
+      )
       .post(
         '/challenge/themes',
-        async ({ body, headers, set }) => {
+        async ({ body, headers, set, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
           set.status = 201
-          return deps.challengeAdmin.createTheme(body)
+          return deps.challengeAdmin.createTheme(body, query.audience ?? 'kids')
         },
-        { body: ChallengeThemeBody },
+        { body: ChallengeThemeBody, query: AudienceQuery },
       )
       .patch(
         '/challenge/themes/:id',
-        async ({ params, body, headers }) => {
+        async ({ params, body, headers, query }) => {
           requireAdmin(headers, deps.requireAdminEnabled)
-          return deps.challengeAdmin.updateTheme(params.id, body)
+          return deps.challengeAdmin.updateTheme(params.id, body, query.audience ?? 'kids')
         },
-        { params: IdParams, body: ChallengeThemePatchBody },
+        { params: IdParams, body: ChallengeThemePatchBody, query: AudienceQuery },
       )
       .post(
         '/entitlements',

@@ -26,4 +26,9 @@ export interface EntitlementSnapshot {
   resolvedAt: string
   /** Ausente somente em snapshots gravados antes do contrato versionado. */
   accessPolicy?: PurchasedAccessPolicy
+  /**
+   * Público do PRESENTE (curso concedido pelo `grant-manual` S2S, 20/10/2026). Ausente em
+   * snapshots anteriores e fora do presente: os avisos de fim do presente tratam como `kids`.
+   */
+  giftAudience?: 'kids' | 'adult'
 }

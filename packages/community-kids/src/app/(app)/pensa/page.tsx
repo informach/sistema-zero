@@ -1,19 +1,19 @@
-import { creativeToolAvailability } from '@sistemazero/core/journey'
-import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
-import { meetsAiAppsLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { isReadonlyImpersonation } from '@sistemazero/member-shell/lib/act'
+import {
+  hasKidsCapability,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { KidsJourneyLockedPensa } from '@/components/kids/kids-journey-locked-pensa'
 import { KidsLockedPensa } from '@/components/kids/kids-locked-pensa'
 import { KidsPensaUnavailable } from '@/components/kids/kids-pensa-unavailable'
 import { PensaClient } from '@/components/kids/pensa-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
-import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
-import {
-  checkCreativeToolsAccessReadonly,
-  checkPensaAccessReadonly,
-  getGamificationReadonly,
-  getStudioUnlocksReadonly,
-} from '@/server/members'
+import { getEnv } from '@/lib/env'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
+import { checkPensaAccessReadonly, getGamificationReadonly } from '@/server/members'
 import { getSession } from '@/server/session'
+import { shell } from '@/server/shell'
 
 export const dynamic = 'force-dynamic'
 
@@ -29,49 +29,50 @@ export const dynamic = 'force-dynamic'
 export default async function PensaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plano?: string }>
+  searchParams: Promise<{ plano?: string; ajuda?: string }>
 }) {
-  const { plano } = await searchParams
+  const { plano, ajuda } = await searchParams
   // `session.id` = o PERFIL ativo (kids) → o Modo Missão semeia/abre o projeto do
   // Estúdio no MESMO namespace do IndexedDB que o /estudio usa (fase R do Pensa).
   // A posse do PINTA (produto à parte) só liga o "Desenhar no Pinta" das missões:
   // best-effort — soluço na checagem degrada escondendo o botão, nunca trava a página.
-  const [res, toolsRes, gam, session, unlocksRes] = await Promise.all([
+  const [res, gam, session] = await Promise.all([
     checkPensaAccessReadonly(),
-    checkCreativeToolsAccessReadonly().catch(() => null),
     getGamificationReadonly().catch(() => null),
     getSession(),
-    getStudioUnlocksReadonly().catch(() => null),
   ])
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
   const hasAccess = res.body?.access?.pensa === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPensa} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('pensa', lockedJourney)
+    const earned = toolEarnedInJourney('pensa', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedPensa opensAt={opensAt} earned={earned} />} />
+  }
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPensaUnavailable} />
-  if (!meetsAiAppsLevel(gam.body?.level?.slug, session?.role)) {
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsPensaUnavailable} />
+  if (!hasKidsCapability(journey, 'pensa') || !hasKidsCapability(journey, 'ai')) {
     return <ToolRouteRecado screen={KidsJourneyLockedPensa} />
   }
-  const pintaOwned = toolsRes?.status === 200 && toolsRes.body?.access?.pinta === true
-  const studioAvailable = canOpenPensaStudioTask({
-    studioProductOwned:
-      toolsRes?.status === 200 && toolsRes.body?.access?.['estudio-completo'] === true,
-    levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
-    role: session?.role,
-    unlocks: unlocksRes,
-  })
+  // Contar a ideia falando (14/10/2026): a MESMA régua da aula e dos Recados (criança, sem sessão
+  // de suporte, fala ligada no servidor, escolha dos pais relida no PRÓPRIO perfil). Decisão dela:
+  // sem interruptor à parte para o texto que vai ao Zappy — é a dúvida da criança sobre o jogo
+  // ("meu personagem não pulou"), o mesmo tipo de texto que ela já escreve à mão.
+  const profile =
+    session?.kids?.kind === 'student' && !session.act && isVoiceInputConfigured()
+      ? await shell.auth.getMyProfileReadonly().catch(() => null)
+      : null
+  const perfilDaFala = profile?.status === 200 ? profile.body?.profile : null
   return (
     <PensaClient
-      pintaOwned={pintaOwned}
-      studioAvailable={studioAvailable}
-      moldaAvailable={
-        creativeToolAvailability({
-          tool: 'molda',
-          owned: toolsRes?.body?.access?.molda === true,
-          level: gam.body?.level?.slug ?? null,
-          privileged: isPrivilegedRole(session?.role),
-        }) === 'available'
-      }
+      viewerId={session?.id}
+      voiceEnabled={perfilDaFala?.id === session?.id && perfilDaFala?.voiceInputEnabled === true}
+      narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
       initialProjectId={plano ?? null}
+      initialHelpMissionId={ajuda ?? null}
+      supportReadOnly={isReadonlyImpersonation(session)}
     />
   )
 }

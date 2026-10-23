@@ -1,10 +1,15 @@
-import { meetsFreeCreationLevel } from '@sistemazero/member-shell/server/creative-apps-access'
+import { getEnv } from '@sistemazero/member-shell/lib/env'
+import {
+  hasKidsCapability,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { KidsJourneyLockedPinta } from '@/components/kids/kids-journey-locked-pinta'
 import { KidsLockedPinta } from '@/components/kids/kids-locked-pinta'
 import { KidsPintaUnavailable } from '@/components/kids/kids-pinta-unavailable'
 import { PintaClient } from '@/components/kids/pinta-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
 import { canOpenPensaStudioTask } from '@/lib/pensa-capabilities'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import {
   checkPintaAccessReadonly,
   getGamificationReadonly,
@@ -39,16 +44,28 @@ export default async function PintaPage() {
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
   const hasAccess = res.body?.access?.pinta === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedPinta} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('pinta', lockedJourney)
+    const earned = toolEarnedInJourney('pinta', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedPinta opensAt={opensAt} earned={earned} />} />
+  }
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsPintaUnavailable} />
-  if (!meetsFreeCreationLevel(gam.body?.level?.slug, session?.role)) {
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsPintaUnavailable} />
+  if (!hasKidsCapability(journey, 'pinta')) {
     return <ToolRouteRecado screen={KidsJourneyLockedPinta} />
   }
   const studioAvailable = canOpenPensaStudioTask({
     studioProductOwned: res.body?.access?.['estudio-completo'] === true,
-    levelSlug: gam?.status === 200 ? gam.body?.level?.slug : undefined,
-    role: session?.role,
+    journey,
     unlocks: unlocksRes,
   })
-  return <PintaClient viewerId={session?.id ?? null} studioAvailable={studioAvailable} />
+  return (
+    <PintaClient
+      viewerId={session?.id ?? null}
+      studioAvailable={studioAvailable}
+      narrationEnabled={Boolean(getEnv().ELEVENLABS_API_KEY)}
+    />
+  )
 }

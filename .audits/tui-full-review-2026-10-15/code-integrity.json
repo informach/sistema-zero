@@ -1,0 +1,12 @@
+[
+  {
+    "TimeCreated": "2026-10-15T20:27:42.5956381-03:00",
+    "Id": 3077,
+    "Message": "Code Integrity determined that a process (\\Device\\HarddiskVolume3\\Users\\tocha\\.bun\\bin\\bun.exe) attempted to load \\Device\\HarddiskVolume3\\Users\\tocha\\AppData\\Local\\Temp\\zero-blocked-stdin-idPsfx\\bin\\windows-job-9fa673208b27f34f9eb841871da30780cfe5bb2cb76ef16473e4c623fd384790.exe that did not meet the Enterprise signing level requirements or violated code integrity policy (Policy ID:{0283ac0f-fff1-49ae-ada1-8a933130cad6})."
+  },
+  {
+    "TimeCreated": "2026-10-15T20:27:42.595471-03:00",
+    "Id": 3033,
+    "Message": "Code Integrity determined that a process (\\Device\\HarddiskVolume3\\Users\\tocha\\.bun\\bin\\bun.exe) attempted to load \\Device\\HarddiskVolume3\\Users\\tocha\\AppData\\Local\\Temp\\zero-blocked-stdin-idPsfx\\bin\\windows-job-9fa673208b27f34f9eb841871da30780cfe5bb2cb76ef16473e4c623fd384790.exe that did not meet the Enterprise signing level requirements."
+  }
+]

@@ -12,12 +12,15 @@ import type { ResendInviteService } from '../../application/admin/resend-invite/
 import type { SearchProfilesService } from '../../application/admin/search-profiles/search-profiles.service'
 import type { SetUserPasswordService } from '../../application/admin/set-password/set-user-password.service'
 import type { UpdateUserService } from '../../application/admin/update-user/update-user.service'
+import type { BrowserSessionService } from '../../application/browser/browser-session.service'
+import type { DesktopSessionService } from '../../application/desktop/desktop-session.service'
 import type { EnsureBuyerService } from '../../application/ensure-buyer/ensure-buyer.service'
 import type { GetMeService } from '../../application/get-me/get-me.service'
 import type { GetOwnProfileService } from '../../application/get-me/get-own-profile.service'
 import type { ChangeImpersonationModeService } from '../../application/impersonation/change-impersonation-mode.service'
 import type { CreateImpersonationTokenService } from '../../application/impersonation/create-impersonation-token.service'
 import type { ExchangeImpersonationTokenService } from '../../application/impersonation/exchange-impersonation-token.service'
+import type { ReadProfileCohortService } from '../../application/internal/read-profile-cohort.service'
 import type { WriteAuditLogService } from '../../application/internal/write-audit-log/write-audit-log.service'
 import type { LoginService } from '../../application/login/login.service'
 import type { LogoutService } from '../../application/logout/logout.service'
@@ -31,6 +34,7 @@ import type { ForgotPasswordService } from '../../application/password-reset/for
 import type { ResetPasswordService } from '../../application/password-reset/reset-password.service'
 import type { RefreshService } from '../../application/refresh/refresh.service'
 import type { RegisterService } from '../../application/register/register.service'
+import type { StaffOperationsService } from '../../application/staff/staff-operations.service'
 import type { StudyAccessService } from '../../application/study-access/study-access.service'
 import type { ProfileRepository } from '../../domain/ports/profile-repository.port'
 import type { TokenIssuer } from '../../domain/ports/token-issuer.port'
@@ -41,13 +45,20 @@ import { PayloadTooLargeError } from './errors'
 import { isOversizeBody, markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { authRoutes } from './routes/auth.routes'
+import { browserRoutes } from './routes/browser.routes'
+import { desktopRoutes } from './routes/desktop.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { impersonationRoutes } from './routes/impersonation.routes'
 import { internalRoutes } from './routes/internal.routes'
+import { profileCohortRoutes } from './routes/profile-cohort.routes'
 import { type ProfilesRoutesDeps, profilesRoutes } from './routes/profiles.routes'
+import { staffRoutes } from './routes/staff.routes'
 import { studyAccessRoutes } from './routes/study-access.routes'
 
 export interface HttpDeps {
+  staffOperations?: StaffOperationsService
+  browserSessions?: BrowserSessionService
+  desktopSessions?: DesktopSessionService
   studyAccess?: StudyAccessService
   env: Env
   logger: Logger
@@ -88,6 +99,7 @@ export interface HttpDeps {
   /** Report dos pais (S2S members): identidade mínima em lote (users/emails + profiles/batch). */
   users: UserRepository
   profilesRepo: ProfileRepository
+  readProfileCohort: ReadProfileCohortService
   /** Gerenciamento de perfis (estilo Netflix) pelo responsável. */
   profiles: ProfilesRoutesDeps
 }
@@ -98,10 +110,13 @@ export interface HttpDeps {
  */
 export function createServer(deps: HttpDeps) {
   const app = new Elysia({
-    serve: { maxRequestBodySize: deps.env.MAX_REQUEST_BODY_BYTES },
+    serve: { maxRequestBodySize: Math.max(deps.env.MAX_REQUEST_BODY_BYTES, 2_032_768) },
   })
     .onParse({ as: 'global' }, async ({ request, contentType }) => {
-      const maxBytes = deps.env.MAX_REQUEST_BODY_BYTES
+      const maxBytes =
+        new URL(request.url).pathname === '/auth/staff/operations'
+          ? 2_032_768
+          : deps.env.MAX_REQUEST_BODY_BYTES
       const declared = Number(request.headers.get('content-length') ?? '0')
       if (Number.isFinite(declared) && declared > maxBytes) {
         markOversizeBody(request)
@@ -144,6 +159,9 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
+  if (deps.desktopSessions)
+    app.use(desktopRoutes({ service: deps.desktopSessions, tokenIssuer: deps.tokenIssuer }))
+  if (deps.browserSessions) app.use(browserRoutes(deps.browserSessions))
   return app
     .use(
       deps.studyAccess
@@ -156,6 +174,7 @@ export function createServer(deps: HttpDeps) {
         : new Elysia(),
     )
     .use(healthRoutes(deps.readiness))
+    .use(deps.staffOperations ? staffRoutes(deps.staffOperations) : new Elysia())
     .use(
       authRoutes({
         trustProxy: deps.env.TRUST_PROXY,
@@ -174,6 +193,12 @@ export function createServer(deps: HttpDeps) {
         resetPasswordWithOtp: deps.resetPasswordWithOtp,
         updateProfile: deps.updateProfile,
         changeMyPassword: deps.changeMyPassword,
+      }),
+    )
+    .use(
+      profileCohortRoutes({
+        read: deps.readProfileCohort,
+        internalToken: deps.env.AUTH_INTERNAL_TOKEN,
       }),
     )
     .use(

@@ -12,6 +12,15 @@ const VIMEO_ACCEPT = 'application/vnd.vimeo.*+json;version=3.4'
 const VIMEO_API_TIMEOUT_MS = 30_000
 const VIMEO_BYTES_TIMEOUT_MS = 60_000
 
+export class VimeoApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message)
+  }
+}
+
 function requireAccessToken(): string {
   const token = getEnv().VIMEO_ACCESS_TOKEN
   if (!token) {
@@ -42,8 +51,9 @@ async function vimeoFetch<T>(
   })
   if (!response.ok) {
     const body = await response.text().catch(() => '')
-    throw new Error(
+    throw new VimeoApiError(
       `Vimeo API ${init.method ?? 'GET'} ${path} falhou (${response.status}): ${body.slice(0, 300)}`,
+      response.status,
     )
   }
   if (options.skipJsonParse || response.status === 204) return undefined as T
@@ -129,6 +139,38 @@ export async function createUploadTicket(input: {
     uploadLink: response.upload.upload_link,
     embedUrl: response.player_embed_url ?? buildEmbedUrl(vimeoVideoId, hash),
   }
+}
+
+/**
+ * Cria o vídeo por `pull`: o VIMEO baixa o arquivo do `link` (a URL GET temporária do MP4 da
+ * gravação no R2). O tamanho é obrigatório na API. Mesma privacidade dos vídeos das aulas:
+ * `view=disable` + `embed=whitelist` + sem download.
+ */
+export async function createPullUpload(input: {
+  link: string
+  sizeBytes: number
+  name: string
+}): Promise<{ vimeoVideoId: string; embedUrl: string }> {
+  const response = await vimeoFetch<VimeoCreateVideoResponse>('/me/videos', {
+    method: 'POST',
+    body: JSON.stringify({
+      upload: { approach: 'pull', size: String(input.sizeBytes), link: input.link },
+      name: input.name,
+      privacy: { view: 'disable', embed: 'whitelist', download: false },
+    }),
+  })
+  if (!response?.uri) throw new Error('Resposta do Vimeo sem uri')
+  const vimeoVideoId = parseVimeoIdFromUri(response.uri)
+  const hash = parsePlaybackHash(response.player_embed_url)
+  return {
+    vimeoVideoId,
+    embedUrl: response.player_embed_url ?? buildEmbedUrl(vimeoVideoId, hash),
+  }
+}
+
+/** Apaga um vídeo (a gravação que não chegou a ser registrada no members). */
+export async function deleteVideo(vimeoVideoId: string): Promise<void> {
+  await vimeoFetch(`/videos/${vimeoVideoId}`, { method: 'DELETE' }, { skipJsonParse: true })
 }
 
 /** Garante a whitelist de domínios de embed do vídeo. */

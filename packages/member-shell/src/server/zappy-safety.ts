@@ -6,7 +6,7 @@ const CPF_RE = /\b\d{3}[.-]?\d{3}[.-]?\d{3}-?\d{2}\b/g
 const BIRTH_DATE_RE = /\b(?:0?[1-9]|[12]\d|3[01])[/-](?:0?[1-9]|1[0-2])[/-](?:19|20)\d{2}\b/g
 const PHONE_RE = /(?<!\d)(?:\+?55\s*)?(?:\(?\d{2}\)?[\s.-]*)?9?\d{4}[\s.-]*\d{4}(?!\d)/g
 const SOCIAL_HANDLE_RE =
-  /\b(?:instagram|insta|tiktok|discord|rede social)\s*(?:e|é|:)?\s*@?[a-z0-9_.-]{2,32}/giu
+  /\b(?:instagram|insta|tiktok|discord|rede social)\b\s*(?:e|é|:)?\s*@?[a-z0-9_.-]{2,32}/giu
 const LABELED_PII_RE =
   /\b(?:meu|minha)\s+(?:nome(?: completo)?|endereço|endereco|escola|telefone|celular|e-mail|email)\s*(?:é|e|:|fica em)\s*[^,.!?\n]{2,120}/giu
 const CHILD_IDENTITY_RE = /\bme chamo\s+[^,.!?\n]{2,80}/giu
@@ -42,13 +42,16 @@ export function redactZappyPii(value: string): { text: string; hadPii: boolean }
   return { text: valueAfter, hadPii }
 }
 
-export function redactZappySensitiveText(value: string): {
+export function redactZappySensitiveText(
+  value: string,
+  syntax: 'javascript' | 'python' = 'javascript',
+): {
   text: string
   hadPii: boolean
   hadSecret: boolean
 } {
   const pii = redactZappyPii(value)
-  const secret = redactStudioTutorSecrets(pii.text)
+  const secret = redactStudioTutorSecrets(pii.text, syntax)
   return { text: secret.text, hadPii: pii.hadPii, hadSecret: secret.hadSecret }
 }
 

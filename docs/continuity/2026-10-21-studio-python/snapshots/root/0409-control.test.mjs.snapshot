@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {spawn} from 'node:child_process';
+import {randomBytes} from 'node:crypto';
+import {context,serviceContexts,validateBinding,acceptRemoteLine,makeSecretSender,secretEnvelope} from './contract.mjs';
+import {runOwnedScenario} from './run.mjs';
+const attemptId='00000000-0000-4000-8000-000000000001',actorId='00000000-0000-4000-8000-000000000002';
+const expected={attemptId,actorId};
+const ready={kind:'ready',...expected,contextVerified:true,sourcePinsVerified:true,absenceVerified:true};
+const at=Date.parse('2026-10-21T06:00:00.000Z'),hash='a'.repeat(64);
+const binding=()=>({attemptId,serviceContexts:structuredClone(serviceContexts),browserChannel:'chrome',createExclusiveStaff:true,expiresAt:new Date(at+300000).toISOString(),observedAt:new Date(at).toISOString(),planSha256:hash,windowOwner:'Root'});
+test('binding accepts its exact offline schema; no authority is created',()=>assert.equal(validateBinding(binding(),hash,at).attemptId,attemptId));
+for(const [name,change]of [
+ ['wrong stage deployment',v=>v.serviceContexts.auth.deploymentId=actorId],['wrong source',v=>v.serviceContexts.auth.commitSha='b'.repeat(40)],
+ ['wrong community deployment',v=>v.serviceContexts.community.deploymentId=actorId],['wrong members deployment',v=>v.serviceContexts.members.deploymentId=actorId],
+ ['wrong plan',v=>v.planSha256='b'.repeat(64)],['wrong browser',v=>v.browserChannel='edge'],
+ ['not authorized',v=>v.createExclusiveStaff=false],['foreign owner',v=>v.windowOwner='other'],
+ ['expired',v=>v.expiresAt=new Date(at-1).toISOString()],['stale observation',v=>v.observedAt=new Date(at-300001).toISOString()],
+ ['extra secret field',v=>v.password='not-permitted']
+])test('binding rejects '+name,()=>{const v=binding();change(v);assert.throws(()=>validateBinding(v,hash,at));});
+test('secret generation and send happen only once after complete READY; forget removes access',()=>{
+ let generated=0,sent=0;const gate=makeSecretSender(expected,()=>{generated++;return randomBytes(32).toString('hex')},body=>{sent++;assert.equal(JSON.parse(body).attemptId,attemptId)});
+ assert.equal(generated,0);assert.equal(gate.hasSent(),false);assert.throws(()=>gate.password());
+ assert.throws(()=>gate.onReady({...ready,absenceVerified:false}));assert.equal(generated,0);assert.equal(sent,0);
+ gate.onReady(ready);assert.equal(generated,1);assert.equal(sent,1);assert.equal(gate.hasSent(),true);assert.equal(gate.password().length,64);
+ assert.throws(()=>gate.onReady(ready));assert.equal(sent,1);gate.forget();assert.throws(()=>gate.password());
+});
+for(const [name,value]of [['foreign actor',{...ready,actorId:attemptId}],['unverified context',{...ready,contextVerified:false}],['raw error',{...ready,error:'forbidden'}],['credential field',{...ready,password:'forbidden'}]])
+ test('remote protocol rejects '+name,()=>assert.throws(()=>acceptRemoteLine(JSON.stringify(value),expected)));
+test('failure terminal does not become successful creation',()=>{
+ const v=acceptRemoteLine(JSON.stringify({kind:'terminal',...expected,ok:false,phase:'create',created:false,dbClosed:true,emailOutbound:false,creationOutcome:'unknown'}),expected);
+ assert.equal(v.ok,false);assert.equal(v.creationOutcome,'unknown');
+ assert.throws(()=>acceptRemoteLine(JSON.stringify({...v,ok:true}),expected));
+});
+test('JSON pipe carries a generated secret without embedding it in source or argv',async()=>{
+ const secret=randomBytes(32).toString('hex');
+ const source="let b='';process.stdin.setEncoding('utf8');process.stdin.on('data',x=>b+=x);process.stdin.on('end',()=>{try{const v=JSON.parse(b);if(Object.keys(v).sort().join(',')!=='attemptId,password'||!/^"+attemptId+"$/.test(v.attemptId)||!/^[a-f0-9]{64}$/.test(v.password))throw 0;process.stdout.write(JSON.stringify({accepted:true,bytes:Buffer.byteLength(v.password)}));}catch{process.exitCode=1}})";
+ const argv=['--input-type=module','--eval',source];assert(!argv.some(x=>x.includes(secret)));
+ const child=spawn(process.execPath,argv,{stdio:['pipe','pipe','pipe'],windowsHide:true});let output='',errorBytes=0;
+ child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>errorBytes+=b.length);
+ const closed=new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',(code,signal)=>resolve({code,signal}));});
+ child.stdin.end(secretEnvelope(attemptId,secret));
+ assert.deepEqual(await closed,{code:0,signal:null});assert.deepEqual(JSON.parse(output),{accepted:true,bytes:64});assert.equal(errorBytes,0);assert(!output.includes(secret));
+});
+test('aborted owner refuses before any file/auth/spawn operation',async()=>{
+ const controller=new AbortController();controller.abort();
+ await assert.rejects(runOwnedScenario({browser:{isConnected:()=>true},signal:controller.signal,requestStop:()=>{throw Error('must not run')}}));
+});
+

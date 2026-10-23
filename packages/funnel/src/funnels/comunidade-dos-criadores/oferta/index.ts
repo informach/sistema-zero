@@ -1,28 +1,32 @@
-import { PAGE_B } from './criacao-de-jogos'
-import { PAGE_C } from './expressao-visual'
-import { PAGE_D } from './formacao-tecnologica'
-import { PAGE_A } from './tempo-de-tela'
-import type { ComunidadePage, ComunidadePageId, ComunidadeProfile } from './types'
+import type { ComunidadeOfertaId } from './types'
 
-export const COMUNIDADE_PAGES: Record<ComunidadePageId, ComunidadePage> = {
-  'tempo-de-tela': PAGE_A,
-  'criacao-de-jogos': PAGE_B,
-  'expressao-visual': PAGE_C,
-  'formacao-tecnologica': PAGE_D,
-  continuar: PAGE_E,
+/** As subpáginas de `/oferta/<id>` (a 9 a 17 é a própria `/oferta`). */
+export const COMUNIDADE_SUBPAGINAS = ['criar-junto', 'continuar'] as const
+export type ComunidadeSubpagina = (typeof COMUNIDADE_SUBPAGINAS)[number]
+
+export function isComunidadeSubpagina(value: unknown): value is ComunidadeSubpagina {
+  return typeof value === 'string' && (COMUNIDADE_SUBPAGINAS as readonly string[]).includes(value)
 }
 
-export function isComunidadeProfile(value: unknown): value is ComunidadeProfile {
-  return value !== 'continuar' && isComunidadePage(value)
+/**
+ * As cinco páginas de perfil que existiram até 20/10/2026. Os links antigos (resultado do quiz v5,
+ * anúncios, mensagens) chegam à página de 9 a 17 por redirecionamento permanente, com a query.
+ */
+export const COMUNIDADE_OFERTAS_ANTIGAS = [
+  'tempo-de-tela',
+  'criacao-de-jogos',
+  'expressao-visual',
+  'formacao-tecnologica',
+  'habilidades-escolares',
+] as const
+
+export function isComunidadeOfertaAntiga(value: unknown): boolean {
+  return (
+    typeof value === 'string' && (COMUNIDADE_OFERTAS_ANTIGAS as readonly string[]).includes(value)
+  )
 }
 
-export function isComunidadePage(value: unknown): value is ComunidadePageId {
-  return typeof value === 'string' && Object.hasOwn(COMUNIDADE_PAGES, value)
-}
-
-export function comunidadeOfferPath(profile: ComunidadePageId): string {
+export function comunidadeOfferPath(id: ComunidadeOfertaId): string {
   const base = '/kids/comunidade-dos-criadores/oferta'
-  return profile === 'tempo-de-tela' ? base : `${base}/${profile}`
+  return id === '9a17' ? base : `${base}/${id}`
 }
-
-import { PAGE_E } from './continuidade'

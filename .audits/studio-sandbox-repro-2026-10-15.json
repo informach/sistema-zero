@@ -1,0 +1,51 @@
+{
+  "root": "C:\\Users\\tocha\\Downloads\\sandbox-main\\sandbox-main",
+  "generatedAt": "2026-10-15T18:59:58.197Z",
+  "scope": "Original reviewed functions; isolated adapters; no external services or full-app validation.",
+  "threeRevisionUsedForVectors": "180",
+  "cases": 10,
+  "results": {
+    "expansion": {
+      "bytes": 128001,
+      "subsequentRead": "main.js is 128001 bytes, over the 128000 byte read limit. Split it into smaller modules."
+    },
+    "statFailure": {
+      "output": "No file at main.js.",
+      "logLevel": "info"
+    },
+    "promptOnlyProtection": {
+      "acceptedDeletes": [
+        "/home/daytona/game/report.js",
+        "/home/daytona/game/engine/index.js"
+      ]
+    },
+    "concurrentReplacement": {
+      "actual": "A BB",
+      "expected": "AA BB",
+      "scope": "In-memory I/O scheduling; not a Daytona integration test."
+    },
+    "previewUrl": {
+      "sanitized": "https://3000-SYNTHETIC_TOKEN.proxy.example/main.js"
+    },
+    "gamepadDisconnect": {
+      "jumpHeldAfterDisconnect": true
+    },
+    "mixedInput": {
+      "keyboardStillPhysicallyHeld": true,
+      "actionAfterPadRelease": false
+    },
+    "audioDisposal": {
+      "listenersBeforeDispose": 3,
+      "listenersAfterDispose": 3,
+      "scope": "EventTarget adapter; no real audio device."
+    },
+    "pool": {
+      "configuredSize": 2,
+      "live": 5,
+      "allocated": 5
+    },
+    "storageAcknowledgement": {
+      "returnedOnFailedWrite": 10
+    }
+  }
+}

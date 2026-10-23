@@ -1,0 +1,1 @@
+CREATE INDEX "editorial_changes_snapshot_idx" ON "marketing"."editorial_changes" USING btree ("project_id","entity_id","sequence" DESC NULLS LAST) WHERE "marketing"."editorial_changes"."type" in ('revision', 'archive');

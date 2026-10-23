@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { InteractiveBlock } from '@sistemazero/core/learning'
 import type {
   QuizQuestionSpeech,
@@ -11,17 +12,7 @@ import type {
  */
 
 // Tipos do editor embarcável (bloco `studio`) — type-only (erasado em runtime).
-// As atividades (auto-correção) reusam os tipos PÚBLICOS do @sistemazero/studio
-// (sem mirror próprio — evita drift; o members tem o espelho do lado servidor).
-import type {
-  AnyBlockLevel,
-  CheckResult,
-  IDEMode,
-  LessonActivity,
-  Project,
-} from '@sistemazero/studio'
-
-export type { ActivityCheck, CheckResult, LessonActivity } from '@sistemazero/studio'
+import type { AnyBlockLevel, EditableStudioProject, IDEMode } from '@sistemazero/studio'
 
 export interface SessionUser {
   id: string
@@ -202,6 +193,7 @@ export interface AiUsageTopAccountView {
 
 /** Agregados do mês (mirror do members + identidades hidratadas). */
 export interface AiUsageStatsView {
+  studioCosts?: import('@sistemazero/core/ai-credits').StudioAiCostGroup[]
   month: string
   monthUsed: number
   todayUsed: number
@@ -230,6 +222,8 @@ export interface MemberActivityItemView {
   score?: number | null
   passed?: boolean | null
   message?: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
 }
 
 export interface MemberActivityPage {
@@ -332,6 +326,17 @@ export const AUDIENCE_LABELS: Record<CourseAudience, string> = {
 }
 
 /**
+ * Modalidade do curso (14/10/2026): gravado (trilha, Jornada, catálogo) ou ao vivo (só em
+ * Oficinas: cada aula publicada é um encontro de uma turma). Contrato em
+ * `@sistemazero/core/course/modality`; aqui ficam só os rótulos do painel.
+ */
+export type { CourseModality }
+export const COURSE_MODALITY_LABELS: Record<CourseModality, string> = {
+  recorded: 'Gravado',
+  live: 'Ao vivo',
+}
+
+/**
  * Dificuldade do curso. As 3 primeiras alimentam o nível do ALUNO (degraus da
  * jornada). `lenda` é uma categoria À PARTE, FORA da jornada: cursos bônus "de
  * formatura" que aparecem só na trilha da Lenda (kids) — NÃO é degrau, por isso NÃO
@@ -401,6 +406,11 @@ export interface CourseView {
   status: string
   /** Plataforma do curso (`adult` | `kids`) — a chave-mestra cobre só `adult`. */
   audience: CourseAudience
+  /**
+   * Gravado ou ao vivo. Opcional para tolerar members antigo: ausente = gravado
+   * (`courseModalityOf` do core).
+   */
+  modality?: CourseModality
   /** Dificuldade do curso (`iniciante` | `intermediario` | `avancado`). */
   level: CourseLevel
   /** Eixo 2D/3D (par com `level` = degrau). Opcional p/ tolerar members antigo. */
@@ -595,18 +605,24 @@ export interface EbookBlock {
  * campos são a config de aprendizado (nível, allowlist de blocos, modos).
  */
 export interface StudioBlock {
+  pythonLevel?: 1 | 2 | 3
   gallery?: import('@sistemazero/core/learning').GalleryDeliveryConfig
   purpose?: 'experiment' | 'submission'
   kind: 'studio'
-  initialProject: Project
+  initialProject: EditableStudioProject
   /** Aceita a escala LEGADA (aulas pré-reforma 2D/3D); o editor normaliza no load. */
   level?: AnyBlockLevel
   allowBlocks?: string[]
   allowCategories?: string[]
   allowedModes?: IDEMode[]
   allowLevelReveal?: boolean
-  /** Atividade com auto-correção (fase 2). Ausente = bloco só de entrega. */
-  activity?: LessonActivity
+  /**
+   * O GABARITO da professora (18/10/2026): o projeto pronto. Só a equipe vê (o members o tira da
+   * aula do aluno); serve ao "Testar agora" dos objetivos e à publicação.
+   */
+  solutionProject?: EditableStudioProject
+  /** Private per-part registry; narrow through the Core authoring reader before using it. */
+  projectExamples?: unknown
   /** Nome do projeto contínuo (cadeia). Aulas com o mesmo nome carregam o código entre si. */
   chain?: string
   /** Vitrine (Mural dos Criadores): config da auto-publicação ao concluir a última aula. */
@@ -728,12 +744,10 @@ export interface StudioSubmissionRow {
   accountEmail: string | null
   /** Nome da CRIANÇA (perfil) quando a entrega veio de um perfil; `null` no adulto. */
   childName: string | null
-  /** Correção automática (atividade): nota/aprovado; `null` sem atividade. */
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
 }
 
 /**
@@ -751,17 +765,14 @@ export interface StudioSubmissionCourseRow extends StudioSubmissionRow {
   moduleTitle: string
 }
 
-/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin) + correção. */
+/** Projeto enviado por um aluno (abrir no Estúdio embutido do admin). */
 export interface StudioSubmissionDetailView {
-  project: Project
+  project: EditableStudioProject
   submittedAt: string
-  score: number | null
-  /** Resultado por checagem (`verifiedBy`: server recalculado × client reportado). */
-  results: CheckResult[] | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
   /** ISO do carimbo "já conferi"; `null` = nunca conferida. */
   reviewedAt: string | null
   /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
@@ -775,7 +786,7 @@ export interface StudioSubmissionDetailView {
 
 /** A versão anterior de uma entrega (backup do reenvio) — baixar/inspecionar. */
 export interface StudioSubmissionPreviousView {
-  project: Project
+  project: EditableStudioProject
   submittedAt: string
 }
 
@@ -804,11 +815,10 @@ export interface StudioSubmissionQueueRow {
   courseTitle: string
   audience: 'adult' | 'kids'
   submittedAt: string
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado opcional do aluno no envio. */
   message: string | null
+  /** O recado veio da fala transcrita (14/10/2026). */
+  messageSpoken?: boolean
   /** Há resposta do professor após o último envio. */
   answered: boolean
   /**
@@ -843,6 +853,8 @@ export interface TeacherMessageView {
   authorId: string | null
   authorName: string | null
   body: string
+  /** O texto veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
+  spoken?: boolean
   createdAt: string
 }
 

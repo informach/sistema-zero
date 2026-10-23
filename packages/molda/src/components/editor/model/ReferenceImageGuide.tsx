@@ -48,7 +48,7 @@ export function ReferenceImageGuide({
     setOpen(false)
   }
   return (
-    <div className="relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_50%_30%,color-mix(in_oklab,var(--color-mld-surface)_70%,var(--color-mld-bg)),var(--color-mld-bg))]">
+    <div className="mld-stage-surface relative min-h-0 flex-1 overflow-hidden bg-[radial-gradient(circle_at_50%_30%,color-mix(in_oklab,var(--color-mld-surface)_70%,var(--color-mld-bg)),var(--color-mld-bg))]">
       {children}
       {available && reference.image && placement.visible && boundView === view && !disabled && (
         <img

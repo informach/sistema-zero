@@ -2,12 +2,27 @@ import 'server-only'
 import { z } from 'zod'
 
 /**
+ * URL pública de outro console (opcional). Em branco ou inválida conta como AUSENTE: é só um
+ * link, e o `getEnv` roda em toda página — uma variável mal preenchida no Railway não pode
+ * derrubar o app inteiro (o sintoma do erro é o link não aparecer). Só http(s): o valor vira
+ * `href`.
+ */
+export const optionalAppUrl = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z
+    .url({ protocol: /^https?$/ })
+    .optional()
+    .catch(undefined),
+)
+
+/**
  * Env do servidor (fail-fast). NUNCA é importado por Client Component — `server-only`
  * garante o erro de build se vazar para o bundle do cliente.
  */
 const EnvSchema = z
   .object({
     GATEWAY_URL: z.string().url().default('http://localhost:3000'),
+    MEMBER_SHELL_HMAC_SECRET: z.string().min(24).optional(),
     // Verificação do access JWT — HS256 (segredo compartilhado; dev/local) e/ou
     // RS256 via JWKS (PRODUÇÃO: o auth emite RS256 e não há segredo HS256 lá —
     // aponte p/ o gateway: <GATEWAY_URL>/auth/.well-known/jwks.json).
@@ -25,12 +40,20 @@ const EnvSchema = z
     // mas precisa estar completo quando a autoria Pro for utilizada.
     STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
     STUDIO_PRO_RUNTIME_TOKEN: z.string().min(24).optional(),
+    // Serviço privado de análise do Pro Python; credenciais nunca chegam ao editor.
+    STUDIO_PYTHON_LANGUAGE_URL: z.string().url().optional(),
+    STUDIO_PYTHON_LANGUAGE_TOKEN: z.string().min(32).optional(),
 
     // "Ver como aluno" (editor de aula): URLs públicas dos apps de aluno — a
     // equipe abre a aula PUBLICADA no app certo pela audience (passe livre da
     // equipe). OPCIONAIS: ausentes → o botão fica oculto.
     COMMUNITY_URL: z.string().url().optional(),
     KIDS_COMMUNITY_URL: z.string().url().optional(),
+
+    // Os outros consoles da equipe (menu do avatar + botão do painel de Atendimento), abertos
+    // em nova aba. OPCIONAIS: ausentes → o link some.
+    HELPDESK_APP_URL: optionalAppUrl,
+    MARKETING_APP_URL: optionalAppUrl,
 
     // ── Upload de mídia (opcionais: sem eles a feature responde "indisponível",
     //    não derruba o boot — os adapters validam presença com erro amigável) ──
@@ -44,6 +67,10 @@ const EnvSchema = z
     R2_PRIVATE_BUCKET: z.string().optional(),
     // Bucket PRIVADO de UGC da comunidade (anexos de tópicos/comentários).
     R2_UGC_BUCKET: z.string().optional(),
+    // Bucket das GRAVAÇÕES dos encontros ao vivo (o `R2_BUCKET` do live-recorder), quando não é
+    // o `R2_PRIVATE_BUCKET`. O Admin assina nele a URL que o Vimeo baixa ao publicar a gravação;
+    // as credenciais R2 acima precisam ler esse bucket. Ausente = só o privado é aceito.
+    LIVE_RECORDING_BUCKET: z.string().optional(),
     // A voz do Zappy (ElevenLabs): geração do áudio das falas na AUTORIA.
     // ⚠⚠ A chave vive SÓ no admin. O community/kids nunca fala com o ElevenLabs: o que chega
     // na criança é MP3 no R2. Sem a chave, o botão de gerar responde 503 e a cena continua na
@@ -80,6 +107,13 @@ const EnvSchema = z
     message: 'Configure STUDIO_PRO_RUNTIME_URL e STUDIO_PRO_RUNTIME_TOKEN juntos',
     path: ['STUDIO_PRO_RUNTIME_URL'],
   })
+  .refine(
+    (e) => Boolean(e.STUDIO_PYTHON_LANGUAGE_URL) === Boolean(e.STUDIO_PYTHON_LANGUAGE_TOKEN),
+    {
+      message: 'Configure STUDIO_PYTHON_LANGUAGE_URL e STUDIO_PYTHON_LANGUAGE_TOKEN juntos',
+      path: ['STUDIO_PYTHON_LANGUAGE_URL'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

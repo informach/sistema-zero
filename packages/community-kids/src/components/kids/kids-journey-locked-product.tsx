@@ -1,6 +1,5 @@
 import { BookOpen } from 'lucide-react'
 import Link from 'next/link'
-import { levelInfo } from '@/lib/level-info'
 import { KidsRecado } from './kids-recado'
 import { KidsMascot } from './mascot'
 
@@ -8,20 +7,22 @@ import { KidsMascot } from './mascot'
 export function KidsJourneyLockedProduct({
   title,
   intro,
-  minLevelSlug,
+  heading,
+  detail,
 }: {
   title: string
   intro: string
-  minLevelSlug: string
+  /** O título próprio da ferramenta (sem ele, "{title} faz parte da sua jornada"). */
+  heading?: string
+  /** A segunda frase própria (sem ela, a frase geral de continuar a jornada). */
+  detail?: string
 }) {
-  const level = levelInfo(minLevelSlug)
   return (
     <KidsRecado
       art={<KidsMascot expression="sleeping" className="kid-float size-24" />}
-      // O ícone e o nome do posto saem do LEVEL_INFO, como em toda a jornada.
-      chip={`Abre no ${level.label}`}
-      chipIcon={level.icon}
-      title={`${title} faz parte da sua jornada`}
+      chip="Próxima conquista"
+      chipIcon={BookOpen}
+      title={heading ?? `${title} faz parte da sua jornada`}
       actions={
         <Link href="/cursos" className="sz-btn-gradient">
           <BookOpen className="size-4" aria-hidden /> Ver a minha jornada
@@ -30,8 +31,8 @@ export function KidsJourneyLockedProduct({
     >
       <p>{intro}</p>
       <p className="text-[0.9375rem]">
-        Ele abre quando você chegar no nível <strong>{level.label}</strong>. Continue as suas
-        aventuras e publique os seus projetos. No mapa você pode ver suas próximas conquistas.
+        {detail ??
+          'Continue sua jornada para liberar esta ferramenta. No mapa você pode ver suos próximos cursos e conquistas.'}
       </p>
     </KidsRecado>
   )

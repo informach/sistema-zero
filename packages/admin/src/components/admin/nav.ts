@@ -1,8 +1,10 @@
 import {
   BookOpen,
+  CalendarDays,
   CreditCard,
   Gift,
   GraduationCap,
+  Headset,
   Home,
   Inbox,
   LayoutDashboard,
@@ -65,6 +67,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       // 1º item do grupo = destino do `homeForRole` (a Home do professor É a home do painel).
       { label: 'Início', href: '/admin/professor', icon: Home },
+      { label: 'Ao vivo', href: '/admin/professor/ao-vivo', icon: CalendarDays },
       {
         label: 'Entregas',
         href: '/admin/professor/entregas',
@@ -73,6 +76,8 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { label: 'Recados', href: '/admin/professor/recados', icon: Mail, badgeKey: 'recados' },
       { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
+      { label: 'Jornada adulta', href: '/admin/professor/jornada-adulta', icon: GraduationCap },
+      { label: 'Jornada Kids', href: '/admin/professor/jornada-kids', icon: GraduationCap },
       {
         label: 'Moderação',
         href: '/admin/comunidade/moderacao',
@@ -105,12 +110,15 @@ export const NAV_GROUPS: NavGroup[] = [
         match: '/admin/catalogo',
       },
       { label: 'Uso de IA', href: '/admin/ia', icon: Sparkles },
+      // Somente leitura: o trabalho acontece no app de atendimento (outra aba).
+      { label: 'Atendimento', href: '/admin/atendimento', icon: Headset },
     ],
   },
   {
     id: 'config',
     label: 'Configuração',
     items: [
+      { label: 'Oficinas ao vivo', href: '/admin/oficinas', icon: CalendarDays },
       { label: 'Cursos', href: '/admin/membros/cursos', icon: BookOpen },
       // A biblioteca de ajuda do Kids ("Como fazer", 26/09/2026): conteúdo GLOBAL, sem o
       // seletor de plataforma (só existe no kids), no lugar da autoria.
@@ -236,6 +244,8 @@ const PLATFORM_SCOPED_PREFIXES = [
   '/admin/professor',
   '/admin/comunidade/moderacao',
   '/admin/membros',
+  // Oficinas ao vivo: as turmas dos cursos ao vivo DA plataforma ativa (14/10/2026).
+  '/admin/oficinas',
 ] as const
 
 export function pathIsPlatformScoped(pathname: string): boolean {

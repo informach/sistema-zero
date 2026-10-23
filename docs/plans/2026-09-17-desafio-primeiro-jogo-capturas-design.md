@@ -9,8 +9,8 @@ essa compra, sem sugerir acesso à Comunidade do Criador ou às ferramentas vend
 ## Decisão
 
 Usar uma fixture visual local e reproduzível. Ela monta componentes reais da plataforma com dados
-fictícios derivados dos manifestos em `docs/aulas-interativas/desafio-primeiro-jogo-v6` e dos
-projetos progressivos em `docs/aulas-interativas/qa/desafio-projetos-qa.ts`.
+fictícios derivados dos manifestos em `docs/aulas-interativas/kids/desafio-primeiro-jogo-v6` e dos
+projetos progressivos em `docs/aulas-interativas-tecnico/qa/desafio-projetos-qa.ts`.
 
 A fixture fica em `packages/community-kids/tests/visual`, fora das rotas de produção. Nenhum mock,
 perfil ou dado promocional será publicado no aplicativo. Um script de captura abre o ensaio local,

@@ -1,0 +1,966 @@
+{
+  "method": "Runtime oficial, mesmos comandos e parâmetros; somente jump 9/15. Trilha editorial calculada a partir das posições medidas. Capturas no primeiro pouso e no primeiro contato com teto; ambas as versões executadas por 40 passos.",
+  "variants": [
+    {
+      "variant": "curto",
+      "jump": 9,
+      "captured": {
+        "frame": 26,
+        "state": {
+          "x": 168,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        "trace": [
+          {
+            "x": 64,
+            "y": 140
+          },
+          {
+            "x": 68,
+            "y": 131,
+            "vy": -9,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 72,
+            "y": 122.6,
+            "vy": -8.4,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 76,
+            "y": 114.8,
+            "vy": -7.800000000000001,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 80,
+            "y": 107.6,
+            "vy": -7.200000000000001,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 84,
+            "y": 101,
+            "vy": -6.600000000000001,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 88,
+            "y": 95,
+            "vy": -6.000000000000002,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 92,
+            "y": 89.6,
+            "vy": -5.400000000000002,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 96,
+            "y": 84.8,
+            "vy": -4.8000000000000025,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 100,
+            "y": 80.6,
+            "vy": -4.200000000000003,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 104,
+            "y": 76.99999999999999,
+            "vy": -3.6000000000000028,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 108,
+            "y": 73.99999999999999,
+            "vy": -3.0000000000000027,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 112,
+            "y": 71.59999999999998,
+            "vy": -2.4000000000000026,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 116,
+            "y": 69.79999999999998,
+            "vy": -1.8000000000000025,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 120,
+            "y": 68.59999999999998,
+            "vy": -1.2000000000000024,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 124,
+            "y": 67.99999999999997,
+            "vy": -0.6000000000000024,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 128,
+            "y": 67.99999999999997,
+            "vy": -2.4424906541753444e-15,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 132,
+            "y": 68.59999999999997,
+            "vy": 0.5999999999999975,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 136,
+            "y": 69.79999999999997,
+            "vy": 1.1999999999999975,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 140,
+            "y": 71.59999999999997,
+            "vy": 1.7999999999999976,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 144,
+            "y": 73.99999999999996,
+            "vy": 2.3999999999999977,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 148,
+            "y": 76.99999999999996,
+            "vy": 2.999999999999998,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 152,
+            "y": 80.59999999999995,
+            "vy": 3.599999999999998,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 156,
+            "y": 84.79999999999995,
+            "vy": 4.1999999999999975,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 160,
+            "y": 89.59999999999995,
+            "vy": 4.799999999999997,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 164,
+            "y": 94.99999999999994,
+            "vy": 5.399999999999997,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 168,
+            "y": 96,
+            "vy": 0,
+            "onGround": true,
+            "onDestination": true,
+            "ceilingHit": false
+          }
+        ]
+      },
+      "trace": [
+        {
+          "x": 68,
+          "y": 131,
+          "vy": -9,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 72,
+          "y": 122.6,
+          "vy": -8.4,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 76,
+          "y": 114.8,
+          "vy": -7.800000000000001,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 80,
+          "y": 107.6,
+          "vy": -7.200000000000001,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 84,
+          "y": 101,
+          "vy": -6.600000000000001,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 88,
+          "y": 95,
+          "vy": -6.000000000000002,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 92,
+          "y": 89.6,
+          "vy": -5.400000000000002,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 96,
+          "y": 84.8,
+          "vy": -4.8000000000000025,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 100,
+          "y": 80.6,
+          "vy": -4.200000000000003,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 104,
+          "y": 76.99999999999999,
+          "vy": -3.6000000000000028,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 108,
+          "y": 73.99999999999999,
+          "vy": -3.0000000000000027,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 112,
+          "y": 71.59999999999998,
+          "vy": -2.4000000000000026,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 116,
+          "y": 69.79999999999998,
+          "vy": -1.8000000000000025,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 120,
+          "y": 68.59999999999998,
+          "vy": -1.2000000000000024,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 124,
+          "y": 67.99999999999997,
+          "vy": -0.6000000000000024,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 128,
+          "y": 67.99999999999997,
+          "vy": -2.4424906541753444e-15,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 132,
+          "y": 68.59999999999997,
+          "vy": 0.5999999999999975,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 136,
+          "y": 69.79999999999997,
+          "vy": 1.1999999999999975,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 140,
+          "y": 71.59999999999997,
+          "vy": 1.7999999999999976,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 144,
+          "y": 73.99999999999996,
+          "vy": 2.3999999999999977,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 148,
+          "y": 76.99999999999996,
+          "vy": 2.999999999999998,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 152,
+          "y": 80.59999999999995,
+          "vy": 3.599999999999998,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 156,
+          "y": 84.79999999999995,
+          "vy": 4.1999999999999975,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 160,
+          "y": 89.59999999999995,
+          "vy": 4.799999999999997,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 164,
+          "y": 94.99999999999994,
+          "vy": 5.399999999999997,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 168,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 172,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 176,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 180,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 184,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 188,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 192,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 196,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 200,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 204,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 208,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 212,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 216,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 220,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 224,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        }
+      ],
+      "initial": {
+        "x": 64,
+        "y": 140
+      }
+    },
+    {
+      "variant": "alto",
+      "jump": 15,
+      "captured": {
+        "frame": 7,
+        "state": {
+          "x": 92,
+          "y": 56,
+          "vy": 0,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": true
+        },
+        "trace": [
+          {
+            "x": 64,
+            "y": 140
+          },
+          {
+            "x": 68,
+            "y": 125,
+            "vy": -15,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 72,
+            "y": 110.6,
+            "vy": -14.4,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 76,
+            "y": 96.8,
+            "vy": -13.8,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 80,
+            "y": 83.6,
+            "vy": -13.200000000000001,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 84,
+            "y": 71,
+            "vy": -12.600000000000001,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 88,
+            "y": 59,
+            "vy": -12.000000000000002,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": false
+          },
+          {
+            "x": 92,
+            "y": 56,
+            "vy": 0,
+            "onGround": false,
+            "onDestination": false,
+            "ceilingHit": true
+          }
+        ]
+      },
+      "trace": [
+        {
+          "x": 68,
+          "y": 125,
+          "vy": -15,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 72,
+          "y": 110.6,
+          "vy": -14.4,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 76,
+          "y": 96.8,
+          "vy": -13.8,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 80,
+          "y": 83.6,
+          "vy": -13.200000000000001,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 84,
+          "y": 71,
+          "vy": -12.600000000000001,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 88,
+          "y": 59,
+          "vy": -12.000000000000002,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 92,
+          "y": 56,
+          "vy": 0,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": true
+        },
+        {
+          "x": 96,
+          "y": 56.6,
+          "vy": 0.6,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 100,
+          "y": 57.800000000000004,
+          "vy": 1.2,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 104,
+          "y": 59.6,
+          "vy": 1.7999999999999998,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 108,
+          "y": 62,
+          "vy": 2.4,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 112,
+          "y": 65,
+          "vy": 3,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 116,
+          "y": 68.6,
+          "vy": 3.6,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 120,
+          "y": 72.8,
+          "vy": 4.2,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 124,
+          "y": 77.6,
+          "vy": 4.8,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 128,
+          "y": 83,
+          "vy": 5.3999999999999995,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 132,
+          "y": 89,
+          "vy": 5.999999999999999,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 136,
+          "y": 95.6,
+          "vy": 6.599999999999999,
+          "onGround": false,
+          "onDestination": false,
+          "ceilingHit": false
+        },
+        {
+          "x": 140,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 144,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 148,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 152,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 156,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 160,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 164,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 168,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 172,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 176,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 180,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 184,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 188,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 192,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 196,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 200,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 204,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 208,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 212,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 216,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 220,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        },
+        {
+          "x": 224,
+          "y": 96,
+          "vy": 0,
+          "onGround": true,
+          "onDestination": true,
+          "ceilingHit": false
+        }
+      ],
+      "initial": {
+        "x": 64,
+        "y": 140
+      }
+    }
+  ],
+  "errors": [],
+  "passed": true,
+  "onlyJumpChanged": true
+}

@@ -11,6 +11,11 @@ import {
   MURAL_VISITOR_REF,
 } from '../../src/application/grant-manual-entitlement/grant-manual-entitlement.service'
 import { RevokeEntitlementService } from '../../src/application/revoke-entitlement/revoke-entitlement.service'
+import {
+  ADULT_MURAL_FULL_REF,
+  ADULT_MURAL_VISITOR_PRODUCT_ID,
+  ADULT_MURAL_VISITOR_REF,
+} from '../../src/domain/entitlement/mural-visitor'
 import { FakeCatalogGateway, InMemoryEntitlementRepository, silentLogger } from '../fakes/in-memory'
 import { offerWithCourse, offerWithMural } from '../helpers'
 
@@ -192,6 +197,61 @@ describe('GrantEntitlementService', () => {
     })
     expect(await grant.execute(cmd)).toEqual({ offerFound: true, granted: 0, itemsResolved: 2 })
     expect(entitlements.byId.size).toBe(3)
+  })
+
+  test('Desafio adulto de 30 dias deixa a visita permanente ao Mural ADULTO, nunca ao Kids', async () => {
+    const { catalog, entitlements, grant } = setup()
+    const offerSlug = 'desafio-primeiro-jogo-adulto-30-dias'
+    const offer = offerWithCourse(offerSlug, 'desafio-primeiro-jogo-adulto')
+    offer.items.push({
+      productId: randomUUID(),
+      sku: 'adult-mural-dos-criadores',
+      name: 'Mural dos Criadores (adultos)',
+      kind: 'community',
+      isPrimary: false,
+      fulfillment: { accessType: 'community', courseRef: ADULT_MURAL_FULL_REF },
+    })
+    catalog.set(offerSlug, offer)
+    const cmd = {
+      userId: 'u-adulto',
+      offerRef: offerSlug,
+      paymentId: 'pay-adulto',
+      grantedAt: T('2026-10-21T12:00:00Z'),
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const,
+    }
+    expect(await grant.execute(cmd)).toEqual({ offerFound: true, granted: 3, itemsResolved: 2 })
+
+    const all = await entitlements.listByUserId('u-adulto')
+    const visitor = all.find((e) => e.toSnapshot().productId === ADULT_MURAL_VISITOR_PRODUCT_ID)
+    expect(visitor?.courseRef).toBe(ADULT_MURAL_VISITOR_REF)
+    expect(visitor?.expiresAt).toBeNull()
+    expect(visitor?.toSnapshot().idempotencyKey).toBe(
+      `payment:pay-adulto:${ADULT_MURAL_VISITOR_PRODUCT_ID}`,
+    )
+    expect(all.some((e) => e.toSnapshot().productId === MURAL_VISITOR_PRODUCT_ID)).toBe(false)
+
+    const access = new AccessCheckService(entitlements, () => T('2026-11-21T12:00:00Z'))
+    expect(await access.execute('u-adulto', ['desafio-primeiro-jogo-adulto'])).toMatchObject({
+      grants: [],
+      communities: [ADULT_MURAL_VISITOR_REF],
+    })
+    expect(await grant.execute(cmd)).toEqual({ offerFound: true, granted: 0, itemsResolved: 2 })
+  })
+
+  test('a oferta adulta com o Mural Kids não ganha visita (o público vem da oferta)', async () => {
+    const { catalog, entitlements, grant } = setup()
+    const offerSlug = 'desafio-primeiro-jogo-adulto-30-dias'
+    catalog.set(offerSlug, offerWithMural(offerSlug, 'desafio-primeiro-jogo-adulto'))
+    await grant.execute({
+      userId: 'u-misto',
+      offerRef: offerSlug,
+      paymentId: 'pay-misto',
+      grantedAt: T('2026-10-21T12:00:00Z'),
+      accessPolicy: { mode: 'fixed', durationValue: 30, durationUnit: 'days' } as const,
+    })
+    const ids = (await entitlements.listByUserId('u-misto')).map((e) => e.toSnapshot().productId)
+    expect(ids).not.toContain(MURAL_VISITOR_PRODUCT_ID)
+    expect(ids).not.toContain(ADULT_MURAL_VISITOR_PRODUCT_ID)
   })
 
   test('o visitante permanente não é concedido a ofertas históricas ou a outras ofertas fixas', async () => {

@@ -1,0 +1,71 @@
+{
+  "status": "conferido",
+  "slides": [
+    {
+      "file": "01-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1027108
+    },
+    {
+      "file": "02-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 907296
+    },
+    {
+      "file": "03-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 78060
+    },
+    {
+      "file": "04-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 84283
+    },
+    {
+      "file": "05-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 122429
+    },
+    {
+      "file": "06-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 992334
+    },
+    {
+      "file": "07-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 81361
+    },
+    {
+      "file": "08-p11.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 124252
+    }
+  ],
+  "copyPreserved": true,
+  "fontsLoaded": true,
+  "localLinks": 65,
+  "playthrough": {
+    "keyAfterConversation": true,
+    "doorLeadsToCave": true,
+    "battleOpens": true,
+    "controls": [
+      "Atacar",
+      "Espada flamejante",
+      "Defender",
+      "Item (poção)",
+      "Fugir"
+    ]
+  },
+  "artDirection": "Três imagens novas com família fictícia e lista no papel. Capturas nativas da Vila do Dragão e dos blocos. Inspeção visual das oito artes e dos recortes finais.",
+  "errors": [],
+  "scope": "Produção local do P11. Sem publicação, agendamento, commit ou deploy."
+}

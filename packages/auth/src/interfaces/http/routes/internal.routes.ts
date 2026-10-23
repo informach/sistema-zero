@@ -38,6 +38,60 @@ export interface InternalRoutesDeps {
 export function internalRoutes(deps: InternalRoutesDeps) {
   return (
     new Elysia({ prefix: '/auth/internal' })
+      .post(
+        '/staff-directory',
+        async ({ body, headers, set }) => {
+          requireInternalToken(headers, deps.internalToken)
+          set.headers['cache-control'] = 'private, no-store'
+          const users =
+            'ids' in body
+              ? await deps.users.listByIds([...new Set(body.ids)])
+              : (
+                  await Promise.all(
+                    (['staff', 'admin', 'superadmin'] as const).map((role) =>
+                      deps.users.list({
+                        q: body.query,
+                        role,
+                        status: 'active',
+                        limit: 20,
+                        offset: 0,
+                      }),
+                    ),
+                  )
+                ).flatMap((page) => page.users)
+          return users.map((user) => ({
+            id: user.id,
+            name: `${user.firstName} ${user.lastName}`.trim(),
+            active:
+              user.status === 'active' && ['staff', 'admin', 'superadmin'].includes(user.role),
+          }))
+        },
+        {
+          body: t.Union([
+            t.Object({ ids: t.Array(t.String({ format: 'uuid' }), { maxItems: 100 }) }),
+            t.Object({ query: t.String({ minLength: 2, maxLength: 100 }) }),
+          ]),
+        },
+      )
+      .post(
+        '/profiles/ownership',
+        async ({ body, headers, set }) => {
+          requireInternalToken(headers, deps.internalToken)
+          set.headers['cache-control'] = 'private, no-store'
+          const [account] = await deps.users.listByIds([body.accountId])
+          if (account?.status !== 'active') return { valid: false }
+          if (body.profileId === null) return { valid: true, name: account.firstName }
+          const [profile] = await deps.profiles.listActiveByIds([body.profileId])
+          if (!profile || profile.accountUserId !== account.id) return { valid: false }
+          return { valid: true, name: profile.name }
+        },
+        {
+          body: t.Object({
+            accountId: t.String({ format: 'uuid' }),
+            profileId: t.Union([t.String({ format: 'uuid' }), t.Null()]),
+          }),
+        },
+      )
       .get(
         '/teacher-recipients',
         async ({ headers, query }) => {

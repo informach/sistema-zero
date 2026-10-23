@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import {
   evaluateProjectStructure,
   isProjectBlockPattern,
+  type ProjectBlockPattern,
   type SectionStructureRule,
 } from '../src/learning'
 
@@ -22,6 +23,300 @@ const rule: SectionStructureRule = {
   fields: { ID: 'dino' },
   inputs: { X: 120 },
 }
+
+test('numeric ranges keep sign and open/closed bounds without coercing empty or nonnumeric values', () => {
+  const rangeRule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'speed',
+    fieldRanges: { SPEED: { min: 0, minExclusive: true, max: 10 } },
+  }
+  const check = (value: unknown) =>
+    evaluateProjectStructure(rangeRule, project({ type: 'speed', fields: { SPEED: value } }))
+  for (const value of [1, 10, 0.5, '1', '+2.5', ' 3 ', '.5', '1e1']) expect(check(value)).toBe(true)
+  for (const value of [
+    0,
+    -1,
+    11,
+    '',
+    '  ',
+    '0x2',
+    '0b1',
+    'NaN',
+    'Infinity',
+    '1,5',
+    '1e309',
+    true,
+    null,
+    undefined,
+    {},
+    [],
+    Infinity,
+    NaN,
+  ])
+    expect(check(value)).toBe(false)
+  expect(evaluateProjectStructure(rangeRule, project({ type: 'speed' }))).toBe(false)
+  const negative: SectionStructureRule = {
+    ...rangeRule,
+    fieldRanges: { SPEED: { max: 0, maxExclusive: true } },
+  }
+  expect(
+    evaluateProjectStructure(negative, project({ type: 'speed', fields: { SPEED: '-2e-1' } })),
+  ).toBe(true)
+  expect(evaluateProjectStructure(negative, project({ type: 'speed', fields: { SPEED: 0 } }))).toBe(
+    false,
+  )
+  const exact: SectionStructureRule = { ...rangeRule, fieldRanges: { SPEED: { min: 2, max: 2 } } }
+  expect(evaluateProjectStructure(exact, project({ type: 'speed', fields: { SPEED: 2 } }))).toBe(
+    true,
+  )
+  expect(evaluateProjectStructure(exact, project({ type: 'speed', fields: { SPEED: 3 } }))).toBe(
+    false,
+  )
+  const zero: SectionStructureRule = { ...rangeRule, fieldRanges: { SPEED: { min: 0, max: 0 } } }
+  expect(evaluateProjectStructure(zero, project({ type: 'speed', fields: { SPEED: '0' } }))).toBe(
+    true,
+  )
+  for (const empty of ['', ' ', null, false])
+    expect(
+      evaluateProjectStructure(zero, project({ type: 'speed', fields: { SPEED: empty } })),
+    ).toBe(false)
+})
+
+test('nonblank text requires an actual string, not a truthy or coerced field', () => {
+  const textRule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'description',
+    fieldText: { DESCRIPTION: { nonBlank: true } },
+  }
+  for (const value of ['Minha ilha', '  Olá 🌊  ', '0'])
+    expect(
+      evaluateProjectStructure(
+        textRule,
+        project({ type: 'description', fields: { DESCRIPTION: value } }),
+      ),
+    ).toBe(true)
+  for (const value of ['', ' \t\n\u00a0 ', 1, false, {}, null, undefined])
+    expect(
+      evaluateProjectStructure(
+        textRule,
+        project({ type: 'description', fields: { DESCRIPTION: value } }),
+      ),
+    ).toBe(false)
+})
+
+test('explicit text terms require every group with word boundaries, case and accent normalization', () => {
+  const rule: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'description',
+    fieldText: {
+      DESCRIPTION: {
+        nonBlank: true,
+        containsAll: [
+          ['setas', 'flechas'],
+          ['espaço', 'barra de espaço'],
+          ['reiniciar', 'recomeçar'],
+        ],
+      },
+    },
+  }
+  const check = (value: unknown) =>
+    evaluateProjectStructure(rule, project({ type: 'description', fields: { DESCRIPTION: value } }))
+  for (const text of [
+    'SETAS movem; ESPAÇO pula; reiniciar.',
+    'Use flechas. Barra-de-espaço pula! RECOMEÇAR.',
+    'Setas; espac\u0327o; reiniciar',
+  ])
+    expect(check(text)).toBe(true)
+  for (const text of [
+    '',
+    ' ',
+    'Minha fase favorita',
+    'setas e espaço',
+    'setas espaçosos reiniciar',
+    'setas espaço recomeçaremos',
+    'flechas espaço não há o terceiro termo',
+    123,
+    null,
+  ])
+    expect(check(text)).toBe(false)
+  // This is a term check, not interpretation of prose or negation.
+  expect(check('Não use setas, espaço nem reiniciar.')).toBe(true)
+  const phrase: SectionStructureRule = {
+    ...rule,
+    fieldText: { DESCRIPTION: { nonBlank: true, containsAll: [['pressione r'], ['tecla 2']] } },
+  }
+  expect(
+    evaluateProjectStructure(
+      phrase,
+      project({ type: 'description', fields: { DESCRIPTION: 'PRESSIONE R; tecla-2.' } }),
+    ),
+  ).toBe(true)
+  expect(
+    evaluateProjectStructure(
+      phrase,
+      project({ type: 'description', fields: { DESCRIPTION: 'pressione rapidamente; tecla 20.' } }),
+    ),
+  ).toBe(false)
+})
+
+test('explicit text term groups reject malformed, empty or unbounded alternatives', () => {
+  const valid = (containsAll: unknown) =>
+    isProjectBlockPattern({
+      blockType: 'description',
+      fieldText: { DESCRIPTION: { nonBlank: true, containsAll } },
+    })
+  expect(valid([['pular'], ['tecla 2', 'espaço']])).toBe(true)
+  expect(valid([['x'.repeat(120)]])).toBe(true)
+  for (const terms of [
+    null,
+    {},
+    [],
+    [[]],
+    [['']],
+    [['  ']],
+    [['---']],
+    [['🙂']],
+    [['\u0301']],
+    [[1]],
+    [['x'.repeat(121)]],
+    Array.from({ length: 11 }, () => ['pular']),
+    [Array.from({ length: 11 }, () => 'pular')],
+  ])
+    expect(valid(terms)).toBe(false)
+  expect(
+    isProjectBlockPattern({
+      blockType: 'description',
+      fieldText: { DESCRIPTION: { nonBlank: true, containsAll: [['pular']], regex: '.*' } },
+    }),
+  ).toBe(false)
+})
+
+test('ranges and text remain on the same enabled block and recursive input branch', () => {
+  const child: ProjectBlockPattern = {
+    blockType: 'move',
+    fields: { ID: 'avatar' },
+    fieldOptions: { MODE: ['walk', 'run'] },
+    fieldRanges: { SPEED: { min: 0, minExclusive: true } },
+    fieldText: { DESCRIPTION: { nonBlank: true } },
+  }
+  const parent: SectionStructureRule = {
+    type: 'usesBlock',
+    blockType: 'if',
+    inputBlocks: { THEN: child },
+  }
+  const good = {
+    type: 'move',
+    fields: { ID: 'avatar', MODE: 'run', SPEED: 2, DESCRIPTION: 'Pelo jardim' },
+  }
+  const state = (then: unknown, other?: unknown) =>
+    project({ type: 'if', inputs: { THEN: { block: then }, ELSE: { block: other } } })
+  expect(evaluateProjectStructure(parent, state(good))).toBe(true)
+  expect(evaluateProjectStructure(parent, state({ ...good, disabled: true }))).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      parent,
+      state({ ...good, fields: { ...good.fields, SPEED: 0 } }, good),
+    ),
+  ).toBe(false)
+  expect(
+    evaluateProjectStructure(
+      parent,
+      state({
+        ...good,
+        fields: { ...good.fields, DESCRIPTION: '' },
+        next: { block: { ...good, fields: { ...good.fields, SPEED: 0 } } },
+      }),
+    ),
+  ).toBe(false)
+})
+
+test('range/text contracts refuse malformed bounds, exclusivity and cross-map conflicts', () => {
+  const base = { blockType: 'move' }
+  for (const range of [
+    { min: 0 },
+    { max: 0, maxExclusive: true },
+    { min: -2, max: -1 },
+    { min: 1, max: 1 },
+  ])
+    expect(isProjectBlockPattern({ ...base, fieldRanges: { SPEED: range } })).toBe(true)
+  for (const range of [
+    {},
+    null,
+    [],
+    { min: '0' },
+    { min: NaN },
+    { min: Infinity },
+    { max: -Infinity },
+    { min: 2, max: 1 },
+    { min: 1, max: 1, minExclusive: true },
+    { min: 1, max: 1, maxExclusive: true },
+    { minExclusive: true },
+    { min: 0, maxExclusive: true },
+    { min: 0, minExclusive: false },
+    { min: 0, extra: true },
+  ])
+    expect(isProjectBlockPattern({ ...base, fieldRanges: { SPEED: range } })).toBe(false)
+  for (const text of [
+    {},
+    null,
+    [],
+    { nonBlank: false },
+    { nonBlank: 'true' },
+    { nonBlank: true, extra: 1 },
+  ])
+    expect(isProjectBlockPattern({ ...base, fieldText: { DESCRIPTION: text } })).toBe(false)
+  const conditions = [
+    { fields: { VALUE: 1 } },
+    { fieldOptions: { VALUE: ['1'] } },
+    { fieldRanges: { VALUE: { min: 0 } } },
+    { fieldText: { VALUE: { nonBlank: true } } },
+  ]
+  for (let a = 0; a < conditions.length; a++)
+    for (let b = a + 1; b < conditions.length; b++)
+      expect(isProjectBlockPattern({ ...base, ...conditions[a], ...conditions[b] })).toBe(false)
+  for (const key of ['fieldRanges', 'fieldText']) {
+    const value = key === 'fieldRanges' ? { min: 0 } : { nonBlank: true }
+    expect(isProjectBlockPattern({ ...base, [key]: { ' ': value } })).toBe(false)
+    expect(
+      isProjectBlockPattern({
+        ...base,
+        [key]: Object.fromEntries(Array.from({ length: 21 }, (_, i) => [`F${i}`, value])),
+      }),
+    ).toBe(false)
+  }
+})
+
+test('new field criteria preserve recursion and total pattern budgets', () => {
+  const leaf: ProjectBlockPattern = {
+    blockType: 'move',
+    fieldRanges: { SPEED: { min: 0 } },
+    fieldText: { DESCRIPTION: { nonBlank: true } },
+  }
+  let nested = leaf
+  for (let depth = 0; depth < 4; depth++)
+    nested = { blockType: 'loop', inputBlocks: { BODY: nested } }
+  expect(isProjectBlockPattern(nested)).toBe(true)
+  expect(isProjectBlockPattern({ blockType: 'loop', inputBlocks: { BODY: nested } })).toBe(false)
+  const branch = {
+    blockType: 'loop',
+    inputBlocks: Object.fromEntries(Array.from({ length: 20 }, (_, i) => [`B${i}`, leaf])),
+  }
+  expect(
+    isProjectBlockPattern({ blockType: 'loop', inputBlocks: { A: branch, B: branch, C: branch } }),
+  ).toBe(true)
+  expect(
+    isProjectBlockPattern({
+      blockType: 'loop',
+      inputBlocks: { A: branch, B: branch, C: branch, D: leaf },
+    }),
+  ).toBe(false)
+  expect(
+    isProjectBlockPattern({
+      blockType: 'loop',
+      inputBlocks: { BODY: { ...leaf, fieldRanges: { SPEED: {} } } },
+    }),
+  ).toBe(false)
+})
 
 test('accepted field options are constrained to the same enabled nested block', () => {
   const optionsRule: SectionStructureRule = {

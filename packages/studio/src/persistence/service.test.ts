@@ -1,25 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, mock, setSystemTime } from 'bun:test'
-import type { Project } from '#core'
 import { createEmptyProject } from '#core'
-import { fakeUseStore } from '../testing/fakeIdbStore'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import type { StudioPersistenceAdapter } from './types'
 
-// bun:test não isola module mocks por arquivo, e o registro é compartilhado pela
-// suíte. O `projectStore` importa idb-keyval no topo; este no-op garante que
-// importá-lo aqui não toque o IndexedDB (inexistente no happy-dom). Sem restore
-// de propósito, igual aos demais arquivos de persistência.
-mock.module('idb-keyval', () => ({
-  createStore: mock((dbName: string) => fakeUseStore(dbName)),
-  del: mock(async () => undefined),
-  delMany: mock(async () => undefined),
-  get: mock(async (): Promise<unknown> => undefined),
-  getMany: mock(async (): Promise<unknown[]> => []),
-  keys: mock(async (): Promise<unknown[]> => []),
-  set: mock(async () => undefined),
-  setMany: mock(async () => undefined),
-  // `update` é usado por settingsStore.ts; o registry de mocks é global na suíte.
-  update: mock(async () => undefined),
-}))
+// Each test supplies its persistence adapter. idb-keyval is lazy and importing
+// the store does not open IndexedDB; a module-wide no-op would leak into the
+// real local-persistence tests that run later in the same Bun process.
 
 const { createProjectStore, useProjectStore } = await import('../state/projectStore')
 const {
@@ -34,6 +20,63 @@ const {
 // timers reais (folga de 5x para máquinas lentas/CI).
 const AUTOSAVE_TEST_DELAY_MS = 10
 const waitForAutosave = () => Bun.sleep(AUTOSAVE_TEST_DELAY_MS * 5)
+
+it('a durable stage is written before debounce while remote acknowledgement keeps the editor dirty', async () => {
+  setAutosaveDelayForTests(10)
+  const store = createProjectStore()
+  const staged: string[] = []
+  let release = () => {}
+  const ack = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const service = createPersistenceService(store, {
+    load: async () => null,
+    stage: async (project) => {
+      staged.push(project.name)
+    },
+    save: () => ack,
+  })
+  const detach = service.attach()
+  try {
+    store.getState().setProject(createEmptyProject(crypto.randomUUID(), 'Rascunho durável'))
+    expect(staged).toEqual(['Rascunho durável'])
+    await Bun.sleep(50)
+    expect(store.getState().isDirty).toBe(true)
+    release()
+    await Bun.sleep(10)
+    expect(store.getState().isDirty).toBe(false)
+  } finally {
+    release()
+    detach()
+    setAutosaveDelayForTests(null)
+  }
+})
+
+it('unmount stages a dirty snapshot synchronously even if it predates the subscription', async () => {
+  const store = createProjectStore()
+  store.getState().setProject(createEmptyProject(crypto.randomUUID(), 'Último rascunho'))
+  const staged: string[] = []
+  let release = () => {}
+  const ack = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  const service = createPersistenceService(store, {
+    load: async () => null,
+    stage: async (project) => {
+      staged.push(project.name)
+    },
+    save: () => ack,
+  })
+  const detach = service.attach()
+  try {
+    detach()
+    expect(staged).toEqual(['Último rascunho'])
+    expect(store.getState().isDirty).toBe(true)
+  } finally {
+    release()
+    await Bun.sleep(0)
+  }
+})
 
 /**
  * Adapter de teste com `save` GATEADO: cada chamada fica pendurada até o teste
@@ -548,7 +591,7 @@ describe('PersistenceService — hidratação pós-load', () => {
 
     const state = useProjectStore.getState()
     expect(state.project?.blocksState).toEqual(storedBlocksState)
-    expect(state.project?.files['script.js']).toBe('console.log("editado");\n')
+    expect(state.project?.files?.['script.js']).toBe('console.log("editado");\n')
     expect(state.isDirty).toBe(true)
     expect(state.blocksHydration).toBe('restored')
   })

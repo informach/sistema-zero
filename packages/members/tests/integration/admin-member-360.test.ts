@@ -10,8 +10,11 @@ const get = (app: App, path: string, headers: Record<string, string> = {}) =>
   app.handle(new Request(`http://localhost${path}`, { headers }))
 
 describe('Members HTTP — admin: gamificação do aluno (ficha 360)', () => {
-  test('aluno sem perfil → zeros + nível noob + catálogo de badges', async () => {
-    const { app } = buildApp()
+  test('perfil Kids admitido sem atividade → zeros + nível noob + catálogo de badges', async () => {
+    const { app, gamification, kidsJourneySnapshots } = buildApp()
+    // Admission has a canonical owner even before the first XP activity; account != profile.
+    kidsJourneySnapshots.owners.set(A, '22222222-2222-4222-8222-222222222222')
+    expect(await gamification.getProfile(A, 'kids')).toBeNull()
     const res = await get(app, `/members/admin/members/${A}/gamification?audience=kids`)
     expect(res.status).toBe(200)
     const body = await readJson(res)
@@ -21,6 +24,17 @@ describe('Members HTTP — admin: gamificação do aluno (ficha 360)', () => {
     expect(Array.isArray(body.badges)).toBe(true)
     // Visão admin: nunca marca passe de equipe (estado REAL do aluno).
     expect(body.coins.unlimited).toBeUndefined()
+  })
+
+  test('perfil Kids desconhecido → indisponível, sem fabricar nível ou conquistas', async () => {
+    const { app } = buildApp()
+    const res = await get(app, `/members/admin/members/${A}/gamification?audience=kids`)
+    expect(res.status).toBe(503)
+    const body = await readJson(res)
+    expect(body.error.code).toBe('KIDS_JOURNEY_UNAVAILABLE')
+    expect(body).not.toHaveProperty('level')
+    expect(body).not.toHaveProperty('kidsJourney')
+    expect(body).not.toHaveProperty('kidsPreview')
   })
 
   test('audiência inválida → 400 (validação de borda)', async () => {
@@ -105,10 +119,12 @@ describe('Members HTTP — admin: linha do tempo de atividade', () => {
     expect(body.hasMore).toBe(false)
     const pinta = body.items[0]
     expect(pinta.message).toBe('meu desenho')
-    expect(pinta.passed).toBeNull()
+    // Entrega não tem nota desde 18/10/2026: os objetivos da parte é que contam.
+    expect(pinta).not.toHaveProperty('passed')
+    expect(pinta).not.toHaveProperty('score')
     const studio = body.items[1]
     expect(studio.message).toBe('oi prof')
-    expect(studio.passed).toBeNull()
+    expect(studio).not.toHaveProperty('passed')
 
     // Paginação: limit=2 → 2 itens (os mais novos) + hasMore.
     const page = await readJson(await get(app, `/members/admin/members/${A}/activity?limit=2`))

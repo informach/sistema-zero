@@ -3,11 +3,12 @@ import type { JSX } from 'react'
 import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import type { ExtraFile } from '#core'
 import { Button } from '#ui'
+import { javaScriptProject } from '../../core/editableProject'
 import '@xterm/xterm/css/xterm.css'
 import type { FitAddon } from '@xterm/addon-fit'
 import type { Terminal as XTerm } from '@xterm/xterm'
 import { useShallow } from 'zustand/react/shallow'
-import { useProjectStore } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import {
   buildTerminalFileContents,
   buildTerminalFileTree,
@@ -72,15 +73,16 @@ interface TerminalRuntime {
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 
 export function Terminal(): JSX.Element {
+  const projectStore = useProjectStoreApi()
   const project = useProjectStore(
     useShallow(
       (s): TerminalProjectSnapshot => ({
-        id: s.project?.id ?? null,
-        name: s.project?.name ?? 'sz-project',
-        files: s.project?.files ?? null,
-        extraFiles: s.project?.extraFiles ?? EMPTY_EXTRA_FILES,
-        kind: s.project?.kind === 'pro' ? 'pro' : undefined,
-        tree: s.project?.tree,
+        id: javaScriptProject(s.project)?.id ?? null,
+        name: javaScriptProject(s.project)?.name ?? 'sz-project',
+        files: javaScriptProject(s.project)?.files ?? null,
+        extraFiles: javaScriptProject(s.project)?.extraFiles ?? EMPTY_EXTRA_FILES,
+        kind: javaScriptProject(s.project)?.kind === 'pro' ? 'pro' : undefined,
+        tree: javaScriptProject(s.project)?.tree,
       }),
     ),
   )
@@ -180,14 +182,14 @@ export function Terminal(): JSX.Element {
         // esperar para sempre quando o preview está fechado. Se não houver projeto
         // pro identificado, segue sem esperar (cenário degradado).
         if (projectId && waitForProFsMounted) {
-          requestProFsMount?.()
+          requestProFsMount?.(projectStore)
           // `waitForProFsMounted` tem TIMEOUT: o escritor único pode estar `busy`
           // (outra instância é dona do FS singleton) e nunca publicar o sinal —
           // sem o timeout o terminal ficava preso para sempre "Carregando…". Ao
           // expirar (resolve `false`), espelhamos a UI de ocupado do terminal
           // clássico em vez de girar para sempre; o botão "Tentar novamente"
           // rechama handleLoad quando a posse for liberada.
-          const mounted = await waitForProFsMounted(projectId)
+          const mounted = await waitForProFsMounted(projectId, undefined, projectStore)
           if (loadSeqRef.current !== loadId) {
             term.dispose()
             return
@@ -292,7 +294,7 @@ export function Terminal(): JSX.Element {
       setError(message)
       setStatus('error')
     }
-  }, [cleanupRuntime, project, projectId])
+  }, [cleanupRuntime, project, projectId, projectStore])
 
   useEffect(() => {
     return () => {

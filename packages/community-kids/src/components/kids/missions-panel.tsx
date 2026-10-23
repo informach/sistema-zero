@@ -9,6 +9,7 @@ import {
   Gift,
   MessageCircle,
   MessagesSquare,
+  Radio,
   Rocket,
   Send,
   Shirt,
@@ -59,6 +60,8 @@ function missionIcon(m: MissionView): ComponentType<{ className?: string }> {
       return MessagesSquare
     case 'studio_remix':
       return Shuffle
+    case 'live_encounter':
+      return Radio
     default:
       return Sparkles
   }
@@ -69,7 +72,7 @@ function missionLabel(m: MissionView): string {
   const n = m.target
   switch (m.goalType) {
     case 'lesson_complete':
-      return n === 1 ? 'Conclua 1 fase' : `Conclua ${n} fases`
+      return n === 1 ? 'Conclua 1 aula' : `Conclua ${n} aulas`
     case 'quiz_passed':
       return n === 1 ? 'Acerte 1 quiz' : `Acerte ${n} quizzes`
     case 'unit_complete':
@@ -81,7 +84,7 @@ function missionLabel(m: MissionView): string {
     case 'course_showcased':
       return n === 1 ? 'Publique um jogo no Mural' : `Publique ${n} jogos no Mural`
     case 'course_rated':
-      return n === 1 ? 'Avalie uma aventura' : `Avalie ${n} aventuras`
+      return n === 1 ? 'Avalie um curso' : `Avalie ${n} cursos`
     case 'room_item_buy':
       return n === 1 ? 'Decore seu quarto' : `Ganhe ${n} itens para o quarto`
     case 'avatar_part_buy':
@@ -95,6 +98,9 @@ function missionLabel(m: MissionView): string {
       return n === 1 ? 'Lance um jogo seu no Mural' : `Lance ${n} jogos seus no Mural`
     case 'studio_remix':
       return n === 1 ? 'Faça sua versão de um jogo do Mural' : `Faça sua versão de ${n} jogos`
+    // Oficinas ao vivo (14/10/2026): só aparece para quem tem vaga numa turma.
+    case 'live_encounter':
+      return n === 1 ? 'Participe de um encontro ao vivo' : `Participe de ${n} encontros ao vivo`
     default:
       return 'Complete a missão'
   }

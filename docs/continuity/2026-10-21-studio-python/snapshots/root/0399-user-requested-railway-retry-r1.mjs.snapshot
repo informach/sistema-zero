@@ -1,0 +1,24 @@
+import {spawn} from 'node:child_process'
+import {writeFileSync} from 'node:fs'
+import {cliEnvironment} from '../pro-legacy-staging-ui-owned-r5/oauth-session.mjs'
+const cli='C:/Users/tocha/AppData/Roaming/npm/node_modules/@railway/cli/bin/railway.exe'
+const selectors=['--project','415d5a1c-5f75-432c-8445-b395d0977ce3','--environment','f634cff6-aafb-4804-8b69-172fad4e946e','--service','aa282801-ffba-477c-af6d-394b2f4f9af9']
+const words=new Set('invalid expired authentication permission service project environment accessible member variable variables failed credentials token access internal server error query schema validation denied refresh authorized signed not login in problem processing request'.split(' '))
+const receipts=[]
+for(const[kind,argv]of [['admin-variables',['variable','list',...selectors.map(x=>x==='aa282801-ffba-477c-af6d-394b2f4f9af9'?'e00eca0b-5323-4424-9b58-fdb073cfce82':x),'--json']],['members-variables',['variable','list',...selectors,'--json']]]){
+ const child=spawn(cli,argv,{cwd:process.cwd(),env:cliEnvironment(process.env),windowsHide:true,stdio:['ignore','pipe','pipe']})
+ let stdout='',stderr='',overflow=false,error=false,expired=false
+ const timer=setTimeout(()=>{expired=true},30000)
+ for(const[stream,name]of [[child.stdout,'stdout'],[child.stderr,'stderr']])stream.on('data',bytes=>{if(overflow)return;if(Buffer.byteLength(stdout)+Buffer.byteLength(stderr)+bytes.length>8_000_000){overflow=true;stdout='';stderr='';return}if(name==='stdout')stdout+=bytes;else stderr+=bytes})
+ child.on('error',()=>{error=true})
+ const[code,signal]=await new Promise(resolve=>child.once('close',(c,s)=>resolve([c,s])))
+ clearTimeout(timer)
+ let shape='invalid';try{const value=JSON.parse(stdout);shape=Array.isArray(value)?'array':value&&typeof value==='object'?'object':'other'}catch{}
+ const errorVocabulary=[...new Set((stderr.toLowerCase().match(/[a-z]+/g)??[]).filter(w=>words.has(w)))].sort()
+ receipts.push({kind,pid:child.pid,code,signal,closed:true,expired,overflow,error,stdoutBytes:Buffer.byteLength(stdout),stderrBytes:Buffer.byteLength(stderr),shape,errorVocabulary,rawOutputPersisted:false})
+ stdout='';stderr=''
+ if(expired||overflow||error)break
+}
+const value={kind:'closed-environment-fixed-readonly-comparison',observedAt:new Date().toISOString(),receipts,mutations:0,credentialValuesPersisted:false}
+writeFileSync(new URL('./user-requested-railway-retry-r1.json',import.meta.url),JSON.stringify(value,null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify(value));if(receipts.length!==2||receipts.some(r=>r.code!==0||r.expired||r.overflow||r.error))process.exitCode=1

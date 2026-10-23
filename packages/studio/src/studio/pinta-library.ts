@@ -1,3 +1,9 @@
+import type {
+  PintaImageDerivation,
+  PintaImageRecipe,
+  PintaImageSelectionSummary,
+  PintaImageTargetLimits,
+} from '@sistemazero/core/studio/pinta-image'
 import { createContext, useContext } from 'react'
 
 /**
@@ -30,6 +36,13 @@ export interface StudioPintaDrawingSummary {
   projectName?: string
   /** PNG ou SVG dataUrl pequeno; null → a UI mostra o emoji do tipo. */
   thumbDataUrl: string | null
+  /** Optional, explicitly requested facts for selecting a portable Python image. */
+  imageSelection?: PintaImageSelectionSummary
+}
+
+export interface StudioPintaImagePreview {
+  dataUrl: string
+  derivation: PintaImageDerivation
 }
 
 export type StudioPintaImportResult =
@@ -51,6 +64,8 @@ export type StudioPintaImportResult =
         tilemap?: unknown
         /** Revisão persistida na biblioteca pessoal pelo host. */
         libRevision?: number
+        /** Captured PNG recipe. The canonical personal-library record remains separate. */
+        pintaImage?: PintaImageDerivation
       }
     }
   | {
@@ -63,9 +78,33 @@ export type StudioPintaImportResult =
 
 export interface StudioPintaLibraryAdapter {
   /** Todos os desenhos do perfil, mais recente primeiro. Rejeição → erro na modal. */
-  list(): Promise<StudioPintaDrawingSummary[]>
+  list(options?: {
+    signal?: AbortSignal
+    includeImageSelection?: boolean
+  }): Promise<StudioPintaDrawingSummary[]>
+  /** Reads the current native source/dependency fingerprints without exporting or saving. */
+  inspectImage?(
+    drawingId: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<PintaImageDerivation['provenance']>
+  /** Read-only preview; never saves into the personal library or imports into a project. */
+  previewImage?(
+    recipe: PintaImageRecipe,
+    limits: PintaImageTargetLimits,
+    options?: {
+      signal?: AbortSignal
+      expectedProvenance?: PintaImageDerivation['provenance']
+    },
+  ): Promise<StudioPintaImagePreview>
   /** Exporta + grava na biblioteca pessoal; o Studio faz o `addAsset` com o retorno. */
-  import(drawingId: string): Promise<StudioPintaImportResult>
+  import(
+    drawingId: string,
+    options?: {
+      signal?: AbortSignal
+      /** Explicit representation requested by a Python project, never inferred from the drawing. */
+      image?: { recipe: PintaImageRecipe; limits: PintaImageTargetLimits }
+    },
+  ): Promise<StudioPintaImportResult>
 }
 
 const StudioPintaLibraryContext = createContext<StudioPintaLibraryAdapter | null>(null)

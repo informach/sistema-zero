@@ -1,0 +1,30 @@
+{
+  "kind": "hosted-staging-python-public-player",
+  "version": 1,
+  "commit": "1f71cd1f4721e2828ea72a18d687e90882d7e223",
+  "observedAt": "2026-10-23T02:52:02.9982567+00:00",
+  "language": "python",
+  "studioMode": "classic",
+  "release": "python-browser/2026-10-22-visual-games-3",
+  "threadId": "77aff804-25f6-4554-91c8-77b36091e3e2",
+  "playId": "86ca7d6f-8672-463b-9363-58fd045ff44e",
+  "publishedByRealStaffUi": true,
+  "coverCapturedFromLivePreview": true,
+  "anonymousIsolatedBrowserContext": true,
+  "loginRequired": false,
+  "explicitPlayGesture": true,
+  "canvasLabel": "Pac-Man educacional • Sistema Zero",
+  "labyrinthSpritesAndScoreVisuallyConfirmed": true,
+  "scoreAdvancedTo": 2,
+  "pauseLabelVisuallyConfirmed": true,
+  "restartVisuallyConfirmed": {
+    "points": 0,
+    "lives": 3
+  },
+  "consoleErrors": 0,
+  "consoleWarnings": 0,
+  "screenshotsViewedInlineOnly": true,
+  "audioListeningQualified": false,
+  "allGameScenariosQualified": false,
+  "overallQualified": false
+}

@@ -27,6 +27,7 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleProfileRepository } from '../../src/infrastructure/persistence/drizzle/profile.repository'
 import { DrizzleRefreshTokenRepository } from '../../src/infrastructure/persistence/drizzle/refresh-token.repository'
+import { profiles as profileRows } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleStudyAccessRepository } from '../../src/infrastructure/persistence/drizzle/study-access.repository'
 import { DrizzleUserRepository } from '../../src/infrastructure/persistence/drizzle/user.repository'
 import { createJoseTokenIssuer } from '../../src/infrastructure/security/jose-token-issuer'
@@ -86,8 +87,8 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       accountUserId: account.id,
       name: 'Débora',
     })
-    await profiles.createWithinLimit(andre, 10)
-    await profiles.createWithinLimit(debora, 10)
+    await conn.db.insert(profileRows).values({ ...andre.toSnapshot(), admissionState: 'ready' })
+    await conn.db.insert(profileRows).values({ ...debora.toSnapshot(), admissionState: 'ready' })
   })
   function services() {
     const issuer = createJoseTokenIssuer({
@@ -450,7 +451,7 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       accountUserId: other.id,
       name: 'Primo',
     })
-    await profiles.createWithinLimit(primo, 10)
+    await conn.db.insert(profileRows).values({ ...primo.toSnapshot(), admissionState: 'ready' })
     const codeHash = sha256Hex(randomUUID())
     await repository.createCode({
       id: randomUUID(),

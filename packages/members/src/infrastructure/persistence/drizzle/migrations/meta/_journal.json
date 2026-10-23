@@ -715,6 +715,265 @@
       "when": 1791666505573,
       "tag": "0101_content_fingerprints",
       "breakpoints": true
+    },
+    {
+      "idx": 102,
+      "version": "7",
+      "when": 1791981583946,
+      "tag": "0102_live_workshops",
+      "breakpoints": true
+    },
+    {
+      "idx": 103,
+      "version": "7",
+      "when": 1791981757445,
+      "tag": "0103_live_recording_jobs",
+      "breakpoints": true
+    },
+    {
+      "idx": 104,
+      "version": "7",
+      "when": 1791982295214,
+      "tag": "0104_live_replay_positions",
+      "breakpoints": true
+    },
+    {
+      "idx": 105,
+      "version": "7",
+      "when": 1791983052607,
+      "tag": "0105_live_materials_recording_commands",
+      "breakpoints": true
+    },
+    {
+      "idx": 106,
+      "version": "7",
+      "when": 1791984332314,
+      "tag": "0106_live_learning",
+      "breakpoints": true
+    },
+    {
+      "idx": 107,
+      "version": "7",
+      "when": 1792000899277,
+      "tag": "0107_teacher_message_spoken",
+      "breakpoints": true
+    },
+    {
+      "idx": 108,
+      "version": "7",
+      "when": 1792006537827,
+      "tag": "0108_pensa_journey_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 109,
+      "version": "7",
+      "when": 1792007717770,
+      "tag": "0109_private_zappy_narrations",
+      "breakpoints": true
+    },
+    {
+      "idx": 110,
+      "version": "7",
+      "when": 1792009115431,
+      "tag": "0110_pensa_lifecycle_cleanup",
+      "breakpoints": true
+    },
+    {
+      "idx": 111,
+      "version": "7",
+      "when": 1792009220471,
+      "tag": "0111_pensa_provider_budget",
+      "breakpoints": true
+    },
+    {
+      "idx": 112,
+      "version": "7",
+      "when": 1792023397140,
+      "tag": "0112_live_recording_terminal_states",
+      "breakpoints": true
+    },
+    {
+      "idx": 113,
+      "version": "7",
+      "when": 1792023398140,
+      "tag": "0113_course_modality",
+      "breakpoints": true
+    },
+    {
+      "idx": 114,
+      "version": "7",
+      "when": 1792023399140,
+      "tag": "0114_live_course_cohorts",
+      "breakpoints": true
+    },
+    {
+      "idx": 115,
+      "version": "7",
+      "when": 1792025250906,
+      "tag": "0115_pensa_v2_team",
+      "breakpoints": true
+    },
+    {
+      "idx": 116,
+      "version": "7",
+      "when": 1792077355178,
+      "tag": "0116_groovy_shriek",
+      "breakpoints": true
+    },
+    {
+      "idx": 117,
+      "version": "7",
+      "when": 1792078476737,
+      "tag": "0117_absurd_jimmy_woo",
+      "breakpoints": true
+    },
+    {
+      "idx": 118,
+      "version": "7",
+      "when": 1792079049342,
+      "tag": "0118_high_stark_industries",
+      "breakpoints": true
+    },
+    {
+      "idx": 119,
+      "version": "7",
+      "when": 1792079567019,
+      "tag": "0119_numerous_mattie_franklin",
+      "breakpoints": true
+    },
+    {
+      "idx": 120,
+      "version": "7",
+      "when": 1792085709200,
+      "tag": "0120_cool_the_fallen",
+      "breakpoints": true
+    },
+    {
+      "idx": 121,
+      "version": "7",
+      "when": 1792086226896,
+      "tag": "0121_purple_taskmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 122,
+      "version": "7",
+      "when": 1792086667044,
+      "tag": "0122_optimal_argent",
+      "breakpoints": true
+    },
+    {
+      "idx": 123,
+      "version": "7",
+      "when": 1792094714878,
+      "tag": "0123_steep_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 124,
+      "version": "7",
+      "when": 1792096464841,
+      "tag": "0124_superb_karen_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 125,
+      "version": "7",
+      "when": 1792119905904,
+      "tag": "0125_opposite_guardian",
+      "breakpoints": true
+    },
+    {
+      "idx": 126,
+      "version": "7",
+      "when": 1792189515268,
+      "tag": "0126_pensa_functional_reset",
+      "breakpoints": true
+    },
+    {
+      "idx": 127,
+      "version": "7",
+      "when": 1792189774166,
+      "tag": "0127_pensa_functional_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 128,
+      "version": "7",
+      "when": 1792189783775,
+      "tag": "0128_pensa_remove_documentary_workflow",
+      "breakpoints": true
+    },
+    {
+      "idx": 129,
+      "version": "7",
+      "when": 1792318977591,
+      "tag": "0129_section_objectives",
+      "breakpoints": true
+    },
+    {
+      "idx": 130,
+      "version": "7",
+      "when": 1792327557118,
+      "tag": "0130_oval_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 131,
+      "version": "7",
+      "when": 1792328327548,
+      "tag": "0131_adult_journey_policy",
+      "breakpoints": true
+    },
+    {
+      "idx": 132,
+      "version": "7",
+      "when": 1792330294215,
+      "tag": "0132_useful_jigsaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 133,
+      "version": "7",
+      "when": 1792332248864,
+      "tag": "0133_adult_tutorial_library",
+      "breakpoints": true
+    },
+    {
+      "idx": 134,
+      "version": "7",
+      "when": 1792332720652,
+      "tag": "0134_adult_ai_execution_isolation",
+      "breakpoints": true
+    },
+    {
+      "idx": 135,
+      "version": "7",
+      "when": 1792343823376,
+      "tag": "0135_freezing_madripoor",
+      "breakpoints": true
+    },
+    {
+      "idx": 136,
+      "version": "7",
+      "when": 1792358354428,
+      "tag": "0136_kids_journey_policy",
+      "breakpoints": true
+    },
+    {
+      "idx": 137,
+      "version": "7",
+      "when": 1792364213276,
+      "tag": "0137_auth_capture",
+      "breakpoints": true
+    },
+    {
+      "idx": 138,
+      "version": "7",
+      "when": 1792493298588,
+      "tag": "0138_adult_journey_reached",
+      "breakpoints": true
     }
   ]
 }

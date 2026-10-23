@@ -194,6 +194,21 @@ describe('submissionFreshness', () => {
     ])
       expect(submissionFreshness(input)).toBe('fresh')
   })
+
+  test('migração de régua não bloqueia entregas antigas; versões iguais continuam comparáveis', () => {
+    expect(
+      submissionFreshness({
+        submission: { fingerprint: `v1:${'a'.repeat(64)}`, submittedAt: enviado },
+        draft: { fingerprint: `v2:${'b'.repeat(64)}`, syncedAt: depois },
+      }),
+    ).toBe('fresh')
+    expect(
+      submissionFreshness({
+        submission: { fingerprint: `v2:${'a'.repeat(64)}`, submittedAt: enviado },
+        draft: { fingerprint: `v2:${'b'.repeat(64)}`, syncedAt: depois },
+      }),
+    ).toBe('outdated')
+  })
 })
 
 describe('a autoria do envio em dia', () => {

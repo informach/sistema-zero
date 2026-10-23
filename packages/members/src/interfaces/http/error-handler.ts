@@ -18,12 +18,26 @@ import {
   CreationStaleBaseError,
 } from '../../domain/creations/creation.errors'
 import { HelpTutorialConflictError, HelpTutorialInvalidError } from '../../domain/help/help.errors'
-import { PensaGateNotReadyError } from '../../domain/pensa/pensa.errors'
 
 export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  KIDS_JOURNEY_CONFLICT: 409,
+  KIDS_JOURNEY_PREPARATION_MISSING: 404,
+  KIDS_JOURNEY_CATALOG_BUSY: 409,
+  KIDS_JOURNEY_INITIALIZING: 503,
+  KIDS_JOURNEY_UNAVAILABLE: 503,
+  ZAPPY_CONTEXT_CONFLICT: 409,
+  STUDIO_AI_UNAVAILABLE: 503,
+  STUDIO_PYTHON_ACTIVITY_UNAVAILABLE: 503,
+  GALLERY_SOURCE_UNAVAILABLE: 503,
+  STUDIO_AI_CONFLICT: 409,
+  STUDIO_BUILDER_CONFLICT: 409,
+  LIVE_NOT_FOUND: 404,
+  LIVE_ACCESS_DENIED: 403,
+  LIVE_CONFLICT: 409,
+  LIVE_UNAVAILABLE: 503,
   VALIDATION_ERROR: 400,
   PURCHASE_ACCESS_POLICY_INVALID: 422,
   ACCESS_DENIED: 403,
@@ -37,6 +51,12 @@ const DOMAIN_STATUS: Record<string, number> = {
   OFFER_NOT_FOUND: 404,
   QUIZ_BLOCK_NOT_FOUND: 404,
   LEARNING_CONFLICT: 409,
+  STUDIO_PROJECT_SYNCING: 409,
+  // 424 e não 503: o defeito é do executor (dependência), não do members. Um 5xx aqui entraria
+  // na conta do disjuntor do gateway e uma queda do executor fecharia TODAS as rotas do members.
+  PROJECT_CHECK_UNAVAILABLE: 424,
+  PROJECT_CHECK_ANALYSIS_LIMIT: 424,
+  PROJECT_CHECK_BUSY: 429,
   SECTION_LOCKED: 423,
   SECTION_GATE_INCOMPLETE: 409,
   LESSON_DRAFT_CONFLICT: 409,
@@ -52,6 +72,9 @@ const DOMAIN_STATUS: Record<string, number> = {
   ENTITLEMENT_CONFLICT: 409,
   DUPLICATE_SLUG: 409,
   CLONE_SAME_AUDIENCE: 409,
+  // Cursos ao vivo (14/10/2026).
+  COURSE_MODALITY_LOCKED: 409,
+  LIVE_LESSON_CLOSED: 403,
   CAREER_SLOT_CONFLICT: 409,
   CONCURRENCY_CONFLICT: 409,
   NO_PUBLISHED_LESSON: 409,
@@ -60,7 +83,6 @@ const DOMAIN_STATUS: Record<string, number> = {
   QUIZ_GATE_NOT_PASSED: 409,
   STUDIO_GATE_NOT_SUBMITTED: 409,
   PINTA_GATE_NOT_SUBMITTED: 409,
-  STUDIO_GATE_NOT_PASSED: 409,
   LESSON_COMING_SOON: 409,
   QUIZ_COOLDOWN: 429,
   // Avatar / carteira Zappy.
@@ -86,25 +108,19 @@ const DOMAIN_STATUS: Record<string, number> = {
   CHALLENGE_THEME_ARCHIVED: 409,
   // Pensa (planejamento guiado). NOT_FOUND cobre também ownership mismatch
   // (nunca vazar existência); os demais são conflitos de estado/cota.
-  PENSA_NOT_FOUND: 404,
-  PENSA_QUOTA_EXCEEDED: 409,
-  PENSA_CYCLE_NOT_DONE: 409,
-  PENSA_GATE_NOT_READY: 409,
-  PENSA_STAGE_MISMATCH: 409,
-  PENSA_TASK_LOCKED: 409,
-  PENSA_TASK_TRANSITION_INVALID: 409,
-  PENSA_TASK_DEPENDENCY_PENDING: 409,
-  PENSA_TASK_PROGRESS_CONFLICT: 409,
-  // Equipe do Pensa (26/09/2026): dono × membro; código que não abre nada é 404 (nunca
-  // vaza a existência do plano); o resto são conflitos de estado/cota.
-  PENSA_NOT_OWNER: 403,
-  PENSA_INVITE_INVALID: 404,
-  PENSA_ALREADY_MEMBER: 409,
-  PENSA_TEAM_FULL: 409,
-  PENSA_JOIN_LIMIT: 409,
-  PENSA_OWNER_CANNOT_LEAVE: 409,
-  // "Guardado na sua conta" (criações do Estúdio Completo/Pinta). NOT_FOUND cobre
-  // ownership mismatch; quota e revisão vencida são conflitos.
+  PROJECT_GONE: 404,
+  REVISION_CONFLICT: 409,
+  DRAFT_CHANGED: 409,
+  MISSION_UNAVAILABLE: 409,
+  DEPENDENCY_PENDING: 409,
+  RESOURCES_CHANGED: 409,
+  RESOURCES_UNAVAILABLE: 503,
+  CREATION_NOT_SAVED: 409,
+  CREATION_CHANGED: 409,
+  EXTENSION_CONFLICT: 409,
+  NOT_YOUR_MISSION: 403,
+  QUOTA_EXCEEDED: 409,
+  OPERATION_FAILED: 409,
   CREATION_NOT_FOUND: 404,
   CREATION_QUOTA_EXCEEDED: 409,
   CREATION_REVISION_MISMATCH: 409,
@@ -172,16 +188,6 @@ export function buildErrorResponse(input: {
 
   // Gate do advance do Pensa: expõe `details.gate` + `details.missing`
   // ESTRUTURADOS (contrato) — a UI mostra exatamente o que falta na etapa.
-  if (error instanceof PensaGateNotReadyError) {
-    return {
-      status: 409,
-      body: {
-        ...envelope(error.code, error.message),
-        details: { gate: error.gate, missing: error.missing },
-      },
-    }
-  }
-
   // "Como fazer": o PATCH com `expectedRevision` velho devolve a revisão ATUAL (a outra aba
   // salvou); o publish de rascunho incompleto devolve os BLOQUEIOS campo a campo (o diálogo
   // "Revisar e publicar" do admin aponta cada um).

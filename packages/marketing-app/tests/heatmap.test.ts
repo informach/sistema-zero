@@ -3,15 +3,36 @@ import { buildHeatmapGrid, cellTitle, intensityFor } from '../src/lib/heatmap'
 import type { BestTimesView } from '../src/lib/types'
 
 const view: BestTimesView = {
+  coverage: { truncated: false, limit: 500 },
   cells: [
-    { dow: 2, hour: 19, posts: 2, views: 400, likes: 40 }, // avg 200 (o melhor)
-    { dow: 2, hour: 8, posts: 1, views: 90, likes: 9 }, // avg 90 (~45%)
-    { dow: 5, hour: 12, posts: 3, views: 30, likes: 3 }, // avg 10 (~5%)
+    { dow: 2, hour: 19, posts: 2, views: 400, likes: 40, viewsObserved: 2, likesObserved: 2 }, // avg 200 (o melhor)
+    { dow: 2, hour: 8, posts: 1, views: 90, likes: 9, viewsObserved: 1, likesObserved: 1 }, // avg 90 (~45%)
+    { dow: 5, hour: 12, posts: 3, views: 30, likes: 3, viewsObserved: 3, likesObserved: 3 }, // avg 10 (~5%)
   ],
   totalPosts: 6,
 }
 
 describe('buildHeatmapGrid', () => {
+  it('não dilui a média com posts sem dados nem inventa intensidade para ausência', () => {
+    const grid = buildHeatmapGrid({
+      cells: [
+        { dow: 1, hour: 12, posts: 4, views: 100, likes: 0, viewsObserved: 1, likesObserved: 1 },
+        {
+          dow: 2,
+          hour: 12,
+          posts: 2,
+          views: null,
+          likes: null,
+          viewsObserved: 0,
+          likesObserved: 0,
+        },
+      ],
+      totalPosts: 6,
+    })
+    expect(grid[1]?.[12]).toMatchObject({ avgViews: 100, observedPosts: 1, intensity: 4 })
+    expect(grid[2]?.[12]).toMatchObject({ posts: 2, views: null, avgViews: null, intensity: 0 })
+    expect(grid[2]?.[12] && cellTitle(grid[2][12]!)).toContain('views indisponíveis')
+  })
   it('grade densa 7×24 com intensidade normalizada pelo melhor avg', () => {
     const grid = buildHeatmapGrid(view)
     expect(grid).toHaveLength(7)
@@ -38,7 +59,9 @@ describe('intensityFor / cellTitle', () => {
   it('tooltip legível em pt-BR', () => {
     const grid = buildHeatmapGrid(view)
     const cell = grid[2]?.[19]
-    expect(cell && cellTitle(cell)).toBe('ter 19h · 2 posts · 400 views (200/post)')
+    expect(cell && cellTitle(cell)).toBe(
+      'ter 19h · 2 posts · 400 views (200/post com dado; 2/2 observados)',
+    )
     const empty = grid[0]?.[0]
     expect(empty && cellTitle(empty)).toBe('dom 0h · sem posts')
   })

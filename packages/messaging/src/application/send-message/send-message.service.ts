@@ -1,3 +1,4 @@
+import { staffCanonical } from '@sistemazero/core/staff'
 import type { Message } from '../../domain/message/message.aggregate'
 import { Message as MessageAggregate } from '../../domain/message/message.aggregate'
 import {
@@ -10,6 +11,7 @@ import type { SenderRepository } from '../../domain/ports/sender-repository.port
 import type { SuppressionRepository } from '../../domain/ports/suppression-repository.port'
 import type { TemplateRepository } from '../../domain/ports/template-repository.port'
 import { NoSenderAvailableError, SenderNotFoundError } from '../../domain/sender/sender.errors'
+import { normalizeAddress } from '../../domain/services/address'
 import { renderTemplate } from '../../domain/services/render-template'
 import type { Channel } from '../../domain/shared/channel'
 import { TemplateNotFoundError } from '../../domain/template/template.errors'
@@ -53,7 +55,7 @@ export class SendMessageService {
     // Idempotência: mesma (consumerId, key) → devolve o que já existe.
     if (consumerId && idempotencyKey) {
       const existing = await this.messages.findByIdempotency(consumerId, idempotencyKey)
-      if (existing) return toMessageView(existing)
+      if (existing) return this.existing(existing, input)
     }
 
     const template = await this.templates.findByChannelAndKey(input.channel, input.templateKey)
@@ -100,7 +102,7 @@ export class SendMessageService {
       // resposta 202 do caminho feliz, sem 500.
       if (error instanceof IdempotencyConflictError && consumerId && idempotencyKey) {
         const existing = await this.messages.findByIdempotency(consumerId, idempotencyKey)
-        if (existing) return toMessageView(existing)
+        if (existing) return this.existing(existing, input)
       }
       throw error
     }
@@ -108,6 +110,39 @@ export class SendMessageService {
   }
 
   /** E-mail precisa de um remetente; WhatsApp não. */
+  private existing(message: Message, input: SendMessageInput): MessageView {
+    const state = message.state
+    const recipient = {
+      name: input.recipient.name.trim(),
+      email: input.recipient.email?.trim()
+        ? normalizeAddress('email', input.recipient.email)
+        : null,
+      phone: input.recipient.phone?.trim()
+        ? normalizeAddress('whatsapp', input.recipient.phone)
+        : null,
+    }
+    const attachments = (input.attachments ?? []).map((item) => ({
+      filename: item.filename.trim(),
+      url: item.url.trim(),
+      contentType: item.contentType?.trim() || null,
+    }))
+    if (
+      state.channel !== input.channel ||
+      state.templateKey !== input.templateKey ||
+      staffCanonical(state.recipient) !== staffCanonical(recipient) ||
+      staffCanonical(state.variables) !== staffCanonical(input.variables ?? {}) ||
+      staffCanonical(state.attachments) !== staffCanonical(attachments) ||
+      (input.senderId != null && state.senderId !== input.senderId) ||
+      (input.priority !== undefined && state.priority !== input.priority) ||
+      (input.scheduledAt !== undefined &&
+        state.scheduledAt.getTime() !== input.scheduledAt.getTime())
+    )
+      throw new IdempotencyConflictError(
+        'A intenção já existe com conteúdo ou destinatário diferente',
+      )
+    return toMessageView(message)
+  }
+
   private async resolveSenderId(
     channel: Channel,
     requested: string | null,

@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type { LessonBlockContent, LessonBlockKind } from './lesson-block'
 
@@ -101,6 +102,13 @@ export interface Course {
    * o aluno assiste ao vídeo uma vez. Default DESLIGADO; a autora liga por curso no admin.
    */
   videoBeforeActivity: boolean
+  /**
+   * GRAVADO (`recorded`, o de sempre) ou AO VIVO (`live`, 14/10/2026): o ao vivo só existe em
+   * Oficinas. Não entra em listagem do aluno, Jornada, chave-mestra nem na base do Zappy;
+   * a aula abre pela vaga na turma (ver `CheckAccessService`). Sua conclusão concede os
+   * blocos configurados, sem conceder o produto Estúdio Completo.
+   */
+  modality: CourseModality
   /** Extras livres (ex.: `salesPageUrl` — URL da página de vendas no funil). */
   metadata: Record<string, unknown> | null
   createdAt: Date

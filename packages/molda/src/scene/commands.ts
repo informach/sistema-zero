@@ -25,19 +25,24 @@ import { reparentPreservingWorld } from './graph'
 import { SCENE_MATERIAL_IMAGE_KEYS, sceneMaterialImageIds } from './materialImages'
 import {
   type AffineMatrix,
+  affineDeterminant,
   affineInverse,
   affineMultiply,
   composeTransform,
   identityMatrix,
   transformPoint,
 } from './matrix'
-import { parametricMesh } from './parametricGeometry'
+import { meshSymmetrySource, synchronizeMeshSymmetry } from './meshSymmetry'
+import { parametricMesh, sceneGeometryMesh } from './parametricGeometry'
 import { primitiveDetail, readPrimitiveDetail } from './primitiveDetail'
+import { resizeScenePaint } from './resizePaint'
 import { duplicateSceneSkinTargets } from './skinTargets'
+import { rigidSceneTransform } from './transformTrs'
 import { triangulateFace } from './triangulate'
 import { boolean, choice, number, requireScene, text, tuple } from './validation'
 
 export type SceneIdFactory = () => string
+export type SceneShapeKind = ScenePrimitiveGeometry['kind'] | 'plane'
 
 export function addSceneBox(
   document: MoldaSceneDocument,
@@ -54,6 +59,17 @@ export function addScenePrimitive(
   nextId: SceneIdFactory = newId,
 ): MoldaSceneDocument {
   choice(kind, ['box', 'wedge', 'cylinder', 'sphere'], 'kind')
+  return addSceneShape(document, kind, name, nextId)
+}
+
+/** A plane is an editable quad, using the existing mesh document and UV contracts. */
+export function addSceneShape(
+  document: MoldaSceneDocument,
+  kind: SceneShapeKind,
+  name: string,
+  nextId: SceneIdFactory = newId,
+): MoldaSceneDocument {
+  choice(kind, ['box', 'wedge', 'cylinder', 'sphere', 'plane'], 'kind')
   const allocate = allocateId(document, nextId)
   const nodeId = allocate()
   const geometryId = allocate()
@@ -74,9 +90,10 @@ export function addScenePrimitive(
         materialId,
         hidden: false,
         locked: false,
+        pivot: kind === 'plane' ? [0, 0, 0] : [0, -1, 0],
         transform: {
           kind: 'trs',
-          translation: [0, 1, 0],
+          translation: kind === 'plane' ? [0, 0, 0] : [0, 1, 0],
           rotation: [0, 0, 0, 1],
           scale: [1, 1, 1],
         },
@@ -84,7 +101,24 @@ export function addScenePrimitive(
     ],
     geometries: [
       ...document.geometries,
-      { id: geometryId, kind, from: [-1, -1, -1], to: [1, 1, 1], surfaces: {} },
+      kind === 'plane'
+        ? {
+            id: geometryId,
+            kind: 'mesh',
+            vertices: { a: [-1, 0, -1], b: [-1, 0, 1], c: [1, 0, 1], d: [1, 0, -1] },
+            faces: {
+              plane: {
+                corners: [
+                  { vertexId: 'a', uv: [0, 0] },
+                  { vertexId: 'b', uv: [0, 1] },
+                  { vertexId: 'c', uv: [1, 1] },
+                  { vertexId: 'd', uv: [1, 0] },
+                ],
+              },
+            },
+            looseEdges: [],
+          }
+        : { id: geometryId, kind, from: [-1, -1, -1], to: [1, 1, 1], surfaces: {} },
     ],
     materials: [
       ...document.materials,
@@ -94,7 +128,7 @@ export function addScenePrimitive(
         baseColor: { kind: 'palette', index: color },
         roughness: 1,
         metalness: 0,
-        doubleSided: false,
+        doubleSided: kind === 'plane',
       },
     ],
   })
@@ -284,14 +318,21 @@ export function editSceneMesh(
   nodeId: string,
   edit: (mesh: SceneMeshGeometry) => SceneMeshGeometry,
   nextId: SceneIdFactory = newId,
+  options: { bakeSymmetry?: boolean; symmetricNewFaces?: boolean } = {},
 ): MoldaSceneDocument {
   const selected = selection(document, [nodeId])
   editable(selected)
   const node = selected.index.scene.nodes.get(nodeId)
   requireScene(node?.kind === 'mesh', 'node', 'Escolha uma peça para editar.')
-  const source = selected.index.geometries.get(node.geometryId)
-  requireScene(source?.kind === 'mesh', 'geometry', 'Transforme a forma em malha primeiro.')
-  const result = edit(source)
+  const geometry = selected.index.geometries.get(node.geometryId)
+  requireScene(geometry, 'geometry', 'A forma não existe mais.')
+  const full = sceneGeometryMesh(geometry)
+  const source = options.bakeSymmetry ? full : meshSymmetrySource(full)
+  const editedMesh = edit(source)
+  if (editedMesh === source) return document
+  const result = options.bakeSymmetry
+    ? editedMesh
+    : synchronizeMeshSymmetry(full, editedMesh, nextId, options.symmetricNewFaces)
   if (result === source) return document
   requireScene(result.id === source.id, 'geometry', 'A identidade da malha mudou durante a edição.')
   const shared = document.nodes.some(
@@ -349,6 +390,15 @@ export function transformSceneNodes(
   editable(selected)
   if (!selected.roots.size || delta.every((value, i) => value === identityMatrix()[i]))
     return document
+  for (const clip of document.animations ?? [])
+    if (clip.space === 'local')
+      for (const track of clip.tracks)
+        requireScene(
+          !selected.covered.has(track.nodeId),
+          `animations.${clip.id}.${track.nodeId}`,
+          'Esse clipe usa a posição local original. Converta o movimento antes de mudar a organização ou o pivô.',
+        )
+  const reflection = affineDeterminant(delta) < 0
   const nodes = document.nodes.map((node): ModelSceneNode => {
     if (!selected.roots.has(node.id)) return node
     const world = selected.index.scene.worldMatrices.get(node.id)
@@ -362,12 +412,13 @@ export function transformSceneNodes(
       `nodes.${node.id}`,
       'O grupo tem uma escala que impede essa mudança.',
     )
-    return {
-      ...node,
-      transform: { kind: 'affine', matrix: affineMultiply(inverse, affineMultiply(delta, world)) },
+    const affine = {
+      kind: 'affine' as const,
+      matrix: affineMultiply(inverse, affineMultiply(delta, world)),
     }
+    return { ...node, transform: reflection ? affine : rigidSceneTransform(affine) }
   })
-  return finish({ ...document, nodes })
+  return finish(resizeScenePaint(document, { ...document, nodes }))
 }
 
 /** Group pivot starts at the selected geometry's world center. Different parents join at root. */
@@ -580,6 +631,9 @@ export function moveScenePivot(
   let geometries = document.geometries
   let changed: ModelSceneNode = {
     ...node,
+    ...(node.pivot
+      ? { pivot: node.pivot.map((value, axis) => value - offset[axis]!) as Vec3 }
+      : {}),
     transform: {
       kind: 'affine',
       matrix: affineMultiply(composeTransform(node.transform), forward),

@@ -1,0 +1,48 @@
+import {resolveWranglerTools} from '../python-operational-tail-absence-r1/private-api.mjs'
+import assert from 'node:assert/strict'
+import {execFileSync} from 'node:child_process'
+import {createHash} from 'node:crypto'
+import {readFile,writeFile} from 'node:fs/promises'
+import {createRequire} from 'node:module'
+import {resolve,dirname,join} from 'node:path'
+import {StudioPythonRuntimeConfigurationSchema} from '../../../packages/core/src/studio/python-runtime-distribution'
+const root=process.cwd(),require=createRequire(resolve(root,'packages/studio-runtime/package.json'))
+const pkgPath=require.resolve('wrangler/package.json'),pkg=JSON.parse(await readFile(pkgPath,'utf8'))
+assert.equal(pkg.version,'4.120.1')
+const node=resolve(root,'.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'),cli=join(dirname(pkgPath),pkg.bin.wrangler)
+assert.equal(resolveWranglerTools(root).wrapper,cli)
+const account='bcc0f2d44140e05b69152cba326132f8',name='sistemazero-studio-runtime-staging',bucket='sistemazero-studio-artifacts-staging'
+const empty=resolve(import.meta.dirname,'readonly-staging-empty.env')
+await writeFile(empty,'',{flag:'wx'})
+const env:Record<string,string>={}
+for(const key of ['SystemRoot','WINDIR','COMSPEC','TEMP','TMP','APPDATA','LOCALAPPDATA','USERPROFILE','HOMEDRIVE','HOMEPATH','HOME','XDG_CONFIG_HOME','PATH','CLOUDFLARE_API_TOKEN'])if(process.env[key]!==undefined)env[key]=process.env[key]!
+Object.assign(env,{CLOUDFLARE_ACCOUNT_ID:account,WRANGLER_SEND_METRICS:'false',WRANGLER_LOG_SANITIZE:'true',WRANGLER_WRITE_LOGS:'false'})
+const selectors=['--cwd',resolve(root,'packages/studio-runtime'),'--env','staging','--env-file',empty]
+const call=(args:string[],maxBuffer=2_000_000)=>execFileSync(node,[cli,...args,...(['deployments','versions'].includes(args[0])?['--name',name]:[]),...selectors],{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe'],timeout:40000,maxBuffer})
+const sha=(bytes:Uint8Array)=>createHash('sha256').update(bytes).digest('hex')
+let phase='deployment-read'
+try{
+ const list=JSON.parse(call(['deployments','list','--json']).toString())
+ const latest=[...list].sort((a,b)=>a.created_on.localeCompare(b.created_on)).at(-1)
+ assert(latest&&latest.versions.length===1&&latest.versions[0].percentage===100)
+ const versionId=latest.versions[0].version_id
+ phase='version-read'
+ const version=JSON.parse(call(['versions','view',versionId,'--json']).toString())
+ const bindings=version.resources?.bindings??version.bindings??[]
+ const pointer=bindings.find((row:any)=>row.name==='STUDIO_PYTHON_DISTRIBUTIONS_SHA256')?.text
+ assert.match(pointer,/^[a-f0-9]{64}$/)
+ phase='configuration-object-read'
+ const object=call(['r2','object','get',bucket+'/runtime-configs/'+pointer+'.json','--remote','--pipe'])
+ assert.equal(sha(object),pointer,'R2 bytes differ from active pointer')
+ const configuration=StudioPythonRuntimeConfigurationSchema.parse(JSON.parse(object.toString('utf8')))
+ phase='deployment-bracket'
+ const after=[...JSON.parse(call(['deployments','list','--json']).toString())].sort((a,b)=>a.created_on.localeCompare(b.created_on)).at(-1)
+ assert.equal(after?.id,latest.id);assert.deepEqual(after?.versions,latest.versions)
+ const allowed=new Set(['STUDIO_PYTHON_DISTRIBUTIONS_SHA256','STUDIO_PYTHON_PREVIEW_ORIGIN'])
+ const publicBindings=bindings.filter((row:any)=>allowed.has(row.name)).map((row:any)=>({name:row.name,type:row.type,text:row.text}))
+ const receipt={state:'readonly-active-worker-public-baseline',observedAt:new Date().toISOString(),account,name,bucket,versionId,deploymentId:latest.id,activeConfigurationSha256:pointer,configuration,publicBindings,cliVersion:pkg.version,cliSha256:sha(await readFile(cli)),bracketStable:true,mutationsPerformed:false,rawProviderOutputPersisted:false,credentialValuesPersisted:false}
+ await writeFile(new URL('./cloudflare-staging-worker-public-baseline-r1.json',import.meta.url),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'})
+ console.log(JSON.stringify({state:receipt.state,versionId,activeConfigurationSha256:pointer,deployments:configuration.deployments.length,bracketStable:true,mutationsPerformed:false}))
+}catch(error){console.error(JSON.stringify({state:'readonly-worker-baseline-unavailable',phase,errorKind:error instanceof Error?error.name:'unknown',rawProviderOutputDiscarded:true}));process.exitCode=1}
+
+

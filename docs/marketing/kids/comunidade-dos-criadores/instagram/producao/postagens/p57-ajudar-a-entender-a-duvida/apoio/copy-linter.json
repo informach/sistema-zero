@@ -1,0 +1,56 @@
+{
+  "results": [
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\1.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\2.txt",
+      "issues": [
+        {
+          "rule": 3,
+          "label": "Pergunta no gancho",
+          "fix": "A primeira frase não pode ser pergunta. Vire uma afirmação direta."
+        }
+      ],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\3.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\4.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\5.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\6.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\7.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\8.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    },
+    {
+      "file": "output\\instagram\\p57-2026-10-14\\copy-limpa\\legenda.txt",
+      "issues": [],
+      "scope": "Regras mecânicas; exige revisão editorial e de provas."
+    }
+  ],
+  "review": "Uma ocorrência de Pergunta no gancho no slide 2: são perguntas citadas para a conversa entre adulto e criança, dentro do desenvolvimento. A capa é afirmativa. Falso positivo revisado; copy aprovada mantida."
+}

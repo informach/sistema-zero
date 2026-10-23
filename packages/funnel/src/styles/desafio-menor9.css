@@ -1,0 +1,419 @@
+/*
+ * desafio-menor9.css: as peças próprias da página do Desafio para menores de 9 anos, criando junto
+ * (proposta aprovada de 21/10/2026, quadro DesafioMenor9). Body: `DesafioMenor9Body.astro`; copy:
+ * `desafio-primeiro-jogo/oferta/pagina-menor9.ts`. O resto vem de comunidade-menor9.css (`.cm9`).
+ *
+ * Mesma regra da página irmã: tudo sob `.cm9`, sem cor própria, só os aliases `--kof-*` e os pastéis
+ * `--cm9-*`. As ilustrações pintam pelas classes `.dm9-f-*` e `.dm9-s-*`.
+ */
+
+/* ── Dois jeitos de usar a tela ─────────────────────────────────────────────── */
+.cm9 .dm9-jeitos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 24px;
+}
+.cm9 .dm9-jeito {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 32px;
+  background: color-mix(in oklab, var(--kof-lilas) 35%, var(--kof-carta));
+  color: var(--kof-tinta-suave);
+  text-align: center;
+}
+.cm9 .dm9-jeito p {
+  margin: 0;
+}
+.cm9 .dm9-jeito--junto {
+  background: var(--cm9-creme);
+  color: var(--kof-tinta);
+}
+.cm9 .dm9-jeito__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 26px;
+  font-weight: 800;
+}
+.cm9 .dm9-jeito--junto .dm9-jeito__titulo {
+  color: var(--cm9-acento);
+}
+.cm9 .dm9-ilustra {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  height: auto;
+}
+/* Na coluna (`cm9-pilha`), a base de 412px da Comunidade viraria altura: aqui a frase tem a sua. */
+.cm9 .dm9-destaque {
+  flex: none;
+  align-self: flex-start;
+  max-width: 640px;
+}
+
+.cm9 .dm9-f-cinza {
+  fill: color-mix(in oklab, var(--kof-tinta-suave) 55%, var(--kof-carta));
+}
+.cm9 .dm9-f-cinza-escuro {
+  fill: color-mix(in oklab, var(--kof-tinta) 70%, var(--kof-carta));
+}
+.cm9 .dm9-f-claro {
+  fill: color-mix(in oklab, var(--kof-carta) 80%, var(--kof-tinta-suave));
+}
+.cm9 .dm9-f-pele {
+  fill: color-mix(in oklab, var(--kof-laranja) 35%, var(--kof-carta));
+}
+.cm9 .dm9-f-pele-adulto {
+  fill: color-mix(in oklab, var(--kof-laranja) 50%, var(--kof-carta));
+}
+.cm9 .dm9-s-pele-adulto {
+  stroke: color-mix(in oklab, var(--kof-laranja) 50%, var(--kof-carta));
+}
+.cm9 .dm9-f-cabelo {
+  fill: color-mix(in oklab, var(--kof-tinta) 65%, var(--kof-laranja));
+}
+.cm9 .dm9-f-lilas {
+  fill: var(--cm9-lilas);
+}
+.cm9 .dm9-f-laranja {
+  fill: var(--cm9-laranja);
+}
+.cm9 .dm9-f-carta {
+  fill: var(--kof-carta);
+}
+.cm9 .dm9-f-tinta {
+  fill: var(--kof-tinta);
+}
+.cm9 .dm9-s-tinta {
+  stroke: var(--kof-tinta);
+}
+.cm9 .dm9-f-rosa {
+  fill: var(--cm9-rosa);
+}
+.cm9 .dm9-f-amarelo {
+  fill: var(--cm9-amarelo);
+}
+.cm9 .dm9-f-azul {
+  fill: var(--cm9-azul);
+}
+
+/* ── O jogo: as etapas ao lado da captura do Farol ─────────────────────────── */
+.cm9 .dm9-jogo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 40px;
+}
+.cm9 .dm9-jogo__texto {
+  display: flex;
+  flex: 1 1 440px;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.cm9 .dm9-etapas {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cm9 .dm9-etapas li {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.cm9 .dm9-etapa__icone {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  color: var(--kof-tinta);
+}
+.cm9 .dm9-jogo__tela {
+  flex: 1 1 440px;
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  border-radius: 36px;
+  background: var(--kof-carta);
+  box-shadow: 0 8px 0 var(--kof-tinta);
+}
+.cm9 .dm9-jogo__tela img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 26px;
+}
+.cm9 .dm9-jogo__tela figcaption {
+  padding: 10px 8px 2px;
+  color: var(--kof-tinta-suave);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ── A sessão em 4 passos ───────────────────────────────────────────────────── */
+.cm9 .dm9-sessao {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cm9 .dm9-sessao__passo {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  margin: 0;
+  overflow: clip;
+  border-radius: 28px;
+  background: var(--cm9-creme);
+}
+.cm9 .dm9-sessao__passo img {
+  display: block;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  object-position: left top;
+}
+.cm9 .dm9-sessao__passo figcaption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+}
+.cm9 .dm9-nota {
+  margin: 0;
+  color: var(--kof-tinta-suave);
+  font-size: 15px;
+}
+
+/* ── O que ele treina ───────────────────────────────────────────────────────── */
+.cm9 .dm9-habilidades {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cm9 .dm9-habilidade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 22px;
+  border-radius: 28px;
+  background: var(--cm9-creme);
+  text-align: center;
+}
+.cm9 .dm9-habilidade__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  color: var(--kof-tinta);
+}
+.cm9 .dm9-habilidade__titulo {
+  margin: 0;
+  font-family: var(--kof-display);
+  font-size: 24px;
+  font-weight: 800;
+}
+.cm9 .dm9-habilidade__texto {
+  margin: 0;
+  color: var(--kof-tinta-suave);
+}
+.cm9 .dm9-faixa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 28px;
+  padding: 26px 28px;
+  border-radius: 32px;
+  background: var(--kof-tinta);
+  color: var(--kof-carta);
+}
+.cm9 .dm9-faixa strong {
+  flex: 1 1 280px;
+  font-family: var(--kof-display);
+  font-size: 26px;
+}
+.cm9 .dm9-faixa span {
+  flex: 2 1 420px;
+  color: color-mix(in oklab, var(--kof-carta) 88%, var(--kof-lilas));
+}
+
+/* ── A prova: o relato da Débora e os fundadores ───────────────────────────── */
+.cm9 .dm9-prova {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 32px;
+}
+.cm9 .dm9-relato {
+  display: flex;
+  flex: 1 1 380px;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+  padding: 28px;
+  border-radius: 36px 36px 36px 12px;
+  background: var(--kof-carta);
+}
+.cm9 .dm9-relato__quem {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.cm9 .dm9-relato__quem img {
+  flex: none;
+  width: 104px;
+  height: 104px;
+  border: 4px solid var(--cm9-amarelo);
+  border-radius: 50%;
+  object-fit: cover;
+}
+.cm9 .dm9-relato__quem span {
+  color: var(--kof-tinta-suave);
+  font-size: 15px;
+}
+.cm9 .dm9-relato__quem strong {
+  color: var(--kof-tinta);
+  font-size: 20px;
+}
+.cm9 .dm9-relato blockquote,
+.cm9 .dm9-relato blockquote p {
+  margin: 0;
+}
+.cm9 .dm9-relato blockquote p {
+  font-family: var(--kof-display);
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.cm9 .dm9-fundadores {
+  display: flex;
+  flex: 1 1 440px;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  overflow: clip;
+  border-radius: 36px;
+  background: var(--kof-carta);
+}
+.cm9 .dm9-fundadores img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+.cm9 .dm9-fundadores figcaption {
+  padding: 20px 24px;
+  color: var(--kof-tinta-suave);
+}
+
+/* ── A oferta: um plano só, com o que inclui e a garantia embaixo do botão ── */
+.cm9 .dm9-cheio {
+  margin-right: 12px;
+  color: var(--kof-tinta-suave);
+  font-size: 24px;
+  font-weight: 700;
+}
+.cm9 .dm9-inclui {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 700;
+}
+.cm9 .dm9-inclui li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.cm9 .dm9-inclui svg {
+  flex: none;
+  color: var(--kof-verde);
+}
+.cm9 .dm9-plano__botao {
+  border: 0;
+  background: var(--cm9-laranja);
+  box-shadow: 0 5px 0 var(--kof-tinta);
+}
+.cm9 .dm9-plano__garantia {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: var(--kof-tinta-suave);
+  font-size: 16px;
+  font-weight: 700;
+}
+.cm9 .dm9-plano__garantia svg {
+  flex: none;
+  color: var(--kof-verde);
+}
+.cm9 .dm9-depois {
+  flex: 1 1 320px;
+  align-self: flex-start;
+}
+
+/* ── O caminho depois do Desafio ────────────────────────────────────────────── */
+.cm9 .dm9-caminho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cm9 .dm9-caminho__passo {
+  display: flex;
+  flex: 1 1 220px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 20px;
+  border-radius: 28px;
+  background: var(--cm9-creme);
+  text-align: center;
+}
+.cm9 .dm9-caminho__passo strong {
+  font-family: var(--kof-display);
+  font-size: 22px;
+  line-height: 1.15;
+}
+.cm9 .dm9-caminho__passo > span:last-child {
+  color: var(--kof-tinta-suave);
+  font-size: 17px;
+}
+.cm9 .dm9-caminho__icone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  color: var(--kof-tinta);
+}
+.cm9 .dm9-link {
+  border-radius: 4px;
+  color: var(--kof-tinta);
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}

@@ -10,13 +10,16 @@ import {
   resolveTier,
 } from '../../domain/gamification/league'
 import { weekBoundsUtc, weeklyPeriodKey } from '../../domain/gamification/missions'
+import type { AdultProfileRepository } from '../../domain/ports/adult-profile-repository.port'
 import type { AuthGateway, ProfileIdentity } from '../../domain/ports/auth-gateway.port'
 import type { GamificationRepository } from '../../domain/ports/gamification-repository.port'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type {
   GetAvatarsByProfilesService,
   ProfileAvatarView,
 } from '../avatar/get-avatars-by-profiles.service'
 import type { LeagueEntryView, LeagueMeView } from '../mappers/views'
+import { adultJourneysFor, badgeOf } from './get-ranking-leaderboard.service'
 
 /**
  * Liga semanal do aluno. Resolve o tier da semana de forma LAZY (sem cron): se ainda
@@ -33,6 +36,8 @@ export class GetLeagueService {
     private readonly avatars: GetAvatarsByProfilesService,
     /** Nome/flag-público via auth S2S; `null` (dev/local sem envs) → sem nome/link. */
     private readonly auth: AuthGateway | null,
+    private readonly adultProfiles?: AdultProfileRepository,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'positions'>,
   ) {}
 
   /** Colocação 1-based de `userId` na coorte por XP da semana (empate → competition rank). */
@@ -108,6 +113,7 @@ export class GetLeagueService {
     const myPosition = rows.find((e) => e.isMe)?.position ?? this.rankOf(userId, xpByUser)
 
     return {
+      ...(audience === 'adult' ? { audience: 'adult' as const } : {}),
       tier,
       weekKey,
       promotionCount: promotionCount(cohort.length),
@@ -124,6 +130,17 @@ export class GetLeagueService {
    * expõe o id de um não-público. Coorte é limitada por tier (bem abaixo do teto de 100
    * do batch do auth) — sem chunking.
    */
+  private async adultIdentities(ids: string[]) {
+    const result = new Map<string, ProfileIdentity>()
+    try {
+      for (const profile of (await this.adultProfiles?.listPublic(ids)) ?? [])
+        result.set(profile.userId, { firstName: profile.displayName, public: true })
+    } catch {
+      return new Map<string, ProfileIdentity>()
+    }
+    return result
+  }
+
   private async hydrate(
     rows: { id: string; position: number; weeklyXp: number; isMe: boolean }[],
     audience: CourseAudience,
@@ -131,21 +148,35 @@ export class GetLeagueService {
     const ids = rows.map((r) => r.id)
     const [avatars, identities] = await Promise.all([
       this.avatars.execute(ids, audience).catch((): Record<string, ProfileAvatarView> => ({})),
-      this.auth
-        ? this.auth.getProfileIdentities(ids).catch(() => new Map<string, ProfileIdentity>())
-        : Promise.resolve(new Map<string, ProfileIdentity>()),
+      audience === 'adult'
+        ? this.adultIdentities(ids)
+        : this.auth
+          ? this.auth.getProfileIdentities(ids).catch(() => new Map<string, ProfileIdentity>())
+          : Promise.resolve(new Map<string, ProfileIdentity>()),
     ])
+    const journeys = await adultJourneysFor(
+      this.adultJourney,
+      audience,
+      rows.filter((r) => r.isMe || identities.get(r.id)?.public).map((r) => r.id),
+    )
     return rows.map((r) => {
       const avatar = avatars[r.id]
       const identity = identities.get(r.id)
+      const journey = journeys.get(r.id)
       return {
         position: r.position,
         weeklyXp: r.weeklyXp,
         isMe: r.isMe,
-        photoUrl: avatar?.photoUrl ?? null,
-        levelSlug: avatar?.level,
+        // Adulto: foto e etapa respeitam o perfil público; Kids mantém seu posto canônico.
+        photoUrl:
+          audience !== 'adult' || r.isMe || identity?.public ? (avatar?.photoUrl ?? null) : null,
+        levelSlug: audience === 'kids' ? (avatar?.level ?? null) : avatar?.level,
+        ...(audience === 'kids' && (avatar?.journeyUnavailable || !avatar?.level)
+          ? { journeyUnavailable: true as const }
+          : {}),
         firstName: identity?.firstName ?? null,
         profileId: identity?.public ? r.id : undefined,
+        ...(journey ? { journey: badgeOf(journey) } : {}),
       }
     })
   }

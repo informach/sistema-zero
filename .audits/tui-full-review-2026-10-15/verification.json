@@ -1,0 +1,127 @@
+{
+  "reviewDate": "2026-10-15",
+  "baseCommit": "8ea02d96e48f447762ee070e8334d8a6c515c437",
+  "sourceBranch": "fix/tui-full-review",
+  "mergeTarget": "staging",
+  "publication": "Local commit and merge only; commit identities are recorded by Git history, not self-referential metadata.",
+  "sourceIdentity": {
+    "packagesTree": "8c662e74bba05b1b430e0a0361729a2b3728a978",
+    "scriptsTree": "b4e0b1d05da58e3df591c75d6dd0055b9603ca15",
+    "meaning": "Git tree objects for the tested source, captured from the staged index. Compare with <commit>:packages and <commit>:scripts. Audit and docs metadata are outside these trees."
+  },
+  "review": {
+    "inventoriedFiles": 251,
+    "inventoriedLines": 36166,
+    "correctedFindings": 13,
+    "report": "../architectural-analysis-2026-10-15-tui-review.md",
+    "inventory": "inventory.json"
+  },
+  "tests": {
+    "tui": {
+      "command": "bun test --define 'ZERO_JOB_BINARY=\"file:///C:/Users/tocha/projects/sistema-zero-tui/packages/tui/dist/windows-job.exe\"' packages/agent-core/tests packages/agent-runtime/tests packages/agent-integrations/tests packages/tui/tests scripts/tui-release/manifest.test.ts",
+      "passed": 79,
+      "failed": 0,
+      "assertions": 475,
+      "files": 50,
+      "durationSeconds": 36.1,
+      "log": "tui-tests.log",
+      "condition": "Uses the built distribution helper explicitly; does not certify unsigned helper compilation under every Windows signing policy."
+    },
+    "backend": {
+      "command": "bun test packages/auth/tests/unit packages/auth/tests/integration packages/messaging/tests/unit packages/api-gateway/tests/unit/config.test.ts packages/studio-runtime/tests packages/core/src/staff packages/core/src/studio",
+      "passed": 458,
+      "failed": 0,
+      "assertions": 1643,
+      "files": 54,
+      "durationSeconds": 36.54,
+      "log": "backend-tests.log"
+    },
+    "totalPassed": 537,
+    "totalAssertions": 2118,
+    "previousDevelopmentFailure": {
+      "passed": 78,
+      "failed": 1,
+      "log": "tui-tests-code-integrity-failure.log",
+      "cause": "Windows Code Integrity events 3033 and 3077 blocked the newly compiled temporary helper under signing policy; the child was not launched.",
+      "events": "code-integrity.json",
+      "systemPolicyChanged": false,
+      "certificateInstalled": false,
+      "automaticRetryAdded": false
+    }
+  },
+  "typecheck": {
+    "commandPattern": "bunx tsc --noEmit -p <configuration>",
+    "allPassed": true,
+    "configurations": [
+      "packages/agent-core/tsconfig.json",
+      "packages/agent-runtime/tsconfig.json",
+      "packages/agent-integrations/tsconfig.json",
+      "packages/tui/tsconfig.json",
+      "packages/core/tsconfig.json",
+      "packages/auth/tsconfig.json",
+      "packages/messaging/tsconfig.json",
+      "packages/api-gateway/tsconfig.json",
+      "packages/studio-runtime/tsconfig.json",
+      "packages/studio-runtime/tsconfig.test.json",
+      "scripts/tui-release/tsconfig.json"
+    ]
+  },
+  "staticChecks": {
+    "biome": { "files": 221, "errors": 0, "warnings": 0 },
+    "gitDiffCheck": "passed",
+    "studioValidationProfile": "bun packages/studio-runtime/scripts/validation-profile.ts --check: passed"
+  },
+  "release": {
+    "build": { "command": "bun run build:tui", "passed": true, "modules": 28, "log": "build.log" },
+    "installation": {
+      "command": "bun run verify:tui",
+      "passed": true,
+      "runtimeReady": true,
+      "log": "release-verify.log",
+      "smokes": ["manifest", "sqlite-worker", "schema-worker", "typescript-worker", "opentui-native-wasm", "windows-job-conpty", "node-chromium-worker"]
+    },
+    "upgrade": {
+      "command": "bun run verify:tui:upgrade",
+      "at": "2026-10-15T23:33:54.245Z",
+      "interruptedKeptPrevious": true,
+      "backupVerified": true,
+      "rollbackVerified": true,
+      "launcherVerified": true,
+      "log": "upgrade.log"
+    },
+    "sha256": {
+      "packages/tui/dist/manifest.json": "c943fd08b16272966f86f34cd3056202f09afc7c573b90a61e94ba66184f52e5",
+      "packages/tui/dist/windows-job.exe": "420e3f74e47bab868e2a4ef1293898f3ea97b0cc0e6eb76bc8485d71a1e03c04",
+      "packages/tui/dist/windows-job.ps1": "9fa673208b27f34f9eb841871da30780cfe5bb2cb76ef16473e4c623fd384790",
+      "packages/agent-runtime/src/process/windows-job.ps1": "9fa673208b27f34f9eb841871da30780cfe5bb2cb76ef16473e4c623fd384790"
+    },
+    "helperAuthenticodeStatus": "NotSigned",
+    "currentUserCodeSigningCertificateCount": 0
+  },
+  "performance": {
+    "scope": "Owned service port verification only; no inference or overall application speed claim.",
+    "samplesPerPath": 10,
+    "warmupsPerPath": 1,
+    "previousP50Ms": 1262.4262,
+    "previousP95Ms": 1364.9852,
+    "nativeP50Ms": 84.4399,
+    "nativeP95Ms": 92.4781,
+    "evidence": "ports.json"
+  },
+  "openAcceptanceRequirements": [
+    "Trusted publisher signing for Windows machines whose policy requires it; unsigned release is not certified for those machines.",
+    "Combined supervisor/UI RSS remains above the 300 MiB target.",
+    "Docker bind mounts have no hard physical disk quota and individual Bun workers have no hard memory quota.",
+    "Real ENOSPC and termination at every patch boundary are not fully exercised.",
+    "Live external integration certification and the comparative 30-task evaluation remain pending; no superiority claim over Claude Code is established.",
+    "OpenRouter and Brave credentials were absent; native Claude/Codex account status checks do not certify inference behavior.",
+    "Backend facades are not deployed by this local review; platform validation is Windows x64."
+  ],
+  "externalEffects": {
+    "paidInference": false,
+    "messagesSent": false,
+    "externalPullRequestsCreated": false,
+    "push": false,
+    "deploy": false
+  }
+}

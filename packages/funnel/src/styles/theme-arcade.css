@@ -1,0 +1,40 @@
+/*
+ * theme-arcade.css: o tema da área adulta da Comunidade dos Criadores ("arcade / nostalgia",
+ * Canvas de 19/10/2026). As cores do desenho são declaradas UMA vez aqui, como tokens `--cda-*` no
+ * `.theme-arcade` (classe do <html>, `theme: 'arcade'` do funil); a página de oferta (`.cda`), o
+ * quiz, o resultado em conversa e o checkout só usam as variáveis. As fontes são as do desenho,
+ * servidas pelo próprio site (a CSP só aceita 'self').
+ */
+@import "@fontsource/bricolage-grotesque/latin-600.css";
+@import "@fontsource/bricolage-grotesque/latin-700.css";
+@import "@fontsource/bricolage-grotesque/latin-800.css";
+@import "@fontsource/silkscreen/latin-400.css";
+@import "@fontsource/silkscreen/latin-700.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-400.css";
+@import "@fontsource/atkinson-hyperlegible-next/latin-700.css";
+
+.theme-arcade {
+  --cda-fundo: #0b0e1a;
+  --cda-fundo-2: #121733;
+  --cda-carta: #1a2040;
+  --cda-codigo: #161b38;
+  --cda-linha: #232a52;
+  --cda-linha-forte: #2c3563;
+  --cda-texto: #f2f4fa;
+  --cda-texto-suave: #c9d1e6;
+  --cda-texto-apoio: #b9c2db;
+  --cda-legenda: #8e9bba;
+  --cda-branco: #ffffff;
+  --cda-preto: #000000;
+  --cda-amarelo: #ffc02e;
+  --cda-dourado: #ffd45c;
+  --cda-fundo-lenda: #1a1a0b;
+  --cda-rosa: #f368a6;
+  --cda-azul: #6e9bff;
+  --cda-verde: #7ce38b;
+  --cda-menta: #7ce3a6;
+
+  --cda-titulo: "Bricolage Grotesque", system-ui, sans-serif;
+  --cda-pixel: "Silkscreen", monospace;
+  --cda-corpo: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif;
+}

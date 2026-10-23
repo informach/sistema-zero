@@ -1,10 +1,12 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { canonicalHmacMessage, verifyHmacSignature } from '@sistemazero/core/security'
 
 // Helpers PUROS da rota S2S `POST /api/studio/cleanup` (limpeza de R2 na moderação).
 // Vivem fora do route.ts (server-only) p/ serem testáveis em `bun test`.
 
 /** Path EXATO que o hub assina e que verificamos (canônico `<MÉTODO>.<path>.<corpo>`). */
 export const CLEANUP_PATH = '/api/studio/cleanup'
+export const RESERVATION_CLEANUP_PATH = '/api/studio/reservation-cleanup'
 export const CLEANUP_HMAC_TOLERANCE_SECONDS = 300
 
 /**
@@ -18,6 +20,38 @@ export function verifyCleanupSignature(
   rawBody: string,
   header: string | null | undefined,
   nowSeconds: number = Math.floor(Date.now() / 1000),
+): boolean {
+  return verifySignatureAt(CLEANUP_PATH, secret, rawBody, header, nowSeconds)
+}
+
+export function verifyReservationCleanupSignature(
+  secret: string,
+  rawBody: string,
+  header: string | null | undefined,
+  deliveryId: string | null | undefined,
+  nowSeconds: number = Math.floor(Date.now() / 1000),
+): boolean {
+  if (!deliveryId || !/^studio-reservation-cleanup:[a-f0-9-]{36}$/.test(deliveryId)) return false
+  return verifyHmacSignature({
+    secret,
+    body: canonicalHmacMessage({
+      method: 'POST',
+      path: RESERVATION_CLEANUP_PATH,
+      deliveryId,
+      body: rawBody,
+    }),
+    signatureHeader: header ?? undefined,
+    nowSeconds,
+    toleranceSeconds: CLEANUP_HMAC_TOLERANCE_SECONDS,
+  }).valid
+}
+
+function verifySignatureAt(
+  path: typeof CLEANUP_PATH | typeof RESERVATION_CLEANUP_PATH,
+  secret: string,
+  rawBody: string,
+  header: string | null | undefined,
+  nowSeconds: number,
 ): boolean {
   if (!header) return false
   const parts = Object.fromEntries(
@@ -33,27 +67,11 @@ export function verifyCleanupSignature(
   if (Math.abs(nowSeconds - ts) > CLEANUP_HMAC_TOLERANCE_SECONDS) return false
   // `Buffer.from(x,'hex')` não lança em hex inválido — valide o formato antes.
   if (parts.v1.length % 2 !== 0 || !/^[0-9a-f]+$/i.test(parts.v1)) return false
-  const canonical = `POST.${CLEANUP_PATH}.${rawBody}`
+  const canonical = `POST.${path}.${rawBody}`
   const expected = Buffer.from(
     createHmac('sha256', secret).update(`${ts}.${canonical}`).digest('hex'),
     'hex',
   )
   const received = Buffer.from(parts.v1, 'hex')
   return received.length === expected.length && timingSafeEqual(received, expected)
-}
-
-/**
- * Deriva a key R2 da capa a partir da URL pública. Só devolve keys sob `studio/cover/`
- * (defesa em profundidade — mesmo com HMAC válido, NUNCA apaga key arbitrária).
- */
-export function coverKeyFromPublicUrl(
-  publicBaseUrl: string | undefined,
-  url: string,
-): string | null {
-  const base = publicBaseUrl?.replace(/\/+$/, '')
-  if (!base) return null
-  const prefix = `${base}/`
-  if (!url.startsWith(prefix)) return null
-  const key = url.slice(prefix.length)
-  return key.startsWith('studio/cover/') ? key : null
 }

@@ -1,6 +1,7 @@
+import { TERMOS_DESAFIO } from '../../content/legal/termos-desafio'
 import type { FunnelDef } from '../registry'
-import { DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
-import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz/definition'
+import { DESAFIO_CHECKOUT, DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
+import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz'
 
 export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   audience: 'kids',
@@ -14,7 +15,7 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   byline: 'Helena e Júlio · Sistema Zero',
   seoTitle: 'Desafio do Primeiro Jogo | Sistema Zero',
   seoDescription:
-    'Seu filho aprende a programar A Chave do Farol. Para 9 a 14 anos, com aulas gravadas, prática integrada e 30 dias de acesso ao curso e ao Mural completo. Pagamento único.',
+    'Seu filho programa A Chave do Farol na plataforma do Sistema Zero Kids: aulas gravadas com o Estúdio ao lado, ajuda por mensagens e Mural completo por 30 dias. Para 9 a 17 anos, e para menores de 9 criando junto com um adulto. Pagamento único, sem assinatura.',
   theme: 'kids',
   lifetimeAccess: false,
   offerContract: {
@@ -25,10 +26,12 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     guaranteeDays: 7,
   },
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
+  legal: { termos: TERMOS_DESAFIO, termsVersion: 'desafio-2026-10-21' },
   content: {
     copy: DESAFIO_PRODUTO,
     landing: DESAFIO_LANDING,
     obrigado: DESAFIO_OBRIGADO,
+    checkout: DESAFIO_CHECKOUT,
     quiz: DESAFIO_QUIZ,
     result: { profiles: {}, fecho: '', perfilLabels: DESAFIO_PERFIL_LABELS },
   },

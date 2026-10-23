@@ -6,17 +6,14 @@ import {
   isLearningAnswers,
   isPublicInteractiveBlock,
   type LearningAnswers,
-  type LearningAttemptView,
-  type LearningBlockProgress,
   type PublicInteractiveBlock,
   projectPlayComplete,
 } from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { CheckCircle2, Gamepad2, Lightbulb } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
-import { apiSend } from '../lib/api'
-import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { LessonBlockView } from '../lib/types'
+import { useLearningExecution } from './learning-execution-context'
 import { LearningHtml } from './learning-html'
 import { useLessonCopy } from './lesson-copy-context'
 import { useLessonPlayer } from './lesson-player-context'
@@ -34,14 +31,14 @@ export function InteractiveLessonBlock({
   block: LessonBlockView
   previewContent?: InteractiveBlock
 }) {
-  const player = useLessonPlayer()
+  const execution = useLearningExecution()
   if (!isPublicInteractiveBlock(block.content))
     return <p role="alert">Este bloco precisa de uma configuração válida.</p>
   const activity = block.content.activity
   if (activity.type === 'experimentation')
     return (
       <SceneActivityView
-        key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(activity)}`}
+        key={`${execution?.viewerId}:${execution?.scopeId}:${block.id}:${block.blockRevision}:${execution ? '' : JSON.stringify(activity)}`}
         block={block}
         content={block.content}
         activity={activity}
@@ -50,7 +47,7 @@ export function InteractiveLessonBlock({
     )
   return (
     <Activity
-      key={`${player?.viewerId}:${block.id}:${block.blockRevision}:${player ? '' : JSON.stringify(block.content.activity)}`}
+      key={`${execution?.viewerId}:${execution?.scopeId}:${block.id}:${block.blockRevision}:${execution ? '' : JSON.stringify(block.content.activity)}`}
       block={block}
       content={block.content}
       previewContent={previewContent}
@@ -68,9 +65,10 @@ function Activity({
   previewContent?: InteractiveBlock
 }) {
   const player = useLessonPlayer()
+  const execution = useLearningExecution()
   const rehearsal = useLessonPreview()
   const { erroDoServidor } = useLessonCopy()
-  const saved = player?.learningProgress?.blocks.find(
+  const saved = execution?.progress.find(
     (p) => p.blockId === block.id && p.revision === block.blockRevision,
   )
   const initialSaved = useRef(saved)
@@ -87,17 +85,15 @@ function Activity({
   // novo". Antes, o botão aparecia durante a espera e sumia na resposta, e a tela tremia.
   const [tentouGuardar, setTentouGuardar] = useState(false)
   const id = useId()
-  const key = player?.viewerId
-    ? `sz:learning:${player.viewerId}:${player.lessonId}:${block.id}:${block.blockRevision}`
+  const key = execution?.viewerId
+    ? `sz:learning:${execution.viewerId}:${execution.scopeId}:${block.id}:${block.blockRevision}`
     : null
-  const base = player
-    ? `/api/members/lessons/${encodeURIComponent(player.lessonId)}/blocks/${encodeURIComponent(block.id)}`
-    : null
+  const persistent = Boolean(execution)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const queue = useRef<Promise<void>>(Promise.resolve())
   const current = useRef({ answers, hintsUsed, dirty: false })
-  const callback = useRef(player?.onLearningProgress)
-  callback.current = player?.onLearningProgress
+  const callback = useRef(execution?.onProgress)
+  callback.current = execution?.onProgress
   const requestId = useRef<string | null>(null)
   const checking = useRef(false)
   // A atualização da página que libera a próxima parte, uma vez por montagem (ver o envio).
@@ -134,7 +130,7 @@ function Activity({
 
   const persistRef = useRef<() => void>(() => {})
   persistRef.current = () => {
-    if (!base || !block.blockRevision || !current.current.dirty) return
+    if (!execution || !block.blockRevision || !current.current.dirty) return
     const snapshot = {
       revision: block.blockRevision,
       answers: current.current.answers,
@@ -144,14 +140,7 @@ function Activity({
     current.current.dirty = false
     queue.current = queue.current.then(async () => {
       try {
-        const response = await fetch(`${base}/learning-progress`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', 'x-sz-viewer': player?.viewerId ?? '' },
-          body: JSON.stringify(snapshot),
-          keepalive: true,
-        })
-        const data = await response.json()
-        if (!response.ok) throw data?.error ?? new Error('Não foi possível salvar.')
+        const data = await execution.saveProgress(block.id, snapshot)
         callback.current?.(data)
         setStatus('Respostas salvas.')
         setError('')
@@ -186,9 +175,9 @@ function Activity({
     setError('')
     // ⚠️ A mesma língua da cena (review do lote 2): "Prévia de autoria. Nenhum progresso de aluno
     // foi registrado." e "Salvando…" eram as frases antigas que a moldura já tinha trocado.
-    setStatus(base ? 'Guardando…' : PREVIA)
+    setStatus(persistent ? 'Guardando…' : PREVIA)
     current.current = { answers: next, hintsUsed: nextHints, dirty: true }
-    if (!player) rehearsal?.onChange(block.id, next, nextHints)
+    if (!execution) rehearsal?.onChange(block.id, next, nextHints)
     if (key)
       try {
         localStorage.setItem(
@@ -206,7 +195,7 @@ function Activity({
     timer.current = setTimeout(() => persistRef.current(), 500)
   }
   async function check() {
-    if (!player && previewContent) {
+    if (!execution && previewContent) {
       if (checking.current) return
       checking.current = true
       setBusy(true)
@@ -227,7 +216,7 @@ function Activity({
       }
       return
     }
-    if (!base || !block.blockRevision || checking.current) return
+    if (!execution || !block.blockRevision || checking.current) return
     checking.current = true
     setBusy(true)
     setError('')
@@ -237,17 +226,12 @@ function Activity({
     requestId.current ??= crypto.randomUUID()
     const submitted = current.current
     try {
-      const data = await apiSend<{ attempt: LearningAttemptView; progress: LearningBlockProgress }>(
-        `${base}/learning-attempts`,
-        'POST',
-        {
-          id: requestId.current,
-          revision: block.blockRevision,
-          answers: submitted.answers,
-          hintsUsed: submitted.hintsUsed,
-        },
-        { 'x-sz-viewer': player?.viewerId ?? '' },
-      )
+      const data = await execution.attempt(block.id, {
+        id: requestId.current,
+        revision: block.blockRevision,
+        answers: submitted.answers,
+        hintsUsed: submitted.hintsUsed,
+      })
       setResult(data.attempt.result)
       callback.current?.(data.progress)
       setStatus('Guardado.')
@@ -255,7 +239,7 @@ function Activity({
       // na resposta, e uma atualização a cada tentativa refazia a aula no servidor.
       if (data.attempt.result.passed && !atualizouAoPassar.current) {
         atualizouAoPassar.current = true
-        player?.refreshAfterLearning?.()
+        execution.refresh?.()
       }
       if (key && current.current.answers === submitted.answers)
         try {
@@ -375,7 +359,10 @@ function Activity({
             </Button>
           )}
           {!jogo && (
-            <Button disabled={busy || (!base && !previewContent)} onClick={() => void check()}>
+            <Button
+              disabled={busy || (!persistent && !previewContent)}
+              onClick={() => void check()}
+            >
               {busy ? 'Guardando…' : 'Conferir minha descoberta'}
             </Button>
           )}
@@ -404,7 +391,7 @@ function Activity({
               <button
                 type="button"
                 className="underline"
-                disabled={!base && !previewContent}
+                disabled={!persistent && !previewContent}
                 onClick={tentarDeNovo}
               >
                 Tentar guardar de novo

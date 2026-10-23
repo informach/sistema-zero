@@ -1,0 +1,19 @@
+P11 · Ele imaginou o jogo inteiro. Na hora de começar, ficou sem saber o que fazer primeiro.
+Calendário comum · semana 8 · primeiro post · série Por trás do jogo · dor D11.
+Instagram · carrossel · 8 imagens · 1080 × 1350 · proporção 4:5.
+
+Ordem: 01-p11.png, 02-p11.png, 03-p11.png, 04-p11.png, 05-p11.png, 06-p11.png, 07-p11.png, 08-p11.png.
+Legenda integral: legenda.txt.
+Textos alternativos: texto-alternativo.txt.
+Prévia: index.html ou previa.png.
+Montagem editável: montagem.html.
+Copy aprovada: ../../../postagens/02-p11-a-p20.md, seção P11.
+
+Convite: seguir @criecomhelenaejulio, no slide final e no fechamento da legenda.
+Pessoas fictícias nas cenas geradas. Na foto do computador, a interface foi fornecida como captura real do Estúdio vazio.
+Capturas diretas do exemplo Vila do Dragão nos slides 3, 4, 5, 7 e 8. Não são projetos de alunos nem promessa de um curso específico.
+O slide 5 amplia dois comandos da regra original e compara a mesma entrada antes e depois de receber a chave.
+Na publicação manual, aplicar as orientações vigentes da conta para identificação de mídia gerada.
+
+Estado: produzido e conferido localmente. Não publicado ou agendado.
+Próximo carrossel: P35, segundo post da semana 9.

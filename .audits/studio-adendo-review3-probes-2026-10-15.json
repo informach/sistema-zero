@@ -1,0 +1,39 @@
+{
+  "capturedAt": "2026-10-15T19:48:09.687Z",
+  "results": [
+    {
+      "id": "metadata-needs-reader-migration",
+      "confirmed": true,
+      "observation": "sanitizeProMeta omits the proposed field; the actual preservation guard refuses the document.",
+      "error": "Este projeto não pode ser aberto integralmente nesta versão ($.proMeta.designBrief). Nenhuma cópia foi gravada."
+    },
+    {
+      "id": "builder-and-build-envelopes-differ",
+      "confirmed": true,
+      "observation": "The shared preflight now being implemented by the main session rejects this complete envelope. It fits below the builder cap but exceeds the runtime cap; no request was sent to either service.",
+      "runtimeEnvelopeBytes": 2000284,
+      "builderCap": 3000000,
+      "runtimeCap": 2000000
+    },
+    {
+      "id": "existing-lot8-curation",
+      "confirmed": true,
+      "templateCount": 14,
+      "selectedGuideIds": [
+        "sprite",
+        "audio",
+        "hud"
+      ],
+      "observation": "Task selection and the three lot-8 IDs already exist; this does not certify their complete gameplay."
+    },
+    {
+      "id": "artifact-identity-and-lifetime",
+      "confirmed": true,
+      "observation": "Actual artifact writer with an in-memory bucket: equal bytes, different artifact IDs, equal manifest digests; not an R2 integration test.",
+      "equalContentDigest": true,
+      "differentIds": true,
+      "previewLifetimeMs": 86400000,
+      "jobRetentionMs": 604800000
+    }
+  ]
+}

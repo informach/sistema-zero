@@ -37,12 +37,15 @@ export function runScenePaintShortcut(
   paint: Paint,
   event: ShortcutEvent,
   can?: SceneToolCheck,
+  onChooseTool?: () => void,
 ): boolean {
   const match = matchSceneShortcut('paint', event, can)
   if (!match || !isPaintAction(match.id)) return false
   // Segurar a tecla repete o evento: o M ligaria e desligaria o espelho sem parar.
   const repeat = 'repeat' in event && event.repeat === true
-  if (match.allowed && !repeat && !paint.drawing && !paint.busy)
+  if (match.allowed && !repeat && !paint.drawing && !paint.busy) {
+    if (!match.id.startsWith('paint.width-') && match.id !== 'paint.mirror') onChooseTool?.()
     SCENE_PAINT_ACTIONS[match.id](paint)
+  }
   return true
 }

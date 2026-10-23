@@ -1,5 +1,5 @@
-# Executa em todo push de main: Wait for CI precisa de um workflow sem filtro
-# de paths. Não cancelar runs: a configuração é pré-requisito do deploy nativo.
+# Plano do PR e conferência readonly de main. Deploys pertencem somente ao dispatch
+# deploy-production; config apply pode iniciar réplicas antes da barreira canônica.
 name: Configuração Railway
 
 on:
@@ -35,7 +35,7 @@ jobs:
           retention-days: 14
           if-no-files-found: error
 
-  apply:
+  check:
     name: railway-config-production
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -73,7 +73,7 @@ jobs:
           github-token: ${{ github.token }}
           path: ${{ runner.temp }}/railway-plan
           merge-multiple: true
-      - name: Aplicar exatamente o plano validado
+      - name: Conferir plano e deriva sem aplicar configuração
         env:
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: node scripts/ci/railway-config.mjs apply production "$RUNNER_TEMP/railway-plan/railway-production-plan.json"
+        run: node scripts/ci/railway-config.mjs check production "$RUNNER_TEMP/railway-plan/railway-production-plan.json"

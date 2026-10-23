@@ -154,6 +154,7 @@ export const ScheduleBody = t.Object({
 // Carrossel do IG: 1..10 imagens (teto da Graph API), na ordem do post.
 export const PublicationAssetsBody = t.Object({
   assetIds: t.Array(UUID, { minItems: 1, maxItems: 10 }),
+  version: t.Integer({ minimum: 0 }),
 })
 
 export const MarkPublishedBody = t.Object({

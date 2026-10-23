@@ -14,7 +14,7 @@ describe('configuração do Helpdesk', () => {
 
   it('usa limites seguros para contexto da KB', () => {
     const env = loadEnv(REQUIRED)
-    expect(env.AI_KB_MAX_CANDIDATES).toBe(100)
+    expect(env.AI_RUN_RETENTION_DAYS).toBe(30)
     expect(env.AI_MAX_KB_CHARS).toBe(12_000)
   })
 

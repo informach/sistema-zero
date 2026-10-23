@@ -1,41 +1,38 @@
 import type { JSX } from 'react'
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
 import { buildWorkspaceStateFromIR, isBlocksStateEmpty } from '#blockly'
 import type { InstalledExtension } from '#core'
 import type { GeneratedFiles, SourceMap, SourceMappedFile } from '#generators'
-import { buildCssSourceMapFromText } from '#generators'
+import { buildCssSourceMapFromText, GENERATED_JS_HEADER } from '#generators'
 import { deepEqualIR, hasBehaviorStatements, irBlockStructureEqual, normalizeSZIR } from '#ir'
 import type { MonacoCursorPosition } from '#monaco'
 import type { ParseProjectDiagnostic } from '#parsers'
-import { extractInlineAssets } from '#parsers'
-import { PREVIEW_MESSAGE_SOURCE } from '#preview'
 import { BlocklyPanel } from '../components/blocks/BlocklyPanel'
-import { FontSizeControls } from '../components/code/FontSizeControls'
-import { MonacoTabs } from '../components/code/LazyMonacoTabs'
-import { useCodeHistory } from '../components/code/useCodeHistory'
-import { useFormatIssueLogger } from '../components/code/useFormatIssueLogger'
 import { EditorSkeleton } from '../components/layout/LoadingViews'
 import { ModeLimitationsNotice } from '../components/layout/ModeLimitationsNotice'
 import { NarrowPanels } from '../components/layout/NarrowPanels'
-import { PreviewIframe } from '../components/preview/PreviewIframe'
+import { PreviewIframe } from '../components/preview/LazyPreviewIframe'
+import { javaScriptProject } from '../core/editableProject'
 import { useCrossHighlight } from '../hooks/useCrossHighlight'
 import { useDebounced } from '../hooks/useDebounced'
+import { extractInlineAssets } from '../parsers/html'
+import { PREVIEW_MESSAGE_SOURCE } from '../preview/types'
 import { getCanonicalSourceMap } from '../state/canonicalSourceMap'
 import { useHighlightStore } from '../state/highlightStore'
 import { useLogsStore } from '../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
-import { CODE_FONT_SIZE_DEFAULT, useSettingsStore } from '../state/settingsStore'
 import { useSourcemapStore } from '../state/sourcemapStore'
 import { useEditorHistory } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
 import { useStudioConfig } from '../studio/config'
 import { useT } from '../studio/i18n'
 import { useStudioLayout } from '../studio/layoutContext'
-import { useStudioTheme } from '../studio/theme'
 import { canvas3DInternalCodeRanges } from '../three/canvas3dMacroCodec'
-import { BRIDGE_JS_HEADER, type BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
+import type { BridgeReverseParseWorkerResponse } from './bridgeReverseParse'
+
+const BridgeCodeEditor = lazy(() => import('../components/code/BridgeCodeEditor'))
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const MAX_BRIDGE_REVERSE_PARSE_CHARS = 500_000
@@ -87,13 +84,14 @@ export function BridgeMode(): JSX.Element {
     bridgeCodeEditEpoch,
   } = useProjectStore(
     useShallow((s) => ({
-      hasProject: Boolean(s.project),
-      projectId: s.project?.id,
-      projectName: s.project?.name ?? 'Projeto',
-      files: s.project?.files,
-      ir: s.project?.ir ?? null,
-      blocksState: s.project?.blocksState ?? null,
-      installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+      hasProject: Boolean(javaScriptProject(s.project)),
+      projectId: javaScriptProject(s.project)?.id,
+      projectName: javaScriptProject(s.project)?.name ?? 'Projeto',
+      files: javaScriptProject(s.project)?.files,
+      ir: javaScriptProject(s.project)?.ir ?? null,
+      blocksState: javaScriptProject(s.project)?.blocksState ?? null,
+      installedExtensions:
+        javaScriptProject(s.project)?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
       bridgeCodeEditEpoch: s.bridgeCodeEditEpoch,
     })),
   )
@@ -111,13 +109,7 @@ export function BridgeMode(): JSX.Element {
   const { isNarrow } = useStudioLayout()
   const setSourceMap = useSourcemapStore((s) => s.setMap)
   const pushLog = useLogsStore((s) => s.push)
-  const onFormatIssue = useFormatIssueLogger()
-  // Desfazer/refazer da barra: a pilha do código entra no registro da instância, e trocar de aba
-  // no estreito conta como tocar naquele editor (é ele que a criança passa a ver).
-  const onCodeEditorReady = useCodeHistory()
   const editorHistory = useEditorHistory()
-  const codeFontSize = useSettingsStore((s) => s.codeFontSize)
-  const studioTheme = useStudioTheme()
   const [parseDiagnostics, setParseDiagnostics] = useState<ParseProjectDiagnostic[]>([])
   const [showCanvas3DInternals, setShowCanvas3DInternals] = useState(false)
 
@@ -217,7 +209,7 @@ export function BridgeMode(): JSX.Element {
   // cabeçalho (string|undefined) para não regenerar o canônico a cada tecla no
   // corpo do JS — só quando a presença do cabeçalho realmente vira.
   const displayedJsHeader = useMemo(
-    () => (debouncedJs.startsWith(BRIDGE_JS_HEADER) ? BRIDGE_JS_HEADER : undefined),
+    () => (debouncedJs.startsWith(GENERATED_JS_HEADER) ? GENERATED_JS_HEADER : undefined),
     [debouncedJs],
   )
 
@@ -314,9 +306,9 @@ export function BridgeMode(): JSX.Element {
   // código) NÃO mexe nessas chaves, então não conta — só mudanças que os blocos
   // representam invalidam um reparse em voo.
   useEffect(() => {
-    let prev = projectStoreApi.getState().project
+    let prev = javaScriptProject(projectStoreApi.getState().project)
     const unsubscribe = projectStoreApi.subscribe((state) => {
-      const next = state.project
+      const next = javaScriptProject(state.project)
       if (next?.ir !== prev?.ir || next?.blocksState !== prev?.blocksState) {
         stateEpoch.current += 1
       }
@@ -398,7 +390,7 @@ export function BridgeMode(): JSX.Element {
       }
       // Lê o `ir`/`blocksState` FRESCOS do store (closure obsoleta dropava o
       // resultado quando uma edição de bloco mudava o `ir` durante o parse).
-      const currentProject = projectStoreApi.getState().project
+      const currentProject = javaScriptProject(projectStoreApi.getState().project)
       const currentIR = currentProject?.ir ?? null
       if (deepEqualIR(result.ir, currentIR)) {
         markSynced()
@@ -591,7 +583,7 @@ export function BridgeMode(): JSX.Element {
       htmlShell: assets.htmlShell,
       cssSource: assets.cssSource,
       jsSource: assets.jsSource,
-      ir: projectStoreApi.getState().project?.ir ?? null,
+      ir: javaScriptProject(projectStoreApi.getState().project)?.ir ?? null,
       projectName,
       installedExtensionIds: installedExtensions.map((extension) => extension.id),
     })
@@ -616,13 +608,9 @@ export function BridgeMode(): JSX.Element {
 
   const codeEditor = (
     <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-      <MonacoTabs
+      <BridgeCodeEditor
         files={filesArray}
         modelPathPrefix={projectId}
-        theme={studioTheme === 'light' ? 'light' : 'vs-dark'}
-        fontSize={codeFontSize || CODE_FONT_SIZE_DEFAULT}
-        formatLabel={t('editor.format')}
-        onFormatIssue={onFormatIssue}
         hiddenAreas={hiddenCanvas3DAreas}
         tabsRightSlot={
           <div className="flex items-center gap-1">
@@ -643,7 +631,6 @@ export function BridgeMode(): JSX.Element {
                   : t('bridge.showGeneratedInternals')}
               </button>
             )}
-            <FontSizeControls />
           </div>
         }
         onChange={(name, value) => {
@@ -657,7 +644,6 @@ export function BridgeMode(): JSX.Element {
         // apenas seleciona e SÓ recentraliza o canvas se o bloco estiver fora
         // da viewport, então o acoplamento não sacode a edição.
         onCursorChange={handleCursorChange}
-        onEditorReady={onCodeEditorReady}
       />
     </Suspense>
   )

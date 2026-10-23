@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { z } from 'zod'
 import type { ContentDetailView, PublicationView } from '../../src/application/mappers/views'
 import type { AssetStatus, MediaAsset } from '../../src/domain/media/media-asset'
 import { buildTestApp, request, STAFF_USER_ID, type TestApp } from '../helpers'
@@ -53,13 +54,63 @@ function readyImage(
   return id
 }
 
-function putAssets(t: TestApp, pubId: string, assetIds: string[]): Promise<Response> {
+function putAssets(
+  t: TestApp,
+  pubId: string,
+  assetIds: string[],
+  version = t.repos.publications.rows.get(pubId)?.version ?? 0,
+): Promise<Response> {
   return request(t.app, 'PUT', `/marketing/publications/${pubId}/assets`, {
-    body: { assetIds },
+    body: { assetIds, version },
   })
 }
 
 describe('PUT /marketing/publications/:id/assets (carrossel)', () => {
+  it('duas edições na mesma versão não sobrescrevem a ordem confirmada', async () => {
+    const t = buildTestApp(),
+      content = await approvedContent(t.app),
+      pub = await createCarousel(t, content.id)
+    const first = readyImage(t, content.id),
+      second = readyImage(t, content.id)
+    const results = await Promise.all([
+      putAssets(t, pub.id, [first, second], pub.version),
+      putAssets(t, pub.id, [second, first], pub.version),
+    ])
+    expect(results.map((response) => response.status).sort()).toEqual([200, 409])
+    const winner = results.find((response) => response.status === 200)
+    if (!winner) throw new Error('Nenhuma edição confirmada')
+    const view = z
+      .object({ version: z.number(), assetIds: z.array(z.string().uuid()) })
+      .parse(await winner.json())
+    expect(view.version).toBe(pub.version + 1)
+    expect(t.repos.publicationAssets.rows.get(pub.id)).toEqual(view.assetIds)
+  })
+  it('checkpoint de qualquer provedor impede troca de mídia e de legenda', async () => {
+    for (const checkpoint of [
+      { childContainerIds: ['child'] },
+      { publishId: 'tiktok-id' },
+      { phase: 'fb_creating' },
+      { uploadUri: 'upload-pendente' },
+    ]) {
+      const t = buildTestApp(),
+        content = await approvedContent(t.app),
+        pub = await createCarousel(t, content.id),
+        image = readyImage(t, content.id)
+      const record = t.repos.publications.rows.get(pub.id)
+      if (!record) throw new Error('Publicação ausente')
+      record.status = 'failed'
+      record.providerSession = checkpoint
+      expect((await putAssets(t, pub.id, [image], pub.version)).status).toBe(409)
+      expect(
+        (
+          await request(t.app, 'PATCH', `/marketing/publications/${pub.id}`, {
+            body: { version: pub.version, caption: 'Mudança tardia' },
+          })
+        ).status,
+      ).toBe(409)
+      expect(t.repos.publicationAssets.rows.has(pub.id)).toBe(false)
+    }
+  })
   it('grava a lista ordenada; GET e reordenação refletem a ordem', async () => {
     const t = buildTestApp()
     const content = await approvedContent(t.app)

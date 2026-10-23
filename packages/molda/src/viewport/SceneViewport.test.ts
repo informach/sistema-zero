@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, spyOn, test } from 'bun:test'
 import {
   AxesHelper,
-  Box3Helper,
+  Box3,
   type Camera,
+  DirectionalLight,
   Mesh,
   OrthographicCamera,
   Points,
@@ -13,10 +14,25 @@ import {
 } from 'three'
 import { createModelAsset } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
-import { addScenePrimitive, convertSceneNodesToMesh, transformSceneNodes } from '../scene/commands'
+import { setSceneAnimationKeys } from '../scene/animationKeyBatch'
+import {
+  addScenePrimitive,
+  convertSceneNodesToMesh,
+  editSceneMesh,
+  groupSceneNodes,
+  transformSceneNodes,
+} from '../scene/commands'
 import { indexSceneDocument } from '../scene/documentIndex'
 import { setSceneImageFlipbook } from '../scene/imageFlipbookCommands'
-import { type AffineMatrix, identityMatrix, transformPoint } from '../scene/matrix'
+import {
+  type AffineMatrix,
+  identityMatrix,
+  quaternionFromEulerXYZ,
+  transformPoint,
+} from '../scene/matrix'
+import { meshComponentIds } from '../scene/meshComponents'
+import { prepareMeshRemoval } from '../scene/meshRemoval'
+import { meshEdgeKey } from '../scene/meshTopology'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { ensureScenePaintSurface } from '../scene/paintSurface'
 import { prepareSceneAnimation } from '../scene/sampleAnimation'
@@ -36,6 +52,7 @@ import { makeSceneSkinFixture } from '../testing/sceneSkin'
 import { makeSceneTwoBoneFixture } from '../testing/sceneTwoBone'
 import { SceneViewport } from './SceneViewport'
 import type {
+  SceneGuideInput,
   ScenePaintActions,
   SceneSelectDetail,
   SceneSkinPaintActions,
@@ -70,6 +87,7 @@ function setup(
   skinPaint?: SceneSkinPaintActions,
   gpuCapture = false,
   reducedMotion = true,
+  guideInput?: () => SceneGuideInput | null,
 ) {
   const host = document.createElement('div')
   Object.defineProperties(host, { clientWidth: { value: 320 }, clientHeight: { value: 180 } })
@@ -105,6 +123,7 @@ function setup(
       transform,
       paint,
       skinPaint,
+      guideInput,
     },
     reducedMotion,
     () =>
@@ -137,8 +156,8 @@ function setup(
   const point = new Vector3(0, 1, 0).project(camera)
   const x = (point.x + 1) * 160
   const y = (1 - point.y) * 90
-  const pointer = (type: string, id = 1, extra: PointerEventInit = {}) =>
-    canvas.dispatchEvent(
+  const pointer = (type: string, id = 1, extra: PointerEventInit = {}, target: Element = canvas) =>
+    target.dispatchEvent(
       new PointerEvent(type, {
         pointerId: id,
         pointerType: 'mouse',
@@ -161,6 +180,14 @@ function setup(
     canvas,
     tick,
     pointer,
+    handlePointer: (type: string, id = 1, extra: PointerEventInit = {}) => {
+      const target = host.querySelector('[aria-label="Mover no eixo X"]') as SVGGElement
+      if (!target) throw new Error('Missing move handle')
+      target.setPointerCapture = () => {}
+      target.releasePointerCapture = () => {}
+      target.hasPointerCapture = () => false
+      return pointer(type, id, extra, target)
+    },
     x,
     count: () => ({ renders, disposals, scene, camera }),
     close: () => {
@@ -171,6 +198,255 @@ function setup(
 }
 
 describe('scene viewport lifecycle and picking', () => {
+  test.each([
+    'face',
+    'edge',
+    'vertex',
+  ] as const)('removing a selected %s keeps rendering and preserves surviving component targets', (mode) => {
+    const f = setup({ begin: () => true, preview: () => true, end() {} })
+    try {
+      const nodeId = f.source.nodes[0]!.id
+      const source = convertSceneNodesToMesh(f.source, [nodeId])
+      const mesh = source.geometries[0]!
+      if (mesh.kind !== 'mesh') throw new Error('Expected editable mesh')
+      const removedId = meshComponentIds(mesh, mode)[0]!
+      const removed = prepareMeshRemoval(mesh, { mode, ids: [removedId] }).apply()
+      const survivorId = meshComponentIds(removed, mode)[0]!
+      expect(survivorId).toBeDefined()
+      const selection = { nodeId, mode, ids: [removedId, survivorId] }
+      f.viewport.setDocument(source)
+      f.viewport.setSelection([nodeId])
+      f.viewport.setComponentSelection(selection)
+      f.viewport.setTransformTool('move')
+      const next = editSceneMesh(source, nodeId, () => removed)
+      expect(() => f.viewport.setDocument(next)).not.toThrow()
+      expect(() => f.viewport.setComponentSelection(selection)).not.toThrow()
+      f.tick()
+      const handles = f.canvas.parentElement!.querySelector<SVGSVGElement>(
+        '[aria-label="Alças para mover"]',
+      )!
+      expect(handles.style.display).toBe('')
+
+      // An empty component selection must not fall back to moving the whole piece.
+      f.viewport.setComponentSelection({ nodeId, mode, ids: [removedId] })
+      f.tick()
+      expect(handles.style.display).toBe('none')
+
+      // Restoring the geometry makes the removed component selectable again.
+      f.viewport.setDocument(source)
+      f.viewport.setComponentSelection({ nodeId, mode, ids: [removedId] })
+      const renders = f.count().renders
+      f.tick()
+      expect(f.count().renders).toBeGreaterThan(renders)
+      expect(handles.style.display).toBe('')
+    } finally {
+      f.close()
+    }
+  })
+
+  test('edge clicks select one segment and highlight it without outlining the whole piece', () => {
+    const f = setup({ begin: () => true, preview: () => true, end() {} })
+    try {
+      const id = f.source.nodes[0]!.id
+      const mesh = makeSceneGridGeometry(4)
+      const source = {
+        ...f.source,
+        geometries: [mesh],
+        nodes: f.source.nodes.map((node) =>
+          node.kind === 'mesh' ? { ...node, geometryId: mesh.id } : node,
+        ),
+      }
+      f.viewport.setDocument(source)
+      f.viewport.setSelection([id])
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'edge', ids: [] })
+      f.viewport.frame()
+      f.tick()
+      const world = indexSceneDocument(source).scene.worldMatrices.get(id)!
+      const point = new Vector3(...transformPoint(world, [0.375, 0.5, 0])).project(
+        f.count().camera!,
+      )
+      const event = { clientX: (point.x + 1) * 160, clientY: (1 - point.y) * 90 }
+      const edge = meshEdgeKey('v_1_2', 'v_2_2')
+      f.pointer('pointerdown', 1, event)
+      f.pointer('pointerup', 1, event)
+      expect(f.faces).toEqual([edge])
+      expect(f.components).toEqual([])
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'edge', ids: [edge] })
+      f.viewport.setTransformTool('move')
+      f.tick()
+      const outline = f.count().scene?.getObjectByName('molda-selection-outline')
+      expect(outline?.visible).toBe(false)
+      f.canvas.dispatchEvent(new MouseEvent('dblclick', { ...event, bubbles: true, detail: 2 }))
+      expect(f.components).toEqual([])
+    } finally {
+      f.close()
+    }
+  })
+  test('camera navigation reuses shadows, while document, pose, visibility and context restoration refresh them', () => {
+    const f = setup()
+    try {
+      const sun = f
+        .count()
+        .scene!.children.find(
+          (object) => object instanceof DirectionalLight && object.castShadow,
+        ) as DirectionalLight
+      expect(sun.shadow.autoUpdate).toBe(false)
+      expect(sun.shadow.needsUpdate).toBe(true)
+      // Three clears this flag after rendering the map; the test renderer has no GPU.
+      sun.shadow.needsUpdate = false
+      f.viewport.setView('right')
+      f.viewport.frame()
+      f.tick()
+      expect(sun.shadow.needsUpdate).toBe(false)
+      const source = animatedScene()
+      f.viewport.setDocument(source)
+      expect(sun.shadow.needsUpdate).toBe(true)
+      sun.shadow.needsUpdate = false
+      f.viewport.setPose(prepareSceneAnimation(source, 'clip').sample(1, false))
+      expect(sun.shadow.needsUpdate).toBe(true)
+      sun.shadow.needsUpdate = false
+      f.viewport.setIsolation(['body'])
+      expect(sun.shadow.needsUpdate).toBe(true)
+      sun.shadow.needsUpdate = false
+      f.canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+      f.canvas.dispatchEvent(new Event('webglcontextrestored'))
+      expect(sun.shadow.needsUpdate).toBe(true)
+    } finally {
+      f.close()
+    }
+  })
+
+  test('pivot vertex picking follows the deformed skin in the displayed pose, not its form-base', () => {
+    const fixture = makeSceneSkinFixture()
+    const { id, ...input } = fixture.input
+    const source = createSceneSkin(fixture.document, input, () => id)
+    source.animations = [
+      {
+        ...sceneAnimationClip('lower'),
+        tracks: [
+          {
+            nodeId: 'lower',
+            channel: 'translation',
+            keys: [
+              { time: 0, value: [0, 0, 0], interpolation: 'linear' },
+              { time: 2, value: [2, 0, 0], interpolation: 'linear' },
+            ],
+          },
+        ],
+      },
+    ]
+    let marked: { id: string; point: number[] } | null = null
+    const guide: SceneGuideInput = {
+      pivot: {
+        nodeId: 'part-0',
+        snapVertex: true,
+        begin: () => false,
+        preview: () => false,
+        end: () => {},
+        markVertex: (id, point) => {
+          marked = { id, point }
+        },
+      },
+    }
+    const f = setup(undefined, undefined, undefined, false, true, () => guide)
+    try {
+      f.viewport.setDocument(source)
+      f.viewport.setAnimationEditing(true)
+      f.viewport.setPose(prepareSceneAnimation(source, 'clip').sample(2, false))
+      f.viewport.setSelection(['part-0'])
+      f.viewport.frame(true)
+      f.tick()
+      const mesh = f
+        .count()
+        .scene!.children[0]!.children.find((object) => object instanceof SkinnedMesh)
+      if (!(mesh instanceof SkinnedMesh)) throw new Error('Missing posed mesh')
+      const local = mesh.getVertexPosition(0, new Vector3())
+      const point = local.clone().applyMatrix4(mesh.matrixWorld).project(f.count().camera!)
+      const at = { clientX: (point.x + 1) * 160, clientY: (1 - point.y) * 90 }
+      f.pointer('pointerdown', 1, at)
+      f.pointer('pointerup', 1, at)
+      expect(marked).not.toBeNull()
+      for (const axis of [0, 1, 2])
+        expect(marked!.point[axis]).toBeCloseTo(local.toArray()[axis]!, 5)
+      expect(source.skins).toHaveLength(1)
+    } finally {
+      f.close()
+    }
+  })
+
+  test('a failure while observing ground theme disposes the partially initialized renderer', () => {
+    const host = document.createElement('div'),
+      canvas = document.createElement('canvas')
+    host.dataset.moldaTheme = 'light'
+    host.append(canvas)
+    document.body.append(host)
+    let disposed = 0
+    const observe = spyOn(MutationObserver.prototype, 'observe').mockImplementation(() => {
+      throw new Error('theme failure')
+    })
+    try {
+      expect(
+        () =>
+          new SceneViewport(canvas, { select: () => {}, contextLost: () => {} }, true, () => ({
+            setPixelRatio() {},
+            setClearColor() {},
+            setSize() {},
+            render() {},
+            dispose() {
+              disposed++
+            },
+          })),
+      ).toThrow('theme failure')
+      expect(disposed).toBe(1)
+    } finally {
+      observe.mockRestore()
+      host.remove()
+    }
+  })
+  test('dragging an unselected body only selects it; the next gesture moves it and cancellation never selects', () => {
+    const deltas: AffineMatrix[] = [],
+      ends: boolean[] = []
+    let begins = 0
+    const f = setup({
+      begin: () => {
+        begins++
+        return true
+      },
+      preview: (delta) => {
+        deltas.push(delta)
+        return true
+      },
+      end: (commit) => ends.push(commit),
+    })
+    try {
+      f.viewport.setTransformTool('move')
+      const point = new Vector3(-0.6, 1.6, 0).project(f.count().camera!)
+      const at = { clientX: (point.x + 1) * 160, clientY: (1 - point.y) * 90 }
+      f.pointer('pointerdown', 1, at)
+      f.pointer('pointermove', 1, { ...at, clientX: at.clientX + 12, buttons: 1 })
+      f.pointer('pointerup', 1, { ...at, clientX: at.clientX + 12 })
+      expect(f.picks).toEqual([f.source.nodes[0]!.id])
+      expect(begins).toBe(0)
+      f.viewport.setSelection([f.source.nodes[0]!.id])
+      f.tick()
+      f.pointer('pointerdown', 2, at)
+      f.pointer('pointermove', 2, { ...at, clientX: at.clientX + 12, buttons: 1 })
+      f.pointer('pointerup', 2, { ...at, clientX: at.clientX + 12 })
+      expect(begins).toBe(1)
+      expect(deltas.at(-1)![12]).toBeGreaterThan(0)
+      expect(deltas.at(-1)![14]).toBe(0)
+      expect(ends).toEqual([true])
+      f.viewport.setSelection([])
+      f.tick()
+      f.pointer('pointerdown', 3, at)
+      f.pointer('pointercancel', 3, at)
+      f.pointer('pointerup', 3, at)
+      expect(f.picks).toHaveLength(1)
+      expect(begins).toBe(1)
+    } finally {
+      f.close()
+    }
+  })
   test('thumbnail capture works at rest and refuses a transient animation pose until it is cleared', () => {
     const capture = spyOn(ViewportThumbnail.prototype, 'render').mockReturnValue(
       'data:image/jpeg;base64,AAAA',
@@ -193,7 +469,9 @@ describe('scene viewport lifecycle and picking', () => {
     }
   })
 
-  test('movement steps snap the relative world displacement, retain fractional coordinates and undo in one step', () => {
+  test.each([
+    1, 0.1,
+  ])('movement steps snap the resulting position to %s, preserve imported values until editing and undo in one step', (step) => {
     let gesture: ReturnType<typeof createSceneTransformGesture> | undefined
     const f = setup({
       begin: () => gesture?.begin(f.source.nodes.map((node) => node.id)) ?? false,
@@ -227,7 +505,7 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setDocument(source)
       f.viewport.setSelection(source.nodes.map((node) => node.id))
       f.viewport.setTransformTool('move')
-      f.viewport.setMovementStep(0.5)
+      f.viewport.setMovementStep(step)
       f.viewport.setGridVisible(false)
       f.tick()
       expect(editor.getState().asset).toBe(source)
@@ -244,7 +522,7 @@ describe('scene viewport lifecycle and picking', () => {
       const original = indexSceneDocument(source).scene.worldMatrices.get(source.nodes[0]!.id)!
       const delta = moved[12] - original[12]
       expect(delta).toBeGreaterThan(0)
-      expect(delta / 0.5).toBeCloseTo(Math.round(delta / 0.5), 10)
+      expect(moved[12] / step).toBeCloseTo(Math.round(moved[12] / step), 10)
       expect(editor.getState().canUndo).toBe(false)
       f.pointer('pointerup', 1, { clientX: x + 45, clientY: y })
       expect(editor.getState().canUndo).toBe(true)
@@ -252,6 +530,118 @@ describe('scene viewport lifecycle and picking', () => {
       expect(editor.getState().asset.nodes).toEqual(source.nodes)
       expect(editor.getState().canUndo).toBe(false)
     } finally {
+      f.close()
+      editor.getState().dispose()
+    }
+  })
+
+  test.each([
+    'local',
+    'local-delta',
+  ] as const)('local rings in a %s clip rotate a resized wheel under an animated affine parent and record one undoable pose', (space) => {
+    let source = groupSceneNodes(animatedScene(), ['body'], {
+      name: 'Rodas',
+      nextId: () => 'wheels',
+    })
+    source.animations![0]!.space = space
+    source.nodes = source.nodes.map((node) =>
+      node.id === 'body'
+        ? {
+            ...node,
+            transform: {
+              kind: 'trs',
+              translation: [0, 0, 0],
+              rotation: [0, 0, Math.SQRT1_2, Math.SQRT1_2],
+              scale: [2, 1, 0.5],
+            },
+          }
+        : node.id === 'wheels'
+          ? {
+              ...node,
+              transform: {
+                kind: 'affine',
+                matrix: [1, 0, 0, 0, 0.25, 2, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1],
+              },
+            }
+          : node,
+    )
+    // Absolute clips cannot animate an affine group; relative clips must follow its animated pose.
+    source = setSceneAnimationKeys(source, 'clip', [
+      {
+        nodeId: 'body',
+        channel: 'scale',
+        key: { time: 0, value: [1.2, 0.8, 1.5], interpolation: 'linear' },
+      },
+      {
+        nodeId: 'body',
+        channel: 'rotation',
+        key: { time: 0, value: quaternionFromEulerXYZ([15, -20, 30]), interpolation: 'linear' },
+      },
+      ...(space === 'local-delta'
+        ? [
+            {
+              nodeId: 'wheels',
+              channel: 'rotation' as const,
+              key: {
+                time: 0,
+                value: quaternionFromEulerXYZ([10, 25, 5]),
+                interpolation: 'linear' as const,
+              },
+            },
+          ]
+        : []),
+    ])
+    const editor = createDocumentEditorStore({
+        asset: source,
+        sizeOf: structuredBytes,
+        persistence: { save: async () => {} },
+        autosaveMs: 60_000,
+      }),
+      player = new SceneAnimationPlayer({ now: () => 0, request: () => 1, cancel() {} }),
+      gesture = new SceneAnimationPoseGesture(editor, player),
+      disconnect = gesture.connect()
+    player.setClip(source, 'clip')
+    const f = setup(gesture.transformActions(['body'])),
+      off = gesture.subscribe(() =>
+        f.viewport.setPose(gesture.getSnapshot().pose ?? player.getSnapshot().pose),
+      )
+    try {
+      f.viewport.setDocument(source)
+      f.viewport.setSelection(['body'])
+      f.viewport.setPose(player.getSnapshot().pose)
+      f.viewport.setTransformSpace('local')
+      f.viewport.setTransformTool('rotate')
+      f.viewport.setAnimationEditing(true)
+      f.tick()
+      const ring = f.canvas.parentElement!.querySelector('[aria-label="Girar no eixo Z"]')
+      if (!ring) throw new Error('Missing wheel rotation ring')
+      ring.dispatchEvent(
+        new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight', shiftKey: true }),
+      )
+      expect(gesture.getSnapshot().error).toBeNull()
+      expect(gesture.getSnapshot().pending).toBe(true)
+      const preview = gesture.getSnapshot().pose!
+      expect(editor.getState().asset).toBe(source)
+      expect(gesture.record()).toBe(true)
+      const saved = editor.getState().asset
+      expect(saved.nodes).toBe(source.nodes)
+      expect(saved.geometries).toBe(source.geometries)
+      expect(saved.images).toBe(source.images)
+      const scale = saved.animations![0]!.tracks.find((track) => track.channel === 'scale')
+      expect(scale?.keys).toHaveLength(1)
+      scale!.keys[0]!.value.forEach((value, axis) => {
+        expect(value).toBeCloseTo([1.2, 0.8, 1.5][axis]!, 12)
+      })
+      expect(prepareSceneAnimation(saved, 'clip').sample(0, false).worldMatrices).toEqual(
+        preview.worldMatrices,
+      )
+      expect(saved.animations![0]!.tracks.some((track) => track.channel === 'rotation')).toBe(true)
+      editor.getState().undo()
+      expect({ ...editor.getState().asset, updatedAt: source.updatedAt }).toEqual(source)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      off()
+      disconnect()
       f.close()
       editor.getState().dispose()
     }
@@ -301,10 +691,10 @@ describe('scene viewport lifecycle and picking', () => {
         start = screenTarget()
       expect(start.x).toBeGreaterThan(20)
       expect(start.x + 20).toBeLessThan(320)
-      f.pointer('pointermove', 1, { clientX: start.x + 20, clientY: start.y, button: -1 })
-      f.pointer('pointerdown', 1, { clientX: start.x + 20, clientY: start.y, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: start.x + 20, clientY: start.y, button: -1 })
+      f.handlePointer('pointerdown', 1, { clientX: start.x + 20, clientY: start.y, buttons: 1 })
       expect(gesture.getSnapshot().dragging).toBe(true)
-      f.pointer('pointermove', 1, {
+      f.handlePointer('pointermove', 1, {
         clientX: start.x - 20,
         clientY: start.y,
         buttons: 1,
@@ -312,36 +702,41 @@ describe('scene viewport lifecycle and picking', () => {
       })
       const pose = gesture.getSnapshot().pose!
       expect(pose.twoBoneGuide!.target[0]).toBeLessThan(3)
-      f.pointer('pointerup', 1, { clientX: start.x - 20, clientY: start.y })
+      f.handlePointer('pointerup', 1, { clientX: start.x - 20, clientY: start.y })
       expect(gesture.getSnapshot().dragging).toBe(false)
       expect(gesture.getSnapshot().pose).toBe(pose)
       expect(editor.getState().asset).toBe(source)
       f.tick()
       const next = screenTarget()
-      f.pointer('pointermove', 2, { clientX: next.x + 20, clientY: next.y, button: -1 })
-      f.pointer('pointerdown', 2, { clientX: next.x + 20, clientY: next.y, buttons: 1 })
+      f.handlePointer('pointermove', 2, { clientX: next.x + 20, clientY: next.y, button: -1 })
+      f.handlePointer('pointerdown', 2, { clientX: next.x + 20, clientY: next.y, buttons: 1 })
       expect(gesture.getSnapshot().dragging).toBe(true)
-      f.pointer('pointermove', 2, { clientX: next.x + 30, clientY: next.y, buttons: 1, button: -1 })
-      f.pointer('pointercancel', 2)
+      f.handlePointer('pointermove', 2, {
+        clientX: next.x + 30,
+        clientY: next.y,
+        buttons: 1,
+        button: -1,
+      })
+      f.handlePointer('pointercancel', 2)
       expect(gesture.getSnapshot().pose).toBe(pose)
       expect(gesture.getSnapshot().dragging).toBe(false)
       f.tick()
       const touch = screenTarget()
-      f.pointer('pointerdown', 3, {
+      f.handlePointer('pointerdown', 3, {
         pointerType: 'touch',
         clientX: touch.x + 20,
         clientY: touch.y,
         buttons: 1,
       })
       expect(gesture.getSnapshot().dragging).toBe(true)
-      f.pointer('pointermove', 3, {
+      f.handlePointer('pointermove', 3, {
         pointerType: 'touch',
         clientX: touch.x + 30,
         clientY: touch.y,
         buttons: 1,
         button: -1,
       })
-      f.pointer('pointerdown', 4, {
+      f.handlePointer('pointerdown', 4, {
         pointerType: 'touch',
         clientX: touch.x - 20,
         clientY: touch.y,
@@ -349,15 +744,15 @@ describe('scene viewport lifecycle and picking', () => {
       })
       expect(gesture.getSnapshot().dragging).toBe(false)
       expect(gesture.getSnapshot().pose).toBe(pose)
-      f.pointer('pointerup', 4, { pointerType: 'touch' })
-      f.pointer('pointermove', 3, {
+      f.handlePointer('pointerup', 4, { pointerType: 'touch' })
+      f.handlePointer('pointermove', 3, {
         pointerType: 'touch',
         clientX: touch.x + 40,
         clientY: touch.y,
         buttons: 1,
         button: -1,
       })
-      f.pointer('pointerup', 3, { pointerType: 'touch' })
+      f.handlePointer('pointerup', 3, { pointerType: 'touch' })
       expect(gesture.getSnapshot().pose).toBe(pose)
       expect(f.picks).toEqual([])
       expect(editor.getState().canUndo).toBe(false)
@@ -389,9 +784,16 @@ describe('scene viewport lifecycle and picking', () => {
         markers = guide.children.filter((object) => object instanceof Points),
         destination = markers[1]!.geometry.getAttribute('position'),
         before = f.count().renders
-      const helper = f.count().scene!.getObjectByProperty('isTransformControlsRoot', true)!,
-        proxy = helper.parent!.children[0]!
-      expect(proxy.position.x).toBe(3)
+      const checkAnchor = (x: number) => {
+        const group = f.canvas.parentElement!.querySelector('[aria-label="Mover no eixo X"]')!
+        const position = group
+          .getAttribute('transform')!
+          .match(/translate\(([-\d.e]+) ([-\d.e]+)\)/)!
+        const projected = new Vector3(x, 0, 0).project(f.count().camera!)
+        expect(Number(position[1])).toBeCloseTo((projected.x + 1) * 160, 10)
+        expect(Number(position[2])).toBeCloseTo((1 - projected.y) * 90, 10)
+      }
+      checkAnchor(3)
       expect(guide.visible).toBe(true)
       expect(destination.getX(0)).toBe(3)
       expect(markers.map((marker) => marker.geometry.drawRange.count)).toEqual([4, 1])
@@ -411,7 +813,8 @@ describe('scene viewport lifecycle and picking', () => {
       expect(destination.getX(0)).toBe(4)
       f.viewport.setPose(prepared.original.pose)
       expect(guide.visible).toBe(false)
-      expect(proxy.position.x).toBe(2)
+      f.tick()
+      checkAnchor(2)
       f.viewport.setPose(prepared.sample([4, 0, 0]).pose)
       expect(guide.visible).toBe(true)
       window.dispatchEvent(new Event('blur'))
@@ -947,8 +1350,7 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.frame()
       f.tick()
       const guides = f.count().scene!.getObjectByName('molda-support-guides')!,
-        markers = guides.children[1],
-        chosen = guides.children[2],
+        [markers, chosen] = guides.children.filter((object) => object instanceof Points),
         mesh = f
           .count()
           .scene!.children[0]!.children.find((object) => object instanceof SkinnedMesh)
@@ -1037,7 +1439,7 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.frame()
       f.tick()
       const guides = f.count().scene!.getObjectByName('molda-support-guides')!,
-        points = guides.children[1]
+        points = guides.children.find((object) => object instanceof Points)
       if (!(points instanceof Points)) throw new Error('Missing guides')
       const before = points.geometry.getAttribute('position').array.slice(),
         far = {
@@ -1177,11 +1579,11 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setSelection(['part-0'])
       f.tick()
       const scene = f.count().scene!,
-        outline = scene.children.find((object) => object instanceof Box3Helper),
+        outline = scene.getObjectByName('molda-selection-outline'),
         mesh = scene.children[0]!.children.find((object) => object instanceof SkinnedMesh)
-      if (!(outline instanceof Box3Helper) || !(mesh instanceof SkinnedMesh))
-        throw new Error('Missing skin drawing')
-      const rest = outline.box.clone(),
+      if (!outline || !(mesh instanceof SkinnedMesh)) throw new Error('Missing skin drawing')
+      const outlineBounds = () => new Box3().setFromObject(outline)
+      const rest = outlineBounds().clone(),
         compiled = prepareSceneAnimation(source, 'clip')
       reads = 0
       for (const seconds of [0.5, 1, 1.5, 2]) {
@@ -1189,17 +1591,21 @@ describe('scene viewport lifecycle and picking', () => {
         f.tick()
         for (let i = 0; i < mesh.geometry.getAttribute('position').count; i++)
           expect(
-            outline.box.containsPoint(
-              mesh.getVertexPosition(i, new Vector3()).applyMatrix4(mesh.matrixWorld),
-            ),
+            outlineBounds()
+              .expandByScalar(outlineBounds().getSize(new Vector3()).length() * 2 ** -22)
+              .containsPoint(
+                mesh.getVertexPosition(i, new Vector3()).applyMatrix4(mesh.matrixWorld),
+              ),
           ).toBe(true)
       }
-      expect(outline.box.equals(rest)).toBe(false)
+      expect(outlineBounds().equals(rest)).toBe(false)
       f.viewport.frame(true)
       f.tick()
-      const center = outline.box.getCenter(new Vector3()).project(f.count().camera!)
-      expect(center.x).toBeCloseTo(0, 10)
-      expect(center.y).toBeCloseTo(0, 10)
+      const center = outlineBounds().getCenter(new Vector3()).project(f.count().camera!)
+      // Edges use the GPU's Float32 positions; framing uses the exact deformed bounds.
+      // Their projected centers must agree to less than one thousandth of a pixel.
+      expect(Math.abs(center.x) * 160).toBeLessThan(0.001)
+      expect(Math.abs(center.y) * 120).toBeLessThan(0.001)
       f.viewport.setIsolation(['upper'])
       expect(outline.visible).toBe(false)
       f.viewport.setIsolation(null)
@@ -1207,7 +1613,7 @@ describe('scene viewport lifecycle and picking', () => {
       expect(reads).toBe(0)
       f.viewport.setPose(null)
       f.tick()
-      expect(outline.box).toEqual(rest)
+      expect(outlineBounds()).toEqual(rest)
     } finally {
       f.close()
     }
@@ -1317,16 +1723,13 @@ describe('scene viewport lifecycle and picking', () => {
       f.tick()
       expect(reads).toBeGreaterThan(0)
       const scene = f.count().scene!
-      const outline = scene.children.find((object) => object instanceof Box3Helper)
+      const outline = scene.getObjectByName('molda-selection-outline')
       const pivot = scene.children.find((object) => object instanceof AxesHelper)
       const mesh = scene.children[0]!.children[0]
-      if (
-        !(outline instanceof Box3Helper) ||
-        !(pivot instanceof AxesHelper) ||
-        !(mesh instanceof Mesh)
-      )
+      if (!outline || !(pivot instanceof AxesHelper) || !(mesh instanceof Mesh))
         throw new Error('Missing drawing')
-      const bounds = outline.box.clone(),
+      const outlineBounds = () => new Box3().setFromObject(outline)
+      const bounds = outlineBounds().clone(),
         rest = mesh.matrix.clone(),
         pivotRest = pivot.matrix.clone()
       const sampler = prepareSceneAnimation(document, 'clip')
@@ -1340,19 +1743,19 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setPose(sampler.sample(1.5))
       expect(frames.size).toBe(1)
       f.tick()
-      expect(outline.box.min.x).toBeCloseTo(bounds.min.x + 6, 12)
-      expect(outline.box.max.x).toBeCloseTo(bounds.max.x + 6, 12)
+      expect(outlineBounds().min.x).toBeCloseTo(bounds.min.x + 6, 12)
+      expect(outlineBounds().max.x).toBeCloseTo(bounds.max.x + 6, 12)
       expect(pivot.matrix.elements[12]).toBeCloseTo(pivotRest.elements[12]! + 6, 12)
       f.viewport.frame(true)
       f.tick()
-      const center = outline.box.getCenter(new Vector3()).project(f.count().camera!)
+      const center = outlineBounds().getCenter(new Vector3()).project(f.count().camera!)
       expect(center.x).toBeCloseTo(0, 10)
       expect(center.y).toBeCloseTo(0, 10)
       expect(reads).toBe(0)
       f.viewport.setPose(null)
       f.tick()
       expect(mesh.matrix).toEqual(rest)
-      expect(outline.box).toEqual(bounds)
+      expect(outlineBounds()).toEqual(bounds)
       f.viewport.setDocument({ ...document, name: 'Revisão nova' })
       f.tick()
       f.viewport.setPose(sampler.sample(1.5))
@@ -1391,20 +1794,20 @@ describe('scene viewport lifecycle and picking', () => {
         interrupt()
         f.viewport.frame(true)
         f.tick()
-        f.pointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
-        f.pointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
-        f.pointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
-        f.pointer('pointerup', 1, { clientX: f.x + 45 })
+        f.handlePointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
+        f.handlePointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
+        f.handlePointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
+        f.handlePointer('pointerup', 1, { clientX: f.x + 45 })
         expect(begins).toBe(0)
       }
       f.viewport.setPose(null)
       // Disabled gizmos leave navigation active, so restore framing after the pan probes.
       f.viewport.frame(true)
       f.tick()
-      f.pointer('pointermove', 2, { clientX: f.x + 20, button: -1 })
-      f.pointer('pointerdown', 2, { clientX: f.x + 20, buttons: 1 })
+      f.handlePointer('pointermove', 2, { clientX: f.x + 20, button: -1 })
+      f.handlePointer('pointerdown', 2, { clientX: f.x + 20, buttons: 1 })
       expect(begins).toBe(1)
-      f.pointer('pointercancel', 2)
+      f.handlePointer('pointercancel', 2)
     } finally {
       f.close()
     }
@@ -1475,9 +1878,11 @@ describe('scene viewport lifecycle and picking', () => {
     const paint = createScenePaintGesture(editor, (error) => errors.push(error))
     const f = setup(undefined, {
       begin(sample) {
+        if ('kind' in sample) throw new Error('Expected the explicit layer paint path')
         return paint.begin(target, 7, 1) && paint.segment(sample.point, sample.point)
       },
       move(sample) {
+        if (sample && 'kind' in sample) throw new Error('Expected the explicit layer paint path')
         if (sample) paint.segment(sample.point, sample.point)
       },
       end(commit) {
@@ -1553,9 +1958,11 @@ describe('scene viewport lifecycle and picking', () => {
       undefined,
       {
         begin: (sample) =>
+          !('kind' in sample) &&
           paint.begin(prepared.target, 7, 1) &&
           paint.segment(sample.point, sample.point, sample.bounds),
         move: (sample) => {
+          if (sample && 'kind' in sample) throw new Error('Expected the explicit layer paint path')
           if (sample) paint.segment(sample.point, sample.point, sample.bounds)
         },
         end: (commit) => {
@@ -1681,12 +2088,12 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setComponentSelection({ nodeId: id, mode: 'face' as const, ids: ['pz'] })
       f.viewport.setTransformTool('move')
       f.tick()
-      f.pointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
-      f.pointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
-      f.pointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
+      f.handlePointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
       expect(editor.getState().asset.geometries).not.toEqual(source.geometries)
       expect(editor.getState().asset.nodes).toEqual(source.nodes)
-      f.pointer('pointerup', 1, { clientX: f.x + 45 })
+      f.handlePointer('pointerup', 1, { clientX: f.x + 45 })
       expect(editor.getState().canUndo).toBe(true)
       editor.getState().undo()
       expect(editor.getState().asset.geometries).toEqual(source.geometries)
@@ -1768,16 +2175,16 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setSelection(f.source.nodes.map((node) => node.id))
       f.viewport.setTransformTool('move')
       f.tick()
-      f.pointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
-      f.pointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
-      f.pointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
+      f.handlePointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
       expect(editor.getState().asset).not.toBe(f.source)
       expect(editor.getState().canUndo).toBe(false)
       const moved = indexSceneDocument(editor.getState().asset).scene.worldMatrices.get(
         f.source.nodes[0]?.id ?? '',
       )
       expect(moved?.[12]).toBeGreaterThan(0)
-      f.pointer('pointerup', 1, { clientX: f.x + 45 })
+      f.handlePointer('pointerup', 1, { clientX: f.x + 45 })
       expect(editor.getState().canUndo).toBe(true)
       expect(f.picks).toHaveLength(0)
       editor.getState().undo()
@@ -1786,29 +2193,29 @@ describe('scene viewport lifecycle and picking', () => {
       f.viewport.setDocument(editor.getState().asset)
       f.tick()
       const before = editor.getState().asset
-      f.pointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
-      f.pointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
-      f.pointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: f.x + 20, button: -1 })
+      f.handlePointer('pointerdown', 1, { clientX: f.x + 20, buttons: 1 })
+      f.handlePointer('pointermove', 1, { clientX: f.x + 45, button: -1, buttons: 1 })
       expect(editor.getState().asset).not.toBe(before)
       f.viewport.cancelGesture()
-      f.pointer('pointerup', 1, { clientX: f.x + 45 })
+      f.handlePointer('pointerup', 1, { clientX: f.x + 45 })
       expect(editor.getState().asset).toBe(before)
       expect(editor.getState().canUndo).toBe(false)
       expect(errors).toHaveLength(0)
       // Context loss has no guaranteed pointerup. A new pointer must still be able to drag.
       f.tick()
-      f.pointer('pointermove', 3, { clientX: f.x + 20, button: -1 })
-      f.pointer('pointerdown', 3, { clientX: f.x + 20, buttons: 1 })
-      f.pointer('pointermove', 3, { clientX: f.x + 45, button: -1, buttons: 1 })
+      f.handlePointer('pointermove', 3, { clientX: f.x + 20, button: -1 })
+      f.handlePointer('pointerdown', 3, { clientX: f.x + 20, buttons: 1 })
+      f.handlePointer('pointermove', 3, { clientX: f.x + 45, button: -1, buttons: 1 })
       f.canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
       expect(editor.getState().asset).toBe(before)
       f.canvas.dispatchEvent(new Event('webglcontextrestored'))
       f.tick()
-      f.pointer('pointermove', 4, { clientX: f.x + 20, button: -1 })
-      f.pointer('pointerdown', 4, { clientX: f.x + 20, buttons: 1 })
-      f.pointer('pointermove', 4, { clientX: f.x + 45, button: -1, buttons: 1 })
+      f.handlePointer('pointermove', 4, { clientX: f.x + 20, button: -1 })
+      f.handlePointer('pointerdown', 4, { clientX: f.x + 20, buttons: 1 })
+      f.handlePointer('pointermove', 4, { clientX: f.x + 45, button: -1, buttons: 1 })
       expect(editor.getState().asset).not.toBe(before)
-      f.pointer('pointercancel', 4)
+      f.handlePointer('pointercancel', 4)
       expect(editor.getState().asset).toBe(before)
     } finally {
       f.close()

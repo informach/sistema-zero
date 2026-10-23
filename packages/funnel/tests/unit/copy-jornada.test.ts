@@ -17,8 +17,17 @@ import { join, relative } from 'node:path'
 
 const SRC = join(import.meta.dir, '..', '..', 'src')
 
-/** O texto jurídico usa "carreira" no sentido de profissão. É o único lugar. */
-const ALLOWLIST = ['content/legal-kids.ts']
+/**
+ * O texto jurídico usa "carreira" no sentido de profissão: o aviso legal kids e os Termos de cada
+ * oferta (desde 20/10/2026, um por oferta), na cláusula que nega a promessa de carreira.
+ */
+const ALLOWLIST = [
+  'content/legal-kids.ts',
+  'content/legal/termos-desafio.ts',
+  'content/legal/termos-comunidade-kids.ts',
+  'content/legal/termos-comunidade-adulto.ts',
+  'content/legal/termos-desafio-adulto.ts',
+]
 
 const EXTENSOES = ['.astro', '.ts', '.tsx', '.md', '.mdx']
 
@@ -59,9 +68,9 @@ describe('copy do funil — a palavra é jornada, não carreira', () => {
     expect(/carreira/i.test(readFileSync(legal as string, 'utf8'))).toBe(true)
   })
 
-  test('a oferta da Comunidade fala da Jornada do Criador', () => {
+  test('a continuidade da Comunidade fala da Jornada do Criador', () => {
     const oferta = readFileSync(
-      join(SRC, 'components/funnel/oferta/ComunidadeOfertaBody.astro'),
+      join(SRC, 'funnels/comunidade-dos-criadores/oferta/pagina-continuar.ts'),
       'utf8',
     )
     expect(oferta).toContain('Jornada do Criador')

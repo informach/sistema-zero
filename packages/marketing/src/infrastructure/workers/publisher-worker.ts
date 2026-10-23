@@ -4,6 +4,10 @@ import type { AccountService } from '../../application/accounts/account.service'
 import type { PublicationService } from '../../application/publications/publication.service'
 import type { MediaAsset } from '../../domain/media/media-asset'
 import type { ContentRepository } from '../../domain/ports/content-repository.port'
+import type {
+  DeliveryRepository,
+  ResolvedDelivery,
+} from '../../domain/ports/delivery-repository.port'
 import type { MediaAssetRepository } from '../../domain/ports/media-asset-repository.port'
 import type { MediaStore } from '../../domain/ports/media-store.port'
 import type { PublicationAssetRepository } from '../../domain/ports/publication-asset-repository.port'
@@ -44,6 +48,7 @@ export interface AutoPublishDeps {
 }
 
 export interface PublisherWorkerDeps {
+  deliveries?: Pick<DeliveryRepository, 'resolve' | 'syncContent'>
   publications: PublicationRepository
   contents: Pick<ContentRepository, 'byId'>
   notifier: ReminderNotifier | null
@@ -168,6 +173,24 @@ export class PublisherWorker {
       })
       return
     }
+    let delivery: ResolvedDelivery | null = null
+    try {
+      delivery = (await this.deps.deliveries?.resolve(publication)) ?? null
+    } catch (error) {
+      if (error instanceof DomainError)
+        await this.finishAuto(auto, publication, {
+          status: 'failed',
+          lastError: error.message,
+          nextAttemptAt: null,
+        })
+      else
+        await this.applyRetry(
+          auto,
+          publication,
+          'Não foi possível conferir os arquivos aprovados no armazenamento',
+        )
+      return
+    }
     // Conta + token frescos. Sem conta apta = falha PERMANENTE com CTA claro.
     const account = publication.socialAccountId
       ? await auto.accounts.byId(publication.socialAccountId)
@@ -197,21 +220,29 @@ export class PublisherWorker {
       return
     }
 
-    const { items } = await auto.assets.list({
-      contentId: publication.contentId,
-      limit: 100,
-      offset: 0,
-    })
-    const orderedAssetIds =
-      publication.format === 'ig_carousel'
-        ? await auto.publicationAssets.listByPublication(publication.id)
+    const items = delivery
+      ? delivery.assets
+      : (
+          await auto.assets.list({
+            contentId: publication.contentId,
+            limit: 100,
+            offset: 0,
+          })
+        ).items
+    const orderedMedia = delivery
+      ? delivery.orderedMedia
+      : publication.format === 'ig_carousel'
+        ? (await auto.publicationAssets.listByPublication(publication.id)).map((assetId) => ({
+            assetId,
+            alt: null,
+          }))
         : []
     const outcome = await publisher.publish({
       publication,
       account,
       accessToken,
       assets: items,
-      orderedAssetIds,
+      orderedMedia,
       assetBytes: (asset: MediaAsset, start: number, endInclusive: number) => {
         if (!asset.r2Key) return Promise.reject(new Error('asset sem r2Key'))
         return auto.store.getRange({ key: asset.r2Key, start, endInclusive })
@@ -327,7 +358,8 @@ export class PublisherWorker {
     patch: Partial<Publication>,
   ): Promise<void> {
     await this.persistAuto(auto, publication, patch)
-    await auto.publicationService.syncStageFromWorker(publication.contentId)
+    if (!(await this.deps.deliveries?.syncContent(publication)))
+      await auto.publicationService.syncStageFromWorker(publication.contentId)
   }
 
   private async persistAuto(
@@ -351,6 +383,19 @@ export class PublisherWorker {
   }
 
   private async handle(publication: Publication): Promise<void> {
+    let delivery: ResolvedDelivery | null = null
+    try {
+      delivery = (await this.deps.deliveries?.resolve(publication)) ?? null
+    } catch (error) {
+      if (!(error instanceof DomainError)) throw error
+      await this.persist(publication, {
+        status: 'failed',
+        lastError: error.message,
+        nextAttemptAt: null,
+      })
+      await this.deps.deliveries?.syncContent(publication)
+      return
+    }
     // Lembrete desligado/sem fones: a publicação JÁ virou awaiting_manual no
     // claim (o Painel mostra); zera o lease p/ não re-claimar em loop.
     if (!this.deps.notifier || !this.deps.reminder || this.deps.reminder.phones.length === 0) {
@@ -362,10 +407,12 @@ export class PublisherWorker {
     }
     const content = await this.deps.contents.byId(publication.contentId)
     const variables = {
-      titulo: content?.title ?? 'Conteúdo',
+      titulo: delivery?.title ?? content?.title ?? 'Conteúdo',
       formato: FORMAT_LABELS[publication.format] ?? publication.format,
       horario: publication.scheduledAt ? SP_FORMATTER.format(publication.scheduledAt) : 'agora',
-      link: `${this.deps.reminder.appUrl}/conteudos/${publication.contentId}/publicacoes/${publication.id}`,
+      link: delivery
+        ? `${this.deps.reminder.appUrl}/bancada?projectId=${delivery.projectId}&representationId=${delivery.representationId}`
+        : `${this.deps.reminder.appUrl}/conteudos/${publication.contentId}/publicacoes/${publication.id}`,
     }
     let lastError: string | null = null
     let permanent = false
@@ -422,7 +469,7 @@ export class PublisherWorker {
 
   private async persist(
     publication: Publication,
-    patch: Partial<Pick<Publication, 'reminderSentAt' | 'nextAttemptAt' | 'lastError'>>,
+    patch: Partial<Pick<Publication, 'reminderSentAt' | 'nextAttemptAt' | 'lastError' | 'status'>>,
   ): Promise<void> {
     const expectedVersion = publication.version
     Object.assign(publication, patch)

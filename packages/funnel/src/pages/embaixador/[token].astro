@@ -1,34 +1,94 @@
 ---
-import ComunidadeSection from '../../components/funnel/oferta/ComunidadeSection.astro'
-import EmbaixadorDuvidas from '../../components/referrals/EmbaixadorDuvidas.astro'
-import PresenteDuvidas from '../../components/referrals/PresenteDuvidas.astro'
-import PresenteExperiencia from '../../components/referrals/PresenteExperiencia.astro'
-import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
-import { AMBASSADOR_SECTIONS } from '../../content/presente'
-import EmbaixadorPainel, { type EmbaixadorPainelProps } from '../../islands/EmbaixadorPainel'
+// Painel privado do embaixador (`/embaixador/<token>`, capability URL: o token É a chave de acesso).
+// Canvas "Presente Kids e adulto · proposta" (Embaixador, 20/10/2026): o embaixador escolhe para
+// quem é o presente (família ou adulto) e copia o link, a mensagem ou manda o convite DAQUELE
+// público. no-store, no-referrer e canonical público sem o token.
+import EmbaixadorLayout from '../../components/referrals/EmbaixadorLayout.astro'
+import { EMBAIXADOR_DUVIDAS, PAINEL_EMBAIXADOR as P } from '../../content/embaixador'
+import EmbaixadorBonus, { type EmbaixadorBonusProps } from '../../islands/EmbaixadorBonus'
+import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
+import type { AmbassadorPageView } from '../../lib/gateway-client'
 import { getDeps } from '../../server/deps'
 export const prerender = false
 Astro.response.headers.set('cache-control', 'private, no-store')
 Astro.response.headers.set('referrer-policy', 'no-referrer')
+type AmbassadorView = AmbassadorPageView & { bonus?: EmbaixadorBonusProps['bonus'] }
 const token = (Astro.params.token ?? '').trim()
-let view: Omit<EmbaixadorPainelProps, 'token'> | null = null
+let view: AmbassadorView | null = null
 let gatewayDown = false
 if (/^[A-Za-z0-9_-]{16,64}$/.test(token)) {
   const result = await getDeps().gateway.getAmbassadorByToken(token)
-  if (result.status === 200) view = result.body as Omit<EmbaixadorPainelProps, 'token'>
+  if (result.status === 200) view = result.body as AmbassadorView
   else if (result.status !== 404) gatewayDown = true
 }
 if (!view) Astro.response.status = gatewayDown ? 503 : 404
 // Uma URL privada não entra em canonical nem og:url.
 const canonical = new URL('/kids/embaixadores', Astro.site ?? Astro.url).href
+const primeiroNome = (view?.name ?? '').trim().split(/\s+/)[0] ?? ''
+const indisponivel = gatewayDown ? P.indisponivel.foraDoAr : P.indisponivel.naoEncontrado
 ---
-<PresenteLayout title="Seu painel de embaixador | Sistema Zero" description="Compartilhe uma primeira experiência de criação com outras famílias." canonical={canonical} action={view ? { href: '#painel', label: 'Meu link de convite' } : undefined}>
+<EmbaixadorLayout title={P.seoTitle} description={P.description} canonical={canonical} painel={Boolean(view)} bonus={Boolean(view?.bonus)}>
   {view ? <>
-    <section id="painel" class="section"><div class="wrap gift-panel"><div class="gift-panel-title"><span class="kof-eyebrow">Seu espaço de embaixador</span><h1 class="kof-h2">Olá, {view.name.split(' ')[0]}. Quem você quer convidar?</h1><p>Você pode oferecer a outra família sete dias do curso Cadê Todo Mundo?, sem custo. A criança conhece uma forma de criar com tecnologia, e o responsável decide quando começar.</p></div><p class="gift-private"><strong>Guarde esta página só para você.</strong> Ela dá acesso ao seu painel e à sua chave Pix. Para convidar uma família, use o link público do presente que aparece abaixo.</p><div class="gift-interactive"><EmbaixadorPainel client:load token={token} {...view} /></div></div></section>
-    {AMBASSADOR_SECTIONS.map((section, index) => <ComunidadeSection section={section} index={index} imagesBase="/img/comunidade-dos-criadores" />)}
-    <PresenteExperiencia ambassador action={{ href: '#painel', label: 'Quero compartilhar meu convite' }} />
-    <EmbaixadorDuvidas />
-    <PresenteDuvidas ambassador />
-    <section class="section"><div class="wrap gift-form-wrap"><h2 class="kof-h2">Um convite pessoal pode abrir esse primeiro caminho.</h2><div class="gift-prose"><p>Conte para a família por que você lembrou dela. Compartilhe seu link e deixe o responsável conhecer a proposta com calma. A decisão de começar, e de continuar depois, é dele.</p></div><a class="kof-btn" href="#painel">Voltar ao meu link de convite</a></div></section>
-  </> : <section class="section"><div class="wrap gift-status"><h1>{gatewayDown ? 'Não conseguimos abrir seu painel agora.' : 'Esta página não está disponível.'}</h1><p>{gatewayDown ? 'Recarregue em alguns instantes. Não é necessário fazer outro cadastro.' : 'Confira se o link do e-mail foi copiado por inteiro. Você também pode acessar o painel pela Área dos pais, se o cadastro estiver vinculado à sua conta.'}</p><a class="kof-link" href="mailto:contato@sistemazero.com.br">Pedir ajuda à equipe</a></div></section>}
-</PresenteLayout>
+    <div class="emb-aviso"><p><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg><span><strong>{P.aviso.destaque}</strong>{P.aviso.texto}</span></p></div>
+    <section id="painel" class="emb-sec" aria-labelledby="emb-titulo">
+      <div class="emb-wrap emb-pilha">
+        <div class="emb-cabeca">
+          <span class="emb-etiqueta">{P.cabeca.etiqueta}</span>
+          <h1 id="emb-titulo" class="emb-h1">{primeiroNome ? P.cabeca.titulo.replace('{{nome}}', primeiroNome) : P.cabeca.tituloSemNome}</h1>
+          <p class="emb-lead">{P.cabeca.texto}</p>
+        </div>
+        <EmbaixadorPainel client:load token={token} shareUrl={view.shareUrl} shareUrls={view.shareUrls} stats={view.stats} />
+      </div>
+    </section>
+    {view.bonus && (
+      <section id="bonus" class="emb-sec emb-sec--branca">
+        <div class="emb-wrap"><EmbaixadorBonus client:load token={token} bonus={view.bonus} /></div>
+      </section>
+    )}
+    <section class="emb-sec" aria-labelledby="emb-para-quem">
+      <div class="emb-wrap emb-pilha">
+        <div class="emb-cabeca">
+          <h2 id="emb-para-quem" class="emb-h2">{P.paraQuem.titulo}</h2>
+          <p class="emb-p">{P.paraQuem.texto}</p>
+        </div>
+        <div class="emb-perfis">
+          <article class="emb-perfil emb-perfil--kids"><strong>{P.paraQuem.kids.titulo}</strong><p>{P.paraQuem.kids.texto}</p></article>
+          <article class="emb-perfil emb-perfil--adult theme-arcade"><strong>{P.paraQuem.adult.titulo}</strong><p>{P.paraQuem.adult.texto}</p></article>
+        </div>
+        <ol class="emb-passos">
+          {P.paraQuem.passos.map((passo, index) => <li><span class="emb-passos__numero" aria-hidden="true">{index + 1}</span><span>{passo}</span></li>)}
+        </ol>
+      </div>
+    </section>
+    <section id="inclui" class="emb-sec emb-sec--branca" aria-labelledby="emb-inclui">
+      <div class="emb-wrap emb-pilha">
+        <h2 id="emb-inclui" class="emb-h2">{P.inclui.titulo}</h2>
+        <div class="emb-tabela" role="region" aria-labelledby="emb-inclui" tabindex="0">
+          <table>
+            <thead><tr><th scope="col"><span class="emb-sr">{P.inclui.colunas.item}</span></th><th scope="col" class="emb-tabela__kids">{P.inclui.colunas.kids}</th><th scope="col" class="emb-tabela__adulto">{P.inclui.colunas.adult}</th></tr></thead>
+            <tbody>{P.inclui.linhas.map((linha) => <tr><th scope="row">{linha.item}</th><td>{linha.kids}</td><td>{linha.adult}</td></tr>)}</tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    <section id="duvidas" class="emb-sec" aria-labelledby="emb-duvidas">
+      <div class="emb-wrap emb-pilha">
+        <div class="emb-cabeca"><span class="emb-etiqueta">{EMBAIXADOR_DUVIDAS.etiqueta}</span><h2 id="emb-duvidas" class="emb-h2">{EMBAIXADOR_DUVIDAS.titulo}</h2></div>
+        <div class="emb-duvidas">{EMBAIXADOR_DUVIDAS.itens.map((item) => <details class="emb-duvida"><summary>{item.pergunta}</summary>{item.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</details>)}</div>
+      </div>
+    </section>
+    <section class="emb-sec emb-sec--branca" aria-labelledby="emb-fim">
+      <div class="emb-wrap emb-fim">
+        <h2 id="emb-fim" class="emb-h2">{P.fechamento.titulo}</h2>
+        <p class="emb-p">{P.fechamento.texto}</p>
+        <a class="emb-btn" href="#painel">{P.fechamento.cta}</a>
+      </div>
+    </section>
+  </> : (
+    <section class="emb-sec"><div class="emb-wrap"><div class="emb-cartao emb-status">
+      <h1 class="emb-h2">{indisponivel.titulo}</h1>
+      <p class="emb-p">{indisponivel.texto}</p>
+      <a class="emb-link" href="mailto:contato@sistemazero.com.br">{P.indisponivel.contato}</a>
+    </div></div></section>
+  )}
+</EmbaixadorLayout>

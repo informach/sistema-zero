@@ -26,11 +26,11 @@ const MIRRORS: Array<{ file: string; pattern: RegExp }> = [
     pattern: /export const CLOUD_THUMB_MAX_CHARS = (\d[\d_]*)/,
   },
   {
-    file: 'community-kids/src/lib/studio-cloud.ts',
+    file: 'member-shell/src/lib/studio-cloud.ts',
     pattern: /const MAX_CLOUD_THUMB_CHARS = (\d[\d_]*)/,
   },
   {
-    file: 'community-kids/src/lib/molda-cloud-persistence.ts',
+    file: 'member-shell/src/lib/molda-cloud-persistence.ts',
     pattern: /const MAX_THUMB_CHARS = (\d[\d_]*)/,
   },
   { file: 'molda/src/core/limits.ts', pattern: /maxThumbChars: (\d[\d_]*)/ },

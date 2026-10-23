@@ -21,13 +21,13 @@ export const SCENE_FIRST_STEPS_COPY = {
       steps: [
         {
           title: 'Comece com uma peça',
-          // “Adicionar forma” é o começo do nome nos dois portões (no básico o ponto de apoio não
-          // aparece, e o botão se chama só assim): a criança acha o botão pelo que lê aqui.
-          text: `Em “${SCENE_TOOL_ACCESS_COPY.addShape}”, escolha “${COPY.shapes.box}”. Você pode começar só com ela e acrescentar outras formas depois.`,
+          // “Adicionar” é o título da seção das formas nos dois portões: a criança acha os
+          // botões pelo que lê aqui.
+          text: `Sua criação nova começa com uma caixa. Em “${SCENE_TOOL_ACCESS_COPY.addShape}”, à esquerda, você pode acrescentar outras formas.`,
         },
         {
           title: 'Dê forma à sua ideia',
-          text: `Toque na peça para escolher. Use “${scene.move}”, “${scene.rotate}” ou “${scene.scale}” e arraste as alças coloridas.`,
+          text: `Clique na peça para escolher. Use “${scene.move}”, “${scene.rotate}” ou “${scene.scale}”. Você pode usar as alças coloridas ou os botões do painel direito.`,
         },
         {
           title: 'Experimente outra versão',
@@ -44,11 +44,11 @@ export const SCENE_FIRST_STEPS_COPY = {
         },
         {
           title: 'Escolha a cor',
-          text: `Toque numa das cores embaixo do palco. Do lado ficam “${scene.paintPencil}”, “${scene.paintEraser}”, “${scene.paintFill}” e “${scene.paintPicker}”.`,
+          text: `Escolha uma cor no painel direito. À esquerda ficam “${scene.paintPencil}”, “${scene.paintFill}”, “${scene.paintEraser}” e “${scene.paintPicker}”.`,
         },
         {
           title: 'Faça o primeiro traço',
-          text: `Arraste na peça para pintar. Para girar a câmera, arraste fora dela. “${COPY.editor.undo}” volta o traço inteiro de uma vez.`,
+          text: `Arraste na peça escolhida para pintar. Use “Olhar” para girar a câmera e depois volte ao Pincel. “${COPY.editor.undo}” volta o traço inteiro de uma vez.`,
         },
       ],
     },
@@ -73,16 +73,16 @@ export const SCENE_FIRST_STEPS_COPY = {
       label: 'Como animar',
       steps: [
         {
-          title: 'Dê um nome ao movimento',
-          text: `Abra “${scene.animationMode}”, escreva o nome e use “${scene.animationCreate}”. Escolha uma peça. A forma original fica guardada enquanto você prepara o movimento.`,
+          title: 'Escolha o que vai se mexer',
+          text: `Abra “${scene.animationMode}” e escolha “Esta peça” ou “Modelo inteiro”. Use “${scene.animationCreate}” ou experimente um movimento pronto.`,
         },
         {
-          title: 'Guarde o começo',
-          text: `No começo da linha do tempo, use “${scene.animationRecord}” no painel da peça para guardar a posição inicial. Uma chave guarda um valor naquele momento.`,
+          title: 'Crie a próxima pose',
+          text: `Use “Próxima pose”, mova as peças e toque em “${scene.animationPoseRecord}”. O começo é guardado automaticamente quando necessário.`,
         },
         {
           title: 'Experimente o próximo momento',
-          text: `Escolha outro tempo, use “${scene.move}” e arraste uma alça. Use “${scene.animationPoseRecord}” para guardar a prévia. Depois, “${scene.animationPlay}” mostra o caminho entre os momentos.`,
+          text: `Você pode ajustar várias peças antes de marcar. “Desfazer” volta só o último ajuste. “${scene.animationPlay}” mostra o movimento; “Mais tempo” acrescenta dois segundos para continuar.`,
         },
       ],
     },

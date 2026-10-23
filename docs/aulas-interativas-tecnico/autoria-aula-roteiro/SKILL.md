@@ -1,0 +1,39 @@
+---
+name: aula-roteiro
+description: Escreve e revisa aulas comuns aos públicos infantojuvenil e adulto do Sistema Zero, com instrução completa, roteiro de produção e fala pronta para ElevenLabs v4.
+---
+
+# Roteiros de aula do Sistema Zero
+
+Direção comum de 21/10/2026: simplicidade para uma criança compreender, tratamento respeitoso para adolescentes e adultos. Uma fonte editorial e uma gravação integral da professora.
+
+## Antes de escrever
+
+- Leia `docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md` inteiro, `DIRETRIZES-VOZ-ELEVENLABS.md` e `ESPEC-ROTEIRO.md`. Instruções do usuário prevalecem.
+- Leia proposta, manifesto e roteiro em `docs/aulas-interativas/<curso>/`. Confira o gerador em `docs/aulas-interativas-tecnico/qa/`; Nave, Dino e Meu Jeito têm fonte `.conteudo.json`, Cadê e Farol têm a fala no roteiro de produção.
+- Confira nomes de controles e comportamento no código. Não existe tradução adulta separada nem pasta editorial kids/adulto.
+
+## Como escrever
+
+1. Situe a tarefa e convide para uma ação concreta. Use jogar, curso, aula, parte e Passo a passo do projeto.
+2. Preserve todos os passos: destino visível antes da peça, caminho da paleta, bloco literal, encaixe, campo, valor, teste e correção.
+3. Explique a palavra nova quando necessária. Escolha analogias comuns às idades, humor moderado e conversa com você, a gente e eu na demonstração. Traga o exemplo para quem assiste: “Sabe quando alguém faz cócegas em você e você não consegue parar de rir?”. Evite descrições distantes ou fabricadas como “vem aquela risada”; leia em voz alta e varie as construções sem repetir uma fórmula em todas as aulas. Evite voz de bebê, diminutivos de rotina e elogios excessivos. Preserve ilustrações já produzidas que expliquem bem para todos: mascote e humor visual, por si, não exigem uma troca de analogia. No Cadê, reaproveitar as cócegas/risada e o placar de futebol.
+4. Na experiência, o narrador demonstra na primeira pessoa e só no fim passa a vez. A instrução da atividade orienta os testes sem antecipar respostas.
+5. Termine na ação real: Próxima parte, envio com confirmação ou Concluir aula. Consulta ao material e Como Fazer continuam opcionais.
+6. Mantenha o master contínuo e completo. Pensamentos citados podem ter sua frase exata substituída por Dedé ou Debinha no kids; preparação e retomada da professora permanecem. Não chamar personagens pelo nome no master.
+
+## Entrega
+
+- `{slug}.roteiro.md`: produção com notas de tela, chave do clipe e bloco **Fala para ElevenLabs:**. Intervenções em tabela com ID, personagem, frase exata, ocorrência e âncoras.
+- `{slug}.elevenlabs.txt`: aula inteira da professora, só falas, tags e pausas; sem cabeçalhos, notas, Markdown ou nomes de falantes. Toda frase tem direção aplicável; use ajustes locais quando a intenção mudar. Manter energia e variação de intenção adequadas a cada momento, inclusive dentro do parágrafo; não usar voz calma e uniforme como padrão. Não espalhe tags entre todas as palavras por rotina.
+- TXT de cada personagem presente e `.edicao.json`: derivados do roteiro pelo exportador. A fala do personagem tem de ser idêntica à frase substituída. Na edição kids, silenciar somente esse intervalo da professora.
+- `[long pause]` entre partes; alvo de cerca de três segundos conferido na edição. Sem SSML `<break>`. Audicionar a voz selecionada antes do lote.
+- Atualizar fonte, proposta, roteiro, manifesto e PDF juntos. Preservar IDs, projetos, critérios, mídia e progresso. `plannedVideo` não é vídeo publicado.
+
+## Conferência
+
+Execute os geradores afetados, `qa/gerar-falas-elevenlabs.ts --check`, `qa/validar-manifestos.ts`, `validar-roteiros.py`, testes do curso e validadores Como Fazer. Os comandos completos estão no README técnico. Renderize e revise o PDF após alterações. Leia o master continuamente e confira cada troca kids. Perguntas devem soar faladas: evite fórmulas como “Uma dúvida possível é” e “Você pode pensar assim”. Retire reações redundantes sem omitir dúvidas ou passos.
+
+Tutoriais de interface ficam em `docs/como-fazer/como-fazer.json` e `docs/como-fazer-adulto/como-fazer.json`, com rótulos comuns. Não retirar passos da aula sem garantir o destino.
+
+Registre separadamente texto, derivados, PDF, voz gerada, voz escutada, edição e publicação. Testes não comprovam compreensão: ainda é necessário ensaio com iniciantes das idades atendidas. As duas cópias desta skill são `.agents/skills/aula-roteiro/SKILL.md` e `docs/aulas-interativas-tecnico/autoria-aula-roteiro/SKILL.md`.

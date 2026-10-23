@@ -32,6 +32,8 @@ export interface BuildPreviewDocInput {
   js: string
   /** Scripts adicionais (ex.: runtimes de extensões oficiais instaladas). */
   extensionScripts?: string[]
+  /** Trusted opt-in diagnostics; initialized before extensions and any student HTML. */
+  runtimeInspection?: boolean
   /** Arquivos extras criados pelo aluno (Fase 3). */
   extraFiles?: PreviewExtraFile[]
   /**
@@ -150,6 +152,13 @@ export function buildPreviewDoc(input: BuildPreviewDocInput): string {
   const extScripts = (input.extensionScripts ?? [])
     .map((s) => trustedScriptTag(s, needsModules ? { type: 'module' } : {}))
     .join('\n')
+  // A deferred module must never let earlier student HTML forge a runtime observer.
+  // Group gestures are deliberately unavailable in that environment until separately qualified.
+  const runtimeInspectorsTag = input.runtimeInspection
+    ? trustedScriptTag(`window.__SZSTUDIO_RUNTIME_INSPECTORS = Object.create(null);
+Object.defineProperty(window, '__SZSTUDIO_RUNTIME_INSPECTORS', { value: window.__SZSTUDIO_RUNTIME_INSPECTORS, writable: false, configurable: false });
+${needsModules ? "Object.defineProperty(window.__SZSTUDIO_RUNTIME_INSPECTORS, 'game-2d:observation', { value: null, writable: false, configurable: false });" : ''}`)
+    : ''
   const safeExtraFiles = (input.extraFiles ?? [])
     .map((file) => {
       const safeName = normalizeExtraFileName(file.name)
@@ -383,6 +392,7 @@ ${storageBridgeTag}
 ${snapshotBridgeTag}
 ${assetsBridgeTag}
 ${gameUiFontTag}
+${runtimeInspectorsTag}
 ${importmapTag}
 ${extScripts}
 ${styleTag}

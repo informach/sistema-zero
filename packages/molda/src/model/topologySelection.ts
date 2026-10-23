@@ -86,7 +86,7 @@ export function selectTopology(
   return [...links.keys()].filter((id) => chosen.has(id))
 }
 
-/** Quad rings cross opposite sides; loops continue through unambiguous four-edge vertices. */
+/** Rings cross opposite quad sides; loops keep the unique continuation, including inserted edge points. */
 function traceEdges(
   topology: SelectionTopology,
   selection: readonly string[],
@@ -126,10 +126,14 @@ function traceEdges(
         if (cycle.length === 4) include(cycle[(cycle.indexOf(id) + 2) % 4]!)
       }
     } else {
-      if (touching.length !== 2 || touching.some((face) => topology.faces.get(face)?.length !== 4))
-        continue
+      if (touching.length !== 2) continue
       for (const vertex of topology.edges.get(id) ?? []) {
         const incident = vertexEdges.get(vertex) ?? []
+        if (incident.length === 2) {
+          const next = incident.find((other) => other !== id)
+          if (next && edgeFaces.get(next)?.length === 2) include(next)
+          continue
+        }
         if (incident.length !== 4) continue
         const candidates = incident.filter(
           (other) =>
@@ -138,11 +142,7 @@ function traceEdges(
         if (candidates.length !== 1) continue
         const next = candidates[0]!
         const nextFaces = edgeFaces.get(next) ?? []
-        if (
-          nextFaces.length === 2 &&
-          nextFaces.every((face) => topology.faces.get(face)?.length === 4)
-        )
-          include(next)
+        if (nextFaces.length === 2) include(next)
       }
     }
   }

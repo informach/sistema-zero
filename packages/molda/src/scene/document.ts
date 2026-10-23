@@ -27,6 +27,9 @@ interface ModelNodeBase extends SceneNode {
   name: string
   hidden: boolean
   locked: boolean
+  /** Authoring point in geometry-local coordinates. Absent retains the legacy node origin.
+   * This is not another scene transform and never changes existing animation or skin binds. */
+  pivot?: Vec3
 }
 
 export type ModelSceneNode = ModelNodeBase &
@@ -48,6 +51,16 @@ export interface SceneMeshGeometry {
   vertices: Record<string, Vec3>
   faces: Record<string, SceneMeshFace>
   looseEdges: Array<[string, string]>
+  symmetry?: SceneMeshSymmetry
+}
+
+/** Materialized result + stable source/result identities, with a fixed local plane. */
+export interface SceneMeshSymmetry {
+  version: 1
+  axis: 0 | 1 | 2
+  center: number
+  vertices: Record<string, string>
+  faces: Record<string, string>
 }
 
 interface ScenePrimitiveBase {

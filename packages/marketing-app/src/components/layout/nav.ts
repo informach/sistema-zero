@@ -5,6 +5,8 @@ import {
   LayoutDashboard,
   Lightbulb,
   type LucideIcon,
+  Monitor,
+  PanelsTopLeft,
   Plug,
   SquareKanban,
 } from 'lucide-react'
@@ -23,6 +25,7 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: 'Painel', href: '/', icon: LayoutDashboard },
+  { label: 'Bancada', href: '/bancada', icon: PanelsTopLeft },
   // /conteudos/[id] (detalhe/composer) é navegação que NASCE do kanban.
   { label: 'Pipeline', href: '/pipeline', icon: SquareKanban, matchAlso: ['/conteudos'] },
   { label: 'Calendário', href: '/calendario', icon: CalendarDays },
@@ -30,4 +33,5 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Biblioteca', href: '/midia', icon: Images },
   { label: 'Métricas', href: '/metricas', icon: ChartColumn },
   { label: 'Conexões', href: '/conexoes', icon: Plug },
+  { label: 'Computadores', href: '/conectar-desktop', icon: Monitor },
 ]

@@ -51,6 +51,7 @@ import { ReminderSendError } from '../../src/domain/ports/reminder-notifier.port
 import type { SecretBox } from '../../src/domain/ports/secret-box.port'
 import type { SocialAccountRepository } from '../../src/domain/ports/social-account-repository.port'
 import type { Network } from '../../src/domain/publication/publication'
+import { hasProviderCheckpoint, isEditable } from '../../src/domain/publication/publication'
 import type { Publication } from '../../src/domain/publication/publication-record'
 import type { SocialAccount } from '../../src/domain/social-account/social-account'
 
@@ -376,13 +377,20 @@ export class InMemoryPublicationRepository implements PublicationRepository {
     return due.map(clone)
   }
 
-  async listRecentPublished(input: { since: Date; limit: number }): Promise<PublicationListItem[]> {
+  async listRecentPublished(input: {
+    since: Date
+    until?: Date
+    network?: Network
+    limit: number
+  }): Promise<PublicationListItem[]> {
     return [...this.rows.values()]
       .filter(
         (p) =>
           p.status === 'published' &&
           p.publishedAt !== null &&
-          p.publishedAt.getTime() >= input.since.getTime(),
+          p.publishedAt.getTime() >= input.since.getTime() &&
+          (!input.until || p.publishedAt.getTime() <= input.until.getTime()) &&
+          (!input.network || p.network === input.network),
       )
       .sort((a, b) => (b.publishedAt?.getTime() ?? 0) - (a.publishedAt?.getTime() ?? 0))
       .slice(0, input.limit)
@@ -469,9 +477,26 @@ export class InMemoryPublicationRepository implements PublicationRepository {
 
 export class InMemoryPublicationAssetRepository implements PublicationAssetRepository {
   rows = new Map<string, string[]>()
+  constructor(private readonly publications: InMemoryPublicationRepository) {}
 
-  async replaceForPublication(publicationId: string, assetIds: string[]): Promise<void> {
+  async replaceForPublication(
+    publicationId: string,
+    assetIds: string[],
+    expectedVersion: number,
+    at: Date,
+  ): Promise<Publication | null> {
+    const pub = this.publications.rows.get(publicationId)
+    if (
+      !pub ||
+      pub.version !== expectedVersion ||
+      !isEditable(pub.status) ||
+      hasProviderCheckpoint(pub.providerSession)
+    )
+      return null
     this.rows.set(publicationId, [...assetIds])
+    pub.version++
+    pub.updatedAt = at
+    return clone(pub)
   }
 
   async listByPublication(publicationId: string): Promise<string[]> {

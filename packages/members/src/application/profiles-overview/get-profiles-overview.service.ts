@@ -1,3 +1,4 @@
+import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import type { CourseAudience } from '../../domain/course/course'
 import { effectiveStreak, localDateSaoPaulo } from '../../domain/gamification/gamification'
 import {
@@ -10,12 +11,14 @@ import {
   MAX_STREAK_FREEZES,
 } from '../../domain/ports/gamification-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+import type { KidsJourneyProfilesService } from '../kids-journey/kids-journey-profiles.service'
 
 /** Uma linha da LISTAGEM de crianças do painel (batch por página do auth). */
 export interface ProfileOverviewView {
   profileId: string
   xp: number
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** Streak de EXIBIÇÃO (projeta freeze grátis do mês + férias — o cru mentia). */
   streakCurrent: number
   /** Data civil SP (`YYYY-MM-DD`) da última atividade que rendeu XP; null = nunca. */
@@ -28,7 +31,8 @@ export interface ProfileOverviewView {
  * Enriquecimento em LOTE dos perfis de uma página da listagem de CRIANÇAS do
  * painel (os ids vêm da busca no auth): nível/XP/ofensiva/última atividade +
  * pendências de entrega — 3 idas ao banco para a página inteira, nunca N+1.
- * TODO id pedido volta no array (sem linha de gamificação → zeros/noob), na
+ * TODO id pedido volta no array (sem atividade → estatísticas zero; sem registro Kids →
+ * posto indisponível explícito), na
  * ordem pedida — régua das rotas em lote (`/members/avatars`).
  */
 export class GetProfilesOverviewService {
@@ -36,19 +40,25 @@ export class GetProfilesOverviewService {
     private readonly gamification: GamificationRepository,
     private readonly studioSubmissions: StudioSubmissionRepository,
     private readonly clock: () => Date,
+    private readonly kidsProfiles: Pick<KidsJourneyProfilesService, 'getMany'>,
   ) {}
 
   async execute(
     profileIds: string[],
     audience: CourseAudience = 'kids',
   ): Promise<{ profiles: ProfileOverviewView[] }> {
-    const ids = [...new Set(profileIds)]
+    const ids = [
+      ...new Set(profileIds.map((id) => (audience === 'kids' ? IdentityUuidSchema.parse(id) : id))),
+    ]
     if (ids.length === 0) return { profiles: [] }
 
-    const [records, qualifying, pending] = await Promise.all([
+    const [records, qualifying, pending, kids] = await Promise.all([
       this.gamification.listByUserIds(ids, audience),
-      this.gamification.listQualifyingJourneySlotsForProfiles(ids, audience),
+      audience === 'adult'
+        ? this.gamification.listQualifyingJourneySlotsForProfiles(ids, 'adult')
+        : null,
       this.studioSubmissions.countPendingByUsers(ids, audience),
+      audience === 'kids' ? this.kidsProfiles.getMany(ids) : null,
     ])
     const byId = new Map(records.map((r) => [r.userId, r]))
     const today = localDateSaoPaulo(this.clock())
@@ -59,7 +69,10 @@ export class GetProfilesOverviewService {
         return {
           profileId,
           xp: rec?.xp ?? 0,
-          levelSlug: computeStudentLevel(qualifying.get(profileId) ?? emptyQualifyingByTier()).slug,
+          levelSlug: kids
+            ? (kids.get(profileId)?.earned.level ?? null)
+            : computeStudentLevel(qualifying?.get(profileId) ?? emptyQualifyingByTier()).slug,
+          ...(kids && !kids.has(profileId) ? { journeyUnavailable: true as const } : {}),
           // Streak de EXIBIÇÃO — a mesma projeção do dashboard dos pais (freeze
           // grátis do mês + férias); o `streakCurrent` cru mostraria "vivo" um
           // streak que já quebrou.

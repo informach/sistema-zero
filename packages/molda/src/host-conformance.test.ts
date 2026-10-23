@@ -1,11 +1,12 @@
 /**
  * Conformidade com o HOST: o que precisa existir fora deste pacote para o
- * Molda chegar em staging/prod. Lê os arquivos do monorepo por texto (sem
- * importar nada de outro pacote).
+ * Molda chegar em staging/prod. Lê configurações e definições puras do catálogo,
+ * sem executar CLIs ou inicializar serviços de outro pacote.
  */
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { CATALOG_SEED_PRODUCTS } from '../../catalog/scripts/catalog-seed-definitions'
 
 const ROOT = resolve(import.meta.dir, '../../..')
 
@@ -65,7 +66,10 @@ describe('host kids', () => {
       true,
     )
     expect(read('packages/community-kids/src/proxy.ts')).toContain("'/molda'")
-    expect(read('packages/community-kids/src/lib/embedded-app-path.ts')).toContain("'/molda'")
+    expect(read('packages/community-kids/src/lib/embedded-app-path.ts')).toContain(
+      "export * from '@sistemazero/member-shell/lib/embedded-app-path'",
+    )
+    expect(read('packages/member-shell/src/lib/embedded-app-path.ts')).toContain("'/molda'")
     const nav = read('packages/community-kids/src/components/kids/nav.ts')
     // The host groups creative tools under Criar; keep the complete discovery path covered.
     expect(nav).toContain("href: '/criar'")
@@ -81,8 +85,12 @@ describe('host kids', () => {
 
 describe('member-shell e catálogo', () => {
   test('portão de jornada e refs de acesso', () => {
-    expect(read('packages/member-shell/src/lib/studio-tier.ts')).toContain(
-      'THREE_D_CREATION_MIN_LEVEL',
+    const gate = read('packages/community-kids/src/lib/molda-tool-access.ts')
+    expect(gate).toContain('KIDS_MOLDA_BAND_CAPABILITIES')
+    expect(gate).not.toContain('journeyLevelAtLeast')
+    expect(gate).not.toContain('moldaPreviewLevel')
+    expect(read('packages/community-kids/src/app/(app)/molda/page.tsx')).toContain(
+      "hasKidsCapability(journey, 'molda')",
     )
     const clients = read('packages/member-shell/src/server/clients.ts')
     expect(clients).toContain("MOLDA_ACCESS_REF = 'molda'")
@@ -90,7 +98,14 @@ describe('member-shell e catálogo', () => {
   })
 
   test('seed do catálogo tem o produto molda', () => {
-    expect(read('packages/catalog/scripts/seed.ts')).toContain("MOLDA_SKU = 'molda'")
+    const products = CATALOG_SEED_PRODUCTS.filter((product) => product.sku === 'molda')
+    expect(products).toHaveLength(1)
+    expect(products[0]).toMatchObject({
+      slug: 'molda',
+      kind: 'tool',
+      status: 'active',
+      fulfillment: { accessType: 'community', courseRef: 'molda' },
+    })
   })
 })
 

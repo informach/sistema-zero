@@ -1,0 +1,297 @@
+/** PRIVATE preparation. No operation on import. One service/one permanent intent per apply. */
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, open, readFile, rename } from 'node:fs/promises'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { PINS as STORE, SERVICES, validateEvidence, validateMaps } from './production-maintenance-store-r1.mjs'
+import { declaredValue, projectServices } from './staging-members-image-reload-r1.mjs'
+export { SERVICES }
+export const ORDER = Object.freeze(['kids', 'adult', 'admin', 'hub', 'members'])
+export const PINS = Object.freeze({ project: STORE.project, environment: STORE.environment,
+  storePins: STORE, maintenancePlanSha256: STORE.maintenancePlanSha256,
+  storeSha256: '86ed82e9cca0b47c1bdeec4f14ef5a8ac18e7c72055ecf512baab7bd60a28de4',
+  referenceHelperSha256: 'ee81fdf4b005ff3ad6937f403c9ff7f8eb302b1315fbdc2ca8ca814a3eccff85',
+  httpSha256: '1e5aa41ca694c8e9fc8c7ce8d6f61aa5dd57a9df4a17bacd7a3cabfc4142ea7f',
+  remoteHttpSha256: '301fa4faded7316e778d7a41db558f295174ff3be199fe991f976471e376925b' })
+export const LIMITS = Object.freeze({ checkMs: 600000, journalMs: 1800000, planMs: 1800000, httpProofMs: 300000,
+  pollMs: 900000, operationMs: 1200000, commandMs: 20000, intervalMs: 3000, bytes: 8388608 })
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+const KEY = 'RELEASE_MAINTENANCE_MODE', names = Object.keys(SERVICES)
+const sha = x => createHash('sha256').update(x).digest('hex')
+const obj = x => x !== null && typeof x === 'object' && !Array.isArray(x)
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const keys = (o, wanted) => obj(o) && same(Object.keys(o).sort(), [...wanted].sort())
+const id = x => typeof x === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(x)
+const hash = x => typeof x === 'string' && /^[a-f0-9]{64}$/.test(x)
+const reference = x => keys(x, ['path', 'sha256']) && typeof x.path === 'string' && x.path.startsWith('.cache/python-reference-games/') && hash(x.sha256)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function guard(v, code) { if (!v) throw new Refusal(code) }
+function fresh(t, limit, now, code) { const age = now - Date.parse(t); guard(Number.isFinite(age) && age >= 0 && age <= limit, code) }
+export function argumentsFor(args) {
+  const [mode, service, run, input, expected, httpPath, httpHash, ...extra] = args
+  guard(['check', 'apply', 'verify', 'diagnose'].includes(mode) && ORDER.includes(service) && new RegExp(`^production-maintenance-reload-${mode}-${service}-[a-z0-9-]+$`).test(run ?? '') && typeof input === 'string' && hash(expected) && !extra.length, 'ARGUMENTS_INVALID')
+  guard(mode === 'verify' ? typeof httpPath === 'string' && hash(httpHash) : httpPath === undefined && httpHash === undefined, 'ARGUMENTS_INVALID')
+  return { mode, service, run, input, expected, httpPath, httpHash }
+}
+export function validatePlan(p, service, now = Date.now()) {
+  guard(keys(p, ['kind', 'version', 'projectId', 'environmentId', 'phase', 'createdAt', 'expiresAt', 'maintenancePlan', 'evidence', 'journalReadback', 'phase1', 'previous']) && p.kind === 'production-maintenance-reload-plan' && p.version === 1 && p.projectId === PINS.project && p.environmentId === PINS.environment && p.phase === 'reload-old-images-full', 'PLAN_INVALID')
+  fresh(p.createdAt, LIMITS.planMs, now, 'PLAN_STALE')
+  guard(Date.parse(p.expiresAt) > now && Date.parse(p.expiresAt) - Date.parse(p.createdAt) <= LIMITS.planMs, 'PLAN_EXPIRED')
+  guard(reference(p.maintenancePlan) && p.maintenancePlan.sha256 === PINS.maintenancePlanSha256 && keys(p.evidence, ['launchers', 'journals', 'next']) && Object.values(p.evidence).every(reference) && keys(p.phase1, ORDER) && Object.values(p.phase1).every(reference), 'PLAN_REFERENCES_INVALID')
+  guard(keys(p.previous, ORDER.slice(0, ORDER.indexOf(service))) && Object.values(p.previous).every(reference), 'SERIAL_PREDECESSORS_INVALID')
+  guard(['hub', 'members'].includes(service) ? reference(p.journalReadback) : p.journalReadback === null, 'JOURNAL_READBACK_REQUIRED')
+  return p
+}
+export function validatePhase1(proofs) {
+  guard(keys(proofs, ORDER), 'PHASE1_SET_INCOMPLETE')
+  for (const service of ORDER) {
+    const p = proofs[service]
+    guard(p?.kind === 'production-maintenance-store' && p.version === 1 && p.mode === 'apply' && p.service === service && p.operatorSha256 === PINS.storeSha256 && same(p.pins, STORE) && same(p.targets, SERVICES) && p.state === 'CONFIGURATION_STORED_NO_RELOAD' && p.mutationAttempts === 1 && p.cliAcknowledged === true && p.remoteOutcomeUnknown === false && p.readbackVerified === true && p.contextUnchanged === true && p.allOtherVariablesByteEqual === true && p.configuredFull === true && p.maintenanceActivatedByThisOperator === false, 'PHASE1_FULL_NOT_PROVEN')
+  }
+}
+export function validatePrevious(previous, selected, operatorSha) {
+  guard(keys(previous, ORDER.slice(0, ORDER.indexOf(selected))), 'PREVIOUS_SET_INVALID')
+  for (const service of Object.keys(previous)) {
+    const p = previous[service], t = SERVICES[service], c = p?.candidate
+    guard(p?.kind === 'production-maintenance-reload' && p.version === 1 && p.mode === 'verify' && p.service === service && p.projectId === PINS.project && p.environmentId === PINS.environment && p.state === 'OLD_IMAGE_FULL_MAINTENANCE_VERIFIED' && p.operatorSha256 === operatorSha && p.remoteOutcomeUnknown === false && p.imageVerified === true && p.oldRetired === true && p.snapshotVerified === true && p.fullHttpVerified === true && reference(p.httpReceipt) && id(c?.id) && c.id !== t.deployment && id(c.snapshotId) && c.snapshotId !== t.snapshot && c.image === t.image && c.commit === t.commit, 'PREDECESSOR_NOT_QUALIFIED')
+  }
+}
+export function validateJournalAge(proof, service, now = Date.now()) {
+  if (service === 'hub' || service === 'members') fresh(proof?.finishedAt, LIMITS.journalMs, now, 'DATABASE_JOURNAL_PROOF_STALE')
+}
+export function validateJournalReadback(proof, service, now = Date.now()) {
+  if (!['hub', 'members'].includes(service)) { guard(proof === null, 'UNEXPECTED_JOURNAL_READBACK'); return }
+  validateJournalAge(proof, service, now)
+  guard(proof?.kind === 'production-old-image-migration-readonly' && proof.version === 1 && proof.state === 'BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE' && proof.projectId === PINS.project && proof.environmentId === PINS.environment && proof.mutations === 0 && proof.migratorExecuted === false && proof.appImported === false && Array.isArray(proof.targets), 'JOURNAL_READBACK_INVALID')
+  const rows = proof.targets.filter(x => x.name === service), t = SERVICES[service], row = rows[0]
+  guard(rows.length === 1 && row.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH', 'JOURNAL_TARGET_INVALID')
+  for (const v of [row.before, row.after]) guard(v?.deploymentId === t.deployment && v.snapshotId === t.snapshot && v.commit === t.commit && v.imageDigest === t.image, 'JOURNAL_SOURCE_CHANGED')
+  const r = row.remote, db = r?.database
+  guard(r?.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH' && keys(r.identityChecks, ['project', 'environment', 'service', 'deployment', 'commit']) && Object.values(r.identityChecks).every(x => x === true) && r.matchesInstalledLast === true && r.installed?.entries === t.entries && r.installed.lastSqlSha256 === t.lastSql && String(r.installed.last?.when) === t.lastWhen && db?.table === `drizzle.${service}_migrations` && db.readOnly === true && db.isolation === 'repeatable read' && db.databaseNameMatchesConnection === true && db.last?.sha256 === t.lastSql && db.last.when === t.lastWhen, 'JOURNAL_DATABASE_MISMATCH')
+}
+const absent = x => x === undefined || x === null || x === '' || (Array.isArray(x) && !x.length)
+function commandEquals(x, expected) { return expected === null ? absent(x) : x === expected || (Array.isArray(x) && x.length === 1 && x[0] === expected) }
+function deployment(raw, service) {
+  const t = SERVICES[service]
+  guard(raw?.projectId === PINS.project && raw.environmentId === PINS.environment && raw.serviceId === t.id && id(raw.id) && typeof raw.status === 'string' && typeof raw.deploymentStopped === 'boolean' && Number.isFinite(Date.parse(raw.createdAt)) && Array.isArray(raw.instances), 'DEPLOYMENT_IDENTITY')
+  const instances = raw.instances.map(x => { guard(id(x.id) && typeof x.status === 'string', 'INSTANCE_INVALID'); return { id: x.id, status: x.status } }).sort((a, b) => a.id.localeCompare(b.id))
+  guard(new Set(instances.map(x => x.id)).size === instances.length, 'INSTANCE_DUPLICATED')
+  const deploy = raw.meta?.serviceManifest?.deploy
+  const commandsVerified = obj(deploy) && Object.hasOwn(deploy, 'startCommand') && Object.hasOwn(deploy, 'preDeployCommand') && commandEquals(deploy.startCommand, t.start) && commandEquals(deploy.preDeployCommand, t.preDeploy)
+  return { id: raw.id, snapshotId: id(raw.snapshotId) ? raw.snapshotId : null, status: raw.status, stopped: raw.deploymentStopped,
+    createdAt: raw.createdAt, commit: raw.meta?.commitHash ?? null, image: raw.meta?.imageDigest ?? null, canRedeploy: raw.canRedeploy === true, instances, commandsVerified }
+}
+export function projectContext(raw) {
+  return Object.fromEntries(names.map((service, i) => {
+    const t = SERVICES[service], s = raw?.[`s${i}`], pending = raw?.[`p${i}`]
+    guard(s?.serviceId === t.id && s.environmentId === PINS.environment && Array.isArray(s.activeDeployments) && Array.isArray(pending?.edges) && pending.pageInfo?.hasNextPage === false, 'CONTEXT_INCOMPLETE')
+    guard(commandEquals(s.startCommand, t.start) && commandEquals(s.preDeployCommand, t.preDeploy), 'EFFECTIVE_COMMAND_CHANGED')
+    const file = s.resolvedFileConfig
+    if (file?.commitHash != null) guard(file.commitHash === t.commit, 'FILE_COMMIT_CHANGED')
+    if (file?.fileManifest != null) guard(obj(file.fileManifest) && absent(file.fileManifest.deploy?.startCommand) && absent(file.fileManifest.deploy?.preDeployCommand), 'FILE_COMMAND_CHANGED')
+    const fileCommandsVerified = file?.deploymentId === s.latestDeployment?.id && file.commitHash === t.commit && obj(file.fileManifest)
+    return [service, { latest: deployment(s.latestDeployment, service), active: s.activeDeployments.map(d => deployment(d, service)), pending: pending.edges.map(x => deployment(x.node, service)), old: deployment(raw[`o${i}`], service), fileCommandsVerified }]
+  }))
+}
+// Historical REMOVED rows are retained; only one distinct live UUID may be selected.
+function runningInstance(rows) {
+  if (!Array.isArray(rows) || !rows.every(x => id(x?.id) && ['RUNNING', 'REMOVED'].includes(x.status)) || new Set(rows.map(x => x.id)).size !== rows.length) return null
+  const live = rows.filter(x => x.status === 'RUNNING')
+  return live.length === 1 ? live[0].id : null
+}
+function stable(c, service, expected, old = false) {
+  const t = SERVICES[service]
+  const instance = old ? t.instance : runningInstance(expected.instances)
+  guard(c.fileCommandsVerified === true && c.latest.id === expected.id && c.active.length === 1 && c.active[0].id === expected.id && c.pending.length === 0, 'ACTIVE_OR_PENDING_CHANGED')
+  for (const d of [c.latest, c.active[0]]) guard(d.status === 'SUCCESS' && d.stopped === false && d.snapshotId === expected.snapshotId && d.commit === t.commit && d.image === t.image && d.commandsVerified === true && id(instance) && runningInstance(d.instances) === instance, 'HEALTHY_IMAGE_CHANGED')
+  if (old) guard(c.old.id === t.deployment && c.old.snapshotId === t.snapshot && c.latest.canRedeploy && runningInstance(c.latest.instances) === t.instance, 'OLD_BASELINE_CHANGED')
+  else guard(retired(c, t), 'PREDECESSOR_OLD_NOT_RETIRED')
+}
+function retired(c, t) { return c.old.id === t.deployment && c.old.status === 'REMOVED' && c.old.stopped === true && !c.active.some(x => x.id === t.deployment) && c.old.instances.length > 0 && c.old.instances.every(x => x.status === 'REMOVED') }
+export function baselineContext(context, selected, previous) {
+  for (const service of ORDER) stable(context[service], service, previous[service]?.candidate ?? { id: SERVICES[service].deployment, snapshotId: SERVICES[service].snapshot }, !previous[service])
+}
+export function evaluate(c, service, ack) {
+  const t = SERVICES[service], d = c.latest
+  guard(c.old.id === t.deployment && d.id === ack.id && c.active.every(x => [t.deployment, ack.id].includes(x.id)) && c.pending.every(x => [t.deployment, ack.id].includes(x.id)), 'OTHER_DEPLOYMENT_APPEARED')
+  guard(!['FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'].includes(d.status), 'CANDIDATE_FAILED')
+  if (d.commit !== null) guard(d.commit === t.commit, 'CANDIDATE_COMMIT_CHANGED')
+  if (d.image !== null) guard(d.image === t.image, 'CANDIDATE_IMAGE_CHANGED')
+  if (d.snapshotId !== null) guard(d.snapshotId !== t.snapshot && (!ack.snapshotId || d.snapshotId === ack.snapshotId), 'CANDIDATE_SNAPSHOT_CHANGED')
+  const instance = runningInstance(d.instances)
+  const healthy = c.fileCommandsVerified === true && d.status === 'SUCCESS' && d.stopped === false && d.commit === t.commit && d.image === t.image && d.commandsVerified === true && id(d.snapshotId) && c.active.length === 1 && c.active[0].id === ack.id && c.pending.length === 0 && id(instance) && runningInstance(c.active[0].instances) === instance
+  return { ready: healthy && retired(c, t), healthy, oldRetired: retired(c, t) }
+}
+export function preserveMaps(before, after, selected, generated = false) {
+  validateMaps(before); validateMaps(after)
+  for (const service of names) for (const kind of ['declared', 'rendered']) {
+    const a = before[service][kind], b = after[service][kind], ignored = generated && service === selected && kind === 'rendered' ? ['RAILWAY_DEPLOYMENT_ID', 'RAILWAY_REPLICA_ID'] : []
+    const all = [...new Set([...Object.keys(a), ...Object.keys(b)])].filter(k => !ignored.includes(k))
+    guard(all.every(k => Object.hasOwn(a, k) === Object.hasOwn(b, k) && a[k] === b[k]), 'VARIABLES_CHANGED')
+  }
+}
+function allFull(maps) { validateMaps(maps); for (const service of names) guard(maps[service].declared[KEY] === 'full' && maps[service].rendered[KEY] === 'full', 'FULL_NOT_STORED_ON_ALL_FIVE') }
+export function compareSnapshot(snapshot, expected, declared, services) {
+  guard(snapshot?.id === expected && obj(snapshot.variables) && Object.values(snapshot.variables).every(v => typeof v === 'string') && snapshot.variables[KEY] === 'full' && declared[KEY] === 'full', 'SNAPSHOT_FULL_MISSING')
+  guard(same(Object.keys(snapshot.variables).sort(), Object.keys(declared).sort()) && Object.keys(declared).every(k => same(declaredValue(snapshot.variables[k], services), declaredValue(declared[k], services))), 'SNAPSHOT_NOT_CURRENT')
+  return true
+}
+export function mutationRequest(service) { guard(ORDER.includes(service), 'SERVICE_INVALID'); return { query: 'mutation OldImageFullMaintenance($id:String!){deploymentRedeploy(id:$id,usePreviousImageTag:true){id status snapshotId}}', variables: { id: SERVICES[service].deployment } } }
+export function acknowledge(value, service) {
+  const a = value?.data?.deploymentRedeploy
+  return value && !value.errors && id(a?.id) && a.id !== SERVICES[service].deployment && typeof a.status === 'string' ? { id: a.id, status: a.status, snapshotId: id(a.snapshotId) ? a.snapshotId : null } : null
+}
+export async function reserveIntent(directory, service, record) {
+  guard(ORDER.includes(service), 'SERVICE_INVALID')
+  let h; try { h = await open(join(directory, `production-maintenance-reload-${service}.intent.json`), 'wx', 0o600) } catch { throw new Refusal('PERMANENT_INTENT_EXISTS_OR_UNAVAILABLE') }
+  try { await h.writeFile(JSON.stringify(record) + '\n'); await h.sync() } finally { await h.close() }
+}
+export async function reloadOnce(service, previous, deps) {
+  const baseline = await deps.preflight()
+  await deps.reserve()
+  const started = deps.now()
+  await deps.checkpoint({ state: 'RELOAD_INTENT', dispatchStartedAt: new Date(started).toISOString(), mutationAttempts: 1, remoteOutcomeUnknown: true, acknowledged: false })
+  let ack = null
+  try { ack = acknowledge(await deps.send(mutationRequest(service)), service) } catch { /* No retry: persisted intent remains. */ }
+  await deps.checkpoint({ state: ack ? 'ACKNOWLEDGED_OBSERVING' : 'ACK_UNKNOWN_OBSERVING', acknowledged: Boolean(ack), remoteOutcomeUnknown: !ack, ack })
+  if (!ack) {
+    // Safe discovery only, never adopt a discovered candidate as an acknowledgement.
+    let diagnostic = null
+    try { const c = (await deps.diagnose())[service]; diagnostic = { observedAt: new Date(deps.now()).toISOString(), latest: c.latest, candidatesSinceIntent: [c.latest, ...c.active, ...c.pending].filter((d, i, rows) => d.id !== SERVICES[service].deployment && Date.parse(d.createdAt) >= started - 5000 && rows.findIndex(x => x.id === d.id) === i) } } catch { /* Preserve unknown without leaking provider errors. */ }
+    const result = { state: 'ACK_UNKNOWN_NO_REPLAY', remoteOutcomeUnknown: true, diagnostic, qualified: false }; await deps.checkpoint(result); return result
+  }
+  const end = deps.now() + LIMITS.pollMs
+  while (deps.now() < end) {
+    const c = await deps.context()
+    for (const other of ORDER.filter(s => s !== service)) stable(c[other], other, previous[other]?.candidate ?? { id: SERVICES[other].deployment, snapshotId: SERVICES[other].snapshot }, !previous[other])
+    const ready = evaluate(c[service], service, ack)
+    await deps.checkpoint({ state: 'OBSERVING', lastContext: c, imageVerified: ready.healthy, oldRetired: ready.oldRetired, noBuildProven: false, skipPreDeployProven: false })
+    if (ready.ready) {
+      const after = await deps.configuration(); allFull(after.maps); preserveMaps(baseline.maps, after.maps, service, true)
+      guard(same(after.services, baseline.services), 'REFERENCE_SERVICE_MAP_CHANGED')
+      compareSnapshot(await deps.snapshot(ack.id), c[service].latest.snapshotId, after.maps[service].declared, after.services)
+      const final = await deps.context(); guard(evaluate(final[service], service, ack).ready, 'FINAL_CONTEXT_CHANGED')
+      for (const other of ORDER.filter(s => s !== service)) guard(same(final[other], baseline.context[other]), 'OTHER_CONTEXT_CHANGED')
+      const result = { state: 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED', candidate: final[service].latest,
+        remoteOutcomeUnknown: false, acknowledged: true, imageVerified: true, oldRetired: true,
+        snapshotVerified: true, variablesPreserved: true, fullHttpVerified: false, qualified: false }
+      await deps.checkpoint(result); return result
+    }
+    await deps.wait(Math.min(LIMITS.intervalMs, end - deps.now()))
+  }
+  const result = { state: 'ACKNOWLEDGED_POLL_TIMEOUT_NO_REPLAY', remoteOutcomeUnknown: false, qualified: false }; await deps.checkpoint(result); return result
+}
+export function validateHttp(p, service, candidate, now = Date.now()) {
+  guard(p?.kind === 'production-maintenance-http' && p.version === 1 && p.state === 'LOCAL_FULL_HTTP_VERIFIED' && p.operatorSha256 === PINS.httpSha256 && p.remoteProgramSha256 === PINS.remoteHttpSha256 && p.projectId === PINS.project && p.environmentId === PINS.environment && p.service === service && p.serviceId === SERVICES[service].id && same(p.candidate, candidate) && p.identityVerified === true && p.ready === true && p.blocked === true && p.providerMutations === 0, 'HTTP_PROOF_UNQUALIFIED')
+  fresh(p.observedAt, LIMITS.httpProofMs, now, 'HTTP_PROOF_STALE')
+}
+
+async function readPinned(ref, bytesOnly = false) {
+  guard(reference(ref), 'REFERENCE_INVALID'); const p = resolve(ROOT, ref.path), rel = relative(CACHE, p), st = await lstat(p)
+  guard(rel && !rel.startsWith('..') && !rel.includes(':') && st.isFile() && !st.isSymbolicLink() && st.size <= 2097152, 'REFERENCE_PATH')
+  const bytes = await readFile(p); guard(bytes.length <= 2097152 && sha(bytes) === ref.sha256, 'REFERENCE_HASH'); return bytesOnly ? bytes : JSON.parse(bytes.toString('utf8'))
+}
+const fields = 'id projectId environmentId serviceId createdAt status deploymentStopped canRedeploy snapshotId meta instances{id status}'
+const contextQuery = `query($e:String!,${names.map((_, i) => `$i${i}:DeploymentListInput!`).join(',')}){${names.map((s, i) => `s${i}:serviceInstance(serviceId:"${SERVICES[s].id}",environmentId:$e){serviceId environmentId preDeployCommand startCommand resolvedFileConfig{deploymentId commitHash fileManifest}activeDeployments{${fields}}latestDeployment{${fields}}}p${i}:deployments(first:20,input:$i${i}){edges{node{${fields}}}pageInfo{hasNextPage}}o${i}:deployment(id:"${SERVICES[s].deployment}"){${fields}}`).join('\n')}}`
+const contextVars = { e: PINS.environment, ...Object.fromEntries(names.map((s, i) => [`i${i}`, { projectId: PINS.project, environmentId: PINS.environment, serviceId: SERVICES[s].id, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } }])) }
+export function nativeEnvironment(source) {
+  const env = { ...source, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+  return env
+}
+export async function main(argv = process.argv.slice(2)) {
+  const args = argumentsFor(argv); guard(process.versions.node === '24.22.0' && !process.versions.bun, 'NODE_VERSION')
+  const out = join(CACHE, args.run); await mkdir(out)
+  const start = Date.now(), deadline = start + LIMITS.operationMs, operatorSha = sha(await readFile(FILE))
+  const receipt = { kind: 'production-maintenance-reload', version: 1, mode: args.mode, service: args.service,
+    projectId: PINS.project, environmentId: PINS.environment, state: 'PREPARING', startedAt: new Date(start).toISOString(),
+    operatorSha256: operatorSha, pins: PINS, mutationAttempts: 0, remoteOutcomeUnknown: false,
+    noBuildProven: false, skipPreDeployProven: false, sqlNotExecutedByProviderProven: false,
+    appDataOrSecretsRecorded: false, crossProcessSecretEqualityProven: false, publicEdgeQualified: false, retries: 0, rollbacks: 0 }
+  const save = async patch => { Object.assign(receipt, patch); const h = await open(join(out, 'receipt.tmp'), 'w', 0o600); try { await h.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await h.sync() } finally { await h.close() } await rename(join(out, 'receipt.tmp'), join(out, 'receipt.json')) }
+  const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const env = nativeEnvironment(process.env)
+  const native = (argv, stdin = '') => new Promise((yes, no) => { guard(Date.now() < deadline, 'DEADLINE'); const child = execFile(cli, argv, { cwd: ROOT, env, windowsHide: true, encoding: 'utf8', timeout: Math.min(LIMITS.commandMs, deadline - Date.now()), maxBuffer: LIMITS.bytes }, (e, stdout) => e ? no(new Refusal('CLI_UNCONFIRMED')) : yes(stdout)); child.stdin?.on('error', () => {}); child.stdin?.end(stdin) })
+  const api = async (q, v) => { guard(/^query\b/.test(q) && !/\bmutation\b/.test(q), 'QUERY_REQUIRED'); const r = JSON.parse(await native(['api', '--compact', q, '--variables', '@-'], JSON.stringify(v))); guard(r.data && !r.errors, 'API_UNCONFIRMED'); return r.data }
+  const context = async () => projectContext(await api(contextQuery, contextVars))
+  const allMaps = []
+  const configuration = async () => {
+    const raw = await api(`query($p:String!,$e:String!){${names.map((s, i) => `d${i}:variables(projectId:$p,environmentId:$e,serviceId:"${SERVICES[s].id}",unrendered:true)r${i}:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:"${SERVICES[s].id}")`).join('\n')}}`, { p: PINS.project, e: PINS.environment })
+    const maps = Object.fromEntries(names.map((s, i) => [s, { declared: raw[`d${i}`], rendered: raw[`r${i}`] }]))
+    allMaps.push(maps); allFull(maps)
+    const services = projectServices(await api('query($p:String!){project(id:$p){id services(first:50){edges{node{id name projectId deletedAt}}pageInfo{hasNextPage}}}}', { p: PINS.project }))
+    // Refuse unsupported authoring expressions before a reload, not only after snapshot creation.
+    for (const s of names) for (const value of Object.values(maps[s].declared)) declaredValue(value, services)
+    return { maps, services }
+  }
+  const snapshot = async d => (await api('query($d:String!){deploymentSnapshot(deploymentId:$d){id variables}}', { d })).deploymentSnapshot
+  try {
+    await save({})
+    for (const [file, expected] of [['production-maintenance-store-r1.mjs', PINS.storeSha256], ['staging-members-image-reload-r1.mjs', PINS.referenceHelperSha256], ['production-maintenance-http-r2.mjs', PINS.httpSha256]]) guard(sha(await readFile(join(CACHE, file))) === expected, 'IMPORT_PIN_CHANGED')
+    const inputRef = { path: args.input.replaceAll('\\', '/'), sha256: args.expected }, input = await readPinned(inputRef)
+    let planRef = inputRef
+    if (args.mode !== 'check') {
+      guard(input.kind === receipt.kind && input.version === 1 && input.service === args.service && input.operatorSha256 === operatorSha && input.projectId === PINS.project && input.environmentId === PINS.environment && reference(input.plan), 'PRIOR_RECEIPT_INVALID')
+      if (args.mode === 'apply') { guard(input.mode === 'check' && input.state === 'READ_ONLY_READY' && input.mutationAttempts === 0, 'CHECK_INVALID'); fresh(input.finishedAt, LIMITS.checkMs, Date.now(), 'CHECK_STALE') }
+      else if (args.mode === 'verify') guard(input.mode === 'apply' && input.state === 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED' && input.remoteOutcomeUnknown === false && input.acknowledged === true && input.variablesPreserved === true && input.imageVerified === true && input.oldRetired === true && input.snapshotVerified === true && input.mutationAttempts === 1, 'APPLY_NOT_QUALIFIED')
+      else guard(input.mode === 'apply' && input.mutationAttempts === 1 && input.remoteOutcomeUnknown === true && Number.isFinite(Date.parse(input.dispatchStartedAt)), 'UNKNOWN_APPLY_REQUIRED')
+      planRef = input.plan
+    }
+    const plan = args.mode === 'check' ? input : await readPinned(planRef)
+    // After dispatch, verify may outlive the plan; it cannot cause another mutation.
+    const observationOnly = ['verify', 'diagnose'].includes(args.mode)
+    validatePlan(plan, args.service, observationOnly ? Date.parse(input.startedAt) : Date.now())
+    await readPinned(plan.maintenancePlan, true)
+    const evidence = Object.fromEntries(await Promise.all(Object.entries(plan.evidence).map(async ([k, r]) => [k, await readPinned(r)])))
+    // The pinned image proofs attest immutable old artifacts. Their original observation window stays explicit.
+    validateEvidence(evidence, Math.max(...Object.values(evidence).map(p => Date.parse(p.finishedAt))))
+    const journal = plan.journalReadback === null ? null : await readPinned(plan.journalReadback)
+    validateJournalReadback(journal, args.service, observationOnly ? Date.parse(input.startedAt) : Date.now())
+    const phase1 = Object.fromEntries(await Promise.all(Object.entries(plan.phase1).map(async ([k, r]) => [k, await readPinned(r)]))); validatePhase1(phase1)
+    const previous = Object.fromEntries(await Promise.all(Object.entries(plan.previous).map(async ([k, r]) => [k, await readPinned(r)]))); validatePrevious(previous, args.service, operatorSha)
+    receipt.plan = planRef; receipt.predecessors = plan.previous
+    guard((await native(['--version'])).trim() === 'railway 5.62.1', 'CLI_VERSION')
+    const preflight = async () => {
+      validatePlan(plan, args.service); validateJournalReadback(journal, args.service)
+      const before = await context(); baselineContext(before, args.service, previous)
+      const config = await configuration(), after = await context(); guard(same(before, after), 'CONTEXT_CHANGED_DURING_PREFLIGHT')
+      if (args.mode === 'apply') guard(same(input.baselineContext, after), 'CONTEXT_CHANGED_SINCE_CHECK')
+      for (const [s, p] of Object.entries(previous)) compareSnapshot(await snapshot(p.candidate.id), p.candidate.snapshotId, config.maps[s].declared, config.services)
+      const finalConfig = await configuration(); preserveMaps(config.maps, finalConfig.maps, args.service); guard(same(config.services, finalConfig.services), 'REFERENCE_MAP_CHANGED')
+      const finalContext = await context(); baselineContext(finalContext, args.service, previous); guard(same(after, finalContext), 'FINAL_PREFLIGHT_CONTEXT_CHANGED')
+      await save({ baselineContext: finalContext, fullStoredOnFive: true, imageEvidence: plan.evidence, phase1Receipts: plan.phase1 })
+      return { ...finalConfig, context: finalContext }
+    }
+    if (args.mode === 'diagnose') {
+      const c = await context(), selected = c[args.service], since = Date.parse(input.dispatchStartedAt) - 5000
+      const candidates = [selected.latest, ...selected.active, ...selected.pending].filter((d, i, rows) => d.id !== SERVICES[args.service].deployment && Date.parse(d.createdAt) >= since && rows.findIndex(x => x.id === d.id) === i)
+      await save({ state: 'ACK_UNKNOWN_DIAGNOSTIC_ONLY', unknownApplyReceipt: inputRef, remoteOutcomeUnknown: true,
+        observedContext: c, candidatesSinceIntent: candidates, observedAt: new Date().toISOString(), qualified: false })
+    } else if (args.mode === 'check') {
+      const a = await preflight(), b = await preflight(); preserveMaps(a.maps, b.maps, args.service); guard(same(a.services, b.services), 'REFERENCE_MAP_CHANGED')
+      await save({ state: 'READ_ONLY_READY', mapsStableWithinCheck: true })
+    } else if (args.mode === 'apply') {
+      await reloadOnce(args.service, previous, { preflight, context, configuration, snapshot, now: Date.now,
+        wait: ms => new Promise(r => setTimeout(r, ms)), checkpoint: save,
+        reserve: async () => { validatePlan(plan, args.service); validateJournalReadback(journal, args.service); await reserveIntent(CACHE, args.service, { kind: 'production-maintenance-reload-intent', projectId: PINS.project, environmentId: PINS.environment, service: args.service, oldDeployment: SERVICES[args.service].deployment, operatorSha256: operatorSha, checkReceipt: inputRef, plan: planRef, createdAt: new Date().toISOString(), retryAllowed: false }) },
+        send: async r => JSON.parse(await native(['api', '--compact', r.query, '--variables', '@-'], JSON.stringify(r.variables))), diagnose: context })
+    } else {
+      const httpRef = { path: args.httpPath.replaceAll('\\', '/'), sha256: args.httpHash }, http = await readPinned(httpRef)
+      validateHttp(http, args.service, input.candidate)
+      guard(same(http.reloadReceipt, inputRef), 'HTTP_RECEIPT_NOT_BOUND_TO_APPLY')
+      const c = await context(); stable(c[args.service], args.service, input.candidate)
+      for (const s of ORDER.filter(s => s !== args.service)) stable(c[s], s, previous[s]?.candidate ?? { id: SERVICES[s].deployment, snapshotId: SERVICES[s].snapshot }, !previous[s])
+      const conf = await configuration(); compareSnapshot(await snapshot(input.candidate.id), input.candidate.snapshotId, conf.maps[args.service].declared, conf.services)
+      const afterConf = await configuration(); preserveMaps(conf.maps, afterConf.maps, args.service); guard(same(conf.services, afterConf.services), 'REFERENCE_MAP_CHANGED')
+      const final = await context(); guard(same(c, final), 'VERIFY_CONTEXT_CHANGED'); validateHttp(http, args.service, input.candidate)
+      await save({ state: 'OLD_IMAGE_FULL_MAINTENANCE_VERIFIED', candidate: final[args.service].latest,
+        applyReceipt: inputRef, httpReceipt: httpRef, imageVerified: true, oldRetired: true, snapshotVerified: true, fullHttpVerified: true,
+        finalContext: final, qualified: true })
+    }
+  } catch (e) { await save({ state: receipt.mutationAttempts ? 'RELOAD_UNCONFIRMED_NO_REPLAY' : 'REFUSED_BEFORE_MUTATION', failureCode: e instanceof Refusal ? e.code : 'LOCAL_OR_PROVIDER_UNCONFIRMED', qualified: false }) }
+  finally { for (const maps of allMaps) for (const entry of Object.values(maps)) for (const values of Object.values(entry)) if (obj(values)) for (const k of Object.keys(values)) delete values[k]; await save({ finishedAt: new Date().toISOString() }) }
+  console.log(JSON.stringify({ output: args.run, service: args.service, state: receipt.state, mutationAttempts: receipt.mutationAttempts, remoteOutcomeUnknown: receipt.remoteOutcomeUnknown }))
+  return ['READ_ONLY_READY', 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED', 'OLD_IMAGE_FULL_MAINTENANCE_VERIFIED'].includes(receipt.state) ? 0 : 1
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) main().then(code => { process.exitCode = code }, () => { console.error('LOCAL_INITIALIZATION_OR_RECEIPT_UNCONFIRMED'); process.exitCode = 1 })

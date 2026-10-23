@@ -1,7 +1,11 @@
 import { randomUUID } from 'node:crypto'
 import type { Logger } from '@sistemazero/core/logging'
 import type { Attachment } from '../../src/domain/attachment/attachment'
-import { DuplicateSlugError } from '../../src/domain/hub-errors'
+import {
+  ConcurrencyConflictError,
+  DuplicateSlugError,
+  PostingNotAllowedError,
+} from '../../src/domain/hub-errors'
 import type { MuteBan, MuteBanKind } from '../../src/domain/moderation/mute-ban'
 import { isActiveMuteBan } from '../../src/domain/moderation/mute-ban'
 import type {
@@ -45,6 +49,12 @@ import type {
   ReactionTarget,
 } from '../../src/domain/ports/reaction-repository.port'
 import type { ReadStateRepository } from '../../src/domain/ports/read-state-repository.port'
+import type { StudioPublicationEvent } from '../../src/domain/ports/studio-event-repository.port'
+import { studioPublicationEventAt } from '../../src/domain/ports/studio-event-repository.port'
+import type {
+  StudioReservationInput,
+  StudioReservationOutcome,
+} from '../../src/domain/ports/studio-reservation-repository.port'
 import type {
   AuthorActivity,
   CreateCommentInput,
@@ -238,6 +248,7 @@ function ltPos(aT: Date, aId: string, bT: Date, bId: string): boolean {
 
 /** Fake in-memory de `ThreadRepository`. */
 export class InMemoryThreadRepository implements ThreadRepository {
+  audienceForChannel?: (channelId: string) => 'adult' | 'kids' | undefined
   threads: Thread[] = []
   comments: Comment[] = []
   /** Wireado pelo helper de teste: o vínculo de anexos é atômico com o create. */
@@ -285,6 +296,126 @@ export class InMemoryThreadRepository implements ThreadRepository {
 
   /** Dedupe da vitrine: chave de idempotência → id do tópico (a chave não é do domínio). */
   private readonly showcaseKeys = new Map<string, string>()
+  readonly studioReservations = new Map<
+    string,
+    Omit<StudioReservationInput, 'scopeKey' | 'accountId' | 'snapshotHash'> & {
+      scopeKey: string | null
+      accountId: string | null
+      snapshotHash: string | null
+      playId: string
+      phase: 'reserved' | 'finalized' | 'retired'
+      threadId?: string
+    }
+  >()
+
+  async prepareStudioPublication(input: StudioReservationInput): Promise<StudioReservationOutcome> {
+    const value = structuredClone(input)
+    const saved = [...this.studioReservations.values()].find(
+      (r) => r.scopeKey === value.scopeKey || r.idempotencyKey === value.idempotencyKey,
+    )
+    if (saved) {
+      if (
+        saved.authorId !== value.authorId ||
+        (saved.accountId !== null && saved.accountId !== value.accountId) ||
+        saved.audience !== value.audience
+      )
+        throw new PostingNotAllowedError('Reserva pertence a outro autor')
+      if (saved.phase !== 'reserved') {
+        const thread = this.threads.find((t) => t.id === saved.threadId)
+        if (
+          !thread ||
+          saved.phase === 'retired' ||
+          thread.status === 'deleted' ||
+          thread.status === 'rejected'
+        )
+          return { state: 'retired', playId: saved.playId, thread: thread ?? null }
+        return { state: 'finalized', thread, deduped: true }
+      }
+      if (
+        !saved.snapshotHash ||
+        saved.scopeKey !== value.scopeKey ||
+        saved.idempotencyKey !== value.idempotencyKey ||
+        saved.semanticHash !== value.semanticHash ||
+        saved.snapshotHash !== value.snapshotHash ||
+        saved.context !== value.context ||
+        (value.livePlayId && saved.playId !== value.livePlayId)
+      )
+        throw new ConcurrencyConflictError()
+      return {
+        state: 'reserved',
+        reservationId: saved.id,
+        playId: saved.playId,
+        snapshotHash: saved.snapshotHash,
+      }
+    }
+    const existingId = this.showcaseKeys.get(value.idempotencyKey)
+    const thread = this.threads.find((t) => t.id === existingId)
+    if (thread?.playId) {
+      if (thread.authorId !== value.authorId) throw new PostingNotAllowedError('Autor divergente')
+      const phase =
+        thread.status === 'deleted' || thread.status === 'rejected' ? 'retired' : 'finalized'
+      this.studioReservations.set(value.id, {
+        ...value,
+        scopeKey: null,
+        accountId: null,
+        snapshotHash: null,
+        playId: thread.playId,
+        phase,
+        threadId: thread.id,
+      })
+      return phase === 'retired'
+        ? { state: 'retired', playId: thread.playId, thread }
+        : { state: 'finalized', thread, deduped: true }
+    }
+    const playId = value.livePlayId ?? randomUUID()
+    if (
+      this.threads.some((thread) => thread.playId === playId) ||
+      [...this.studioReservations.values()].some((reservation) => reservation.playId === playId)
+    )
+      throw new ConcurrencyConflictError()
+    this.studioReservations.set(value.id, { ...value, playId, phase: 'reserved' })
+    return { state: 'reserved', reservationId: value.id, playId, snapshotHash: value.snapshotHash }
+  }
+
+  async finalizeStudioPublication(
+    id: string,
+    input: StudioReservationInput,
+    candidate: CreateShowcaseThreadInput,
+  ) {
+    const saved = this.studioReservations.get(id)
+    if (
+      !saved ||
+      saved.authorId !== input.authorId ||
+      saved.accountId !== input.accountId ||
+      saved.audience !== input.audience
+    )
+      throw new PostingNotAllowedError('Reserva inválida')
+    if (
+      saved.scopeKey !== input.scopeKey ||
+      saved.idempotencyKey !== input.idempotencyKey ||
+      saved.semanticHash !== input.semanticHash ||
+      saved.snapshotHash !== input.snapshotHash ||
+      saved.context !== input.context ||
+      saved.playId !== candidate.playId
+    )
+      throw new ConcurrencyConflictError()
+    if (saved.phase !== 'reserved') {
+      const thread = this.threads.find((t) => t.id === saved.threadId)
+      if (!thread) throw new ConcurrencyConflictError()
+      return { thread, deduped: true }
+    }
+    const result = await this.createShowcaseThread(structuredClone(candidate))
+    if (result.thread.playId !== saved.playId) throw new ConcurrencyConflictError()
+    saved.phase = 'finalized'
+    saved.threadId = result.thread.id
+    for (const event of candidate.studioEvents ?? [])
+      this.studioEvents.set(
+        `studio:${result.thread.id}:${event.kind}`,
+        structuredClone(studioPublicationEventAt(event, result.thread.createdAt.toISOString())),
+      )
+    return result
+  }
+  readonly studioEvents = new Map<string, StudioPublicationEvent>()
   readonly showcaseDeliveries = new Map<string, ShowcasePublishedArgs>()
 
   async createShowcaseThread(
@@ -305,7 +436,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
       channelId: input.channelId,
       authorId: input.authorId,
       // Vitrine não recebe recompensa de Clube (usa course_showcased) → sem conta snapshot.
-      authorAccountId: null,
+      authorAccountId: input.authorAccountId ?? null,
       title: input.title,
       slug: input.slug,
       body: input.body,
@@ -334,6 +465,7 @@ export class InMemoryThreadRepository implements ThreadRepository {
   async hasVisibleShowcasePlayId(
     playId: string,
     countHit = false,
+    audience?: 'adult' | 'kids',
   ): Promise<{
     visible: boolean
     authorDisplayName: string | null
@@ -342,7 +474,14 @@ export class InMemoryThreadRepository implements ThreadRepository {
     playsCount: number
   }> {
     const found = this.threads.find(
-      (t) => t.playId === playId && t.isShowcase && t.status === 'visible',
+      (t) =>
+        t.playId === playId &&
+        t.isShowcase &&
+        t.status === 'visible' &&
+        (audience === undefined ||
+          (this.audienceForChannel
+            ? this.audienceForChannel(t.channelId) === audience
+            : audience === 'kids')),
     )
     if (found && countHit) found.playsCount += 1
     return {
@@ -351,6 +490,31 @@ export class InMemoryThreadRepository implements ThreadRepository {
       authorId: found?.authorId ?? null,
       authorAccountId: found?.authorAccountId ?? null,
       playsCount: found?.playsCount ?? 0,
+    }
+  }
+
+  async showcaseCoverReference(playId: string, audience: 'adult' | 'kids') {
+    const reservation = [...this.studioReservations.values()].find(
+      (value) => value.playId === playId && value.audience === audience,
+    )
+    if (reservation?.phase === 'reserved')
+      return { status: 'pending' as const, coverImageUrl: null }
+    const found = this.threads.find(
+      (thread) =>
+        thread.playId === playId &&
+        thread.isShowcase &&
+        (this.audienceForChannel
+          ? this.audienceForChannel(thread.channelId) === audience
+          : audience === 'kids'),
+    )
+    return {
+      status:
+        reservation?.phase === 'retired' &&
+        found?.status !== 'deleted' &&
+        found?.status !== 'rejected'
+          ? ('deleted' as const)
+          : (found?.status ?? (reservation ? ('deleted' as const) : ('absent' as const))),
+      coverImageUrl: found?.coverImageUrl ?? null,
     }
   }
 
@@ -420,11 +584,21 @@ export class InMemoryThreadRepository implements ThreadRepository {
   async listShowcaseByAuthor(
     authorId: string,
     limit: number,
+    audience?: 'adult' | 'kids',
   ): Promise<
     Array<{ title: string; playId: string | null; coverImageUrl: string | null; createdAt: Date }>
   > {
     return this.threads
-      .filter((t) => t.authorId === authorId && t.isShowcase && t.status === 'visible')
+      .filter(
+        (t) =>
+          t.authorId === authorId &&
+          t.isShowcase &&
+          t.status === 'visible' &&
+          (audience === undefined ||
+            (this.audienceForChannel
+              ? this.audienceForChannel(t.channelId) === audience
+              : audience === 'kids')),
+      )
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(0, limit)
       .map((t) => ({
@@ -524,6 +698,9 @@ export class InMemoryThreadRepository implements ThreadRepository {
     if (!t) return 'not_found'
     if (!fromStatuses.includes(t.status)) return 'invalid_state'
     t.status = status
+    if (status === 'deleted' || status === 'rejected')
+      for (const reservation of this.studioReservations.values())
+        if (reservation.threadId === id) reservation.phase = 'retired'
     if (bumpActivity) t.lastActivityAt = now
     return 'updated'
   }
@@ -1094,6 +1271,25 @@ export class InMemoryProcessedWebhookRepository implements ProcessedWebhookRepos
 
 /** Fake do gateway do members: grants e master configuráveis por usuário. */
 export class FakeMembersGateway implements MembersGateway {
+  adultCapabilities = new Map<string, string[]>()
+  adultIdentities = new Map<string, { displayName: string; publicEnabled: boolean }>()
+  async getAdultCreatorState(userId: string) {
+    return {
+      capabilities: this.adultCapabilities.get(userId) ?? [],
+      ...(this.adultIdentities.get(userId) ?? { displayName: 'Criador', publicEnabled: false }),
+    }
+  }
+  liveMuralLearners = new Set<string>()
+  async getLiveMuralAccess(userId: string, accountId: string) {
+    return this.liveMuralLearners.has(`${accountId}:${userId}`)
+  }
+  liveEligibility: { eligible: boolean; title: string; audience?: 'adult' | 'kids' } = {
+    eligible: false,
+    title: '',
+  }
+  async getLiveShowcaseEligibility() {
+    return this.liveEligibility
+  }
   /** userId → cursos com matrícula ativa. */
   grantsByUser = new Map<string, Set<string>>()
   /** userIds com chave-mestra ADULTA (all_courses) ativa. */
@@ -1144,8 +1340,9 @@ export class FakeMembersGateway implements MembersGateway {
 
   /** Registra as notificações do DESAFIO do mês (XP + badge) — best-effort. */
   challengeNotifications: ChallengeEntryArgs[] = []
-  async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<void> {
+  async notifyChallengeEntry(args: ChallengeEntryArgs): Promise<boolean> {
     this.challengeNotifications.push(args)
+    return true
   }
 
   /** Registra as recompensas de contribuição no Clube (aprovação) — best-effort. */
@@ -1162,8 +1359,9 @@ export class FakeMembersGateway implements MembersGateway {
 
   /** Registra as publicações STANDALONE (marco + XP diário de publicar) — best-effort. */
   standaloneShowcases: StandaloneShowcaseArgs[] = []
-  async notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<void> {
+  async notifyStandaloneShowcase(args: StandaloneShowcaseArgs): Promise<boolean> {
     this.standaloneShowcases.push(args)
+    return true
   }
 
   /** Registra os marcos de plays (jogo cruzou 10/100 jogadas) — best-effort. */

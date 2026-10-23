@@ -1,0 +1,61 @@
+{
+  "kind": "hosted-staging-admin-browser-smoke",
+  "version": 1,
+  "observedThrough": "2026-10-23T00:17:46Z",
+  "environment": "staging",
+  "applicationCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+  "applicationCommitSource": "separate Railway deployment inventory, not a browser runtime attestation",
+  "authentication": "user logged in interactively; no password collected",
+  "state": "PARTIAL_PYTHON_BLOCKED_BY_HOST_CSP",
+  "admin": {
+    "journeyConfigurationOpened": true,
+    "publishedCourseOpened": true,
+    "publishedLessonAuthoringOpened": true,
+    "curriculumContentChanged": false,
+    "studentSimulationQualified": false
+  },
+  "javascript": {
+    "example": "Pegue a moeda",
+    "blocksOpened": true,
+    "previewRendered": true,
+    "realKeyboardEnterChangedCanvasDescriptionToPlaying": true,
+    "scoreStatusObserved": "Moedas: 0",
+    "bridgeOpenedWithHtmlCssJavascriptFiles": true,
+    "previewStopObserved": true,
+    "qaCopyRenamed": true,
+    "galleryAccountSavedStatusObserved": true,
+    "reopenedQaCopyInBridge": true,
+    "wholeJavascriptProductQualified": false
+  },
+  "python": {
+    "languageFilterVisible": true,
+    "pacmanAndSpaceArenaBlocksAndCodeEntriesVisible": true,
+    "example": "Pac-Man (Blocos)",
+    "qaCopyCreatedAndRenamed": true,
+    "accountSavedStatusObserved": true,
+    "initialLoadingMisrepresentedAsMissingAchievements": true,
+    "editorOpenedAfterRuntimeAuthorityResolved": true,
+    "parserTimedOut": true,
+    "executionTimedOut": true,
+    "browserConsoleCspFrameViolation": true,
+    "blockedOrigin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
+    "receivedFrameDirective": "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com",
+    "hostedPythonQualified": false
+  },
+  "otherObservations": {
+    "existingProjectDownloadReconcileDeadlineWarning": true,
+    "multipartUpload409Code": "CREATION_PARTS_NEED_BYTES",
+    "multipart409IsExplicitlyHandledByExistingUploadProtocol": true,
+    "screenshotFilePersistence": "browser tool refused both requested workspace paths; no screenshot file claimed"
+  },
+  "remaining": [
+    "rebuild host images with public CSP build arguments and recheck received headers",
+    "remove misleading missing-achievements screen during runtime preparation",
+    "rerun hosted Python blocks/bridge/execution/Stop after deployment",
+    "real student account eligibility and lesson workflow",
+    "hosted Pro, Pinta, Mural/public player and full performance gates"
+  ],
+  "productionApplicationReleasePerformed": false,
+  "overallQualified": false,
+  "credentialsOrPersonalAccountDataRecorded": false
+}

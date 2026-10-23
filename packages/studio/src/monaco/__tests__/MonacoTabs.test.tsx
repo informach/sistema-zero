@@ -1,6 +1,8 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
+import type { OnChange } from '@monaco-editor/react'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useEffect, useRef } from 'react'
+import { inferLanguage } from '../languages'
 import type { DisposableMonacoModel, MonacoModelRegistry } from '../modelPaths'
 
 // bun:test NÃO isola module mocks por arquivo: captura os exports reais ANTES de
@@ -24,6 +26,7 @@ interface FakeModel extends DisposableMonacoModel {
   disposed: boolean
   value: string
   getValue: () => string
+  getLanguageId: () => string
   setValue: (value: string) => void
   getLineCount: () => number
   getLineMaxColumn: (line: number) => number
@@ -44,6 +47,7 @@ function makeModel(path: string, initialValue = ''): FakeModel {
     value: initialValue,
     uri: { path, toString: () => path },
     getValue: () => model.value,
+    getLanguageId: () => inferLanguage(path),
     setValue: (value) => {
       model.value = value
     },
@@ -167,12 +171,15 @@ function makeEditor(initialPath: string): FakeEditor {
 // <Editor> mockado: garante o model do seu `path` no registro, monta o editor
 // falso e chama `onMount`. Em rerenders com `path` diferente, troca o model do
 // editor (espelha o `restoreViewState`/troca de aba do @monaco-editor/react).
+let currentChange: OnChange | undefined
 function EditorMock(props: {
   path: string
   defaultValue?: string
   onMount?: (editor: FakeEditor) => void
+  onChange?: OnChange
 }): React.JSX.Element {
   const { path, defaultValue, onMount } = props
+  currentChange = props.onChange
   const mountedRef = useRef(false)
   getOrCreateModel(path, defaultValue)
   // biome-ignore lint/correctness/useExhaustiveDependencies: onMount é estável (useCallback no MonacoTabs); monta uma vez e só troca o model por path
@@ -223,6 +230,7 @@ const { MonacoTabs, setFormatWaitForTests } = await import('../MonacoTabs')
 setFormatWaitForTests(1, 30, 40)
 
 function resetWorld(): void {
+  currentChange = undefined
   fakeModels.clear()
   currentEditor = null
   selectionCalls.length = 0
@@ -232,6 +240,72 @@ function resetWorld(): void {
   restoreViewStateCalls.length = 0
   loadLanguageServicesImpl = async () => {}
 }
+
+describe('MonacoTabs — callbacks existentes', () => {
+  beforeEach(resetWorld)
+  afterEach(() => {
+    cleanup()
+    resetWorld()
+  })
+  it('não publica o eco normalizado de uma atualização externa do arquivo', async () => {
+    const edits: string[] = []
+    const onChange = (_name: string, value: string) => {
+      edits.push(value)
+    }
+    const { rerender } = render(
+      <MonacoTabs files={[{ name: 'main.py', value: 'print(1)' }]} onChange={onChange} />,
+    )
+    await waitFor(() => expect(currentEditor).not.toBeNull())
+    const model = currentEditor!.getModel()!
+    let writes = 0
+    model.setValue = (source) => {
+      writes++
+      model.value = source.replace(/\r\n|\r/g, '\n')
+      currentChange?.(model.value, {
+        changes: [],
+        eol: '\n',
+        versionId: 2,
+        isUndoing: false,
+        isRedoing: false,
+        isFlush: true,
+        isEolChange: false,
+      })
+    }
+    const source = 'x = 2\r\nprint(x)\n'
+    rerender(<MonacoTabs files={[{ name: 'main.py', value: source }]} onChange={onChange} />)
+    await waitFor(() => expect(model.value).toBe('x = 2\nprint(x)\n'))
+    expect(edits).toEqual([])
+    rerender(<MonacoTabs files={[{ name: 'main.py', value: source }]} onChange={onChange} />)
+    expect(writes).toBe(1)
+  })
+  for (const returned of [1, Promise.resolve(), undefined, {}, { rejectedValue: 1 }])
+    it(`ignora o retorno legado ${String(returned)} sem recusar a edição`, async () => {
+      const received: string[] = []
+      render(
+        <MonacoTabs
+          files={[{ name: 'script.js', value: '' }]}
+          onChange={(_name, value) => {
+            received.push(value)
+            return returned
+          }}
+        />,
+      )
+      await waitFor(() => expect(currentEditor).not.toBeNull())
+      const model = currentEditor!.getModel()!
+      model.setValue('const accepted = 1;')
+      currentChange?.(model.getValue(), {
+        changes: [],
+        eol: '\n',
+        versionId: 2,
+        isUndoing: false,
+        isRedoing: false,
+        isFlush: false,
+        isEolChange: false,
+      })
+      expect(model.getValue()).toBe('const accepted = 1;')
+      expect(received).toEqual(['const accepted = 1;'])
+    })
+})
 
 describe('MonacoTabs — áreas internas recolhidas', () => {
   beforeEach(resetWorld)

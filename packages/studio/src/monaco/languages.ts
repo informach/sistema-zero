@@ -3,6 +3,7 @@ export type CodeLanguage =
   | 'css'
   | 'javascript'
   | 'typescript'
+  | 'python'
   | 'json'
   | 'markdown'
   | 'xml'
@@ -19,9 +20,10 @@ export function inferLanguage(fileName: string): CodeLanguage {
   if (known) return known
   if (/\.html?$/i.test(fileName)) return 'html'
   if (/\.css$/i.test(fileName)) return 'css'
+  if (/\.(?:py|pyi|pyw)$/i.test(fileName)) return 'python'
   // .ts/.tsx usam a linguagem 'typescript' do Monaco (mesma para ambos; o ts
   // worker é configurado com jsx). O preview transpila via Sucrase.
-  if (/\.tsx?$/i.test(fileName)) return 'typescript'
+  if (/\.(?:tsx?|mts|cts)$/i.test(fileName)) return 'typescript'
   // Explícito (não fallback): a árvore PRO permite mjs/cjs/jsx e os extras
   // legados permitem mjs — precisam do language service de JS.
   if (/\.(?:js|mjs|cjs|jsx)$/i.test(fileName)) return 'javascript'

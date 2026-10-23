@@ -9,11 +9,16 @@ import type { AmbassadorEnrollmentView } from '@/lib/types'
 import { PRIMARY_ACTION, SECONDARY_ACTION } from './parent-ui'
 
 /**
- * Card de embaixador da área dos pais: o responsável vira embaixador da
- * indicação do curso Cadê Todo Mundo? com um clique (os dados já são os da conta) e recebe
- * o link da própria página por e-mail. Best-effort: serviço fora → card some.
- * O VALOR do bônus vem do serviço (`bonus.amountCents`) — nunca fica cravado
- * na copy, senão uma mudança de env deixaria esta tela prometendo errado.
+ * Card de embaixador da área dos pais: o responsável vira embaixador do presente com um clique
+ * (os dados já são os da conta) e recebe o link da própria página por e-mail. Desde 20/10/2026 o
+ * presente tem dois públicos: uma família com criança de 9 a 14 anos (Kids) ou um adulto que quer
+ * criar o próprio jogo. O cadastrado copia o link certo para cada um (`shareUrls`); sem
+ * `shareUrls` (referrals antigo), o `shareUrl` é o link Kids.
+ * ⚠️ Regra da dona (20/10/2026): o desenho é o da área dos pais de hoje (faixa lilás, ícone em
+ * cartão branco, `PRIMARY_ACTION`/`SECONDARY_ACTION`). Só o texto muda; a cara da oferta adulta
+ * fica no funil.
+ * Best-effort: serviço fora → card some. O VALOR do bônus vem do serviço (`bonus.amountCents`) —
+ * nunca fica cravado na copy, senão uma mudança de env deixaria esta tela prometendo errado.
  */
 export function AmbassadorCard() {
   const [view, setView] = useState<AmbassadorEnrollmentView | null>(null)
@@ -62,11 +67,11 @@ export function AmbassadorCard() {
     setEnrolling(false)
   }
 
-  async function copyShareUrl(url: string) {
+  async function copyShareUrl(url: string, done: string) {
     try {
       await navigator.clipboard.writeText(url)
       setManualCopy(null)
-      toast.success('Link de bolsa copiado!')
+      toast.success(done)
     } catch {
       // Clipboard bloqueado (permissão/contexto): mostra o link para copiar à
       // mão — nada de window.prompt (padrão que o kids aposentou).
@@ -87,6 +92,9 @@ export function AmbassadorCard() {
   // Bônus liberado + chave vazia = o Pix não tem para onde ir, e só o
   // embaixador resolve (a chave é cadastrada na página dele).
   const needsPixKey = eligible > 0 && view.ambassador?.pixKeySet === false
+  // `shareUrl` é o Kids de sempre: segura o botão da família diante de um referrals antigo.
+  const familyUrl = view.ambassador?.shareUrls?.kids ?? view.ambassador?.shareUrl ?? null
+  const adultUrl = view.ambassador?.shareUrls?.adult ?? null
 
   return (
     <section id="embaixador" className="scroll-mt-24 rounded-(--raio-carta) bg-(--band-lilas) p-6">
@@ -103,23 +111,20 @@ export function AmbassadorCard() {
             </h2>
             {paused ? (
               <p className="mt-1 text-sm text-muted-foreground">
-                Sua página de embaixador está pausada no momento, então os links de bolsa não
+                Sua página de embaixador está pausada no momento, então os links do presente não
                 funcionam. Se quiser reativar, fale com a gente pelo Atendimento aqui da Área dos
                 pais.
               </p>
             ) : view.enrolled && view.ambassador ? (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Compartilhe o seu link e presenteie famílias com 7 dias de acesso ao curso Cadê
-                  Todo Mundo? sem custo, a partir do cadastro pelo link. Se a família depois assinar
-                  a Comunidade dos Criadores, você recebe um agradecimento
-                  {bonusValue ? ` de ${bonusValue}` : ''} por Pix.
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {redeemed} bolsa{redeemed === 1 ? '' : 's'} resgatada{redeemed === 1 ? '' : 's'}
+                  Compartilhe o link certo para cada pessoa: um para uma família, outro para um
+                  adulto. {redeemed} presente{redeemed === 1 ? '' : 's'} resgatado
+                  {redeemed === 1 ? '' : 's'}
                   {bonusTotal > 0
-                    ? ` e ${bonusTotal} bônus a caminho ou pago${bonusTotal === 1 ? '' : 's'}. Os detalhes ficam na sua página.`
-                    : '.'}
+                    ? ` e ${bonusTotal} bônus a caminho ou pago${bonusTotal === 1 ? '' : 's'}.`
+                    : '.'}{' '}
+                  Os detalhes do bônus ficam na sua página.
                 </p>
                 {needsPixKey ? (
                   <p className="mt-2 rounded-xl bg-primary/10 p-2 text-sm text-foreground">
@@ -128,15 +133,22 @@ export function AmbassadorCard() {
                   </p>
                 ) : null}
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {view.ambassador.shareUrl ? (
+                  {familyUrl ? (
                     <button
                       type="button"
                       className={PRIMARY_ACTION}
-                      onClick={() =>
-                        view.ambassador?.shareUrl && copyShareUrl(view.ambassador.shareUrl)
-                      }
+                      onClick={() => void copyShareUrl(familyUrl, 'Link para uma família copiado.')}
                     >
-                      Copiar link de bolsa
+                      Copiar link para uma família
+                    </button>
+                  ) : null}
+                  {adultUrl ? (
+                    <button
+                      type="button"
+                      className={SECONDARY_ACTION}
+                      onClick={() => void copyShareUrl(adultUrl, 'Link para um adulto copiado.')}
+                    >
+                      Copiar link para um adulto
                     </button>
                   ) : null}
                   <a
@@ -169,10 +181,11 @@ export function AmbassadorCard() {
             ) : (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Como embaixador(a), você pode presentear famílias com 7 dias de acesso ao curso
-                  Cadê Todo Mundo? sem custo, a partir do cadastro pelo link. Se uma família
-                  indicada assinar a Comunidade dos Criadores, você recebe um agradecimento
-                  {bonusValue ? ` de ${bonusValue}` : ''} por Pix, depois da garantia de 7 dias.
+                  Como embaixador(a), você pode dar 7 dias no Sistema Zero, sem custo, a outra
+                  família com criança de 9 a 14 anos ou a um adulto que quer criar o próprio jogo.
+                  Se alguém que recebeu o seu presente assinar a Comunidade dos Criadores, Kids ou
+                  adulta, você recebe um agradecimento{bonusValue ? ` de ${bonusValue}` : ''} por
+                  Pix, depois da garantia de 7 dias.
                 </p>
                 {/* Os TERMOS moram aqui, no ponto em que a pessoa se
                     compromete: no funil eles só aparecem depois do primeiro
@@ -200,7 +213,7 @@ export function AmbassadorCard() {
               rel="noreferrer"
               className="mt-3 inline-flex min-h-11 items-center font-bold text-primary text-sm underline-offset-4 hover:underline"
             >
-              Conhecer o programa e o presente que vou oferecer
+              Como funciona o programa
             </a>
           </div>
         </div>

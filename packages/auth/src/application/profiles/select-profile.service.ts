@@ -50,7 +50,7 @@ export class SelectProfileService {
     await assertNotKidsSession(this.refreshTokens, cmd.kidsContext, cmd.refreshToken)
     const profile = await this.profiles.findById(cmd.profileId)
     // Ownership: perfil de outra conta / arquivado → 404 (não vaza a existência).
-    if (!profile?.belongsTo(cmd.accountUserId) || profile.isArchived) {
+    if (!profile?.belongsTo(cmd.accountUserId) || !profile.isSelectable) {
       throw new ProfileNotFoundError()
     }
     const account = await this.users.findById(cmd.accountUserId)

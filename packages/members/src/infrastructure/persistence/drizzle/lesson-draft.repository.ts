@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
+import { liveLessonCompletionIssues } from '@sistemazero/core/course/modality'
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   applyLessonDraftChange,
@@ -8,6 +9,8 @@ import {
   type LessonDraftCommand,
   type LessonDraftDocument,
   type LessonDraftIssue,
+  lessonStudioExampleTransportIssues,
+  lessonStudioProjectExampleIssues,
   restoreFromPublished,
   validateLessonSections,
 } from '@sistemazero/core/learning'
@@ -19,6 +22,7 @@ import {
   assertPintaChainTypeMatches,
   canonicalizeBlockContent,
 } from '../../../application/content-admin/content-admin.service'
+import { blockRevisionFingerprint } from '../../../domain/course/block-revision'
 import { certificateLessonIssues } from '../../../domain/course/certificate-lesson'
 import {
   ContentNotFoundError,
@@ -30,13 +34,14 @@ import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import { importedLearningId } from '../../../domain/learning/learning-import'
 import { LessonDraftConflictError } from '../../../domain/learning/lesson-draft.errors'
 import { publishedLessonRevisions } from '../../../domain/learning/published-lesson-revisions'
-import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
+import type {
+  LessonDraftRepository,
+  StudioDraftRuntimeContext,
+} from '../../../domain/ports/lesson-draft-repository.port'
 import { stableJson } from '../../../domain/shared/stable-json'
-import {
-  DrizzleContentAdminRepository,
-  quizGateFingerprint,
-  studioActivityFingerprint,
-} from './content-admin.repository'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
+import { studioChainCandidate } from '../../../domain/studio/chain-environment'
+import { DrizzleContentAdminRepository, quizGateFingerprint } from './content-admin.repository'
 import { DrizzleCourseRepository } from './course.repository'
 import type { Database } from './db'
 import { lockLessonStructure } from './lesson-structure'
@@ -50,15 +55,17 @@ import {
   lessonStructures,
   lessons,
   quizAttempts,
-  studioSubmissions,
 } from './schema'
+import { studioCurationProjection, studioEnvironmentProjection } from './studio-runtime-projection'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 export type ParsePublishedBlock = (value: unknown) => LessonBlockContent
 const fingerprint = (value: unknown) => createHash('sha256').update(stableJson(value)).digest('hex')
 
 async function publishedSnapshot(tx: Transaction, lessonId: string) {
-  const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId)
+  const lesson = await new DrizzleCourseRepository(tx).findLessonWithContent(lessonId, {
+    includePrivateStudioAuthoring: true,
+  })
   if (!lesson) throw new LessonNotFoundError()
   const [structure] = await tx
     .select()
@@ -125,12 +132,14 @@ async function lockDraft(tx: Transaction, lessonId: string) {
     .from(lessons)
     .where(eq(lessons.id, lessonId))
   if (!lesson) throw new LessonNotFoundError()
-  await tx
-    .select({ id: courses.id })
+  const [course] = await tx
+    .select({ id: courses.id, slug: courses.slug })
     .from(courses)
     .where(eq(courses.id, lesson.courseId))
     .for('update')
+  if (!course) throw new LessonNotFoundError()
   await lockLessonStructure(tx, lessonId)
+  return course
 }
 
 async function readDraft(tx: Transaction, lessonId: string): Promise<LessonDraft> {
@@ -202,6 +211,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
   constructor(
     private readonly db: Database,
     private readonly parseBlock: ParsePublishedBlock,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
   ) {}
 
   async read(lessonId: string) {
@@ -209,6 +219,26 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       await lockDraft(tx, lessonId)
       return readDraft(tx, lessonId)
     })
+  }
+
+  async readStudioRuntimeContext(lessonId: string, blockId: string | null) {
+    // One MVCC snapshot binds metadata to its revision, without loading source/media
+    // into the service, creating drafts or locking course authoring.
+    const [context] = await this.db
+      .select({
+        revision: lessonDrafts.revision,
+        block: sql<StudioDraftRuntimeContext['block']>`(
+        select jsonb_build_object(
+          'kind', block->'content'->'kind',
+          'environment', ${studioEnvironmentProjection(sql`block->'content'->'initialProject'`)},
+          'curation', ${studioCurationProjection(sql`block->'content'`)}
+        ) from jsonb_array_elements(${lessonDrafts.document}->'blocks') as block
+        where block->>'id' = ${blockId} limit 1
+      )`,
+      })
+      .from(lessonDrafts)
+      .where(eq(lessonDrafts.lessonId, lessonId))
+    return context ?? null
   }
 
   private async write(
@@ -220,7 +250,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
     update: (draft: LessonDraft, tx: Transaction) => Promise<LessonDraftDocument>,
   ) {
     return this.db.transaction(async (tx) => {
-      await lockDraft(tx, lessonId)
+      const authoringCourse = await lockDraft(tx, lessonId)
       const draft = await readDraft(tx, lessonId)
       const hash = fingerprint({ authorId, expectedRevision, input })
       const [previous] = await tx
@@ -240,9 +270,14 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
       const document = await update(draft, tx)
       checkDocumentBounds(document)
+      const [exampleIssue] = lessonStudioProjectExampleIssues(document.sections, document.blocks)
+      if (exampleIssue) throw new ValidationError(exampleIssue.message)
+      const [transportIssue] = lessonStudioExampleTransportIssues(document, authoringCourse.slug)
+      if (transportIssue) throw new ValidationError(transportIssue.message)
       for (const block of document.blocks)
-        if (block.content.kind === 'studio')
+        if (block.content.kind === 'studio') {
           assertCurrentStudioAuthoring(block.content.initialProject)
+        }
       const revision = randomUUID()
       const updatedAt = new Date()
       const snapshot = await publishedSnapshot(tx, lessonId)
@@ -314,7 +349,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           !snapshot.compatibleRevisions.includes(draft.publishedRevision)
         )
           throw new LessonDraftConflictError()
-        const content = new DrizzleContentAdminRepository(tx)
+        const content = new DrizzleContentAdminRepository(tx, this.studioPolicy)
         const course = await new DrizzleCourseRepository(tx).findCourseById(
           snapshot.lesson.courseId,
         )
@@ -434,6 +469,7 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
       document.blocks.map((b) => ({ id: b.id, kind: b.content.kind })),
     )
     if (invalid) issues.push({ message: invalid })
+    issues.push(...lessonStudioProjectExampleIssues(document.sections, document.blocks))
     if (document.sections.some((s) => s.pendingMedia.length))
       issues.push({
         message: 'Converta as mídias pendentes em cartões de vídeo antes de publicar.',
@@ -454,8 +490,8 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
     const anexosDaAula = new Set(document.attachments.map((a) => a.id))
     for (const block of document.blocks) {
       try {
-        const content = canonicalizeBlockContent(this.parseBlock(block.content))
-        assertBlockCoherent(content)
+        const content = canonicalizeBlockContent(this.parseBlock(block.content), this.studioPolicy)
+        assertBlockCoherent(content, this.studioPolicy)
         blocks.push({ id: block.id, content })
         if (content.kind === 'ebook') {
           const pdf = document.attachments.find(
@@ -511,7 +547,15 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
   async validate(lessonId: string, expectedRevision: string, readyVideoIds: string[]) {
     const draft = await this.read(lessonId)
     if (draft.revision !== expectedRevision) throw new LessonDraftConflictError()
-    return this.inspect(draft.document, readyVideoIds).issues
+    const courses = new DrizzleCourseRepository(this.db)
+    const lesson = await courses.findLesson(lessonId)
+    const course = lesson ? await courses.findCourseById(lesson.courseId) : null
+    return [
+      ...this.inspect(draft.document, readyVideoIds).issues,
+      ...(course?.modality === 'live'
+        ? liveLessonCompletionIssues(draft.document.blocks, draft.document.sections)
+        : []),
+    ]
   }
 
   async publish(
@@ -535,8 +579,13 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
         )
           throw new LessonDraftConflictError()
         const { issues, blocks } = this.inspect(draft.document, readyVideoIds)
+        const publishingCourse = await new DrizzleCourseRepository(tx).findCourseById(
+          snapshot.lesson.courseId,
+        )
+        if (publishingCourse?.modality === 'live')
+          issues.push(...liveLessonCompletionIssues(draft.document.blocks, draft.document.sections))
         if (issues.length) throw new ValidationError(issues.map((i) => i.message).join('\n'))
-        const content = new DrizzleContentAdminRepository(tx)
+        const content = new DrizzleContentAdminRepository(tx, this.studioPolicy)
         const hadShowcase =
           (await content.listCourseIdsWithShowcaseBlock([snapshot.lesson.courseId])).length > 0
         const ids = blocks.map((b) => b.id)
@@ -544,6 +593,12 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
           .select()
           .from(lessonBlocks)
           .where(eq(lessonBlocks.lessonId, lessonId))
+        // Course lock is already held by write(). Claim BEFORE any old chain is overwritten.
+        await content.claimStudioChains(
+          snapshot.lesson.courseId,
+          blocks.flatMap((block) => studioChainCandidate(block.content)),
+          existingRows.flatMap((block) => studioChainCandidate(block.content)),
+        )
         // Client-provided identities can only create new rows or retain this lesson's own rows.
         if (ids.length) {
           const foreign = await tx
@@ -580,7 +635,9 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
               /* Previously invalid content gets a new revision after repair. */
             }
           }
-          const changed = !old || stableJson(previousContent) !== stableJson(block.content)
+          const changed =
+            !old ||
+            blockRevisionFingerprint(previousContent) !== blockRevisionFingerprint(block.content)
           const values = {
             lessonId,
             kind: block.content.kind,
@@ -595,14 +652,6 @@ export class DrizzleLessonDraftRepository implements LessonDraftRepository {
             .onConflictDoUpdate({ target: lessonBlocks.id, set: values })
           if (old && quizGateFingerprint(old.content) !== quizGateFingerprint(block.content))
             await tx.delete(quizAttempts).where(eq(quizAttempts.blockId, block.id))
-          if (
-            old &&
-            studioActivityFingerprint(old.content) !== studioActivityFingerprint(block.content)
-          )
-            await tx
-              .update(studioSubmissions)
-              .set({ score: null, results: null, checkedAt: null, passedAt: null })
-              .where(eq(studioSubmissions.blockId, block.id))
         }
         // Validate against the final set, avoiding transient conflicts while replacing content.
         if ((await content.countCertificateBlocks(snapshot.lesson.courseId)) > 1)

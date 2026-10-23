@@ -1,0 +1,21 @@
+{
+  "person": "Débora",
+  "role": "Aluna",
+  "source": "C:/Users/tocha/Downloads/FotosHelenaJulio/WhatsApp Image 2026-10-09 at 08.36.33 (1).jpeg",
+  "file": "debora-retrato-real.jpeg",
+  "sha256": "2eb8b39d2abf90339d5abec9f14ab198f07f465daefa5a7d385b7bcc9eb30ccc",
+  "kind": "Foto real enviada pela responsável na pasta FotosHelenaJulio",
+  "aiGenerated": false,
+  "transform": "Somente enquadramento por CSS. Fonte integral preservada; sem recriação, retoque, alteração de rosto, remoção de fundo ou síntese de cena.",
+  "crop": {
+    "frame": {
+      "width": 740,
+      "height": 600
+    },
+    "image": {
+      "width": 900,
+      "left": -110,
+      "top": -20
+    }
+  }
+}

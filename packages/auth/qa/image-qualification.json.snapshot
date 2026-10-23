@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-22T22:33:51.0436516Z",
+  "state": "LOCAL_IMAGE_PILOT_PARTIALLY_QUALIFIED",
+  "sources": [
+    {
+      "path": "packages/auth/Dockerfile",
+      "sha256": "2f94c19d3f07e262b02f211f1fe59d76b23acff8410517d527897e659058a490"
+    },
+    {
+      "path": "packages/auth/package.json",
+      "sha256": "790cf7107684708b1c55b0e925c2a3c72ccd9e94e7f444141e6ad7f0bf656e87"
+    },
+    {
+      "path": "bun.lock",
+      "sha256": "c76a0e416067f840dd96ff6c57e0fc1653632befb14c91cdb8eeefc75414c441"
+    },
+    {
+      "path": "packages/auth/src/composition-root.ts",
+      "sha256": "f150afb7cfea2a23d9d8f13a0dbf2e72a40bd005a05e79f2e6f6fff7cf7291cd"
+    },
+    {
+      "path": "packages/auth/qa/image-smoke.mjs",
+      "sha256": "6b18b7f6d4eb5cb28fcb29fa68e0cb612ba66762164ee61f8a99e64fc4707865"
+    },
+    {
+      "path": "packages/auth/qa/image-database-smoke.mjs",
+      "sha256": "d19e5bd42a303643e5cb1885c12ff16acd4dd9f4acc50cf772450cd9de684a25"
+    }
+  ],
+  "qualification": {
+    "staticR1": {
+      "state": "IMAGE_STATIC_SMOKE_PASSED",
+      "bun": "1.4.4",
+      "uid": 1000,
+      "workspaces": [
+        "auth",
+        "core"
+      ],
+      "migrationEntries": 26,
+      "migrationJournalSha256": "240cac26ffd1e17dd55b73026e2eb6911bdd2e34c28b0265a3b44e03ca6c68f6",
+      "migrationsApplied": false,
+      "applicationBooted": false,
+      "runtimeStartGraph": true,
+      "migrationCli": true,
+      "argon2id": true,
+      "maintenanceWrapper": true,
+      "maintenanceDoesNotImportApplication": true
+    },
+    "controlledPurgeLockR2": {
+      "state": "IMAGE_DATABASE_SMOKE_PASSED",
+      "uid": 1000,
+      "bun": "1.4.4",
+      "migrationsBefore": 26,
+      "migrationsAfter": 26,
+      "migrationReplayUnchanged": true,
+      "emptyAccountsPreserved": true,
+      "productionEnvGuards": true,
+      "readyz": true,
+      "unauthenticatedInternalStatus": 401,
+      "gracefulStop": true,
+      "purgeDrainedBeforePoolClose": true,
+      "startCommand": [
+        "bun",
+        "/app/scripts/release/start.mjs",
+        "packages/auth/src/index.ts"
+      ],
+      "realMembersOrMessaging": false
+    },
+    "pid1": "PENDING_NOT_EXECUTED_AUTOMATIC_REVIEW_BLOCKED",
+    "productionDeployment": false,
+    "hosted": false,
+    "membersOrMessagingReal": false,
+    "performance": false,
+    "registryCompressedBytes": false,
+    "priorFullMonorepoImageComparison": false
+  },
+  "images": [
+    {
+      "name": "r1",
+      "dockerExposedId": "sha256:248c061cd478a1f641ba853bcbd2233acc4f27d45e2f53dc21183243f22d3114",
+      "dockerInspectSizeBytes": 571260278,
+      "buildKitExportedIndex": "sha256:248c061cd478a1f641ba853bcbd2233acc4f27d45e2f53dc21183243f22d3114",
+      "buildKitPlatformManifest": "sha256:1b393f9df661125635a1a2eb02abb13db8266e5e3a12ae9af66279cb068e1725",
+      "buildKitConfig": "sha256:485d0bc65832b3376a34f5d7e4b713b1e9b3fac9982d4b160ff8e449357e9d05"
+    },
+    {
+      "name": "r2",
+      "dockerExposedId": "sha256:1dea0cafcf18db7c9b9c1246ec307db98563f0b4740bfeab25e8a229610fac41",
+      "dockerInspectSizeBytes": 571260321,
+      "buildKitExportedIndex": "sha256:1dea0cafcf18db7c9b9c1246ec307db98563f0b4740bfeab25e8a229610fac41",
+      "buildKitPlatformManifest": "sha256:19c2e20f72fb4476c6d3b874b07e379262e56c1929633b1e33ffeb4be73b2a43",
+      "buildKitConfig": "sha256:fd14c5cb6eeef1f89a4840772f975310e8f15f8a3fc384f52f9e48a410d630f1"
+    }
+  ],
+  "migrationEvidence": {
+    "initialDatabaseHadNoJournal": true,
+    "initialHeadAfterMigration": 26,
+    "replayHashesUnchanged": true,
+    "initialOverallRunPassed": false,
+    "initialFailure": "QA collector reread a consumed stream after migration and HTTP assertions",
+    "laterGreenMigrationsBefore": 26,
+    "laterGreenMigrationsAfter": 26
+  },
+  "causalEvidence": {
+    "controlledTable": "auth.refresh_tokens",
+    "queryIdentity": [
+      "database",
+      "application_name",
+      "pid",
+      "DELETE",
+      "Lock wait"
+    ],
+    "observationWindowMs": 6000,
+    "poolCloseTimeoutMs": 5000,
+    "oldImageExitedBeforeLockRelease": true,
+    "newImageAwaitedLockRelease": true,
+    "artificialPool2NegativesNotUsedAsCausalProof": true,
+    "workspaceSubprocessNegativeNotAttributedToDockerPid1": true
+  },
+  "evidence": [
+    {
+      "name": "build-r1",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/build.log",
+      "sha256": "90f2b949cf4158c417af3dc58b482990c3d98522aec71d392b17aab9065a970a",
+      "bytes": 8903,
+      "status": "BUILT"
+    },
+    {
+      "name": "static-r1",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/static-smoke-3.log",
+      "sha256": "05736b981884b162177d3131b974c22e61d3bf5a466fffd468a8bfaf36d1edc8",
+      "bytes": 389,
+      "status": "PASSED"
+    },
+    {
+      "name": "database-initial",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/database-smoke-2.log",
+      "sha256": "195087b0c67037cbdeb06327d4747c56871a5b8f13e64589a7eeb0a561ce2280",
+      "bytes": 489,
+      "status": "FAILED_QA_STREAM_COLLECTOR_AFTER_MIGRATION_CHECKS"
+    },
+    {
+      "name": "database-pool2-r3",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/database-smoke-wrapper-3.log",
+      "sha256": "391de1a469e13c77ce22c2a29e33e3c8109c51c7c176c0fe4366fc053cf0053f",
+      "bytes": 786,
+      "status": "FAILED_NOT_ISOLATED_SHUTDOWN_PROOF"
+    },
+    {
+      "name": "database-pool2-r4",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/database-smoke-wrapper-4.log",
+      "sha256": "29e3110ce092b21baaa20e3195af4151d2dd12028e71d2e3a5e9e1fb762899a3",
+      "bytes": 1612,
+      "status": "FAILED_NOT_ISOLATED_SHUTDOWN_PROOF"
+    },
+    {
+      "name": "build-r2",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/build-2.log",
+      "sha256": "c197341eb03d649c5b2d48682548f04ff95835b1ea1656200761bd961c54636e",
+      "bytes": 3376,
+      "status": "BUILT"
+    },
+    {
+      "name": "old-image-controlled-lock",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/purge-lock-old-wrapper-r1.log",
+      "sha256": "ce71e44f9f030799e86287e32ed0aef99287b30388eb8395caa945e2d9230c56",
+      "bytes": 723,
+      "status": "EXPECTED_RED_EARLY_EXIT"
+    },
+    {
+      "name": "new-image-controlled-lock-wrapper",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/purge-lock-new-wrapper-r1.log",
+      "sha256": "20bc3ed600ee073416a9d1ef67e440cab6bee12daba2fb094bc529b6e8546a73",
+      "bytes": 419,
+      "status": "PASSED"
+    },
+    {
+      "name": "new-image-workspace-subprocess",
+      "path": ".cache/python-reference-games/auth-image-closure-r1/purge-lock-new-workspace-r1.log",
+      "sha256": "427c35f5e5e81cc8909103443cead6add73a399ca15920411bd8873c62f39170",
+      "bytes": 701,
+      "status": "FAILED_SIGTERM_ACK_DEADLINE"
+    }
+  ],
+  "cleanup": {
+    "qaApplicationContainersAbsent": true,
+    "qaNetworkAbsent": true,
+    "ownedPostgresStopped": true,
+    "qaDatabaseRetained": true,
+    "preexistingUserContainersUntouched": true
+  },
+  "limitations": [
+    "No PID1 Docker signal proof: automatic approval review rejected both proposed executions before CreateProcess, without an additional reason.",
+    "No preexisting full-monorepo Auth image was available for size comparison.",
+    "Static smoke ran against r1; r2 changed only composition-root purge lifecycle and passed the controlled PostgreSQL wrapper test.",
+    "The initial migration0-to26 proof completed its checks but the full run failed in the QA collector; its receipt is not a pass.",
+    "The final image retains dependency package contents and Bun node_modules store; it excludes project QA/docs/unrelated workspace source and installer cache."
+  ],
+  "preparedOperator": {
+    "privatePath": ".cache/python-reference-games/auth-image-closure-r1/pid1-operator.mjs",
+    "sha256": "9ed841c6bc2de2de1523918e203438d2fa4ef416440b5ac22181d1e8ec3cd1a5",
+    "executed": false,
+    "syntaxChecked": true
+  }
+}

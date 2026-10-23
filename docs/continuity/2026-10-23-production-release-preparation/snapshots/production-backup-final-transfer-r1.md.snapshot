@@ -1,0 +1,57 @@
+# Cópia durável FINAL dos cinco escritores — preparo privado
+
+Somente Root executa após revisão e após existir o recibo final real. Esta preparação não fez GET/PUT, não leu identidade ou ciphertext reais e não executou age, SQL, SSH, Docker ou restore. Não altera os operadores, intenções ou recibos históricos de rehearsal.
+
+## Entrada e alcance
+
+O novo caller exige o SHA externo e o caminho de um recibo `production-postgres-final-affected-backup` v1, produzido pela fonte `production-postgres-final-backup-r1.mjs` SHA `ef6a30d051f22e37120f601fbe69fdba7fa9c11edfbb5b04d6c90f610a349fba`, em estado `FINAL_AFFECTED_WRITERS_BACKUP_RESTORE_VERIFIED`.
+
+Exige explicitamente `affectedWritersFenced:true`, `allProductionWritersFenced:false`, `fenceVerifiedAroundCapture:true`, `finalPreMigrationBackup:true`, `restoreQualified:true`, `finalCiphertextVerified:true`, ausência de migração e somente uma captura. Confere o manifesto por bytes/SHA, os cinco alvos de produção e as observações antes/depois, capture completo, EOF autenticado, restauração integral e remoção do clone próprio. Recusa o recibo e o arquivo do rehearsal. O operador antigo também continua recusando recibos finais.
+
+Os cinco escritores são Kids, Adult, Admin, Hub e Members. A observação é a do intervalo da captura, preservada no recibo final; este caller não reconsulta nem declara que todos os escritores continuam bloqueados agora. A cópia é de **um banco**, sem prova de recuperação de roles/ACL de cluster, R2, proxies IA ou outros bancos. `allProductionWritersFenced` e `clusterRollbackQualified` permanecem false. A preparação não autoriza migrações nem reabre aplicações.
+
+## Reuso e delta completo
+
+São somente três arquivos novos: `production-backup-final-transfer-r1.mjs`, `.test.ts` e este `.md`. Nenhuma alteração nos arquivos históricos.
+
+- Reusa diretamente do transfer r2: `missingObject`, `catalogDisabled`, `executionEnvironment`, `downloadExclusive` e os argumentos GET/auth/catalog oficiais. Mantém a negativa exata que admite somente stdout vazio ou o único LF comprovado do logger Wrangler.
+- Reusa `writeOnce`, `validateBucket` e `assertAcl` do store r2. O pequeno trecho ACL local é idêntico ao revisado e usa o mesmo pwsh7 pinado.
+- Acrescenta entrada final explícita, validação do recibo/manifesto final, prefixo de objeto `final/` e intenção global final separada.
+- Usa `verifyEncryptedDump` e `requireVerifiedBytes` canônicos para autenticar o **download** até EOF com `backup-identity-recovered.agekey`. Não implementa criptografia, SQL ou verificação de restore paralela.
+
+O transporte mantém Node24.22.0/Windows, Wrangler4.120.1 e sua CLI em bytes fixos; conta `bcc0f2d44140e05b69152cba326132f8`, bucket `sistemazero-release-backups-production`. O arquivo cifrado deve estar no diretório privado já criado por Root, ter nome terminado em `.dump.age`, não ser o rehearsal, alias ou link. Tamanho máximo de ciphertext 300MiB corresponde ao limite do PUT da CLI; plaintext esperado limita-se a 1GiB. Ausência de suporte a arquivo maior é recusa, não truncamento ou multipart improvisado.
+
+## Comando reservado a Root
+
+Ainda não há aqui pin ou ID inventado para o backup final. Root preencherá **ambos** os valores abaixo a partir do recibo FINAL real, depois de revisar esta fonte. Não usar recibo do rehearsal.
+
+```powershell
+$backupNode = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'
+$finalReceiptPath = '<.cache/python-reference-games/production-postgres-final-RUN/receipt.json real>'
+$finalReceiptSha256 = '<SHA256 real externo de 64 hex>'
+& $backupNode './.cache/python-reference-games/production-backup-final-transfer-r1.mjs' production-backup-final-transfer-root-r1 $finalReceiptPath $finalReceiptSha256
+```
+
+O parser recusa os placeholders. Saída nova `.cache/python-reference-games/<run>/receipt.json`, sincronizada como RUNNING antes da primeira chamada de provedor. Objeto novo `final/<run>/<cipherSHA>.dump.age`. Download novo fora Git: `<diretório privado>/<run>.download.dump.age`, aberto com `wx`, fsync e conferência dos bytes efetivamente gravados. A identidade recuperada é o arquivo fixo `backup-identity-recovered.agekey` no mesmo diretório; seu conteúdo ou SHA não é colocado no recibo ou em argv. Somente o caminho é passado ao age. Nenhuma identidade é gerada ou rotacionada.
+
+## Execução, sucesso e falhas
+
+1. Confere fontes/CLI/configuração/recibo/manifesto por SHA, arquivo cifrado por tamanho/SHA/caminho real e ACLs do diretório e identidade recuperada.
+2. GETs somente de metadados confirmam bucket privado, nenhum domínio público e nenhuma expiração de objetos; o comando oficial confirma data catalog desabilitado. GET oficial da nova chave deve retornar a negativa exata conhecida, sem dados.
+3. Cria e sincroniza **uma intenção global permanente** `.cache/python-reference-games/production-backup-final-r1-upload.intent.json`, independente de run/SHA. Faz uma invocação PUT oficial, sem force ou expiração. Mudança de run/recibo não permite replay automático.
+4. Mesmo com ACK perdido, faz o readback independente previsto uma vez: download GET oficial, arquivo exclusivo, tamanho/SHA exatos, ACL. Chama age decrypt com a identidade recuperada; plaintext passa somente por medidor de bytes/hash e sink, nunca é registrado ou gravado. Exige EOF autenticado, bytes/digests iguais ao restore já qualificado e fechamento observado dos próprios filhos.
+5. Confere novamente o ciphertext original, pins do recibo/manifesto e bucket/catalog. Somente ACK positivo **e** readback/EOF completos dão `FINAL_AFFECTED_BACKUP_DURABLE_COPY_VERIFIED` com `durableCopyQualified:true`.
+
+ACK perdido permanece `ACK_UNKNOWN_READBACK_MATCHED` ou `ACK_UNKNOWN_READBACK_UNCONFIRMED`, `remoteOutcomeUnknown:true`, exit1, mesmo se o download foi autenticado. ACK positivo com download/EOF recusado permanece `ACK_READBACK_UNCONFIRMED`, nunca qualificado. Root reconcilia; não apagar a intenção nem repetir. Arquivo cifrado vazio/parcial de falha permanece para diagnóstico. O recibo registra hashes de ciphertext, contexto público, contagens e booleanos; não grava chave, token, stdout/stderr bruto, plaintext ou hash do plaintext.
+
+Prazo total300s, filhos CLI até90s, GET de metadados até15s/1MiB, ausência/textos até64KiB, download limitado ao tamanho esperado+64KiB. O age recebe somente o prazo restante. Nenhum retry do caller, nenhum outro bucket, criação de recursos ou operação de deploy.
+
+Wrangler não oferece create-only/If-None-Match neste PUT. Chave nova + GET ausente + intenção exclusiva dependem da exclusividade externa de Root; não se afirma CAS ou object lock. O ramo interno data-catalog10081 da CLI pode reenviar: exige-se catalog desabilitado antes/depois e nenhuma mudança concorrente; saída que indique esse ramo não confirma o ACK. Contam-se invocações do caller, sem prometer observar todos os HTTP internos. São os mesmos limites explícitos do transfer r2.
+
+## Provas inertes
+
+```powershell
+bun --no-env-file test ./.cache/python-reference-games/production-backup-final-transfer-r1.test.ts
+```
+
+12 testes, 83 asserções, zero falhas, exit0. Verificam separação final/rehearsal; contexto dos cinco escritores; negativos de fence, EOF, restore, cleanup e limite; destino e argv; identidade recuperada/pino age; ACK perdido; bloqueio de replay por novo run/SHA; download corrompido; fontes históricas intactas e import Node24 sem processo de provedor ou fetch. Fixtures são metadados inertes e funções injetadas, não recibos de operações ou qualificação criptográfica real. O fechamento operacional ainda depende da execução única de Root com o futuro recibo final.

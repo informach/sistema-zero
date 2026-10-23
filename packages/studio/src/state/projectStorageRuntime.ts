@@ -8,10 +8,13 @@ export interface ProjectStorageScope {
   readonly namespace: string
   readonly identity: string
   readonly store: ReturnType<typeof createStore>
+  /** Active-profile lifetime; captured storage operations may still finish in their own store. */
+  readonly signal?: AbortSignal
 }
 
 let storageNamespace = ''
 let currentScope: ProjectStorageScope | null = null
+let activeScopeLifetime = new AbortController()
 
 function databaseName(namespace: string): string {
   return namespace ? `sistema-zero-studio-${namespace}` : 'sistema-zero-studio'
@@ -50,14 +53,20 @@ export function createProjectStorageScope(namespace: string): ProjectStorageScop
 export function setProjectStorageNamespace(namespace: string): void {
   const next = namespace.trim()
   if (next === storageNamespace) return
+  const previousLifetime = activeScopeLifetime
   storageNamespace = next
+  activeScopeLifetime = new AbortController()
   currentScope = null
+  previousLifetime.abort()
 }
 
 /** Captura atômica do namespace + handle usados durante uma operação inteira. */
 export function captureProjectStorageScope(): ProjectStorageScope {
   if (!currentScope) {
-    currentScope = createProjectStorageScope(storageNamespace)
+    currentScope = Object.freeze({
+      ...createProjectStorageScope(storageNamespace),
+      signal: activeScopeLifetime.signal,
+    })
   }
   return currentScope
 }

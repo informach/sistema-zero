@@ -1,315 +1,385 @@
+// O resultado em conversa do quiz v6 (20/10/2026): monta a carta de cada ramo a partir das
+// respostas. Puro: sem IO, sem preço. O componente `ResultadoConversa.astro` desenha.
+import type { BlocoConversa, ResultadoConversa } from '../../../content/resultado-conversa'
 import type { QuizAnswers } from '../../../lib/quiz-types'
 import { comunidadeOfferPath } from '../oferta'
-import { type CommunityProfile, type Condition, communityDecision, PROFILE_IDS } from './engine'
+import { legendaDoRelato } from '../oferta/pagina-9a17'
+import { RELATOS } from '../oferta/relatos'
+import type { RelatoId } from '../oferta/types'
+import { visualDe } from '../oferta/visuals'
 import {
-  ACTIVITY_VARIANTS,
-  CHOOSING_ACTIVITY,
-  COMMUNITY_INTRO,
-  PRIMARY_COPY,
-  RESULT_COPY,
-  type ResultSection,
-  SECONDARY_CONTEXT,
-} from './result-copy'
+  type CommunityProfile,
+  communityDecision,
+  type Decision917,
+  type DecisionM9,
+  type M9Profile,
+  PROFILE_IDS,
+  PROFILE_IDS_M9,
+  QUIZ_VERSION,
+  quizRevision,
+} from './engine'
+import { flexionar } from './genero'
+import {
+  APPROXIMATE_NOTE,
+  ASSINATURA_KIDS,
+  CALCULADORA,
+  CENA,
+  CENA_DESEJADA,
+  COMMUNITY_OPENING,
+  CONDITION_SENTENCE,
+  CRIACAO,
+  CTA_WITH_UNMET_CONDITION,
+  ESCOLA,
+  IDADE,
+  NEED_SENTENCE,
+  NEXT_917,
+  NEXT_WITH_UNMET_CONDITION,
+  PERFIS_917,
+  PREOCUPACAO,
+  QUANDO_TRAVA,
+  SCHOOL_CHANGE_ADD,
+  SCHOOL_CHANGE_REPLACE,
+  SCHOOL_CHANGE_TITLE,
+  SCHOOL_THESIS,
+  SCHOOL_TITLE,
+  SCHOOL_VISUAL,
+  SCHOOL_WHERE,
+  SCHOOL_WHY_TITLE,
+  SECONDARY_SENTENCE,
+  SINTESE,
+  THESIS_A_END,
+  TITLE_A_GOOD_PART,
+  TITLE_F_NUMBERS,
+  TRAVA_SENTENCE,
+  WISH_SCENE_SENTENCE,
+  WORRY_SENTENCE,
+} from './result-copy-9a17'
+import {
+  CENA_DESEJADA_M9,
+  CENA_M9,
+  COMPUTADOR_M9,
+  FALTA,
+  IMAGEM_M9,
+  IRMAO_M9,
+  LEITURA,
+  LEITURA_SESSAO,
+  NEED_M9,
+  NEXT_M9,
+  ONDE_LEITURA,
+  ONDE_M9,
+  OUVIR_E_TESTAR,
+  PERFIS_M9,
+  PREOCUPACAO_M9,
+  RELATO_M9,
+  SECONDARY_M9,
+  SINTESE_M9,
+  TEMPO_JUNTOS,
+  TEMPO_SESSAO,
+  WISH_SCENE_M9,
+  WORRY_NONE,
+  WORRY_OTHER,
+  WORRY_SAME,
+} from './result-copy-m9'
 
-const moduleCopy = (key: string): ResultSection => {
-  const section = RESULT_COPY[key]?.[0]
-  if (!section) throw new Error(`Módulo de resultado ausente: ${key}`)
-  return section
+type Opener = 'cena' | 'preocupacao' | 'sintese' | 'cena_desejada'
+
+const text = (answers: QuizAnswers, key: string) => String(answers[key] ?? '')
+const juntar = (...partes: (string | false | null | undefined)[]) =>
+  partes.filter((p): p is string => Boolean(p)).join(' ')
+const minuscula = (s: string) => s.charAt(0).toLowerCase() + s.slice(1)
+
+/** A tela real de cada carta, com uma legenda curta (sem a pergunta do nome do curso). */
+const IMAGENS_917: Record<string, { frame: string; legenda: string }> = {
+  'aula-estudio': {
+    frame: 'aula-estudio',
+    legenda: 'A aula com o vídeo e a fala do Zappy de um lado e a atividade no Estúdio do outro',
+  },
+  'estudio-jardim': {
+    frame: 'estudio',
+    legenda: 'O Estúdio com os blocos do jardim e o jogo rodando ao lado',
+  },
+  estudio: {
+    frame: 'estudio',
+    legenda: 'O Estúdio com os blocos de um lado e o jogo rodando do outro',
+  },
+  integracao: {
+    frame: 'integracao',
+    legenda:
+      'A janela Trazer do Pinta, dentro do Estúdio, com o cavaleiro desenhado pronto para o jogo',
+  },
+  contador: {
+    frame: 'contador',
+    legenda: 'O contador de achados muda quando um personagem é encontrado',
+  },
+  regra: {
+    frame: 'regra',
+    legenda:
+      'O experimento do jardim: com a reação ao toque ligada, o arbusto some e o coelho aparece',
+  },
 }
-const paragraphs = (key: string) => moduleCopy(key).paragraphs
-const SUPPORT: Record<string, string> = {
-  rever: 'costuma rever uma explicação',
-  pessoa: 'costuma procurar uma pessoa',
-  experimentar: 'costuma experimentar alternativas',
-  varia: 'varia conforme a atividade',
-  nao_observou: 'ainda falta observar',
-}
-const DOUBT: Record<string, string> = {
-  interesse: 'interesse',
-  comeco: 'começo',
-  ajuda: 'ajuda',
-  aprendizagem: 'acompanhar a aprendizagem',
-  rotina: 'rotina',
-  investimento: 'investimento',
-}
-const PAIRS: Record<string, [number, CommunityProfile]> = {
-  AB: [1, 'B'],
-  AC: [2, 'C'],
-  AD: [3, 'D'],
-  BC: [4, 'C'],
-  BD: [5, 'B'],
-  CD: [6, 'C'],
-}
-const VISUALS: Record<CommunityProfile, string[]> = {
-  A: ['aula-estudio'],
-  B: ['regra'],
-  C: ['integracao'],
-  D: ['jornada', 'aprendizagem'],
+/** O quadro da sequência que melhor mostra cada tela (a integração mostra o Trazer do Pinta). */
+const QUADRO: Record<string, number> = { integracao: 1, regra: 1 }
+
+function imagem917(id: string): BlocoConversa {
+  const escolhida = IMAGENS_917[id]
+  if (!escolhida) throw new Error(`Tela sem legenda no resultado: ${id}`)
+  const visual = visualDe(escolhida.frame)
+  const frame = visual?.frames[QUADRO[escolhida.frame] ?? 0] ?? visual?.frames[0]
+  if (!frame) throw new Error(`Tela inexistente: ${escolhida.frame}`)
+  return {
+    tipo: 'img',
+    src: `/img/comunidade-dos-criadores/${frame.file}`,
+    legenda: escolhida.legenda,
+    largura: frame.width,
+    altura: frame.height,
+  }
 }
 
-export function buildCommunityResult(answers: QuizAnswers) {
+/** O relato e a frase que o apresenta ("O Daniel, pai do Rafael, viu isso acontecer em casa:"). */
+function relato917(id: RelatoId): BlocoConversa[] {
+  const r = RELATOS[id]
+  const feminino = /^(Aluna|Mãe)/.test(r.papel)
+  const responsavel = /^(Pai|Mãe)/.test(r.papel)
+  const intro = `${feminino ? 'A' : 'O'} ${legendaDoRelato(id)}, ${
+    responsavel ? 'viu isso acontecer em casa:' : 'contou assim:'
+  }`
+  return [
+    { tipo: 'p', texto: intro },
+    {
+      tipo: 'relato',
+      texto: r.fala,
+      autor: legendaDoRelato(id),
+      foto: `/img/comunidade-dos-criadores/${r.retrato}`,
+    },
+  ]
+}
+
+function opener917(answers: QuizAnswers, p: CommunityProfile): Opener {
+  if (answers.cena === p) return 'cena'
+  if (answers.preocupacao === p) return 'preocupacao'
+  if (answers.sintese === p) return 'sintese'
+  return 'cena_desejada'
+}
+
+function carta917(answers: QuizAnswers, d: Decision917): ResultadoConversa {
+  const p = d.profile
+  const copy = PERFIS_917[p]
+  const escola = text(answers, 'escola')
+  const wish = text(answers, 'cena_desejada')
+  const trava = text(answers, 'quando_trava')
+  const opener = opener917(answers, p)
+  const f = (s: string) => flexionar(s, d.gender)
+
+  const abertura =
+    opener === 'cena'
+      ? `[[${CENA[p]}]]`
+      : opener === 'preocupacao'
+        ? `o que mais preocupa é [[${PREOCUPACAO[p]}]]`
+        : opener === 'sintese'
+          ? `o que você mais quer é [[${SINTESE[p]}]]`
+          : `a cena que você quer ver é [[${CENA_DESEJADA[p]}]]`
+  const travou =
+    trava === 'nao_reparou'
+      ? 'e que você [[ainda não reparou]] no que ele faz quando algo não dá certo num jogo.'
+      : `e que, quando algo não dá certo num jogo, [[${QUANDO_TRAVA[trava]}]].`
+  const primeiro = `Você contou que ele tem [[${IDADE[text(answers, 'idade')]}]], que ${abertura} ${travou} ${copy.openingEnd}`
+
+  const calculadora = `${CALCULADORA[text(answers, 'tempo_tela')]} em jogos e vídeos, e ${CRIACAO[text(answers, 'tempo_criacao')]}.`
+  const preocupa =
+    answers.preocupacao === p && opener !== 'preocupacao'
+      ? WORRY_SENTENCE.replace('{preocupacao}', PREOCUPACAO[p] ?? '')
+      : ''
+  const porque =
+    p === 'F'
+      ? juntar(
+          `Na escola, ${ESCOLA[escola]}.`,
+          SCHOOL_THESIS[escola] ?? copy.thesis,
+          `E o tempo de tela já está aí: ${minuscula(calculadora)}`,
+          preocupa,
+        )
+      : p === 'A'
+        ? juntar(
+            calculadora,
+            copy.thesis,
+            answers.tempo_criacao === 'boa_parte' ? THESIS_A_END.boa_parte : THESIS_A_END.padrao,
+            preocupa,
+          )
+        : juntar(calculadora, copy.thesis, preocupa)
+
+  const testeFalhou = TRAVA_SENTENCE[trava]!.replace(
+    '{se}',
+    p === 'B' ? 'Se não fez' : 'Se não deu certo',
+  )
+  const muda = juntar(
+    p === 'F' && SCHOOL_CHANGE_REPLACE[escola] ? SCHOOL_CHANGE_REPLACE[escola] : copy.change,
+    testeFalhou,
+    p === 'F' && !SCHOOL_CHANGE_REPLACE[escola] ? SCHOOL_CHANGE_ADD[escola] : '',
+    opener === 'cena_desejada' ? '' : WISH_SCENE_SENTENCE[wish],
+    d.secondary && d.secondary !== wish ? SECONDARY_SENTENCE[d.secondary] : '',
+  )
+
+  const condicional = [
+    CONDITION_SENTENCE.ferramenta[text(answers, 'ferramenta')],
+    CONDITION_SENTENCE.desenho[text(answers, 'desenho')],
+    CONDITION_SENTENCE.reforco[text(answers, 'escola')],
+  ]
+  const precisa = juntar(
+    NEED_SENTENCE[text(answers, 'garantia')],
+    ...condicional,
+    CONDITION_SENTENCE.computador[text(answers, 'computador')],
+  )
+
+  const titulo =
+    p === 'A' && answers.tempo_criacao === 'boa_parte'
+      ? TITLE_A_GOOD_PART
+      : p === 'F'
+        ? (SCHOOL_TITLE[escola] ?? (opener === 'cena' ? copy.title : TITLE_F_NUMBERS))
+        : copy.title
+  const semCondicao = d.unmet.length > 0
+  const destino = comunidadeOfferPath('9a17')
+  const blocos: BlocoConversa[] = [
+    { tipo: 'p', texto: f(primeiro) },
+    { tipo: 'h', texto: f((p === 'F' && SCHOOL_WHY_TITLE[escola]) || copy.whyTitle) },
+    { tipo: 'p', texto: f(porque) },
+    { tipo: 'h', texto: f((p === 'F' && SCHOOL_CHANGE_TITLE[escola]) || copy.changeTitle) },
+    { tipo: 'p', texto: f(muda) },
+    { tipo: 'h', texto: 'Onde isso acontece' },
+    {
+      tipo: 'p',
+      texto: f(`${COMMUNITY_OPENING} ${(p === 'F' && SCHOOL_WHERE[escola]) || copy.where}`),
+    },
+    imagem917((p === 'F' && SCHOOL_VISUAL[escola]) || copy.visual),
+    ...relato917(copy.relato),
+    { tipo: 'h', texto: 'O que você disse que precisa' },
+    { tipo: 'p', texto: f(precisa) },
+    {
+      tipo: 'cta',
+      texto: f(semCondicao ? NEXT_WITH_UNMET_CONDITION : NEXT_917),
+      rotulo: f(semCondicao ? CTA_WITH_UNMET_CONDITION : copy.cta),
+      href: destino,
+    },
+  ]
+  return {
+    tema: 'kids',
+    titulo: f(titulo),
+    ...(d.state === 'perfil_aproximado' ? { aviso: APPROXIMATE_NOTE } : {}),
+    blocos,
+    assinatura: ASSINATURA_KIDS,
+    perfil: PROFILE_IDS[p],
+    destino,
+    evento: eventoDo(answers, d, destino),
+  }
+}
+
+function openerM9(answers: QuizAnswers, p: M9Profile): Opener {
+  const comoPerfil = (v: unknown) => (v === 'A2' ? 'A' : v)
+  if (answers.m9_cena === p) return 'cena'
+  if (answers.m9_preocupacao === p) return 'preocupacao'
+  if (answers.m9_sintese === p) return 'sintese'
+  return comoPerfil(answers.m9_cena_desejada) === p ? 'cena_desejada' : 'sintese'
+}
+
+function cartaM9(answers: QuizAnswers, d: DecisionM9): ResultadoConversa {
+  const p = d.profile
+  const copy = PERFIS_M9[p]
+  const leitura = text(answers, 'm9_leitura')
+  const tempo = text(answers, 'm9_tempo_juntos')
+  const wish = text(answers, 'm9_cena_desejada')
+  const preocupacao = text(answers, 'm9_preocupacao')
+  const opener = openerM9(answers, p)
+  const f = (s: string) => flexionar(s, d.gender)
+
+  const abertura =
+    opener === 'cena'
+      ? `[[${CENA_M9[p]}]]`
+      : opener === 'preocupacao'
+        ? `o que mais preocupa é [[${PREOCUPACAO_M9[p]}]]`
+        : opener === 'sintese'
+          ? `o que você mais quer é [[${SINTESE_M9[p]}]]`
+          : `a cena que você quer ver é [[${CENA_DESEJADA_M9[wish]}]]`
+  const primeiro = juntar(
+    `Você contou que ele tem [[menos de 9 anos]], que [[${LEITURA[leitura]}]] e que ${abertura}.`,
+    TEMPO_JUNTOS[tempo]?.texto,
+    TEMPO_JUNTOS[tempo]?.fecho,
+  )
+  const preocupa =
+    opener === 'preocupacao'
+      ? ''
+      : preocupacao === p
+        ? WORRY_SAME.replace('{preocupacao}', PREOCUPACAO_M9[p] ?? '')
+        : PREOCUPACAO_M9[preocupacao]
+          ? WORRY_OTHER.replace('{preocupacao}', PREOCUPACAO_M9[preocupacao] ?? '')
+          : WORRY_NONE
+  const porque = juntar(copy.why.replace('{falta}', FALTA[leitura] ?? ''), preocupa)
+  const wishProfile = wish === 'A2' ? 'A' : wish
+  const muda = juntar(
+    copy.change,
+    LEITURA_SESSAO[leitura],
+    OUVIR_E_TESTAR,
+    opener === 'cena_desejada' ? '' : WISH_SCENE_M9[wish],
+    d.secondary && d.secondary !== wishProfile ? SECONDARY_M9[d.secondary] : '',
+    TEMPO_SESSAO[tempo],
+  )
+  const precisa = juntar(
+    NEED_M9[text(answers, 'm9_garantia')],
+    COMPUTADOR_M9[text(answers, 'm9_computador')],
+    answers.m9_cena === 'irmao' ? IRMAO_M9 : '',
+  )
+  const semCondicao = d.unmet.length > 0
+  const destino = comunidadeOfferPath('criar-junto')
+  const blocos: BlocoConversa[] = [
+    { tipo: 'p', texto: f(primeiro) },
+    { tipo: 'h', texto: f(copy.whyTitle) },
+    { tipo: 'p', texto: f(porque) },
+    { tipo: 'h', texto: f(copy.changeTitle) },
+    { tipo: 'p', texto: f(muda) },
+    { tipo: 'h', texto: 'Onde isso acontece' },
+    { tipo: 'p', texto: f(juntar(ONDE_M9, ONDE_LEITURA[leitura])) },
+    { tipo: 'img', ...IMAGEM_M9 },
+    { tipo: 'p', texto: RELATO_M9.intro },
+    { tipo: 'relato', texto: RELATOS.AV03.fala, autor: RELATO_M9.autor, foto: RELATO_M9.foto },
+    { tipo: 'h', texto: 'O que você disse que precisa' },
+    { tipo: 'p', texto: f(precisa) },
+    {
+      tipo: 'cta',
+      texto: f(semCondicao ? NEXT_WITH_UNMET_CONDITION : NEXT_M9),
+      rotulo: f(semCondicao ? CTA_WITH_UNMET_CONDITION : copy.cta),
+      href: destino,
+    },
+  ]
+  return {
+    tema: 'kids-m9',
+    titulo: f(copy.title),
+    ...(d.state === 'perfil_aproximado' ? { aviso: APPROXIMATE_NOTE } : {}),
+    blocos,
+    assinatura: ASSINATURA_KIDS,
+    perfil: PROFILE_IDS_M9[p],
+    destino,
+    evento: eventoDo(answers, d, destino),
+  }
+}
+
+function eventoDo(
+  answers: QuizAnswers,
+  d: Decision917 | DecisionM9,
+  destino: string,
+): Record<string, unknown> {
+  return {
+    quiz_version: QUIZ_VERSION,
+    revision: quizRevision(answers),
+    ramo: d.branch,
+    perfil_principal: d.profile,
+    perfil_secundario: d.secondary,
+    pontos: d.scores,
+    estado: d.state,
+    adequacao: d.adequacy,
+    destino,
+  }
+}
+
+/** A carta do resultado, ou null quando o quiz não está completo (ou é a saída de 18 ou mais). */
+export function buildCommunityResult(answers: QuizAnswers): ResultadoConversa | null {
   const decision = communityDecision(answers)
   if (!decision) return null
-  const drawingOnly = decision.unmet.includes('desenho')
-  let title: string
-  let reason: string[]
-  let activity: ResultSection | null = null
-  let bridge: ResultSection | null = null
-  let cta: string
-  let activityProfile = decision.profile
-  if (decision.state === 'misto_sem_prioridade') {
-    const [index, profile] = PAIRS[decision.objectives.join('')]!
-    const combined = RESULT_COPY['Dois objetivos com o mesmo peso']!
-    title = combined[index]!.title
-    reason = [...combined[0]!.paragraphs, ...combined[index]!.paragraphs]
-    activityProfile = profile
-    cta = 'Conhecer a proposta completa da Comunidade'
-  } else if (decision.profile) {
-    const primary = PRIMARY_COPY[decision.profile]!
-    title = primary.title
-    reason = primary.sections[0]!.paragraphs
-    cta = primary.sections[2]!.cta!
-  } else {
-    const section = moduleCopy(
-      decision.state === 'exploratorio' ? 'Procura ainda aberta' : 'Quando a procura é outra',
-    )
-    title = section.title
-    reason = [section.paragraphs[0]!]
-    activity = {
-      title:
-        decision.state === 'exploratorio'
-          ? 'Um convite para experimentar em casa'
-          : 'Uma conversa para organizar a procura',
-      paragraphs: section.paragraphs.slice(1),
-    }
-    bridge = {
-      title: 'Conheça um exemplo do que seu filho pode fazer aqui',
-      paragraphs: [
-        'Nas atividades integradas da Comunidade, seu filho encontra a explicação de um lado e a área de criação do outro. Ele acompanha o passo, faz uma tentativa e observa o resultado. A tela abaixo mostra essa organização numa aula de criação de jogos.',
-        decision.state === 'exploratorio'
-          ? 'Mostre esse exemplo a ele e ouça o que teria vontade de experimentar. Como vocês ainda estão conhecendo os caminhos, vale comparar essa proposta com o que surgir na conversa, antes de escolher uma atividade.'
-          : 'Mostre esse exemplo a ele e ouça o que teria vontade de experimentar. Como o que você procura não aparece entre as opções, vale comparar essa proposta com o que surgir na conversa, antes de escolher uma atividade.',
-      ],
-    }
-    cta = section.cta!
-  }
-  if (activityProfile) {
-    activity = PRIMARY_COPY[activityProfile]!.sections[1]!
-    bridge = PRIMARY_COPY[activityProfile]!.sections[2]!
-  }
-  let activityVariant = 'padrao'
-  if (activityProfile === 'C' && drawingOnly) {
-    activity = ACTIVITY_VARIANTS.desenhoSemJogos
-    activityVariant = 'desenho_sem_jogos'
-    if (decision.profile === 'C') {
-      title = 'Um espaço para ele desenvolver os próprios desenhos'
-      reason = [
-        'Você quer dar mais espaço ao desenho e indicou que procura uma atividade que não envolva jogos. Podemos começar por uma criação dele: olhar o que fez, ouvir a ideia e convidá-lo a experimentar outra versão. Assim, a sugestão respeita o que vocês querem explorar agora.',
-      ]
-    } else {
-      reason = [
-        reason[0]!,
-        'Para o desenho, você indicou que procura uma atividade que não envolva jogos. A experiência abaixo parte de um desenho dele e convida a explorar uma mudança na aparência. Os dois objetivos que você escolheu continuam importantes para pensar nos próximos passos.',
-      ]
-    }
-  } else if (activityProfile && answers.q2 === 'criar_jogo') {
-    activity = ACTIVITY_VARIANTS.projetoExistente
-    activityVariant = 'projeto_existente'
-  } else if (activityProfile && answers.q1 === '12_a_14') {
-    activity = ACTIVITY_VARIANTS.adolescente[activityProfile]
-    activityVariant = 'adolescente'
-  }
-  const orientationFor = (profile: CommunityProfile): ResultSection =>
-    profile === 'C' && drawingOnly
-      ? {
-          title: 'O próprio desenho dele pode guiar a próxima tentativa',
-          paragraphs: [
-            'Convide seu filho a mostrar uma criação e contar o que gostaria de fazer diferente. Pode ser mudar a expressão do personagem, experimentar outras cores ou desenhar a mesma cena de outro jeito. Essas escolhas ajudam a conhecer o que ele quer desenvolver no desenho.',
-          ],
-        }
-      : CHOOSING_ACTIVITY[profile]!
-  const orientation: ResultSection | null = decision.profile
-    ? orientationFor(decision.profile)
-    : decision.state === 'misto_sem_prioridade'
-      ? {
-          title: 'O que procurar para reunir esses objetivos',
-          paragraphs: decision.objectives.map((p) => orientationFor(p).paragraphs[0]!),
-        }
-      : null
-
-  const observed: Record<string, string> = {
-    jogar:
-      'O jogo que ele costuma procurar pode ser o ponto de partida da conversa. Peça que mostre uma parte de que gosta e conte o que chama a atenção ali. Você passa a conhecer o interesse por trás daquele tempo no computador ou no celular.',
-    desenhar:
-      'Um desenho que ele fez recentemente já dá algo para vocês olharem juntos. Peça que mostre o detalhe de que mais gosta e conte como teve aquela ideia. O que ele valoriza na própria criação pode orientar o próximo convite.',
-    investigar_programas:
-      'Uma curiosidade que ele teve sobre um programa pode render essa primeira conversa. Peça que mostre o que tentou descobrir e conte o que gostaria de fazer funcionar. A pergunta dele pode virar o ponto de partida de uma atividade.',
-    videos:
-      'Como ele tem procurado assistir a vídeos, pergunte quais assuntos acompanha com mais vontade. Pode haver ali um personagem, uma história ou uma curiosidade para vocês explorarem juntos. Primeiro ouça o tema; depois, conversem sobre o que ele gostaria de fazer a partir dele.',
-    outra:
-      'Comece pela atividade de que você se lembrou ao responder. Peça que ele mostre uma coisa de que gosta nela e conte o que teria vontade de experimentar a seguir. Esse interesse merece participar da escolha, mesmo estando fora dos exemplos que apresentamos.',
-    variado:
-      'Os interesses dele variaram no último mês. Você pode convidá-lo a escolher uma ideia para experimentar agora e ouvir o motivo da escolha. A próxima atividade pode partir dessa curiosidade, e vocês continuam observando o que dá vontade de desenvolver.',
-    nao_sei:
-      'Você pode começar pedindo que seu filho mostre uma coisa de que gostou de fazer recentemente. Ouça o que chamou a atenção dele e pergunte o que teria vontade de tentar a seguir. Essa conversa dá uma referência para escolherem uma atividade juntos.',
-  }
-  const context: string[] = observed[String(answers.q2)] ? [observed[String(answers.q2)]!] : []
-  const interests = decision.interests
-  const named = ['jogo', 'visual', 'programacao'].filter((i) => interests.includes(i))
-  const contextKey =
-    named.length === 3
-      ? 'os três interesses'
-      : named.includes('jogo') && named.includes('visual')
-        ? 'jogos e desenho'
-        : named.includes('jogo') && named.includes('programacao')
-          ? 'jogos e programação'
-          : named.length === 2
-            ? 'desenho e programação'
-            : null
-  if (contextKey) context.push(...paragraphs(`Contexto: ${contextKey}`))
-  else if (named.length === 1)
-    context.push(
-      paragraphs('Contexto: o que a criança já expressou')[
-        ['jogo', 'visual', 'programacao'].indexOf(named[0]!)
-      ]!,
-    )
-  const sharedInterests: Record<string, string> = {
-    'jogar:jogo':
-      'Ele já gosta de jogar e falou em fazer um jogo próprio. Você pode pedir que mostre uma parte de um jogo que conhece e conte o que faria diferente. A conversa parte de uma referência dele e chega a uma escolha que teria vontade de construir.',
-    'desenhar:visual':
-      'O desenho já aparece na rotina dele, e ele falou em criar desenhos ou personagens. Peça que escolha uma criação dele e mostre o que mais gosta nela. A partir dessa ideia, vocês podem conversar sobre o que teria vontade de acrescentar ou fazer de outro jeito.',
-    'investigar_programas:programacao':
-      'Ele tem procurado entender como programas funcionam e já falou em aprender a programar. Peça que conte uma coisa que gostaria de fazer acontecer no computador. Essa curiosidade dá um exemplo para vocês procurarem uma explicação e uma primeira tarefa.',
-  }
-  const sharedInterest =
-    named.length === 1 ? sharedInterests[`${answers.q2}:${named[0]}`] : undefined
-  if (sharedInterest) context.splice(0, context.length, sharedInterest)
-  if (interests.includes('outro'))
-    context.push(paragraphs('Contexto: o que a criança já expressou')[3]!)
-  if (interests.includes('nao_expressou'))
-    context.push(...paragraphs('Contexto: ainda não expressou vontade de criar'))
-  if (interests.includes('nao_sei') && answers.q2 !== 'nao_sei')
-    context.push(...paragraphs('Contexto: ainda não sabe'))
-  if (answers.q2 === 'criar_jogo') context.push(...paragraphs('Contexto: já tentou criar um jogo'))
-  const secondary = decision.secondary
-  if (secondary)
-    context.push(SECONDARY_CONTEXT[secondary === 'C' && drawingOnly ? 'C_SEM_JOGOS' : secondary]!)
-
-  const conditions: Array<ResultSection & { kind: Condition; unmet: boolean }> = []
-  const addCondition = (kind: Condition, key: string | undefined) => {
-    if (key && (decision.unmet.includes(kind) || decision.pending.includes(kind)))
-      conditions.push({ ...moduleCopy(key), kind, unmet: decision.unmet.includes(kind) })
-  }
-  addCondition(
-    'ferramenta',
-    {
-      roblox: 'Jogos: Roblox ou Minecraft indispensável',
-      minecraft: 'Jogos: Roblox ou Minecraft indispensável',
-      outra_especifica: 'Jogos: outra ferramenta específica',
-      conversar: 'Jogos: precisa conversar com o filho',
-    }[String(answers.qb)],
-  )
-  addCondition(
-    'desenho',
-    {
-      sem_jogos: 'Desenho: precisa de uma atividade sem jogos',
-      ver_exemplo: 'Desenho: quer conhecer a integração',
-    }[String(answers.qc)],
-  )
-  addCondition(
-    'formato',
-    {
-      exige_ao_vivo: 'Formato: professor ao vivo indispensável',
-      prefere_ao_vivo: 'Formato: prefere ao vivo, mas considera outra possibilidade',
-      conhecer: 'Formato: quer conhecer melhor',
-    }[String(answers.q7)],
-  )
-  addCondition(
-    'computador',
-    {
-      celular_tablet: 'Equipamento: só celular ou tablet',
-      organizar: 'Equipamento: precisa organizar horários',
-      verificar: 'Equipamento: ainda precisa verificar',
-    }[String(answers.q8)],
-  )
-  conditions.sort((a, b) => Number(b.unmet) - Number(a.unmet))
-  for (const condition of conditions) {
-    condition.paragraphs = condition.paragraphs.map((p) =>
-      p.replace('{{ferramenta}}', answers.qb === 'minecraft' ? 'Minecraft' : 'Roblox'),
-    )
-  }
-
-  const supportCopy = moduleCopy(`Apoio: ${SUPPORT[String(answers.q6)]}`)
-  const support: ResultSection = {
-    title:
-      answers.q5 === 'ajuda'
-        ? 'Seu filho tem onde pedir ajuda quando encontrar uma dúvida'
-        : supportCopy.title,
-    paragraphs: [...supportCopy.paragraphs, ...paragraphs('Dúvida principal: ajuda')],
-  }
-  const formatKey = {
-    pode_funcionar: 'Formato: pode funcionar',
-    prefere_ao_vivo: 'Formato: prefere ao vivo, mas considera outra possibilidade',
-    conhecer: 'Formato: quer conhecer melhor',
-  }[String(answers.q7)]
-  const format = formatKey ? moduleCopy(formatKey) : null
-  const doubtDef = DOUBT[String(answers.q5)]
-  // Quem procura desenho SEM jogos não recebe a regra do jogo como prova do interesse.
-  const doubtKey =
-    doubtDef === 'interesse' && drawingOnly ? 'interesse (desenho sem jogos)' : doubtDef
-  const doubt: ResultSection | null =
-    doubtKey && answers.q5 !== 'ajuda' ? moduleCopy(`Dúvida principal: ${doubtKey}`) : null
-  const doubtVisual =
-    {
-      interesse: drawingOnly ? 'pinta' : 'regra',
-      comeco: 'aula-estudio',
-      aprendizagem: 'responsavel',
-      rotina: 'salvamento',
-    }[String(answers.q5)] ?? null
-  const unmet = decision.unmet.length > 0
-  if (unmet) {
-    bridge = {
-      title: 'O que a Comunidade oferece',
-      paragraphs: [
-        'No Estúdio, a ferramenta de criação de jogos da plataforma, seu filho pode montar comandos em blocos e testar o resultado. O Pinta é o editor em que ele prepara desenhos que podem participar desses projetos. As aulas orientam as primeiras atividades; os recursos para criar livremente são liberados conforme o avanço na Jornada.',
-        'As telas abaixo permitem conhecer essa experiência e comparar com o que vocês procuram. As diferenças que explicamos acima continuam valendo para sua escolha: conhecer os recursos não muda o formato das aulas, os requisitos de equipamento ou as ferramentas usadas.',
-      ],
-    }
-    cta = moduleCopy('Botão quando há uma condição não atendida').cta!
-  }
-  const visuals = activityProfile ? [...VISUALS[activityProfile]] : ['aula-estudio']
-  const practicalConditions = conditions.filter((c) => !c.unmet && c.kind !== 'formato')
-  // Quando a integração já é o argumento principal, desenvolve a dúvida ali,
-  // sem repetir o mesmo texto e a mesma tira de capturas em outro cartão.
-  const drawingCondition = practicalConditions.find((c) => c.kind === 'desenho')
-  if (drawingCondition && activityProfile === 'C' && !unmet) {
-    bridge = { ...bridge!, title: drawingCondition.title, paragraphs: drawingCondition.paragraphs }
-  }
-  return {
-    decision,
-    title,
-    reason,
-    context,
-    orientation,
-    introduction: COMMUNITY_INTRO,
-    activity: activity!,
-    activityVariant,
-    bridge,
-    cta,
-    conditions,
-    unmetConditions: conditions.filter((c) => c.unmet),
-    practicalConditions: practicalConditions.filter(
-      (c) => !(c.kind === 'desenho' && activityProfile === 'C' && !unmet),
-    ),
-    format,
-    support,
-    doubt,
-    doubtVisual: doubtVisual && !visuals.includes(doubtVisual) ? doubtVisual : null,
-    visuals,
-    requirements: paragraphs('Para participar da Comunidade'),
-    offerPath: comunidadeOfferPath(
-      decision.profile ? PROFILE_IDS[decision.profile] : 'tempo-de-tela',
-    ),
-  }
+  return decision.branch === 'm9' ? cartaM9(answers, decision) : carta917(answers, decision)
 }
-export type CommunityResult = NonNullable<ReturnType<typeof buildCommunityResult>>

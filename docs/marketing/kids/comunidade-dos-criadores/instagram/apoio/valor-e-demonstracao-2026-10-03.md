@@ -40,7 +40,7 @@ Para a segunda cartela, ampliar uma regra, preservando evento ou condição e as
 
 O rótulo das oito imagens compostas é **Demonstração da equipe**. A copy pública fica na arte; não há fala obrigatória para essas cartelas. O bloco do Farol leva ao Desafio; os demais levam à Comunidade. Os desenhos preparados e o movimento do barco mantêm sua autoria da equipe.
 
-Fontes: [Farol](../../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md), [Cadê Todo Mundo?](../../../../../aulas-interativas/modulos-cade-todo-mundo.md), [Nave Contra Asteroides](../../../../../aulas-interativas/modulos-nave-contra-asteroides.md) e [Corre Dino](../../../../../aulas-interativas/modulos-corre-dino.md).
+Fontes: [Farol](../../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md), [Cadê Todo Mundo?](../../../../../aulas-interativas-tecnico/modulos-cade-todo-mundo.md), [Nave Contra Asteroides](../../../../../aulas-interativas-tecnico/modulos-nave-contra-asteroides.md) e [Corre Dino](../../../../../aulas-interativas-tecnico/modulos-corre-dino.md).
 
 ## Autoria e acesso
 
@@ -67,6 +67,6 @@ Os primeiros três relatos foram autorizados e confirmados pelo responsável tam
 
 ## Fontes de produto
 
-[Diretrizes pedagógicas](../../../../../aulas-interativas/DIRETRIZES-PEDAGOGICAS.md) · [Módulos do Desafio](../../../../../aulas-interativas/modulos-desafio-primeiro-jogo.md) · [Movimento](../../../../../aulas-interativas/aulas/desafio-dia-1.roteiro.md) · [Memória](../../../../../aulas-interativas/aulas/desafio-dia-2.roteiro.md) · [Condição e personalização](../../../../../aulas-interativas/aulas/desafio-dia-3.roteiro.md) · [Implementação do funil](../../../desafio-primeiro-jogo/implementacao.md).
+[Diretrizes pedagógicas](../../../../../aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md) · [Módulos do Desafio](../../../../../aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md) · [Movimento](../../../../../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md) · [Memória](../../../../../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-2.roteiro.md) · [Condição e personalização](../../../../../aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-3.roteiro.md) · [Implementação do funil](../../../desafio-primeiro-jogo/implementacao.md).
 
 A verdade local do contrato e das respostas está nos arquivos content.ts, index.ts e offer-copy.ts de packages/funnel/src/funnels/desafio-primeiro-jogo. Se a copy comercial antiga usar um rótulo de aula desatualizado, a interface infantil e as diretrizes atuais orientam a captura. Código local e roteiro não comprovam que o catálogo remoto já foi atualizado; conferir antes de publicar.

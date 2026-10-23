@@ -115,6 +115,7 @@ export class MetricsWorker {
             socialAccountId: account.id,
             capturedAt: now,
             followers: sample.followers,
+            collectionVersion: 1,
             raw: sample.raw,
           })
         }
@@ -159,11 +160,12 @@ export class MetricsWorker {
           id: randomUUID(),
           publicationId: pub.id,
           capturedAt: now,
-          views: sample.views,
-          likes: sample.likes,
-          comments: sample.comments,
-          shares: sample.shares ?? 0,
-          saves: sample.saves ?? 0,
+          collectionVersion: 1,
+          views: metricCount(sample.views),
+          likes: metricCount(sample.likes),
+          comments: metricCount(sample.comments),
+          shares: metricCount(sample.shares),
+          saves: metricCount(sample.saves),
           reach: sample.reach ?? null,
           watchTimeSeconds: sample.watchTimeSeconds ?? null,
           avgWatchRatio: sample.avgWatchRatio ?? null,
@@ -190,3 +192,5 @@ export class MetricsWorker {
     })
   }
 }
+
+import { metricCount } from '../../domain/metrics/availability'

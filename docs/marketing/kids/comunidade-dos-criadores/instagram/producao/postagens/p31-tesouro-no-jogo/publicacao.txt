@@ -1,0 +1,29 @@
+P31 · Imagine seu filho escondendo um tesouro num jogo. E chamando você para encontrar.
+Produção: 14/10/2026
+Estado: produzido para revisão. Não publicado e não agendado.
+
+FORMATO E ORDEM
+7 PNGs em 1080 × 1350, proporção 4:5.
+Selecionar 01-p31.png a 07-p31.png em ordem numérica.
+Usar legenda.txt integralmente e o texto alternativo curto correspondente a cada slide.
+
+ARQUIVOS
+index.html: prévia e links.
+previa.png: visão dos sete slides.
+montagem.html: composição editável, com fontes e imagens locais.
+apoio: cenas geradas, capturas reais, fontes, prompts e verificações.
+
+ORIGEM
+Pai e filho fictícios nas cenas dos slides 1 e 7; não são depoentes ou alunos reais.
+Slides 2 e 3 são ilustrações editoriais da escolha de um esconderijo.
+Slides 4, 5 e 6 mostram capturas reais do Meu Mundo e dos blocos do Estúdio.
+As telas nas fotos foram compostas com referência da plataforma. O exemplo é da equipe, sem atribuição à criança fictícia.
+Seguir a orientação editorial vigente de identificação de mídia gerada na publicação manual. Não acrescentar rodapés nas artes.
+
+CONVITE
+Seguir @criecomhelenaejulio para conhecer mais possibilidades de criação.
+Não há palavra-chave ManyChat ou chamada de oferta nesta postagem.
+
+CALENDÁRIO
+Primeiro post da semana 5. Próximo carrossel: P40, terceiro post da mesma semana.
+Os demais formatos mantêm seus estados anteriores.

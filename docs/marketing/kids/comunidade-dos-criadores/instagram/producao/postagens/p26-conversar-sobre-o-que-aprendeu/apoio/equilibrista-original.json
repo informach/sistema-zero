@@ -1,0 +1,284 @@
+{
+  "html": [],
+  "css": [
+    {
+      "selector": "body",
+      "declarations": {
+        "background": "#dff0d0",
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "min-height": "100vh",
+        "margin": "0",
+        "cursor": "pointer"
+      }
+    },
+    {
+      "selector": "canvas",
+      "declarations": {
+        "border": "2px solid #1b2330",
+        "border-radius": "12px"
+      }
+    }
+  ],
+  "version": 2,
+  "behavior": {
+    "molds": [],
+    "start": [
+      {
+        "type": "g2d:setupStage",
+        "width": 360,
+        "height": 480,
+        "bg": "#11172a",
+        "__id": "exemplo-equilibrista"
+      },
+      {
+        "type": "g2d:setStageDescription",
+        "description": "Estica o bastão segurando o mouse/dedo e atravessa as plataformas (estilo Stick Hero). A regra do mouse é um se/senão: segurado cresce o bastão, solto derruba. Enter começa e recomeça.",
+        "__id": "exemplo-equilibrista-descricao"
+      },
+      {
+        "type": "g2d:fitScreen",
+        "percent": 100
+      },
+      {
+        "type": "g2d:createStickHero",
+        "varName": "equilibrista",
+        "w": 18,
+        "h": 36,
+        "color": "#d6455d"
+      },
+      {
+        "type": "g2d:createStickPath",
+        "varName": "caminho",
+        "ctxVar": "ctx",
+        "platformColor": "#0ea5a0",
+        "stickColor": "#1b2330"
+      },
+      {
+        "type": "var",
+        "name": "pontos",
+        "value": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g2d:setScene",
+        "name": "inicio"
+      }
+    ],
+    "events": [
+      {
+        "type": "g2d:onKey",
+        "key": "Enter",
+        "body": [
+          {
+            "type": "if",
+            "cond": {
+              "type": "g2d:sceneIs",
+              "name": "inicio"
+            },
+            "then": [
+              {
+                "type": "g2d:setScene",
+                "name": "jogando"
+              }
+            ]
+          },
+          {
+            "type": "if",
+            "cond": {
+              "type": "g2d:sceneIs",
+              "name": "perdeu"
+            },
+            "then": [
+              {
+                "type": "g2d:restart"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "g2d:onStickPathCross",
+        "pathVar": "caminho",
+        "body": [
+          {
+            "type": "g2d:playFx",
+            "fx": "jump"
+          },
+          {
+            "type": "assign",
+            "name": "pontos",
+            "value": {
+              "type": "binop",
+              "op": "+",
+              "left": {
+                "type": "var",
+                "name": "pontos"
+              },
+              "right": {
+                "type": "num",
+                "value": 1
+              }
+            }
+          }
+        ]
+      },
+      {
+        "type": "g2d:onStickPathPerfect",
+        "pathVar": "caminho",
+        "body": [
+          {
+            "type": "g2d:playFx",
+            "fx": "collect"
+          },
+          {
+            "type": "g2d:flash",
+            "ctxVar": "ctx",
+            "color": "#ffe066"
+          },
+          {
+            "type": "assign",
+            "name": "pontos",
+            "value": {
+              "type": "binop",
+              "op": "+",
+              "left": {
+                "type": "var",
+                "name": "pontos"
+              },
+              "right": {
+                "type": "num",
+                "value": 2
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "loops": [
+      {
+        "type": "g2d:updateEachFrame",
+        "body": [
+          {
+            "type": "g2d:clear"
+          },
+          {
+            "type": "g2d:stickPathScenery",
+            "pathVar": "caminho"
+          },
+          {
+            "type": "if",
+            "cond": {
+              "type": "g2d:sceneIs",
+              "name": "inicio"
+            },
+            "then": [
+              {
+                "type": "g2d:showScreen",
+                "ctxVar": "ctx",
+                "title": "Equilibrista",
+                "subtitle": "Segure para esticar o bastão e solte para atravessar!",
+                "hint": "Aperte Enter para começar",
+                "bg": "#1b2330"
+              }
+            ]
+          },
+          {
+            "type": "if",
+            "cond": {
+              "type": "g2d:sceneIs",
+              "name": "jogando"
+            },
+            "then": [
+              {
+                "type": "if",
+                "cond": {
+                  "type": "g2d:pointerDown"
+                },
+                "then": [
+                  {
+                    "type": "g2d:stickPathGrow",
+                    "pathVar": "caminho",
+                    "speed": 1
+                  }
+                ],
+                "else": [
+                  {
+                    "type": "g2d:stickPathDrop",
+                    "pathVar": "caminho"
+                  }
+                ]
+              },
+              {
+                "type": "g2d:stickPathWalk",
+                "spriteVar": "equilibrista",
+                "pathVar": "caminho",
+                "speed": 1
+              },
+              {
+                "type": "g2d:stickPathDraw",
+                "pathVar": "caminho"
+              },
+              {
+                "type": "g2d:drawSprite",
+                "spriteVar": "equilibrista",
+                "ctxVar": "ctx"
+              },
+              {
+                "type": "g2d:drawScore",
+                "ctxVar": "ctx",
+                "label": "Pontos:",
+                "value": {
+                  "type": "var",
+                  "name": "pontos"
+                },
+                "x": 12,
+                "y": 26,
+                "color": "#1b2330",
+                "size": 22
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "g2d:stickPathFell",
+                  "pathVar": "caminho"
+                },
+                "then": [
+                  {
+                    "type": "g2d:setScene",
+                    "name": "perdeu"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "if",
+            "cond": {
+              "type": "g2d:sceneIs",
+              "name": "perdeu"
+            },
+            "then": [
+              {
+                "type": "g2d:showScreen",
+                "ctxVar": "ctx",
+                "title": "Caiu!",
+                "subtitle": "O bastão não alcançou a plataforma.",
+                "hint": "Aperte Enter para jogar de novo",
+                "bg": "#1b2330"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "extensions": [
+    {
+      "extensionId": "game-2d"
+    }
+  ]
+}

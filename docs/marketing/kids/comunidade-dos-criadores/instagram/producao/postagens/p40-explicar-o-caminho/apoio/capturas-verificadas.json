@@ -1,0 +1,288 @@
+{
+  "source": "Corrida do Pôr do Sol · Mundo 3D",
+  "errors": [],
+  "captures": [
+    {
+      "name": "04-primeiro-anel",
+      "points": [
+        {
+          "n": 1,
+          "x": 800.0000000000003,
+          "y": 341.86886360454014,
+          "world": {
+            "x": 60,
+            "z": 40
+          }
+        },
+        {
+          "n": 2,
+          "x": 89.35544769100541,
+          "y": 315.2347054107187,
+          "world": {
+            "x": 40,
+            "z": 0
+          }
+        },
+        {
+          "n": 3,
+          "x": 413.5294827030828,
+          "y": 324.47034518059604,
+          "world": {
+            "x": 20,
+            "z": -60
+          }
+        },
+        {
+          "n": 4,
+          "x": -717.6520979464196,
+          "y": 288.9307157883275,
+          "world": {
+            "x": -20,
+            "z": -20
+          }
+        },
+        {
+          "n": 5,
+          "x": 7591.448773048197,
+          "y": 593.9708571490419,
+          "world": {
+            "x": -10,
+            "z": 30
+          }
+        }
+      ]
+    },
+    {
+      "name": "05-cinco-aneis",
+      "points": [
+        {
+          "n": 1,
+          "x": 920.1546636470562,
+          "y": 825.7232501303123,
+          "world": {
+            "x": 60,
+            "z": 40
+          }
+        },
+        {
+          "n": 2,
+          "x": 881.4028414472077,
+          "y": 593.2113198676388,
+          "world": {
+            "x": 40,
+            "z": 0
+          }
+        },
+        {
+          "n": 3,
+          "x": 891.2812590926371,
+          "y": 424.64924637808906,
+          "world": {
+            "x": 20,
+            "z": -60
+          }
+        },
+        {
+          "n": 4,
+          "x": 652.9583964590311,
+          "y": 469.08971102941575,
+          "world": {
+            "x": -20,
+            "z": -20
+          }
+        },
+        {
+          "n": 5,
+          "x": 530.7507848875215,
+          "y": 622.8180155626097,
+          "world": {
+            "x": -10,
+            "z": 30
+          }
+        }
+      ]
+    },
+    {
+      "name": "06-anel-pulado",
+      "points": [
+        {
+          "n": 1,
+          "x": 1952.2956433134777,
+          "y": 547.804784612938,
+          "world": {
+            "x": 60,
+            "z": 40
+          }
+        },
+        {
+          "n": 2,
+          "x": 1310.9071923750137,
+          "y": 510.7061649526958,
+          "world": {
+            "x": 40,
+            "z": 0
+          }
+        },
+        {
+          "n": 3,
+          "x": 764.1162678550947,
+          "y": 464.2891707333151,
+          "world": {
+            "x": 20,
+            "z": -60
+          }
+        },
+        {
+          "n": 4,
+          "x": 709.0511107683282,
+          "y": 645.4273352671106,
+          "world": {
+            "x": -20,
+            "z": -20
+          }
+        },
+        {
+          "n": 5,
+          "x": 1967.9546537251645,
+          "y": 1039.2650253311208,
+          "world": {
+            "x": -10,
+            "z": 30
+          }
+        }
+      ]
+    },
+    {
+      "name": "07-teste-corrida",
+      "points": [
+        {
+          "n": 1,
+          "x": 559.7190504188683,
+          "y": 340.64773176763515,
+          "world": {
+            "x": 60,
+            "z": 40
+          }
+        },
+        {
+          "n": 2,
+          "x": 290.0279365028739,
+          "y": 317.2485344787908,
+          "world": {
+            "x": 40,
+            "z": 0
+          }
+        },
+        {
+          "n": 3,
+          "x": 465.9371084643106,
+          "y": 324.9237646456276,
+          "world": {
+            "x": 20,
+            "z": -60
+          }
+        },
+        {
+          "n": 4,
+          "x": -589.3284753840101,
+          "y": 290.64676314850163,
+          "world": {
+            "x": -20,
+            "z": -20
+          }
+        },
+        {
+          "n": 5,
+          "x": 7992.518617034887,
+          "y": 626.5846797654434,
+          "world": {
+            "x": -10,
+            "z": 30
+          }
+        }
+      ]
+    }
+  ],
+  "states": [
+    {
+      "name": "largada",
+      "state": "correndo",
+      "lap": 1,
+      "next": 0,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.2s · ponto 1/5 · volta 1/2",
+      "x": 0,
+      "z": 0
+    },
+    {
+      "name": "anel-1",
+      "state": "correndo",
+      "lap": 1,
+      "next": 1,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.2s · ponto 2/5 · volta 1/2",
+      "x": 60,
+      "z": 40
+    },
+    {
+      "name": "anel-2",
+      "state": "correndo",
+      "lap": 1,
+      "next": 2,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.3s · ponto 3/5 · volta 1/2",
+      "x": 40,
+      "z": 0
+    },
+    {
+      "name": "pulou-3-passou-4",
+      "state": "correndo",
+      "lap": 1,
+      "next": 2,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.3s · ponto 3/5 · volta 1/2",
+      "x": -20,
+      "z": -20
+    },
+    {
+      "name": "pulou-3-passou-5",
+      "state": "correndo",
+      "lap": 1,
+      "next": 2,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.4s · ponto 3/5 · volta 1/2",
+      "x": -10,
+      "z": 30
+    },
+    {
+      "name": "retomou-anel-3",
+      "state": "correndo",
+      "lap": 1,
+      "next": 3,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.4s · ponto 4/5 · volta 1/2",
+      "x": 20,
+      "z": -60
+    },
+    {
+      "name": "retomou-anel-4",
+      "state": "correndo",
+      "lap": 1,
+      "next": 4,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.4s · ponto 5/5 · volta 1/2",
+      "x": -20,
+      "z": -20
+    },
+    {
+      "name": "retomou-anel-5",
+      "state": "correndo",
+      "lap": 2,
+      "next": 0,
+      "total": 5,
+      "text": "Meu Mundo 3D\n\nWASD ou setas dirigem · espaço pula\n\nComeçar o passeio\nRecorde: 0s\nTempo 2.5s · ponto 1/5 · volta 2/2",
+      "x": -10,
+      "z": 30
+    }
+  ]
+}

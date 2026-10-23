@@ -19,7 +19,7 @@ describe('o que o menu oferece', () => {
     ])
   })
 
-  it('sobrando só a página da seção, NÃO há lista a abrir', () => {
+  it('sobrando só a página da parte, NÃO há lista a abrir', () => {
     // A criança Faísca ainda não tem ferramenta nenhuma. Um accordion de um item só
     // cobraria um clique a mais de quem mais precisa do caminho curto: o item volta a
     // ser um link direto para a página.

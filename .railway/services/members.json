@@ -6,6 +6,7 @@
       "/packages/members/**",
       "/packages/core/**",
       "/packages/pinta/**",
+      "/packages/studio/**",
       "/bun.lock",
       "/package.json",
       "/.dockerignore",

@@ -1,1 +1,0 @@
-O Mundo de Blocos foi feito no nosso Estúdio. Clicou no chão perto do personagem, ele planta um bloco. Bloco por bloco, ele sobe até o topo da muralha.

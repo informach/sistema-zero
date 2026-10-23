@@ -31,7 +31,7 @@
 - Modify: `packages/admin/src/app/admin/membros/cursos/[courseId]/aulas/[lessonId]/lesson-editor-client.tsx` (preservar e editar a opção)
 - Test: `packages/members/tests/integration/learning-import.test.ts`
 - Test: `packages/admin/tests/materials-authoring.test.ts`
-- Test: `docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts`
+- Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`
 
 **Interfaces:**
 - Produces: `MaterialsBlock.bookPreview?: boolean`, aceito por `isLearningManifest` e mantido ao salvar o bloco no admin.
@@ -88,15 +88,15 @@ expect(partirSecao({ blocks: [{ id: 'caderno', kind: 'materials', content: { kin
 ### Task 3: Reescrever e unificar o caderno do curso
 
 **Files:**
-- Modify: `docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`
-- Regenerate: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.manifesto.json`
-- Regenerate: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-2.manifesto.json`
-- Modify: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.roteiro.md`
-- Modify: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-2.roteiro.md`
-- Modify: `docs/aulas-interativas/recursos/cade-todo-mundo/caderno-do-aluno.template.html`
-- Regenerate locally: `output/pdf/cade-todo-mundo-caderno-do-aluno.pdf` (não adicionar ao git se estiver ignorado)
-- Modify: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.md`, `cade-todo-mundo-aula-2.md`, `docs/aulas-interativas/modulos-cade-todo-mundo.md`
-- Test: `docs/aulas-interativas/qa/cade-todo-mundo-manifestos.test.ts`
+- Modify: `docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`
+- Regenerate: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json`
+- Regenerate: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.roteiro.md`
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.roteiro.md`
+- Modify: `docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/caderno-do-aluno.template.html`
+- Regenerate locally: `docs/aulas-interativas/kids/cade-todo-mundo/mapa-da-aventura.pdf` (não adicionar ao git se estiver ignorado)
+- Modify: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `cade-todo-mundo-aula-2.md`, `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`
+- Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-manifestos.test.ts`
 
 **Interfaces:**
 - Consumes: `bookPreview: true` from Task 1 and responsive preview from Task 2.
@@ -104,11 +104,11 @@ expect(partirSecao({ blocks: [{ id: 'caderno', kind: 'materials', content: { kin
 
 - [ ] **Step 1: Update tests first.** Assert Aula 1 title/flag/optional completion; assert Aula 2 has no caderno block or section reference and retires the old key.
 - [ ] **Step 2: Run the manifest test and confirm the red result.**
-- [ ] **Step 3: Update the manifest generator.** Rename section 2 `seu-caderno-do-aluno` / `Seu Caderno do Aluno`, set `bookPreview: true`, remove Aula 2 caderno block and reference, and add `retireBlockKeys: ['caderno']` in Aula 2. Regenerate both manifest files with `bun docs/aulas-interativas/qa/gerar-cade-todo-mundo.ts`.
+- [ ] **Step 3: Update the manifest generator.** Rename section 2 `seu-caderno-do-aluno` / `Seu Caderno do Aluno`, set `bookPreview: true`, remove Aula 2 caderno block and reference, and add `retireBlockKeys: ['caderno']` in Aula 2. Regenerate both manifest files with `bun docs/aulas-interativas-tecnico/qa/gerar-cade-todo-mundo.ts`.
 - [ ] **Step 4: Rewrite the spoken script and planned-video directions.** Example voice: “Este é o Caderno do Aluno. Ele tem os passos das duas aulas, com os blocos que vamos usar e o que conferir quando testar. Se você esquecer alguma parte, pode voltar a esta seção e olhar o passo no caderno. Dá para folhear aqui na tela ou baixar o PDF junto do vídeo. Você não precisa baixar nem imprimir para continuar.” Mostrar capa e orientação no vídeo; não abrir a página de passos antes da primeira experiência. In Aula 2, replace “está nesta seção” with a short reminder about Aula 1.
 - [ ] **Step 5: Reframe the PDF cover and overview.** Replace “Seu mapa para criar o jogo…” with “Os passos das duas aulas para consultar quando precisar.” Rename `Mapa do jogo` to `O que você vai fazer` or another descriptive, child-friendly overview. Retain both step-by-step pages. Generate the PDF with the existing script and visually inspect all pages.
 - [ ] **Step 6: Update the lesson/module docs** to say one upload in Aula 1, book on the right if wide, stacked if narrow, and Aula 2 reference only; presentation video does not spoil the experience.
-- [ ] **Step 7: Run filtered manifest validation and tests**: `bun docs/aulas-interativas/qa/validar-manifestos.ts cade-todo-mundo` and the `cade-todo-mundo` test files.
+- [ ] **Step 7: Run filtered manifest validation and tests**: `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts cade-todo-mundo` and the `cade-todo-mundo` test files.
 - [ ] **Step 8: Commit only Task 3 files.**
 
 ### Task 4: Integrated review

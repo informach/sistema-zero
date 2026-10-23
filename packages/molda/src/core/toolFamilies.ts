@@ -1,13 +1,13 @@
 /**
  * As FAMÍLIAS de ferramentas da oficina e as faixas em que elas se liberam.
  *
- * O Molda não conhece jornada. O host (o kids) traduz o posto da criança numa lista de famílias
+ * O Molda não conhece jornada. O host (o kids) traduz capacidades conquistadas numa lista de famílias
  * liberadas e passa em `MoldaHostAdapter.toolAccess`; aqui mora só o vocabulário, como dado
  * puro, sem nenhum import, para o host poder ler pelo subpath `@sistemazero/molda/tools` sem
  * trazer React, Three ou IndexedDB junto (`src/assets/purity.test.ts` cobra isso).
  *
  * ⚠️ Os nomes das faixas (`MOLDA_TOOL_BANDS`) são o contrato com o core
- * (`MOLDA_TOOL_BAND_LEVELS`, em `packages/core/src/journey/state.ts`). O kids tem um teste que
+ * (`KIDS_MOLDA_BAND_CAPABILITIES`, em `packages/core/src/journey/kids-policy.ts`). O kids tem um teste que
  * confere os dois lados. Família nova entra aqui com a faixa dela, e só.
  *
  * ⚠️ Trancar tira a AUTORIA, nunca a leitura: uma criação que já usa uma família trancada abre,
@@ -31,18 +31,30 @@ export interface MoldaToolFamily {
 export const MOLDA_TOOL_FAMILIES = [
   // ── básico: o que a criança encontra ao abrir o Molda ────────────────────────
   { id: 'model.pieces', tab: 'model', band: 'basic', label: 'Peças, mover, girar e tamanho' },
+  {
+    id: 'model.coordinates',
+    tab: 'model',
+    band: 'basic',
+    label: 'Posição, tamanho e giro da peça',
+  },
+  { id: 'model.pivot', tab: 'model', band: 'basic', label: 'Onde a peça gira' },
+  { id: 'model.components', tab: 'model', band: 'basic', label: 'Escolher faces e pontos' },
+  { id: 'model.cut', tab: 'model', band: 'basic', label: 'Cortar em duas peças' },
   { id: 'model.finish', tab: 'model', band: 'basic', label: 'Cor e acabamento da peça' },
   { id: 'model.mirror', tab: 'model', band: 'basic', label: 'Espelho no meio' },
   { id: 'model.reference', tab: 'model', band: 'basic', label: 'Imagem de apoio' },
+  { id: 'model.locator', tab: 'model', band: 'basic', label: 'Pontos de apoio' },
   { id: 'paint.brush', tab: 'paint', band: 'basic', label: 'Pintar a peça' },
   { id: 'animate.create', tab: 'animate', band: 'basic', label: 'Criar movimentos' },
   { id: 'files.export', tab: 'files', band: 'basic', label: 'Levar a criação' },
+  { id: 'files.import', tab: 'files', band: 'basic', label: 'Trazer um modelo 3D' },
   // ── intermediário: Arquiteto(a) de Mundos ────────────────────────────────────
+  { id: 'animate.batch', tab: 'animate', band: 'intermediate', label: 'Editar várias poses' },
   {
     id: 'model.precise',
     tab: 'model',
     band: 'intermediate',
-    label: 'Medidas exatas e ponto de giro',
+    label: 'Ajustes detalhados das formas',
   },
   {
     id: 'model.mirror-axis',
@@ -50,7 +62,6 @@ export const MOLDA_TOOL_FAMILIES = [
     band: 'intermediate',
     label: 'Espelho em qualquer direção',
   },
-  { id: 'model.locator', tab: 'model', band: 'intermediate', label: 'Pontos de apoio' },
   {
     id: 'model.area-select',
     tab: 'model',

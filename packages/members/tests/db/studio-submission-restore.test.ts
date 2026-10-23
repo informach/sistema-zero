@@ -100,6 +100,7 @@ describe.skipIf(!testDatabaseUrl)('restauração de entregas apagadas (Postgres 
       checked_at timestamptz,
       passed_at timestamptz,
       message varchar(1000),
+      message_spoken boolean not null default false,
       reviewed_at timestamptz,
       reviewed_by uuid
     )`)
@@ -119,6 +120,8 @@ describe.skipIf(!testDatabaseUrl)('restauração de entregas apagadas (Postgres 
       'reviewed_at timestamptz',
       'reviewed_by uuid',
       'content_fingerprint varchar(70)',
+      // Voz para texto (0107): o insert do Drizzle nomeia a coluna; NOT NULL pede o default.
+      'message_spoken boolean not null default false',
     ]) {
       await conn.sql.unsafe(
         `alter table members.studio_submissions add column if not exists ${col}`,

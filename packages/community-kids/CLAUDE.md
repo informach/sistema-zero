@@ -1,5 +1,131 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Jornada canônica (implementação isolada, 19/10/2026)
+
+Mapa, trilha, requisitos, ferramentas e celebrações Kids leem a mesma view de política/earned
+do Members. Nomes/ordem dos oito postos são metadata; requisitos e acesso por tier não são
+deduzidos do slug. Direito de curso preservado pode abrir aventura antes do rank da trilha,
+sem conceder o posto. Requisitos fora da trilha usam resolvedCourseId da mesma captura; null
+não cria dívida sobre marco histórico satisfeito. Não fazer outra busca por slot para autorizá-lo.
+
+Unavailable/initializing são estados explícitos, sem default Faísca, coleção vazia de conquistas
+ou promessa de ferramenta fixa. Posto ausente tem metadata neutra. Anúncios usam capacidades
+reais e licença; selos de curso e paleta curricular mantêm seu critério próprio. Preview da equipe
+é somente leitura, sem posto/earned fictícios ou tarefas para aluno. Preservar gates JS/Python e
+projetos existentes. Veja docs/jornada-do-criador.md e os recibos de cada lote antes de alterar
+comportamento; a integração e o rollout ainda não estão qualificados.
+
+## A aura do nível voltou (19/10/2026)
+
+Pedido dela, junto com o anel da etapa na comunidade adulta: o `AvatarWithAura` volta a desenhar
+o anel na cor do nível (`--level-<slug>`), que tinha saído em 10/09/2026 (as descrições de "sem
+anel" mais abaixo são históricas). O anel é uma SOMBRA no próprio avatar (`.kids-aura` +
+`.kids-aura-<tamanho>` no `globals.css`): folga clara e o anel, acompanhando a forma do
+`className` (o quadrado arredondado do perfil também) sem mudar o tamanho de nada; no vidro do
+herói o fio de dentro continua (`.kids-aura.kids-marca-vidro`). Nível desconhecido ou ausente,
+sem anel. As telas passam o nível: menu, cartão da jornada na Início, perfil, perfil público,
+ranking, liga e os autores do Clube/Mural. No perfil, no menu e no cartão da jornada o nível
+também vem escrito (`LevelBadge`); nas listas a aura só ajuda a reconhecer de longe. No herói azul
+um fio claro por fora separa o anel do fundo (o Construtor(a) no tema azul tem a mesma cor do
+herói), e o foco do avatar do perfil fica por fora da aura. Teste: `tests/avatar-aura.test.tsx`
+e o pódio em `tests/ranking-hub.test.tsx`.
+
+## Objetivos da parte (18/10/2026)
+
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). O cartão é do member-shell (ver lá); aqui ele veste a pele da casa pelos ganchos
+`sz-lesson-objectives*` no `globals.css` (os 6 temas do perfil pelos tokens semânticos) e o
+vocabulário vem do `KIDS_LESSON_COPY` (`verificacao.*`: "Desafio extra", "+5 XP", "você mexeu no
+projeto depois de verificar"). O `STUDIO_GATE_NOT_PASSED` e a nota mínima do Estúdio SAÍRAM: o
+toast de conclusão não trata mais esse código. Testes: `tests/section-objectives-card.test.tsx`.
+
+## Oficinas ao vivo: conquistas, troféu e missão (14/10/2026)
+
+Lockstep dos cursos ao vivo (regras no CLAUDE.md do members): `BADGE_INFO` ganhou
+`live-first-encounter` ("Primeiro encontro ao vivo", `Radio`) e `live-course-complete` ("Oficina
+completa", `Award`), no tom verde do Clube (`badgeTone` pelo prefixo `live-`); o quarto ganhou
+`trofeu-oficina-completa` ("Troféu da Oficina", telinha de transmissão dourada com o ponto
+vermelho em `furniture-models.tsx`), em `ROOM_ITEM_INFO`/`TROPHY_HINT`/`TROPHY_BADGE_SLUGS`; e o
+painel de missões nomeia o goal `live_encounter` ("Participe de um encontro ao vivo"). As duas
+conquistas e o troféu só chegam aqui DEPOIS de ganhos (o members não os lista travados: as
+oficinas não se divulgam fora delas). `tests/room-trophy-models.test.ts` reprova troféu sem
+modelo próprio (a caixa neutra), além do `badge-conformance` e do `catalog-conformance` do
+members.
+
+## A sala da oficina ao vivo é a fase com a transmissão (cursos ao vivo, 14/10/2026)
+
+A oficina virou um CURSO ao vivo e a sala é o layout da fase gravada (o desenho e as regras estão
+no CLAUDE.md do member-shell, §"Cursos ao vivo"). Aqui moram a página e a pele:
+
+- **`/oficinas/aulas/[id]`**: a página (servidor) lê o perfil (marca d'água, fala, rascunho na
+  conta) e monta o `LiveRoomClient` (`live-room-client.tsx`), que passa ao `LiveClassroom` o slot
+  da fase: o `LessonSections` do Kids (`kids`, `immersive`, `KidsLessonBlocks`) com o
+  `LessonPlayerProvider` de sempre, a transmissão em `stage`, as partes conduzidas em
+  `sectionControl` e `liveWorkspace` com `publishToMural: true` (o bloco Estúdio é o projeto ao
+  vivo e publica no Mural). "Concluir fase" usa a mesma rota da fase gravada (XP, foguinho e missões
+  pela mesma régua) e avisa por toast, sem a celebração que navegaria por `<Link>`.
+  ⚠️⚠️ Nada aqui chama `router.refresh()`: atualizar a fase é RELER o JSON (`useLiveLesson`), senão
+  um deploy recarregaria a página e derrubaria a chamada.
+- **Primeiro quadro e espera**: a página lê a sala e a fase no servidor (`loadLiveRoomInitial` do
+  member-shell, só leitura) e passa `initialRoom`/`initialLesson`: entrar não mostra "Abrindo…" nem
+  esqueleto. Fase ainda fechada para a vaga (`LIVE_LESSON_CLOSED`) vira `LiveLessonClosed` (espera
+  gentil que abre sozinha), nunca erro. Os números de desempenho estão no CLAUDE.md do member-shell.
+- **`MainContainer`**: a sala (`isLiveRoomPath`, `lib/lesson-path.ts`) entra no regime da AULA
+  (`kids-aula`: o céu, as cartas e a reserva do rodapé), não no das faixas.
+- **`globals.css`** (fora de camada, junto do rodapé da aula): `--sz-lesson-stage-top` (4rem no
+  celular, abaixo da barra do topo; 0.75rem a partir do md), a barra da chamada
+  (`.sz-live-controls`) acima do rodapé da aula (no celular, acima também da barra de abas) e a
+  reserva das duas no `<main>` (`--sz-lesson-nav-height` + `--sz-live-bar-height`), e o céu em
+  volta da transmissão fixa (os cantos redondos deixariam ver o texto passando por trás).
+- **Oficinas** (`/oficinas`): a mesma `LiveCatalog`, agora com "Suas oficinas" (as turmas de
+  curso ao vivo da criança); nenhuma outra tela divulga os cursos ao vivo. Área dos pais: igual.
+- `next.config.ts` não mudou: a rota da sala já tinha câmera, microfone, tela e o `frame-src` do R2
+  (a entrada e a saída são por `<a>`, navegação completa).
+- Testes: `tests/live-lesson-room.test.tsx` (o `LessonSections` com a transmissão e as partes
+  conduzidas, o flutuante, os controles da professora e os cartões),
+  `tests/live-classroom-slot.test.ts` (o `LiveClassroom` pelo slot, em processo próprio:
+  `tests/fixtures/live-classroom-slot.tsx`). O `live-learning.test.tsx` saiu com as etapas.
+- **Ensaio visual** (fora do git): `tmp/sala-visual/` (`bun tmp/sala-visual/server.ts`, dados de
+  mentira e a câmera falsa do Chromium; `playwright test --config tmp/sala-visual/playwright.config.ts`
+  tira as fotos em 1366×768, 1920×1080 e 390×844 em `tmp/sala-visual/fotos`; `SPEC='perf\.spec'`
+  mede renders, tempo até a transmissão e deslocamento de layout, com contadores embrulhando o
+  Estúdio, o `LessonSections` e o palco; `SPEC='pulos\.spec'` diz de onde vem cada deslocamento).
+
+## Falar em vez de escrever (14/10/2026)
+
+A criança fala a mensagem para a equipe e confere o texto antes de enviar; a voz não é guardada.
+A lógica mora no member-shell (ver a seção de lá); aqui moram a porta e o lado dos pais.
+
+- **Porta:** shim `app/api/voice/transcribe/route.ts` (`shell.routes.voiceTranscribe`, dentro do
+  matcher). `next.config.ts`: `microphone=(self)` na política GERAL (o cabeçalho vale para o
+  primeiro documento e a navegação do Next o mantém, então por rota não funcionaria para quem
+  chega por um link); a câmera segue `()` na política geral (o lote das oficinas ao vivo abre a
+  câmera só na rota da sala dele).
+- **Railway:** `VOICE_INPUT_ENABLED` está em `.railway/variables.ts`, e a regra da casa é CRIAR a
+  variável no painel ANTES de o nome chegar à lista (o portão recusa mudança em variável). Crie
+  `VOICE_INPUT_ENABLED=false` em staging e produção antes do merge; ligar é trocar o valor.
+- **Quem vê o botão:** a página da fase passa `voiceInput` = perfil com `voiceInputEnabled`,
+  sessão de criança, sem suporte e `isVoiceInputConfigured()`; os Recados passam `voiceEnabled`
+  pela mesma régua ("Escreva ou fale uma resposta…").
+- **Os pais ligam por criança, e a escolha nasce DESLIGADA** (a Política promete a opção mais
+  protetiva por padrão): caixa "Falar em vez de escrever (recomendado)" no `ProfileForm`, logo
+  abaixo do perfil público, dizendo quem vê o quê (só a equipe lê o texto; a gravação não fica
+  guardada pela Empresa, e a fala vai a um serviço fora do Brasil: é o consentimento para a
+  transferência; link para a Política ao lado). O perfil público diz agora "nunca na internet
+  aberta". O `onSave` virou objeto (`ProfileFormValues`), e o `profile-editor` CONFERE o valor
+  devolvido (um auth antigo responderia 200 sem gravar). Ligar exige login recente (o
+  `PARENT_REAUTH_REQUIRED` de sempre); desligar é livre. ⚠️ Na CRIAÇÃO com a fala marcada e
+  login antigo, o editor cria o perfil SEM a fala e leva à página da criança com
+  `?aviso=fala-entrar` (o `child-client` mostra o recado com "Entrar de novo" e apaga o
+  parâmetro); antes a recusa levava o formulário inteiro junto. O aviso de servidor antigo na
+  criação viaja do mesmo jeito (`?aviso=fala-nao-gravou`): um toast antes de navegar sumia. A página da criança mostra "fala liberada"; o guia dos pais
+  (`parentWelcomeSteps({voiceAvailable})`) orienta a ligar; as famílias que já existem veem a
+  novidade na Família (`_components/voice-news-card.tsx`, dispensável por navegador).
+- **Testes:** `voice-input.test.tsx` (o gravador e o botão com o microfone de mentira de
+  `tests/helpers/fake-microphone.ts`: a espera do envio, o emoji no contexto, o medidor parado do
+  iPhone, a interrupção, o cancelar e a caixa cheia), `voice-parents.test.tsx` (formulário,
+  criação com login antigo, guia, novidade e a `Permissions-Policy`), `recados-voice.test.tsx` e o caso da fala em `lesson-sections.test.tsx`
+  (a dúvida falada chega com `spoken: true`).
+
 ## Acesso infantil por aparelho (10/10/2026)
 
 A implementação de entrada Kids passa a usar sessões discriminadas `kids.kind`: responsável em `/pais`, criança em `/login/aluno` e `/perfis`. `/login` escolhe o público. O login adulto exige senha ou OTP próprio e não autoriza perfis implicitamente. Cada autorização pertence a um perfil e navegador; o cookie HttpOnly do aparelho é separado da sessão ativa. Os endpoints antigos de seleção/saída de perfil do Kids retornam 410 para a família. A seleção aceita exclusivamente sessões de suporte autenticadas (`act`), sem criar autorização de aparelho; `/perfis` mostra um seletor separado nesse contexto. As descrições antigas do portão de senha e da grade mista de perfis neste documento são históricas.
@@ -52,7 +178,7 @@ de número, menu ⋯ acessível) em `app/pais/_components/parent-ui.tsx`.
   `tests/profile-allowance.test.ts`). O teto da conta é o MAIOR entre as matrículas, nunca a soma:
   o assinante no limite lia o convite para comprar o que já tem. No teto da Comunidade a frase
   manda ao Atendimento (`PARENT_SUPPORT_HREF`).
-- **Conta:** "Minhas compras" (assinatura + histórico), uso da IA, senha e o cartão de embaixador
+- **Conta:** "Minhas compras" (assinatura + histórico), créditos do Zappy e do Pensa, senha e o cartão de embaixador
   (`#embaixador`). ⚠️ O título "Minhas compras" é load-bearing: os Termos de Uso e as páginas de
   venda dizem que o cancelamento fica ali. Renomear exige mudar os Termos (versão nova).
 - **Endereços antigos:** `/responsavel` → `/pais/acompanhamento` e `/responsavel/ajuda` →
@@ -271,7 +397,7 @@ o bloco **`studio`** (chip "Crie") REUSA o `StudioBlockView` do member-shell —
 (altura `h-[36rem] lg:h-[40rem]` desde 09/2026, quando ele passou a dividir a tela com o conteúdo
 da seção; mudança no member-shell, vale tb no adulto),
 rascunho local, "Enviar para o professor" (o modal de confirmação tem um campo OPCIONAL de recado ao professor — compartilhado do member-shell, vale tb no adulto) + gate de conclusão `STUDIO_GATE_NOT_SUBMITTED` (sem envio)
-ou `STUDIO_GATE_NOT_PASSED` (atividade enviada, mas abaixo da nota mínima); o `lesson-player-client`
+(o `STUDIO_GATE_NOT_PASSED` da nota mínima saiu em 18/10/2026); o `lesson-player-client`
 distingue os dois no toast/botão. O player compartilhado `LessonSections` mostra uma seção por vez e mantém uma instância do editor entre seções, ocultando-a quando não usada. O índice é livre dentro da aula desbloqueada.
 Renderizado DENTRO do `LessonPlayerProvider` (precisa do contexto do player). Exige `@sistemazero/studio` em transpilePackages + `@source`
 + `frame-src blob:`;
@@ -477,6 +603,43 @@ assere que LEU arquivos — guarda que não lê nada aprova tudo, em silêncio. 
 que já tinha voltado duas vezes por componente novo; os dois dividem a máquina de estados em
 `tests/helpers/copy-scan.ts`. Desde 06/10/2026 o mesmo arquivo guarda o vocabulário da aventura (abaixo).
 
+## O recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido dela (o mesmo da comunidade adulta, com o mesmo vocabulário): a tela nomeia o RECURSO, não
+a tecnologia.
+
+- **o Zappy**: o mascote que fala nas fases ("falas do Zappy") e a ajuda do Zappy no Estúdio.
+- **o Pensa**: planeja o jogo com a criança, em missões.
+- **créditos**: o que o Zappy no Estúdio e o Pensa gastam, da família inteira. ⚠️ As **falas do
+  Zappy nas fases** são escritas pela equipe e NÃO gastam crédito. Gastam: cada pergunta ao Zappy no
+  Estúdio, cada pedido ao Pensa, a descrição automática ao publicar no Mural (`server/openrouter.ts`
+  do member-shell) e o "Construir com Zappy" do modo Pro (`server/studio-builder.ts`). Na área dos
+  pais: "Créditos do Zappy e do Pensa neste mês" com `CREDIT_USES` e "Na tela da criança, os
+  créditos aparecem como ideias." (`ai-credits-card.tsx`); "Assistentes no Estúdio", "Uso dos
+  assistentes no Estúdio neste mês" e "pagar os assistentes do Estúdio com o seu próprio saldo no
+  OpenRouter" (`studio-openrouter-card.tsx`: o custo somado não é só do Zappy, e "créditos" é o
+  termo da franquia, não do saldo no OpenRouter); "Assinatura, compras, créditos do Zappy e do
+  Pensa, e a segurança da sua conta." (Conta). Na tela da criança o medidor do core segue contando
+  **ideias** ("✨ 13 ideias hoje"), que é a palavra dela.
+- **assistente virtual** (decisão dela, 20/10/2026), nunca "assistente automático".
+- **"IA" fica só no aviso de transparência aos pais**, `AI_DISCLOSURE` do `ai-credits-card.tsx`:
+  "A ajuda do Zappy no Estúdio e o Pensa são assistentes virtuais, feitos com inteligência
+  artificial. As falas do Zappy nas fases são escritas pela nossa equipe, e nos Recados quem
+  responde é a equipe." ⚠️ Ele mora no `AiTransparencyNotice` ("Quem responde à criança"), montado
+  na Conta ao lado do cartão de créditos e FORA dele: o cartão some quando a consulta falha e para
+  a equipe, e o aviso não pode sumir junto. No atendimento compartilhado (member-shell), o autor da
+  resposta automática segue "Assistente de IA".
+- O recado do Zappy quando a conexão da família falha diz "A conexão do Zappy precisa da atenção do
+  responsável…" (`routes/studio-zappy.ts` do member-shell). A recusa de reserva do "Construir" do
+  Pro vira frase de gente, sem o código do motivo (`studioBuilderReservationDenied`; na criança,
+  "As ideias de hoje acabaram. Peça ao responsável…").
+- Guarda: **`tests/copy-sem-ia.test.ts`** (mesma máquina `copy-scan`) varre o `src/` inteiro, a área
+  dos pais inclusive, e o member-shell que roda aqui; reprova "IA"/"inteligência artificial" fora da
+  lista `PERMITIDOS` (trecho exato, uma vez por arquivo, com motivo).
+- O `studio` segue o mesmo vocabulário desde 20/10/2026 (`ShareDialog`: "Escrever com ajuda do
+  Zappy"; `ProBuilderPanel`: "passos do Zappy" e "ideias da família"; `ZappyPanel`: "ideias"). O
+  painel do Zappy diz à criança: "O Zappy é um assistente virtual, não uma pessoa da equipe."
+
 ## A criança lê aventura, não escola (06/10/2026)
 
 ⭐⭐ Decisão da dona: a área da criança é um lugar de criar jogos, não uma extensão da escola. No que a
@@ -514,7 +677,7 @@ aula e professor, que é a língua dos adultos.
   (`literaisVisiveis` em `tests/helpers/copy-scan.ts`: literais, crases, texto de JSX e rótulos; comentário
   não é nó da árvore) e reprova qualquer palavra da régua `PALAVRAS_DA_ESCOLA`, e também a CONCORDÂNCIA que
   a troca palavra por palavra deixa ("o fase", "no parte", "próximo parte"; a régua `CONCORDANCIA_ERRADA`
-  é importada, só leitura, de `docs/aulas-interativas/qa/palavras-da-escola.ts`). O alcance: o `src/` do
+  é importada, só leitura, de `docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`). O alcance: o `src/` do
   app (a área dos pais fica fora por ARQUIVO, e a grade `perfis-client.tsx`, que a criança também lê, é
   varrida com exceções pontuais), o member-shell que roda aqui (`components`, `lib`, `routes`, `server`),
   o `core/src` inteiro, o `studio/src`, o `pinta/src`, o `molda/src` e o `ui/src`, cada raiz com um
@@ -551,7 +714,7 @@ aula e professor, que é a língua dos adultos.
   "meu-desenho" (o `PintaLesson` troca o "desenho-da-aula" antigo ao carregar, sem mexer no banco), e
   nos manuais do Estúdio "das engines de verdade" no lugar de "do curso".
 - ⚠️ A régua da tela cobre tudo o que a régua dos roteiros e manifestos cobre
-  (`docs/aulas-interativas/qa/palavras-da-escola.ts`): o que a narração não pode dizer, a tela também não.
+  (`docs/aulas-interativas-tecnico/qa/palavras-da-escola.ts`): o que a narração não pode dizer, a tela também não.
 
 ## A regra de ouro: quase tudo vem do member-shell
 
@@ -688,6 +851,14 @@ Shim `app/api/parents/embaixador/route.ts` = `requireParentGateAccountOnly(shell
 ambassadorMe.GET/POST)` — mesma régua estrita do children-stats (sessão de perfil é RECUSADA).
 Tipos no member-shell (`AmbassadorEnrollmentView`); gestão completa (bônus, Pix, jornada) vive no
 ADMIN e na página do embaixador no funil.
+**Presente Kids e adulto (20/10/2026):** o cartão (hoje em `app/pais/_components/ambassador-card.tsx`)
+conta os DOIS presentes (uma família com criança de 9 a 14 anos ou um adulto que quer criar o
+próprio jogo) e, cadastrado, oferece "Copiar link para uma família" (`shareUrls.kids`, com o
+`shareUrl` antigo como reserva) e "Copiar link para um adulto" (`shareUrls.adult`; some sem ele),
+mais "Abrir minha página". ⚠️ Regra da dona: o DESENHO não muda (faixa `--band-lilas`, ícone em
+cartão branco, `sz-display`, `PRIMARY_ACTION`/`SECONDARY_ACTION`); a cara da oferta adulta fica no
+funil. Os toasts perderam o "!" e o nome do curso saiu do cartão. Testes:
+`tests/ambassador-card.test.tsx` (estados) e `tests/ambassador-copy.test.ts` (copy e desenho).
 A Área dos Pais também tem o **Atendimento**, hoje em `/pais/ajuda/atendimento` (era `/responsavel/ajuda`, que
 virou redirecionamento em 11/10/2026; FORA do layout e da navegação infantil). Essa página exige sessão da CONTA no RSC;
 os três BFFs `/api/helpdesk/portal/*` repetem a proteção com
@@ -1440,6 +1611,9 @@ rating/estúdio-submit JÁ chamavam `router.refresh()` (`lesson-player-client`/c
 reiniciar o jogo. Os tokens `--sz-activity-card-*` do cartão da aula também vestem o cartão
 ampliado. A rolagem mantém o cabeçalho da experiência acessível em telas pequenas e com
 fonte aumentada. QA: `e2e-scenes/activity-expansion.spec.ts`, junto das suítes de jogo e cena.
+⚠️ O teste só guarda o `<iframe>` do jogo depois de `aria-busy="false"` (19/10/2026): o player
+troca o iframe do "Carregando…" por um elemento NOVO quando o jogo fica pronto, e guardar o nó
+antes disso fazia o CI falhar ou passar conforme a velocidade da máquina.
 
 A aula é do member-shell (compartilhada com o adulto), então o kids a veste por CSS a partir dos
 GANCHOS de lá (lista no CLAUDE.md do member-shell, invariante 8). ⚠️ As regras ficam FORA de camada
@@ -1628,23 +1802,104 @@ eram 44/60rem e 40/52rem): 960px de altura numa coluna de metade da tela viravam
 comprido. Quem quer mais espaço usa o "Expandir". A mudança é no member-shell, então **vale também
 no adulto** (como sempre valeu a altura de lá).
 
-## Telas de produto bloqueado (Estúdio/Clube/Pensa/Pinta/Mural + CTA da Comunidade) — 07/2026
+## Telas de produto bloqueado (Estúdio/Pinta/Pensa/Molda/Clube/Mural + Comunidade), revistas em 20/10/2026
 
-As 5 telas de "Ainda não liberado" dos produtos vendáveis (`kids-locked-{studio,clube,pensa,pinta,
-mural}.tsx`) são **wrappers finos** do componente compartilhado
-**`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote dormindo + título +
-pílula "Ainda não liberado" + prévia (`preview`) + o **cartão da Comunidade dos Criadores** (na faixa
-lilás) com um **CTA** para a oferta de assinatura. Cada wrapper só passa `title`/`intro`/`preview`; a API dos
-exports (`KidsLockedStudio`/`KidsLockedClube`/…, sem props) não mudou. **A promessa é REAL:** a
-assinatura "Comunidade dos Criadores" é um combo do catálogo que concede Clube + Mural + Estúdio +
-Pensa + Pinta (+ cursos) — confirmado em `packages/catalog/scripts/seed.ts`, então o CTA vale para as
-5. ⚠️ A **URL da oferta** é uma CONSTANTE nomeada (`COMUNIDADE_OFERTA_URL` em `lib/links.ts`:
-`https://sistemazero.com.br/kids/comunidade-dos-criadores/oferta`, `target="_blank"`), NÃO uma env
-(kids segue sem `FUNNEL_URL` de env). ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica
-`KidsLockedSpace`** (coringa de qualquer espaço do hub, que pode ser gateado por curso/cargo e não só
-pela assinatura — o CTA prometeria errado); a genérica fica sem CTA. As telas transientes
-`kids-*-unavailable.tsx` ("tente de novo") e a trava de aula `kids-locked-lesson.tsx` são gates
-diferentes (não-produto) e seguem sem CTA.
+As 6 telas de produto que a CONTA não tem (nunca assinou ou a assinatura acabou),
+`kids-locked-{studio,pinta,pensa,molda,clube,mural}.tsx`, são **wrappers finos** do componente
+compartilhado **`kids-locked-product.tsx`** (`KidsLockedProduct`, Server Component): mascote
+dormindo + título (o nome do produto) + pílula **"Parte da Comunidade"** + prévia (`preview`) + o
+**cartão da Comunidade dos Criadores** na faixa lilás. Cada wrapper passa `product` (a chave de
+`LOCKED_PRODUCTS`), `title`, `intro` e `preview`; os quatro de ferramenta aceitam `opensAt`.
+
+- **A promessa antiga era falsa** ("fica tudo liberado" com a assinatura). Na Comunidade as
+  FERRAMENTAS abrem por posto da Jornada; só o Clube e o Mural abrem direto com a assinatura.
+  Copy aprovada: título do cartão "O {Estúdio|Pinta|Pensa|Molda|Clube|Mural} faz parte da
+  Comunidade dos Criadores"; ferramentas: "Na Comunidade, cada posto da Jornada abre ferramentas
+  novas. O Pinta abre no posto Construtor(a). Chame o seu responsável para ver com você como
+  entrar na Comunidade."; Clube: "Com a assinatura, o Clube abre para você conversar com a turma
+  e mostrar as suas criações. …"; Mural: "Com a assinatura, o Mural abre para você publicar e
+  comentar. …". Botão **"Ver com o meu responsável"** (`target="_blank"`). A frase mora em
+  `lockedProductText`, e o pedido ao responsável é o `LOCKED_PRODUCT_ASK`.
+- **Quem volta depois do fim da assinatura e já chegou ao posto** (`journey.earned` cobre a
+  ferramenta, `toolEarnedInJourney` de `lib/tool-opens-at.ts`; as capacidades ficam com a
+  criança): "Você já chegou ao posto Construtor(a). Com a assinatura, o Pinta volta a abrir para
+  você. …" (sem posto conhecido, só a volta). As páginas passam `earned` junto do `opensAt`.
+- **O posto vem da política, nunca digitado:** `toolOpensAtLevel(tool, journey)`
+  (`lib/tool-opens-at.ts`) roda o MESMO `kidsCreativeToolAvailability` do core como se a criança
+  começasse sem capacidades (o real responde `not-included` sem posto para quem não tem o
+  produto), e o nome sai do `levelInfo` (o mesmo "Construtor(a)" do `/criar`). Política pausada,
+  sem horizonte, prévia da equipe ou jornada indisponível → `null`, e a frase do posto sai
+  inteira. As páginas (`/estudio`, `/estudio/pro/[id]`, `/pinta`, `/pensa`, `/molda`) já tinham a
+  gamificação em mãos e passam `<ToolRouteRecado screen={<KidsLockedPinta opensAt={…} />} />`
+  (o `ToolRouteRecado` aceita o componente sem props OU o elemento montado).
+- **Link:** a página de continuidade com UTM, `comunidadeContinuarUrl(origem)` em `lib/links.ts`
+  (`…/kids/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=<origem>`),
+  aqui `ferramenta-<estudio|pinta|pensa|molda|clube|mural>`. Os outros links da Comunidade usam
+  o mesmo helper com origem própria: `perfis-nao-incluidos` (`ProfilesNotIncluded`),
+  `pais-limite-perfis` (`ProfileAllowanceNote`), `criar-oficinas-ao-vivo` (`/criar`). A constante
+  `COMUNIDADE_OFERTA_URL` (sem UTM) segue como base dos links derivados. Constante nomeada, NÃO
+  env (kids segue sem `FUNNEL_URL` de env).
+- **Guarda:** `tests/copy-produto-bloqueado.test.tsx` reprova "tudo liberado" em qualquer texto
+  de tela do `src/` e trava a pílula, o título, o pedido ao responsável, o botão, o
+  `utm_content=ferramenta-` e o posto vindo da política (seed: Estúdio e Pinta no Construtor(a),
+  Pensa no Inventor(a), Molda no Explorador(a) de Mundos).
+- **Pensa (Canvas "Estados", 20/10/2026):** a prévia virou os três passos que o Pensa faz
+  ("Conte a ideia do jogo, escrevendo ou falando", "Confira o plano que o Zappy monta com você",
+  "Construa uma missão de cada vez no Estúdio, no Pinta e no Molda") em ladrilhos âmbar
+  numerados (`numbered`, opcional no `KidsLockedProduct`; as outras telas seguem com emoji). A
+  antiga prometia "desenhar as telas e o fluxo do jogo". Quem já conquistou lê que os jogos e os
+  planos estão guardados. O posto que falta (`KidsJourneyLockedPensa`) diz "O Pensa abre num
+  próximo posto da Jornada" (`heading`/`detail` opcionais no `KidsJourneyLockedProduct`), e o
+  `KidsPensaUnavailable` virou "O Pensa não abriu agora" com "Tentar de novo" e "Ir para o
+  Estúdio". O cartão da Comunidade não mudou (sem fluxo de "mostrar para quem cuida da conta").
+- ⚠️ **NÃO usar `KidsLockedProduct` na tela genérica `KidsLockedSpace`** (coringa de qualquer
+  espaço do hub, que pode ser gateado por curso/cargo e não só pela assinatura: o botão prometeria
+  errado); a genérica fica sem CTA. As telas transientes `kids-*-unavailable.tsx` ("tente de
+  novo"), o posto que falta com o produto comprado (`KidsJourneyLocked*`) e a trava de aula
+  `kids-locked-lesson.tsx` são gates diferentes e seguem sem o cartão da Comunidade.
+
+**Na área dos pais (20/10/2026):**
+
+- **Assinatura encerrada:** em Conta, só o cartão da Comunidade Kids `EXPIRED` ("Encerrada") mais
+  recente mostra **"Ver como continuar"** (`SECONDARY_ACTION`, `utm_content=pais-assinatura`), pela
+  régua `comebackSubscriptionId` do member-shell (`lib/subscription-comeback`). `CANCELED`
+  ("Cancelada") ainda dá acesso até o fim do período pago mais a carência: sem botão (a família
+  pagaria duas vezes), e enquanto o período pago derivado (última cobrança + intervalo) não
+  terminou, o cartão diz "O acesso continua até o fim do período já pago.". Uma Kids Ativa esconde o
+  botão; a Pendente não conta. ⚠️ A view pública do payments não tem SKU, slug nem produto, só o
+  nome do produto: a Kids é reconhecida pelo nome (`isKidsComunidadeSubscription`: começa com
+  "Comunidade dos Criadores" e NÃO tem "adult"). A oferta principal Kids cobra como "Comunidade dos
+  Criadores"; a adulta leva "(adultos)" no nome (a principal adulta passa a gravar esse nome no
+  funil).
+- **Perfil que fez 18 anos:** o perfil Kids NUNCA é cortado aos 18; continua funcionando. Na página
+  da criança (`child-client.tsx`), com data de nascimento e idade ≥ 18, um aviso diz "{nome} fez 18
+  anos. O perfil Kids continua funcionando enquanto a sua assinatura estiver ativa, com os projetos
+  que já estão aqui. Agora {nome} também pode ter uma conta própria na área adulta, que começa nova
+  e usa o mesmo Estúdio.", com **"Conhecer a área adulta"** (`areaAdultaContinuarUrl('pais-perfil-18')`,
+  que repassa ao `comunidadeAdultoContinuarUrl` do member-shell) e **"Arquivar perfil"**, que reusa
+  o arquivamento do editor (`_components/remove-profile.tsx`: `archiveProfile`,
+  `showProfileActionError` e a MESMA confirmação `RemoveProfileDialog`). A idade é contada no dia de
+  São Paulo (`profileAgeOn(birthDate, saoPauloDayKey())`, `lib/profile-age.ts`): servidor e
+  navegador chegam ao mesmo dia, sem diferença na hidratação.
+- **Arquivar** (`archiveProfile`): o `DELETE` arquiva no Auth (`status = 'archived'`, nunca apaga;
+  não há como desarquivar pela plataforma, então a tela não promete volta). O limite do Auth conta
+  só perfis `active`, então a vaga volta. A falha leva o código do servidor: `PARENT_REAUTH_REQUIRED`
+  vira `StudyRequestError` com esse código, e `showProfileActionError` mostra o atalho "Entrar de
+  novo". Diálogo: título "Arquivar perfil", botão "Arquivar", texto "Arquivar o perfil de {nome}?
+  Ele sai da sua conta e libera a vaga do plano, e {nome} deixa de entrar com ele. O progresso e os
+  projetos ficam guardados, mas não aparecem mais na plataforma." (sem "criança": serve ao perfil de
+  quem fez 18). O botão do formulário de edição também diz "Arquivar perfil".
+- **Sem data de nascimento:** a página da criança mostra, discreto e opcional, "Informe a data de
+  nascimento para a plataforma avisar você quando {nome} completar 18 anos." com "Informar a data"
+  (o formulário de edição). O campo segue opcional. Se o perfil já é de quem tem 18 anos ou mais, a
+  data não entra (`PROFILE_AGE_RESTRICTED`, a regra do Auth para qualquer data nova de 18+): na
+  EDIÇÃO a recusa diz "A plataforma só aceita datas de quem tem menos de 18 anos. O perfil continua
+  funcionando." (`profileAgeMessage(true)`); na criação segue "Esta comunidade é para crianças
+  menores de 18 anos.".
+- Testes: `tests/parent-surfaces.test.tsx` (o botão só na Kids Encerrada, a Cancelada e a Ativa sem
+  botão), `tests/parents-area.test.tsx` (o aviso dos 18, o arquivamento confirmado, o código do
+  login recente e o convite da data), `tests/guide-components.test.tsx` (a recusa da data na
+  edição) e `tests/copy-produto-bloqueado.test.tsx` (a volta de quem já chegou ao posto).
 
 ### O molde das telas de recado (11/09/2026)
 
@@ -2111,9 +2366,9 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    perfil" via `/api/profiles/:id`. O telefone do RESPONSÁVEL segue na compra (não se mistura).
 4. **SEM `FUNNEL_URL` de env** (curso bloqueado no catálogo sem `salesPageUrl` fica não-clicável —
    comportamento herdado). ⚠️ **Atualização 07/2026:** o funil kids EXISTE (assinatura "Comunidade
-   dos Criadores", em produção) — as 5 telas de PRODUTO bloqueado agora levam um CTA para a oferta
-   (ver `## Telas de produto bloqueado`). A URL é uma CONSTANTE no componente, não uma env; kids
-   segue sem `FUNNEL_URL` de env.
+   dos Criadores", em produção) — as 6 telas de PRODUTO bloqueado levam à página de continuidade
+   (`/oferta/continuar` com UTM, desde 20/10/2026; ver `## Telas de produto bloqueado`). A URL é uma
+   CONSTANTE em `lib/links.ts`, não uma env; kids segue sem `FUNNEL_URL` de env.
 5. **SEM `public/sw.js`** (kill-switch era cicatriz do domínio do community).
 6. `/impersonar` EXISTE (suporte): o admin gera o handoff com `?platform=kids` no auth → a URL
    devolvida é a deste app. O banner persiste também em `/perfis`, usa o nome do perfil ativo e
@@ -2125,39 +2380,37 @@ e encontra o recado, que é justamente a mensagem que a autora quer dar.
    desenha em SVG embutido, com o selo "kids" já no desenho (antes era a wordmark do adulto + um
    selo em HTML). Os favicons também são do pacote. Ver §"Tema: a paleta do Pen".
 
-## Pensa (planejador de jogos — 08/2026)
+## Pensa: definição do jogo e missões funcionais
 
-O **Pensa** (`@sistemazero/pensa`) planeja; Pinta e Estúdio executam. O método ZERO usa **Z**
-(ideia e regras), **E** (loop, cenas, telas e Bíblia Visual), **R** (Cartões de Criação ordenados)
-e **O** (auditoria e aprovação). Item "Pensa" no `nav.ts` → rota
-`/pensa` (`protectedPrefixes`), gate em 4 ESTADOS (indisponível, sem produto, comprado mas abaixo
-de Inventor(a), liberado):
-`app/(app)/pensa/page.tsx` chama `checkPensaAccessReadonly()` (`GET /members/access?refs=pensa`;
-ref = `PENSA_ACCESS_REF` do member-shell) → 200 sem produto = `KidsLockedPensa`; status ≠ 200 =
-`KidsPensaUnavailable` (retry); produto + jornada ≥ `hacker` = `pensa-client.tsx` (`'use client'`, import dinâmico
-do pacote no effect, tema claro fixo e sprites do Zappy). A persistência do plano é
-BACKEND (members, tabelas `pensa_*`) — o client injeta um **transport** que prefixa `/api/pensa`
-(shims de 1–3 linhas sobre `shell.routes.pensa*`; o chat SSE `/api/pensa/chat` E o
-`…/artifacts/generate` têm `force-dynamic` — a geração responde SSE desde 08/2026, ver
-member-shell). Erros do transport são duck-typed `{status, code}` (a classe não atravessa o
-dynamic import). ⚠️ O `request()` do transport **sniffa `content-type: text/event-stream`**:
-resposta SSE é lida pelo helper `readSse` (compartilhado com o `streamChat`) e o evento terminal
-vira o resolve (`done` = corpo JSON de sempre) ou o MESMO erro duck-typed (`error`); stream que
-acaba sem terminal rejeita "A conexão caiu no meio.". Sniff por content-type (não por path)
-tolera skew de deploy. É o que matou o 502 do "Criar plano de tarefas" (borda derrubava o POST
-mudo de minutos). `PensaHostAdapter.onOpenTask` navega para `/pinta?tarefa=<id>` ou
-`/estudio?tarefa=<id>`; nenhuma tela do Estúdio monta dentro do Pensa. `MainContainer` dá largura
-total a `/pensa`. Requisitos de
-build: `transpilePackages` + `@import` do `pensa.css` + `@source "../../../pensa/src"` no
-globals.css (MESMO gotcha das utilitárias `sz-*` do Estúdio — sem isso as `pz-*` são no-op).
-`api/pensa/*` fica DENTRO do matcher do proxy (JSON pequeno; a resposta SSE não é bufferizada
-pelo middleware). Deploy: `packages/pensa/**` nos watchPatterns do railway.json + case no ci.yml.
-O host remove chaves locais do fluxo anterior e mantém apenas os deep links de tarefa. Contrato:
-[`../../docs/pensa-planner.md`](../../docs/pensa-planner.md). **Equipe do plano (26/09/2026):** quatro shims novos sobre o BFF — `projects/join`
-(`pensaJoin`), `[projectId]/share` (`pensaShare` POST/DELETE), `[projectId]/members`
-(`pensaMembers`) e `[projectId]/members/[profileId]` (`pensaMember` DELETE); todos DENTRO do
-matcher do proxy, sem gate próprio (posse do Pensa e dono/membro são do members). Ordem de deploy:
-members (migration `0098`) → gateway → member-shell → kids.
+`@sistemazero/pensa` é a interface única para definir o jogo completo, revisar mudanças e organizar missões por funcionalidade. O plano não é tutorial de blocos. Especificação vigente: [reestruturação do Pensa](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
+
+`app/(app)/pensa/page.tsx` preserva o gate do produto e da jornada; `pensa-client.tsx` injeta tema, chrome, transporte e voz/narração. O browser não consulta capacidades para decidir o plano. O servidor oferece alternativas viáveis quando faltam recursos e fornece `availability`/`nextAction` atualizadas. Projetos, revisões, drafts, operações, missões e equipe vêm dos schemas de `@sistemazero/core/pensa`.
+
+A API usa somente o shim `app/api/pensa/[...path]/route.ts`, que encaminha os verbos para `shell.routes.pensa`. O transport prefixa `/api/pensa`, envia JSON e preserva os erros estruturados. As rotas canônicas são projects, missions, operations e credits; operações persistidas são acompanhadas por polling com `requestId`. Não existem aliases de tarefas, ciclos, etapas de método ou outra versão de API.
+
+### Oficinas e retomada
+
+`onOpenMission` navega com `?missao=<id>` para Estúdio, Pinta ou Molda. `onOpenGame` abre a criação canônica `pensa-<32 hex>`. Estúdio Pro usa `/estudio/pro/<id>` com navegação completa ao entrar, sair ou trocar de jogo; apenas a troca de missão no mesmo pathname preserva o documento e o editor. `?plano=<id>` reabre o plano; `?ajuda=<missionId>` seleciona a dúvida da missão correta mesmo quando ela não é a próxima.
+
+`use-pensa-mission-session.tsx` busca e valida `PensaMissionHandoff`, mantém a sessão durante refresh e serializa as escritas. Cada resposta assíncrona confere perfil, missão e revisão antes de atualizar a UI. A disponibilidade é do servidor; outra pessoa da equipe ou uma dependência pendente bloqueia execução com recado e volta ao plano.
+
+Antes de concluir, reconferir ou vincular uma criação, o host aguarda a gravação na conta por `CreationsCloud.confirm` e lê a revisão salva real. Entregas persistem por missão e `assetSlotId` via `PATCH /missions/:id/deliveries`. Referências não são inventadas nem guardadas em `sessionStorage`. Instalar a extensão recomendada é uma ação explícita no Estúdio; o BFF inspeciona o snapshot autorizado, incluindo extensões instaladas. A criação de uma arte independe de sua integração posterior no jogo.
+
+`pensa-mission-link.ts` inicia com as revisões canônicas de concorrência e não recomeça uma missão concluída. `pensa-next-mission.ts` consulta a próxima ação autorizada no servidor. Não ordene dependências ou decida papéis no browser. A anotação “Onde parei” é persistida no servidor. O recolhimento do painel é uma preferência visual por perfil (`use-pensa-guide-collapsed.tsx`), compartilhada pelas três oficinas.
+
+⭐ **A missão nunca cobre a oficina (20/10/2026, desenho aprovado).** Estúdio, Pinta e Molda montam `PensaMissionLayout` (`@sistemazero/ui/pensa-mission-panel`) em volta da oficina, com o painel como IRMÃO dela. Medida é a largura da área da oficina (container query, não o viewport): a partir de 1100px o painel é uma coluna própria de 360px à direita e a oficina encolhe; recolhido vira um trilho de 64px (lâmpada, "4/9", "Ver missão · título" em pé, seta) que reabre ao toque. Abaixo de 1100px o painel vira uma faixa EMBAIXO da oficina (a coluna rola; a oficina mantém o piso de 34rem das ferramentas embarcadas) e recolhe para a linha "Missão 4/9 · título". Recolhido com recado (erro de gravação, desenho ausente) a linha fica e o recado continua visível. Canvas e editores re-medem sozinhos (ResizeObserver de cada oficina). Provado em Chromium real: nenhum elemento da oficina intersecta o painel, aberto ou recolhido, a 1440px e a 390px.
+
+`usePensaMissionOutline` (em `use-pensa-mission-session.tsx`) lê `GET /api/pensa/projects/:id` só para EXIBIR "missão N de M", o título da próxima missão ("Missão pronta. A próxima é …") e, em equipe, quem programa e recebe a arte (linha lilás). Sem o plano carregado, nada de número inventado: o topo mostra só "Pensa · <jogo>". A ordem e a próxima ação continuam decididas pelo servidor. Cada oficina acrescenta só os controles nativos dela: o Estúdio instala as ferramentas e mostra "Onde parei"; o Pinta lista as partes com "Escolher o desenho aberto"/"Trocar pelo desenho aberto" (nunca "Usar no jogo": ligar o desenho à parte não o leva ao Estúdio, e a barra do editor já tem o "Usar no Estúdio", que faz outra coisa); o Molda escolhe a criação guardada de cada parte. O painel "Peças e propriedades" do Molda segue onde estava: a missão é uma coluna própria, sem abas dentro do Molda.
+
+No Estúdio, restaure a criação da conta antes de propor um projeto vazio quando ela já existe. `gameCreation` e `restoredSaveRevision` vêm do servidor; `pensa-restore-pending.ts` protege contra gravar um rascunho local anterior sobre uma restauração. Não remonte o editor ao atualizar progresso. Pinta/Molda guardam antes de sair; o Molda exige fechar a criação pelo Voltar nativo antes de conferir, vincular ou navegar.
+
+### Equipe e biblioteca
+
+O servidor controla convites, dono, quem programa, artistas, ocupação de missões e estabilidade da pessoa que programa após o primeiro salvamento. `use-pensa-team-library.ts`/`pensa-team-library.ts` oferecem artes concluídas para quem programa, com revisão salva e identidade por missão e parte. Várias artes da mesma missão não podem colidir. A importação usa a criação autorizada do perfil de origem, com confirmação de conteúdo quando necessária; atualizar não duplica.
+
+Narração usa referências canônicas de definição, draft, mensagem ou missão e suas revisões. Voz permanece no member-shell. Links de cursos enviados na ajuda passam pelo renderer seguro do Pensa, sem HTML arbitrário.
+
+Testes principais: `pensa-client.test.tsx`, `pensa-mission-session.test.tsx`, `pensa-mission-link.test.ts`, `pensa-next-mission.test.ts`, `molda-mission-guide.test.tsx`, `pensa-team-library.test.ts`, `use-pensa-team-library.test.tsx` e `pensa-restore-pending.test.ts`. Painéis e fluxo de planejamento têm testes nos pacotes UI, Studio, Pinta e Pensa.
 
 ## Pinta (editor de assets de jogos — produto vendável, 07/2026)
 
@@ -2178,7 +2431,7 @@ em "Meus desenhos" na aba "Imagens" (menu ⋯ → Materiais) do `/estudio` do ME
 **Mão DUPLA (08/2026):** o Estúdio ganhou um botão "Editar" nos desenhos vindos daqui →
 `studio-full-client` passa `onEditDrawing` = `window.open('/pinta?desenho=<id>', '_blank',
 'noopener,noreferrer')`; o `pinta-client` lê `?desenho=` (query, porque `noopener` corta o
-`sessionStorage` usado pelo intent do Pensa), repassa como `initialAssetId` e LIMPA a URL
+contexto temporário da aba), repassa como `initialAssetId` e LIMPA a URL
 (`router.replace('/pinta')`) p/ um F5 não reabrir. Salvar no Pinta chama o `resyncToStudio` do
 adapter, que **só atualiza o que JÁ foi enviado** (guarda `getPersonalAsset(id)` — sem ela todo
 rascunho cairia na biblioteca sozinho); o Estúdio então reconcilia os JOGOS (todos, inclusive
@@ -2761,72 +3014,7 @@ proteção de sequência saíram do backlog — entregues na expansão de 6 fase
   `POST /api/studio/remix {playId}` (shim novo sobre `shell.routes.studioRemix`, DENTRO do matcher
   do proxy — JSON pequeno, ganha o anti-CSRF) → marco da missão `weekly-remix`/`monthly-remix-3` no
   members (que valida posse + playId real no hub + recusa self-remix; o toast não espera).
-- **Handoff Pensa→Pinta/Estúdio:** a página `/pensa` checa as duas capabilities best-effort e
-  mantém o plano visível mesmo sem posse. O client abre `?tarefa=<id>`; cada ferramenta busca
-  `/api/pensa/tasks/:id/handoff`, restaura seu painel e sincroniza
-  `/api/pensa/tasks/:id/progress`. Não use `sessionStorage` para contexto de tarefa.
-  ⭐ **A volta existe (09/2026):** o `pinta-client` monta `taskSession.onReturnToPlan` =
-  `router.push('/pensa?plano=' + handoff.project.id)` (espelho do `onReturn` do
-  `molda-client`/`MoldaTaskGuide`), e o painel do brief do Pinta desenha o botão "Voltar ao plano"
-  nas duas telas. O id do plano vem do HANDOFF, nunca de parâmetro novo na URL, e quem guarda o
-  desenho antes de navegar é o pacote. ⚠️ O `hostChrome.back` continua sendo só da galeria, sempre
-  "Voltar para Criar" (`tests/host-chrome.test.tsx`, `tests/nav-back.test.ts`).
-  ⭐⭐ **O guia RECOLHE por uma seta, e quem lembra é o host (18/09/2026).** Relato dela: o painel
-  come muito da tela e sobra pouco para criar. Não existe "o painel": são TRÊS componentes
-  independentes — `TaskBriefPanel` (pacote pinta), `TaskGuidePanel` (pacote studio) e o
-  `MoldaTaskGuide` daqui, que era o único no host e o único cujo corpo engolia o "Voltar ao plano".
-  O estado mora AQUI, numa chave por CRIANÇA valendo para as três oficinas
-  (`sz:kids:pensa-guia-recolhido:<viewerId>`, hook `use-pensa-guide-collapsed.tsx`), e desce aos
-  dois pacotes como DADO pelo par OPCIONAL `collapsed`/`onCollapsedChange` das sessões de tarefa —
-  o mesmo idioma do `menu.hidden`/`onToggle` do `hostChrome`, porque os pacotes não conhecem
-  `viewerId` nem `localStorage`. ⚠⚠ **O hook mora nos TRÊS clients, nunca dentro do painel** (conserto do full review de
-  18/09/2026): ele lê a preferência num efeito pós-mount, e o `MoldaTaskGuide` — que só monta
-  depois de o módulo do Molda carregar e o handoff resolver — pintava ABERTO no primeiro quadro e
-  fechava no seguinte. Pior: a `key` dele inclui a `revision` da tarefa, então cada progresso
-  guardado remontava e repetia o pisca. Nos clients o hook monta muito antes, e o painel já nasce
-  com o valor certo — por isso o guia do Molda também recebe `collapsed`/`onCollapsedChange` por
-  PROP, como os irmãos.
-  ⚠ Cobertura que FALTA, declarada: a fiação dos clients (o par descendo pelo adapter e pela
-  sessão) não tem teste. O hook tem o seu (`tests/use-pensa-guide-collapsed.test.tsx`, com os dois
-  mutantes que sobreviviam: gravar só o `'1'`, e vazar entre irmãos por varredura de prefixo) e os
-  três painéis têm os deles.
-  ⚠⚠ **A preferência é lida num `useEffect` PÓS-MOUNT, nunca no inicializador do `useState`**:
-  ler `localStorage` na primeira renderização dá mismatch de hidratação (React #418). Molde exato
-  do `focus-mode.tsx`, e a regra é load-bearing — ela já custou caro uma vez.
-  ⚠⚠ **O pé do Molda SAIU do que recolhe** (18/09): o `<details>` antigo embrulhava tudo, então
-  recolher escondia o ÚNICO caminho de volta ao plano e também o recado de um progresso que não
-  subiu. De quebra o pé saiu do corpo que ROLA (`max-h-80`), onde os botões nasciam abaixo da
-  dobra no celular.
-  ⭐⭐ **E em 19/09/2026 esse invariante foi REVOGADO EM PARTE, por decisão dela:** *"quando fechar
-  pode fechar tudo, mantendo só uma linha ali: o título e a setinha, para a gente deixar bastante
-  espaço para as ferramentas"*. O pé de ROTINA (guardar, concluir, abrir a criação vinculada,
-  voltar ao plano, a linha de situação) passou a recolher junto nos TRÊS guias. A regra que ficou
-  no lugar, e vale para os três: **recolher esconde conteúdo e ação de ROTINA, NUNCA um
-  problema** — o recado de erro e o aviso da criação que não está nesta galeria seguem fora do
-  que recolhe (escolha dela entre três opções), e a rotina volta com um clique na seta, que nunca
-  sai da tela. O sobretítulo também some recolhido, senão o cabeçalho tem duas linhas.
-  ⭐⭐ **No mesmo lote os três ganharam UMA casca só** (`.sz-tool-guide` do
-  `@sistemazero/ui/tool-chrome.css`): ela disse que o painel estava "totalmente fora do design da
-  identidade visual da comunidade", e era verdade — o do Pinta tinha fio de 2px no acento com
-  12px de respiro, este aqui o fio da marca com 20px, e o do Estúdio nem cartão era. Agora os
-  três são o cartão branco das galerias (canto de 20px, Baloo de 15px, 14/18px de respiro) com os
-  botões em `.sz-tool-pill`. ⚠️ Este guia é o único dos três que mora no HOST, então é o único
-  que usa a receita sem passar por um contrato de pacote.
-  **Full review do lote (19/09/2026), o que ele mudou aqui:** (a) o rascunho que o navegador NÃO
-  conseguiu guardar (`draftError`) SAIU da linha de situação e virou um recado próprio, fora do
-  que recolhe — ele só existe quando o `localStorage.setItem` lançou, ou seja as marcações da
-  criança estão só em memória, e recolhia junto com a rotina; (b) a SITUAÇÃO da tarefa virou a
-  pílula `.sz-tool-guide__state` no cabeçalho: enquanto ela era o sobretítulo, era `aria-hidden`
-  e sumia ao recolher, então quem usa leitor de tela deixava de saber que a tarefa estava pronta;
-  (c) os dois recados informativos (`role="status"`) usam `__alert--warn`, e o vermelho ficou
-  para o `role="alert"`: vermelho o tempo todo, para uma criança de 8 anos, lê como "quebrou";
-  (d) com o recado de falha na tela o pé FICA, porque "tente novamente" precisa do botão.
-  O review de integração acrescentou o caso da tarefa CONCLUÍDA e recolhida: a pílula
-  "Concluída" continua no cabeçalho e no nome acessível do botão, sem trazer o pé de rotina.
-  ⚠ As identidades novas nos `useMemo` do `pinta-client` (adapter) e do `studio-full-client`
-  (taskSession) NÃO remontam nada: o `PintaApp` guarda store/view/refs em `useState`/`useRef` e o
-  `EditorScreen` é chaveado pelo asset, e o `StudioCore` não latcha `taskSession`. Conferido antes
-  de fechar o lote, porque um remonte ali custaria o desenho aberto da criança.
+- **Handoff do Pensa:** a seção Pensa acima descreve o contrato canônico de missões, salvamento na conta, equipe, retorno ao plano e preferência de recolhimento. Os três consumidores usam `PensaMissionPanel`; não duplique o painel ou persista progresso no navegador.
 - **Desafio do MÊS (D — game jam, decisão da usuária: MENSAL e só Clube+Estúdio):** card
   `challenge-card.tsx` na home SÓ com as duas refs (`checkChallengeAccessReadonly`, 1 ida; tema de
   `getChallengeReadonly` — determinístico global, `m:YYYY-MM` SP); o `/estudio` passa
@@ -3401,8 +3589,8 @@ Sentry `sistema-zero-community-kids` + DSN no host.
 - O tutor é injetado somente em `StudioFullClient` e `StudioProClient`; players de aula e o
   Pensa não recebem `tutor`, portanto não exibem o botão. A capability `zappyEnabled` é derivada
   no Server Component pelo mesmo gate do BFF, então alunos abaixo de Inventor(a) não veem a UI.
-- Configuração: `ZAPPY_ENABLED` é o interruptor de emergência e `OPENROUTER_ZAPPY_MODEL` é
-  opcional. Não há allowlist de contas; a equipe mantém bypass de QA.
+- Configuração: `OPENROUTER_ZAPPY_MODEL` é opcional. O acesso acompanha a jornada, sem
+  flags de liberação ou allowlist de contas; a equipe mantém bypass de QA.
 - Chips de aula só existem em respostas com `courseSlug` autoritativo e abrem
   `/cursos/:slug/aulas/:lessonId` em nova aba com `noopener,noreferrer`.
 - **Chips de sugestão (08/2026):** a resposta traz até 3 continuações prováveis (`suggestions`) que
@@ -3437,11 +3625,7 @@ A validação em staging e a promoção para produção estão em `../../docs/pl
   distintos; aulas novas não apagam conquistas. Celebração usa progresso da resposta do servidor.
 - `creator-works.tsx` lista metadados da nuvem e planos; criações somente locais ficam nas galerias.
   Retomar Estúdio pelo ID conserva a preferência pelo rascunho local e os conflitos existentes.
-- Molda aceita `?tarefa=` do Pensa, guia contextual e saída vinculada a uma criação real do perfil.
-  O guia exige guardar/fechar pelo Voltar nativo do Molda antes de concluir/sair, preservando IDs.
-  Cada abertura pelo guia tem revisão própria (o `initialAssetId` do editor só é consumido na
-  montagem). Marcações do guia têm rascunho por perfil+tarefa, validado pela revisão e pelo
-  timestamp do progresso; uma atualização do servidor invalida um rascunho antigo.
+- Molda aceita `?missao=` do Pensa e recebe `PensaMissionHandoff`. `MoldaMissionGuide` vincula criações guardadas a cada parte do jogo e exige guardar/fechar pelo Voltar nativo antes de concluir ou sair. Progresso e entregas são persistidos no servidor; o browser guarda somente preferências visuais.
 - `/responsavel` exige sessão da conta e verificação de responsável. Reusa o dashboard com jornada,
   ferramentas e publicações pendentes; o fluxo de gerenciamento antigo continua em `/perfis`.
 - Curso com entrega recebida pelo Hub mostra propagação em andamento; refresh automático é

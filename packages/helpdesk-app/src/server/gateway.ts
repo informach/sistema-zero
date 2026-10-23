@@ -15,6 +15,7 @@ const GATEWAY_TIMEOUT_MS = 60_000
 const AUTH_TIMEOUT_MS = 15_000
 
 export interface GatewayResponse<T = unknown> {
+  retryAfter?: string
   status: number
   body: T
 }
@@ -156,7 +157,11 @@ export async function gatewayFetch<T = unknown>(
     const renewed = await tryRefresh()
     if (renewed) res = await rawFetch(path, opts, renewed)
   }
-  return { status: res.status, body: await readJson<T>(res) }
+  return {
+    status: res.status,
+    body: await readJson<T>(res),
+    ...(res.headers.get('retry-after') ? { retryAfter: res.headers.get('retry-after')! } : {}),
+  }
 }
 
 /** Login (rota pública do gateway → auth). NÃO leva Bearer. */

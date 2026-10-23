@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import {
   openScene,
   SCENE_IDS,
@@ -11,8 +10,11 @@ import {
   sceneTrial,
   stepScene,
 } from '@sistemazero/core/learning/scene'
-import { Glob } from 'bun'
 import { renderToStaticMarkup } from 'react-dom/server'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { scenePaths } from '../../core/tests/fixtures/exploration-paths'
 import { ExperienceComparison } from '../src/components/experience-scene'
 import { ExplorationStage } from '../src/components/exploration-stage'
@@ -48,8 +50,6 @@ import {
 
 const JANELAS = { 390: 314, 600: 524 } as const
 
-const DOCS = join(import.meta.dir, '../../../docs/aulas-interativas/aulas')
-
 /** Todo bloco de cena dos manifestos atuais (com elenco, caso ou roteiro próprio). */
 function usosDosManifestos(): SceneActivity[] {
   const usos: SceneActivity[] = []
@@ -66,8 +66,8 @@ function usosDosManifestos(): SceneActivity[] {
       for (const valor of Object.values(registro)) visitar(valor)
     }
   }
-  for (const arquivo of new Glob('*.manifesto.json').scanSync(DOCS))
-    visitar(JSON.parse(readFileSync(join(DOCS, arquivo), 'utf8')))
+  for (const arquivo of listarArquivosAulas().filter((nome) => nome.endsWith('.manifesto.json')))
+    visitar(JSON.parse(readFileSync(caminhoAula(arquivo), 'utf8')))
   return usos
 }
 

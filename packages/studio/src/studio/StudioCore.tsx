@@ -1,23 +1,29 @@
+import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import type { JSX } from 'react'
-import { useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { modesForKind, type Project } from '#core'
+import { useEffect, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
+import { type IDEMode, modesForKind } from '#core'
 import { ErrorBoundary } from '#ui'
 import { RootErrorFallback } from '../components/layout/ErrorViews'
 import { Shell } from '../components/layout/Shell'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { captureAndStoreProjectThumb } from '../cover/thumbCapture'
+import { createCodeObservationRegistry } from '../monaco/codeObservation'
 import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
-import { useChecksStoreApi } from '../state/checksStore'
-import { prepareProjectForHost, useProjectStore, useProjectStoreApi } from '../state/projectStore'
+import { prepareEditableStudioProject } from '../state/editableProjectValidation'
+import { flushProjectOperations } from '../state/projectOperations'
+import { useProjectStore, useProjectStoreApi } from '../state/projectStore'
 import { useSettingsStore } from '../state/settingsStore'
 import { StudioStoresContext } from '../state/storesContext'
 import {
   createStudioStores,
   usePendingEditorEdits,
   useStudioPersistence,
+  useStudioRuntimeCapture,
 } from '../state/studioStores'
 import { useUIStore } from '../state/uiStore'
-import { StudioActivityProvider } from './activity'
 import { StudioCloudSyncProvider } from './cloud-sync'
+import { StudioCodeObservationProvider, useStudioCodeObservation } from './code-observation'
 import {
   type ResolvedStudioConfig,
   resolveLearning,
@@ -30,14 +36,39 @@ import { StudioEditDrawingProvider } from './edit-drawing'
 import { StudioExamplesVisibleProvider } from './examples-visibility'
 import { StudioI18nProvider } from './i18n'
 import { StudioMoldaLibraryProvider } from './molda-library'
+import { StudioExecutionProvider } from './observation'
 import { StudioPintaLibraryProvider } from './pinta-library'
+import { ProBuilderDeletionReconciler } from './pro-builder-deletion'
+import { StudioProCandidatePreviewProvider } from './pro-candidate-preview'
 import { StudioProRuntimeProvider } from './pro-runtime'
 import { disallowedProjectExtensions } from './project-access'
+import { StudioRuntimeEnvironmentProvider } from './runtime-environment'
 import { StudioShareDisabledProvider, StudioShareProvider } from './share'
 import { TaskGuidePanel } from './TaskGuidePanel'
+import { withSaveBeforeTaskActions } from './taskSessionSave'
+import { StudioTeamLibraryProvider } from './team-library'
 import { StudioThemeProvider } from './theme'
 import { StudioTutorProvider } from './tutor'
 import type { StudioCoreProps, StudioHandle } from './types'
+
+/** Host curation applies both on opening and on every observed document. */
+function projectInAllowedMode(
+  project: Project,
+  allowedModes: readonly IDEMode[],
+  initialMode?: IDEMode,
+): Project {
+  const kindModes = modesForKind(project.kind)
+  const allowed =
+    project.kind === 'pro' ? kindModes : kindModes.filter((mode) => allowedModes.includes(mode))
+  let mode = initialMode ?? project.mode
+  if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
+  if (mode === project.mode) return project
+  if (isPythonProject(project)) {
+    if (project.kind === 'pro') return project
+    return { ...project, mode: mode === 'bridge' ? 'bridge' : 'blocks' }
+  }
+  return { ...project, mode }
+}
 
 /**
  * Motor compartilhado do Sistema Zero Studio (modos Blocos/Ponte/Código) — base
@@ -62,11 +93,13 @@ import type { StudioCoreProps, StudioHandle } from './types'
  * no Astro.
  */
 export function StudioCore(props: StudioCoreProps): JSX.Element {
+  const [codeObservation] = useState(createCodeObservationRegistry)
   // 1x por instância; StrictMode-safe (re-render descarta a duplicata).
   // `persistence` e `limits` são estáticos por instância (lidos só aqui).
   const [stores] = useState(() =>
     createStudioStores({
       persistence: props.persistence,
+      workspacePreferences: props.workspacePreferences,
       limits: props.limits,
       proBuildLimits: props.proRuntime?.limits,
       locale: props.locale,
@@ -75,7 +108,11 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
   return (
     <StudioI18nProvider locale={props.locale}>
       <StudioStoresContext.Provider value={stores}>
-        <StudioCoreBody {...props} />
+        <StudioRuntimeEnvironmentProvider value={props.runtimeEnvironment ?? null}>
+          <StudioCodeObservationProvider value={codeObservation}>
+            <StudioCoreBody {...props} />
+          </StudioCodeObservationProvider>
+        </StudioRuntimeEnvironmentProvider>
       </StudioStoresContext.Provider>
     </StudioI18nProvider>
   )
@@ -84,16 +121,24 @@ export function StudioCore(props: StudioCoreProps): JSX.Element {
 /** Corpo do Studio — DENTRO do provider, para os hooks lerem as stores da instância. */
 function StudioCoreBody({
   initialProject,
+  editingAccess = 'author',
+  writerEpoch,
+  onRevisionApplied,
+  autoRun = true,
+  previewOriginAdapter,
+  requireIsolatedPreview = false,
+  projectMuted = false,
   features,
   allowedModes,
   initialMode,
   limits,
   level,
+  pythonLevel,
   allowBlocks,
+  grantedBlockIds,
   allowExtensions,
   allowCategories,
   allowLevelReveal,
-  activity,
   tutor,
   taskSession,
   share,
@@ -103,30 +148,30 @@ function StudioCoreBody({
   onEditCreation,
   pintaLibrary,
   moldaLibrary,
+  teamLibrary,
   showExamples,
   onChange,
   onSave,
   onError,
   onModeChange,
   onReady,
+  onProjectOpeningSettled,
   theme,
   onExit,
   onPromoteToPro,
   proRuntime,
+  prepareProDependencies,
   blockUnloadWhenDirty = true,
   className,
   style,
   ref,
 }: StudioCoreProps): JSX.Element {
-  // Atividade é estática por instância (fixada pelo professor): latcha uma vez
-  // para o provider entregar valor estável — re-render do host com `activity`
-  // inline não re-renderiza o painel. Default `null` (sem atividade).
-  const [activityValue] = useState(() => activity ?? null)
+  const codeObservation = useStudioCodeObservation()
+  const runtimeCapture = useStudioRuntimeCapture()
   // Somente o StudioEditor oferece tutor. Adapter estático por instância, como share.
   const [tutorValue] = useState(() => tutor ?? null)
 
-  // Adapter de compartilhar também latcha uma vez por instância (igual à
-  // atividade): `share={{…}}` inline do host muda de referência a cada render,
+  // Adapter de compartilhar latcha uma vez por instância: `share={{…}}` inline do host muda de referência a cada render,
   // mas o valor entregue ao provider fica estável. Default `null` → sem botão.
   const [shareValue] = useState(() => share ?? null)
 
@@ -141,17 +186,22 @@ function StudioCoreBody({
   // "Editar a criação no Molda": o gêmeo do Pinta, mesmo latch. `null` → sem botão.
   const [editCreationValue] = useState(() => onEditCreation ?? null)
 
-  // "Trazer do Pinta" — mesmo latch; a janela dos materiais mostra o botão e a
-  // modal quando presente (e esconde a seção "Meus desenhos"). `null` → nada.
-  const [pintaLibraryValue] = useState(() => pintaLibrary ?? null)
+  // Perfil/posse podem mudar sem remontar o editor. A modal cancela o owner antigo.
+  const pintaLibraryValue = pintaLibrary ?? null
 
-  // "Trazer do Molda" — o mesmo latch do Pinta; a janela dos materiais mostra o botão e
+  // "Trazer do Molda" — valor inicial; a janela dos materiais mostra o botão e
   // a modal das criações 3D quando presente. `null` → nada.
   const [moldaLibraryValue] = useState(() => moldaLibrary ?? null)
 
-  // Runtime Pro da aula é um adapter estático, como os demais contratos de I/O
-  // do host. Ausente mantém o WebContainer local do Estúdio Completo.
-  const [proRuntimeValue] = useState(() => proRuntime ?? null)
+  // "Trazer da equipe" — SEM latch, de propósito: o host só descobre se o plano do Pensa
+  // tem equipe e arte entregue DEPOIS de abrir o jogo, e o botão precisa aparecer quando a
+  // resposta chega (latchar congelaria o `undefined` da montagem). O host passa uma
+  // referência estável (memo), então o Provider só muda quando a disponibilidade muda.
+  const teamLibraryValue = teamLibrary ?? null
+
+  // A autoridade do host pode trocar sem remontar o editor.
+  // Ausente mantém o WebContainer local do Estúdio Completo.
+  const proRuntimeValue = proRuntime ?? null
 
   // Visibilidade dos exemplos prontos — latcha uma vez por instância. Default
   // `false`: só o playground/admin de teste liga (ver examples-visibility.ts).
@@ -175,8 +225,21 @@ function StudioCoreBody({
   // render do host (o que re-sanitizaria/re-hidrataria o projeto — ver acima).
   const [previewSecurity] = useState(() => resolvePreviewSecurity(limits))
   // Perfil de aprendizado também é estático por instância (fixado pelo professor).
-  const [learning] = useState(() =>
-    resolveLearning({ level, allowBlocks, allowExtensions, allowCategories, allowLevelReveal }),
+  const [curation] = useState(() =>
+    resolveLearning({
+      level,
+      pythonLevel,
+      allowBlocks,
+      allowExtensions,
+      allowCategories,
+      allowLevelReveal,
+    }),
+  )
+  // Course/extension authority can change without replacing the learner's document.
+  // Lesson level and curation keep their existing per-instance lifetime.
+  const learning = useMemo(
+    () => ({ ...curation, grantedBlockIds, allowExtensions }),
+    [curation, grantedBlockIds, allowExtensions],
   )
   // `previewSecurity`/`learning` saem de fora do BaseStudioConfig de propósito
   // (ver config.ts) e são anexados SÓ aqui — a anotação ResolvedStudioConfig
@@ -188,41 +251,72 @@ function StudioCoreBody({
 
   // `replaceProject` (handle) troca o projeto sem mexer na prop.
   const [replacedProject, setReplacedProject] = useState<Project | null>(null)
+  const [handoffFrozen, setHandoffFrozen] = useState(false)
+  const [observationViewVersion, setObservationViewVersion] = useState(0)
+  const observedRevision = useRef<number | null>(null)
+  const observationGeneration = useRef(0)
+  const isObserver = editingAccess === 'observer' || handoffFrozen
   const sourceProject = replacedProject ?? initialProject
+  const projectStoreApi = useProjectStoreApi()
+  const persistence = useStudioPersistence()
+  const preparationGeneration = useRef(0)
   const [preparationLimits] = useState(() => proRuntime?.limits)
   const preparationErrorHandler = useRef(onError)
+  const openingSettledHandler = useRef(onProjectOpeningSettled)
   useEffect(() => {
     preparationErrorHandler.current = onError
-  }, [onError])
+    openingSettledHandler.current = onProjectOpeningSettled
+  }, [onError, onProjectOpeningSettled])
   const [prepared, setPrepared] = useState<{
     source: Project
     project: Project | null
     error: string | null
+    generation: number
+    settleOpening: (status: 'ready' | 'blocked' | 'error') => void
   } | null>(null)
   useEffect(() => {
     let active = true
-    void prepareProjectForHost(sourceProject, { proBuildLimits: preparationLimits }).then(
+    const generation = ++preparationGeneration.current
+    const lifetime = new AbortController()
+    const releaseOpening = persistence.beginOpening(sourceProject.id, { signal: lifetime.signal })
+    const notifySettled = openingSettledHandler.current
+    let settled = false
+    const settleOpening = (status: 'ready' | 'blocked' | 'error') => {
+      releaseOpening()
+      if (!active || settled) return
+      settled = true
+      notifySettled?.({ projectId: sourceProject.id, status })
+    }
+    void prepareEditableStudioProject(sourceProject, { proBuildLimits: preparationLimits }).then(
       (project) => {
+        if (!project) settleOpening('error')
         if (active)
           setPrepared({
             source: sourceProject,
             project,
             error: project ? null : 'Este projeto não pôde ser aberto.',
+            generation,
+            settleOpening,
           })
       },
       (cause: unknown) => {
+        settleOpening('error')
         if (active)
           setPrepared({
             source: sourceProject,
             project: null,
             error: cause instanceof Error ? cause.message : 'Não foi possível abrir este projeto.',
+            generation,
+            settleOpening,
           })
       },
     )
     return () => {
       active = false
+      lifetime.abort()
+      releaseOpening()
     }
-  }, [sourceProject, preparationLimits])
+  }, [sourceProject, preparationLimits, persistence])
   const preparedProject = prepared?.source === sourceProject ? prepared.project : null
   const preparationError = prepared?.source === sourceProject ? prepared.error : null
   useEffect(() => {
@@ -241,16 +335,8 @@ function StudioCoreBody({
   const sanitized = useMemo(() => {
     const project = preparedProject
     if (!project) return null
-    // Coerção de modo (D2): os modos dependem do TIPO do projeto (modesForKind)
-    // intersectados com a allowlist do host — pro = só Código; básico = Blocos/
-    // Ponte. initialMode sobrepõe o salvo; fora dos permitidos cai no primeiro.
-    // Não marca sujo (é abertura, não edição).
-    const kindModes = modesForKind(project.kind)
-    const allowed =
-      project.kind === 'pro' ? kindModes : kindModes.filter((m) => config.allowedModes.includes(m))
-    let mode = initialMode ?? project.mode
-    if (!allowed.includes(mode)) mode = allowed[0] ?? project.mode
-    return mode === project.mode ? project : { ...project, mode }
+    // Abertura não é edição: a curadoria não marca o projeto como sujo.
+    return projectInAllowedMode(project, config.allowedModes, initialMode)
   }, [preparedProject, initialMode, resolvedModesKey])
   const disallowedExtensions = useMemo(
     () => (sanitized ? disallowedProjectExtensions(sanitized, learning.allowExtensions) : []),
@@ -258,9 +344,13 @@ function StudioCoreBody({
   )
   const projectAccessBlocked = disallowedExtensions.length > 0
 
-  const projectStoreApi = useProjectStoreApi()
-  const checksStoreApi = useChecksStoreApi()
-  const persistence = useStudioPersistence()
+  // O guia v2 GRAVA o jogo antes de concluir, continuar e pedir ajuda (ver o módulo). Memoizado
+  // pela sessão: o `taskSession` NÃO é latchado (o `collapsed` do host precisa chegar vivo).
+  const sessaoDoGuia = useMemo(
+    () =>
+      taskSession ? withSaveBeforeTaskActions(taskSession, () => persistence.save()) : undefined,
+    [taskSession, persistence],
+  )
   const pendingEditorEdits = usePendingEditorEdits()
   const hydrateProject = useProjectStore((s) => s.hydrateProject)
   const unloadProject = useProjectStore((s) => s.unloadProject)
@@ -270,6 +360,13 @@ function StudioCoreBody({
   const loadSettings = useSettingsStore((s) => s.load)
   const settingsTheme = useSettingsStore((s) => s.theme)
   const effectiveTheme = theme ?? settingsTheme
+  useLayoutEffect(() => {
+    projectStoreApi.getState().setEditingAccess(isObserver ? 'observer' : 'author')
+    if (isObserver) {
+      persistence.suspend()
+      setPreviewRunning(false)
+    } else persistence.resume()
+  }, [isObserver, persistence, projectStoreApi, setPreviewRunning])
 
   // Callbacks do host mudam por render — o serviço lê sempre a versão atual.
   useEffect(() => {
@@ -279,56 +376,157 @@ function StudioCoreBody({
   useImperativeHandle(
     ref,
     (): StudioHandle => ({
+      getCodeCursorAnchor: (x, y) => codeObservation?.anchorAt(x, y) ?? Promise.resolve(null),
+      getCodeCursorPosition: (anchor) =>
+        codeObservation?.positionOf(anchor) ?? Promise.resolve(null),
+      onCodeCursorChange: (listener) => codeObservation?.subscribe(listener) ?? (() => {}),
       getProject: () => {
         pendingEditorEdits?.flush()
         const project = projectStoreApi.getState().project
         return project ? snapshotProjectWithCurrentAuthority(project) : null
       },
+      onProjectChange: (listener) =>
+        projectStoreApi.subscribe((next, previous) => {
+          if (next.project !== previous.project || next.editingAccess !== previous.editingAccess)
+            listener()
+        }),
       save: () => persistence.save(),
       replaceProject: (project) => setReplacedProject(project),
+      prepareHandoff: async () => {
+        pendingEditorEdits?.flush()
+        await flushProjectOperations(projectStoreApi)
+        projectStoreApi.getState().setEditingAccess('observer')
+        persistence.suspend()
+        setPreviewRunning(false)
+        setHandoffFrozen(true)
+        const project = projectStoreApi.getState().project
+        if (!project) throw new Error('O projeto ainda não está pronto.')
+        return snapshotProjectWithCurrentAuthority(project)
+      },
+      applyObservedRevision: async (project, revision) => {
+        if (
+          !Number.isSafeInteger(revision) ||
+          revision < 0 ||
+          (observedRevision.current !== null && revision < observedRevision.current)
+        )
+          throw new Error('Revisão de observação inválida.')
+        if (projectStoreApi.getState().editingAccess !== 'observer')
+          throw new Error('Pause a autoria antes de observar uma revisão.')
+        const generation = ++observationGeneration.current
+        const prepared = await prepareEditableStudioProject(project, {
+          proBuildLimits: preparationLimits,
+        })
+        if (!prepared) throw new Error('O projeto recebido não pôde ser aberto.')
+        if (generation !== observationGeneration.current)
+          throw new Error('Revisão substituída por uma mais recente.')
+        persistence.suspend()
+        setPreviewRunning(false)
+        // Dispose the old editor workers, undo stacks and delayed Blockly callbacks
+        // before acknowledging a remotely-authored document. A new canvas loads the
+        // saved layout instead of preserving positions from the preceding writer.
+        flushSync(() => {
+          projectStoreApi
+            .getState()
+            .hydrateProject(projectInAllowedMode(prepared, config.allowedModes))
+          setObservationViewVersion(generation)
+        })
+        observedRevision.current = revision
+        onRevisionApplied?.(revision)
+      },
+      resumeAuthorship: (revision) => {
+        if (observedRevision.current !== revision)
+          throw new Error('A revisão confirmada ainda não foi aplicada.')
+        observationGeneration.current++
+        setHandoffFrozen(false)
+        if (editingAccess === 'author') {
+          projectStoreApi.getState().setEditingAccess('author')
+          persistence.resume()
+        }
+      },
       setMode: (mode) => projectStoreApi.getState().setMode(mode),
       isDirty: () => projectStoreApi.getState().isDirty,
-      getActivityResult: () => checksStoreApi.getState().lastResult,
     }),
-    [projectStoreApi, checksStoreApi, persistence, pendingEditorEdits],
+    [
+      codeObservation,
+      projectStoreApi,
+      persistence,
+      pendingEditorEdits,
+      setPreviewRunning,
+      preparationLimits,
+      onRevisionApplied,
+      editingAccess,
+      config.allowedModes,
+    ],
   )
 
+  // Document lifetime belongs to its preparation, never to mutable authority/curation.
+  // A denied first opening can hydrate later; a loaded document survives revocation.
+  const hydratedPreparation = useRef<typeof prepared>(null)
   useEffect(() => {
-    if (!sanitized || projectAccessBlocked) return
-    hydrateProject(sanitized)
-    // Projeto trocado pelo HOST (`handle.replaceProject`, o "Trazer o que eu enviei" da aula) é a
-    // versão que deve ficar guardada: entra como edição, e o autosave grava por cima do rascunho
-    // do aparelho. Antes isso acontecia por acaso, na regravação que o editor fazia ao abrir, e
-    // abrir deixou de regravar (abrir não é editar, e não muda o "Atualizado em").
-    if (replacedProject !== null)
-      projectStoreApi.setState((state) =>
-        state.project ? { project: { ...state.project }, isDirty: true } : {},
-      )
-    // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
-    // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
-    // blocos só voltavam ao forçar um reparse na Ponte). No-op quando o projeto já
-    // veio com blocksState (host passou o projeto completo) ou sem adapter.
-    persistence.hydrateAfterLoad(sanitized)
-    setPreviewRunning(true)
-    // Resultado da auto-correção é POR PROJETO: ao (re)hidratar — inclusive via
-    // handle.replaceProject() / carregar a próxima aula da cadeia — o último
-    // resultado não vale mais. Sem isto, getActivityResult() devolveria a nota de
-    // um projeto anterior e o host a anexaria no envio do novo (6º review, D).
-    checksStoreApi.getState().setResult(null)
+    if (!prepared || prepared.source !== sourceProject) return
     return () => {
+      hydratedPreparation.current = null
       unloadProject()
-      checksStoreApi.getState().setResult(null)
+    }
+  }, [prepared, sourceProject, unloadProject])
+
+  useEffect(() => {
+    if (
+      !sanitized ||
+      prepared?.source !== sourceProject ||
+      prepared.generation !== preparationGeneration.current
+    )
+      return
+    try {
+      if (projectAccessBlocked) {
+        setPreviewRunning(false)
+        prepared.settleOpening('blocked')
+        return
+      }
+      if (hydratedPreparation.current === prepared) {
+        const current = projectStoreApi.getState().project
+        if (current) {
+          const curated = projectInAllowedMode(current, config.allowedModes)
+          if (curated !== current) projectStoreApi.setState({ project: curated })
+        }
+        setPreviewRunning(autoRun && projectStoreApi.getState().editingAccess === 'author')
+        return
+      }
+      hydrateProject(sanitized)
+      hydratedPreparation.current = prepared
+      // Projeto trocado pelo HOST (`handle.replaceProject`, o "Trazer o que eu enviei" da aula) é a
+      // versão que deve ficar guardada: entra como edição, e o autosave grava por cima do rascunho
+      // do aparelho. Antes isso acontecia por acaso, na regravação que o editor fazia ao abrir, e
+      // abrir deixou de regravar (abrir não é editar, e não muda o "Atualizado em").
+      if (replacedProject !== null)
+        projectStoreApi.setState((state) =>
+          state.project ? { project: { ...state.project }, isDirty: true } : {},
+        )
+      // Restaura, EM SEGUNDO PLANO, o `blocksState` pesado que a abertura rápida
+      // (shell load) omitiu — sem isto o editor abria com o workspace VAZIO (os
+      // blocos só voltavam ao forçar um reparse na Ponte). No-op quando o projeto já
+      // veio com blocksState (host passou o projeto completo) ou sem adapter.
+      persistence.hydrateAfterLoad(sanitized)
+      setPreviewRunning(autoRun && projectStoreApi.getState().editingAccess === 'author')
+    } catch (cause) {
+      prepared.settleOpening('error')
+      throw cause
+    } finally {
+      // Release this preparation, even for same-id replacements. onReady is only an id latch.
+      prepared.settleOpening('ready')
     }
   }, [
     sanitized,
     projectAccessBlocked,
     hydrateProject,
-    unloadProject,
     setPreviewRunning,
-    checksStoreApi,
     persistence,
     replacedProject,
     projectStoreApi,
+    autoRun,
+    prepared,
+    sourceProject,
+    config.allowedModes,
   ])
 
   useEffect(() => {
@@ -405,10 +603,11 @@ function StudioCoreBody({
       unsubscribe()
       if (studioRoot?.isConnected) return
       if (!persistence.hasAdapter) return
+      if (requireIsolatedPreview || projectStoreApi.getState().editingAccess === 'observer') return
       const project = lastProjectRef.current
-      if (project) void captureAndStoreProjectThumb(project)
+      if (project) void captureAndStoreProjectThumb(project, runtimeCapture)
     }
-  }, [persistence, projectStoreApi])
+  }, [persistence, projectStoreApi, requireIsolatedPreview, runtimeCapture])
 
   useEffect(() => {
     if (!blockUnloadWhenDirty || !isDirty) return
@@ -422,102 +621,136 @@ function StudioCoreBody({
 
   return (
     <StudioTutorProvider value={tutorValue}>
-      <StudioProRuntimeProvider value={proRuntimeValue}>
+      <ProBuilderDeletionReconciler />
+      <StudioProRuntimeProvider
+        value={proRuntimeValue}
+        prepareDependencies={prepareProDependencies}
+      >
         <StudioShareProvider value={shareValue}>
           <StudioCloudSyncProvider value={cloudSyncValue}>
             <StudioEditDrawingProvider value={editDrawingValue}>
               <StudioEditCreationProvider value={editCreationValue}>
                 <StudioPintaLibraryProvider value={pintaLibraryValue}>
                   <StudioMoldaLibraryProvider value={moldaLibraryValue}>
-                    <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
-                      <StudioExamplesVisibleProvider value={examplesVisible}>
-                        <StudioActivityProvider value={activityValue}>
+                    <StudioTeamLibraryProvider value={teamLibraryValue}>
+                      <StudioShareDisabledProvider value={shareDisabledReason ?? null}>
+                        <StudioExamplesVisibleProvider value={examplesVisible}>
                           <StudioConfigProvider value={config}>
                             <StudioThemeProvider value={effectiveTheme}>
-                              <div
-                                ref={studioRootRef}
-                                data-sz-theme={effectiveTheme}
-                                className={['h-full min-h-0', className].filter(Boolean).join(' ')}
-                                // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
-                                // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
-                                // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
-                                // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
-                                // é PORTALADO pro document.body — fora da cerca, segue intacto.
-                                style={{
-                                  fontFamily: 'var(--font-family-sans)',
-                                  isolation: 'isolate',
-                                  ...style,
+                              <StudioExecutionProvider
+                                value={{
+                                  editingAccess: isObserver ? 'observer' : 'author',
+                                  autoRun,
+                                  originAdapter: previewOriginAdapter,
+                                  requireIsolatedPreview,
+                                  muted: projectMuted,
+                                  writerEpoch,
                                 }}
                               >
-                                {sanitized === null ? (
-                                  <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
-                                    <p className="text-sm">
-                                      {preparationError ?? 'Preparando seu projeto…'}
-                                    </p>
-                                    {preparationError && onExit ? (
-                                      <button
-                                        type="button"
-                                        className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
-                                        onClick={onExit}
-                                      >
-                                        Voltar
-                                      </button>
-                                    ) : null}
-                                  </div>
-                                ) : projectAccessBlocked ? (
-                                  <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
-                                    <p className="text-base font-semibold text-sz-fg">
-                                      Este projeto usa ferramentas que você ainda vai conquistar
-                                    </p>
-                                    <p className="max-w-md text-sm">
-                                      Continue avançando na Jornada do Criador. O projeto ficou
-                                      guardado e abrirá normalmente quando essas ferramentas forem
-                                      liberadas.
-                                    </p>
-                                    {onExit ? (
-                                      <button
-                                        type="button"
-                                        className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
-                                        onClick={onExit}
-                                      >
-                                        Voltar
-                                      </button>
-                                    ) : null}
-                                  </div>
-                                ) : hasProject ? (
-                                  <ErrorBoundary
-                                    fallback={(p) => <RootErrorFallback {...p} onExit={onExit} />}
-                                    resetKeys={[sanitizedId]}
-                                    label="Studio"
+                                <StudioProCandidatePreviewProvider>
+                                  <div
+                                    ref={studioRootRef}
+                                    data-editing-access={isObserver ? 'observer' : 'author'}
+                                    data-sz-theme={effectiveTheme}
+                                    className={['h-full min-h-0', className]
+                                      .filter(Boolean)
+                                      .join(' ')}
+                                    // `isolation` cerca os z-index INTERNOS do editor (o Blockly injeta
+                                    // `.blocklyToolbox { z-index: 70 }`) — sem a cerca, a paleta vazava por
+                                    // cima de modais do HOST (overlay `z-50` do Dialog, sem portal). O que
+                                    // precisa flutuar sobre o host (menus da Topbar, dropdowns do Blockly)
+                                    // é PORTALADO pro document.body — fora da cerca, segue intacto.
+                                    style={{
+                                      fontFamily: 'var(--font-family-sans)',
+                                      isolation: 'isolate',
+                                      ...style,
+                                    }}
                                   >
-                                    <div className="flex h-full min-h-0 flex-col lg:flex-row">
-                                      {taskSession ? (
-                                        <TaskGuidePanel session={taskSession} />
-                                      ) : null}
-                                      <div className="min-h-0 min-w-0 flex-1">
-                                        <Shell
-                                          onExit={onExit}
-                                          onPromoteToPro={onPromoteToPro}
-                                          canToggleTheme={theme === undefined}
-                                          onRenderError={(area, error) =>
-                                            onError?.({
-                                              kind: 'render',
-                                              area,
-                                              message: error.message,
-                                              ...(error.stack ? { stack: error.stack } : {}),
-                                            })
-                                          }
-                                        />
+                                    {sanitized === null ? (
+                                      <div className="flex h-full flex-col items-center justify-center gap-2 bg-sz-bg text-sz-fg-soft">
+                                        <p className="text-sm">
+                                          {preparationError ?? 'Preparando seu projeto…'}
+                                        </p>
+                                        {preparationError && onExit ? (
+                                          <button
+                                            type="button"
+                                            className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                            onClick={onExit}
+                                          >
+                                            Voltar
+                                          </button>
+                                        ) : null}
                                       </div>
-                                    </div>
-                                  </ErrorBoundary>
-                                ) : null}
-                              </div>
+                                    ) : projectAccessBlocked ? (
+                                      <div className="flex h-full flex-col items-center justify-center gap-3 bg-sz-bg px-6 text-center text-sz-fg-soft">
+                                        <p className="text-base font-semibold text-sz-fg">
+                                          Este projeto usa ferramentas que você ainda vai conquistar
+                                        </p>
+                                        <p className="max-w-md text-sm">
+                                          Continue avançando na Jornada do Criador. O projeto ficou
+                                          guardado e abrirá normalmente quando essas ferramentas
+                                          forem liberadas.
+                                        </p>
+                                        {onExit ? (
+                                          <button
+                                            type="button"
+                                            className="rounded-lg bg-sz-accent px-4 py-2 font-semibold text-sm text-white"
+                                            onClick={onExit}
+                                          >
+                                            Voltar
+                                          </button>
+                                        ) : null}
+                                      </div>
+                                    ) : hasProject ? (
+                                      <ErrorBoundary
+                                        fallback={(p) => (
+                                          <RootErrorFallback {...p} onExit={onExit} />
+                                        )}
+                                        resetKeys={[sanitizedId]}
+                                        label="Studio"
+                                      >
+                                        <div
+                                          inert={isObserver}
+                                          className="flex h-full min-h-0 flex-col"
+                                        >
+                                          {/* A missão do Pensa é uma coluna PRÓPRIA à direita (ou
+                                              uma faixa embaixo, na tela estreita): nunca cobre o
+                                              editor, e o editor se mede no espaço que sobra. */}
+                                          <PensaMissionLayout
+                                            panel={
+                                              sessaoDoGuia ? (
+                                                <TaskGuidePanel session={sessaoDoGuia} />
+                                              ) : null
+                                            }
+                                          >
+                                            <div className="min-h-0 min-w-0 flex-1">
+                                              <Shell
+                                                key={observationViewVersion}
+                                                onExit={onExit}
+                                                onPromoteToPro={onPromoteToPro}
+                                                canToggleTheme={theme === undefined}
+                                                onRenderError={(area, error) =>
+                                                  onError?.({
+                                                    kind: 'render',
+                                                    area,
+                                                    message: error.message,
+                                                    ...(error.stack ? { stack: error.stack } : {}),
+                                                  })
+                                                }
+                                              />
+                                            </div>
+                                          </PensaMissionLayout>
+                                        </div>
+                                      </ErrorBoundary>
+                                    ) : null}
+                                  </div>
+                                </StudioProCandidatePreviewProvider>
+                              </StudioExecutionProvider>
                             </StudioThemeProvider>
                           </StudioConfigProvider>
-                        </StudioActivityProvider>
-                      </StudioExamplesVisibleProvider>
-                    </StudioShareDisabledProvider>
+                        </StudioExamplesVisibleProvider>
+                      </StudioShareDisabledProvider>
+                    </StudioTeamLibraryProvider>
                   </StudioMoldaLibraryProvider>
                 </StudioPintaLibraryProvider>
               </StudioEditCreationProvider>

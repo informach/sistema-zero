@@ -5,6 +5,11 @@ import {
   type SectionCompletion,
   sectionCompletionIssues,
 } from '@sistemazero/core/learning'
+import {
+  objectiveProject,
+  objectiveSectionId,
+  objectiveWorkspace,
+} from './fixtures/section-objective-examples'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -108,6 +113,102 @@ test('"Exigir envio em dia" só aparece onde vale, e desmarcar apaga a chave', a
     await act(async () => caixa()!.click())
     expect('submissionUpToDate' in value).toBe(false)
     expect(caixa()).toBeNull()
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
+
+test('objetivo ganha dica e desafio extra, e "Testar agora" confere inicial e gabarito', async () => {
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  let value: SectionCompletion = {
+    version: 1,
+    blockIds: [],
+    projectChecks: [{ id: 'laco', label: 'Use um laço', rule: { type: 'usesLoop' } }],
+  }
+  const workspace = objectiveWorkspace(objectiveProject(), objectiveProject())
+  const render = () =>
+    root.render(
+      <SectionCompletionEditor
+        value={value}
+        candidates={[]}
+        hasStudio
+        workspace={workspace}
+        sectionId={objectiveSectionId}
+        onChange={(next) => {
+          value = next
+          render()
+        }}
+      />,
+    )
+  const setInput = (input: HTMLInputElement, text: string) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!
+    setter.call(input, text)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+  }
+  try {
+    await act(async () => render())
+    expect(container.textContent).toContain('Obrigatório')
+    const hint = container.querySelector<HTMLInputElement>(
+      'input[aria-label="Dica do objetivo 1"]',
+    )!
+    await act(async () => setInput(hint, 'Procure em Laços'))
+    expect(value.projectChecks?.[0]?.hint).toBe('Procure em Laços')
+    await act(async () => setInput(hint, ''))
+    expect('hint' in (value.projectChecks?.[0] ?? {})).toBe(false)
+    const extra = [...container.querySelectorAll('label')]
+      .find((label) => label.textContent?.includes('Desafio extra'))!
+      .querySelector<HTMLInputElement>('input[type="checkbox"]')!
+    await act(async () => extra.click())
+    expect(value.projectChecks?.[0]?.optional).toBe(true)
+    expect(container.textContent).toContain('Desafio extra')
+    await act(async () => extra.click())
+    expect('optional' in (value.projectChecks?.[0] ?? {})).toBe(false)
+    await act(async () =>
+      [...container.querySelectorAll('button')]
+        .find((button) => button.textContent === 'Testar agora')!
+        .click(),
+    )
+    const status = container.querySelector('[role="status"]')!
+    expect(status.textContent).toContain('O gabarito não cumpre "Use um laço"')
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
+
+test('num Estúdio Pro o objetivo nasce como ideia de programação e "usar um bloco" fica desligado', async () => {
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  let value: SectionCompletion = { version: 1, blockIds: [] }
+  const render = () =>
+    root.render(
+      <SectionCompletionEditor
+        value={value}
+        candidates={[]}
+        hasStudio
+        workspace={{ kind: 'studio', initialProject: { kind: 'pro', tree: {} } }}
+        onChange={(next) => {
+          value = next
+          render()
+        }}
+      />,
+    )
+  try {
+    await act(async () => render())
+    await act(async () =>
+      [...container.querySelectorAll('button')]
+        .find((button) => button.textContent?.includes('Adicionar objetivo'))!
+        .click(),
+    )
+    expect(value.projectChecks?.[0]?.rule).toEqual({ type: 'usesLoop' })
+    const option = container.querySelector<HTMLOptionElement>(
+      'select[aria-label="Regra do objetivo 1"] option[value="usesBlock"]',
+    )!
+    expect(option.disabled).toBe(true)
   } finally {
     await act(async () => root.unmount())
     container.remove()

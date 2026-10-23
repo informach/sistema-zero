@@ -21,6 +21,7 @@ import { ValidationError } from '../../../domain/shared/errors'
 import {
   ChallengeWebhookBody,
   ClubeWebhookBody,
+  GiftCourseQuery,
   GrantManualWebhookBody,
   GrantWebhookBody,
   MuralCommentWebhookBody,
@@ -157,10 +158,17 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
     )
     .get(
       '/gift-course/:slug',
-      async ({ params }) => ({
-        available: await deps.grantManual.isPublishedKidsCourse(params.slug),
+      // `audience` ausente = `kids` (contrato anterior a 20/10/2026, chamadas antigas iguais).
+      async ({ params, query }) => ({
+        available: await deps.grantManual.isPublishedGiftCourse(
+          params.slug,
+          query.audience ?? 'kids',
+        ),
       }),
-      { params: t.Object({ slug: t.String({ minLength: 1, maxLength: 200 }) }) },
+      {
+        params: t.Object({ slug: t.String({ minLength: 1, maxLength: 200 }) }),
+        query: GiftCourseQuery,
+      },
     )
     .post(
       // Concessão MANUAL S2S (referrals → gateway [resign] → members): mantém
@@ -196,7 +204,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
                     courseRef: body.courseRef,
                     expiresAt,
                     sourceId: body.sourceId,
-                    requirePublishedKids: true,
+                    requirePublishedAudience: body.audience ?? 'kids',
                   }
                 : body.mode === 'mural_trial'
                   ? {
@@ -205,6 +213,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
                       courseRef: body.courseRef,
                       sourceId: body.sourceId,
                       expiresAt: new Date(body.expiresAt),
+                      audience: body.audience ?? 'kids',
                     }
                   : {
                       mode: 'mural_visitor',
@@ -310,7 +319,10 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
         if (deliveryId && (await deps.processed.isProcessed(deliveryId))) {
           return { ok: true, deduped: true }
         }
-        if (body.challengeKey !== currentChallengeKey(deps.now())) {
+        if (
+          body.challengeKey !==
+          currentChallengeKey(body.publishedAt ? new Date(body.publishedAt) : deps.now())
+        ) {
           deps.logger.warn('challenge.month_mismatch', { challengeKey: body.challengeKey })
           if (deliveryId) await deps.processed.markProcessed(deliveryId, 'challenge')
           return { ok: true, ignored: true }
@@ -320,6 +332,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           accountId: body.accountId,
           audience: body.audience,
           monthKey: body.challengeKey,
+          ...(body.publishedAt ? { publishedAt: new Date(body.publishedAt) } : {}),
         })
         if (!awarded) {
           set.status = 502
@@ -399,6 +412,7 @@ export function webhooksRoutes(deps: WebhooksRoutesDeps) {
           accountId: body.accountId,
           audience: body.audience,
           playId: body.playId,
+          ...(body.publishedAt ? { publishedAt: new Date(body.publishedAt) } : {}),
         })
         if (!awarded) {
           set.status = 502

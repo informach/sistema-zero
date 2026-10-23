@@ -13,7 +13,7 @@
  */
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { RequiresTool } from '../../toolAccess'
-import { Button } from '../../ui/Button'
+import { ChevronDown, FlipHorizontal2, Grid3x3 } from '../../ui/icons'
 import { SCENE_TILE_GRID, SceneTile } from './SceneTile'
 import { sceneCommand } from './sceneCommandRegistry'
 import { SCENE_PAINT_ACTIONS, type ScenePaintActionId } from './scenePaintShortcuts'
@@ -25,7 +25,7 @@ import type { useScenePaint } from './useScenePaint'
  * quebra linha (tem a largura do traço e os avisos da ferramenta): em duas fileiras de
  * ladrilhos o palco de um celular em pé caía para 190px.
  */
-const PAINT_TILES = `${SCENE_TILE_GRID} mld-scroll-x max-lg:overflow-x-auto`
+const PAINT_TILES = SCENE_TILE_GRID
 
 const WIDTHS = [
   [1, 'paint.width-1'],
@@ -36,21 +36,21 @@ const WIDTHS = [
 export function ScenePaintToolbox({
   paint,
   onDress,
+  onChooseTool,
 }: {
   paint: ReturnType<typeof useScenePaint>
   /** "Vestir com textura": só quando há galeria (dentro do app) e uma peça para vestir. */
   onDress?: () => void
+  onChooseTool?(): void
 }) {
   const { eraser, fill, picker, rotate, closeupTool, shape, brush } = paint
   const pencil = !eraser && !fill && !shape && !picker && !rotate && !closeupTool
   const tools: Array<[ScenePaintActionId, boolean]> = [
     ['paint.pencil', pencil],
-    ['paint.eraser', eraser],
     ['paint.fill', fill],
+    ['paint.eraser', eraser],
     ['paint.picker', picker],
-    ['paint.rotate', rotate],
     ['paint.closeup', closeupTool],
-    ['paint.mirror', paint.mirror],
   ]
   const dress = sceneCommand('paint.dress')
   return (
@@ -71,20 +71,16 @@ export function ScenePaintToolbox({
                 icon={command.icon}
                 label={command.label}
                 pressed={active}
+                keyHint={key}
                 aria-keyshortcuts={key}
                 title={`${command.label}${key ? ` (${key})` : ''}${command.help ? `. ${command.help}` : ''}`}
-                onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
+                onClick={() => {
+                  onChooseTool?.()
+                  SCENE_PAINT_ACTIONS[id](paint)
+                }}
               />
             )
           })}
-          {onDress && (
-            <SceneTile
-              icon={dress.icon}
-              label={dress.label}
-              aria-haspopup="dialog"
-              onClick={onDress}
-            />
-          )}
         </div>
       </fieldset>
       {picker && <p className="text-xs text-mld-muted">{SCENE_PAINT_COPY.pickerHint}</p>}
@@ -97,28 +93,80 @@ export function ScenePaintToolbox({
           className={steadyWhileDrawing(paint, 'min-w-0')}
         >
           <legend className="mld-kicker mb-2">{SCENE_PAINT_COPY.widths}</legend>
-          {/* Três de largura igual numa linha: soltos, o "Grosso" caía sozinho na de baixo. */}
-          <div className="grid grid-cols-3 gap-1">
+          {/* O número é a largura real em pixels, como no Pinta Pixelart. */}
+          <div className="mld-width-seg">
             {WIDTHS.map(([size, id]) => {
               const command = sceneCommand(id)
               const key = command.shortcut?.display
               return (
-                <Button
+                <button
                   key={size}
-                  variant="ghost"
-                  className="px-2 text-sm"
+                  type="button"
+                  aria-label={command.label}
                   aria-pressed={size === brush}
                   aria-keyshortcuts={key}
-                  title={key ? `${command.label} (${key})` : undefined}
+                  title={key ? `${command.label} (${key})` : command.label}
                   onClick={() => SCENE_PAINT_ACTIONS[id](paint)}
                 >
-                  {command.label}
-                </Button>
+                  {size}
+                </button>
               )
             })}
           </div>
+          <p className="mt-1 text-center text-xs font-bold text-mld-muted" aria-live="polite">
+            {SCENE_PAINT_COPY.width[brush]}
+          </p>
         </fieldset>
       )}
+      <SceneTile
+        data-toggle=""
+        icon={FlipHorizontal2}
+        label={SCENE_PAINT_COPY.mirrorShort}
+        aria-label={SCENE_PAINT_COPY.mirror}
+        title={SCENE_PAINT_COPY.mirrorHint}
+        pressed={paint.mirror}
+        onClick={() => paint.setMirror(!paint.mirror)}
+      />
+      <SceneTile
+        data-toggle=""
+        icon={Grid3x3}
+        label="Quadradinhos"
+        title="Mostrar a grade da pintura sobre a superfície"
+        pressed={paint.grid}
+        onClick={() => paint.setGrid(!paint.grid)}
+      />
+      <details className="mld-rail-more">
+        <summary>
+          {SCENE_PAINT_COPY.moreBrushes}
+          <ChevronDown aria-hidden="true" />
+        </summary>
+        <div className={PAINT_TILES}>
+          {(['paint.rotate'] as const).map((id) => {
+            const command = sceneCommand(id)
+            return (
+              <SceneTile
+                key={id}
+                data-paint-tool={id}
+                icon={command.icon}
+                label={command.label}
+                pressed={rotate}
+                onClick={() => {
+                  onChooseTool?.()
+                  SCENE_PAINT_ACTIONS[id](paint)
+                }}
+              />
+            )
+          })}
+          {onDress && (
+            <SceneTile
+              icon={dress.icon}
+              label={dress.label}
+              aria-haspopup="dialog"
+              onClick={onDress}
+            />
+          )}
+        </div>
+      </details>
     </RequiresTool>
   )
 }

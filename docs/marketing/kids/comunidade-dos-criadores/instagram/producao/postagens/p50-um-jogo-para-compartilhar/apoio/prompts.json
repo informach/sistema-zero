@@ -1,0 +1,36 @@
+[
+  {
+    "slide": 1,
+    "file": "01-link.png",
+    "prompt": "Use case: photorealistic-natural. Asset: wide editorial photograph for a Portuguese Instagram carousel about a child sharing a game link with a friend. Create one new 1536x1024 landscape image. Overhead close-up of a modern smartphone lying completely flat, perfectly vertical and front-facing to camera, on a warm wooden homework desk, medium brown child hand rests naturally near bottom right but does NOT cover the phone screen. The phone fills the middle 45 percent of image width, nearly 90 percent of height, screen is a perfectly flat clean very pale blue blank rectangle for later editorial message overlay. Slim dark navy straight phone border, rounded corners. A closed blue notebook partly enters on left edge, yellow pencil right, warm natural afternoon light, realistic photographic skin and materials. Focus on the act of receiving a link, quiet optimistic mood. No faces or people in background, no recognizable real child, no lettering, no text, no words, no social media logos, no chat messages, no UI icons or fake interface, no perspective tilt, no watermark. Only the photographic empty-screen base; typography and a generic link bubble will be applied in editing.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-10dfc4bf-9571-4cb5-900c-d4b4f02a5b6d.png",
+    "tool": "image_gen.imagegen",
+    "references": []
+  },
+  {
+    "slide": 3,
+    "file": "03-convite-para-jogar.png",
+    "prompt": "Use case: illustration-story. Asset: distinct landscape editorial illustration, 1536x1024, for parents about sharing a game one created. Create a beautiful tactile colored-pencil and paper-cut illustration in cobalt blue, warm ivory, mustard yellow, muted green. Side perspective of a modest wooden desk, a monitor showing a simple invented tiny 2D fantasy island game: one small explorer, path, trees and a flag, no interface or text. In foreground at the right an inviting single empty chair and a blue game controller resting on the desk, waiting for another person to try. To left of monitor a small sketchbook with matching island drawing and colored pencil quietly indicates someone created it. No actual children or adults, no portraits, no brand logos, no text, no letters, no numbers, no speech bubbles, no fake real platform screenshot, no stock clipart. Soft paper grain, rich drawing, warm friendly light, clear large shapes, balanced composition. The EMPTY chair and waiting controller must be obvious; not abandoned or sad. One unique image, no collage.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-c9a08e0c-7fca-4efd-825f-a907ae043c1e.png",
+    "tool": "image_gen.imagegen",
+    "references": []
+  },
+  {
+    "slide": 4,
+    "file": "04-jogando-juntos.png",
+    "prompt": "Use case: photorealistic-natural. One 1536x1024 landscape candid editorial photograph for a parent-facing carousel. Two fictional Brazilian boys aged 11-12 sitting next to each other at one modest home desk with a desktop computer, clearly distinct people and NOT modeled on any actual student. Boy nearest camera has short tight dark curls, medium-brown skin, plain cobalt-blue T-shirt. His friend has straight short dark hair, light-brown skin, a plain mustard T-shirt. The friend uses the mouse with right hand and looks at the monitor. The blue-shirt boy gently points at one part of the screen with his index finger and looks at the friend with a relaxed interested expression, inviting his opinion rather than teaching formally. Natural posture, credible age, no extra fingers. Camera from beside and slightly behind them, three-quarter faces and interaction visible, enough screen to understand a very simple colorful block-platform game but screen is naturally out of focus, no recognizable game brand and no readable interface. Home daylight, warm wooden desk, notebooks, quiet authentic house in background. No parents, no headphones, no staged thumbs-up, no text or captions, no school logos, no brands, no watermark. Do NOT depict Rafael or any identifiable real child. Keep the screen secondary and indistinct so it cannot be claimed as a specific real game.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-fef1c2c1-7aee-4425-82dd-d041685ab0eb.png",
+    "tool": "image_gen.imagegen",
+    "references": []
+  },
+  {
+    "slide": 7,
+    "file": "07-compartilhar-na-escola.png",
+    "prompt": "Use case: photorealistic-natural. Create one new landscape 1536x1024 editorial photograph. Input image 1 is ONLY identity continuity reference for TWO FICTIONAL boys; use their appearance, do not copy pose or home room. Same fictional 11-12-year-old boys: one medium brown skin with short tight dark curls wearing cobalt blue shirt, the friend light brown skin with straight short dark hair wearing mustard shirt. New scene outdoors: they are standing still together on a safe wide pedestrian area beside a generic school entrance gate in Brazil, in afternoon light, with backpacks. Blue-shirt boy holds a smartphone naturally between them at chest level and shows it to his friend, both looking DOWN at the phone together, relaxed slight smiles and interested conversation. Three-quarter front view from waist up, camera off to side so screen itself is not readable. No walking into traffic, no cars, no crowd, no actual school branding, no names on uniform, no adult, no text or captions, no watermarks. Warm authentic candid photography, no exuberant advertising pose, natural age-appropriate body proportions and hands. This is an editorial fictional scene, not Rafael and not a documentary reenactment of his experience. Retain both boys' faces and hair, but change setting, posture and framing completely from reference.",
+    "source": "C:/Users/tocha/.codex/generated_images/01a1177a-9196-73f3-b995-b63ba3002ced/exec-3ae73819-5215-4109-8260-f2c09e94d088.png",
+    "tool": "image_gen.imagegen",
+    "references": [
+      "C:/Users/tocha/projects/sistema-zero/docs/marketing/kids/comunidade-dos-criadores/instagram/producao/postagens/p50-um-jogo-para-compartilhar/apoio/04-jogando-juntos.png"
+    ]
+  }
+]

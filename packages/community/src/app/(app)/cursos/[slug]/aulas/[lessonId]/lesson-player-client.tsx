@@ -13,6 +13,9 @@ import {
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { ProgressBar } from '@sistemazero/member-shell/components/progress-bar'
+import { upToDateWorkspaceIds } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
+import { lessonDraftCloudFor } from '@sistemazero/member-shell/lib/lesson-draft-transport'
+import type { LessonCompleteResult } from '@sistemazero/member-shell/lib/types'
 import { useLessonRefresh } from '@sistemazero/member-shell/lib/use-lesson-refresh'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
@@ -24,6 +27,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { CourseRatingFlow, type RatingViewer } from '@/components/community/course-rating-flow'
+import { useAdultGamification } from '@/components/community/gamification-provider'
 import { type ApiError, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import type { CourseDetailView, LessonDetailView } from '@/lib/types'
@@ -40,6 +44,8 @@ interface Props {
   viewerWatermark: string | null
   /** Id da sessão (conta) — isola o rascunho LOCAL do Estúdio por usuário. */
   viewerId: string | null
+  lessonDraftsEnabled: boolean
+  creationSharingEnabled: boolean
   /** Identidade exibida no agradecimento do rating (avatar + nome). */
   viewer: RatingViewer
   /** Página de vendas do curso (salesPageUrl ?? FUNNEL_URL) — modal Compartilhar. */
@@ -52,13 +58,23 @@ export function LessonPlayer({
   nextLessonHref,
   viewerWatermark,
   viewerId,
+  lessonDraftsEnabled,
+  creationSharingEnabled,
   viewer,
   shareUrl,
 }: Props) {
   const router = useRouter()
+  const gamification = useAdultGamification()
   // Junta os pedidos e espera a atividade ampliada fechar (ver `use-lesson-refresh`).
   const refreshLesson = useLessonRefresh(() => router.refresh())
   const learning = useLessonLearning(lesson, viewerId)
+  const lessonDrafts = useMemo(
+    () =>
+      lessonDraftsEnabled && viewerId && typeof window !== 'undefined'
+        ? lessonDraftCloudFor(viewerId, 'adult')
+        : undefined,
+    [lessonDraftsEnabled, viewerId],
+  )
   const requirements = lessonCompletionRequirements({
     ...lesson,
     learningProgress: learning.progress,
@@ -84,7 +100,6 @@ export function LessonPlayer({
 
   const blockedByQuiz = missing('QUIZ_GATE_NOT_PASSED')
   const blockedByStudio = missing('STUDIO_GATE_NOT_SUBMITTED')
-  const blockedByStudioNotPassed = missing('STUDIO_GATE_NOT_PASSED')
   const blockedByComingSoon = missing('LESSON_COMING_SOON')
 
   const completeBlocked = requirements.some((r) => !r.complete)
@@ -94,9 +109,24 @@ export function LessonPlayer({
     if (completedRef.current) return
     setCompleting(true)
     try {
-      await apiSend(`/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`, 'POST')
+      const sendCompletion = () =>
+        apiSend<LessonCompleteResult>(
+          `/api/members/lessons/${encodeURIComponent(lesson.id)}/complete`,
+          'POST',
+        )
+      const sections = lesson.sections ?? []
+      const result = lessonDrafts
+        ? await lessonDrafts.withSavedDrafts(lesson.id, sendCompletion, {
+            confirm: upToDateWorkspaceIds(sections, sectionPosition?.index ?? 0, sections.length),
+          })
+        : await sendCompletion()
+      gamification?.reward(result.gamification)
       completedRef.current = true
-      toast.success('Aula concluída!')
+      toast.success(
+        result.gamification?.xpAwarded
+          ? `Aula concluída! +${result.gamification.xpAwarded} XP`
+          : 'Aula concluída!',
+      )
       if (nextLessonHref) router.push(nextLessonHref)
       router.refresh()
     } catch (error) {
@@ -105,7 +135,15 @@ export function LessonPlayer({
     } finally {
       setCompleting(false)
     }
-  }, [lesson.id, nextLessonHref, router])
+  }, [
+    lesson.id,
+    lesson.sections,
+    lessonDrafts,
+    sectionPosition?.index,
+    nextLessonHref,
+    router,
+    gamification,
+  ])
 
   const playerContext = useMemo<LessonPlayerContextValue>(
     () => ({
@@ -113,6 +151,7 @@ export function LessonPlayer({
       courseSlug: course.slug,
       viewerWatermark,
       viewerId,
+      lessonDrafts,
       initialPositionSeconds: lesson.positionSeconds,
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
@@ -128,6 +167,7 @@ export function LessonPlayer({
       course.slug,
       viewerWatermark,
       viewerId,
+      lessonDrafts,
       refreshLesson,
     ],
   )
@@ -144,7 +184,7 @@ export function LessonPlayer({
     </Button>
   )
   // Em TEXTO: vira um item da faixa "o que falta para seguir" do rodapé (`LessonSectionStatus`),
-  // só quando a seção não tem itens próprios (aula legada, equipe).
+  // só quando a parte não tem itens próprios (aula legada, equipe).
   const completionMessage = lesson.completed
     ? null
     : blockedByLearning
@@ -157,9 +197,7 @@ export function LessonPlayer({
             ? 'Passe no quiz da aula para concluir'
             : blockedByStudio
               ? 'Envie seu projeto do Estúdio para concluir a aula'
-              : blockedByStudioNotPassed
-                ? 'Alcance a nota mínima do Estúdio para concluir a aula'
-                : null
+              : null
 
   return (
     <LessonPlayerProvider value={playerContext}>
@@ -193,7 +231,13 @@ export function LessonPlayer({
             onSectionChange={setSectionPosition}
             completionAction={completionAction}
             completionMessage={completionMessage}
-            renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
+            renderBlocks={(blocks) => (
+              <LessonBlocks
+                enableHelpLinks
+                blocks={blocks}
+                enableStudioShare={creationSharingEnabled}
+              />
+            )}
           />
         </div>
 

@@ -3,14 +3,25 @@ import type * as monacoNs from 'monaco-editor'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMeasuredWidth } from '../hooks/useMeasuredWidth'
+import { useStudioCodeObservation } from '../studio/code-observation'
 import { inferLanguage } from './languages'
 import {
   buildMonacoModelPath,
   disposeModelsForPathPrefix,
   getMonacoModelPath,
   isModelInPathPrefix,
+  isMonacoModelSynchronizing,
+  reserveMonacoModelUri,
   resolveModelPathPrefix,
+  synchronizeMonacoModel,
 } from './modelPaths'
+import { proLanguage } from './pro/languages'
+import type {
+  attachProLanguageService,
+  ProEditorDiagnostic,
+  ProLanguageSession,
+  ProProjectLanguageInput,
+} from './pro/session'
 import {
   configureMonacoWorkers,
   getMonacoModelRegistry,
@@ -96,7 +107,10 @@ const FORMATTABLE_LANGUAGES: ReadonlySet<string> = new Set([
   'css',
   'javascript',
   'typescript',
+  'sz-pro-typescript',
+  'sz-pro-javascript',
   'json',
+  'python',
 ])
 
 /**
@@ -120,9 +134,17 @@ export interface MonacoHighlight {
 }
 
 export interface MonacoTabsProps {
+  /** Isolated Pro service; includes closed source files and actual installed declarations. */
+  proProject?: ProProjectLanguageInput
+  onProDiagnostics?: (items: ProEditorDiagnostic[]) => void
+  onProAnalysis?: (state: import('./pro/session').ProAnalysisState) => void
+  onProLanguageReady?: (session: ProLanguageSession | null) => void
   files: MonacoTabsFile[]
   activeFile?: string
-  onChange: (fileName: string, value: string) => void
+  /** Return the accepted source when a synchronous document policy rejects this edit. */
+  onChange:
+    | ((fileName: string, value: string) => void)
+    | ((fileName: string, value: string) => { rejectedValue: string } | undefined)
   onActiveFileChange?: (fileName: string) => void
   onCursorChange?: (pos: MonacoCursorPosition) => void
   /** Faixa de linhas para destacar e rolar até o topo no arquivo indicado. */
@@ -130,6 +152,8 @@ export interface MonacoTabsProps {
   theme?: 'vs-dark' | 'light'
   /** Tamanho da fonte (px). Reativo: muda imediatamente quando o pai atualiza. */
   fontSize?: number
+  readOnly?: boolean
+  indentSize?: 2 | 4
   className?: string
   /** Conteúdo extra renderizado à direita da fila de abas. */
   tabsRightSlot?: JSX.Element
@@ -148,6 +172,7 @@ export interface MonacoTabsProps {
    * aparece em `console.warn` (invisível sem DevTools).
    */
   onFormatIssue?: (issue: MonacoFormatIssue) => void
+  onFormatReady?: (run: (() => void) | null) => void
   /**
    * Decide se uma aba pode ser fechada (mostra o "×"). Fechar é só de UI: o
    * arquivo continua existindo; quem o reabre é o componente pai. Os arquivos
@@ -156,6 +181,8 @@ export interface MonacoTabsProps {
   canCloseFile?: (fileName: string) => boolean
   /** Chamado ao clicar no "×" de uma aba fechável. */
   onCloseFile?: (fileName: string) => void
+  temporaryFile?: string | null
+  onPinFile?: (fileName: string) => void
   /**
    * Prefixo do `path` dos models do Monaco (ex.: id do projeto). O `path` é o
    * identificador do model num registro GLOBAL que sobrevive ao desmonte do
@@ -174,7 +201,10 @@ export interface MonacoTabsProps {
    * de desfazer do código aos botões da barra (`useCodeHistory`) sem este pacote conhecer o
    * estado do Studio.
    */
-  onEditorReady?: (editor: monacoNs.editor.IStandaloneCodeEditor | null) => void
+  onEditorReady?: (
+    editor: monacoNs.editor.IStandaloneCodeEditor | null,
+    scope?: { modelPathPrefix: string },
+  ) => void
 }
 
 /** Ícone "formatar" (linhas alinhadas) — usado no botão compacto, sem dep externa. */
@@ -264,6 +294,10 @@ function scheduleLanguageServicesLoad(): () => void {
 }
 
 export function MonacoTabs({
+  proProject,
+  onProDiagnostics,
+  onProAnalysis,
+  onProLanguageReady,
   files,
   activeFile,
   onChange,
@@ -272,13 +306,18 @@ export function MonacoTabs({
   highlight,
   theme = 'vs-dark',
   fontSize = 13,
+  readOnly = false,
+  indentSize = 2,
   className,
   tabsRightSlot,
   hiddenAreas,
   formatLabel,
   onFormatIssue,
+  onFormatReady,
   canCloseFile,
   onCloseFile,
+  temporaryFile,
+  onPinFile,
   modelPathPrefix,
   onEditorReady,
 }: MonacoTabsProps): JSX.Element {
@@ -334,8 +373,91 @@ export function MonacoTabs({
   const [mountedEditor, setMountedEditor] = useState<monacoNs.editor.IStandaloneCodeEditor | null>(
     null,
   )
+  const hasFile = Boolean(file)
+  useEffect(() => {
+    if (hasFile) return
+    editorRef.current = null
+    setMountedEditor(null)
+    disposeModelsForPathPrefix(saltedPrefix, getMonacoModelRegistry())
+    viewStatesRef.current.clear()
+  }, [hasFile, saltedPrefix])
 
-  useEffect(() => scheduleLanguageServicesLoad(), [])
+  const proMode = proProject !== undefined
+  const proInput = useRef(proProject)
+  proInput.current = proProject
+  const proNavigate = useRef(onActiveFileChange)
+  proNavigate.current = onActiveFileChange
+  const proDiagnostics = useRef(onProDiagnostics)
+  proDiagnostics.current = onProDiagnostics
+  const proAnalysis = useRef(onProAnalysis)
+  proAnalysis.current = onProAnalysis
+  const proSession = useRef<ReturnType<typeof attachProLanguageService> | null>(null)
+  const proReady = useRef(onProLanguageReady)
+  proReady.current = onProLanguageReady
+  const [languageIssue, setLanguageIssue] = useState<string | null>(null)
+  const [languageLoadFailed, setLanguageLoadFailed] = useState(false)
+  const [languageAttempt, setLanguageAttempt] = useState(0)
+  const hasJavaScriptFiles = files.some((item) =>
+    ['javascript', 'typescript'].includes(inferLanguage(item.name)),
+  )
+  useEffect(
+    () => (proMode || !hasJavaScriptFiles ? undefined : scheduleLanguageServicesLoad()),
+    [proMode, hasJavaScriptFiles],
+  )
+  // biome-ignore lint/correctness/useExhaustiveDependencies: retry creates a fresh worker and resends the complete project.
+  useEffect(() => {
+    if (!proMode || !mountedEditor) return
+    let active = true
+    let dispose: (() => void) | undefined
+    setLanguageLoadFailed(false)
+    setLanguageIssue('Conferindo código e bibliotecas…')
+    proAnalysis.current?.({ status: 'pending' })
+    void Promise.all([import('./pro/session'), import('monaco-editor/esm/vs/editor/editor.api.js')])
+      .catch((error: unknown) => {
+        // A rejected ES module load is cached by the browser. Recreating a worker
+        // cannot repair it; keep editing available and require saving before reload.
+        if (active) setLanguageLoadFailed(true)
+        throw error
+      })
+      .then(([module, monaco]) => {
+        if (!active) return
+        const session = module.attachProLanguageService(
+          monaco,
+          saltedPrefix,
+          () => proInput.current ?? { tree: {}, dependencies: {} },
+          (message) => {
+            if (active) setLanguageIssue(message)
+          },
+          {
+            editor: mountedEditor,
+            openFile: (path) => proNavigate.current?.(path),
+            diagnostics: (items) => proDiagnostics.current?.(items),
+            analysis: (state) => proAnalysis.current?.(state),
+          },
+        )
+        proSession.current = session
+        proReady.current?.(session)
+        dispose = () => {
+          session.dispose()
+          if (proSession.current === session) proSession.current = null
+          proReady.current?.(null)
+        }
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          const message = error instanceof Error ? error.message : String(error)
+          setLanguageIssue(message)
+          proAnalysis.current?.({ status: 'error', message })
+        }
+      })
+    return () => {
+      active = false
+      dispose?.()
+    }
+  }, [proMode, mountedEditor, saltedPrefix, languageAttempt])
+  useEffect(() => {
+    if (proProject) proSession.current?.update()
+  }, [proProject])
 
   // Pré-cria os models das DEMAIS abas assim que o editor monta (a ativa já foi
   // criada pelo @monaco-editor/react). Sem isto, a 1ª visita a cada aba criava o
@@ -349,9 +471,13 @@ export function MonacoTabs({
     prewarmedRef.current = true
     prewarmEditorModels(
       saltedPrefix,
-      files.map((f) => ({ name: f.name, language: inferLanguage(f.name), value: f.value })),
+      files.map((f) => ({
+        name: f.name,
+        language: proMode ? proLanguage(inferLanguage(f.name)) : inferLanguage(f.name),
+        value: f.value,
+      })),
     )
-  }, [mountedEditor, saltedPrefix])
+  }, [mountedEditor, saltedPrefix, proMode])
 
   useEffect(() => {
     const prefix = saltedPrefix
@@ -399,8 +525,15 @@ export function MonacoTabs({
     const model = mountedEditor?.getModel()
     if (!model || !file) return
     if (getMonacoModelPath(model) !== buildMonacoModelPath(saltedPrefix, file.name)) return
-    if (model.getValue() === file.value) return
-    model.setValue(file.value)
+    const value = model.getValue()
+    if (
+      value === file.value ||
+      value.replace(/\r\n|\r/g, '\n') === file.value.replace(/\r\n|\r/g, '\n')
+    )
+      return
+    // Loading external source is not a learner edit. Monaco normalizes mixed
+    // EOLs in setValue and emits synchronously; do not echo that into storage.
+    synchronizeMonacoModel(model, () => model.setValue(file.value))
   }, [file, mountedEditor, saltedPrefix])
 
   const clearHighlightDecorations = useCallback(() => {
@@ -426,9 +559,38 @@ export function MonacoTabs({
   useEffect(() => {
     activeFileNameRef.current = file?.name
   }, [file?.name])
-  const handleChange = useCallback<OnChange>((value) => {
+  const reconcilingRejectedEdit = useRef(false)
+  const handleChange = useCallback<OnChange>((value, event) => {
+    if (reconcilingRejectedEdit.current) return
+    const editor = editorRef.current
+    const model = editor?.getModel()
+    if (model && isMonacoModelSynchronizing(model)) return
     const name = activeFileNameRef.current
-    if (name !== undefined) onChangeRef.current(name, value ?? '')
+    if (name === undefined) return
+    const result = onChangeRef.current(name, value ?? '')
+    if (
+      !result ||
+      typeof result !== 'object' ||
+      !('rejectedValue' in result) ||
+      typeof result.rejectedValue !== 'string' ||
+      !model ||
+      !editor ||
+      model.getValue() === result.rejectedValue
+    )
+      return
+    // A refusal is part of the same edit transaction. Append its compensation to
+    // that undo group, so Undo/Redo cannot resurrect the rejected buffer. Unlike
+    // setValue(), this preserves earlier accepted edits and their undo history.
+    reconcilingRejectedEdit.current = true
+    try {
+      if (!event.isUndoing && !event.isRedoing && !event.isFlush) model.popStackElement()
+      editor.executeEdits('studio.rejected-edit', [
+        { range: model.getFullModelRange(), text: result.rejectedValue },
+      ])
+      editor.pushUndoStop()
+    } finally {
+      reconcilingRejectedEdit.current = false
+    }
   }, [])
 
   // Busy do Formatar: desabilita o botão enquanto roda (feedback visível — sem
@@ -451,7 +613,8 @@ export function MonacoTabs({
       // As contribuições de linguagem são estáticas (ver ./workers); o aguardo
       // fica como cinto de segurança barato e ponto de injeção dos testes.
       try {
-        await loadLanguageServices()
+        const language = editor.getModel()?.getLanguageId()
+        if (language !== 'python' && !language?.startsWith('sz-pro-')) await loadLanguageServices()
       } catch (err) {
         console.warn('[studio] Formatar: serviços de linguagem não carregaram', err)
         onFormatIssueRef.current?.('services-failed')
@@ -509,24 +672,50 @@ export function MonacoTabs({
     editorRef.current = editor
     setMountedEditor(editor)
   }, [])
+  const formatReadyRef = useRef(onFormatReady)
+  formatReadyRef.current = onFormatReady
+  useEffect(() => {
+    formatReadyRef.current?.(() => void handleFormat())
+    return () => formatReadyRef.current?.(null)
+  }, [handleFormat])
 
   // Entrega o editor montado a quem pediu (e `null` na saída). Pelo ref: o efeito roda uma vez
   // por editor, mesmo que o pai passe um callback novo a cada render.
   const onEditorReadyRef = useRef(onEditorReady)
+  const codeObservation = useStudioCodeObservation()
+  const observedFiles = useRef(files)
+  useLayoutEffect(() => {
+    observedFiles.current = files
+    codeObservation?.invalidate()
+  }, [codeObservation, files])
+  useEffect(() => {
+    if (!mountedEditor || !codeObservation) return
+    const prefix = `${saltedPrefix}/`
+    return codeObservation.register(mountedEditor, (model) => {
+      const logical = getMonacoModelPath(model)
+      const path = logical.startsWith(prefix) ? logical.slice(prefix.length) : null
+      const source = observedFiles.current.find((candidate) => candidate.name === path)?.value
+      return path && source !== undefined ? { path, source } : null
+    })
+  }, [mountedEditor, codeObservation, saltedPrefix])
   useEffect(() => {
     onEditorReadyRef.current = onEditorReady
   }, [onEditorReady])
   useEffect(() => {
     if (!mountedEditor) return
-    onEditorReadyRef.current?.(mountedEditor)
+    onEditorReadyRef.current?.(mountedEditor, { modelPathPrefix: saltedPrefix })
     return () => onEditorReadyRef.current?.(null)
-  }, [mountedEditor])
+  }, [mountedEditor, saltedPrefix])
 
   // Salva o view state da aba que está SAINDO. É layout effect de propósito: a
   // troca de model do <Editor> acontece num efeito PASSIVO do
   // @monaco-editor/react, então neste ponto o editor ainda exibe o model
   // anterior — `saveViewState()` captura o cursor/scroll certo sob a chave certa.
-  const activeModelPath = file ? buildMonacoModelPath(saltedPrefix, file.name) : ''
+  const activeModelPath = file
+    ? proMode
+      ? reserveMonacoModelUri(getMonacoModelRegistry(), saltedPrefix, file.name)
+      : buildMonacoModelPath(saltedPrefix, file.name)
+    : ''
   const prevModelPathRef = useRef(activeModelPath)
   useLayoutEffect(() => {
     const prev = prevModelPathRef.current
@@ -545,7 +734,9 @@ export function MonacoTabs({
     const disposable = mountedEditor.onDidChangeModel(() => {
       const model = mountedEditor.getModel()
       if (!model) return
-      const saved = viewStatesRef.current.get(getMonacoModelPath(model))
+      const saved =
+        viewStatesRef.current.get(model.uri.toString()) ??
+        viewStatesRef.current.get(getMonacoModelPath(model))
       if (saved) mountedEditor.restoreViewState(saved)
     })
     return () => disposable.dispose()
@@ -561,8 +752,9 @@ export function MonacoTabs({
       scrollBeyondLastLine: false,
       wordWrap: 'on',
       fontSize,
+      readOnly,
       fontFamily: "'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, monospace",
-      tabSize: 2,
+      tabSize: indentSize,
       // Mantido `true` DE PROPÓSITO. Sim, ele adiciona um observador de tamanho por
       // editor que em parte se sobrepõe ao nosso `useMeasuredWidth` (ResizeObserver da
       // seção). Mas trocar por `false` + `editor.layout()` manual exigiria um sinal
@@ -587,7 +779,7 @@ export function MonacoTabs({
       autoIndent: 'full',
       autoClosingBrackets: 'languageDefined',
     }),
-    [fontSize],
+    [fontSize, readOnly, indentSize],
   )
 
   const applyHighlightToCurrentModel = useCallback(
@@ -761,9 +953,13 @@ export function MonacoTabs({
                 <button
                   type="button"
                   onClick={() => setActive(f.name)}
-                  className={['py-2 pl-3 text-xs font-medium', closable ? 'pr-1' : 'pr-3'].join(
-                    ' ',
-                  )}
+                  onDoubleClick={() => onPinFile?.(f.name)}
+                  title={f.name}
+                  className={[
+                    'py-2 pl-3 text-xs font-medium',
+                    temporaryFile === f.name ? 'italic' : '',
+                    closable ? 'pr-1' : 'pr-3',
+                  ].join(' ')}
                 >
                   {f.name}
                 </button>
@@ -804,12 +1000,35 @@ export function MonacoTabs({
           <div className="flex items-center border-l border-sz-border px-2">{tabsRightSlot}</div>
         )}
       </div>
+      {languageIssue && (
+        <div role="status" className="shrink-0 px-3 py-1 text-xs">
+          {languageIssue}
+          {languageLoadFailed ? (
+            <p>
+              A análise não carregou. Você pode continuar editando. Salve o projeto antes de
+              recarregar a página.
+            </p>
+          ) : (
+            languageIssue !== 'Conferindo código e bibliotecas…' && (
+              <button
+                type="button"
+                className="ml-2 underline"
+                onClick={() => setLanguageAttempt((attempt) => attempt + 1)}
+              >
+                Reiniciar análise
+              </button>
+            )
+          )}
+        </div>
+      )}
       <div className="min-h-0 flex-1">
         <Editor
           height="100%"
           theme={monacoThemeName(theme)}
-          path={buildMonacoModelPath(saltedPrefix, file.name)}
-          defaultLanguage={inferLanguage(file.name)}
+          path={activeModelPath}
+          defaultLanguage={
+            proMode ? proLanguage(inferLanguage(file.name)) : inferLanguage(file.name)
+          }
           defaultValue={file.value}
           onChange={handleChange}
           onMount={handleMount}

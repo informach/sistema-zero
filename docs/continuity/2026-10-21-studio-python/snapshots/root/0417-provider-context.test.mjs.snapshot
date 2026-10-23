@@ -1,0 +1,54 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {spawn} from 'node:child_process';
+import {randomBytes} from 'node:crypto';
+import {Readable} from 'node:stream';
+import {win32} from 'node:path';
+import {captureRailwayProvider,receiveRailwayProvider} from './provider-context.mjs';
+const attemptId='00000000-0000-4000-8000-000000000001';
+const owner='C:\\qa-provider-owner',qa='C:\\qa-isolated-browser';
+const environment={USERPROFILE:owner,APPDATA:owner+'\\AppData\\Roaming',LOCALAPPDATA:owner+'\\AppData\\Local',PROGRAMDATA:'C:\\ProgramData',SystemRoot:process.env.SystemRoot??'C:\\Windows',PATH:process.env.PATH??'',RAILWAY_TOKEN:'must-be-dropped',UNRELATED_SECRET:'must-be-dropped'};
+const now=Date.now(),expires=Math.ceil(now/1000)+600;
+const config=()=>({user:{accessToken:randomBytes(32).toString('hex'),tokenExpiresAt:expires}});
+const capture=(oauthConfig=config(),clock=()=>now)=>captureRailwayProvider({sourceEnvironment:environment,sourceHomeDirectory:owner,oauthConfig,now:clock});
+test('outer capture has no public env/token and takes one CLI-only transport',()=>{
+ const raw=config(),source=JSON.stringify(environment),configuration=JSON.stringify(raw);
+ const provider=capture(raw);assert.equal(provider.env,undefined);assert.equal(provider.token,undefined);
+ const transport=provider.takeSSHTransport();assert.equal(transport.env.RAILWAY_API_TOKEN,raw.user.accessToken);assert.equal(transport.env.RAILWAY_TOKEN,undefined);assert.equal(transport.env.UNRELATED_SECRET,undefined);
+ assert.equal(transport.identityPath,win32.join(owner,'.ssh','id_ed25519'));
+ assert.equal(JSON.stringify(environment),source);assert.equal(JSON.stringify(raw),configuration);assert.throws(()=>provider.takeSSHTransport());
+});
+test('expired session refuses without discovering or refreshing a user home',()=>assert.throws(()=>capture({user:{accessToken:'inert-token',tokenExpiresAt:Math.floor(now/1000)}})));
+test('mismatching caller home refuses',()=>assert.throws(()=>captureRailwayProvider({sourceEnvironment:environment,sourceHomeDirectory:qa,oauthConfig:config(),now:()=>now})));
+test('disposed capability cannot launch transport',()=>{const p=capture();p.dispose();assert.throws(()=>p.takeSSHTransport());});
+test('session that expires while queued refuses at transport boundary',()=>{let clock=now;const p=capture(config(),()=>clock);clock=(expires*1000)-59000;assert.throws(()=>p.takeSSHTransport());});
+function envelope(){
+ const t=capture().takeSSHTransport();
+ return {version:1,attemptId,expiresAt:expires*1000,identityPath:t.identityPath,env:t.env};
+}
+for(const [name,change]of [
+ ['foreign attempt',v=>v.attemptId='00000000-0000-4000-8000-000000000002'],
+ ['project token',v=>v.env.RAILWAY_TOKEN='not-allowed'],
+ ['extra env',v=>v.env.UNRELATED_SECRET='not-allowed'],
+ ['different key',v=>v.identityPath=win32.join(qa,'.ssh','id_ed25519')],
+ ['expired',v=>v.expiresAt=now-1000],
+ ['extra field',v=>v.refreshToken='not-allowed']
+])test('private receiver rejects '+name,async()=>{const v=envelope();change(v);await assert.rejects(receiveRailwayProvider(Readable.from([Buffer.from(JSON.stringify(v))]),{attemptId,now:()=>now}));});
+test('private receiver rejects oversized input',async()=>{await assert.rejects(receiveRailwayProvider(Readable.from([Buffer.alloc(32769)]),{attemptId}));});
+test('malformed private input exposes only a fixed category',async()=>{
+ const sentinel=randomBytes(32).toString('hex');
+ await assert.rejects(receiveRailwayProvider(Readable.from([Buffer.from('{"token":"'+sentinel+'" BROKEN')]),{attemptId}),error=>error.message==='provider-envelope-refused'&&!error.stack.includes(sentinel));
+});
+test('actual Windows Node QA home exposes old defect; private pipe + CLI child preserve isolation',{skip:process.platform!=='win32'},async()=>{
+ const oauth=config(),provider=capture(oauth);
+ const env={SystemRoot:environment.SystemRoot,USERPROFILE:qa,HOME:qa,APPDATA:qa+'\\AppData\\Roaming',LOCALAPPDATA:qa+'\\AppData\\Local'};
+ const child=spawn(process.execPath,[new URL('./provider-projection-child.mjs',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1'),'isolated-node'],{env,stdio:['pipe','pipe','pipe'],windowsHide:true});
+ assert(!child.spawnargs.some(v=>v.includes(oauth.user.accessToken)));
+ let output='',errorBytes=0;child.stdout.on('data',b=>output+=b);child.stderr.on('data',b=>errorBytes+=b.length);
+ const done=new Promise((resolve,reject)=>{child.once('error',reject);child.once('close',(code,signal)=>resolve({code,signal}));});
+ await provider.sendToChild(child,attemptId);
+ assert.deepEqual(await done,{code:0,signal:null});assert.equal(errorBytes,0);assert(!output.includes(oauth.user.accessToken));
+ assert.deepEqual(JSON.parse(output),{passed:true,oldQaHomeIdentityWrong:true,oldTokenAbsent:true,privatePipeReceived:true,isolatedNodeEnvUnchanged:true,browserEnvironmentHasNoToken:true,cliChildPassed:true});
+ assert.equal(env.RAILWAY_API_TOKEN,undefined);
+});
+

@@ -42,10 +42,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
       .post('/access-check', ({ body }) => deps.accessCheck.execute(body.userId, body.courseRefs), {
         body: AccessCheckBody,
       })
+      // Só para conta com a cerca de exclusão (409 sem ela, nada apagado): o worker
+      // reaproveitado também limpa PLANOS do Pensa, e um worker antigo confundiria os dois.
       .post(
         '/account-deletion/finalize',
         async ({ body }) => {
-          await deps.purgeUserData.execute({
+          await deps.purgeUserData.finalize({
             userId: body.accountId,
             profileIds: body.userIds.filter((id) => id !== body.accountId),
           })

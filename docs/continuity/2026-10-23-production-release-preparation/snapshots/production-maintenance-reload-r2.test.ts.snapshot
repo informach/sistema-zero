@@ -1,0 +1,242 @@
+import { afterEach, expect, test } from 'bun:test'
+import { execFileSync } from 'node:child_process'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import {
+  ORDER, PINS, SERVICES, LIMITS, argumentsFor, validatePlan, validatePhase1,
+  validatePrevious, mutationRequest, acknowledge, evaluate, preserveMaps,
+  compareSnapshot, reserveIntent, reloadOnce, validateHttp, validateJournalAge,
+  projectContext, baselineContext, validateJournalReadback, nativeEnvironment,
+} from './production-maintenance-reload-r2.mjs'
+
+const now = Date.parse('2026-10-23T04:00:00Z'), iso = (ms: number) => new Date(ms).toISOString()
+const ref = { path: '.cache/python-reference-games/inert.json', sha256: 'a'.repeat(64) }
+const sid = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
+const dirs: string[] = []
+afterEach(async () => { for (const dir of dirs.splice(0)) { if (!resolve(dir).startsWith(resolve(tmpdir(), 'sz-maintenance-reload-'))) throw Error('unsafe'); await rm(dir, { recursive: true }) } })
+function plan(service = 'kids') {
+  return { kind: 'production-maintenance-reload-plan', version: 1, projectId: PINS.project,
+    environmentId: PINS.environment, phase: 'reload-old-images-full', createdAt: iso(now - 1000), expiresAt: iso(now + 600000),
+    maintenancePlan: { ...ref, sha256: PINS.maintenancePlanSha256 },
+    evidence: { launchers: ref, journals: ref, next: ref }, journalReadback: ['hub', 'members'].includes(service) ? ref : null,
+    phase1: Object.fromEntries(ORDER.map(name => [name, ref])),
+    previous: Object.fromEntries(ORDER.slice(0, ORDER.indexOf(service)).map(name => [name, ref])) }
+}
+function phase1(service: string) { return { kind: 'production-maintenance-store', version: 1, mode: 'apply', service,
+  operatorSha256: PINS.storeSha256, projectId: PINS.project, pins: PINS.storePins, targets: SERVICES,
+  state: 'CONFIGURATION_STORED_NO_RELOAD', mutationAttempts: 1, cliAcknowledged: true,
+  remoteOutcomeUnknown: false, readbackVerified: true, contextUnchanged: true, allOtherVariablesByteEqual: true,
+  configuredFull: true, maintenanceActivatedByThisOperator: false, finishedAt: iso(now - 1000) } }
+function dep(service: string, fresh = false) { const t = SERVICES[service]; return {
+  id: fresh ? sid(10) : t.deployment, snapshotId: fresh ? sid(11) : t.snapshot,
+  status: 'SUCCESS', stopped: false, commit: t.commit, image: t.image,
+  createdAt: iso(fresh ? now : now - 100000), canRedeploy: true,
+  instances: [{ id: fresh ? sid(12) : t.instance, status: 'RUNNING' }], commandsVerified: true,
+} }
+function ctx(service = 'kids', fresh = false) { const candidate = dep(service, fresh), old = dep(service); if (fresh) { old.status = 'REMOVED'; old.stopped = true; old.instances[0].status = 'REMOVED' }
+  return { latest: candidate, active: [candidate], pending: [], old, fileCommandsVerified: true } }
+function allContext(service = 'kids', fresh = false) { return Object.fromEntries(ORDER.map(name => [name, ctx(name, name === service && fresh)])) }
+function maps() { return Object.fromEntries(ORDER.map(name => [name, { declared: { RELEASE_MAINTENANCE_MODE: 'full', PRIVATE: 'inert-only' }, rendered: { RELEASE_MAINTENANCE_MODE: 'full', PRIVATE: 'inert-only' } }])) }
+function proof(service = 'kids') { return { kind: 'production-maintenance-http', version: 1, state: 'LOCAL_FULL_HTTP_VERIFIED',
+  operatorSha256: PINS.httpSha256, projectId: PINS.project, environmentId: PINS.environment,
+  service, serviceId: SERVICES[service].id, candidate: dep(service, true),
+  observedAt: iso(now), identityVerified: true, ready: true, blocked: true, providerMutations: 0,
+  remoteProgramSha256: PINS.remoteHttpSha256 } }
+
+test('CLI and plan reject extra targets/modes/arguments, expired and out-of-order chains', () => {
+  expect(argumentsFor(['check', 'kids', 'production-maintenance-reload-check-kids-test', ref.path, ref.sha256]).mode).toBe('check')
+  for (const args of [['apply', 'auth', 'run'], ['check', 'kids', '../run', ref.path, ref.sha256], ['restore', 'kids', 'run'], ['verify', 'kids', 'production-maintenance-reload-verify-kids-test', ref.path, ref.sha256]]) expect(() => argumentsFor(args)).toThrow()
+  expect(validatePlan(plan(), 'kids', now)).toEqual(plan())
+  for (const patch of [{ environmentId: 'staging' }, { expiresAt: iso(now) }, { arbitrary: 1 }, { previous: { adult: ref } }]) expect(() => validatePlan({ ...plan(), ...patch }, 'kids', now)).toThrow()
+  expect(() => validatePlan(plan(), 'members', now)).toThrow()
+})
+test('phase1 proof must be actual acknowledged full on every exact target', () => {
+  const rows = Object.fromEntries(ORDER.map(s => [s, phase1(s)]))
+  expect(() => validatePhase1(rows)).not.toThrow()
+  for (const patch of [{ state: 'ACK_UNKNOWN_READBACK_MATCHED_NO_REPLAY' }, { remoteOutcomeUnknown: true }, { configuredFull: false }, { operatorSha256: 'b'.repeat(64) }]) expect(() => validatePhase1({ ...rows, kids: { ...rows.kids, ...patch } })).toThrow()
+})
+test('old image redeploy mutation has no source/env/skip-predeploy parameters and no secret argv', () => {
+  const request = mutationRequest('kids')
+  expect(request.query).toContain('usePreviousImageTag:true')
+  expect(request.variables).toEqual({ id: SERVICES.kids.deployment })
+  expect(request.query).not.toMatch(/skipPreDeploy|environmentPatch|variablesUpsert|deploymentCreate/)
+  expect(acknowledge({ data: { deploymentRedeploy: { id: SERVICES.kids.deployment, status: 'SUCCESS' } } }, 'kids')).toBeNull()
+  expect(acknowledge({ errors: [{}], data: { deploymentRedeploy: { id: sid(10), status: 'SUCCESS' } } }, 'kids')).toBeNull()
+})
+test('only candidate with exact old digest, unique success and all old instances retired is ready', () => {
+  const c = ctx('kids', true), ack = { id: sid(10), snapshotId: sid(11), status: 'SUCCESS' }
+  expect(evaluate(c, 'kids', ack).ready).toBe(true)
+  for (const edit of [(x: any) => { x.old.instances[0].status = 'RUNNING' }, (x: any) => { x.active.push(x.old) }]) { const n = structuredClone(c); edit(n); expect(evaluate(n, 'kids', ack).ready).toBe(false) }
+  for (const edit of [(x: any) => { x.latest.image = 'sha256:' + 'f'.repeat(64) }, (x: any) => { x.latest.commit = 'f'.repeat(40) }, (x: any) => { x.active.push({ ...x.latest, id: sid(90) }) }, (x: any) => { x.latest.snapshotId = SERVICES.kids.snapshot }]) { const n = structuredClone(c); edit(n); expect(() => evaluate(n, 'kids', ack)).toThrow() }
+})
+test('maps preserve all variables, permit only generated identities for selected service', () => {
+  const before = maps(), after = maps(); after.kids.rendered.RAILWAY_DEPLOYMENT_ID = sid(10)
+  expect(() => preserveMaps(before, after, 'kids', true)).not.toThrow()
+  after.adult.rendered.RAILWAY_DEPLOYMENT_ID = sid(11)
+  expect(() => preserveMaps(before, after, 'kids', true)).toThrow()
+  const drift = maps(); drift.members.declared.PRIVATE = 'changed'
+  expect(() => preserveMaps(before, drift, 'kids', true)).toThrow()
+})
+test('snapshot equality resolves whole references only and refuses silent missing/additional vars', () => {
+  const services = [{ id: sid(20), name: 'Postgres', deletedAt: null }]
+  const a = { RELEASE_MAINTENANCE_MODE: 'full', DATABASE_URL: '${{Postgres.DATABASE_URL}}' }
+  const b = { ...a, DATABASE_URL: '${{' + sid(20) + '.DATABASE_URL}}' }
+  expect(compareSnapshot({ id: sid(11), variables: b }, sid(11), a, services)).toBe(true)
+  expect(() => compareSnapshot({ id: sid(11), variables: { ...b, EXTRA: 'x' } }, sid(11), a, services)).toThrow()
+  expect(() => compareSnapshot({ id: sid(11), variables: b }, sid(11), { ...a, DATABASE_URL: 'prefix${{Postgres.DATABASE_URL}}' }, services)).toThrow()
+})
+test('journals must still be fresh at Members/Hub dispatch; launchers are immutable image evidence', () => {
+  const proof = { finishedAt: iso(now - LIMITS.journalMs - 1) }
+  expect(() => validateJournalAge(proof, 'kids', now)).not.toThrow()
+  expect(() => validateJournalAge(proof, 'hub', now)).toThrow()
+  expect(() => validateJournalAge({ finishedAt: iso(now) }, 'members', now)).not.toThrow()
+})
+test('HTTP proof wrong identity, missing full or stale cannot permit a successor', () => {
+  expect(() => validateHttp(proof(), 'kids', dep('kids', true), now)).not.toThrow()
+  for (const patch of [{ ready: false }, { blocked: false }, { state: 'SUCCESS' }, { operatorSha256: 'x' }, { observedAt: iso(now - LIMITS.httpProofMs - 1) }, { candidate: dep('adult', true) }]) expect(() => validateHttp({ ...proof(), ...patch }, 'kids', dep('kids', true), now)).toThrow()
+  expect(() => validatePrevious({ kids: { state: 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED' } }, 'adult')).toThrow()
+})
+test('permanent intent blocks second run/hash after ACK loss and safe GET diagnostic still occurs', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'sz-maintenance-reload-')); dirs.push(dir)
+  let sends = 0, diagnostics = 0
+  const events: any[] = []
+  const baseline = { context: allContext(), maps: maps() }
+  const deps = { now: () => now, preflight: async () => baseline,
+    reserve: () => reserveIntent(dir, 'kids', { checkHash: sends ? 'b' : 'a' }),
+    checkpoint: async (p: any) => { events.push(p) }, send: async () => { sends++; throw new Error('inert-private-secret') },
+    diagnose: async () => { diagnostics++; return allContext('kids', true) } }
+  expect((await reloadOnce('kids', {}, deps)).state).toBe('ACK_UNKNOWN_NO_REPLAY')
+  expect(sends).toBe(1); expect(diagnostics).toBe(1)
+  expect(JSON.stringify(events)).not.toContain('inert-private-secret')
+  expect(JSON.stringify(events)).toContain(sid(10))
+  await expect(reloadOnce('kids', {}, deps)).rejects.toThrow('PERMANENT_INTENT')
+  expect(sends).toBe(1)
+  expect((await readFile(join(dir, 'production-maintenance-reload-kids.intent.json'), 'utf8'))).toContain('checkHash')
+})
+
+test('successful image reload stops at HTTP_REQUIRED and never calls HTTP or grants successor', async () => {
+  let time = now, polls = 0, sends = 0
+  const snapshots: any[] = [], saved: any[] = [], after = allContext('kids', true)
+  const base = { context: allContext(), maps: maps(), services: [] }
+  const result = await reloadOnce('kids', {}, { now: () => time, preflight: async () => base,
+    reserve: async () => {}, checkpoint: async (p: any) => { saved.push(p) },
+    send: async () => { sends++; return { data: { deploymentRedeploy: { id: sid(10), snapshotId: sid(11), status: 'DEPLOYING' } } } },
+    context: async () => { polls++; const c = structuredClone(after); if (polls === 1) { c.kids.latest.status = 'DEPLOYING'; c.kids.fileCommandsVerified = false } return c },
+    wait: async (ms: number) => { time += ms }, configuration: async () => ({ maps: maps(), services: [] }),
+    snapshot: async (id: string) => { snapshots.push(id); return { id: sid(11), variables: maps().kids.declared } },
+  })
+  expect(sends).toBe(1); expect(polls).toBe(3); expect(snapshots).toEqual([sid(10)])
+  expect(result.state).toBe('IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED')
+  expect(result.fullHttpVerified).toBe(false); expect(result.qualified).toBe(false)
+  expect(() => validatePrevious({ kids: result }, 'adult')).toThrow()
+})
+
+test('poll timeout and drift after ACK stay unqualified without another mutation', async () => {
+  let time = now, sends = 0
+  const pending = allContext('kids', true); pending.kids.old.instances[0].status = 'RUNNING'
+  const deps = { now: () => time, preflight: async () => ({ context: allContext(), maps: maps() }), reserve: async () => {}, checkpoint: async () => {},
+    send: async () => { sends++; return { data: { deploymentRedeploy: { id: sid(10), status: 'SUCCESS', snapshotId: sid(11) } } } },
+    context: async () => pending, wait: async () => { time += LIMITS.pollMs } }
+  expect((await reloadOnce('kids', {}, deps)).state).toBe('ACKNOWLEDGED_POLL_TIMEOUT_NO_REPLAY')
+  expect(sends).toBe(1)
+  pending.kids.latest.image = 'sha256:' + 'f'.repeat(64)
+  await expect(reloadOnce('kids', {}, deps)).rejects.toThrow('CANDIDATE_IMAGE_CHANGED')
+  expect(sends).toBe(2) // two distinct synthetic scenarios, never automatic retry within a run
+})
+
+test('journal readback validates actual saved proof structure, target and DB identity', async () => {
+  const path = join(import.meta.dir, 'production-old-image-migration-readonly-r1.json')
+  const real = JSON.parse(await readFile(path, 'utf8')), at = Date.parse(real.finishedAt)
+  expect(() => validateJournalReadback(real, 'hub', at)).not.toThrow()
+  for (const edit of [(x: any) => { x.targets.find((r: any) => r.name === 'hub').remote.identityChecks.environment = false }, (x: any) => { x.targets.find((r: any) => r.name === 'hub').remote.database.last.sha256 = 'f'.repeat(64) }, (x: any) => { x.migratorExecuted = true }]) { const bad = structuredClone(real); edit(bad); expect(() => validateJournalReadback(bad, 'hub', at)).toThrow() }
+})
+
+test('provider projection rejects paginated pending sets and waits for candidate config instead of claiming ready', () => {
+  const raw = Object.fromEntries(Object.keys(SERVICES).flatMap((service, i) => {
+    const t = SERVICES[service], d = { id: t.deployment, projectId: PINS.project, environmentId: PINS.environment, serviceId: t.id, createdAt: iso(now - 100000), status: 'SUCCESS', deploymentStopped: false, canRedeploy: true, snapshotId: t.snapshot, meta: { commitHash: t.commit, imageDigest: t.image, serviceManifest: { deploy: { startCommand: t.start, preDeployCommand: t.preDeploy } } }, instances: [{ id: t.instance, status: 'RUNNING' }] }
+    return [[`s${i}`, { serviceId: t.id, environmentId: PINS.environment, startCommand: t.start, preDeployCommand: t.preDeploy, latestDeployment: d, activeDeployments: [d], resolvedFileConfig: { deploymentId: t.deployment, commitHash: t.commit, fileManifest: {} } }], [`p${i}`, { edges: [], pageInfo: { hasNextPage: false } }], [`o${i}`, d]]
+  }))
+  expect(() => baselineContext(projectContext(raw), 'kids', {})).not.toThrow()
+  const missing = structuredClone(raw); missing.s1.resolvedFileConfig = null
+  expect(() => baselineContext(projectContext(missing), 'kids', {})).toThrow()
+  const more = structuredClone(raw); more.p1.pageInfo.hasNextPage = true
+  expect(() => projectContext(more)).toThrow('CONTEXT_INCOMPLETE')
+  const altered = structuredClone(raw); altered.s1.preDeployCommand = 'new migration'
+  expect(() => projectContext(altered)).toThrow('EFFECTIVE_COMMAND_CHANGED')
+})
+
+test('Node24 import, actual remote program pin and invalid CLI are inert with execution/network disabled', () => {
+  const node = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'
+  const script = `import assert from 'node:assert/strict'; import cp from 'node:child_process'; import {syncBuiltinESMExports} from 'node:module';
+    cp.execFile=()=>{throw Error('NO_PROVIDER_EXECUTION')}; syncBuiltinESMExports(); globalThis.fetch=()=>{throw Error('NO_NETWORK')};
+    const a=await import('./.cache/python-reference-games/production-maintenance-reload-r2.mjs');
+    const b=await import('./.cache/python-reference-games/production-maintenance-http-r2.mjs');
+    assert.equal(process.versions.node,'24.22.0'); assert.equal(a.PINS.remoteHttpSha256,b.REMOTE_SHA);
+    await assert.rejects(a.main(['wrong']),/ARGUMENTS_INVALID/); await assert.rejects(b.main(['wrong']),/ARGUMENTS_INVALID/);
+    console.log('NODE_IMPORT_AND_CLOSED_CLI_PASS');`
+  const stdout = execFileSync(node, ['--input-type=module', '-e', script], { cwd: resolve(import.meta.dir, '../..'), encoding: 'utf8', timeout: 5000, windowsHide: true })
+  expect(stdout.trim()).toBe('NODE_IMPORT_AND_CLOSED_CLI_PASS')
+})
+
+test('old Members baseline retains real REMOVED history and its single pinned RUNNING instance', async () => {
+  const r = JSON.parse(await readFile(join(import.meta.dir, 'production-postgres-metadata-root-r3/receipt.json'), 'utf8'))
+  expect(r.state).toBe('METADATA_READ_VERIFIED')
+  const observed = r.before.members
+  expect(observed.deploymentId).toBe(SERVICES.members.deployment)
+  expect(observed.instanceId).toBe(SERVICES.members.instance)
+  const c = allContext()
+  for (const row of [c.members.latest, c.members.active[0], c.members.old]) row.instances = structuredClone(observed.instances)
+  const before = structuredClone(c)
+  expect(() => baselineContext(c, 'kids', {})).not.toThrow()
+  expect(c).toEqual(before)
+  expect(c.members.latest.instances).toHaveLength(2)
+})
+
+test('stable predecessor pins the RUNNING UUID and refuses transitions, duplicates and two RUNNING rows', () => {
+  const good = allContext('kids', true)
+  good.kids.latest.instances.unshift({ id: sid(99), status: 'REMOVED' })
+  const candidate = structuredClone(good.kids.latest)
+  expect(() => baselineContext(good, 'adult', { kids: { candidate } })).not.toThrow()
+  for (const edit of [
+    (c: any) => { c.kids.latest.instances[0].status = 'STARTING' },
+    (c: any) => { c.kids.latest.instances[0].status = 'RUNNING' },
+    (c: any) => { c.kids.latest.instances.push({ ...c.kids.latest.instances[0] }) },
+    (c: any) => { c.kids.latest.instances[1].id = sid(98) },
+    (c: any) => { c.kids.active = [structuredClone(c.kids.latest)]; c.kids.active[0].instances[1].id = sid(97) },
+    (c: any) => { c.kids.latest.instances[0].id = 'not-a-uuid' },
+  ]) {
+    const bad = structuredClone(good); edit(bad)
+    expect(() => baselineContext(bad, 'adult', { kids: { candidate } })).toThrow()
+  }
+})
+
+test('candidate evaluation accepts only one live replica with retired history, preserving every row', () => {
+  const good = ctx('kids', true), ack = { id: sid(10), snapshotId: sid(11), status: 'SUCCESS' }
+  good.latest.instances.unshift({ id: sid(99), status: 'REMOVED' })
+  const before = structuredClone(good)
+  expect(evaluate(good, 'kids', ack).ready).toBe(true)
+  expect(good).toEqual(before)
+  for (const status of ['STARTING', 'DEPLOYING', 'STOPPED', 'FAILED', 'UNKNOWN', 'RUNNING']) {
+    const bad = structuredClone(good); bad.latest.instances[0].status = status
+    expect(evaluate(bad, 'kids', ack).ready).toBe(false)
+  }
+  for (const edit of [
+    (c: any) => { c.latest.instances.push({ ...c.latest.instances[0] }) },
+    (c: any) => { c.latest.instances[1].status = 'REMOVED' },
+    (c: any) => { c.latest.instances[0].id = 'not-a-uuid' },
+    (c: any) => { c.active = [structuredClone(c.latest)]; c.active[0].instances[1].id = sid(98) },
+  ]) {
+    const bad = structuredClone(good); edit(bad)
+    expect(evaluate(bad, 'kids', ack).ready).toBe(false)
+  }
+})
+
+test('native CLI environment keeps the normal Windows profile and removes exactly four Railway overrides', () => {
+  const source = { PATH: 'inert-path', USERNAME: 'inert-user', HOME: 'inert-home', COMSPEC: 'inert-shell', PATHEXT: '.EXE', SYSTEM_EXTRA: 'inert-extra', CI: 'false', NO_COLOR: '0',
+    RAILWAY_TOKEN: 'inert-one', RAILWAY_API_TOKEN: 'inert-two', RAILWAY_PROJECT_TOKEN: 'inert-three', RAILWAY_API: 'inert-four', RAILWAY_PROJECT_ID: 'inert-preserved' }
+  const before = structuredClone(source), expected: Record<string, string> = { ...source, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete expected[key]
+  expect(nativeEnvironment(source)).toEqual(expected)
+  expect(source).toEqual(before)
+})

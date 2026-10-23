@@ -1,8 +1,14 @@
 import { isDocumentRecord, ProjectDocumentError } from '../core/projectDocument'
 import { readValues } from '../state/idbTransaction'
-import { projectMetaKey, projectMigrationKey, projectThumbKey } from '../state/projectStorageKeys'
+import {
+  projectHeadKey,
+  projectMetaKey,
+  projectMigrationKey,
+  projectThumbKey,
+} from '../state/projectStorageKeys'
 import { assembleProjectRecord, projectStorageEntries } from '../state/projectStorageRecords'
 import { gameStorageKey, type ProjectStorageScope } from '../state/projectStorageRuntime'
+import { type ProjectSummary, projectEnvironmentSummary } from '../state/projectSummary'
 import { prepareProjectForHost } from '../state/projectValidation'
 import { promoteLocalMigration } from './localTransaction'
 
@@ -15,12 +21,15 @@ const PREFIXES = [
   'sz:project-assets:',
   'sz:project-thumb:',
 ]
+const V2_PREFIXES = PREFIXES.map((prefix) => prefix.replace('sz:', 'sz:v2:'))
 
 export function historicalLocalIds(keys: readonly IDBValidKey[]): string[] {
   const ids = new Set<string>()
   for (const key of keys) {
     if (typeof key !== 'string') continue
-    const prefix = PREFIXES.slice(0, 6).find((item) => key.startsWith(item))
+    const prefix = [...PREFIXES.slice(0, 6), ...V2_PREFIXES.slice(0, 6)].find((item) =>
+      key.startsWith(item),
+    )
     if (prefix) ids.add(key.slice(prefix.length))
   }
   return [...ids]
@@ -41,12 +50,40 @@ export async function migrateLocalProject(
   id: string,
   scope: ProjectStorageScope,
 ): Promise<string | undefined> {
-  const sourceKeys = PREFIXES.map((prefix) => `${prefix}${id}`)
+  let changed: string | undefined
+  for (const prefixes of [PREFIXES, V2_PREFIXES])
+    changed = (await migrateLocalLayout(id, scope, prefixes)) ?? changed
+  return changed
+}
+
+async function migrateLocalLayout(
+  id: string,
+  scope: ProjectStorageScope,
+  prefixes: readonly string[],
+): Promise<string | undefined> {
+  const sourceKeys = prefixes.map((prefix) => `${prefix}${id}`)
   for (let attempt = 0; attempt < 3; attempt++) {
-    const keys = [...sourceKeys, projectMetaKey(id), projectMigrationKey(id), gameStorageKey(id)]
+    const keys = [
+      ...sourceKeys,
+      projectMetaKey(id),
+      projectMigrationKey(id),
+      projectHeadKey(id),
+      gameStorageKey(id),
+    ]
     const values = await readValues(scope.store, keys)
-    const [flat, meta, files, state, blocks, assets, thumb, currentMeta, marker, gameStorage] =
-      values
+    const [
+      flat,
+      meta,
+      files,
+      state,
+      blocks,
+      assets,
+      thumb,
+      currentMeta,
+      marker,
+      currentHead,
+      gameStorage,
+    ] = values
     if (!flat && !meta && !files && !state && !blocks && !assets) return
     const raw =
       meta && files && state
@@ -87,8 +124,9 @@ export async function migrateLocalProject(
     const recovery = Boolean(currentMeta || marker)
     const targetId = recovery ? `recuperado-${id.slice(0, 28)}-${hash.slice(0, 24)}` : id
     const targetMeta = recovery
-      ? await readValues(scope.store, [projectMetaKey(targetId)])
-      : [currentMeta]
+      ? await readValues(scope.store, [projectMetaKey(targetId), projectHeadKey(targetId)])
+      : [currentMeta, currentHead]
+    const targetExists = Boolean(targetMeta[0] || targetMeta[1])
     const sameSource = previousHash === hash
     const puts: Array<[IDBValidKey, unknown]> = [
       [
@@ -103,7 +141,7 @@ export async function migrateLocalProject(
       [projectMigrationKey(id), { sourceHash: hash, lastTargetId: targetId }],
     ]
     if (existingBackup !== undefined) puts.shift()
-    if (!sameSource && !targetMeta[0]) {
+    if (!sameSource && !targetExists) {
       const converted = recovery
         ? {
             ...project,
@@ -113,6 +151,10 @@ export async function migrateLocalProject(
           }
         : project
       puts.push(...projectStorageEntries(converted))
+      puts.push([
+        projectHeadKey(targetId),
+        { version: 1, token: crypto.randomUUID(), writer: '', base: null, sequence: 0 },
+      ])
       if (isDocumentRecord(thumb))
         puts.push([projectThumbKey(targetId), { ...thumb, id: targetId }])
       if (recovery && gameStorage !== undefined) puts.push([gameStorageKey(targetId), gameStorage])
@@ -120,10 +162,21 @@ export async function migrateLocalProject(
     const expected: Array<[IDBValidKey, unknown]> = keys
       .slice(0, -1)
       .map((key, index) => [key, values[index]])
-    if (recovery) expected.push([projectMetaKey(targetId), targetMeta[0]])
+    if (recovery)
+      expected.push(
+        [projectMetaKey(targetId), targetMeta[0]],
+        [projectHeadKey(targetId), targetMeta[1]],
+      )
     expected.push([backupKey, existingBackup])
-    if (await promoteLocalMigration(scope.store, expected, { puts, deletes: sourceKeys }))
-      return !sameSource && !targetMeta[0] ? targetId : undefined
+    if (
+      await promoteLocalMigration(
+        scope.store,
+        expected,
+        { puts, deletes: sourceKeys },
+        scope.identity,
+      )
+    )
+      return !sameSource && !targetExists ? targetId : undefined
   }
   throw new ProjectDocumentError(
     'migration-pending',
@@ -137,35 +190,28 @@ export async function migrateLocalProjects(
   keys: readonly IDBValidKey[],
 ): Promise<{
   changed: string[]
-  pending: Array<{
-    id: string
-    name: string
-    updatedAt: number
-    createdAt: number
-    mode: 'blocks' | 'code' | 'bridge'
-    migrationPending: true
-  }>
+  pending: ProjectSummary[]
 }> {
   const changed: string[] = []
-  const pending: Array<{
-    id: string
-    name: string
-    updatedAt: number
-    createdAt: number
-    mode: 'blocks' | 'code' | 'bridge'
-    migrationPending: true
-  }> = []
+  const pending: ProjectSummary[] = []
   for (const id of historicalLocalIds(keys)) {
     try {
       const target = await migrateLocalProject(id, scope)
       if (target) changed.push(target)
     } catch (error) {
       if (!(error instanceof ProjectDocumentError)) throw error
-      const [meta, flat] = await readValues(scope.store, [
+      const [meta, flat, v2meta] = await readValues(scope.store, [
         `sz:project-meta:${id}`,
         `sz:project:${id}`,
+        `sz:v2:project-meta:${id}`,
       ])
-      const raw = isDocumentRecord(meta) ? meta : isDocumentRecord(flat) ? flat : {}
+      const raw = isDocumentRecord(v2meta)
+        ? v2meta
+        : isDocumentRecord(meta)
+          ? meta
+          : isDocumentRecord(flat)
+            ? flat
+            : {}
       const stamp = (value: unknown) =>
         typeof value === 'number' && Number.isFinite(value) && value > 0 && value < 8.64e15
           ? value
@@ -180,6 +226,7 @@ export async function migrateLocalProjects(
         createdAt: stamp(raw.createdAt),
         mode: raw.mode === 'code' || raw.mode === 'bridge' ? raw.mode : 'blocks',
         migrationPending: true,
+        ...projectEnvironmentSummary(raw),
       })
     }
   }

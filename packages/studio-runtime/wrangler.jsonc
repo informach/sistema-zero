@@ -1,14 +1,31 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "sistemazero-studio-runtime",
-  "main": "src/index.ts",
+  "main": "src/worker.ts",
   "compatibility_date": "2026-07-01",
   "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["*/15 * * * *"]
+  },
+  "r2_buckets": [
+    {
+      "binding": "PRO_ARTIFACTS",
+      "bucket_name": "sistemazero-studio-artifacts"
+    },
+    {
+      "binding": "PYTHON_INPUTS",
+      "bucket_name": "sistemazero-studio-artifacts"
+    },
+    {
+      "binding": "PYTHON_PREVIEWS",
+      "bucket_name": "sistemazero-studio-artifacts"
+    }
+  ],
   "containers": [
     {
       "class_name": "ProBuildSandbox",
       "image": "./Dockerfile",
-      "instance_type": "lite",
+      "instance_type": "standard-1",
       "max_instances": 50
     }
   ],
@@ -17,6 +34,10 @@
       {
         "class_name": "ProBuildSandbox",
         "name": "ProBuildSandbox"
+      },
+      {
+        "class_name": "PythonInspectionJob",
+        "name": "PythonInspectionJobs"
       }
     ]
   },
@@ -24,9 +45,18 @@
     {
       "new_sqlite_classes": ["ProBuildSandbox"],
       "tag": "v1"
+    },
+    {
+      "new_sqlite_classes": ["PythonInspectionJob"],
+      "tag": "v2-python-inspection-jobs"
     }
   ],
   "ratelimits": [
+    {
+      "name": "PYTHON_UPLOAD_RATE_LIMITER",
+      "namespace_id": "27003",
+      "simple": { "limit": 120, "period": 60 }
+    },
     {
       "name": "BUILD_RATE_LIMITER",
       "namespace_id": "27001",
@@ -35,5 +65,75 @@
         "period": 60
       }
     }
-  ]
+  ],
+  "vars": {
+    "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "6742f03c85bcde761b3df3bac4377e6bf2ffa359ac6572089f38532d1b8e601c",
+    "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime.helena-bcc.workers.dev",
+    "PUBLICATION_AUTHORIZATION_URL": "https://kids.sistemazero.com.br/api/internal/studio-play",
+    "PUBLICATION_AUTHORIZATION_ADULT_URL": "https://comunidade.sistemazero.com.br/api/internal/studio-play",
+    "PUBLICATION_CLEANUP_URL": "https://kids.sistemazero.com.br/api/internal/studio-publication-cleanup",
+    "PUBLICATION_CLEANUP_ADULT_URL": "https://comunidade.sistemazero.com.br/api/internal/studio-publication-cleanup"
+  },
+  "env": {
+    "staging": {
+      "name": "sistemazero-studio-runtime-staging",
+      "vars": {
+        "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "3c69eea36bfb14db88679a7e32bc7b61c69e05095d2794f1aabf4ab54985b230",
+        "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
+        "PUBLICATION_AUTHORIZATION_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-play",
+        "PUBLICATION_AUTHORIZATION_ADULT_URL": "https://community-staging-66f2.up.railway.app/api/internal/studio-play",
+        "PUBLICATION_CLEANUP_URL": "https://community-kids-staging.up.railway.app/api/internal/studio-publication-cleanup",
+        "PUBLICATION_CLEANUP_ADULT_URL": "https://community-staging-66f2.up.railway.app/api/internal/studio-publication-cleanup"
+      },
+      "r2_buckets": [
+        {
+          "binding": "PRO_ARTIFACTS",
+          "bucket_name": "sistemazero-studio-artifacts-staging"
+        },
+        {
+          "binding": "PYTHON_INPUTS",
+          "bucket_name": "sistemazero-studio-artifacts-staging"
+        },
+        {
+          "binding": "PYTHON_PREVIEWS",
+          "bucket_name": "sistemazero-studio-artifacts-staging"
+        }
+      ],
+      "containers": [
+        {
+          "class_name": "ProBuildSandbox",
+          "image": "./Dockerfile",
+          "instance_type": "standard-1",
+          "max_instances": 50
+        }
+      ],
+      "durable_objects": {
+        "bindings": [
+          {
+            "class_name": "ProBuildSandbox",
+            "name": "ProBuildSandbox"
+          },
+          {
+            "class_name": "PythonInspectionJob",
+            "name": "PythonInspectionJobs"
+          }
+        ]
+      },
+      "ratelimits": [
+        {
+          "name": "PYTHON_UPLOAD_RATE_LIMITER",
+          "namespace_id": "27004",
+          "simple": { "limit": 120, "period": 60 }
+        },
+        {
+          "name": "BUILD_RATE_LIMITER",
+          "namespace_id": "27002",
+          "simple": {
+            "limit": 10,
+            "period": 60
+          }
+        }
+      ]
+    }
+  }
 }

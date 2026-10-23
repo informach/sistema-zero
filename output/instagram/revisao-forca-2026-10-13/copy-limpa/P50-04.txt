@@ -1,3 +1,0 @@
-Na Corrida Infinita 3D, do nosso Estúdio, as caixas ficam mais rápidas com o tempo.
-
-Se quem testa achar a aceleração brusca, dá para comparar outro valor.

@@ -1,0 +1,116 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
+import { createRequire } from 'node:module'
+import { mkdir, readFile, realpath, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
+// PROPOSED ONLY. Do not invoke until Root reviews producer/source pins and
+// explicitly authorizes this bounded source export. Never runs Python/Tk/audio.
+const [permission, pinsArgument, outputArgument] = process.argv.slice(2)
+assert(permission === '--export' && /^--pins-sha=[a-f0-9]{64}$/.test(pinsArgument ?? '') && outputArgument?.startsWith('--output='), 'Explicit reviewed --export --pins-sha --output required')
+assert.equal(process.argv.slice(2).length, 3)
+const sha = (b: string | Uint8Array) => createHash('sha256').update(b).digest('hex')
+const pinsBytes = await readFile(resolve(import.meta.dirname, 'export-pins.json'))
+assert.equal(sha(pinsBytes), pinsArgument.slice(11))
+const pins = JSON.parse(pinsBytes.toString())
+const root = resolve(pins.root), output = resolve(outputArgument.slice(9))
+assert.equal(resolve(process.cwd()), root, 'Run in current Root workspace, never Games cwd/old Core')
+assert.equal(output, resolve(pins.output), 'Only the reviewed new own-cache output is permitted')
+const head = () => execFileSync('git', ['-C', root, 'rev-parse', 'HEAD'], { encoding: 'utf8', windowsHide: true, timeout: 5000 }).trim()
+assert.equal(head(), pins.rootHead)
+async function verifyInputs() {
+  for (const file of pins.sourceFiles) assert.equal(sha(await readFile(file.absolutePath)), file.sha256, file.path)
+  assert.equal(sha(await readFile(pins.release.path)), pins.release.sha256)
+  assert.equal(sha(await readFile(pins.distribution.path)), pins.distribution.fileSha256)
+  assert.equal(sha(await readFile(pins.historical.receiptPath)), pins.historical.receiptSha256)
+  assert.equal(sha(await readFile(pins.historical.zipPath)), pins.historical.zipSha256)
+}
+await verifyInputs()
+const studioRequire = createRequire(resolve(root, 'packages/studio/package.json'))
+assert.equal(await realpath(studioRequire.resolve('@sistemazero/core/studio/runtime-catalog')), await realpath(resolve(root, 'packages/core/src/studio/runtime-catalog.ts')), 'Core must resolve to reviewed Root, not Games')
+const fromRoot = (path: string) => import(pathToFileURL(resolve(root, path)).href)
+const { portableGameSource } = await import(pathToFileURL(resolve(pins.games, 'experiments/studio-python-runtime/gameVariants.ts')).href)
+const { gameFixtureProject } = await fromRoot('experiments/studio-python-runtime/gameFixtures.ts')
+const { verifyStudioPythonDeployment } = await fromRoot('packages/core/src/studio/python-runtime-distribution.ts')
+const { createStudioRuntimeCatalog } = await fromRoot('packages/core/src/studio/runtime-catalog.ts')
+const { refinePythonProjectDocument } = await fromRoot('packages/studio/src/state/pythonProjectValidation.ts')
+const { exportProjectSource } = await fromRoot('packages/studio/src/export/sourceExport.ts')
+const { unzipSync } = await fromRoot('packages/studio/node_modules/fflate/esm/index.mjs')
+for (const value of [gameFixtureProject, verifyStudioPythonDeployment, createStudioRuntimeCatalog, refinePythonProjectDocument, exportProjectSource, unzipSync]) assert.equal(typeof value, 'function')
+await mkdir(output, { recursive: false }) // Exclusive attempt. Never overwrite/reuse an old export.
+const started = Date.now(), abort = new AbortController()
+const timeout = setTimeout(() => abort.abort(new Error('Source export deadline')), 30000)
+try {
+  const deployment = await verifyStudioPythonDeployment({ release: JSON.parse(await readFile(pins.release.path, 'utf8')), distribution: JSON.parse(await readFile(pins.distribution.path, 'utf8')) })
+  assert.equal(deployment.distributionSha256, pins.distribution.canonicalSha256)
+  assert.equal(deployment.distribution.previewHostAudioVersion, 1)
+  const { release } = deployment
+  assert.equal(release.manifestSha256, pins.runtimeManifestSha256)
+  // Verify actual immutable distribution files, without loading/executing them.
+  for (const file of deployment.distribution.files) assert.equal(sha(await readFile(resolve(pins.distribution.path, '..', file.path))), file.sha256)
+  const catalog = await createStudioRuntimeCatalog({ profiles: [{ id: release.profileId, languages: ['python'], kinds: [...release.manifest.kinds], modes: [...release.manifest.modes], levels: [], releases: [{ id: release.releaseId, manifestSha256: release.manifestSha256 }] }], releases: [release] })
+  const raw = await gameFixtureProject('pacmanOriginal')
+  const originalMain = raw.tree['main.py']; assert(originalMain?.kind === 'file')
+  const rootCorpus = JSON.parse(await readFile(resolve(root, 'experiments/studio-python-l0/corpus/pacman.json'), 'utf8'))
+  const ownCorpus = JSON.parse(await readFile(resolve(pins.games, 'experiments/studio-python-l0/corpus/pacman.json'), 'utf8'))
+  assert.deepEqual(rootCorpus.files, ownCorpus.files, 'Same exact19 corpus files required')
+  const variant = portableGameSource('pacman', originalMain.content)
+  assert.equal(variant.receipt.version, pins.variantVersion)
+  assert.equal(variant.receipt.qualification, 'not-qualified')
+  raw.tree['main.py'] = { kind: 'file', content: variant.content }
+  raw.id = 'pacmanPortable'; raw.name = 'Pac-Man portable1.1 exact9557 external QA, not qualified'
+  raw.runtime = { profileId: release.profileId, releaseId: release.releaseId, manifestSha256: release.manifestSha256 }
+  raw.python.dependencyLock.runtimeManifestSha256 = release.manifestSha256
+  const project = await refinePythonProjectDocument(raw)
+  assert.equal(project.programmingLanguage, 'python'); assert.equal(project.kind, 'pro'); assert.equal(project.python.entrypoint, 'main.py')
+  assert(!project.tree['_qa_pacman_observer.py'] && !project.tree['qa_entry.py'], 'Canonical export excludes QA modules')
+  const entry = project.tree['main.py']; assert(entry?.kind === 'file'); assert.equal(sha(entry.content), pins.entrypointSha256)
+  const corpus = JSON.parse(await readFile(resolve(pins.games, 'experiments/studio-python-l0/corpus/pacman.json'), 'utf8'))
+  assert.equal(corpus.portableVariant.version, pins.variantVersion)
+  assert.equal(corpus.portableVariant.entrypointSha256, pins.entrypointSha256)
+  abort.signal.throwIfAborted()
+  // Current Root Python branch only: source export, not JS/Vite/runtime build.
+  const result = await exportProjectSource(project, { runtimeCatalog: catalog, signal: abort.signal })
+  abort.signal.throwIfAborted()
+  const zip = new Uint8Array(await result.blob.arrayBuffer())
+  const files = unzipSync(zip) as Record<string, Uint8Array>
+  const decode = (path: string) => new TextDecoder('utf-8', { fatal: true }).decode(files[path])
+  const metadata = JSON.parse(decode('.sistemazero/export-manifest.json'))
+  assert.equal(metadata.runtimeModules.status, 'known-release')
+  assert.equal(metadata.runtimeModules.modules.find((m: any) => m.importName === 'sz_audio')?.nativePackage, 'included')
+  assert.equal(metadata.runtime.manifestSha256, release.manifestSha256)
+  assert.equal(metadata.entrypoint, 'main.py'); assert.equal(metadata.desktopExecution, 'not-observed')
+  assert.equal(metadata.portableAudio.desktopExecution, 'not-observed')
+  assert.deepEqual(result.warnings, []); assert.deepEqual(metadata.warnings, [])
+  for (const [path, node] of Object.entries(project.tree) as any) { assert.equal(node.kind, 'file'); assert.equal(decode(path), node.content) }
+  const media = []
+  for (const asset of project.assets ?? []) {
+    assert(asset.proPath && files[asset.proPath])
+    const bytes = files[asset.proPath], original = Buffer.from(asset.dataUrl.split(',')[1], 'base64')
+    assert.equal(sha(bytes), sha(original)); media.push({ path: asset.proPath, bytes: bytes.length, sha256: sha(bytes) })
+  }
+  assert.equal(media.filter(m => m.path.endsWith('.gif')).length, 9)
+  assert.equal(media.filter(m => m.path.endsWith('.wav')).length, 3)
+  for (const file of metadata.source.files) { assert.equal(files[file.path].length, file.bytes); assert.equal(sha(files[file.path]), file.sha256) }
+  for (const file of metadata.portableAudio.files) { assert.equal(files[file.path].length, file.bytes); assert.equal(sha(files[file.path]), file.sha256) }
+  const expected = [...new Set([...Object.keys(project.tree), ...media.map(m => m.path), ...metadata.generatedFiles])].sort()
+  assert.deepEqual(Object.keys(files).sort(), expected, 'No missing or unexpected ZIP members')
+  assert.equal(new Set(Object.keys(files).map(p => p.toLowerCase())).size, expected.length)
+  const inventory = Object.entries(files).map(([path, bytes]) => {
+    assert(path && !path.startsWith('/') && !/^[a-z]:/i.test(path) && !path.includes('\\') && !path.split('/').includes('..'))
+    return { path, bytes: bytes.length, sha256: sha(bytes) }
+  }).sort((a, b) => a.path.localeCompare(b.path))
+  assert.equal(sha(files['main.py']), pins.entrypointSha256)
+  await verifyInputs(); assert.equal(head(), pins.rootHead); abort.signal.throwIfAborted()
+  assert(Date.now() - started < 60000, 'No export result after bounded preparation budget')
+  const inventoryBytes = JSON.stringify(inventory, null, 2) + '\n'
+  await writeFile(resolve(output, 'source.zip'), zip, { flag: 'wx' })
+  await writeFile(resolve(output, 'inventory.json'), inventoryBytes, { flag: 'wx' })
+  const receipt = { state: 'canonical-source-export-prepared-no-game-execution', producer: { root, rootHead: pins.rootHead, sourcePinsSha256: sha(pinsBytes), producerSha256: sha(await readFile(import.meta.path)), sourceScope: pins.rootSourceScope, gamesHead: pins.gamesHead }, inputRelease: pins.release, inputDistribution: pins.distribution, distribution: deployment.distributionSha256, runtime: project.runtime, variant: pins.variantVersion, entrySha256: sha(files['main.py']), zip: { path: 'source.zip', bytes: zip.length, sha256: sha(zip) }, inventoryFileSha256: sha(inventoryBytes), inventory, media, portableAudio: metadata.portableAudio, warnings: result.warnings, elapsedMs: Date.now() - started, limits: ['Actual source-export preparation only, never native/game/Tk/audio/dependency-install execution', 'Current Root65b696 exporter/catalog/Core by absolute paths plus Games9557 recipe/main only; no Root mutation or old Games Core equivalence assumed', 'Native runner entry/receipt pins remain unchanged until this actual artifact is separately reviewed', 'Prior Pac-Man1.0 proof does not qualify this1.1 export', 'External Pac-Man QA corpus only, original license/authorship and all media bytes preserved', 'No live host/new bundle/catalog activation/hosted/Mural/FPS/performance acceptance'] }
+  await writeFile(resolve(output, 'receipt.json'), JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' })
+  console.log(JSON.stringify({ state: receipt.state, files: inventory.length, zipBytes: zip.length, zipSha256: sha(zip), receiptSha256: sha(await readFile(resolve(output, 'receipt.json'))), output }))
+} finally {
+  clearTimeout(timeout)
+}

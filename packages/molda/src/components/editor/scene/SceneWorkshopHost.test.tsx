@@ -22,7 +22,6 @@ function begin(name: string) {
 }
 function confirmExit() {
   fireEvent.click(screen.getByRole('button', { name: exit.open }))
-  fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: exit.save }))
 }
 function addBox() {
   fireEvent.click(screen.getByText(COPY.scene.add))

@@ -12,7 +12,7 @@ import {
   PALETTE_LIBRARY_ITEM_ID,
   PALETTE_LIBRARY_KIND,
 } from '../../src/domain/creations/palette-library'
-import { buildApp, grantCommunity, grantLifetime } from '../helpers'
+import { buildApp, grantCommunity, grantLifetime, seedSampleCourse } from '../helpers'
 
 const USER = '11111111-1111-1111-1111-111111111111'
 const ACCOUNT = '33333333-3333-3333-3333-333333333333'
@@ -77,12 +77,124 @@ const reserve = (ctx: Ctx, tool: string, itemId: string, over = {}) =>
     uploadBody({ formatVersion: tool === 'studio' ? 2 : 1, ...over }),
   )
 
+describe('biblioteca adulta e compatibilidade Kids', () => {
+  test('licença Kids não libera adulto, cache é isolado e o mesmo item tem duas revisões independentes', async () => {
+    const ctx = buildWithTools()
+    const course = seedSampleCourse(ctx.courses)
+    await ctx.adultJourney.configure(
+      {
+        schemaVersion: 1,
+        stages: [
+          {
+            id: 'primeiro-jogo',
+            title: 'Primeiro jogo',
+            requirements: [{ courseId: course.courseId, milestone: 'complete' }],
+            capabilities: ['studio'],
+          },
+        ],
+      },
+      0,
+    )
+    ctx.gamification.events.push({
+      userId: ACCOUNT,
+      audience: 'adult',
+      sourceType: 'course_complete',
+      sourceId: course.courseId,
+      amount: 0,
+      createdAt: new Date(),
+    })
+    const headers = { 'x-auth-user-id': ACCOUNT, 'content-type': 'application/json' }
+    const path = '/members/creations/studio/same-game'
+    const kids = await req(ctx.app, 'POST', `${path}/upload`, uploadBody(), headers)
+    expect(kids.status).toBe(200)
+    const kidsTicket = await json(kids)
+    expect(kidsTicket.storageKey).toBe(`creations/${ACCOUNT}/studio/same-game/1.json.gz`)
+    expect(
+      (
+        await req(
+          ctx.app,
+          'POST',
+          `${path}/commit`,
+          { revision: 1, verifiedPartHashes: [], verifiedFormatVersion: 2 },
+          headers,
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (await req(ctx.app, 'POST', `${path}/upload?audience=adult`, uploadBody(), headers)).status,
+    ).toBe(403)
+    grantLifetime(ctx.entitlements, { userId: ACCOUNT, courseRef: 'adult-estudio-completo' })
+    const adult = await req(ctx.app, 'POST', `${path}/upload?audience=adult`, uploadBody(), headers)
+    expect(adult.status).toBe(200)
+    expect((await json(adult)).storageKey).toBe(
+      `creations/adult/${ACCOUNT}/studio/same-game/1.json.gz`,
+    )
+    expect(
+      (
+        await json(
+          await req(ctx.app, 'GET', '/members/creations/studio?audience=adult', undefined, headers),
+        )
+      ).items,
+    ).toEqual([])
+    expect(
+      (
+        await req(
+          ctx.app,
+          'POST',
+          `${path}/commit?audience=adult`,
+          { revision: 1, verifiedPartHashes: [], verifiedFormatVersion: 2 },
+          headers,
+        )
+      ).status,
+    ).toBe(200)
+    expect(
+      (await json(await req(ctx.app, 'GET', `${path}/download?audience=adult`, undefined, headers)))
+        .storageKey,
+    ).toContain('creations/adult/')
+    expect(
+      (
+        await req(
+          ctx.app,
+          'DELETE',
+          `${path}?audience=adult`,
+          { baseRevision: 1, maxFormatVersion: 2 },
+          headers,
+        )
+      ).status,
+    ).toBe(200)
+    expect((await req(ctx.app, 'GET', `${path}/download`, undefined, headers)).status).toBe(200)
+    expect(
+      (await req(ctx.app, 'GET', `${path}/download?audience=adult`, undefined, headers)).status,
+    ).toBe(404)
+  })
+  test('perfil infantil não pode escolher biblioteca adulta pela query', async () => {
+    const ctx = buildWithTools()
+    expect((await req(ctx.app, 'GET', '/members/creations/studio?audience=adult')).status).toBe(403)
+    expect(
+      (
+        await req(
+          ctx.app,
+          'POST',
+          '/members/creations/studio/x/upload?audience=adult',
+          uploadBody(),
+        )
+      ).status,
+    ).toBe(403)
+  })
+})
+
 const commit = async (ctx: Ctx, tool: string, itemId: string, revision: number, extra = {}) => {
   const row = await ctx.creations.get(USER, tool as 'studio' | 'pinta' | 'molda', itemId)
   const parts = row?.pending?.revision === revision ? row.pending.parts : row?.parts
   return req(ctx.app, 'POST', `/members/creations/${tool}/${itemId}/commit`, {
     revision,
-    ...(tool === 'studio' ? { verifiedPartHashes: (parts ?? []).map((part) => part.hash) } : {}),
+    ...(tool === 'studio'
+      ? {
+          verifiedPartHashes: (parts ?? []).map((part) => part.hash),
+          verifiedFormatVersion:
+            row?.pending?.revision === revision ? row.pending.formatVersion : row?.formatVersion,
+        }
+      : {}),
     ...extra,
   })
 }
@@ -124,6 +236,24 @@ const PUBLIC_FIELDS = [
 ].sort()
 
 describe('criações guardadas na conta — HTTP', () => {
+  test('a versão verificada do documento precisa coincidir com a reserva em ambos os sentidos', async () => {
+    const ctx = buildWithTools()
+    for (const [reservedVersion, verifiedVersion] of [
+      [2, 3],
+      [3, 2],
+    ]) {
+      const id = `formato-${reservedVersion}`
+      const ticket = await json(
+        await reserve(ctx, 'studio', id, { formatVersion: reservedVersion }),
+      )
+      const result = await commit(ctx, 'studio', id, ticket.revision, {
+        verifiedFormatVersion: verifiedVersion,
+      })
+      expect(result.status).toBe(400)
+      expect((await listOf(ctx, 'studio')).some((item) => item.itemId === id)).toBe(false)
+    }
+  })
+
   test('o manifesto deve listar exatamente as partes reservadas; uma recusa conserva a revisão e a reserva', async () => {
     const ctx = buildWithTools()
     await saveItem(ctx, 'studio', 'manifesto')
@@ -158,6 +288,17 @@ describe('criações guardadas na conta — HTTP', () => {
       details: { requiredVersion: 2 },
     })
     expect(await listOf(ctx, 'studio')).toEqual([])
+  })
+
+  test('Studio guarda documentos Python v3 sem alterar a aceitação JavaScript v2', async () => {
+    const ctx = buildWithTools()
+    const js = await reserve(ctx, 'studio', 'javascript-v2', { formatVersion: 2 })
+    const python = await reserve(ctx, 'studio', 'python-v3', { formatVersion: 3 })
+    const future = await reserve(ctx, 'studio', 'future-v4', { formatVersion: 4 })
+    expect(js.status).toBe(200)
+    expect(python.status).toBe(200)
+    expect(await json(python)).toMatchObject({ formatVersion: 3, revision: 1 })
+    expect(future.status).toBe(400)
   })
 
   test('apagar de novo durante restauro cancela a reserva compatível, sem deixar o item voltar', async () => {
@@ -730,6 +871,7 @@ describe('criações guardadas na conta — HTTP', () => {
       revision: reserved.revision,
       bytes: 1,
       verifiedPartHashes: [],
+      verifiedFormatVersion: 2,
     })
     expect(committed.status).toBe(200)
     const [item] = await listOf(ctx, 'studio')

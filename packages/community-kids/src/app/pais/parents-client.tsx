@@ -26,6 +26,7 @@ import {
   SECONDARY_ACTION,
 } from './_components/parent-ui'
 import { useChildrenStats } from './_components/use-children-stats'
+import { VoiceNewsCard } from './_components/voice-news-card'
 import { childHref, NEW_CHILD_HREF, studentEntryFor } from './parent-routes'
 import { ProfileAllowanceNote } from './profile-allowance-note'
 
@@ -75,6 +76,7 @@ export function ParentsClient({
   profileAllowance,
   initialAccess = {},
   studentDestination,
+  voiceAvailable = false,
 }: {
   accountId: string
   parentName?: string
@@ -83,8 +85,10 @@ export function ParentsClient({
   profileAllowance: ProfileAllowance
   /** Autorizações de cada criança lidas no servidor; `null` = a consulta falhou. */
   initialAccess?: Record<string, StudyGrantView[] | null>
-  /** A fase do link que trouxe o responsável: abre depois da troca para a criança. */
+  /** A aula do link que trouxe o responsável: abre depois da troca para a criança. */
   studentDestination?: string
+  /** A fala da criança está ligada no servidor (14/10/2026): mostra a novidade e o passo. */
+  voiceAvailable?: boolean
 }) {
   const profiles = initialProfiles
   const access = initialAccess
@@ -102,7 +106,11 @@ export function ParentsClient({
     accessReady: accessReady === true,
     dismissed: !guideOpen,
   })
-  const steps = parentWelcomeSteps({ profilesCount: profiles.length, canCreateProfile })
+  const steps = parentWelcomeSteps({
+    profilesCount: profiles.length,
+    canCreateProfile,
+    voiceAvailable,
+  })
   const studentEntry = studentEntryFor(studentDestination)
   const initial = useRef({
     profiles: initialProfiles.length,
@@ -229,6 +237,11 @@ export function ParentsClient({
             </button>
           </div>
         </section>
+      ) : null}
+      {/* Com o guia aberto a família está no primeiro acesso: a fala aparece no formulário do
+          perfil, e o aviso empilhado aqui seria a mesma orientação duas vezes. */}
+      {voiceAvailable && !guideStep && profiles.length > 0 ? (
+        <VoiceNewsCard accountId={accountId} profiles={profiles} />
       ) : null}
       <AttentionList
         items={attention}

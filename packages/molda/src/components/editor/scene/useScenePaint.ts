@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from 'zustand'
-import { hexToRgb } from '../../../core/color'
+import { hexToRgb, rgbToHex } from '../../../core/color'
 import { COPY } from '../../../core/copy'
 import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import type { BrushSize, Texel } from '../../../paint/skinPaint'
 import type { ScenePixelRegion } from '../../../scene/composite'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import { sceneLayerColor } from '../../../scene/imageColor'
+import { sceneFlipbookRegion } from '../../../scene/imageFlipbook'
 import { captureSceneLayerRaster } from '../../../scene/imageImport'
 import {
   resolveScenePaintTarget,
@@ -19,12 +19,19 @@ import {
 import { intersectImageRegions } from '../../../scene/imageRegion'
 import type { SceneStampSettings } from '../../../scene/imageStamp'
 import {
+  prepareScenePaintContact,
+  type ScenePaintPreparationIssue,
+  ScenePaintPreparationRequired,
+} from '../../../scene/paintContact'
+import {
   type ScenePaintFaceView,
   scenePaintFaceView,
   sceneSheetView,
 } from '../../../scene/paintFaceView'
+import { prepareSceneInk, sampleSceneInk, sceneInkRgba } from '../../../scene/paintInk'
 import { rotateScenePaintFace } from '../../../scene/paintRegionRotate'
-import { scenePaintFaceFillsBounds } from '../../../scene/paintSurfaceBounds'
+import { scenePaintFaceBounds, scenePaintFaceFillsBounds } from '../../../scene/paintSurfaceBounds'
+import { patchScenePieceAppearance } from '../../../scene/pieceAppearance'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
 import { createScenePaintGesture } from '../../../state/scenePaintGesture'
@@ -33,8 +40,11 @@ import {
   type ScenePaintDraft,
   type ScenePaintScope,
 } from '../../../state/scenePaintShapeGesture'
-import { createScenePaletteGesture } from '../../../state/scenePaletteGesture'
 import type { ScenePaintActions } from '../../../viewport/sceneViewportTypes'
+import { useMoldaToolAccess } from '../../toolAccess'
+import { isMoldaDialogOpen } from '../../ui/Dialog'
+import { isTypingTarget } from '../../ui/interaction'
+import { usePaintFavorites } from './usePaintFavorites'
 import { useSceneImageTask } from './useSceneImageTask'
 import { useSceneRasterFile } from './useSceneRasterFile'
 
@@ -61,7 +71,12 @@ export function crossesSeam(previous: ScenePaintSample, next: ScenePaintSample):
   return Math.abs(previous.point[0] - next.point[0]) * 2 > bounds.x1 - bounds.x0 + 1
 }
 
-export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
+export function useScenePaint(
+  editor: EditorStore<MoldaSceneDocument>,
+  active = false,
+  onPreparationRequired?: (issue: ScenePaintPreparationIssue | null) => void,
+) {
+  const { can } = useMoldaToolAccess()
   const document = useStore(editor, (state) => state.content)
   /** `quiet`: a sessão que a aba Pintar abriu sozinha fecha sem alerta quando o alvo some. */
   const [session, setSession] = useState<{
@@ -69,14 +84,45 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     target: ScenePaintTarget
     quiet?: boolean
   } | null>(null)
-  const [chosenColor, setColor] = useState<ScenePaintColor>(7)
+  const [chosenColor, setColor] = useState<ScenePaintRgba>(() => sceneInkRgba(document, 7))
+  const [recentColors, setRecentColors] = useState<ScenePaintRgba[]>([])
+  const favoriteColors = usePaintFavorites()
+  const [fillScope, setFillScope] = useState<'area' | 'base'>('area')
+  const [pieceScope, setPieceScope] = useState<'all' | 'selected'>('all')
+  const [grid, setGrid] = useState(false)
+  const pushRecent = useCallback(
+    (ink: ScenePaintRgba) =>
+      setRecentColors((before) =>
+        [ink, ...before.filter((entry) => entry.some((channel, i) => channel !== ink[i]))].slice(
+          0,
+          6,
+        ),
+      ),
+    [],
+  )
+  const rememberColor = (color: ScenePaintColor) => {
+    const ink = sceneInkRgba(editor.getState().content, color)
+    setColor(ink)
+  }
+  /**
+   * Pegar cor lê a cor que a criança VÊ: um ponto sem tinta nenhuma (transparente sobre fundo
+   * transparente, comum em modelo importado) não vira tinta invisível, que faria o Pincel apagar.
+   * Fica a tinta de antes; o resto ganha alfa cheio.
+   */
+  const rememberSampled = (sampled: ScenePaintRgba) => {
+    if (sampled[3] === 0) return
+    rememberColor([sampled[0], sampled[1], sampled[2], 255])
+  }
   const [brush, setBrush] = useState<BrushSize>(1)
   const [tool, setTool] = useState<
     'pencil' | 'eraser' | 'fill' | 'picker' | 'rotate' | 'closeup' | ScenePaintDraft['tool']
   >('pencil')
+  const [temporaryPicker, setTemporaryPicker] = useState(false)
+  const straight = useRef(false)
   const eraser = tool === 'eraser'
+  const [eraseMode, setEraseMode] = useState<'paint' | 'cutout'>('paint')
   const fill = tool === 'fill'
-  const picker = tool === 'picker'
+  const picker = tool === 'picker' || temporaryPicker
   /** Girar a pintura da face: cada toque numa face gira a pintura dela 90°. */
   const rotate = tool === 'rotate'
   /** Espelho de pintura: o traço pinta também o ponto refletido no meio, na mesma peça. */
@@ -112,30 +158,48 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
   const [selection, setSelection] = useState<ScenePaintScope | null>(null)
   const [drawing, setDrawing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const reportError = useCallback(
+    (error: unknown) => {
+      if (error instanceof ScenePaintPreparationRequired && onPreparationRequired) {
+        setError(null)
+        onPreparationRequired(error.issue)
+      } else
+        setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
+    },
+    [onPreparationRequired],
+  )
+  const runShape = useCallback<Parameters<typeof createScenePaintShapeGesture>[1]['run']>(
+    async (...args) => {
+      const [source, , operation, prepared] = args
+      const inks =
+        operation.kind === 'gradient'
+          ? [operation.endColor, operation.color]
+          : operation.kind === 'shape'
+            ? [sceneInkRgba(prepared ?? source, operation.color)]
+            : []
+      const applied = await runImage(...args)
+      if (applied) for (const ink of inks) if (ink[3] > 0) pushRecent(ink)
+      return applied
+    },
+    [runImage, pushRecent],
+  )
   const shapeGesture = useMemo(
     () =>
       createScenePaintShapeGesture(editor, {
         preview: setDraft,
         select: setSelection,
-        run: runImage,
-        error: (error) =>
-          setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed),
+        run: runShape,
+        error: reportError,
       }),
-    [editor, runImage],
+    [editor, runShape, reportError],
   )
   const stroke = useRef<{
     last: ScenePaintSample | null
     lastMirror: ScenePaintSample | null
+    line?: { start: ScenePaintSample; checkpoint: MoldaSceneDocument }
   } | null>(null)
   const publishing = useRef(false)
-  const gesture = useMemo(
-    () =>
-      createScenePaintGesture(editor, (error) =>
-        setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed),
-      ),
-    [editor],
-  )
-  const palette = useMemo(() => createScenePaletteGesture(editor), [editor])
+  const gesture = useMemo(() => createScenePaintGesture(editor, reportError), [editor, reportError])
   /** Só o traço e o trabalho em andamento; o gesto de cor segue (o seletor nativo tira o foco). */
   const stopStroke = useCallback(() => {
     cancelImage()
@@ -146,11 +210,42 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     setDrawing(false)
   }, [gesture, cancelImage, cancelFile, shapeGesture])
   const cancel = useCallback(() => {
-    // O gesto do "+ Nova cor" fecha ANTES de qualquer outra coisa (a lição do editor antigo):
-    // o Esc no seletor não manda `change`, e um passo velho entraria no histórico depois.
-    palette.end()
     stopStroke()
-  }, [palette, stopStroke])
+  }, [stopStroke])
+  useEffect(() => {
+    if (!active) return
+    const down = (event: KeyboardEvent) => {
+      if (isTypingTarget(event.target) || isMoldaDialogOpen()) return
+      if (event.key === 'Alt') {
+        event.preventDefault()
+        stopStroke()
+        setTemporaryPicker(true)
+      }
+      if (event.key === 'Shift') straight.current = true
+    }
+    const up = (event: KeyboardEvent) => {
+      if (event.key === 'Alt') setTemporaryPicker(false)
+      if (event.key === 'Shift') straight.current = false
+    }
+    const reset = () => {
+      straight.current = false
+      setTemporaryPicker(false)
+    }
+    const hidden = () => {
+      if (window.document.hidden) reset()
+    }
+    window.addEventListener('keydown', down)
+    window.addEventListener('keyup', up)
+    window.addEventListener('blur', reset)
+    window.document.addEventListener('visibilitychange', hidden)
+    return () => {
+      window.removeEventListener('keydown', down)
+      window.removeEventListener('keyup', up)
+      window.removeEventListener('blur', reset)
+      window.document.removeEventListener('visibilitychange', hidden)
+      reset()
+    }
+  }, [active, stopStroke])
   const close = useCallback(() => {
     cancel()
     clearFile()
@@ -176,15 +271,13 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       : undefined
   // Undo/import can change encoding while this panel remains open. Tool state is not image data.
   // Desfazer a cor nova tira a extra da paleta: o lápis volta à cor de sempre, que existe.
-  const colorCount = resolvePaletteColors(document).length
+  const paletteColors = resolvePaletteColors(document)
+  const inkIndex =
+    chosenColor[3] === 255
+      ? paletteColors.indexOf(rgbToHex(chosenColor[0], chosenColor[1], chosenColor[2]))
+      : -1
   const color: ScenePaintColor =
-    data?.image.encoding === 'rgba'
-      ? typeof chosenColor === 'number'
-        ? [120, 220, 82, 255]
-        : chosenColor
-      : typeof chosenColor === 'number' && chosenColor < colorCount
-        ? chosenColor
-        : 7
+    data?.image.encoding === 'indexed' && inkIndex > 0 ? inkIndex : chosenColor
   useEffect(() => {
     if (session && !data) {
       cancel()
@@ -216,19 +309,26 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       stroke.current = null
       gesture.cancel()
       shapeGesture.cancel()
-      palette.end()
     }
-  }, [editor, gesture, shapeGesture, stopStroke, palette])
+  }, [editor, gesture, shapeGesture, stopStroke])
   const publish = (sample: ScenePaintSample) => {
     const current = stroke.current
     if (!current) return false
     publishing.current = true
     try {
-      const last = current.last
+      if (!straight.current || current.line?.start.region !== sample.region)
+        current.line = undefined
+      if (straight.current && !current.line)
+        current.line = {
+          start: current.last?.region === sample.region ? current.last : sample,
+          checkpoint: gesture.checkpoint() ?? editor.getState().content,
+        }
+      if (current.line && !gesture.restore(current.line.checkpoint)) return false
+      const last = current.line?.start ?? current.last
       const from =
         last?.region === sample.region && !crossesSeam(last, sample) ? last.point : sample.point
       // O limite vale por amostra: o traço atravessa faces e cada pedaço fica na face dele.
-      if (!gesture.segment(from, sample.point, sample.bounds)) {
+      if (!gesture.segment(from, sample.point, sample.bounds, sample.target)) {
         cancel()
         return false
       }
@@ -236,12 +336,12 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       // O espelho entra no MESMO gesto: um traço, um desfazer, dos dois lados.
       const reflected = sample.mirror
       if (reflected) {
-        const before = current.lastMirror
+        const before = current.line?.start.mirror ?? current.lastMirror
         const start =
           before?.region === reflected.region && !crossesSeam(before, reflected)
             ? before.point
             : reflected.point
-        if (!gesture.segment(start, reflected.point, reflected.bounds)) {
+        if (!gesture.segment(start, reflected.point, reflected.bounds, reflected.target)) {
           cancel()
           return false
         }
@@ -252,21 +352,109 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       publishing.current = false
     }
   }
+  const openFace = useCallback(
+    (
+      source: MoldaSceneDocument,
+      target: ScenePaintTarget,
+      faceId?: string,
+      bounds?: ScenePixelRegion,
+    ) => {
+      const { image } = resolveScenePaintTarget(source, target)
+      const node = source.nodes.find((entry) => entry.id === target.nodeId)
+      const geometry =
+        node?.kind === 'mesh'
+          ? source.geometries.find((entry) => entry.id === node.geometryId)
+          : undefined
+      const region =
+        bounds ??
+        (geometry && faceId !== undefined
+          ? scenePaintFaceBounds(
+              geometry,
+              faceId,
+              image,
+              image.flipbook ? sceneFlipbookRegion(image, 0) : undefined,
+            )
+          : null)
+      if (!region) {
+        setError(SCENE_PAINT_COPY.faceOnly)
+        return
+      }
+      const cell = image.flipbook
+        ? { width: image.flipbook.frameWidth, height: image.flipbook.frameHeight }
+        : image
+      setCloseUp({
+        imageId: image.id,
+        view:
+          (geometry &&
+            faceId !== undefined &&
+            scenePaintFaceView(geometry, faceId, cell, region)) ||
+          sceneSheetView(region),
+      })
+      setTool('pencil')
+      setError(null)
+    },
+    [],
+  )
+  const changeBaseColor = (nodeId: string) => {
+    if (!can('model.finish')) {
+      setError('A cor de fundo não está disponível nesta oficina. Use Área desta face.')
+      return
+    }
+    try {
+      const source = editor.getState().content
+      const next = patchScenePieceAppearance(source, nodeId, {
+        baseColor: {
+          kind: 'rgba',
+          value: [
+            chosenColor[0] / 255,
+            chosenColor[1] / 255,
+            chosenColor[2] / 255,
+            chosenColor[3] / 255,
+          ],
+        },
+      })
+      if (next !== source) {
+        editor.getState().commit(next)
+        pushRecent(chosenColor)
+      }
+      setError(null)
+      onPreparationRequired?.(null)
+    } catch (error) {
+      reportError(error)
+    }
+  }
   const actions: ScenePaintActions = {
-    begin(sample) {
-      palette.end()
-      if (
-        stroke.current ||
-        shapeGesture.active() ||
-        imageTask.busy ||
-        stampFile.busy ||
-        !session ||
-        !data
-      )
-        return false
-      let region = scope
+    begin(input) {
+      if (stroke.current || shapeGesture.active() || imageTask.busy || stampFile.busy) return false
+      let prepared: ReturnType<typeof prepareScenePaintContact> | null = null
+      if ('kind' in input) {
+        // A solid piece color needs no image, UV layout or topology preparation.
+        if (fill && !picker && fillScope === 'base') {
+          changeBaseColor(input.nodeId)
+          return false
+        }
+        try {
+          prepared = prepareScenePaintContact(editor.getState().content, input)
+          onPreparationRequired?.(null)
+        } catch (error) {
+          reportError(error)
+          return false
+        }
+      }
+      const sample = prepared?.sample ?? ('kind' in input ? null : input)
+      if (!sample) return false
+      const document = prepared?.document ?? editor.getState().content
+      const activeSession = prepared ? { target: prepared.target } : session
+      const activeData = prepared ? resolveScenePaintTarget(document, prepared.target) : data
+      if (!activeSession || !activeData) return false
+      const { target } = activeSession
+      const { image, material, imageKind } = activeData
+      const selectedRegion = prepared ? undefined : scope
+      let region = selectedRegion
       if (!picker && shape !== 'select' && sample.bounds) {
-        const clipped = scope ? intersectImageRegions(sample.bounds, scope) : sample.bounds
+        const clipped = selectedRegion
+          ? intersectImageRegions(sample.bounds, selectedRegion)
+          : sample.bounds
         if (!clipped) return false
         region = clipped
       }
@@ -281,28 +469,13 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         setError(SCENE_PAINT_COPY.faceOnly)
         return false
       }
-      const node = document.nodes.find((entry) => entry.id === session.target.nodeId)
+      const node = document.nodes.find((entry) => entry.id === target.nodeId)
       const geometry =
         node?.kind === 'mesh'
           ? document.geometries.find((entry) => entry.id === node.geometryId)
           : undefined
       if (closeupTool && sample.bounds) {
-        // O toque escolhe a face; a pintura continua com o lápis, agora de perto.
-        const region = sample.bounds
-        // Na pintura que se mexe a UV corre pela célula: o em pé é medido no tamanho dela.
-        const cell = data.image.flipbook
-          ? { width: data.image.flipbook.frameWidth, height: data.image.flipbook.frameHeight }
-          : data.image
-        setCloseUp({
-          imageId: session.target.imageId,
-          view:
-            (geometry &&
-              sample.faceId !== undefined &&
-              scenePaintFaceView(geometry, sample.faceId, cell, region)) ||
-            sceneSheetView(region),
-        })
-        setTool('pencil')
-        setError(null)
+        openFace(document, target, sample.faceId, sample.bounds)
         return false
       }
       if (rotate && sample.bounds) {
@@ -317,7 +490,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         }
         try {
           const source = editor.getState().asset
-          const face = { materialId: session.target.materialId, imageId: session.target.imageId }
+          const face = { materialId: target.materialId, imageId: target.imageId }
           let next = rotateScenePaintFace(source, face, sample.bounds)
           const reflected = sample.mirror
           if (
@@ -335,12 +508,9 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       }
       if (picker) {
         try {
-          const sampled = sceneLayerColor(data.image, data.layer.id, sample.point)
-          if (sampled === 0) setTool('eraser')
-          else {
-            setColor(sampled)
-            setTool('pencil')
-          }
+          const sampled = sampleSceneInk(document, material, image, sample.point, imageKind)
+          rememberSampled(sampled)
+          if (!temporaryPicker) setTool('pencil')
           setError(null)
         } catch (error) {
           setError(error instanceof SceneValidationError ? error.message : COPY.scene.paintFailed)
@@ -348,20 +518,20 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         return false
       }
       const chosen = eraser
-        ? data.image.encoding === 'indexed'
+        ? image.encoding === 'indexed'
           ? 0
           : ([0, 0, 0, 0] as ScenePaintColor)
-        : color
+        : chosenColor
       if (shape) {
         setError(null)
         if (shape === 'select')
-          return shapeGesture.begin(document, session.target, sample, { tool: 'select' })
+          return shapeGesture.begin(document, target, sample, { tool: 'select' })
         if (shape === 'stamp') {
           if (!stampFile.data) {
             setError(COPY.scene.paintStampMissing)
             return false
           }
-          return shapeGesture.begin(document, session.target, sample, {
+          return shapeGesture.begin(document, target, sample, {
             tool: 'stamp',
             raster: stampFile.data.raster,
             ...stampSettings,
@@ -373,14 +543,14 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
             setError(COPY.scene.paintGradientNeedsRgba)
             return false
           }
-          return shapeGesture.begin(document, session.target, sample, {
+          return shapeGesture.begin(document, target, sample, {
             tool: shape,
             color: chosen,
             endColor,
             region,
           })
         }
-        return shapeGesture.begin(document, session.target, sample, {
+        return shapeGesture.begin(document, target, sample, {
           tool: shape,
           color: chosen,
           brush,
@@ -390,31 +560,91 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       }
       if (fill) {
         setError(null)
-        const fillAt = (point: Texel, area?: ScenePixelRegion) => ({
-          kind: 'fill' as const,
-          layerId: session.target.layerId,
-          point,
-          color: chosen,
-          tolerance: data.image.encoding === 'indexed' ? 0 : tolerance,
-          ...(area ? { region: area } : {}),
-        })
-        const operations = [fillAt(sample.point, region)]
-        // Com o espelho, o balde enche também o outro lado, no mesmo passo de desfazer.
-        const reflected = sample.mirror
-        const other =
-          reflected?.bounds &&
-          (scope ? intersectImageRegions(reflected.bounds, scope) : reflected.bounds)
-        if (reflected && other) operations.push(fillAt(reflected.point, other))
-        void imageTask.run(document, session.target.imageId, operations)
+        if (fillScope === 'base' && imageKind === 'color') {
+          changeBaseColor(target.nodeId)
+          return false
+        }
+        try {
+          let prepared = prepareSceneInk(document, target.imageId, chosen)
+          const fillAt = (
+            point: Texel,
+            area?: ScenePixelRegion,
+            layerId = target.layerId,
+            color = prepared.color,
+            encoding = image.encoding,
+          ) => ({
+            kind: 'fill' as const,
+            layerId,
+            point,
+            color,
+            tolerance: encoding === 'indexed' ? 0 : tolerance,
+            ...(area ? { region: area } : {}),
+          })
+          const requests = [{ imageId: target.imageId, operations: [fillAt(sample.point, region)] }]
+          // Com o espelho, o balde enche também o outro lado, no mesmo passo de desfazer.
+          const reflected = sample.mirror
+          const other =
+            reflected?.bounds &&
+            (scope ? intersectImageRegions(reflected.bounds, scope) : reflected.bounds)
+          if (reflected && other) {
+            const reflectedTarget = reflected.target ?? target
+            const ink = prepareSceneInk(prepared.document, reflectedTarget.imageId, chosen)
+            prepared = ink
+            const reflectedImage = resolveScenePaintTarget(prepared.document, reflectedTarget).image
+            requests.push({
+              imageId: reflectedTarget.imageId,
+              operations: [
+                fillAt(
+                  reflected.point,
+                  other,
+                  reflectedTarget.layerId,
+                  ink.color,
+                  reflectedImage.encoding,
+                ),
+              ],
+            })
+          }
+          void imageTask
+            .runBatch(editor.getState().content, requests, prepared.document)
+            .then((applied) => {
+              if (applied && !eraser) pushRecent(chosenColor)
+            })
+        } catch (error) {
+          setError(error instanceof Error ? error.message : COPY.scene.paintFailed)
+        }
         return false
       }
-      if (!gesture.begin(session.target, chosen, brush, data.image, scope)) return false
+      if (
+        !gesture.begin(
+          target,
+          chosen,
+          brush,
+          image,
+          prepared ? undefined : scope,
+          document,
+          eraser && eraseMode === 'cutout' && imageKind === 'color',
+        )
+      )
+        return false
       stroke.current = { last: null, lastMirror: null }
       setError(null)
       setDrawing(true)
       return publish(sample)
     },
-    move(sample) {
+    move(input) {
+      let sample = input && 'kind' in input ? null : input
+      if (input && 'kind' in input) {
+        publishing.current = true
+        try {
+          sample = gesture.surface(input)
+        } finally {
+          publishing.current = false
+        }
+        if (!sample) {
+          stopStroke()
+          return
+        }
+      }
       if (shapeGesture.active()) {
         shapeGesture.move(sample)
         return
@@ -431,16 +661,44 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
         return
       }
       stroke.current = null
-      gesture.end(commit)
+      const applied = gesture.end(commit)
+      if (commit && applied && !eraser) pushRecent(chosenColor)
       setDrawing(false)
     },
   }
   return {
     session: data ? session : null,
+    /** An explicitly chosen layer/map keeps that exact target until the user leaves it. */
+    surfaceMode: !session || !!session.quiet,
     data,
     color,
+    ink: chosenColor,
+    recentColors,
+    favorites: favoriteColors.colors,
+    favoritesUnavailable: favoriteColors.unavailable,
+    favoritesFull: favoriteColors.full,
+    fillScope,
+    pieceScope,
+    setPieceScope: (value: 'all' | 'selected') => {
+      cancel()
+      setPieceScope(value)
+    },
+    grid,
+    setGrid,
+    setFillScope,
+    toggleFavorite: () => favoriteColors.remember(chosenColor),
+    sample: (sampled: ScenePaintRgba) => {
+      rememberSampled(sampled)
+      if (!temporaryPicker) setTool('pencil')
+      setError(null)
+    },
     brush,
     eraser,
+    eraseMode,
+    setEraseMode: (value: 'paint' | 'cutout') => {
+      cancel()
+      setEraseMode(value)
+    },
     fill,
     picker,
     rotate,
@@ -455,6 +713,7 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       closeUp.view.region.y1 < data.image.height
         ? closeUp.view
         : null,
+    openFace,
     closeCloseUp: () => {
       cancel()
       setCloseUp(null)
@@ -490,32 +749,18 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
     cancel,
     setColor: (value: ScenePaintColor) => {
       if (!stroke.current && !imageTask.busy) {
-        palette.end()
-        setColor(value)
+        rememberColor(value)
         if (eraser || picker || rotate || closeupTool) setTool('pencil')
       }
     },
-    /** Um passo do seletor do "+ Nova cor": a cor nova já vira a cor do lápis. */
+    /** Choosing ink changes tool state only. Palette preparation joins the next stroke. */
     newColorStep: (hex: string) => {
       if (stroke.current || imageTask.busy) return
-      const step = palette.step(hex)
-      if (!step) return
-      if ('full' in step) {
-        setError(COPY.editor.model.colorsFull)
-        return
-      }
-      const chosen = resolvePaletteColors(editor.getState().asset)[step.index] ?? hex
-      setColor(
-        data?.image.encoding === 'rgba'
-          ? ([...hexToRgb(chosen), 255] as ScenePaintRgba)
-          : step.index,
-      )
-      // A mesma regra da amostra: escolher uma cor é querer pintar com ela.
+      const ink: ScenePaintRgba = [...hexToRgb(hex), 255]
+      setColor(ink)
       if (eraser || picker || rotate || closeupTool) setTool('pencil')
       setError(null)
     },
-    /** O seletor fechou: UM passo de desfazer para a cor nova. */
-    newColorEnd: () => palette.end(),
     setBrush: (value: BrushSize) => {
       if (!stroke.current) setBrush(value)
     },
@@ -587,21 +832,14 @@ export function useScenePaint(editor: EditorStore<MoldaSceneDocument>) {
       setCloseUp(null)
       try {
         const document = editor.getState().content
-        const { image, imageKind } = resolveScenePaintTarget(document, target)
+        const { imageKind } = resolveScenePaintTarget(document, target)
         setSession({
           documentId: document.id,
           target: { ...target },
           ...(options.quiet ? { quiet: true } : {}),
         })
-        setColor(
-          image.encoding === 'indexed'
-            ? 7
-            : imageKind === 'normal'
-              ? [128, 128, 255, 255]
-              : imageKind === 'color'
-                ? [120, 220, 82, 255]
-                : [255, 255, 255, 255],
-        )
+        if (imageKind !== 'color')
+          setColor(imageKind === 'normal' ? [128, 128, 255, 255] : [255, 255, 255, 255])
         setTool('pencil')
         setSelection(null)
         setError(null)

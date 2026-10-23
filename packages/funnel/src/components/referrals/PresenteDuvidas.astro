@@ -1,14 +1,11 @@
 ---
+// As dúvidas do presente Kids, como a família convidada as encontra, na página pública do programa
+// (`/kids/embaixadores`). Desde 20/10/2026 o recebimento Kids tem dúvidas próprias (`PRESENTE_KIDS`).
 import { GIFT_FAQ } from '../../content/presente'
 import ComunidadeVisual from '../funnel/oferta/ComunidadeVisual.astro'
-
-interface Props {
-  ambassador?: boolean
-}
-const { ambassador = false } = Astro.props
 ---
-<section id={ambassador ? 'duvidas-presente' : 'duvidas'} class="section fundo-alt cor-azul" aria-labelledby="duvidas-title"><div class="wrap">
-  <span class="kof-eyebrow">{ambassador ? 'Para mostrar à família convidada' : 'Respostas para a sua família'}</span><h2 id="duvidas-title" class="kof-h2">{ambassador ? 'As respostas que o responsável vai encontrar' : 'Antes de começar com seu filho'}</h2>
-  {ambassador && <p class="gift-private">A página do presente explica os detalhes abaixo diretamente à família. Você pode compartilhar essas respostas quando ela quiser saber mais antes de começar.</p>}
+<section id="duvidas-presente" class="section fundo-alt cor-azul" aria-labelledby="duvidas-title"><div class="wrap">
+  <span class="kof-eyebrow">Para conversar com a família convidada</span><h2 id="duvidas-title" class="kof-h2">As dúvidas mais comuns sobre o presente Kids</h2>
+  <p class="gift-private">A página do presente Kids também responde às principais dúvidas do responsável. Use estas respostas quando a família quiser saber mais antes de começar.</p>
   <div class="gift-faq">{GIFT_FAQ.map((entry) => <details id={`duvida-${entry.id}`}><summary>{entry.question}<span aria-hidden="true">+</span></summary><div class:list={['gift-answer', { 'gift-answer--visual': entry.visual }]}><div class="gift-prose">{entry.paragraphs.map((paragraph) => <p>{paragraph}</p>)}</div>{entry.visual && <ComunidadeVisual visual={entry.visual} imagesBase="/img/comunidade-dos-criadores" variant="plana" only="first" />}</div></details>)}</div>
 </div></section>

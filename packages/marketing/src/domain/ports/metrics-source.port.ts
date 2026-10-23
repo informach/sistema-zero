@@ -4,17 +4,17 @@ import type { SocialAccount } from '../social-account/social-account'
 
 /** Snapshot de conta SEM os campos que o worker preenche (id/conta/hora). */
 export interface AccountMetricsSample {
-  followers: number
+  followers: number | null
   raw: Record<string, unknown>
 }
 
 /** Snapshot de publicação SEM os campos que o worker preenche. */
 export interface PublicationMetricsSample {
-  views: number
-  likes: number
-  comments: number
-  shares?: number
-  saves?: number
+  views: number | null
+  likes: number | null
+  comments: number | null
+  shares?: number | null
+  saves?: number | null
   reach?: number | null
   watchTimeSeconds?: number | null
   avgWatchRatio?: number | null

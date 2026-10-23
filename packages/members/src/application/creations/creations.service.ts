@@ -1,5 +1,8 @@
-import { isContentFingerprint } from '@sistemazero/core/creations'
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
+import { creativeToolAccessRef, isContentFingerprint } from '@sistemazero/core/creations'
+import {
+  STUDIO_PROJECT_FORMAT_VERSION,
+  STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION,
+} from '@sistemazero/core/studio'
 /**
  * "Guardado na sua conta" — os casos de uso do ÍNDICE das criações (Estúdio
  * Completo e Pinta). O blob nunca passa por aqui: o BFF assina PUT/GET no R2 UGC
@@ -41,6 +44,7 @@ import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import type { CreationsRepository } from '../../domain/ports/creations-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
 import type { AccessCheckService } from '../access-check/access-check.service'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { LessonDraftAccessService } from './lesson-draft-access.service'
 import {
   rememberToolOwned,
@@ -102,17 +106,18 @@ async function assertToolOwned(
   tool: ProductCreationTool,
   privileged: boolean,
   now: number = Date.now(),
+  audience: 'adult' | 'kids' = 'kids',
 ): Promise<void> {
   if (privileged) return
   // Cache curto da posse (ver `tool-ownership-cache.ts`): quem rebaixa matrícula invalida.
-  if (toolOwnershipCached(accountId, tool, now)) return
+  if (toolOwnershipCached(accountId, tool, now, audience)) return
   const since = toolOwnershipGeneration()
-  const ref = CREATION_ACCESS_REF[tool]
+  const ref = creativeToolAccessRef(CREATION_ACCESS_REF[tool], audience)
   const result = await accessCheck.execute(accountId, [ref])
   if (!result.grants.includes(ref) && !result.communities.includes(ref)) {
     throw new AccessDeniedError(`Você não tem acesso ao ${CREATION_TOOL_NAMES[tool]}`)
   }
-  rememberToolOwned(accountId, tool, now, since)
+  rememberToolOwned(accountId, tool, now, since, audience)
 }
 
 export class ListCreationsService {
@@ -123,6 +128,7 @@ export class ListCreationsService {
     tool: CreationTool,
     options: { cursor?: string; limit?: number } = {},
   ): Promise<{
+    audience?: 'adult'
     items: Array<CreationSummary | { itemId: string; revision: number; deletedAt: Date }>
     nextCursor: string | null
   }> {
@@ -136,6 +142,7 @@ export class ListCreationsService {
       ...(cursor ? { cursor } : {}),
     })
     return {
+      ...(this.creations.audience === 'adult' ? { audience: 'adult' as const } : {}),
       items: page.items.map((item) =>
         item.deletedAt
           ? { itemId: item.itemId, revision: item.revision, deletedAt: item.deletedAt }
@@ -198,6 +205,7 @@ export class ReserveCreationUploadService {
     private readonly clock: () => Date,
     /** O portão dos rascunhos da fase (`lesson-*`); sem ele, esses tipos são recusados. */
     private readonly lessonDraftAccess?: Pick<LessonDraftAccessService, 'assert'>,
+    private readonly adultJourney?: Pick<AdultJourneyService, 'assert'>,
   ) {}
 
   async execute(input: {
@@ -222,6 +230,7 @@ export class ReserveCreationUploadService {
     if (isLessonCreationTool(input.tool)) {
       if (!this.lessonDraftAccess) throw new AccessDeniedError('Rascunho de fase indisponível')
       await this.lessonDraftAccess.assert({
+        audience: this.creations.audience ?? 'kids',
         userId: input.userId,
         accountId: input.accountId,
         privileged: input.privileged,
@@ -229,12 +238,17 @@ export class ReserveCreationUploadService {
         blockId: input.itemId,
       })
     } else {
+      if (this.creations.audience === 'adult') {
+        if (!this.adultJourney) throw new AccessDeniedError('Jornada adulta indisponível.')
+        await this.adultJourney.assert(input.userId, input.tool, input.privileged)
+      }
       await assertToolOwned(
         this.accessCheck,
         input.accountId,
         input.tool,
         input.privileged,
         this.clock().getTime(),
+        this.creations.audience ?? 'kids',
       )
     }
     if (
@@ -256,7 +270,7 @@ export class ReserveCreationUploadService {
     }
     if (isStudioFormatTool(input.tool) && formatVersion < STUDIO_PROJECT_FORMAT_VERSION)
       throw new CreationClientOutdatedError(STUDIO_PROJECT_FORMAT_VERSION)
-    if (isStudioFormatTool(input.tool) && formatVersion > STUDIO_PROJECT_FORMAT_VERSION)
+    if (isStudioFormatTool(input.tool) && formatVersion > STUDIO_PROJECT_SUPPORTED_FORMAT_VERSION)
       throw new ValidationError('Esta versão do servidor ainda não aceita esse formato de projeto')
     if (!Number.isInteger(input.bytes) || input.bytes <= 0) {
       throw new ValidationError('Tamanho do arquivo inválido')
@@ -361,7 +375,13 @@ export class ReserveCreationUploadService {
     return {
       revision: reservation.revision,
       formatVersion,
-      storageKey: creationStorageKey(input.userId, input.tool, input.itemId, reservation.revision),
+      storageKey: creationStorageKey(
+        input.userId,
+        input.tool,
+        input.itemId,
+        reservation.revision,
+        this.creations.audience ?? 'kids',
+      ),
       bytes: input.bytes,
       parts: reservation.missingParts.map((part) => ({
         ...part,
@@ -371,6 +391,7 @@ export class ReserveCreationUploadService {
           input.itemId,
           part.hash,
           part.rev,
+          this.creations.audience ?? 'kids',
         ),
       })),
     }
@@ -395,12 +416,16 @@ export class CommitCreationUploadService {
     /** Hashes das partes que o cliente PUTou nesta reserva (as faltantes). */
     uploadedParts?: readonly string[]
     verifiedPartHashes?: readonly string[]
+    verifiedFormatVersion?: number
   }): Promise<CreationCommitOutcome> {
     if (!Number.isInteger(input.revision) || input.revision <= 0) {
       throw new ValidationError('Revisão inválida')
     }
     const uploadedParts = input.uploadedParts ?? []
-    if (isStudioFormatTool(input.tool) && !input.verifiedPartHashes)
+    if (
+      isStudioFormatTool(input.tool) &&
+      (!input.verifiedPartHashes || input.verifiedFormatVersion === undefined)
+    )
       throw new ValidationError(
         'O serviço precisa conferir o manifesto antes de confirmar o projeto',
       )
@@ -422,9 +447,18 @@ export class CommitCreationUploadService {
       tool: input.tool,
       itemId: input.itemId,
       revision: input.revision,
-      storageRef: creationStorageKey(input.userId, input.tool, input.itemId, input.revision),
+      storageRef: creationStorageKey(
+        input.userId,
+        input.tool,
+        input.itemId,
+        input.revision,
+        this.creations.audience ?? 'kids',
+      ),
       ...(uploadedParts.length > 0 ? { uploadedParts } : {}),
       ...(input.verifiedPartHashes ? { verifiedPartHashes: input.verifiedPartHashes } : {}),
+      ...(input.verifiedFormatVersion !== undefined
+        ? { verifiedFormatVersion: input.verifiedFormatVersion }
+        : {}),
       now: this.clock(),
       limits: {
         maxItemBytes: CREATION_LIMITS.maxItemBytes,
@@ -456,7 +490,14 @@ export class CommitCreationUploadService {
     const releasedStorageKeys = [
       ...(result.previousStorageRef ? [result.previousStorageRef] : []),
       ...result.releasedPartRefs.map((part) =>
-        creationPartStorageKey(input.userId, input.tool, input.itemId, part.hash, part.rev),
+        creationPartStorageKey(
+          input.userId,
+          input.tool,
+          input.itemId,
+          part.hash,
+          part.rev,
+          this.creations.audience ?? 'kids',
+        ),
       ),
     ]
     return {
@@ -486,7 +527,14 @@ export class GetCreationDownloadService {
       summary: toCreationSummary(record),
       parts: record.parts.map((part) => ({
         ...part,
-        storageKey: creationPartStorageKey(userId, tool, itemId, part.hash, part.rev),
+        storageKey: creationPartStorageKey(
+          userId,
+          tool,
+          itemId,
+          part.hash,
+          part.rev,
+          this.creations.audience ?? 'kids',
+        ),
       })),
     }
   }
@@ -539,7 +587,14 @@ export class DeleteCreationService {
       storageKeys: [
         ...(result.storageRef ? [result.storageRef] : []),
         ...result.partRefs.map((part) =>
-          creationPartStorageKey(userId, tool, itemId, part.hash, part.rev),
+          creationPartStorageKey(
+            userId,
+            tool,
+            itemId,
+            part.hash,
+            part.rev,
+            this.creations.audience ?? 'kids',
+          ),
         ),
       ],
       revision: result.revision,

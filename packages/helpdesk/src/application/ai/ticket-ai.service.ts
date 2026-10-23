@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+import type { AiRunView } from '@sistemazero/helpdesk-contracts'
 import {
   AiNotConfiguredError,
   ConcurrencyConflictError,
@@ -7,36 +9,25 @@ import type { LlmClient } from '../../domain/ports/llm-client.port'
 import type { MessageRepository } from '../../domain/ports/message-repository.port'
 import type { AiWriteGuard, TicketRepository } from '../../domain/ports/ticket-repository.port'
 import type { Ticket } from '../../domain/ticket/ticket'
-import type { TicketMessage } from '../../domain/ticket/ticket-message'
 import { assertHumanTicket } from '../../domain/ticket/ticket-triage'
 import type { TicketView } from '../views'
 import { toTicketView } from '../views'
-import { selectRelevantKbArticles } from './kb-context'
+import type { KnowledgeAnswerService } from './knowledge-answer.service'
 import {
   buildClassifyPrompt,
-  buildDraftPrompt,
   buildThreadText,
   type ClassifyResult,
   ClassifySchema,
   type DraftResult,
-  DraftSchema,
 } from './prompts'
 
 export interface TicketAiConfig {
   maxThreadChars: number
-  maxKbChars: number
-  onKbContextSelected?: (stats: { articles: number; chars: number }) => void
 }
-
-/** Provedor de artigos do KB p/ o prompt de rascunho (vazio na F3; F4 injeta os publicados). */
-export type KbArticlesProvider = () => Promise<{ title: string; content: string }[]>
 
 export interface AiPipelineResult {
   classification: ClassifyResult
   draft: DraftResult
-  /** Fatos da thread para classificação, resumo e rascunho do copiloto (F4). */
-  lastInbound: TicketMessage | null
-  hasOutbound: boolean
 }
 
 /** Controle de fluxo: a conversa mudou enquanto o modelo respondia. */
@@ -58,7 +49,7 @@ export class TicketAiService {
     private readonly llm: LlmClient | null,
     private readonly tickets: TicketRepository,
     private readonly messages: MessageRepository,
-    private readonly kbArticles: KbArticlesProvider,
+    private readonly answers: KnowledgeAnswerService,
     private readonly config: TicketAiConfig,
     private readonly now: () => Date,
   ) {}
@@ -70,21 +61,22 @@ export class TicketAiService {
       generation: ticket.aiGeneration,
       ...(ticket.aiStatus === 'processing' ? { processingAttempt: ticket.aiAttempts } : {}),
     } satisfies AiWriteGuard
-    const messages = await this.messages.byTicketId(ticket.id)
+    const messages = (await this.messages.page(ticket.id, { limit: 50, publicOnly: true }))
+      .slice(0, 50)
+      .reverse()
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const classification = await this.classifyAndPersist(ticket.id, guard, threadText)
-    const draft = await this.draftAndPersist(ticket.id, guard, threadText, classification.summary)
-    const lastInbound =
-      [...messages].reverse().find((m) => m.direction === 'inbound' && m.triage === 'human') ?? null
-    const hasOutbound = messages.some((m) => m.direction === 'outbound')
-    return { classification, draft, lastInbound, hasOutbound }
+    const draft = await this.draftAndPersist(ticket.id, guard, threadText)
+    return { classification, draft }
   }
 
   /** On-demand: só classificar+resumir (rota summarize). Fecha com markAiDone. */
   async summarize(ticketId: string): Promise<TicketView> {
     const ticket = await this.requireTicket(ticketId)
     assertHumanTicket(ticket)
-    const messages = await this.messages.byTicketId(ticketId)
+    const messages = (await this.messages.page(ticketId, { limit: 50, publicOnly: true }))
+      .slice(0, 50)
+      .reverse()
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const guard = { generation: ticket.aiGeneration }
     try {
@@ -104,11 +96,13 @@ export class TicketAiService {
   async regenerateDraft(ticketId: string): Promise<TicketView> {
     const ticket = await this.requireTicket(ticketId)
     assertHumanTicket(ticket)
-    const messages = await this.messages.byTicketId(ticketId)
+    const messages = (await this.messages.page(ticketId, { limit: 50, publicOnly: true }))
+      .slice(0, 50)
+      .reverse()
     const threadText = buildThreadText(ticket.subject, messages, this.config.maxThreadChars)
     const guard = { generation: ticket.aiGeneration }
     try {
-      await this.draftAndPersist(ticketId, guard, threadText, ticket.aiSummary ?? '')
+      await this.draftAndPersist(ticketId, guard, threadText)
       const completed = await this.tickets.markAiDone(ticketId, guard, this.now())
       if (!completed) throw new AiGenerationSupersededError()
     } catch (error) {
@@ -126,13 +120,50 @@ export class TicketAiService {
     threadText: string,
   ): Promise<ClassifyResult> {
     const { system, user } = buildClassifyPrompt(threadText)
-    const result = await this.llmOrThrow().complete({
-      system,
-      user,
-      schema: ClassifySchema,
-      label: 'classify',
-      maxTokens: 800,
-    })
+    const run: AiRunView = {
+      id: randomUUID(),
+      ticketId,
+      generation: guard.generation,
+      purpose: 'classification',
+      audience: 'staff_only',
+      product: 'all',
+      promptVersion: 'classify-1',
+      status: 'running',
+      coverage: 'covered',
+      reply: null,
+      reason: 'classification',
+      clarification: false,
+      evidence: [],
+      attempts: [],
+      createdAt: this.now().toISOString(),
+      completedAt: null,
+    }
+    await this.answers.runs.create(run)
+    let result: ClassifyResult
+    try {
+      result = await this.llmOrThrow().complete({
+        system,
+        user,
+        schema: ClassifySchema,
+        label: 'classify',
+        maxTokens: 800,
+        onAttempt: async (attempt) => {
+          run.attempts = [
+            ...run.attempts.filter((entry) => entry.attempt !== attempt.attempt),
+            attempt,
+          ]
+          await this.answers.runs.attempt(run.id, attempt)
+        },
+      })
+      run.status = 'completed'
+    } catch (error) {
+      run.status = 'failed'
+      run.reason = 'provider_failure'
+      throw error
+    } finally {
+      run.completedAt = this.now().toISOString()
+      await this.answers.runs.finish(run)
+    }
     const persisted = await this.tickets.applyClassification(ticketId, guard, {
       category: result.category,
       priority: result.priority,
@@ -146,7 +177,10 @@ export class TicketAiService {
       summary: result.summary,
       at: this.now(),
     })
-    if (!persisted) throw new AiGenerationSupersededError()
+    if (!persisted) {
+      await this.answers.runs.finish({ ...run, status: 'superseded' })
+      throw new AiGenerationSupersededError()
+    }
     return result
   }
 
@@ -154,28 +188,45 @@ export class TicketAiService {
     ticketId: string,
     guard: AiWriteGuard,
     threadText: string,
-    summary: string,
   ): Promise<DraftResult> {
-    const kbArticles = selectRelevantKbArticles(
-      `${summary}\n${threadText}`,
-      await this.kbArticles(),
-      this.config.maxKbChars,
+    const ticket = await this.requireTicket(ticketId)
+    const messages = (await this.messages.page(ticketId, { limit: 50, publicOnly: true }))
+      .slice(0, 50)
+      .reverse()
+    const question =
+      [...messages]
+        .reverse()
+        .find(
+          (m) => m.direction === 'inbound' && m.visibility === 'customer' && m.triage === 'human',
+        )?.bodyText ?? ticket.subject
+    const run = await this.answers.answer({
+      ticketId,
+      generation: guard.generation,
+      purpose: 'copilot',
+      query: question,
+      thread: threadText,
+      audience:
+        ticket.portal === 'kids'
+          ? 'customer_parent'
+          : ticket.portal === 'adult'
+            ? 'customer_adult'
+            : 'customer_all',
+      product:
+        ticket.category === 'studio' ? 'studio' : ticket.portal === 'kids' ? 'kids' : 'community',
+      limit: 6,
+    })
+    const result = { reply: run.reply ?? '', kbCoverage: run.coverage }
+    const persisted = await this.tickets.applyDraft(
+      ticketId,
+      guard,
+      result.reply,
+      run.id,
+      this.now(),
     )
-    this.config.onKbContextSelected?.({
-      articles: kbArticles.length,
-      chars: kbArticles.map((article) => `# ${article.title}\n${article.content}`).join('\n\n')
-        .length,
-    })
-    const { system, user } = buildDraftPrompt({ threadText, summary, kbArticles })
-    const result = await this.llmOrThrow().complete({
-      system,
-      user,
-      schema: DraftSchema,
-      label: 'draft',
-      maxTokens: 1500,
-    })
-    const persisted = await this.tickets.applyDraft(ticketId, guard, result.reply, this.now())
-    if (!persisted) throw new AiGenerationSupersededError()
+    if (!persisted) {
+      await this.answers.runs.finish({ ...run, status: 'superseded' })
+      throw new AiGenerationSupersededError()
+    }
     return result
   }
 

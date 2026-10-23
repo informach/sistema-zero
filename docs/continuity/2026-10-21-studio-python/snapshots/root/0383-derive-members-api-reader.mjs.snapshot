@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict'
+import {readFileSync,writeFileSync} from 'node:fs'
+const previous=new URL('./read-staging-members.ts',import.meta.url)
+let source=readFileSync(previous,'utf8')
+source="import {cliEnvironment} from '../pro-legacy-staging-ui-owned-r5/oauth-session.mjs'\n"+source
+const before="const values=JSON.parse(execFileSync(cli,['variable','list','--project',project,'--environment',environment,'--service',service,'--json'],{encoding:'utf8',windowsHide:true,timeout:30000,maxBuffer:8_000_000,stdio:['ignore','pipe','pipe']}))"
+assert.equal(source.split(before).length,2)
+const query='query StudioPythonPublicBaseline($projectId:String!,$environmentId:String!,$serviceId:String!){variables(projectId:$projectId,environmentId:$environmentId,serviceId:$serviceId,unrendered:false)}'
+source=source.replace(before,`const response=JSON.parse(execFileSync(cli,['api',${JSON.stringify(query)},'--variables',JSON.stringify({projectId:project,environmentId:environment,serviceId:service}),'--compact'],{env:cliEnvironment(process.env),encoding:'utf8',windowsHide:true,timeout:30000,maxBuffer:8_000_000,stdio:['ignore','pipe','pipe']}))
+ if(response.errors?.length)throw new Error('API query failed')
+ const values=response.data?.variables
+ if(!values||typeof values!=='object'||Array.isArray(values))throw new Error('API variables shape invalid')`)
+source=source.replace("'CLI can list only service-wide variables; raw service response remained private RAM and was projected to named public schema-validated values. Null records proven absent named variable only; it does not claim the Worker configuration object is absent.'", "'Official CLI api uses the documented nondeprecated Query.variables with unrendered:false after variable list returned Problem processing request. Only named public configuration is persisted; all other values remain private RAM. Null proves named absence in this service query, not absent Worker configuration or running-process configuration.'")
+source=source.replace("state:'readonly-public-members-baseline'", "state:'readonly-public-members-baseline',reader:'railway-api-variables-rendered'")
+source=source.replaceAll('./railway-staging-members-public-baseline-r1.json','./railway-staging-members-api-baseline-r1.json')
+writeFileSync(new URL('./read-staging-members-api.ts',import.meta.url),source,{flag:'wx'})
+console.log(JSON.stringify({prepared:true,providerCalls:0,mutations:0}))

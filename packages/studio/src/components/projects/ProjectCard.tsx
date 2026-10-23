@@ -208,7 +208,7 @@ export const ProjectCard = memo(function ProjectCard({
 
   // Começa a baixar/avaliar o chunk do modo salvo ANTES do clique (hover e
   // pointerdown), para que a navegação não espere o download. Idempotente.
-  const prefetch = () => prefetchMode(summary.mode)
+  const prefetch = () => prefetchMode(summary.mode, summary.programmingLanguage)
 
   // Abre o projeto dando feedback imediato no card ("Abrindo…") no mesmo gesto —
   // assim o aluno vê que o clique pegou enquanto o editor carrega.

@@ -1,13 +1,10 @@
 'use client'
 
 import type { UploadedAttachment } from '@sistemazero/member-shell/components/attachment-uploader'
-import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fetch'
 import {
-  remixRequirementFromSnapshot,
   type StudioRemixCapability,
   studioRemixCovered,
 } from '@sistemazero/member-shell/lib/studio-tier'
-import { useRouter } from 'next/navigation'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { KidsAccessUnavailable } from '@/components/kids/kids-access-unavailable'
@@ -27,6 +24,7 @@ import { type MuralSort, sortQuery } from './mural-sort'
 import { AuthorBadge, type AuthorItem, displayAuthor, toggleReaction } from './space-author'
 import { pickInitialChannel } from './space-channel'
 import { useKidsSpaceReport } from './use-kids-space-report'
+import { useKidsStudioRemix } from './use-kids-studio-remix'
 import { useThreadPages } from './use-thread-pages'
 
 /** Modo de apresentação: fórum (Clube — conversa) ou vitrine (Mural — cards de projeto). */
@@ -42,10 +40,6 @@ export type RemixTier = StudioRemixCapability
 
 // Slugs/ids vêm do servidor (slug/UUID), mas codificamos por consistência/segurança.
 const enc = encodeURIComponent
-
-/** As ferramentas vêm das aventuras concluídas: o recado aponta para elas, nunca para um nível. */
-const REMIX_BLOCKED_MESSAGE =
-  'Esse jogo usa ferramentas que você ainda vai conquistar nas aventuras. 🚀'
 
 function postingError(e: ApiError): string {
   if (e.code === 'POSTING_NOT_ALLOWED') return 'Aqui só a equipe pode escrever. 🙂'
@@ -151,6 +145,14 @@ export function KidsSpaceViewClient({
   threadRef.current = thread
   commentsRef.current = comments
 
+  // Limpa a conversa junto da escolha do canal. Um efeito passivo pode rodar
+  // depois que o botão já recebeu um clique e fechar o formulário recém-aberto.
+  const selectChannel = useCallback((next: HubChannelView | null) => {
+    setThread(null)
+    setShowNew(false)
+    setChannel(next)
+  }, [])
+
   // Rosto+aura+nome (clicável no post aberto) — o que aquece o Clube. Usado na
   // assinatura do tópico e em cada resposta.
   const authorLabel = useCallback(
@@ -160,7 +162,13 @@ export function KidsSpaceViewClient({
     [viewerId],
   )
 
-  const canRemix = remixTier !== null && space?.canInteract === true
+  const canRemix =
+    remixTier !== null &&
+    space?.canInteract === true &&
+    !space.locked &&
+    !forbidden &&
+    !unavailable &&
+    !loading
 
   // Selo do card: o `studioMeta` do post (snapshot no publish) diz as ferramentas do jogo,
   // e as ferramentas vêm dos CURSOS concluídos (não de um nível), então o selo só diz que
@@ -177,50 +185,7 @@ export function KidsSpaceViewClient({
   // Remix ("Fazer a minha versão"): baixa o snapshot PÚBLICO do jogo e o importa
   // como projeto NOVO no namespace do PERFIL (mesma lista do /estudio). Client-side
   // de ponta a ponta — o snapshot é imutável, o remix nunca toca o post original.
-  const router = useRouter()
-  const remixBusyRef = useRef(false)
-  const handleRemix = useCallback(
-    async (t: HubThreadView) => {
-      if (!canRemix || !t.playId || remixBusyRef.current) return
-      remixBusyRef.current = true
-      try {
-        // Selo do post já diz que falta ferramenta → recado gentil sem nem baixar o jogo.
-        if (remixTier && t.studioMeta && !studioRemixCovered(remixTier, t.studioMeta)) {
-          toast.info(REMIX_BLOCKED_MESSAGE)
-          return
-        }
-        const res = await fetch(`/api/studio/play/${enc(t.playId)}`)
-        if (!res.ok) throw new Error('play indisponível')
-        const snapshot: unknown = await res.json()
-        // Checagem AUTORITATIVA (post antigo sem metadado / metadado divergente): as
-        // ferramentas REAIS do snapshot precisam caber no degrau — senão o projeto
-        // importado nem abriria no Estúdio (trava de conquista) e viraria beco sem saída.
-        const requirement = remixRequirementFromSnapshot(snapshot)
-        if (remixTier && !studioRemixCovered(remixTier, requirement)) {
-          toast.info(REMIX_BLOCKED_MESSAGE)
-          return
-        }
-        const studio = await import('@sistemazero/studio')
-        studio.setStudioStorageNamespace(viewerId)
-        await studio.importProjectSnapshot(snapshot, { name: `Remix de ${t.title}` })
-        // Gamificação (retenção pós-cursos): registra o marco da missão de remix.
-        // BEST-EFFORT fire-and-forget — o toast/navegação não esperam; os guards
-        // anti-farm (posse + playId real no hub + não-self) são do members.
-        void fetch('/api/studio/remix', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ playId: t.playId }),
-        }).catch(() => {})
-        toast.success('Sua versão foi criada! Abrindo o Estúdio... 🎮')
-        router.push('/estudio')
-      } catch {
-        toast.error('Não consegui criar a sua versão agora. Tente de novo!')
-      } finally {
-        remixBusyRef.current = false
-      }
-    },
-    [viewerId, router, remixTier, canRemix],
-  )
+  const handleRemix = useKidsStudioRemix({ viewerId, slug, remixTier, canRemix })
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: `reloadNonce` é só o gatilho do retry — bump força a re-carga sem ser lido no corpo.
   useEffect(() => {
@@ -240,7 +205,7 @@ export function KidsSpaceViewClient({
         )
         if (!alive) return
         setChannels(ch.items)
-        setChannel(pickInitialChannel(ch.items, mode))
+        selectChannel(pickInitialChannel(ch.items, mode))
       } catch (err) {
         if (!alive) return
         const e = err as ApiError
@@ -265,7 +230,7 @@ export function KidsSpaceViewClient({
     return () => {
       alive = false
     }
-  }, [slug, mode, reloadNonce])
+  }, [slug, mode, reloadNonce, selectChannel])
 
   // Retry da tela de indisponível: re-roda a carga (volta ao skeleton e refaz o
   // fetch). `router.refresh()` não serviria — preserva o estado deste client.
@@ -323,8 +288,6 @@ export function KidsSpaceViewClient({
 
   useEffect(() => {
     if (!channel) return
-    setThread(null)
-    setShowNew(false)
     setChallengeThreads([])
     let alive = true
     void loadThreads(channel.id, () => alive)
@@ -535,7 +498,7 @@ export function KidsSpaceViewClient({
       spaceChannelIds,
       onOpenThreadById: openThreadById,
     },
-    navigation: { channels, channel, onSelectChannel: setChannel },
+    navigation: { channels, channel, onSelectChannel: selectChannel },
     discussion: {
       thread,
       comments,

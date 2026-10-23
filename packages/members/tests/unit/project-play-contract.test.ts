@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { type InteractiveBlock, isInteractiveBlock } from '@sistemazero/core/learning'
 import { Elysia, t } from 'elysia'
-import manifest from '../../../../docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.manifesto.json'
+import manifest from '../../../../docs/aulas-interativas/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
 import { InteractiveBlockSchema } from '../../src/interfaces/http/learning.dtos'
 import {
   draftCommand,

@@ -1,7 +1,7 @@
 import { expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
-import { resolve } from 'node:path'
 import { isLearningManifest, type LearningManifest } from '@sistemazero/core/learning'
+import { caminhoAula } from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
 import { changeDraft, readDraft } from '../draft-authoring-helpers'
 import { buildApp, seedSampleCourse } from '../helpers'
@@ -15,9 +15,7 @@ import { buildApp, seedSampleCourse } from '../helpers'
  * só, e a autora tinha de limpar à mão a cada atualização do manifesto.
  */
 async function manifesto(nome: string, lessonSlug: string): Promise<LearningManifest> {
-  const document: unknown = await Bun.file(
-    resolve(import.meta.dir, `../../../../docs/aulas-interativas/aulas/${nome}.manifesto.json`),
-  ).json()
+  const document: unknown = await Bun.file(caminhoAula(`${nome}.manifesto.json`)).json()
   if (!isLearningManifest(document)) throw new Error(`Manifesto ${nome} inválido`)
   // O mesmo que o botão "Vincular ao destino aberto" do Admin faz.
   return { ...document, lessonSlug }

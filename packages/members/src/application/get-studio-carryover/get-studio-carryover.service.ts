@@ -1,3 +1,4 @@
+import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
 import {
   LessonNotFoundError,
   PintaBlockNotFoundError,
@@ -6,7 +7,9 @@ import {
 import type { SubmissionBlockKind } from '../../domain/course/lesson-block'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
+import type { StudioLessonBindingRepository } from '../../domain/ports/studio-lesson-binding-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
+import { ValidationError } from '../../domain/shared/errors'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { SectionProgressionService } from '../learning/section-progression.service'
 import { assertLessonUnlocked } from '../lesson-locking/lesson-locking'
@@ -39,6 +42,7 @@ export class GetStudioCarryoverService {
     private readonly progress: ProgressRepository,
     private readonly submissions: StudioSubmissionRepository,
     private readonly sections: SectionProgressionService,
+    private readonly bindings?: StudioLessonBindingRepository,
   ) {}
 
   async execute(
@@ -59,6 +63,7 @@ export class GetStudioCarryoverService {
       lesson.courseId,
       privileged,
       userId,
+      { lessonId },
     )
     await assertLessonUnlocked(this.courses, this.progress, course, lessonId, userId, privileged)
     await this.sections.assertBlock(
@@ -74,15 +79,37 @@ export class GetStudioCarryoverService {
     }
 
     // Sem nome de cadeia = aula independente: não há projeto anterior a carregar.
-    const chain = block.content.chain?.trim()
+    const binding =
+      kind === 'studio'
+        ? await this.bindings?.find({ userId, accountId: accountId ?? userId }, blockId)
+        : null
+    const chain = (binding ? binding.baseline.configuration.chain : block.content.chain)?.trim()
     if (!chain) return { project: null }
 
-    const prev = await this.courses.findPrecedingChainBlock(lesson.courseId, lessonId, chain, kind)
+    const prev = await this.courses.findPrecedingChainBlock(
+      lesson.courseId,
+      lessonId,
+      chain,
+      kind,
+      kind === 'studio' ? { userId, accountId: accountId ?? userId } : undefined,
+    )
     // 1ª aula da cadeia (sem antecessora na mesma cadeia) → começa do template.
     if (!prev) return { project: null }
 
     // Última entrega do PRÓPRIO aluno/perfil no bloco anterior. Nunca enviou → null.
     const sub = await this.submissions.getOne(userId, prev.blockId)
+    if (
+      kind === 'studio' &&
+      sub &&
+      block.content.kind === 'studio' &&
+      studioProjectContinuityIssue(
+        sub.project,
+        binding?.baseline.configuration.initialProject ?? block.content.initialProject,
+      )
+    )
+      throw new ValidationError(
+        'O projeto anterior e esta aula usam ambientes diferentes. O trabalho anterior foi preservado; peça à equipe para conferir a configuração.',
+      )
     return { project: sub?.project ?? null }
   }
 }

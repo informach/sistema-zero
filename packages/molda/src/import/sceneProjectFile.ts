@@ -1,7 +1,6 @@
 import { newId } from '../core/id'
 import { MOLDA_LIMITS } from '../core/limits'
 import { structuredBytes } from '../core/structuredBytes'
-import { MAX_BACKUP_FILE_BYTES } from '../export/backupFormat'
 import { sceneProjectName } from '../scene/createProject'
 import type { MoldaSceneDocument } from '../scene/document'
 import { readSceneDocument } from '../scene/readDocument'
@@ -9,7 +8,7 @@ import { readImportJson } from './importJson'
 
 /** Wire expansion and metadata are bounded separately from the decoded authoring pixels. */
 export const SCENE_PROJECT_FILE_LIMITS = {
-  bytes: MAX_BACKUP_FILE_BYTES,
+  bytes: MOLDA_LIMITS.maxDocumentBytes * 2,
   jsonDepth: 128,
   jsonStructure: 16_000_000,
 } as const
@@ -39,7 +38,7 @@ export function readSceneProjectContent(raw: unknown): MoldaSceneDocument {
   const read = readSceneDocument(raw)
   if (read.status === 'unsupported') throw new SceneProjectFileError('version')
   if (read.status === 'invalid') throw new SceneProjectFileError('invalid')
-  if (structuredBytes(read.document) > MOLDA_LIMITS.maxGalleryBytes)
+  if (structuredBytes(read.document) > MOLDA_LIMITS.maxDocumentBytes)
     throw new SceneProjectFileError('budget')
   return read.document
 }

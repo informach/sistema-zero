@@ -1,0 +1,322 @@
+"""Native embedding of the canonical Pac-Man ZIP plus an external QA observer.
+
+--preflight verifies inputs/installation without importing Turtle/audio or opening
+Tk. Game execution requires a separate agreed hardware window and supervisor.
+The exported tree is never modified; the observer is compiled outside that tree.
+"""
+import argparse
+import hashlib
+import importlib.metadata
+import importlib.util
+import io
+import json
+import os
+from pathlib import Path
+import stat
+import sys
+import tempfile
+import time
+import tomllib
+import traceback
+import zipfile
+
+HERE = Path(__file__).resolve().parent
+RECEIPT_SHA = '4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09'
+ZIP_SHA = '8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9'
+MAIN_SHA = '3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76'
+PREFIX = '__SZ_PACMAN_QA__'
+
+
+def require(value, message):
+    assert value, message
+
+
+def digest(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def verified_inputs(artifact):
+    raw = (artifact / 'receipt.json').read_bytes()
+    assert digest(raw) == RECEIPT_SHA
+    baseline = json.loads(raw)
+    archive = (artifact / 'source.zip').read_bytes()
+    assert digest(archive) == baseline['zip']['sha256'] == ZIP_SHA
+    files = {}
+    with zipfile.ZipFile(io.BytesIO(archive)) as source:
+        assert len(source.infolist()) == len(baseline['inventory']) == 32
+        assert len(set(source.namelist())) == 32
+        for entry in baseline['inventory']:
+            name = entry['path']
+            assert not stat.S_ISLNK(source.getinfo(name).external_attr >> 16)
+            data = source.read(name)
+            assert digest(data) == entry['sha256'] and len(data) == entry['bytes']
+            files[name] = data
+    assert digest(files['main.py']) == MAIN_SHA
+    manifest = json.loads(files['.sistemazero/export-manifest.json'])
+    assert manifest['entrypoint'] == 'main.py'
+    descriptor = importlib.util.find_spec('sz_audio')
+    assert descriptor is not None and descriptor.origin is not None
+    installed = Path(descriptor.origin).resolve().parent
+    assert installed.is_relative_to(Path(sys.prefix).resolve())
+    matched = []
+    for entry in manifest['portableAudio']['files']:
+        if '/sz_audio/' in entry['path']:
+            relative = entry['path'].split('/sz_audio/', 1)[1]
+            assert digest((installed / relative).read_bytes()) == entry['sha256']
+            matched.append(relative)
+    assert len(matched) == 7
+    module = json.loads((installed / '_module.json').read_bytes())
+    dependencies = module['native']['dependencies']
+    package_root = Path(manifest['portableAudio']['requirementsPath']).parent.as_posix()
+    package = tomllib.loads(files[package_root + '/pyproject.toml'].decode())
+    assert package['build-system']['requires'] == ['setuptools==' + dependencies['setuptools']]
+    runtime = {key: value for key, value in dependencies.items() if key != 'setuptools'}
+    assert set(package['project']['dependencies']) == {key + '==' + value for key, value in runtime.items()}
+    assert {key: importlib.metadata.version(key) for key in runtime} == runtime
+    return files, dict(sourceReceiptSha256=RECEIPT_SHA, zipSha256=ZIP_SHA, mainSha256=MAIN_SHA,
+                       installedAudio=str(installed), matchingModuleFiles=matched, dependencies=runtime)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--artifact-dir', type=Path, required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--scenario', choices=('observe', 'pellet', 'power', 'death', 'victory-near-end', 'defeat-near-end'), required=True)
+    parser.add_argument('--preflight', action='store_true')
+    args = parser.parse_args()
+    assert sys.flags.isolated and sys.dont_write_bytecode and sys.version_info[:3] == (3, 14, 2)
+    args.output.mkdir(parents=True, exist_ok=False)
+    observer_path = HERE / 'pacman_observer.py'
+    source = observer_path.read_bytes().decode('utf-8')
+    marker = 'CONFIG = {"scenario": "observe", "seed": 2026}'
+    assert source.count(marker) == 1
+    selected_source = source.replace(marker, 'CONFIG = ' + json.dumps(
+        dict(scenario=args.scenario, seed=2026), separators=(',', ':')))
+    code = compile(selected_source, str(observer_path), 'exec')
+    report = dict(state='failed', scenario=args.scenario, python=sys.version, executable=sys.executable,
+                  runnerSha256=digest(Path(__file__).read_bytes()), observerSourceSha256=digest(source.encode()),
+                  observerSha256=digest(selected_source.encode()), seed=2026, errors=[], events=[],
+                  rootMapEvents=0, rootDestroyEvents=0, audioReleased=False,
+                  cooperativeDeadline=False, boundedFunctionalCompletion=False,
+                  preflightOnly=args.preflight, freshInstall=False, physicalKeyboard=False,
+                  limits=['External observer; exact canonical exported five game modules remain unchanged',
+                          'Declared classic six scenarios; authored bye for endings, QA bounded close otherwise; not a full played game',
+                          'No browser, physical input, raster, acoustic or performance acceptance'])
+    screen = desktop = turtle = None
+    roots = []
+    lifecycle = dict(closedByQA=False, expectedTickObserved=False)
+    report['lifecycle'] = lifecycle
+    original_stdout = sys.stdout
+    original_cwd, original_path = Path.cwd(), sys.path.copy()
+    scope = None
+    project = None
+    exported_hashes = None
+    started = time.monotonic()
+    try:
+        files, evidence = verified_inputs(args.artifact_dir)
+        report.update(evidence)
+        for name, data in files.items():
+            if name.endswith('.py'):
+                compile(data, name, 'exec')
+        if args.preflight:
+            assert 'turtle' not in sys.modules and 'sz_audio._desktop' not in sys.modules
+            report.update(state='preflight-passed-no-Tk', inventoryFiles=len(files))
+        else:
+            scope = tempfile.TemporaryDirectory(prefix='sz-pacman-functional-')
+            project = Path(scope.name).resolve()
+            report['ownedTemp'] = str(project)
+            for name, data in files.items():
+                destination = (project / name).resolve()
+                assert '\\' not in name and destination != project and destination.is_relative_to(project)
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(data)
+            exported_hashes = {name: digest(data) for name, data in files.items()}
+            from sz_audio import _desktop
+            desktop = _desktop
+            import turtle
+            official_root = turtle._Root
+
+            class HiddenOfficialRoot(official_root):
+                def __init__(self):
+                    super().__init__()
+                    roots.append(self)
+                    self.withdraw()
+                    self.bind('<Map>', lambda event: report.__setitem__('rootMapEvents', report['rootMapEvents'] + int(event.widget is self)), add='+')
+                    self.bind('<Destroy>', lambda event: report.__setitem__('rootDestroyEvents', report['rootDestroyEvents'] + int(event.widget is self)), add='+')
+
+                def setupcanvas(self, *values):
+                    assert self.state() == 'withdrawn'
+                    report['withdrawnBeforeSetup'] = True
+                    return super().setupcanvas(*values)
+
+            turtle._Root = HiddenOfficialRoot
+            try:
+                screen = turtle.Screen()
+            finally:
+                turtle._Root = official_root
+            root = screen.getcanvas().winfo_toplevel()
+            report['nativeClockInfo'] = dict(tclPatchlevel=root.tk.call('info', 'patchlevel'),
+                                             tkPatchlevel=root.tk.call('package', 'provide', 'Tk'),
+                                             monotonic=vars(time.get_clock_info('monotonic')))
+            assert root.state() == 'withdrawn' and report['withdrawnBeforeSetup']
+
+            def fail_callback(kind, value, tb):
+                report['errors'].append(dict(callback=kind.__name__, message=str(value)))
+                traceback.print_exception(kind, value, tb)
+                screen.bye()
+
+            def deadline():
+                report['cooperativeDeadline'] = True
+                screen.bye()
+
+            root.report_callback_exception = fail_callback
+            screen.ontimer(deadline, 30000)  # Additional QA deadline; authored timers unchanged.
+
+            def close_by_qa():
+                lifecycle['closedByQA'] = True
+                screen.bye()
+
+            wanted_tick = 250 if args.scenario in ('observe', 'power') else 3
+            endings = args.scenario in ('victory-near-end', 'defeat-near-end')
+
+            class ObservedOutput:
+                def __init__(self):
+                    self.pending = ''
+
+                def write(self, text):
+                    original_stdout.write(text)
+                    original_stdout.flush()
+                    self.pending += text
+                    while '\n' in self.pending:
+                        line, self.pending = self.pending.split('\n', 1)
+                        if line.startswith(PREFIX):
+                            event = json.loads(line[len(PREFIX):])
+                            if event['event'] in ('timer-scheduled', 'timer-fired'):
+                                # Existing observer event only: no extra emit/timer/callback wrapper.
+                                qpc_before = time.monotonic_ns()
+                                tcl_us = int(root.tk.call('clock', 'microseconds'))
+                                qpc_after = time.monotonic_ns()
+                                event['nativeClockPair'] = dict(qpcBeforeNs=qpc_before,
+                                                               tclMicroseconds=tcl_us,
+                                                               qpcAfterNs=qpc_after)
+                            assert event['scenario'] == args.scenario
+                            report['events'].append(event)
+                            if event['event'] == 'after' and event['tick'] == wanted_tick:
+                                lifecycle['expectedTickObserved'] = True
+                                report['canvasItemsAtWitness'] = len(screen.getcanvas().find_all())
+                                assert root.state() == 'withdrawn'
+                                if args.scenario == 'observe':
+                                    native = screen.getcanvas()._canvas
+                                    report['bindings'] = {key: bool(native.bind('<KeyPress-' + key + '>')) for key in ('Left', 'Up', 'Right', 'Down')}
+                                    assert all(report['bindings'].values())
+                                if not endings:
+                                    screen.ontimer(close_by_qa, 0)
+                    return len(text)
+
+                def flush(self):
+                    original_stdout.flush()
+
+            sys.stdout = ObservedOutput()
+            os.chdir(project)
+            sys.path.insert(0, str(project))
+            exec(code, dict(__name__='__main__', __file__=str(observer_path)))
+            sys.stdout = original_stdout
+            assert lifecycle['expectedTickObserved'] and not report['cooperativeDeadline'] and not report['errors']
+            assert report['rootMapEvents'] == 0 and report['rootDestroyEvents'] == 1
+            assert report['canvasItemsAtWitness'] > 100
+            assert lifecycle['closedByQA'] is (not endings)
+            events, scenario = report['events'], args.scenario
+            snapshots = {(item["event"], item["tick"]): item["value"] for item in events
+                         if item["event"] in ("before", "after")}
+            initial, after = snapshots[("before", 1)], snapshots[("after", 1)]
+            require(initial["player"]["lives"] == 3 and len(after["enemies"]) == 7, "Author baseline")
+            if scenario == "pellet":
+                require(after["player"]["score"] - initial["player"]["score"] == 2
+                        and after["pellets"] == initial["pellets"] - 1, "Pellet rules")
+            elif scenario == "power":
+                require(after["player"]["score"] - initial["player"]["score"] == 50
+                        and after["power"] == initial["power"] - 1
+                        and after["player"]["speed"] == initial["player"]["speed"] + 3
+                        and after["timersScheduled"]["3000"] == 1, "Power rules")
+                require(snapshots[("after", 250)]["player"]["speed"] == initial["player"]["speed"], "Actual timed power reset")
+            elif scenario in ("death", "defeat-near-end"):
+                require(after["player"]["lives"] == (2 if scenario == "death" else 0)
+                        and after["player"]["position"] != initial["player"]["position"], "Death/respawn rules")
+                if scenario == "defeat-near-end":
+                    require(not after["player"]["visible"] and after["player"]["state"] == "stop"
+                            and after["timersScheduled"]["3000"] == 1, "Near defeat rules")
+            elif scenario == "victory-near-end":
+                require(after["pellets"] + after["power"] == 0 and after["player"]["state"] == "stop"
+                        and all(not enemy["visible"] and enemy["state"] == "stop" for enemy in after["enemies"])
+                        and after["timersScheduled"]["3000"] == 1, "Near victory rules")
+            bye_events = [e for e in events if e['event'] in ('timer-scheduled', 'timer-fired') and e['value'].get('callback') == 'bye' and e['value'].get('delay') == 3000]
+            if endings:
+                scheduled = [e for e in bye_events if e['event'] == 'timer-scheduled']
+                fired = [e for e in bye_events if e['event'] == 'timer-fired']
+                assert len(scheduled) == len(fired) == 1
+                assert fired[0]['value']['scheduledClock'] == scheduled[0]['value']['scheduledClock']
+                assert fired[0]['value']['elapsedSeconds'] >= 3
+                assert len([e for e in events if e['event'] == 'natural-close']) == 1
+            else:
+                assert not bye_events
+            report['completionMode'] = 'authored-natural-close' if endings else 'declared-QA-bounded-close'
+            assert desktop._device is not None and desktop._failure is None
+            report['audioBackend'] = str(desktop._device.backend)
+            assert report['audioBackend'].lower() != 'null'
+            report['imports'] = {name: str(Path(sys.modules[name].__file__).resolve())
+                                 for name in ('main', 'actors', 'renderer', 'constants', 'mazes')}
+            assert all(Path(path).parent == project for path in report['imports'].values())
+            report.update(state='native-functional-passed', boundedFunctionalCompletion=True, completedCriteria=['authored-rules', 'observed-closure', 'native-canvas', 'native-audio-device'])
+    except BaseException as error:
+        report['errors'].append(dict(name=type(error).__name__, message=str(error), traceback=traceback.format_exc()))
+    finally:
+        sys.stdout = original_stdout
+        if screen is not None and report['rootDestroyEvents'] == 0:
+            try:
+                screen.bye()
+            except BaseException as error:
+                report['errors'].append(dict(cleanup='screen', message=str(error)))
+        elif screen is None:
+            for root in roots:
+                try:
+                    root.destroy()
+                except BaseException as error:
+                    report['errors'].append(dict(cleanup='partial-root', message=str(error)))
+        if desktop is not None:
+            try:
+                if desktop._device is not None:
+                    report.setdefault('audioBackend', str(desktop._device.backend))
+                desktop._shutdown()
+                report['audioReleased'] = desktop._device is None and desktop._generator is None and desktop._mixer.active == 0
+            except BaseException as error:
+                report['errors'].append(dict(cleanup='audio', message=str(error)))
+        if exported_hashes is not None:
+            try:
+                report['exportTreeUnchanged'] = exported_hashes == {
+                    path.relative_to(project).as_posix(): digest(path.read_bytes())
+                    for path in project.rglob('*') if path.is_file()}
+                assert report['exportTreeUnchanged']
+            except BaseException as error:
+                report['errors'].append(dict(cleanup='export-integrity', message=str(error)))
+        os.chdir(original_cwd)
+        sys.path[:] = original_path
+        if scope is not None:
+            try:
+                scope.cleanup()
+                report['ownedTempAbsent'] = not project.exists()
+            except BaseException as error:
+                report['errors'].append(dict(cleanup='temp', message=str(error)))
+        if not args.preflight and (report['rootMapEvents'] or report['rootDestroyEvents'] != 1
+                or not report['audioReleased'] or not report.get('ownedTempAbsent')):
+            report['errors'].append(dict(cleanup='lifecycle', message='Native lifecycle invariants not satisfied'))
+        if report['errors']:
+            report['state'] = 'failed'
+        report['elapsedMs'] = (time.monotonic() - started) * 1000
+        with (args.output / 'native.json').open('x', encoding='utf-8') as output:
+            json.dump(report, output, indent=2)
+    print(json.dumps({key: report[key] for key in ('state', 'scenario', 'elapsedMs', 'errors')}))
+    return 0 if report['state'] in ('preflight-passed-no-Tk', 'native-functional-passed') else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

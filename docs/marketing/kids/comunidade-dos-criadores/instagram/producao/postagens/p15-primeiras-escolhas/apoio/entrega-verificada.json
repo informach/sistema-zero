@@ -1,0 +1,415 @@
+{
+  "id": "P15",
+  "checkedAt": "2026-10-14T21:41:41.880Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 880554,
+      "sha256": "35bc174794acaff505ef167be73e62e52b47bd28916139ad0b16ba4bc89b3929"
+    },
+    {
+      "file": "02-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 106274,
+      "sha256": "ae4a2316aad56dbba61cf6d26e99fc88bd4402fcd9eb5bf1b982a103b4ff0248"
+    },
+    {
+      "file": "03-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1007743,
+      "sha256": "2f2c5a4dc686545f8f2644c487267db05b0e05ea4da3b4a59e7394fe4d1ee8d3"
+    },
+    {
+      "file": "04-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 965688,
+      "sha256": "c4537b0ff32b31417f2a55386811b72092030e51ac2bbe2752790b8f86f5f1ca"
+    },
+    {
+      "file": "05-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 960684,
+      "sha256": "345d284ca5b62cb0607429b30bab8d639755fa64db77e39130a7b4b8912f28a1"
+    },
+    {
+      "file": "06-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 671223,
+      "sha256": "e5a90d683841e25331f8c6a7d1f209375b6bddf9d8fd67f01de9da1af8401b94"
+    },
+    {
+      "file": "07-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 1161713,
+      "sha256": "cae60f6b81937b4f15899043dd5e6f9638f858dbc5fdbf94cea7bad50b63f975"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p15.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p15.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-modelo-para-comecar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-uma-escolha.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-combinar-escolhas.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-jogo-castelo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-bloco-fundo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-jogo-rua.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-ideia-propria.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/02-p11-a-p20.md#p15",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "cenario-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "cenario-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "asset-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "cenario-castelo.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "cenario-rua.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "05-jogo-castelo.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "06-jogo-rua.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "06-bloco-fundo.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "copyLinter": "Sete slides e legenda: zero achados mecânicos.",
+  "visualReview": "Sete slides conferidos individualmente. Quatro fotografias novas, diagrama editorial e duas capturas nativas distintas. Bloco ampliado para leitura. Nenhuma foto ou captura repetida.",
+  "demo": {
+    "sameCode": true,
+    "onlyBackdropAssetChanged": true,
+    "movementAndBoundaryVerified": true,
+    "states": [
+      {
+        "scene": "castelo",
+        "name": "initial",
+        "x": 148,
+        "y": 150,
+        "w": 24,
+        "h": 24,
+        "color": "#f97316"
+      },
+      {
+        "scene": "castelo",
+        "name": "capture",
+        "x": 200,
+        "y": 177,
+        "w": 24,
+        "h": 24,
+        "color": "#f97316"
+      },
+      {
+        "scene": "rua",
+        "name": "initial",
+        "x": 148,
+        "y": 150,
+        "w": 24,
+        "h": 24,
+        "color": "#f97316"
+      },
+      {
+        "scene": "rua",
+        "name": "capture",
+        "x": 77,
+        "y": 174,
+        "w": 24,
+        "h": 24,
+        "color": "#f97316"
+      }
+    ]
+  },
+  "carouselCount": 25,
+  "pngCount": 183,
+  "textBounds": [
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    },
+    {
+      "within": true
+    }
+  ],
+  "uniqueImages": true,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "5506cd9788b1ea65ca479b64046c4c128b557e375437744d7bad1d01cee35be0",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P48",
+  "published": false
+}

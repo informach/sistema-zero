@@ -1,7 +1,7 @@
 ---
 import Footer from '../../../components/Footer.astro'
 import { leadBelongsToFunnel } from '../../../funnels/lead-scope'
-import { getFunnel } from '../../../funnels/registry'
+import { getFunnel, isDesafioFunnel } from '../../../funnels/registry'
 import CheckoutForm from '../../../islands/CheckoutForm'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
 import {
@@ -123,7 +123,11 @@ const priceCents =
     ? initialCoupon.listPriceCents
     : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
 const productName = offer?.productName || f.productName
-const isCommunity = f.key === 'kids/comunidade-dos-criadores'
+// Abertura do checkout por funil (o título dela é o h1; sem ela, o nome do produto é o h1).
+const intro = f.content.checkout
+// "Capa da Comunidade dos Criadores" × "Capa do curso Desafio do Primeiro Jogo".
+const capaAlt =
+  f.content.copy.artigo === 'a' ? `Capa da ${productName}` : `Capa do curso ${productName}`
 const fixedAccess = fixedAccessFromOffer(offer)
 const accessLabel = fixedAccess ? fixedAccessLabel(fixedAccess) : null
 const estimatedAccessEnd = fixedAccess
@@ -180,34 +184,15 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
   <!-- Sem header: o checkout abre direto no card do produto (estilo Hotmart). -->
   <main class:list={['mx-auto max-w-xl px-4 py-10 sm:py-12', { 'kids-checkout': f.theme === 'kids' }]}>
     {
-      f.key === 'kids/desafio-primeiro-jogo' && (
+      intro && (
         <div class="mb-6 text-center">
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
-          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
-            Falta pouco para o primeiro jogo começar
-          </h1>
-          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-            Revise o valor, informe os dados do responsável e escolha a forma de pagamento. Depois
-            da aprovação, seu filho terá 30 dias para criar, testar e publicar o primeiro jogo.
-          </p>
-        </div>
-      )
-    }
-    {
-      isCommunity && (
-        <div class="mb-6 text-center">
-          <p class="text-xs font-bold uppercase tracking-[0.18em] text-cyan">Checkout seguro</p>
-          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">
-            Confirme sua assinatura da Comunidade dos Criadores
-          </h1>
-          <p class="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-            Projetos guiados e ferramentas de criação liberadas ao longo da Jornada, para até dois
-            perfis de criança. Confira o plano, o valor e a renovação antes de pagar.
-          </p>
-          <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted">
-            Preencha os dados do responsável. Após a aprovação, abra o perfil do seu filho ou crie
-            um novo. Ele pode começar pela atividade de entrada ou continuar do ponto em que está.
-          </p>
+          <h1 class="mt-2 text-2xl font-extrabold text-ink sm:text-3xl">{intro.titulo}</h1>
+          {intro.paragrafos.map((texto, i) => (
+            <p class:list={['mx-auto max-w-md text-sm leading-relaxed text-muted', i === 0 ? 'mt-2' : 'mt-3']}>
+              {texto}
+            </p>
+          ))}
         </div>
       )
     }
@@ -215,21 +200,21 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
     <div class="checkout-product-card flex items-center gap-4 rounded-2xl border border-line/70 bg-card/50 p-4 sm:p-5">
       <img
         src={`${f.imagesBase}/${f.checkoutImage ?? 'produto-capa.webp'}`}
-        alt={isCommunity ? `Capa da ${productName}` : `Capa do curso ${productName}`}
+        alt={capaAlt}
         width="80"
         height="80"
         class:list={[
           'size-16 shrink-0 rounded-lg border border-line/60 sm:size-20',
-          f.key === 'kids/desafio-primeiro-jogo' ? 'object-contain bg-[#94d5f5]' : 'object-cover',
+          isDesafioFunnel(f.key) ? 'object-contain bg-[#94d5f5]' : 'object-cover',
         ]}
         decoding="async"
       />
       <div>
-        {isCommunity
+        {intro
           ? <h2 class="text-lg font-bold leading-snug text-ink">{productName}</h2>
           : <h1 class="text-lg font-bold leading-snug text-ink">{productName}</h1>}
         <p class="mt-0.5 text-sm text-muted">{f.byline}</p>
-        {isCommunity && altOffer ? (
+        {isSubscription && altOffer ? (
           <p class="mt-1.5 text-sm text-muted">
             Escolha seu plano abaixo. Acesso após a aprovação do pagamento.
           </p>
@@ -263,8 +248,8 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
         accessLabel={accessLabel}
         estimatedAccessEnd={estimatedAccessEnd}
         guaranteeDays={guaranteeDays}
-        termsHref={`/${f.audience}/termos`}
-        privacyHref={`/${f.audience}/privacidade`}
+        termsHref={`${f.basePath}/termos`}
+        privacyHref="/privacidade"
       />
     </div>
 
@@ -273,5 +258,5 @@ const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.sl
     </p>
   </main>
 
-  <Footer audience={f.audience} vitalicio={f.lifetimeAccess ?? false} />
+  <Footer audience={f.audience} vitalicio={f.lifetimeAccess ?? false} termosHref={`${f.basePath}/termos`} />
 </BaseLayout>

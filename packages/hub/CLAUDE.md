@@ -19,6 +19,14 @@ Assinantes com ambas as chaves interagem normalmente; após perder a assinatura,
 voltam à leitura. Não adicionar a chave visitante ao `accessConfig` persistido:
 isso ampliaria a autorização de escrita por acidente.
 
+**Mural adulto visitante (20/10/2026, presente adulto):** mesma regra do Kids na Mostra
+`mural-dos-criadores-adulto` (space `adult`, `community_gated` com `adult-mural-dos-criadores`):
+`readConfig` acrescenta só na LEITURA a chave `adult-mural-dos-criadores-visitante`. A visita lê
+canais, jogos e comentários; publicar (o `canInteractChannel` do destino adulto), comentar e reagir
+usam o `accessConfig` persistido e exigem o pleno. Visita Kids não abre a Mostra adulta e
+vice-versa. Jogo publicado e `/jogar` não dependem do acesso do autor (nos dois públicos). Teste:
+`tests/integration/adult-mural-visitor.test.ts`.
+
 ## O que é
 
 **Comunidade em FÓRUM** (só back-end/API; os front-ends são o **[@sistemazero/community](../community)**
@@ -566,7 +574,7 @@ Boot: `loadEnv` (fail-fast) → `createApplication` → `start` (listen `::`), c
 compartilhado — members=`30792297…`, payments=`8103081227979411315`; nunca reusar a chave). `/readyz`
 só promove a réplica quando o `select 1` responde.
 
-**Seed dos servidores kids (`scripts/seed-community-spaces.ts`, `bun run db:seed-community`, 06/2026):**
+**Seed explícito (`scripts/seed-community-spaces.ts`, `bun run db:seed-community`, 22/10/2026):**
 cria IDEMPOTENTEmente o **Clube dos Criadores** (canal `geral` members) e o **Mural dos Criadores**
 (canal `parede` staff_only) com os SLUGS FIXOS que o community-kids consome — sem eles, clicar no menu
 dá 404 `SPACE_NOT_FOUND`. **Acesso (06/2026): cada servidor é um PRODUTO INDEPENDENTE** —
@@ -576,16 +584,21 @@ null`). **Clube e Mural são SEPARADOS:** o **Clube** (`clube-dos-criadores`) é
 de cada servidor = o slug do produto de COMUNIDADE no catálogo. O ACESSO é decidido SÓ por este "Quem
 vê" (o community-kids NÃO tem 2º gate de produto na página — só mostra a tela de bloqueio quando o hub
 devolve o teaser). **NÃO há mais gate por curso** (o antigo `course_gated` slug=courseRef
-saiu). O seed **RECONCILIA servidores existentes**: re-rodar atualiza o `accessConfig` do modelo antigo
-(course_gated) p/ o novo, por servidor (idempotente — só escreve se mudou; esses 2 slugs são infra dona
-do seed). `SEED_PUBLIC=true` deixa públicos p/ smoke test. Postgres é privado → rodar via `railway ssh`
-no serviço hub. Re-rodar é seguro.
+saiu). O seed **preserva integralmente servidores/canais existentes** e relata os campos divergentes.
+Sem argumento, ou com `plan`/`status`, somente lê. `apply` cria ausentes; conflito de audiência
+recusa a aplicação, e canais novos não herdam configuração divergente ou modificada durante a inserção.
+`SEED_PUBLIC` que habilite acesso público é recusado antes de abrir o banco.
+Também inclui o Mural adulto (`mural-dos-criadores-adulto`, chave plena
+`adult-mural-dos-criadores`, canal `parede` staff_only), reutilizando a definição aprovada de
+`ensureAdultMural` do setup local. A chave visitante nunca é persistida no acesso. O Clube adulto
+permanece `pendingDefinitions`: sua estrutura completa ainda não foi aprovada.
 **Canal "Recados da equipe" (staff_only, full review do Clube, 07/2026):** `SpaceSeed.channel` virou
 `channels[]` (idempotente por `(spaceId, slug)`, `sortOrder` = índice); o **Clube** ganhou o canal
 `recados-da-equipe` (`postingPolicy: staff_only`) além do `geral`, e o Mural segue com `parede`. SEM
 migração. **Rodado em local/staging/produção 04/07.** ⚠️ **No container o WORKDIR é a RAIZ do monorepo
 (`/app`)**, então `bun run db:seed-community` falha — rode
-`bun packages/hub/scripts/seed-community-spaces.ts` via `railway ssh -s hub`.
+`bun packages/hub/scripts/seed-community-spaces.ts plan` (depois `status`/`apply`) no contexto
+do serviço Hub explicitamente selecionado. Não existe apply implícito no deploy.
 
 ## Testes (31, `bun test`)
 
@@ -628,6 +641,20 @@ in-memory das portas em `tests/fakes/in-memory.ts`; montagem via `tests/helpers.
    `retention.cleanup.failed` a cada 6h (a poda de `processed_webhooks` NUNCA rodava). NÃO reproduz
    local. Fix: passar `date.toISOString()` (texto ISO vs `timestamptz` é comparado direto). Regra
    geral: em `db.execute`/`sql` cru, coaja `Date`→ISO na escrita e string→`Date` na leitura.
+
+## Oficinas ao vivo — 14/10/2026
+
+O mesmo endpoint de publicação standalone aceita uma
+origem `liveWorkspace`, cuja prova é revalidada no Members (conta, perfil, revisão salva e
+playId). Essa origem dispensa a posse do Estúdio durante o grant, mas não concede conclusão
+de curso, marco de publicação standalone ou entrada no desafio do mês. A publicação continua
+na parede curada, com a mesma moderação e limpeza de objetos.
+
+O Members também resolve `live/mural-access` por **conta e perfil**. Essa concessão só amplia
+o espaço Kids `mural-dos-criadores` configurado com sua chave de comunidade; canais continuam
+fazendo AND com o espaço. Não guardar essa concessão no micro-cache de acesso da conta:
+outro filho da mesma família não herda a oficina, e revogação/expiração devem valer na próxima
+requisição. Clube, cursos e demais produtos permanecem sob suas próprias regras.
 
 ## Entrega recuperável da publicação — 07/09/2026
 

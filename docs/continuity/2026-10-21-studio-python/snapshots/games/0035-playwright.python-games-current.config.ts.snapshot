@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict'
+import { existsSync } from 'node:fs'
+import { defineConfig } from '@playwright/test'
+
+// An already running, separately owned host only. Never start/build a server.
+const baseURL = process.env.SZ_GAMES_CURRENT_URL
+assert(baseURL, 'SZ_GAMES_CURRENT_URL must name the current authorized host')
+const url = new URL(baseURL)
+assert(['http:', 'https:'].includes(url.protocol) && url.pathname === '/')
+assert(!url.username && !url.password && !url.search && !url.hash)
+assert(process.env.SZ_GAMES_HOST_AUTHORITY, 'Fresh host authority file required')
+assert(process.env.SZ_GAMES_SOURCE_FREEZE, 'Reviewed source freeze required')
+assert(process.env.SZ_GAMES_OUTPUT, 'New isolated output directory required')
+// Playwright clears outputDir before globalSetup. Reject a reused CLI output
+// before that cleanup; workers reimport after setup has reserved the directory.
+const isWorker = /^\d+$/.test(process.env.TEST_WORKER_INDEX ?? '')
+assert(
+  isWorker || !existsSync(process.env.SZ_GAMES_OUTPUT),
+  'Do not overwrite an earlier browser attempt',
+)
+const budget = Number(process.env.SZ_GAMES_BUDGET_MS)
+assert(
+  Number.isSafeInteger(budget) && budget > 0 && budget <= 720_000,
+  'Explicit batch budget required',
+)
+
+export default defineConfig({
+  testDir: './e2e-runtime',
+  testMatch: [
+    'python-pacman-portable.spec.ts',
+    'python-space-arena-portable.spec.ts',
+    'python-space-arena-input.spec.ts',
+  ],
+  globalSetup: '../../experiments/studio-python-runtime/qualification/current_games_host.ts',
+  fullyParallel: false,
+  workers: 1,
+  retries: 0,
+  maxFailures: 1,
+  globalTimeout: budget,
+  timeout: 60_000,
+  expect: { timeout: 35_000 },
+  outputDir: `${process.env.SZ_GAMES_OUTPUT}/artifacts`,
+  reporter: [['list'], ['json', { outputFile: `${process.env.SZ_GAMES_OUTPUT}/report.json` }]],
+  use: { baseURL: url.origin, headless: true, trace: 'off', video: 'off' },
+  projects: [{ name: 'chrome', use: { channel: 'chrome' } }],
+})

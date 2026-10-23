@@ -1,8 +1,18 @@
 import { ValidationError } from '@sistemazero/core/errors'
 import {
   type DraftBlock,
+  hasLegacyStudioManifestSolution,
   isLearningManifest,
+  LEARNING_IMPORT_BODY_MAX_BYTES,
   type LessonDraftDocument,
+  learningImportBodyBytes,
+  lessonStudioExampleTransportIssues,
+  lessonStudioProjectExampleIssues,
+  pruneLessonStudioExamples,
+  readManifestStudioProjectExamples,
+  readStudioProjectExamples,
+  remapStudioExampleSections,
+  studioExampleBindings,
   validateLessonSections,
 } from '@sistemazero/core/learning'
 import { LessonNotFoundError } from '../../domain/course/course.errors'
@@ -30,6 +40,10 @@ const BLOCK_KIND_LABELS: Readonly<Record<string, string>> = {
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
 
+/** O recado do manifesto que traz vídeo planejado para uma aula de curso ao vivo. */
+export const LIVE_LESSON_PLANNED_VIDEO_MESSAGE =
+  'Aula ao vivo não tem vídeo gravado: a transmissão do encontro faz esse papel.'
+
 /** O Vimeo já escolhido para um bloco de vídeo, pela fonte do bloco ou pelo `plannedVideos`. */
 function linkedVimeoId(document: LessonDraftDocument, block: DraftBlock): string | null {
   if (block.content.kind !== 'video') return null
@@ -56,9 +70,37 @@ function removalLabel(document: LessonDraftDocument, block: DraftBlock): string 
 function importedContent(
   authored: DraftBlock['content'],
   previous: DraftBlock['content'] | undefined,
+  mode: 'preserve' | 'replace',
 ): DraftBlock['content'] {
   if (!previous || previous.kind !== authored.kind) return authored
   if (authored.kind === 'pinta') return { ...authored, initialAsset: previous.initialAsset }
+  if (
+    mode === 'preserve' &&
+    authored.kind === 'studio' &&
+    authored.projectExamples === undefined &&
+    previous.kind === 'studio' &&
+    previous.projectExamples !== undefined
+  )
+    return { ...authored, projectExamples: previous.projectExamples }
+  if (
+    authored.kind === 'studio' &&
+    previous.kind === 'studio' &&
+    authored.projectExamples !== undefined &&
+    previous.projectExamples !== undefined
+  ) {
+    const incoming = readStudioProjectExamples(authored.projectExamples)
+    const current = readStudioProjectExamples(previous.projectExamples)
+    if (incoming.kind !== 'valid' || current.kind !== 'valid')
+      throw new ValidationError('O registro de exemplos do Estúdio está inválido.')
+    for (const [id, project] of Object.entries(incoming.value.examples))
+      if (
+        Object.hasOwn(current.value.examples, id) &&
+        stableJson(project) !== stableJson(current.value.examples[id])
+      )
+        throw new ValidationError(
+          'Um exemplo guardado é imutável. Use um novo ID para a solução alterada no manifesto.',
+        )
+  }
   if (authored.kind === 'materials' && Array.isArray(authored.items)) {
     if (!Array.isArray(previous.items) || authored.items.length === 0)
       return { ...authored, items: Array.isArray(previous.items) ? previous.items : authored.items }
@@ -91,6 +133,17 @@ function importedContent(
   return authored
 }
 
+function exampleBindings(blocks: LessonDraftDocument['blocks']) {
+  return blocks.flatMap((block) => {
+    if (block.content.kind !== 'studio') return []
+    const read = readStudioProjectExamples(block.content.projectExamples)
+    if (read.kind === 'invalid')
+      throw new ValidationError(read.issues[0]?.message ?? 'Exemplos inválidos.')
+    if (read.kind === 'absent') return []
+    return studioExampleBindings(read.value).map((binding) => ({ blockId: block.id, ...binding }))
+  })
+}
+
 export class LearningImportService {
   constructor(
     private readonly repository: LessonDraftRepository,
@@ -98,6 +151,10 @@ export class LearningImportService {
   ) {}
 
   async preview(lessonId: string, manifest: unknown, mode: LearningImportMode = 'preserve') {
+    if (hasLegacyStudioManifestSolution(manifest))
+      throw new ValidationError(
+        'Este manifesto contém um gabarito global antigo. Converta o arquivo para exemplos por parte antes de importar.',
+      )
     if (!isLearningManifest(manifest))
       throw new ValidationError(
         'Manifesto de aula inválido. Confira os blocos, seções e referências.',
@@ -106,12 +163,29 @@ export class LearningImportService {
       this.repository.read(lessonId),
       this.courses.findLessonWithContent(lessonId),
     ])
+    if (draft.document.blocks.some((block) => Object.hasOwn(block.content, 'solutionProject')))
+      throw new ValidationError(
+        'Converta o gabarito global desta aula para exemplos por parte antes de importar.',
+      )
+    if (learningImportBodyBytes(manifest, mode, draft.revision) > LEARNING_IMPORT_BODY_MAX_BYTES)
+      throw new ValidationError(
+        'O corpo de importação, incluindo revisão e operação, excede 2 MiB.',
+      )
     if (!lesson) throw new LessonNotFoundError()
     const course = await this.courses.findCourseById(lesson.courseId)
     if (course?.slug !== manifest.courseSlug || draft.document.slug !== manifest.lessonSlug)
       throw new ValidationError(
         'Este manifesto pertence a outro curso ou aula. Vincule-o ao destino aberto antes de importar.',
       )
+    // Aula de curso AO VIVO (14/10/2026) não tem vídeo gravado: quem faz esse papel é a
+    // transmissão do encontro, que é da aula inteira. O `plannedVideo` (e a mídia pendente da
+    // seção, que vira um vídeo planejado) é recusado com o recado, antes de montar o rascunho.
+    if (
+      course.modality === 'live' &&
+      (manifest.blocks.some((entry) => 'plannedVideo' in entry) ||
+        manifest.sections.some((section) => section.pendingMedia.length > 0))
+    )
+      throw new ValidationError(LIVE_LESSON_PLANNED_VIDEO_MESSAGE)
     const document: LessonDraftDocument = {
       ...draft.document,
       title: manifest.title,
@@ -120,6 +194,12 @@ export class LearningImportService {
       plannedVideos: [],
     }
     const mapping = new Map<string, string>()
+    const sectionMapping = new Map(
+      manifest.sections.map((section) => [
+        section.key,
+        importedLearningId(lessonId, 'section', section.key),
+      ]),
+    )
     const used = new Set<string>()
     let replacedStudioProject = false
     const actions: Array<{
@@ -202,8 +282,16 @@ export class LearningImportService {
           stableJson(previous.content.initialProject) !== stableJson(entry.content.initialProject)
         )
           replacedStudioProject = true
+        const authored = { ...entry.content }
+        if (authored.kind === 'studio' && authored.projectExamples !== undefined) {
+          const read = readManifestStudioProjectExamples(authored.projectExamples)
+          if (read.kind !== 'valid') throw new ValidationError('Exemplos inválidos no manifesto.')
+          authored.projectExamples = remapStudioExampleSections(read.value, (key) =>
+            sectionMapping.get(key),
+          )
+        }
         mapping.set(entry.key, id)
-        add({ id, content: importedContent({ ...entry.content }, previous?.content) })
+        add({ id, content: importedContent(authored, previous?.content, mode) })
       }
     }
     const mapped = (key: string) => {
@@ -225,8 +313,23 @@ export class LearningImportService {
       workspaceBlockId: s.workspaceKey ? mapped(s.workspaceKey) : null,
       externalTool: s.externalTool,
       pendingMedia: [],
+      // Anotações da professora por seção (cursos ao vivo): viajam do manifesto ao rascunho.
+      ...(s.teacherNotes !== undefined ? { teacherNotes: s.teacherNotes } : {}),
       ...(s.completion
-        ? { completion: { ...s.completion, blockIds: s.completion.blockIds.map(mapped) } }
+        ? {
+            completion: {
+              ...s.completion,
+              blockIds: s.completion.blockIds.map(mapped),
+              ...(s.completion.materialItems
+                ? {
+                    materialItems: s.completion.materialItems.map((item) => ({
+                      blockId: mapped(item.blockId),
+                      itemIds: [...item.itemIds],
+                    })),
+                  }
+                : {}),
+            },
+          }
         : {}),
     }))
     const retireIds = new Set(
@@ -260,6 +363,30 @@ export class LearningImportService {
     const closing =
       document.sections.findLast((s) => s.intent === 'closing') ?? document.sections.at(-1)
     if (closing && retained.length) closing.blockIds.push(...retained.map((b) => b.id))
+    const beforeExamples = exampleBindings(draft.document.blocks)
+    document.blocks = pruneLessonStudioExamples(document).blocks
+    const afterExamples = exampleBindings(document.blocks)
+    const removedExamples = beforeExamples
+      .filter(
+        (before) =>
+          !afterExamples.some(
+            (after) =>
+              before.blockId === after.blockId &&
+              before.sectionId === after.sectionId &&
+              before.role === after.role &&
+              before.exampleId === after.exampleId,
+          ),
+      )
+      .map((example) => ({
+        ...example,
+        sectionTitle:
+          draft.document.sections.find((section) => section.id === example.sectionId)?.title ??
+          'Parte sem vínculo',
+      }))
+    const [exampleIssue] = lessonStudioProjectExampleIssues(document.sections, document.blocks)
+    if (exampleIssue) throw new ValidationError(exampleIssue.message)
+    const [transportIssue] = lessonStudioExampleTransportIssues(document, course.slug)
+    if (transportIssue) throw new ValidationError(transportIssue.message)
     const leaving = omitted.filter((block) => !retained.includes(block))
     const linkedLeaving = leaving.filter((block) => linkedVimeoId(draft.document, block))
     for (const video of draft.document.plannedVideos)
@@ -285,6 +412,7 @@ export class LearningImportService {
       sections: document.sections,
       blocks: actions,
       removedSections,
+      removedExamples,
       document,
       warnings: [
         ...(replacedStudioProject
@@ -292,6 +420,13 @@ export class LearningImportService {
               'O projeto inicial do Estúdio será substituído pelo manifesto. Projetos e entregas já salvos pelos alunos não são apagados.',
             ]
           : []),
+        ...(removedExamples.length
+          ? [
+              `A importação substitui ou remove ${removedExamples.length} associação(ões) de exemplos por parte. Confira as partes removidas e o modo escolhido antes de aplicar.`,
+            ]
+          : beforeExamples.length
+            ? ['Os exemplos por parte compatíveis feitos no Admin serão preservados.']
+            : []),
         ...(leaving.length || removedSections.length
           ? [
               mode === 'replace'
@@ -340,6 +475,13 @@ export class LearningImportService {
     operationId: string,
     mode: LearningImportMode = 'preserve',
   ) {
+    if (
+      learningImportBodyBytes(manifest, mode, expectedFingerprint, operationId) >
+      LEARNING_IMPORT_BODY_MAX_BYTES
+    )
+      throw new ValidationError(
+        'O corpo de importação, incluindo revisão e operação, excede 2 MiB.',
+      )
     const plan = await this.preview(lessonId, manifest, mode)
     const draft = await this.repository.replace(
       lessonId,

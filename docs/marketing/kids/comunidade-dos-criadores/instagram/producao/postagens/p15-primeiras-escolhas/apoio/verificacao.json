@@ -1,0 +1,316 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/02-p11-a-p20.md",
+  "sourceSectionHash": "5506cd9788b1ea65ca479b64046c4c128b557e375437744d7bad1d01cee35be0",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 195.953125
+        },
+        {
+          "kind": "copy lead",
+          "top": 118.25,
+          "bottom": 275.1875,
+          "height": 156.9375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 347.859375,
+          "bottom": 408.6875,
+          "height": 60.828125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 52
+    },
+    {
+      "number": 2,
+      "file": "02-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 153.09375,
+          "height": 153.09375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "diagram",
+          "top": 283.796875,
+          "bottom": 863.796875,
+          "height": 580,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.5,
+          "bottom": 1116,
+          "height": 121.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 3,
+      "file": "03-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 201.796875,
+          "height": 201.796875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 277.109375,
+          "bottom": 911.765625,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 987.0625,
+          "bottom": 1116,
+          "height": 128.9375,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 52
+    },
+    {
+      "number": 4,
+      "file": "04-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 178.96875,
+          "height": 178.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 273.125,
+          "bottom": 907.78125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1001.9375,
+          "bottom": 1116,
+          "height": 114.0625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 46
+    },
+    {
+      "number": 5,
+      "file": "05-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 129.90625,
+          "height": 129.90625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "game-scene",
+          "top": 215.921875,
+          "bottom": 915.921875,
+          "height": 700,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1001.9375,
+          "bottom": 1116,
+          "height": 114.0625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 46
+    },
+    {
+      "number": 6,
+      "file": "06-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 234,
+          "height": 234,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "change-scene",
+          "top": 310.875,
+          "bottom": 980.875,
+          "height": 670,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1057.734375,
+          "bottom": 1116,
+          "height": 58.265625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 7,
+      "file": "07-p15.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 193.171875,
+          "height": 193.171875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 257.40625,
+          "bottom": 892.0625,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 956.296875,
+          "bottom": 1116,
+          "height": 159.703125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 44
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-modelo-para-comecar.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/03-uma-escolha.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/04-combinar-escolhas.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-jogo-castelo.png",
+      "loaded": true,
+      "width": 2200,
+      "height": 1652
+    },
+    {
+      "src": "apoio/06-bloco-fundo.png",
+      "loaded": true,
+      "width": 936,
+      "height": 196
+    },
+    {
+      "src": "apoio/06-jogo-rua.png",
+      "loaded": true,
+      "width": 2200,
+      "height": 1652
+    },
+    {
+      "src": "apoio/07-ideia-propria.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

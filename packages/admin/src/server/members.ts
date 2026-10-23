@@ -1,4 +1,6 @@
 import 'server-only'
+import type { StudioAuthoringOptions } from '@sistemazero/core/studio/authoring-catalog'
+import type { PensaFunnelView } from '@/lib/pensa-funnel'
 import type { MemberToolUsageView } from '@/lib/tool-usage'
 import type {
   AdminEntitlementView,
@@ -20,6 +22,10 @@ import { type GatewayResponse, gatewayFetch } from './gateway'
 
 const enc = encodeURIComponent
 
+export function getStudioAuthoringOptions(): Promise<GatewayResponse<StudioAuthoringOptions>> {
+  return gatewayFetch('/members/admin/studio/authoring-options')
+}
+
 /**
  * Agregados de uso de IA por conta (quota 50/dia + 500/mês): totais do mês,
  * breakdown por recurso e top contas (o handler hidrata a identidade no auth).
@@ -29,6 +35,11 @@ export function getAiUsageStats(
   month?: string,
 ): Promise<GatewayResponse<Omit<AiUsageStatsView, 'topAccounts'> & AiUsageStatsRaw>> {
   return gatewayFetch('/members/admin/ai-usage', { query: { month } })
+}
+
+/** Onde as crianças param no Pensa (primeira versão dos jogos dos últimos `days` dias). */
+export function getPensaFunnel(days: number): Promise<GatewayResponse<PensaFunnelView>> {
+  return gatewayFetch('/members/admin/pensa/funnel', { query: { days } })
 }
 
 interface AiUsageStatsRaw {
@@ -49,7 +60,8 @@ export interface AdminRankingEntryRaw {
   xp: number
   lastActivityDate: string | null
   photoUrl: string | null
-  levelSlug: string
+  levelSlug: string | null
+  journeyUnavailable?: true
 }
 
 export interface AdminRankingPageRaw {
@@ -123,7 +135,8 @@ export function getMember(
 export interface ProfileOverviewView {
   profileId: string
   xp: number
-  levelSlug: string
+  levelSlug: string | null
+  journeyUnavailable?: true
   streakCurrent: number
   lastActivityDate: string | null
   pendingSubmissions: number
@@ -233,13 +246,22 @@ export interface ListCoursesParams {
   status?: string
   /** Plataforma (seletor global do painel) — o members filtra a listagem. */
   audience?: 'adult' | 'kids'
+  /** Gravado × ao vivo (filtro da lista e o painel da Jornada, que só olha gravados). */
+  modality?: 'recorded' | 'live'
   limit?: number
   offset?: number
 }
 
 export function listCourses(p: ListCoursesParams): Promise<GatewayResponse<Paginated<CourseView>>> {
   return gatewayFetch('/members/admin/courses', {
-    query: { q: p.q, status: p.status, audience: p.audience, limit: p.limit, offset: p.offset },
+    query: {
+      q: p.q,
+      status: p.status,
+      audience: p.audience,
+      modality: p.modality,
+      limit: p.limit,
+      offset: p.offset,
+    },
   })
 }
 export function createCourse(body: unknown): Promise<GatewayResponse<CourseView>> {
@@ -313,17 +335,16 @@ export function listCourseStudioSubmissions(courseId: string): Promise<
       lessonTitle: string
       moduleTitle: string
       submittedAt: string
-      score: number | null
-      checkedAt: string | null
-      passed: boolean
       /** Recado opcional do aluno ao professor. `null` = sem recado. */
       message: string | null
+      /** O recado veio da fala transcrita (14/10/2026). OPCIONAL: members antigo não manda. */
+      messageSpoken?: boolean
     }[]
   }>
 > {
   return gatewayFetch(`/members/admin/courses/${enc(courseId)}/studio-submissions`)
 }
-/** Projeto + correção de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
+/** Projeto de UMA entrega: `GET /members/admin/blocks/:id/studio-submissions/:userId`. */
 export function getStudioSubmission(
   blockId: string,
   userId: string,
@@ -331,10 +352,6 @@ export function getStudioSubmission(
   GatewayResponse<{
     project: unknown
     submittedAt: string
-    score: number | null
-    results: unknown
-    checkedAt: string | null
-    passed: boolean
     /** Recado opcional do aluno ao professor. `null` = sem recado. */
     message: string | null
     /** ISO do carimbo "já conferi"; `null` = nunca conferida. */

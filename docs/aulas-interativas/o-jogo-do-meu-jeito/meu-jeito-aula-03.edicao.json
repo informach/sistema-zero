@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-quadros",
+    "video-primeiro-fogo",
+    "video-fantasma",
+    "video-segundo-fogo",
+    "video-voando",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-quadros-K1",
+      "clipe": "video-quadros",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "vai ver o desenho se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.",
+      "ancoraDepois": "Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por",
+      "falaPrincipal": "E se os dois desenhos forem iguais?",
+      "falaPersonagem": "E se os dois desenhos forem iguais?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-fantasma-K1",
+      "clipe": "video-fantasma",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.",
+      "ancoraDepois": "Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que",
+      "falaPrincipal": "E se o fogo 2 ficar maior que o tracejado?",
+      "falaPersonagem": "E se o fogo 2 ficar maior que o tracejado?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-segundo-fogo-K1",
+      "clipe": "video-segundo-fogo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.",
+      "ancoraDepois": "Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo. Olha só: no espaço",
+      "falaPrincipal": "Ainda está igual. Qual pedaço eu mudo?",
+      "falaPersonagem": "Ainda está igual. Qual pedaço eu mudo?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

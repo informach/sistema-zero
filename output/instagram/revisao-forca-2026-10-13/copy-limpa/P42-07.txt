@@ -1,3 +1,0 @@
-Quem cria precisa dizer quando a partida termina e testar se o jogo reconhece esse momento.
-
-Siga @criecomhelenaejulio para ver como critérios viram regras que funcionam na tela.

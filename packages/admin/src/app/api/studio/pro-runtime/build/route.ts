@@ -7,7 +7,9 @@ import {
   buildStudioProProject,
   isProStudioProject,
   opaqueStudioRuntimeExecutionId,
+  prepareStudioProToolchain,
   proProjectTemplateId,
+  proRuntimeOperation,
   STUDIO_PRO_BUILD_LIMITS,
   StudioProRuntimeInputError,
   StudioProRuntimeUpstreamError,
@@ -26,6 +28,13 @@ export async function POST(request: Request): Promise<Response> {
   const session = await requireLocalAdminSession('Sem permissão para usar a autoria Pro.')
   if (session instanceof NextResponse) return session
 
+  let operation: ReturnType<typeof proRuntimeOperation>
+  try {
+    operation = proRuntimeOperation(request)
+  } catch {
+    return response({ error: { message: 'A operação Pro enviada é inválida.' } }, 400)
+  }
+  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(RUNTIME_TIMEOUT_MS)])
   let body: unknown
   try {
     body = await readJsonBodyWithLimit(request, MAX_REQUEST_BYTES)
@@ -54,13 +63,25 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   try {
+    const executionId = await opaqueStudioRuntimeExecutionId('admin', session.id)
+    if (operation === 'prepare-dependencies')
+      return response(
+        await prepareStudioProToolchain({
+          project,
+          executionId,
+          runtimeUrl: env.STUDIO_PRO_RUNTIME_URL,
+          runtimeToken: env.STUDIO_PRO_RUNTIME_TOKEN,
+          signal,
+        }),
+      )
     const result = await buildStudioProProject({
+      parentOrigin: new URL(request.url).origin,
       project,
       templateId,
-      executionId: await opaqueStudioRuntimeExecutionId('admin', session.id),
+      executionId,
       runtimeUrl: env.STUDIO_PRO_RUNTIME_URL,
       runtimeToken: env.STUDIO_PRO_RUNTIME_TOKEN,
-      signal: AbortSignal.timeout(RUNTIME_TIMEOUT_MS),
+      signal,
     })
     return response(result)
   } catch (error) {

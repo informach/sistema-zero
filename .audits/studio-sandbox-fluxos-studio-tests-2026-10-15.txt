@@ -1,0 +1,42 @@
+bun test v1.3.11 (af24e281)
+
+src\state\proRevision.test.ts:
+(pass) application to the live Studio store > applies and undoes as single updates with the exact original layout
+(pass) application to the live Studio store > flushes pending terminal edits and refuses to overwrite them with the old proposal
+(pass) application to the live Studio store > rejects a profile A → B → A change during flush even with the same project object
+(pass) application to the live Studio store > preserves metadata changed while the revision digest is in flight
+(pass) isolated Pro revisions > changes several files atomically and undoes added directories without dropping empty ones
+(pass) isolated Pro revisions > rejects stale, forged, duplicate and traversal changes without mutating any file [16.00ms]
+(pass) isolated Pro revisions > includes assets, settings and empty directories in the revision identity; order is irrelevant
+
+src\studio\config.test.ts:
+(pass) resolveStudioConfig — modo profissional > professional força terminal:true e mantém a allowlist do host (D2: modos por kind)
+(pass) resolveStudioConfig — modo profissional > default é não-profissional e não força terminal
+(pass) resolveStudioConfig — modo profissional > professional respeita terminal:false quando a aula usa runtime remoto
+(pass) resolveStudioConfig — modo profissional > sem professional, terminal segue a flag do host
+(pass) resolveStudioConfig — modo profissional > professional não quebra os outros defaults
+(pass) resolveStudioConfig — IA gerenciada pelo host > aceita um provider sem transportar segredo e desliga BYOK por padrão
+(pass) resolvePreviewSecurity — timeout do terminal > usa o default quando não informado
+(pass) resolvePreviewSecurity — timeout do terminal > respeita o limite do host (>0)
+(pass) resolvePreviewSecurity — timeout do terminal > ignora valores inválidos (≤0)
+
+src\studio\tutor.test.ts:
+(pass) buildStudioTutorContext > identifica o kit Pro de origem sem enviar fontes completas nem contaminar blocos
+(pass) buildStudioTutorContext > prioriza arquivo ativo e erros mesmo fora dos primeiros arquivos; isola o projeto
+(pass) buildStudioTutorContext > envia estrutura compacta e nunca envia assets ou código no modo Blocos
+(pass) buildStudioTutorContext > a Ponte continua no modo normal e não envia código
+(pass) buildStudioTutorContext > não envia arquivos secretos nem valores de credenciais ao BFF
+(pass) buildStudioTutorContext > redige segredo com aspas incompletas antes de truncar o arquivo [16.00ms]
+(pass) buildStudioTutorContext > remove credenciais embutidas em URLs de conexão
+
+src\components\tutor\ProBuilderPanel.test.tsx:
+(pass) builder review interface > restores a proposal in StrictMode, only applies explicitly, then undoes the exact change [156.00ms]
+(pass) builder review interface > does not overwrite an edit made before the user accepts the proposal [94.00ms]
+(pass) builder review interface > cancellation wins over an in-flight advance and its late proposal never replaces the cancelled state [156.00ms]
+(pass) builder review interface > recovers a lost create response using the same idempotency key and base revision [94.00ms]
+(pass) builder review interface > does not act through a stale panel after profile A → B → A [63.00ms]
+
+ 28 pass
+ 0 fail
+ 81 expect() calls
+Ran 28 tests across 4 files. [1411.00ms]

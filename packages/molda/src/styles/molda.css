@@ -18,6 +18,277 @@
 @source "../components";
 @source not "../components/**/*.test.{ts,tsx}";
 
+/* Component editing follows the compact reference layout, using the host palette and fonts. */
+@layer components {
+  .mld-component-root {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px;
+  }
+  .mld-component-panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 16px;
+    min-height: min-content;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--color-mld-text);
+  }
+  .mld-component-panel fieldset {
+    min-width: 0;
+  }
+  .mld-component-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 28px;
+    gap: 8px;
+  }
+  [data-molda-theme] .mld-component-title {
+    margin: 0;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 800;
+  }
+  .mld-component-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    gap: 8px;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    padding: 8px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 20px;
+    cursor: pointer;
+    transition:
+      background-color 120ms ease,
+      border-color 120ms ease;
+  }
+  .mld-component-button > svg,
+  .mld-component-entry svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .mld-component-button[data-tone="primary"] {
+    background: var(--color-mld-accent);
+    color: var(--color-mld-accent-fg);
+  }
+  .mld-component-button[data-tone="soft"] {
+    background: color-mix(in srgb, var(--color-mld-accent) 12%, var(--color-mld-surface));
+    color: var(--color-mld-accent);
+  }
+  .mld-component-button[data-tone="danger"] {
+    color: var(--color-mld-danger);
+  }
+  .mld-component-button[aria-pressed="true"] {
+    border-color: color-mix(in srgb, currentColor 35%, transparent);
+  }
+  .mld-component-button:hover:not(:disabled) {
+    border-color: var(--color-mld-accent);
+  }
+  .mld-component-button:disabled,
+  .mld-component-entry:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .mld-component-button:focus-visible,
+  .mld-component-entry:focus-visible,
+  .mld-component-help:focus-visible,
+  .mld-component-back:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-component-help {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-block: -8px;
+    margin-right: -8px;
+    border-radius: 8px;
+    color: var(--color-mld-muted);
+    cursor: pointer;
+  }
+  .mld-component-help svg {
+    width: 22px;
+    height: 22px;
+  }
+  .mld-component-selection {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mld-component-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mld-component-count {
+    color: var(--color-mld-accent);
+    font-weight: 800;
+  }
+  .mld-component-description {
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--color-mld-muted);
+  }
+  .mld-component-shape {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--color-mld-border);
+  }
+  .mld-component-panel h4 {
+    font-weight: 800;
+  }
+  .mld-component-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .mld-component-tip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--color-mld-warn) 12%, var(--color-mld-surface));
+    color: var(--color-mld-text);
+  }
+  .mld-component-tip svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    color: var(--color-mld-warn);
+  }
+  .mld-component-links {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .mld-component-removal {
+    padding-top: 4px;
+    font-size: 13px;
+  }
+  .mld-component-footer {
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+  .mld-component-back {
+    display: flex;
+    align-items: center;
+    align-self: flex-start;
+    gap: 8px;
+    min-height: 44px;
+    margin-block: -8px;
+    border-radius: 8px;
+    color: var(--color-mld-accent);
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .mld-component-back svg {
+    width: 18px;
+    height: 18px;
+  }
+  .mld-component-entries {
+    display: flex;
+    flex-direction: column;
+  }
+  .mld-component-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 76px;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--color-mld-border);
+    text-align: left;
+    cursor: pointer;
+  }
+  .mld-component-entry > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mld-component-entry > span > svg:last-child {
+    margin-left: auto;
+    color: var(--color-mld-muted);
+  }
+  .mld-component-note {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--color-mld-accent) 12%, var(--color-mld-surface));
+    color: var(--color-mld-text);
+  }
+  .mld-component-note strong {
+    color: var(--color-mld-accent);
+  }
+  .mld-component-divider {
+    border-top: 1px solid var(--color-mld-border);
+  }
+  .mld-component-value {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    border-radius: 8px;
+    background: var(--color-mld-bg);
+    font-weight: 800;
+  }
+  .mld-component-field {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-weight: 700;
+  }
+  .mld-component-field > input {
+    min-height: 44px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 8px;
+    background: var(--color-mld-bg);
+    padding-inline: 12px;
+  }
+  .mld-component-preview {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .mld-component-check > summary {
+    display: none;
+  }
+}
+
+[data-molda-theme] {
+  --mld-grid-ink: #a8b7cc;
+  --mld-grid-opacity: 0.5;
+}
+[data-molda-theme="dark"] {
+  --mld-grid-ink: #53647e;
+  --mld-grid-opacity: 0.36;
+}
+
 @theme {
   /* SUPERFÍCIES: o Molda é uma SEÇÃO da comunidade kids, não um app à parte —
      fundo, painel, borda e texto vêm dos primitivos do host (o fundo é o mesmo
@@ -47,6 +318,1424 @@
   --color-mld-kind-model: oklch(0.55 0.15 235); /* azul    · Modelo */
   --color-mld-kind-texture: oklch(0.66 0.17 55); /* laranja · Textura */
   --color-mld-kind-sky: oklch(0.55 0.21 300); /* roxo    · Céu */
+}
+
+/* Approved workshop regions; sidebars scroll independently of the creation. */
+@layer components {
+  [data-molda-theme] .mld-color-picker {
+    display: grid;
+    gap: 10px;
+  }
+  [data-molda-theme] .mld-color-sv {
+    position: relative;
+    height: 150px;
+    border-radius: 12px;
+    touch-action: none;
+    cursor: crosshair;
+    background-image:
+      linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, transparent);
+  }
+  [data-molda-theme] .mld-color-sv-marker {
+    position: absolute;
+    width: 21px;
+    height: 21px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #0006;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  [data-molda-theme] .mld-color-hue {
+    appearance: none;
+    width: 100%;
+    height: 18px;
+    border-radius: 12px;
+    background: linear-gradient(to right, red, #ff0, #0f0, #0ff, #00f, #f0f, red);
+    cursor: pointer;
+  }
+  [data-molda-theme] .mld-color-hue::-webkit-slider-thumb {
+    appearance: none;
+    width: 23px;
+    height: 23px;
+    border: 3px solid white;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #0006;
+  }
+  [data-molda-theme] .mld-color-hue::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border: 3px solid white;
+    background: transparent;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px #0006;
+  }
+  [data-molda-theme] .mld-paint-swatches {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 5px;
+  }
+  [data-molda-theme] .mld-paint-swatches > .mld-paint-swatch {
+    width: 100%;
+    min-width: 0;
+    min-height: 30px;
+    height: 32px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-paint-swatches {
+      grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+    }
+    [data-molda-theme] .mld-paint-swatches > .mld-paint-swatch {
+      min-height: 44px;
+      height: auto;
+    }
+  }
+  [data-molda-theme] .mld-tile[data-toggle] > .mld-tile-label {
+    font-size: 11px;
+    overflow-wrap: normal;
+  }
+  [data-molda-theme] .mld-paint-scope :where(button) {
+    min-height: 36px;
+    white-space: nowrap;
+  }
+  @media (max-width: 599px) {
+    [data-molda-theme] .mld-paint-scope > :where(span) {
+      display: none;
+    }
+    [data-molda-theme] .mld-paint-scope :where(button) {
+      padding-inline: 6px;
+      font-size: 10px;
+    }
+  }
+  .mld-timeline {
+    height: var(--mld-timeline-height, 200px);
+  }
+  .mld-inspector-overview {
+    max-height: 50%;
+  }
+  .mld-hierarchy-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .mld-hierarchy-destination,
+  .mld-hierarchy-name {
+    min-width: 0;
+    min-height: 40px;
+    width: 100%;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: var(--color-mld-text);
+    background: var(--color-mld-surface);
+    font-size: 12px;
+  }
+  .mld-hierarchy-destination:disabled {
+    opacity: 0.5;
+  }
+  .mld-hierarchy-destination:focus-visible,
+  .mld-hierarchy-name:focus {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-hierarchy-row[data-drop-target="true"],
+  .mld-hierarchy-root-drop[data-drop-target="true"] {
+    border-radius: 8px;
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: -2px;
+    background: color-mix(in oklab, var(--color-mld-accent) 12%, var(--color-mld-surface));
+  }
+  .mld-hierarchy-root-drop {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+    min-height: 44px;
+    margin-bottom: 6px;
+    padding: 10px;
+    border: 1px dashed var(--color-mld-border);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--color-mld-muted);
+    background: var(--color-mld-surface);
+  }
+  .mld-hierarchy {
+    position: relative;
+    --mld-hierarchy-row-height: 28px;
+    --mld-hierarchy-toggle-width: 20px;
+    --mld-hierarchy-piece-padding: 2px 6px;
+    --mld-hierarchy-piece-gap: 6px;
+    --mld-hierarchy-piece-radius: 8px;
+  }
+  .mld-hierarchy-toggle {
+    width: var(--mld-hierarchy-toggle-width);
+    min-height: var(--mld-hierarchy-row-height);
+  }
+  .mld-hierarchy-children {
+    margin-left: 10px;
+    border-left: 1px solid var(--color-mld-border);
+    padding-left: 13px;
+  }
+  @media (pointer: coarse) {
+    .mld-hierarchy {
+      --mld-hierarchy-row-height: 44px;
+      --mld-hierarchy-toggle-width: 28px;
+    }
+  }
+  .mld-hierarchy .mld-piece[draggable="true"] {
+    cursor: grab;
+  }
+  @media (any-pointer: coarse) {
+    .mld-hierarchy-destination,
+    .mld-hierarchy-name {
+      min-height: 44px;
+    }
+  }
+  @media (min-width: 1101px) {
+    .mld-inspector-pieces {
+      flex: 0 1 auto;
+      min-height: 84px;
+      max-height: 32%;
+    }
+    .mld-inspector-sections[data-activity="model"] .mld-inspector-pieces {
+      max-height: 42%;
+    }
+    .mld-inspector-sections[data-activity="paint"] .mld-inspector-pieces {
+      max-height: 26%;
+    }
+    .mld-inspector-sections[data-activity="paint"] .mld-inspector-overview {
+      flex: 1 1 auto;
+      min-height: 128px;
+      max-height: 70%;
+    }
+    .mld-inspector-sections[data-activity="paint"] .mld-inspector-properties {
+      flex: 0 1 auto;
+      min-height: 80px;
+      max-height: 30%;
+    }
+    /* Ao abrir a pintura de perto/camadas, reservar espaço para trabalhar na imagem. */
+    .mld-inspector-sections[data-activity="paint"]:has(.mld-inspector-properties details[open]) {
+      .mld-inspector-overview {
+        max-height: 35%;
+      }
+      .mld-inspector-pieces {
+        max-height: 24%;
+      }
+      .mld-inspector-properties {
+        flex: 1 1 0;
+        max-height: none;
+      }
+    }
+  }
+  [data-molda-theme].mld-workshop {
+    --mld-rail-width: 104px;
+    --mld-inspector-width: 320px;
+    --mld-timeline-height: 306px;
+    min-width: 0;
+  }
+  .mld-workshop-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    min-height: 60px;
+    padding: 4px 12px;
+    border-bottom: 1px solid var(--color-mld-border);
+    flex-shrink: 0;
+    z-index: 35;
+  }
+  .mld-workshop-project,
+  .mld-workshop-file-actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 4px;
+  }
+  .mld-workshop-file-actions {
+    gap: 8px;
+  }
+  .mld-workshop-project h1 {
+    max-width: 200px;
+  }
+  @media (max-width: 1399px) {
+    .mld-workshop-project h1 {
+      max-width: 150px;
+    }
+  }
+  .mld-workshop-file-actions {
+    justify-content: end;
+  }
+  /* O selo do salvamento: a pílula menta do "Salvo" do Pinta; neutra enquanto grava e vermelha
+     no erro. É o `<summary>` do menu de salvar: o pseudo-elemento estica o ALVO até a altura
+     dos controles da barra sem engordar a pílula. */
+  .mld-save-status {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    margin-inline: 4px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-muted);
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    list-style: none;
+  }
+  .mld-save-status::-webkit-details-marker {
+    display: none;
+  }
+  .mld-save-status::after {
+    position: absolute;
+    inset: -6px -4px;
+    content: "";
+  }
+  .mld-save-status[data-state="saved"] {
+    border-color: color-mix(in oklab, var(--sz-tool-ok, #26745d) 30%, transparent);
+    background: var(--sz-tool-ok-tint, #e6f8ec);
+    color: var(--sz-tool-ok, #26745d);
+  }
+  .mld-save-status[data-state="pose"] {
+    background: color-mix(in oklab, var(--color-mld-warn) 14%, var(--color-mld-surface));
+    color: color-mix(in oklab, var(--color-mld-warn) 70%, var(--color-mld-text));
+  }
+  .mld-save-status[data-state="error"] {
+    background: color-mix(in oklab, var(--color-mld-danger) 10%, var(--color-mld-surface));
+    color: var(--color-mld-danger);
+  }
+  .mld-save-status:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-menu-action {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: left;
+  }
+  .mld-menu-action:hover {
+    background: var(--color-mld-bg);
+  }
+  .mld-menu-action svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+  .mld-workshop-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    flex: 0 0 var(--mld-rail-width);
+    width: var(--mld-rail-width);
+    min-height: 0;
+    padding: 10px 8px 12px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-mld-border) transparent;
+    border-right: 1px solid var(--color-mld-border);
+  }
+  .mld-workshop-rail .mld-tile {
+    min-height: 58px;
+    width: 100%;
+    font-size: 12px;
+  }
+  /* "Mais ferramentas" e "Mais pincéis": o resumo é um ladrilho quieto com a seta embaixo, e o
+     conteúdo aberto ganha o fio da linha à esquerda, como um galho. */
+  .mld-rail-more {
+    border-radius: 12px;
+  }
+  .mld-rail-more > summary {
+    display: flex;
+    min-height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 6px 4px;
+    border: 1px dashed var(--color-mld-border);
+    border-radius: 12px;
+    color: var(--color-mld-muted);
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1.15;
+    text-align: center;
+    cursor: pointer;
+    list-style: none;
+    transition:
+      background-color 0.12s ease,
+      color 0.12s ease;
+  }
+  .mld-rail-more > summary::-webkit-details-marker {
+    display: none;
+  }
+  .mld-rail-more > summary:hover {
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+  }
+  .mld-rail-more > summary:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-rail-more > summary svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.15s ease;
+  }
+  .mld-rail-more[open] > summary {
+    border-style: solid;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+  }
+  .mld-rail-more[open] > summary svg {
+    transform: rotate(180deg);
+  }
+  .mld-rail-more > :not(summary) {
+    margin-top: 6px;
+  }
+  /* "Ferramentas que vêm por aí" no trilho estreito: o resumo centrado e miúdo, quebrando
+     entre palavras (antes cortava "Ferramenta / s que vêm po / r aí"). */
+  .mld-workshop-rail .mld-upcoming > summary {
+    justify-content: center;
+    padding: 6px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    text-align: center;
+    overflow-wrap: normal;
+    hyphens: auto;
+  }
+  .mld-workshop-rail .mld-upcoming > div {
+    padding-inline: 6px;
+    font-size: 11.5px;
+  }
+  .mld-workshop-rail .mld-upcoming ul {
+    padding-left: 0;
+    list-style: none;
+  }
+  /* A espessura do traço: três bolinhas num segmentado, como no trilho do Pinta. */
+  .mld-width-seg {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px;
+    padding: 3px;
+    border-radius: 12px;
+    background: var(--color-mld-bg);
+  }
+  .mld-width-seg > button {
+    display: grid;
+    min-height: 38px;
+    place-items: center;
+    border-radius: 9px;
+    color: var(--color-mld-text);
+    transition: background-color 0.12s ease;
+  }
+  .mld-width-seg > button:hover:not(:disabled):not([aria-pressed="true"]) {
+    background: color-mix(in oklab, var(--color-mld-bg) 85%, var(--color-mld-text));
+  }
+  .mld-width-seg > button[aria-pressed="true"] {
+    background: var(--color-mld-surface);
+    color: var(--color-mld-accent);
+    box-shadow: 0 0 0 2px var(--color-mld-accent);
+  }
+  .mld-width-seg > button:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-width-seg > button > span {
+    display: block;
+    border-radius: 9999px;
+    background: currentColor;
+  }
+  .mld-workshop-inspector {
+    width: var(--mld-inspector-width);
+    min-height: 0;
+  }
+  /* O PALCO é uma superfície só: a faixa das ferramentas de olhar, o 3D e a faixa da dica
+     dividem o mesmo fundo (antes as faixas eram chapadas e o 3D tinha o clarão: três camadas). */
+  .mld-workshop-stage {
+    position: relative;
+    background: var(--mld-stage-bg);
+  }
+  .mld-workspace-areas {
+    display: flex;
+    flex: none;
+    align-items: center;
+    height: 52px;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--color-mld-border);
+    background: var(--color-mld-surface);
+  }
+  .mld-stage-workbench {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+  }
+  .mld-stage-viewport {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    container: molda-viewport / size;
+  }
+  .mld-workspace-panel {
+    flex: 0 0 45%;
+    min-width: 280px;
+    max-width: 560px;
+    padding: 16px;
+    overflow: auto;
+    border-left: 1px solid var(--color-mld-border);
+    background: var(--color-mld-surface);
+  }
+  .mld-curves {
+    min-height: 0;
+    padding: 8px 16px 12px;
+    overflow: auto;
+  }
+  .mld-curves input[type="number"],
+  .mld-curves select {
+    display: block;
+    min-height: 36px;
+    max-width: 140px;
+    padding: 4px 8px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 8px;
+    background: var(--color-mld-surface);
+    color: var(--color-mld-text);
+  }
+  .mld-curve-plot {
+    position: relative;
+    height: 180px;
+    margin: 8px 12px;
+    color: var(--mld-axis-x);
+  }
+  .mld-curves[data-axis="y"] .mld-curve-plot {
+    color: var(--mld-axis-y);
+  }
+  .mld-curves[data-axis="z"] .mld-curve-plot {
+    color: var(--mld-axis-z);
+  }
+  .mld-curve-plot svg {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .mld-curve-grid {
+    fill: none;
+    stroke: var(--color-mld-border);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .mld-curve-time {
+    fill: none;
+    stroke: var(--color-mld-accent);
+    stroke-width: 2;
+    vector-effect: non-scaling-stroke;
+  }
+  .mld-curve-high,
+  .mld-curve-low {
+    position: absolute;
+    left: 4px;
+    font-size: 10px;
+    color: var(--color-mld-muted);
+    pointer-events: none;
+  }
+  .mld-curve-high {
+    top: 2px;
+  }
+  .mld-curve-low {
+    bottom: 2px;
+  }
+  .mld-curve-handle {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    transform: translate(-50%, -50%);
+    cursor: move;
+    touch-action: none;
+  }
+  .mld-curve-handle::after {
+    content: "";
+    position: absolute;
+    inset: 12px;
+    border: 2px solid var(--color-mld-surface);
+    background: currentColor;
+    transform: rotate(45deg);
+    box-shadow: 0 0 0 1px currentColor;
+  }
+  .mld-curve-handle:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    border-radius: 8px;
+  }
+  @media (pointer: coarse) {
+    .mld-curve-handle {
+      width: 44px;
+      height: 44px;
+    }
+    .mld-curve-handle::after {
+      inset: 16px;
+    }
+    .mld-curves input[type="number"],
+    .mld-curves select {
+      min-height: 44px;
+    }
+  }
+  @media (max-width: 1199px) {
+    .mld-stage-workbench[data-specialized="true"] {
+      flex-direction: column;
+      overflow: auto;
+    }
+    .mld-stage-workbench[data-specialized="true"] .mld-stage-viewport {
+      flex: 0 0 300px;
+    }
+    .mld-workspace-panel {
+      flex: none;
+      min-width: 0;
+      max-width: none;
+      border-top: 1px solid var(--color-mld-border);
+      border-left: 0;
+    }
+  }
+  .mld-stage-toolbar {
+    position: absolute;
+    inset: 0 0 auto;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    min-height: 56px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+    padding: 8px 12px 0;
+    z-index: 25;
+  }
+  /* Os grupos de botões que flutuam no palco: um cartão branco com a sombra curta. */
+  .mld-float {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 4px;
+    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border-radius: 16px;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+  }
+  .mld-stage-toolbar > .mld-float {
+    flex-shrink: 0;
+    max-width: 100%;
+  }
+  .mld-stage-toolbar > * {
+    pointer-events: auto;
+  }
+  .mld-float:empty {
+    display: none;
+  }
+  .mld-float .sz-tool-pill {
+    min-height: 36px;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+  .mld-float .sz-tool-pill--outline {
+    border-color: transparent;
+    background: transparent;
+  }
+  .mld-float .sz-tool-pill--outline:hover:not(:disabled) {
+    background: var(--color-mld-bg);
+  }
+  .mld-float .mld-toggle[aria-pressed="true"],
+  .mld-float .mld-look[aria-pressed="true"] {
+    border-color: transparent;
+    background: color-mix(in oklab, var(--color-mld-accent) 12%, var(--color-mld-surface));
+    color: var(--color-mld-accent);
+  }
+  .mld-stage-context {
+    position: absolute;
+    inset: auto 0 68px;
+    z-index: 24;
+    pointer-events: none;
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    min-height: 50px;
+    flex-shrink: 0;
+    padding: 0 12px;
+  }
+  /* A DICA do momento: a pílula escura do pé do palco (a âncora navy da casa), com a lâmpada
+     amarela. Os botões e caixas que moram nela herdam o tema escuro por `data-molda-theme`. */
+  .mld-stage-context .mld-stage-card {
+    pointer-events: auto;
+    max-width: 100%;
+    min-height: 40px;
+    padding: 4px 16px;
+    border-radius: 14px;
+    box-shadow: var(--mld-float-shadow);
+  }
+  .mld-stage-context p {
+    font-size: 13px;
+  }
+  .mld-stage-card[data-dismissible="true"] {
+    flex-wrap: nowrap;
+  }
+  .mld-stage-card[data-dismissible="true"] > p {
+    min-width: 0;
+    flex: 1;
+  }
+  @container molda-viewport (height < 300px) {
+    .mld-stage-context:not([data-essential="true"]) {
+      display: none;
+    }
+    .mld-stage-context[data-essential="true"] {
+      position: static;
+    }
+  }
+  .mld-stage-viewport:is([data-mode="animation"], [data-mode="paint"]) .mld-stage-context,
+  .mld-stage-viewport[data-mode="model"] .mld-stage-context[data-essential="false"] {
+    bottom: 16px;
+    left: 316px;
+    right: 76px;
+    padding-inline: 0;
+  }
+  .mld-stage-viewport:is([data-mode="animation"], [data-mode="paint"]) .mld-stage-card {
+    max-width: 500px;
+  }
+  @container molda-viewport (width < 900px) {
+    /* Narrow stages reserve a row for guidance, leaving camera/image controls on the canvas. */
+    .mld-stage-context {
+      position: static;
+      padding: 6px 8px;
+      max-height: 120px;
+      overflow: auto;
+    }
+  }
+  @container molda-viewport (width < 900px) and (height < 360px) {
+    .mld-stage-context:not([data-essential="true"]) {
+      display: none;
+    }
+  }
+  .mld-hint-bulb {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    color: var(--sz-tool-new, #ffce3a);
+  }
+  .mld-dismiss-hint {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    color: var(--color-mld-muted);
+  }
+  .mld-dismiss-hint:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  @media (pointer: coarse) {
+    .mld-dismiss-hint {
+      width: 44px;
+      height: 44px;
+    }
+  }
+  .mld-placement-notice {
+    position: absolute;
+    bottom: 64px;
+    left: 50%;
+    z-index: 25;
+    display: flex;
+    max-width: calc(100% - 24px);
+    align-items: center;
+    gap: 12px;
+    padding: 6px 6px 6px 16px;
+    transform: translateX(-50%);
+    border-radius: 9999px;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  /* O zoom: um cartão só, com os dois botões e o fio entre eles. */
+  .mld-zoom {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border-radius: 14px;
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+  }
+  .mld-zoom > button {
+    display: grid;
+    width: var(--sz-tool-hit, 2.5rem);
+    height: var(--sz-tool-hit, 2.5rem);
+    place-items: center;
+    color: var(--color-mld-text);
+    transition: background-color 0.12s ease;
+  }
+  .mld-zoom > button + button {
+    border-top: 1px solid var(--color-mld-border);
+  }
+  .mld-zoom > button:hover:not(:disabled) {
+    background: var(--color-mld-bg);
+  }
+  .mld-zoom > button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  .mld-zoom > button:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: -3px;
+  }
+  .mld-zoom svg {
+    width: 18px;
+    height: 18px;
+  }
+  /* A legenda dos eixos, no pé do palco: a mesma cor das alças e dos selos do painel. */
+  .mld-axis-legend {
+    position: absolute;
+    left: 64px;
+    bottom: 14px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    background: color-mix(in oklab, var(--color-mld-surface) 88%, transparent);
+    box-shadow: var(--mld-float-shadow);
+    color: var(--color-mld-text);
+    font-size: 12px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+  .mld-axis-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mld-axis {
+    display: inline-grid;
+    flex: none;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-radius: 6px;
+    color: oklch(1 0 0);
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .mld-axis[data-axis="x"] {
+    background: var(--mld-axis-x);
+  }
+  .mld-axis[data-axis="y"] {
+    background: var(--mld-axis-y);
+  }
+  .mld-axis[data-axis="z"] {
+    background: var(--mld-axis-z);
+  }
+  @media (max-width: 1279px) {
+    .mld-axis-legend {
+      display: none;
+    }
+  }
+  .mld-tree-action {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: var(--mld-hierarchy-row-height, 32px);
+    min-height: var(--mld-hierarchy-row-height, 40px);
+    border-radius: 8px;
+    color: var(--color-mld-muted);
+  }
+  .mld-tree-action:hover {
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+  }
+  .mld-tree-action[aria-pressed="true"] {
+    color: var(--color-mld-text);
+  }
+  .mld-tree-action:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: -2px;
+  }
+  @media (any-pointer: coarse) {
+    .mld-tree-action {
+      width: var(--mld-hierarchy-row-height, 44px);
+      min-height: var(--mld-hierarchy-row-height, 44px);
+    }
+  }
+  /* O `<details>` do painel (medidas, mais sobre a peça, mais ajustes): uma linha com a seta,
+     sem o bloco cinza que parecia botão desligado. */
+  .mld-disclosure {
+    border-top: 1px solid var(--color-mld-border);
+  }
+  .mld-disclosure > summary {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-inline: 2px;
+    color: var(--color-mld-text);
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+  .mld-disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+  .mld-disclosure > summary::after {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-right: 2px solid var(--color-mld-muted);
+    border-bottom: 2px solid var(--color-mld-muted);
+    transform: rotate(45deg) translateY(-2px);
+    transition: transform 0.15s ease;
+    content: "";
+  }
+  .mld-disclosure[open] > summary::after {
+    transform: rotate(-135deg) translateY(-2px);
+  }
+  .mld-disclosure > summary:hover {
+    color: var(--color-mld-accent);
+  }
+  .mld-disclosure > summary:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  .mld-disclosure[open] {
+    padding-bottom: 8px;
+  }
+  /* A régua do tempo: trilho fino, o andado no acento e a bolinha com o anel branco. */
+  .mld-scrubber {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .mld-scrubber::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: linear-gradient(
+      to right,
+      var(--color-mld-accent) var(--mld-progress, 0%),
+      var(--color-mld-border) var(--mld-progress, 0%)
+    );
+  }
+  .mld-scrubber::-moz-range-track {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--color-mld-border);
+  }
+  .mld-scrubber::-moz-range-progress {
+    height: 4px;
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+  }
+  .mld-scrubber::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    margin-top: -7px;
+    border: 3px solid var(--color-mld-surface);
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+    box-shadow: 0 1px 4px color-mix(in oklab, var(--color-mld-text) 35%, transparent);
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .mld-scrubber::-moz-range-thumb {
+    width: 12px;
+    height: 12px;
+    border: 3px solid var(--color-mld-surface);
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+    box-shadow: 0 1px 4px color-mix(in oklab, var(--color-mld-text) 35%, transparent);
+  }
+  .mld-scrubber:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+    border-radius: 8px;
+  }
+  /* O transporte da linha do tempo: botões quietos e o Reproduzir redondo no acento. */
+  .mld-transport-btn {
+    display: inline-grid;
+    flex: none;
+    width: var(--sz-tool-hit, 2.5rem);
+    height: var(--sz-tool-hit, 2.5rem);
+    place-items: center;
+    border-radius: 12px;
+    color: var(--color-mld-text);
+    transition: background-color 0.12s ease;
+  }
+  .mld-transport-btn:hover:not(:disabled) {
+    background: var(--color-mld-bg);
+  }
+  .mld-transport-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+  .mld-transport-btn:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-transport-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  .mld-transport-btn[data-play] {
+    border-radius: 9999px;
+    background: var(--color-mld-accent);
+    color: var(--color-mld-accent-fg);
+  }
+  .mld-transport-btn[data-play]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-mld-accent) 88%, var(--color-mld-text));
+  }
+  .mld-transport-btn[data-play] svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+  @media (max-width: 1399px) {
+    [data-molda-theme].mld-workshop {
+      --mld-rail-width: 96px;
+      --mld-inspector-width: 296px;
+      --mld-timeline-height: 160px;
+    }
+  }
+  /* Sem espaço ao lado das abas, o selo e o "Trazer arquivo 3D" ficam só com o ícone; o nome
+     segue no `title` e no texto escondido. */
+  @media (max-width: 1279px) {
+    .mld-save-short {
+      display: none;
+    }
+    .mld-save-status {
+      padding-inline: 9px;
+    }
+    .mld-bar-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    /* Só o ícone: o mesmo quadrado quieto da ajuda, ao lado dela. */
+    .mld-workshop-file-actions .sz-tool-pill:has(.mld-bar-label) {
+      width: var(--sz-tool-hit, 2.5rem);
+      padding-inline: 0;
+      border-color: transparent;
+      border-radius: var(--sz-tool-radius-control, 0.75rem);
+      background: var(--sz-tool-quiet);
+    }
+  }
+  @media (max-width: 1100px) {
+    [data-molda-theme] .mld-inspector-sections > .contents > [role="tabpanel"]:not([hidden]) {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: none;
+      overflow-y: auto;
+    }
+    [data-molda-theme].mld-workshop {
+      --mld-rail-width: 88px;
+      --mld-inspector-width: 256px;
+      --mld-timeline-height: 132px;
+    }
+    .mld-workshop-header {
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas: "project files" "tabs tabs";
+      min-height: 104px;
+      padding-block: 4px;
+      gap: 4px;
+    }
+    .mld-workshop-project {
+      grid-area: project;
+    }
+    .mld-workshop-file-actions {
+      grid-area: files;
+    }
+    .mld-workshop-tabs {
+      grid-area: tabs;
+      justify-self: center;
+    }
+  }
+  @media (max-width: 767px) {
+    .mld-workshop-header {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "project" "tabs" "files";
+    }
+    .mld-workshop-file-actions {
+      justify-content: center;
+    }
+  }
+  @media (max-width: 599px) {
+    .mld-stage-toolbar {
+      height: auto;
+      min-height: 52px;
+      padding-inline: 8px;
+      flex-wrap: wrap;
+    }
+    .mld-workshop-rail {
+      --mld-rail-width: 80px;
+      padding-inline: 6px;
+    }
+    .mld-workshop-rail .mld-tile {
+      font-size: 10.5px;
+      overflow-wrap: normal;
+    }
+    .mld-workshop-tabs,
+    .mld-workshop-tabs .mld-seg {
+      width: 100%;
+    }
+    .mld-workshop-tabs .mld-seg > button {
+      flex: 1 1 0;
+      justify-content: center;
+      padding-inline: 8px;
+    }
+    /* No celular em pé os grupos do palco ficam só com os ícones (o nome segue escondido). */
+    .mld-float-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .mld-stage-context .mld-stage-card {
+      border-radius: 16px;
+    }
+  }
+  /* Browser zoom can make a desktop layout narrower than the normal 1024px target. O painel
+     ocupa o que sobra abaixo do palco (antes, 420px fixos: num tablet em pé sobrava um vazio
+     embaixo enquanto o painel cortava o "Colocar no chão"). */
+  @media (max-width: 899px) {
+    .mld-workshop-body .mld-workshop-inspector {
+      flex: 1 0 420px;
+      width: 100%;
+      min-height: 420px;
+      border-top: 1px solid var(--color-mld-border);
+      border-left: 0;
+    }
+  }
+  .mld-toolbar-action {
+    flex-shrink: 0;
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0 12px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .mld-workspace-caption {
+    overflow: hidden;
+    margin-right: auto;
+    font-size: 12px;
+    color: var(--color-mld-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .mld-toolbar-menu {
+    position: fixed;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 260px;
+    max-height: min(480px, 70vh);
+    padding: 6px;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+    background: var(--color-mld-surface);
+    color: var(--color-mld-text);
+    box-shadow: var(--mld-float-shadow);
+    overflow-y: auto;
+  }
+  .mld-toolbar-menu > button {
+    justify-content: flex-start;
+    font-size: 12px;
+  }
+  .mld-stage-workbench[data-paint-sheet="true"] {
+    display: grid;
+    grid-template-columns: minmax(300px, var(--mld-sheet-width)) 6px minmax(0, 1fr);
+  }
+  .mld-paint-sheet {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--color-mld-surface);
+    border-right: 1px solid var(--color-mld-border);
+  }
+  .mld-sheet-heading {
+    display: flex;
+    align-items: center;
+    flex: none;
+    gap: 2px;
+    min-height: 52px;
+    padding: 4px 6px;
+    border-bottom: 1px solid var(--color-mld-border);
+  }
+  .mld-sheet-mode,
+  .mld-sheet-device-switch {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .mld-sheet-mode {
+    flex: 1;
+  }
+  .mld-sheet-mode > button,
+  .mld-sheet-device-switch > button {
+    padding: 0 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .mld-sheet-device-switch {
+    display: none;
+  }
+  .mld-sheet-body,
+  .mld-sheet-uv,
+  .mld-texture-view {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+  }
+  .mld-sheet-divider {
+    position: relative;
+    align-self: stretch;
+    height: auto;
+    margin: 0;
+    border: 0;
+    cursor: col-resize;
+    touch-action: none;
+    background: var(--color-mld-bg);
+  }
+  .mld-sheet-divider::before {
+    content: "";
+    position: absolute;
+    inset: 0 -5px;
+  }
+  .mld-sheet-divider:hover,
+  .mld-sheet-divider:focus-visible {
+    background: var(--color-mld-accent);
+  }
+  .mld-sheet-paint-actions,
+  .mld-uv-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 48px;
+    flex: none;
+    padding: 2px 6px;
+    border-bottom: 1px solid var(--color-mld-border);
+  }
+  .mld-sheet-paint-actions {
+    justify-content: space-between;
+    padding-left: 12px;
+  }
+  .mld-uv-actions > button:last-child {
+    margin-left: auto;
+  }
+  .mld-texture-viewport {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    touch-action: none;
+    background-color: var(--color-mld-bg);
+    background-image:
+      linear-gradient(
+        45deg,
+        var(--color-mld-border) 25%,
+        transparent 25%,
+        transparent 75%,
+        var(--color-mld-border) 75%
+      ),
+      linear-gradient(
+        45deg,
+        var(--color-mld-border) 25%,
+        transparent 25%,
+        transparent 75%,
+        var(--color-mld-border) 75%
+      );
+    background-size: 16px 16px;
+    background-position:
+      0 0,
+      8px 8px;
+  }
+  .mld-texture-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+  }
+  .mld-texture-viewport:focus-within {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: -2px;
+  }
+  .mld-texture-content canvas {
+    image-rendering: pixelated;
+    border-radius: 0;
+  }
+  .mld-texture-content button {
+    min-height: 0;
+    border-radius: 0;
+  }
+  .mld-texture-viewport[data-hand="true"] {
+    cursor: grab;
+  }
+  .mld-sheet-paint,
+  .mld-sheet-uv-canvas {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .mld-uv-sheet-outlines,
+  .mld-uv-rotate-handle,
+  .mld-uv-scale-handles {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+    color: var(--color-mld-text);
+  }
+  .mld-uv-rotate-handle,
+  .mld-uv-scale-handles {
+    color: var(--color-mld-accent);
+  }
+  .mld-uv-scale-target {
+    pointer-events: auto;
+    cursor: nwse-resize;
+  }
+  .mld-uv-rotate-target {
+    pointer-events: auto;
+    cursor: grab;
+  }
+  button.mld-uv-rotate-target {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    outline: none;
+  }
+  button.mld-uv-rotate-target:active {
+    cursor: grabbing;
+  }
+  .mld-texture-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    flex: none;
+    min-height: 52px;
+    padding: 4px;
+    border-top: 1px solid var(--color-mld-border);
+    background: var(--color-mld-surface);
+  }
+  .mld-texture-navigation output {
+    min-width: 42px;
+    font-size: 11px;
+    text-align: center;
+    color: var(--color-mld-muted);
+  }
+  .mld-sheet-hint {
+    flex: none;
+    padding: 8px 12px;
+    border-top: 1px solid var(--color-mld-border);
+    font-size: 11px;
+    color: var(--color-mld-muted);
+  }
+  .mld-sheet-empty {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--color-mld-muted);
+  }
+  @media (max-width: 1199px) {
+    .mld-stage-workbench[data-paint-sheet="true"] {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .mld-stage-workbench[data-paint-sheet="true"] > .mld-paint-sheet {
+      flex: 1;
+    }
+    .mld-stage-workbench[data-paint-sheet="true"] > .mld-stage-viewport,
+    .mld-stage-workbench[data-paint-sheet="true"] > .mld-sheet-divider {
+      display: none;
+    }
+    .mld-sheet-device-switch {
+      display: flex;
+      margin-left: auto;
+    }
+    .mld-sheet-mode {
+      flex: none;
+    }
+    .mld-stage-workbench[data-paint-sheet="true"][data-sheet-model="true"] > .mld-paint-sheet {
+      flex: none;
+    }
+    .mld-stage-workbench[data-paint-sheet="true"][data-sheet-model="true"] .mld-sheet-body {
+      display: none;
+    }
+    .mld-stage-workbench[data-paint-sheet="true"][data-sheet-model="true"] > .mld-stage-viewport {
+      display: flex;
+      flex: 1;
+    }
+    .mld-workspace-caption {
+      display: none;
+    }
+  }
+  @media (min-width: 1200px) {
+    .mld-stage-workbench[data-paint-sheet="true"][data-sheet-expanded="true"] {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .mld-stage-workbench[data-paint-sheet="true"][data-sheet-expanded="true"] > .mld-stage-viewport,
+    .mld-stage-workbench[data-paint-sheet="true"][data-sheet-expanded="true"] > .mld-sheet-divider {
+      display: none;
+    }
+  }
 }
 
 /* Tema escuro — override por atributo data-molda-theme="dark" no root. */
@@ -195,6 +1884,45 @@
 }
 
 /* Canvas de pixel: nunca suavizar o upscale. */
+[data-molda-theme] .mld-paint-detail {
+  display: flex;
+  flex: 0 0 clamp(280px, 35%, 380px);
+  min-height: 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 76px 12px 64px;
+  border-right: 1px solid var(--color-mld-border);
+  background: var(--color-mld-surface);
+}
+[data-molda-theme] .mld-paint-pixel-grid {
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--color-mld-text) 22%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-mld-text) 22%, transparent) 1px,
+      transparent 1px
+    );
+}
+@media (max-width: 900px) {
+  [data-molda-theme] .mld-paint-detail {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    padding: 12px;
+    border: 0;
+  }
+}
+@media (max-width: 899px) {
+  [data-molda-theme] .mld-workshop-stage:has(.mld-paint-detail) {
+    height: 560px;
+    min-height: 560px;
+  }
+}
 [data-molda-theme] .mld-pixelated {
   image-rendering: pixelated;
 }
@@ -290,8 +2018,45 @@
   --mld-fill-special: var(--sz-kids-roxo, #8b5cf6);
   --mld-fill-group: var(--sz-kids-tinta-suave, #5c6b85);
   --mld-stage-shadow: 0 10px 28px -14px color-mix(in oklab, var(--color-mld-text) 45%, transparent);
+  /* A sombra dos controles que FLUTUAM no palco (vista, zoom): mais curta que a do cartão. */
+  --mld-float-shadow:
+    0 1px 2px color-mix(in oklab, var(--color-mld-text) 10%, transparent),
+    0 6px 16px -8px color-mix(in oklab, var(--color-mld-text) 30%, transparent);
+  /* Os EIXOS (15/10/2026): a mesma cor nas alças do palco, nos selos do painel e na legenda.
+     São FUNDOS com a letra branca por cima (≥ 4,5:1), então não seguem o tema. */
+  --mld-axis-x: oklch(0.56 0.19 25);
+  --mld-axis-y: oklch(0.54 0.14 152);
+  --mld-axis-z: oklch(0.53 0.19 262);
+  --mld-pivot: #8b3fd9;
+  --mld-pivot-text: #8b3fd9;
+  --mld-pivot-bg: #f2eafc;
+  --mld-cut-ink: #e8336f;
+  --mld-cut-text: #c31952;
+  --mld-cut-bg: #fde6ee;
+  --mld-channel-move: #1b5cf3;
+  --mld-channel-rotate: #d48116;
+  --mld-channel-size: #00895b;
+  /* O palco: o céu diluído com um clarão no alto, do topo das ferramentas ao pé da dica. */
+  --mld-stage-bg: radial-gradient(
+    120% 90% at 50% 18%,
+    color-mix(in oklab, var(--color-mld-surface) 72%, var(--color-mld-bg)),
+    var(--color-mld-bg) 70%
+  );
 }
 [data-molda-theme="dark"] {
+  --mld-pivot-bg: #2f2044;
+  --mld-pivot-text: #c99af7;
+  --mld-cut-bg: #3b1b2c;
+  --mld-cut-text: #ff85ad;
+  --mld-channel-move: #6e9bff;
+  --mld-channel-rotate: #f0a43c;
+  --mld-channel-size: #49d98f;
+  --mld-float-shadow: 0 1px 2px oklch(0 0 0 / 0.4), 0 6px 16px -8px oklch(0 0 0 / 0.7);
+  --mld-stage-bg: radial-gradient(
+    120% 90% at 50% 18%,
+    color-mix(in oklab, var(--color-mld-surface) 55%, var(--color-mld-bg)),
+    var(--color-mld-bg) 70%
+  );
   --mld-shape-box: var(--sz-kids-azul-vivo, oklch(0.72 0.13 245));
   --mld-shape-wedge: var(--sz-kids-rosa-viva, oklch(0.75 0.16 356));
   --mld-shape-cylinder: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
@@ -315,10 +2080,35 @@
     margin: 0;
     font-size: 0.6875rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.025em;
     line-height: 1.2;
     text-transform: uppercase;
     color: var(--color-mld-muted);
+  }
+
+  /* No trilho, o rótulo de seção é o mesmo caixa-alta do painel (o "PRÉVIA" do Pinta), só
+     mais miúdo para caber nos 88–104px. */
+  [data-molda-theme] .mld-workshop-rail .mld-kicker {
+    padding-inline: 4px;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    overflow-wrap: normal;
+    white-space: nowrap;
+  }
+  /* "FERRAMENTAS" precisa caber inteiro no trilho de 88–96px e no de 80px do celular. */
+  @media (max-width: 1399px) {
+    [data-molda-theme] .mld-workshop-rail .mld-kicker {
+      padding-inline: 2px;
+      font-size: 9.5px;
+      letter-spacing: 0.02em;
+    }
+  }
+  @media (max-width: 599px) {
+    [data-molda-theme] .mld-workshop-rail .mld-kicker {
+      padding-inline: 0;
+      font-size: 8.5px;
+      letter-spacing: 0;
+    }
   }
 
   /* O SEGMENTADO das abas: trilho claro e a aba escolhida em pílula azul cheia. */
@@ -373,10 +2163,13 @@
     justify-content: center;
     gap: 0.3125rem;
     min-height: 3.5rem;
+    position: relative;
     padding: 0.5rem 0.25rem;
-    border: 1px solid var(--sz-tool-card-edge, transparent);
+    border: 1px solid transparent;
     border-radius: 0.75rem;
-    background: var(--color-mld-bg);
+    /* Quieto em repouso: só a escolhida ganha o acento cheio (antes a coluna era uma pilha de
+       blocos cinza, e a escolhida competia com eles). */
+    background: transparent;
     color: var(--color-mld-text);
     font-size: 0.75rem;
     font-weight: 800;
@@ -397,11 +2190,56 @@
     color: var(--mld-tile-ink, currentColor);
   }
   [data-molda-theme] .mld-tile:hover:not(:disabled):not([aria-pressed="true"]) {
-    background: color-mix(in oklab, var(--color-mld-bg) 88%, var(--color-mld-text));
+    background: var(--color-mld-bg);
   }
   [data-molda-theme] .mld-tile[aria-pressed="true"] {
     background: var(--color-mld-accent);
     color: var(--color-mld-accent-fg);
+    box-shadow: 0 6px 14px -8px color-mix(in oklab, var(--color-mld-accent) 80%, transparent);
+  }
+  /* O ladrilho TINGIDO das formas ("Adicionar"): o fundo claro na cor da forma, como as peças
+     prontas das telas-modelo. */
+  [data-molda-theme] .mld-tile[data-tint] {
+    border-color: color-mix(in oklab, var(--mld-tile-ink) 18%, transparent);
+    background: color-mix(in oklab, var(--mld-tile-ink) 10%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-tile[data-tint]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--mld-tile-ink) 18%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-tile[data-tint] > span {
+    color: color-mix(in oklab, var(--mld-tile-ink) 55%, var(--color-mld-text));
+  }
+  /* O ladrilho de LIGAR (Espelhar): ligado, o roxo da assinatura do Molda em tinta clara. */
+  [data-molda-theme] .mld-tile[data-toggle][aria-pressed="true"] {
+    background: color-mix(in oklab, var(--mld-shape-special) 14%, var(--color-mld-surface));
+    color: var(--mld-shape-special);
+    box-shadow: inset 0 0 0 2px var(--mld-shape-special);
+  }
+  /* A tecla do atalho, no canto do ladrilho (só com mouse: no toque não há teclado). */
+  [data-molda-theme] .mld-tile-key {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: none;
+    min-width: 16px;
+    height: 16px;
+    padding-inline: 3px;
+    border-radius: 5px;
+    background: color-mix(in oklab, var(--color-mld-text) 8%, transparent);
+    color: var(--color-mld-muted);
+    font-size: 9.5px;
+    font-weight: 800;
+    line-height: 16px;
+    text-align: center;
+  }
+  [data-molda-theme] .mld-tile[aria-pressed="true"] .mld-tile-key {
+    background: color-mix(in oklab, var(--color-mld-accent-fg) 22%, transparent);
+    color: var(--color-mld-accent-fg);
+  }
+  @media (hover: hover) and (pointer: fine) and (min-width: 1101px) {
+    [data-molda-theme] .mld-tile-key {
+      display: block;
+    }
   }
   [data-molda-theme] .mld-tile[aria-pressed="true"] > svg {
     color: inherit;
@@ -452,20 +2290,971 @@
     border: 1px solid var(--sz-tool-card-edge, transparent);
     border-radius: 1rem;
     background: var(--color-mld-surface);
+    color: var(--color-mld-text);
     box-shadow: var(--mld-stage-shadow);
   }
 
-  /* Uma linha da lista de peças: cartão claro; a escolhida ganha o contorno azul. */
+  /* Uma linha da lista de peças (15/10/2026, a árvore das telas-modelo): linha baixa e quieta,
+     o ícone na cor da forma e o nome; a escolhida ganha o fundo tingido e o contorno azul. O
+     cartão alto de antes (ladrilho cheio + "Peça" embaixo) fazia uma lista de 6 peças rolar. */
   [data-molda-theme] .mld-piece {
-    border: 2px solid transparent;
-    border-radius: 0.875rem;
-    background: var(--color-mld-bg);
+    display: flex;
+    min-width: 0;
+    min-height: var(--mld-hierarchy-row-height, 40px);
+    align-items: center;
+    gap: var(--mld-hierarchy-piece-gap, 10px);
+    padding: var(--mld-hierarchy-piece-padding, 4px 10px);
+    border: 1.5px solid transparent;
+    border-radius: var(--mld-hierarchy-piece-radius, 12px);
+    background: transparent;
+    color: var(--color-mld-text);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease;
   }
   [data-molda-theme] .mld-piece:hover:not([aria-pressed="true"]) {
-    border-color: var(--color-mld-border);
+    background: var(--color-mld-bg);
   }
   [data-molda-theme] .mld-piece[aria-pressed="true"] {
     border-color: var(--color-mld-accent);
-    background: var(--color-mld-surface);
+    background: color-mix(in oklab, var(--color-mld-accent) 9%, var(--color-mld-surface));
+    color: var(--color-mld-accent);
   }
+  [data-molda-theme] .mld-piece:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-piece {
+      min-height: var(--mld-hierarchy-row-height, 44px);
+    }
+  }
+  /* O selo do tipo ao lado do nome ("Caixa", "Grupo"): pílula clara na cor da forma. */
+  [data-molda-theme] .mld-kind-chip {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    height: 22px;
+    padding-inline: 8px;
+    border-radius: 9999px;
+    background: color-mix(
+      in oklab,
+      var(--mld-chip, var(--color-mld-accent)) 13%,
+      var(--color-mld-surface)
+    );
+    color: color-mix(in oklab, var(--mld-chip, var(--color-mld-accent)) 70%, var(--color-mld-text));
+    font-size: 11.5px;
+    font-weight: 800;
+  }
+  /* As ações com nome do cartão da peça ("Duplicar", "Apagar"): pequenas, claras. */
+  [data-molda-theme] .mld-chip-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding-inline: 10px;
+    border-radius: 10px;
+    background: var(--color-mld-bg);
+    color: var(--color-mld-text);
+    font-size: 13px;
+    font-weight: 800;
+    transition: background-color 0.12s ease;
+  }
+  [data-molda-theme] .mld-chip-btn:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-mld-bg) 85%, var(--color-mld-text));
+  }
+  [data-molda-theme] .mld-chip-btn[data-danger] {
+    background: color-mix(in oklab, var(--color-mld-danger) 9%, var(--color-mld-surface));
+    color: var(--color-mld-danger);
+  }
+  [data-molda-theme] .mld-chip-btn[data-danger]:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--color-mld-danger) 16%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-chip-btn:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  [data-molda-theme] .mld-chip-btn svg {
+    width: 15px;
+    height: 15px;
+  }
+  @media (any-pointer: coarse) {
+    [data-molda-theme] .mld-chip-btn {
+      min-height: 44px;
+    }
+  }
+  /* O passo por clique (− / +) de cada eixo. */
+  [data-molda-theme] .mld-step {
+    display: grid;
+    width: var(--sz-tool-hit, 2.5rem);
+    height: var(--sz-tool-hit, 2.5rem);
+    place-items: center;
+    border: 1px solid var(--color-mld-border);
+    border-radius: 12px;
+    background: var(--color-mld-surface);
+    color: var(--color-mld-text);
+    transition:
+      background-color 0.12s ease,
+      border-color 0.12s ease;
+  }
+  [data-molda-theme] .mld-step:hover:not(:disabled) {
+    border-color: var(--color-mld-accent);
+    background: color-mix(in oklab, var(--color-mld-accent) 6%, var(--color-mld-surface));
+  }
+  [data-molda-theme] .mld-step:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+  [data-molda-theme] .mld-step:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  [data-molda-theme] .mld-step svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* O palco é a superfície: o 3D e a imagem de apoio não pintam fundo próprio por cima do clarão
+   do `.mld-workshop-stage` (sem camada: vence as utilitárias `bg-*` dos dois). */
+[data-molda-theme] .mld-workshop-stage .mld-stage-surface {
+  background: transparent;
+}
+
+@layer components {
+  .mld-piece-coordinates {
+    display: grid;
+    gap: 10px;
+  }
+  .mld-piece-coordinates legend {
+    margin-bottom: 5px;
+    font-size: 11px;
+    font-weight: 650;
+    color: var(--color-mld-muted);
+  }
+  .mld-axis-fields {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .mld-axis-fields label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    min-height: 38px;
+    padding: 5px 6px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: var(--color-mld-bg);
+  }
+  .mld-axis-fields label:focus-within {
+    border-color: var(--color-mld-accent);
+    outline: 2px solid color-mix(in srgb, var(--color-mld-accent) 20%, transparent);
+  }
+  .mld-axis-fields label > span {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    border-radius: 5px;
+    font-size: 11px;
+    font-weight: 750;
+    color: white;
+  }
+  .mld-axis-fields [data-axis="0"] > span {
+    background: var(--mld-axis-x, #e5484d);
+  }
+  .mld-axis-fields [data-axis="1"] > span {
+    background: var(--mld-axis-y, #30a46c);
+  }
+  .mld-axis-fields [data-axis="2"] > span {
+    background: var(--mld-axis-z, #3e63dd);
+  }
+  .mld-axis-fields input {
+    width: 100%;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--color-mld-text);
+    font-size: 13px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    appearance: textfield;
+  }
+  .mld-axis-fields input::-webkit-inner-spin-button,
+  .mld-axis-fields input::-webkit-outer-spin-button {
+    appearance: none;
+    margin: 0;
+  }
+  .mld-axis-fields small {
+    color: var(--color-mld-muted);
+  }
+  .mld-selection-modes {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .mld-selection-modes button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 650;
+    color: var(--color-mld-muted);
+  }
+  .mld-selection-modes button[aria-pressed="true"] {
+    color: var(--color-mld-accent-fg);
+    background: var(--color-mld-text);
+  }
+  .mld-selection-modes button svg {
+    width: 15px;
+    height: 15px;
+  }
+  .mld-selection-modes button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mld-selection-modes button:focus-visible {
+    outline: 2px solid var(--color-mld-accent);
+    outline-offset: 2px;
+  }
+  .mld-cut-bar {
+    position: absolute;
+    z-index: 25;
+    left: 50%;
+    bottom: 68px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: max-content;
+    max-width: calc(100% - 32px);
+    padding: 10px 12px;
+    border-radius: 14px;
+    color: var(--color-mld-text);
+    background: var(--color-mld-surface);
+    box-shadow: var(--mld-float-shadow);
+    font-size: 13px;
+  }
+  .mld-cut-status {
+    min-width: 120px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .mld-cut-bar label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+  }
+  .mld-cut-bar input {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--mld-cut-ink, #e84297);
+  }
+  .mld-cut-bar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: color-mix(in srgb, currentColor 13%, transparent);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+  .mld-cut-bar button[data-confirm] {
+    background: var(--mld-cut-ink, #e84297);
+    color: white;
+  }
+  .mld-cut-bar button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .mld-cut-bar button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 3px;
+  }
+  @media (max-width: 1100px) {
+    .mld-cut-bar {
+      flex-wrap: wrap;
+      width: calc(100% - 32px);
+    }
+    .mld-cut-status {
+      flex: 1 1 100%;
+    }
+  }
+  @media (pointer: coarse) {
+    .mld-axis-fields label,
+    .mld-selection-modes button {
+      min-height: 44px;
+    }
+  }
+}
+
+/* Shared pixel geometry for the ruler, per-channel keys and playhead. */
+[data-molda-theme] .mld-cut-canvas {
+  cursor: none;
+}
+[data-molda-theme] .mld-axis-handles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 2;
+}
+[data-molda-theme] .mld-axis-handles [role="button"] {
+  cursor: grab;
+}
+[data-molda-theme] .mld-axis-hit-line {
+  stroke-width: 18;
+}
+[data-molda-theme] .mld-axis-hit-tip {
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  [data-molda-theme] .mld-axis-hit-line {
+    stroke-width: 44;
+  }
+  [data-molda-theme] .mld-axis-hit-tip {
+    pointer-events: all;
+  }
+}
+[data-molda-theme] .mld-axis-handles [role="button"]:active {
+  cursor: grabbing;
+}
+[data-molda-theme] .mld-axis-handles [role="button"]:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+}
+[data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] {
+  padding: 6px;
+  margin-inline: -6px;
+  border-radius: 10px;
+  background: var(--mld-pivot-bg, #f2eafc);
+  color: var(--mld-pivot-text, #8b3fd9);
+}
+[data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] legend {
+  color: var(--mld-pivot-text);
+}
+[data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] .mld-axis-fields > label {
+  border: 1.5px solid var(--mld-pivot);
+  background: var(--mld-pivot-bg);
+}
+[data-molda-theme] .mld-cut-precision {
+  position: relative;
+  font-size: 0.75rem;
+}
+[data-molda-theme] .mld-cut-point-count {
+  position: absolute;
+  pointer-events: none;
+  z-index: 15;
+  width: 138px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--mld-cut-bg);
+  color: var(--mld-cut-text);
+  border: 1px solid color-mix(in srgb, var(--mld-cut-ink) 25%, transparent);
+  box-shadow: var(--mld-float-shadow);
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 26px;
+  text-align: center;
+}
+[data-molda-theme] .mld-cut-cursor {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  pointer-events: none;
+  z-index: 16;
+  color: white;
+  background: var(--mld-cut-ink);
+  border-radius: 8px;
+  padding: 7px;
+  filter: drop-shadow(0 3px 4px #5a0b2a44);
+}
+[data-molda-theme] .mld-cut-bar input.mld-cut-switch {
+  appearance: none;
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: #737887;
+}
+[data-molda-theme] .mld-cut-bar input.mld-cut-switch:checked {
+  background: var(--mld-cut-ink);
+}
+[data-molda-theme] .mld-cut-switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+}
+[data-molda-theme] .mld-cut-switch:checked::after {
+  transform: translateX(14px);
+}
+[data-molda-theme] .mld-cut-switch:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+[data-molda-theme] .mld-pivot-ghost-label {
+  position: absolute;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 155px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--mld-pivot-bg);
+  color: var(--mld-pivot-text);
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 28px;
+  text-align: center;
+  pointer-events: none;
+  z-index: 3;
+}
+[data-molda-theme] .mld-pivot-ghost-label:not([hidden]) {
+  display: flex;
+}
+[data-molda-theme] .mld-cut-precision summary {
+  cursor: pointer;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-weight: 700;
+}
+[data-molda-theme] .mld-cut-precision-panel {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  width: min(360px, calc(100vw - 32px));
+  max-height: min(480px, 65vh);
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 12px;
+  background: var(--color-mld-surface);
+  box-shadow: var(--mld-float-shadow);
+  color: var(--color-mld-text);
+  z-index: 40;
+}
+[data-molda-theme] .mld-cut-precision-panel > label {
+  display: grid;
+  grid-template-columns: 1fr 80px;
+  margin: 8px 0;
+}
+[data-molda-theme] .mld-cut-precision-panel input[type="number"] {
+  width: 100%;
+  height: 36px;
+  min-width: 0;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 6px;
+  background: var(--color-mld-bg);
+  color: var(--color-mld-text);
+  padding: 4px;
+}
+[data-molda-theme] .mld-cut-precision-panel fieldset {
+  min-width: 0;
+  margin: 10px 0;
+}
+[data-molda-theme] .mld-cut-precision-panel p {
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+[data-molda-theme] .mld-pivot-choice[aria-pressed="true"] {
+  background: var(--mld-pivot-bg);
+  border-color: var(--mld-pivot);
+  color: var(--mld-pivot-text);
+}
+[data-molda-theme] .mld-pivot-choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 10px;
+  background: var(--color-mld-surface);
+  font-size: 13px;
+  font-weight: 700;
+}
+[data-molda-theme] .mld-pivot-choice svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+[data-molda-theme] .mld-pivot-choice:hover:not(:disabled) {
+  border-color: var(--mld-pivot);
+}
+[data-molda-theme] .mld-pivot-choice:focus-visible {
+  outline: 2px solid var(--mld-pivot);
+  outline-offset: 2px;
+}
+[data-molda-theme] .mld-pivot-choice:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+[data-molda-theme] .mld-rig-labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+[data-molda-theme] .mld-rig-labels > span {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: var(--mld-pivot);
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
+}
+[data-molda-theme] .mld-rig-labels > span[hidden] {
+  display: none;
+}
+[data-molda-theme] .mld-timeline {
+  --mld-timeline-label-width: 180px;
+  overflow: visible;
+}
+[data-molda-theme] .mld-auto-key {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+[data-molda-theme] .mld-auto-key:focus-within {
+  outline: 2px solid var(--color-mld-accent);
+  outline-offset: 2px;
+}
+[data-molda-theme] .mld-previous-pose {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 0;
+  font-size: 14px;
+}
+@media (any-pointer: coarse) {
+  [data-molda-theme] .mld-previous-pose {
+    min-height: 44px;
+  }
+}
+[data-molda-theme] .mld-record-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-mld-danger);
+}
+[data-molda-theme] .mld-auto-switch {
+  position: relative;
+  width: 34px;
+  height: 20px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-mld-muted) 30%, var(--color-mld-surface));
+}
+[data-molda-theme] .mld-auto-switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #0003;
+}
+[data-molda-theme] .mld-auto-key[data-enabled="true"] .mld-auto-switch {
+  background: var(--color-mld-accent);
+}
+[data-molda-theme] .mld-auto-key[data-enabled="true"] .mld-auto-switch::after {
+  left: 16px;
+}
+[data-molda-theme] .mld-arrival-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin-top: 6px;
+}
+[data-molda-theme] .mld-arrival-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 64px;
+  padding: 5px 2px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  background: var(--color-mld-bg);
+  color: var(--color-mld-text);
+  font-size: 12px;
+  font-weight: 800;
+}
+[data-molda-theme] .mld-arrival-option[aria-pressed="true"] {
+  border-color: var(--color-mld-accent);
+  background: color-mix(in srgb, var(--color-mld-accent) 10%, var(--color-mld-surface));
+  color: var(--color-mld-accent);
+}
+[data-molda-theme] .mld-arrival-option:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+  outline-offset: 2px;
+}
+[data-molda-theme] .mld-pose-channel {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: color-mix(in srgb, currentColor 10%, var(--color-mld-surface));
+  color: var(--mld-channel-color, var(--color-mld-accent));
+  font-size: 11px;
+  font-weight: 800;
+}
+@media (max-width: 599px) {
+  [data-molda-theme] .mld-timeline {
+    --mld-timeline-label-width: 104px;
+  }
+}
+[data-molda-theme] .mld-timeline-transport {
+  height: 60px;
+  min-height: 60px;
+}
+[data-molda-theme] .mld-time-seconds {
+  width: 4ch;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  font-weight: 900;
+  text-align: right;
+  appearance: textfield;
+}
+[data-molda-theme] .mld-time-readout {
+  position: relative;
+  display: inline-grid;
+  font-size: 20px;
+  font-weight: 900;
+}
+[data-molda-theme] .mld-time-readout > span {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+[data-molda-theme] .mld-time-readout:focus-within > span {
+  display: none;
+}
+[data-molda-theme] .mld-time-seconds:not(:focus) {
+  color: transparent;
+}
+[data-molda-theme] .mld-time-seconds:focus {
+  width: 16ch;
+}
+[data-molda-theme] .mld-time-seconds::-webkit-inner-spin-button,
+[data-molda-theme] .mld-time-seconds::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+[data-molda-theme] .mld-duration-label {
+  position: absolute;
+  left: 12px;
+  top: 63px;
+  max-width: calc(var(--mld-timeline-label-width) - 20px);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 7px;
+  padding: 0 6px;
+  background: var(--color-mld-bg);
+  color: var(--color-mld-muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+[data-molda-theme] .mld-duration-select {
+  min-width: 0;
+  height: 24px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+[data-molda-theme] .mld-timeline-resizer {
+  border: 0;
+  margin: 0;
+  position: absolute;
+  z-index: 12;
+  top: -4px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  cursor: row-resize;
+  touch-action: none;
+}
+[data-molda-theme] .mld-timeline-resizer::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: calc(50% - 18px);
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+  background: transparent;
+}
+[data-molda-theme] .mld-timeline-resizer:hover::after,
+[data-molda-theme] .mld-timeline-resizer:focus-visible::after {
+  background: var(--color-mld-muted);
+}
+[data-molda-theme] .mld-timeline-row {
+  display: grid;
+  grid-template-columns: var(--mld-timeline-label-width) minmax(0, 1fr);
+  height: 36px;
+  padding-right: 24px;
+  border-bottom: 1px solid var(--color-mld-border);
+}
+[data-molda-theme] .mld-key-strip {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  height: 36px;
+  padding: 0;
+  color: var(--color-mld-muted);
+  touch-action: none;
+}
+[data-molda-theme] .mld-timeline-leading {
+  width: 28px;
+  height: 36px;
+}
+@media (any-pointer: coarse) {
+  [data-molda-theme] .mld-timeline-row,
+  [data-molda-theme] .mld-key-strip,
+  [data-molda-theme] .mld-timeline-leading {
+    height: 44px;
+  }
+  [data-molda-theme] .mld-timeline-leading {
+    width: 44px;
+  }
+}
+[data-molda-theme] [data-channel="translation"] {
+  --mld-channel-color: var(--mld-channel-move);
+}
+[data-molda-theme] [data-channel="rotation"] {
+  --mld-channel-color: var(--mld-channel-rotate);
+}
+[data-molda-theme] [data-channel="scale"] {
+  --mld-channel-color: var(--mld-channel-size);
+}
+[data-molda-theme]
+  [data-channel]:not([data-channel="summary"])
+  :is(.mld-key-strip, .mld-channel-icon) {
+  color: var(--mld-channel-color);
+}
+[data-molda-theme] .mld-key-strip:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+  outline-offset: -2px;
+}
+[data-molda-theme] .mld-key-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  pointer-events: none;
+  background: var(--color-mld-text);
+}
+[data-molda-theme] .mld-timeline-ruler {
+  position: relative;
+  height: 30px;
+  min-height: 30px;
+  margin-left: var(--mld-timeline-label-width);
+  margin-right: 24px;
+}
+[data-molda-theme] .mld-timeline-ruler input {
+  margin: 0;
+}
+[data-molda-theme] .mld-movement-row {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 9px;
+}
+[data-molda-theme] .mld-movement-choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 38px;
+  flex: 1;
+  padding: 4px 8px;
+  text-align: left;
+}
+[data-molda-theme] .mld-movement-options {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+[data-molda-theme] .mld-movement-options svg {
+  width: 18px;
+  height: 18px;
+}
+[data-molda-theme] .mld-movement-options:focus-visible {
+  outline: 2px solid var(--color-mld-accent);
+}
+[data-molda-theme] .mld-piece-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+@media (pointer: coarse) {
+  [data-molda-theme] .mld-movement-choice {
+    min-height: 44px;
+  }
+  [data-molda-theme] .mld-movement-options {
+    width: 44px;
+    height: 44px;
+  }
+}
+[data-molda-theme] .mld-movement-row[data-active="true"] {
+  border-color: var(--color-mld-accent);
+  background: color-mix(in srgb, var(--color-mld-accent) 8%, var(--color-mld-surface));
+}
+[data-molda-theme] .mld-movement-menu {
+  position: absolute;
+  z-index: 15;
+  right: 0;
+  min-width: 140px;
+  padding: 4px;
+  border: 1px solid var(--color-mld-border);
+  border-radius: 9px;
+  background: var(--color-mld-surface);
+  box-shadow: 0 3px 10px #0002;
+}
+[data-molda-theme] .mld-movement-menu button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  width: 100%;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+[data-molda-theme] .mld-movement-menu svg {
+  width: 15px;
+  height: 15px;
+}
+[data-molda-theme] .mld-pose-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 205px;
+}
+@media (min-width: 1101px) {
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
+    flex: 0 1 244px;
+    max-height: 35%;
+    min-height: 96px;
+  }
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-pieces {
+    flex: 0 1 240px;
+    max-height: 28%;
+    min-height: 84px;
+  }
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-properties {
+    flex: 1 1 205px;
+    min-height: 120px;
+  }
+}
+[data-molda-theme] .mld-ruler-tick {
+  position: absolute;
+  top: 0;
+  height: 30px;
+  width: 1px;
+  border-bottom: 5px solid var(--color-mld-border);
+}
+[data-molda-theme] .mld-ruler-tick[data-major="true"] {
+  border-bottom-width: 10px;
+}
+[data-molda-theme] .mld-ruler-tick > span {
+  position: absolute;
+  top: 1px;
+  white-space: nowrap;
+  color: var(--color-mld-muted);
+  font-size: 10px;
+}
+[data-molda-theme] .mld-timeline-playhead-area {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  top: 60px;
+  bottom: 0;
+  left: var(--mld-timeline-label-width);
+  right: 24px;
+  overflow: hidden;
+}
+[data-molda-theme] .mld-timeline-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  transform: translateX(-50%);
+  padding: 0;
+  pointer-events: none;
+  cursor: ew-resize;
+  touch-action: none;
+}
+[data-molda-theme] .mld-timeline-playhead::after {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: 0;
+  width: 2px;
+  left: 6px;
+  background: var(--color-mld-accent);
+}
+[data-molda-theme] .mld-timeline-playhead > span {
+  position: absolute;
+  pointer-events: auto;
+  top: 2px;
+  left: 0;
+  width: 14px;
+  height: 18px;
+  background: var(--color-mld-accent);
+  border-radius: 4px;
+}
+[data-molda-theme] .mld-timeline .mld-key-playhead {
+  display: none;
 }

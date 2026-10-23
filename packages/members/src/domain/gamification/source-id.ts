@@ -53,3 +53,12 @@ export function studioPublishDaySourceId(dayKey: string): string {
 export function studioActivityDaySourceId(dayKey: string): string {
   return deterministicSourceId(STUDIO_ACTIVITY_DAY_NAMESPACE, dayKey)
 }
+
+// Namespace fixo dos objetivos EXTRAS (18/10/2026). Aula + parte + objetivo: o mesmo objetivo
+// nunca paga duas vezes, e o mesmo id de objetivo em outra parte é outro prêmio.
+const OBJECTIVE_EXTRA_NAMESPACE = '6d1f0a5e-7b3c-4c8e-9a21-0f5b8e7d2c41'
+
+/** sourceId do XP de um objetivo EXTRA da parte. */
+export function objectiveExtraSourceId(lessonId: string, sectionId: string, checkId: string) {
+  return deterministicSourceId(OBJECTIVE_EXTRA_NAMESPACE, `${lessonId}:${sectionId}:${checkId}`)
+}

@@ -1,4 +1,8 @@
-import { resolveStudioTier } from '@sistemazero/member-shell/lib/studio-tier'
+import {
+  hasKidsCapability,
+  isKidsStaffPreview,
+  type KidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 
 /** A resposta de `getStudioUnlocksReadonly()`, ou `null` quando a busca falhou. */
 export interface StudioUnlocksResult {
@@ -26,13 +30,11 @@ export interface StudioUnlocksResult {
  */
 export function canOpenFreeStudio(
   ownsStudio: boolean,
-  levelSlug: string | undefined,
-  role: string | undefined,
+  journey: KidsJourneyAccess | null,
   unlocks: StudioUnlocksResult | null,
 ): boolean {
-  if (!ownsStudio) return false
+  if (!ownsStudio || !journey || !hasKidsCapability(journey, 'studio')) return false
+  if (isKidsStaffPreview(journey)) return true
   const blocks = unlocks?.status === 200 && unlocks.body ? unlocks.body.blocks : null
-  const tier = resolveStudioTier(levelSlug, role, blocks ? { blocks, extensions: [] } : undefined)
-  if (!tier.freeStudio) return false
-  return blocks === null ? true : tier.hasPalette
+  return blocks === null || blocks.length > 0
 }

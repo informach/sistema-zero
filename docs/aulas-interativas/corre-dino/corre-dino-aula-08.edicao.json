@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-menu", "video-convite", "video-entrada-ampla", "video-entrega"],
+  "intervencoes": [
+    {
+      "id": "video-convite-K1",
+      "clipe": "video-convite",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.",
+      "ancoraDepois": "Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco",
+      "falaPrincipal": "E quem quiser começar pelo toque?",
+      "falaPersonagem": "E quem quiser começar pelo toque?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-entrada-ampla-K1",
+      "clipe": "video-entrada-ampla",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.",
+      "ancoraDepois": "Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de",
+      "falaPrincipal": "E a tecla do pulo, vai começar a partida de novo?",
+      "falaPersonagem": "E a tecla do pulo, vai começar a partida de novo?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

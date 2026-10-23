@@ -5,13 +5,15 @@ import {
   Group,
   type Intersection,
   Mesh,
-  type MeshStandardMaterial,
+  MeshStandardMaterial,
   NoColorSpace,
   type Object3D,
   type Raycaster,
   SkinnedMesh,
   SRGBColorSpace,
+  Vector3,
 } from 'three'
+import type { Vec3 } from '../core/model'
 import {
   type ScenePixelRegion,
   type SceneRgba,
@@ -42,6 +44,8 @@ import {
   type SceneMaterialImageKind,
   sceneMaterialImageBase,
 } from '../scene/materialImages'
+import { meshComponentEdges } from '../scene/meshComponents'
+import { sceneGeometryMesh } from '../scene/parametricGeometry'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinBinding } from '../scene/skin'
 import { compileSceneSkinGeometry } from '../scene/skinPose'
@@ -51,6 +55,7 @@ import { SceneSurfaceQuery } from './SceneSurfaceQuery'
 import { applySceneGeometryUvUpload } from './sceneGeometryUvUpload'
 import { SceneMaterialResource } from './sceneMaterialResource'
 import { ScenePaintResource } from './scenePaintResource'
+import { type SceneEdgeSegments, sceneVisibleEdges } from './sceneVisibleEdges'
 
 interface SkinEntry {
   binding: SceneSkinBinding
@@ -67,6 +72,7 @@ interface GeometryEntry {
 }
 
 interface MaterialEntry {
+  revision: number
   source: SceneMaterial
   images: Partial<Record<SceneMaterialImageKind, SceneImage>>
   paletteKey: string
@@ -120,6 +126,7 @@ export class SceneRenderResource {
   private readonly surfaces = new SceneSurfaceQuery()
   private readonly geometries = new Map<string, GeometryEntry>()
   private readonly materials = new Map<string, MaterialEntry>()
+  private materialRevision = 0
   private readonly paints = new Map<string, PaintEntry>()
   private readonly frames = new Map<string, { source: SceneImageFlipbook; frame: number }>()
   private readonly meshes = new Map<string, Mesh<BufferGeometry, MeshStandardMaterial[]>>()
@@ -130,8 +137,18 @@ export class SceneRenderResource {
   private source: MoldaSceneDocument | null = null
   private index: ReturnType<typeof indexSceneDocument> | null = null
   private pose: SceneAnimationPose | null = null
+  private poseRevision = 0
   private formBaseNode: string | null = null
   private disposed = false
+  private readonly edgeCache = new WeakMap<
+    Mesh,
+    {
+      source: SceneGeometry
+      pose: number
+      paint: string
+      segments: SceneEdgeSegments
+    }
+  >()
 
   /** Current frame bounds, tied to the same authorial revision as the calling viewport. */
   skinLocalBounds(document: MoldaSceneDocument | null) {
@@ -172,6 +189,89 @@ export class SceneRenderResource {
     return id ? (this.instances.get(id) ?? null) : null
   }
 
+  /** Authorial boundaries include coplanar cuts; render triangulation is never an edit edge. */
+  edgePositionsFor(object: Mesh): Array<readonly [Vec3, Vec3]> {
+    const instance = this.instanceFor(object)
+    const entry = instance ? this.geometries.get(instance.geometryId) : null
+    if (!entry || !instance) return []
+    const materials = (Array.isArray(object.material) ? object.material : [object.material]).map(
+      (material) => {
+        requireScene(
+          material instanceof MeshStandardMaterial,
+          'contour',
+          'Material do contorno ausente.',
+        )
+        return material
+      },
+    )
+    const paint = materials.map((material) => [
+      material.alphaTest,
+      material.transparent,
+      material.opacity,
+      material.map?.uuid,
+      material.map?.version,
+    ])
+    // Paint may change while its first full GPU upload is still pending. Authorial
+    // revisions identify that pixel source without retaining old authorial images.
+    const revisions = entry.slots.map((id) => {
+      const owner = this.materials.get(id ?? instance.materialId)
+      requireScene(owner, 'contour', 'Material do contorno ausente.')
+      return owner.revision
+    })
+    const key = JSON.stringify([paint, revisions])
+    const cached = this.edgeCache.get(object)
+    const pose = object instanceof SkinnedMesh ? this.poseRevision : 0
+    if (cached?.source === entry.source && cached.paint === key && cached.pose === pose)
+      return cached.segments
+    const mesh = sceneGeometryMesh(entry.source)
+    const positions = new Map<string, Vec3>()
+    if (object instanceof SkinnedMesh) {
+      const point = new Vector3()
+      for (const [i, cornerIndex] of entry.buffers.cornerIndices.entries()) {
+        const faceId = entry.buffers.componentFaceIds[Math.floor(i / 3)]
+        const corner = faceId === undefined ? undefined : mesh.faces[faceId]?.corners[cornerIndex]
+        requireScene(
+          corner,
+          'geometry',
+          'O contorno perdeu a correspondência com a face desenhada.',
+        )
+        const vertexId = corner.vertexId
+        if (positions.has(vertexId)) continue
+        object.getVertexPosition(i, point)
+        positions.set(vertexId, [point.x, point.y, point.z])
+      }
+    } else for (const [id, point] of Object.entries(mesh.vertices)) positions.set(id, point)
+    const segments: Array<readonly [Vec3, Vec3]> = []
+    for (const [a, b] of meshComponentEdges(mesh).values()) {
+      const from = positions.get(a),
+        to = positions.get(b)
+      if (!from || !to) continue
+      requireScene(
+        [...from, ...to].every((n) => Number.isFinite(Math.fround(n))),
+        'geometry',
+        'O contorno excede a precisão de desenho. Seus pontos continuam guardados.',
+      )
+      segments.push([from, to])
+    }
+    const visible = materials.some((material) => material.alphaTest > 0 || material.transparent)
+      ? sceneVisibleEdges(mesh, positions, (face) => {
+          const slot = entry.slots.indexOf(face.materialId ?? null)
+          // An invalid face omitted by the triangulator has no rendered material slot.
+          if (slot < 0) return null
+          const material = materials[slot]
+          requireScene(material, 'contour', 'Material do contorno ausente.')
+          return material
+        })
+      : segments
+    this.edgeCache.set(object, {
+      source: entry.source,
+      pose,
+      paint: key,
+      segments: visible,
+    })
+    return visible
+  }
+
   surfaceIntersections(raycaster: Raycaster): Intersection[] {
     const hits: Intersection[] = []
     for (const object of this.root.children)
@@ -187,6 +287,13 @@ export class SceneRenderResource {
     const instance = this.instanceFor(object)
     return instance
       ? (this.geometries.get(instance.geometryId)?.buffers.faceIds[triangle] ?? null)
+      : null
+  }
+  /** Mesh editing uses individual authorial faces, even on a shared parametric paint surface. */
+  componentFaceFor(object: Object3D, triangle: number): string | null {
+    const instance = this.instanceFor(object)
+    return instance
+      ? (this.geometries.get(instance.geometryId)?.buffers.componentFaceIds[triangle] ?? null)
       : null
   }
   materialFor(object: Object3D, triangle: number): string | null {
@@ -248,6 +355,7 @@ export class SceneRenderResource {
     }
     this.instances = new Map(instances.map((instance) => [instance.id, instance]))
     this.pose = pose
+    this.poseRevision++
     if (changed) this.root.updateMatrixWorld(true)
     return changed
   }
@@ -440,6 +548,7 @@ export class SceneRenderResource {
         ),
       })
       this.materials.set(id, {
+        revision: ++this.materialRevision,
         source: prepared.source,
         images: prepared.images,
         paletteKey,
@@ -498,6 +607,7 @@ export class SceneRenderResource {
     this.source = document
     this.index = index
     this.pose = null
+    this.poseRevision++
     this.formBaseNode = formBaseNode
     this.surfaces.setSources([...this.geometries.values()].map((entry) => entry.geometry))
     this.root.updateMatrixWorld(true)
@@ -545,6 +655,8 @@ export class SceneRenderResource {
     }
     if (!mesh) {
       mesh = skin ? skin.createMesh(materials) : new Mesh(geometry.geometry, materials)
+      mesh.castShadow = true
+      mesh.receiveShadow = true
       if (skin) this.skinOwners.set(mesh, skin)
       mesh.matrixAutoUpdate = false
       this.meshes.set(instance.id, mesh)

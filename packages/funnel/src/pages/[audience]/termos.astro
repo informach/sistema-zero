@@ -1,31 +1,14 @@
 ---
-import Footer from '../../components/Footer.astro'
-import LegalDocument from '../../components/LegalDocument.astro'
-import { TERMOS } from '../../content/legal'
-import { TERMOS_KIDS } from '../../content/legal-kids'
-import BaseLayout from '../../layouts/BaseLayout.astro'
+import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 
-// SSR de propósito: pré-renderizada não passa pela middleware → sem security
-// headers em produção (sem CDN p/ repô-los). Conteúdo estático → cache curto.
+// Endereço antigo (até 20/10/2026, um Termo por público). O Kids continua apontando para o Termo
+// da assinatura, o mais procurado pelos links da plataforma; o Pro vai ao índice dos Termos.
 export const prerender = false
 
-// Público resolvido pela URL. Inválido → 404 (não vira catch-all). Espelha
-// [audience]/index.astro.
 const audience = Astro.params.audience
 if (audience !== 'pro' && audience !== 'kids') return new Response(null, { status: 404 })
-
-const doc = audience === 'kids' ? TERMOS_KIDS : TERMOS
-const areaLabel = audience === 'kids' ? 'Sistema Zero Kids' : 'Sistema Zero'
-
-Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-revalidate=3600')
+return Astro.redirect(
+  audience === 'kids' ? `${COMUNIDADE_DOS_CRIADORES.basePath}/termos` : '/termos',
+  301,
+)
 ---
-
-<BaseLayout
-  title={`${doc.titulo} | ${areaLabel}`}
-  description={doc.descricao}
-  htmlClass={audience === 'kids' ? 'theme-kids' : undefined}
->
-  {/* Fallback do kids = a bio da raiz (o /kids redirecionaria pro quiz). */}
-  <LegalDocument doc={doc} voltarHref={audience === 'kids' ? '/' : `/${audience}`} />
-  <Footer audience={audience} />
-</BaseLayout>

@@ -3,6 +3,7 @@ import { ArrowRight, BookOpen, CircleCheck, Gift, Lock, Play } from 'lucide-reac
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
+import { LEVEL_INFO } from '@/lib/level-info'
 import type { CatalogCourseView, MyCourseView } from '@/lib/types'
 import { CourseAccessExpiry } from './course-access-expiry'
 import { CourseBadgeChip } from './course-badge-chip'
@@ -52,14 +53,14 @@ export function CatalogCourseCard({
   const journeyLocked = course.hasAccess && course.careerLock?.locked === true
   const available = course.hasAccess && !journeyLocked
   const foundationFirst = journeyLocked && course.careerLock?.reason === 'foundation-first'
-  // Bônus = recompensa da etapa: abre sozinho quando os obrigatórios completam.
+  // O servidor já avaliou o direito retido e o requisito da política publicada.
   const tierReward = journeyLocked && course.careerLock?.reason === 'tier-reward'
   const linha = layout === 'linha'
-  // ⚠️ Sem "etapa" e sem nome de degrau: é vocabulário de quem MONTA o curso. Para a
-  // criança basta saber que é prêmio e o que destrava.
-  // ⚠️ E sem QUANTIDADE, nem implícita: "os outros cursos" ficou errado quando a trilha da
-  // Faísca virou um degrau de UM curso só (14/08). "A trilha" vale para 1, 7 ou 8.
-  const rewardLabel = 'Prêmio! Abre quando você terminar a trilha'
+  const rewardPost = course.careerLock?.requiredLevel
+  const rewardLabel =
+    rewardPost && Object.hasOwn(LEVEL_INFO, rewardPost)
+      ? `Prêmio! Abre no posto ${LEVEL_INFO[rewardPost].label}`
+      : 'Prêmio! Requisito indisponível no momento'
 
   const cover = (
     <div
@@ -120,12 +121,12 @@ export function CatalogCourseCard({
       {linha ? (
         <p className="font-bold text-muted-foreground text-xs">
           {course.journeyRole === 'extra'
-            ? 'Aventura extra'
+            ? 'Curso extra'
             : course.careerSlot === 1
               ? 'Primeira da trilha'
               : typeof course.careerSlot === 'number'
-                ? 'Aventura da jornada'
-                : 'Aventura bônus'}
+                ? 'Curso da jornada'
+                : 'Curso bônus'}
         </p>
       ) : null}
       <h3
@@ -158,7 +159,7 @@ export function CatalogCourseCard({
         <span className="font-normal text-[11px]">Comece por esta:</span>
         <span className="flex items-center gap-1.5">
           <span className="line-clamp-1 flex-1 font-semibold text-sm">
-            {foundationTitle ?? 'A primeira aventura'}
+            {foundationTitle ?? 'O primeiro curso'}
           </span>
           <ArrowRight className="size-4 shrink-0" aria-hidden />
         </span>
@@ -192,7 +193,7 @@ export function CatalogCourseCard({
       <span className={cn(salesUrl || available ? 'sz-btn-gradient gap-2 px-5' : PILULA_APAGADA)}>
         {available ? (
           <>
-            <Play className="size-4" aria-hidden /> Acessar aventura
+            <Play className="size-4" aria-hidden /> Acessar curso
           </>
         ) : salesUrl ? (
           'Mostrar ao responsável'
@@ -240,7 +241,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
     state === 'publish'
       ? 'Preparar publicação'
       : state === 'review'
-        ? 'Revisar aventura'
+        ? 'Revisar curso'
         : started
           ? 'Continuar'
           : 'Começar agora'
@@ -255,7 +256,7 @@ function MyProgress({ mine }: { mine: MyCourseView }) {
         <>
           <div className="flex items-center justify-between font-semibold text-muted-foreground text-xs">
             <span>
-              {progress.completedLessons} de {progress.totalLessons} fases
+              {progress.completedLessons} de {progress.totalLessons} aulas
             </span>
             <span
               className={cn(

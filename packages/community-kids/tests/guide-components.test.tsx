@@ -106,7 +106,10 @@ describe('formulário do primeiro perfil', () => {
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
 
-    expect(onSave).toHaveBeenCalledWith('Sofia', '2008-08-16', false, undefined)
+    expect(onSave).toHaveBeenCalledWith(
+      { name: 'Sofia', birthDate: '2008-08-16', publicProfileEnabled: false },
+      undefined,
+    )
   })
 
   it('é um form semântico e salva pelo submit do teclado', () => {
@@ -126,7 +129,10 @@ describe('formulário do primeiro perfil', () => {
     expect(form).not.toBeNull()
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
-    expect(onSave).toHaveBeenCalledWith('Sofia', null, false, undefined)
+    expect(onSave).toHaveBeenCalledWith(
+      { name: 'Sofia', birthDate: null, publicProfileEnabled: false },
+      undefined,
+    )
   })
 
   it('explica a faixa etária e não envia um novo perfil adulto', () => {
@@ -161,6 +167,44 @@ describe('formulário do primeiro perfil', () => {
     )
   })
 
+  it('perfil sem data que já é adulto: a recusa da data diz que o perfil continua', () => {
+    const onSave = mock(() => {})
+    const { container } = render(
+      <ProfileForm
+        editing={{
+          mode: 'edit',
+          profile: {
+            id: '11111111-1111-4111-8111-111111111111',
+            name: 'Sofia',
+            avatarUrl: null,
+            whatsapp: null,
+            birthDate: null,
+            publicProfileEnabled: false,
+            sortOrder: 0,
+          },
+        }}
+        busy={false}
+        onCancel={() => {}}
+        onSave={onSave}
+        onArchive={() => {}}
+      />,
+    )
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança (opcional)'), {
+      target: { value: '2000-01-01' },
+    })
+    const form = container.querySelector('form')
+    if (!form) throw new Error('form semântico não renderizado')
+    fireEvent.submit(form)
+
+    expect(onSave).not.toHaveBeenCalled()
+    const alert = screen.getByRole('alert').textContent ?? ''
+    expect(alert).toContain(
+      'A plataforma só aceita datas de quem tem menos de 18 anos. O perfil continua funcionando.',
+    )
+    expect(alert).not.toContain('crianças')
+    expect(screen.getByRole('button', { name: 'Arquivar perfil' })).toBeTruthy()
+  })
+
   it('permite editar um perfil antigo que já completou 18 anos sem trocar o nascimento', () => {
     const onSave = mock(() => {})
     const { container } = render(
@@ -192,9 +236,7 @@ describe('formulário do primeiro perfil', () => {
     fireEvent.submit(form)
 
     expect(onSave).toHaveBeenCalledWith(
-      'Sofia Silva',
-      '2000-01-01',
-      false,
+      { name: 'Sofia Silva', birthDate: '2000-01-01', publicProfileEnabled: false },
       expect.objectContaining({ id: '11111111-1111-4111-8111-111111111111' }),
     )
   })

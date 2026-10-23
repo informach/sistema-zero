@@ -282,6 +282,8 @@ async function ensureTables(conn: DbConnection) {
     'video_before_activity boolean not null default false',
     'created_at timestamptz not null default now()',
     'updated_at timestamptz not null default now()',
+    // Cursos ao vivo (0113): as consultas da Jornada/Estúdio filtram a modalidade.
+    "modality text not null default 'recorded'",
   ]) {
     await conn.sql.unsafe(`alter table members.courses add column if not exists ${column}`)
   }
@@ -290,6 +292,7 @@ async function ensureTables(conn: DbConnection) {
   for (const column of [
     'version integer not null default 0',
     'user_id uuid not null',
+    // Como no schema real: cada fixture fornece a identidade do seu produto.
     'product_id uuid not null',
     "product_kind text not null default 'course'",
     "access_type text not null default 'course'",

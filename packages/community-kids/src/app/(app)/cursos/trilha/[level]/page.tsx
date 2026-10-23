@@ -1,3 +1,7 @@
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { Lock, Map as MapIcon } from 'lucide-react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -6,9 +10,9 @@ import { CatalogCourseCard } from '@/components/kids/catalog-course-card'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsMascot } from '@/components/kids/mascot'
 import { cn } from '@/lib/cn'
-import { journeyHorizon, nextLevelHintWithin, promisedNextLevel } from '@/lib/journey-horizon'
-import { coursesForLevel, LEVEL_TIER, tierCompletionByLevel, trilhaLocked } from '@/lib/journey-map'
-import { JOURNEY_REWARD_INFO } from '@/lib/journey-rewards'
+import { coursesForLevel, tierCompletionByLevel, trilhaLocked } from '@/lib/journey-map'
+import { canonicalJourneyProgress } from '@/lib/journey-presentation'
+import { journeyRewardInfo } from '@/lib/journey-rewards'
 import { LEVEL_ORDER, levelInfo } from '@/lib/level-info'
 import { canOpenFreeStudio } from '@/lib/studio-cta'
 import type { StudentLevelSlug } from '@/lib/types'
@@ -19,7 +23,6 @@ import {
   listCatalog,
   listMyCourses,
 } from '@/server/members'
-import { getSession } from '@/server/session'
 
 export const dynamic = 'force-dynamic'
 
@@ -86,37 +89,40 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
   const { level: raw } = await params
   const levelSlug = LEVEL_ORDER.find((candidate) => candidate === raw)
   if (!levelSlug) notFound()
-  const tier = LEVEL_TIER[levelSlug]
-  // A Lenda (god) não estuda um degrau, mas TEM trilha: os cursos bônus da formatura
-  // (nível `lenda`). Os demais slugs sem tier não existem — 404.
-  if (!tier && levelSlug !== 'god') notFound()
-
-  const [{ status, body }, gamification, studioRes, session, unlocksRes, mineRes] =
-    await Promise.all([
-      listCatalog(),
-      getGamificationReadonly(),
-      checkStudioAccessReadonly().catch(() => null),
-      getSession(),
-      getStudioUnlocksReadonly().catch(() => null),
-      // Aulas concluídas vêm de "Meus cursos"; sem essa resposta, o card mantém o acesso.
-      listMyCourses().catch(() => null),
-    ])
+  const [{ status, body }, gamification, studioRes, unlocksRes, mineRes] = await Promise.all([
+    listCatalog(),
+    getGamificationReadonly(),
+    checkStudioAccessReadonly().catch(() => null),
+    getStudioUnlocksReadonly().catch(() => null),
+    // Aulas concluídas vêm de "Meus cursos"; sem essa resposta, o card mantém o acesso.
+    listMyCourses().catch(() => null),
+  ])
   if (status !== 200) throw new Error('Falha ao carregar o catálogo')
   const all = body?.courses ?? []
-  const level = gamification.status === 200 ? (gamification.body?.level ?? null) : null
+  const journey = kidsJourneyAccess(gamification.status === 200 ? gamification.body : null)
+  if (!journey)
+    return (
+      <KidsBand tone="creme">
+        <KidsBackButton href="/cursos" label="Voltar ao mapa" showLabel />
+        <p role="status">
+          Sua jornada está indisponível agora. Suas conquistas continuam guardadas. Tente novamente
+          daqui a pouco.
+        </p>
+      </KidsBand>
+    )
   // ⚠️ Posse + `freeStudio` + algum bloco conquistado: sem os três o atalho cairia na tela
   // de Estúdio trancado (clique morto).
   const studioOwned = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
-    level?.slug,
-    session?.role,
+    journey,
     unlocksRes,
   )
-  // Posto acima do HORIZONTE do catálogo = os cursos dele ainda não foram gravados.
-  // Não é a criança que está devendo, e a copy tem que dizer isso.
-  const beyondHorizon = LEVEL_ORDER.indexOf(levelSlug) > LEVEL_ORDER.indexOf(journeyHorizon(all))
+  // Policy readiness can stop at missing courses or unusable requirements, independently of rank.
+  const beyondHorizon =
+    LEVEL_ORDER.indexOf(levelSlug) >
+    (journey.readiness.horizon === null ? -1 : LEVEL_ORDER.indexOf(journey.readiness.horizon))
 
-  if (trilhaLocked(level, levelSlug, all)) {
+  if (trilhaLocked(journey, levelSlug, all)) {
     return (
       <KidsBand tone="creme">
         <KidsBackButton href="/cursos" label="Voltar ao mapa" showLabel className="mb-6" />
@@ -127,13 +133,10 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               ? 'Esta parte do mapa está sendo construída'
               : 'Esta parte do mapa ainda está bloqueada'}
           </h1>
-          {/* Nomeia o NÍVEL (não o degrau de curso): em `/trilha/coder` o degrau é o MESMO
-              Iniciante 2D que a Faísca já estuda — dizer "complete e Iniciante 2D abre"
-              soaria errado; "a trilha de Construtor(a)" é o que abre de fato. */}
           <p className="mt-4 font-medium text-[1.0625rem] text-muted-foreground">
             {beyondHorizon
-              ? `As aventuras da trilha de ${levelInfo(levelSlug).label} ainda estão sendo criadas. Volte daqui a pouquinho!`
-              : `Complete as trilhas anteriores da sua jornada e a trilha de ${levelInfo(levelSlug).label} vai abrir sozinha, com direito a recompensas!`}
+              ? `Os próximos cursos da trilha de ${levelInfo(levelSlug).label} estão em preparação. Os cursos que você já abriu continuam disponíveis.`
+              : `Veja no mapa o que falta para abrir a trilha de ${levelInfo(levelSlug).label}. Suas conquistas continuam guardadas.`}
           </p>
           <Link href="/cursos" className="sz-btn-gradient mt-6 gap-2 px-6">
             <MapIcon className="size-4" aria-hidden /> Voltar ao mapa
@@ -143,20 +146,19 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
     )
   }
 
-  const courses = coursesForLevel(levelSlug, all)
+  const courses = coursesForLevel(levelSlug, all, journey)
   const mine = new Map(
     (mineRes?.status === 200 ? (mineRes.body?.courses ?? []) : []).map((c) => [c.courseSlug, c]),
   )
   const titleBySlug = new Map(all.map((c) => [c.courseSlug, c.title]))
   const owner = levelInfo(levelSlug)
-  const isCurrent = level?.slug === levelSlug
-  // O hint do próximo nível só aparece quando ESTA é a trilha que o aluno estuda agora.
-  // Conta só os cursos que EXISTEM (horizonte do catálogo) — a mesma frase do mapa.
-  const hint = level && isCurrent ? nextLevelHintWithin(level, all) : null
-  // O cartão "Próximo nível" é da trilha ATUAL (é para onde ela leva) e só quando o catálogo
-  // LEVA até lá: ver `promisedNextLevel`.
-  const next = isCurrent ? promisedNextLevel(level, all) : null
-  const trilha = tierCompletionByLevel(all)[levelSlug]
+  const child = isKidsStaffPreview(journey) ? null : journey
+  const isCurrent = child?.earned.level === levelSlug
+  const progress = child ? canonicalJourneyProgress(child) : null
+  const hint = isCurrent ? progress?.hint : null
+  const next = isCurrent && progress?.kind === 'pending' && progress.hint ? child?.nextLevel : null
+  const reward = child && next ? journeyRewardInfo(child, next) : null
+  const trilha = tierCompletionByLevel(all, journey)[levelSlug]
 
   return (
     <>
@@ -171,16 +173,14 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           <div className="min-w-0">
             {/* ⚠️ A trilha se chama pelo POSTO do aluno ("Trilha Faísca"), nunca pelo degrau
                 interno ("Iniciante 2D"), que é vocabulário de quem monta o curso. */}
-            <h1 className="sz-display text-[clamp(2rem,3.6vw,3rem)]">
-              {tier ? `Trilha ${owner.label}` : 'Aventuras da Lenda 👑'}
-            </h1>
+            <h1 className="sz-display text-[clamp(2rem,3.6vw,3rem)]">{`Trilha ${owner.label}`}</h1>
           </div>
         </div>
-        {tier ? null : (
+        {levelSlug === 'god' && child?.earned.level === 'god' ? (
           <p className="mt-4 max-w-3xl font-medium text-[1.0625rem] text-muted-foreground">
-            Você chegou ao topo da jornada! Estas aventuras extras abriram para você.
+            Você chegou ao topo da jornada! Estes cursos extras abriram para você.
           </p>
-        )}
+        ) : null}
         {hint ? (
           <p className="mt-4 max-w-4xl font-medium text-[1.0625rem] text-muted-foreground">
             {hint}
@@ -195,7 +195,7 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
           <section className="kids-carta flex flex-col items-center gap-4 px-6 py-14 text-center">
             <KidsMascot expression="thinking" className="kid-float size-16" />
             <p className="sz-display text-xl">
-              As aventuras desta trilha estão a caminho! Volte daqui a pouquinho.
+              Os cursos desta trilha estão a caminho! Volte daqui a pouco.
             </p>
             {/* Trilha vazia não pode virar beco: quem tem o Estúdio já pode criar o
               que quiser enquanto os cursos não chegam. */}
@@ -246,14 +246,14 @@ export default async function TrilhaPage({ params }: { params: Promise<{ level: 
               <p className="sz-display mt-1 text-2xl md:text-[1.625rem]">{levelInfo(next).label}</p>
               <p className="mt-1.5 text-[0.9375rem]">
                 <span className="font-bold">Ao chegar aqui: </span>
-                <span className="text-muted-foreground">{JOURNEY_REWARD_INFO[next].title}</span>
+                <span className="text-muted-foreground">{reward?.title}</span>
               </p>
             </div>
             {trilha && trilha.total > 0 ? (
               <div className="w-full shrink-0 md:w-60">
                 <p className="font-extrabold text-sm">
                   {trilha.done} de {trilha.total}{' '}
-                  {trilha.total === 1 ? 'aventura pronta' : 'aventuras prontas'}
+                  {trilha.total === 1 ? 'curso pronto' : 'cursos prontos'}
                 </p>
                 <div className="sz-progress mt-2.5" aria-hidden="true">
                   <span style={{ width: `${Math.round((trilha.done / trilha.total) * 100)}%` }} />

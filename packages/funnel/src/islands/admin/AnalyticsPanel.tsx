@@ -472,6 +472,13 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
                         return (
                           <tr key={question.id}>
                             <td className="p-2">
+                              {(question.branch || question.conditional) && (
+                                <span className="mr-2 rounded bg-bg px-1.5 py-0.5 text-xs text-cyan">
+                                  {[question.branch, question.conditional ? 'extra' : '']
+                                    .filter(Boolean)
+                                    .join(' · ')}
+                                </span>
+                              )}
                               {question.position}. {question.title}
                               <details className="text-xs text-muted">
                                 <summary>Identificador e opções</summary>

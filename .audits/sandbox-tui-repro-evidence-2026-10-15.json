@@ -1,0 +1,51 @@
+{
+  "commit": "ac18750e06d7678ca8a215fc61cb91e1e5709b50",
+  "scope": "Reviewed original tools.ts; in-memory fs adapter; no remote services or model calls",
+  "results": {
+    "expansion": {
+      "result": "Replaced 1 occurrence in main.js.",
+      "bytes": 128001,
+      "laterRead": "main.js is 128001 bytes, over the 128000 byte read limit. Split it into smaller modules."
+    },
+    "statFailure": {
+      "result": "No file at main.js.",
+      "logLevel": "info"
+    },
+    "concurrentReplace": {
+      "results": [
+        "Replaced 1 occurrence in main.js.",
+        "Replaced 1 occurrence in main.js."
+      ],
+      "actual": "A BB",
+      "desired": "AA BB",
+      "limitation": "In-memory adapter; proves missing concurrency control in caller, not Daytona implementation."
+    },
+    "promptOnlyProtection": {
+      "acceptedDeletes": 2,
+      "paths": [
+        "report.js",
+        "engine/index.js"
+      ]
+    },
+    "abortedTool": {
+      "writesAfterAlreadyAbortedInvocation": 1,
+      "limitation": "Isolated execute call; SDK may prevent scheduling a new call. In-flight cancellation remains unverified."
+    },
+    "paths": {
+      "lexicalTraversalRejected": true,
+      "linkNameAccepted": true,
+      "symlinkEscapeDemonstrated": false
+    },
+    "previewRedaction": {
+      "input": "https://3000-SYNTHETIC_TOKEN.proxy.example/main.js?cache=1",
+      "output": "https://3000-SYNTHETIC_TOKEN.proxy.example/main.js",
+      "syntheticHostnameTokenRetained": true,
+      "liveCredentialUsed": false
+    },
+    "toolUiStatus": {
+      "missingFileResult": "No file at main.js.",
+      "sdkResultState": "output-available",
+      "renderedStatus": "done"
+    }
+  }
+}

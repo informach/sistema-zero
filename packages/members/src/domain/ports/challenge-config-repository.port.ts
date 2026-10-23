@@ -1,3 +1,4 @@
+import type { CourseAudience } from '../course/course'
 /**
  * Configuração do Desafio do mês gerenciada pelo admin: biblioteca de temas
  * CUSTOM + override do tema por mês. Sem override, o tema do mês vem do
@@ -5,6 +6,7 @@
  */
 
 export interface ChallengeCustomThemeRecord {
+  audience?: CourseAudience
   id: string
   emoji: string
   title: string
@@ -25,6 +27,7 @@ export interface ChallengeOverrideWithTheme {
 }
 
 export interface UpsertChallengeOverrideInput {
+  audience?: CourseAudience
   monthKey: string
   builtinSlug: string | null
   customThemeId: string | null
@@ -33,6 +36,7 @@ export interface UpsertChallengeOverrideInput {
 }
 
 export interface CreateChallengeThemeInput {
+  audience?: CourseAudience
   id: string
   emoji: string
   title: string
@@ -48,19 +52,26 @@ export type ChallengeThemePatch = Partial<{
 }>
 
 export interface ChallengeConfigRepository {
-  findOverrideWithTheme(monthKey: string): Promise<ChallengeOverrideWithTheme | null>
+  findOverrideWithTheme(
+    monthKey: string,
+    audience?: CourseAudience,
+  ): Promise<ChallengeOverrideWithTheme | null>
   /** Uma query (LEFT JOIN) para a janela do painel. */
-  listOverridesWithThemes(monthKeys: string[]): Promise<ChallengeOverrideWithTheme[]>
+  listOverridesWithThemes(
+    monthKeys: string[],
+    audience?: CourseAudience,
+  ): Promise<ChallengeOverrideWithTheme[]>
   upsertOverride(input: UpsertChallengeOverrideInput): Promise<void>
   /** Idempotente: mês sem override é no-op. */
-  deleteOverride(monthKey: string): Promise<void>
+  deleteOverride(monthKey: string, audience?: CourseAudience): Promise<void>
   /** TODOS os temas custom (com arquivados; a UI decide o que esconder). */
-  listCustomThemes(): Promise<ChallengeCustomThemeRecord[]>
-  findCustomTheme(id: string): Promise<ChallengeCustomThemeRecord | null>
+  listCustomThemes(audience?: CourseAudience): Promise<ChallengeCustomThemeRecord[]>
+  findCustomTheme(id: string, audience?: CourseAudience): Promise<ChallengeCustomThemeRecord | null>
   createCustomTheme(input: CreateChallengeThemeInput): Promise<ChallengeCustomThemeRecord>
   updateCustomTheme(
     id: string,
     patch: ChallengeThemePatch,
     now: Date,
+    audience?: CourseAudience,
   ): Promise<ChallengeCustomThemeRecord | null>
 }

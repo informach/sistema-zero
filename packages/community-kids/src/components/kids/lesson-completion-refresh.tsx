@@ -22,7 +22,7 @@ const CompletionRefreshContext = createContext<CompletionRefresh | null>(null)
 /**
  * A conclusão muda também XP, moedas e ferramentas no layout compartilhado. Ele não é
  * reconsultado só por navegar. Guardamos o pedido AQUI, no layout, até a criança fechar a
- * celebração ou sair da fase (inclusive pelo voltar do navegador ou pelo link do troféu).
+ * celebração ou sair da aula (inclusive pelo voltar do navegador ou pelo link do troféu).
  * O pedido sobrevive à desmontagem da aula, sem interromper a festa nem disputar com o push.
  */
 export function LessonCompletionRefreshProvider({ children }: { children: ReactNode }) {

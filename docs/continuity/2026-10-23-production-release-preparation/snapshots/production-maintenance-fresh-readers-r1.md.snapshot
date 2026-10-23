@@ -1,0 +1,48 @@
+# Fresh read-only prerequisites before production maintenance
+
+Preparation only. No Railway, SSH, HTTP, SQL, provider write or maintenance was executed. The three original readers and all old receipts remain untouched. `production-maintenance-fresh-readers-r1.diff` contains the complete source delta.
+
+The launcher derivative starts from **production-pensa-writer-images-readonly-r2-final.mjs**, the actual qualified correction: normal native process environment minus `RAILWAY_TOKEN`, `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_TOKEN`, `RAILWAY_API`, and selection of the unique RUNNING instance. It does not reintroduce the earlier limited environment or select an arbitrary historical instance. All three readers retain native environment handling; no values are serialized.
+
+Changes are restricted to explicit new output names, exclusive `wx` reservation **before** any subprocess, fsync/close, import guards, fresh timestamps at actual collection start, and meaningful nonzero status when a returned proof is unqualified. Source/remote identity checks, query/SQL text, installed-file pins, deployment pins, command projections and proof schemas remain unchanged. A failed early collection can leave its reserved output empty; that is not evidence and is never overwritten automatically. A new deliberate read uses a new output name.
+
+## Commands for Root, serially
+
+Working directory: `C:/Users/tocha/projects/sistema-zero-python-review-fixes`. These are **read-only operational commands**, prepared but not run here. Each output name below is new; if it already exists, choose another explicit suffix in the same allowed namespace.
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' `
+  '.cache/python-reference-games/production-pensa-writer-images-readonly-r3.mjs' `
+  'production-pensa-writer-images-readonly-r3-window-r1.json'
+
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' `
+  '.cache/python-reference-games/production-old-image-migration-readonly-r2.mjs' run `
+  'production-old-image-migration-readonly-r2-window-r1.json'
+
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' `
+  '.cache/python-reference-games/production-next-predeploy-readonly-r2.mjs' `
+  'production-next-predeploy-readonly-r2-window-r1.json'
+```
+
+All outputs are in `.cache/python-reference-games/`. Await each exit and inspect its actual state:
+
+| Proof | Required successful state | Reads |
+| --- | --- | --- |
+| Launchers | `FIVE_ACTIVE_IMAGES_AND_INSTALLED_LAUNCHERS_VERIFIED` | Fresh contexts/snapshots and one installed launcher hash per service, selected instance and identity checked; no SQL or variables |
+| Journals | `BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE` | Members/Hub exact installed journal + migration SQL/config/package hashes and database journal SELECTs in read-only repeatable-read transactions |
+| Next | `THREE_NEXT_PREDEPLOY_AND_START_OVERRIDES_ABSENT` | Fresh Admin/Adult/Kids metadata, effective/deployed/file-config commands; no SSH, SQL or variables |
+
+Next still reads the pinned historical launcher receipt solely as the fixed identity source. It does not treat that receipt's timestamp as fresh: all three Next targets receive new before/after metadata observations. The new launcher receipt is the launchers proof for the next phase-1 plan.
+
+After success Root computes the three **actual output hashes** and writes a **new** phase-1 plan using those paths/hashes, real current `createdAt`/`expiresAt`, and the existing approved maintenance-plan pin. Do not edit the old plan or old receipt dates. The canonical store reader still enforces the 30-minute observational proof window and its own fresh checks. These observations do not activate maintenance or establish a writer fence.
+
+If any deployment, image, command, installed hash or journal changes, stop and review the mismatch. No derivative adopts a new operational target, runs a migrator, executes DDL/DML, creates a deployment, reloads a process or sets a variable.
+
+## Focused offline evidence
+
+Node24.22.0: six tests passed in 99.51 ms, provider/subprocess calls zero. Covered import inertness; preservation of native environment with exactly four credential overrides removed; rejection of old/path-traversal output names; preexisting output preserved and refusal before subprocess; identical journal target/SQL/remote-reader/projection functions; and original reader byte hashes unchanged. Synthetic exclusive-output fixtures were deleted by their exact known paths after the test.
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' --test `
+  '.cache/python-reference-games/production-maintenance-fresh-readers-r1.test.mjs'
+```

@@ -38,6 +38,17 @@ export class SceneAnimationPlayer {
   private startedAt = 0
   private startTime = 0
   private previewReturn: PreviewReturn | null = null
+  private transitionGuard:
+    | ((action: (current?: MoldaSceneDocument) => void, reason?: 'navigation') => boolean)
+    | null = null
+
+  setTransitionGuard(
+    guard:
+      | ((action: (current?: MoldaSceneDocument) => void, reason?: 'navigation') => boolean)
+      | null,
+  ) {
+    this.transitionGuard = guard
+  }
 
   constructor(private readonly clock: PlaybackClock) {}
 
@@ -95,6 +106,12 @@ export class SceneAnimationPlayer {
       !before.preview
     )
       return
+    if (
+      this.transitionGuard?.((current) =>
+        this.setClip(document && current?.id === document.id ? current : document, clipId),
+      )
+    )
+      return
     const sampler = document && clipId ? prepareSceneAnimation(document, clipId) : null
     const time =
       sampler &&
@@ -109,14 +126,20 @@ export class SceneAnimationPlayer {
 
   /** Preview a candidate without replacing the editor document, writing autosave, or adding history. */
   setPreview(document: MoldaSceneDocument, clip: SceneAnimationClip) {
+    if (
+      this.transitionGuard?.((current) =>
+        this.setPreview(current?.id === document.id ? current : document, clip),
+      )
+    )
+      return
     const sampler = prepareSceneAnimationPreview(document, clip)
     const { source, time, playing } = this.snapshot
     const previous =
-      source?.document === document
+      source?.document.id === document.id
         ? source.preview
           ? this.previewReturn
           : {
-              document,
+              document: source.document,
               clipId: source.clip.id,
               time: playing ? sceneAnimationTime(source.clip, this.seconds()) : time,
             }
@@ -172,6 +195,11 @@ export class SceneAnimationPlayer {
     const source = this.snapshot.source
     if (!source) return
     number(seconds, 'time', 0, source.clip.duration)
+    if (
+      seconds !== this.snapshot.time &&
+      this.transitionGuard?.(() => this.seek(seconds), 'navigation')
+    )
+      return
     this.cancel()
     this.show(seconds, false, false)
   }
@@ -193,6 +221,7 @@ export class SceneAnimationPlayer {
   play() {
     const { source, playing, time } = this.snapshot
     if (!source || playing) return
+    if (this.transitionGuard?.(() => this.play(), 'navigation')) return
     this.startTime = time >= source.clip.duration ? 0 : time
     this.startedAt = this.clock.now()
     this.show(this.startTime, source.clip.loop, true)

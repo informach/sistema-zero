@@ -1,4 +1,7 @@
+export * from './community-access'
 export * from './content-fingerprint'
 export * from './object-deletion'
 export * from './pinta-palette-library'
 export * from './storage-keys'
+export { creativeToolAccessRef } from './tool-access'
+export { encodeOwnedUtf8 } from './utf8'

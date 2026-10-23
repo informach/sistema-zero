@@ -16,7 +16,9 @@ const prof = (profileId: string) => ({ 'x-auth-user-id': profileId, 'x-auth-acco
 
 describe('admin profiles-overview — enriquecimento da listagem de crianças', () => {
   test('xp/ofensiva/última atividade + pendências por perfil; TODO id pedido volta', async () => {
-    const { app, courses, entitlements, studioSubmissions, clockRef } = buildApp()
+    const { app, courses, entitlements, studioSubmissions, clockRef, kidsJourneySnapshots } =
+      buildApp()
+    kidsJourneySnapshots.owners.set(PROFILE_B, ACCOUNT)
     const { courseId, slug, lessonIds } = seedSampleCourse(
       courses,
       'kids-curso',

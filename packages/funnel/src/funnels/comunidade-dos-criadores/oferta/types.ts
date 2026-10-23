@@ -1,11 +1,9 @@
-export type ComunidadeProfile =
-  | 'tempo-de-tela'
-  | 'criacao-de-jogos'
-  | 'expressao-visual'
-  | 'formacao-tecnologica'
-
-/** Continuidade é uma etapa de relacionamento, não um quinto avatar. */
-export type ComunidadePageId = ComunidadeProfile | 'continuar'
+/**
+ * As páginas de oferta da Comunidade Kids (20/10/2026): `9a17` em `/oferta`, `criar-junto` (menor
+ * de 9, criando com o responsável) e `continuar` (a família que já começou na plataforma). As cinco
+ * páginas de perfil de antes redirecionam para `/oferta` (`COMUNIDADE_OFERTAS_ANTIGAS`).
+ */
+export type ComunidadeOfertaId = '9a17' | 'criar-junto' | 'continuar'
 
 export interface ComunidadeAction {
   label: string
@@ -22,54 +20,57 @@ export interface ComunidadeSection {
   id: string
   title: string
   eyebrow: string
-  /** `cases`: uma carta por situação (grupo com subtítulo), ligadas como etapas de um percurso. */
-  layout: 'story' | 'cards' | 'band' | 'journey' | 'tools' | 'cases'
+  /**
+   * `cases`: uma carta por situação (grupo com subtítulo), ligadas como etapas de um percurso.
+   * `relatos`: a faixa de relatos; as falas de `falas` viram cartas com retrato.
+   */
+  layout: 'story' | 'cards' | 'band' | 'journey' | 'tools' | 'cases' | 'relatos'
   visuals: string[]
   groups: ComunidadeGroup[]
+  /** Relatos reais (`relatos.ts`): a faixa em `relatos`; nas demais, a fala solta do fim da seção. */
+  falas?: readonly RelatoId[]
   actions: ComunidadeAction[]
 }
 
-export interface ComunidadePage {
-  id: ComunidadePageId
-  label: string
-  seoTitle: string
-  description: string
-  emphasis: string
-  heroVisual: string
-  heroChip: string
-  hero: {
-    title: string
-    description: string
-    benefits: string[]
-    requirements: string
-    primary: ComunidadeAction
-    secondary: ComunidadeAction
-  }
-  sections: ComunidadeSection[]
-  faqTitle: string
-  faqGroups: { title: string; questions: string[] }[]
-  faq?: Record<string, ComunidadeFaqEntry>
-  faqVisuals?: Record<string, readonly string[]>
-  faqLinks?: ComunidadeAction[]
-  offer?: ComunidadeOffer
-  showFounder?: boolean
-  closing: ComunidadeSection
+/** Uma fala real, com as palavras de quem disse (cartelas do Instagram e trechos conferidos). */
+export interface Relato {
+  fala: string
+  nome: string
+  /** "Aluno", "Aluna" ou a relação do responsável com a criança. */
+  papel: string
+  /** Tema editorial ou curso do relato; fica fora das aspas. */
+  contexto: string
+  retrato: string
 }
 
-export interface ComunidadeOffer {
-  title: string
-  paragraphs: string[]
-  monthly: { title: string; paragraphs: string[]; cta: string }
-  annual: { title: string; paragraphs: string[]; cta: string }
-  period?: { title: string; paragraphs: string[] }
-  guarantee: { title: string; paragraphs: string[] }
-  checkout: string
-}
-
-export interface ComunidadeFaqEntry {
-  question: string
-  paragraphs: string[]
-}
+export type RelatoId =
+  | 'AV02'
+  | 'AV03'
+  | 'AV04'
+  | 'AV06'
+  | 'AV07'
+  | 'AV08'
+  | 'AV09'
+  | 'AV10'
+  | 'AV11'
+  | 'AV12'
+  | 'N1'
+  | 'N2'
+  | 'N4'
+  | 'N5'
+  | 'N6'
+  | 'N7'
+  | 'N8'
+  | 'N9'
+  | 'N11'
+  | 'N12'
+  | 'N13'
+  | 'N14'
+  | 'N15'
+  | 'N16'
+  | 'N17'
+  | 'N18'
+  | 'N19'
 
 /** Uma captura REAL do kids em staging (1x e @2x, mesma proporção). */
 export interface ComunidadeFrame {

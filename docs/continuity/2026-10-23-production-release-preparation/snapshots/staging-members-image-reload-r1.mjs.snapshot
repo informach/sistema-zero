@@ -1,0 +1,363 @@
+import assert from 'node:assert/strict'
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdir, open, readFile, rename } from 'node:fs/promises'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+export const PINS = Object.freeze({
+  project: '415d5a1c-5f75-432c-8445-b395d0977ce3', environment: 'f634cff6-aafb-4804-8b69-172fad4e946e',
+  service: 'aa282801-ffba-477c-af6d-394b2f4f9af9',
+  deployment: '9d93b2ea-0301-4d1e-b376-187557cf7bfe',
+  commit: 'bc2f154d45509a4745cccc5d05bb2226ff9f2977',
+  imageDigest: 'sha256:db2ba83e02e45ad01dd3d2e1a7202e66f8517b6efd666cd5e8382c0552449f21',
+  snapshot: 'cbf99aba-71dc-4170-b0d5-3f5ce70c99d8',
+  adult: '9df1b493-4cea-4b36-bec8-7299f054c17d', gateway: '2b7748bc-d3e3-4aff-bd94-3f514b53c44f',
+  kids: 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f',
+  adultOrigin: 'https://community-staging-66f2.up.railway.app', kidsOrigin: 'https://community-kids-staging.up.railway.app',
+  vaultId: 'staging_20261022_v1',
+  baselineReceiptSha256: 'fcb5a107d4e19e9868e78966726065c1485efaf48dd60a8be73ad7ff211c5b27',
+  checkMaxAgeMs: 600000, overallTimeoutMs: 300000, pollTimeoutMs: 240000, pollIntervalMs: 2000,
+})
+const CACHE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(CACHE, '../..')
+const PILOT = join(CACHE, 'staging-members-image-reload-r1')
+const INTENT = join(PILOT, 'mutation-intent.json')
+export const TARGET_KEYS = Object.freeze(['ADULT_STUDIO_BUILDER_EXECUTOR_URL', 'STUDIO_AI_CALLBACK_ORIGINS', 'STUDIO_AI_VAULT_ACTIVE_ID', 'STUDIO_AI_VAULT_KEYS'])
+const SOURCES = Object.freeze(['members', 'adult', 'kids', 'gateway'])
+export const CANONICAL_PINS = Object.freeze([
+  ['.cache/python-reference-games/staging-members-image-reload-canonical-r1.ts', '0a116e505176f854dad7e405d3ac88e607512ec1964492aec8577ce116108bd4'],
+  ['.cache/python-reference-games/staging-promotion-plan-001-r1.json', 'ec3b48ca45b65e20baa13112b9e77037e49e1523b1c4c2d01b83e2d9a0aa2f5b'],
+  ['packages/members/src/infrastructure/security/studio-ai-vault-config.ts', '4d060b4774eb8651129b699b218b04fee88709a9ebaec83f82e2bbe28fe7ffca'],
+  ['packages/members/src/infrastructure/security/studio-ai-vault.ts', '1d9f802ae0d4bf026c3c1bf0269f520c78debc89889aa633c462764b76805689'],
+  ['packages/members/src/domain/studio/authoring-policy.ts', '95c03b5f383bfc7c8ccc02fffc1a6e66968a7e628b81d97beac00f5156a37cb0'],
+  ['packages/members/src/domain/studio/runtime-hosts.ts', '0b8059c6dc596f5a21f01e4275833b79933ce2b6eacc8308376bc4d13dfd9352'],
+])
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const record = value => value && typeof value === 'object' && !Array.isArray(value)
+const id = value => typeof value === 'string' && /^[a-f0-9-]{36}$/.test(value)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function guard(value, code) { if (!value) throw new Refusal(code) }
+const deploymentFields = 'id status createdAt snapshotId canRedeploy deploymentStopped projectId environmentId serviceId meta'
+const contextQuery = `query($e:String!,$s:String!,$input:DeploymentListInput!,$old:String!){serviceInstance(environmentId:$e,serviceId:$s){serviceId environmentId activeDeployments{${deploymentFields}} latestDeployment{${deploymentFields}}}deployments(first:20,input:$input){edges{node{${deploymentFields}}}pageInfo{hasNextPage}}old:deployment(id:$old){${deploymentFields}}}`
+const snapshotQuery = 'query($d:String!){deploymentSnapshot(deploymentId:$d){id createdAt updatedAt variables}}'
+const variablesQuery = 'query($p:String!,$e:String!,$s:String!){raw:variables(projectId:$p,environmentId:$e,serviceId:$s,unrendered:true) rendered:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$s)}'
+const servicesQuery = 'query($p:String!){project(id:$p){id services(first:50){edges{node{id name projectId deletedAt}}pageInfo{hasNextPage}}}}'
+export const mutation = 'mutation MembersExistingImagePilot($id:String!){deploymentRedeploy(id:$id,usePreviousImageTag:true){id status snapshotId}}'
+const contextVariables = () => ({ e: PINS.environment, s: PINS.service, old: PINS.deployment,
+  input: { projectId: PINS.project, environmentId: PINS.environment, serviceId: PINS.service,
+    status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } })
+
+function deployment(value) {
+  guard(record(value) && id(value.id) && value.projectId === PINS.project && value.environmentId === PINS.environment && value.serviceId === PINS.service, 'DEPLOYMENT_IDENTITY')
+  guard(typeof value.status === 'string' && typeof value.createdAt === 'string', 'DEPLOYMENT_SHAPE')
+  const meta = record(value.meta) ? value.meta : {}
+  const date = key => typeof meta[key] === 'string' && Number.isFinite(Date.parse(meta[key])) ? meta[key] : null
+  return { id: value.id, status: value.status, createdAt: value.createdAt,
+    snapshotId: id(value.snapshotId) ? value.snapshotId : null,
+    canRedeploy: value.canRedeploy === true, deploymentStopped: value.deploymentStopped === true,
+    commit: typeof meta.commitHash === 'string' && /^[a-f0-9]{40}$/.test(meta.commitHash) ? meta.commitHash : null,
+    imageDigest: typeof meta.imageDigest === 'string' && /^sha256:[a-f0-9]{64}$/.test(meta.imageDigest) ? meta.imageDigest : null,
+    reportedBuildStartedAt: date('buildStartedAt'), reportedBuildFinishedAt: date('buildFinishedAt') ?? date('buildEndedAt') }
+}
+export function projectContext(data) {
+  const instance = data.serviceInstance
+  guard(instance?.serviceId === PINS.service && instance.environmentId === PINS.environment, 'SERVICE_IDENTITY')
+  guard(Array.isArray(instance.activeDeployments) && Array.isArray(data.deployments?.edges) && data.deployments.pageInfo?.hasNextPage === false, 'CONTEXT_INCOMPLETE')
+  return { active: instance.activeDeployments.map(deployment), latest: deployment(instance.latestDeployment),
+    pending: data.deployments.edges.map(value => deployment(value.node)), old: deployment(data.old) }
+}
+export function validateBaseline(context) {
+  guard(context.active.length === 1 && context.active[0].id === PINS.deployment && context.latest.id === PINS.deployment && context.old.id === PINS.deployment, 'BASELINE_DEPLOYMENT_CHANGED')
+  guard(context.pending.length === 0, 'BASELINE_PENDING')
+  for (const value of [context.active[0], context.latest, context.old]) {
+    guard(value.status === 'SUCCESS' && value.commit === PINS.commit && value.imageDigest === PINS.imageDigest && value.snapshotId === PINS.snapshot && value.canRedeploy, 'BASELINE_SOURCE_CHANGED')
+  }
+}
+export function projectServices(data) {
+  guard(data.project?.id === PINS.project && Array.isArray(data.project.services?.edges) && data.project.services.pageInfo?.hasNextPage === false, 'SERVICE_MAP_INCOMPLETE')
+  const services = data.project.services.edges.map(({ node }) => {
+    guard(record(node) && id(node.id) && node.projectId === PINS.project && typeof node.name === 'string' && node.name.length > 0 && (node.deletedAt === null || typeof node.deletedAt === 'string'), 'SERVICE_MAP_SHAPE')
+    return { id: node.id, name: node.name, deletedAt: node.deletedAt }
+  })
+  guard(new Set(services.map(value => value.id)).size === services.length, 'SERVICE_MAP_DUPLICATE_ID')
+  return services.sort((a, b) => a.id.localeCompare(b.id))
+}
+function serviceForReference(namespace, services) {
+  const matches = services.filter(value => !value.deletedAt && (value.id === namespace || value.name === namespace))
+  guard(matches.length === 1, 'REFERENCE_SERVICE_ABSENT_OR_AMBIGUOUS')
+  return matches[0]
+}
+export function declaredValue(value, services) {
+  guard(typeof value === 'string', 'DECLARED_VARIABLE_SHAPE')
+  if (!value.includes('${{')) return { kind: 'literal', value }
+  // Observed provider forms only: the entire value is one service.variable reference.
+  // No interpolation, expression execution, whitespace repair or partial-template evaluator.
+  const match = /^\$\{\{([^{}]+)\.([A-Za-z_][A-Za-z_0-9]*)\}\}$/.exec(value)
+  guard(match, 'NON_ATOMIC_REFERENCE_UNSUPPORTED')
+  return { kind: 'reference', serviceId: serviceForReference(match[1], services).id, variable: match[2] }
+}
+function declaredDifferences(before, after, services) {
+  const keys = [...new Set([...Object.keys(before), ...Object.keys(after)])].sort()
+  return keys.filter(key => !Object.hasOwn(before, key) || !Object.hasOwn(after, key) || !same(declaredValue(before[key], services), declaredValue(after[key], services)))
+}
+export function validateVariables(values) {
+  for (const service of SOURCES) {
+    for (const map of [values[service], values.authored?.[service]]) guard(record(map) && Object.values(map).every(value => typeof value === 'string'), 'VARIABLE_SHAPE')
+  }
+  guard(Array.isArray(values.services) && values.services.length > 0, 'SERVICE_MAP_SHAPE')
+  // Validate every declared Members reference before dispatch, including unchanged ones.
+  for (const value of Object.values(values.authored.members)) declaredValue(value, values.services)
+  guard(values.adult.APP_PUBLIC_URL === PINS.adultOrigin && values.kids.APP_PUBLIC_URL === PINS.kidsOrigin && values.adult.RAILWAY_PRIVATE_DOMAIN === 'community.railway.internal' && values.adult.PORT === '3007', 'BASE_URL_SOURCE_CHANGED')
+  guard(values.members.ADULT_STUDIO_BUILDER_EXECUTOR_URL === `${PINS.adultOrigin}/api/internal/studio-builder/execute` && values.members.STUDIO_AI_CALLBACK_ORIGINS === PINS.kidsOrigin && values.members.STUDIO_AI_VAULT_ACTIVE_ID === PINS.vaultId, 'MEMBERS_TARGET_CONTEXT_CHANGED')
+  const hmac = values.gateway.GATEWAY_HMAC_SECRET
+  guard(typeof hmac === 'string' && hmac.length >= 16 && !/\s/.test(hmac) && SOURCES.every(service => values[service].GATEWAY_HMAC_SECRET === hmac), 'HMAC_SOURCE_CHANGED')
+  const executor = values.members.STUDIO_BUILDER_EXECUTOR_SECRET
+  guard(typeof executor === 'string' && executor.length >= 32 && !/\s/.test(executor) && values.adult.STUDIO_BUILDER_EXECUTOR_SECRET === executor && values.kids.STUDIO_BUILDER_EXECUTOR_SECRET === executor, 'EXECUTOR_SOURCE_CHANGED')
+  guard(values.canonicalValidation?.vault === true && values.canonicalValidation?.catalogAndHosts === true, 'CANONICAL_CONFIGURATION_UNCONFIRMED')
+  const postgres = serviceForReference('Postgres', values.services)
+  const database = declaredValue(values.authored.members.DATABASE_URL, values.services)
+  guard(database.kind === 'reference' && database.serviceId === postgres.id && database.variable === 'DATABASE_URL' && values.postgresServiceId === postgres.id && typeof values.postgresDatabaseUrl === 'string' && values.postgresDatabaseUrl.length > 0 && values.members.DATABASE_URL === values.postgresDatabaseUrl, 'DATABASE_SOURCE_CHANGED')
+}
+// Only provider-generated deployment/replica identities may differ for this new deployment.
+// Other RAILWAY_* keys, including user-configured platform options, are preserved.
+export const dynamicKeys = Object.freeze(['RAILWAY_DEPLOYMENT_ID', 'RAILWAY_REPLICA_ID'])
+export function differenceKeys(before, after, exclusions = []) {
+  const ignored = new Set(exclusions)
+  return [...new Set([...Object.keys(before), ...Object.keys(after)])].filter(key => !ignored.has(key) && before[key] !== after[key]).sort()
+}
+export function preservedVariables(before, after) {
+  validateVariables(after)
+  const mismatches = Object.fromEntries(SOURCES.map(service =>
+    [service, differenceKeys(before[service], after[service], service === 'members' ? dynamicKeys : [])]))
+  // Authored values are compared byte for byte across the operation. Normalization is only
+  // for snapshot-vs-authoring storage representations, never to conceal an intervening edit.
+  const authoredMismatches = Object.fromEntries(SOURCES.map(service =>
+    [service, differenceKeys(before.authored[service], after.authored[service])]))
+  const serviceMapEqual = same(before.services, after.services)
+  const databaseSourceEqual = before.postgresServiceId === after.postgresServiceId && before.postgresDatabaseUrl === after.postgresDatabaseUrl
+  return { equal: Object.values(mismatches).every(keys => keys.length === 0) && Object.values(authoredMismatches).every(keys => keys.length === 0) && serviceMapEqual && databaseSourceEqual,
+    renderedMismatches: mismatches, authoredMismatches, serviceMapEqual, databaseSourceEqual }
+}
+export function snapshotComparison(snapshot, currentRaw, services) {
+  guard(record(snapshot) && record(snapshot.variables) && Object.values(snapshot.variables).every(value => typeof value === 'string'), 'SNAPSHOT_SHAPE')
+  const mismatchKeys = declaredDifferences(snapshot.variables, currentRaw, services)
+  return { snapshotId: snapshot.id, createdAt: snapshot.createdAt, updatedAt: snapshot.updatedAt,
+    targetsPresent: TARGET_KEYS.every(key => typeof snapshot.variables[key] === 'string'),
+    targetsAbsent: TARGET_KEYS.every(key => !Object.hasOwn(snapshot.variables, key)),
+    targetsEqualCurrent: TARGET_KEYS.every(key => snapshot.variables[key] === currentRaw[key]),
+    allDeclaredVariablesEqual: mismatchKeys.length === 0, mismatchKeys,
+    referenceIdentityNormalization: 'whole-service-reference-by-complete-current-project-service-map',
+    excludedDeclaredKeys: [] }
+}
+export function validateOldSnapshot(snapshot, values) {
+  guard(snapshot?.id === PINS.snapshot, 'OLD_SNAPSHOT_IDENTITY')
+  const comparison = snapshotComparison(snapshot, values.authored.members, values.services)
+  guard(comparison.targetsAbsent, 'BASELINE_ALREADY_CHANGED')
+  guard(same(comparison.mismatchKeys, TARGET_KEYS), 'BASELINE_DECLARED_VARIABLES_CHANGED')
+  return comparison
+}
+export function acknowledge(value) {
+  if (!record(value) || value.errors || !record(value.data?.deploymentRedeploy)) return null
+  const result = value.data.deploymentRedeploy
+  if (!id(result.id) || result.id === PINS.deployment || typeof result.status !== 'string') return null
+  return { id: result.id, status: result.status, snapshotId: id(result.snapshotId) ? result.snapshotId : null }
+}
+export function evaluatePoll(context, ack, candidate) {
+  guard(candidate.id === ack.id && context.old.id === PINS.deployment, 'POLL_IDENTITY')
+  guard(context.active.every(value => [PINS.deployment, ack.id].includes(value.id)) && context.pending.every(value => [PINS.deployment, ack.id].includes(value.id)) && context.latest.id === ack.id, 'OTHER_DEPLOYMENT_APPEARED')
+  guard(context.pending.filter(value => value.id === PINS.deployment).every(value => ['REMOVING', 'RETIRING'].includes(value.status)), 'OLD_PENDING_STATE_UNEXPECTED')
+  if (candidate.commit !== null) guard(candidate.commit === PINS.commit, 'CANDIDATE_COMMIT_CHANGED')
+  if (candidate.imageDigest !== null) guard(candidate.imageDigest === PINS.imageDigest, 'CANDIDATE_IMAGE_CHANGED')
+  guard(!['FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'].includes(candidate.status), 'CANDIDATE_FAILED')
+  const oldRetired = !context.active.some(value => value.id === PINS.deployment) && context.old.deploymentStopped && context.old.status === 'REMOVED'
+  const healthy = candidate.status === 'SUCCESS' && candidate.commit === PINS.commit && candidate.imageDigest === PINS.imageDigest &&
+    context.active.length === 1 && context.active[0].id === ack.id && context.pending.length === 0
+  return { healthy, oldRetired, ready: healthy && oldRetired }
+}
+
+export async function qualify(deps) {
+  const baseline = await deps.preflight()
+  validateBaseline(baseline.context); validateVariables(baseline.values)
+  await deps.intent(baseline.context) // Single global wx/fsync record, before the one dispatch.
+  await deps.checkpoint({ state: 'MUTATION_OUTCOME_UNKNOWN', mutationAttempted: true, acknowledged: false })
+  const mutationStartedAt = deps.now()
+  let ack = null
+  try { ack = acknowledge(await deps.send()) } catch { /* No retry; loss of response is unknown. */ }
+  await deps.checkpoint({ state: ack ? 'ACK_RECEIVED_READBACK_PENDING' : 'ACK_UNKNOWN', acknowledged: Boolean(ack), ack })
+  if (!ack) {
+    try { await deps.checkpoint({ diagnosticContextAfterUnknownAck: await deps.context() }) } catch { /* Preserve unknown. */ }
+    return 'ACK_UNKNOWN_NO_REPLAY'
+  }
+  const dispatchedAt = deps.now(), pollDeadline = dispatchedAt + PINS.pollTimeoutMs
+  let buildObserved = ack.status === 'BUILDING'
+  while (deps.now() < pollDeadline) {
+    const { context, candidate } = await deps.poll(ack.id)
+    await deps.checkpoint({ lastObservedContext: context, lastObservedCandidate: candidate })
+    if (candidate.status === 'BUILDING' || context.pending.some(value => value.status === 'BUILDING') ||
+      (candidate.reportedBuildStartedAt && Date.parse(candidate.reportedBuildStartedAt) >= mutationStartedAt)) buildObserved = true
+    const state = evaluatePoll(context, ack, candidate)
+    await deps.checkpoint({ state: 'POLLING_READONLY', sample: { observedAt: new Date(deps.now()).toISOString(), candidate, ...state },
+      buildObserved, noBuildProven: false })
+    if (state.ready) {
+      const values = await deps.variables()
+      const preservation = preservedVariables(baseline.values, values)
+      const snapshot = await deps.snapshot(candidate.id)
+      guard(snapshot?.id === candidate.snapshotId && snapshot.id !== PINS.snapshot, 'NEW_SNAPSHOT_IDENTITY')
+      const comparison = snapshotComparison(snapshot, values.authored.members, values.services)
+      await deps.checkpoint({ preservation, snapshot: comparison })
+      guard(preservation.equal, 'CONFIGURATION_CHANGED')
+      guard(comparison.targetsPresent && comparison.targetsEqualCurrent && comparison.allDeclaredVariablesEqual, 'NEW_SNAPSHOT_VARIABLES_NOT_CURRENT')
+      // Final context fence after snapshot/variable reads; no claiming retirement from an earlier sample.
+      const final = await deps.poll(ack.id)
+      await deps.checkpoint({ lastObservedContext: final.context, lastObservedCandidate: final.candidate })
+      const finalState = evaluatePoll(final.context, ack, final.candidate)
+      guard(finalState.ready, 'FINAL_CONTEXT_CHANGED')
+      if (final.candidate.reportedBuildStartedAt && Date.parse(final.candidate.reportedBuildStartedAt) >= mutationStartedAt) buildObserved = true
+      await deps.checkpoint({ finalContext: final.context, finalCandidate: final.candidate, buildObserved, noBuildProven: false })
+      return buildObserved ? 'IMAGE_ENV_HEALTH_RETIREMENT_VERIFIED_BUILD_OBSERVED' : 'IMAGE_ENV_HEALTH_RETIREMENT_VERIFIED_BUILD_ACTIVITY_UNCONFIRMED'
+    }
+    await deps.wait(Math.min(PINS.pollIntervalMs, pollDeadline - deps.now()))
+  }
+  return 'ACK_RECEIVED_POLL_TIMEOUT_NO_REPLAY'
+}
+
+export async function durable(path, value) {
+  const handle = await open(path, 'wx', 0o600)
+  try { await handle.writeFile(JSON.stringify(value, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+}
+export function argumentsFor(argv) {
+  const [mode, run, checkPath, checkHash, ...extra] = argv
+  guard(['check', 'apply'].includes(mode) && typeof run === 'string' && new RegExp(`^${mode}-[a-z0-9-]+$`).test(run) && extra.length === 0, 'ARGUMENTS')
+  guard(mode === 'check' ? checkPath === undefined && checkHash === undefined : typeof checkPath === 'string' && /^[a-f0-9]{64}$/.test(checkHash ?? ''), 'ARGUMENTS')
+  return { mode, run, checkPath, checkHash }
+}
+async function main() {
+  const args = argumentsFor(process.argv.slice(2))
+  assert.equal(process.versions.node, '24.22.0')
+  await mkdir(PILOT, { recursive: true })
+  const out = join(PILOT, args.run); await mkdir(out)
+  const started = Date.now(), deadline = started + PINS.overallTimeoutMs
+  const receipt = { kind: 'staging-members-existing-image-pilot', version: 1, mode: args.mode, state: 'PREPARING',
+    startedAt: new Date(started).toISOString(), finishedAt: null, pins: PINS,
+    sourceSha256: sha(await readFile(fileURLToPath(import.meta.url))), mutationAttempts: 0, samples: [],
+    acknowledged: false, noBuildProven: false, processEnvironmentFunctionallyVerified: false,
+    credentialsOrHashesRecorded: false, rawVariablesOrMetadataRecorded: false,
+    canonicalSourcePins: CANONICAL_PINS,
+    retries: 0, rollbacks: 0, otherServicesMutated: false, environmentCASAvailable: false,
+    limits: { overallMs: PINS.overallTimeoutMs, pollMs: PINS.pollTimeoutMs, cliMs: 20000, maxResponseBytes: 8388608 },
+  }
+  const save = async patch => {
+    if (patch.sample) { receipt.samples.push(patch.sample); delete patch.sample }
+    Object.assign(receipt, patch)
+    const temp = join(out, 'receipt.tmp'), handle = await open(temp, 'w', 0o600)
+    try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+    await rename(temp, join(out, 'receipt.json'))
+  }
+  const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const env = Object.fromEntries(['PATH', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA'].filter(key => process.env[key]).map(key => [key, process.env[key]]))
+  Object.assign(env, { CI: 'true', NO_COLOR: '1' })
+  const native = (argv, input = '', executable = cli) => new Promise((accept, reject) => {
+    const remaining = deadline - Date.now()
+    if (remaining <= 0) return reject(new Refusal('OVERALL_DEADLINE'))
+    const child = execFile(executable, argv, { cwd: ROOT, env, windowsHide: true, encoding: 'utf8',
+      timeout: Math.min(20000, remaining), maxBuffer: 8388608 }, (error, stdout) => error ? reject(new Refusal('CLI_UNCONFIRMED')) : accept(stdout))
+    child.stdin?.on('error', () => {}); child.stdin?.end(input)
+  })
+  const api = async (query, parameters) => {
+    const value = JSON.parse(await native(['api', '--compact', query, '--variables', '@-'], JSON.stringify(parameters)))
+    guard(record(value) && !value.errors && record(value.data), 'API_UNCONFIRMED')
+    return value.data
+  }
+  const validateCanonicalConfiguration = async members => {
+    for (const [path, expected] of CANONICAL_PINS) guard(sha(await readFile(join(ROOT, path))) === expected, 'CANONICAL_SOURCE_CHANGED')
+    const bun = join(process.env.USERPROFILE, '.bun/bin/bun.exe')
+    guard((await native(['--version'], '', bun)).trim() === '1.3.11', 'BUN_VERSION')
+    const input = Object.fromEntries(['STUDIO_AI_VAULT_KEYS', 'STUDIO_AI_VAULT_ACTIVE_ID', 'STUDIO_AI_CALLBACK_ORIGINS', 'STUDIO_AUTHORING_POLICY_JSON', 'STUDIO_RUNTIME_HOSTS_JSON'].map(key => [key, members[key]]))
+    const remaining = deadline - Date.now(); guard(remaining > 0, 'OVERALL_DEADLINE')
+    const output = await new Promise((accept, reject) => {
+      const child = execFile(bun, ['--no-env-file', join(CACHE, 'staging-members-image-reload-canonical-r1.ts')],
+        { cwd: ROOT, env, windowsHide: true, encoding: 'utf8', timeout: Math.min(20000, remaining), maxBuffer: 1048576 },
+        (error, stdout) => error ? reject(new Refusal('CANONICAL_CONFIGURATION_UNCONFIRMED')) : accept(stdout))
+      child.stdin?.on('error', () => {}); child.stdin?.end(JSON.stringify(input))
+    })
+    const result = JSON.parse(output)
+    guard(result?.vault === true && result?.catalogAndHosts === true && Object.keys(result).length === 2, 'CANONICAL_CONFIGURATION_UNCONFIRMED')
+    return result
+  }
+  const context = async () => projectContext(await api(contextQuery, contextVariables()))
+  const variables = async () => {
+    const services = projectServices(await api(servicesQuery, { p: PINS.project }))
+    const values = { authored: {}, services }
+    for (const [name, service] of Object.entries({ members: PINS.service, adult: PINS.adult, kids: PINS.kids, gateway: PINS.gateway })) {
+      const maps = await api(variablesQuery, { p: PINS.project, e: PINS.environment, s: service })
+      values[name] = maps.rendered; values.authored[name] = maps.raw
+    }
+    const postgres = serviceForReference('Postgres', services)
+    const source = await api('query($p:String!,$e:String!,$s:String!){rendered:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$s)}', { p: PINS.project, e: PINS.environment, s: postgres.id })
+    values.postgresServiceId = postgres.id; values.postgresDatabaseUrl = source.rendered?.DATABASE_URL
+    values.canonicalValidation = await validateCanonicalConfiguration(values.members)
+    validateVariables(values)
+    return values
+  }
+  const snapshot = async deploymentId => (await api(snapshotQuery, { d: deploymentId })).deploymentSnapshot
+  const preflight = async () => {
+    const before = await context(); validateBaseline(before)
+    const values = await variables(), old = await snapshot(PINS.deployment)
+    const comparison = validateOldSnapshot(old, values)
+    const after = await context(); validateBaseline(after)
+    guard(same(before, after), 'PREFLIGHT_CONTEXT_CHANGED')
+    await save({ baseline: before, baselineSnapshot: comparison, sourcesReady: true })
+    return { context: after, values }
+  }
+  try {
+    await save({})
+    guard((await native(['--version'])).trim() === 'railway 5.62.1', 'CLI_VERSION')
+    guard(sha(await readFile(join(CACHE, 'staging-four-reloads-readonly-r1.json'))) === PINS.baselineReceiptSha256, 'BASELINE_RECEIPT_HASH')
+    if (args.mode === 'check') {
+      await preflight()
+      await save({ state: 'READ_ONLY_READY', expiresAt: new Date(Date.now() + PINS.checkMaxAgeMs).toISOString() })
+    } else {
+      const checkFile = resolve(ROOT, args.checkPath)
+      guard(relative(PILOT, checkFile).match(/^check-[a-z0-9-]+[\\/]receipt\.json$/), 'CHECK_PATH')
+      const bytes = await readFile(checkFile); guard(sha(bytes) === args.checkHash, 'CHECK_HASH')
+      const checked = JSON.parse(bytes.toString('utf8'))
+      guard(checked.kind === receipt.kind && checked.version === 1 && checked.mode === 'check' && checked.state === 'READ_ONLY_READY' && same(checked.pins, PINS) && checked.sourceSha256 === receipt.sourceSha256 && Date.parse(checked.expiresAt) > Date.now(), 'CHECK_INVALID_OR_STALE')
+      receipt.checkedReceiptSha256 = args.checkHash
+      const result = await qualify({
+        preflight, context, variables, snapshot, now: Date.now,
+        wait: ms => new Promise(resolveWait => setTimeout(resolveWait, ms)), checkpoint: save,
+        intent: async baseline => durable(INTENT, {
+          kind: 'one-members-redeploy-intent', createdAt: new Date().toISOString(), checkSha256: args.checkHash,
+          sourceSha256: receipt.sourceSha256, pins: PINS, baseline,
+          maximumMutationInvocations: 1, retryAllowed: false, rollbackAllowed: false,
+        }),
+        send: async () => {
+          receipt.mutationAttempts++
+          await save({ state: 'MUTATION_OUTCOME_UNKNOWN' })
+          // The sole mutation call. No source changes, no secret payload, no implicit latest target.
+          return JSON.parse(await native(['api', '--compact', mutation, '--variables', '@-'], JSON.stringify({ id: PINS.deployment })))
+        },
+        poll: async candidateId => {
+          const current = await context()
+          const candidate = deployment((await api(`query($id:String!){deployment(id:$id){${deploymentFields}}}`, { id: candidateId })).deployment)
+          return { context: current, candidate }
+        },
+      })
+      await save({ state: result })
+      if (result !== 'IMAGE_ENV_HEALTH_RETIREMENT_VERIFIED_BUILD_ACTIVITY_UNCONFIRMED') process.exitCode = 1
+    }
+  } catch (error) {
+    await save({ state: receipt.mutationAttempts ? 'PILOT_UNCONFIRMED_NO_REPLAY' : 'REFUSED_BEFORE_MUTATION',
+      failureCode: error instanceof Refusal ? error.code : 'SANITIZED_LOCAL_OR_PROVIDER_FAILURE' })
+    process.exitCode = 1
+  } finally {
+    await save({ finishedAt: new Date().toISOString() })
+    console.log(JSON.stringify({ state: receipt.state, mode: args.mode, run: args.run,
+      mutationAttempts: receipt.mutationAttempts, receiptSha256: sha(await readFile(join(out, 'receipt.json'))),
+      noBuildProven: false, processEnvironmentFunctionallyVerified: false }))
+  }
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(() => { console.error('LOCAL_PILOT_UNCONFIRMED'); process.exitCode = 1 })
+}

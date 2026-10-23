@@ -1,0 +1,6160 @@
+{
+  "date": "2026-10-15",
+  "scope": "Static file/export/import inventory; does not imply manual review of every line or proof of dead code",
+  "files": [
+    {
+      "project": "echo",
+      "path": "packages/ui/src/lib/utils.ts",
+      "lines": 7,
+      "sha256": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+      "exports": [
+        "cn"
+      ],
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/eslint.config.js",
+      "lines": 5,
+      "sha256": "5da646c7663f513cc466324f336d93fe12a866a6acb208c4ce6c9eb2157c8198",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@workspace/eslint-config/react-internal"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/postcss.config.mjs",
+      "lines": 7,
+      "sha256": "36540b4e3711ce38adec0fe1b577554c9a6b6514a74f8fefbe43a724946f8a63",
+      "exports": [
+        "default"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/hooks/use-mobile.ts",
+      "lines": 20,
+      "sha256": "ad0936f84f1df79d3697bfbff9c18f8ad58431c1cbaf2359c6a853b0fcc9f28b",
+      "exports": [
+        "useIsMobile"
+      ],
+      "imports": [
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/hooks/use-infinite-scroll.ts",
+      "lines": 55,
+      "sha256": "f8c958495deec3b42a193188b83ceeec87f9c67c3ec8722ca6afa0d849feed4d",
+      "exports": [
+        "useInfiniteScroll"
+      ],
+      "imports": [
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/eslint-config/react-internal.js",
+      "lines": 42,
+      "sha256": "d4d552c215bd5bd65ba14c9fd16d00815c8e5e0681c4a7daff7f6f2c4f752a20",
+      "exports": [
+        "config"
+      ],
+      "imports": [
+        "@eslint/js",
+        "eslint-config-prettier",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "globals",
+        "typescript-eslint",
+        "./base.js"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/eslint-config/base.js",
+      "lines": 33,
+      "sha256": "013d9dc71bf40afe6043c4f303668de734df0d1bb9d4aff1f0e029993ff2595e",
+      "exports": [
+        "config"
+      ],
+      "imports": [
+        "@eslint/js",
+        "eslint-config-prettier",
+        "eslint-plugin-only-warn",
+        "eslint-plugin-turbo",
+        "typescript-eslint"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/eslint-config/next.js",
+      "lines": 52,
+      "sha256": "7bd157afc15cd8e4dadb1154fcaa9836e5c023205fc52b75d1125c63ddc37271",
+      "exports": [
+        "nextJsConfig"
+      ],
+      "imports": [
+        "@eslint/js",
+        "@next/eslint-plugin-next",
+        "eslint-config-prettier",
+        "eslint-plugin-react",
+        "eslint-plugin-react-hooks",
+        "globals",
+        "typescript-eslint",
+        "./base.js"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": ".eslintrc.js",
+      "lines": 11,
+      "sha256": "27bc156b755c4e24b2ae4cc532cd1b93602ad3e742aaf97d72af86803b344fb3",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/math/src/add.ts",
+      "lines": 1,
+      "sha256": "bcd50dd716a6a47c48e1a22893f996ca0b42413855d698083d1a970a190c8af9",
+      "exports": [
+        "add"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/tooltip.tsx",
+      "lines": 62,
+      "sha256": "ec9c23660870ab6c9174202cdcfaa9d1ec272d462d93a5f9976f5d55cdcc05e8",
+      "exports": [
+        "Tooltip",
+        "TooltipContent",
+        "TooltipProvider",
+        "TooltipTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-tooltip",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/toggle.tsx",
+      "lines": 48,
+      "sha256": "82e0e10bddf6461c70257fb8c4370e1c64a5f216bbc8bcd45695d1bcbab45478",
+      "exports": [
+        "Toggle",
+        "toggleVariants"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-toggle",
+        "class-variance-authority",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/toggle-group.tsx",
+      "lines": 74,
+      "sha256": "a692581001eadbef94206a0fdbf09d3aeb1b3583597da4019109fed919964d2a",
+      "exports": [
+        "ToggleGroup",
+        "ToggleGroupItem"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-toggle-group",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/toggle"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/textarea.tsx",
+      "lines": 19,
+      "sha256": "a4491aecf8053ecd55bfc853fceba323546a31192855ff05bb7d01c8bab06359",
+      "exports": [
+        "Textarea"
+      ],
+      "imports": [
+        "react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/tabs.tsx",
+      "lines": 67,
+      "sha256": "db4d2c90ec8a3cfe811575b28784145258f47a19ee2d9f1bc470145958458ce3",
+      "exports": [
+        "Tabs",
+        "TabsContent",
+        "TabsList",
+        "TabsTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-tabs",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/table.tsx",
+      "lines": 117,
+      "sha256": "41394db1eb27575ad71f4cc9332ec19dae712675ae47d0b85ec163cca0464ed0",
+      "exports": [
+        "Table",
+        "TableBody",
+        "TableCaption",
+        "TableCell",
+        "TableFooter",
+        "TableHead",
+        "TableHeader",
+        "TableRow"
+      ],
+      "imports": [
+        "react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/switch.tsx",
+      "lines": 32,
+      "sha256": "191f2dd2a4b7c86bee0f07291f8c844c00b7133ef225a0cded2d2b74fdfe07be",
+      "exports": [
+        "Switch"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-switch",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/sonner.tsx",
+      "lines": 26,
+      "sha256": "958d33cd8a85293728acad21c1f3881da56b805bc11a3ec862d6aa355c152d90",
+      "exports": [
+        "Toaster"
+      ],
+      "imports": [
+        "next-themes",
+        "sonner"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/slider.tsx",
+      "lines": 64,
+      "sha256": "794a043eab0af70e3e4f6a316f8a2a470300390fdcc37e9e05efc4180acad734",
+      "exports": [
+        "Slider"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-slider",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/skeleton.tsx",
+      "lines": 14,
+      "sha256": "133404fee410f583d0c8913c4e5f65fa9b1df096e19c26fb17959080335f3c47",
+      "exports": [
+        "Skeleton"
+      ],
+      "imports": [
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/sidebar.tsx",
+      "lines": 727,
+      "sha256": "9df3d79563375016bbccfeb9ca8674a951485d410ec42e5fd567642f07c4f6c2",
+      "exports": [
+        "SIDEBAR_COOKIE_NAME",
+        "Sidebar",
+        "SidebarContent",
+        "SidebarFooter",
+        "SidebarGroup",
+        "SidebarGroupAction",
+        "SidebarGroupContent",
+        "SidebarGroupLabel",
+        "SidebarHeader",
+        "SidebarInput",
+        "SidebarInset",
+        "SidebarMenu",
+        "SidebarMenuAction",
+        "SidebarMenuBadge",
+        "SidebarMenuButton",
+        "SidebarMenuItem",
+        "SidebarMenuSkeleton",
+        "SidebarMenuSub",
+        "SidebarMenuSubButton",
+        "SidebarMenuSubItem",
+        "SidebarProvider",
+        "SidebarRail",
+        "SidebarSeparator",
+        "SidebarTrigger",
+        "useSidebar"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "lucide-react",
+        "@workspace/ui/hooks/use-mobile",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/input",
+        "@workspace/ui/components/separator",
+        "@workspace/ui/components/sheet",
+        "@workspace/ui/components/skeleton",
+        "@workspace/ui/components/tooltip"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/sheet.tsx",
+      "lines": 140,
+      "sha256": "811fa2a640098b835f4d45bc112df17493093d74893a668beb96383c2e7aad42",
+      "exports": [
+        "Sheet",
+        "SheetClose",
+        "SheetContent",
+        "SheetDescription",
+        "SheetFooter",
+        "SheetHeader",
+        "SheetTitle",
+        "SheetTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-dialog",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/separator.tsx",
+      "lines": 29,
+      "sha256": "eaff058bc059e652f2f28e549e00f83d5afdf925e270db95538d5ea7cddc36ac",
+      "exports": [
+        "Separator"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-separator",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/select.tsx",
+      "lines": 186,
+      "sha256": "582cb486423c037b67a584201989f8ce31cca6977421d3358833a053d73340cd",
+      "exports": [
+        "Select",
+        "SelectContent",
+        "SelectGroup",
+        "SelectItem",
+        "SelectLabel",
+        "SelectScrollDownButton",
+        "SelectScrollUpButton",
+        "SelectSeparator",
+        "SelectTrigger",
+        "SelectValue"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-select",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/scroll-area.tsx",
+      "lines": 59,
+      "sha256": "b5880e01b41f9773e01577fd5352098e5eb2491bbe1555d3875e37cb3a839921",
+      "exports": [
+        "ScrollArea",
+        "ScrollBar"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-scroll-area",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/resizable.tsx",
+      "lines": 57,
+      "sha256": "56d9c14d0df3fb42e0f891d59e92e5c424555e4c42542049ab9db54bdbeaaaca",
+      "exports": [
+        "ResizableHandle",
+        "ResizablePanel",
+        "ResizablePanelGroup"
+      ],
+      "imports": [
+        "react",
+        "lucide-react",
+        "react-resizable-panels",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/radio-group.tsx",
+      "lines": 46,
+      "sha256": "1159094a22daae88cfb4fd1cba53c5c5acb714e34ba8664564ac3eea77a070c0",
+      "exports": [
+        "RadioGroup",
+        "RadioGroupItem"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-radio-group",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/progress.tsx",
+      "lines": 32,
+      "sha256": "f41b5894299ed3c72b43da52300a18493c0df9c14916b17e39bfe3e853680599",
+      "exports": [
+        "Progress"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-progress",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/popover.tsx",
+      "lines": 49,
+      "sha256": "c43f80f958063eed369c97c57c1c726e1997b46be2c18398fc3692441e6294e6",
+      "exports": [
+        "Popover",
+        "PopoverAnchor",
+        "PopoverContent",
+        "PopoverTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-popover",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/pagination.tsx",
+      "lines": 128,
+      "sha256": "66316d345aa281a150b530f9a8fb32672d501649dc6e9004c2c6fa02bbe62edc",
+      "exports": [
+        "Pagination",
+        "PaginationContent",
+        "PaginationEllipsis",
+        "PaginationItem",
+        "PaginationLink",
+        "PaginationNext",
+        "PaginationPrevious"
+      ],
+      "imports": [
+        "react",
+        "lucide-react",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/button"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/navigation-menu.tsx",
+      "lines": 169,
+      "sha256": "5e57390d57b9288ca0a98908c74afb4eb8dce4bd753d0b2a39b5c0e37043e749",
+      "exports": [
+        "NavigationMenu",
+        "NavigationMenuContent",
+        "NavigationMenuIndicator",
+        "NavigationMenuItem",
+        "NavigationMenuLink",
+        "NavigationMenuList",
+        "NavigationMenuTrigger",
+        "NavigationMenuViewport",
+        "navigationMenuTriggerStyle"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-navigation-menu",
+        "class-variance-authority",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/menubar.tsx",
+      "lines": 277,
+      "sha256": "6c0e89d5f1b827a662a738021b3e21d94bab8753ec3e7b37098bf81d16ce2cce",
+      "exports": [
+        "Menubar",
+        "MenubarCheckboxItem",
+        "MenubarContent",
+        "MenubarGroup",
+        "MenubarItem",
+        "MenubarLabel",
+        "MenubarMenu",
+        "MenubarPortal",
+        "MenubarRadioGroup",
+        "MenubarRadioItem",
+        "MenubarSeparator",
+        "MenubarShortcut",
+        "MenubarSub",
+        "MenubarSubContent",
+        "MenubarSubTrigger",
+        "MenubarTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-menubar",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/label.tsx",
+      "lines": 25,
+      "sha256": "5b5b9903d3c063627434fd95b8314231b66a7f584b1e5d5018b07ce0eefe0026",
+      "exports": [
+        "Label"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-label",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/input.tsx",
+      "lines": 22,
+      "sha256": "d06b5576c3c94286e9bf23069e27bf0ccdae3be98e0893eedfda8c1513cd79fa",
+      "exports": [
+        "Input"
+      ],
+      "imports": [
+        "react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/input-otp.tsx",
+      "lines": 78,
+      "sha256": "ff6cae7733119d72a906ddc22a1d0b65068b6a76ba32e8d4713f9191845e8c7f",
+      "exports": [
+        "InputOTP",
+        "InputOTPGroup",
+        "InputOTPSeparator",
+        "InputOTPSlot"
+      ],
+      "imports": [
+        "react",
+        "input-otp",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/infinite-scroll-trigger.tsx",
+      "lines": 44,
+      "sha256": "c62d58b8ec6ea068d5aa55b37e6c9e6e5af77a4d1761fd25575813f7e6ef24ca",
+      "exports": [
+        "InfiniteScrollTrigger"
+      ],
+      "imports": [
+        "@workspace/ui/components/button",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/hover-card.tsx",
+      "lines": 45,
+      "sha256": "84bf20776a2b031cbc205681293f412b769f4af6fadd71bd5020fe57116585aa",
+      "exports": [
+        "HoverCard",
+        "HoverCardContent",
+        "HoverCardTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-hover-card",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/hint.tsx",
+      "lines": 34,
+      "sha256": "634454cfdc8bfd3098810f4b83e50cecf9148ad2222923510529bf6936a0062c",
+      "exports": [
+        "Hint"
+      ],
+      "imports": [
+        "@workspace/ui/components/tooltip"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/form.tsx",
+      "lines": 168,
+      "sha256": "ce6ebf457f0f270ef098ff3a812c813d53f8470548494d35d93f133d0c86c3ed",
+      "exports": [
+        "Form",
+        "FormControl",
+        "FormDescription",
+        "FormField",
+        "FormItem",
+        "FormLabel",
+        "FormMessage",
+        "useFormField"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-label",
+        "@radix-ui/react-slot",
+        "react-hook-form",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/label"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/dropzone.tsx",
+      "lines": 202,
+      "sha256": "c220f44b4fc4b20fda1876df5ff2f6c55fe070f0c986983f041e1c05a610e81c",
+      "exports": [
+        "Dropzone",
+        "DropzoneContent",
+        "DropzoneEmptyState"
+      ],
+      "imports": [
+        "lucide-react",
+        "react",
+        "react-dropzone",
+        "@workspace/ui/components/button",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/dropdown-menu.tsx",
+      "lines": 258,
+      "sha256": "1d604d29b1354c7eaac16bce7f2314a11a4c57637c8c3457a1707f323763d319",
+      "exports": [
+        "DropdownMenu",
+        "DropdownMenuCheckboxItem",
+        "DropdownMenuContent",
+        "DropdownMenuGroup",
+        "DropdownMenuItem",
+        "DropdownMenuLabel",
+        "DropdownMenuPortal",
+        "DropdownMenuRadioGroup",
+        "DropdownMenuRadioItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuShortcut",
+        "DropdownMenuSub",
+        "DropdownMenuSubContent",
+        "DropdownMenuSubTrigger",
+        "DropdownMenuTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-dropdown-menu",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/drawer.tsx",
+      "lines": 136,
+      "sha256": "7030d372698869157b913034233021883d2584b6dd0c2041da55bc6d1e19702e",
+      "exports": [
+        "Drawer",
+        "DrawerClose",
+        "DrawerContent",
+        "DrawerDescription",
+        "DrawerFooter",
+        "DrawerHeader",
+        "DrawerOverlay",
+        "DrawerPortal",
+        "DrawerTitle",
+        "DrawerTrigger"
+      ],
+      "imports": [
+        "react",
+        "vaul",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/dicebear-avatar.tsx",
+      "lines": 76,
+      "sha256": "2ac32d1d42d6ba923713411e7fa982ab2e43a0b2726c48638eb1a7689fda8a9f",
+      "exports": [
+        "DicebearAvatar"
+      ],
+      "imports": [
+        "@dicebear/collection",
+        "@dicebear/core",
+        "react",
+        "@workspace/ui/components/avatar",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/dialog.tsx",
+      "lines": 144,
+      "sha256": "ac83d372a511755fa2daa54ec17ec5f2c6e2b632657178471850fe2f2178b29b",
+      "exports": [
+        "Dialog",
+        "DialogClose",
+        "DialogContent",
+        "DialogDescription",
+        "DialogFooter",
+        "DialogHeader",
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogTitle",
+        "DialogTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-dialog",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/conversation-status-icon.tsx",
+      "lines": 41,
+      "sha256": "64ca435a116ea3bb35ad81ba4e5fb4fc88d92789a0afd598a247fd4d98710e5e",
+      "exports": [
+        "ConversationStatusIcon"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/context-menu.tsx",
+      "lines": 253,
+      "sha256": "c523c3c08596f22e633206ec1304b4cbadd5fb01d314eedb1d48d586970e343b",
+      "exports": [
+        "ContextMenu",
+        "ContextMenuCheckboxItem",
+        "ContextMenuContent",
+        "ContextMenuGroup",
+        "ContextMenuItem",
+        "ContextMenuLabel",
+        "ContextMenuPortal",
+        "ContextMenuRadioGroup",
+        "ContextMenuRadioItem",
+        "ContextMenuSeparator",
+        "ContextMenuShortcut",
+        "ContextMenuSub",
+        "ContextMenuSubContent",
+        "ContextMenuSubTrigger",
+        "ContextMenuTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-context-menu",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/command.tsx",
+      "lines": 185,
+      "sha256": "08741c46266c3e55a2b9b13d6bb3421bc6a6828692b44b79f7aed98ab94c2ffa",
+      "exports": [
+        "Command",
+        "CommandDialog",
+        "CommandEmpty",
+        "CommandGroup",
+        "CommandInput",
+        "CommandItem",
+        "CommandList",
+        "CommandSeparator",
+        "CommandShortcut"
+      ],
+      "imports": [
+        "react",
+        "cmdk",
+        "lucide-react",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/dialog"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/collapsible.tsx",
+      "lines": 34,
+      "sha256": "c2c74dc3e99482d00a57de673b56920860c2ff4b330373d783843f505dc11dae",
+      "exports": [
+        "Collapsible",
+        "CollapsibleContent",
+        "CollapsibleTrigger"
+      ],
+      "imports": [
+        "@radix-ui/react-collapsible"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/checkbox.tsx",
+      "lines": 33,
+      "sha256": "c5612e9d36705bfd813c9f45463b231692c8dd5d323cfbd4d12d48f28c757667",
+      "exports": [
+        "Checkbox"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-checkbox",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/chart.tsx",
+      "lines": 354,
+      "sha256": "c2271ce5c44c2e4ed11b6075967516dbf5f10af1a402f173b6e9ba7642f96142",
+      "exports": [
+        "ChartContainer",
+        "ChartLegend",
+        "ChartLegendContent",
+        "ChartStyle",
+        "ChartTooltip",
+        "ChartTooltipContent"
+      ],
+      "imports": [
+        "react",
+        "recharts",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/carousel.tsx",
+      "lines": 242,
+      "sha256": "d21e63c2dfbc8e5d9ba872b9fb9eb83459e27dd2394e55038d84fc98f133ecc4",
+      "exports": [
+        "Carousel",
+        "CarouselContent",
+        "CarouselItem",
+        "CarouselNext",
+        "CarouselPrevious"
+      ],
+      "imports": [
+        "react",
+        "embla-carousel-react",
+        "lucide-react",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/button"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/card.tsx",
+      "lines": 93,
+      "sha256": "d595061fa0acf65db129df9d42614ebd51364656f44624ba8b5a2f22ecb9a3a4",
+      "exports": [
+        "Card",
+        "CardAction",
+        "CardContent",
+        "CardDescription",
+        "CardFooter",
+        "CardHeader",
+        "CardTitle"
+      ],
+      "imports": [
+        "react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/calendar.tsx",
+      "lines": 214,
+      "sha256": "0f7fbdd3d3a21b6e8cac441f0a560ddc3d20629daac1af10f9b765ec8d4e3951",
+      "exports": [
+        "Calendar",
+        "CalendarDayButton"
+      ],
+      "imports": [
+        "react",
+        "lucide-react",
+        "react-day-picker",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/button"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/button.tsx",
+      "lines": 63,
+      "sha256": "4aeef846134ecb16687b1b5f70e7834211d214369c163ea88f31280d4bec49c3",
+      "exports": [
+        "Button",
+        "buttonVariants"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/breadcrumb.tsx",
+      "lines": 110,
+      "sha256": "9fe0cfbaac91355e12baa1f8ec9fe81659acf715d03bd3943d4675bfd29bd863",
+      "exports": [
+        "Breadcrumb",
+        "BreadcrumbEllipsis",
+        "BreadcrumbItem",
+        "BreadcrumbLink",
+        "BreadcrumbList",
+        "BreadcrumbPage",
+        "BreadcrumbSeparator"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-slot",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/badge.tsx",
+      "lines": 47,
+      "sha256": "742330dbc3e40a7960fc2f99fea548f0b0170f6b35448e347e1dbc4f20db3ea7",
+      "exports": [
+        "Badge",
+        "badgeVariants"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/avatar.tsx",
+      "lines": 54,
+      "sha256": "983326ed80726ff3b863794e16cae0c14f1a6a3d96ba72db6b23ec9ff33abd40",
+      "exports": [
+        "Avatar",
+        "AvatarFallback",
+        "AvatarImage"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-avatar",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/aspect-ratio.tsx",
+      "lines": 12,
+      "sha256": "6a75117416aa89200cf31e8d61643b428e812f479caea857c80004b26d893e79",
+      "exports": [
+        "AspectRatio"
+      ],
+      "imports": [
+        "@radix-ui/react-aspect-ratio"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/alert.tsx",
+      "lines": 67,
+      "sha256": "30b77ae86e2733ebe0e422bb9162027cd983f7f8f250f3002b0cc348e1b4281f",
+      "exports": [
+        "Alert",
+        "AlertDescription",
+        "AlertTitle"
+      ],
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/alert-dialog.tsx",
+      "lines": 158,
+      "sha256": "a1fec38f1d743b236e5c4a1ab3b36dbd0fd616aa436fb92d1ffd32919c7b1171",
+      "exports": [
+        "AlertDialog",
+        "AlertDialogAction",
+        "AlertDialogCancel",
+        "AlertDialogContent",
+        "AlertDialogDescription",
+        "AlertDialogFooter",
+        "AlertDialogHeader",
+        "AlertDialogOverlay",
+        "AlertDialogPortal",
+        "AlertDialogTitle",
+        "AlertDialogTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-alert-dialog",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/button"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/embed/vite.config.ts",
+      "lines": 23,
+      "sha256": "8891720e9bc367c7ab15d753191f1449984831d4bbf4d61e95551ccc780c1561",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "vite",
+        "path"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/embed/icons.ts",
+      "lines": 11,
+      "sha256": "5da7127a2d948991e3cbe9f4c0a9494d7bc156db309ee8749411e19529b86612",
+      "exports": [
+        "chatBubbleIcon",
+        "closeIcon"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/embed/eslint.config.js",
+      "lines": 4,
+      "sha256": "2abe4e2f7572042cd8efca508a98364d1e6d76b7f9b9d0635460634e29d0dde4",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@workspace/eslint-config/base.js"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/embed/embed.ts",
+      "lines": 223,
+      "sha256": "56dd6f94055304b9196928c8baf96fc7645e49e99352968ba25b38870a47a9bc",
+      "exports": [],
+      "imports": [
+        "./config",
+        "./icons"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/embed/config.ts",
+      "lines": 6,
+      "sha256": "2989219b17b61609859b45f042260d4df00681a7470e87c8eb601c83fb321bd6",
+      "exports": [
+        "EMBED_CONFIG"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/http.ts",
+      "lines": 79,
+      "sha256": "7b4ac2ab2f3f663f4322f462416d594f2352ec2965e2f9594426786446920d64",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "svix",
+        "@clerk/backend",
+        "convex/server",
+        "./_generated/server",
+        "./_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/convex.config.ts",
+      "lines": 10,
+      "sha256": "5fd92dab58022db1cfd2b72d778424dcfe1a6534e4544036b21f6c5249320605",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "convex/server",
+        "@convex-dev/rag/convex.config",
+        "@convex-dev/agent/convex.config"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/constants.ts",
+      "lines": 1,
+      "sha256": "30898facc33f9204a6988a1a24d004ac15daee956d5cd8663609f9f181a7326b",
+      "exports": [
+        "SESSION_DURATION_MS"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/auth.config.ts",
+      "lines": 13,
+      "sha256": "6f07d74978e609b9719025b7dd6d2c8dc69d1b49371a79d3810ec62a9ebf1429",
+      "exports": [
+        "default"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/playground.ts",
+      "lines": 23,
+      "sha256": "9b412ac6e802eb25313f6a9382397e28c14db27fd6745c32647d4aee5c9ecffa",
+      "exports": [
+        "createThread",
+        "fetchPromptContext",
+        "generateText",
+        "isApiKeyValid",
+        "listAgents",
+        "listMessages",
+        "listThreads",
+        "listUsers"
+      ],
+      "imports": [
+        "@convex-dev/agent-playground",
+        "./_generated/api",
+        "./system/ai/agents/supportAgent"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/users.ts",
+      "lines": 36,
+      "sha256": "53e07b12ff4eb23cda13d89e445863d979b1d9ca40855bb893a9ac16e4d7f1b2",
+      "exports": [
+        "add",
+        "getMany"
+      ],
+      "imports": [
+        "./_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/sentry.server.config.ts",
+      "lines": 19,
+      "sha256": "51753714dca59407c086d02315870f9b236c3a03aacf8bea131161921447bbe7",
+      "exports": [],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/sentry.edge.config.ts",
+      "lines": 20,
+      "sha256": "002a6c2919093e746b27a42c37244fc30a92a3feac88e94514bcb250881adc71",
+      "exports": [],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/tool.tsx",
+      "lines": 150,
+      "sha256": "040a9fb2cc7690b48b3619fbbb51d7ac2661ec209e7402ad582e753e65582c08",
+      "exports": [
+        "AITool",
+        "AIToolContent",
+        "AIToolHeader",
+        "AIToolParameters",
+        "AIToolResult"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/components/badge",
+        "@workspace/ui/components/collapsible",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/suggestion.tsx",
+      "lines": 57,
+      "sha256": "e42086d7fb1d38f71ae3e163ad56524cfa8b68e8450b1be93782bc6bca4a3ee1",
+      "exports": [
+        "AISuggestion",
+        "AISuggestions"
+      ],
+      "imports": [
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/scroll-area",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/source.tsx",
+      "lines": 77,
+      "sha256": "ea88507cb2f82c4051950b56ce6dd5e4fbd1b3466b37bfcc6ad8bce702d236da",
+      "exports": [
+        "AISource",
+        "AISources",
+        "AISourcesContent",
+        "AISourcesTrigger"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/components/collapsible",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/response.tsx",
+      "lines": 108,
+      "sha256": "9d42f3d0ecff49fc021d4500d25caddc9c8ae87cbae80cfd48f5eab6871c2aab",
+      "exports": [
+        "AIResponse"
+      ],
+      "imports": [
+        "react",
+        "react-markdown",
+        "remark-gfm",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/reasoning.tsx",
+      "lines": 168,
+      "sha256": "469ea9772c4d4adde129a0b168528a821cd4dd8813903c61d13b665a825562a8",
+      "exports": [
+        "AIReasoning",
+        "AIReasoningContent",
+        "AIReasoningTrigger"
+      ],
+      "imports": [
+        "@radix-ui/react-use-controllable-state",
+        "@workspace/ui/components/collapsible",
+        "lucide-react",
+        "react",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/ai/response"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/message.tsx",
+      "lines": 58,
+      "sha256": "f968b96dca974d5b6724c5cf16ce0672911bbab9ca5c38a37379584f2a47d866",
+      "exports": [
+        "AIMessage",
+        "AIMessageAvatar",
+        "AIMessageContent"
+      ],
+      "imports": [
+        "@workspace/ui/components/avatar",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/input.tsx",
+      "lines": 276,
+      "sha256": "9183a4c40c1e0c6da404804bc9540408e1f87305b9a6451264e5231581931f7a",
+      "exports": [
+        "AIInput",
+        "AIInputButton",
+        "AIInputModelSelect",
+        "AIInputModelSelectContent",
+        "AIInputModelSelectItem",
+        "AIInputModelSelectTrigger",
+        "AIInputModelSelectValue",
+        "AIInputSubmit",
+        "AIInputTextarea",
+        "AIInputToolbar",
+        "AIInputTools"
+      ],
+      "imports": [
+        "lucide-react",
+        "react",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/select",
+        "@workspace/ui/components/textarea",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/conversation.tsx",
+      "lines": 56,
+      "sha256": "b4b9ffe94dfa55d4638809ad6d4c504641339e8959d5cd7d6a236e1a986b9d9c",
+      "exports": [
+        "AIConversation",
+        "AIConversationContent",
+        "AIConversationScrollButton"
+      ],
+      "imports": [
+        "@workspace/ui/components/button",
+        "lucide-react",
+        "react",
+        "use-stick-to-bottom",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/ai/branch.tsx",
+      "lines": 212,
+      "sha256": "13c180fd70592b73be9c0c9c9069c163649f21aa243444b4c8e5031b25ce596d",
+      "exports": [
+        "AIBranch",
+        "AIBranchMessages",
+        "AIBranchNext",
+        "AIBranchPage",
+        "AIBranchPrevious",
+        "AIBranchSelector"
+      ],
+      "imports": [
+        "lucide-react",
+        "react",
+        "@workspace/ui/components/button",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/ui/src/components/accordion.tsx",
+      "lines": 67,
+      "sha256": "15d0aa053308f5954a775a455957ede1ed520cedccfdf395972516c2bf13933b",
+      "exports": [
+        "Accordion",
+        "AccordionContent",
+        "AccordionItem",
+        "AccordionTrigger"
+      ],
+      "imports": [
+        "react",
+        "@radix-ui/react-accordion",
+        "lucide-react",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/instrumentation.ts",
+      "lines": 14,
+      "sha256": "f75c8e413039b811562dc7600cccb19c2ca988fd0147defabff45ac622af29a7",
+      "exports": [
+        "onRequestError",
+        "register"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "./sentry.server.config",
+        "./sentry.edge.config"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/instrumentation-client.ts",
+      "lines": 32,
+      "sha256": "73bf54f4ac54ff5d78e5e02182ee131787961ee137bffb2599bcc28772625898",
+      "exports": [
+        "onRouterTransitionStart"
+      ],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/public/widget.js",
+      "lines": 44,
+      "sha256": "18b445384b05d0d008f22911f922b5263607a912be5658651c902ef56aaea2f7",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/lib/secrets.ts",
+      "lines": 67,
+      "sha256": "8df0e25c5b592574bd2400c85dda6931a487bf598a9d8dd9f9372fbac0db9a6e",
+      "exports": [
+        "createSecretsManagerClient",
+        "getSecretValue",
+        "parseSecretString",
+        "upsertSecret"
+      ],
+      "imports": [
+        "@aws-sdk/client-secrets-manager"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/lib/extractTextContent.ts",
+      "lines": 135,
+      "sha256": "ebfc8b21bfb38603d7c3b03f7b047378a46534ce2fc49559fd61f9194556c15b",
+      "exports": [
+        "extractTextContent"
+      ],
+      "imports": [
+        "@ai-sdk/openai",
+        "ai",
+        "convex-helpers",
+        "../_generated/dataModel"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/postcss.config.mjs",
+      "lines": 1,
+      "sha256": "177be1ba81ed1c12fa4c01dc3e7a42c595087be302f1308ff5e6f26fb499d186",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@workspace/ui/postcss.config"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/next.config.mjs",
+      "lines": 7,
+      "sha256": "13f7c69171bd3ea95d5041750e1a52cb78b39e103b56d0386a049643d4c4620a",
+      "exports": [
+        "default"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/subscriptions.ts",
+      "lines": 43,
+      "sha256": "ec8b9e229ec8714359712d97fc6f07d12720ec12313ecf8bfb34c49096f22ecb",
+      "exports": [
+        "getByOrganizationId",
+        "upsert"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/secrets.ts",
+      "lines": 26,
+      "sha256": "808855b56710a3e2f7dc359a02ded332e806b858134c7d03da487ea528c96b40",
+      "exports": [
+        "upsert"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/api",
+        "../_generated/server",
+        "../lib/secrets"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/plugins.ts",
+      "lines": 47,
+      "sha256": "5dad6d3638d4f8fcef64a5a3171e0fe736a9668cb995d3f5773c6a312aab226c",
+      "exports": [
+        "getByOrganizationIdAndService",
+        "upsert"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/conversations.ts",
+      "lines": 59,
+      "sha256": "65b5fb147e689e76196ca25a2afbb39a07227d4054e090e604e8168c9b0d3868",
+      "exports": [
+        "escalate",
+        "getByThreadId",
+        "resolve"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/contactSessions.ts",
+      "lines": 52,
+      "sha256": "89b7c53db4af5f038515142ddadac37a49eb4222c34f82f913e10a2266b9dc24",
+      "exports": [
+        "getOne",
+        "refresh"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server",
+        "../constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/eslint.config.js",
+      "lines": 5,
+      "sha256": "18f1ba4bf4bf22321db394516b4b5e03bf80ef81300b5cd2baaab861fcd7a3b5",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@workspace/eslint-config/next-js"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/public/widgetSettings.ts",
+      "lines": 19,
+      "sha256": "4e235061a1bd620e7ff4b11b0c1948cb4eedbebb5401f22ac588430e1a457349",
+      "exports": [
+        "getByOrganizationId"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/public/secrets.ts",
+      "lines": 49,
+      "sha256": "5acf079f3b2e9e69c7d08ee6ea81548e5b7b80a69cafa6d4781f7999e9e72c00",
+      "exports": [
+        "getVapiSecrets"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/api",
+        "../_generated/server",
+        "../lib/secrets"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/public/organizations.ts",
+      "lines": 25,
+      "sha256": "26eab5fe8a4b6e53e574a3e11591ecd5589e8e0101d2cde80edb095545bb9b25",
+      "exports": [
+        "validate"
+      ],
+      "imports": [
+        "@clerk/backend",
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/public/messages.ts",
+      "lines": 114,
+      "sha256": "708e8cb30f7c5dab4c90dc8e0e0e9cb1e14ac372bf98a811f0044b32dd7c33a3",
+      "exports": [
+        "create",
+        "getMany"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server",
+        "../_generated/api",
+        "../system/ai/agents/supportAgent",
+        "convex/server",
+        "../system/ai/tools/escalateConversation",
+        "../system/ai/tools/resolveConversation",
+        "@convex-dev/agent",
+        "../system/ai/tools/search"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/public/conversations.ts",
+      "lines": 150,
+      "sha256": "320ade3400c32937600193d98525e9a1c5d0849705397dc857a27d48e64d1996",
+      "exports": [
+        "create",
+        "getMany",
+        "getOne"
+      ],
+      "imports": [
+        "../_generated/server",
+        "../_generated/api",
+        "convex/values",
+        "../system/ai/agents/supportAgent",
+        "@convex-dev/agent",
+        "convex/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/public/contactSessions.ts",
+      "lines": 61,
+      "sha256": "1928b33fc9850936e21d4404f827fd56e67ece8676782f2d6019a08798f82d7e",
+      "exports": [
+        "create",
+        "validate"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server",
+        "../constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/components/providers.tsx",
+      "lines": 21,
+      "sha256": "50c84a97977a9a62736ec1848a2bacebaa96e77503829d600ee0e3a4ea25e44a",
+      "exports": [
+        "Providers"
+      ],
+      "imports": [
+        "react",
+        "convex/react",
+        "convex/react-clerk",
+        "@clerk/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/postcss.config.mjs",
+      "lines": 1,
+      "sha256": "177be1ba81ed1c12fa4c01dc3e7a42c595087be302f1308ff5e6f26fb499d186",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@workspace/ui/postcss.config"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/next.config.mjs",
+      "lines": 47,
+      "sha256": "64434326438cd62a518f09126c920da8b993301b4481e68b3c854b4ef31ed93a",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/widgetSettings.ts",
+      "lines": 88,
+      "sha256": "5abc5912662b8b67cf32192762e7c12fc2dc4b2ba379cc1d700bee6f1970969f",
+      "exports": [
+        "getOne",
+        "upsert"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/vapi.ts",
+      "lines": 140,
+      "sha256": "ca4ab70f1968f0df46d83d44a9552684db76cffafb6332ef7e186ede0e229301",
+      "exports": [
+        "getAssistants",
+        "getPhoneNumbers"
+      ],
+      "imports": [
+        "@vapi-ai/server-sdk",
+        "../_generated/api",
+        "../_generated/server",
+        "../lib/secrets",
+        "convex/values"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/secrets.ts",
+      "lines": 38,
+      "sha256": "0442421ba3a703d24d9f18079565a35e1493ffa70536dba226a397aca3d4e002",
+      "exports": [
+        "upsert"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server",
+        "../_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/plugins.ts",
+      "lines": 76,
+      "sha256": "fbead52666039a01d438ea5e78a6681c1bfae8d2800519c814da29a7550dd120",
+      "exports": [
+        "getOne",
+        "remove"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/messages.ts",
+      "lines": 182,
+      "sha256": "9470fd7591c410b4c549254eece18e4361d119ff68d658039df07d9997e9d314",
+      "exports": [
+        "create",
+        "enhanceResponse",
+        "getMany"
+      ],
+      "imports": [
+        "convex/values",
+        "ai",
+        "../_generated/server",
+        "../_generated/api",
+        "../system/ai/agents/supportAgent",
+        "convex/server",
+        "@convex-dev/agent",
+        "@ai-sdk/openai",
+        "../system/ai/constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/files.ts",
+      "lines": 293,
+      "sha256": "6fad4af9cb1789973589b193c2532149665463c921b2d07c2a09fb1da6398d47",
+      "exports": [
+        "addFile",
+        "deleteFile",
+        "list"
+      ],
+      "imports": [
+        "convex/values",
+        "@convex-dev/rag",
+        "../_generated/server",
+        "../lib/extractTextContent",
+        "../system/ai/rag",
+        "../_generated/dataModel",
+        "convex/server",
+        "../_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/conversations.ts",
+      "lines": 203,
+      "sha256": "64905907b925ab8a5afc70ae821fa26daa2d6769ba9e8e5729628b296d49c88d",
+      "exports": [
+        "getMany",
+        "getOne",
+        "updateStatus"
+      ],
+      "imports": [
+        "../_generated/server",
+        "convex/values",
+        "../system/ai/agents/supportAgent",
+        "@convex-dev/agent",
+        "convex/server",
+        "../_generated/dataModel"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/private/contactSessions.ts",
+      "lines": 48,
+      "sha256": "c9c1235d21dbe2a4572aebdf854067605ed15c05d7c38efa103e1f0da020b0ad",
+      "exports": [
+        "getOneByConversationId"
+      ],
+      "imports": [
+        "convex/values",
+        "../_generated/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/schema.ts",
+      "lines": 71,
+      "sha256": "b3e33c1d2764cf2b6d5b012cd10338e24587450ffea962826e270a4c45306101",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "convex/server",
+        "convex/values"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/ai/constants.ts",
+      "lines": 161,
+      "sha256": "cac726af0481ed5f12012b8b9094295cd394e214aaf794ede964abe44aa5f999",
+      "exports": [
+        "OPERATOR_MESSAGE_ENHANCEMENT_PROMPT",
+        "SEARCH_INTERPRETER_PROMPT",
+        "SUPPORT_AGENT_PROMPT"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/ai/rag.ts",
+      "lines": 12,
+      "sha256": "c71f837b7834d681addbe2ae8906d111303b0b61e34343bda2834d65049c48be",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@ai-sdk/openai",
+        "@convex-dev/rag",
+        "../../_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/ai/tools/search.ts",
+      "lines": 69,
+      "sha256": "a4f30165583ef87d4f86a306592f73a972392cc4aa26d1a97455f6a0237929c1",
+      "exports": [
+        "search"
+      ],
+      "imports": [
+        "@ai-sdk/openai",
+        "@convex-dev/agent",
+        "ai",
+        "zod",
+        "../../../_generated/api",
+        "../agents/supportAgent",
+        "../rag",
+        "../constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/ai/tools/resolveConversation.ts",
+      "lines": 29,
+      "sha256": "e4728b1b197b52d7545258d4b6c92f96b7e18e277cf26f6d836cda1477e64abf",
+      "exports": [
+        "resolveConversation"
+      ],
+      "imports": [
+        "@convex-dev/agent",
+        "zod",
+        "../../../_generated/api",
+        "../agents/supportAgent"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/ai/tools/escalateConversation.ts",
+      "lines": 29,
+      "sha256": "153b8f14b54ed0363ecb7ca25c5a3b3be2d222e40b367a103426cca979696bae",
+      "exports": [
+        "escalateConversation"
+      ],
+      "imports": [
+        "@convex-dev/agent",
+        "zod",
+        "../../../_generated/api",
+        "../agents/supportAgent"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/middleware.ts",
+      "lines": 42,
+      "sha256": "7929dfbb9ddec0c111dbb19dac7a2e746f8aace881cede63a35c31fac6a94f83",
+      "exports": [
+        "config",
+        "default"
+      ],
+      "imports": [
+        "next/server",
+        "@clerk/nextjs/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/eslint.config.js",
+      "lines": 5,
+      "sha256": "18f1ba4bf4bf22321db394516b4b5e03bf80ef81300b5cd2baaab861fcd7a3b5",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@workspace/eslint-config/next-js"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "packages/backend/convex/system/ai/agents/supportAgent.ts",
+      "lines": 10,
+      "sha256": "d0d5fdfba530299097d8ba97b1c0233b51cfc22314382b510a2fa85b4805711c",
+      "exports": [
+        "supportAgent"
+      ],
+      "imports": [
+        "@ai-sdk/openai",
+        "@convex-dev/agent",
+        "../../../_generated/api",
+        "../constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/components/providers.tsx",
+      "lines": 18,
+      "sha256": "685e00d2a53fa29dcc9db85d98e77e19bf8c647abf91239b7f24eef8d7c0b611",
+      "exports": [
+        "Providers"
+      ],
+      "imports": [
+        "react",
+        "jotai",
+        "convex/react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/global-error.tsx",
+      "lines": 23,
+      "sha256": "78c1934435196c84c666ad241a2e49d52e5079581a8b306c56b75459e132d63d",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@sentry/nextjs",
+        "next/error",
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/layout.tsx",
+      "lines": 44,
+      "sha256": "a13037c9f69b3ca3d8d1982f0a9b89d9a6daeda286a36bdd12a5691cfce2ae5b",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "next/font/google",
+        "@workspace/ui/globals.css",
+        "@/components/providers",
+        "@workspace/ui/components/sonner"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/app/page.tsx",
+      "lines": 22,
+      "sha256": "f828b71a821cf051e765f1acc956bf4950248c44d7fceb9eb9abfb3e045e6c2d",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "react",
+        "@/modules/widget/ui/views/widget-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/app/layout.tsx",
+      "lines": 35,
+      "sha256": "893bfc583af6bf6a314d6f199aae6731c87abf7a8bf8bbb1de34561180650ea5",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "next/font/google",
+        "@workspace/ui/globals.css",
+        "@/components/providers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/lib/country-utils.ts",
+      "lines": 25,
+      "sha256": "053da9f3cb93efaea97858489bfdf24ffd98315dd413ede57608562c465e97d4",
+      "exports": [
+        "getCountryFlagUrl",
+        "getCountryFromTimezone"
+      ],
+      "imports": [
+        "countries-and-timezones"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/sentry-example-page/page.tsx",
+      "lines": 210,
+      "sha256": "4ea62dbaad7be9cbe5b7f6b9b4984aa968712437ae243b0908a64676c26135b5",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "next/head",
+        "@sentry/nextjs",
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/views/widget-view.tsx",
+      "lines": 38,
+      "sha256": "4a4b52d92b641c3d4eda0e977e850a4efbb25db8aa5b440110b53aa6c3479095",
+      "exports": [
+        "WidgetView"
+      ],
+      "imports": [
+        "jotai",
+        "@/modules/widget/ui/screens/widget-auth-screen",
+        "@/modules/widget/atoms/widget-atoms",
+        "@/modules/widget/ui/screens/widget-error-screen",
+        "@/modules/widget/ui/screens/widget-loading-screen",
+        "@/modules/widget/ui/screens/widget-selection-screen",
+        "@/modules/widget/ui/screens/widget-chat-screen",
+        "../screens/widget-inbox-screen",
+        "../screens/widget-voice-screen",
+        "../screens/widget-contact-screen"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/plugins/ui/views/vapi-view.tsx",
+      "lines": 246,
+      "sha256": "138b6daa7255feee83d4532bfc23c4c0d1733beab1730012b699d21a78aa4f42",
+      "exports": [
+        "VapiView"
+      ],
+      "imports": [
+        "lucide-react",
+        "../components/plugin-card",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "react",
+        "@workspace/ui/components/dialog",
+        "@workspace/ui/components/form",
+        "@workspace/ui/components/input",
+        "@workspace/ui/components/label",
+        "zod",
+        "react-hook-form",
+        "@hookform/resolvers/zod",
+        "sonner",
+        "@workspace/ui/components/button",
+        "../components/vapi-connected-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/integrations/utils.ts",
+      "lines": 28,
+      "sha256": "93b989cf9015b1793addf7ad5662e83a152ef4552b40afaa7b8de0e2bbfba7a9",
+      "exports": [
+        "createScript"
+      ],
+      "imports": [
+        "./constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/api/sentry-example-api/route.ts",
+      "lines": 15,
+      "sha256": "692228fd9c30d717e8986873beb3fac994af25af5983d59fa29b49a1c479a5bb",
+      "exports": [
+        "GET",
+        "dynamic"
+      ],
+      "imports": [
+        "next/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-voice-screen.tsx",
+      "lines": 105,
+      "sha256": "8b5e27afcd8a18ea0a640605528a4e2f39c9e4eb3a53a38336e1299623aecd71",
+      "exports": [
+        "WidgetVoiceScreen"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/ai/conversation",
+        "@workspace/ui/components/ai/message",
+        "@/modules/widget/hooks/use-vapi",
+        "@/modules/widget/ui/components/widget-header",
+        "jotai",
+        "../../atoms/widget-atoms",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-selection-screen.tsx",
+      "lines": 114,
+      "sha256": "99c84bad294b8b9d4bf3ebe311cbfc6a662f18e9a81175a050e206f8e9718371",
+      "exports": [
+        "WidgetSelectionScreen"
+      ],
+      "imports": [
+        "@/modules/widget/ui/components/widget-header",
+        "@workspace/ui/components/button",
+        "jotai",
+        "lucide-react",
+        "../../atoms/widget-atoms",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "react",
+        "../components/widget-footer"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-loading-screen.tsx",
+      "lines": 184,
+      "sha256": "1c4da21c3b6c998f6d16cf684f22e148ab578eed85c40d8148a19cd6952efd17",
+      "exports": [
+        "WidgetLoadingScreen"
+      ],
+      "imports": [
+        "react",
+        "lucide-react",
+        "jotai",
+        "@/modules/widget/atoms/widget-atoms",
+        "@/modules/widget/ui/components/widget-header",
+        "convex/react",
+        "@workspace/backend/_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-inbox-screen.tsx",
+      "lines": 97,
+      "sha256": "9c5f9c9a772538d79b8f2ab026582a95f4fcec9f4276e6fef307b06c284ce268",
+      "exports": [
+        "WidgetInboxScreen"
+      ],
+      "imports": [
+        "jotai",
+        "date-fns",
+        "lucide-react",
+        "@/modules/widget/atoms/widget-atoms",
+        "@workspace/ui/components/conversation-status-icon",
+        "@/modules/widget/ui/components/widget-header",
+        "../components/widget-footer",
+        "@workspace/ui/components/button",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "@workspace/ui/hooks/use-infinite-scroll",
+        "@workspace/ui/components/infinite-scroll-trigger"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-error-screen.tsx",
+      "lines": 32,
+      "sha256": "5f118f9975fd707f75536bf46571e6e8eedfbd8bc76eee481a7081759c8c10f2",
+      "exports": [
+        "WidgetErrorScreen"
+      ],
+      "imports": [
+        "jotai",
+        "lucide-react",
+        "@/modules/widget/atoms/widget-atoms",
+        "@/modules/widget/ui/components/widget-header"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-contact-screen.tsx",
+      "lines": 83,
+      "sha256": "8933152da659aae23570fe99d54ada79475d135d2d88062beb0d40afaa7fffa3",
+      "exports": [
+        "WidgetContactScreen"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/components/button",
+        "@/modules/widget/ui/components/widget-header",
+        "jotai",
+        "../../atoms/widget-atoms",
+        "react",
+        "next/link"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-chat-screen.tsx",
+      "lines": 233,
+      "sha256": "153372e78fe9a106666b0fd0edd3d4a9cc75a5ac7b89af1cd5a59ef3e8af723b",
+      "exports": [
+        "WidgetChatScreen"
+      ],
+      "imports": [
+        "@workspace/ui/components/ai/suggestion",
+        "@hookform/resolvers/zod",
+        "zod",
+        "react-hook-form",
+        "@convex-dev/agent/react",
+        "@/modules/widget/ui/components/widget-header",
+        "@workspace/ui/components/button",
+        "jotai",
+        "lucide-react",
+        "@workspace/ui/components/dicebear-avatar",
+        "@workspace/ui/hooks/use-infinite-scroll",
+        "@workspace/ui/components/infinite-scroll-trigger",
+        "../../atoms/widget-atoms",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "@workspace/ui/components/form",
+        "@workspace/ui/components/ai/conversation",
+        "@workspace/ui/components/ai/input",
+        "@workspace/ui/components/ai/message",
+        "@workspace/ui/components/ai/response",
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/screens/widget-auth-screen.tsx",
+      "lines": 135,
+      "sha256": "4fd831da25750a2bf53e214cb2e76e6ebf521ffc61e6cad75a1bf6b006ad20ba",
+      "exports": [
+        "WidgetAuthScreen"
+      ],
+      "imports": [
+        "zod",
+        "react-hook-form",
+        "@hookform/resolvers/zod",
+        "@workspace/ui/components/form",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/input",
+        "@/modules/widget/ui/components/widget-header",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "@workspace/backend/_generated/dataModel",
+        "jotai",
+        "../../atoms/widget-atoms"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/plugins/ui/components/vapi-phone-numbers-tab.tsx",
+      "lines": 103,
+      "sha256": "6d0e743e04cd16792ab9c4dacf2678bed8015b37ca93db90c3a15ba3ada24849",
+      "exports": [
+        "VapiPhoneNumbersTab"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/components/badge",
+        "@workspace/ui/components/table",
+        "../../hooks/use-vapi-data"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/plugins/ui/components/vapi-connected-view.tsx",
+      "lines": 111,
+      "sha256": "687a778bea8e55d1cb72bf7ea51290484188fd1c5dcc54e28441ef9356f6d613",
+      "exports": [
+        "VapiConnectedView"
+      ],
+      "imports": [
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "react",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/card",
+        "@workspace/ui/components/tabs",
+        "./vapi-phone-numbers-tab",
+        "./vapi-assistants-tab"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/plugins/ui/components/vapi-assistants-tab.tsx",
+      "lines": 91,
+      "sha256": "9921d479a67d9eb58228034e77542547c0c4040e90ce86f8f3ca745c89924c7c",
+      "exports": [
+        "VapiAssistantsTab"
+      ],
+      "imports": [
+        "lucide-react",
+        "@workspace/ui/components/table",
+        "../../hooks/use-vapi-data"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/plugins/ui/components/plugin-card.tsx",
+      "lines": 90,
+      "sha256": "ff254fcb68bb65e7ddf9ff1f04ab0ecea19ed0c789129abe3e1481475497d29f",
+      "exports": [
+        "PluginCard"
+      ],
+      "imports": [
+        "lucide-react",
+        "next/image",
+        "@workspace/ui/components/button"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/billing/ui/views/billing-view.tsx",
+      "lines": 22,
+      "sha256": "6ee81f7f94036eb4bb4c82db574c11f11c61d80438ff33b0061412e7732e0c8c",
+      "exports": [
+        "BillingView"
+      ],
+      "imports": [
+        "../components/pricing-table"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/components/widget-header.tsx",
+      "lines": 19,
+      "sha256": "c123c8f0ccb89ec1e55c507fe4185c71f67b5dd0231718beb106e58cefa30beb",
+      "exports": [
+        "WidgetHeader"
+      ],
+      "imports": [
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/ui/components/widget-footer.tsx",
+      "lines": 36,
+      "sha256": "a5ac57cdf65e6da6dd9bfe5119e3a08dd96467f9bd63e0d97b25abc6611ac04a",
+      "exports": [
+        "WidgetFooter"
+      ],
+      "imports": [
+        "@workspace/ui/components/button",
+        "@workspace/ui/lib/utils",
+        "jotai",
+        "lucide-react",
+        "../../atoms/widget-atoms"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/types.ts",
+      "lines": 4,
+      "sha256": "1bc4cb445e73c8ccf257bbc569e87d4a21123b4e4717e2551132eaa5c3db338a",
+      "exports": [],
+      "imports": [
+        "@/modules/widget/constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/constants.ts",
+      "lines": 13,
+      "sha256": "acf8ffdac63936394fce39b6aea0bef5c25550569e8a4e2b554acc63df22edea",
+      "exports": [
+        "CONTACT_SESSION_KEY",
+        "WIDGET_SCREENS"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/integrations/ui/views/integrations-view.tsx",
+      "lines": 179,
+      "sha256": "a296ac748ca5473082df69907685eb3d6a3ea420111dc07ee756515d1b09acf1",
+      "exports": [
+        "IntegrationsDialog",
+        "IntegrationsView"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/input",
+        "@workspace/ui/components/label",
+        "@workspace/ui/components/separator",
+        "lucide-react",
+        "sonner",
+        "../../constants",
+        "next/image",
+        "@workspace/ui/components/dialog",
+        "react",
+        "../../utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/integrations/constants.ts",
+      "lines": 30,
+      "sha256": "849d5653ab0617700fea54576dde29b9651ef1503ef83b3494113ef07ffa9fe9",
+      "exports": [
+        "HTML_SCRIPT",
+        "INTEGRATIONS",
+        "JAVASCRIPT_SCRIPT",
+        "NEXTJS_SCRIPT",
+        "REACT_SCRIPT"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/plugins/hooks/use-vapi-data.ts",
+      "lines": 100,
+      "sha256": "d94ec2b588faf0a06e6a1b5f1c820c737c957b00c2a3828de6a2dc295ae06b55",
+      "exports": [
+        "useVapiAssistants",
+        "useVapiPhoneNumbers"
+      ],
+      "imports": [
+        "convex/react",
+        "react",
+        "sonner",
+        "@workspace/backend/_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/constants.ts",
+      "lines": 2,
+      "sha256": "18bd1c591f39eccee5995d3db03afa2d6008b79674308ba6fe716a052d1811ed",
+      "exports": [
+        "STATUS_FILTER_KEY"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/atoms.ts",
+      "lines": 8,
+      "sha256": "1f3e34a7627ea5de3d094e941506df4c0e93eacf4b31c54a72e50e14fdf96f7b",
+      "exports": [
+        "statusFilterAtom"
+      ],
+      "imports": [
+        "jotai/utils",
+        "@workspace/backend/_generated/dataModel",
+        "./constants"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/views/conversations-view.tsx",
+      "lines": 13,
+      "sha256": "57a1ffe151073f68414b555d89e92bb20c05ad4bbc818f1ed6fb20a67764ead0",
+      "exports": [
+        "ConversationsView"
+      ],
+      "imports": [
+        "next/image"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/views/conversation-id-view.tsx",
+      "lines": 301,
+      "sha256": "9b1f919804810c235d602fe2f689905c98d0d31288655ce27dff6b95030eb15d",
+      "exports": [
+        "ConversationIdView",
+        "ConversationIdViewLoading"
+      ],
+      "imports": [
+        "@workspace/ui/hooks/use-infinite-scroll",
+        "@workspace/ui/components/infinite-scroll-trigger",
+        "@convex-dev/agent/react",
+        "@workspace/backend/_generated/api",
+        "@workspace/backend/_generated/dataModel",
+        "@workspace/ui/components/button",
+        "convex/react",
+        "lucide-react",
+        "@workspace/ui/components/ai/conversation",
+        "@workspace/ui/components/ai/input",
+        "@workspace/ui/components/ai/message",
+        "@workspace/ui/components/ai/response",
+        "@workspace/ui/components/form",
+        "zod",
+        "react-hook-form",
+        "@hookform/resolvers/zod",
+        "@workspace/ui/components/dicebear-avatar",
+        "../components/conversation-status-button",
+        "react",
+        "@workspace/ui/lib/utils",
+        "@workspace/ui/components/skeleton",
+        "sonner"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/atoms/widget-atoms.ts",
+      "lines": 22,
+      "sha256": "ad8b62a4676ab29d8e7cf4eb17c7bd6f90f62f9f3544df6e306c3b0cf5b0a3d8",
+      "exports": [
+        "contactSessionIdAtomFamily",
+        "conversationIdAtom",
+        "errorMessageAtom",
+        "hasVapiSecretsAtom",
+        "loadingMessageAtom",
+        "organizationIdAtom",
+        "screenAtom",
+        "vapiSecretsAtom",
+        "widgetSettingsAtom"
+      ],
+      "imports": [
+        "jotai",
+        "jotai/utils",
+        "@/modules/widget/types",
+        "../constants",
+        "@workspace/backend/_generated/dataModel"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(auth)/layout.tsx",
+      "lines": 12,
+      "sha256": "0368525d136ca45672bd98f1d0e5e25346277e3faee2953cb40737e81b7f4fbf",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/auth/ui/layouts/auth-layout"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/billing/ui/components/premium-feature-overlay.tsx",
+      "lines": 124,
+      "sha256": "2c4fc988c9715716058612ac123d603c75eb317f45e6dc213007061f2c72bdae",
+      "exports": [
+        "PremiumFeatureOverlay"
+      ],
+      "imports": [
+        "lucide-react",
+        "next/navigation",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/card"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/billing/ui/components/pricing-table.tsx",
+      "lines": 21,
+      "sha256": "10d421cd76703938cfba70ba347c4fb159fed9c129d4eb6aee1efbc670e85d9e",
+      "exports": [
+        "PricingTable"
+      ],
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/widget/modules/widget/hooks/use-vapi.ts",
+      "lines": 96,
+      "sha256": "c5fc4ae4ba3e9ff81279c26ad58cf2502f452ab95a00d71afc1a9ba4d30c2556",
+      "exports": [
+        "useVapi"
+      ],
+      "imports": [
+        "@vapi-ai/web",
+        "jotai",
+        "react",
+        "../atoms/widget-atoms"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(auth)/sign-up/[[...sign-up]]/page.tsx",
+      "lines": 8,
+      "sha256": "6438a8328db32ce7ca6d3a49a127f0ca3cfd0c2fc8bd5128e713806adb40cf90",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/auth/ui/views/sign-up-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/layouts/dashboard-layout.tsx",
+      "lines": 28,
+      "sha256": "27876fe201c09d608d000945d583ef8881fc435c05ad5e8eba1dcf87a89fbc00",
+      "exports": [
+        "DashboardLayout"
+      ],
+      "imports": [
+        "@/modules/auth/ui/components/auth-guard",
+        "@/modules/auth/ui/components/organization-guard",
+        "@/modules/dashboard/ui/components/dashboard-sidebar",
+        "@workspace/ui/components/sidebar",
+        "jotai",
+        "next/headers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/layouts/conversations-layout.tsx",
+      "lines": 23,
+      "sha256": "bbf3ac00e63d21b27f4ca6d2c52d2a07f1c7ee03ecc9b84a253ee7ca79c9eac0",
+      "exports": [
+        "ConversationsLayout"
+      ],
+      "imports": [
+        "@workspace/ui/components/resizable",
+        "../components/conversations-panel"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/layouts/conversation-id-layout.tsx",
+      "lines": 26,
+      "sha256": "82c2396741108d460164f9253c9b0480ccf3138107f52390301d295ff049c128",
+      "exports": [
+        "ConversationIdLayout"
+      ],
+      "imports": [
+        "@workspace/ui/components/resizable",
+        "../components/contact-panel"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/components/contact-panel.tsx",
+      "lines": 249,
+      "sha256": "6fba4e3bd51461ad2577c671e5efebda63e900e0858d8334eeeeedad38a8203c",
+      "exports": [
+        "ContactPanel"
+      ],
+      "imports": [
+        "bowser",
+        "@workspace/ui/components/accordion",
+        "@/lib/country-utils",
+        "@workspace/backend/_generated/api",
+        "@workspace/backend/_generated/dataModel",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/dicebear-avatar",
+        "convex/react",
+        "lucide-react",
+        "next/link",
+        "next/navigation",
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/components/dashboard-sidebar.tsx",
+      "lines": 206,
+      "sha256": "7991df08103b1024d0c1dffdbd4e6e7ea9b95d6151b00e519632ba0a5fbd9c41",
+      "exports": [
+        "DashboardSidebar"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "next/navigation",
+        "@workspace/ui/components/sidebar",
+        "@workspace/ui/lib/utils"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/components/conversations-panel.tsx",
+      "lines": 208,
+      "sha256": "21c37c57bec2a10d6fc283bf508e78288b84440e56e98aa29937546713ca1131",
+      "exports": [
+        "ConversationsPanel",
+        "SkeletonConversations"
+      ],
+      "imports": [
+        "@workspace/ui/hooks/use-infinite-scroll",
+        "@workspace/ui/components/infinite-scroll-trigger",
+        "date-fns",
+        "@/lib/country-utils",
+        "@workspace/backend/_generated/api",
+        "@workspace/ui/components/dicebear-avatar",
+        "@workspace/ui/components/scroll-area",
+        "@workspace/ui/components/select",
+        "@workspace/ui/lib/utils",
+        "convex/react",
+        "lucide-react",
+        "next/link",
+        "next/navigation",
+        "@workspace/ui/components/conversation-status-icon",
+        "jotai/react",
+        "../../atoms",
+        "@workspace/ui/components/skeleton"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/dashboard/ui/components/conversation-status-button.tsx",
+      "lines": 46,
+      "sha256": "eb32d0ebbc057c120aedff9d32fc1086ed1a6bd92e422d8c493327e255e583fa",
+      "exports": [
+        "ConversationStatusButton"
+      ],
+      "imports": [
+        "@workspace/ui/components/hint",
+        "@workspace/backend/_generated/dataModel",
+        "@workspace/ui/components/button",
+        "lucide-react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(auth)/sign-in/[[...sign-in]]/page.tsx",
+      "lines": 8,
+      "sha256": "3faefc052569f90dbcc37ff98cd5160307914458dc3d5e8c03eb2c114c40f0d4",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/auth/ui/views/sign-in-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/layout.tsx",
+      "lines": 12,
+      "sha256": "2648e5a5541ec08962ec81fd21e09b32fdcda1adca2233dd1427f1e618a396dd",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/dashboard/ui/layouts/dashboard-layout"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/page.tsx",
+      "lines": 20,
+      "sha256": "c8a29ac758a16cf3d6f3ecf5d343b3315ae0c1e6f6605df2fcb185c7b03df4b9",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "@workspace/ui/components/button"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/customization/schemas.ts",
+      "lines": 15,
+      "sha256": "e0e68ccb895be11a00140f02cf2526c9aff95c72ef03ad2d059bbf4358400ba4",
+      "exports": [
+        "widgetSettingsSchema"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/customization/types.ts",
+      "lines": 5,
+      "sha256": "140a943211d0e1d1b08ad2812eabcdbc6344edec12b589147edfaa7e2662a910",
+      "exports": [],
+      "imports": [
+        "zod",
+        "./schemas"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/integrations/page.tsx",
+      "lines": 7,
+      "sha256": "991e5c996df38ee79f4889cfef1bc68b91366287faa9050f44858fe4e006881b",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/integrations/ui/views/integrations-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/files/ui/views/files-view.tsx",
+      "lines": 185,
+      "sha256": "75875373c0902a49bdee5684af61512e964e8d6a5ab0778fe0f681483fc5bb40",
+      "exports": [
+        "FilesView"
+      ],
+      "imports": [
+        "@workspace/ui/components/dropdown-menu",
+        "@workspace/ui/components/table",
+        "@workspace/ui/components/badge",
+        "@workspace/ui/hooks/use-infinite-scroll",
+        "@workspace/ui/components/infinite-scroll-trigger",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "@workspace/ui/components/button",
+        "lucide-react",
+        "../components/upload-dialog",
+        "react",
+        "../components/delete-file-dialog"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/files/page.tsx",
+      "lines": 22,
+      "sha256": "fa190382759138898071b52c189e6c9967b4aafa0fca0c239032d315bdac410a",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "@/modules/billing/ui/components/premium-feature-overlay",
+        "@/modules/files/ui/views/files-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/plugins/vapi/page.tsx",
+      "lines": 21,
+      "sha256": "98f7c9c8bb7ea8e90d6cda3f7f89f09347e7eb8f5540e1cd3203d54b37d7f6a3",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/billing/ui/components/premium-feature-overlay",
+        "@/modules/plugins/ui/views/vapi-view",
+        "@clerk/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/billing/page.tsx",
+      "lines": 7,
+      "sha256": "13735f3e352eabe0ebff18ada218bdd9a7663ee4f5cb4e025829586d2b2441a5",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/billing/ui/views/billing-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/customization/ui/views/customization-view.tsx",
+      "lines": 43,
+      "sha256": "39948fe374a24ace5f9ca07e0fea994d54e034640f4f5f3500efb91e138a6013",
+      "exports": [
+        "CustomizationView"
+      ],
+      "imports": [
+        "@workspace/backend/_generated/api",
+        "convex/react",
+        "lucide-react",
+        "../components/customization-form"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/conversations/layout.tsx",
+      "lines": 10,
+      "sha256": "12c1c1ac3ab0281cdda9f446d42e8d08148c5df78b06520a83320f644ce2368f",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/dashboard/ui/layouts/conversations-layout"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/conversations/page.tsx",
+      "lines": 8,
+      "sha256": "790815cb7012da6450f8c7c8daaa21f4ee64738cfc5de2f86749d57083372c03",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/dashboard/ui/views/conversations-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(auth)/org-selection/[[...org-selection]]/page.tsx",
+      "lines": 8,
+      "sha256": "67ee7740a648874bf62e37ac7d7cb33f60a8067d0013b6034021ddf1d66c71fe",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/auth/ui/views/org-selection-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/files/ui/components/upload-dialog.tsx",
+      "lines": 174,
+      "sha256": "20b86b8657202c2a6ffe4950f81667f9293e825b579c27073970832377b8b8b4",
+      "exports": [
+        "UploadDialog"
+      ],
+      "imports": [
+        "convex/react",
+        "react",
+        "@workspace/ui/components/dialog",
+        "@workspace/ui/components/input",
+        "@workspace/ui/components/label",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/dropzone",
+        "@workspace/backend/_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/files/ui/components/delete-file-dialog.tsx",
+      "lines": 94,
+      "sha256": "ae12e9874b438bbbeaa9c3c9bdbeb05916fe7a21e41a24dd358820aa597c4a49",
+      "exports": [
+        "DeleteFileDialog"
+      ],
+      "imports": [
+        "convex/react",
+        "react",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/dialog",
+        "@workspace/backend/_generated/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/auth/ui/components/organization-guard.tsx",
+      "lines": 24,
+      "sha256": "d953a283a3f7f95a0c5c190aa27cd69e58190bbf8d5ab778d9cf759fe7d2a4ce",
+      "exports": [
+        "OrganizationGuard"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "@/modules/auth/ui/layouts/auth-layout",
+        "@/modules/auth/ui/views/org-selection-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/conversations/[conversationId]/page.tsx",
+      "lines": 17,
+      "sha256": "0763f7e4c7abcb2e3d40ec4e78c5a409603870afe410f77e9ef432eacfcc6d92",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/dashboard/ui/views/conversation-id-view",
+        "@workspace/backend/_generated/dataModel"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/auth/ui/components/auth-guard.tsx",
+      "lines": 26,
+      "sha256": "801f870a217240f23732feab34b6896a74fdd9eb94bfb06ca765dc8be82563ec",
+      "exports": [
+        "AuthGuard"
+      ],
+      "imports": [
+        "convex/react",
+        "../layouts/auth-layout",
+        "../views/sign-in-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/conversations/[conversationId]/layout.tsx",
+      "lines": 9,
+      "sha256": "7f5c43fb2807cc83bbc42d06b05dc33365595914061923ba494b45aacbb40d0c",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/modules/dashboard/ui/layouts/conversation-id-layout"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/customization/ui/components/vapi-form-fields.tsx",
+      "lines": 114,
+      "sha256": "c79c9030b171babaee0ce31ed5de670b649e1c0c770c5b80c1e9d581d2b6543e",
+      "exports": [
+        "VapiFormFields"
+      ],
+      "imports": [
+        "react-hook-form",
+        "@/modules/plugins/hooks/use-vapi-data",
+        "@workspace/ui/components/form",
+        "@workspace/ui/components/select",
+        "../../types"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/app/(dashboard)/customization/page.tsx",
+      "lines": 22,
+      "sha256": "3cd11bdae42dd0fdcb14382eee58d9564e3dd9ad62ffc7a450eaf8affdde10c0",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@clerk/nextjs",
+        "@/modules/billing/ui/components/premium-feature-overlay",
+        "@/modules/customization/ui/views/customization-view"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/customization/ui/components/customization-form.tsx",
+      "lines": 210,
+      "sha256": "ebd348dfa559f515e9d141975370017deae61522f5cea3e38abe5247eb2e9020",
+      "exports": [
+        "CustomizationForm"
+      ],
+      "imports": [
+        "@hookform/resolvers/zod",
+        "zod",
+        "react-hook-form",
+        "sonner",
+        "@workspace/ui/components/button",
+        "@workspace/ui/components/card",
+        "@workspace/ui/components/form",
+        "@workspace/ui/components/input",
+        "@workspace/ui/components/separator",
+        "@workspace/ui/components/textarea",
+        "@workspace/backend/_generated/dataModel",
+        "convex/react",
+        "@workspace/backend/_generated/api",
+        "./vapi-form-fields",
+        "../../types",
+        "../../schemas"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/auth/ui/layouts/auth-layout.tsx",
+      "lines": 8,
+      "sha256": "d7fe64ea0b54abd6cf44c1a7c8be613d083c59025be49ef134391619fcf7191a",
+      "exports": [
+        "AuthLayout"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/auth/ui/views/sign-up-view.tsx",
+      "lines": 8,
+      "sha256": "4eb931899bdf54ab2193d2b54a69b9952a49dbd7349be4073851ff68eb60f969",
+      "exports": [
+        "SignUpView"
+      ],
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/auth/ui/views/sign-in-view.tsx",
+      "lines": 8,
+      "sha256": "95cb6810c1d22b214deb1ba53aed7de8f47a07674097b7303a8058d62df03118",
+      "exports": [
+        "SignInView"
+      ],
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "echo",
+      "path": "apps/web/modules/auth/ui/views/org-selection-view.tsx",
+      "lines": 13,
+      "sha256": "ed8a2fb1453e8c3839e850ed8fe38ef10674f5321d7f0b835e29298a4fda9421",
+      "exports": [
+        "OrgSelectionView"
+      ],
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/gmail-sync-worker.test.ts",
+      "lines": 240,
+      "sha256": "a51e698f7cfb04133ef530f51a34ffb4fd178d74749c34a0774b8fa2eb459d3c",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../../src/application/connection/gmail-account.service",
+        "../../src/application/tickets/ingest.service",
+        "../../src/infrastructure/workers/gmail-sync-worker",
+        "../fakes/gmail",
+        "../fakes/in-memory"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/gateway-messaging-client.test.ts",
+      "lines": 105,
+      "sha256": "4730dc5e5a9aa90825280da07546a9c61327192b6ef022432f81337fe6bb9a31",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@sistemazero/core/security",
+        "../../src/infrastructure/gateways/messaging/gateway-messaging-client"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/env.test.ts",
+      "lines": 51,
+      "sha256": "93f10a617c3760bccea092088c2b8d7a443587f27bc64bb3962ec6812e325fd3",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/infrastructure/config/env"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/ai-worker.test.ts",
+      "lines": 216,
+      "sha256": "b7adafc001d9c6fd7f5a3b4928eea07505c31910a41b2185bd63630227d49757",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/ai/ticket-ai.service",
+        "../../src/domain/ports/llm-client.port",
+        "../../src/infrastructure/workers/ai-worker",
+        "../fakes/ai",
+        "../fakes/in-memory",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/triage.test.ts",
+      "lines": 387,
+      "sha256": "1907b2edbbb2173b93b9b3bee1c0760c192c23fa1cf80211507e42e3cf461050",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/domain/mail/triage"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/ticket-triage.test.ts",
+      "lines": 104,
+      "sha256": "dd525fc33f31d46b9155daffce76b7783122549c0da098d45c1cad2d863e5a63",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@sistemazero/helpdesk-contracts",
+        "../../src/domain/ticket/ticket-triage",
+        "../../src/infrastructure/persistence/drizzle/schema",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/ticket-stats.test.ts",
+      "lines": 60,
+      "sha256": "b5673fee330a50d3fa56ed0db171ea170c8e52d577e257a451e55cd0928d3af5",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/domain/ticket/ticket-stats"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/ticket-sla.test.ts",
+      "lines": 54,
+      "sha256": "5f9a5fe3ca70036e8463043b2d20dcb2711d049d88aad022b8fd31004743c543",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/domain/ticket/ticket-sla",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/ticket-ai.service.test.ts",
+      "lines": 144,
+      "sha256": "ea6f51da92dca4968cc46f2d45a57fb10d0c4d2d05d1303b3fb806dcda9fbb7b",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/ai/ticket-ai.service",
+        "../fakes/ai",
+        "../fakes/in-memory",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/rfc2822.test.ts",
+      "lines": 72,
+      "sha256": "1558a77c687950bdd8cc8d2599561398ce98ac7dda6592a48c52a6bd71806d2e",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/infrastructure/gateways/google/rfc2822"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/prompts.test.ts",
+      "lines": 111,
+      "sha256": "69a56fe409d9849359bc265e61e7197e54ef946d6100694d421626bd0cbf58f3",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/ai/prompts",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/portal-reply-notification.test.ts",
+      "lines": 68,
+      "sha256": "65ffd9c94649ecd866cae73d32a657341d8cf8119d4e46b509e893786d8c4050",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/tickets/portal-reply-notification",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/portal-notification-worker.test.ts",
+      "lines": 152,
+      "sha256": "1d78c1e84de976e7a2f148b8d49ea26d1d6d911a9730b64f3d73b7a5c9f3e982",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/infrastructure/workers/portal-notification-worker",
+        "../fakes/in-memory",
+        "../fakes/messaging"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/mime.test.ts",
+      "lines": 259,
+      "sha256": "01fcc216ad915e4425a0e20b23e0137552210f86987f65ee0d379d1c6c57823b",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/infrastructure/gateways/google/mime"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/kb-context.test.ts",
+      "lines": 37,
+      "sha256": "9b8f5c33dd85e549b2105b7e03ba26b073a85a3c7fcc806395c4dc7d4d7cc6d1",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/application/ai/kb-context"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/unit/ingest.test.ts",
+      "lines": 543,
+      "sha256": "aca5f486b2edbbf677461223363727177eabbca2fe4457e283ca3a36a4b5fea0",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../../src/application/tickets/ingest.service",
+        "../fakes/gmail",
+        "../fakes/in-memory",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/triage.test.ts",
+      "lines": 385,
+      "sha256": "1935062c7f66c182d73f0c9cf8da7df8bfc0baa16530dce4ed8eb7afb9a20da0",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/tickets.test.ts",
+      "lines": 255,
+      "sha256": "dfe6054a97e6eb1bcc0415dd29615a4a84b5f5bbea373adc60d84f63df503776",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/stats.test.ts",
+      "lines": 65,
+      "sha256": "b7d37a697251f1f8c1bac65c1e8035f42e78a3c8301e220b2905891165609d7a",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/domain/ticket/ticket-stats",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/settings.test.ts",
+      "lines": 40,
+      "sha256": "b8720c35055959bb4f9cef6c1e7104fd021f311ccaae0e7270926a9c261c99a8",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/reply.test.ts",
+      "lines": 549,
+      "sha256": "eb6203252c0481ee028c85ce254e8c0d32a76f613f33df97067e6487157b988b",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../../src/domain/ports/oauth-provider.port",
+        "../helpers",
+        "../../src/domain/ports/gmail-client.port",
+        "../../src/domain/ports/gmail-client.port",
+        "../../src/domain/ports/gmail-client.port",
+        "../../src/domain/ports/gmail-client.port"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/oauth.test.ts",
+      "lines": 132,
+      "sha256": "5ee916ea8c7f4ee43e35fd2f90d49917607f492055b3b6e44b70603b1706a9bb",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/kb.test.ts",
+      "lines": 58,
+      "sha256": "d9d8cc8c9b966d99e8e68addd56ba371e8aed8fbe4b28bcb926cf9b29272df11",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-triage.test.ts",
+      "lines": 392,
+      "sha256": "3aa9e6cf112df8a55b8181d6d26e2a9b2f82ed31c8dfb6c2ee68a0dd111125d1",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "drizzle-orm",
+        "../../src/infrastructure/persistence/drizzle/db",
+        "../../src/infrastructure/persistence/drizzle/schema",
+        "../../src/infrastructure/persistence/drizzle/settings.repository",
+        "../../src/infrastructure/persistence/drizzle/ticket.repository",
+        "../../src/infrastructure/persistence/drizzle/ticket-ingestion.repository",
+        "../../src/infrastructure/persistence/drizzle/triage-backfill.repository",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-ticket.repository.test.ts",
+      "lines": 172,
+      "sha256": "495858909d475bb0540a54d36553910a52fb4b3494c8cd66d715d2cface3a407",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "drizzle-orm",
+        "../../src/domain/ticket/ticket-sla",
+        "../../src/infrastructure/persistence/drizzle/db",
+        "../../src/infrastructure/persistence/drizzle/schema",
+        "../../src/infrastructure/persistence/drizzle/ticket.repository",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-reply-delivery.test.ts",
+      "lines": 286,
+      "sha256": "216989b2dc535d0156104a8e69acd2b2d9c984cf270c25abf9960cacf36af388",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "drizzle-orm",
+        "../../src/infrastructure/persistence/drizzle/db",
+        "../../src/infrastructure/persistence/drizzle/reply-delivery.repository",
+        "../../src/infrastructure/persistence/drizzle/schema",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-portal-notification-outbox.test.ts",
+      "lines": 120,
+      "sha256": "1cd1bd5b690e1538ba6def9134dfce615ac2e2082b131f471b035aa64f60d2fc",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../../src/infrastructure/persistence/drizzle/db",
+        "../../src/infrastructure/persistence/drizzle/portal-notification-outbox.repository",
+        "../../src/infrastructure/persistence/drizzle/schema",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-ingestion.test.ts",
+      "lines": 201,
+      "sha256": "095c3cafc7577dea549f0b513cae7caa287ce14f607f7a9494f33bc595753fbb",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "drizzle-orm",
+        "../../src/infrastructure/persistence/drizzle/db",
+        "../../src/infrastructure/persistence/drizzle/schema",
+        "../../src/infrastructure/persistence/drizzle/ticket-ingestion.repository",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-customer-tickets.test.ts",
+      "lines": 87,
+      "sha256": "5feb12f501ad3a74fc2308771911cd5766f54f8ec57233c319485289acadfa09",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/infrastructure/persistence/drizzle/customer-ticket.repository",
+        "../../src/infrastructure/persistence/drizzle/db",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/drizzle-connection.test.ts",
+      "lines": 77,
+      "sha256": "ebf92b8c31e9f18ee174a4f7a41413453b8c1ce22897134ca801b064376065f1",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../../src/infrastructure/persistence/drizzle/connection.repository",
+        "../../src/infrastructure/persistence/drizzle/db"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/customer-tickets.test.ts",
+      "lines": 285,
+      "sha256": "841bfe7ae8310b59894c2d6cbbcc6c850233a7020591de93907798d085a5afe8",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/connection.test.ts",
+      "lines": 73,
+      "sha256": "cec848faa284d8bb78a0cf5e0454f08842fcb091f10bdacbe55d8614b96030bb",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "node:crypto",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/auth.test.ts",
+      "lines": 62,
+      "sha256": "522d1cb9cf0f298347290f5de8145199462522d8c97a389a47f497434cb6cd8d",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/integration/ai.test.ts",
+      "lines": 77,
+      "sha256": "eb013d2ab66d4d5973049e64ce029a7fe0dc87572923b039e19de5b17868c171",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../../src/domain/ports/llm-client.port",
+        "../helpers"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/helpers.ts",
+      "lines": 349,
+      "sha256": "141985a55d682f5d7c6f89eccc7cd55bfa1d8038f22d6e8dc6f1e8b53212ac24",
+      "exports": [
+        "CUSTOMER_USER_ID",
+        "INTERNAL_TOKEN",
+        "STAFF_USER_ID",
+        "TEST_APP_URL",
+        "TEST_GATEWAY_URL",
+        "TEST_PORTAL_URLS",
+        "buildTestApp",
+        "customerHeaders",
+        "json",
+        "makeMessage",
+        "makeTicket",
+        "request",
+        "staffHeaders"
+      ],
+      "imports": [
+        "node:crypto",
+        "../src/application/ai/ticket-ai.service",
+        "../src/application/connection/connection.service",
+        "../src/application/connection/gmail-account.service",
+        "../src/application/connection/oauth.service",
+        "../src/application/kb/kb.service",
+        "../src/application/settings/settings.service",
+        "../src/application/tickets/customer-ticket.service",
+        "../src/application/tickets/reply.service",
+        "../src/application/tickets/ticket.service",
+        "../src/infrastructure/config/env",
+        "../src/infrastructure/workers/portal-notification-worker",
+        "../src/interfaces/http/server",
+        "./fakes/ai",
+        "./fakes/gmail",
+        "./fakes/in-memory",
+        "./fakes/messaging"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/fakes/messaging.ts",
+      "lines": 20,
+      "sha256": "0170f29e3a70744611ea3c7e9e1727f0dd38a003cab8e2840a688a6bb2db9933",
+      "exports": [
+        "FakeMessagingGateway"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/fakes/in-memory.ts",
+      "lines": 773,
+      "sha256": "0bcc1ddc1f566fb56444c236adc49ba24d04b29e273e8adca9673ff7ea23c1f8",
+      "exports": [
+        "InMemoryConnectionRepository",
+        "InMemoryCustomerTicketRepository",
+        "InMemoryKbRepository",
+        "InMemoryMessageRepository",
+        "InMemoryOAuthStateRepository",
+        "InMemoryPortalNotificationOutboxRepository",
+        "InMemoryReplyDeliveryRepository",
+        "InMemorySettingsRepository",
+        "InMemoryTicketIngestionRepository",
+        "InMemoryTicketRepository"
+      ],
+      "imports": [
+        "../../src/domain/settings/settings",
+        "../../src/domain/ticket/ticket",
+        "../../src/domain/ticket/ticket-sla",
+        "../../src/domain/ticket/ticket-stats",
+        "../../src/domain/ticket/ticket-triage"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/fakes/gmail.ts",
+      "lines": 157,
+      "sha256": "b0f6f6f1676612a9ca11dccb03a7e0937aca8f1c6d68e72b24ff4d093a67ff72",
+      "exports": [
+        "FakeGmailClient",
+        "FakeGmailOAuthProvider",
+        "FakeSecretBox",
+        "makeParsedEmail"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "tests/fakes/ai.ts",
+      "lines": 28,
+      "sha256": "b759bc74e8647ff75941b22638773efe838cf2259eaeeac7c4aecdb8cd3f8b0d",
+      "exports": [
+        "FakeLlmClient"
+      ],
+      "imports": [
+        "../../src/domain/ports/llm-client.port"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/composition-root.ts",
+      "lines": 386,
+      "sha256": "7d3ea8399f654ecaad4dc21253ed32f5b3138f7d3779275b5404cc1905cadfa0",
+      "exports": [
+        "createApplication"
+      ],
+      "imports": [
+        "node:crypto",
+        "@sistemazero/core/logging",
+        "./application/ai/ticket-ai.service",
+        "./application/connection/connection.service",
+        "./application/connection/gmail-account.service",
+        "./application/connection/oauth.service",
+        "./application/kb/kb.service",
+        "./application/settings/settings.service",
+        "./application/tickets/customer-ticket.service",
+        "./application/tickets/ingest.service",
+        "./application/tickets/reply.service",
+        "./application/tickets/ticket.service",
+        "./infrastructure/config/env",
+        "./infrastructure/gateways/google/gmail-client",
+        "./infrastructure/gateways/google/gmail-oauth-provider",
+        "./infrastructure/gateways/messaging/gateway-messaging-client",
+        "./infrastructure/gateways/openrouter/openrouter-client",
+        "./infrastructure/observability/sentry",
+        "./infrastructure/persistence/drizzle/connection.repository",
+        "./infrastructure/persistence/drizzle/customer-ticket.repository",
+        "./infrastructure/persistence/drizzle/db",
+        "./infrastructure/persistence/drizzle/kb.repository",
+        "./infrastructure/persistence/drizzle/message.repository",
+        "./infrastructure/persistence/drizzle/oauth-state.repository",
+        "./infrastructure/persistence/drizzle/portal-notification-outbox.repository",
+        "./infrastructure/persistence/drizzle/reply-delivery.repository",
+        "./infrastructure/persistence/drizzle/settings.repository",
+        "./infrastructure/persistence/drizzle/ticket.repository",
+        "./infrastructure/persistence/drizzle/ticket-ingestion.repository",
+        "./infrastructure/security/secret-box",
+        "./infrastructure/workers/ai-worker",
+        "./infrastructure/workers/gmail-sync-worker",
+        "./infrastructure/workers/portal-notification-worker",
+        "./interfaces/http/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/server.ts",
+      "lines": 95,
+      "sha256": "f12c3f2af8135eecdf5bbc3785689d38b0d6eab55d8b4c3c96960d2131525904",
+      "exports": [
+        "createServer"
+      ],
+      "imports": [
+        "@elysiajs/swagger",
+        "@sistemazero/core/http",
+        "elysia",
+        "./error-handler",
+        "./routes/connection.routes",
+        "./routes/customer-tickets.routes",
+        "./routes/health.routes",
+        "./routes/kb.routes",
+        "./routes/oauth.routes",
+        "./routes/settings.routes",
+        "./routes/tickets.routes"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/tickets.routes.ts",
+      "lines": 94,
+      "sha256": "2f9ff55383a62bf157ff47bdb7d6a2e097e765b66afaeef4656bedccf9cf4891",
+      "exports": [
+        "ticketsRoutes"
+      ],
+      "imports": [
+        "elysia",
+        "../auth",
+        "../dtos"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/settings.routes.ts",
+      "lines": 26,
+      "sha256": "9c94f7321f3bc86a4cb819749393cb5fc750979bf4739be221da309157078015",
+      "exports": [
+        "settingsRoutes"
+      ],
+      "imports": [
+        "elysia",
+        "../auth",
+        "../dtos"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/oauth.routes.ts",
+      "lines": 46,
+      "sha256": "87ebcd9a86e39ebde815727ce080591e36c38a448e4ec123f4cef4e42f673a8a",
+      "exports": [
+        "oauthRoutes"
+      ],
+      "imports": [
+        "elysia",
+        "../auth",
+        "../dtos"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/kb.routes.ts",
+      "lines": 50,
+      "sha256": "714be1df3a5d30bea83c15e832274fbc12ecfac675898182f4b2d7712ddff102",
+      "exports": [
+        "kbRoutes"
+      ],
+      "imports": [
+        "elysia",
+        "../auth",
+        "../dtos"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/health.routes.ts",
+      "lines": 15,
+      "sha256": "795c536d52b7588a4e22f293353bde79c9693e0ea1218b145a74a3636f7932ae",
+      "exports": [
+        "healthRoutes"
+      ],
+      "imports": [
+        "elysia"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/customer-tickets.routes.ts",
+      "lines": 55,
+      "sha256": "79f2837577b30fff96d3aac358cecae14c60533afe96b092aeca9a8377b53b9e",
+      "exports": [
+        "customerTicketsRoutes"
+      ],
+      "imports": [
+        "elysia",
+        "../auth",
+        "../dtos"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/routes/connection.routes.ts",
+      "lines": 24,
+      "sha256": "9bc2fd3068587f939023021805c43e01ec8ad6a9a57bf2866ec06eacde94bd82",
+      "exports": [
+        "connectionRoutes"
+      ],
+      "imports": [
+        "elysia",
+        "../auth"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/error-handler.ts",
+      "lines": 85,
+      "sha256": "4dede5b9a747e9aeb33f069231a91aaae3c22cefa611443d9d90ecd731b5c161",
+      "exports": [
+        "buildErrorResponse"
+      ],
+      "imports": [
+        "@sentry/bun",
+        "@sistemazero/core/errors",
+        "@sistemazero/core/http",
+        "@sistemazero/core/logging",
+        "../../domain/ports/llm-client.port"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/dtos.ts",
+      "lines": 150,
+      "sha256": "6b6490d45c2e53d09e13d3b2360b8e81bba3a751b2023b0cb753aca85ae3a62d",
+      "exports": [
+        "CustomerTicketCreateBody",
+        "CustomerTicketMessageBody",
+        "CustomerTicketsQuery",
+        "DeliveryDiscardBody",
+        "DeliveryParams",
+        "IdParams",
+        "KbCreateBody",
+        "KbPatchBody",
+        "KbQuery",
+        "NoteBody",
+        "OAuthCallbackQuery",
+        "ProviderParams",
+        "ReplyBody",
+        "SettingsPatchBody",
+        "TicketPatchBody",
+        "TicketsQuery"
+      ],
+      "imports": [
+        "@sistemazero/helpdesk-contracts",
+        "elysia"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/interfaces/http/auth.ts",
+      "lines": 112,
+      "sha256": "ca520aa8bc9fe577d32ff6c1db93f5fd0d32d4a732c87f8a5fc2505891f96dc2",
+      "exports": [
+        "assertInternalCaller",
+        "requireStaff",
+        "resolveActor",
+        "resolveCustomer",
+        "resolveDisplayName",
+        "resolveUserId"
+      ],
+      "imports": [
+        "node:crypto",
+        "@sistemazero/core/http"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/views.ts",
+      "lines": 183,
+      "sha256": "577a142aea2328f0eb9e66f4206bd760dd24eb889611b3d2d095cd787db5c0e9",
+      "exports": [
+        "toConnectionView",
+        "toCustomerMessageView",
+        "toCustomerTicketView",
+        "toKbArticleView",
+        "toMessageView",
+        "toSettingsView",
+        "toTicketView"
+      ],
+      "imports": [
+        "../domain/ticket/ticket-sla"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/ticket.service.ts",
+      "lines": 191,
+      "sha256": "035e4c7cb5e1869ea7c7f0bc6a878ced26088f9ce77b5c0e9ef34df5bd4ea3ee",
+      "exports": [
+        "TicketService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../../domain/ticket/ticket",
+        "../../domain/ticket/ticket-triage",
+        "../views",
+        "./ticket-cursor"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/ticket-cursor.ts",
+      "lines": 65,
+      "sha256": "38d09f909eb837995e512797d2659feb51b160cc25d1065cfc0ac5c5e6a1232c",
+      "exports": [
+        "decodeTicketCursor",
+        "encodeTicketCursor"
+      ],
+      "imports": [
+        "../../domain/ticket/ticket-sla"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/reply.service.ts",
+      "lines": 386,
+      "sha256": "818af02974c64c234475167291eb508c272d7d3c3acba11d28e35b3b9d957ebd",
+      "exports": [
+        "ReplyService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../../domain/ports/gmail-client.port",
+        "../../domain/ports/oauth-provider.port",
+        "../../domain/ticket/ticket-triage",
+        "../../infrastructure/gateways/google/rfc2822",
+        "../views",
+        "./portal-reply-notification"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/portal-reply-notification.ts",
+      "lines": 65,
+      "sha256": "3f07e826c660ef4f90dd116517451571fdd18ba5c1bd5f5b30f949f69db7efae",
+      "exports": [
+        "PORTAL_HELP_PATH",
+        "PORTAL_REPLY_TEMPLATE_KEY",
+        "buildPortalReplyNotification",
+        "greetingFor",
+        "portalHelpUrl"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/ingest.service.ts",
+      "lines": 186,
+      "sha256": "3c3b8e64c384df370c03a50998866e5d04384c1e9041ca172f10eb2e7fbfbdc7",
+      "exports": [
+        "IngestService"
+      ],
+      "imports": [
+        "../../domain/mail/triage"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/customer-ticket.service.ts",
+      "lines": 210,
+      "sha256": "6f580f0466475201561be05327f0a1d2e524df05e92e0fabdc1df8d0d1571742",
+      "exports": [
+        "CustomerTicketService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../views",
+        "./customer-ticket-cursor"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/tickets/customer-ticket-cursor.ts",
+      "lines": 35,
+      "sha256": "28f0ed9e122c7e3959c0bb90f38317fcd0fbaa51e36f040be2925a15ee588618",
+      "exports": [
+        "decodeCustomerTicketCursor",
+        "encodeCustomerTicketCursor"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/settings/settings.service.ts",
+      "lines": 42,
+      "sha256": "d9e8992cfc703eddaac4f682d894d5e74225f079e9a07c58454ae2302669fa65",
+      "exports": [
+        "SettingsService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../../domain/mail/triage",
+        "../views"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/kb/kb.service.ts",
+      "lines": 78,
+      "sha256": "7c128c7741a70d977fe8fa687d9b4927c262744d67a288b03800af5cf68030ad",
+      "exports": [
+        "KbService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../views"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/workers/portal-notification-worker.ts",
+      "lines": 102,
+      "sha256": "a7f80a1ce17f73738a2a0648d52369bec50cdba5332ad390d395b3263df56cd6",
+      "exports": [
+        "PortalNotificationWorker"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/workers/gmail-sync-worker.ts",
+      "lines": 230,
+      "sha256": "6d040527c163b897c3cccc3e39d674f2233f1b592c748f5d7ba3da4fcc7b67c7",
+      "exports": [
+        "GmailSyncWorker"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/workers/ai-worker.ts",
+      "lines": 111,
+      "sha256": "395db5011ca024e614de319f7222c74fb1eadf24db3d2e4d29f5a5cbc852ab91",
+      "exports": [
+        "AiWorker"
+      ],
+      "imports": [
+        "../../application/ai/ticket-ai.service"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/security/secret-box.ts",
+      "lines": 68,
+      "sha256": "fe62e96985745a54d52d93e07b00c528963012d22458f3fc4d755e2250baf395",
+      "exports": [
+        "SecretBoxError",
+        "createSecretBox"
+      ],
+      "imports": [
+        "node:crypto"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/connection/oauth.service.ts",
+      "lines": 189,
+      "sha256": "c8ea8d6b487f032abbb5a88cfe3c803ec476d3bdcd63bae7ee240f0997be58d8",
+      "exports": [
+        "OAuthService"
+      ],
+      "imports": [
+        "node:crypto",
+        "../../domain/helpdesk-errors"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/connection/gmail-account.service.ts",
+      "lines": 83,
+      "sha256": "18a37e7f4178b1a7e8eeef0f413abe83748643e68a7a64240856cca423bc31f4",
+      "exports": [
+        "GmailAccountService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../../domain/ports/oauth-provider.port"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/connection/connection.service.ts",
+      "lines": 54,
+      "sha256": "dfa1442087569bf169f6c5fa4ec8044337678e190365db9a0a5df87cd9967ecd",
+      "exports": [
+        "ConnectionService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../views"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/ai/ticket-ai.service.ts",
+      "lines": 199,
+      "sha256": "062e665020ef30cf9a29851756361bcd5c659349caa073ff89d6131bb6a396fc",
+      "exports": [
+        "AiGenerationSupersededError",
+        "TicketAiService"
+      ],
+      "imports": [
+        "../../domain/helpdesk-errors",
+        "../../domain/ticket/ticket-triage",
+        "../views",
+        "./kb-context",
+        "./prompts"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/ai/prompts.ts",
+      "lines": 114,
+      "sha256": "7c047a38814b592970a0762f77331231420fc9d7ed0b467c588f7f09d10e2ae5",
+      "exports": [
+        "ClassifySchema",
+        "DraftSchema",
+        "buildClassifyPrompt",
+        "buildDraftPrompt",
+        "buildThreadText"
+      ],
+      "imports": [
+        "@sistemazero/helpdesk-contracts",
+        "zod"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/ai/kb-context.ts",
+      "lines": 95,
+      "sha256": "fcd1602040cd2da3e13b3f4c0c12787e365bfae30f9d728a9a2eff6bea2968b2",
+      "exports": [
+        "selectRelevantKbArticles"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/application/actor.ts",
+      "lines": 12,
+      "sha256": "b469a6d12d8059ed77e3f67f6e0d931e7d8d9669959a948afee4b7c4bda116cd",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "scripts/triage-backfill.ts",
+      "lines": 305,
+      "sha256": "08088e635f5bde51463dab24c6fab7af430f0f7ab52e17bbf432c8fa01ad95ce",
+      "exports": [],
+      "imports": [
+        "@sistemazero/core/logging",
+        "drizzle-orm",
+        "../src/application/connection/gmail-account.service",
+        "../src/domain/mail/triage",
+        "../src/domain/ticket/ticket-triage",
+        "../src/infrastructure/config/env",
+        "../src/infrastructure/gateways/google/gmail-client",
+        "../src/infrastructure/gateways/google/gmail-oauth-provider",
+        "../src/infrastructure/persistence/drizzle/connection.repository",
+        "../src/infrastructure/persistence/drizzle/db",
+        "../src/infrastructure/persistence/drizzle/schema",
+        "../src/infrastructure/persistence/drizzle/settings.repository",
+        "../src/infrastructure/persistence/drizzle/triage-backfill.repository",
+        "../src/infrastructure/security/secret-box"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "drizzle.config.ts",
+      "lines": 22,
+      "sha256": "fa1fe0f13a98bd925235a9c68b966e1155a2b4fc8e64c28d203e546f086f190b",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "drizzle-kit"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/triage-backfill.repository.ts",
+      "lines": 47,
+      "sha256": "e08d7745a6019e60ff71eabf205f97a32ad350d4562e73aa73fa7c6fc25ad4d2",
+      "exports": [
+        "applyAtomicTriageBackfill"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema",
+        "./ticket.repository"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/ticket.repository.ts",
+      "lines": 351,
+      "sha256": "66daab5be4f630652fe189b39f9a7e95a2347b9181b7f2d4132d4854e11af82d",
+      "exports": [
+        "DrizzleTicketRepository",
+        "updateTicketRow"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "../../../domain/ticket/ticket-sla",
+        "../../../domain/ticket/ticket-stats",
+        "./pg-errors",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/ticket-ingestion.repository.ts",
+      "lines": 235,
+      "sha256": "ea4bf172c2fa5e54578e91ac0906e49fc7cfc0ed13f13fbf27550c4ea2149112",
+      "exports": [
+        "DrizzleTicketIngestionRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "../../../domain/ticket/ticket-triage",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/settings.repository.ts",
+      "lines": 51,
+      "sha256": "8af14f352e922bdc91f162b9c36f71d807bd2bbefed3530e30e3e26ff30968b9",
+      "exports": [
+        "DrizzleSettingsRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "../../../domain/settings/settings",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/schema.ts",
+      "lines": 336,
+      "sha256": "876c32dbce8270812a8da1b795af1b221b3c414eb8eb515026ae187c15552e39",
+      "exports": [
+        "aiStatusEnum",
+        "connectionStatusEnum",
+        "gmailConnections",
+        "helpdesk",
+        "kbArticles",
+        "messageDeliveryStateEnum",
+        "messageDirectionEnum",
+        "messageKindEnum",
+        "messageSentViaEnum",
+        "messageVisibilityEnum",
+        "oauthStates",
+        "portalNotificationOutbox",
+        "portalNotificationStatusEnum",
+        "schema",
+        "settings",
+        "ticketCategoryEnum",
+        "ticketMessages",
+        "ticketPortalEnum",
+        "ticketPriorityEnum",
+        "ticketSourceEnum",
+        "ticketStatusEnum",
+        "tickets",
+        "triageKindEnum"
+      ],
+      "imports": [
+        "@sistemazero/helpdesk-contracts",
+        "drizzle-orm",
+        "drizzle-orm/pg-core",
+        "../../../domain/mail/triage"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/reply-delivery.repository.ts",
+      "lines": 200,
+      "sha256": "de378ac1efbfb6cfa2bcb4bc85bf76f9cf2b245e156dda9a5b2b2ba2ad70f26a",
+      "exports": [
+        "DrizzleReplyDeliveryRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/portal-notification-outbox.repository.ts",
+      "lines": 104,
+      "sha256": "1020b2808e4b9a3da73298b0a5859dc499035cdfc36ea6df88746880a0035ba7",
+      "exports": [
+        "DrizzlePortalNotificationOutboxRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/pg-errors.ts",
+      "lines": 8,
+      "sha256": "e61eb3aee2a83742e13314ddd332f63e4cc7d5ccd76b76cfbc2a250d6997d73b",
+      "exports": [
+        "escapeLike"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/oauth-state.repository.ts",
+      "lines": 41,
+      "sha256": "9c98ab19ea762dfa642766a66677020cd08e719a83c4beddef9d19073ac51b6f",
+      "exports": [
+        "DrizzleOAuthStateRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/observability/sentry.ts",
+      "lines": 83,
+      "sha256": "76d9737ae5e7f30681f64458739c106fc1702b21f844d00904c62c8283ff07c5",
+      "exports": [
+        "flushSentry",
+        "initSentry",
+        "withSentryMirror"
+      ],
+      "imports": [
+        "@sentry/bun"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/gateways/openrouter/openrouter-client.ts",
+      "lines": 137,
+      "sha256": "c8ade45300d4236f48dd290ddce62dda3acf31a2095ee6d51d983f47c3c319e3",
+      "exports": [
+        "OpenRouterClient"
+      ],
+      "imports": [
+        "../../../domain/ports/llm-client.port"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/message.repository.ts",
+      "lines": 22,
+      "sha256": "b1ea0f88e0017850e64f6a37079d4e3b506acb4ebbdfa5d8695eb26dc880bdb4",
+      "exports": [
+        "DrizzleMessageRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/kb.repository.ts",
+      "lines": 69,
+      "sha256": "5835d5bd2b73a59a49bffc7dfc975b7fc4701f1f32dc62a0e9924c4f0a40a169",
+      "exports": [
+        "DrizzleKbRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/db.ts",
+      "lines": 51,
+      "sha256": "e9595bebc24e01b9618a9020ed91676bd65b5ac99eae734bee8090fc270614bf",
+      "exports": [
+        "createDbConnection"
+      ],
+      "imports": [
+        "drizzle-orm/postgres-js",
+        "postgres",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/customer-ticket.repository.ts",
+      "lines": 126,
+      "sha256": "efb2517561b43e4c8d973ec161649b47defa5ef31786f6d0d4c45fd06bd30b8d",
+      "exports": [
+        "DrizzleCustomerTicketRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/persistence/drizzle/connection.repository.ts",
+      "lines": 153,
+      "sha256": "c10c66110f30b1b0e225317a7156ca991bbaa901214ce974a83f7e88715fb7e3",
+      "exports": [
+        "DrizzleConnectionRepository"
+      ],
+      "imports": [
+        "drizzle-orm",
+        "./schema"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/index.ts",
+      "lines": 66,
+      "sha256": "1ebd51dfdc4d6f9548ef562b9621ae341625ad06c37835a449572ac723dd0731",
+      "exports": [],
+      "imports": [
+        "@sentry/bun",
+        "@sistemazero/core/logging",
+        "./composition-root",
+        "./infrastructure/config/env",
+        "./infrastructure/observability/sentry"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/gateways/messaging/gateway-messaging-client.ts",
+      "lines": 68,
+      "sha256": "97b7a5d253874107e4f1d32c2d17aa5ff8596ad6941bf4c7679f4e5ef0d92b48",
+      "exports": [
+        "createGatewayMessagingClient"
+      ],
+      "imports": [
+        "@sistemazero/core/security"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/gateways/google/rfc2822.ts",
+      "lines": 73,
+      "sha256": "e7f3b86fb6f1a96235a45cb4255ae7f17320589758d5bbeff6ab617ff6ed8631",
+      "exports": [
+        "buildReplyRaw"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/gateways/google/mime.ts",
+      "lines": 287,
+      "sha256": "999a553e536b9410cab5fa20f7f71146bf32340f6b6000b29666e9c8e857fac0",
+      "exports": [
+        "TRIAGE_HEADER_ALLOWLIST",
+        "decodeEncodedWords",
+        "parseGmailMessage"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/gateways/google/gmail-oauth-provider.ts",
+      "lines": 181,
+      "sha256": "87587b2a0ecbc15d0e64faae8d9a2fb178d09e57fad44d3b2d5099f16cee9ee5",
+      "exports": [
+        "GMAIL_SCOPES",
+        "GmailOAuthProvider"
+      ],
+      "imports": [
+        "../../../domain/ports/oauth-provider.port"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/gateways/google/gmail-client.ts",
+      "lines": 181,
+      "sha256": "e1c38e4ad8faa70aef62b06db5dee23cd9b4c4f67a250995e2be3e9657f73b4a",
+      "exports": [
+        "GoogleGmailClient"
+      ],
+      "imports": [
+        "../../../domain/ports/gmail-client.port",
+        "./mime"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ticket/ticket.ts",
+      "lines": 104,
+      "sha256": "f64577f74cea91403f1f901e78a5129fd4cfa20d0377ac896b91772d750e1d5d",
+      "exports": [
+        "TICKET_CATEGORIES",
+        "TICKET_STATUSES",
+        "isTerminalTicketStatus",
+        "statusOnInbound",
+        "statusOnOutbound"
+      ],
+      "imports": [
+        "@sistemazero/helpdesk-contracts"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ticket/ticket-triage.ts",
+      "lines": 90,
+      "sha256": "976d7fa6d5e91994f166603b0e53cad93ae6896504c67ab9f810368c82301da5",
+      "exports": [
+        "MANUAL_DEMOTED_RULE",
+        "MANUAL_PROMOTED_RULE",
+        "MANUAL_TRIAGE_RULE_PREFIX",
+        "PROMOTED_BY_INBOUND_RULE",
+        "assertHumanTicket",
+        "canRetriage",
+        "demoteTicket",
+        "isManualTriageRule",
+        "promoteTicket"
+      ],
+      "imports": [
+        "../helpdesk-errors",
+        "./ticket"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ticket/ticket-stats.ts",
+      "lines": 85,
+      "sha256": "6864061a2c750c891904278cbf672a04a7d16b10f5eba2a9db2368d72677b529",
+      "exports": [
+        "STATS_WINDOW_DAYS",
+        "densifyVolume",
+        "spDayKey",
+        "spDayStart",
+        "statsWindows"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ticket/ticket-sla.ts",
+      "lines": 87,
+      "sha256": "18a63511aea046bb200d7bf18da646dbb55a0fd9164debf185fef208ad0037e2",
+      "exports": [
+        "SLA_RISK_REMAINING_RATIO",
+        "SLA_RISK_START_RATIO",
+        "SLA_TARGET_MINUTES",
+        "matchesSlaFilter",
+        "ticketQueuePosition",
+        "ticketSla",
+        "ticketSlaRank"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ticket/ticket-message.ts",
+      "lines": 61,
+      "sha256": "f05369918f709cae79b47b45cb1ab6c292ef9b47a2fc2d45489553b601644cf9",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/helpdesk-errors.ts",
+      "lines": 79,
+      "sha256": "23dbf940c98eb5bdd96a201ee2663e7f5855b431a9e93c794e611718a47661f7",
+      "exports": [
+        "AiNotConfiguredError",
+        "ConcurrencyConflictError",
+        "ConnectionNotConnectedError",
+        "CustomerTicketCursorInvalidError",
+        "GmailNotConfiguredError",
+        "GmailSendFailedError",
+        "KbArticleNotFoundError",
+        "TicketCursorInvalidError",
+        "TicketNotFoundError",
+        "TicketNotHumanError",
+        "TriageRulesInvalidError"
+      ],
+      "imports": [
+        "@sistemazero/core/errors"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/infrastructure/config/env.ts",
+      "lines": 252,
+      "sha256": "41d426dc327905fcd3e75e6b219e9404e6efb4f041e9a45705b40302ee33ecfc",
+      "exports": [
+        "aiConfig",
+        "gmailConfig",
+        "loadEnv",
+        "portalNotifyConfig",
+        "portalUrls"
+      ],
+      "imports": [
+        "zod"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/settings/settings.ts",
+      "lines": 22,
+      "sha256": "b731de568a3ecfa9f75e71f4fe97c592802acdfdf5315f3d238a774020d8e8ab",
+      "exports": [
+        "DEFAULT_SETTINGS"
+      ],
+      "imports": [
+        "../mail/triage"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/kb/kb-article.ts",
+      "lines": 13,
+      "sha256": "8e5c0718d3cdcdd906954559c42c4ed5e42f6fb08a35b1d39dfa9d58c6cd6130",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/connection/gmail-connection.ts",
+      "lines": 34,
+      "sha256": "c52a1e60c12170e5517c3d6707f2ac550842448d819d45c2b6d2d9b78d2dbd37",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/mail/triage.ts",
+      "lines": 266,
+      "sha256": "92c466b1ac1b5f15076a3f6c616dc6c57bad9376c0153a0f3d30faa68cc4a45e",
+      "exports": [
+        "DEFAULT_TRIAGE_RULES",
+        "HUMAN_VERDICT",
+        "normalizeTriageRules",
+        "triageByAddressOnly",
+        "triageEmail"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/ticket-repository.port.ts",
+      "lines": 98,
+      "sha256": "609a73bce1d8afbdbbdbf27bdea11059c3dcddd84da1de3b05be4c740e3ac3b3",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/ticket-ingestion-repository.port.ts",
+      "lines": 42,
+      "sha256": "aaf03c3c90f67300d2174e31dcf66da85ef619caea7d0bf3688d99df4a6f165f",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/settings-repository.port.ts",
+      "lines": 8,
+      "sha256": "9b4fd24dab6b27b2b15318c5eca3561cf4a3fff5ebb0f7c9b6116567eccf2471",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/secret-box.port.ts",
+      "lines": 12,
+      "sha256": "c9a2c67b8b4f59b3a069b8b8096b22c2d3a6e1256f3e22609df204145eb16e0c",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/reply-delivery-repository.port.ts",
+      "lines": 63,
+      "sha256": "042e4698899718d6017d1a2416666e591911ab09541977a33951094e22e3dea6",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/portal-notification-outbox.port.ts",
+      "lines": 37,
+      "sha256": "7ebd7f0e2b8937b2254feb3f2d9496c0e75c52bd71f7e5ac4a47cde3338b24e8",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/oauth-state-repository.port.ts",
+      "lines": 20,
+      "sha256": "8efcf1ab9393e3a35b5b9d5f344741e7aff80de7662f89a49c5c6c6d73f8e5a6",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/oauth-provider.port.ts",
+      "lines": 57,
+      "sha256": "bbd3e69b6486943ed64cbfeae346981b75a265af93c61516f373bda3ee85668d",
+      "exports": [
+        "OAuthProviderError"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/messaging-gateway.port.ts",
+      "lines": 19,
+      "sha256": "6e6d9163a77bc97227674a76134c8f610cd098926b6eab1ccddcc5a40befcba9",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/message-repository.port.ts",
+      "lines": 7,
+      "sha256": "4da04c536bed94d4701419424a285d50893f5a4be6c22520bba62ea7eb67bc6e",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/llm-client.port.ts",
+      "lines": 41,
+      "sha256": "63b9ea086b76c129e702108ded4bb275e66b7784acb08b2f3b1a7234b68ad0e8",
+      "exports": [
+        "LlmError"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/kb-repository.port.ts",
+      "lines": 13,
+      "sha256": "db1ea659ebe3dc2e2ed34478bfe4267a5d25dd91f969d097210f2b9bfecc0317",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/gmail-client.port.ts",
+      "lines": 108,
+      "sha256": "f1dea4e0cd2b1a013f5bf54eb7f0470edc4b5e71bd5f2bd09a832fae047a3c24",
+      "exports": [
+        "GmailApiError"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/customer-ticket-repository.port.ts",
+      "lines": 38,
+      "sha256": "96ea24c26ad3d3dc0b97f00ada2d2c87c45a49da99de4337bedc634524305c81",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk",
+      "path": "src/domain/ports/connection-repository.port.ts",
+      "lines": 21,
+      "sha256": "efba926112359c8d6fdb285afa28189840a0e890627421165a56fa1d95c43863",
+      "exports": [],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "tests/triage.test.ts",
+      "lines": 66,
+      "sha256": "bc532793d42371b89187f4ec3c1dc64a1e12f5f260dccd393cfc88447a5cdfa8",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@sistemazero/helpdesk-contracts",
+        "../src/lib/categories"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "tests/sla.test.ts",
+      "lines": 23,
+      "sha256": "f2420845be17d348c4ac62fb76adc691b29d6dee44226e0550f693d505a125e1",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/lib/sla"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "tests/quote.test.ts",
+      "lines": 70,
+      "sha256": "73829313850151a6b1afc78c0f10d696f727d420b71ad744353422898cae3ea4",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "@sistemazero/helpdesk-contracts/quote"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "tests/categories.test.ts",
+      "lines": 88,
+      "sha256": "7096182dbd43886f87328e4ae56fae013fdbfd900bac9f8ed45f34957a8f4685",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/lib/categories"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/server/session.ts",
+      "lines": 148,
+      "sha256": "ebbc2c6a86e00ed3419ddc1224ebeeef3c085c3bd295436370384562d7a956b0",
+      "exports": [
+        "clearSessionCookies",
+        "getAccessToken",
+        "getRefreshToken",
+        "getSession",
+        "setSessionCookies",
+        "verifyAccessToken"
+      ],
+      "imports": [
+        "server-only",
+        "jose",
+        "next/headers",
+        "@/lib/cookies",
+        "@/lib/env"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/server/sentry.ts",
+      "lines": 118,
+      "sha256": "d56dbbda019a5bea0cca858f08fb47098f02b28c553d3a9e486535d0db8ff529",
+      "exports": [
+        "buildEnvelope",
+        "captureServerException",
+        "parseDsn"
+      ],
+      "imports": [
+        "node:crypto"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/server/gateway.ts",
+      "lines": 193,
+      "sha256": "c55e0e4321780a2283975a5592d0ac0464ff9aae94fcb4f295c86c38ce693351",
+      "exports": [
+        "gatewayFetch",
+        "loginRequest",
+        "logoutRequest",
+        "tryRefresh"
+      ],
+      "imports": [
+        "server-only",
+        "next/headers",
+        "@/lib/env",
+        "./session"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/server/forward.ts",
+      "lines": 26,
+      "sha256": "c8c894ac46e0b7f1db37f88625ca19681312e991f33a9d7bcf7964e4364dc187",
+      "exports": [
+        "forwardUpstream"
+      ],
+      "imports": [
+        "server-only",
+        "next/server",
+        "@/lib/upstream"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/proxy.ts",
+      "lines": 65,
+      "sha256": "2d5848080803e86eba58f0291eeb7bb722c2fb8fca1114f63fef679d01e7a9f2",
+      "exports": [
+        "config",
+        "proxy"
+      ],
+      "imports": [
+        "next/server",
+        "@/lib/cookies",
+        "@/lib/csrf"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/instrumentation.ts",
+      "lines": 72,
+      "sha256": "03cec9b2c043c6d633f009cd7214cd83d1f95c3bcb21b8a3088a83ff7e39ca18",
+      "exports": [
+        "onRequestError",
+        "register"
+      ],
+      "imports": [
+        "@/server/sentry"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "postcss.config.mjs",
+      "lines": 9,
+      "sha256": "54b5708e687b8c9ecc8dbeebf29801dbec1213f890c5e018d7ca9c1541a6f7e3",
+      "exports": [
+        "default"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "next.config.ts",
+      "lines": 73,
+      "sha256": "1f01e14848457a5568f3c32d77c102c6cd3fd891224b994fabfd04f0eabe7c2b",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "node:path",
+        "node:url"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "scripts/boot-check.mjs",
+      "lines": 54,
+      "sha256": "0dcd97d1247945646228cfe0a17564c25ae78861fc7923084218e470fd8ba92e",
+      "exports": [],
+      "imports": [
+        "./server.js"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/upstream.ts",
+      "lines": 26,
+      "sha256": "454a97484c94e56a42bd86e60d2f0f06ab290259391c3d46334417015ae624a5",
+      "exports": [
+        "normalizeUpstreamError"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/dates.ts",
+      "lines": 15,
+      "sha256": "0343c978bd23f7e877109c39db46d704186552bc4e56700c1797d94620b899b5",
+      "exports": [
+        "formatShortSp"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/types.ts",
+      "lines": 42,
+      "sha256": "73a3ef0d945c16d86ddbf709b22b088b12f0d158144e300f3ff0593b186a7516",
+      "exports": [
+        "TEAM_ROLES",
+        "isTeamRole"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/sla.ts",
+      "lines": 33,
+      "sha256": "f597f985ded6f303d4c24deb4d3f05a9f8be3cbdd8dd3d051a7531b3ce017e0b",
+      "exports": [
+        "SLA_STATE_COLORS",
+        "SLA_STATE_LABELS",
+        "formatSlaRemaining"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/csrf.ts",
+      "lines": 49,
+      "sha256": "8c00b861a3f3ea78eab63190159b7c0845a2bb0d587dac51f4398d36f83e2573",
+      "exports": [
+        "isSameOriginRequest",
+        "requiresOriginCheck"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/paths.ts",
+      "lines": 18,
+      "sha256": "3e1a7b84044d1aa37f19597c18c0f118a40d969224f8aaa9af62b08d0030c61a",
+      "exports": [
+        "safeNextPath"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/format.ts",
+      "lines": 8,
+      "sha256": "bc1c2fe1cfee9a283e1996c2b3c3fded8f0701d4ce56d94e3b6c8792adbcbb0b",
+      "exports": [
+        "formatDate"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/cookies.ts",
+      "lines": 41,
+      "sha256": "2d77b722cb422938d139906623e202d83af4d20e5a896c82a00afb8bf99aaa3b",
+      "exports": [
+        "ACCESS_COOKIE",
+        "REFRESH_COOKIE",
+        "expireCookieOptions",
+        "prefixedCookieName"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/env.ts",
+      "lines": 61,
+      "sha256": "b1436b801946ae39df3ed5e8d9dec2ae22b10b1cb35c8918e1991214cabc30c5",
+      "exports": [
+        "getEnv",
+        "isProd"
+      ],
+      "imports": [
+        "server-only",
+        "zod"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/cn.ts",
+      "lines": 8,
+      "sha256": "b5bcadaada6dd80e9882d14362fa93640985a18d2ea0c4936b01cf3d081783c2",
+      "exports": [
+        "cn"
+      ],
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/categories.ts",
+      "lines": 95,
+      "sha256": "0f625d48e346cd5c07fc158f51e8f68e0109cf9bfe8c5303a79509fb38ba6e1f",
+      "exports": [
+        "CATEGORY_COLORS",
+        "CATEGORY_LABELS",
+        "PRIORITY_COLORS",
+        "PRIORITY_LABELS",
+        "STATUS_COLORS",
+        "STATUS_LABELS",
+        "TICKET_CATEGORIES",
+        "TICKET_PRIORITIES",
+        "TICKET_STATUSES",
+        "TRIAGE_COLORS",
+        "TRIAGE_HEADER_RULES",
+        "TRIAGE_KINDS",
+        "TRIAGE_LABELS",
+        "triageRuleDescription"
+      ],
+      "imports": [
+        "@sistemazero/helpdesk-contracts"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/lib/api.ts",
+      "lines": 48,
+      "sha256": "dad5773dcdde9bd4e9331e992877f628aa1d2daeb4301b82e92430d709e248d8",
+      "exports": [
+        "apiGet",
+        "apiSend"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/not-found.tsx",
+      "lines": 15,
+      "sha256": "dfb2c740794713aeecb5dd7febf66d76fef049abd506a5f35d144389dce734c3",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "next/link"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/shared/ticket-badges.tsx",
+      "lines": 110,
+      "sha256": "3036bd048c24b364b9731bf94f97c0d99b31707dbf32a588a83d9d307eb6f27c",
+      "exports": [
+        "TicketCategoryBadge",
+        "TicketPriorityBadge",
+        "TicketSlaBadge",
+        "TicketSourceBadge",
+        "TicketStatusBadge",
+        "TicketTriageBadge"
+      ],
+      "imports": [
+        "@/lib/categories",
+        "@/lib/cn",
+        "@/lib/sla"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/shared/page-header.tsx",
+      "lines": 23,
+      "sha256": "57151b627fa0404e2a0dabef6d5dfb05934b81e8463c2db5c6d3a75c53fca87c",
+      "exports": [
+        "PageHeader"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/shared/empty-state.tsx",
+      "lines": 23,
+      "sha256": "735010038a93976e255643c4206882ce63aeb0e5727c1eea271c6d86069a8151",
+      "exports": [
+        "EmptyState"
+      ],
+      "imports": [
+        "lucide-react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/providers.tsx",
+      "lines": 20,
+      "sha256": "7c029981a4bc3bb534a5535ec9e3ef0785035f137cf89a3cc562fe5a0433a9bb",
+      "exports": [
+        "Providers"
+      ],
+      "imports": [
+        "sonner"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/login/page.tsx",
+      "lines": 26,
+      "sha256": "20a061be1fd3882bdedca4b6b0b47fb065cbf2c64e4ddba3ea5fba87feb9b085",
+      "exports": [
+        "default",
+        "dynamic"
+      ],
+      "imports": [
+        "next/navigation",
+        "@/lib/paths",
+        "@/lib/types",
+        "@/server/session",
+        "./login-form"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/login/login-form.tsx",
+      "lines": 122,
+      "sha256": "abba79e31fdc119124e7d453d0c0a1e0cdd7596521a6ee9010356bb0a519a7f7",
+      "exports": [
+        "LoginForm"
+      ],
+      "imports": [
+        "@sistemazero/ui/brand-logo",
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/card",
+        "@sistemazero/ui/input",
+        "@sistemazero/ui/label",
+        "@sistemazero/ui/spinner",
+        "react",
+        "sonner",
+        "zod",
+        "@/lib/paths"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/layout.tsx",
+      "lines": 38,
+      "sha256": "c2b6e5795c99269fec6d131c36cf02f89ffa81cf223023393a5602fb91b16ea9",
+      "exports": [
+        "default",
+        "metadata"
+      ],
+      "imports": [
+        "geist/font/mono",
+        "geist/font/sans",
+        "@/components/providers",
+        "./globals.css"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/layout/user-menu.tsx",
+      "lines": 66,
+      "sha256": "f5b458a5b7ec476f39bf6384020452f433dc422604513379a2f3e8267c2275d1",
+      "exports": [
+        "UserMenu"
+      ],
+      "imports": [
+        "lucide-react",
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/layout/topbar.tsx",
+      "lines": 31,
+      "sha256": "954d64b482cfe3dbd8ad8d7a2efa757742f8c6b9fc61063b55e0482b96ee0ea8",
+      "exports": [
+        "Topbar"
+      ],
+      "imports": [
+        "@sistemazero/ui/brand-logo",
+        "next/link",
+        "./user-menu"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/layout/nav.ts",
+      "lines": 21,
+      "sha256": "59faee8005c686ec4e5aa1d3537805e00f9aafc36be33845687f7cd7240d8824",
+      "exports": [
+        "NAV_ITEMS"
+      ],
+      "imports": [
+        "lucide-react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/layout/logout-button.tsx",
+      "lines": 27,
+      "sha256": "6f0ad77b777a3f1a1790822c114331d8a1df7049fa55de965c28bd34cc1dc7b4",
+      "exports": [
+        "LogoutButton"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/spinner",
+        "react"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/components/layout/app-sidebar.tsx",
+      "lines": 77,
+      "sha256": "e56cc6682838c2e60a6e080c0b74d71b49ad5348520b0249a873ea3816d3eb6f",
+      "exports": [
+        "AppSidebar",
+        "MobileNav"
+      ],
+      "imports": [
+        "next/link",
+        "next/navigation",
+        "@/lib/cn",
+        "./nav"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/volume-chart.tsx",
+      "lines": 96,
+      "sha256": "aadbe634c134d9436d808fae3eece5b3120074c96c33d97d98756692d01e7cc2",
+      "exports": [
+        "VolumeChart"
+      ],
+      "imports": [
+        "recharts"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/api/helpdesk/[...path]/route.ts",
+      "lines": 66,
+      "sha256": "a1723ff9eca7ce0c47132e1e575296ffac3df3d4557caa47722e761a3e0c0ba3",
+      "exports": [
+        "DELETE",
+        "GET",
+        "PATCH",
+        "POST",
+        "PUT"
+      ],
+      "imports": [
+        "next/server",
+        "@/server/forward",
+        "@/server/gateway"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/api/healthz/route.ts",
+      "lines": 13,
+      "sha256": "5bebf70a4f96d69df81fc22bbb0a4e09afef0e928e1168741d1513693e77af30",
+      "exports": [
+        "GET",
+        "dynamic"
+      ],
+      "imports": [
+        "next/server"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/ticket-message-card.tsx",
+      "lines": 213,
+      "sha256": "6cd51348e6cdab49a367eb27b68ae8466df9585d6b2ff0b8969cb4599a208dc0",
+      "exports": [
+        "TicketMessageCard"
+      ],
+      "imports": [
+        "@sistemazero/helpdesk-contracts/quote",
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/confirm-dialog",
+        "lucide-react",
+        "react",
+        "sonner",
+        "@/lib/api",
+        "@/lib/categories",
+        "@/lib/cn",
+        "@/lib/format"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/ticket-detail-client.tsx",
+      "lines": 175,
+      "sha256": "f62d0982d6dd1703eeb4c01569f215c74d127065561e65c9ead71014f32af275",
+      "exports": [
+        "TicketDetailClient"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/skeleton",
+        "lucide-react",
+        "next/link",
+        "react",
+        "@/components/shared/ticket-badges",
+        "@/lib/api",
+        "@/lib/categories",
+        "@/lib/sla",
+        "./ai-summary-panel",
+        "./note-box",
+        "./reply-box",
+        "./ticket-controls",
+        "./ticket-message-card"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/ticket-controls.tsx",
+      "lines": 249,
+      "sha256": "c8a5b2a7aab8ab2e36d622210a0c87309b5d0d61b4053a0f01a159afea354807",
+      "exports": [
+        "TicketControls"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/card",
+        "@sistemazero/ui/confirm-dialog",
+        "@sistemazero/ui/label",
+        "@sistemazero/ui/select",
+        "next/link",
+        "react",
+        "sonner",
+        "@/lib/api",
+        "@/lib/categories"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/reply-box.tsx",
+      "lines": 146,
+      "sha256": "26caba9454cbd2181d524ee15f301e95651d8c5ab271669aa8d706e556522f30",
+      "exports": [
+        "ReplyBox"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/textarea",
+        "lucide-react",
+        "react",
+        "sonner",
+        "@/lib/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/page.tsx",
+      "lines": 13,
+      "sha256": "2be866fda572236c1d14efe553732fac471d72deb1cdbbab5b3ed84a9237577f",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "next/navigation",
+        "./ticket-detail-client"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/note-box.tsx",
+      "lines": 62,
+      "sha256": "296a94e7d028d902343a32b03ab9d3689290d71715522b93804e73f5cc4f71e2",
+      "exports": [
+        "NoteBox"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/card",
+        "@sistemazero/ui/textarea",
+        "react",
+        "sonner",
+        "@/lib/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/[id]/ai-summary-panel.tsx",
+      "lines": 71,
+      "sha256": "0753949149c27c19672eae52569e01629e4020e0df952700553ae3f150bf6805",
+      "exports": [
+        "AiSummaryPanel"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "lucide-react",
+        "react",
+        "sonner",
+        "@/lib/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/tickets-client.tsx",
+      "lines": 362,
+      "sha256": "0e9a4ffdae73b4214ff96cd501129adaaecf5a95d197aed411c4ba63e540ec0a",
+      "exports": [
+        "TicketsClient"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/input",
+        "@sistemazero/ui/skeleton",
+        "lucide-react",
+        "next/link",
+        "next/navigation",
+        "react",
+        "sonner",
+        "@/components/shared/empty-state",
+        "@/components/shared/ticket-badges",
+        "@/lib/api",
+        "@/lib/categories",
+        "@/lib/cn",
+        "@/lib/dates",
+        "@/lib/sla"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/tickets/page.tsx",
+      "lines": 18,
+      "sha256": "dfd0dd91da1cd660c3dbfdb148ad59c4ef9a794623d4dd9b59d746cb6b1d0e76",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "react",
+        "@/components/shared/page-header",
+        "./tickets-client"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/painel-client.tsx",
+      "lines": 100,
+      "sha256": "56d6146ed6bbc978bff8e32eca71719a1a230d09f4238a78e412de937c6d845c",
+      "exports": [
+        "PainelClient"
+      ],
+      "imports": [
+        "@sistemazero/ui/card",
+        "react",
+        "@/lib/api",
+        "./volume-chart"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/page.tsx",
+      "lines": 17,
+      "sha256": "6c0f50b58c79cd0c461c60dbbed92c0e9656fb3c6bc999039f3c152a534cc9fe",
+      "exports": [
+        "default",
+        "dynamic"
+      ],
+      "imports": [
+        "@/components/shared/page-header",
+        "./painel-client"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/layout.tsx",
+      "lines": 57,
+      "sha256": "01e773379cc686c30a84c38c9a8bd9eed6ab09ea70744ecfb44ab2e67561d19c",
+      "exports": [
+        "default",
+        "dynamic"
+      ],
+      "imports": [
+        "lucide-react",
+        "next/navigation",
+        "@/components/layout/app-sidebar",
+        "@/components/layout/logout-button",
+        "@/components/layout/topbar",
+        "@/lib/types",
+        "@/server/session"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/configuracoes/page.tsx",
+      "lines": 15,
+      "sha256": "e46017b276878f85244defd8fb5d93581003e8746147369ad88b7b574348563a",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/components/shared/page-header",
+        "./configuracoes-client"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/configuracoes/configuracoes-client.tsx",
+      "lines": 424,
+      "sha256": "4d25829a00555846e0aafc4454aec9683af464fe9539ea374b2542cb61d7de2a",
+      "exports": [
+        "ConfiguracoesClient"
+      ],
+      "imports": [
+        "@sistemazero/ui/badge",
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/card",
+        "@sistemazero/ui/confirm-dialog",
+        "@sistemazero/ui/label",
+        "@sistemazero/ui/skeleton",
+        "@sistemazero/ui/textarea",
+        "lucide-react",
+        "react",
+        "sonner",
+        "@/lib/api",
+        "@/lib/categories",
+        "@/lib/format"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/base-conhecimento/page.tsx",
+      "lines": 15,
+      "sha256": "cac21da006804adc3a22cc2e1969368dde6dc3cfa839705a9ed1d7c0d35fdd7c",
+      "exports": [
+        "default"
+      ],
+      "imports": [
+        "@/components/shared/page-header",
+        "./kb-client"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/base-conhecimento/kb-client.tsx",
+      "lines": 257,
+      "sha256": "9a1f319dddf8f539aa75ce6b9a3f7f4121d08f96a27ae16c30401379ad61d2d3",
+      "exports": [
+        "KbClient"
+      ],
+      "imports": [
+        "@sistemazero/ui/badge",
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/confirm-dialog",
+        "@sistemazero/ui/skeleton",
+        "@sistemazero/ui/switch",
+        "lucide-react",
+        "react",
+        "sonner",
+        "@/lib/api",
+        "@/lib/dates",
+        "./article-dialog"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/(app)/base-conhecimento/article-dialog.tsx",
+      "lines": 164,
+      "sha256": "d3705e9d1764e4925c5b2f8e7c93b86019b3e9e80ca514012284b54c15fbdc6a",
+      "exports": [
+        "ArticleDialog"
+      ],
+      "imports": [
+        "@sistemazero/ui/button",
+        "@sistemazero/ui/dialog",
+        "@sistemazero/ui/input",
+        "@sistemazero/ui/label",
+        "@sistemazero/ui/switch",
+        "@sistemazero/ui/textarea",
+        "react",
+        "sonner",
+        "@/lib/api"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/api/auth/login/route.ts",
+      "lines": 46,
+      "sha256": "f712816139741278766ceb2330801dea7353d0b28102794d02d407ca8ae6b54e",
+      "exports": [
+        "POST"
+      ],
+      "imports": [
+        "next/server",
+        "zod",
+        "@/lib/types",
+        "@/server/gateway",
+        "@/server/session"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-app",
+      "path": "src/app/api/auth/logout/route.ts",
+      "lines": 11,
+      "sha256": "37e74a5666dfd73d3be2554b50e3e9d3638dbb9c47e6c2f93c965deec45a5a8b",
+      "exports": [
+        "POST"
+      ],
+      "imports": [
+        "next/server",
+        "@/server/gateway",
+        "@/server/session"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-contracts",
+      "path": "tests/quote.test.ts",
+      "lines": 42,
+      "sha256": "b5cf7ceb49e22990c1b9c968f2eb4604056d819fcebbe685b31b73b1720d1d4a",
+      "exports": [],
+      "imports": [
+        "bun:test",
+        "../src/quote"
+      ],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-contracts",
+      "path": "src/quote.ts",
+      "lines": 42,
+      "sha256": "05651e1a613855bd5f195cdc8d1c1b63efda3b808e31b3f769ff082837514009",
+      "exports": [
+        "splitQuotedReply",
+        "stripQuotedHistory"
+      ],
+      "imports": [],
+      "scanError": null
+    },
+    {
+      "project": "helpdesk-contracts",
+      "path": "src/index.ts",
+      "lines": 348,
+      "sha256": "818b235f4873ac65289f8eca4026dc62512e90fd1cc390d398d1ed2c9ac11aee",
+      "exports": [
+        "AI_STATUSES",
+        "CATEGORY_LABELS",
+        "CUSTOMER_TICKET_CATEGORIES",
+        "CUSTOMER_TICKET_CATEGORY_LABEL",
+        "CUSTOMER_TICKET_STATUS_LABEL",
+        "PRIORITY_LABELS",
+        "STATUS_LABELS",
+        "TICKET_CATEGORIES",
+        "TICKET_PORTALS",
+        "TICKET_PRIORITIES",
+        "TICKET_SOURCES",
+        "TICKET_STATUSES",
+        "TRIAGE_FILTERS",
+        "TRIAGE_HEADER_RULES",
+        "TRIAGE_KINDS",
+        "TRIAGE_LABELS",
+        "splitQuotedReply",
+        "stripQuotedHistory"
+      ],
+      "imports": [
+        "./quote"
+      ],
+      "scanError": null
+    }
+  ]
+}

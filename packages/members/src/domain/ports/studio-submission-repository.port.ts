@@ -1,6 +1,13 @@
 import type { CourseAudience } from '../course/course'
 import type { SubmissionBlockKind } from '../course/lesson-block'
-import type { StudioCheckResult } from '../course/studio-activity'
+import type { gallerySubmissionReceipt } from '../learning/gallery-receipt'
+
+export type StudioSubmissionWriteResult =
+  | undefined
+  | {
+      duplicateGallery: true
+      receipt: ReturnType<typeof gallerySubmissionReceipt>
+    }
 
 /** Entrega do projeto do Estúdio (1 linha por aluno+bloco, upsert — último vence). */
 export interface StudioSubmissionRecord {
@@ -15,17 +22,17 @@ export interface StudioSubmissionRecord {
   /** Snapshot `Project` do Estúdio (JSON opaco — o front sanitiza). */
   project: unknown
   submittedAt: Date
-  // ── Auto-correção (fase 2; null quando o bloco não tem atividade) ────────────
-  /** Nota 0–100 da última entrega. */
-  score?: number | null
-  /** Resultado por checagem (server + client). */
-  results?: StudioCheckResult[] | null
-  /** Quando a correção rodou. */
-  checkedAt?: Date | null
-  /** STICKY: 1ª vez que passou (gate "aprovou uma vez = destrava"). */
-  passedAt?: Date | null
+  /**
+   * ⚠️ As colunas `score/results/checked_at/passed_at` da antiga auto-correção (saiu em
+   * 18/10/2026) ficam no banco com o que já existia: nada as escreve nem as lê.
+   */
   /** Recado OPCIONAL do aluno ao professor (modal de envio). `null` = sem recado. */
   message?: string | null
+  /**
+   * O recado foi FALADO e transcrito pelo servidor (voz para texto, 14/10/2026). Ausente/`false` =
+   * digitado ou sem recado. Reenvio sobrescreve junto com o `message`; restaurar preserva os dois.
+   */
+  messageSpoken?: boolean
   /**
    * Impressão digital do conteúdo enviado ("envio em dia"). `null` = sem conferência (envio
    * antigo, galeria, restaurado pelo professor).
@@ -55,19 +62,15 @@ export interface StudioSubmissionSummary {
   /** Conta responsável (p/ o BFF hidratar o responsável + o nome do perfil). `null` = legado. */
   accountId: string | null
   submittedAt: Date
-  score: number | null
-  checkedAt: Date | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 /** Estado por bloco para o ALUNO (gate da conclusão + UI). */
 export interface StudioSubmissionState {
   submittedAt: Date
-  score: number | null
-  /** `passed_at` presente (sticky) — usado pelo gate de atividade com nota. */
-  passed: boolean
   /**
    * Quando o professor carimbou "já conferi". NÃO é sticky: comparar com
    * `submittedAt` diz se o carimbo vale para a entrega ATUAL (reenvio reabre).
@@ -81,12 +84,10 @@ export interface StudioSubmissionState {
 export interface StudioSubmissionDetail {
   project: unknown
   submittedAt: Date
-  score: number | null
-  results: StudioCheckResult[] | null
-  checkedAt: Date | null
-  passedAt: Date | null
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
   /** Carimbo de "já conferi" (o botão do professor). `null` = nunca conferida. */
   reviewedAt: Date | null
   /**
@@ -110,10 +111,9 @@ export interface StudioSubmissionCourseRow {
   lessonTitle: string
   moduleTitle: string
   submittedAt: Date
-  score: number | null
-  checkedAt: Date | null
-  passed: boolean
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 /** Filtro da fila GLOBAL de entregas (página "Entregas" da Sala do Professor). */
@@ -157,11 +157,10 @@ export interface RecentStudioSubmission {
   lessonId: string
   lessonTitle: string | null
   courseTitle: string | null
-  score: number | null
-  /** `null` quando a entrega não possui correção automática. */
-  passed: boolean | null
   submittedAt: Date
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 export interface StudioSubmissionRepository {
@@ -169,15 +168,13 @@ export interface StudioSubmissionRepository {
   upsert(
     submission: StudioSubmissionRecord & { accountId: string },
     options?: {
-      /** Mantém `passedAt` existente (STICKY) se já houver, sem sobrescrever por `null`. */
-      preservePassedAt?: boolean
       revision?: string
       galleryRequestId?: string
     },
-  ): Promise<void>
+  ): Promise<StudioSubmissionWriteResult>
   /**
    * Estado das entregas do aluno nos `blockIds` — usado pelo gate da conclusão
-   * (submitted = tem entrada; passed = `passed_at`). Lote por aula.
+   * (submitted = tem entrada). Lote por aula.
    */
   summarizeByBlockIds(
     userId: string,
@@ -214,7 +211,7 @@ export interface StudioSubmissionRepository {
    * restaurar 2× volta ao estado inicial) num único UPDATE atômico. Zera a
    * correção (score/results/checked_at — era da versão sobrescrita) e PRESERVA
    * `passed_at` (sticky: a restauração do professor não pune a criança),
-   * `reviewed_at/by` e `message`. `false` = sem linha ou sem versão anterior.
+   * `reviewed_at/by`, `message` e `message_spoken`. `false` = sem linha ou sem versão anterior.
    */
   restorePrevious(input: { userId: string; blockId: string }): Promise<boolean>
   /**

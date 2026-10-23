@@ -1,0 +1,72 @@
+# Transferência R2 do ciphertext do rehearsal — preparo privado
+
+Somente Root executa o fluxo completo após revisão. Nesta revisão houve somente um GET oficial de diagnóstico autorizado para a chave r1 ausente; nenhum upload ou download de ciphertext, leitura de chave ou rotação. O recibo negativo r1 e sua fonte permaneceram intactos.
+
+## Pinos reais
+
+- Recibo Root `.cache/python-reference-games/production-postgres-rehearsal-root-r1/receipt.json`, SHA256 `3f8293eb899e5350cbd922257f01b211b956c564f1b072cffbbacfbb4ff7cbf9`.
+- Estado real `LOCAL_LOGICAL_RESTORE_REHEARSAL_VERIFIED_NOT_FINAL_BACKUP`, restauração qualificada, EOF autenticado, clone próprio removido, ciphertext final conferido. Os escritores de produção **não** estavam bloqueados e esse recibo **não** é o backup final antes da migração.
+- Ciphertext fixo `C:/Users/tocha/SistemaZeroRecovery/production/postgres/2026-10-23-root-r1/database-rehearsal-r1.dump.age`, 2.303.491 bytes, SHA256 `f23a35b1dfb7db5708d05464148a5a5801d3b7ca0a07d50e7b424e58c7b22c00`.
+- Bucket `sistemazero-release-backups-production`, conta `bcc0f2d44140e05b69152cba326132f8`; Node24.22.0 e Wrangler4.120.1 fixados. Usa somente a autenticação local existente da CLI, em RAM.
+
+## Execução única por Root
+
+Manter exclusividade de alterações do bucket, do nome novo de objeto e do arquivo ciphertext durante a execução. Não usar esta fonte para o backup final; ele exigirá outro arquivo, objeto e recibo próprios.
+
+```powershell
+$backupNode = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'
+& $backupNode './.cache/python-reference-games/production-backup-rehearsal-r2-transfer-r2.mjs' production-backup-rehearsal-transfer-root-r2
+```
+
+Saída nova: `.cache/python-reference-games/production-backup-rehearsal-transfer-root-r2/receipt.json`. O recibo RUNNING é sincronizado antes de consultar provedores. Objeto novo:
+
+```text
+sistemazero-release-backups-production/rehearsal/production-backup-rehearsal-transfer-root-r2/f23a35b1dfb7db5708d05464148a5a5801d3b7ca0a07d50e7b424e58c7b22c00.dump.age
+```
+
+Download exclusivo fora Git:
+
+```text
+C:/Users/tocha/SistemaZeroRecovery/production/postgres/2026-10-23-root-r1/production-backup-rehearsal-transfer-root-r2.download.dump.age
+```
+
+O diretório privado já foi criado e protegido por Root. O download usa `open(...,'wx')`, é sincronizado e relido para conferir os bytes efetivamente gravados. Nunca usa `r2 object get --file`, pois esse caminho da CLI sobrescreve arquivos. Só conteúdo já cifrado é mantido em RAM ou em disco pelo caller.
+
+## Fluxo fechado
+
+1. Confere fontes, CLI, configuração, hash do recibo real, sua qualificação de restore/EOF/cleanup e arquivo cifrado fixo (tipo, caminho real, tamanho, SHA).
+2. Confere por GET o bucket privado: domínio gerenciado desabilitado, nenhum domínio personalizado, nenhuma regra habilitada `deleteObjectsTransition` ou `deleteObjects`. Confere data catalog desabilitado pelo comando oficial `r2 bucket catalog get`.
+3. Usa `r2 object get <bucket/key> --remote --pipe` para provar ausência. Só exit1, stdout vazio ou exatamente um byte LF do logger oficial, e erro canônico exato `[ERROR] The specified key does not exist.` admitem o upload. Presença, saída extra, autorização negada, timeout ou qualquer ambiguidade recusam o PUT.
+4. Cria e sincroniza a intenção global permanente `.cache/python-reference-games/production-backup-rehearsal-r1-upload.intent.json`. Mudança de run não permite reenviar o mesmo rehearsal.
+5. Executa uma invocação oficial `r2 object put --remote --file`, MIME `application/octet-stream`, cache-control `no-store`, sem `--force`, expiração ou chave alternativa.
+6. Mesmo se o ACK for perdido, tenta somente o readback independente já previsto: GET oficial `--pipe`, exit0 sem stderr, tamanho e SHA exatos, arquivo novo `wx`, fsync e conferência do arquivo. Verifica ciphertext original e bucket/catalog novamente.
+
+Estado positivo: `CIPHERTEXT_UPLOAD_DOWNLOAD_VERIFIED_NOT_FINAL_BACKUP`. Se ACK incerto, permanece `ACK_UNKNOWN_READBACK_MATCHED` ou `ACK_UNKNOWN_READBACK_UNCONFIRMED`, `remoteOutcomeUnknown:true`, exit1 e nenhuma repetição automática. Não apagar a intenção nem repetir o comando; Root deve reconciliar o resultado. Arquivos vazios/parciais cifrados de uma falha permanecem para diagnóstico, não são adotados silenciosamente.
+
+## Limites reais da CLI
+
+Wrangler4.120.1 não expõe precondição atômica create-only/If-None-Match nem comando HEAD de objeto. Por isso há uma chave nova derivada de run+SHA, GET prévio, intenção global e exigência de exclusividade externa. Não se afirma CAS nem proteção contra outro escritor concorrente.
+
+Fonte instalada `cli.js:417342–417374`, `:417621–417715`: PUT não inclui If-None-Match. `:417575–417618`: GET `--pipe` não imprime banner/progresso e entrega bytes; `--file` abre com sobrescrita. `:131753–131795`: transporte de objetos faz um fetch direto. Há uma exceção conhecida na própria CLI `:417844–417870`: conflito data catalog10081 pode pedir confirmação, assumir yes em contexto não interativo e reenviar com force interno. Não existe flag para desabilitar esse ramo. O operador exige catalog desabilitado antes/depois e manutenção dessa condição por Root; se a saída indicar esse caminho, não declara ACK positivo. O recibo conta **invocações** e explicita a existência do ramo, não promete observar cada PUT HTTP interno.
+
+`WRANGLER_HIDE_BANNER=true` é a opção oficial implementada em `cli.js:52377` e `:257410`, usada para impedir banner/update check; o parser não ignora mensagens arbitrárias. Outputs de CLI e credenciais ficam em RAM, com limites. Prazo total300s, processo individual≤90s, GET de metadata≤15s, metadata≤1MiB; stdout de ausência≤64KiB e download≤tamanho esperado+64KiB. Nenhum retry do caller, API S3 manual, proxy R2, token novo, Worker/deploy, SQL ou comunicação a terceiros.
+
+Esta prova vincula o download ao ciphertext já restaurado por Root por igualdade SHA/tamanho. Não executa outra restauração, não prova retenção imutável/object lock, não substitui o backup final após bloqueio de escritas e não qualifica restauração de roles/ACL do cluster.
+
+## Verificação inerte
+
+```powershell
+bun --no-env-file test ./.cache/python-reference-games/production-backup-rehearsal-r2-transfer-r2.test.ts
+```
+
+11 testes, 77 asserções, zero falhas, exit0. Cobrem pinos/scope, ausência estrita, catalog correto, argv, exclusividade de download, bytes corrompidos/curtos/extras, ACK perdido sem segundo envio e import Node24 sem processos de provedor/fetch. Nenhum teste leu a chave ou o ciphertext real.
+
+Referências: [upload R2](https://developers.cloudflare.com/r2/objects/upload-objects/) e [comandos Wrangler](https://developers.cloudflare.com/workers/wrangler/commands/), conferidos juntamente com os bytes fixos da CLI instalada. O único GET de diagnóstico desta revisão é descrito abaixo; o fluxo completo r2 não foi executado pelo preparador.
+
+## Delta r2: ausência e logger oficiais
+
+A tentativa Root r1 terminou `REFUSED_BEFORE_UPLOAD`, `OBJECT_ABSENCE_UNCONFIRMED`, put0 e sem intenção. O único GET de diagnóstico autorizado foi feito para a mesma chave r1 entre 04:59:58 e 05:00:00 UTC. Retornou exit1, stdout de exatamente um byte0x0A e stderr canônico `X [ERROR] The specified key does not exist.`. Nenhum payload de objeto foi retornado. A projeção sanitizada está em `production-backup-object-get-diagnostic-r1.json`.
+
+A causa está no Wrangler4.120.1 fixado: `cli.js:432361–432364`, `handleError` chama `logger2.log("")` antes de apresentar o erro. R2 admite somente esse LF único ou stdout vazio, conjuntamente com exit1 e o mesmo erro estrito. Não faz trim genérico do stdout e não ignora logs desconhecidos. Testes recusam espaço, CRLF, doisLF, tab, NUL ou qualquer dado adicional, além de outros erros/códigos de saída. RED preservado em `production-backup-rehearsal-r2-transfer-r2-red.log`; GREEN11/77 exit0.
+
+O único delta do operador é `missingObject`: comentário da origem e reconhecimento exato do LF. Fonte r1 SHA `d35a3aa99afe5342c4945110063c6de9e5d056f40b763f9fa960e2f0ad62f3cd` preservada. Intenção global, configuração, pinos, comandos PUT/download, ausência de retries, catálogo e privacidade não mudaram. O comando acima usa um diretório/run novo; exige novamente seu próprio GET de ausência antes do eventual PUT. Esta revisão não executou esse fluxo.

@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "state": "PREPARED-NOT-BROWSER-EXECUTED",
+  "at": "2026-10-21T07:31:46.1091967+00:00",
+  "sourceFrozen": true,
+  "pins": [
+    {
+      "path": "profile.mjs",
+      "bytes": 7388,
+      "sha256": "916ac8959738480978e4ac8fc0c4e1fcaf5d2508a60ea838a306fa58f16ac5e1"
+    },
+    {
+      "path": "profile.test.mjs",
+      "bytes": 4870,
+      "sha256": "9af0af939a72fbee6b34956d4e420f150231a9a670de2d67c1fe7a71e715d2fd"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4167,
+      "sha256": "f4b13e340f6cde84c346281a227e2cfee3982ce89c924fc02eacdc2b52f06c85"
+    }
+  ],
+  "unitTests": {
+    "runtime": "Node24.22.0",
+    "passed": 5,
+    "failed": 0,
+    "inertPortsOnly": true,
+    "nativeJobStarts": 0,
+    "browserStarts": 0,
+    "providerCalls": 0,
+    "serviceStarts": 0
+  },
+  "independentReview": {
+    "rootReadAndFreshTests": true,
+    "coreReadNoP1P2": true
+  },
+  "authorityCreated": false,
+  "previousNegativeReceiptsUnchanged": true
+}

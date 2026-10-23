@@ -72,6 +72,12 @@ describe('templates do Messaging usados pelo Referrals', () => {
       'referrals-scholarship-welcome-mural-trial',
       'referrals-campaign-existing-mural-trial',
       'referrals-bonus-eligible',
+      // Presente adulto (20/10/2026).
+      'referrals-scholarship-invite-adult',
+      'referrals-scholarship-welcome-adult',
+      'referrals-scholarship-existing-adult',
+      'referrals-campaign-welcome-adult',
+      'referrals-campaign-existing-adult',
       'kids-new-access',
       'new-access',
     ])

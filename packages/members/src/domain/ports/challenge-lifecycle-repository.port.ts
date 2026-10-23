@@ -1,3 +1,5 @@
+import type { ChallengeAudience } from '../entitlement/challenge-courses'
+
 export const CHALLENGE_BEHAVIOR_MESSAGE_KINDS = [
   'not_activated',
   'not_started',
@@ -17,6 +19,8 @@ export interface ChallengeLifecycleCandidate {
   grantedAt: Date
   expiresAt: Date
   courseRef: string
+  /** O público do curso: escolhe os templates (`-adult`) e os links. */
+  audience: ChallengeAudience
   started: boolean
   dayOneComplete: boolean
   completed: boolean

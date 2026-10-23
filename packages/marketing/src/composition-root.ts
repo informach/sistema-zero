@@ -4,14 +4,23 @@ import { AccountService } from './application/accounts/account.service'
 import { OAuthService } from './application/accounts/oauth.service'
 import { AiCopyService } from './application/ai/ai-copy.service'
 import { ContentService } from './application/contents/content.service'
+import { EngagementService } from './application/engagement/engagement.service'
 import { IdeaService } from './application/ideas/idea.service'
 import { PromoteIdeaService } from './application/ideas/promote-idea.service'
+import { MonitoringService } from './application/intelligence/monitoring.service'
 import { DriveImportService } from './application/media/drive.service'
 import { MediaService } from './application/media/media.service'
 import { MetricsService } from './application/metrics/metrics.service'
 import { LinkExternalService } from './application/publications/link-external.service'
 import { PublicationService } from './application/publications/publication.service'
+import { VerifiedPostService } from './application/publications/verified-post.service'
 import { YtQuotaGuard } from './application/publications/yt-quota-guard'
+import { ApprovalService } from './application/workspace/approval.service'
+import { DeliveryService } from './application/workspace/delivery.service'
+import { ExecutionService } from './application/workspace/execution.service'
+import { ImportService } from './application/workspace/import.service'
+import { WorkspaceService } from './application/workspace/workspace.service'
+import { WorkspaceAssetsService } from './application/workspace/workspace-assets.service'
 import { MediaNotConfiguredError } from './domain/marketing-errors'
 import type { ExternalPostResolver } from './domain/ports/external-post-resolver.port'
 import type { MediaStore } from './domain/ports/media-store.port'
@@ -30,9 +39,13 @@ import {
   tiktokConfig,
 } from './infrastructure/config/env'
 import { OpenRouterCopyClient } from './infrastructure/gateways/ai/openrouter-copy-client'
+import { GatewayStaffDirectory } from './infrastructure/gateways/auth/gateway-staff-directory'
+import { PublicFeedSource } from './infrastructure/gateways/feeds/public-feed-source'
+import { GatewayCommercialReportSource } from './infrastructure/gateways/funnel/commercial-report-source'
 import { GoogleDriveClient } from './infrastructure/gateways/google/google-drive-client'
 import { GoogleOAuthProvider } from './infrastructure/gateways/google/google-oauth-provider'
 import { GatewayMessagingClient } from './infrastructure/gateways/messaging/gateway-messaging-client'
+import { MetaEngagementProvider } from './infrastructure/gateways/meta/engagement-provider'
 import { MetaClient } from './infrastructure/gateways/meta/meta-client'
 import { MetaExternalResolver } from './infrastructure/gateways/meta/meta-external-resolver'
 import { MetaMetricsSource } from './infrastructure/gateways/meta/meta-metrics-source'
@@ -48,24 +61,38 @@ import { YoutubeExternalResolver } from './infrastructure/gateways/youtube/youtu
 import { YoutubeMetricsSource } from './infrastructure/gateways/youtube/youtube-metrics-source'
 import { YoutubePublisher } from './infrastructure/gateways/youtube/youtube-publisher'
 import { withSentryMirror } from './infrastructure/observability/sentry'
+import { DrizzleApprovalRepository } from './infrastructure/persistence/drizzle/approval.repository'
 import { DrizzleChecklistRepository } from './infrastructure/persistence/drizzle/checklist.repository'
 import { DrizzleCommentRepository } from './infrastructure/persistence/drizzle/comment.repository'
 import { DrizzleContentRepository } from './infrastructure/persistence/drizzle/content.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzleDeliveryRepository } from './infrastructure/persistence/drizzle/delivery.repository'
+import { DrizzleEngagementRepository } from './infrastructure/persistence/drizzle/engagement.repository'
+import { DrizzleEngagementConversations } from './infrastructure/persistence/drizzle/engagement-conversations.repository'
+import { maintainEngagement } from './infrastructure/persistence/drizzle/engagement-dispatch'
+import { DrizzleEngagementEngine } from './infrastructure/persistence/drizzle/engagement-engine.repository'
+import { DrizzleExecutionRepository } from './infrastructure/persistence/drizzle/execution.repository'
 import { DrizzleIdeaRepository } from './infrastructure/persistence/drizzle/idea.repository'
+import { DrizzleImportRepository } from './infrastructure/persistence/drizzle/import.repository'
 import { DrizzleMediaAssetRepository } from './infrastructure/persistence/drizzle/media-asset.repository'
 import { DrizzleMetricsRepository } from './infrastructure/persistence/drizzle/metrics.repository'
+import { DrizzleMonitoringRepository } from './infrastructure/persistence/drizzle/monitoring.repository'
 import { DrizzleOAuthStateRepository } from './infrastructure/persistence/drizzle/oauth-state.repository'
 import { DrizzlePublicationRepository } from './infrastructure/persistence/drizzle/publication.repository'
 import { DrizzlePublicationAssetRepository } from './infrastructure/persistence/drizzle/publication-asset.repository'
 import { DrizzleQuotaUsageRepository } from './infrastructure/persistence/drizzle/quota-usage.repository'
 import { DrizzleSocialAccountRepository } from './infrastructure/persistence/drizzle/social-account.repository'
+import { DrizzleWorkspaceRepository } from './infrastructure/persistence/drizzle/workspace.repository'
+import { DrizzleWorkspaceAssetsRepository } from './infrastructure/persistence/drizzle/workspace-assets.repository'
 import { createSecretBox } from './infrastructure/security/secret-box'
+import { EngagementWorker } from './infrastructure/workers/engagement-worker'
 import { MediaArchiverWorker } from './infrastructure/workers/media-archiver-worker'
 import { MediaTransferWorker } from './infrastructure/workers/media-transfer-worker'
 import { MetricsWorker } from './infrastructure/workers/metrics-worker'
+import { MonitoringWorker } from './infrastructure/workers/monitoring-worker'
 import { PublisherWorker } from './infrastructure/workers/publisher-worker'
 import { TokenRefreshWorker } from './infrastructure/workers/token-refresh-worker'
+import { WorkspaceAssetVerifier } from './infrastructure/workers/workspace-asset-verifier'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -114,6 +141,14 @@ export function createApplication(env: Env): Application {
   })
   const db = connection.db
   const now = () => new Date()
+  const monitoringRepo = new DrizzleMonitoringRepository(db, now)
+  const monitoringDirectory = new GatewayStaffDirectory(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET)
+  const monitoringWorker = new MonitoringWorker(
+    monitoringRepo,
+    new PublicFeedSource(),
+    monitoringDirectory,
+    logger,
+  )
   const idGen = () => randomUUID()
 
   // Adapters
@@ -127,9 +162,14 @@ export function createApplication(env: Env): Application {
   const accountRepo = new DrizzleSocialAccountRepository(db)
   const oauthStateRepo = new DrizzleOAuthStateRepository(db)
   const r2 = r2Config(env)
-  const mediaStore: MediaStore = r2
+  const r2Store = r2
     ? new R2MediaStore({ ...r2, transferTimeoutMs: env.MEDIA_TRANSFER_TIMEOUT_MS })
-    : notConfiguredMediaStore
+    : null
+  const mediaStore: MediaStore = r2Store ?? notConfiguredMediaStore
+  const workspaceAssetsRepo = new DrizzleWorkspaceAssetsRepository(db)
+  const workspaceAssetVerifier = r2Store
+    ? new WorkspaceAssetVerifier(workspaceAssetsRepo, r2Store, logger)
+    : null
   if (!r2) logger.warn('media.not_configured', { hint: 'R2_* ausentes — presign responderá 503' })
 
   // OAuth (núcleo comum + provedores por rede) — grupos atômicos independentes:
@@ -328,8 +368,23 @@ export function createApplication(env: Env): Application {
     )
   }
 
+  const externalResolvers = new Map<Network, ExternalPostResolver>()
+  if (youtubeEnabled)
+    externalResolvers.set('youtube', new YoutubeExternalResolver(new YoutubeClient()))
+  if (metaApi) {
+    externalResolvers.set('instagram', new MetaExternalResolver(metaApi, 'instagram'))
+    externalResolvers.set('facebook', new MetaExternalResolver(metaApi, 'facebook'))
+  }
   // Workers (processo único, padrão messaging: claim SKIP LOCKED + lease).
+  const deliveryRepo = new DrizzleDeliveryRepository(
+    db,
+    mediaStore,
+    new Set(publishers.keys()),
+    now,
+    new VerifiedPostService(accountRepo, accountService, externalResolvers),
+  )
   const publisherWorker = new PublisherWorker({
+    deliveries: deliveryRepo,
     publications: publicationRepo,
     contents: contentRepo,
     notifier: reminderNotifier,
@@ -428,13 +483,7 @@ export function createApplication(env: Env): Application {
     metricsSources.push(new TikTokMetricsSource(new TikTokClient()))
   }
 
-  // Vínculo publicação manual ↔ post real (YouTube por regex; IG/FB pela API).
-  const externalResolvers = new Map<Network, ExternalPostResolver>()
-  externalResolvers.set('youtube', new YoutubeExternalResolver())
-  if (metaApi) {
-    externalResolvers.set('instagram', new MetaExternalResolver(metaApi, 'instagram'))
-    externalResolvers.set('facebook', new MetaExternalResolver(metaApi, 'facebook'))
-  }
+  // Vínculo do post real verifica sua identidade na conta conectada.
   const linkExternalService = new LinkExternalService(
     publicationRepo,
     accountRepo,
@@ -482,7 +531,93 @@ export function createApplication(env: Env): Application {
     return { ready: checks.db === 'ok', checks }
   }
 
+  const engagementReady = Boolean(
+    secretBox &&
+      metaCfg &&
+      env.META_ENGAGEMENT_VERIFY_TOKEN &&
+      env.MARKETING_ENGAGEMENT_IDENTITY_KEY,
+  )
+  const engagementSending = engagementReady && env.MARKETING_ENGAGEMENT_SEND_ENABLED
+  const engagementDirectory = new GatewayStaffDirectory(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET)
+  const engagementEngine =
+    secretBox && env.MARKETING_ENGAGEMENT_IDENTITY_KEY
+      ? new DrizzleEngagementEngine(
+          db,
+          secretBox,
+          env.MARKETING_ENGAGEMENT_IDENTITY_KEY,
+          env.META_GRAPH_VERSION,
+          engagementSending,
+          engagementDirectory,
+        )
+      : null
+  const engagementWorker = new EngagementWorker(
+    (now) =>
+      maintainEngagement(
+        { db, graphVersion: env.META_GRAPH_VERSION, sendingEnabled: engagementSending },
+        now,
+      ),
+    engagementEngine && metaCfg
+      ? {
+          engine: engagementEngine,
+          provider: new MetaEngagementProvider(accountService, env.META_GRAPH_VERSION),
+        }
+      : null,
+    logger,
+  )
   const server = createServer({
+    engagement: {
+      engagement: new EngagementService(
+        new DrizzleEngagementRepository(db, env.META_GRAPH_VERSION, engagementSending),
+        new DrizzleEngagementConversations(db, env.META_GRAPH_VERSION, engagementSending),
+        engagementDirectory,
+        new GatewayCommercialReportSource(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET),
+      ),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    engagementWebhook:
+      engagementEngine && metaCfg && env.META_ENGAGEMENT_VERIFY_TOKEN
+        ? {
+            engine: engagementEngine,
+            appSecret: metaCfg.appSecret,
+            appId: metaCfg.appId,
+            verifyToken: env.META_ENGAGEMENT_VERIFY_TOKEN,
+            internalToken: env.INTERNAL_API_TOKEN,
+          }
+        : undefined,
+    monitoring: {
+      monitoring: new MonitoringService(monitoringRepo),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    execution: {
+      execution: new ExecutionService(new DrizzleExecutionRepository(db)),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    workspaceAssets: {
+      assets: new WorkspaceAssetsService(workspaceAssetsRepo, r2Store),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    imports: {
+      imports: new ImportService(new DrizzleImportRepository(db)),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    workspace: {
+      workspace: new WorkspaceService(
+        new DrizzleWorkspaceRepository(db),
+        new GatewayStaffDirectory(env.GATEWAY_URL, env.MARKETING_HMAC_SECRET),
+      ),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    approval: {
+      approval: new ApprovalService(
+        new DrizzleApprovalRepository(db),
+        new WorkspaceAssetsService(workspaceAssetsRepo, r2Store),
+      ),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
+    deliveries: {
+      deliveries: new DeliveryService(deliveryRepo),
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     env,
     logger,
     readiness,
@@ -588,10 +723,13 @@ export function createApplication(env: Env): Application {
         )
       }, env.RETENTION_CLEANUP_INTERVAL_MS)
       publisherWorker.start()
+      engagementWorker.start()
       mediaTransferWorker.start()
       mediaArchiverWorker?.start()
       tokenRefreshWorker.start()
       metricsWorker?.start()
+      workspaceAssetVerifier?.start()
+      monitoringWorker.start()
       // `::` = dual-stack — necessário p/ o private networking do Railway (IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
@@ -601,10 +739,13 @@ export function createApplication(env: Env): Application {
       // Workers param ANTES do pool fechar (senão um tick em voo estoura no banco).
       await Promise.all([
         publisherWorker.stop(),
+        engagementWorker.stop(),
         mediaTransferWorker.stop(),
         mediaArchiverWorker?.stop() ?? Promise.resolve(),
         tokenRefreshWorker.stop(),
         metricsWorker?.stop() ?? Promise.resolve(),
+        workspaceAssetVerifier?.stop() ?? Promise.resolve(),
+        monitoringWorker.stop(),
       ])
       try {
         await server.stop()

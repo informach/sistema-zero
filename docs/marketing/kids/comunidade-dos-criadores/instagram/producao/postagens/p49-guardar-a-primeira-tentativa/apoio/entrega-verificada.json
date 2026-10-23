@@ -1,0 +1,268 @@
+{
+  "id": "P49",
+  "checkedAt": "2026-10-15T01:14:52.801Z",
+  "errors": [],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "01-p49.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p49.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p49.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/jogo-antes.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/jogo-depois.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/10-p41-a-p50.md#p49",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../03-postagens.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy-linter.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "cenario-floresta.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "raposa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "caixa.svg",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem-jogo.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "projeto-antes.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "projeto-depois.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "projeto-antes.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "projeto-depois.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-verificado.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-antes.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-depois.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../01-p49.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../previa.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "published": false,
+  "visualReview": "Arte em tamanho integral e prévia móvel inspecionadas. Capturas completas com o mesmo enquadramento; personagem e caixa visíveis, trajetória e salto distinguíveis. Rótulos Antes e Depois identificam as versões. Título, frase final e legenda correspondem à ficha.",
+  "wordCount": 19,
+  "png": {
+    "width": 1080,
+    "height": 1350,
+    "sha256": "fed088b93ba0c6cfb69377675a71f18afa81174b773f94ff4fd3c5c75bb98e39",
+    "bytes": 784603
+  },
+  "game": {
+    "frames": [
+      60,
+      60
+    ],
+    "events": [
+      {
+        "variant": "antes",
+        "frame": 23,
+        "state": {
+          "x": 156,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        }
+      },
+      {
+        "variant": "depois",
+        "frame": 34,
+        "state": {
+          "x": 200,
+          "y": 47.599999999999966,
+          "vx": 4,
+          "vy": -0.40000000000000313,
+          "onGround": false
+        }
+      }
+    ],
+    "onlyJumpAdded": true
+  },
+  "runtimeHashScope": "runtimeSha256 identifica o JavaScript exportado por gameTwoDRuntime e executado nas capturas, não o módulo TypeScript que o contém.",
+  "captureHashes": [
+    {
+      "file": "jogo-antes.png",
+      "sha256": "e7781f067d7696f687b38c88521d1f7cc6285b25bfacca074538bd7c59504cd7"
+    },
+    {
+      "file": "jogo-depois.png",
+      "sha256": "4fe386ab4b519c6867d173cd9f959dd88a5fa12a0e29ec27940ce7bf7c2d43a0"
+    }
+  ],
+  "staticOrder": [
+    "P03",
+    "P14",
+    "P33",
+    "P38",
+    "P49",
+    "P53",
+    "P08",
+    "P29",
+    "P19",
+    "P58",
+    "P45",
+    "P27"
+  ],
+  "nextStaticPost": "P53",
+  "carouselCount": 30,
+  "staticCount": 5,
+  "totalPngs": 225,
+  "previewReadable": true,
+  "galleryNoOverflow": true
+}

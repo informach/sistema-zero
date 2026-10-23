@@ -1,0 +1,397 @@
+{
+  "source": "Defesa do Reino · exemplo original, sem mudança nas regras",
+  "errors": [],
+  "states": [
+    {
+      "name": "plano-aberto",
+      "file": "06-defesa-aberta.png",
+      "coins": 50,
+      "groups": {
+        "torre": [
+          {
+            "x": 280,
+            "y": 200,
+            "w": 40,
+            "h": 40,
+            "health": 1
+          }
+        ],
+        "invasor": [
+          {
+            "x": -130.11000000000035,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 19.88999999999974,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 169.8899999999998,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          }
+        ],
+        "tiro": [
+          {
+            "x": 269.7789405935299,
+            "y": 191.272827227022,
+            "w": 10,
+            "h": 10,
+            "health": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "name": "pickActive",
+          "args": [
+            "invasor",
+            "maior",
+            "pathProgress"
+          ],
+          "result": {
+            "x": 168.4499999999998,
+            "y": 103,
+            "hp": 30
+          }
+        },
+        {
+          "name": "launchTowards",
+          "args": [
+            {
+              "x": 280,
+              "y": 200,
+              "hp": 1,
+              "active": true
+            },
+            {
+              "x": 168.4499999999998,
+              "y": 103,
+              "hp": 30,
+              "active": true
+            },
+            420
+          ],
+          "result": null
+        }
+      ]
+    },
+    {
+      "name": "alvo-escolhido",
+      "file": "07-alvo.png",
+      "coins": 50,
+      "groups": {
+        "torre": [
+          {
+            "x": 280,
+            "y": 200,
+            "w": 40,
+            "h": 40,
+            "health": 1
+          }
+        ],
+        "invasor": [
+          {
+            "x": -125.79000000000036,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 24.209999999999745,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 174.20999999999978,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          }
+        ],
+        "tiro": [
+          {
+            "x": 254.44735148382475,
+            "y": 178.18206806755498,
+            "w": 10,
+            "h": 10,
+            "health": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "name": "pickActive",
+          "args": [
+            "invasor",
+            "maior",
+            "pathProgress"
+          ],
+          "result": {
+            "x": 168.4499999999998,
+            "y": 103,
+            "hp": 30
+          }
+        },
+        {
+          "name": "launchTowards",
+          "args": [
+            {
+              "x": 280,
+              "y": 200,
+              "hp": 1,
+              "active": true
+            },
+            {
+              "x": 168.4499999999998,
+              "y": 103,
+              "hp": 30,
+              "active": true
+            },
+            420
+          ],
+          "result": null
+        }
+      ]
+    },
+    {
+      "name": "tiro-em-andamento",
+      "file": "07-tiro.png",
+      "coins": 50,
+      "groups": {
+        "torre": [
+          {
+            "x": 280,
+            "y": 200,
+            "w": 40,
+            "h": 40,
+            "health": 1
+          }
+        ],
+        "invasor": [
+          {
+            "x": -118.59000000000037,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 31.40999999999975,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 181.40999999999977,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          }
+        ],
+        "tiro": [
+          {
+            "x": 228.89470296764938,
+            "y": 156.36413613510996,
+            "w": 10,
+            "h": 10,
+            "health": 1
+          }
+        ]
+      },
+      "events": [
+        {
+          "name": "pickActive",
+          "args": [
+            "invasor",
+            "maior",
+            "pathProgress"
+          ],
+          "result": {
+            "x": 168.4499999999998,
+            "y": 103,
+            "hp": 30
+          }
+        },
+        {
+          "name": "launchTowards",
+          "args": [
+            {
+              "x": 280,
+              "y": 200,
+              "hp": 1,
+              "active": true
+            },
+            {
+              "x": 168.4499999999998,
+              "y": 103,
+              "hp": 30,
+              "active": true
+            },
+            420
+          ],
+          "result": null
+        }
+      ]
+    },
+    {
+      "name": "recompensa",
+      "file": "07-recompensa.png",
+      "coins": 60,
+      "groups": {
+        "torre": [
+          {
+            "x": 280,
+            "y": 200,
+            "w": 40,
+            "h": 40,
+            "health": 1
+          }
+        ],
+        "invasor": [
+          {
+            "x": -46.59000000000049,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          },
+          {
+            "x": 103.40999999999964,
+            "y": 103,
+            "w": 34,
+            "h": 34,
+            "health": 30
+          }
+        ],
+        "tiro": []
+      },
+      "events": [
+        {
+          "name": "pickActive",
+          "args": [
+            "invasor",
+            "maior",
+            "pathProgress"
+          ],
+          "result": {
+            "x": 168.4499999999998,
+            "y": 103,
+            "hp": 30
+          }
+        },
+        {
+          "name": "launchTowards",
+          "args": [
+            {
+              "x": 280,
+              "y": 200,
+              "hp": 1,
+              "active": true
+            },
+            {
+              "x": 168.4499999999998,
+              "y": 103,
+              "hp": 30,
+              "active": true
+            },
+            420
+          ],
+          "result": null
+        },
+        {
+          "name": "hurt",
+          "args": [
+            {
+              "x": 188.60999999999976,
+              "y": 103,
+              "hp": 15,
+              "active": true
+            },
+            15,
+            0
+          ],
+          "result": null
+        },
+        {
+          "name": "pickActive",
+          "args": [
+            "invasor",
+            "maior",
+            "pathProgress"
+          ],
+          "result": {
+            "x": 240.44999999999968,
+            "y": 103,
+            "hp": 15
+          }
+        },
+        {
+          "name": "launchTowards",
+          "args": [
+            {
+              "x": 280,
+              "y": 200,
+              "hp": 1,
+              "active": true
+            },
+            {
+              "x": 240.44999999999968,
+              "y": 103,
+              "hp": 15,
+              "active": true
+            },
+            420
+          ],
+          "result": null
+        },
+        {
+          "name": "hurt",
+          "args": [
+            {
+              "x": 253.40999999999966,
+              "y": 103,
+              "hp": 0,
+              "active": true
+            },
+            15,
+            0
+          ],
+          "result": null
+        },
+        {
+          "name": "tdAddCoins",
+          "args": [
+            10
+          ],
+          "result": null
+        },
+        {
+          "name": "floatText",
+          "args": [
+            "+10",
+            253.40999999999966,
+            103,
+            "#ffd166",
+            20
+          ],
+          "result": null
+        }
+      ]
+    }
+  ]
+}

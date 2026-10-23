@@ -26,6 +26,7 @@ function candidate(over: Partial<ChallengeLifecycleCandidate> = {}): ChallengeLi
     grantedAt: new Date('2026-09-16T12:00:00Z'),
     expiresAt: EXPIRES,
     courseRef: 'desafio-primeiro-jogo',
+    audience: 'kids',
     started: false,
     dayOneComplete: false,
     completed: false,
@@ -95,6 +96,7 @@ function service(
   auth: AuthGateway,
   messaging: { sendEmail(input: SendEmailInput): Promise<void> },
   analytics?: ChallengeAnalyticsGateway,
+  adultUrl: string | null = 'https://comunidade.sistemazero.com.br',
 ) {
   return new SendChallengeLifecycleService(
     repo,
@@ -105,9 +107,14 @@ function service(
     {
       kidsUrl: 'https://kids.sistemazero.com.br',
       funnelUrl: 'https://sistemazero.com.br',
+      adultUrl: adultUrl ?? undefined,
     },
     analytics,
   )
+}
+
+function adulto(over: Partial<ChallengeLifecycleCandidate> = {}): ChallengeLifecycleCandidate {
+  return candidate({ courseRef: 'desafio-primeiro-jogo-adulto', audience: 'adult', ...over })
 }
 
 describe('SendChallengeLifecycleService', () => {
@@ -223,6 +230,78 @@ describe('SendChallengeLifecycleService', () => {
     expect(
       await service(repo, fakeAuth([identity(true)]), messaging.gateway, analytics).runCycle(),
     ).toEqual({ sent: 1, skipped: 0, failed: 0 })
+  })
+})
+
+describe('SendChallengeLifecycleService no Desafio adulto', () => {
+  test('usa os templates -adult e leva ao app adulto', async () => {
+    const { repo } = fakeRepo([
+      adulto({ entitlementId: 'sem-senha' }),
+      adulto({ entitlementId: 'dia-1', started: true, dayOneComplete: true }),
+    ])
+    const messaging = fakeMessaging()
+    const auth: AuthGateway = {
+      ...fakeAuth([]),
+      async getAccountIdentities() {
+        return [{ ...identity(false), firstName: '' }]
+      },
+    }
+    await service(repo, auth, messaging.gateway).runCycle()
+
+    expect(messaging.sent).toEqual([
+      expect.objectContaining({
+        templateKey: 'challenge-not-activated-adult',
+        variables: {
+          nome: 'Aluno(a)',
+          link: 'https://comunidade.sistemazero.com.br/esqueci-senha',
+        },
+        idempotencyKey: 'challenge-not-activated-adult:sem-senha:2026-10-16',
+      }),
+      expect.objectContaining({
+        templateKey: 'challenge-day-one-complete-adult',
+        variables: {
+          nome: 'Aluno(a)',
+          link: 'https://comunidade.sistemazero.com.br/cursos/desafio-primeiro-jogo-adulto',
+        },
+      }),
+    ])
+  })
+
+  test('sem início leva ao curso adulto, e não à Área dos pais', async () => {
+    const { repo } = fakeRepo([adulto()])
+    const messaging = fakeMessaging()
+    await service(repo, fakeAuth([identity(true)]), messaging.gateway).runCycle()
+
+    expect(messaging.sent[0]).toMatchObject({
+      templateKey: 'challenge-not-started-adult',
+      variables: {
+        nome: 'Marcos',
+        link: 'https://comunidade.sistemazero.com.br/cursos/desafio-primeiro-jogo-adulto',
+      },
+    })
+  })
+
+  test('a conclusão leva à continuidade adulta do funil, com UTM', async () => {
+    const { repo } = fakeRepo([adulto({ started: true, dayOneComplete: true, completed: true })])
+    const messaging = fakeMessaging()
+    await service(repo, fakeAuth([identity(true)]), messaging.gateway).runCycle()
+
+    expect(messaging.sent[0]).toMatchObject({
+      templateKey: 'challenge-completed-adult',
+      variables: {
+        link: 'https://sistemazero.com.br/pro/comunidade-dos-criadores/oferta/continuar?utm_source=email&utm_medium=email&utm_campaign=desafio-concluido',
+      },
+    })
+  })
+
+  test('sem a URL do app adulto, o aviso espera e não marca', async () => {
+    const { repo, marks } = fakeRepo([adulto()])
+    const messaging = fakeMessaging()
+    const lifecycle = service(repo, fakeAuth([identity(true)]), messaging.gateway, undefined, null)
+
+    expect(await lifecycle.runCycle()).toEqual({ sent: 0, skipped: 1, failed: 0 })
+    expect(messaging.sent).toHaveLength(0)
+    expect(marks).toHaveLength(0)
   })
 })
 

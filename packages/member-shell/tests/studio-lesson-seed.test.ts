@@ -1,11 +1,69 @@
 import { describe, expect, mock, test } from 'bun:test'
-import type { Project } from '@sistemazero/studio'
-import { completeLibraryAssets, resolveStudioLessonSeed } from '../src/lib/studio-lesson-seed'
+import type { EditableStudioProject, Project } from '@sistemazero/studio'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
+import {
+  completeLibraryAssets,
+  resolveStudioLessonSeed,
+  StudioLessonMaterialError,
+  StudioLessonSeedCompatibilityError,
+} from '../src/lib/studio-lesson-seed'
 
 const local = { id: 'lesson-child', name: 'Meu trabalho local' } as Project
 const submitted = { id: 'submitted', name: 'Minha entrega' } as Project
 const carryover = { id: 'previous', name: 'Aula anterior' } as Project
 const initial = { id: 'initial', name: 'Projeto inicial' } as Project
+
+for (const source of ['local', 'submitted', 'carryover'] as const) {
+  test(`${source}: incompatible saved work never falls through to a fresh project`, async () => {
+    const saved = { ...documentFixture('python', 'classic'), assets: [] } as EditableStudioProject
+    const before = structuredClone(saved)
+    const next = mock(async () => initial)
+    const sources: Parameters<typeof resolveStudioLessonSeed>[0] = {
+      local: async () => null,
+      submitted: next,
+      carryover: next,
+      initial,
+    }
+    if (source === 'carryover') sources.submitted = async () => null
+    sources[source] = async () => saved
+    const failure = await resolveStudioLessonSeed(sources).catch((error: unknown) => error)
+    expect(failure).toBeInstanceOf(StudioLessonSeedCompatibilityError)
+    expect((failure as StudioLessonSeedCompatibilityError).savedProject).toBe(saved)
+    expect(saved).toEqual(before)
+    expect(next).not.toHaveBeenCalled()
+  })
+}
+
+test('a legacy JS draft adopts current compatible authoring without replacing its work', async () => {
+  const saved = {
+    ...local,
+    formatVersion: 2,
+    files: { 'index.html': '<p>Meu jogo</p>', 'style.css': '', 'script.js': 'let pontos = 10' },
+  }
+  const opened = await resolveStudioLessonSeed({
+    local: async () => saved,
+    initial: {
+      ...initial,
+      formatVersion: 2,
+      files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+    },
+  })
+  expect(opened).toBe(saved)
+  expect(opened).toMatchObject({ files: { 'script.js': 'let pontos = 10' } })
+})
+
+for (const kind of ['classic', 'pro'] as const) {
+  test(`Python ${kind}: same environment preserves files, lock and work while adding course images`, async () => {
+    const initial = {
+      ...documentFixture('python', kind),
+      assets: [imagem('novo')],
+    } as EditableStudioProject
+    const saved = { ...initial, id: 'saved', name: 'Trabalho', assets: [] }
+    const opened = await resolveStudioLessonSeed({ initial, local: async () => saved })
+    expect(opened).toEqual({ ...saved, assets: initial.assets })
+    expect(saved.assets).toEqual([])
+  })
+}
 
 describe('saved lesson project priority', () => {
   test('keeps local work ahead of the submitted project and the template', async () => {
@@ -136,14 +194,40 @@ describe('library images added to the course after the work was saved', () => {
     }
   })
 
-  test('returns the same project when nothing is missing', () => {
+  test('returns the same project when nothing is missing', async () => {
     const completo = {
       id: 'lesson-child',
       name: 'Meu jogo',
       assets: [imagem('personagem'), imagem('menina')],
     } as Project
-    expect(completeLibraryAssets(completo, modelo)).toBe(completo)
-    expect(completeLibraryAssets(local, modelo)).not.toBe(local)
-    expect(completeLibraryAssets(local, initial)).toBe(local)
+    expect(await completeLibraryAssets(completo, modelo)).toBe(completo)
+    expect(await completeLibraryAssets(local, modelo)).not.toBe(local)
+    expect(await completeLibraryAssets(local, initial)).toBe(local)
   })
 })
+
+for (const kind of ['classic', 'pro'] as const) {
+  for (const conflict of ['identical', 'case', 'source'] as const)
+    test(`Python ${kind}: ${conflict} course material paths never produce a corrupt merged seed`, async () => {
+      const base = { ...documentFixture('python', kind), assets: [] } as EditableStudioProject
+      if (base.programmingLanguage !== 'python') throw new Error('fixture')
+      const own = { ...imagem('heroi'), proPath: 'hero.svg' }
+      const saved = { ...base, assets: conflict === 'source' ? [] : [own] }
+      if (conflict === 'source') {
+        if (saved.kind === 'pro') saved.tree['hero.svg'] = { kind: 'file', content: '<svg/>' }
+        else saved.files['hero.svg'] = '<svg/>'
+      }
+      const initial = {
+        ...base,
+        assets: [
+          { ...imagem('novo-heroi'), proPath: conflict === 'case' ? 'Hero.svg' : 'hero.svg' },
+        ],
+      }
+      const before = structuredClone(saved)
+      await expect(completeLibraryAssets(saved, initial)).rejects.toBeInstanceOf(
+        StudioLessonMaterialError,
+      )
+      expect(saved).toEqual(before)
+      expect(initial.assets[0]?.name).toBe('novo-heroi')
+    })
+}

@@ -25,4 +25,25 @@ describe('CreationCleanupService', () => {
       '2026-08-19T14:04:00.000Z',
     ])
   })
+
+  test('claim repassa só os escopos que o members conhece; sem declaração, nenhum', async () => {
+    const seen: Array<readonly string[]> = []
+    const service = new CreationCleanupService({
+      claimDue: async (_now, _lease, scopes) => {
+        seen.push(scopes)
+        return null
+      },
+      complete: async () => false,
+      fail: async () => false,
+    })
+
+    await service.claim()
+    await service.claim([])
+    await service.claim(['pensa'])
+    await service.claim(['futuro', 'pensa', 'pensa'])
+    await service.claim(['futuro'])
+    await service.claim(['gallery', 'futuro', 'gallery'])
+
+    expect(seen).toEqual([[], [], ['pensa'], ['pensa'], [], ['gallery']])
+  })
 })

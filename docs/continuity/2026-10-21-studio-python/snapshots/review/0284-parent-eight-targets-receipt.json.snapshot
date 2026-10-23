@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-20T23:58:27.1160700Z",
+  "head": "face8acef32f1e924f1461557e82716ea7acc3dc",
+  "run": 39514471699,
+  "attempt": 1,
+  "job": 118943202376,
+  "jobURL": "https://github.com/informach/sistema-zero/actions/runs/39514471699/job/118943202376",
+  "sourceQualificationSha256": "9f89ee85532029b76b6d47d5232f3ecb463e56fccc22f34f09657e330ce3037f",
+  "actualTargetPass": 8,
+  "targetRetries": 0,
+  "targetSkips": 0,
+  "rows": [
+    {
+      "line": 590,
+      "text": "2026-10-20T23:26:57.5702758Z   ✓   29 [chromium] › e2e/pro-workspace.spec.ts:139:1 › uses conventional keyboard navigation, native commands and reviewed symbol rename (2.3s)"
+    },
+    {
+      "line": 618,
+      "text": "2026-10-20T23:29:39.6738686Z   ✓   57 [chromium] › e2e/reopen-blocks.spec.ts:159:3 › Reabrir projeto de blocos — renderiza de primeira › reabrir pela lista (Meus projetos → Abrir) também renderiza de primeira (3.4s)"
+    },
+    {
+      "line": 638,
+      "text": "2026-10-20T23:30:41.7973191Z   ✓   77 [chromium] › e2e/smoke.spec.ts:298:3 › Sistema Zero Studio — smoke › Pensa: recolher e abrir preserva editor e histórico (3.6s)"
+    },
+    {
+      "line": 639,
+      "text": "2026-10-20T23:30:44.6173177Z   ✓   78 [chromium] › e2e/smoke.spec.ts:406:3 › Sistema Zero Studio — smoke › Código digitado na Ponte sobrevive à troca IMEDIATA para Blocos (2.8s)"
+    },
+    {
+      "line": 640,
+      "text": "2026-10-20T23:30:51.0788292Z   ✓   79 [chromium] › e2e/smoke.spec.ts:438:3 › Sistema Zero Studio — smoke › Preview executa automaticamente ao abrir e recarregar o editor (6.4s)"
+    },
+    {
+      "line": 661,
+      "text": "2026-10-20T23:31:37.3767721Z   ✓  100 [chromium] › e2e/topbar-undo.spec.ts:76:3 › Desfazer e refazer na barra do editor › modo Blocos: os botões seguem a pilha dos blocos (2.1s)"
+    },
+    {
+      "line": 662,
+      "text": "2026-10-20T23:31:40.2621715Z   ✓  101 [chromium] › e2e/topbar-undo.spec.ts:97:3 › Desfazer e refazer na barra do editor › Ponte: o alvo é o último editor tocado e o código desfaz o que foi digitado (2.9s)"
+    },
+    {
+      "line": 684,
+      "text": "2026-10-20T23:32:04.4835228Z   ✓  110 [chromium] › e2e/zappy.spec.ts:12:3 › Zappy do Studio › abre no desktop sem remontar o Blockly e devolve o foco pelo teclado (1.9s)"
+    }
+  ],
+  "logPath": ".cache/authoring-js-ci-face8-r1/parent-face-shard3-original.log",
+  "logSha256": "3616a39a71dc4dcc851f4a1582c4ed8f95a049d004a97d337dd8cdcbaed60d8c",
+  "collection": "Retrospective direct download of completed exactFACE job stdout; not continuous observation during prior observer gap",
+  "scope": "Eight UI authoring cases only; not globalTypecheck/needs/deploy/provider/publication acceptance"
+}

@@ -11,6 +11,10 @@
       "!**/dist",
       "!**/migrations",
       "!bun.lock",
+      "!packages/studio/src/monaco/pro/defaultLibraries.json",
+      "!packages/studio-runtime/runtime/portable-path.generated.mjs",
+      "!packages/studio-runtime/runtime/python-playtest.generated.mjs",
+      "!packages/studio-runtime/runtime/execution-observation.generated.mjs",
       "!**/.astro",
       "!**/.next",
       "!**/next-env.d.ts",
@@ -20,8 +24,11 @@
       "!output/instagram",
       "!docs/marketing/**/instagram/producao",
       "!docs/marketing/**/instagram/historico",
+      "!docs/marketing/comunidade-dos-criadores/proposta-2026-10-19",
       "!**/.agents",
-      "!**/.claude"
+      "!**/.claude",
+      "!.audits",
+      "!docs/superpowers/plans/2026-10-21-python-audio-2-candidate"
     ]
   },
   "formatter": {
@@ -281,7 +288,7 @@
       }
     },
     {
-      "includes": ["docs/aulas-interativas/qa/*-projeto.ts"],
+      "includes": ["docs/aulas-interativas-tecnico/qa/*-projeto.ts"],
       "linter": {
         "rules": {
           "suspicious": {

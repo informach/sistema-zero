@@ -1,0 +1,234 @@
+/** Private Root operator. Importing this module performs no provider call. */
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, open, readFile, rename } from 'node:fs/promises'
+import { basename, dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { runReconciliation } from '../../packages/studio-ai-reconcile-cron/src/index.ts'
+
+export const PINS = Object.freeze({
+  project: '415d5a1c-5f75-432c-8445-b395d0977ce3',
+  environment: 'f634cff6-aafb-4804-8b69-172fad4e946e',
+  origin: 'https://community-kids-staging.up.railway.app',
+  route: '/api/internal/studio-ai/reconcile',
+  kids: 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f',
+  members: 'aa282801-ffba-477c-af6d-394b2f4f9af9',
+  kidsCommit: '1f71cd1f4721e2828ea72a18d687e90882d7e223',
+  membersCommit: 'bc2f154d45509a4745cccc5d05bb2226ff9f2977',
+})
+export const INTENT_NAME = 'staging-studio-ai-reconcile-bff-proof.intent.json'
+const SECRET = 'STUDIO_AI_RECONCILE_CRON_SECRET'
+const SOURCE_PINS = [
+  ['packages/studio-ai-reconcile-cron/src/index.ts', 'e77858b335783f29b5a08455aaa374df0b2e8bf7b2404347d25864875a443e16'],
+  ['packages/studio-ai-reconcile-cron/wrangler.jsonc', 'b248254fceb9378f43320a4bfa5e2ca81911975c5f71a16c97a7d76fcc81ae02'],
+  ['packages/member-shell/src/routes/studio-ai-reconcile.ts', '8391425492af07a6fe9d568bc030c8238edb85561d3a8f553903135fe10ee1a2'],
+  ['packages/community-kids/src/app/api/internal/studio-ai/reconcile/route.ts', '26536147dbefb29d4548030182d66bb859bd5655c28ecbe1ba7d209b39810099'],
+]
+const CACHE = dirname(fileURLToPath(import.meta.url)), ROOT = resolve(CACHE, '../..')
+const record = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+const uuid = value => typeof value === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value)
+const hash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function guard(value, code) { if (!value) throw new Refusal(code) }
+function keys(value, expected) { return record(value) && same(Object.keys(value).sort(), [...expected].sort()) }
+
+export function validatePlan(plan) {
+  guard(keys(plan, ['kind', 'version', 'project', 'environment', 'kids', 'members']) && plan.kind === 'staging-reconcile-bff-proof-plan' && plan.version === 1 && plan.project === PINS.project && plan.environment === PINS.environment, 'PLAN_SCOPE')
+  for (const role of ['kids', 'members']) {
+    const target = plan[role]
+    guard(keys(target, ['deploymentId', 'receipt']) && uuid(target.deploymentId) && keys(target.receipt, ['path', 'sha256']) && typeof target.receipt.path === 'string' && target.receipt.path.length > 0 && hash(target.receipt.sha256), 'PLAN_TARGET')
+  }
+  guard(plan.kids.deploymentId !== plan.members.deploymentId, 'PLAN_TARGET')
+  return plan
+}
+
+export function argumentsFor(argv) {
+  const [mode, run, planPath, planSha256, checkPath, checkSha256, ...extra] = argv
+  guard(['check', 'apply'].includes(mode) && typeof run === 'string' && new RegExp(`^staging-reconcile-${mode}-[a-z0-9-]+$`).test(run) && typeof planPath === 'string' && planPath.length > 0 && hash(planSha256) && extra.length === 0, 'ARGUMENTS')
+  guard(mode === 'check' ? checkPath === undefined && checkSha256 === undefined : typeof checkPath === 'string' && checkPath.length > 0 && hash(checkSha256), 'ARGUMENTS')
+  return { mode, run, planPath, planSha256, checkPath, checkSha256 }
+}
+
+export function projectContext(data, plan, role) {
+  const service = PINS[role], expected = plan[role].deploymentId
+  const instance = data?.serviceInstance, pending = data?.deployments, target = data?.deployment
+  guard(instance?.serviceId === service && instance.environmentId === PINS.environment && Array.isArray(instance.activeDeployments) && instance.activeDeployments.length === 1 && Array.isArray(pending?.edges) && pending.edges.length === 0 && pending.pageInfo?.hasNextPage === false, 'CONTEXT_NOT_UNIQUE_READY')
+  for (const item of [target, instance.activeDeployments[0], instance.latestDeployment])
+    guard(record(item) && item.id === expected && item.projectId === PINS.project && item.environmentId === PINS.environment && item.serviceId === service && item.status === 'SUCCESS' && item.deploymentStopped === false && item.meta?.commitHash === PINS[`${role}Commit`] && uuid(item.snapshotId) && item.snapshotId === target?.snapshotId, 'DEPLOYMENT_CONTEXT_CHANGED')
+  return { role, serviceId: service, deploymentId: expected, commit: PINS[`${role}Commit`], snapshotId: target.snapshotId, status: 'SUCCESS', activeCount: 1, pendingCount: 0 }
+}
+
+/** Only RAM values leave this function; callers must never serialize the return value. */
+export function currentSecret(data, expectedSnapshotId) {
+  const { snapshot, raw, rendered } = data ?? {}
+  guard(record(snapshot) && snapshot.id === expectedSnapshotId && record(snapshot.variables) && record(raw) && record(rendered), 'SNAPSHOT_VARIABLE_SHAPE')
+  const secret = rendered[SECRET]
+  guard(typeof secret === 'string' && secret.length >= 24 && secret.trim() === secret && !/\s/.test(secret), 'SECRET_INVALID')
+  guard(raw[SECRET] === secret && snapshot.variables[SECRET] === secret, 'SECRET_NOT_LOADED_OR_CHANGED')
+  guard(rendered.APP_PUBLIC_URL === PINS.origin && raw.APP_PUBLIC_URL === PINS.origin && snapshot.variables.APP_PUBLIC_URL === PINS.origin, 'PUBLIC_ORIGIN_CHANGED')
+  for (const [key, value] of [['RAILWAY_PROJECT_ID', PINS.project], ['RAILWAY_ENVIRONMENT_ID', PINS.environment], ['RAILWAY_SERVICE_ID', PINS.kids]])
+    if (Object.hasOwn(rendered, key)) guard(rendered[key] === value, 'VARIABLE_CONTEXT_CHANGED')
+  return secret
+}
+
+export async function exclusiveIntent(directory, value) {
+  let file
+  try { file = await open(join(directory, INTENT_NAME), 'wx', 0o600) }
+  catch { throw new Refusal('GLOBAL_INTENT_ALREADY_EXISTS_OR_UNAVAILABLE') }
+  try { await file.writeFile(JSON.stringify(value) + '\n'); await file.sync() }
+  finally { await file.close() }
+  // Never unlink, including failure, timeout, changed check hash, or successful completion.
+}
+
+async function unauthenticated(fetchImpl, timeoutMs) {
+  const controller = new AbortController()
+  let timer
+  try {
+    return await Promise.race([
+      (async () => {
+        const response = await fetchImpl(`${PINS.origin}${PINS.route}`, { method: 'POST', redirect: 'error', signal: controller.signal })
+        const status = response.status
+        await response.body?.cancel()
+        return status
+      })(),
+      new Promise((_, reject) => { timer = setTimeout(() => { controller.abort(); reject(new Refusal('ANONYMOUS_POST_UNCONFIRMED')) }, timeoutMs) }),
+    ])
+  } catch { throw new Refusal('ANONYMOUS_POST_UNCONFIRMED') }
+  finally { clearTimeout(timer); controller.abort() }
+}
+
+/** The sole POST sequence; counts/response parser belong to the real cron module. */
+export async function proveBff(baseline, deps, timeoutMs = 25_000) {
+  guard(Number.isInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 25_000, 'TIMEOUT')
+  await deps.reserve()
+  await deps.checkpoint({ state: 'ANONYMOUS_POST_OUTCOME_UNKNOWN', anonymousPostAttempts: 1, remoteOutcomeUnknown: true })
+  const status = await unauthenticated(deps.fetch, timeoutMs)
+  await deps.checkpoint({ anonymousStatus: status, anonymousRejected: status === 401, remoteOutcomeUnknown: status !== 401 })
+  guard(status === 401, 'ANONYMOUS_NOT_REJECTED')
+  // Recheck deployment/snapshot/secret after the negative and immediately before dispatch.
+  const fresh = await deps.inspect()
+  guard(same(fresh.context, baseline.context) && fresh.secret === baseline.secret, 'AUTHORITY_CHANGED_BEFORE_POST')
+  let attempts = 0
+  const result = await runReconciliation({ ENVIRONMENT: 'staging', KIDS_ORIGIN: PINS.origin, [SECRET]: fresh.secret }, async (url, init) => {
+    guard(attempts === 0 && url === `${PINS.origin}${PINS.route}` && init.method === 'POST' && init.redirect === 'error' && init.body === undefined && new Headers(init.headers).get('authorization') === `Bearer ${fresh.secret}`, 'DISPATCH_CONTRACT_CHANGED')
+    attempts++
+    await deps.checkpoint({ state: 'AUTHENTICATED_POST_OUTCOME_UNKNOWN', authenticatedPostAttempts: attempts, remoteOutcomeUnknown: true })
+    init.signal.throwIfAborted()
+    return deps.fetch(url, init)
+  }, timeoutMs)
+  const confirmed = result.state === 'reconciled' || result.state === 'pending'
+  await deps.checkpoint({ result, apiContractQualified: confirmed, callReconciled: result.state === 'reconciled', remoteOutcomeUnknown: !confirmed })
+  guard(confirmed && attempts === 1, 'AUTHENTICATED_RESULT_UNCONFIRMED')
+  const after = await deps.inspect()
+  guard(same(after.context, baseline.context) && after.secret === baseline.secret, 'POST_CONTEXT_CHANGED')
+  await deps.checkpoint({ afterContext: after.context, contextUnchanged: true })
+  return result.state === 'reconciled' ? 'BFF_API_QUALIFIED' : 'BFF_API_CONFIRMED_PENDING'
+}
+
+async function pinnedJson(path, digest, maxBytes = 2 * 1024 * 1024) {
+  const meta = await lstat(path)
+  guard(meta.isFile() && !meta.isSymbolicLink() && meta.size <= maxBytes, 'INPUT_FILE_INVALID')
+  const bytes = await readFile(path)
+  guard(bytes.length <= maxBytes && sha(bytes) === digest, 'INPUT_HASH_CHANGED')
+  try { return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) }
+  catch { throw new Refusal('INPUT_JSON_INVALID') }
+}
+
+async function main() {
+  const args = argumentsFor(process.argv.slice(2))
+  guard(process.versions.node === '24.22.0' && !process.versions.bun, 'NODE_VERSION')
+  const out = join(CACHE, args.run)
+  await mkdir(out)
+  const deadline = Date.now() + 300_000
+  const receipt = { kind: 'staging-reconcile-bff-proof', version: 1, mode: args.mode, state: 'RUNNING', startedAt: new Date().toISOString(), pins: PINS,
+    planSha256: args.planSha256, operatorSha256: sha(await readFile(fileURLToPath(import.meta.url))), sourcePins: SOURCE_PINS,
+    anonymousPostAttempts: 0, authenticatedPostAttempts: 0, retries: 0, remoteOutcomeUnknown: false,
+    cronWitnessQualified: false, wholeLedgerReconciled: false, hostedUiQualified: false, overallQualified: false,
+    inferenceRequested: false, providerConfigurationWrites: false, deploymentsRequested: false,
+    secretsOrSecretHashesRecorded: false, rawProviderResponsesRecorded: false, environmentCasAvailable: false,
+    externalDeploymentAndSecretFreezeRequired: true, apiContractQualified: false, contextUnchanged: false }
+  const save = async patch => {
+    Object.assign(receipt, patch)
+    const temporary = join(out, 'receipt.tmp'), file = await open(temporary, 'w', 0o600)
+    try { await file.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await file.sync() } finally { await file.close() }
+    await rename(temporary, join(out, 'receipt.json'))
+  }
+  const remaining = () => { const ms = deadline - Date.now(); guard(ms > 0, 'DEADLINE'); return ms }
+  const env = Object.fromEntries(['PATH', 'SystemRoot', 'WINDIR', 'TEMP', 'TMP', 'USERPROFILE', 'LOCALAPPDATA', 'APPDATA'].filter(k => process.env[k]).map(k => [k, process.env[k]]))
+  Object.assign(env, { CI: 'true', NO_COLOR: '1' })
+  const cli = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const native = argv => new Promise((accept, reject) => {
+    execFile(cli, argv, { cwd: ROOT, env, windowsHide: true, timeout: Math.min(20_000, remaining()), maxBuffer: 8 * 1024 * 1024, encoding: 'utf8' }, (error, stdout) => error ? reject(new Refusal('CLI_READ_UNCONFIRMED')) : accept(stdout))
+  })
+  const api = async (query, variables) => {
+    // These query variables contain only public identifiers, never secrets.
+    let reply
+    try { reply = JSON.parse(await native(['api', '--compact', query, '--variables', JSON.stringify(variables)])) }
+    catch { throw new Refusal('API_READ_UNCONFIRMED') }
+    guard(record(reply?.data) && !reply.errors, 'API_READ_UNCONFIRMED')
+    return reply.data
+  }
+  let baseline
+  try {
+    await save({}) // Durable RUNNING before the first remote read.
+    const plan = validatePlan(await pinnedJson(resolve(ROOT, args.planPath), args.planSha256, 16_384))
+    receipt.deploymentProofs = []
+    for (const role of ['kids', 'members']) {
+      const proof = plan[role].receipt
+      await pinnedJson(resolve(ROOT, proof.path), proof.sha256)
+      receipt.deploymentProofs.push({ role, deploymentId: plan[role].deploymentId, artifact: basename(proof.path), sha256: proof.sha256 })
+    }
+    for (const [path, digest] of SOURCE_PINS) guard(sha(await readFile(join(ROOT, path))) === digest, 'SOURCE_PIN_CHANGED')
+    if (args.mode === 'apply') {
+      const checked = await pinnedJson(resolve(ROOT, args.checkPath), args.checkSha256)
+      guard(checked.kind === receipt.kind && checked.version === 1 && checked.mode === 'check' && checked.state === 'READ_ONLY_READY' && checked.planSha256 === args.planSha256 && checked.operatorSha256 === receipt.operatorSha256 && same(checked.pins, PINS) && checked.anonymousPostAttempts === 0 && checked.authenticatedPostAttempts === 0, 'CHECK_INVALID')
+      const age = Date.now() - Date.parse(checked.finishedAt)
+      guard(Number.isFinite(age) && age >= 0 && age < 600_000, 'CHECK_STALE')
+      receipt.checkReceiptSha256 = args.checkSha256
+    }
+    guard((await native(['--version'])).trim() === 'railway 5.62.1', 'CLI_VERSION')
+    const fields = 'id projectId environmentId serviceId status snapshotId deploymentStopped meta'
+    const query = `query($id:String!,$s:String!,$e:String!,$input:DeploymentListInput!){deployment(id:$id){${fields}}serviceInstance(serviceId:$s,environmentId:$e){serviceId environmentId activeDeployments{${fields}}latestDeployment{${fields}}}deployments(input:$input,first:1){edges{node{id status}}pageInfo{hasNextPage}}}`
+    const context = async () => {
+      const result = []
+      for (const role of ['kids', 'members']) result.push(projectContext(await api(query, { id: plan[role].deploymentId, s: PINS[role], e: PINS.environment,
+        input: { projectId: PINS.project, environmentId: PINS.environment, serviceId: PINS[role], status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } }), plan, role))
+      return result
+    }
+    const inspect = async () => {
+      const before = await context()
+      const data = await api('query($d:String!,$p:String!,$e:String!,$s:String!){snapshot:deploymentSnapshot(deploymentId:$d){id variables}raw:variables(projectId:$p,environmentId:$e,serviceId:$s,unrendered:true)rendered:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$s)}', { d: plan.kids.deploymentId, p: PINS.project, e: PINS.environment, s: PINS.kids })
+      let secret
+      try { secret = currentSecret(data, before[0].snapshotId) }
+      finally { for (const map of [data.raw, data.rendered, data.snapshot?.variables]) if (record(map)) for (const key of Object.keys(map)) delete map[key] }
+      const after = await context()
+      guard(same(before, after), 'CONTEXT_CHANGED_DURING_READ')
+      return { context: after, secret }
+    }
+    baseline = await inspect()
+    await save({ state: 'READ_ONLY_READY', beforeContext: baseline.context, loadedSecretMatchesCurrent: true, exactStagingOriginVerified: true })
+    if (args.mode === 'apply') {
+      guard(remaining() >= 120_000, 'INSUFFICIENT_OPERATION_BUDGET')
+      const state = await proveBff(baseline, { fetch: (url, init) => {
+        guard(remaining() >= 25_000, 'INSUFFICIENT_POST_BUDGET')
+        return fetch(url, init)
+      },
+        reserve: () => exclusiveIntent(CACHE, { kind: 'staging-reconcile-bff-exclusive-intent', target: { project: PINS.project, environment: PINS.environment, service: PINS.kids, route: PINS.route }, planSha256: args.planSha256, checkSha256: args.checkSha256, run: args.run, createdAt: new Date().toISOString() }),
+        checkpoint: save, inspect })
+      await save({ state })
+      if (state !== 'BFF_API_QUALIFIED') process.exitCode = 1
+    }
+  } catch (error) {
+    await save({ state: 'REFUSED_OR_UNCONFIRMED', failureCode: error instanceof Refusal ? error.code : 'LOCAL_OR_PROVIDER_UNCONFIRMED' })
+    process.exitCode = 1
+  } finally {
+    if (baseline) baseline.secret = undefined
+    await save({ finishedAt: new Date().toISOString() })
+    console.log(JSON.stringify({ state: receipt.state, output: basename(out), failureCode: receipt.failureCode ?? null, authenticatedPostAttempts: receipt.authenticatedPostAttempts, cronWitnessQualified: false }))
+  }
+}
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().catch(() => { console.error('LOCAL_PREFLIGHT_OR_RECEIPT_FAILURE'); process.exitCode = 1 })
+}

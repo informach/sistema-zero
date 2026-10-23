@@ -1,0 +1,171 @@
+diff --git "a/.cache\\python-reference-games\\production-pensa-writer-images-readonly-r2-final.mjs" "b/.cache\\python-reference-games\\production-pensa-writer-images-readonly-r3.mjs"
+index 8e25eae66..913c9443b 100644
+--- "a/.cache\\python-reference-games\\production-pensa-writer-images-readonly-r2-final.mjs"
++++ "b/.cache\\python-reference-games\\production-pensa-writer-images-readonly-r3.mjs"
+@@ -18,13 +18,16 @@ const targets = [
+   { name: 'Hub', service: '00b27b18-0587-460b-ba90-b6b24c423e45', package: 'hub', runtime: 'bun', command: 'bun scripts/release/start.mjs packages/hub/src/index.ts', deployment: 'ba08042b-d2bf-4063-87e7-97ea452cf030', commit: 'a270417ba4acffe97629793bb3fb62ac0e134519', digest: 'sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241' },
+ ]
+ const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+-const env = { ...process.env }
+-for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+-Object.assign(env, { CI: 'true', NO_COLOR: '1' })
++export function nativeEnvironment(source) {
++  const env = { ...source, CI: 'true', NO_COLOR: '1' }
++  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
++  return env
++}
++const env = nativeEnvironment(process.env)
+ const hash = bytes => createHash('sha256').update(bytes).digest('hex')
+ class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+ const guard = (condition, code) => { if (!condition) throw new Refusal(code) }
+-const startedAt = new Date().toISOString(), deadline = Date.now() + 360000
++let startedAt, deadline
+ let queryCount = 0, sshCount = 0
+ const native = (argv, input = '', executable = cli, timeout = 20000) => new Promise((accept, reject) => {
+   if (Date.now() >= deadline) return reject(new Refusal('READ_DEADLINE'))
+@@ -123,7 +126,8 @@ async function inspect(target) {
+   console.log(JSON.stringify({ service: target.name, state: result.state, failureCode: result.failureCode ?? result.ssh?.failureCode ?? null }))
+   return result
+ }
+-async function main() {
++async function collect() {
++  startedAt = new Date().toISOString(); deadline = Date.now() + 360000; queryCount = 0; sshCount = 0
+   guard(process.versions.node === '24.22.0', 'NODE_VERSION')
+   guard((await native(['--version'])).trim() === 'railway 5.62.1', 'RAILWAY_VERSION')
+   const report = await readFile(join(directory, 'production-pensa-writer-freeze-offline-r1.md'))
+@@ -139,8 +143,22 @@ async function main() {
+   for (const target of targets) receipt.targets.push(await inspect(target))
+   receipt.state = receipt.targets.every(value => value.state === 'FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED') ? 'FIVE_ACTIVE_IMAGES_AND_INSTALLED_LAUNCHERS_VERIFIED' : receipt.targets.every(value => value.state.startsWith('FRESH_IMAGE_')) ? 'FIVE_ACTIVE_IMAGES_VERIFIED_WITH_SSH_LIMITS' : 'PARTIAL_READ_UNCONFIRMED'
+   Object.assign(receipt, { finishedAt: new Date().toISOString(), queryCount, sshCount, sourceSha256: hash(await readFile(file)) })
+-  const path = join(directory, 'production-pensa-writer-images-readonly-r2-final.json'), handle = await open(path, 'wx', 0o600)
+-  try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+-  console.log(JSON.stringify({ state: receipt.state, receiptSha256: hash(await readFile(path)), queryCount, sshCount, mutations: 0 }))
++  return receipt
++}
++export function outputFile(name) {
++  guard(/^production-pensa-writer-images-readonly-r3-[a-z0-9-]{1,50}\.json$/.test(name ?? ''), 'OUTPUT_NAME_INVALID')
++  return join(directory, name)
++}
++export async function main(name) {
++  const path = outputFile(name), handle = await open(path, 'wx', 0o600)
++  try {
++    const receipt = await collect()
++    await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync()
++    console.log(JSON.stringify({ state: receipt.state, receiptSha256: hash(await readFile(path)), queryCount, sshCount, mutations: 0 }))
++    return receipt.state === 'FIVE_ACTIVE_IMAGES_AND_INSTALLED_LAUNCHERS_VERIFIED' ? 0 : 1
++  } finally { await handle.close() }
++}
++if (process.argv[1] && resolve(process.argv[1]) === file) {
++  const task = process.argv.length === 3 ? main(process.argv[2]) : Promise.reject(new Refusal('ARGUMENTS'))
++  task.then(code => { process.exitCode = code }, error => { console.error(error instanceof Refusal ? error.code : 'READ_ONLY_INVENTORY_LOCAL_FAILURE'); process.exitCode = 1 })
+ }
+-main().catch(error => { console.error(error instanceof Refusal ? error.code : 'READ_ONLY_INVENTORY_LOCAL_FAILURE'); process.exitCode = 1 })
+diff --git "a/.cache\\python-reference-games\\production-old-image-migration-readonly-r1.mjs" "b/.cache\\python-reference-games\\production-old-image-migration-readonly-r2.mjs"
+index e00ed3fca..05575edd7 100644
+--- "a/.cache\\python-reference-games\\production-old-image-migration-readonly-r1.mjs"
++++ "b/.cache\\python-reference-games\\production-old-image-migration-readonly-r2.mjs"
+@@ -143,11 +143,15 @@ async function selfTest() {
+   console.log(JSON.stringify({ state: 'INERT_NEGATIVES_PASSED', assertionsAtLeast: assertions, providerCalls: 0, databaseConnections: 0, sourceSha256: sha(await readFile(FILE)) }))
+ }
+ 
+-async function main() {
++export function nativeEnvironment(source) {
++  const env = { ...source, CI: 'true', NO_COLOR: '1' }
++  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
++  return env
++}
++async function collect() {
+   check(process.versions.node === '24.22.0', 'NODE_VERSION')
+   const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+-  const env = { ...process.env, CI: 'true', NO_COLOR: '1' }
+-  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
++  const env = nativeEnvironment(process.env)
+   const startedAt = new Date().toISOString(), deadline = Date.now() + 180000
+   const native = (args, input = '', timeout = 20000) => new Promise((accept, reject) => {
+     check(Date.now() < deadline, 'READ_DEADLINE')
+@@ -193,11 +197,22 @@ async function main() {
+   }
+   receipt.state = receipt.targets.every(row => row.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH') ? 'BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE' : 'READ_HAS_MISMATCH_OR_UNCONFIRMED'
+   Object.assign(receipt, { finishedAt: new Date().toISOString(), queryCount, sshCount, limits: ['This read predates maintenance and is not a writer fence.', 'Equal latest hash/when means no later entry in the inspected old image journal; it does not promise zero SQL or bootstrap DDL when drizzle-kit migrate is rerun.', 'No migrator/app is imported. Only builtin filesystem/crypto and the installed postgres driver are loaded.', 'Database name is compared in RAM with the connection URL. Neither the name, URL, credentials nor a hash of credentials is persisted.', 'No claim is made about OCI argv, a future Railway redeploy implementation or its decision to execute preDeploy.'] })
+-  const output = join(CACHE, 'production-old-image-migration-readonly-r1.json'), handle = await open(output, 'wx', 0o600)
+-  try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+-  console.log(JSON.stringify({ state: receipt.state, receiptSha256: sha(await readFile(output)), queryCount, sshCount, mutations: 0 }))
++  return receipt
++}
++export function outputFile(name) {
++  check(/^production-old-image-migration-readonly-r2-[a-z0-9-]{1,50}\.json$/.test(name ?? ''), 'OUTPUT_NAME_INVALID')
++  return join(CACHE, name)
++}
++export async function main(name) {
++  const output = outputFile(name), handle = await open(output, 'wx', 0o600)
++  try {
++    const receipt = await collect()
++    await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync()
++    console.log(JSON.stringify({ state: receipt.state, receiptSha256: sha(await readFile(output)), queryCount: receipt.queryCount, sshCount: receipt.sshCount, mutations: 0 }))
++    return receipt.state === 'BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE' ? 0 : 1
++  } finally { await handle.close() }
+ }
+ if (process.argv[1] && resolve(process.argv[1]) === FILE) {
+-  const task = process.argv.length === 3 && process.argv[2] === 'self-test' ? selfTest : process.argv.length === 3 && process.argv[2] === 'run' ? main : async () => { throw new Refusal('ARGUMENTS') }
+-  task().catch(error => { console.error(error instanceof Refusal ? error.code : 'SANITIZED_LOCAL_FAILURE'); process.exitCode = 1 })
++  const task = process.argv.length === 3 && process.argv[2] === 'self-test' ? selfTest() : process.argv.length === 4 && process.argv[2] === 'run' ? main(process.argv[3]) : Promise.reject(new Refusal('ARGUMENTS'))
++  task.then(code => { process.exitCode = code ?? 0 }, error => { console.error(error instanceof Refusal ? error.code : 'SANITIZED_LOCAL_FAILURE'); process.exitCode = 1 })
+ }
+diff --git "a/.cache\\python-reference-games\\production-next-predeploy-readonly-r1.mjs" "b/.cache\\python-reference-games\\production-next-predeploy-readonly-r2.mjs"
+index ad6621c8a..76684a37b 100644
+--- "a/.cache\\python-reference-games\\production-next-predeploy-readonly-r1.mjs"
++++ "b/.cache\\python-reference-games\\production-next-predeploy-readonly-r2.mjs"
+@@ -14,9 +14,13 @@ const check = (condition, code) => { if (!condition) throw new Refusal(code) }
+ const object = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+ const absent = value => value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)
+ const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+-const env = { ...process.env, CI: 'true', NO_COLOR: '1' }
+-for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+-const startedAt = new Date().toISOString(), deadline = Date.now() + 90000
++export function nativeEnvironment(source) {
++  const env = { ...source, CI: 'true', NO_COLOR: '1' }
++  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
++  return env
++}
++const env = nativeEnvironment(process.env)
++let startedAt, deadline
+ let calls = 0
+ const native = (argv, input = '') => new Promise((accept, reject) => {
+   check(Date.now() < deadline, 'READ_DEADLINE')
+@@ -37,7 +41,8 @@ async function observe(target) {
+   const projectCommand = key => ({ configuredAbsent: absent(i[key]), deploymentManifestAbsent: absent(deployed[key]), resolvedFileConfigAbsent: absent(file.fileManifest.deploy?.[key]) })
+   return { deploymentId: d.id, snapshotId: d.snapshotId, commit: expected.commit, imageDigest: expected.imageDigest, uniqueSuccess: true, noPending: true, resolvedFileDeploymentMatches: true, resolvedFileCommitMatches: true, preDeploy: projectCommand('preDeployCommand'), startOverride: projectCommand('startCommand') }
+ }
+-async function main() {
++async function collect() {
++  startedAt = new Date().toISOString(); deadline = Date.now() + 90000; calls = 0
+   check(process.versions.node === '24.22.0', 'NODE_VERSION')
+   check((await native(['--version'])).trim() === 'railway 5.62.1', 'RAILWAY_VERSION')
+   const originalBytes = await readFile(join(CACHE, priorName)); check(sha(originalBytes) === priorSha, 'PRIOR_RECEIPT_CHANGED')
+@@ -58,8 +63,22 @@ async function main() {
+   }
+   receipt.state = receipt.targets.every(row => row.state === 'ABSENCE_COHERENT_UNIQUE_SUCCESS') ? 'THREE_NEXT_PREDEPLOY_AND_START_OVERRIDES_ABSENT' : 'READ_HAS_MISMATCH_OR_UNCONFIRMED'
+   Object.assign(receipt, { finishedAt: new Date().toISOString(), graphqlCalls: calls, maximumConcurrency: 1, limits: ['Only current declared configuration and exact active deployment manifests were read. No process argv or OCI image config was inspected.', 'This is a fresh observation, not maintenance activation, process retirement or a writer fence.', 'Absent preDeploy/start overrides were required in service configuration, deployment manifest and resolved file configuration. Any unexpected command is projected only as a mismatch boolean.'] })
+-  const path = join(CACHE, 'production-next-predeploy-readonly-r1.json'), handle = await open(path, 'wx', 0o600)
+-  try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+-  console.log(JSON.stringify({ state: receipt.state, receiptSha256: sha(await readFile(path)), graphqlCalls: calls, providerMutations: 0 }))
++  return receipt
++}
++export function outputFile(name) {
++  check(/^production-next-predeploy-readonly-r2-[a-z0-9-]{1,50}\.json$/.test(name ?? ''), 'OUTPUT_NAME_INVALID')
++  return join(CACHE, name)
++}
++export async function main(name) {
++  const path = outputFile(name), handle = await open(path, 'wx', 0o600)
++  try {
++    const receipt = await collect()
++    await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync()
++    console.log(JSON.stringify({ state: receipt.state, receiptSha256: sha(await readFile(path)), graphqlCalls: calls, providerMutations: 0 }))
++    return receipt.state === 'THREE_NEXT_PREDEPLOY_AND_START_OVERRIDES_ABSENT' ? 0 : 1
++  } finally { await handle.close() }
++}
++if (process.argv[1] && resolve(process.argv[1]) === FILE) {
++  const task = process.argv.length === 3 ? main(process.argv[2]) : Promise.reject(new Refusal('ARGUMENTS'))
++  task.then(code => { process.exitCode = code }, error => { console.error(error instanceof Refusal ? error.code : 'SANITIZED_READ_FAILURE'); process.exitCode = 1 })
+ }
+-main().catch(error => { console.error(error instanceof Refusal ? error.code : 'SANITIZED_READ_FAILURE'); process.exitCode = 1 })

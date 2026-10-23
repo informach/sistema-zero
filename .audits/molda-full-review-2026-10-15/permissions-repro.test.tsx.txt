@@ -1,0 +1,60 @@
+import { expect, test } from 'bun:test'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { COPY } from '../src/core/copy'
+import { structuredBytes } from '../src/core/structuredBytes'
+import { moldaToolFamilyIds } from '../src/core/toolFamilies'
+import { createDocumentEditorStore } from '../src/state/editorStore'
+import { animatedScene } from '../src/testing/sceneAnimation'
+import { sceneViewportProbe } from '../src/testing/sceneViewportProbe'
+import { MoldaToolAccessProvider } from '../src/components/toolAccess'
+import { SceneWorkshop } from '../src/components/editor/scene/SceneWorkshop'
+
+test('review: revoked animation creation cannot retain rename form', async () => {
+  const source = animatedScene()
+  const editor = createDocumentEditorStore({ asset: source, sizeOf: structuredBytes, persistence: { save: async () => undefined }, autosaveMs: 60000 })
+  const probe = sceneViewportProbe()
+  const draw = (revoked: boolean) => <MoldaToolAccessProvider access={revoked ? { allow: moldaToolFamilyIds(['basic', 'intermediate', 'professional']).filter(id => id !== 'animate.create') } : undefined}><SceneWorkshop editor={editor} viewportFactory={probe.factory} /></MoldaToolAccessProvider>
+  const view = render(draw(false))
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const clipButton = await screen.findByRole('button', { name: new RegExp(source.animations![0]!.name) })
+    fireEvent.doubleClick(clipButton)
+    const field = screen.getByRole('textbox', { name: COPY.scene.animationRename })
+    fireEvent.change(field, { target: { value: 'Revogação ignorada' } })
+    view.rerender(draw(true))
+    const retained = screen.queryByRole('textbox', { name: COPY.scene.animationRename })
+    if (retained) fireEvent.submit(retained.closest('form')!)
+    console.log(JSON.stringify({ renameRetained: !!retained, before: source.animations![0]!.name, after: editor.getState().content.animations![0]!.name, revision: editor.getState().contentRevision }))
+    expect(editor.getState().content.animations![0]!.name).toBe(source.animations![0]!.name)
+  } finally { view.unmount(); editor.getState().dispose() }
+})
+
+test('review: revoking cut cancels the existing cutting session', async () => {
+  const source=animatedScene(), editor=createDocumentEditorStore({asset:source,sizeOf:structuredBytes,persistence:{save:async()=>undefined},autosaveMs:60000}), probe=sceneViewportProbe()
+  const draw=(revoked:boolean)=><MoldaToolAccessProvider access={revoked ? {allow:moldaToolFamilyIds(['basic','intermediate','professional']).filter(id=>id!=='model.cut')} : undefined}><SceneWorkshop editor={editor} viewportFactory={probe.factory}/></MoldaToolAccessProvider>
+  const view=render(draw(false))
+  try {
+    fireEvent.click(screen.getByRole('button',{name:'Escolher corpo'}))
+    fireEvent.click(screen.getByRole('button',{name:'Cortar'}))
+    const bar=screen.getByRole('region',{name:'Cortar a peça'})
+    fireEvent.click(within(bar).getByText('Precisão do corte'))
+    fireEvent.click(within(bar).getByRole('button',{name:'Conferir plano'}))
+    view.rerender(draw(true))
+    const retained=screen.queryByRole('region',{name:'Cortar a peça'})
+    if(retained) await act(async()=>{fireEvent.click(within(retained).getByRole('button',{name:'Cortar'}))})
+    console.log(JSON.stringify({case:'cut-revocation',retained:!!retained,before:source.nodes.map(n=>n.name),after:editor.getState().content.nodes.map(n=>n.name)}))
+    expect(editor.getState().content).toBe(source)
+  } finally {view.unmount();editor.getState().dispose()}
+})
+
+test('review: coordinates alone must not grant the independently denied pivot capability', () => {
+  const source=animatedScene(), editor=createDocumentEditorStore({asset:source,sizeOf:structuredBytes,persistence:{save:async()=>undefined},autosaveMs:60000}), probe=sceneViewportProbe()
+  const view=render(<MoldaToolAccessProvider access={{allow:moldaToolFamilyIds(['basic']).filter(id=>id!=='model.pivot')}}><SceneWorkshop editor={editor} viewportFactory={probe.factory}/></MoldaToolAccessProvider>)
+  try {
+    fireEvent.click(screen.getByRole('button',{name:'Escolher corpo'}))
+    const field=screen.queryByRole('spinbutton',{name:'Pivô · o ponto onde a peça gira X'})
+    if(field) { fireEvent.change(field,{target:{value:'9'}});fireEvent.blur(field) }
+    console.log(JSON.stringify({case:'pivot-family',field:!!field,pivot:editor.getState().content.nodes.find(n=>n.id==='body')?.pivot}))
+    expect(editor.getState().content).toBe(source)
+  } finally {view.unmount();editor.getState().dispose()}
+})

@@ -1,0 +1,188 @@
+{
+  "kind": "python-staging-runtime-public-delivery",
+  "startedAt": "2026-10-21T07:50:12.009Z",
+  "release": "56204780388c78e8ecf978da984eca182ed4ac958e78c63a22ac286210ab7880",
+  "checks": [
+    {
+      "path": "LICENSE-pyodide.txt",
+      "bytes": 16725,
+      "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+      "etagVerified": true
+    },
+    {
+      "path": "LICENSE-python.txt",
+      "bytes": 13804,
+      "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+      "etagVerified": true
+    },
+    {
+      "path": "LICENSE-tk.txt",
+      "bytes": 2267,
+      "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198",
+      "etagVerified": true
+    },
+    {
+      "path": "SOURCES.txt",
+      "bytes": 1206,
+      "sha256": "847f9acb99a9d9b0d30b5450a526392724e39c2d752c1cbd62be7e438ca7ae2b",
+      "etagVerified": true
+    },
+    {
+      "path": "analysis-frame.mjs",
+      "bytes": 5419,
+      "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97",
+      "etagVerified": true
+    },
+    {
+      "path": "analysis-worker.mjs",
+      "bytes": 19988,
+      "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7",
+      "etagVerified": true
+    },
+    {
+      "path": "analysis.html",
+      "bytes": 151,
+      "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c",
+      "etagVerified": true
+    },
+    {
+      "path": "boot-loader-derivation.json",
+      "bytes": 840,
+      "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466",
+      "etagVerified": true
+    },
+    {
+      "path": "boot-reader.mjs",
+      "bytes": 3782,
+      "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02",
+      "etagVerified": true
+    },
+    {
+      "path": "frame.html",
+      "bytes": 211,
+      "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe",
+      "etagVerified": true,
+      "frameAncestorsVerified": true
+    },
+    {
+      "path": "frame.mjs",
+      "bytes": 312069,
+      "sha256": "1c8a8a6b931577e098dcbbaae5423bfe02c8fb50a3a9251a904154d8d946de6d",
+      "etagVerified": true
+    },
+    {
+      "path": "http-compression-recipe.json",
+      "bytes": 134,
+      "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5",
+      "etagVerified": true
+    },
+    {
+      "path": "inspect.mjs",
+      "bytes": 693030,
+      "sha256": "d5b366ee73e1601c182d06016ca702818e5ac37c41b81e54ab6334d09d437364",
+      "etagVerified": true
+    },
+    {
+      "path": "playtest.mjs",
+      "bytes": 710771,
+      "sha256": "a386d77b6ca303d108a56cfde4188580b3e8dde4e6062d8ba38ba1578d4ff05e",
+      "etagVerified": true
+    },
+    {
+      "path": "pyodide-lock.json",
+      "bytes": 119077,
+      "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010",
+      "etagVerified": true
+    },
+    {
+      "path": "pyodide.asm.mjs",
+      "bytes": 1530472,
+      "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b",
+      "etagVerified": true
+    },
+    {
+      "path": "pyodide.asm.wasm",
+      "bytes": 9598218,
+      "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6",
+      "etagVerified": true
+    },
+    {
+      "path": "pyodide.mjs",
+      "bytes": 21884,
+      "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1",
+      "etagVerified": true
+    },
+    {
+      "path": "python_stdlib.zip",
+      "bytes": 7066273,
+      "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+      "etagVerified": true
+    },
+    {
+      "path": "standalone.mjs",
+      "bytes": 707330,
+      "sha256": "4c5a21c482b95fbe77efcbdfe73c787592573cd01c558abb3c18413b12a47b0a",
+      "etagVerified": true
+    },
+    {
+      "path": "turtle-protocol.mjs",
+      "bytes": 3425,
+      "sha256": "620dac820045739923456bb8647f41635ef4c090ad93c6a6a8ac223743fdc605",
+      "etagVerified": true
+    },
+    {
+      "path": "turtle-renderer.mjs",
+      "bytes": 15868,
+      "sha256": "2cebfa739e05badb9e8a379fc0771d446181f53cf36ee38647cf9eea8ae470e9",
+      "etagVerified": true
+    },
+    {
+      "path": "turtle/_sz_turtle_backend.py",
+      "bytes": 18183,
+      "sha256": "666ae2dd739dfb31cbb9453ffe948ed88fcb2c74ef5ad978199c8339b5b4620a",
+      "etagVerified": true
+    },
+    {
+      "path": "turtle/_sz_turtle_colors.py",
+      "bytes": 25484,
+      "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc",
+      "etagVerified": true
+    },
+    {
+      "path": "turtle/_sz_turtle_limits.py",
+      "bytes": 435,
+      "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862",
+      "etagVerified": true
+    },
+    {
+      "path": "turtle/turtle.py",
+      "bytes": 117612,
+      "sha256": "63759ac09e0caaef0eb70e13f49e706d1752141d5351ec888e24b72667852a68",
+      "etagVerified": true
+    },
+    {
+      "path": "worker.mjs",
+      "bytes": 323176,
+      "sha256": "2b3f0b7a1375c12c8da074936cc436815896af30cdb89c4cd50f6d8e1636371d",
+      "etagVerified": true
+    }
+  ],
+  "hiddenRepresentations": [
+    "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+    "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+    "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+    "_http/gzip/6b0bbd12da1c7777b54a7eff9c31b33f32b2be0279ac97a6d903047fcc247765.gz",
+    "_http/gzip/993fe48114276143c68a4cf998d43e2560f508c043dc29d6242d9ceac46ddd09.gz",
+    "_http/gzip/9ede981060a4b579fe52a76cb757045a6605c1a10335820b7763963684d73d1d.gz",
+    "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+    "_http/gzip/a5f2fc8565b261cee6dcb398fbd626e8a3ea01546d4288590cfb1ca77d9f0df2.gz",
+    "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+    "_http/gzip/be6469f3763c14d9715c30461b8c5a5a4f405e22570f5aff9e9a2e965599ae98.gz",
+    "_http/gzip/e6ef3c185bad29033c79762259fb9e515c0f588ee0b488b76ab43b4c4db35023.gz",
+    "_http/gzip/f63c19852b347926a19e3c551cf78a023d27b0343edea29fde1354cde451afdd.gz"
+  ],
+  "state": "passed",
+  "mutationsPerformed": false,
+  "metadataVerified": true,
+  "completedAt": "2026-10-21T07:50:22.818Z"
+}

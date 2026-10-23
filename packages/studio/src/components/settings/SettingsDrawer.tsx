@@ -1,91 +1,46 @@
 import type { JSX } from 'react'
-import { useEffect, useId, useState } from 'react'
+import { useEffect } from 'react'
 import { MAX_BLOCK_LEVEL } from '#core'
 import { Button, Modal } from '#ui'
-import { AI_MODEL_OPTIONS, useSettingsStore } from '../../state/settingsStore'
+import { isPythonProject } from '../../core/editableProject'
+import { resolvePythonLearningLevel } from '../../python/learning'
+import { useProjectStore } from '../../state/projectStore'
+import { useSettingsStore } from '../../state/settingsStore'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioTutor } from '../../studio/tutor'
 
 export interface SettingsDrawerProps {
   open: boolean
   onClose: () => void
-  /** Foca a seção de IA ao abrir (útil para CTA "Configurar IA"). */
+  /** @deprecated 'ai' opens the host-authorized Zappy; credentials are managed by the host. */
   initialSection?: 'ai' | 'appearance'
 }
 
 export function SettingsDrawer({
   open,
   onClose,
-  initialSection = 'ai',
+  initialSection = 'appearance',
 }: SettingsDrawerProps): JSX.Element {
-  const apiKey = useSettingsStore((s) => s.aiApiKey)
-  const apiKeyStorage = useSettingsStore((s) => s.aiApiKeyStorage)
-  const model = useSettingsStore((s) => s.aiModel)
-  const theme = useSettingsStore((s) => s.theme)
-  const setAIApiKey = useSettingsStore((s) => s.setAIApiKey)
-  const clearAIApiKey = useSettingsStore((s) => s.clearAIApiKey)
-  const setAIModel = useSettingsStore((s) => s.setAIModel)
-  const setTheme = useSettingsStore((s) => s.setTheme)
-  const revealAdvanced = useSettingsStore((s) => s.revealAdvanced)
-  const setRevealAdvanced = useSettingsStore((s) => s.setRevealAdvanced)
+  const theme = useSettingsStore((state) => state.theme)
+  const setTheme = useSettingsStore((state) => state.setTheme)
+  const revealAdvanced = useSettingsStore((state) => state.revealAdvanced)
+  const setRevealAdvanced = useSettingsStore((state) => state.setRevealAdvanced)
   const config = useStudioConfig()
-  // Toggle de "revelar avançado" só faz sentido quando o professor permite e o
-  // nível fixado não é já o topo da escada (senão a paleta já mostra tudo).
+  const tutor = useStudioTutor()
+  const python = useProjectStore((state) => !!state.project && isPythonProject(state.project))
   const showRevealToggle =
-    config.learning.allowLevelReveal && config.learning.level !== MAX_BLOCK_LEVEL
-  // Host injetou provider/modelo? As seções correspondentes somem (a configuração
-  // é da plataforma, não do aluno).
-  const hostProvider = Boolean(config.aiConfig.provider)
-  const showKeySection = config.ai && !hostProvider && config.aiConfig.allowUserKey
-  const showModelSection = config.ai && !hostProvider && !config.aiConfig.model
-  const showAITab = showKeySection || showModelSection
-
-  const [draftKey, setDraftKey] = useState(apiKey)
-  const [showKey, setShowKey] = useState(false)
-  const apiKeyInputId = useId()
-  const aiTabId = useId()
-  const appearanceTabId = useId()
-  const aiPanelId = useId()
-  const appearancePanelId = useId()
-  const [section, setSection] = useState<'ai' | 'appearance'>(
-    showAITab ? initialSection : 'appearance',
-  )
-
+    config.learning.allowLevelReveal &&
+    (python
+      ? resolvePythonLearningLevel(config.learning.pythonLevel) !== 3
+      : config.learning.level !== MAX_BLOCK_LEVEL)
   useEffect(() => {
-    if (!open) return
-    setDraftKey(apiKey)
-    setShowKey(false)
-    // Sem aba de IA (host fixou chave/modelo e não permite chave do aluno) o
-    // initialSection 'ai' deixaria o corpo vazio — clampa em 'appearance',
-    // espelhando o inicializador do useState.
-    setSection(showAITab ? initialSection : 'appearance')
-  }, [apiKey, initialSection, open, showAITab])
-
-  const handleSaveKey = async () => {
-    const nextKey = draftKey.trim()
-    await setAIApiKey(nextKey, { storage: apiKeyStorage })
-    setDraftKey(nextKey)
-  }
-
-  const handleClearKey = async () => {
-    await clearAIApiKey()
-    setDraftKey('')
-  }
-
-  const handleStorageToggle = async (persistent: boolean) => {
-    // Comita o RASCUNHO digitado junto com a escolha de armazenamento. Antes o
-    // toggle só chamava setAIApiKeyStorage, que persiste a chave JÁ na store —
-    // então marcar a caixa ANTES de clicar "Salvar" guardava a chave antiga/vazia
-    // e o que o aluno acabou de digitar (só em draftKey) virava no-op silencioso
-    // ao recarregar (rebaixava para o provider mock). Persistir o draft elimina a
-    // divergência draft↔store.
-    const nextKey = draftKey.trim()
-    await setAIApiKey(nextKey, { storage: persistent ? 'persistent' : 'session' })
-    setDraftKey(nextKey)
-  }
-
+    if (!open || initialSection !== 'ai' || !tutor.config) return
+    onClose()
+    tutor.setOpen(true)
+  }, [open, initialSection, tutor.config, tutor.setOpen, onClose])
   return (
     <Modal
-      open={open}
+      open={open && !(initialSection === 'ai' && tutor.config)}
       onClose={onClose}
       title="Configurações"
       className="w-[560px] max-w-[90vw]"
@@ -95,201 +50,54 @@ export function SettingsDrawer({
         </Button>
       }
     >
-      <div
-        role="tablist"
-        aria-label="Grupos de configurações"
-        className="mb-3 flex gap-2 border-b border-sz-border-soft"
-      >
-        {(showAITab ? (['ai', 'appearance'] as const) : (['appearance'] as const)).map((s) => {
-          const label = s === 'ai' ? 'Assistente de IA' : 'Aparência'
-          return (
-            <button
-              key={s}
-              id={s === 'ai' ? aiTabId : appearanceTabId}
-              type="button"
-              role="tab"
-              aria-selected={section === s}
-              aria-controls={s === 'ai' ? aiPanelId : appearancePanelId}
-              tabIndex={section === s ? 0 : -1}
-              onClick={() => setSection(s)}
-              onKeyDown={(event) => {
-                if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
-                event.preventDefault()
-                const tabs = Array.from(
-                  event.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
-                    '[role="tab"]',
-                  ) ?? [],
-                )
-                const current = tabs.indexOf(event.currentTarget)
-                const target =
-                  event.key === 'Home'
-                    ? tabs[0]
-                    : event.key === 'End'
-                      ? tabs.at(-1)
-                      : tabs[
-                          (current + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) %
-                            tabs.length
-                        ]
-                target?.click()
-                target?.focus()
-              }}
-              className={[
-                'sz-touch-target border-b-2 px-2 py-1.5 text-xs font-medium transition-colors',
-                section === s
-                  ? 'border-sz-accent text-sz-fg'
-                  : 'border-transparent text-sz-fg-soft hover:text-sz-fg',
-              ].join(' ')}
-            >
-              {label}
-            </button>
-          )
-        })}
-      </div>
-      {section === 'ai' && showAITab && (
-        <section id={aiPanelId} role="tabpanel" aria-labelledby={aiTabId} className="space-y-3">
-          <header>
-            <h3 className="text-sm font-semibold text-sz-fg">Assistente de IA</h3>
-            <p className="mt-1 text-xs text-sz-fg-mute">
-              Use sua própria chave OpenRouter (BYOK). A chave fica salva apenas no seu navegador;
-              nenhuma requisição passa por servidores do Sistema Zero. Crie uma chave em{' '}
-              <a
-                href="https://openrouter.ai/keys"
-                target="_blank"
-                rel="noreferrer"
-                className="text-sz-accent underline"
-              >
-                openrouter.ai/keys
-              </a>
-              .
-            </p>
-          </header>
-
-          {showKeySection && (
-            <div className="block text-xs text-sz-fg-soft">
-              <label htmlFor={apiKeyInputId}>Chave de API</label>
-              <div className="mt-1 flex gap-2">
-                <input
-                  id={apiKeyInputId}
-                  name="openrouter-api-key"
-                  type={showKey ? 'text' : 'password'}
-                  autoComplete="off"
-                  spellCheck={false}
-                  value={draftKey}
-                  onChange={(e) => setDraftKey(e.target.value)}
-                  placeholder="sk-or-v1-…"
-                  className="sz-touch-target flex-1 rounded border border-sz-border bg-sz-bg px-2 py-1.5 font-mono text-xs text-sz-fg"
-                />
-                <Button size="sm" variant="ghost" onClick={() => setShowKey((v) => !v)}>
-                  {showKey ? 'Ocultar' : 'Mostrar'}
-                </Button>
-                <Button size="sm" variant="primary" onClick={handleSaveKey}>
-                  Salvar
-                </Button>
-                <Button size="sm" variant="ghost" onClick={handleClearKey}>
-                  Limpar
-                </Button>
-              </div>
-              {apiKey && (
-                <p className="mt-1 text-xs text-sz-success">Chave configurada. IA real ativa.</p>
-              )}
-              <label className="sz-touch-target mt-2 flex items-center gap-2 text-xs text-sz-fg-soft">
-                <input
-                  type="checkbox"
-                  name="persist-openrouter-key"
-                  checked={apiKeyStorage === 'persistent'}
-                  onChange={(e) => void handleStorageToggle(e.currentTarget.checked)}
-                />
-                Salvar chave neste navegador
-              </label>
-              <p className="mt-1 text-xs text-sz-fg-mute">
-                {apiKeyStorage === 'persistent'
-                  ? 'A chave é guardada sem criptografia no navegador (IndexedDB). Evite computadores compartilhados e prefira uma chave com limite de gasto.'
-                  : 'Modo sessão: a chave fica só na memória desta aba e será removida ao recarregar.'}
-              </p>
-            </div>
-          )}
-
-          {showModelSection && (
-            <label className="block text-xs text-sz-fg-soft">
-              Modelo
-              <select
-                name="ai-model"
-                value={model}
-                onChange={(e) => void setAIModel(e.target.value)}
-                className="sz-touch-target mt-1 w-full rounded border border-sz-border bg-sz-bg px-2 py-1.5 text-xs text-sz-fg"
-              >
-                {AI_MODEL_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-sz-fg-mute">
-                OpenRouter cobra por token usado. Veja preços em openrouter.ai/models.
-              </p>
-            </label>
-          )}
-        </section>
+      {initialSection === 'ai' && !tutor.config && (
+        <p role="status" className="mb-3 text-sm text-sz-fg-soft">
+          O Zappy não está disponível neste espaço.
+        </p>
       )}
-
-      {section === 'appearance' && (
-        <section
-          id={appearancePanelId}
-          role="tabpanel"
-          aria-labelledby={appearanceTabId}
-          className="space-y-3"
-        >
-          <header>
-            <h3 className="text-sm font-semibold text-sz-fg">Aparência</h3>
-            <p className="mt-1 text-xs text-sz-fg-mute">
-              Preferências visuais do Sistema Zero. Persistido no IndexedDB.
-            </p>
-          </header>
-
-          <div className="block text-xs text-sz-fg-soft">
-            <span>Tema</span>
-            <div className="mt-1 flex rounded-md border border-sz-border bg-sz-bg p-0.5">
-              {(['dark', 'light'] as const).map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  aria-pressed={theme === t}
-                  onClick={() => void setTheme(t)}
-                  className={[
-                    'sz-touch-target flex-1 rounded px-3 py-1 text-xs font-medium transition-colors',
-                    theme === t ? 'bg-sz-accent text-sz-bg' : 'text-sz-fg-soft hover:text-sz-fg',
-                  ].join(' ')}
-                >
-                  {t === 'dark' ? 'Escuro' : 'Claro'}
-                </button>
-              ))}
-            </div>
+      <section aria-label="Aparência" className="space-y-3">
+        <header>
+          <h3 className="text-sm font-semibold text-sz-fg">Aparência</h3>
+          <p className="mt-1 text-xs text-sz-fg-mute">Preferências visuais do Sistema Zero.</p>
+        </header>
+        <div className="block text-xs text-sz-fg-soft">
+          <span>Tema</span>
+          <div className="mt-1 flex rounded-md border border-sz-border bg-sz-bg p-0.5">
+            {(['dark', 'light'] as const).map((value) => (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={theme === value}
+                onClick={() => void setTheme(value)}
+                className={[
+                  'sz-touch-target flex-1 rounded px-3 py-1 text-xs font-medium transition-colors',
+                  theme === value ? 'bg-sz-accent text-sz-bg' : 'text-sz-fg-soft hover:text-sz-fg',
+                ].join(' ')}
+              >
+                {value === 'dark' ? 'Escuro' : 'Claro'}
+              </button>
+            ))}
           </div>
-
-          {/* O ajuste de fonte da UI saiu daqui: ele mutava o font-size do <html>
-              do HOST — inaceitável embarcado. O tamanho da fonte do CÓDIGO
-              continua nos controles A−/A+ do editor. */}
-
-          {showRevealToggle && (
-            <div className="block text-xs text-sz-fg-soft">
-              <span>Blocos avançados</span>
-              <label className="sz-touch-target mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
-                <input
-                  type="checkbox"
-                  name="reveal-advanced-blocks"
-                  checked={revealAdvanced}
-                  onChange={(e) => void setRevealAdvanced(e.currentTarget.checked)}
-                />
-                Mostrar blocos avançados na paleta
-              </label>
-              <p className="mt-1 text-xs text-sz-fg-mute">
-                Sua turma começa com os blocos essenciais. Ative para explorar recursos mais
-                avançados quando se sentir pronto.
-              </p>
-            </div>
-          )}
-        </section>
-      )}
+        </div>
+        {showRevealToggle && (
+          <div className="block text-xs text-sz-fg-soft">
+            <span>Blocos avançados</span>
+            <label className="sz-touch-target mt-1 flex items-center gap-2 text-xs text-sz-fg-soft">
+              <input
+                type="checkbox"
+                name="reveal-advanced-blocks"
+                checked={revealAdvanced}
+                onChange={(event) => void setRevealAdvanced(event.currentTarget.checked)}
+              />
+              Mostrar blocos avançados na paleta
+            </label>
+            <p className="mt-1 text-xs text-sz-fg-mute">
+              Sua turma começa com os blocos essenciais. Ative para explorar recursos mais avançados
+              quando se sentir pronto.
+            </p>
+          </div>
+        )}
+      </section>
     </Modal>
   )
 }

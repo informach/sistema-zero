@@ -1,29 +1,21 @@
 'use client'
 
-import { Badge } from '@sistemazero/ui/badge'
+import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { Button } from '@sistemazero/ui/button'
-import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
-import { Pagination } from '@sistemazero/ui/pagination'
 import { Skeleton } from '@sistemazero/ui/skeleton'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@sistemazero/ui/table'
-import { Receipt, RefreshCcw } from 'lucide-react'
+import { Check, Receipt } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
-import { StatusBadge } from '@/components/community/status-badge'
 import { apiGet, apiSend } from '@/lib/api'
+import { cn } from '@/lib/cn'
+import { comebackSubscriptionId } from '@/lib/continuity'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
   type MySubscriptionView,
   nextChargeDate,
   PAYMENT_METHOD_LABELS,
+  PAYMENT_STATUS_LABELS,
   type Paginated,
   type PaymentView,
   SUBSCRIPTION_STATUS_LABELS,
@@ -31,13 +23,55 @@ import {
 
 const LIMIT = 20
 
-/** "R$ X/mês" ou "R$ X/ano" a partir do intervalo da assinatura. */
-function subscriptionPriceLabel(sub: MySubscriptionView): string {
-  const suffix = sub.intervalMonths === 12 ? '/ano' : sub.intervalMonths === 1 ? '/mês' : ''
-  return `${formatCentsStr(sub.amountInCents)}${suffix}`
+const dayPt = new Intl.DateTimeFormat('pt-BR', {
+  dateStyle: 'short',
+  timeZone: 'America/Sao_Paulo',
+})
+
+/** ISO → `dd/mm/aaaa` no horário de Brasília (ou "Sem data"). */
+function formatDay(iso: string | null | undefined): string {
+  if (!iso) return 'Sem data'
+  const date = new Date(iso)
+  return Number.isNaN(date.getTime()) ? 'Sem data' : dayPt.format(date)
 }
 
-/** Seção "Minhas assinaturas" — só aparece quando o comprador tem alguma. */
+/** "R$ 49,90 por mês", "R$ 478,80 por ano" ou "a cada N meses". */
+function subscriptionPriceLabel(sub: MySubscriptionView): string {
+  const price = formatCentsStr(sub.amountInCents)
+  if (sub.intervalMonths === 1) return `${price} por mês`
+  if (sub.intervalMonths === 12) return `${price} por ano`
+  return `${price} a cada ${sub.intervalMonths} meses`
+}
+
+/** O selo do status, sempre com a palavra (nunca só a cor). */
+const PAYMENT_CHIP: Record<string, string> = {
+  PAID: 'sz-chip-ok',
+  PENDING: 'sz-chip-aviso',
+  FAILED: 'sz-chip-aviso',
+  REFUNDED: 'sz-chip-acao',
+}
+
+function PaymentStatusChip({ status }: { status: string }) {
+  return (
+    <span className={cn('sz-chip justify-self-start', PAYMENT_CHIP[status])}>
+      {PAYMENT_STATUS_LABELS[status] ?? status}
+    </span>
+  )
+}
+
+function SubscriptionStatusChip({ status }: { status: string }) {
+  const label = SUBSCRIPTION_STATUS_LABELS[status] ?? status
+  if (status === 'ACTIVE')
+    return (
+      <span className="sz-chip sz-chip-ok">
+        <Check aria-hidden />
+        {label}
+      </span>
+    )
+  return <span className={cn('sz-chip', status === 'PENDING' && 'sz-chip-aviso')}>{label}</span>
+}
+
+/** "Minha assinatura": só aparece quando o comprador tem alguma. */
 export function SubscriptionsSection() {
   const [subs, setSubs] = useState<MySubscriptionView[]>([])
   const [confirming, setConfirming] = useState<MySubscriptionView | null>(null)
@@ -71,46 +105,64 @@ export function SubscriptionsSection() {
   }
 
   if (subs.length === 0) return null
+  const comebackId = comebackSubscriptionId(subs)
 
   return (
-    <Card className="flex flex-col gap-4 p-4">
-      <h2 className="flex items-center gap-2 text-sm font-semibold">
-        <RefreshCcw className="size-4 text-muted-foreground" /> Minhas assinaturas
+    <section
+      aria-labelledby="compras-assinatura"
+      className="sz-card flex flex-col gap-4 p-6 md:p-8"
+    >
+      <h2 id="compras-assinatura" className="sz-h3">
+        {subs.length === 1 ? 'Minha assinatura' : 'Minhas assinaturas'}
       </h2>
-      <div className="flex flex-col gap-3">
+      <ul className="flex flex-col gap-3">
         {subs.map((sub) => {
           const next = nextChargeDate(sub)
           return (
-            <div
+            <li
               key={sub.id}
-              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3"
+              className="sz-soft flex flex-wrap items-center gap-x-6 gap-y-3 p-5 md:p-6"
             >
-              <div className="min-w-0">
-                <p className="font-medium">{sub.description ?? 'Assinatura'}</p>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  <span className="sz-display">{subscriptionPriceLabel(sub)}</span>
+              <div className="flex min-w-0 flex-1 basis-[18rem] flex-col gap-1.5">
+                <strong className="text-[1.1rem]">{sub.description ?? 'Assinatura'}</strong>
+                <p className="text-muted-foreground">
+                  <b className="text-foreground">{subscriptionPriceLabel(sub)}</b>
                   {' · '}
                   {sub.card.brand.toUpperCase()} •••• {sub.card.last4}
-                  {next ? ` · próxima cobrança ~${formatDate(next.toISOString())}` : null}
+                  {next ? ` · próxima cobrança por volta de ${dayPt.format(next)}` : null}
                   {sub.status === 'CANCELED' && sub.canceledAt
-                    ? ` · cancelada em ${formatDate(sub.canceledAt)}`
+                    ? ` · cancelada em ${formatDay(sub.canceledAt)}`
                     : null}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={sub.status === 'ACTIVE' ? 'success' : 'muted'}>
-                  {SUBSCRIPTION_STATUS_LABELS[sub.status] ?? sub.status}
-                </Badge>
-                {sub.status === 'ACTIVE' ? (
-                  <Button variant="outline" size="sm" onClick={() => setConfirming(sub)}>
-                    Cancelar
-                  </Button>
-                ) : null}
-              </div>
-            </div>
+              <SubscriptionStatusChip status={sub.status} />
+              {sub.status === 'ACTIVE' ? (
+                <button
+                  type="button"
+                  className="sz-btn-outline sz-btn-sm"
+                  onClick={() => setConfirming(sub)}
+                >
+                  Cancelar assinatura
+                </button>
+              ) : null}
+              {sub.id === comebackId ? (
+                // A oferta de continuidade é página EXTERNA (funil): outra aba.
+                <a
+                  href={comunidadeAdultoContinuarUrl('compras-assinatura')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="sz-btn sz-btn-sm"
+                >
+                  Voltar para a Comunidade
+                </a>
+              ) : null}
+            </li>
           )
         })}
-      </div>
+      </ul>
+      <p className="text-[0.9rem] text-muted-foreground">
+        Se cancelar, o acesso continua até o fim do período já pago.
+      </p>
 
       {confirming ? (
         <Dialog
@@ -119,35 +171,48 @@ export function SubscriptionsSection() {
           title="Cancelar assinatura?"
           description={confirming.description ?? undefined}
           footer={
-            <>
-              <Button variant="outline" onClick={() => setConfirming(null)} disabled={canceling}>
+            // O rodapé do Dialog não quebra linha: no celular os dois botões descem um embaixo do outro.
+            <div className="flex w-full flex-wrap justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setConfirming(null)}
+                disabled={canceling}
+                className="max-sm:w-full"
+              >
                 Manter assinatura
               </Button>
               <Button
                 variant="destructive"
                 onClick={() => void cancel(confirming)}
                 disabled={canceling}
+                className="max-sm:w-full"
               >
                 {canceling ? 'Cancelando…' : 'Cancelar assinatura'}
               </Button>
-            </>
+            </div>
           }
         >
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground">
             Você não será cobrado de novo, e o seu{' '}
-            <strong>acesso continua até o fim do período já pago</strong>. Depois disso, a
-            plataforma fica indisponível até uma nova assinatura.
+            <strong className="text-foreground">
+              acesso continua até o fim do período já pago
+            </strong>
+            . Depois disso, a plataforma fica indisponível até uma nova assinatura.
           </p>
         </Dialog>
       ) : null}
-    </Card>
+    </section>
   )
 }
 
+const COLUMNS = 'md:grid-cols-[2fr_1fr_1.2fr_1fr_1fr]'
+
+/** "Histórico de compras": a lista paginada; cada linha abre o detalhe. */
 export function PurchasesClient() {
   const [page, setPage] = useState<Paginated<PaymentView> | null>(null)
   const [offset, setOffset] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
   const [selected, setSelected] = useState<PaymentView | null>(null)
 
   const load = useCallback(async (newOffset: number) => {
@@ -158,7 +223,9 @@ export function PurchasesClient() {
       )
       setPage(data)
       setOffset(newOffset)
+      setFailed(false)
     } catch {
+      setFailed(true)
       toast.error('Não foi possível carregar suas compras.')
     } finally {
       setLoading(false)
@@ -169,69 +236,113 @@ export function PurchasesClient() {
     void load(0)
   }, [load])
 
-  if (loading && !page) return <PurchasesSkeleton />
-
   const items = page?.items ?? []
-
-  if (items.length === 0) {
-    return (
-      <div className="flex flex-col items-center gap-3 rounded-[1.75rem] border-2 border-border border-dashed bg-card py-16 text-center">
-        <Receipt className="size-10 text-muted-foreground" />
-        <div>
-          <p className="font-medium">Nenhuma compra encontrada</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            As compras feitas com o e-mail desta conta aparecem aqui.
-          </p>
-        </div>
-      </div>
-    )
-  }
+  const total = page?.total ?? 0
 
   return (
-    <Card className="flex flex-col gap-4 p-4">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Data</TableHead>
-            <TableHead>Descrição</TableHead>
-            <TableHead>Valor</TableHead>
-            <TableHead>Método</TableHead>
-            <TableHead>Status</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {items.map((payment) => (
-            <TableRow
-              key={payment.id}
-              className="cursor-pointer"
-              onClick={() => setSelected(payment)}
+    <section aria-labelledby="compras-historico" className="sz-card flex flex-col gap-4 p-6 md:p-8">
+      <h2 id="compras-historico" className="sz-h3">
+        Histórico de compras
+      </h2>
+      {loading && !page ? (
+        <PurchasesSkeleton />
+      ) : failed && !page ? (
+        <div className="flex flex-col items-start gap-3">
+          <p role="status" className="text-muted-foreground">
+            Não foi possível carregar suas compras agora.
+          </p>
+          <button type="button" className="sz-btn-outline sz-btn-sm" onClick={() => void load(0)}>
+            Tentar novamente
+          </button>
+        </div>
+      ) : items.length === 0 ? (
+        <div className="sz-soft flex flex-col items-center gap-3 px-6 py-12 text-center">
+          <Receipt className="size-10 text-muted-foreground" aria-hidden />
+          <div>
+            <p className="font-bold">Nenhuma compra encontrada</p>
+            <p className="mt-1 text-muted-foreground">
+              As compras feitas com o e-mail desta conta aparecem aqui.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div aria-busy={loading || undefined}>
+            <div
+              aria-hidden
+              className={cn(
+                'hidden gap-4 border-border border-b px-4 py-3 font-bold text-[0.9rem] text-muted-foreground md:grid',
+                COLUMNS,
+              )}
             >
-              <TableCell className="whitespace-nowrap">
-                {formatDate(payment.paidAt ?? payment.createdAt)}
-              </TableCell>
-              <TableCell>{payment.description ?? '—'}</TableCell>
-              <TableCell className="sz-display whitespace-nowrap">
-                {formatCentsStr(payment.amountInCents)}
-              </TableCell>
-              <TableCell className="whitespace-nowrap">
-                {PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={payment.status} />
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <Pagination
-        total={page?.total ?? 0}
-        limit={LIMIT}
-        offset={offset}
-        onChange={(next) => void load(next)}
-      />
-
+              <span>Descrição</span>
+              <span>Valor</span>
+              <span>Método</span>
+              <span>Data</span>
+              <span>Status</span>
+            </div>
+            <ul>
+              {items.map((payment, index) => (
+                <li key={payment.id} className={cn(index > 0 && 'border-border border-t')}>
+                  <button
+                    type="button"
+                    onClick={() => setSelected(payment)}
+                    className={cn(
+                      'grid w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 rounded-[0.6rem] px-4 py-4 text-left transition-colors hover:bg-background md:min-h-[3.4rem] md:py-2',
+                      COLUMNS,
+                    )}
+                  >
+                    <strong className="min-w-0 break-words">
+                      {payment.description ?? 'Compra'}
+                    </strong>
+                    <span className="md:order-last">
+                      <PaymentStatusChip status={payment.status} />
+                    </span>
+                    <span className="col-span-2 flex flex-wrap gap-x-2 text-[0.9rem] text-muted-foreground md:contents md:text-base md:text-foreground">
+                      <span>{formatCentsStr(payment.amountInCents)}</span>
+                      <span aria-hidden className="md:hidden">
+                        ·
+                      </span>
+                      <span>{PAYMENT_METHOD_LABELS[payment.method] ?? payment.method}</span>
+                      <span aria-hidden className="md:hidden">
+                        ·
+                      </span>
+                      <span>{formatDay(payment.paidAt ?? payment.createdAt)}</span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {total > LIMIT ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-border border-t pt-4">
+              <span className="text-[0.9rem] text-muted-foreground">
+                {offset + 1} a {Math.min(offset + LIMIT, total)} de {total}
+              </span>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  className="sz-btn-quiet sz-btn-sm"
+                  disabled={loading || offset === 0}
+                  onClick={() => void load(Math.max(0, offset - LIMIT))}
+                >
+                  Anterior
+                </button>
+                <button
+                  type="button"
+                  className="sz-btn-outline sz-btn-sm"
+                  disabled={loading || offset + LIMIT >= total}
+                  onClick={() => void load(offset + LIMIT)}
+                >
+                  Próxima
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </>
+      )}
       <PurchaseDetail payment={selected} onClose={() => setSelected(null)} />
-    </Card>
+    </section>
   )
 }
 
@@ -244,43 +355,33 @@ function PurchaseDetail({
 }) {
   if (!payment) return null
   return (
-    <Dialog
-      open
-      onClose={onClose}
-      title="Detalhe da compra"
-      description={payment.description ?? undefined}
-    >
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-        <DetailRow label="Valor" value={formatCentsStr(payment.amountInCents)} mono />
+    <Dialog open onClose={onClose} title="Detalhes da compra" className="max-w-[38rem]">
+      <dl className="grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-y-3">
+        <DetailRow label="Descrição" value={<strong>{payment.description ?? 'Compra'}</strong>} />
+        <DetailRow label="Valor" value={formatCentsStr(payment.amountInCents)} />
         <DetailRow label="Método" value={PAYMENT_METHOD_LABELS[payment.method] ?? payment.method} />
-        <div>
-          <dt className="text-xs uppercase tracking-wide text-muted-foreground">Status</dt>
-          <dd className="mt-1">
-            <StatusBadge status={payment.status} />
-          </dd>
-        </div>
-        <DetailRow label="Criada em" value={formatDate(payment.createdAt)} />
-        <DetailRow label="Paga em" value={formatDate(payment.paidAt)} />
+        <DetailRow label="Data" value={formatDate(payment.paidAt ?? payment.createdAt)} />
+        <DetailRow label="Status" value={<PaymentStatusChip status={payment.status} />} />
         {payment.card ? (
           <DetailRow
             label="Cartão"
             value={`${payment.card.brand.toUpperCase()} •••• ${payment.card.last4} (${payment.card.installments}x)`}
           />
         ) : null}
-        <div className="col-span-2">
-          <dt className="text-xs uppercase tracking-wide text-muted-foreground">Identificador</dt>
-          <dd className="mt-1 break-all font-mono text-xs text-muted-foreground">{payment.id}</dd>
-        </div>
+        <DetailRow
+          label="Identificador"
+          value={<span className="break-all font-mono text-[0.9rem]">{payment.id}</span>}
+        />
       </dl>
       {payment.boleto ? (
-        <div className="mt-4 rounded-lg border border-border bg-muted p-3 text-xs">
-          <p className="font-medium">Boleto</p>
-          <p className="mt-1 break-all font-mono">{payment.boleto.digitableLine}</p>
+        <div className="sz-soft mt-5 flex flex-col gap-1.5 p-4">
+          <p className="font-bold">Boleto</p>
+          <p className="break-all font-mono text-[0.9rem]">{payment.boleto.digitableLine}</p>
           <a
             href={payment.boleto.pdfUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 inline-block text-interactive hover:text-interactive-hover"
+            className="sz-link self-start"
           >
             Abrir PDF do boleto
           </a>
@@ -290,32 +391,31 @@ function PurchaseDetail({
   )
 }
 
-// Chaves estáveis das linhas-fantasma da tabela.
-const ROW_KEYS = ['r1', 'r2', 'r3', 'r4', 'r5', 'r6']
-
-/** Esqueleto da tabela de compras (no lugar do spinner) — 5 colunas × algumas linhas. */
-function PurchasesSkeleton() {
+function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <Card aria-busy="true" className="flex flex-col gap-3 p-4">
-      <span className="sr-only">Carregando…</span>
-      {ROW_KEYS.map((k) => (
-        <div key={k} className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr] items-center gap-3">
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-4 w-40 max-w-full" />
-          <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-4 w-20" />
-          <Skeleton className="h-5 w-16 rounded-full" />
-        </div>
-      ))}
-    </Card>
+    <>
+      <dt className="text-muted-foreground max-sm:mt-2">{label}</dt>
+      <dd className="min-w-0">{value}</dd>
+    </>
   )
 }
 
-function DetailRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+// Chaves estáveis das linhas-fantasma da lista.
+const ROW_KEYS = ['r1', 'r2', 'r3', 'r4']
+
+function PurchasesSkeleton() {
   return (
-    <div>
-      <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
-      <dd className={mono ? 'sz-display mt-1' : 'mt-1'}>{value}</dd>
+    <div aria-busy="true" className="flex flex-col gap-4">
+      <span className="sr-only">Carregando…</span>
+      {ROW_KEYS.map((k) => (
+        <div key={k} className={cn('grid grid-cols-2 items-center gap-4 px-4', COLUMNS)}>
+          <Skeleton className="h-5 w-48 max-w-full" />
+          <Skeleton className="h-5 w-20" />
+          <Skeleton className="hidden h-5 w-28 md:block" />
+          <Skeleton className="hidden h-5 w-24 md:block" />
+          <Skeleton className="hidden h-6 w-16 rounded-full md:block" />
+        </div>
+      ))}
     </div>
   )
 }

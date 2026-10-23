@@ -5,6 +5,9 @@
  * só depois de a descida validar, e sobe o que só existe aqui.
  */
 import { describe, expect, spyOn, test } from 'bun:test'
+import { studioContentFingerprint } from '@sistemazero/core/creations'
+import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 import {
   type CloudCreationSummary,
   CloudListTimeoutError,
@@ -21,6 +24,7 @@ import {
   buildStudioCloudSnapshot,
   createStudioCloudSync,
   isStudioPartsManifest,
+  resolveStudioCloudDocument,
   type StudioCloudModule,
   type StudioProjectLike,
 } from '../src/lib/studio-cloud'
@@ -164,7 +168,7 @@ function fakeCloud(
     supported: true,
     list: async () => [...remote.values()].map((r) => r.summary),
     upload: async () => ({ revision: 1 }),
-    // O rascunho da fase consulta sem baixar; estas filas não usam.
+    // O rascunho da aula consulta sem baixar; estas filas não usam.
     peek: async () => null,
     download: async (itemId) => {
       const r = remote.get(itemId)
@@ -211,6 +215,164 @@ async function remotePartsOf(project: StudioProjectLike) {
 }
 
 const asset = (id: string, dataUrl: string) => ({ id, name: id, kind: 'image', dataUrl })
+
+describe('version 3 document transport uses the existing cloud parts format', () => {
+  for (const language of ['javascript', 'python'] as const)
+    for (const kind of ['classic', 'pro'] as const)
+      test(`${language}/${kind}: source, environment and assets survive upload/download and JSON export`, async () => {
+        const project = documentFixture(language, kind)
+        const fingerprint = await studioContentFingerprint(project)
+        const remote = await remotePartsOf(project)
+        const { cloud, fetchedParts } = fakeCloud(new Map([[project.id, remote]]))
+        const download = await cloud.download(project.id)
+        if (!download) throw new Error('Fixture missing')
+        const raw = await resolveStudioCloudDocument(download, [])
+        expect(StudioProjectDocumentSchema.parse(raw)).toEqual(project)
+        expect(await studioContentFingerprint(raw)).toBe(fingerprint)
+        expect(fetchedParts).toEqual([...remote.parts.keys()])
+        expect(StudioProjectDocumentSchema.parse(JSON.parse(JSON.stringify(raw)))).toEqual(project)
+        fetchedParts.length = 0
+        expect(await resolveStudioCloudDocument(download, project.assets ?? [])).toEqual(project)
+        expect(fetchedParts).toEqual([])
+        if (language === 'python' && kind === 'pro') {
+          expect(raw).not.toHaveProperty('files')
+          expect(raw).not.toHaveProperty('extraFiles')
+        }
+      })
+})
+
+test('upload antigo do Pensa não substitui a versão restaurada; a descida preserva o rascunho como cópia', async () => {
+  const id = `pensa-${'a'.repeat(32)}`
+  const local = { id, name: 'Edição ainda neste aparelho', updatedAt: 2000 }
+  const restored = { id, name: 'Versão restaurada pelo Pensa', updatedAt: 3000 }
+  const fake = fakeStudio([local])
+  const { cloud, uploads } = fakeCloud(
+    new Map([
+      [id, { json: JSON.stringify(restored), summary: summaryOf(restored, { revision: 8 }) }],
+    ]),
+  )
+  const marks = createMemorySyncedMarks()
+  marks.set(id, 1000, 5)
+  // A restauração v2 que este aparelho ainda não alcançou (a marca que o transporte do Pensa
+  // guarda ao ver a jornada restaurada): só ela inverte a regra do conflito.
+  let restoreMark: number | null = 8
+  const cleared: string[] = []
+  const sync = createStudioCloudSync({
+    studio: fake.studio,
+    cloud,
+    viewerId: 'v1',
+    marks,
+    pensaRestore: {
+      revision: (itemId) => (itemId === id ? restoreMark : null),
+      clear: (itemId) => {
+        cleared.push(itemId)
+        restoreMark = null
+      },
+    },
+  })
+  const detach = sync.attach()
+  try {
+    fake.mirror()?.onChanged(id)
+    const stale = uploads.get(id)!.onStale!
+    await expect(stale({ itemId: id, currentRevision: 8 })).rejects.toThrow()
+    expect(marks.revision(id)).toBe(5)
+    expect(fake.imported).toEqual([])
+    cloud.getItemState = () => ({
+      status: 'error',
+      code: 'CREATION_REOPEN_REQUIRED',
+      lastError: 'Reabra o jogo',
+    })
+    const enqueue = spyOn(cloud, 'enqueueUpload')
+    fake.openIds.add(id)
+    await sync.pullMissing()
+    expect(fake.projects.get(id)?.name).toBe(local.name)
+    expect(marks.revision(id)).toBe(5)
+    expect(enqueue).not.toHaveBeenCalled()
+    fake.openIds.delete(id)
+    await sync.pullMissing()
+    expect(fake.projects.get(id)?.name).toBe(restored.name)
+    expect(fake.projects.get(`${id}-copia`)?.name).toBe(`${local.name} (deste computador)`)
+    expect(marks.revision(id)).toBe(8)
+    expect(enqueue.mock.calls.some(([itemId]) => itemId === id)).toBe(true)
+    expect(await uploads.get(id)!.produce()).toBeNull()
+    // A restaurada chegou: a marca de pendência cumpriu o papel e sai.
+    expect(cleared).toEqual([id])
+  } finally {
+    detach()
+  }
+})
+
+test('A2: conflito de um jogo do Pensa SEM restauração pendente segue a regra de sempre (dois aparelhos, plano v1)', async () => {
+  const id = `pensa-${'b'.repeat(32)}`
+  const local = { id, name: 'Nave', updatedAt: 500 }
+  const remoteProject = { id, name: 'Nave', updatedAt: 300 }
+  const fake = fakeStudio([local])
+  const { cloud, uploads } = fakeCloud(
+    new Map([
+      [
+        id,
+        { json: JSON.stringify(remoteProject), summary: summaryOf(remoteProject, { revision: 4 }) },
+      ],
+    ]),
+  )
+  const marks = createMemorySyncedMarks()
+  const sync = createStudioCloudSync({
+    studio: fake.studio,
+    cloud,
+    viewerId: 'v1',
+    marks,
+    pensaRestore: { revision: () => null, clear: () => {} },
+  })
+  const detach = sync.attach()
+  try {
+    fake.mirror()?.onChanged(id)
+    // Sem "reabra o jogo": a versão da nuvem vira a cópia e o jogo daqui fica ligado ao plano.
+    await uploads.get(id)?.onStale?.({ itemId: id })
+    expect(fake.imported).toEqual(['Nave (de outro aparelho)'])
+    expect(fake.projects.get(id)?.updatedAt).toBe(500)
+    expect(marks.revision(id)).toBe(4)
+    expect((await uploads.get(id)?.produce())?.meta?.baseRevision).toBe(4)
+  } finally {
+    detach()
+  }
+})
+
+test('A2: restauração que este aparelho JÁ alcançou não pede para reabrir', async () => {
+  const id = `pensa-${'c'.repeat(32)}`
+  const local = { id, name: 'Nave', updatedAt: 900 }
+  const remoteProject = { id, name: 'Nave', updatedAt: 950 }
+  const fake = fakeStudio([local])
+  const { cloud, uploads } = fakeCloud(
+    new Map([
+      [
+        id,
+        {
+          json: JSON.stringify(remoteProject),
+          summary: summaryOf(remoteProject, { revision: 11 }),
+        },
+      ],
+    ]),
+  )
+  const marks = createMemorySyncedMarks()
+  marks.set(id, 800, 8)
+  const sync = createStudioCloudSync({
+    studio: fake.studio,
+    cloud,
+    viewerId: 'v1',
+    marks,
+    // A restauração foi a 8 e a marca daqui já está nela: o conflito de agora é de dois aparelhos.
+    pensaRestore: { revision: () => 8, clear: () => {} },
+  })
+  const detach = sync.attach()
+  try {
+    fake.mirror()?.onChanged(id)
+    await uploads.get(id)?.onStale?.({ itemId: id })
+    expect(fake.imported).toEqual(['Nave (de outro aparelho)'])
+    expect(marks.revision(id)).toBe(11)
+  } finally {
+    detach()
+  }
+})
 
 const summaryOf = (
   p: StudioProjectLike,

@@ -1,4 +1,5 @@
-import type { LearningProfile } from '../core/levels'
+import { isBlockTypeAllowed, type LearningProfile } from '../core/levels'
+import { resolveBlockLevel } from './blockLevels'
 import { FUNCTION_BLOCKS } from './blocks/functions'
 import { OOP_BLOCKS } from './blocks/oop'
 import type { BlockDefinition } from './blocks/types'
@@ -55,6 +56,7 @@ export function restrictedFunctionsCategoryHasContent(allowed: ReadonlySet<strin
 export function classesCategoryProvidesContextualParameters(profile: LearningProfile): boolean {
   return (
     !(profile.allowBlocks && profile.allowBlocks.length > 0) &&
-    profile.allowCategories?.includes('Classes') === true
+    profile.allowCategories?.includes('Classes') === true &&
+    isBlockTypeAllowed('sz_val_arg', resolveBlockLevel('sz_val_arg'), profile, 'Classes')
   )
 }

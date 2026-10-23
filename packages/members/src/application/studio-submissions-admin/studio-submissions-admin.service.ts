@@ -1,6 +1,5 @@
 import type { CourseAudience } from '../../domain/course/course'
 import { ContentNotFoundError } from '../../domain/course/course.errors'
-import type { StudioCheckResult } from '../../domain/course/studio-activity'
 import type {
   StudioSubmissionGlobalFilter,
   StudioSubmissionRepository,
@@ -12,14 +11,13 @@ export interface StudioSubmissionSummaryView {
   /** Conta responsável (kids: o pai; adulto: = userId). `null` em entregas legadas. */
   accountId: string | null
   submittedAt: string
-  /** Nota da correção automática (atividade); `null` sem atividade. */
-  score: number | null
-  /** ISO da correção; `null` sem atividade. */
-  checkedAt: string | null
-  /** Atingiu a nota de corte (sticky). */
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /**
+   * O recado foi FALADO pela criança e transcrito pelo servidor (voz para texto, 14/10/2026): o
+   * painel avisa a equipe para ler um erro de transcrição com boa vontade. `false` = digitado.
+   */
+  messageSpoken: boolean
 }
 
 /**
@@ -35,10 +33,9 @@ export interface StudioSubmissionCourseView {
   lessonTitle: string
   moduleTitle: string
   submittedAt: string
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   message: string | null
+  /** O recado foi falado e transcrito (voz para texto). */
+  messageSpoken: boolean
 }
 
 /** Linha da fila GLOBAL de entregas (todos os cursos) — o curso resolvido + o estado. */
@@ -60,13 +57,13 @@ export interface StudioSubmissionDetailView {
   /** Snapshot `Project` do Estúdio enviado pelo aluno — importável no Estúdio do professor. */
   project: unknown
   submittedAt: string
-  score: number | null
-  /** Resultado por checagem (com `verifiedBy`: server recalculado × client reportado). */
-  results: StudioCheckResult[] | null
-  checkedAt: string | null
-  passed: boolean
   /** Recado OPCIONAL do aluno ao professor. `null` = sem recado. */
   message: string | null
+  /**
+   * O recado foi FALADO pela criança e transcrito pelo servidor (voz para texto, 14/10/2026): o
+   * painel avisa a equipe para ler um erro de transcrição com boa vontade. `false` = digitado.
+   */
+  messageSpoken: boolean
   /** ISO do carimbo "já conferi"; `null` = nunca conferida. */
   reviewedAt: string | null
   /** O carimbo vale para a entrega ATUAL (um reenvio depois dele o invalida). */
@@ -96,7 +93,8 @@ export interface StudioSubmissionCountsView {
 /**
  * Acompanhamento das entregas do Estúdio pelo professor (admin). A identidade
  * (nome/e-mail) é hidratada pelo BFF do admin via auth — aqui só o userId + data
- * + correção (lista) e o projeto inteiro + resultado por checagem (detalhe).
+ * + recado (lista) e o projeto inteiro (detalhe). A nota da antiga auto-correção saiu das telas
+ * da equipe em 18/10/2026: os objetivos da parte é que dizem o que a criança cumpriu.
  */
 export class StudioSubmissionsAdminService {
   constructor(
@@ -110,10 +108,8 @@ export class StudioSubmissionsAdminService {
       userId: r.userId,
       accountId: r.accountId,
       submittedAt: r.submittedAt.toISOString(),
-      score: r.score,
-      checkedAt: r.checkedAt?.toISOString() ?? null,
-      passed: r.passed,
       message: r.message,
+      messageSpoken: r.messageSpoken,
     }))
   }
 
@@ -127,10 +123,8 @@ export class StudioSubmissionsAdminService {
       lessonTitle: r.lessonTitle,
       moduleTitle: r.moduleTitle,
       submittedAt: r.submittedAt.toISOString(),
-      score: r.score,
-      checkedAt: r.checkedAt?.toISOString() ?? null,
-      passed: r.passed,
       message: r.message,
+      messageSpoken: r.messageSpoken,
     }))
   }
 
@@ -150,10 +144,8 @@ export class StudioSubmissionsAdminService {
         courseTitle: r.courseTitle,
         audience: r.audience,
         submittedAt: r.submittedAt.toISOString(),
-        score: r.score,
-        checkedAt: r.checkedAt?.toISOString() ?? null,
-        passed: r.passed,
         message: r.message,
+        messageSpoken: r.messageSpoken,
         answered: r.answered,
         reviewed: r.reviewed,
       })),
@@ -167,11 +159,8 @@ export class StudioSubmissionsAdminService {
     return {
       project: row.project,
       submittedAt: row.submittedAt.toISOString(),
-      score: row.score,
-      results: row.results,
-      checkedAt: row.checkedAt?.toISOString() ?? null,
-      passed: row.passedAt != null,
       message: row.message,
+      messageSpoken: row.messageSpoken,
       reviewedAt: row.reviewedAt?.toISOString() ?? null,
       reviewed: row.reviewedAt != null && row.reviewedAt >= row.submittedAt,
       previousSubmittedAt: row.previousSubmittedAt?.toISOString() ?? null,

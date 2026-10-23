@@ -1,0 +1,189 @@
+{
+  "observedAt": "2026-10-21T00:27:48.8408103Z",
+  "observerStoppedAt": "2026-10-21T00:28:34.1227885Z",
+  "actualObserverStart": "2026-10-20T23:57:41Z",
+  "authorizedDeadline": "2026-10-21T00:45:00Z",
+  "stopReason": "Same FACE attempt1 terminal; parent requested one final metadata reading and no duplicate Root deploy logs",
+  "head": "face8acef32f1e924f1461557e82716ea7acc3dc",
+  "run": 39514471699,
+  "attempt": 1,
+  "status": "completed",
+  "conclusion": "success",
+  "url": "https://github.com/informach/sistema-zero/actions/runs/39514471699",
+  "typecheck": {
+    "name": "Typecheck (todos os pacotes)",
+    "status": "completed",
+    "conclusion": "success",
+    "number": 42,
+    "started_at": "2026-10-20T23:47:19Z",
+    "completed_at": "2026-10-20T23:59:59Z"
+  },
+  "deploy": {
+    "id": 118956576693,
+    "run_id": 39514471699,
+    "workflow_name": "CI",
+    "head_branch": "staging",
+    "run_url": "https://api.github.com/repos/informach/sistema-zero/actions/runs/39514471699",
+    "run_attempt": 1,
+    "node_id": "CR_kwDOSsmR988AAAAbsl1PtQ",
+    "head_sha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+    "url": "https://api.github.com/repos/informach/sistema-zero/actions/jobs/118956576693",
+    "html_url": "https://github.com/informach/sistema-zero/actions/runs/39514471699/job/118956576693",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-10-21T00:00:03Z",
+    "started_at": "2026-10-21T00:00:05Z",
+    "completed_at": "2026-10-21T00:25:28Z",
+    "name": "deploy-staging",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-21T00:00:06Z",
+        "completed_at": "2026-10-21T00:00:06Z"
+      },
+      {
+        "name": "Run actions/checkout@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-21T00:00:06Z",
+        "completed_at": "2026-10-21T00:00:33Z"
+      },
+      {
+        "name": "Run oven-sh/setup-bun@v2",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-21T00:00:33Z",
+        "completed_at": "2026-10-21T00:00:34Z"
+      },
+      {
+        "name": "Instalar dependências do gate de infraestrutura",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-21T00:00:34Z",
+        "completed_at": "2026-10-21T00:01:52Z"
+      },
+      {
+        "name": "Provar CORS do R2 público",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-21T00:01:52Z",
+        "completed_at": "2026-10-21T00:01:52Z"
+      },
+      {
+        "name": "Run ./.github/actions/setup-railway",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 6,
+        "started_at": "2026-10-21T00:01:52Z",
+        "completed_at": "2026-10-21T00:01:57Z"
+      },
+      {
+        "name": "Provar SSH readonly antes de qualquer apply/deploy",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 7,
+        "started_at": "2026-10-21T00:01:57Z",
+        "completed_at": "2026-10-21T00:01:59Z"
+      },
+      {
+        "name": "Aplicar configuração de staging antes dos deployments",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 8,
+        "started_at": "2026-10-21T00:01:59Z",
+        "completed_at": "2026-10-21T00:02:04Z"
+      },
+      {
+        "name": "Calcular serviços afetados e deployar",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 9,
+        "started_at": "2026-10-21T00:02:04Z",
+        "completed_at": "2026-10-21T00:25:26Z"
+      },
+      {
+        "name": "Post Run ./.github/actions/setup-railway",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 16,
+        "started_at": "2026-10-21T00:25:26Z",
+        "completed_at": "2026-10-21T00:25:26Z"
+      },
+      {
+        "name": "Post Run oven-sh/setup-bun@v2",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 17,
+        "started_at": "2026-10-21T00:25:26Z",
+        "completed_at": "2026-10-21T00:25:26Z"
+      },
+      {
+        "name": "Post Run actions/checkout@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 18,
+        "started_at": "2026-10-21T00:25:26Z",
+        "completed_at": "2026-10-21T00:25:26Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 19,
+        "started_at": "2026-10-21T00:25:26Z",
+        "completed_at": "2026-10-21T00:25:26Z"
+      }
+    ],
+    "check_run_url": "https://api.github.com/repos/informach/sistema-zero/check-runs/118956576693",
+    "labels": [
+      "ubuntu-latest"
+    ],
+    "runner_id": 1000007296,
+    "runner_name": "GitHub Actions 1000007296",
+    "runner_group_id": 0,
+    "runner_group_name": "GitHub Actions"
+  },
+  "allTenJobsTerminalSuccess": true,
+  "evidence": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-js-ci-face8-r1\\critical-snapshot-20261021T002748865Z.json",
+      "sha256": "bedf295d0cc74057506cd443163617d4a89e79e60324917e4f9fee8a1da005bc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-js-ci-face8-r1\\source-qualification.json",
+      "sha256": "9f89ee85532029b76b6d47d5232f3ecb463e56fccc22f34f09657e330ce3037f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-js-ci-face8-r1\\observer-start-20261020T235741434Z.json",
+      "sha256": "390e5f86b174b34858f8e6db3f25ecc676ba6e636e735b4611968d1f142bedb8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-js-ci-face8-r1\\gate-open-receipt-20261021T000145594Z.json",
+      "sha256": "9932f819102b590c2b2be1a48abf8fef18e2b899fab330d83c0bc98ef0a7c3a5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-js-ci-face8-r1\\watch-extension-20261021T001529898Z.json",
+      "sha256": "3b70b0d16ae3d54fd1b9aaab1c38e23ea9efa6a0c9b774bf0ff41785f6c89b78"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-js-ci-face8-r1\\root-relayed-observation-20261021T002628465Z.json",
+      "sha256": "5f3683f718a8def9b896eee3479c9effb778b1f2e80ba5eb75a221b8d521620c"
+    }
+  ],
+  "provenance": {
+    "eightTargets": "Parent owns exact target logs; no outcome inferred from green jobs",
+    "selectorExecutionRelease": "Root collecting terminal GH logs. This receipt proves nominal metadata only; no service selection/order/admission or five published services assertion.",
+    "rootRelayedObservation": "Imported Root report explicitly separated; no observer provider query",
+    "metadata": "Own fresh GitHub GET of exact attempt1 and jobs"
+  },
+  "noActionsOrHeavy": true,
+  "duplicateTerminalLogDownload": false,
+  "scopeNote": "Immutable snapshot scope string retains initial00:15 deadline; linked extension receipt proves authorized00:45 bound."
+}

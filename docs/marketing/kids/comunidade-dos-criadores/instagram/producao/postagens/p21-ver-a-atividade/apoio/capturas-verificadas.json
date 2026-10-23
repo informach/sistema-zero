@@ -1,0 +1,435 @@
+{
+  "source": "Duelo de Cartas",
+  "change": "Energia por turno de 3 para 2; custo original 1; mão original compra 3 e mantém cartas não usadas.",
+  "states": [
+    {
+      "name": "04-dois-pontos",
+      "energy": 2,
+      "heroLife": 30,
+      "enemyLife": 40,
+      "hand": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "03-demonstracao",
+      "energy": 1,
+      "heroLife": 30,
+      "enemyLife": 34,
+      "hand": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "05-antes-da-tentativa",
+      "energy": 0,
+      "heroLife": 30,
+      "enemyLife": 28,
+      "hand": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "05-carta-bloqueada",
+      "energy": 0,
+      "heroLife": 30,
+      "enemyLife": 28,
+      "hand": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "06-novo-turno",
+      "energy": 2,
+      "heroLife": 23,
+      "enemyLife": 28,
+      "hand": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "06-gastou-um-ponto",
+      "energy": 1,
+      "heroLife": 23,
+      "enemyLife": 28,
+      "hand": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "06-sem-pontos",
+      "energy": 0,
+      "heroLife": 23,
+      "enemyLife": 28,
+      "hand": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "06-conferir-bloqueio",
+      "energy": 0,
+      "heroLife": 23,
+      "enemyLife": 28,
+      "hand": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    },
+    {
+      "name": "07-video-atividade",
+      "energy": 1,
+      "heroLife": 23,
+      "enemyLife": 22,
+      "hand": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        },
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "discard": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        }
+      ],
+      "deck": [
+        {
+          "front": "🗡️",
+          "back": "🗡️",
+          "faceUp": false
+        },
+        {
+          "front": "🛡️",
+          "back": "🛡️",
+          "faceUp": false
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "canvas": {
+    "x": 15,
+    "y": 36.25,
+    "width": 970,
+    "height": 727.5
+  }
+}

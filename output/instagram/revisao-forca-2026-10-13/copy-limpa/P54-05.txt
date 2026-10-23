@@ -1,3 +1,0 @@
-Nos jogos, uma regra precisa existir antes da reação.
-
-Na Vila das Vocações, do nosso Estúdio, os carrinhos param no vermelho porque esse comportamento foi programado.

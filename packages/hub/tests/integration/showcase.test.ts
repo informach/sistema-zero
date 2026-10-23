@@ -2,7 +2,13 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { canonicalHmacMessage, signHmac } from '@sistemazero/core/security'
 import type { AccessConfig } from '../../src/domain/access/access-config'
-import { buildApp, jsonRequest, studentHeaders } from '../helpers'
+import {
+  buildApp,
+  jsonRequest,
+  publishStudioRequest,
+  readStudioPublication,
+  studentHeaders,
+} from '../helpers'
 
 const PUBLIC: AccessConfig = { visibility: 'public', courses: [], roles: [] }
 const INTERNAL = 'showcase-internal-token-0001'
@@ -331,8 +337,35 @@ describe('vitrine (Mural dos Criadores)', () => {
     ...over,
   })
 
+  test('studio: exige identidade assinada pelo BFF e confere autor e audiência com o JWT', async () => {
+    const authorId = randomUUID()
+    const headers = child(authorId)
+    const missing = await ctx.app.handle(
+      new Request('http://local/hub/internal/showcase-thread-studio', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(studioBody()),
+      }),
+    )
+    expect(missing.status).toBe(400)
+    for (const publisher of [
+      { authorId: randomUUID(), accountId: authorId, audience: 'kids' },
+      { authorId, accountId: authorId, audience: 'adult' },
+    ] as const) {
+      const result = await publishStudioRequest(
+        ctx.app,
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
+          headers,
+          body: studioBody({ publisher }),
+        }),
+      )
+      expect(result.status).toBe(403)
+    }
+  })
+
   test('studio: corpo = descrição da criança, título do members, playId persistido', async () => {
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: child(randomUUID()),
         body: studioBody({ playId: '55555555-5555-5555-5555-555555555555' }),
@@ -356,14 +389,16 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.body).toBe('Um jogo de nave que desvia de asteroides.')
     expect(thread.title).toBe('Meu joguinho')
     expect(thread.authorDisplayName).toBe('Sofia')
-    expect(thread.playId).toBe('55555555-5555-5555-5555-555555555555')
+    expect(thread.playId).toMatch(/^[0-9a-f-]{36}$/)
+    expect(thread.playId).not.toBe('55555555-5555-5555-5555-555555555555')
     expect(thread.status).toBe('visible')
   })
 
   test('studio: visitante não usa publicação kid-driven mesmo com curso elegível', async () => {
     const accountId = randomUUID()
     ctx.members.communitiesByUser.set(accountId, new Set(['mural-dos-criadores-visitante']))
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: child(accountId),
         body: studioBody(),
@@ -374,19 +409,22 @@ describe('vitrine (Mural dos Criadores)', () => {
 
   test('presente com Mural completo publica; depois volta a visitante e mantém o jogo público', async () => {
     const accountId = randomUUID()
-    const playId = randomUUID()
+    let playId: string = randomUUID()
     ctx.members.communitiesByUser.set(
       accountId,
       new Set(['mural-dos-criadores-visitante', 'mural-dos-criadores']),
     )
     const publish = () =>
-      ctx.app.handle(
+      publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
           headers: child(accountId),
           body: studioBody({ playId }),
         }),
       )
-    expect((await publish()).status).toBe(200)
+    const published = await publish()
+    expect(published.status).toBe(200)
+    playId = (await readStudioPublication(published)).thread.playId
     // O Members deixa de retornar o direito completo quando seu prazo acaba.
     ctx.members.communitiesByUser.set(accountId, new Set(['mural-dos-criadores-visitante']))
     expect((await publish()).status).toBe(403)
@@ -400,7 +438,8 @@ describe('vitrine (Mural dos Criadores)', () => {
   })
 
   test('studio: studioMeta persiste saneado (dedupe) e volta na view; ausente → null', async () => {
-    const withMeta = await ctx.app.handle(
+    const withMeta = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: child(randomUUID()),
         body: studioBody({
@@ -414,7 +453,8 @@ describe('vitrine (Mural dos Criadores)', () => {
     }
     expect(meta.thread.studioMeta).toEqual({ pro: false, extensions: ['world-3d', 'game-2d'] })
 
-    const without = await ctx.app.handle(
+    const without = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: child(randomUUID()),
         body: studioBody(),
@@ -426,14 +466,16 @@ describe('vitrine (Mural dos Criadores)', () => {
   })
 
   test('studio-play: só valida playId enquanto o post está visível', async () => {
-    const playId = '55555555-5555-5555-5555-555555555555'
-    const create = await ctx.app.handle(
+    let playId = '55555555-5555-5555-5555-555555555555'
+    const create = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: child(randomUUID()),
         body: studioBody({ playId }),
       }),
     )
     expect(create.status).toBe(200)
+    playId = (await readStudioPublication(create.clone())).thread.playId
 
     const visible = await ctx.app.handle(
       jsonRequest('GET', `/hub/internal/studio-play/${playId}`, {
@@ -461,7 +503,8 @@ describe('vitrine (Mural dos Criadores)', () => {
     const headers = child(randomUUID())
     const sameKey = randomUUID()
     const first = (await (
-      await ctx.app.handle(
+      await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
           headers,
           body: studioBody({ clientIdempotencyKey: sameKey }),
@@ -469,7 +512,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       )
     ).json()) as { thread: { id: string }; deduped: boolean }
     const retry = (await (
-      await ctx.app.handle(
+      await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
           headers,
           body: studioBody({ clientIdempotencyKey: sameKey }),
@@ -477,7 +521,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       )
     ).json()) as { thread: { id: string }; deduped: boolean }
     const republish = (await (
-      await ctx.app.handle(
+      await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
           headers,
           body: studioBody({ clientIdempotencyKey: randomUUID() }),
@@ -492,7 +537,8 @@ describe('vitrine (Mural dos Criadores)', () => {
 
   test('studio: projeto NÃO elegível → 403 (re-valida no members)', async () => {
     ctx.members.showcaseEligibility = { ...ctx.members.showcaseEligibility, eligible: false }
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: child(randomUUID()),
         body: studioBody(),
@@ -502,7 +548,8 @@ describe('vitrine (Mural dos Criadores)', () => {
   })
 
   test('studio: sem x-internal-token → 401', async () => {
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio', {
         headers: studentHeaders(randomUUID(), { 'x-internal-token': '' }),
         body: studioBody(),
@@ -562,6 +609,37 @@ describe('vitrine (Mural dos Criadores)', () => {
     clientIdempotencyKey: randomUUID(),
     ...over,
   })
+
+  test('oficina publica com prova do snapshot, deduplica e não concede marco de curso ou desafio', async () => {
+    const accountId = randomUUID(),
+      learnerId = randomUUID()
+    const headers = { ...child(learnerId), 'x-auth-account-id': accountId }
+    ctx.members.liveEligibility = { eligible: true, title: 'Projeto da oficina' }
+    const body = standaloneBody({
+      liveWorkspace: { id: randomUUID(), revision: 3, publicationToken: 'proof' },
+      challengeKey: 'm:2026-10',
+    })
+    const publish = () =>
+      publishStudioRequest(
+        ctx.app,
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', { headers, body }),
+      )
+    const first = await publish()
+    expect(first.status).toBe(200)
+    const created = (await first.json()) as {
+      thread: { id: string; challengeKey: string | null }
+      deduped: boolean
+    }
+    const retry = await publish()
+    expect(retry.status).toBe(200)
+    expect(await retry.json()).toMatchObject({ thread: { id: created.thread.id }, deduped: true })
+    expect(created.thread.challengeKey).toBeNull()
+    expect(ctx.members.showcaseNotifications).toHaveLength(0)
+    expect(ctx.members.challengeNotifications).toHaveLength(0)
+    expect(ctx.members.standaloneShowcases).toHaveLength(0)
+    ctx.members.liveEligibility = { eligible: false, title: '' }
+    expect((await publish()).status).toBe(403)
+  })
   /** Concede o produto do Estúdio à conta (a elegibilidade do standalone é a posse). */
   const ownsStudio = (accountId: string) =>
     ctx.members.communitiesByUser.set(accountId, new Set(['estudio-completo']))
@@ -569,7 +647,8 @@ describe('vitrine (Mural dos Criadores)', () => {
   test('standalone: com produto → publica título E descrição da criança + playId', async () => {
     const accountId = randomUUID()
     ownsStudio(accountId)
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(accountId),
         body: standaloneBody({ playId: '66666666-6666-6666-6666-666666666666' }),
@@ -583,7 +662,8 @@ describe('vitrine (Mural dos Criadores)', () => {
     // SEM aula → título E corpo vêm da criança (não há payload do members).
     expect(thread.title).toBe('Meu jogo livre')
     expect(thread.body).toBe('Fiz no Estúdio Completo!')
-    expect(thread.playId).toBe('66666666-6666-6666-6666-666666666666')
+    expect(thread.playId).toMatch(/^[0-9a-f-]{36}$/)
+    expect(thread.playId).not.toBe('66666666-6666-6666-6666-666666666666')
   })
 
   test('standalone: visitante com Estúdio separado ainda precisa assinar para publicar no Mural', async () => {
@@ -592,7 +672,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       accountId,
       new Set(['estudio-completo', 'mural-dos-criadores-visitante']),
     )
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(accountId),
         body: standaloneBody(),
@@ -604,7 +685,8 @@ describe('vitrine (Mural dos Criadores)', () => {
   test('standalone: studioMeta persiste ({pro:true} do modo Código) e volta na view', async () => {
     const accountId = randomUUID()
     ownsStudio(accountId)
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(accountId),
         body: standaloneBody({ studioMeta: { pro: true, extensions: [] } }),
@@ -617,8 +699,34 @@ describe('vitrine (Mural dos Criadores)', () => {
     expect(thread.studioMeta).toEqual({ pro: true, extensions: [] })
   })
 
+  test('standalone Python retains language/runtime metadata, deduplicates extensions and rejects missing runtime', async () => {
+    const accountId = randomUUID()
+    ownsStudio(accountId)
+    const metadata = {
+      pro: true,
+      programmingLanguage: 'python',
+      runtime: { profileId: 'python-browser', releaseId: '1.0.0', manifestSha256: 'a'.repeat(64) },
+      extensions: ['python-turtle', 'python-turtle'],
+    }
+    const request = (studioMeta: unknown) =>
+      publishStudioRequest(
+        ctx.app,
+        jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
+          headers: child(accountId),
+          body: standaloneBody({ studioMeta }),
+        }),
+      )
+    const response = await request(metadata)
+    expect(response.status).toBe(200)
+    const body = (await response.json()) as { thread: { studioMeta: unknown } }
+    expect(body.thread.studioMeta).toEqual({ ...metadata, extensions: ['python-turtle'] })
+    expect((await request({ ...metadata, runtime: undefined })).status).toBe(400)
+    expect((await request({ ...metadata, programmingLanguage: 'ruby' })).status).toBe(400)
+  })
+
   test('standalone: SEM o produto → 403 (elegibilidade = posse, re-validada no hub)', async () => {
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(randomUUID()),
         body: standaloneBody(),
@@ -635,7 +743,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       'x-auth-profile-name': 'Prof',
       'x-auth-user-role': 'admin',
     })
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: staff,
         body: standaloneBody(),
@@ -649,7 +758,8 @@ describe('vitrine (Mural dos Criadores)', () => {
   test('standalone: chave-mestra KIDS cobre a publicação', async () => {
     const accountId = randomUUID()
     ctx.members.mastersKids.add(accountId)
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(accountId),
         body: standaloneBody(),
@@ -664,7 +774,8 @@ describe('vitrine (Mural dos Criadores)', () => {
     const headers = child(accountId)
     const sameKey = randomUUID()
     const first = (await (
-      await ctx.app.handle(
+      await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers,
           body: standaloneBody({ clientIdempotencyKey: sameKey }),
@@ -672,7 +783,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       )
     ).json()) as { thread: { id: string }; deduped: boolean }
     const retry = (await (
-      await ctx.app.handle(
+      await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers,
           body: standaloneBody({ clientIdempotencyKey: sameKey }),
@@ -680,7 +792,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       )
     ).json()) as { thread: { id: string }; deduped: boolean }
     const republish = (await (
-      await ctx.app.handle(
+      await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers,
           body: standaloneBody({ clientIdempotencyKey: randomUUID() }),
@@ -694,7 +807,8 @@ describe('vitrine (Mural dos Criadores)', () => {
   })
 
   test('standalone: sem x-internal-token → 401', async () => {
-    const res = await ctx.app.handle(
+    const res = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: studentHeaders(randomUUID(), { 'x-internal-token': '' }),
         body: standaloneBody(),
@@ -708,13 +822,16 @@ describe('vitrine (Mural dos Criadores)', () => {
   test('studio-play com count=1 conta a jogada; sem count só valida', async () => {
     const accountId = randomUUID()
     ownsStudio(accountId)
-    const playId = '77777777-7777-7777-7777-777777777777'
-    await ctx.app.handle(
+    let playId = '77777777-7777-7777-7777-777777777777'
+    const published = await publishStudioRequest(
+      ctx.app,
       jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
         headers: child(accountId),
         body: standaloneBody({ playId }),
       }),
     )
+    expect(published.status).toBe(200)
+    playId = (await readStudioPublication(published)).thread.playId
     const resolve = (qs = '') =>
       ctx.app.handle(
         jsonRequest('GET', `/hub/internal/studio-play/${playId}${qs}`, {
@@ -757,7 +874,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       accountId: string,
       over: Record<string, unknown> = {},
     ) =>
-      gated.app.handle(
+      publishStudioRequest(
+        gated.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers: child(accountId),
           body: standaloneBody(over),
@@ -845,7 +963,8 @@ describe('vitrine (Mural dos Criadores)', () => {
       const kidB = randomUUID()
       for (const kid of [kidA, kidB]) {
         ctx.members.communitiesByUser.set(kid, new Set(['estudio-completo']))
-        const res = await ctx.app.handle(
+        const res = await publishStudioRequest(
+          ctx.app,
           jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
             headers: child(kid),
             body: standaloneBody(),
@@ -895,14 +1014,16 @@ describe('vitrine (Mural dos Criadores)', () => {
     test('publicar standalone NOTIFICA o members (marco + XP diário) com o playId', async () => {
       const accountId = randomUUID()
       ownsStudio(accountId)
-      const playId = randomUUID()
-      const res = await ctx.app.handle(
+      let playId: string = randomUUID()
+      const res = await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers: child(accountId),
           body: standaloneBody({ playId }),
         }),
       )
       expect(res.status).toBe(200)
+      playId = (await readStudioPublication(res)).thread.playId
       await flush() // fire-and-forget (`void`) → espera o microtask do notify
       expect(ctx.members.standaloneShowcases.length).toBe(1)
       expect(ctx.members.standaloneShowcases[0]).toMatchObject({ playId, audience: 'kids' })
@@ -911,13 +1032,16 @@ describe('vitrine (Mural dos Criadores)', () => {
     test('o hit que CRUZA 10 jogadas dispara o marco de plays (1× — nem antes, nem depois)', async () => {
       const accountId = randomUUID()
       ownsStudio(accountId)
-      const playId = randomUUID()
-      await ctx.app.handle(
+      let playId: string = randomUUID()
+      const published = await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers: child(accountId),
           body: standaloneBody({ playId }),
         }),
       )
+      expect(published.status).toBe(200)
+      playId = (await readStudioPublication(published)).thread.playId
       const hit = () =>
         ctx.app.handle(
           jsonRequest('GET', `/hub/internal/studio-play/${playId}?count=1`, {
@@ -956,14 +1080,16 @@ describe('vitrine (Mural dos Criadores)', () => {
 
       const authorProfile = randomUUID()
       ctx.members.communitiesByUser.set(authorProfile, new Set(['estudio-completo']))
-      const playId = randomUUID()
-      const create = await ctx.app.handle(
+      let playId: string = randomUUID()
+      const create = await publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers: child(authorProfile),
           body: standaloneBody({ playId }),
         }),
       )
       expect(create.status).toBe(200)
+      playId = (await readStudioPublication(create.clone())).thread.playId
 
       const ok = await ctx.app.handle(signedPlayCheck(JSON.stringify({ playId })))
       expect(ok.status).toBe(200)
@@ -991,15 +1117,18 @@ describe('vitrine (Mural dos Criadores)', () => {
     const accountId = randomUUID()
     ownsStudio(accountId)
     const headers = child(accountId)
-    const p1 = randomUUID()
+    let p1: string = randomUUID()
     const publish = (playId: string) =>
-      ctx.app.handle(
+      publishStudioRequest(
+        ctx.app,
         jsonRequest('POST', '/hub/internal/showcase-thread-studio-standalone', {
           headers,
           body: standaloneBody({ playId }),
         }),
       )
-    await publish(p1)
+    const first = await publish(p1)
+    expect(first.status).toBe(200)
+    p1 = (await readStudioPublication(first)).thread.playId
     await publish(randomUUID())
     await ctx.app.handle(
       jsonRequest('GET', `/hub/internal/studio-play/${p1}?count=1`, {

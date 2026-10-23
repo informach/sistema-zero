@@ -86,6 +86,7 @@ describe.skipIf(!testDatabaseUrl)('Conversões — Postgres real', () => {
     })
     if (created.kind !== 'created') throw new Error('seed falhou')
     const { redemption } = await repo.insertRedemption({
+      audience: 'kids',
       codeId: created.code.id,
       email: 'paula@example.com',
       name: 'Paula',

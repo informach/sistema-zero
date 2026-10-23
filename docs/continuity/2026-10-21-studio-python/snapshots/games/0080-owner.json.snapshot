@@ -1,0 +1,17 @@
+{
+  "state": "running",
+  "startedAt": "2026-10-21T04:13:23.218Z",
+  "absoluteWindowEnd": "2026-10-21T04:14:22.000Z",
+  "packetSha": "3d46e99b80448903029c780ba5f63cfa891398d377de99e724272bd743e4a063",
+  "nodePID": 34452,
+  "pythonPID": 38112,
+  "argv": [
+    "-I",
+    "-B",
+    "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\tcl-clock-causal-control-r1\\probe.py",
+    "--packet-sha",
+    "3d46e99b80448903029c780ba5f63cfa891398d377de99e724272bd743e4a063"
+  ],
+  "deadline": false,
+  "signalAttempted": false
+}

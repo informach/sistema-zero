@@ -10,20 +10,26 @@ const ok = (fn: string) => {
   }
 }
 
+const audiences: string[] = []
 mock.module('@/server/help', () => ({
-  listHelpCollections: ok('listHelpCollections'),
-  createHelpCollection: ok('createHelpCollection'),
-  updateHelpCollection: ok('updateHelpCollection'),
-  archiveHelpCollection: ok('archiveHelpCollection'),
-  restoreHelpCollection: ok('restoreHelpCollection'),
-  reorderHelpCollections: ok('reorderHelpCollections'),
-  listHelpTutorials: ok('listHelpTutorials'),
-  getHelpTutorial: ok('getHelpTutorial'),
-  createHelpTutorial: ok('createHelpTutorial'),
-  updateHelpTutorial: ok('updateHelpTutorial'),
-  actHelpTutorial: ok('actHelpTutorial'),
-  importHelp: ok('importHelp'),
-  exportHelp: ok('exportHelp'),
+  createHelpAdminClient: (audience: string = 'kids') => {
+    audiences.push(audience)
+    return {
+      listHelpCollections: ok('listHelpCollections'),
+      createHelpCollection: ok('createHelpCollection'),
+      updateHelpCollection: ok('updateHelpCollection'),
+      archiveHelpCollection: ok('archiveHelpCollection'),
+      restoreHelpCollection: ok('restoreHelpCollection'),
+      reorderHelpCollections: ok('reorderHelpCollections'),
+      listHelpTutorials: ok('listHelpTutorials'),
+      getHelpTutorial: ok('getHelpTutorial'),
+      createHelpTutorial: ok('createHelpTutorial'),
+      updateHelpTutorial: ok('updateHelpTutorial'),
+      actHelpTutorial: ok('actHelpTutorial'),
+      importHelp: ok('importHelp'),
+      exportHelp: ok('exportHelp'),
+    }
+  },
 }))
 
 mock.module('@/server/forward', () => ({

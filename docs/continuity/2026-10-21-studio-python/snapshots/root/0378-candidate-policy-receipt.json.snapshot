@@ -1,0 +1,55 @@
+{
+  "kind": "actual-pilot-catalog-offline-policy-check",
+  "completedAt": "2026-10-21T08:04:55.332Z",
+  "state": "PASS-policy-only",
+  "results": [
+    {
+      "language": "javascript",
+      "kind": "classic",
+      "formatVersion": 2,
+      "sourcePreserved": true,
+      "authoringApproved": true
+    },
+    {
+      "language": "javascript",
+      "kind": "pro",
+      "formatVersion": 2,
+      "sourcePreserved": true,
+      "authoringApproved": true
+    },
+    {
+      "language": "python",
+      "kind": "classic",
+      "formatVersion": 3,
+      "sourcePreserved": true,
+      "authoringApproved": true,
+      "executeAuthorized": true,
+      "capabilities": [
+        "edit",
+        "execute",
+        "export-source"
+      ]
+    },
+    {
+      "language": "python",
+      "kind": "pro",
+      "formatVersion": 3,
+      "sourcePreserved": true,
+      "authoringApproved": true,
+      "executeAuthorized": true,
+      "capabilities": [
+        "edit",
+        "execute",
+        "export-source",
+        "python-repl"
+      ]
+    }
+  ],
+  "oldDeploymentPreserved": true,
+  "parentOriginsPreserved": true,
+  "configurationSha256": "2dc37fc221789ba23780d13754743470bbe687a703ac115ed14a2e12d9e79df4",
+  "mutations": 0,
+  "networkCalls": 0,
+  "interpreterExecuted": false,
+  "applicationActivation": false
+}

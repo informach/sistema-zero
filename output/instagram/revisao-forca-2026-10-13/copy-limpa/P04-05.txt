@@ -1,3 +1,0 @@
-Neste jogo de gorilas, feito no nosso Estúdio, arrastar o mouse prepara o lançamento. Soltar lança a banana.
-
-Quem cria monta essa ligação entre o gesto e a reação.

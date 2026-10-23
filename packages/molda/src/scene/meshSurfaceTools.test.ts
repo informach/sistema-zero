@@ -26,6 +26,29 @@ function closed(mesh: SceneMeshGeometry) {
   expect(buildSceneGeometry(mesh).issues).toEqual([])
 }
 
+test('a Move displacement extrudes a closed region with stable caps, UVs and no source mutation', () => {
+  const mesh = box()
+  const before = structuredClone(mesh)
+  const prepared = prepareMeshExtrusion(mesh, ['px'])
+  try {
+    const result = prepared.apply(0, ids(), [1, 0.5, -0.25])
+    closed(result)
+    expect(Object.keys(result.faces)).toHaveLength(10)
+    for (let i = 0; i < mesh.faces.px!.corners.length; i++) {
+      const a = mesh.faces.px!.corners[i]!
+      const b = result.faces.px!.corners[i]!
+      const p = mesh.vertices[a.vertexId]!
+      expect(result.vertices[b.vertexId]).toEqual([p[0] + 1, p[1] + 0.5, p[2] - 0.25])
+      expect(b.uv).toEqual(a.uv)
+    }
+    expect(prepared.apply(0, ids(), [0, 0, 0])).toBe(mesh)
+    expect(() => prepared.apply(0, ids(), [Infinity, 0, 0])).toThrow()
+    expect(mesh).toEqual(before)
+  } finally {
+    prepared.dispose()
+  }
+})
+
 test('prepared extrusion is byte-identical to fresh operations and releases bounded caches over 20 sessions', () => {
   const mesh = box()
   const before = structuredClone(mesh)

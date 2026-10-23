@@ -1,0 +1,10 @@
+{
+  "state": "NATIVE12-STATIC-PACKET-PASS-NOT-EXECUTED",
+  "runnerOnlyTwoActualPinsChanged": true,
+  "allRunnerAssertionsAndCleanupPreserved": true,
+  "observerByteIdentical": true,
+  "cooperative30AndChild40SecondsUnchanged": true,
+  "supervisorWindowGuardStrengthenedForEveryChild": true,
+  "patchSha256": "82fd6aab5d320093614d3c563d1e8ea75a66a6c9eced6a6e87b8e7904b398799",
+  "nativeExecution": false
+}

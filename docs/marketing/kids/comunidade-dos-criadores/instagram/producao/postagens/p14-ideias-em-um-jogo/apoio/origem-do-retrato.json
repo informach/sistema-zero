@@ -1,0 +1,17 @@
+{
+  "person": "Jeffrey",
+  "role": "Aluno",
+  "source": "output/instagram/avaliacoes/2026-10-09/fontes/jeffrey-90s.png",
+  "file": "jeffrey-retrato-real.png",
+  "sha256": "7b8471294f20c3a8505cfdca9a1efcb38cd2647bbd1ba0385abf4d1b3d2d1034",
+  "kind": "Quadro real previamente extraído do vídeo autorizado, aos 90 segundos",
+  "testimonial": "AV07",
+  "fullQuote": "Eu gosto bastante de produzir os meus jogos, porque é uma forma de eu expressar as minhas ideias.",
+  "quoteSeconds": [
+    101.42,
+    109.34
+  ],
+  "frameSeconds": 90,
+  "aiGenerated": false,
+  "transform": "Enquadramento por CSS; pixels da fonte preservados; sem recriação do rosto, retoque ou troca de tela."
+}

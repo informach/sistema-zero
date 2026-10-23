@@ -1,0 +1,933 @@
+{
+  "version": 5,
+  "courseSlug": "nave-contra-asteroides",
+  "lessonSlug": "dia-1",
+  "title": "Mova a nave pelo espaço",
+  "retireBlockKeys": [
+    "video-abertura-v6",
+    "video-areas",
+    "fala-areas",
+    "video-tela",
+    "fala-tela",
+    "video-endereco",
+    "video-nave",
+    "fala-nave",
+    "video-criar-desenhar",
+    "experiencia-criar-desenhar",
+    "video-quadro",
+    "fala-quadro",
+    "experiencia-limpeza",
+    "video-fundo",
+    "fala-fundo",
+    "video-mover",
+    "fala-mover",
+    "video-desenhar",
+    "fala-desenhar",
+    "video-teste",
+    "entrega-fala-v6",
+    "video-fecho-v6",
+    "quiz-v6",
+    "video-abertura",
+    "video-duas-areas",
+    "fala-uma-vez-e-sempre",
+    "experiencia-areas",
+    "fala-montar-areas-tela",
+    "video-montar-areas-tela",
+    "video-coordenadas",
+    "fala-coordenadas",
+    "experiencia-coordenadas",
+    "fala-criar-nave",
+    "video-criar-nave",
+    "video-livrinho",
+    "video-criar-e-mostrar",
+    "fala-criar-mostrar",
+    "experiencia-criar-mostrar",
+    "fala-o-quadro",
+    "experiencia-quadro",
+    "fala-motor-e-nave",
+    "video-motor-e-nave",
+    "fala-setas-e-rastro",
+    "fala-limpar-rastro",
+    "video-limpar-rastro",
+    "fala-limite-da-nave",
+    "video-camadas",
+    "fala-camadas",
+    "fala-quiz"
+  ],
+  "blocks": [
+    {
+      "key": "video-seta-e-velocidade",
+      "plannedVideo": "Título: Observe o movimento quadro a quadro\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Segurar a seta para a direita desligado, clicar em Avançar 1 quadro e mostrar o x parado em 208. Ligar a seta, deixar Velocidade 3 e avançar quadro a quadro até 217, apontando o +3. Clicar em Recomeçar, escolher Velocidade 1 e avançar até 210, apontando o +1. Meme na comparação: na frase do tamanho do passo, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy dando um passo de gigante e depois um passinho de formiga, com a legenda \"Velocidade 3 · Velocidade 1\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-seta-e-velocidade-K1: Dedé substitui “E se a gente testar um passo menor?”. Antes: “do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.”. Depois: “Depois, eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-seta-e-velocidade",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-seta-e-velocidade",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Observe o movimento quadro a quadro",
+        "instructions": "Deixe Segurar a seta para a direita desligado e clique em Avançar 1 quadro. Olhe o x. Depois ligue a seta, escolha Velocidade 3 e avance alguns quadros, um de cada vez. Clique em Recomeçar, escolha Velocidade 1 e avance outros quadros com a seta ligada. Compare quanto o x muda em cada passo.",
+        "hints": [],
+        "semPerguntaFinal": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-walk",
+          "cenario": "nave",
+          "setup": {
+            "goals": ["still-without-arrow", "moves-each-frame", "step-speed-3", "step-speed-1"]
+          }
+        }
+      }
+    },
+    {
+      "key": "video-setas-e-rastro",
+      "plannedVideo": "Título: Faça a nave responder às setas\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer bloco: clicar na área do jogo, segurar uma seta e, no \"Tá vendo?\", manter a nave parada à vista. Mostrar o destino antes de abrir a paleta. Montar apenas o movimento, testar as setas no fundo liso e mostrar o rastro, ainda sem limpeza.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-setas-e-rastro-K1: Dedé substitui “E qual velocidade eu uso?”. Antes: “Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.”. Depois: “Repare: o nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-setas",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-limpeza",
+      "plannedVideo": "Título: Tire o rastro da nave\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer bloco: segurar uma seta e, no \"Tá vendo?\", manter o rastro à vista. Montar somente Limpar a tela antes do movimento, com o primeiro encaixe à vista antes de abrir a paleta, e repetir o mesmo teste. Ainda não há estrelas.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limpeza-K1: Dedé substitui “Isso vai apagar a minha nave?”. Antes: “cada quadro, na primeira aula? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!”. Depois: “Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-limpeza",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-limite-da-tela",
+      "plannedVideo": "Título: Observe o que acontece na borda\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar a nave na experiência, com o x, as marcas de cada quadro e a borda. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Manter dentro da tela desligado, ligar Segurar a seta para a direita, clicar em Rodar e acompanhar a nave até sair inteira da tela. Clicar em Recomeçar, ligar Manter dentro da tela, clicar em Rodar e mostrar a nave parada inteira na borda, com x 416. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limite-da-tela-K1: Dedé substitui “E se a nave sair da tela?”. Antes: “e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.”. Depois: “Vamos colocar um limite para ela ficar na tela. Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-limite-da-tela",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-limite-da-tela",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "Observe o que acontece na borda",
+        "instructions": "Deixe Manter dentro da tela desligado, ligue Segurar a seta para a direita e clique em Rodar. Observe a nave chegar à borda e continuar até sair da tela. Clique em Recomeçar, ligue Manter dentro da tela e mantenha a seta ligada. Clique em Rodar e compare o que acontece na borda.",
+        "hints": [],
+        "semPerguntaFinal": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-walk",
+          "cenario": "nave",
+          "setup": {
+            "goals": ["left-the-screen", "stayed-inside"]
+          }
+        }
+      }
+    },
+    {
+      "key": "video-limite-da-nave",
+      "plannedVideo": "Título: Mantenha a nave na tela\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer bloco: segurar uma seta até a nave passar da borda e, no \"Tá vendo?\", manter a saída à vista. Depois deixar à vista o espaço entre o movimento e o desenho, montar o limite e repetir os dois testes. Conferir o sprite escolhido no bloco de limite.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limite-da-nave-K1: Dedé substitui “Esse nome heroi é o da minha nave?”. Antes: “dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.”. Depois: “Repare: o bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave. Agora teste:”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-borda",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-ordem-dos-desenhos",
+      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Apontar a lista A ordem de desenhar, com a nave em 1º a desenhar, e o pedacinho da nave que aparece. Clicar em Subir no fundo de estrelas e mostrar a nave inteira na frente. Trocar a ordem de novo, mostrar a nave escondida e voltar o fundo para antes da nave. Meme na comparação: na frase de pintar no papel, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy pintando um céu estrelado por cima do desenho de uma nave, com a legenda \"quem vem por último fica por cima\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-ordem-dos-desenhos",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-camadas",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "semPerguntaFinal": true,
+        "title": "Compare a ordem dos desenhos",
+        "instructions": "Na experiência, use as setas na lista de desenhos para colocar o fundo de estrelas antes da nave. Observe a tela. Troque a ordem para desenhar a nave antes do fundo. Observe novamente e volte à primeira ordem.",
+        "hints": [],
+        "activity": {
+          "type": "experimentation",
+          "scene": "layers",
+          "cast": {
+            "hero": {
+              "name": "nave",
+              "gender": "f"
+            },
+            "scenery": {
+              "name": "fundo de estrelas",
+              "gender": "m",
+              "figure": "estrelas"
+            }
+          },
+          "cenario": "nave",
+          "setup": {
+            "goals": ["front", "covered", "back-in-front"]
+          }
+        }
+      }
+    },
+    {
+      "key": "video-fundo-estrelado",
+      "plannedVideo": "Título: Coloque as estrelas atrás da nave\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer bloco: no \"Tá vendo?\", mostrar o fundo liso. Mostrar a cobertura real do canvas pelo starfield e mover o mesmo bloco, sem duplicar. Não dizer que ausência de rastro com estrelas comprova a presença de Limpar.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-fundo-estrelado-K1: Dedé substitui “Ué, cadê a nave?”. Antes: “A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.”. Depois: “Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-fundo-estrelado",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "fala-quiz-final",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "quiz",
+      "content": {
+        "kind": "quiz",
+        "passingScore": 100,
+        "questions": [
+          {
+            "id": "q1",
+            "prompt": "A nave sumiu depois de você colocar as estrelas no fim dos desenhos. O que pode resolver?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Criar outra nave."
+              },
+              {
+                "id": "b",
+                "label": "Desenhar as estrelas antes de desenhar a nave."
+              },
+              {
+                "id": "c",
+                "label": "Aumentar a velocidade da nave."
+              }
+            ],
+            "correctChoiceIds": ["b"],
+            "explanation": "O fundo de estrelas cobre a tela inteira. Desenhando o fundo primeiro e a nave depois, a nave fica visível na frente."
+          },
+          {
+            "id": "q2",
+            "prompt": "Por que manter o limite entre mover e desenhar?",
+            "choices": [
+              {
+                "id": "a",
+                "label": "Para corrigir a posição depois do movimento e mostrar a nave dentro da tela."
+              },
+              {
+                "id": "b",
+                "label": "Para criar uma nave nova a cada quadro."
+              },
+              {
+                "id": "c",
+                "label": "Para fazer as estrelas pararem."
+              }
+            ],
+            "correctChoiceIds": ["a"],
+            "explanation": "O movimento pode levar a nave além da borda. O limite corrige a posição antes de o desenho mostrar o resultado."
+          }
+        ]
+      }
+    },
+    {
+      "key": "video-teste-e-envio",
+      "plannedVideo": "Título: Teste e envie sua nave\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Conferir a sequência e os testes, depois demonstrar a verificação e a confirmação de envio.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-entrega",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula."
+      }
+    },
+    {
+      "key": "projeto",
+      "content": {
+        "kind": "studio",
+        "purpose": "submission",
+        "chain": "nave-contra-asteroides",
+        "level": "iniciante-2d",
+        "allowedModes": ["blocks"],
+        "allowLevelReveal": false,
+        "allowBlocks": [
+          "sz_frame_loops",
+          "sz_frame_start",
+          "sz_g2d_arrows_x",
+          "sz_g2d_clamp_to_screen",
+          "sz_g2d_clear",
+          "sz_g2d_create_ship",
+          "sz_g2d_draw_sprite",
+          "sz_g2d_setup_stage",
+          "sz_g2d_starfield",
+          "sz_g2d_update_each_frame",
+          "sz_val_number"
+        ],
+        "showcase": {
+          "enabled": false,
+          "title": "Nave contra Asteroides",
+          "summary": "Mova a nave, acerte os asteroides e tente chegar a 26 pontos sem perder as três vidas."
+        },
+        "initialProject": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "manifest-nave-etapa-1",
+          "name": "Nave contra Asteroides",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Nave contra Asteroides</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(800, 480, \"#07162e\");\n  const nave = SZGame2D.createShip({ x: 400, y: 410, w: 54, h: 62, body: \"#35e8ff\", wings: \"#2568ff\" });\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.drawSprite(ctx, nave);\n  }, \"nave-ref-10\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": {
+                    "type": "num",
+                    "value": 800,
+                    "__id": "nave-ref-2"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 480,
+                    "__id": "nave-ref-3"
+                  },
+                  "bg": "#07162e",
+                  "__id": "nave-ref-1"
+                },
+                {
+                  "type": "g2d:createShip",
+                  "varName": "nave",
+                  "x": {
+                    "type": "num",
+                    "value": 400,
+                    "__id": "nave-ref-5"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 410,
+                    "__id": "nave-ref-6"
+                  },
+                  "w": {
+                    "type": "num",
+                    "value": 54,
+                    "__id": "nave-ref-7"
+                  },
+                  "h": {
+                    "type": "num",
+                    "value": 62,
+                    "__id": "nave-ref-8"
+                  },
+                  "bodyColor": "#35e8ff",
+                  "wingColor": "#2568ff",
+                  "__id": "nave-ref-4"
+                }
+              ],
+              "events": [],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:drawSprite",
+                      "spriteVar": "nave",
+                      "ctxVar": "ctx",
+                      "__id": "nave-ref-11"
+                    }
+                  ],
+                  "__id": "nave-ref-10"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "fields": {
+                          "BG": "#07162e"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 800
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_create_ship",
+                            "fields": {
+                              "NAME": "nave",
+                              "BODY": "#35e8ff",
+                              "WINGS": "#2568ff"
+                            },
+                            "inputs": {
+                              "X": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 400
+                                  }
+                                }
+                              },
+                              "Y": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 410
+                                  }
+                                }
+                              },
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 54
+                                  }
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 62
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "fields": {},
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "fields": {},
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_draw_sprite",
+                              "fields": {
+                                "SPRITE": "nave"
+                              },
+                              "inputs": {}
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "sections": [
+    {
+      "key": "seta-e-velocidade",
+      "title": "Observe o movimento quadro a quadro",
+      "intent": "exploration",
+      "objective": "Sua vez! Compare a seta solta e a seta segurada e depois as velocidades 3 e 1, avançando um quadro por vez. Quando terminar, clique em Próxima parte.",
+      "blockKeys": [
+        "video-seta-e-velocidade",
+        "fala-seta-e-velocidade",
+        "experiencia-seta-e-velocidade"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-seta-e-velocidade", "experiencia-seta-e-velocidade"]
+      }
+    },
+    {
+      "key": "setas",
+      "title": "Faça a nave responder às setas",
+      "intent": "application",
+      "objective": "Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "blockKeys": ["video-setas-e-rastro", "fala-setas"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-setas-e-rastro"],
+        "projectChecks": [
+          {
+            "id": "setas",
+            "label": "Mova nave com as setas, com velocidade positiva, antes de desenhá-la.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_arrows_x",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_draw_sprite",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "limpeza",
+      "title": "Tire o rastro da nave",
+      "intent": "application",
+      "objective": "Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "blockKeys": ["video-limpeza", "fala-limpeza"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-limpeza"],
+        "projectChecks": [
+          {
+            "id": "borracha",
+            "label": "Limpe a tela antes de mover e desenhar a nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_arrows_x"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "limite-da-tela",
+      "title": "Observe o que acontece na borda",
+      "intent": "exploration",
+      "objective": "Sua vez! Rode sem o limite, depois recomece, ligue Manter dentro da tela e rode de novo. Quando terminar, clique em Próxima parte.",
+      "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-limite-da-tela"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-limite-da-tela", "experiencia-limite-da-tela"]
+      }
+    },
+    {
+      "key": "borda",
+      "title": "Mantenha a nave na tela",
+      "intent": "application",
+      "objective": "Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "blockKeys": ["video-limite-da-nave", "fala-borda"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-limite-da-nave"],
+        "projectChecks": [
+          {
+            "id": "setas-antes-do-limite",
+            "label": "Mova nave antes de prendê-la à tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_arrows_x",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_clamp_to_screen",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "limite",
+            "label": "Mantenha nave dentro da tela antes de desenhá-la.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "ordem-dos-desenhos",
+      "title": "Compare a ordem dos desenhos",
+      "intent": "exploration",
+      "objective": "Sua vez! Troque a ordem do fundo e da nave, compare a tela e termine com o fundo antes da nave. Quando terminar, clique em Próxima parte.",
+      "blockKeys": ["video-ordem-dos-desenhos", "fala-ordem-dos-desenhos", "experiencia-camadas"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-ordem-dos-desenhos", "experiencia-camadas"]
+      }
+    },
+    {
+      "key": "fundo-estrelado",
+      "title": "Coloque as estrelas atrás da nave",
+      "intent": "application",
+      "objective": "Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "blockKeys": ["video-fundo-estrelado", "fala-fundo-estrelado"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-fundo-estrelado"],
+        "projectChecks": [
+          {
+            "id": "borracha-primeiro",
+            "label": "Limpe antes de desenhar o céu estrelado.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_starfield"
+            }
+          },
+          {
+            "id": "estrelas",
+            "label": "Desenhe o fundo de estrelas em movimento a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_arrows_x",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "quiz-final",
+      "title": "Confira o que você construiu",
+      "intent": "explanation",
+      "objective": "Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.",
+      "blockKeys": ["fala-quiz-final", "quiz"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["quiz"]
+      }
+    },
+    {
+      "key": "entrega",
+      "title": "Teste e envie sua nave",
+      "intent": "delivery",
+      "objective": "Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+      "blockKeys": ["video-teste-e-envio", "fala-entrega", "projeto"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-teste-e-envio", "projeto"],
+        "projectChecks": [
+          {
+            "id": "tela",
+            "label": "Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_setup_stage",
+              "area": "start",
+              "inputs": {
+                "W": 800,
+                "H": 480
+              }
+            }
+          },
+          {
+            "id": "nave",
+            "label": "Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_create_ship",
+              "fields": {
+                "NAME": "nave"
+              },
+              "area": "start",
+              "count": 1,
+              "inputBlocks": {
+                "W": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "H": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                },
+                "X": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 800,
+                      "maxExclusive": true
+                    }
+                  }
+                },
+                "Y": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "max": 480,
+                      "maxExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "borracha",
+            "label": "Limpe antes de desenhar o fundo de estrelas.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clear",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_starfield"
+            }
+          },
+          {
+            "id": "estrelas",
+            "label": "Desenhe o fundo de estrelas em movimento a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "setas",
+            "label": "Mova nave com as setas, com velocidade positiva, antes de desenhá-la.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_arrows_x",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_clamp_to_screen",
+              "inputBlocks": {
+                "SPEED": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          {
+            "id": "limite",
+            "label": "Mantenha nave dentro da tela, no motor.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              }
+            }
+          },
+          {
+            "id": "nave-visivel",
+            "label": "Desenhe nave depois de manter dentro da tela.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_clamp_to_screen",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              },
+              "beforeBlock": "sz_g2d_draw_sprite"
+            }
+          },
+          {
+            "id": "sprite-certo",
+            "label": "Desenhe o sprite nave a cada quadro.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_draw_sprite",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "fields": {
+                "SPRITE": "nave"
+              }
+            }
+          },
+          {
+            "id": "fundo-atras",
+            "label": "As estrelas vêm antes do movimento da nave.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_g2d_starfield",
+              "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
+              "beforeBlock": "sz_g2d_arrows_x"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

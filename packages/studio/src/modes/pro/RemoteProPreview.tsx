@@ -1,17 +1,33 @@
-import { type JSX, type ReactNode, useEffect, useRef, useState } from 'react'
+import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
+import { type JSX, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '#ui'
+import { javaScriptProject } from '../../core/editableProject'
 import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
+import { createGameStorageSession } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
+import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
-import type { StudioProRuntimeAdapter } from '../../studio/pro-runtime'
-import { buildProConsoleBridgeScript, isProConsoleMessage } from './proConsoleBridge'
+import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
+import { ProArtifactPreview } from './ProArtifactPreview'
+import { isProConsoleMessage } from './proConsoleBridge'
+import { useProGameStorage } from './useProGameStorage'
 
 const TOOLBAR_COMPACT_MAX_PX = 400
 
 type Phase = 'building' | 'ready' | 'error'
 
-export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter }): JSX.Element {
-  const project = useProjectStore((state) => state.project)
+export function RemoteProPreview({
+  runtime,
+  active = true,
+}: {
+  runtime: StudioProRuntimeAdapter
+  active?: boolean
+}): JSX.Element | null {
+  const [started, setStarted] = useState(active)
+  useEffect(() => {
+    if (active) setStarted(true)
+  }, [active])
+  const project = useProjectStore((state) => javaScriptProject(state.project))
   const pushLog = useLogsStore((state) => state.push)
   const latestProjectRef = useRef(project)
   latestProjectRef.current = project
@@ -21,7 +37,11 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
   const compactToolbar = toolbarWidth > 0 && toolbarWidth < TOOLBAR_COMPACT_MAX_PX
 
   const [phase, setPhase] = useState<Phase>('building')
-  const [html, setHtml] = useState('')
+  const [compiled, setCompiled] = useState<{
+    projectId: string
+    runtime: StudioProRuntimeAdapter
+    result: StudioProRuntimeBuildResult
+  } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [output, setOutput] = useState('')
   const [attempt, setAttempt] = useState(0)
@@ -29,31 +49,70 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
   const [builtRevision, setBuiltRevision] = useState<number | null>(null)
   const projectId = project?.id ?? null
   const currentRevision = project?.updatedAt ?? null
-  const stale = phase === 'ready' && currentRevision !== builtRevision
+  const [revoked, setRevoked] = useState<StudioProRuntimeAdapter | null>(null)
+  const authorized = !runtime.signal?.aborted && revoked !== runtime
+  const result =
+    authorized && compiled?.projectId === projectId && compiled.runtime === runtime
+      ? compiled.result
+      : null
+  const stale = currentRevision !== builtRevision
+  const scope = captureProjectStorageScope()
+  // biome-ignore lint/correctness/useExhaustiveDependencies: replace the captured backend on profile changes
+  const backend = useMemo(
+    () => (projectId ? createGameStorageSession(projectId) : undefined),
+    [projectId, scope],
+  )
+  const storageName = useProGameStorage({
+    frame: iframeRef,
+    projectId,
+    revision: builtRevision ?? 0,
+    identity: `${result?.artifact?.id ?? builtRevision ?? ''}:${reloadNonce}`,
+    origin: active && result?.html ? 'null' : null,
+  })
+
+  useEffect(() => {
+    const revoke = () => setRevoked(runtime)
+    if (runtime.signal?.aborted) revoke()
+    runtime.signal?.addEventListener('abort', revoke, { once: true })
+    return () => runtime.signal?.removeEventListener('abort', revoke)
+  }, [runtime])
 
   // `attempt` é o gatilho manual de recompilação. O snapshot vem do ref para
   // não recompilar automaticamente a cada tecla enquanto a criança edita.
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt dispara a recompilação manual
   useEffect(() => {
+    if (!started || !authorized) return
     const snapshot = latestProjectRef.current
     if (snapshot?.kind !== 'pro' || snapshot.id !== projectId) return
     const controller = new AbortController()
+    const signal = runtime.signal
+      ? AbortSignal.any([controller.signal, runtime.signal])
+      : controller.signal
     const revision = snapshot.updatedAt
     setPhase('building')
     setError(null)
     setOutput('')
 
     void runtime
-      .build({ project: snapshot, signal: controller.signal })
+      .build({ project: snapshot, signal })
       .then((result) => {
-        if (controller.signal.aborted) return
-        setHtml(injectConsoleBridge(result.html, window.location.origin))
+        if (signal.aborted) return
+        setCompiled({
+          projectId: snapshot.id,
+          runtime,
+          result: result.artifact
+            ? result
+            : {
+                ...result,
+                html: injectConsoleBridge(result.html, window.location.origin),
+              },
+        })
         setOutput(result.output ?? '')
         setBuiltRevision(revision)
         setPhase('ready')
       })
       .catch((cause: unknown) => {
-        if (controller.signal.aborted) return
+        if (signal.aborted) return
         const runtimeError = cause as { message?: unknown; output?: unknown }
         setError(
           typeof runtimeError?.message === 'string'
@@ -65,11 +124,13 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
       })
 
     return () => controller.abort()
-  }, [projectId, attempt, runtime])
+  }, [projectId, attempt, runtime, started, authorized])
 
   useEffect(() => {
+    if (!active) return
     const handler = (event: MessageEvent) => {
       if (event.source !== iframeRef.current?.contentWindow) return
+      if (event.origin !== 'null') return
       if (!isProConsoleMessage(event.data)) return
       pushLog({
         source: 'sz-preview',
@@ -80,7 +141,7 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [pushLog])
+  }, [pushLog, active])
 
   const rebuild = () => {
     const latest = latestProjectRef.current
@@ -88,7 +149,12 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
     setAttempt((value) => value + 1)
   }
 
-  if (phase === 'ready') {
+  if (!active) return null
+
+  if (!authorized)
+    return <PreviewOverlay>A autoria mudou. Aguarde a sincronização para executar.</PreviewOverlay>
+
+  if (result) {
     return (
       <div className="flex h-full w-full flex-col bg-sz-bg">
         <div
@@ -108,6 +174,7 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
             size="sm"
             variant={stale ? 'primary' : 'ghost'}
             onClick={rebuild}
+            disabled={phase === 'building'}
             title="Compilar novamente com as alterações atuais"
             aria-label="Executar alterações"
           >
@@ -122,16 +189,48 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
             </span>
           ) : null}
         </div>
+        {phase === 'building' ? (
+          <p role="status" className="px-3 py-2 text-sz-fg-soft text-xs">
+            Compilando alterações. A última versão continua disponível.
+          </p>
+        ) : null}
+        {phase === 'error' ? (
+          <div role="alert" className="border-sz-border border-b p-3 text-xs">
+            <p className="text-sz-error">{error}</p>
+            <p>Este preview mostra a última compilação válida.</p>
+            <BuildOutput output={output} />
+          </div>
+        ) : null}
         <div className="min-h-0 flex-1 bg-white">
-          <iframe
-            key={reloadNonce}
-            ref={iframeRef}
-            srcDoc={html}
-            title="Pré-visualização do projeto Pro"
-            sandbox="allow-scripts allow-pointer-lock"
-            referrerPolicy="no-referrer"
-            className="h-full w-full border-0"
-          />
+          {result.artifact ? (
+            <ProArtifactPreview
+              artifact={result.artifact}
+              identity={`${scope.identity}:${projectId}:${reloadNonce}`}
+              revision={builtRevision ?? 0}
+              backend={backend}
+              title="Pré-visualização do projeto Pro"
+              recoveryHint="Use Executar alterações para compilar o projeto novamente."
+              onConsole={(message) =>
+                pushLog({
+                  source: 'sz-preview',
+                  kind: message.kind,
+                  parts: message.parts,
+                  timestamp: Date.now(),
+                })
+              }
+            />
+          ) : (
+            <iframe
+              key={storageName}
+              ref={iframeRef}
+              name={storageName}
+              srcDoc={result.html}
+              title="Pré-visualização do projeto Pro"
+              sandbox="allow-scripts allow-pointer-lock"
+              referrerPolicy="no-referrer"
+              className="h-full w-full border-0"
+            />
+          )}
         </div>
       </div>
     )
@@ -162,7 +261,7 @@ export function RemoteProPreview({ runtime }: { runtime: StudioProRuntimeAdapter
 }
 
 function injectConsoleBridge(html: string, parentOrigin: string): string {
-  const script = `<script>${buildProConsoleBridgeScript(parentOrigin).replace(/<\/script/gi, '<\\/script')}</script>`
+  const script = `<script>${buildProRuntimeBridgeScript(parentOrigin).replace(/<\/script/gi, '<\\/script')}</script>`
   return html.includes('</head>') ? html.replace('</head>', `${script}</head>`) : `${script}${html}`
 }
 

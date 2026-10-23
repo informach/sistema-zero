@@ -2,12 +2,18 @@ import {
   BufferAttribute,
   BufferGeometry,
   type Camera,
+  Color,
+  CylinderGeometry,
   DynamicDrawUsage,
   Group,
+  InstancedMesh,
   LineBasicMaterial,
   LineSegments,
+  Matrix4,
+  MeshBasicMaterial,
   Points,
   PointsMaterial,
+  Quaternion,
   Vector3,
 } from 'three'
 import { SCENE_LIMITS } from '../scene/limits'
@@ -23,26 +29,35 @@ export class SceneSupportOverlay {
   private readonly geometry: BufferGeometry
   private readonly selectedGeometry: BufferGeometry
   private readonly lineGeometry: BufferGeometry
-  private readonly material = new PointsMaterial({
-    color: 0x566781,
-    size: 10,
-    sizeAttenuation: false,
-    transparent: true,
+  private readonly boneGeometry = new CylinderGeometry(0.16, 0.3, 1, 8)
+  private readonly boneMaterial = new MeshBasicMaterial({
+    color: 0x8b3fd9,
     depthTest: false,
     depthWrite: false,
+    transparent: true,
+    opacity: 0.9,
   })
-  private readonly selectedMaterial = new PointsMaterial({
-    color: 0x2389da,
+  private readonly bones: InstancedMesh
+  private readonly material = new PointsMaterial({
+    color: 0xffffff,
     size: 16,
     sizeAttenuation: false,
     transparent: true,
     depthTest: false,
     depthWrite: false,
   })
-  private readonly lineMaterial = new LineBasicMaterial({
-    color: 0x566781,
+  private readonly selectedMaterial = new PointsMaterial({
+    color: 0xffd657,
+    size: 23,
+    sizeAttenuation: false,
     transparent: true,
-    opacity: 0.65,
+    depthTest: false,
+    depthWrite: false,
+  })
+  private readonly lineMaterial = new LineBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.8,
     depthTest: false,
     depthWrite: false,
   })
@@ -67,12 +82,32 @@ export class SceneSupportOverlay {
     this.geometry = new BufferGeometry().setAttribute('position', this.positions)
     this.selectedGeometry = new BufferGeometry().setAttribute('position', this.selectedPositions)
     this.lineGeometry = new BufferGeometry().setAttribute('position', this.linePositions)
+    this.bones = new InstancedMesh(this.boneGeometry, this.boneMaterial, capacity)
+    this.bones.count = 0
+    this.bones.frustumCulled = false
+    for (const [material, border] of [
+      [this.material, 0x8b3fd9],
+      [this.selectedMaterial, 0x8b3fd9],
+    ] as const) {
+      material.onBeforeCompile = (shader) => {
+        shader.uniforms.guideBorder = { value: new Color(border) }
+        shader.fragmentShader = `uniform vec3 guideBorder;\n${shader.fragmentShader}`.replace(
+          '#include <map_particle_fragment>',
+          `
+            float radius = length(gl_PointCoord - vec2(0.5));
+            if (radius > 0.5) discard;
+            diffuseColor.rgb = mix(diffuseColor.rgb, guideBorder, step(0.32, radius));
+          `,
+        )
+      }
+      material.customProgramCacheKey = () => 'molda-support-circle-v1'
+    }
     const lines = new LineSegments(this.lineGeometry, this.lineMaterial),
       points = new Points(this.geometry, this.material),
       selected = new Points(this.selectedGeometry, this.selectedMaterial)
     this.root.name = 'molda-support-guides'
     this.root.visible = false
-    for (const [i, object] of [lines, points, selected].entries()) {
+    for (const [i, object] of [lines, this.bones, points, selected].entries()) {
       object.frustumCulled = false
       object.renderOrder = 20 + i
       this.root.add(object)
@@ -103,7 +138,16 @@ export class SceneSupportOverlay {
       selectedChanged = false,
       lineChanged = false,
       chosen = 0,
-      lines = 0
+      lines = 0,
+      boneCount = 0
+    const start = new Vector3(),
+      end = new Vector3(),
+      direction = new Vector3(),
+      middle = new Vector3(),
+      rotation = new Quaternion(),
+      scale = new Vector3(),
+      matrix = new Matrix4(),
+      up = new Vector3(0, 1, 0)
     const write = (attribute: BufferAttribute, slot: number, point: readonly number[]) => {
       let changed = false
       for (let axis = 0; axis < 3; axis++) {
@@ -121,6 +165,22 @@ export class SceneSupportOverlay {
       if (point.selected)
         selectedChanged = write(this.selectedPositions, chosen++, point.position) || selectedChanged
       if (point.parent !== null) {
+        start.fromArray(points[point.parent]!.position)
+        end.fromArray(point.position)
+        direction.subVectors(end, start)
+        const length = direction.length()
+        if (length > 0) {
+          rotation.setFromUnitVectors(up, direction.multiplyScalar(1 / length))
+          middle.addVectors(start, end).multiplyScalar(0.5)
+          const radius = Math.max(0.025, Math.min(length * 0.15, 0.4))
+          scale.set(radius, length, radius)
+          matrix.compose(middle, rotation, scale)
+          this.bones.setMatrixAt(boneCount, matrix)
+        } else {
+          matrix.makeScale(0, 0, 0)
+          this.bones.setMatrixAt(boneCount, matrix)
+        }
+        boneCount++
         lineChanged =
           write(this.linePositions, lines++, points[point.parent]!.position) || lineChanged
         lineChanged = write(this.linePositions, lines++, point.position) || lineChanged
@@ -129,6 +189,8 @@ export class SceneSupportOverlay {
     if (pointChanged) this.positions.needsUpdate = true
     if (selectedChanged) this.selectedPositions.needsUpdate = true
     if (lineChanged) this.linePositions.needsUpdate = true
+    if (lineChanged || this.bones.count !== boneCount) this.bones.instanceMatrix.needsUpdate = true
+    this.bones.count = boneCount
     const changed =
       pointChanged ||
       selectedChanged ||
@@ -205,9 +267,11 @@ export class SceneSupportOverlay {
     this.geometry.dispose()
     this.selectedGeometry.dispose()
     this.lineGeometry.dispose()
+    this.boneGeometry.dispose()
     this.material.dispose()
     this.selectedMaterial.dispose()
     this.lineMaterial.dispose()
+    this.boneMaterial.dispose()
     this.root.clear()
   }
 }

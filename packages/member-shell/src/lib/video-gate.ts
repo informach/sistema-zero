@@ -20,7 +20,7 @@ export type GateBlock = SplitBlock & { blockRevision?: string }
 export type VideoGate = {
   /** A atividade da direita está trancada agora. */
   locked: boolean
-  /** O vídeo que destranca (o PRIMEIRO da seção). `null` quando não há tranca possível. */
+  /** O vídeo que destranca (o PRIMEIRO da parte). `null` quando não há tranca possível. */
   videoBlockId: string | null
   /** Quanto do vídeo a criança já viu, de 0 a 1 (só os trechos assistidos de verdade). */
   watchedFraction: number
@@ -40,7 +40,7 @@ const trancavel = (block: GateBlock): boolean => ehAtividadeDeSecao(block)
 /**
  * Um vídeo que o `LessonVideo` desenha COM player (o mesmo critério dele). Um bloco de vídeo sem
  * `src`, ou com um link do YouTube/Vimeo que não se lê, vira o recado "Vídeo indisponível": como
- * "primeiro vídeo da seção" ele trancaria a atividade para sempre e roubaria o flutuante de um
+ * "primeiro vídeo da parte" ele trancaria a atividade para sempre e roubaria o flutuante de um
  * vídeo bom logo abaixo (full review de 03/10/2026).
  */
 export function isPlayableVideo(block: { kind: string; content?: unknown }): boolean {
@@ -63,7 +63,7 @@ export function videoGateFor({
   enabled,
   sectionCompleted,
 }: {
-  /** Blocos ATIVOS da seção, na ordem dela. */
+  /** Blocos ATIVOS da parte, na ordem dela. */
   blocks: GateBlock[]
   learningProgress: LessonLearningProgress | undefined
   /**
@@ -75,7 +75,7 @@ export function videoGateFor({
   /** O curso pediu e há player (a prévia e o ensaio do admin ficam sempre abertos). */
   enabled: boolean
   /**
-   * A seção já fechou (ou a aula inteira). Quem terminou antes de a opção ser ligada não volta a
+   * A parte já fechou (ou a aula inteira). Quem terminou antes de a opção ser ligada não volta a
    * encontrar a atividade trancada ao revisitar.
    */
   sectionCompleted: boolean

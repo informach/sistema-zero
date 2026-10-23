@@ -1,3 +1,4 @@
+import type { Vec3 } from '../core/model'
 import { PALETTE_SIZE } from '../core/palette'
 import { type BrushSize, lineTexels, stampTexels, type Texel } from '../paint/skinPaint'
 import { requireEditableAppearance, sceneAppearanceUsage } from './appearanceUsage'
@@ -24,6 +25,8 @@ export interface ScenePaintTarget {
   imageKind?: SceneMaterialImageKind
 }
 export interface ScenePaintSample {
+  /** Prepared surface binding; absent for a 2D stroke with one explicit layer. */
+  target?: ScenePaintTarget
   point: Texel
   region: string
   /** A face tocada no palco (a superfície da forma ou a chave da face da malha): o "de perto". */
@@ -33,6 +36,17 @@ export interface ScenePaintSample {
   /** Espelho de pintura: o ponto refletido no plano do meio, na MESMA peça e na mesma folha. */
   mirror?: Omit<ScenePaintSample, 'mirror'>
 }
+/** A geometric contact survives UV/material preparation without losing the first dab. */
+export interface ScenePaintContact {
+  kind: 'surface'
+  nodeId: string
+  faceId: string
+  triangle: number
+  barycentric: Vec3
+  frame: number
+  mirror?: Omit<ScenePaintContact, 'mirror'>
+}
+export type ScenePaintInputSample = ScenePaintSample | ScenePaintContact
 export interface ScenePaintSegment {
   from: Texel
   to: Texel

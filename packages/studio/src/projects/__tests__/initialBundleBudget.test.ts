@@ -83,9 +83,6 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     (total, entry) => total + (entry?.type === 'chunk' ? gzipSync(entry.code).byteLength : 0),
     0,
   )
-  expect(initialFiles.length).toBeLessThanOrEqual(MAX_INITIAL_JS_FILES)
-  expect(initialBytes).toBeLessThanOrEqual(MAX_INITIAL_JS_BYTES)
-  expect(initialGzipBytes).toBeLessThanOrEqual(MAX_INITIAL_JS_GZIP_BYTES)
 
   const chunks = outputs.filter((entry) => entry.type === 'chunk')
   const editorChunk = chunks.find((entry) =>
@@ -128,9 +125,6 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     (total, fileName) => total + gzipSync(chunkByFile.get(fileName)?.code ?? '').byteLength,
     0,
   )
-  expect(routeFiles.size).toBeLessThanOrEqual(MAX_EDITOR_ROUTE_JS_FILES)
-  expect(routeBytes).toBeLessThanOrEqual(MAX_EDITOR_ROUTE_JS_BYTES)
-  expect(routeGzipBytes).toBeLessThanOrEqual(MAX_EDITOR_ROUTE_JS_GZIP_BYTES)
 
   const transitiveFiles = (entryFile: string): Set<string> => {
     const files = new Set<string>()
@@ -149,6 +143,13 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
     return files
   }
 
+  const modeMeasurements: Array<{
+    modeName: string
+    budget: { raw: number; gzip: number; files: number }
+    files: string[]
+    raw: number
+    gzip: number
+  }> = []
   for (const [modeName, budget] of Object.entries(MODE_BUDGETS)) {
     const modeChunk = chunks.find((entry) =>
       Object.keys(entry.modules).some((moduleId) =>
@@ -166,8 +167,52 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
       (total, fileName) => total + gzipSync(chunkByFile.get(fileName)?.code ?? '').byteLength,
       0,
     )
-    expect(files.size).toBeLessThanOrEqual(budget.files)
-    expect(raw).toBeLessThanOrEqual(budget.raw)
-    expect(gzip).toBeLessThanOrEqual(budget.gzip)
+    modeMeasurements.push({ modeName, budget, files: [...files], raw, gzip })
+  }
+  if (process.env.STUDIO_BUNDLE_BENCH_OUTPUT)
+    await Bun.write(
+      process.env.STUDIO_BUNDLE_BENCH_OUTPUT,
+      JSON.stringify(
+        {
+          initial: {
+            files: initialFiles,
+            raw: initialBytes,
+            gzip: initialGzipBytes,
+            modules: initialChunks.map((chunk) =>
+              chunk?.type === 'chunk'
+                ? {
+                    file: chunk.fileName,
+                    raw: Buffer.byteLength(chunk.code),
+                    modules: Object.keys(chunk.modules),
+                  }
+                : null,
+            ),
+          },
+          route: {
+            files: [...routeFiles],
+            raw: routeBytes,
+            gzip: routeGzipBytes,
+            modules: [...routeFiles].map((file) => ({
+              file,
+              modules: Object.keys(chunkByFile.get(file)?.modules ?? {}),
+            })),
+          },
+          modes: modeMeasurements,
+        },
+        null,
+        2,
+      ),
+    )
+  expect(initialFiles.length).toBeLessThanOrEqual(MAX_INITIAL_JS_FILES)
+  expect(initialBytes).toBeLessThanOrEqual(MAX_INITIAL_JS_BYTES)
+  expect(initialGzipBytes).toBeLessThanOrEqual(MAX_INITIAL_JS_GZIP_BYTES)
+  expect(routeFiles.size).toBeLessThanOrEqual(MAX_EDITOR_ROUTE_JS_FILES)
+  expect(routeBytes).toBeLessThanOrEqual(MAX_EDITOR_ROUTE_JS_BYTES)
+  expect(routeGzipBytes).toBeLessThanOrEqual(MAX_EDITOR_ROUTE_JS_GZIP_BYTES)
+  for (const { modeName, budget, files, raw, gzip } of modeMeasurements) {
+    const evidence = JSON.stringify({ modeName, files, raw, gzip })
+    expect(files.length, evidence).toBeLessThanOrEqual(budget.files)
+    expect(raw, evidence).toBeLessThanOrEqual(budget.raw)
+    expect(gzip, evidence).toBeLessThanOrEqual(budget.gzip)
   }
 }, 20_000)

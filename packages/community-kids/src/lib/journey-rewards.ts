@@ -1,3 +1,9 @@
+import {
+  JOURNEY_LEVEL_SLUGS,
+  KIDS_CREATOR_CAPABILITIES,
+  type KidsCreatorCapability,
+  type KidsJourneyView,
+} from '@sistemazero/core/journey'
 import { moldaFeatureList } from './molda-level-gain'
 import type { StudentLevelSlug } from './types'
 
@@ -6,62 +12,93 @@ export interface JourneyRewardInfo {
   description: string
 }
 
-/**
- * O que cada POSTO da jornada abre, do jeito que a criança lê.
- *
- * ⚠️ **Desde a reforma do currículo (08/2026), o posto NÃO libera mais blocos.** Quem põe
- * ferramenta na caixa é o CURSO (`studioUnlockBlocks`): bônus entrega ao concluir; curso com
- * posição entrega ao concluir e publicar. O posto decide só o MODO do editor
- * (livre → Ponte → Pro) e quais PRODUTOS abrem. Anunciar kit por nível aqui
- * ("Jogo 2D Essencial", "Jogo 3D Iniciante") virou promessa falsa: a criança sobe de posto e a
- * caixa não muda.
- *
- * Por isso o Mestre dos Jogos não anuncia ferramenta nenhuma — porque não abre nenhuma. O que
- * ele dá de verdade é o posto e a trilha nova, e é isso que a copy diz. O Explorador(a) anuncia
- * o Molda (a oficina 3D abre onde o kit Jogo 3D, consumidor do modelo, é recompensa — decisão
- * dela, 05/09/2026), e o Arquiteto(a) e a Lenda anunciam as ferramentas do Molda que abrem neles
- * (`MOLDA_TOOL_BAND_LEVELS`, decisão dela de 11/09/2026), com o texto da fonte única
- * `MOLDA_BAND_PROMISES` (`molda-level-gain.ts`). `tests/journey-rewards-conformance.test.ts`
- * trava as promessas contra o core e contra as constantes dos portões.
- */
-export const JOURNEY_REWARD_INFO: Record<StudentLevelSlug, JourneyRewardInfo> = {
-  noob: {
-    title: 'O Estúdio nas fases',
-    description: 'Você já cria dentro das fases, com as peças que a aventura ensina.',
-  },
-  coder: {
-    title: 'Estúdio livre + Pinta',
+const CAPABILITY_REWARD_INFO: Record<KidsCreatorCapability, JourneyRewardInfo> = {
+  studio: {
+    title: 'Estúdio livre',
     description:
-      'Você cria os seus jogos quando quiser, com as ferramentas das aventuras que terminou, e desenha os seus personagens no Pinta.',
+      'Crie com os blocos conquistados nos cursos, quando o Estúdio estiver incluído na sua conta.',
   },
-  hacker: {
-    title: 'Pensa + Zappy',
-    description:
-      'O Pensa te ajuda a planejar a ideia do jogo e o Zappy fica do seu lado dentro do Estúdio.',
+  pinta: {
+    title: 'Pinta',
+    description: 'Desenhe personagens e cenários, quando o Pinta estiver incluído na sua conta.',
   },
-  explorer: {
-    title: 'Molda, a sua oficina 3D',
-    description:
-      'Uma trilha nova se abre, e com ela o Molda: modele peças, pinte texturas e crie céus 360° para os seus jogos 3D.',
-  },
-  elite: {
-    title: 'Um posto novo no mapa',
-    description: 'Uma trilha nova, com jogos bem mais caprichados.',
-  },
-  architect: {
-    title: 'Um posto novo no mapa',
-    description: `Uma trilha nova, para construir cenários inteiros. E no Molda chegam ${moldaFeatureList('intermediate')}.`,
-  },
-  champion: {
+  bridge: {
     title: 'Modo Ponte',
     description: 'Veja os blocos e o código lado a lado, trabalhando juntos.',
   },
-  god: {
+  pro: {
     title: 'Modo Pro',
-    description: `Escreva o jogo direto no código, como os criadores profissionais fazem. E no Molda chegam ${moldaFeatureList('professional')}.`,
+    description: 'Escreva o jogo direto no código, com o Estúdio incluído na sua conta.',
+  },
+  ai: {
+    title: 'Zappy',
+    description: 'O Zappy ajuda nas ferramentas que estão disponíveis para você.',
+  },
+  pensa: {
+    title: 'Pensa',
+    description: 'Planeje a ideia do jogo, quando o Pensa estiver incluído na sua conta.',
+  },
+  molda: {
+    title: 'Molda, a sua oficina 3D',
+    description:
+      'Modele peças, pinte texturas e crie céus para seus jogos, quando o Molda estiver incluído na sua conta.',
+  },
+  'molda-intermediate': {
+    title: 'Novas ferramentas do Molda',
+    description: `No Molda, você conquistou ${moldaFeatureList('intermediate')}.`,
+  },
+  'molda-professional': {
+    title: 'Ferramentas avançadas do Molda',
+    description: `No Molda, você conquistou ${moldaFeatureList('professional')}.`,
   },
 }
 
-export function journeyRewardInfo(slug: string | undefined): JourneyRewardInfo {
-  return JOURNEY_REWARD_INFO[slug as StudentLevelSlug] ?? JOURNEY_REWARD_INFO.noob
+function capabilityRewardInfo(capabilities: readonly KidsCreatorCapability[]): JourneyRewardInfo {
+  const ordered = KIDS_CREATOR_CAPABILITIES.filter((capability) =>
+    capabilities.includes(capability),
+  )
+  const title = ordered.map((capability) => CAPABILITY_REWARD_INFO[capability].title).join(' + ')
+  return {
+    title,
+    description: ordered
+      .map((capability) => CAPABILITY_REWARD_INFO[capability].description)
+      .join(' '),
+  }
+}
+
+/** Actual retained resources, including capabilities removed from the current policy's awards. */
+export function journeyEarnedRewardInfo(view: KidsJourneyView): JourneyRewardInfo {
+  return capabilityRewardInfo(view.earned.capabilities)
+}
+
+/** No rank threshold: each node describes the current policy and actual retained child rights. */
+export function journeyRewardInfo(
+  view: KidsJourneyView,
+  slug: StudentLevelSlug,
+): JourneyRewardInfo {
+  const earnedNode =
+    JOURNEY_LEVEL_SLUGS.indexOf(slug) <= JOURNEY_LEVEL_SLUGS.indexOf(view.earned.level)
+  const assigned = view.advances.find((advance) => advance.level === slug)?.capabilities ?? []
+  const capabilities = assigned.filter((capability) =>
+    earnedNode
+      ? view.earned.capabilities.includes(capability)
+      : !view.earned.capabilities.includes(capability),
+  )
+  if (!earnedNode && view.mode === 'paused')
+    return {
+      title: 'Próximos cursos',
+      description: 'Os próximos cursos estão em preparação.',
+    }
+  if (capabilities.length) return capabilityRewardInfo(capabilities)
+  if (slug === 'noob')
+    return {
+      title: 'O Estúdio nas aulas',
+      description: 'Você cria dentro das aulas, com as peças de cada curso.',
+    }
+  return {
+    title: 'Um posto novo no mapa',
+    description: earnedNode
+      ? 'Seu posto e suas conquistas continuam guardados.'
+      : 'Mais um passo na sua jornada de criação.',
+  }
 }

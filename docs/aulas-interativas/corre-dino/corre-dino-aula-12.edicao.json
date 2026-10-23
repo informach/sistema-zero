@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-sorteio-tira-na-hora",
+    "video-lugar-diferente",
+    "video-velocidade-propria",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-sorteio-tira-na-hora-K1",
+      "clipe": "video-sorteio-tira-na-hora",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.",
+      "ancoraDepois": "Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os",
+      "falaPrincipal": "Ué, pode sair o mesmo lugar outra vez?",
+      "falaPersonagem": "Ué, pode sair o mesmo lugar outra vez?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-lugar-diferente-K1",
+      "clipe": "video-lugar-diferente",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.",
+      "ancoraDepois": "O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares",
+      "falaPrincipal": "Quais números eu coloco no sorteio?",
+      "falaPersonagem": "Quais números eu coloco no sorteio?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-velocidade-propria-K1",
+      "clipe": "video-velocidade-propria",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.",
+      "ancoraDepois": "Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal",
+      "falaPrincipal": "Por que a conta usa menos?",
+      "falaPersonagem": "Por que a conta usa menos?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

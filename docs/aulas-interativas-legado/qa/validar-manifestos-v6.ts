@@ -3,7 +3,7 @@
  *
  * Valida o conteúdo gravado, sem depender das antigas receitas de geração: a aula publicada é
  * construída a partir deste manifesto, e não da receita que um dia o criou.
- * Uso: bun docs/aulas-interativas/qa/validar-manifestos-v6.ts
+ * Uso: bun docs/aulas-interativas-tecnico/qa/validar-manifestos-v6.ts
  */
 import assert from 'node:assert/strict'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'

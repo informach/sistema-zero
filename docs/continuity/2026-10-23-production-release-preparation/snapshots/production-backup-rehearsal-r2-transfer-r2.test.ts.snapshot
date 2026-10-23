@@ -1,0 +1,81 @@
+import { afterEach, expect, test } from 'bun:test'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { PINS, argumentsFor, catalogDisabled, downloadExclusive, executionEnvironment, invocation, missingObject, reserve, validateRestore } from './production-backup-rehearsal-r2-transfer-r2.mjs'
+import { writeOnce } from './production-backup-durable-store-r2.mjs'
+const bytes = Buffer.from('INERT_ENCRYPTED_BYTES_SENTINEL'), hash = (b: Uint8Array) => createHash('sha256').update(b).digest('hex')
+const dirs: string[] = [], temp = async () => { const p = await mkdtemp(join(tmpdir(), 'sz-rehearsal-transfer-')); dirs.push(p); return p }
+afterEach(async () => { for (const dir of dirs.splice(0)) { if (!resolve(dir).startsWith(resolve(tmpdir(), 'sz-rehearsal-transfer-'))) throw Error('TEST_PATH'); await rm(dir, { recursive: true }) } })
+const result = (code = 0, stdout = '', stderr = '') => ({ code, stdout: Buffer.from(stdout), stderr: Buffer.from(stderr) })
+const fixture = () => ({ kind: 'production-postgres-logical-rehearsal', state: 'LOCAL_LOGICAL_RESTORE_REHEARSAL_VERIFIED_NOT_FINAL_BACKUP', restoreQualified: true, finalCiphertextVerified: true,
+  finalPreMigrationBackup: false, productionWritersFenced: false, ciphertextPath: PINS.ciphertextPath,
+  capture: { ciphertext: { bytes: PINS.ciphertextBytes, sha256: PINS.ciphertextSha256, streamEnded: true } },
+  verification: { authenticatedThroughEof: true, ciphertext: { bytes: PINS.ciphertextBytes, sha256: PINS.ciphertextSha256, streamEnded: true } },
+  clone: { cleanup: 'OWN_CID_REMOVED_VERIFIED', state: 'ISOLATED_CLONE_PROOF_PASSED' },
+  restoreAttempt: { ciphertextSha256: PINS.ciphertextSha256, state: 'CONSUMED_AUTHENTICATED_ARCHIVE', childExits: [{ exitCode: 0 }, { exitCode: 0 }] } })
+test('closed rehearsal scope rejects final backup, extra options and path-like run names', () => {
+  const args = argumentsFor(['production-backup-rehearsal-transfer-inert'])
+  expect(args.key).toBe(`rehearsal/production-backup-rehearsal-transfer-inert/${PINS.ciphertextSha256}.dump.age`)
+  expect(args.download).not.toBe(PINS.ciphertextPath); expect(args.download).toContain('SistemaZeroRecovery')
+  for (const args of [[], ['final-backup'], ['production-backup-rehearsal-transfer-../x'], ['production-backup-rehearsal-transfer-inert', '--force']]) expect(() => argumentsFor(args)).toThrow()
+})
+test('receipt requires authenticated complete restoration, ciphertext identity and owned cleanup', () => {
+  expect(() => validateRestore(fixture())).not.toThrow()
+  for (const mutate of [(v: any) => { v.restoreQualified = false }, (v: any) => { v.finalPreMigrationBackup = true }, (v: any) => { v.verification.authenticatedThroughEof = false }, (v: any) => { v.capture.ciphertext.bytes++ }, (v: any) => { v.verification.ciphertext.sha256 = '0'.repeat(64) }, (v: any) => { v.clone.cleanup = 'UNCONFIRMED' }, (v: any) => { v.restoreAttempt.childExits[1].exitCode = 1 }, (v: any) => { v.ciphertextPath = 'C:/other.age' }]) { const v = fixture(); mutate(v); expect(() => validateRestore(v)).toThrow() }
+})
+test('only the exact remote CLI missing-key error with exit1 and zero bytes admits upload', () => {
+  const error = '✘ [ERROR] The specified key does not exist.\r\n'
+  expect(missingObject(result(1, '', error))).toBe(true)
+  expect(missingObject(result(1, '', '\u001b[31mX [ERROR]\u001b[0m The specified key does not exist.'))).toBe(true)
+  for (const v of [result(0, '', error), result(2, '', error), result(1, 'x', error), result(1, '', '403 Forbidden'), result(1, '', error + 'additional error'), result(1, '', 'The specified bucket does not exist.'), result(1, '', '')]) expect(missingObject(v)).toBe(false)
+})
+test('real Wrangler handleError emits one logger LF, never arbitrary whitespace or object bytes', () => {
+  const error = 'X [ERROR] The specified key does not exist.\n'
+  expect(missingObject(result(1, '\n', error))).toBe(true)
+  for (const stdout of [' ', '\r\n', '\n\n', 'x\n', '\n\0', '\t']) expect(missingObject(result(1, stdout, error))).toBe(false)
+  for (const value of [result(0, '\n', error), result(2, '\n', error), result(1, '\n', '403 Forbidden'), result(1, '\n', error + 'other failure')]) expect(missingObject(value)).toBe(false)
+})
+test('catalog absence requires the official exact target, status and no other warnings', () => {
+  const output = `Getting data catalog status for '${PINS.bucket}'...\r\n\r\nData catalog is not enabled for bucket '${PINS.bucket}'. Please use 'wrangler r2 bucket catalog enable ${PINS.bucket}' to first enable the data catalog on this bucket.\r\n`
+  expect(catalogDisabled(result(0, output))).toBe(true)
+  for (const v of [result(1, output), result(0, output, 'warning'), result(0, output + 'Status: active'), result(0, output.replaceAll(PINS.bucket, 'other')), result(0, 'Status: inactive')]) expect(catalogDisabled(v)).toBe(false)
+})
+test('official argv always uses remote object transfers, no force, no file overwrite download or alternate targets', () => {
+  const args = argumentsFor(['production-backup-rehearsal-transfer-inert']), empty = 'C:/inert/empty.env'
+  const put = invocation('put', args, empty), get = invocation('get', args, empty)
+  expect(put).toContain('--remote'); expect(put).toContain(PINS.ciphertextPath); expect(put).not.toContain('--force'); expect(put).not.toContain('--expires')
+  expect(get).toContain('--pipe'); expect(get).toContain('--remote'); expect(get).not.toContain('--file'); expect(get).not.toContain('--local')
+  expect(() => invocation('delete', args, empty)).toThrow(); expect(put).toContain(`${PINS.bucket}/${args.key}`)
+})
+test('pinned official hide-banner setting prevents unsolicited update check and keeps ambient overrides out', () => {
+  const env = executionEnvironment({ PATH: 'INERT_PATH', CLOUDFLARE_API_BASE_URL: 'https://unexpected.invalid', CLOUDFLARE_API_TOKEN: 'PRIVATE_SENTINEL', NODE_OPTIONS: '--require=other', RAILWAY_TOKEN: 'PRIVATE_SENTINEL' })
+  expect(env.WRANGLER_HIDE_BANNER).toBe('true'); expect(env.CLOUDFLARE_ACCOUNT_ID).toBe(PINS.account); expect(env.WRANGLER_WRITE_LOGS).toBe('false'); expect(env.WRANGLER_SEND_METRICS).toBe('false')
+  expect(env).not.toHaveProperty('NODE_OPTIONS'); expect(env).not.toHaveProperty('CLOUDFLARE_API_BASE_URL'); expect(JSON.stringify(env)).not.toContain('PRIVATE_SENTINEL')
+})
+test('download writes a new file, syncs and verifies actual bytes; existing files are never overwritten', async () => {
+  const dir = await temp(), path = join(dir, 'download.age'); let receives = 0
+  const receive = async () => { receives++; return bytes }, expected = { bytes: bytes.length, sha256: hash(bytes) }
+  expect(await downloadExclusive(path, receive, expected)).toEqual({ ...expected, exclusiveFile: true, synced: true }); expect(await readFile(path)).toEqual(bytes)
+  await expect(downloadExclusive(path, receive, expected)).rejects.toThrow(); expect(receives).toBe(1); expect(await readFile(path)).toEqual(bytes)
+})
+test('short, extra, corrupt or failed downloads cannot qualify or overwrite original ciphertext', async () => {
+  const dir = await temp(), original = join(dir, 'original.age'); await writeFile(original, bytes)
+  for (const [i, value] of [bytes.subarray(1), Buffer.concat([bytes, Buffer.from('x')]), Buffer.alloc(bytes.length)].entries()) {
+    await expect(downloadExclusive(join(dir, `${i}.age`), async () => value, { bytes: bytes.length, sha256: hash(bytes) })).rejects.toThrow('DOWNLOADED_CIPHERTEXT_MISMATCH')
+  }
+  await expect(downloadExclusive(join(dir, 'failed.age'), async () => { throw Error('SAFE_FAILURE') }, { bytes: bytes.length, sha256: hash(bytes) })).rejects.toThrow('SAFE_FAILURE')
+  expect(await readFile(original)).toEqual(bytes)
+})
+test('lost upload ACK still downloads once but stays unknown, and a changed run cannot resend', async () => {
+  const dir = await temp(), patches: any[] = []; let sends = 0, reads = 0
+  const deps = { preflight: async () => {}, reserve: () => reserve(dir, { run: `different-${sends}` }), checkpoint: async (v: any) => { patches.push(v) }, send: async () => { sends++; throw Error('PRIVATE_RAW_ERROR') }, readback: async () => { reads++ } }
+  expect(await writeOnce(deps)).toBe(false); expect(patches.at(-1).state).toBe('ACK_UNKNOWN_READBACK_MATCHED'); expect(patches.at(-1).remoteOutcomeUnknown).toBe(true)
+  await expect(writeOnce(deps)).rejects.toThrow(); expect(sends).toBe(1); expect(reads).toBe(1); expect(JSON.stringify(patches)).not.toContain('PRIVATE_RAW_ERROR')
+})
+test('Node24 import and invalid CLI do not invoke providers or read ciphertext', () => {
+  const code = `import assert from'node:assert/strict';import cp from'node:child_process';import{syncBuiltinESMExports}from'node:module';cp.execFile=()=>{throw Error('NO_PROVIDER')};syncBuiltinESMExports();globalThis.fetch=()=>{throw Error('NO_NETWORK')};const m=await import('./.cache/python-reference-games/production-backup-rehearsal-r2-transfer-r2.mjs');await assert.rejects(m.main(['invalid']),/ARGUMENTS/);console.log('IMPORT_INERT');`
+  expect(execFileSync('C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe', ['--no-warnings', '--input-type=module', '-e', code], { cwd: resolve(import.meta.dir, '../..'), windowsHide: true, encoding: 'utf8', timeout: 5000 }).trim()).toBe('IMPORT_INERT')
+})

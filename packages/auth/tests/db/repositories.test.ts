@@ -4,6 +4,7 @@ import path from 'node:path'
 import { sha256Hex } from '@sistemazero/core/security'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import { UpdateProfileDetailsService } from '../../src/application/profiles/update-profile.service'
 import { ProfileAggregate } from '../../src/domain/profile/profile.aggregate'
 import { UserAggregate } from '../../src/domain/user/user.aggregate'
 import { EmailAlreadyInUseError } from '../../src/domain/user/user.errors'
@@ -127,7 +128,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
   beforeEach(async () => {
     await conn.sql`
       truncate table auth.users, auth.user_deletion_receipts, auth.refresh_tokens,
-        auth.refresh_token_families, auth.profiles,
+        auth.refresh_token_families, auth.profiles, auth.profile_voice_input_events,
         auth.password_reset_tokens, auth.otp_codes, auth.audit_logs cascade`
   })
 
@@ -187,9 +188,216 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       accountUserId: user.id,
       name: 'Novo perfil',
     })
-    expect(await profiles.createWithinLimit(candidate, 5)).toEqual({
+    expect(
+      await profiles.createWithinLimit(candidate, 5, {
+        requestId: randomUUID(),
+        requestHash: 'a'.repeat(64),
+      }),
+    ).toEqual({
       outcome: 'account_inactive',
     })
+  })
+
+  test('fala da criança: linha antiga vem desligada; ligar/desligar faz ida e volta no banco', async () => {
+    const user = newUser('voice-input@example.com')
+    await users.create(user)
+    // Linha como as de antes da migration 0019 (o INSERT não conhece as colunas novas).
+    const legacyId = randomUUID()
+    await conn.sql`
+      insert into auth.profiles
+        (id, account_user_id, name, status, sort_order, created_at, updated_at)
+      values (${legacyId}, ${user.id}, 'Antigo', 'active', 0, now(), now())`
+    const legacy = await profiles.findById(legacyId)
+    if (!legacy) throw new Error('perfil não encontrado')
+    expect(legacy.voiceInputEnabled).toBe(false)
+    expect(legacy.toSnapshot().voiceInputEnabledAt).toBeNull()
+
+    const consentAt = new Date('2026-10-14T15:30:00.000Z')
+    await new UpdateProfileDetailsService(profiles, () => consentAt).execute({
+      accountUserId: user.id,
+      profileId: legacyId,
+      voiceInputEnabled: true,
+    })
+    const on = await profiles.findById(legacyId)
+    expect(on?.voiceInputEnabled).toBe(true)
+    expect(on?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(consentAt.toISOString())
+
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T16:00:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: legacyId, voiceInputEnabled: false })
+    const off = await profiles.findById(legacyId)
+    expect(off?.voiceInputEnabled).toBe(false)
+    expect(off?.toSnapshot().voiceInputEnabledAt).toBeNull()
+
+    // Criar já ligada (régua de autorização é do serviço) persiste os dois campos no insert.
+    const created = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: user.id,
+      name: 'Novo',
+      now: consentAt,
+    })
+    created.setVoiceInputEnabled(true, { kind: 'parent' }, consentAt)
+    const outcome = await profiles.createWithinLimit(created, 5, {
+      requestId: randomUUID(),
+      requestHash: 'a'.repeat(64),
+    })
+    if (outcome.outcome !== 'created') throw new Error(`perfil não criado: ${outcome.outcome}`)
+    const reloaded = await profiles.findById(created.id)
+    expect(reloaded?.voiceInputEnabled).toBe(true)
+    expect(reloaded?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(consentAt.toISOString())
+  })
+
+  test('fala da criança: cada mudança efetiva grava a trilha JUNTO com o perfil', async () => {
+    const user = newUser('voice-trail@example.com')
+    await users.create(user)
+    const supportId = randomUUID()
+    const trailOf = (profileId: string) => conn.sql<
+      {
+        account_user_id: string
+        enabled: boolean
+        actor: string
+        impersonator_id: string | null
+        // O driver do drizzle troca o parser de timestamptz do cliente cru: chega texto.
+        created_at: string
+      }[]
+    >`
+      select account_user_id, enabled, actor, impersonator_id, created_at
+        from auth.profile_voice_input_events
+       where profile_id = ${profileId}
+       order by created_at, id`
+
+    // Criação já ligada: a 1ª linha entra na mesma transação do insert do perfil.
+    const createdAt = new Date('2026-10-14T15:00:00.000Z')
+    const created = ProfileAggregate.create({
+      id: randomUUID(),
+      accountUserId: user.id,
+      name: 'Bia',
+      now: createdAt,
+    })
+    created.setVoiceInputEnabled(true, { kind: 'parent' }, createdAt)
+    expect(
+      (
+        await profiles.createWithinLimit(created, 5, {
+          requestId: randomUUID(),
+          requestHash: 'a'.repeat(64),
+        })
+      ).outcome,
+    ).toBe('created')
+    expect(created.voiceInputChange).toBeNull()
+
+    // Reenviar ligada (o formulário dos pais trocando só o nome): nenhuma linha nova.
+    const resend = await profiles.findById(created.id)
+    if (!resend) throw new Error('perfil não encontrado')
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:10:00.000Z'),
+    ).execute({
+      accountUserId: user.id,
+      profileId: created.id,
+      name: 'Bia Maria',
+      voiceInputEnabled: true,
+    })
+
+    // O suporte desliga: a linha leva o ator real.
+    const offAt = new Date('2026-10-14T15:20:00.000Z')
+    const off = await profiles.findById(created.id)
+    if (!off) throw new Error('perfil não encontrado')
+    await new UpdateProfileDetailsService(profiles, () => offAt).execute({
+      accountUserId: user.id,
+      profileId: created.id,
+      voiceInputEnabled: false,
+      impersonatorId: supportId,
+    })
+
+    // Os pais religam: a data em vigor é a nova, e a antiga segue provada na trilha.
+    const onAgainAt = new Date('2026-10-14T15:30:00.000Z')
+    const onAgain = await profiles.findById(created.id)
+    if (!onAgain) throw new Error('perfil não encontrado')
+    await new UpdateProfileDetailsService(profiles, () => onAgainAt).execute({
+      accountUserId: user.id,
+      profileId: created.id,
+      voiceInputEnabled: true,
+    })
+
+    const reloaded = await profiles.findById(created.id)
+    expect(reloaded?.name).toBe('Bia Maria')
+    expect(reloaded?.toSnapshot().voiceInputEnabledAt?.toISOString()).toBe(onAgainAt.toISOString())
+    const trail = await trailOf(created.id)
+    expect(
+      trail.map((row) => ({
+        account: row.account_user_id,
+        enabled: row.enabled,
+        actor: row.actor,
+        impersonator: row.impersonator_id,
+        at: new Date(row.created_at).toISOString(),
+      })),
+    ).toEqual([
+      {
+        account: user.id,
+        enabled: true,
+        actor: 'parent',
+        impersonator: null,
+        at: createdAt.toISOString(),
+      },
+      {
+        account: user.id,
+        enabled: false,
+        actor: 'support',
+        impersonator: supportId,
+        at: offAt.toISOString(),
+      },
+      {
+        account: user.id,
+        enabled: true,
+        actor: 'parent',
+        impersonator: null,
+        at: onAgainAt.toISOString(),
+      },
+    ])
+
+    // Two explicit disable requests observe the locked current state; only the first changes consent.
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:40:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: created.id, voiceInputEnabled: false })
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:41:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: created.id, voiceInputEnabled: false })
+    expect((await trailOf(created.id)).map((row) => row.enabled)).toEqual([
+      true,
+      false,
+      true,
+      false,
+    ])
+
+    // Edição defasada (`reloaded` leu ligada antes do "desligar") não religa sem trilha.
+    if (!reloaded) throw new Error('perfil não encontrado')
+    await new UpdateProfileDetailsService(
+      profiles,
+      () => new Date('2026-10-14T15:50:00.000Z'),
+    ).execute({ accountUserId: user.id, profileId: created.id, name: 'Bia M' })
+    const afterStale = await profiles.findById(created.id)
+    expect(afterStale?.name).toBe('Bia M')
+    expect(afterStale?.voiceInputEnabled).toBe(false)
+    expect(afterStale?.toSnapshot().voiceInputEnabledAt).toBeNull()
+
+    // O banco também recusa o suporte LIGANDO (CHECK), além do agregado.
+    let caught: unknown = null
+    try {
+      await conn.sql`
+        insert into auth.profile_voice_input_events
+          (profile_id, account_user_id, enabled, actor, impersonator_id)
+        values (${created.id}, ${user.id}, true, 'support', ${supportId})`
+    } catch (error) {
+      caught = error
+    }
+    expect((caught as { code?: string } | null)?.code).toBe('23514')
+
+    // Exclusão da conta pelo painel: a trilha da criança sai junto com o perfil.
+    await users.deleteById(user.id)
+    expect((await trailOf(created.id)).length).toBe(0)
   })
 
   test('deleteById grava recibo durável com os perfis e o retry preserva o resultado', async () => {
@@ -404,15 +612,18 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     const arquivada = randomUUID()
     const orfao = randomUUID()
     const promo = randomUUID()
+    const preparando = randomUUID()
+    // Os perfis históricos já foram admitidos; os novos pending continuam fora da busca.
     await conn.sql`
       insert into auth.profiles
-        (id, account_user_id, name, birth_date, status, sort_order, created_at, updated_at)
+        (id, account_user_id, name, birth_date, status, admission_state, sort_order, created_at, updated_at)
       values
-        (${miguel}, ${ana.id}, 'Miguel', '2016-03-09', 'active', 0, now(), now()),
-        (${alice}, ${ana.id}, 'Alice', null, 'active', 1, now(), now()),
-        (${arquivada}, ${ana.id}, 'Beatriz', null, 'archived', 2, now(), now()),
-        (${orfao}, ${randomUUID()}, 'Zoe', null, 'active', 0, now(), now()),
-        (${promo}, ${rui.id}, 'Za 100%', null, 'active', 0, now(), now())`
+        (${miguel}, ${ana.id}, 'Miguel', '2016-03-09', 'active', 'ready', 0, now(), now()),
+        (${alice}, ${ana.id}, 'Alice', null, 'active', 'ready', 1, now(), now()),
+        (${arquivada}, ${ana.id}, 'Beatriz', null, 'archived', 'ready', 2, now(), now()),
+        (${orfao}, ${randomUUID()}, 'Zoe', null, 'active', 'ready', 0, now(), now()),
+        (${promo}, ${rui.id}, 'Za 100%', null, 'active', 'ready', 0, now(), now()),
+        (${preparando}, ${ana.id}, 'Miguel em preparo', null, 'active', 'pending', 3, now(), now())`
 
     // Por nome da criança (case-insensitive), com a conta responsável anexada.
     const byChild = await profiles.searchWithAccount({ q: 'migu', limit: 10, offset: 0 })
@@ -426,7 +637,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
       account: { id: ana.id, email: 'ana@familia.com', firstName: 'Ana', lastName: 'Souza' },
     })
 
-    // Por e-mail do responsável: os perfis ATIVOS da conta (arquivado fora), nome asc.
+    // Por e-mail do responsável: perfis ATIVOS e admitidos (arquivado/pending fora), nome asc.
     const byEmail = await profiles.searchWithAccount({ q: 'ana@familia', limit: 10, offset: 0 })
     expect(byEmail.total).toBe(2)
     expect(byEmail.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
@@ -436,10 +647,13 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(byFullName.total).toBe(2)
     expect(byFullName.items.map((i) => i.name)).toEqual(['Alice', 'Miguel'])
 
-    // Sem q → todos os ativos; conta apagada → account: null (o perfil segue listável).
+    // Sem q → ativos admitidos; conta apagada → account: null (o perfil segue listável).
     const all = await profiles.searchWithAccount({ limit: 10, offset: 0 })
     expect(all.total).toBe(4)
     expect(all.items.find((i) => i.id === orfao)?.account).toBeNull()
+    expect(all.items.some((i) => i.id === preparando)).toBe(false)
+    const pendingOnly = await profiles.searchWithAccount({ q: 'preparo', limit: 10, offset: 0 })
+    expect(pendingOnly).toEqual({ items: [], total: 0 })
 
     // '%' é LITERAL (escapado): casa só o nome que contém % — não vira curinga.
     const wildcard = await profiles.searchWithAccount({ q: '%', limit: 10, offset: 0 })

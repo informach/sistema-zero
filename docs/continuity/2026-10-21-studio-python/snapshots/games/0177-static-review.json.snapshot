@@ -1,0 +1,11 @@
+{
+  "state": "INSTRUMENTATION-ONLY-STATIC-PASS-NOT-EXECUTED",
+  "packetSha256": "099f802cad4783cd422182710820730025fef6feda79e1e8824e4e20bdf0c241",
+  "originalRunnerExactlyRestoredByRemovingTwoInstrumentationBlocks": true,
+  "originalQpcAtLeast3AssertUnchanged": true,
+  "observerByteIdentical": true,
+  "supervisorByteIdentical": true,
+  "cleanupAndAllOtherOracleCodeUnchanged": true,
+  "sourceCompilePassed": true,
+  "newOutputAbsent": true
+}

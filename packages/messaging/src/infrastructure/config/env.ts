@@ -55,6 +55,7 @@ const EnvSchema = z
     // Token interno injetado pelo gateway nas rotas de envio (S2S), espelhando o
     // padrão do members. Quando AUSENTE/vazio, a checagem é desligada (dev).
     MESSAGING_INTERNAL_TOKEN: optionalSecret('MESSAGING_INTERNAL_TOKEN'),
+    AUTH_CONSUMER_ID: z.string().min(1).max(100).default('auth'),
 
     // ── Provedores (opcionais no boot; o worker falha o envio se faltar) ────────
     SENDGRID_API_KEY: z.string().optional(),

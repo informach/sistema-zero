@@ -107,6 +107,8 @@ const EnvSchema = z
     // kids da conta em `GET /members/internal/profile-allowance` ao criar um perfil.
     MEMBERS_BASE_URL: z.string().url().default('http://localhost:3004'),
     MEMBERS_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
+    // Auth-only Kids admission; bind the SAME secret to Members, never the general internal token.
+    MEMBERS_PROFILE_ADMISSION_TOKEN: z.string().min(16).optional(),
     // Token interno enviado na chamada S2S (= INTERNAL_API_TOKEN do members). Opcional
     // em dev/local (members sem token); OBRIGATÓRIO em produção (ver refine abaixo).
     MEMBERS_INTERNAL_TOKEN: z
@@ -117,9 +119,22 @@ const EnvSchema = z
     // Envio de e-mail via gateway → messaging (HMAC de borda, consumer `auth`).
     // Sem GATEWAY_URL + AUTH_HMAC_SECRET, o cliente vira no-op (envio desligado).
     GATEWAY_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
     GATEWAY_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(10_000),
     AUTH_CONSUMER_ID: z.string().min(1).default('auth'),
     AUTH_HMAC_SECRET: z.string().min(16).optional(),
+
+    // Aviso de 18 anos (e-mail `profile-turned-18` ao responsável): intervalo do job, que
+    // roda também no boot. 0 desliga. Não roda com NODE_ENV=test. Default 6 h: o aniversário
+    // é pego no próprio dia e a janela de 7 dias cobre atrasos. Teto = maior atraso aceito pelo
+    // `setInterval` (acima disso o timer dispara na hora, em loop).
+    PROFILE_ADULT_NOTICE_INTERVAL_MS: z.coerce
+      .number()
+      .int()
+      .min(0)
+      .max(2_147_483_647)
+      .default(6 * 60 * 60 * 1000),
   })
   // HS256 exige um segredo forte (≥ 32 chars) — um segredo curto/ausente derrubaria
   // toda a garantia de autenticidade dos tokens. Fail-fast no boot.
@@ -185,6 +200,10 @@ const EnvSchema = z
     message:
       'MEMBERS_INTERNAL_TOKEN é obrigatório em produção (o members exige x-internal-token na rota S2S de profile-allowance)',
     path: ['MEMBERS_INTERNAL_TOKEN'],
+  })
+  .refine((e) => e.NODE_ENV !== 'production' || Boolean(e.MEMBERS_PROFILE_ADMISSION_TOKEN), {
+    message: 'MEMBERS_PROFILE_ADMISSION_TOKEN é obrigatório em produção para a admissão Kids',
+    path: ['MEMBERS_PROFILE_ADMISSION_TOKEN'],
   })
   // `MEMBERS_BASE_URL` tem default localhost (dev). Em produção precisa apontar para
   // o host interno (members.railway.internal) — localhost bootaria verde e quebraria

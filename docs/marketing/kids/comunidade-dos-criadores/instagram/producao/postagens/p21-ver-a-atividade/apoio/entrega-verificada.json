@@ -1,0 +1,454 @@
+{
+  "id": "P21",
+  "checkedAt": "2026-10-14T21:02:03.440Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 796637,
+      "sha256": "f6a8866313dd1ff468584bd0b6e88cea6b1b7776af12e57d04cb26e18394b656"
+    },
+    {
+      "file": "02-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 918572,
+      "sha256": "ec34d3685d85d388c5b9d8ba45ea7592609e23a77296694a1446445677892e63"
+    },
+    {
+      "file": "03-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 817914,
+      "sha256": "f68f90be74548c624dc84946177fcb6f443eb8178afdcf9df0c152e92054f861"
+    },
+    {
+      "file": "04-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 97922,
+      "sha256": "9e4eb13b5d582a9fc9a87a7236a1c39876af8593bb5bbdca146bdc5720aa6bc0"
+    },
+    {
+      "file": "05-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 130270,
+      "sha256": "1cfd222d9fc550ed8f15f989952dab198cf27c14f7da1d1900eb39171e3465e1"
+    },
+    {
+      "file": "06-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 120669,
+      "sha256": "2194ae64c8b51edb397d4edea1c899966c27aa3341a19fe7db46b32628751094"
+    },
+    {
+      "file": "07-p21.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 878905,
+      "sha256": "a0e773e75d01f92d38eea0f551fd4c840b695fea99346802e46354fde7e7721f"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p21.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p21.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-comparar-cursos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-palavras-no-papel.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-ver-demonstracao.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-demonstracao.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-dois-pontos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-dois-pontos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-condicao-energia.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-carta-bloqueada.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-carta-bloqueada.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-regra-dois-pontos.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-gastou-um-ponto.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-gastou-um-ponto.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-conferir-bloqueio.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-conferir-bloqueio.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-escolher-exemplo.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-player-real.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/03-p21-a-p30.md#p21",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "duelo-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "duelo-dois-pontos.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "duelo-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "duelo-dois-pontos.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "06-regra-dois-pontos.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "05-condicao-energia.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "demonstracao-duelo.webm",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "video-verificado.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "07-player-real.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "copyLinter": "Sete slides e legenda: zero achados.",
+  "visualReview": "Sete slides conferidos individualmente. Quatro imagens novas, perspectivas corrigidas, regras e estados nativos legíveis. Copy pública e legenda preservadas.",
+  "ruleChanges": [
+    {
+      "path": ".behavior.start.12.n.value",
+      "original": 3,
+      "adapted": 2
+    }
+  ],
+  "demo": {
+    "blockedStatesUnchanged": true,
+    "captures": 9,
+    "video": {
+      "duration": 3.938762,
+      "time": 3.938762,
+      "paused": true,
+      "videoWidth": 800,
+      "videoHeight": 600
+    }
+  },
+  "carouselCount": 24,
+  "pngCount": 176,
+  "textBounds": [
+    {
+      "text": "O curso promete criatividade e raciocínio.",
+      "within": true
+    },
+    {
+      "text": "Peça para ver a atividade que trabalha isso.",
+      "within": true
+    },
+    {
+      "text": "Criatividade, raciocínio e preparação para o futuro aparecem em muitas ofertas.",
+      "within": true
+    },
+    {
+      "text": "Mas essas palavras, sozinhas, não mostram como será a aula.",
+      "within": true
+    },
+    {
+      "text": "Peça um exemplo de atividade.",
+      "within": true
+    },
+    {
+      "text": "O que a criança escolhe? O que ela constrói? Como descobre se funcionou?",
+      "within": true
+    },
+    {
+      "text": "Veja este jogo de cartas.",
+      "within": true
+    },
+    {
+      "text": "O jogador tem dois pontos para gastar. Cada carta custa um ponto. Ele precisa escolher quais cartas usar.",
+      "within": true
+    },
+    {
+      "text": "Ao criar essa regra, a criança precisa decidir o que acontece quando os pontos acabam.",
+      "within": true
+    },
+    {
+      "text": "Depois, testa se o jogo impede uma jogada que custa mais do que o jogador tem.",
+      "within": true
+    },
+    {
+      "text": "Agora dá para entender o que ela pratica: criar uma regra, prever uma situação e conferir o resultado.",
+      "within": true
+    },
+    {
+      "text": "Procure esse tipo de explicação ao comparar atividades.",
+      "within": true
+    },
+    {
+      "text": "Aqui mostramos o que as crianças podem aprender criando os próprios jogos.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para conhecer mais exemplos.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 9,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "726f27de37c128915c2074b5dad6846c77f0c70e13ec71b7282962f5bf25cdbc",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P15",
+  "published": false
+}

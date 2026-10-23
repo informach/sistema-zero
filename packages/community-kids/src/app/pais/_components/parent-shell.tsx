@@ -1,7 +1,16 @@
 'use client'
 
 import { UserAvatar } from '@sistemazero/member-shell/components/user-avatar'
-import { ChevronDown, KeyRound, LifeBuoy, LogOut, Receipt, Sparkles, Users } from 'lucide-react'
+import {
+  CalendarDays,
+  ChevronDown,
+  KeyRound,
+  LifeBuoy,
+  LogOut,
+  Receipt,
+  Sparkles,
+  Users,
+} from 'lucide-react'
 import Link from 'next/link'
 import { type ReactNode, useState } from 'react'
 import { toast } from 'sonner'
@@ -16,6 +25,7 @@ import { OptionsMenu } from './parent-ui'
 const ICONS: Record<ParentSectionId, typeof Users> = {
   familia: Users,
   acompanhamento: Sparkles,
+  oficinas: CalendarDays,
   conta: Receipt,
   ajuda: LifeBuoy,
 }
@@ -44,7 +54,7 @@ function SectionLinks({ active }: { active: ParentSectionId | null }) {
  * A moldura de TODAS as páginas da área dos pais (11/10/2026): a barra com a logo, as quatro
  * seções (Família, Acompanhamento, Conta, Ajuda), a troca segura para a criança e o menu da
  * conta. Antes cada página tinha um jeito de voltar, e a ajuda do acesso saía da área sem volta.
- * No celular as seções descem para uma fileira que rola de lado, abaixo da barra.
+ * No celular as partes descem para uma fileira que rola de lado, abaixo da barra.
  */
 export function ParentShell({
   active,
@@ -52,10 +62,10 @@ export function ParentShell({
   studentDestination,
   children,
 }: {
-  /** A seção acesa na barra; `null` nas páginas que não são de uma seção só. */
+  /** A parte acesa na barra; `null` nas páginas que não são de uma parte só. */
   active: ParentSectionId | null
   parentName?: string
-  /** A entrada da criança com o `next` de uma fase, quando o responsável chegou por um link dela. */
+  /** A entrada da criança com o `next` de uma aula, quando o responsável chegou por um link dela. */
   studentDestination?: string
   children: ReactNode
 }) {

@@ -1,0 +1,38 @@
+{
+  "kind": "closed-environment-fixed-readonly-comparison",
+  "observedAt": "2026-10-21T07:43:24.900Z",
+  "receipts": [
+    {
+      "kind": "deployment",
+      "pid": 29564,
+      "code": 0,
+      "signal": null,
+      "closed": true,
+      "expired": false,
+      "overflow": false,
+      "error": false,
+      "stdoutBytes": 2433,
+      "stderrBytes": 0,
+      "shape": "array",
+      "errorVocabulary": [],
+      "rawOutputPersisted": false
+    },
+    {
+      "kind": "variables",
+      "pid": 5500,
+      "code": 1,
+      "signal": null,
+      "closed": true,
+      "expired": false,
+      "overflow": false,
+      "error": false,
+      "stdoutBytes": 0,
+      "stderrBytes": 27,
+      "shape": "invalid",
+      "errorVocabulary": [],
+      "rawOutputPersisted": false
+    }
+  ],
+  "mutations": 0,
+  "credentialValuesPersisted": false
+}

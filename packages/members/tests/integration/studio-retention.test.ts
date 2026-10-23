@@ -322,3 +322,79 @@ describe('POST /members/gamification/activity — XP diário de CRIAR no Estúdi
     expect(await readJson(res)).toEqual({ recorded: true })
   })
 })
+
+describe('durable publication source beyond delivery-id retention', () => {
+  test('standalone retry on a later day, including a legacy marker, never creates new daily XP', async () => {
+    const ctx = buildApp()
+    const playId = randomUUID()
+    const body = { userId: USER, accountId: USER, audience: 'kids', playId }
+    expect((await postStandalone(ctx.app, body)).status).toBe(200)
+    const before = structuredClone(ctx.gamification.events)
+    ctx.processed.seen.clear()
+    ctx.clockRef.now = new Date('2026-08-03T12:00:00Z')
+    expect(
+      (await postStandalone(ctx.app, { ...body, publishedAt: '2026-06-02T12:00:00Z' })).status,
+    ).toBe(200)
+    expect(ctx.gamification.events).toEqual(before)
+    expect((await readJson(await getMe(ctx.app))).xp).toBe(XP_VALUES.STUDIO_PUBLISH_DAY)
+  })
+  test('delayed first delivery credits its original day without regressing newer streak/wallet state', async () => {
+    const ctx = buildApp({ now: new Date('2026-08-03T12:00:00Z') })
+    const send = (playId: string, publishedAt: string) =>
+      postStandalone(ctx.app, {
+        userId: USER,
+        accountId: USER,
+        audience: 'kids',
+        playId,
+        publishedAt,
+      })
+    expect((await send(randomUUID(), ctx.clockRef.now.toISOString())).status).toBe(200)
+    const current = structuredClone([...ctx.gamification.profiles.values()])
+    const delayedId = randomUUID()
+    expect((await send(delayedId, '2026-06-02T12:00:00Z')).status).toBe(200)
+    const profile = [...ctx.gamification.profiles.values()][0]!
+    expect(profile.lastActivityDate).toBe(current[0]!.lastActivityDate)
+    expect(profile.streakCurrent).toBe(current[0]!.streakCurrent)
+    expect(profile.streakFreezes).toBe(current[0]!.streakFreezes)
+    expect(
+      ctx.gamification.events
+        .find((event) => event.sourceId === delayedId)
+        ?.createdAt.toISOString(),
+    ).toBe('2026-06-02T12:00:00.000Z')
+    const count = ctx.gamification.events.length
+    ctx.processed.seen.clear()
+    ctx.clockRef.now = new Date('2026-09-04T12:00:00Z')
+    expect((await send(delayedId, '2026-06-02T12:00:00Z')).status).toBe(200)
+    expect(ctx.gamification.events).toHaveLength(count)
+  })
+  test('a signed challenge delivered next month uses publication time and durable monthly source', async () => {
+    const ctx = buildApp({ now: new Date('2026-08-03T12:00:00Z') })
+    const body = {
+      userId: USER,
+      accountId: USER,
+      audience: 'kids',
+      challengeKey: 'm:2026-06',
+      publishedAt: '2026-06-02T12:00:00Z',
+    }
+    const send = () => {
+      const raw = JSON.stringify(body)
+      return ctx.app.handle(
+        new Request('http://localhost/members/webhooks/challenge', {
+          method: 'POST',
+          headers: signedWebhookHeaders('/members/webhooks/challenge', raw, randomUUID()),
+          body: raw,
+        }),
+      )
+    }
+    expect((await send()).status).toBe(200)
+    const first = ctx.gamification.events.filter((event) => event.sourceType === 'challenge_entry')
+    expect(first).toHaveLength(1)
+    expect(first[0]?.createdAt.toISOString()).toBe('2026-06-02T12:00:00.000Z')
+    ctx.processed.seen.clear()
+    ctx.clockRef.now = new Date('2026-09-04T12:00:00Z')
+    expect((await send()).status).toBe(200)
+    expect(
+      ctx.gamification.events.filter((event) => event.sourceType === 'challenge_entry'),
+    ).toEqual(first)
+  })
+})

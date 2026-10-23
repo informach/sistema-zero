@@ -1,14 +1,13 @@
+import {
+  isKidsStaffPreview,
+  kidsJourneyAccess,
+} from '@sistemazero/member-shell/lib/kids-journey-access'
 import { Check, Gamepad2, Hammer } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/cn'
-import {
-  type CatalogInput,
-  journeyHorizon,
-  journeyProgress,
-  levelsBeyondHorizon,
-  visibleJourneyLevels,
-} from '@/lib/journey-horizon'
-import { JOURNEY_REWARD_INFO } from '@/lib/journey-rewards'
+import { levelsBeyondHorizon } from '@/lib/journey-horizon'
+import { canonicalJourneyProgress, canonicalVisibleJourneyLevels } from '@/lib/journey-presentation'
+import { journeyEarnedRewardInfo, journeyRewardInfo } from '@/lib/journey-rewards'
 import { LEVEL_INFO } from '@/lib/level-info'
 import { TROPHY_BADGE_SLUGS } from '@/lib/room-catalog'
 import type { GamificationMeView, StudentLevelSlug } from '@/lib/types'
@@ -91,28 +90,33 @@ function FeatCard({ slug, unlockedAt }: { slug: string; unlockedAt: string }) {
  */
 export function JourneyTimeline({
   gamification,
-  courses,
   showcaseStats = null,
 }: {
   gamification: GamificationMeView
-  /** Catálogo publicado — define até onde a escada é DESENHADA (horizonte do catálogo).
-   *  `null` = busca falhou → escada inteira, sem restringir. */
-  courses: CatalogInput
   showcaseStats?: { published: number; plays: number } | null
 }) {
-  const currentSlug = gamification.level?.slug ?? 'noob'
-  // A escada mostra até onde o catálogo consegue levar; o resto vira UMA linha de
-  // "está sendo construído", em vez de uma fileira de cadeados (ver `career-horizon.ts`).
-  const visible = visibleJourneyLevels(currentSlug, journeyHorizon(courses))
+  const access = kidsJourneyAccess(gamification)
+  if (!access || isKidsStaffPreview(access)) {
+    return (
+      <section aria-labelledby="minha-jornada" className="kids-carta p-5" role="status">
+        <h2 id="minha-jornada" className="sz-display text-xl">
+          {access ? 'Prévia da equipe' : 'Minha jornada'}
+        </h2>
+        <p className="mt-2 text-muted-foreground text-sm">
+          {access
+            ? 'Você está vendo as ferramentas da equipe, sem simular o posto ou as conquistas de uma criança.'
+            : 'Não foi possível consultar sua jornada agora. Suas conquistas continuam guardadas.'}
+        </p>
+      </section>
+    )
+  }
+  const currentSlug = access.earned.level
+  const visible = canonicalVisibleJourneyLevels(access)
   const beyond = levelsBeyondHorizon(visible)
-  const currentIndex = Math.max(0, visible.indexOf(currentSlug as StudentLevelSlug))
-  const progress = journeyProgress(gamification.level, courses)
-  const hint =
-    progress.kind === 'pending'
-      ? progress.hint
-      : progress.kind === 'up-to-date'
-        ? 'Você já fez tudo que está pronto. Novas aventuras estão sendo criadas!'
-        : null
+  const currentIndex = visible.indexOf(currentSlug)
+  const progress = canonicalJourneyProgress(access)
+  const hint = progress.hint
+  const retained = journeyEarnedRewardInfo(access)
 
   const unlocked = gamification.badges
     .filter((b): b is { slug: string; unlockedAt: string } => b.unlockedAt !== null)
@@ -125,16 +129,22 @@ export function JourneyTimeline({
       <KidsSectionHeader
         id="minha-jornada"
         title="Minha jornada"
-        subtitle="Cada projeto concluído e publicado sobe um degrau da escada."
+        subtitle="Seus cursos e conquistas formam a sua jornada de criação."
       />
 
       <div className="kids-carta p-4 md:p-6">
+        {retained.title ? (
+          <p className="mb-4 text-muted-foreground text-sm">
+            <span className="font-bold text-primary">Conquistas guardadas: </span>
+            {retained.title}
+          </p>
+        ) : null}
         {/* Escada Faísca → Lenda (universal). */}
         <ol className="flex flex-col gap-3">
           {visible.map((slug, index) => {
             const info = LEVEL_INFO[slug]
             const Icon = info.icon
-            const reward = JOURNEY_REWARD_INFO[slug]
+            const reward = journeyRewardInfo(access, slug)
             const done = index < currentIndex
             const current = index === currentIndex
             const next = index === currentIndex + 1
@@ -177,7 +187,7 @@ export function JourneyTimeline({
                   </p>
                   {current ? (
                     <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
-                      {hint ?? info.blurb}
+                      {hint ?? 'Seu posto e suas conquistas continuam com você.'}
                     </p>
                   ) : null}
                   <p className="mt-1 text-[0.8125rem] leading-snug">
@@ -217,7 +227,7 @@ export function JourneyTimeline({
                   </span>
                 </p>
                 <p className="mt-1 font-medium text-[0.8125rem] text-muted-foreground leading-snug">
-                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando as aventuras ficarem
+                  {formatLevelNames(beyond)}. Eles aparecem no seu mapa quando os cursos ficarem
                   prontas!
                 </p>
               </div>

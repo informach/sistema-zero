@@ -86,6 +86,7 @@ export const IDENTITY_HEADERS = {
   // os usa para exigir login recente nas ações sensíveis e recusar o fluxo antigo de perfis.
   // De IDENTIDADE (auto-stripados da entrada + redigidos no log).
   kidsContext: KIDS_IDENTITY_HEADERS.context,
+  desktopDeviceId: 'x-auth-desktop-device-id',
   kidsAuthTime: KIDS_IDENTITY_HEADERS.authTime,
 } as const
 
@@ -106,6 +107,7 @@ export interface IdentityHeaderInput {
   profilePublic?: boolean
   impersonatorId?: string
   kidsContext?: 'parent' | 'student'
+  desktopDeviceId?: string
   kidsAuthTime?: number
 }
 
@@ -171,6 +173,7 @@ export function injectIdentityHeaders(headers: Headers, user: IdentityHeaderInpu
     headers.set(IDENTITY_HEADERS.impersonatorId, headerSafeValue(user.impersonatorId))
   }
   if (user.kidsContext) headers.set(IDENTITY_HEADERS.kidsContext, user.kidsContext)
+  if (user.desktopDeviceId) headers.set(IDENTITY_HEADERS.desktopDeviceId, user.desktopDeviceId)
   if (user.kidsContext === 'parent' && user.kidsAuthTime !== undefined)
     headers.set(IDENTITY_HEADERS.kidsAuthTime, String(user.kidsAuthTime))
 }

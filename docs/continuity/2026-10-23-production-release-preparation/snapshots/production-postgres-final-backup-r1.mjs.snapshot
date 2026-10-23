@@ -1,0 +1,73 @@
+/** Root only. New final artifact after five affected services are fenced; no migration or recovery writes. */
+import { mkdir, open, readFile, lstat, realpath } from 'node:fs/promises';
+import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { observeFence, preserveObservation, eraseObservation, readPinned, validateManifest, sha, check, PINS, PG, nativeEnvironment } from './production-postgres-fenced-context-r1.mjs';
+import { captureEncryptedDump, verifyEncryptedDump } from './production-postgres-binary-stream-r1.mjs';
+import { requireVerifiedBytes, consumeArchive, oracleSql, projectOracles } from './production-postgres-rehearsal-r1.mjs';
+import { withIsolatedClone, queryClone, RESTORE_DB, METADATA_SQL, projectMetadata } from './production-postgres-isolated-clone-r2.mjs';
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..'), PROJECTS = resolve(ROOT, '..');
+const AGE = 'C:/Users/tocha/AppData/Local/Microsoft/WinGet/Packages/FiloSottile.age_Microsoft.Winget.Source_8wekyb3d8bbwe/age/age.exe';
+const AGE_SHA = '2821a4ed191da07372acd302e5f6feae7a7985e285e1417765ebe74025af45f0';
+const SOURCES = {
+  'production-postgres-fenced-context-r1.mjs': '9138be7d02e811a3a2d385d343b035076223d9723ebed5f6650a698712640132',
+  'production-postgres-binary-stream-r1.mjs': '50307de586dd01b06d312cbfe78d382ef094eee6613be7e77e657f18cd8d0b08',
+  'production-postgres-rehearsal-r1.mjs': '4c959eb152fd8de791686dafe6e35fe648115f07d86255c23e70115e50219493',
+  'production-postgres-isolated-clone-r2.mjs': 'a57d440d1c775f3ea6731746bdb78f3bd0fa2771d7c2cd47452f9cfa133124d0',
+  'production-postgres-custom-dump-r1.sh': '8a0b0392ecc76e459c32ff471a304ca2882fba140d6dbeefe41856619ab1695e',
+  'production-pensa-counts-r1.mjs': '8ba889ad1545e3148320511916ba40bc15ab306db80a96b445d94941c8d07b16',
+};
+async function recoveryPath(path, exists) {
+  check(isAbsolute(path), 'ABSOLUTE_RECOVERY_PATH_REQUIRED');
+  const actual = exists ? await realpath(path) : join(await realpath(dirname(path)), path.split(/[\\/]/).at(-1));
+  const rel = relative(PROJECTS, actual); check(rel.startsWith('..') || isAbsolute(rel), 'RECOVERY_PATH_INSIDE_CHECKOUT'); return actual;
+}
+export async function main(args = process.argv.slice(2)) {
+  check(process.versions.node === '24.22.0' && !process.versions.bun && args.length === 6 && /^production-postgres-final-[a-z0-9-]{1,30}$/.test(args[0]), 'ARGUMENTS_OR_NODE_INVALID');
+  const [run, manifestPath, manifestSha, recipient, ciphertext, identity] = args, manifestRef = { path: manifestPath, sha256: manifestSha };
+  validateManifest(await readPinned(manifestRef));
+  const outputPath = await recoveryPath(ciphertext, false), identityPath = await recoveryPath(identity, true), key = await lstat(identityPath);
+  check(outputPath.endsWith('.age') && /^age1[023456789acdefghjklmnpqrstuvwxyz]{58}$/.test(recipient) && key.isFile() && !key.isSymbolicLink() && key.size <= 8192, 'RECOVERY_ARGUMENTS_INVALID');
+  const out = join(CACHE, run); await mkdir(out); const file = await open(join(out, 'receipt.json'), 'wx', 0o600);
+  const receipt = { kind: 'production-postgres-final-affected-backup', version: 1, state: 'RUNNING', phase: 'before-fence-observation', startedAt: new Date().toISOString(), operatorSha256: sha(await readFile(FILE)), manifest: manifestRef,
+    ciphertextPath: outputPath, affectedWritersFenced: false, allProductionWritersFenced: false, finalPreMigrationBackup: false,
+    restoreQualified: false, durableCopyQualified: false, clusterRollbackQualified: false, sourceRowsSnapshotComparison: false,
+    migrationExecuted: false, providerMutations: 0, dumpAttempts: 0 };
+  const save = async patch => { Object.assign(receipt, patch); await file.truncate(0); await file.write(JSON.stringify(receipt, null, 2) + '\n', 0, 'utf8'); await file.sync(); };
+  let before, after;
+  try {
+    await save({}); for (const [name, expected] of Object.entries(SOURCES)) check(sha(await readFile(join(CACHE, name))) === expected, 'SOURCE_PIN_CHANGED');
+    before = await observeFence(manifestRef, `${run}-before`, async latestHttp => save({ lastBeforeHttp: latestHttp }));
+    await save({ fenceBefore: before.public, phase: 'capture', dumpAttempts: 1 });
+    check(Date.now() - Date.parse(before.public.finishedAt) <= 10000, 'BEFORE_FENCE_EXPIRED');
+    const dumpScript = await readFile(join(CACHE, 'production-postgres-custom-dump-r1.sh'));
+    const capture = await captureEncryptedDump({ ageExe: AGE, ageSha256: AGE_SHA, recipient, outputPath, maxBytes: 1073741824,
+      producer: { command: join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe'), env: nativeEnvironment(process.env),
+        args: ['ssh', '--project', PINS.project, '--environment', PINS.environment, '--service', PG.serviceId, '--deployment-instance', PG.instanceId,
+          '--identity-file', 'C:/Users/tocha/.ssh/id_ed25519', '--', 'sh', '-c', dumpScript.toString('utf8')] } });
+    await save({ capture, phase: 'after-fence-observation' });
+    check(capture.state === 'ENCRYPTED_STREAM_CAPTURED_NOT_RESTORE_QUALIFIED' && capture.transport.processes.every(p => p.stderrBytes === 0), 'CAPTURE_UNCONFIRMED');
+    after = await observeFence(manifestRef, `${run}-after`, async latestHttp => save({ lastAfterHttp: latestHttp }));
+    await save({ fenceAfter: after.public }); preserveObservation(before, after);
+    await save({ affectedWritersFenced: true, fenceVerifiedAroundCapture: true, phase: 'authenticate' });
+    eraseObservation(before); eraseObservation(after);
+    const verification = await verifyEncryptedDump({ ageExe: AGE, ageSha256: AGE_SHA, identityPath, inputPath: outputPath, expected: capture });
+    await save({ verification }); requireVerifiedBytes(verification, capture);
+    await save({ phase: 'isolated-restore' });
+    const clone = await withIsolatedClone(run, async owner => {
+      const restored = await consumeArchive(owner, outputPath, identityPath, capture); await save({ restoreAttempt: restored });
+      check(restored.state === 'CONSUMED_AUTHENTICATED_ARCHIVE', 'RESTORE_STREAM_UNCONFIRMED');
+      const metadata = projectMetadata(await queryClone(owner, RESTORE_DB, METADATA_SQL));
+      const oracles = projectOracles(await queryClone(owner, RESTORE_DB, oracleSql())); return { restored, metadata, oracles };
+    }, async owner => save({ cloneCreateIntent: { owner, state: 'OWNER_RECORDED_BEFORE_CREATE' } }));
+    await save({ clone }); check(clone.state === 'ISOLATED_CLONE_PROOF_PASSED' && clone.cleanup === 'OWN_CID_REMOVED_VERIFIED', 'RESTORE_OR_CLEANUP_UNCONFIRMED');
+    const final = await verifyEncryptedDump({ ageExe: AGE, ageSha256: AGE_SHA, identityPath, inputPath: outputPath, expected: capture }); requireVerifiedBytes(final, capture);
+    await save({ state: 'FINAL_AFFECTED_WRITERS_BACKUP_RESTORE_VERIFIED', phase: 'completed', finalPreMigrationBackup: true, restoreQualified: true,
+      finalCiphertextVerified: true, backupScope: 'ONE_DATABASE_NO_CLUSTER_ROLES_OR_ACL_RESTORE_PROOF' });
+  } catch (e) { await save({ state: 'UNQUALIFIED', failureCode: typeof e?.message === 'string' && /^[A-Z_]+$/.test(e.message) ? e.message : 'FINAL_BACKUP_UNCONFIRMED' }); }
+  finally { eraseObservation(before); eraseObservation(after); try { await save({ finishedAt: new Date().toISOString() }); } finally { await file.close(); } }
+  console.log(JSON.stringify({ run, state: receipt.state, restoreQualified: receipt.restoreQualified, affectedWritersFenced: receipt.affectedWritersFenced, allProductionWritersFenced: false }));
+  return receipt.restoreQualified ? 0 : 1;
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE)
+  main().then(status => { process.exitCode = status; }, () => { console.error('FINAL_BACKUP_INITIALIZATION_UNCONFIRMED'); process.exitCode = 1; });

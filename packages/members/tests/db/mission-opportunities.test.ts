@@ -32,7 +32,9 @@ test.skipIf(!url)(
       ])
         await conn.sql.unsafe(`alter table members.xp_events add column if not exists ${column}`)
       await conn.sql`insert into members.courses(id,slug,title,status,audience) values(${courseId},${slug},'Curso','published','kids')`
-      await conn.sql`insert into members.modules(id,course_id,title) values(${moduleId},${courseId},'Módulo')`
+      // Outra fixture pode ter criado sort_order nullable e sem default no banco compartilhado.
+      // A barreira precisa de uma ordem real, como nos módulos criados pela aplicação.
+      await conn.sql`insert into members.modules(id,course_id,title,sort_order) values(${moduleId},${courseId},'Módulo',0)`
       await conn.sql`insert into members.lessons(id,module_id,course_id,slug,title,sort_order,is_published) values
       (${lesson1},${moduleId},${courseId},'inicio','Início',0,true),(${lesson2},${moduleId},${courseId},'fim','Fim',1,true)`
       await conn.sql`insert into members.lesson_blocks(id,lesson_id,kind,sort_order,content) values

@@ -4,7 +4,7 @@ import { getSchemaValidator, type TSchema, t } from 'elysia'
 import type { LessonBlockContent } from '../../domain/course/lesson-block'
 import { LESSON_BLOCK_KINDS } from '../../domain/course/lesson-block'
 import { LessonBlockContentSchema } from './dtos'
-import { LessonSectionSchema } from './learning.dtos'
+import { LessonSectionSchema, SectionCompletionDraftSchema } from './learning.dtos'
 
 /** Keep the editor's structural contract while allowing unfinished text, choices and URLs. */
 function authoringSchema(schema: TSchema): TSchema {
@@ -38,6 +38,7 @@ const Id = t.String({ format: 'uuid' })
 const DraftSection = t.Object({
   ...LessonSectionSchema.properties,
   title: t.String({ maxLength: 200 }),
+  completion: t.Optional(SectionCompletionDraftSchema),
 })
 const Attachment = t.Object({
   id: Id,
@@ -56,6 +57,17 @@ export const DraftCommandSchema = t.Object({
   expectedRevision: Id,
   operationId: Id,
   change: t.Union([
+    t.Object({
+      type: t.Literal('studio-example'),
+      blockId: Id,
+      sectionId: Id,
+      role: t.Union([t.Literal('entry'), t.Literal('solution')]),
+      action: t.Union([
+        t.Object({ type: t.Literal('save'), exampleId: Id, project: t.Unknown() }),
+        t.Object({ type: t.Literal('reuse'), exampleId: Id }),
+        t.Object({ type: t.Literal('clear') }),
+      ]),
+    }),
     t.Object({
       type: t.Literal('block'),
       block: t.Object({

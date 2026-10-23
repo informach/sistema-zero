@@ -9,20 +9,23 @@ import {
   useSensors,
 } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { type CourseModality, courseModalityOf } from '@sistemazero/core/course/modality'
 import {
-  type InteractiveBlock,
   isInteractiveBlock,
   isPdfAttachment,
   LESSON_SECTION_TEMPLATES,
+  type LessonDraft,
   type LessonDraftIssue,
 } from '@sistemazero/core/learning'
 import {
-  falasDoQuiz,
   reconciliarVozesDoZappy,
   roteiroDoZappy,
   type SceneVozes,
-  type ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
+import {
+  PYTHON_LEARNING_LEVELS,
+  resolvePythonLearningLevel,
+} from '@sistemazero/core/studio/python-learning'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -36,12 +39,10 @@ import type { PintaHandle } from '@sistemazero/pinta/lesson'
 import {
   BLOCK_LEVEL_OPTIONS,
   type BlockLevel,
-  CORE_CATEGORY_OPTIONS,
   createEmptyProject,
+  type EditableStudioProject,
   type IDEMode,
-  type LessonActivity,
   normalizeBlockLevel,
-  type Project,
   type StudioHandle,
 } from '@sistemazero/studio'
 import { Badge } from '@sistemazero/ui/badge'
@@ -61,7 +62,7 @@ import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
-import { EMPTY_LEARNING, LearningBuilder } from '@/components/editor/learning-builder'
+import { LearningBuilder } from '@/components/editor/learning-builder'
 import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
 import { LessonContentCatalog } from '@/components/editor/lesson-content-catalog'
 import { lessonEditorialWarnings } from '@/components/editor/lesson-editorial-warnings'
@@ -69,6 +70,7 @@ import { LessonManifestExport } from '@/components/editor/lesson-manifest-export
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
 import { LessonPublishedCompare } from '@/components/editor/lesson-published-compare'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
+import { LiveBroadcastCard } from '@/components/editor/live-broadcast-card'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { useLessonDraft } from '@/components/editor/use-lesson-draft'
 import { VozZappyButton } from '@/components/editor/voz-zappy-button'
@@ -77,6 +79,7 @@ import { AudioUploader } from '@/components/media/audio-uploader'
 import { FileUploader, type UploadedFile } from '@/components/media/file-uploader'
 import { ImageUploader } from '@/components/media/image-uploader'
 import {
+  type LessonVideoDeliveryReceipt,
   LessonVideoUploadRegistry,
   LessonVideoUploads,
   videoUploadStatusLabels,
@@ -88,12 +91,29 @@ import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioBlocksPicker } from '@/components/studio/studio-blocks-picker'
 import { StudioConfigClipboard } from '@/components/studio/studio-config-clipboard'
 import { StudioEmbed } from '@/components/studio/studio-embed'
+import { useStudioAuthoringOptions } from '@/components/studio/use-studio-authoring-options'
+import { useStudioAuthoringPalette } from '@/components/studio/use-studio-authoring-palette'
+import type { StudioAuthoringRuntimeScope } from '@/components/studio/use-studio-authoring-runtime'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { studentLessonLink } from '@/lib/course-modality'
+import { EMPTY_LEARNING } from '@/lib/learning-form-defaults'
 import {
   appendLessonSection,
   newAuthoringSection,
   type SectionStarterOptions,
 } from '@/lib/lesson-authoring'
+import {
+  type BlockForm,
+  buildContent,
+  EMPTY_BLOCK,
+  EMPTY_MATERIALS,
+  materialsFromContent,
+  validateBlock,
+  validateQuiz,
+} from '@/lib/lesson-block-form'
+import { LessonFormBufferSlot, type LessonFormSnapshot } from '@/lib/lesson-form-buffer'
+import { applyLessonVideoDelivery } from '@/lib/lesson-video-delivery'
+import { studioAuthoringChoiceKey } from '@/lib/studio-authoring-options'
 import {
   type AttachmentView,
   type BlockView,
@@ -106,19 +126,20 @@ import {
   type LessonBlockKind,
   type LessonContentView,
 } from '@/lib/types'
-import { ActivityBuilder, EMPTY_ACTIVITY, validateStudioActivity } from './activity-builder'
-import {
-  EMPTY_MATERIALS,
-  MaterialsBuilder,
-  type MaterialsValue,
-  materialsFromContent,
-  validateMaterials,
-} from './materials-builder'
-import { QuizBuilder, type QuizValue, validateQuiz } from './quiz-builder'
+import { MaterialsBuilder } from './materials-builder'
+import { QuizBuilder } from './quiz-builder'
 
 // O mapa vive em `lib/types.ts` desde a exportação de manifesto: a lista do que o formato
 // NÃO carrega nomeia os blocos pelos MESMOS rótulos, e duas cópias divergiriam.
 const KIND_LABELS = LESSON_BLOCK_KIND_LABELS
+const subscribeEmptyForm = () => () => {}
+const emptyBlockForm = () => EMPTY_BLOCK
+
+/** Mutable third-party/editor boundaries receive copies, never the owned form bytes. */
+function editorValue<T>(value: LessonFormSnapshot<T>): T
+function editorValue(value: unknown): unknown {
+  return structuredClone(value)
+}
 
 /** Nome de cada pose, só para o `alt` do seletor (a autora escolhe pela cara). */
 const DIALOGUE_POSE_LABELS: Record<DialoguePose, string> = {
@@ -134,156 +155,6 @@ const DIALOGUE_POSE_LABELS: Record<DialoguePose, string> = {
 const STUDIO_LEVELS = BLOCK_LEVEL_OPTIONS
 // Categorias "sempre visíveis" do Estúdio: vêm do PACOTE (`CORE_CATEGORY_OPTIONS`),
 // derivadas das categorias reais do toolbox — não há mais lista hardcoded p/ desatualizar.
-const STUDIO_MODES: { value: IDEMode; label: string }[] = [
-  { value: 'blocks', label: 'Blocos' },
-  { value: 'bridge', label: 'Ponte' },
-  { value: 'code', label: 'Código' },
-]
-
-export interface BlockForm {
-  galleryEnabled: boolean
-  galleryMin: number
-  galleryMax: number
-  interactive: InteractiveBlock
-  toolPurpose: 'experiment' | 'submission'
-  kind: LessonBlockKind
-  /** Diálogo: pose do mascote e a fala (texto simples, sem markdown). */
-  dialoguePose: DialoguePose
-  dialogueText: string
-  dialogueZappySpeech?: ZappySpeechOverride
-  dialogueVozes?: SceneVozes
-  markdown: string
-  html: string
-  /** Embed URL do vídeo (preenchida pelo uploader Vimeo — sem campo manual). */
-  src: string
-  posterUrl: string
-  /** URL da imagem/áudio (preenchida pelos uploaders — sem campo manual). */
-  url: string
-  /**
-   * Provider do vídeo — SEM UI (autoria v3 = Vimeo). Preservado na edição p/
-   * não corromper blocos legados (youtube/file) ao salvar sem trocar o vídeo.
-   */
-  provider: string
-  /** Duração (s) AUTO-detectada (Vimeo no vídeo; loadedmetadata no áudio). */
-  durationSeconds: string
-  alt: string
-  caption: string
-  quiz: QuizValue
-  /** Legendas/transcrição do vídeo (preenchidas pelo uploader Vimeo). */
-  captions: { lang: string; url: string }[]
-  /** E-book: PDF escolhido nos arquivos da aula. */
-  ebookAttachmentId: string
-  title: string
-  /** Estúdio: nível fixado (paleta por dificuldade). */
-  studioLevel: BlockLevel
-  /** Estúdio: categorias de blocos sempre visíveis. */
-  studioCategories: string[]
-  /** Estúdio: modos liberados ao aluno (vazio = todos os do tipo de projeto). */
-  studioModes: IDEMode[]
-  /** Estúdio: aluno pode revelar blocos avançados. */
-  studioAllowReveal: boolean
-  /**
-   * Estúdio: allowlist de blocos por id — preenchida = o aluno vê SÓ estes (+ as Áreas do
-   * projeto). UI no StudioBlocksPicker; reaproveitável pela área de transferência da config.
-   */
-  studioAllowBlocks: string[]
-  /** Estúdio: atividade com auto-correção (fase 2). Vazia = bloco só de entrega. */
-  studioActivity: LessonActivity
-  /** Estúdio: nome do projeto contínuo (cadeia). Vazio = aula independente. */
-  studioChain: string
-  /** Estúdio: vitrine (Mural) — auto-publicar o projeto ao concluir esta aula. */
-  studioShowcaseEnabled: boolean
-  studioShowcaseTitle: string
-  studioShowcaseSummary: string
-  studioShowcaseCover: string
-  /** Certificado: imagem base (por curso) + conteúdo desenhado por cima do PDF. */
-  certBaseImageUrl: string
-  certIntroLine: string
-  certCoursePhrase: string
-  certBodyText: string
-  certSig1Url: string
-  certSig1Name: string
-  certSig2Url: string
-  certSig2Name: string
-  /** Em breve: recado que substitui o padrão do app. Vazio = usa o padrão. */
-  comingSoonMessage: string
-  /**
-   * Pinta: tipo + tamanho do desenho INICIAL. Só valem na CRIAÇÃO do bloco — depois quem manda no
-   * tamanho é o próprio editor embutido (a autora usa o botão "Tamanho" lá dentro), senão trocar o
-   * select apagaria o desenho que ela acabou de fazer.
-   */
-  pintaAssetKind: PintaLessonAssetKind
-  pintaSize: number
-  /** Pinta: preset de ferramentas liberadas. `tudo` = a caixa inteira (nenhuma curadoria). */
-  pintaToolPreset: 'essencial' | 'livre' | 'tudo'
-  /** Pinta: nome do desenho contínuo (cadeia). Vazio = aula independente. */
-  pintaChain: string
-  /** Materiais complementares: o nome do bloco e a lista ordenada de itens. */
-  materials: MaterialsValue
-  /** Exibe o primeiro PDF em um leitor ao lado do vídeo quando couber. */
-  materialsBookPreview: boolean
-}
-
-/** Exportados para o teste de conformidade dos tipos de bloco (ver tests/). */
-export const EMPTY_BLOCK: BlockForm = {
-  galleryEnabled: false,
-  galleryMin: 1,
-  galleryMax: 6,
-  interactive: EMPTY_LEARNING,
-  toolPurpose: 'submission',
-  kind: 'rich_text',
-  dialoguePose: 'speaking',
-  dialogueText: '',
-  markdown: '',
-  html: '',
-  src: '',
-  posterUrl: '',
-  url: '',
-  provider: 'vimeo',
-  durationSeconds: '',
-  alt: '',
-  caption: '',
-  quiz: { questions: [], passingScore: 70 },
-  captions: [],
-  ebookAttachmentId: '',
-  title: '',
-  studioLevel: 'iniciante-2d',
-  studioCategories: [],
-  // Default NOVO (24/07): o aluno vê SÓ Blocos; Ponte é opt-in do autor; Código é
-  // automático do Pro (não é mais checkbox — bloco legado com 'code' preserva).
-  studioModes: ['blocks'],
-  // Default NOVO (08/08): DESMARCADO. A curadoria por nível é a promessa da aula
-  // — se o autor escolheu "iniciante", deixar o aluno destravar tudo por um
-  // botão esvazia a escolha sem que ninguém perceba. Quem quiser a escapatória
-  // marca de propósito. ⚠️ Bloco JÁ SALVO sem o campo preserva o `true` de antes
-  // (ver o `?? true` na hidratação): aula publicada não muda sozinha.
-  studioAllowReveal: false,
-  studioAllowBlocks: [],
-  studioActivity: EMPTY_ACTIVITY,
-  studioChain: '',
-  studioShowcaseEnabled: false,
-  studioShowcaseTitle: '',
-  studioShowcaseSummary: '',
-  studioShowcaseCover: '',
-  certBaseImageUrl: '',
-  certIntroLine: '',
-  certCoursePhrase: '',
-  certBodyText: '',
-  certSig1Url: '',
-  certSig1Name: '',
-  certSig2Url: '',
-  certSig2Name: '',
-  comingSoonMessage: '',
-  pintaAssetKind: 'pixel-sprite',
-  pintaSize: 32,
-  // Default "essencial": a tela da criança não pode nascer cheia (foi o pedido que originou a
-  // curadoria). Quem quiser a caixa inteira escolhe "Tudo" de propósito.
-  pintaToolPreset: 'essencial',
-  pintaChain: '',
-  materials: EMPTY_MATERIALS,
-  materialsBookPreview: false,
-}
-
 /**
  * Qual preset gerou esta lista? Compara por CONJUNTO (a ordem do preset não é contrato).
  * Lista que não bate com nenhum é tratada como "tudo" — o único caso hoje é um bloco salvo por
@@ -301,240 +172,6 @@ function presetOfAllowTools(allow?: string[]): 'essencial' | 'livre' | 'tudo' {
   if (same(PINTA_TOOL_PRESETS.essencial)) return 'essencial'
   if (same(PINTA_TOOL_PRESETS.livre)) return 'livre'
   return 'tudo'
-}
-
-const num = (s: string): number | undefined => (s.trim() ? Number(s) : undefined)
-const opt = (s: string): string | undefined => (s.trim() ? s.trim() : undefined)
-
-/** Monta o conteúdo do bloco a partir do form. `studioProject` = snapshot do editor embutido. */
-export function buildContent(
-  f: BlockForm,
-  studioProject?: Project,
-  previousContent?: LessonBlockContent,
-  pintaAsset?: unknown,
-): LessonBlockContent {
-  const dur = num(f.durationSeconds)
-  switch (f.kind) {
-    case 'interactive':
-      return f.interactive
-    case 'studio': {
-      if (f.galleryEnabled && studioProject)
-        return {
-          kind: 'studio',
-          purpose: 'submission',
-          initialProject: studioProject,
-          gallery: { minItems: 1, maxItems: 1 },
-        }
-      // `studioProject` é garantido não-nulo no saveBlock (validação antes de chamar).
-      // Atividade só entra se tiver checagens OU enunciado (atividade vazia = omitida).
-      const hasActivity =
-        f.studioActivity.checks.length > 0 || f.studioActivity.instructions.trim() !== ''
-      // Projeto PRO: o modo Código é automático do kind — `allowedModes` é omitido
-      // (redesenho 24/07; a curadoria de modos só vale no projeto de blocos).
-      const isPro = (studioProject as Project & { kind?: string }).kind === 'pro'
-      return {
-        kind: 'studio',
-        purpose: f.toolPurpose,
-        initialProject: studioProject as Project,
-        level: f.studioLevel,
-        ...(f.studioCategories.length > 0 ? { allowCategories: f.studioCategories } : {}),
-        ...(f.studioAllowBlocks.length > 0 ? { allowBlocks: f.studioAllowBlocks } : {}),
-        ...(!isPro && f.studioModes.length > 0 && f.studioModes.length < STUDIO_MODES.length
-          ? { allowedModes: f.studioModes }
-          : {}),
-        allowLevelReveal: f.studioAllowReveal,
-        ...(hasActivity ? { activity: f.studioActivity } : {}),
-        ...(f.studioChain.trim() ? { chain: f.studioChain.trim() } : {}),
-        ...(f.studioShowcaseEnabled
-          ? {
-              showcase: {
-                enabled: true,
-                ...(f.studioShowcaseTitle.trim() ? { title: f.studioShowcaseTitle.trim() } : {}),
-                ...(f.studioShowcaseSummary.trim()
-                  ? { summary: f.studioShowcaseSummary.trim() }
-                  : {}),
-                ...(f.studioShowcaseCover.trim()
-                  ? { defaultCoverUrl: f.studioShowcaseCover.trim() }
-                  : {}),
-              },
-            }
-          : {}),
-      }
-    }
-    // ⚠️ O `default` deste switch cai em QUIZ — um kind sem `case` vira quiz em
-    // silêncio (o TS não avisa). Todo tipo novo precisa do seu case aqui.
-    case 'coming_soon':
-      return {
-        kind: 'coming_soon',
-        ...(opt(f.comingSoonMessage) ? { message: f.comingSoonMessage.trim() } : {}),
-      }
-    case 'materials':
-      return {
-        kind: 'materials',
-        ...(opt(f.materials.title) ? { title: f.materials.title.trim() } : {}),
-        ...(f.materialsBookPreview ? { bookPreview: true } : {}),
-        items: f.materials.items,
-      }
-    case 'dialogue':
-      return {
-        kind: 'dialogue',
-        pose: f.dialoguePose,
-        text: f.dialogueText.trim(),
-        ...(f.dialogueZappySpeech ? { zappySpeech: f.dialogueZappySpeech } : {}),
-        ...(f.dialogueVozes ? { vozes: f.dialogueVozes } : {}),
-      }
-    case 'rich_text':
-      return {
-        kind: 'rich_text',
-        ...(opt(f.markdown) ? { markdown: f.markdown } : {}),
-        ...(opt(f.html) ? { html: f.html } : {}),
-      }
-    case 'video':
-      return {
-        ...(previousContent?.kind === 'video' ? previousContent : {}),
-        kind: 'video',
-        provider: f.provider as 'mux' | 'youtube' | 'vimeo' | 'file',
-        src: f.src.trim(),
-        posterUrl: opt(f.posterUrl),
-        durationSeconds: dur,
-        captions: f.captions.length > 0 ? f.captions : undefined,
-      }
-    case 'image':
-      return {
-        kind: 'image',
-        url: f.url.trim(),
-        ...(opt(f.alt) ? { alt: f.alt } : {}),
-        ...(opt(f.caption) ? { caption: f.caption } : {}),
-      }
-    case 'audio':
-      return { kind: 'audio', url: f.url.trim(), ...(dur != null ? { durationSeconds: dur } : {}) }
-    case 'embed':
-      // Autoria v3: interativo = só HTML (sempre iframe sandbox 16:9 no aluno).
-      return { kind: 'embed', html: f.html }
-    case 'ebook':
-      return {
-        kind: 'ebook',
-        attachmentId: f.ebookAttachmentId,
-        ...(opt(f.title) ? { title: f.title.trim() } : {}),
-      }
-    case 'certificate': {
-      const previousCertificate =
-        previousContent?.kind === 'certificate' ? previousContent : undefined
-      // Cada slot vira uma assinatura; slot totalmente vazio é descartado.
-      const signatures = [
-        { url: f.certSig1Url, name: f.certSig1Name },
-        { url: f.certSig2Url, name: f.certSig2Name },
-      ]
-        .map((s) => ({
-          ...(opt(s.url) ? { imageUrl: s.url.trim() } : {}),
-          ...(opt(s.name) ? { name: s.name.trim() } : {}),
-        }))
-        .filter((s) => Object.keys(s).length > 0)
-      return {
-        kind: 'certificate',
-        ...(opt(previousCertificate?.title ?? '') ? { title: previousCertificate?.title } : {}),
-        ...(opt(previousCertificate?.issuerName ?? '')
-          ? { issuerName: previousCertificate?.issuerName }
-          : {}),
-        ...(opt(previousCertificate?.signatureImageUrl ?? '')
-          ? { signatureImageUrl: previousCertificate?.signatureImageUrl }
-          : {}),
-        ...(opt(previousCertificate?.logoUrl ?? '')
-          ? { logoUrl: previousCertificate?.logoUrl }
-          : {}),
-        ...(opt(previousCertificate?.message ?? '')
-          ? { message: previousCertificate?.message }
-          : {}),
-        ...(opt(f.certBaseImageUrl) ? { baseImageUrl: f.certBaseImageUrl.trim() } : {}),
-        ...(opt(f.certIntroLine) ? { introLine: f.certIntroLine.trim() } : {}),
-        ...(opt(f.certCoursePhrase) ? { coursePhrase: f.certCoursePhrase.trim() } : {}),
-        ...(opt(f.certBodyText) ? { bodyText: f.certBodyText.trim() } : {}),
-        ...(signatures.length > 0 ? { signatures } : {}),
-      }
-    }
-    case 'pinta':
-      if (f.galleryEnabled)
-        return {
-          kind: 'pinta',
-          purpose: 'submission',
-          initialAsset: null,
-          gallery: { minItems: f.galleryMin, maxItems: f.galleryMax },
-        }
-      return {
-        kind: 'pinta',
-        purpose: f.toolPurpose,
-        // O desenho vem do editor embutido (o `saveBlock` já barrou o caso sem handle).
-        initialAsset: pintaAsset,
-        // "tudo" = SEM curadoria; o campo some do payload em vez de virar lista vazia (o
-        // members trata ausente e vazia igual, mas gravar `[]` sugeriria uma escolha que
-        // não foi feita).
-        ...(f.pintaToolPreset === 'tudo'
-          ? {}
-          : { allowTools: [...PINTA_TOOL_PRESETS[f.pintaToolPreset]] }),
-        ...(opt(f.pintaChain) ? { chain: f.pintaChain.trim() } : {}),
-      }
-    default: {
-      // O dicionário só guarda o que ainda casa com o texto (e a pronúncia) de AGORA: uma pergunta
-      // reescrita não pode publicar o MP3 da versão anterior.
-      const vozes = reconciliarVozesDoZappy(
-        falasDoQuiz(f.quiz).map((fala) => fala.speechText),
-        f.quiz.vozes,
-      )
-      return {
-        kind: 'quiz',
-        questions: f.quiz.questions,
-        ...(f.quiz.passingScore != null ? { passingScore: f.quiz.passingScore } : {}),
-        ...(vozes ? { vozes } : {}),
-      }
-    }
-  }
-}
-
-/** Campo obrigatório faltando → mensagem amigável (null = válido). */
-function validateBlock(f: BlockForm): string | null {
-  switch (f.kind) {
-    case 'dialogue': {
-      const fala = f.dialogueText.trim()
-      if (!fala) return 'Escreva a fala do Zappy.'
-      if (fala.length > DIALOGUE_MAX_LENGTH)
-        return `A fala do Zappy passa de ${DIALOGUE_MAX_LENGTH} caracteres.`
-      return null
-    }
-    case 'video':
-      return f.src.trim() ? null : 'Envie o vídeo antes de publicar.'
-    case 'image':
-      return f.url.trim() ? null : 'Envie a imagem antes de publicar.'
-    case 'audio':
-      return f.url.trim() ? null : 'Envie o áudio antes de publicar.'
-    case 'embed':
-      return f.html.trim() ? null : 'Escreva o HTML do conteúdo interativo.'
-    case 'ebook':
-      return f.ebookAttachmentId ? null : 'Escolha um PDF dos arquivos da aula.'
-    case 'materials':
-      return validateMaterials(f.materials)
-    case 'studio': {
-      // O projeto inicial vem do editor embutido (validado no saveBlock). Aqui só
-      // barramos "zero modos" — que, omitido no payload, viraria "todos liberados"
-      // (o OPOSTO da intenção do autor; achado do review).
-      if (f.studioModes.length === 0) return 'Selecione ao menos um modo do Estúdio.'
-      // Atividade (auto-correção): coerência espelhando o members.
-      return validateStudioActivity(f.studioActivity)
-    }
-    case 'certificate': {
-      // A mensagem abaixo do nome (frase e/ou parágrafo) é OBRIGATÓRIA — é o que descreve a
-      // conquista no certificado (decisão da usuária 26/06).
-      if (!f.certCoursePhrase.trim() && !f.certBodyText.trim())
-        return 'Escreva a mensagem que aparece abaixo do nome do aluno (frase e/ou parágrafo).'
-      // URLs http(s) (a imagem base do admin é WebP no R2; assinaturas idem).
-      for (const url of [f.certBaseImageUrl, f.certSig1Url, f.certSig2Url]) {
-        if (url.trim() && !/^https?:\/\//i.test(url.trim()))
-          return 'A imagem base e as assinaturas precisam ser URLs http(s).'
-      }
-      return null
-    }
-    default:
-      return null
-  }
 }
 
 export function LessonEditorClient(props: Parameters<typeof LessonEditorSession>[0]) {
@@ -560,6 +197,20 @@ function LessonEditorSession({
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const draftState = useLessonDraft(lessonId, authorId)
   const { session, draft } = draftState
+  const exampleCapture = useRef<(() => Promise<void>) | null>(null)
+  const sectionAuthoringGeneration = useRef(0)
+  const [sectionAuthoringEpoch, setSectionAuthoringEpoch] = useState(0)
+  const registerExampleCapture = useCallback((capture: () => Promise<void>) => {
+    exampleCapture.current = capture
+    return () => {
+      if (exampleCapture.current === capture) exampleCapture.current = null
+    }
+  }, [])
+  const canCaptureExample = useCallback(
+    () =>
+      canWrite && session.canEdit() && sectionAuthoringGeneration.current === sectionAuthoringEpoch,
+    [canWrite, session, sectionAuthoringEpoch],
+  )
   const loading = draftState.status === 'loading'
   const [preview, setPreview] = useState(false)
   const [reviewResult, setReviewResult] = useState<{
@@ -639,17 +290,81 @@ function LessonEditorSession({
   const [courseInfo, setCourseInfo] = useState<{
     slug: string
     audience: 'adult' | 'kids'
+    /** Curso ao vivo: transmissão no lugar do vídeo, anotações da professora por parte. */
+    modality: CourseModality
     status: string
     lessonPublished: boolean
   } | null>(null)
+  const live = courseInfo?.modality === 'live'
   const [busy, setBusy] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
 
   const [blockOpen, setBlockOpen] = useState(false)
   const [editingBlock, setEditingBlock] = useState<BlockView | null>(null)
-  const [blockForm, setBlockForm] = useState<BlockForm>(EMPTY_BLOCK)
-  const currentBlockEditor = useRef({ id: blockId, open: blockOpen })
-  currentBlockEditor.current = { id: blockId, open: blockOpen }
+  const studioRuntimeScope: StudioAuthoringRuntimeScope | undefined =
+    draft && canWrite
+      ? {
+          userId: authorId,
+          context: {
+            kind: 'authoring',
+            lessonId,
+            draftRevision: draft.revision,
+            blockId: editingBlock?.id ?? null,
+            purpose: 'authoring',
+          },
+        }
+      : undefined
+  const [blockForms] = useState(() => new LessonFormBufferSlot<BlockForm>(() => session.canEdit()))
+  const blockOpening = useSyncExternalStore(
+    blockForms.subscribe,
+    blockForms.getCurrent,
+    blockForms.getCurrent,
+  )
+  const blockForm = useSyncExternalStore(
+    blockOpening?.subscribe ?? subscribeEmptyForm,
+    blockOpening?.getSnapshot ?? emptyBlockForm,
+    blockOpening?.getSnapshot ?? emptyBlockForm,
+  )
+  const interactiveFields = useMemo(
+    () => editorValue<BlockForm['interactive']>(blockForm.interactive),
+    [blockForm.interactive],
+  )
+  const quizFields = useMemo(() => editorValue<BlockForm['quiz']>(blockForm.quiz), [blockForm.quiz])
+  const materialFields = useMemo(
+    () => editorValue<BlockForm['materials']>(blockForm.materials),
+    [blockForm.materials],
+  )
+  const setBlockForm = (
+    change:
+      | LessonFormSnapshot<BlockForm>
+      | ((form: LessonFormSnapshot<BlockForm>) => LessonFormSnapshot<BlockForm>),
+  ) => {
+    if (!blockOpening) return false
+    return typeof change === 'function' ? blockOpening.update(change) : blockOpening.set(change)
+  }
+  function openBlockForm(id: string, initial: BlockForm) {
+    const previous = blockForms.getCurrent()
+    if (previous) blockForms.close(previous)
+    blockForms.open(id, initial)
+  }
+  const [studioAuthoringProject, setStudioAuthoringProject] =
+    useState<EditableStudioProject | null>(null)
+  const isPythonAuthoring = studioAuthoringProject?.programmingLanguage === 'python'
+  const studioAuthoring = useStudioAuthoringOptions(
+    blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled,
+  )
+  const studioPalette = useStudioAuthoringPalette(
+    blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled,
+    studioAuthoringProject,
+    studioAuthoring.prepared,
+  )
+  const currentBlockEditor = useRef({ id: blockId, open: blockOpen, lessonId })
+  if (
+    currentBlockEditor.current.id !== blockId ||
+    currentBlockEditor.current.open !== blockOpen ||
+    currentBlockEditor.current.lessonId !== lessonId
+  )
+    currentBlockEditor.current = { id: blockId, open: blockOpen, lessonId }
   useEffect(() => {
     if (blockOpen) blockHeadingRef.current?.focus()
   }, [blockOpen])
@@ -681,46 +396,16 @@ function LessonEditorSession({
     [session],
   )
   const receiveVideo = useCallback(
-    (id: string, video: ReadyVideo) => {
-      const current = session.getSnapshot().draft
-      const block = current?.document.blocks.find((b) => b.id === id)
-      if (!current || block?.content.kind !== 'video') return
-      const same = block.content.src === video.embedUrl
-      const content: LessonBlockContent = {
-        ...block.content,
-        provider: 'vimeo',
-        src: video.embedUrl,
-        posterUrl: same ? block.content.posterUrl : undefined,
-        durationSeconds:
-          video.durationSeconds ?? (same ? block.content.durationSeconds : undefined),
-        captions: video.captions.length
-          ? video.captions
-          : same
-            ? block.content.captions
-            : undefined,
-      }
-      session.enqueue({ type: 'block', block: { id, content } }, true)
-      const planned = current.document.plannedVideos
-      session.enqueue(
-        {
-          type: 'planned-videos',
-          plannedVideos: planned.some((v) => v.blockId === id)
-            ? planned.map((v) => (v.blockId === id ? { ...v, videoId: video.vimeoVideoId } : v))
-            : [...planned, { blockId: id, instructions: '', videoId: video.vimeoVideoId }],
-        },
-        true,
-      )
-      if (currentBlockEditor.current.open && currentBlockEditor.current.id === id)
-        setBlockForm((form) => ({
-          ...form,
-          provider: 'vimeo',
-          src: content.src,
-          posterUrl: content.posterUrl ?? '',
-          durationSeconds: content.durationSeconds == null ? '' : String(content.durationSeconds),
-          captions: content.captions ?? [],
-        }))
+    (id: string, video: ReadyVideo, receipt: LessonVideoDeliveryReceipt) => {
+      applyLessonVideoDelivery({
+        session,
+        blockId: id,
+        video,
+        receipt,
+        currentOpening: blockForms.getCurrent,
+      })
     },
-    [session],
+    [session, blockForms],
   )
   // Tipo de atividade do bloco Estúdio (redesenho 24/07): controla o segmented do
   // TOPO do form e o que aparece (Pro esconde a curadoria de blocos). NÃO entra no
@@ -774,6 +459,7 @@ function LessonEditorSession({
       setCourseInfo({
         slug: tree.slug,
         audience: (tree.audience ?? 'adult') as 'adult' | 'kids',
+        modality: courseModalityOf(tree.modality),
         status: tree.status,
         lessonPublished: treeLesson?.isPublished ?? false,
       })
@@ -791,6 +477,7 @@ function LessonEditorSession({
         setCourseInfo({
           slug: tree.slug,
           audience: tree.audience === 'kids' ? 'kids' : 'adult',
+          modality: courseModalityOf(tree.modality),
           status: tree.status,
           lessonPublished: treeLesson?.isPublished ?? false,
         })
@@ -811,9 +498,11 @@ function LessonEditorSession({
     setCatalogOpen(true)
   }
   function createBlock(kind: LessonBlockKind) {
-    setBlockId(crypto.randomUUID())
+    setStudioAuthoringProject(null)
+    const id = crypto.randomUUID()
+    setBlockId(id)
     setEditingBlock(null)
-    setBlockForm({
+    openBlockForm(id, {
       ...EMPTY_BLOCK,
       kind,
       toolPurpose: ['delivery', 'closing'].includes(
@@ -838,7 +527,8 @@ function LessonEditorSession({
     )
     setEditingBlock(b)
     const c = b.content
-    setBlockForm({
+    setStudioAuthoringProject(c.kind === 'studio' ? c.initialProject : null)
+    openBlockForm(b.id, {
       ...EMPTY_BLOCK,
       kind: c.kind,
       galleryEnabled: (c.kind === 'studio' || c.kind === 'pinta') && !!c.gallery,
@@ -880,8 +570,8 @@ function LessonEditorSession({
       studioModes:
         c.kind === 'studio' ? (c.allowedModes ?? ['blocks', 'bridge', 'code']) : ['blocks'],
       studioAllowReveal: c.kind === 'studio' ? (c.allowLevelReveal ?? true) : true,
+      studioPythonLevel: c.kind === 'studio' ? resolvePythonLearningLevel(c.pythonLevel) : 1,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
-      studioActivity: c.kind === 'studio' ? (c.activity ?? EMPTY_ACTIVITY) : EMPTY_ACTIVITY,
       studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
       studioShowcaseEnabled: c.kind === 'studio' ? (c.showcase?.enabled ?? false) : false,
       studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
@@ -912,7 +602,6 @@ function LessonEditorSession({
       // default — senão o autor editaria sem ver a curadoria custom que existe.
       const modes = c.allowedModes ?? ['blocks', 'bridge', 'code']
       const modesDefault = modes.length === 1 && modes[0] === 'blocks'
-      const activity = c.activity ?? EMPTY_ACTIVITY
       setAdvancedOpen(
         (normalizeBlockLevel(c.level) ?? 'iniciante-2d') !== 'iniciante-2d' ||
           !modesDefault ||
@@ -922,8 +611,6 @@ function LessonEditorSession({
           // deixar a condição antiga aqui abriria a seção em todo bloco novo e a
           // esconderia justamente nas aulas que liberam o destravamento.
           (c.allowLevelReveal ?? true) === true ||
-          activity.checks.length > 0 ||
-          activity.instructions.trim() !== '' ||
           Boolean(c.showcase?.title || c.showcase?.summary || c.showcase?.defaultCoverUrl),
       )
     } else {
@@ -935,6 +622,9 @@ function LessonEditorSession({
   const captureBlock = useCallback(
     (immediate = false) => {
       if (!blockId || !blockOpen) return
+      const opening = blockForms.getCurrent()
+      if (!opening || opening.targetId !== blockId) return
+      const blockForm = editorValue<BlockForm>(opening.getSnapshot())
       const project = blockForm.galleryEnabled
         ? editingBlock?.content.kind === 'studio'
           ? editingBlock.content.initialProject
@@ -1022,22 +712,68 @@ function LessonEditorSession({
     [
       blockId,
       blockOpen,
-      blockForm,
       editingBlock,
       pintaSeed,
       session,
       blockSectionId,
       galleryStudioSeed,
+      blockForms,
     ],
   )
+  const currentCapture = useRef({
+    lessonId,
+    blockId,
+    open: blockOpen,
+    form: blockForm,
+    capture: captureBlock,
+    editorOwner: currentBlockEditor.current,
+    environment: studioAuthoringChoiceKey(studioAuthoringProject),
+  })
+  currentCapture.current = {
+    lessonId,
+    blockId,
+    open: blockOpen,
+    form: blockForm,
+    capture: captureBlock,
+    editorOwner: currentBlockEditor.current,
+    environment: studioAuthoringChoiceKey(studioAuthoringProject),
+  }
   useEffect(() => {
     void editorVersion
+    void blockForm
     captureBlock()
-  }, [captureBlock, editorVersion])
+  }, [captureBlock, editorVersion, blockForm])
 
   async function captureEditors() {
-    if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled)
+    const captureExample = exampleCapture.current
+    const owner = currentCapture.current
+    const assertCurrent = () => {
+      const current = currentCapture.current
+      if (
+        currentBlockEditor.current !== owner.editorOwner ||
+        current.editorOwner !== owner.editorOwner ||
+        current.lessonId !== owner.lessonId ||
+        current.blockId !== owner.blockId ||
+        current.open !== owner.open ||
+        current.form.kind !== owner.form.kind ||
+        current.form.galleryEnabled !== owner.form.galleryEnabled ||
+        current.environment !== owner.environment
+      )
+        throw new Error(
+          'A configuração do bloco mudou durante a gravação. Revise o bloco antes de continuar.',
+        )
+      return current
+    }
+    assertCurrent()
+    await captureExample?.()
+    if (exampleCapture.current !== captureExample)
+      throw new Error('A parte em edição mudou durante a captura. Tente novamente.')
+    assertCurrent()
+    if (blockOpen && blockForm.kind === 'studio' && !blockForm.galleryEnabled) {
       await studioHandleRef.current?.save()
+      assertCurrent()
+    }
+    assertCurrent()
     if (
       blockOpen &&
       blockForm.kind === 'pinta' &&
@@ -1046,7 +782,7 @@ function LessonEditorSession({
       !(await pintaHandleRef.current.save())
     )
       throw new Error('Não foi possível capturar os últimos traços do Pinta.')
-    captureBlock(true)
+    assertCurrent().capture(true)
   }
   async function changeGalleryMode(galleryEnabled: boolean) {
     if (galleryEnabled === blockForm.galleryEnabled) return
@@ -1096,6 +832,9 @@ function LessonEditorSession({
   async function closeBlock() {
     try {
       await captureEditors()
+      const opening = blockForms.getCurrent()
+      if (opening) blockForms.close(opening)
+      currentBlockEditor.current = { id: blockId, open: false, lessonId }
       setBlockOpen(false)
       requestAnimationFrame(() => {
         blockReturnFocus.current?.focus({ preventScroll: true })
@@ -1111,7 +850,14 @@ function LessonEditorSession({
    * cima (a mesma limpeza do aviso de conflito).
    */
   function fecharTrabalhoLocal() {
-    currentBlockEditor.current = { id: '', open: false }
+    // Explicit reconciliation retires the old editor synchronously, before async restore.
+    // Ordinary autosave revisions keep this generation and the same working copy.
+    sectionAuthoringGeneration.current++
+    setSectionAuthoringEpoch(sectionAuthoringGeneration.current)
+    exampleCapture.current = null
+    const opening = blockForms.getCurrent()
+    if (opening) blockForms.close(opening)
+    currentBlockEditor.current = { id: '', open: false, lessonId }
     uploads.clear()
     setBlockOpen(false)
     setEditingBlock(null)
@@ -1228,7 +974,8 @@ function LessonEditorSession({
         return
       add(
         seed(
-          intent === 'application'
+          // Curso ao vivo: quem explica é a transmissão do encontro, nunca um bloco de vídeo.
+          intent === 'application' && !live
             ? 'video'
             : courseInfo?.audience === 'adult'
               ? 'rich_text'
@@ -1268,7 +1015,7 @@ function LessonEditorSession({
     } else
       add(
         seed(
-          intent === 'presentation'
+          intent === 'presentation' && !live
             ? 'video'
             : intent === 'closing'
               ? 'quiz'
@@ -1345,11 +1092,26 @@ function LessonEditorSession({
         toast.error('Confira as pendências indicadas nos blocos antes de publicar.')
         return false
       }
+      const confirmPublication = session.publicationConfirmation(command.expectedRevision)
       publication.current = command
-      await apiSend(`/api/members/lessons/${lessonId}/draft/publish`, 'POST', command)
+      const published = await apiSend<LessonDraft<LessonBlockContent>>(
+        `/api/members/lessons/${lessonId}/draft/publish`,
+        'POST',
+        command,
+      )
       publication.current = null
-      await load()
-      toast.success('Aula publicada. A base do Zappy será atualizada com esta versão.')
+      const adoption = confirmPublication(published)
+      if (adoption === 'stale') return false
+      if (adoption === 'conflict') {
+        toast.error(session.getSnapshot().error)
+        return false
+      }
+      setCourseInfo((current) => (current ? { ...current, lessonPublished: true } : null))
+      toast.success(
+        live
+          ? 'Aula publicada. Turmas novas deste curso ganham um encontro para ela.'
+          : 'Aula publicada. A base do Zappy será atualizada com esta versão.',
+      )
       return true
     } catch (error) {
       toast.error((error as ApiError).message ?? 'Não foi possível publicar.')
@@ -1408,7 +1170,7 @@ function LessonEditorSession({
       return
     }
     if (attForm.zappyStudentNotebook && !isPdfAttachment(attForm)) {
-      toast.error('O Caderno do aluno para o Zappy precisa ser um PDF.')
+      toast.error('O Passo a passo do projeto para o Zappy precisa ser um PDF.')
       return
     }
     const current = session.getSnapshot().draft
@@ -1499,13 +1261,10 @@ function LessonEditorSession({
                 // "Ver como aluno": abre a aula no app do aluno (pela audience) com a
                 // PRÓPRIA conta de equipe (passe livre). Rascunho → 404 na visão do
                 // aluno (o filtro roda antes do bypass), por isso só habilita publicado.
-                if (!courseInfo) return null
-                const base =
-                  courseInfo.audience === 'kids' ? studentAppUrls?.kids : studentAppUrls?.adult
-                if (!base) return null
-                const publishedBoth =
-                  courseInfo.status === 'published' && courseInfo.lessonPublished
-                const url = `${base.replace(/\/+$/, '')}/cursos/${encodeURIComponent(courseInfo.slug)}/aulas/${encodeURIComponent(lessonId)}`
+                // ⚠️ Curso ao vivo não tem essa porta: a aula abre pela sala do encontro.
+                const link = studentLessonLink(courseInfo, studentAppUrls, lessonId)
+                if (!link) return null
+                const { url, enabled: publishedBoth } = link
                 return (
                   <Button
                     variant="outline"
@@ -1657,11 +1416,13 @@ function LessonEditorSession({
             </details>
           </div>
         )}
+        {/* Curso ao vivo: o cartão fica no topo de todas as áreas (a transmissão é da aula
+            inteira, não de uma parte), menos dentro do editor de um bloco. */}
+        {draft && live && !blockOpen ? <LiveBroadcastCard /> : null}
         {draft && (
-          <div
+          <fieldset
             hidden={blockOpen}
             className="flex flex-wrap gap-2 border-b border-border pb-3"
-            role="group"
             aria-label="Áreas de edição da aula"
           >
             {(
@@ -1676,14 +1437,18 @@ function LessonEditorSession({
                 variant={area === item.id ? 'default' : 'ghost'}
                 aria-pressed={area === item.id}
                 onClick={() => {
-                  setArea(item.id)
-                  setPreview(false)
+                  void captureEditors()
+                    .then(() => {
+                      setArea(item.id)
+                      setPreview(false)
+                    })
+                    .catch((error) => toast.error(error.message))
                 }}
               >
                 {item.label}
               </Button>
             ))}
-          </div>
+          </fieldset>
         )}
         {draft && (
           <section
@@ -1762,6 +1527,7 @@ function LessonEditorSession({
                 lessonId={lessonId}
                 lessonSlug={lesson.slug}
                 courseSlug={courseInfo.slug}
+                live={live}
                 disabled={busy || draftState.status === 'conflict'}
                 beforeImport={beforePublish}
                 onImported={load}
@@ -1774,7 +1540,12 @@ function LessonEditorSession({
             {draft && (
               <div hidden={area === 'data' || blockOpen}>
                 <LessonStructureEditor
+                  key={sectionAuthoringEpoch}
+                  registerExampleCapture={registerExampleCapture}
+                  canCaptureExample={canCaptureExample}
                   authorId={authorId}
+                  draftRevision={draft.revision}
+                  live={live}
                   // A prévia e o ensaio montam a aula no layout do app de destino: os
                   // dois divergem desde 13/09/2026 (o kids não tem a barra do topo e
                   // leva o índice para o cabeçalho da seção).
@@ -1792,8 +1563,11 @@ function LessonEditorSession({
                   onCreateStructure={createStructure}
                   lesson={lesson}
                   document={draft.document}
-                  canWrite={canWrite && !busy && draftState.status !== 'conflict'}
+                  canWrite={canWrite && !busy && session.canEdit()}
                   onChange={(change, immediate) => session.enqueue(change, immediate)}
+                  onExampleChange={(change, immediate) =>
+                    canCaptureExample() && session.enqueue(change, immediate)
+                  }
                   onAddBlock={openCreateBlock}
                   onEditBlock={openEditBlock}
                   onRemoveBlock={deleteBlock}
@@ -1853,7 +1627,11 @@ function LessonEditorSession({
           title="Adicionar conteúdo"
           className="max-w-3xl"
         >
-          <LessonContentCatalog audience={courseInfo?.audience ?? 'kids'} onSelect={createBlock} />
+          <LessonContentCatalog
+            audience={courseInfo?.audience ?? 'kids'}
+            live={live}
+            onSelect={createBlock}
+          />
         </Dialog>
         {compareOpen && draft ? (
           <LessonPublishedCompare
@@ -1906,7 +1684,7 @@ function LessonEditorSession({
                       (s) => s.completion !== undefined,
                     )}
                     kids={courseInfo?.audience === 'kids'}
-                    value={blockForm.interactive}
+                    value={interactiveFields}
                     onChange={(interactive) => setBlockForm((form) => ({ ...form, interactive }))}
                   />
                 )}
@@ -2159,7 +1937,7 @@ function LessonEditorSession({
                       </span>
                     </label>
                     <MaterialsBuilder
-                      value={blockForm.materials}
+                      value={materialFields}
                       onChange={(materials) => setBlockForm((f) => ({ ...f, materials }))}
                       onUploadFile={addMaterialAttachment}
                       attachments={lesson?.attachments ?? []}
@@ -2173,6 +1951,17 @@ function LessonEditorSession({
 
                 {blockForm.kind === 'video' ? (
                   <>
+                    {live ? (
+                      <p
+                        role="note"
+                        className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+                      >
+                        Este curso é ao vivo: o vídeo da aula é a transmissão do encontro, que vira
+                        a gravação da turma. Este bloco de vídeo é antigo e continua editável, mas
+                        não aparece mais na lista de conteúdos novos. Se ele não for necessário,
+                        retire-o da aula.
+                      </p>
+                    ) : null}
                     <div className="grid items-start gap-5 xl:grid-cols-2">
                       <Field
                         label="Vídeo (Vimeo)"
@@ -2405,8 +2194,8 @@ function LessonEditorSession({
                       />
                     </Field>
                     <p className="text-xs text-muted-foreground">
-                      Para usar o texto deste PDF nas respostas do Zappy, marque “Caderno do aluno
-                      para o Zappy” em Arquivos da aula.
+                      Para usar o texto deste PDF nas respostas do Zappy, marque “Passo a passo do
+                      projeto para o Zappy” em Arquivos da aula.
                     </p>
                     <Field
                       label="Título"
@@ -2424,7 +2213,7 @@ function LessonEditorSession({
 
                 {blockForm.kind === 'quiz' ? (
                   <QuizBuilder
-                    value={blockForm.quiz}
+                    value={quizFields}
                     onChange={(quiz) => setBlockForm((f) => ({ ...f, quiz }))}
                   />
                 ) : null}
@@ -2576,13 +2365,32 @@ function LessonEditorSession({
                     >
                       <StudioEmbed
                         key={editingBlock?.id ?? 'new-studio'}
+                        runtimeScope={studioRuntimeScope}
                         initialProject={
                           editingBlock && editingBlock.content.kind === 'studio'
-                            ? (editingBlock.content.initialProject as Project)
+                            ? editingBlock.content.initialProject
                             : null
                         }
                         handleRef={studioHandleRef}
-                        onChange={() => setEditorVersion((v) => v + 1)}
+                        onChange={(project) => {
+                          setStudioAuthoringProject(project)
+                          setEditorVersion((v) => v + 1)
+                        }}
+                        authoringOptions={studioAuthoring.prepared}
+                        authoringError={studioAuthoring.error}
+                        onReloadAuthoringOptions={studioAuthoring.retry}
+                        onProjectReset={(project) => {
+                          setStudioAuthoringProject(project)
+                          setBlockForm((form) => ({
+                            ...form,
+                            studioAllowBlocks: [],
+                            studioCategories: [],
+                            studioModes: ['blocks'],
+                            studioLevel: EMPTY_BLOCK.studioLevel,
+                            studioPythonLevel: 1,
+                            studioAllowReveal: EMPTY_BLOCK.studioAllowReveal,
+                          }))
+                        }}
                         professionalAuthoring
                         hideKindChooser
                         requestedKind={studioKind}
@@ -2593,13 +2401,19 @@ function LessonEditorSession({
                         features={{ terminal: false, ai: false, professional: true, export: false }}
                       />
                     </Field>
+                    <p className="text-sm text-muted-foreground">
+                      A entrada para ensaio e a solução são configuradas em Para avançar de cada
+                      parte, sem alterar o projeto inicial da criança.
+                    </p>
                     {studioKind === 'blocks' ? (
                       <Field
                         label="Blocos visíveis para o aluno"
                         hint="Vazio = a paleta curada pelo nível (em Configurações avançadas). Preenchido = o aluno vê SÓ estes blocos (+ as Áreas do projeto). Bom para aulas bem guiadas."
                       >
                         <StudioBlocksPicker
-                          value={blockForm.studioAllowBlocks}
+                          catalog={studioPalette.palette?.blocks ?? null}
+                          error={studioPalette.error}
+                          value={[...blockForm.studioAllowBlocks]}
                           onChange={(studioAllowBlocks) =>
                             setBlockForm((f) => ({ ...f, studioAllowBlocks }))
                           }
@@ -2658,16 +2472,21 @@ function LessonEditorSession({
                             <>
                               <StudioConfigClipboard
                                 current={{
+                                  environmentKey: studioAuthoringChoiceKey(studioAuthoringProject),
                                   level: blockForm.studioLevel,
-                                  modes: blockForm.studioModes,
-                                  categories: blockForm.studioCategories,
+                                  ...(isPythonAuthoring
+                                    ? { pythonLevel: blockForm.studioPythonLevel }
+                                    : {}),
+                                  modes: [...blockForm.studioModes],
+                                  categories: [...blockForm.studioCategories],
                                   allowReveal: blockForm.studioAllowReveal,
-                                  allowBlocks: blockForm.studioAllowBlocks,
+                                  allowBlocks: [...blockForm.studioAllowBlocks],
                                 }}
                                 onPaste={(snap) =>
                                   setBlockForm((f) => ({
                                     ...f,
                                     studioLevel: snap.level,
+                                    studioPythonLevel: resolvePythonLearningLevel(snap.pythonLevel),
                                     studioModes: snap.modes,
                                     studioCategories: snap.categories,
                                     studioAllowReveal: snap.allowReveal,
@@ -2683,15 +2502,28 @@ function LessonEditorSession({
                                 >
                                   <Select
                                     id="slevel"
-                                    value={blockForm.studioLevel}
+                                    value={
+                                      isPythonAuthoring
+                                        ? blockForm.studioPythonLevel
+                                        : blockForm.studioLevel
+                                    }
                                     onChange={(e) =>
                                       setBlockForm((f) => ({
                                         ...f,
-                                        studioLevel: e.target.value as BlockLevel,
+                                        ...(isPythonAuthoring
+                                          ? {
+                                              studioPythonLevel: resolvePythonLearningLevel(
+                                                Number(e.target.value),
+                                              ),
+                                            }
+                                          : { studioLevel: e.target.value as BlockLevel }),
                                       }))
                                     }
                                   >
-                                    {STUDIO_LEVELS.map((l) => (
+                                    {(isPythonAuthoring
+                                      ? PYTHON_LEARNING_LEVELS
+                                      : STUDIO_LEVELS
+                                    ).map((l) => (
                                       <option key={l.value} value={l.value}>
                                         {l.label}
                                       </option>
@@ -2757,7 +2589,7 @@ function LessonEditorSession({
                                 hint="Categorias liberadas independente do nível (opcional)."
                               >
                                 <div className="flex flex-wrap gap-3 pt-1.5">
-                                  {CORE_CATEGORY_OPTIONS.map((cat) => (
+                                  {(studioPalette.palette?.categories ?? []).map((cat) => (
                                     <label
                                       key={cat.value}
                                       className="flex items-center gap-1.5 text-sm"
@@ -2796,17 +2628,6 @@ function LessonEditorSession({
                               </label>
                             </>
                           ) : null}
-                          <Field
-                            label="Atividade (auto-correção)"
-                            hint="Opcional. Defina checagens que o editor corrige na hora; com nota de corte, viram gate da aula. Só 'estrutura' é reverificada no servidor."
-                          >
-                            <ActivityBuilder
-                              value={blockForm.studioActivity}
-                              onChange={(studioActivity) =>
-                                setBlockForm((f) => ({ ...f, studioActivity }))
-                              }
-                            />
-                          </Field>
                           <fieldset className="rounded-lg border border-border p-3">
                             <legend className="px-1 text-xs text-muted-foreground">
                               Vitrine do Mural — texto do post
@@ -3066,13 +2887,13 @@ function LessonEditorSession({
                 </Button>
               </div>
             ))}
-            {draft && lessonEditorialWarnings(draft.document).length > 0 && (
+            {draft && lessonEditorialWarnings(draft.document, { live }).length > 0 && (
               <details>
                 <summary className="cursor-pointer text-sm font-medium">
                   Sugestões didáticas (não impedem publicar)
                 </summary>
                 <ul className="mt-3 list-disc space-y-2 pl-5 text-sm">
-                  {lessonEditorialWarnings(draft.document).map((warning) => (
+                  {lessonEditorialWarnings(draft.document, { live }).map((warning) => (
                     <li key={warning}>{warning}</li>
                   ))}
                 </ul>
@@ -3135,7 +2956,7 @@ function LessonEditorSession({
                   className="mt-0.5 size-4 accent-primary"
                 />
                 <span>
-                  <strong className="block">Caderno do aluno para o Zappy</strong>
+                  <strong className="block">Passo a passo do projeto para o Zappy</strong>
                   <span className="text-muted-foreground">
                     Autoriza o Zappy a usar o texto deste PDF nas respostas. Não obriga o aluno a
                     baixá-lo.

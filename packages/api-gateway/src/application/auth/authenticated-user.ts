@@ -6,6 +6,7 @@ import type { Principal } from './auth-strategy.port'
  * `phone`/`signupSource`). É a forma confiável repassada ao upstream.
  */
 export interface AuthenticatedUser {
+  readonly desktopDeviceId?: string
   readonly id: string
   readonly email: string
   readonly firstName: string

@@ -1,0 +1,49 @@
+"""Pin existing functional browser sources only. No host/supervisor/bundle/start."""
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+from datetime import datetime, timezone
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+sha = lambda value: hashlib.sha256(value).hexdigest()
+freeze_path = here / '../current-host-browser-package-r8/source-freeze.json'
+freeze_bytes = freeze_path.read_bytes()
+assert sha(freeze_bytes) == 'b4f70d586a34f2b1db2ca6a485d7364daad409abd4e5b40daf0881316711df7a'
+freeze = json.loads(freeze_bytes)
+for entry in freeze['files']:
+    assert sha(Path(entry['path']).read_bytes()) == entry['sha256'], entry['path']
+assert subprocess.check_output(['git', '-C', str(games), 'rev-parse', 'HEAD'], text=True).strip() == '9557e17bcafbe529d0079c8d941485b7f67061c4'
+assert subprocess.check_output(['git', '-C', str(games), 'status', '--porcelain'], text=True) == ''
+relative = ['packages/studio/playwright.python-games-current.config.ts',
+            'packages/studio/e2e-runtime/python-pacman-portable.spec.ts',
+            'experiments/studio-python-runtime/qualification/current_games_host.ts',
+            'experiments/studio-python-runtime/qualification/pacman.ts',
+            'experiments/studio-python-runtime/qualification/pacman_observer.py',
+            'experiments/studio-python-runtime/qualification/pacman_functional_observer.py',
+            'experiments/studio-python-runtime/gameVariants.ts',
+            'experiments/studio-python-l0/corpus/pacman.json']
+files = [dict(path=str(games / p), bytes=(games / p).stat().st_size, sha256=sha((games / p).read_bytes())) for p in relative]
+future = here / '../current-host-browser-package-r8/future-scenarios.json'
+assert sha(future.read_bytes()) == 'a1a3e8e938c7d8f47b2fb34126548fd139f98d3416c3a0281defcc67030f364c'
+report = dict(state='FUNCTIONAL-SPEC-ONLY-EXECUTION-BLOCKED-ON-ROOT-INTEGRATION-AND-KERNEL',
+              checkedAt=datetime.now(timezone.utc).isoformat(), gamesCommit=freeze['commit'],
+              sourceFreeze=dict(path=str(freeze_path.resolve()), sha256=sha(freeze_bytes), files=28, qualified=False, host='UNBOUND'),
+              functionalFiles=files,
+              variant=dict(version='portable-audio-1.1.0', mainSha256='3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76', manifestSha256='689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d'),
+              browserArguments=['test','--config','playwright.python-games-current.config.ts','--project','chrome','--workers','1','--max-failures','1','--retries','0','--grep','Pac-Man instrumented (victory-near-end|defeat-near-end) '],
+              expectedOrderedTitles=['portable Pac-Man instrumented victory-near-end preserves authored rules','portable Pac-Man instrumented defeat-near-end preserves authored rules'],
+              existingAdditionalScenarios=['observe','pellet','power','death','geometry','ai'],
+              policyIntent=dict(oneBrowser=True, oneWorker=True, pagesAtATime=1, serial=True, retries=0, maxFailures=1, trace='off', video='off', noDistributionBuild=True),
+              runtimeReuseCandidate=dict(distribution='a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a', release='0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e', requiresFreshCurrentFingerprintAndAuthority=True),
+              rootPrerequisites=['Explicit branch review/integration of game recipes including6f74 and9557; current host1.0 would fail strict1.1 source assertion',
+                                 'Reviewed/actually proven single Windows Job ownership/supervision base; no old CIM omission accepted',
+                                 'Root derives complete host/operator/executable/parent-origin/resource/cleanup pins from that approved common base',
+                                 'Fresh current host source/runtime graph, authority, new namespace/output, RAM admission, absolute UTC window'],
+              noHostOverlayOrCustomSupervisorCreated=True, noStart=True, noOracleOrFingerprintOrSourceChange=True,
+              historicalNativeAndExportAreSeparateNotBrowserApproval=True)
+target = here / 'functional-inputs.json'
+with target.open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(report, stream, indent=2); stream.write('\n')
+print(json.dumps(dict(state=report['state'], functionalInputsSha256=sha(target.read_bytes()), pinnedFunctionalFiles=len(files), unchangedR8Files=28, noHostOrSupervisorOrStart=True)))

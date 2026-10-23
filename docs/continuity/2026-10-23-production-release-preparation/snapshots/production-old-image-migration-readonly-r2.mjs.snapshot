@@ -1,0 +1,218 @@
+import assert from 'node:assert/strict'
+import { execFile } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { open, readFile } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import vm from 'node:vm'
+
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+const PROJECT = '415d5a1c-5f75-432c-8445-b395d0977ce3', ENVIRONMENT = '19c212a5-85c0-493c-9630-a7a0569e8412'
+const PLAN_SHA = '6f6ac9aab04dc4bf124839eec10a9c5cf6e2205535f693b8bceb8c61b1fd7330'
+export const TARGETS = [
+  { name: 'members', service: 'aa282801-ffba-477c-af6d-394b2f4f9af9', deployment: '9d8368c2-d915-4dbf-898c-28c2b7978133', commit: '6f93dcbfe8f176017b7b1ace5114d480ad5853b1', digest: 'sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847',
+    journalSha256: '9c071735d6bf89d5a4c8d43737563dc18d98d07b3ff9144bc1e578a05e3f14f6', entries: 102, last: { idx: 101, version: '7', when: 1791666505573, tag: '0101_content_fingerprints', breakpoints: true }, lastSqlSha256: 'aeec373386062616efe036d4bc0da327cb05f9f7b6f8259bec32e8ac6a00fe91', packageSha256: '4e9d64e32693c331e8b9aeca6f12b1c3e97a16d62f53235d564eb0c003309f6a', configSha256: 'e89da1ddfb1ff97640471c13df9896d04c26763e781b607d8837ab47376bd598' },
+  { name: 'hub', service: '00b27b18-0587-460b-ba90-b6b24c423e45', deployment: 'ba08042b-d2bf-4063-87e7-97ea452cf030', commit: 'a270417ba4acffe97629793bb3fb62ac0e134519', digest: 'sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241',
+    journalSha256: 'aba8998be5b74b9433f7deffb4004d187afedc5c268c921d052df8121240daf3', entries: 14, last: { idx: 13, version: '7', when: 1789121671089, tag: '0013_mural_sort_indexes', breakpoints: true }, lastSqlSha256: 'e2e7500e33be126202adb61a18f4ad7e583ece8dbffe7b6552060501cf4ef9bd', packageSha256: '7ac1851064a00bfa7d6923d9600d13c7cc3c75d98a5920c7b5876d2ffe66f239', configSha256: '0c3e9e6fa1f035b029bbc944f3e83fd04da3332c427e6df5846a05369de85f6f' },
+]
+export const QUERIES = Object.freeze({
+  policy: "SELECT current_setting('transaction_read_only') AS readonly, current_setting('transaction_isolation') AS isolation, current_database() AS database",
+  members: Object.freeze({ relation: "SELECT to_regclass('drizzle.members_migrations')::text AS relation", count: 'SELECT count(*)::text AS rows FROM drizzle.members_migrations', last: 'SELECT hash, created_at::text AS created_at FROM drizzle.members_migrations ORDER BY created_at DESC, id DESC LIMIT 1' }),
+  hub: Object.freeze({ relation: "SELECT to_regclass('drizzle.hub_migrations')::text AS relation", count: 'SELECT count(*)::text AS rows FROM drizzle.hub_migrations', last: 'SELECT hash, created_at::text AS created_at FROM drizzle.hub_migrations ORDER BY created_at DESC, id DESC LIMIT 1' }),
+})
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+const check = (condition, code) => { if (!condition) throw new Refusal(code) }
+
+// This exact function is serialized into SSH. SQL is the immutable allowlist above.
+export async function readDatabaseJournal(postgres, connection, name, queries) {
+  if (!['members', 'hub'].includes(name)) throw new Error('DATABASE_TARGET_INVALID')
+  const expectedDatabase = decodeURIComponent(new URL(connection).pathname.slice(1))
+  if (!expectedDatabase) throw new Error('DATABASE_IDENTITY_UNCONFIRMED')
+  const client = postgres(connection, { max: 1, prepare: false, connect_timeout: 5, idle_timeout: 2, max_lifetime: 30, debug: false, onnotice: () => {},
+    connection: { application_name: 'sz-old-image-journal-readonly-r1', default_transaction_read_only: true, statement_timeout: 5000, lock_timeout: 1500, idle_in_transaction_session_timeout: 10000 } })
+  const deadline = Date.now() + 15000
+  try {
+    return await client.begin('isolation level repeatable read read only', async tx => {
+      const select = async text => {
+        if (Date.now() >= deadline) throw new Error('DATABASE_READ_DEADLINE')
+        const rows = await tx.unsafe(text)
+        if (Date.now() >= deadline) throw new Error('DATABASE_READ_DEADLINE')
+        return rows
+      }
+      const mode = await select(queries.policy)
+      if (mode.length !== 1 || mode[0].readonly !== 'on' || mode[0].isolation !== 'repeatable read' || mode[0].database !== expectedDatabase) throw new Error('DATABASE_POLICY_OR_IDENTITY_MISMATCH')
+      const table = 'drizzle.' + name + '_migrations', relation = await select(queries[name].relation)
+      if (relation.length !== 1 || relation[0].relation !== table) throw new Error('JOURNAL_RELATION_ABSENT_OR_CHANGED')
+      const count = await select(queries[name].count), last = await select(queries[name].last)
+      if (count.length !== 1 || !/^[1-9][0-9]{0,5}$/.test(count[0].rows) || last.length !== 1 || !/^[a-f0-9]{64}$/.test(last[0].hash) || !/^[0-9]{1,20}$/.test(last[0].created_at)) throw new Error('DATABASE_JOURNAL_INVALID')
+      return { table, readOnly: true, isolation: 'repeatable read', databaseNameMatchesConnection: true, rowCount: count[0].rows, last: { sha256: last[0].hash, when: last[0].created_at }, statementTimeoutMs: 5000, lockTimeoutMs: 1500 }
+    })
+  } finally { await client.end({ timeout: 2 }) }
+}
+
+export async function remoteRead(target, nonce, queries, readDatabase) {
+  const checks = { project: process.env.RAILWAY_PROJECT_ID === target.project, environment: process.env.RAILWAY_ENVIRONMENT_ID === target.environment, service: process.env.RAILWAY_SERVICE_ID === target.service, deployment: process.env.RAILWAY_DEPLOYMENT_ID === target.deployment, commit: process.env.RAILWAY_GIT_COMMIT_SHA === target.commit }
+  const receipt = { nonce, state: 'REFUSED', identityChecks: checks, phase: 'identity', installed: null, database: null }
+  let emitted = false
+  const emit = () => { if (!emitted) { emitted = true; process.stdout.write('SZ_OLD_IMAGE_JOURNAL_V1 ' + JSON.stringify(receipt) + '\n') } }
+  const watchdog = setTimeout(() => { receipt.failureCode = 'REMOTE_DEADLINE'; emit(); process.exit(124) }, 30000)
+  try {
+    if (!Object.values(checks).every(Boolean)) throw new Error('IDENTITY_MISMATCH')
+    const fs = require('node:fs'), crypto = require('node:crypto')
+    const hash = bytes => crypto.createHash('sha256').update(bytes).digest('hex')
+    const read = (path, expected) => {
+      const stat = fs.lstatSync(path)
+      if (!stat.isFile() || stat.size < 1 || stat.size > 2097152) throw new Error('INSTALLED_FILE_INVALID')
+      const bytes = fs.readFileSync(path)
+      if (hash(bytes) !== expected) throw new Error('INSTALLED_FILE_HASH_CHANGED')
+      return bytes
+    }
+    receipt.phase = 'installed-files'
+    const base = '/app/packages/' + target.name, migrations = base + '/src/infrastructure/persistence/drizzle/migrations'
+    const journal = JSON.parse(read(migrations + '/meta/_journal.json', target.journalSha256).toString('utf8'))
+    if (!Array.isArray(journal.entries) || journal.entries.length !== target.entries || JSON.stringify(journal.entries.at(-1)) !== JSON.stringify(target.last) || journal.entries.some((entry, index) => entry.idx !== index || !Number.isSafeInteger(entry.when) || (index > 0 && entry.when <= journal.entries[index - 1].when))) throw new Error('INSTALLED_JOURNAL_INVALID')
+    read(migrations + '/' + target.last.tag + '.sql', target.lastSqlSha256)
+    const pkg = JSON.parse(read(base + '/package.json', target.packageSha256).toString('utf8'))
+    read(base + '/drizzle.config.ts', target.configSha256)
+    if (pkg.scripts?.['db:migrate'] !== 'drizzle-kit migrate') throw new Error('INSTALLED_MIGRATOR_COMMAND_CHANGED')
+    receipt.installed = { journalSha256: target.journalSha256, entries: target.entries, last: target.last, lastSqlSha256: target.lastSqlSha256, packageSha256: target.packageSha256, configSha256: target.configSha256, migrateCommand: 'drizzle-kit migrate' }
+    receipt.phase = 'database-driver'
+    if (typeof Bun === 'undefined' || typeof process.env.DATABASE_URL !== 'string' || !process.env.DATABASE_URL) throw new Error('DATABASE_RUNTIME_UNAVAILABLE')
+    const modulePath = Bun.resolveSync('postgres', base)
+    if (!modulePath.startsWith('/app/')) throw new Error('DATABASE_DRIVER_OUTSIDE_IMAGE')
+    const postgres = (await import(modulePath)).default
+    receipt.phase = 'database-read'
+    receipt.database = await readDatabase(postgres, process.env.DATABASE_URL, target.name, queries)
+    receipt.matchesInstalledLast = receipt.database.last.sha256 === target.lastSqlSha256 && receipt.database.last.when === String(target.last.when)
+    receipt.state = receipt.matchesInstalledLast ? 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH' : 'DATABASE_JOURNAL_DIFFERS'
+    receipt.phase = 'complete'
+  } catch (error) {
+    const codes = new Set(['IDENTITY_MISMATCH', 'INSTALLED_FILE_INVALID', 'INSTALLED_FILE_HASH_CHANGED', 'INSTALLED_JOURNAL_INVALID', 'INSTALLED_MIGRATOR_COMMAND_CHANGED', 'DATABASE_RUNTIME_UNAVAILABLE', 'DATABASE_DRIVER_OUTSIDE_IMAGE', 'DATABASE_TARGET_INVALID', 'DATABASE_IDENTITY_UNCONFIRMED', 'DATABASE_READ_DEADLINE', 'DATABASE_POLICY_OR_IDENTITY_MISMATCH', 'JOURNAL_RELATION_ABSENT_OR_CHANGED', 'DATABASE_JOURNAL_INVALID'])
+    receipt.failureCode = codes.has(error?.message) ? error.message : error?.code === '57014' ? 'STATEMENT_TIMEOUT' : error?.code === '55P03' ? 'LOCK_TIMEOUT' : 'SANITIZED_REMOTE_READ_FAILURE'
+  } finally { clearTimeout(watchdog); emit() }
+}
+
+export function projectRemote(stdout, nonce, target) {
+  const lines = stdout.split(/\r?\n/).filter(line => line.startsWith('SZ_OLD_IMAGE_JOURNAL_V1 '))
+  check(lines.length === 1, 'REMOTE_RECEIPT_MISSING')
+  const value = JSON.parse(lines[0].slice('SZ_OLD_IMAGE_JOURNAL_V1 '.length))
+  check(value.nonce === nonce && ['REFUSED', 'DATABASE_JOURNAL_DIFFERS', 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH'].includes(value.state), 'REMOTE_RECEIPT_INVALID')
+  const identityChecks = Object.fromEntries(['project', 'environment', 'service', 'deployment', 'commit'].map(key => [key, value.identityChecks?.[key]]))
+  check(Object.values(identityChecks).every(item => typeof item === 'boolean'), 'REMOTE_IDENTITY_INVALID')
+  const result = { state: value.state, identityChecks }
+  if (value.state === 'REFUSED') { check(typeof value.failureCode === 'string' && /^(IDENTITY_MISMATCH|INSTALLED_[A-Z_]+|DATABASE_[A-Z_]+|JOURNAL_RELATION_ABSENT_OR_CHANGED|SANITIZED_REMOTE_READ_FAILURE|STATEMENT_TIMEOUT|LOCK_TIMEOUT|REMOTE_DEADLINE)$/.test(value.failureCode), 'REMOTE_FAILURE_INVALID'); return { ...result, failureCode: value.failureCode } }
+  check(Object.values(identityChecks).every(Boolean) && value.phase === 'complete' && value.installed?.journalSha256 === target.journalSha256 && value.installed?.lastSqlSha256 === target.lastSqlSha256 && value.installed?.packageSha256 === target.packageSha256 && value.installed?.configSha256 === target.configSha256 && JSON.stringify(value.installed?.last) === JSON.stringify(target.last) && value.installed?.entries === target.entries && value.installed?.migrateCommand === 'drizzle-kit migrate', 'INSTALLED_PROJECTION_INVALID')
+  const db = value.database
+  check(db?.table === 'drizzle.' + target.name + '_migrations' && db.readOnly === true && db.isolation === 'repeatable read' && db.databaseNameMatchesConnection === true && /^[1-9][0-9]{0,5}$/.test(db.rowCount) && /^[a-f0-9]{64}$/.test(db.last?.sha256) && /^[0-9]{1,20}$/.test(db.last?.when) && db.statementTimeoutMs === 5000 && db.lockTimeoutMs === 1500, 'DATABASE_PROJECTION_INVALID')
+  const matches = db.last.sha256 === target.lastSqlSha256 && db.last.when === String(target.last.when)
+  check(value.matchesInstalledLast === matches && (value.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH') === matches, 'MATCH_PROJECTION_INVALID')
+  return { ...result, installed: { journalSha256: target.journalSha256, entries: target.entries, last: target.last, lastSqlSha256: target.lastSqlSha256, packageSha256: target.packageSha256, configSha256: target.configSha256, migrateCommand: 'drizzle-kit migrate' }, database: { table: db.table, readOnly: true, isolation: 'repeatable read', databaseNameMatchesConnection: true, rowCount: db.rowCount, last: { sha256: db.last.sha256, when: db.last.when }, statementTimeoutMs: 5000, lockTimeoutMs: 1500 }, matchesInstalledLast: matches }
+}
+
+async function selfTest() {
+  let assertions = 0
+  for (const text of [QUERIES.policy, ...Object.values(QUERIES.members), ...Object.values(QUERIES.hub)]) { assert(text.startsWith('SELECT ')); assert(!/\b(?:INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|TRUNCATE|GRANT|COPY|CALL)\b/i.test(text)); assertions += 2 }
+  const target = { ...TARGETS[0], project: PROJECT, environment: ENVIRONMENT }
+  let output = '', imports = 0
+  const sandbox = { process: { env: {}, stdout: { write: text => { output += text } }, exit: () => { throw new Error('exit') } }, setTimeout, clearTimeout, require: () => { imports++; throw new Error('unexpected import') } }
+  await vm.runInNewContext(`(${remoteRead.toString()})(${JSON.stringify(target)},'inert',{},()=>{throw new Error('DB forbidden')})`, sandbox)
+  const denied = projectRemote(output, 'inert', target)
+  assert.equal(denied.failureCode, 'IDENTITY_MISMATCH'); assert.equal(imports, 0); assertions += 2
+  for (const kind of ['good', 'writable', 'wrong-isolation', 'wrong-database', 'absent', 'empty', 'invalid-hash']) {
+    let closed = 0, selected = 0, beginMode
+    const driver = (url, config) => {
+      assert.equal(config.connection.default_transaction_read_only, true); assert.equal(config.max, 1)
+      return { begin: async (mode, fn) => { beginMode = mode; return fn({ unsafe: async text => {
+        selected++
+        if (text === QUERIES.policy) return [{ readonly: kind === 'writable' ? 'off' : 'on', isolation: kind === 'wrong-isolation' ? 'read committed' : 'repeatable read', database: kind === 'wrong-database' ? 'other' : 'inert' }]
+        if (text === QUERIES.members.relation) return [{ relation: kind === 'absent' ? null : 'drizzle.members_migrations' }]
+        if (text === QUERIES.members.count) return [{ rows: '102' }]
+        if (text === QUERIES.members.last) return kind === 'empty' ? [] : [{ hash: kind === 'invalid-hash' ? 'raw connection credential' : target.lastSqlSha256, created_at: String(target.last.when) }]
+        throw new Error('not allowlisted')
+      } }) }, end: async () => { closed++ } }
+    }
+    const promise = readDatabaseJournal(driver, 'postgres://unused:inert@localhost/inert', 'members', QUERIES)
+    if (kind === 'good') assert.equal((await promise).last.sha256, target.lastSqlSha256)
+    else await assert.rejects(promise)
+    assert.equal(beginMode, 'isolation level repeatable read read only'); assert.equal(closed, 1)
+    if (['writable', 'wrong-isolation', 'wrong-database'].includes(kind)) assert.equal(selected, 1)
+    assertions += 5
+  }
+  assert.throws(() => projectRemote(output, 'wrong nonce', target)); assertions++
+  console.log(JSON.stringify({ state: 'INERT_NEGATIVES_PASSED', assertionsAtLeast: assertions, providerCalls: 0, databaseConnections: 0, sourceSha256: sha(await readFile(FILE)) }))
+}
+
+export function nativeEnvironment(source) {
+  const env = { ...source, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+  return env
+}
+async function collect() {
+  check(process.versions.node === '24.22.0', 'NODE_VERSION')
+  const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const env = nativeEnvironment(process.env)
+  const startedAt = new Date().toISOString(), deadline = Date.now() + 180000
+  const native = (args, input = '', timeout = 20000) => new Promise((accept, reject) => {
+    check(Date.now() < deadline, 'READ_DEADLINE')
+    const child = execFile(cli, args, { cwd: ROOT, env, encoding: 'utf8', windowsHide: true, timeout: Math.min(timeout, deadline - Date.now()), maxBuffer: 8388608 }, (error, stdout) => error ? reject(new Refusal('NATIVE_READ_UNCONFIRMED')) : accept(stdout))
+    child.stdin?.on('error', () => {}); child.stdin?.end(input)
+  })
+  let queryCount = 0, sshCount = 0
+  const api = async (query, variables) => {
+    check(/^query\b/.test(query) && !/\bmutation\b/.test(query), 'READ_ONLY_QUERY'); queryCount++
+    const reply = JSON.parse(await native(['api', '--compact', query, '--variables', '@-'], JSON.stringify(variables)))
+    check(reply.data && !reply.errors, 'QUERY_UNCONFIRMED'); return reply.data
+  }
+  const fields = 'id projectId environmentId serviceId status deploymentStopped snapshotId meta instances{id status}'
+  const context = async target => {
+    const raw = await api(`query($e:String!,$s:String!,$input:DeploymentListInput!){serviceInstance(environmentId:$e,serviceId:$s){serviceId environmentId preDeployCommand resolvedFileConfig{deploymentId fileManifest}activeDeployments{${fields}}latestDeployment{${fields}}}deployments(first:20,input:$input){edges{node{id status}}pageInfo{hasNextPage}}}`, { e: ENVIRONMENT, s: target.service, input: { projectId: PROJECT, environmentId: ENVIRONMENT, serviceId: target.service, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } })
+    const i = raw.serviceInstance, d = i?.latestDeployment, expected = `bun run --filter @sistemazero/${target.name} db:migrate`
+    check(i?.serviceId === target.service && i.environmentId === ENVIRONMENT && d?.id === target.deployment && d.projectId === PROJECT && d.environmentId === ENVIRONMENT && d.serviceId === target.service && d.status === 'SUCCESS' && d.deploymentStopped === false && d.meta?.commitHash === target.commit && d.meta?.imageDigest === target.digest, 'ACTIVE_IMAGE_CHANGED')
+    check(i.activeDeployments?.length === 1 && i.activeDeployments[0].id === d.id && i.activeDeployments[0].status === 'SUCCESS' && raw.deployments?.edges?.length === 0 && raw.deployments.pageInfo?.hasNextPage === false, 'ACTIVE_OR_PENDING_CHANGED')
+    const command = value => ({ absent: value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0), exact: value === expected || (Array.isArray(value) && value.length === 1 && value[0] === expected) })
+    const configured = command(i.preDeployCommand), deployed = command(d.meta?.serviceManifest?.deploy?.preDeployCommand), file = command(i.resolvedFileConfig?.fileManifest?.deploy?.preDeployCommand)
+    check(configured.exact && deployed.exact && (file.absent || file.exact) && i.resolvedFileConfig?.deploymentId === d.id, 'PREDEPLOY_COMMAND_CHANGED')
+    const running = d.instances?.filter(value => value.status === 'RUNNING')
+    check(running?.length === 1 && /^[a-f0-9-]{36}$/.test(running[0].id), 'RUNNING_INSTANCE_NOT_UNIQUE')
+    return { deploymentId: d.id, snapshotId: d.snapshotId, commit: target.commit, imageDigest: target.digest, runningInstanceId: running[0].id, uniqueSuccess: true, noPending: true, preDeploy: { command: expected, configured, deployed, file } }
+  }
+  check((await native(['--version'])).trim() === 'railway 5.62.1', 'RAILWAY_VERSION')
+  check(sha(await readFile(join(CACHE, 'production-pensa-five-service-maintenance-plan-r1.md'))) === PLAN_SHA, 'MAINTENANCE_PLAN_CHANGED')
+  const receipt = { kind: 'production-old-image-migration-readonly', version: 1, startedAt, projectId: PROJECT, environmentId: ENVIRONMENT, planSha256: PLAN_SHA, sourceSha256: sha(await readFile(FILE)), sqlSha256: sha(JSON.stringify(QUERIES)), mutations: 0, migratorExecuted: false, appImported: false, maintenanceStarted: false, writerFenceQualified: false, personalDataQueried: false, secretValuesOrHashesRecorded: false, targets: [] }
+  for (const target of TARGETS) {
+    const row = { name: target.name, state: 'READING' }; receipt.targets.push(row)
+    try {
+      row.before = await context(target)
+      const nonce = randomBytes(16).toString('hex'), remoteTarget = { ...target, project: PROJECT, environment: ENVIRONMENT }
+      const source = `(${remoteRead.toString()})(${JSON.stringify(remoteTarget)},${JSON.stringify(nonce)},${JSON.stringify(QUERIES)},${readDatabaseJournal.toString()})`
+      row.remoteSourceSha256 = sha(source); sshCount++
+      const stdout = await native(['ssh', '-p', PROJECT, '-e', ENVIRONMENT, '-s', target.service, '-d', row.before.runningInstanceId, '-i', join(process.env.USERPROFILE, '.ssh/id_ed25519'), '--', 'bun', '--no-env-file', '--cwd', '/app/packages/' + target.name, '-e', source], '', 45000)
+      row.remote = projectRemote(stdout, nonce, target)
+      row.after = await context(target)
+      check(JSON.stringify(row.before) === JSON.stringify(row.after), 'CONTEXT_CHANGED_DURING_READ')
+      row.state = row.remote.state
+    } catch (error) { row.state = 'READ_UNCONFIRMED'; row.failureCode = error instanceof Refusal ? error.code : 'SANITIZED_LOCAL_OR_PROVIDER_FAILURE' }
+    console.log(JSON.stringify({ service: target.name, state: row.state, failureCode: row.failureCode ?? row.remote?.failureCode ?? null }))
+  }
+  receipt.state = receipt.targets.every(row => row.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH') ? 'BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE' : 'READ_HAS_MISMATCH_OR_UNCONFIRMED'
+  Object.assign(receipt, { finishedAt: new Date().toISOString(), queryCount, sshCount, limits: ['This read predates maintenance and is not a writer fence.', 'Equal latest hash/when means no later entry in the inspected old image journal; it does not promise zero SQL or bootstrap DDL when drizzle-kit migrate is rerun.', 'No migrator/app is imported. Only builtin filesystem/crypto and the installed postgres driver are loaded.', 'Database name is compared in RAM with the connection URL. Neither the name, URL, credentials nor a hash of credentials is persisted.', 'No claim is made about OCI argv, a future Railway redeploy implementation or its decision to execute preDeploy.'] })
+  return receipt
+}
+export function outputFile(name) {
+  check(/^production-old-image-migration-readonly-r2-[a-z0-9-]{1,50}\.json$/.test(name ?? ''), 'OUTPUT_NAME_INVALID')
+  return join(CACHE, name)
+}
+export async function main(name) {
+  const output = outputFile(name), handle = await open(output, 'wx', 0o600)
+  try {
+    const receipt = await collect()
+    await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync()
+    console.log(JSON.stringify({ state: receipt.state, receiptSha256: sha(await readFile(output)), queryCount: receipt.queryCount, sshCount: receipt.sshCount, mutations: 0 }))
+    return receipt.state === 'BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE' ? 0 : 1
+  } finally { await handle.close() }
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) {
+  const task = process.argv.length === 3 && process.argv[2] === 'self-test' ? selfTest() : process.argv.length === 4 && process.argv[2] === 'run' ? main(process.argv[3]) : Promise.reject(new Refusal('ARGUMENTS'))
+  task.then(code => { process.exitCode = code ?? 0 }, error => { console.error(error instanceof Refusal ? error.code : 'SANITIZED_LOCAL_FAILURE'); process.exitCode = 1 })
+}

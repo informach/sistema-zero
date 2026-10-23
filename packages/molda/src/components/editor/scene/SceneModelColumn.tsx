@@ -1,33 +1,13 @@
 /**
- * A coluna da ESQUERDA do Modelar, no desenho da tela-modelo (11/09/2026): "Ferramentas" em
- * ladrilhos de duas colunas, "Mais ferramentas" recolhido, as formas à vista e a linha do que
- * vem por aí.
- *
- * Escolher, Mover, Girar e Mudar tamanho (e, recolhidos, a caixa e o laço) são do PALCO: é ele
- * o dono da ferramenta ligada, e ele os desenha aqui por portal, nos dois lugares marcados com
- * `display: contents` (os ladrilhos entram na grade como se fossem daqui).
+ * Trilho vertical comum: ferramentas nomeadas, formas e detalhes conforme o acesso.
+ * A oficina controla a ferramenta; os controles do palco chegam por portais.
  */
-import { type RefObject, useId } from 'react'
+import { useId } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
-import {
-  convertSceneNodesToMesh,
-  deleteSceneNodes,
-  duplicateSceneNodes,
-  groupSceneNodes,
-  ungroupSceneNodes,
-} from '../../../scene/commands'
+import { convertSceneNodesToMesh } from '../../../scene/commands'
 import { RequiresTool } from '../../toolAccess'
-import {
-  ChevronDown,
-  Copy,
-  Group,
-  ListChecks,
-  Shapes,
-  Trash2,
-  Ungroup,
-  Waypoints,
-} from '../../ui/icons'
+import { ChevronDown, Crosshair, Shapes, Slice } from '../../ui/icons'
 import { SceneCreateMenu } from './SceneCreateMenu'
 import { SceneTile, SCENE_TILE_GRID as TILES } from './SceneTile'
 import { SceneUpcomingTools } from './SceneUpcomingTools'
@@ -37,102 +17,71 @@ export function SceneModelColumn({
   workshop,
   toolsSlot,
   areaToolsSlot,
-  faceToggle,
-  onToggleFaces,
   canConvert,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
   toolsSlot(element: HTMLDivElement | null): void
   areaToolsSlot(element: HTMLDivElement | null): void
-  faceToggle: RefObject<HTMLButtonElement | null>
-  onToggleFaces(): void
   canConvert: boolean
 }) {
   const copy = COPY.scene
   const headingId = useId()
-  const { selected, run, components, index } = workshop
+  const { selected, run, components } = workshop
   return (
-    // Abaixo de `lg` a coluna deita: uma fileira que rola de lado, cada grupo com os ladrilhos
-    // numa linha só (o palco precisa da altura no tablet e no celular).
-    <div className="mld-bar mld-scroll-x mld-scroll-y flex shrink-0 items-start gap-4 overflow-x-auto border-b p-3 lg:w-60 lg:flex-col lg:items-stretch lg:overflow-x-hidden lg:overflow-y-auto lg:border-r lg:border-b-0">
+    // O trilho rola sem deslocar o palco; a edição de componentes termina no painel direito.
+    <div className="mld-workshop-rail mld-bar">
       <section aria-labelledby={headingId} className="shrink-0 space-y-2">
         <h3 id={headingId} className="mld-kicker">
           {SCENE_SHELL_COPY.tools}
         </h3>
         <div className={TILES}>
           <div ref={toolsSlot} className="contents" />
-          <RequiresTool family="model.pieces">
+          {selected.length === 1 && !components.selection && (
+            <RequiresTool family="model.pivot">
+              <SceneTile
+                icon={Crosshair}
+                label="Pivô"
+                keyHint="P"
+                aria-keyshortcuts="P"
+                title="Onde gira"
+                pressed={workshop.tool === 'pivot'}
+                onClick={() => workshop.setTool('pivot')}
+              />
+            </RequiresTool>
+          )}
+          <RequiresTool family="model.cut">
             <SceneTile
-              icon={Copy}
-              label={copy.duplicate}
-              disabled={!selected.length}
-              onClick={() => run((source) => duplicateSceneNodes(source, selected), 'created')}
-            />
-            <SceneTile
-              icon={Trash2}
-              label={copy.remove}
-              disabled={!selected.length || components.selection !== null}
-              onClick={() => run((source) => deleteSceneNodes(source, selected), 'clear')}
-            />
-          </RequiresTool>
-          <RequiresTool family="model.mesh">
-            <SceneTile
-              ref={faceToggle}
-              icon={Waypoints}
-              label={
-                components.selection
-                  ? copy.finishFaces
-                  : selected.length === 1 && index.skinsByNode.has(selected[0]!)
-                    ? copy.editSkinBase
-                    : copy.editFaces
-              }
-              pressed={components.selection !== null}
-              disabled={!components.canEdit}
-              onClick={onToggleFaces}
+              icon={Slice}
+              label="Cortar"
+              keyHint="K"
+              aria-keyshortcuts="K"
+              pressed={workshop.tool === 'knife'}
+              onClick={() => workshop.setTool('knife')}
             />
           </RequiresTool>
         </div>
       </section>
+      <div className="shrink-0 border-t border-mld-border pt-3">
+        <SceneCreateMenu run={run} document={workshop.document} selected={selected} />
+      </div>
       {/*
-       * O que se usa menos, recolhido: a caixa e o laço, escolher várias, os grupos e a malha.
-       * É ele que paga as formas à vista (a catraca dos controles encarados não sobe).
+       * O que se usa menos, recolhido: a caixa, o laço e a malha.
+       * As ferramentas básicas permanecem na mesma ordem ao abrir os detalhes.
        */}
-      <details className="group shrink-0 rounded-xl border border-mld-border">
-        <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-2 px-3 text-sm font-bold text-mld-text [&::-webkit-details-marker]:hidden">
-          {SCENE_SHELL_COPY.moreTools}
-          <ChevronDown
-            aria-hidden="true"
-            className="size-4 shrink-0 transition group-open:rotate-180 motion-reduce:transition-none"
-          />
+      <details className="mld-rail-more shrink-0">
+        <summary>
+          Seleção e organização
+          <ChevronDown aria-hidden="true" />
         </summary>
-        <div className={`${TILES} p-1.5 pt-0`}>
+        <div className={TILES}>
           <div ref={areaToolsSlot} className="contents" />
-          <SceneTile
-            icon={ListChecks}
-            label={copy.addSelection}
-            pressed={workshop.additive}
-            onClick={() => workshop.setAdditive(!workshop.additive)}
-          />
-          <RequiresTool family="model.pieces">
+          <RequiresTool family="model.cut">
             <SceneTile
-              icon={Group}
-              label={copy.group}
-              disabled={!selected.length}
-              onClick={() =>
-                run(
-                  (source) => groupSceneNodes(source, selected, { name: copy.groupName }),
-                  'created',
-                )
-              }
-            />
-            <SceneTile
-              icon={Ungroup}
-              label={copy.ungroup}
-              disabled={
-                !selected.length ||
-                selected.some((id) => index.scene.nodes.get(id)?.kind !== 'group')
-              }
-              onClick={() => run((source) => ungroupSceneNodes(source, selected), 'clear')}
+              icon={Slice}
+              label="Separar peça"
+              title="Divide o volume em duas peças fechadas"
+              pressed={workshop.tool === 'cut'}
+              onClick={() => workshop.setTool('cut')}
             />
           </RequiresTool>
           <RequiresTool family="model.mesh">
@@ -145,13 +94,8 @@ export function SceneModelColumn({
             />
           </RequiresTool>
         </div>
-      </details>
-      <div className="shrink-0">
-        <SceneCreateMenu run={run} />
-      </div>
-      <div className="shrink-0 max-lg:w-56">
         <SceneUpcomingTools tabs={['model', 'files']} />
-      </div>
+      </details>
     </div>
   )
 }

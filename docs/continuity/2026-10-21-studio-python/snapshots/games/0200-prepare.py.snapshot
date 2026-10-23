@@ -1,0 +1,70 @@
+"""Existing Q08-pause functional packet only; no native/game/audio execution."""
+import ast
+import hashlib
+import json
+from pathlib import Path
+import shutil
+from datetime import datetime, timezone
+
+here = Path(__file__).resolve().parent
+games = here.parents[3]
+parent = here / '../native12-functional-package-r1'
+sha = lambda value: hashlib.sha256(value).hexdigest()
+def file_sha(path):
+    digest = hashlib.sha256()
+    with path.open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+old_bytes = (parent / 'packet.json').read_bytes()
+assert sha(old_bytes) == '150c7e193ff68b9674c64e54e1d870d0783adaefdd87a776589878d4ee955100'
+old = json.loads(old_bytes)
+expected = {'space_arena_native.py': 'e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1',
+            'space_arena_observer.py': '7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a',
+            'run_space_arena_native.mjs': 'cae7c8fd4c4db8f0622b4116b82c466e162170d5680eaeca428d04d3b25754e7',
+            'space_arena_q08.py': '8eb1871295d8496330ac23ad37d478af3ce2af6715a2347549f5ae136e3d8c12'}
+files = []
+for name, expected_sha in expected.items():
+    source = parent / name if name != 'space_arena_q08.py' else games / 'experiments/studio-python-runtime/qualification' / name
+    raw = source.read_bytes()
+    assert sha(raw) == expected_sha
+    if name.endswith('.py'):
+        ast.parse(raw)
+    target = here / name
+    with target.open('xb') as stream:
+        stream.write(raw)
+    files.append(dict(path=str(target), bytes=len(raw), sha256=expected_sha, original=str(source)))
+artifact = Path(old['artifact'])
+artifact_pins = []
+for name, expected_sha in [('source.zip','14b95ac84cf7eefc9ff3bdcd6abc6c743c230dd52c0632eaf2c1a0659608a6c1'),
+                           ('receipt.json','9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419'),
+                           ('inventory.json','d70276fa5443b3617fcf44f4297503e6eb758f9ae3e8f7ac7f4a739c379224a5')]:
+    path = artifact / name
+    assert file_sha(path) == expected_sha
+    artifact_pins.append(dict(path=str(path), bytes=path.stat().st_size, sha256=expected_sha))
+env_key = next(key for key in old if 'environment' in key.lower())
+environment, audio = old[env_key], old['installedAudioMatches']
+assert len(environment) == 14 and len(audio) == 7
+for item in environment + audio:
+    assert file_sha(Path(item['path'])) == item['sha256'], item['path']
+output = games / '.cache/studio-python-l0/space12-native-q08-pause-r1'
+assert not output.exists()
+packet = dict(state='Q08-PAUSE-PROPOSED-ONLY-NOT-EXECUTED', at=datetime.now(timezone.utc).isoformat(),
+              parentPacketSha256=sha(old_bytes), scenario='Q08-pause', artifact=str(artifact),
+              python=old['python'], node=old['node'], nodeSha256='ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c',
+              output=str(output), files=files, artifactPins=artifact_pins,
+              nativeEnvironmentPins=environment, installedAudioMatches=audio,
+              sourceEntrySha256='d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3',
+              version='portable-audio-1.2.0', functionalGap='S08 native actual pause/visibility/event-pump/resume in full original loop',
+              cooperativeMs=30000, externalMs=40000, proposedWindowSeconds=60, targetSecondsEstimate=18,
+              stopFirstNegative=True, noRetry=True, noNativeExecutionYet=True,
+              unchangedOracles=['pause elapsedSeconds>=1.2', 'frozen real sprite/camera/particle states and original method counters',
+                                'real authored FPS1000ms timer resets game.frame while paused', 'resume original sprite/enemy/render calls advance',
+                                'canonical pool identities and real final pen.clear/unique completion', 'Map0/Destroy1/WASAPI/audio/temp/export/errors cleanup'],
+              excluded=['Q02-Q07 repeats', 'Pac-Man six fixture repeats', 'BGM120s replay', 'physical keyboard', 'browser/Mural/performance/fullgame/30restarts'],
+              cleanup='Only owned Node/Python handles. QA completion closes real Screen; original finally restores hooks, shuts audio, checks export tree and removes exact owned temp. Signal/forced stop is NEG.',
+              clockRisk='Existing strict>=1.2s oracle unchanged. Native Tcl/QPC discrepancy seen in different Pac-Man scenario is unresolved; preserve any Q08 negative, do not add tolerance or repeat automatically.')
+target = here / 'packet.json'
+with target.open('x', encoding='utf-8', newline='\n') as stream:
+    json.dump(packet, stream, indent=2); stream.write('\n')
+print(json.dumps(dict(packetSha256=file_sha(target), files=len(files), byteIdenticalReuse=True, environmentPins=14, audioPins=7, artifactUnchanged=True, newOutputAbsent=True, noNativeStart=True)))

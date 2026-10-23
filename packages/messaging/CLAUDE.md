@@ -1,5 +1,9 @@
 # CLAUDE.md — @sistemazero/messaging
 
+## Delegação da equipe pelo auth (15/10/2026)
+
+`POST /messaging/staff/send` e `/status` recebem ator validado exclusivamente do consumer HMAC auth, com token interno obrigatório inclusive em desenvolvimento. AUTH_CONSUMER_ID deve coincidir com auth (gateway reserva auth). Mensagens usam consumerId staff:UUID para isolar recibos por usuário. A mesma intenção com payload diferente retorna IDEMPOTENCY_CONFLICT/409; a comparação vale também para consumidores S2S existentes e para a corrida da unique. Nenhuma alteração no transporte SendGrid/Evolution ou nas políticas do worker. O TUI jamais recebe segredo interno. Testes em staff-routes.test.ts e send-message.test.ts.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, Bun,
 > **SendGrid**, **Evolution API**, etc.) — não confie só na memória; APIs mudam. Para **pesquisa,
@@ -339,3 +343,62 @@ Templates `referrals-campaign-welcome` (conta nova, link de senha) e `referrals-
 ## Acesso infantil por aparelho (10/10/2026)
 
 Templates do Kids, todos com `nome` + `link`: `kids-welcome` (conta nova, link de definir senha), `kids-new-access` (conta existente, link `<kids>/login/responsavel`) e `kids-access-transition` (aviso às famílias atuais de que a entrada mudou, link `<kids>/login/responsavel`), em e-mail e WhatsApp. A preparação do computador (`DEVICE_SETUP`) usa os rótulos reais da Área dos pais e começa por **Adicionar criança**, porque a conta nova nasce sem perfil. Funil e Referrals caem na chave antiga (`welcome`/`new-access`) quando o Messaging ainda responde 404 `TEMPLATE_NOT_FOUND` para a chave nova; os testes de contrato deles conferem as chaves neste seed. O `kids-access-transition` não tem chamador nem script de envio: lista de destinatários e horário dependem de decisão da dona. Não rodar o seed contra um ambiente para conferir a copy.
+
+## Fim do acesso e perfil que fez 18 anos (20/10/2026)
+
+Templates de e-mail (só e-mail), entram pelo `templates:seed` do deploy. Fim do acesso, enviados
+pelo MEMBERS (consumer `members`, `SendAccessEndedMessagesService`): `gift-expiry-2d`
+(`nome`+`data`+`link`, dois dias antes do fim do presente de 7 dias), `gift-expired`
+(`nome`+`link`, no dia), `subscription-ended-kids` e `subscription-ended-adult` (`nome`+`link`, no
+dia em que a assinatura da Comunidade venceu). `data` chega `dd/mm/aaaa` (São Paulo) e `link`
+chega pronto, com UTMs, para a página de continuidade Kids (`/kids/comunidade-dos-criadores/oferta/continuar`)
+ou adulta (`/pro/...`). `profile-turned-18` (`nome` do responsável + `nome_perfil` + `link` da área
+adulta) é enviado pelo AUTH. Light Copy (sem "!", travessão, pergunta, emoji, "carreira"); o teste
+`tests/access-ended-copy.test.ts` confere contrato, textos aprovados e essas regras na fonte.
+O presente é um CURSO + o Mural por tempo limitado, nunca a assinatura da Comunidade: os textos
+de `gift-expiry-2d`/`gift-expired` (Kids) falam em "presente do curso" e não citam a Comunidade
+(o teste confere; os `-adult` estão na seção abaixo). A volta da
+assinatura começa "no dia em que o pagamento é aprovado". O perfil Kids que fez 18 anos continua
+"enquanto a sua assinatura estiver ativa"; a conta adulta começa nova.
+
+
+## Presente Kids e adulto (20/10/2026)
+
+Templates de e-mail (só e-mail), pelo `templates:seed` do deploy. O referrals escolhe a chave pelo
+público do resgate; o Kids continua com as chaves de sempre.
+
+- Consumer `referrals`: convite `referrals-scholarship-invite-adult` (`nome`+`indicador`+`link`,
+  link = `/bolsa/<código adulto>` do funil); boas-vindas por indicação
+  `referrals-scholarship-welcome-adult` (conta nova) e `referrals-scholarship-existing-adult`
+  (conta existente), com `nome`+`indicador`+`validade`+`link`; por campanha
+  `referrals-campaign-welcome-adult` e `referrals-campaign-existing-adult`, com
+  `nome`+`campanha`+`validade`+`link`. `validade` chega formatada (Brasília). O `link` é montado
+  pelo referrals sobre a env **`COMMUNITY_URL`** dele (base do app adulto):
+  `<COMMUNITY_URL>/redefinir-senha?token=` na conta nova e `<COMMUNITY_URL>/cursos` na existente.
+  Sem `COMMUNITY_URL` o referrals fecha o presente adulto (nenhum desses e-mails sai). O curso
+  liberado é o da env `SCHOLARSHIP_ADULT_COURSE_SLUG` do referrals (default
+  `cade-todo-mundo-adulto`); os templates citam "Cadê Todo Mundo, na versão adulta", então trocar
+  o curso pede revisar a copy.
+- Consumer `members`: `gift-expiry-2d-adult` (`nome`+`data`+`link`) e `gift-expired-adult`
+  (`nome`+`link`), as MESMAS variáveis do Kids, com o `link` da continuidade adulta (`/pro/...`).
+  Diferente dos `gift-*` Kids, os adultos citam a assinatura da Comunidade como próximo passo. O
+  e-mail de 2 dias tem um botão só: o desenho previa um segundo para entrar na Comunidade, mas o
+  members não manda variável com a URL do app adulto e o template não monta URL.
+- `referrals-ambassador-link` e `referrals-bonus-eligible` falam dos dois presentes (o bônus diz
+  "uma pessoa que recebeu o presente", sem presumir família).
+- Testes: `tests/referral-copy.test.ts` e `tests/access-ended-copy.test.ts` conferem contrato,
+  copy aprovada e Light Copy na fonte. Não rodar o seed contra um ambiente para conferir a copy.
+
+## Desafio do Primeiro Jogo para adultos (21/10/2026)
+
+Oito templates com o sufixo `-adult`, as MESMAS variáveis do equivalente Kids, falando com a própria
+pessoa (sem criança, responsável ou Área dos pais), pelo `templates:seed` do deploy:
+`challenge-access-approved-adult` (e-mail + WhatsApp; `nome`+`link`+`expira_em`+`acao`, sem a
+`orientacao` do Kids), enviado pelo FUNIL depois da compra; `challenge-not-activated-adult`,
+`challenge-not-started-adult`, `challenge-day-one-complete-adult` e `challenge-completed-adult`
+(`nome`+`link`), e `challenge-expiry-7d-adult`, `challenge-expiry-3d-adult` e `challenge-expired-adult`
+(`nome`+`data`+`link`), só e-mail, enviados pelo MEMBERS. O link chega pronto: app adulto
+(`/esqueci-senha`, `/cursos/desafio-primeiro-jogo-adulto`, `/progresso`) ou a continuidade adulta do funil
+com UTM. Enquanto o seed não roda, o funil cai em `welcome`/`new-access` (404 `TEMPLATE_NOT_FOUND`); o
+members não tem reserva e o envio falha e é tentado de novo no ciclo seguinte. Teste:
+`tests/challenge-adult-copy.test.ts` (contrato, canais, botões, segunda pessoa e Light Copy na fonte).

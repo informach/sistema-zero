@@ -1,0 +1,465 @@
+{
+  "id": "P60",
+  "checkedAt": "2026-10-15T00:21:49.376Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 228962,
+      "sha256": "2d04cf1ab7b0f38d3534370cf7d38f335c4485e8468c1c709e48a34453575061"
+    },
+    {
+      "file": "02-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 170445,
+      "sha256": "577e74d51fbeacde1fe8d3d46c94b2b3c5c680919387322f7555335501689bb9"
+    },
+    {
+      "file": "03-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 862374,
+      "sha256": "0c622c605bd2fe046f33eee34d88284c32cf94119bcb992a2a2eafb74c238727"
+    },
+    {
+      "file": "04-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 146657,
+      "sha256": "800db45ffe4662ee7df7cd3ccf8a8f678a0a9e304865b653d1b7f46ffc69c92f"
+    },
+    {
+      "file": "05-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 911309,
+      "sha256": "8a0f017f14f628b02e4e11e78a55b7cea2122a9c4804e918a6ce7eb2ad1e8805"
+    },
+    {
+      "file": "06-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 981079,
+      "sha256": "fdeb8b99483a6aaac56959c5159950c9ef00111ab3dd2d01778fc3ff24ba8d36"
+    },
+    {
+      "file": "07-p60.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 978035,
+      "sha256": "ae99b7a477a20bc91803073891fb30758e0395b2d9c5361a4cea564d67ad888a"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p60.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p60.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-andre-original.jpeg",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-andre-oferta.webp",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-jogando-no-celular.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-tabuleiro-inicio.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-casa-premiada.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-regra-casa-sete.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-ideia-no-papel.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-compartilhar-em-familia.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-proximo-jogo.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/11-p51-a-p60.md#p60",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy-linter.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "fonte-do-relato.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "retratos-reais.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "tabuleiro-original.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "tabuleiro-original.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "tabuleiro-demonstracao.js",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "adaptacao-visual.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "jogo-verificado.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "03-tabuleiro-inicio.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-casa-premiada.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "04-regra-casa-sete.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "blocos-capturados.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "published": false,
+  "visualReview": "Sete slides inspecionados individualmente. Retratos reais distintos e fisionomia preservada. Aspas iguais, rótulo apontando a casa do peão azul, condição e soma legíveis, telefone com máscara dos dedos, textos aplicados no papel. Sem repetição de foto ou captura. Slide 2 usa foto autorizada da oferta em lugar do quadro indisponível do vídeo.",
+  "game": {
+    "blue": {
+      "x": 362,
+      "y": 132,
+      "space": 7,
+      "score": 10
+    },
+    "red": {
+      "x": 662,
+      "y": 182,
+      "space": 5,
+      "score": 0
+    },
+    "turn": 2,
+    "clicks": 3,
+    "visualOnlyAdaptation": true
+  },
+  "calendarCarousels": [
+    "P01",
+    "P07",
+    "P34",
+    "P04",
+    "P37",
+    "P20",
+    "P31",
+    "P40",
+    "P44",
+    "P05",
+    "P11",
+    "P35",
+    "P46",
+    "P28",
+    "P54",
+    "P55",
+    "P13",
+    "P50",
+    "P52",
+    "P09",
+    "P42",
+    "P25",
+    "P18",
+    "P21",
+    "P15",
+    "P48",
+    "P26",
+    "P23",
+    "P57",
+    "P60"
+  ],
+  "carouselCount": 30,
+  "pngCount": 220,
+  "textBounds": [
+    {
+      "text": "André terminou o primeiro jogo e já imaginava o próximo.",
+      "within": true
+    },
+    {
+      "text": "‘Esse foi o primeiro e já quero fazer um maior.’",
+      "within": true
+    },
+    {
+      "text": "André · aluno",
+      "within": true
+    },
+    {
+      "text": "A frase conta a vontade dele de continuar criando depois daquela experiência.",
+      "within": true
+    },
+    {
+      "text": "Um projeto permite mostrar algo que a criança aprendeu a fazer.",
+      "within": true
+    },
+    {
+      "text": "Ela pode contar suas escolhas, jogar com alguém e imaginar o que acrescentaria.",
+      "within": true
+    },
+    {
+      "text": "Veja uma possibilidade num jogo de tabuleiro da nossa plataforma.",
+      "within": true
+    },
+    {
+      "text": "Cair numa casa especial dá dez pontos ao jogador.",
+      "within": true
+    },
+    {
+      "text": "Quem cria escolhe a casa e o prêmio.",
+      "within": true
+    },
+    {
+      "text": "Depois testa se a pontuação muda no lugar certo. Outra ideia pode virar uma nova regra.",
+      "within": true
+    },
+    {
+      "text": "Ao ver o projeto do seu filho, pergunte sobre uma escolha que ele fez.",
+      "within": true
+    },
+    {
+      "text": "A resposta ajuda a conhecer o que ele aprendeu e o que ainda quer experimentar.",
+      "within": true
+    },
+    {
+      "text": "Aqui mostramos possibilidades de aprender, criar e compartilhar jogos próprios.",
+      "within": true
+    },
+    {
+      "text": "Siga o perfil para acompanhar essa jornada.",
+      "within": true
+    }
+  ],
+  "svgImages": [
+    {
+      "src": "apoio/01-andre-original.jpeg",
+      "width": 1600,
+      "height": 900
+    },
+    {
+      "src": "apoio/04-casa-premiada.png",
+      "width": 2312,
+      "height": 1540
+    },
+    {
+      "src": "apoio/04-regra-casa-sete.png",
+      "width": 1148,
+      "height": 516
+    }
+  ],
+  "mobileNoOverflow": true,
+  "pngDecode": true,
+  "nextCarousel": null,
+  "remainingMedia": "Reels, imagens únicas, extras, stories e ManyChat mantêm estados anteriores."
+}

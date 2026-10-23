@@ -15,6 +15,7 @@ import type {
   LessonFields,
   ModuleFields,
 } from '../../../domain/ports/content-admin-repository.port'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
 import { assertInternalCaller, requireAdmin } from '../auth'
 import {
   AdminStudioSubmissionParams,
@@ -46,6 +47,7 @@ export interface ContentRoutesDeps {
   studioSubmissions: StudioSubmissionsAdminService
   zappyKnowledge?: ZappyKnowledgeService
   zappyHistory?: ZappyHistoryService
+  studioAuthoringPolicy?: StudioAuthoringPolicy
 }
 
 type CourseInput = typeof CourseBody.static
@@ -76,6 +78,8 @@ const courseFields = (b: CourseInput | CourseUpdateInput): CourseFields => ({
   // null explícito remove o curso da jornada.
   careerSlot: Object.hasOwn(b, 'careerSlot') ? b.careerSlot : undefined,
   journeyRole: Object.hasOwn(b, 'journeyRole') ? b.journeyRole : undefined,
+  // `null` = não informado (create → recorded; update → preserva).
+  modality: b.modality ?? null,
   // Currículo do Estúdio — MESMA distinção do `careerSlot`: ausente PRESERVA (build antigo
   // do admin não apaga o que a professora liberou), `null`/`[]` limpam de propósito.
   // ⚠️ Estar no DTO NÃO basta: este mapeador é a fronteira real, e um campo que não é
@@ -130,6 +134,14 @@ export function contentRoutes(deps: ContentRoutesDeps) {
       .onTransform(({ headers }) =>
         assertInternalCaller(headers['x-internal-token'], deps.internalToken),
       )
+      .get('/studio/authoring-options', ({ headers, set }) => {
+        guard(headers)
+        set.headers['cache-control'] = 'private, no-store'
+        return {
+          legacyJavaScript: true as const,
+          catalog: deps.studioAuthoringPolicy?.describe() ?? null,
+        }
+      })
       .get('/zappy/knowledge/report', ({ headers }) => {
         guard(headers)
         if (!deps.zappyKnowledge) throw new Error('Base de conhecimento do Zappy não configurada')
@@ -236,6 +248,7 @@ export function contentRoutes(deps: ContentRoutesDeps) {
             q: query.q,
             status: query.status as CourseStatus | undefined,
             audience: query.audience,
+            modality: query.modality,
             limit: clampLimit(query.limit),
             offset: query.offset ?? 0,
           })

@@ -1,0 +1,398 @@
+{
+  "state": "CONSOLIDATED-READ-ONLY-SIX-SPECIFIC-NATIVE-FIXTURES-NOT-FULL-GAME",
+  "compiledAt": "2026-10-21T04:31:25.507069+00:00",
+  "sourceGamesCommit": "9557e17bcafbe529d0079c8d941485b7f67061c4",
+  "variant": "portable-audio-1.1.0",
+  "qualification": "limited-to-declared-six-native-rule-fixtures",
+  "cases": [
+    {
+      "scenario": "observe",
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-observe-r1",
+      "nativeReceiptSha256": "cbd062901a54415ad751a455714407deb6a91311d62c46e593fbf52103555662",
+      "supervisorSha256": "51078f8c05020ece9b137c181a75b0ba0b5d0e4102559ad7800c346c40ee707e",
+      "reportedState": "native-functional-passed",
+      "reportedSupervisorState": "native-functional-passed",
+      "startedAt": "2026-10-21T04:28:01.209Z",
+      "endedAt": "2026-10-21T04:28:09.701Z",
+      "pythonPID": 29700,
+      "exitCode": 0,
+      "deadline": false,
+      "signalAttempted": false,
+      "runnerSha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075",
+      "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+      "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+      "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+      "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+      "completionMode": "declared-QA-bounded-close",
+      "cleanup": {
+        "rootMapEvents": 0,
+        "rootDestroyEvents": 1,
+        "audioReleased": true,
+        "ownedTempAbsent": true,
+        "exportTreeUnchanged": true
+      },
+      "backend": "WASAPI",
+      "errors": [],
+      "timers": [
+        {
+          "event": "natural-close",
+          "scenario": "observe",
+          "tick": 251,
+          "clock": 381428.1807431,
+          "value": {
+            "timersScheduled": {
+              "2500": 8,
+              "16": 251,
+              "0": 1
+            }
+          }
+        }
+      ],
+      "bindings": {
+        "Left": true,
+        "Up": true,
+        "Right": true,
+        "Down": true
+      },
+      "nativeClockInfo": null
+    },
+    {
+      "scenario": "pellet",
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-pellet-r1",
+      "nativeReceiptSha256": "d0f14c5237b322dce724c8b47c8c07561d43488eb8c75f1ab94271546bb26ee1",
+      "supervisorSha256": "3bc083a216766fb972eb047e13b5e5c4765ae47f0c870d6beaaa678e11381b70",
+      "reportedState": "native-functional-passed",
+      "reportedSupervisorState": "native-functional-passed",
+      "startedAt": "2026-10-21T04:27:50.997Z",
+      "endedAt": "2026-10-21T04:27:51.619Z",
+      "pythonPID": 10180,
+      "exitCode": 0,
+      "deadline": false,
+      "signalAttempted": false,
+      "runnerSha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075",
+      "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+      "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+      "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+      "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+      "completionMode": "declared-QA-bounded-close",
+      "cleanup": {
+        "rootMapEvents": 0,
+        "rootDestroyEvents": 1,
+        "audioReleased": true,
+        "ownedTempAbsent": true,
+        "exportTreeUnchanged": true
+      },
+      "backend": "WASAPI",
+      "errors": [],
+      "timers": [
+        {
+          "event": "natural-close",
+          "scenario": "pellet",
+          "tick": 4,
+          "clock": 381410.0985406,
+          "value": {
+            "timersScheduled": {
+              "2500": 8,
+              "16": 4,
+              "0": 1
+            }
+          }
+        }
+      ],
+      "bindings": null,
+      "nativeClockInfo": null
+    },
+    {
+      "scenario": "power",
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-power-r1",
+      "nativeReceiptSha256": "9eb5018a8b8d22a758ffdd1f69fe61962c946599843249bd95403e0f0d96dbbf",
+      "supervisorSha256": "fde9e098f9f162a7eb6ed16c60bb6c4bad1782bee500d23d82a022bf86b24344",
+      "reportedState": "native-functional-passed",
+      "reportedSupervisorState": "native-functional-passed",
+      "startedAt": "2026-10-21T04:27:51.762Z",
+      "endedAt": "2026-10-21T04:28:00.254Z",
+      "pythonPID": 36704,
+      "exitCode": 0,
+      "deadline": false,
+      "signalAttempted": false,
+      "runnerSha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075",
+      "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+      "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+      "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+      "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+      "completionMode": "declared-QA-bounded-close",
+      "cleanup": {
+        "rootMapEvents": 0,
+        "rootDestroyEvents": 1,
+        "audioReleased": true,
+        "ownedTempAbsent": true,
+        "exportTreeUnchanged": true
+      },
+      "backend": "WASAPI",
+      "errors": [],
+      "timers": [
+        {
+          "event": "timer-scheduled",
+          "scenario": "power",
+          "tick": 1,
+          "clock": 381410.8193557,
+          "value": {
+            "delay": 3000,
+            "callback": "reset_speed",
+            "scheduledClock": 381410.8193518
+          }
+        },
+        {
+          "event": "timer-fired",
+          "scenario": "power",
+          "tick": 96,
+          "clock": 381413.8313814,
+          "value": {
+            "delay": 3000,
+            "callback": "reset_speed",
+            "scheduledClock": 381410.8193518,
+            "elapsedSeconds": 3.0120236999937333
+          }
+        },
+        {
+          "event": "natural-close",
+          "scenario": "power",
+          "tick": 251,
+          "clock": 381418.7130092,
+          "value": {
+            "timersScheduled": {
+              "2500": 8,
+              "16": 251,
+              "3000": 1,
+              "0": 1
+            }
+          }
+        }
+      ],
+      "bindings": null,
+      "nativeClockInfo": null
+    },
+    {
+      "scenario": "death",
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-death-r1",
+      "nativeReceiptSha256": "399cb2dcaa6c0571920b12ba48cd708ddd22de3ca04a69ab9170c3a5d4e2aa77",
+      "supervisorSha256": "c13e8e62e04e4ff4e613985bacef97a456aeabd6bf9970e0f904efdf5104e0bd",
+      "reportedState": "native-functional-passed",
+      "reportedSupervisorState": "native-functional-passed",
+      "startedAt": "2026-10-21T04:28:00.372Z",
+      "endedAt": "2026-10-21T04:28:01.081Z",
+      "pythonPID": 15828,
+      "exitCode": 0,
+      "deadline": false,
+      "signalAttempted": false,
+      "runnerSha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075",
+      "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+      "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+      "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+      "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+      "completionMode": "declared-QA-bounded-close",
+      "cleanup": {
+        "rootMapEvents": 0,
+        "rootDestroyEvents": 1,
+        "audioReleased": true,
+        "ownedTempAbsent": true,
+        "exportTreeUnchanged": true
+      },
+      "backend": "WASAPI",
+      "errors": [],
+      "timers": [
+        {
+          "event": "natural-close",
+          "scenario": "death",
+          "tick": 4,
+          "clock": 381419.568874,
+          "value": {
+            "timersScheduled": {
+              "2500": 8,
+              "16": 4,
+              "0": 1
+            }
+          }
+        }
+      ],
+      "bindings": null,
+      "nativeClockInfo": null
+    },
+    {
+      "scenario": "victory-near-end",
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-victory-near-end-r1",
+      "nativeReceiptSha256": "589a3752863d672851816f4a394ca1b751087e1b8b5ac5efe03815d711501f14",
+      "supervisorSha256": "0f622d4c56fd709858b5e786a6ecc133f852063b3db89424020fae6c2cab974d",
+      "reportedState": "native-functional-passed",
+      "reportedSupervisorState": "native-functional-passed",
+      "startedAt": "2026-10-21T03:54:20.080Z",
+      "endedAt": "2026-10-21T03:54:23.816Z",
+      "pythonPID": 2816,
+      "exitCode": 0,
+      "deadline": false,
+      "signalAttempted": false,
+      "runnerSha256": "3a5c977393bd4f8a48f6ee62fcfcdc6ab588c16095a7adb1ae6ac1e8a134c075",
+      "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+      "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+      "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+      "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+      "completionMode": "authored-natural-close",
+      "cleanup": {
+        "rootMapEvents": 0,
+        "rootDestroyEvents": 1,
+        "audioReleased": true,
+        "ownedTempAbsent": true,
+        "exportTreeUnchanged": true
+      },
+      "backend": "WASAPI",
+      "errors": [],
+      "timers": [
+        {
+          "event": "timer-scheduled",
+          "scenario": "victory-near-end",
+          "tick": 1,
+          "clock": 379399.289078,
+          "value": {
+            "delay": 3000,
+            "callback": "bye",
+            "scheduledClock": 379399.2890753
+          }
+        },
+        {
+          "event": "timer-fired",
+          "scenario": "victory-near-end",
+          "tick": 97,
+          "clock": 379402.2995872,
+          "value": {
+            "delay": 3000,
+            "callback": "bye",
+            "scheduledClock": 379399.2890753,
+            "elapsedSeconds": 3.0105070000281557
+          }
+        },
+        {
+          "event": "natural-close",
+          "scenario": "victory-near-end",
+          "tick": 97,
+          "clock": 379402.2997481,
+          "value": {
+            "timersScheduled": {
+              "2500": 8,
+              "16": 97,
+              "3000": 1
+            }
+          }
+        }
+      ],
+      "bindings": null,
+      "nativeClockInfo": null
+    },
+    {
+      "scenario": "defeat-near-end",
+      "output": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-paired-r1",
+      "nativeReceiptSha256": "71df7bed03744b94a250135002069d71d1e176fd71da7043feff08c4012fa937",
+      "supervisorSha256": "036fcf8fe27ba1b6c3280b7b0c3a48c2a840d09708f0e10a33ff0d5be576b1b7",
+      "reportedState": "native-functional-passed",
+      "reportedSupervisorState": "native-functional-passed",
+      "startedAt": "2026-10-21T04:23:16.445Z",
+      "endedAt": "2026-10-21T04:23:20.067Z",
+      "pythonPID": 26360,
+      "exitCode": 0,
+      "deadline": false,
+      "signalAttempted": false,
+      "runnerSha256": "4467095db76499c4e6f1d2a169283507b8f57a294b99f26556ca8adad60ca600",
+      "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc",
+      "sourceReceiptSha256": "4aff52e28081d67691c5fead0b8da1f59a0a87e83eb5d91a3c78b09a29debc09",
+      "mainSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+      "zipSha256": "8de6df6a881a579a6aed4918318cfb92ff249d99b361f924073cbfc9389f4ce9",
+      "completionMode": "authored-natural-close",
+      "cleanup": {
+        "rootMapEvents": 0,
+        "rootDestroyEvents": 1,
+        "audioReleased": true,
+        "ownedTempAbsent": true,
+        "exportTreeUnchanged": true
+      },
+      "backend": "WASAPI",
+      "errors": [],
+      "timers": [
+        {
+          "event": "timer-scheduled",
+          "scenario": "defeat-near-end",
+          "tick": 1,
+          "clock": 381135.5615814,
+          "value": {
+            "delay": 3000,
+            "callback": "bye",
+            "scheduledClock": 381135.5615785
+          },
+          "nativeClockPair": {
+            "qpcBeforeNs": 381135561628700,
+            "tclMicroseconds": 1792556596960741,
+            "qpcAfterNs": 381135561640700
+          }
+        },
+        {
+          "event": "timer-fired",
+          "scenario": "defeat-near-end",
+          "tick": 96,
+          "clock": 381138.5636191,
+          "value": {
+            "delay": 3000,
+            "callback": "bye",
+            "scheduledClock": 381135.5615785,
+            "elapsedSeconds": 3.0020360999624245
+          },
+          "nativeClockPair": {
+            "qpcBeforeNs": 381138563735200,
+            "tclMicroseconds": 1792556599963943,
+            "qpcAfterNs": 381138563746000
+          }
+        },
+        {
+          "event": "natural-close",
+          "scenario": "defeat-near-end",
+          "tick": 96,
+          "clock": 381138.5637518,
+          "value": {
+            "timersScheduled": {
+              "2500": 8,
+              "16": 96,
+              "3000": 1
+            }
+          }
+        }
+      ],
+      "bindings": null,
+      "nativeClockInfo": {
+        "tclPatchlevel": "8.6.15",
+        "tkPatchlevel": "8.6.15",
+        "monotonic": {
+          "implementation": "QueryPerformanceCounter()",
+          "monotonic": true,
+          "adjustable": false,
+          "resolution": 1e-07
+        }
+      }
+    }
+  ],
+  "preservedOriginalDefeatNegative": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\pacman11-native-defeat-near-end-r1\\result\\native.json",
+    "sha256": "479502a434ca9a59055aab22d5d54d65e5645537bb0debce3faaf068b40fea97",
+    "meaning": "Original QPC2.9973143999814056s failed>=3. It is not reclassified by a later diagnostic pass."
+  },
+  "pairedWitness": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\pacman11-native-paired-r1\\execution-witness-r1.json",
+    "sha256": "f8e4ac4221f7c0e630224d38ef2de3eac4709f299dfa7ac2fb66d12797a0b9ef",
+    "limitation": "Python26360/Launcher20136 known; own NodePID not captured while alive. Synchronous exit0 and empty exact-child postcheck preserved; no invented ID."
+  },
+  "independentRootObservation": "Root reported at04:29:00Z all8 PIDs of four new cases absent and four supervisors exit0/no deadline/signal.",
+  "causalControl": "Standalone3sample control and paired defeat both did not reproduce earlyQPC; cause of original negative remains unconfirmed.",
+  "noActualExecutionInConsolidation": true,
+  "limits": [
+    "Declared injections/QA closures are not a whole played game or physical keyboard input",
+    "WASAPI output device, no acoustic capture, no fresh installation",
+    "No browser1.1, Mural/Pro publication, performance/FPS/10minute/30restart acceptance",
+    "No source/oracle3000/fingerprint/provider/staging changes; Root owns review/integration/push"
+  ]
+}

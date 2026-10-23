@@ -9,6 +9,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import { type MoldaAssetSummary, summarizeAsset } from '../core/assetSummary'
 import { COPY } from '../core/copy'
 import { newId } from '../core/id'
+import { NEW_MODEL_TEXELS_PER_UNIT } from '../core/limits'
 import { createAsset, type MoldaAsset, type NewAssetInput } from '../core/model'
 import { normalizeAssetName, uniqueAssetName } from '../core/names'
 import { findTemplate } from '../templates/catalog'
@@ -35,6 +36,8 @@ export type RemoveResult = { ok: true } | { ok: false; reason: GalleryPersistenc
 
 export interface ImportResult {
   imported: number
+  /** Native creations saved by this operation, in import order. */
+  ids?: readonly string[]
   reason?: 'storage-budget' | 'save-failed'
 }
 
@@ -67,7 +70,10 @@ export interface GalleryActions {
   /** O editor salvou: atualiza a lista SEM gravar de novo. */
   absorb(asset: MoldaAsset): void
   importAssets(assets: readonly MoldaAsset[]): Promise<ImportResult>
-  importProjects(projects: readonly { name: string; json: string }[]): Promise<ImportResult>
+  importProjects(
+    projects: readonly { name: string; json: string }[],
+    options?: { signal?: AbortSignal },
+  ): Promise<ImportResult>
   /** Liga a releitura por aviso externo; devolve o desligar. */
   attachPersistence(): () => void
   getById(id: string): MoldaAssetSummary | undefined
@@ -227,7 +233,15 @@ export function createGalleryStore(
           if (!base) return { ok: false, reason: 'invalid-name' }
           const name = uniqueAssetName(base, takenNames(get().assets))
           if (!name) return { ok: false, reason: 'invalid-name' }
-          const asset = createAsset(input, name)
+          const asset = createAsset(
+            input.kind === 'model'
+              ? {
+                  ...input,
+                  texelsPerUnit: input.texelsPerUnit ?? NEW_MODEL_TEXELS_PER_UNIT,
+                }
+              : input,
+            name,
+          )
           try {
             await persistence.save(asset)
           } catch (error) {
@@ -386,25 +400,29 @@ export function createGalleryStore(
         })
       },
 
-      importProjects(projects) {
+      importProjects(projects, options) {
         return enqueue(async (): Promise<ImportResult> => {
           const taken = takenNames(get().assets)
           let imported = 0
+          const ids: string[] = []
           if (!scene?.importProject) return { imported, reason: 'save-failed' }
           try {
             for (const project of projects) {
+              if (options?.signal?.aborted) return { imported, ids }
               const name = uniqueAssetName(project.name, taken)
-              if (!name) return { imported, reason: 'save-failed' }
+              if (!name) return { imported, ids, reason: 'save-failed' }
               const copy = await scene.importProject(project.json, name)
-              if (!copy) return { imported, reason: 'save-failed' }
+              if (!copy) return { imported, ids, reason: 'save-failed' }
               imported++
+              ids.push(copy.id)
               taken.add(name)
               set({ assets: upsertSummary(get().assets, copy) })
             }
-            return { imported }
+            return { imported, ids }
           } catch (error) {
             return {
               imported,
+              ids,
               reason: isStorageBudgetError(error) ? 'storage-budget' : 'save-failed',
             }
           }

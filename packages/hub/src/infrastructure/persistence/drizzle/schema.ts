@@ -1,3 +1,4 @@
+import type { StudioReservationContext } from '@sistemazero/core/studio/publication-reservation'
 import { sql } from 'drizzle-orm'
 import {
   bigint,
@@ -12,6 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 import type { AccessConfig } from '../../../domain/access/access-config'
+import type { StudioPublicationEvent } from '../../../domain/ports/studio-event-repository.port'
 import type { ThreadStudioMeta } from '../../../domain/thread/thread'
 
 // Compartilha o MESMO Postgres do payments/auth/catalog/members/funnel, mas é dono
@@ -395,6 +397,98 @@ export const showcaseDeliveries = hub.table(
   ],
 )
 
+/** No thread FK: terminal work must survive a physical purge of its originating thread. */
+export const studioArtifactCleanups = hub.table(
+  'studio_artifact_cleanups',
+  {
+    threadId: uuid('thread_id').primaryKey(),
+    // Legacy jobs without a surviving authoritative thread remain quarantined.
+    authorId: uuid('author_id'),
+    playId: text('play_id').notNull(),
+    coverUrl: text('cover_url'),
+    audience: audienceEnum('audience').notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('studio_artifact_cleanups_pending_idx')
+      .on(t.audience, t.nextAttemptAt)
+      .where(sql`${t.deliveredAt} is null`),
+  ],
+)
+
+/** Private publication intent. Never a thread, never eligible for moderation approval/feed/XP. */
+export const studioPublicationReservations = hub.table(
+  'studio_publication_reservations',
+  {
+    id: uuid('id').primaryKey(),
+    scopeKey: text('scope_key'),
+    idempotencyKey: text('idempotency_key').notNull(),
+    playId: text('play_id').notNull(),
+    authorId: uuid('author_id').notNull(),
+    accountId: uuid('account_id'),
+    audience: audienceEnum('audience').notNull(),
+    context: text('context'),
+    semanticHash: text('semantic_hash'),
+    snapshotHash: text('snapshot_hash'),
+    phase: text('phase').$type<'reserved' | 'finalized' | 'retired'>().notNull(),
+    // No FK: deleting a thread must not erase its idempotency/tombstone.
+    threadId: uuid('thread_id'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('studio_reservations_scope_uq').on(t.scopeKey),
+    uniqueIndex('studio_reservations_idempotency_uq').on(t.idempotencyKey),
+    // Legacy threads may share IDs and do not attest artifact ownership.
+    uniqueIndex('studio_reservations_new_play_uq')
+      .on(t.playId)
+      .where(sql`${t.snapshotHash} is not null`),
+    index('studio_reservations_thread_idx').on(t.threadId),
+    index('studio_reservations_account_idx').on(t.accountId),
+  ],
+)
+
+/** Notifications committed with visible finalization. Stable IDs survive delivery retries. */
+export const studioPublicationEvents = hub.table(
+  'studio_publication_events',
+  {
+    eventId: text('event_id').primaryKey(),
+    threadId: uuid('thread_id').notNull(),
+    event: jsonb('event').$type<StudioPublicationEvent>().notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('studio_events_pending_idx').on(t.nextAttemptAt).where(sql`${t.deliveredAt} is null`),
+  ],
+)
+
+/** A new-reservation retirement attestation, distinct from legacy thread cleanup. No FK: survives purge. */
+export const studioReservationCleanups = hub.table(
+  'studio_reservation_cleanups',
+  {
+    reservationId: uuid('reservation_id').primaryKey(),
+    playId: text('play_id').notNull(),
+    authorId: uuid('author_id').notNull(),
+    accountId: uuid('account_id').notNull(),
+    audience: audienceEnum('audience').notNull(),
+    snapshotHash: text('snapshot_hash').notNull(),
+    context: jsonb('context').$type<StudioReservationContext>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    attempts: integer('attempts').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+  },
+  (t) => [
+    index('studio_reservation_cleanups_pending_idx')
+      .on(t.audience, t.nextAttemptAt)
+      .where(sql`${t.deliveredAt} is null`),
+  ],
+)
+
 export const schema = {
   spaces,
   channels,
@@ -409,6 +503,10 @@ export const schema = {
   processedWebhooks,
   accountDeletionFences,
   showcaseDeliveries,
+  studioArtifactCleanups,
+  studioPublicationReservations,
+  studioPublicationEvents,
+  studioReservationCleanups,
 }
 
 export type SpaceRow = typeof spaces.$inferSelect

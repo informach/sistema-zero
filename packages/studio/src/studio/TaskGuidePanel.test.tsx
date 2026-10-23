@@ -1,152 +1,145 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, expect, mock, test } from 'bun:test'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { createEmptyProject } from '#core'
+import { missionSessionFixture } from '../../../ui/tests/mission-fixture'
+import { useProjectStore } from '../state/projectStore'
 import { TaskGuidePanel } from './TaskGuidePanel'
-import type { StudioTaskSession } from './types'
+import { withSaveBeforeTaskActions } from './taskSessionSave'
 
-afterEach(cleanup)
-
-function createSession(): StudioTaskSession {
-  return {
-    taskId: 'task-studio',
-    title: 'Programar as estrelas',
-    summary: 'Some um ponto ao coletar.',
-    project: { id: 'plan', name: 'Bosque' },
-    cycle: { id: 'cycle', number: 1, goal: null },
-    guide: {
-      steps: [
-        { id: 'collect', text: 'Detectar a coleta', hint: 'Use o evento oficial.', required: true },
-      ],
-      criteria: [{ id: 'score', text: 'O placar aumenta', required: true }],
+afterEach(() => {
+  cleanup()
+  useProjectStore.setState({ project: null, isDirty: false })
+})
+test('preparação instala a extensão por escolha explícita e repetir não duplica', async () => {
+  const session = missionSessionFixture()
+  session.mission = {
+    ...session.mission,
+    kind: 'setup',
+    destination: 'studio',
+    setup: {
+      type: 'extensions',
+      authoring: 'blocks',
+      runtimeExtensionId: 'game-2d',
+      requiredAuxiliaryExtensionIds: [],
+      recommendation: 'Recomendo Jogo 2D para este jogo.',
     },
-    blocks: [
-      {
-        id: 'score_change',
-        label: 'Mudar pontuação',
-        category: 'Jogo',
-        subcategory: 'Placar',
-        area: 'events',
-        extension: 'game-2d',
-      },
-    ],
-    progress: {
-      status: 'in_progress',
-      completedStepIds: ['collect'],
-      completedCriteriaIds: ['score'],
-      startedAt: '2026-08-04T12:00:00.000Z',
-      completedAt: null,
-      updatedAt: '2026-08-04T12:00:00.000Z',
-      outputRef: { kind: 'studio_project', projectId: 'pensa-plan' },
-    },
-    onProgress: mock(async () => undefined),
   }
-}
-
-describe('Guia da tarefa do Estúdio', () => {
-  test('não vira LessonActivity e conclui somente com guia e projeto vinculados', async () => {
-    const session = createSession()
-    render(<TaskGuidePanel session={session} />)
-    expect(screen.getByRole('complementary', { name: 'Guia da tarefa' })).toBeTruthy()
-    expect(screen.getByText('Mudar pontuação')).toBeTruthy()
-    fireEvent.click(screen.getByRole('button', { name: 'Concluir tarefa' }))
-    await waitFor(() => expect(session.onProgress).toHaveBeenCalledWith({ status: 'completed' }))
+  useProjectStore.setState({ project: createEmptyProject('jogo', 'Jogo'), isDirty: false })
+  render(<TaskGuidePanel session={session} />)
+  expect(useProjectStore.getState().project?.installedExtensions).toHaveLength(0)
+  fireEvent.click(screen.getByRole('button', { name: 'Instalar ferramentas recomendadas' }))
+  await screen.findByText('Já está preparada.')
+  expect(useProjectStore.getState().project?.installedExtensions.map((item) => item.id)).toEqual([
+    'game-2d',
+  ])
+  expect(screen.getByRole('button', { name: 'Já preparei' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Instalar ferramentas recomendadas' })).toBeNull()
+})
+test('falha no flush impede a confirmação e conserva a frase da gravação', async () => {
+  const session = missionSessionFixture()
+  const complete = mock(async () => {})
+  session.onComplete = complete
+  const wrapped = withSaveBeforeTaskActions(session, async () => {
+    throw new Error('storage')
   })
+  render(<TaskGuidePanel session={wrapped} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Conferi e está pronto' }))
+  await waitFor(() =>
+    expect(screen.getByRole('alert').textContent).toContain('guardar seu jogo neste aparelho'),
+  )
+  expect(complete).not.toHaveBeenCalled()
+})
+test('uma missão concluída permite reabrir sem trocar o resultado esperado', async () => {
+  const session = missionSessionFixture()
+  session.progress.status = 'completed'
+  session.onReopen = mock(async () => {})
+  render(<TaskGuidePanel session={session} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Quero mexer de novo' }))
+  await waitFor(() => expect(session.onReopen).toHaveBeenCalledTimes(1))
+  expect(screen.getByText('Você reconhece a nave.')).toBeTruthy()
+  expect(screen.queryByText(/Passo 1 de|Próximo passo/)).toBeNull()
+})
+test('o topo âmbar recolhe a missão e o trilho a abre de novo', () => {
+  const onCollapsedChange = mock()
+  const session = {
+    ...missionSessionFixture(),
+    order: { index: 4, total: 9 },
+    onCollapsedChange,
+  }
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const head = screen.getByRole('button', { name: /Desenhar a nave/ })
+  expect(head.getAttribute('aria-expanded')).toBe('true')
+  expect(screen.getByText(/Pensa · Bosque · missão 4 de 9/)).toBeTruthy()
+  fireEvent.click(head)
+  expect(onCollapsedChange).toHaveBeenLastCalledWith(true)
 
-  test('mantém o guia visível quando a sincronização falha', async () => {
-    const session = createSession()
-    session.onProgress = mock(async () => {
-      throw new Error('offline')
-    })
-    render(<TaskGuidePanel session={session} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Concluir tarefa' }))
-    await waitFor(() =>
-      expect(screen.getByRole('alert').textContent).toContain('Confira a internet'),
-    )
-    expect(screen.getByText('Programar as estrelas')).toBeTruthy()
-  })
-
-  /**
-   * 18/09/2026 — "o painel ocupa muito espaço da tela e sobra pouco para a criação". Este era o
-   * único dos três guias do Pensa que NÃO recolhia, e no celular ele é a faixa do topo.
-   */
-  test('a seta recolhe o guia, e o host é quem lembra', () => {
-    const session = createSession()
-    const onCollapsedChange = mock((_v: boolean) => undefined)
-    const view = render(<TaskGuidePanel session={session} />)
-    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
-    if (!seta) throw new Error('seta esperada')
-    expect(seta.getAttribute('aria-expanded')).toBe('true')
-    expect(screen.getByText('Mudar pontuação')).toBeTruthy()
-    fireEvent.click(seta)
-    expect(screen.queryByText('Mudar pontuação')).toBeNull()
-    // ⚠ Recolhido, o corpo DESMONTA e o `aria-controls` SAI (régua do `Panel` do Pinta):
-    // apontar para um id ausente é referência pendurada para o leitor de tela.
-    expect(seta.getAttribute('aria-controls')).toBeNull()
-    // O título e a situação da tarefa CONTINUAM na tela: recolhido não é invisível.
-    expect(screen.getByText('Programar as estrelas')).toBeTruthy()
-    expect(screen.getByText('Em andamento')).toBeTruthy()
-
-    // Com o par do contrato, quem manda é o host: a seta só avisa.
-    cleanup()
-    const comHost = render(
-      <TaskGuidePanel session={{ ...session, collapsed: true, onCollapsedChange }} />,
-    )
-    expect(screen.queryByText('Mudar pontuação')).toBeNull()
-    const setaHost = comHost.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
-    if (!setaHost) throw new Error('seta esperada')
-    fireEvent.click(setaHost)
-    expect(onCollapsedChange).toHaveBeenCalledWith(false)
-    expect(screen.queryByText('Mudar pontuação')).toBeNull()
-  })
-
-  test('o guia tem respiro embaixo até `lg`, onde ele vira coluna lateral', () => {
-    const view = render(<TaskGuidePanel session={createSession()} />)
-    const aside = view.container.querySelector('aside')
-    // ⚠️ `mb-2` sem o `lg:mb-0` deixaria um vão no meio do editor largo, onde o guia é coluna.
-    // ⚠ `classList.contains`: 'mb-20' contém 'mb-2' e 'lg:mb-0.5' contém 'lg:mb-0' — o teste
-    // passaria com um respiro errado (achado do full review de 18/09/2026).
-    expect(aside?.classList.contains('mb-2')).toBe(true)
-    expect(aside?.classList.contains('lg:mb-0')).toBe(true)
-  })
-
-  test('o quadro veste a casca compartilhada das ferramentas', () => {
-    // 19/09/2026: os três guias do Pensa (este, o do Pinta e o do Molda) passaram a vestir a
-    // MESMA receita (`.sz-tool-guide` do `@sistemazero/ui/tool-chrome.css`) — antes cada um
-    // tinha a própria casca, e foi isso que ela leu como "fora da identidade visual da
-    // comunidade". ⚠ Este é o único dos três que vira COLUNA lateral, e por isso leva também o
-    // `--aside`, que troca o fio em volta pelo fio que separa do editor.
-    const view = render(<TaskGuidePanel session={createSession()} />)
-    const aside = view.container.querySelector('aside')
-    expect(aside?.classList.contains('sz-tool-guide')).toBe(true)
-    expect(aside?.classList.contains('sz-tool-guide--aside')).toBe(true)
-    // ⚠ E a casca PRÓPRIA saiu. O `lg:border-r` é o que mais importa: a receita já desenha o
-    // fio do lado, então mantê-lo desenharia DOIS (achado do full review de 19/09/2026).
-    for (const morta of ['border-sz-border', 'border-b', 'bg-sz-surface', 'p-3', 'lg:border-r']) {
-      expect({ morta, tem: aside?.classList.contains(morta) }).toEqual({ morta, tem: false })
-    }
-    expect(view.container.querySelector('.sz-tool-guide__head')).toBeTruthy()
-    expect(view.container.querySelector('.sz-tool-guide__body')).toBeTruthy()
-    // ⚠⚠ Quem rola é o CORPO, nunca o cartão: com o teto no `<aside>`, a seta e o recado de
-    // falha ficavam dentro da área rolável e nasciam abaixo da dobra.
-    expect(aside?.classList.contains('overflow-auto')).toBe(false)
-    expect(
-      view.container.querySelector('.sz-tool-guide__body')?.classList.contains('overflow-auto'),
-    ).toBe(true)
-  })
-
-  test('recolhido, um recado de falha CONTINUA na tela', async () => {
-    // ⚠️ A mesma lição que o irmão do Pinta pagou com o "Voltar ao plano": recolher esconde o
-    // brief, nunca um problema. Sem isso, a marcação que não subiu ficaria invisível.
-    const session = createSession()
-    session.onProgress = mock(async () => {
-      throw new Error('offline')
-    })
-    const view = render(<TaskGuidePanel session={session} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Concluir tarefa' }))
-    await waitFor(() => expect(screen.getByRole('alert')).toBeTruthy())
-    const seta = view.container.querySelector<HTMLButtonElement>('button[aria-expanded]')
-    if (!seta) throw new Error('seta esperada')
-    fireEvent.click(seta)
-    expect(screen.queryByText('Mudar pontuação')).toBeNull()
-    expect(screen.getByRole('alert').textContent).toContain('Confira a internet')
-  })
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: true }} />)
+  const rail = screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ })
+  expect(rail.getAttribute('aria-expanded')).toBe('false')
+  expect(screen.queryByRole('button', { name: 'Conferi e está pronto' })).toBeNull()
+  fireEvent.click(rail)
+  expect(onCollapsedChange).toHaveBeenLastCalledWith(false)
+})
+test('recolher e abrir não perde o foco: o topo e o trilho são o MESMO botão', () => {
+  const session = missionSessionFixture()
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const head = screen.getByRole('button', { name: /Desenhar a nave/ })
+  head.focus()
+  expect(document.activeElement).toBe(head)
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: true }} />)
+  const rail = screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ })
+  // O nó sobreviveu à troca (é ele que segura o foco), e o foco continua nele.
+  expect(rail === head).toBe(true)
+  expect(document.activeElement === rail).toBe(true)
+  rerender(<TaskGuidePanel session={{ ...session, collapsed: false }} />)
+  expect(document.activeElement === head).toBe(true)
+  expect(head.getAttribute('aria-expanded')).toBe('true')
+})
+test('concluir leva o foco ao recado de missão pronta, mesmo que o host responda depois', async () => {
+  let finish: () => void = () => {}
+  const session = {
+    ...missionSessionFixture(),
+    nextMission: { title: 'Faça a nave voar', destination: 'studio' as const },
+    onComplete: () =>
+      new Promise<void>((resolve) => {
+        finish = resolve
+      }),
+  }
+  const { rerender } = render(<TaskGuidePanel session={session} />)
+  const conferir = screen.getByRole('button', { name: 'Conferi e está pronto' })
+  conferir.focus()
+  fireEvent.click(conferir)
+  finish()
+  await waitFor(() => expect(conferir.getAttribute('aria-busy')).toBe('false'))
+  // O host aplica a resposta do servidor só agora: o botão sai e o foco não cai no corpo.
+  rerender(
+    <TaskGuidePanel
+      session={{ ...session, progress: { ...session.progress, status: 'completed' } }}
+    />,
+  )
+  const pronto = screen.getByText(/Missão pronta\. A próxima é Faça a nave voar, no Estúdio\./)
+  await waitFor(() => expect(document.activeElement === pronto.closest('p')).toBe(true))
+})
+test('abrir pela linha recolhida traz a faixa para a vista; montar aberto não rola nada', () => {
+  const calls: unknown[] = []
+  const original = Element.prototype.scrollIntoView
+  Element.prototype.scrollIntoView = function (this: Element, arg?: unknown) {
+    if (this.matches('aside[aria-label="Missão do Pensa"]')) calls.push(arg)
+  } as typeof Element.prototype.scrollIntoView
+  try {
+    const session = { ...missionSessionFixture(), collapsed: true }
+    const onCollapsedChange = mock()
+    const { rerender } = render(<TaskGuidePanel session={{ ...session, onCollapsedChange }} />)
+    expect(calls).toEqual([])
+    fireEvent.click(screen.getByRole('button', { name: /Ver missão · Desenhar a nave/ }))
+    expect(onCollapsedChange).toHaveBeenLastCalledWith(false)
+    rerender(<TaskGuidePanel session={{ ...session, collapsed: false, onCollapsedChange }} />)
+    expect(calls).toEqual([{ block: 'nearest' }])
+    // Recolher não rola.
+    fireEvent.click(screen.getByRole('button', { name: /Desenhar a nave/ }))
+    rerender(<TaskGuidePanel session={{ ...session, collapsed: true, onCollapsedChange }} />)
+    expect(calls).toHaveLength(1)
+  } finally {
+    Element.prototype.scrollIntoView = original
+  }
 })

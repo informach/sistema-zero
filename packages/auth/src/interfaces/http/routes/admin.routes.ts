@@ -281,7 +281,7 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/users/:id/profiles',
         async ({ headers, params }) => {
           requireActor(headers, READ_ROLES)
-          return deps.listProfiles.execute(params.id)
+          return deps.listProfiles.execute(params.id, { includePending: true })
         },
         { params: UserIdParams },
       )

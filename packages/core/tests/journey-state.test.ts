@@ -6,10 +6,10 @@ import {
   type JourneyCourse,
   type JourneyLevelSlug,
   journeyCourseQualified,
-  MOLDA_TOOL_BAND_LEVELS,
   nextJourneyCourse,
   THREE_D_CREATION_MIN_LEVEL,
 } from '../src/journey'
+import { MOLDA_TOOL_BAND_LEVELS } from './fixtures/legacy-kids-tool-levels'
 
 const course = (overrides: Partial<JourneyCourse> = {}): JourneyCourse => ({
   careerSlot: 1,

@@ -1,0 +1,388 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/03-p21-a-p30.md",
+  "sourceSectionHash": "9d2379dcfa51d2f1f7c8b46cb1f5b71de43af822b95d40dbed4d2e489e44a4bc",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 241.53125
+        },
+        {
+          "kind": "copy lead",
+          "top": 106.953125,
+          "bottom": 248.640625,
+          "height": 141.6875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 310.015625,
+          "bottom": 419.984375,
+          "height": 109.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 2,
+      "file": "02-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 186.28125,
+          "height": 186.28125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 273.0625,
+          "bottom": 907.71875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.5,
+          "bottom": 1116,
+          "height": 121.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 3,
+      "file": "03-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 143.8125,
+          "height": 143.8125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 253.0625,
+          "bottom": 887.71875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 996.96875,
+          "bottom": 1116,
+          "height": 119.03125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 48
+    },
+    {
+      "number": 4,
+      "file": "04-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 150.78125,
+          "height": 150.78125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "demo",
+          "top": 255.140625,
+          "bottom": 890.140625,
+          "height": 635,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.5,
+          "bottom": 1116,
+          "height": 121.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 5,
+      "file": "05-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 131.09375,
+          "height": 131.09375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 247.953125,
+          "bottom": 882.609375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 999.46875,
+          "bottom": 1116,
+          "height": 116.53125,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 6,
+      "file": "06-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 198.328125,
+          "height": 198.328125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "video-detail",
+          "top": 316.421875,
+          "bottom": 876.421875,
+          "height": 560,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 994.5,
+          "bottom": 1116,
+          "height": 121.5,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 49
+    },
+    {
+      "number": 7,
+      "file": "07-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 232,
+          "height": 232,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 302.671875,
+          "bottom": 937.328125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1008,
+          "bottom": 1116,
+          "height": 108,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 45
+    },
+    {
+      "number": 8,
+      "file": "08-p23.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 213.890625,
+          "height": 213.890625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 314.859375,
+          "bottom": 949.515625,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 1050.484375,
+          "bottom": 1116,
+          "height": 65.515625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 56
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-pausou-para-fazer.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/01-aula-pausada-player.png",
+      "loaded": true,
+      "width": 1432,
+      "height": 806
+    },
+    {
+      "src": "apoio/02-pausa-para-montar.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-aula-montagem.png",
+      "loaded": true,
+      "width": 3200,
+      "height": 2100
+    },
+    {
+      "src": "apoio/03-esboco-da-nave.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-voltar-e-procurar-ajuda.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/05-aula-ajuda.png",
+      "loaded": true,
+      "width": 3200,
+      "height": 2100
+    },
+    {
+      "src": "apoio/05-botao-ajuda.png",
+      "loaded": true,
+      "width": 366,
+      "height": 88
+    },
+    {
+      "src": "apoio/06-aula-rever-player.png",
+      "loaded": true,
+      "width": 1432,
+      "height": 806
+    },
+    {
+      "src": "apoio/07-conferir-a-atividade.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/07-aula-escolha.png",
+      "loaded": true,
+      "width": 3200,
+      "height": 2100
+    },
+    {
+      "src": "apoio/08-pausa-com-autonomia.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/08-aula-pratica.png",
+      "loaded": true,
+      "width": 3200,
+      "height": 2100
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

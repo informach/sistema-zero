@@ -113,6 +113,11 @@ export class OAuthService {
       const providerAccounts = await provider.resolveAccounts(tokens)
       if (providerAccounts.length === 0) return redirect('error=no_accounts')
       for (const account of providerAccounts) {
+        if (account.network === 'instagram')
+          account.identity.metadata = {
+            ...account.identity.metadata,
+            engagementConnectionId: crypto.randomUUID(),
+          }
         await this.accounts.upsertByExternalId(
           buildSocialAccount({
             account,

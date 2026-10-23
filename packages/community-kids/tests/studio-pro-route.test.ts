@@ -4,6 +4,7 @@ const getSession = mock()
 const checkStudioAccessReadonly = mock()
 const getGamificationReadonly = mock()
 const getLesson = mock()
+const openLessonStudio = mock()
 
 // A rota é uma fronteira HTTP; isolamos somente os adaptadores de sessão e do Members.
 // A política, a leitura do Request e as respostas são as implementações reais.
@@ -12,6 +13,7 @@ mock.module('@/server/members', () => ({
   checkStudioAccessReadonly,
   getGamificationReadonly,
   getLesson,
+  openLessonStudio,
 }))
 
 const { POST } = await import('../src/app/api/studio/pro-runtime/build/route')
@@ -46,11 +48,76 @@ beforeEach(() => {
   checkStudioAccessReadonly.mockReset()
   getGamificationReadonly.mockReset()
   getLesson.mockReset()
+  openLessonStudio.mockReset()
+  openLessonStudio.mockResolvedValue({
+    status: 200,
+    body: {
+      blockId: 'block-1',
+      bound: true,
+      lessonId: 'lesson-1',
+      configuration: { initialProject: proProject },
+    },
+  })
   checkStudioAccessReadonly.mockResolvedValue(studioAvailable)
   getGamificationReadonly.mockResolvedValue(gamificationPro)
 })
 
 describe('POST /api/studio/pro-runtime/build', () => {
+  test('a bound read-only lesson baseline does not grant compilation', async () => {
+    getSession.mockResolvedValue(profileSession)
+    getLesson.mockResolvedValue({
+      status: 200,
+      body: { blocks: [{ id: 'block-1', kind: 'studio' }] },
+    })
+    openLessonStudio.mockResolvedValue({
+      status: 200,
+      body: {
+        blockId: 'block-1',
+        lessonId: 'lesson-1',
+        bound: true,
+        readOnly: true,
+        configuration: { initialProject: proProject },
+      },
+    })
+    expect(
+      (
+        await POST(
+          request({
+            courseSlug: 'curso',
+            lessonId: 'lesson-1',
+            blockId: 'block-1',
+            project: proProject,
+          }),
+        )
+      ).status,
+    ).toBe(403)
+  })
+  test('a proposed lesson baseline cannot grant Pro execution before admission', async () => {
+    getSession.mockResolvedValue(profileSession)
+    getLesson.mockResolvedValue({
+      status: 200,
+      body: { blocks: [{ id: 'block-1', kind: 'studio' }] },
+    })
+    openLessonStudio.mockResolvedValue({
+      status: 200,
+      body: {
+        blockId: 'block-1',
+        lessonId: 'lesson-1',
+        bound: false,
+        configuration: { initialProject: proProject },
+      },
+    })
+    const response = await POST(
+      request({
+        context: 'lesson',
+        courseSlug: 'curso',
+        lessonId: 'lesson-1',
+        blockId: 'block-1',
+        project: proProject,
+      }),
+    )
+    expect(response.status).toBe(403)
+  })
   test('recusa quem não está autenticado antes de consultar os serviços internos', async () => {
     getSession.mockResolvedValue(null)
 
@@ -97,7 +164,17 @@ describe('POST /api/studio/pro-runtime/build', () => {
     const originalToken = process.env.STUDIO_PRO_RUNTIME_TOKEN
     const runtimeFetch = Object.assign(
       async () =>
-        Response.json({ ok: true, html: '<main>Pronto</main>', output: '', durationMs: 12 }),
+        Response.json({
+          ok: true,
+          artifact: {
+            id: 'a'.repeat(64),
+            url: `https://runtime.test/v1/artifacts/${'a'.repeat(64)}/index.html`,
+            sha256: 'b'.repeat(64),
+            expiresAt: Date.now() + 60_000,
+          },
+          output: '',
+          durationMs: 12,
+        }),
       {
         preconnect: (
           _url: string | URL,
@@ -115,7 +192,10 @@ describe('POST /api/studio/pro-runtime/build', () => {
       getLesson.mockResolvedValue({
         status: 200,
         body: {
-          blocks: [{ id: 'block-1', kind: 'studio', content: { initialProject: proProject } }],
+          // The published seed changed; the learner still compiles with the original binding.
+          blocks: [
+            { id: 'block-1', kind: 'studio', content: { initialProject: { kind: 'classic' } } },
+          ],
         },
       })
 

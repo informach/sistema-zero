@@ -1,0 +1,2060 @@
+{
+  "kind": "studio.python.runtime-promotion",
+  "version": 1,
+  "input": {
+    "version": 1,
+    "environment": "staging",
+    "target": {
+      "accountId": "bcc0f2d44140e05b69152cba326132f8",
+      "bucketName": "sistemazero-studio-artifacts-staging",
+      "runtimeOrigin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
+      "parentOrigins": [
+        "https://admin-staging-f8fe.up.railway.app",
+        "https://community-staging-66f2.up.railway.app",
+        "https://community-kids-staging.up.railway.app"
+      ]
+    },
+    "distribution": {
+      "directory": "C:\\Users\\tocha\\projects\\sistema-zero-python-review-fixes\\.cache\\python-reference-games\\candidate-r2\\distributions\\5e247a9350b352d56bb808787929990328291f79499a90027dbf67a7e3818ebf",
+      "sha256": "5e247a9350b352d56bb808787929990328291f79499a90027dbf67a7e3818ebf"
+    },
+    "release": {
+      "profileId": "python-browser",
+      "releaseId": "2026-10-22-visual-games-1",
+      "capabilities": [
+        "edit",
+        "execute",
+        "pause",
+        "publish",
+        "export-source",
+        "python-repl",
+        "assist"
+      ]
+    },
+    "baseline": {
+      "worker": null,
+      "members": null,
+      "hosts": [],
+      "previewOrigin": null,
+      "frameOrigins": {
+        "admin": [],
+        "community": [],
+        "community-kids": []
+      }
+    }
+  },
+  "baselineSha256": "4419fae7d2275c726ebba00dc11e2bbfd3979d04616d175629c72685fed229cc",
+  "configuration": {
+    "worker": {
+      "version": 1,
+      "parentOrigins": [
+        "https://admin-staging-f8fe.up.railway.app",
+        "https://community-staging-66f2.up.railway.app",
+        "https://community-kids-staging.up.railway.app"
+      ],
+      "deployments": [
+        {
+          "status": "active",
+          "deployment": {
+            "release": {
+              "profileId": "python-browser",
+              "releaseId": "2026-10-22-visual-games-1",
+              "manifestSha256": "96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e",
+              "manifest": {
+                "manifestVersion": 1,
+                "profileId": "python-browser",
+                "releaseId": "2026-10-22-visual-games-1",
+                "programmingLanguage": "python",
+                "kinds": ["classic", "pro"],
+                "modes": ["blocks", "bridge", "code"],
+                "capabilities": [
+                  "edit",
+                  "execute",
+                  "pause",
+                  "publish",
+                  "export-source",
+                  "python-repl",
+                  "assist"
+                ],
+                "extensions": [
+                  {
+                    "id": "python-turtle",
+                    "versions": ["1.0.0"]
+                  }
+                ],
+                "sourceTargets": ["browser", "desktop"],
+                "requiredBrowserFeatures": ["wasm", "worker", "jspi", "trusted-types"],
+                "artifacts": [
+                  {
+                    "path": "LICENSE-pyodide.txt",
+                    "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+                  },
+                  {
+                    "path": "LICENSE-python.txt",
+                    "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+                  },
+                  {
+                    "path": "LICENSE-tk.txt",
+                    "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+                  },
+                  {
+                    "path": "SOURCES.txt",
+                    "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185"
+                  },
+                  {
+                    "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+                    "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+                  },
+                  {
+                    "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+                    "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+                  },
+                  {
+                    "path": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz",
+                    "sha256": "17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4"
+                  },
+                  {
+                    "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+                    "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+                  },
+                  {
+                    "path": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz",
+                    "sha256": "3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a"
+                  },
+                  {
+                    "path": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz",
+                    "sha256": "4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae"
+                  },
+                  {
+                    "path": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz",
+                    "sha256": "50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4"
+                  },
+                  {
+                    "path": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz",
+                    "sha256": "8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32"
+                  },
+                  {
+                    "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+                    "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f"
+                  },
+                  {
+                    "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+                    "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+                  },
+                  {
+                    "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+                    "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5"
+                  },
+                  {
+                    "path": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz",
+                    "sha256": "ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab"
+                  },
+                  {
+                    "path": "analysis-frame.mjs",
+                    "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97"
+                  },
+                  {
+                    "path": "analysis-worker.mjs",
+                    "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+                  },
+                  {
+                    "path": "analysis.html",
+                    "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+                  },
+                  {
+                    "path": "boot-loader-derivation.json",
+                    "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+                  },
+                  {
+                    "path": "boot-reader.mjs",
+                    "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+                  },
+                  {
+                    "path": "frame.html",
+                    "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+                  },
+                  {
+                    "path": "frame.mjs",
+                    "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                  },
+                  {
+                    "path": "http-compression-recipe.json",
+                    "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+                  },
+                  {
+                    "path": "inspect.mjs",
+                    "sha256": "d65d7c72db4a7a593837dd11830eadf0a5cc63f68145f3fa68eb69c952962c05"
+                  },
+                  {
+                    "path": "playtest.mjs",
+                    "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                  },
+                  {
+                    "path": "pyodide-lock.json",
+                    "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+                  },
+                  {
+                    "path": "pyodide.asm.mjs",
+                    "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+                  },
+                  {
+                    "path": "pyodide.asm.wasm",
+                    "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+                  },
+                  {
+                    "path": "pyodide.mjs",
+                    "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+                  },
+                  {
+                    "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                    "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                  },
+                  {
+                    "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                    "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                  },
+                  {
+                    "path": "python_stdlib.zip",
+                    "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+                  },
+                  {
+                    "path": "standalone.mjs",
+                    "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                  },
+                  {
+                    "path": "turtle-protocol.mjs",
+                    "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57"
+                  },
+                  {
+                    "path": "turtle-renderer.mjs",
+                    "sha256": "a63a3802a92cb5e17a9c799f4d94a7bac621aeb49f8dfcfaefeffb577ab088b3"
+                  },
+                  {
+                    "path": "turtle/_sz_turtle_backend.py",
+                    "sha256": "58bf25afe157fb1ba451094971d0d75aa93d01637c9b3c5ecef588f1acd79638"
+                  },
+                  {
+                    "path": "turtle/_sz_turtle_colors.py",
+                    "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+                  },
+                  {
+                    "path": "turtle/_sz_turtle_limits.py",
+                    "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+                  },
+                  {
+                    "path": "turtle/turtle.py",
+                    "sha256": "11ed61d21eff0f57035721641b791f9d35c7605ac96ef34ea0abbd17610a6bd3"
+                  },
+                  {
+                    "path": "worker.mjs",
+                    "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                  }
+                ],
+                "python": {
+                  "version": "3.14.2",
+                  "packages": [],
+                  "providedModules": [
+                    {
+                      "descriptor": {
+                        "descriptorVersion": 1,
+                        "kind": "portable-audio",
+                        "importName": "sz_audio",
+                        "version": "1.0.0",
+                        "provider": "sistema-zero",
+                        "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+                        "api": [
+                          {
+                            "name": "play",
+                            "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                            "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+                          },
+                          {
+                            "name": "stop",
+                            "signature": "(handle: int | None = None) -> None",
+                            "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+                          }
+                        ],
+                        "browser": {
+                          "installation": "runtime-bundled",
+                          "paths": "captured-project-assets",
+                          "requiresUserGesture": true,
+                          "lifetime": "execution-session",
+                          "notes": [
+                            "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                            "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                            "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                            "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                            "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+                          ]
+                        },
+                        "audio": {
+                          "container": "RIFF/WAVE",
+                          "encoding": "PCM16",
+                          "channels": [1, 2],
+                          "assetsTotalBytes": 33554432,
+                          "policy": {
+                            "version": 1,
+                            "requestBytes": 2048,
+                            "voices": 16,
+                            "commandsPerSecond": 64,
+                            "wavChunks": 256,
+                            "fileBytes": 33554432,
+                            "durationSeconds": 600,
+                            "minimumSampleRate": 8000,
+                            "maximumSampleRate": 96000
+                          }
+                        },
+                        "native": {
+                          "distribution": "sistema-zero-audio",
+                          "requiresPython": ">=3.14.2,<3.15",
+                          "installation": "exported-package",
+                          "lifetime": "process",
+                          "dependencies": {
+                            "setuptools": "84.2.0",
+                            "miniaudio": "1.71",
+                            "cffi": "2.1.1",
+                            "pycparser": "3.11"
+                          },
+                          "notes": [
+                            "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                            "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                            "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                            "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                            "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+                          ]
+                        }
+                      },
+                      "descriptorArtifact": {
+                        "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                        "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                      },
+                      "typingArtifact": {
+                        "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                        "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                      },
+                      "browserArtifacts": [
+                        {
+                          "path": "worker.mjs",
+                          "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                        },
+                        {
+                          "path": "frame.mjs",
+                          "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                        },
+                        {
+                          "path": "standalone.mjs",
+                          "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                        },
+                        {
+                          "path": "playtest.mjs",
+                          "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                        }
+                      ]
+                    }
+                  ],
+                  "features": ["turtle-compound-shapes"]
+                }
+              }
+            },
+            "distribution": {
+              "version": 1,
+              "pyodideVersion": "314.0.7",
+              "pythonVersion": "3.14.2",
+              "providedModules": [
+                {
+                  "descriptor": {
+                    "descriptorVersion": 1,
+                    "kind": "portable-audio",
+                    "importName": "sz_audio",
+                    "version": "1.0.0",
+                    "provider": "sistema-zero",
+                    "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+                    "api": [
+                      {
+                        "name": "play",
+                        "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                        "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+                      },
+                      {
+                        "name": "stop",
+                        "signature": "(handle: int | None = None) -> None",
+                        "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+                      }
+                    ],
+                    "browser": {
+                      "installation": "runtime-bundled",
+                      "paths": "captured-project-assets",
+                      "requiresUserGesture": true,
+                      "lifetime": "execution-session",
+                      "notes": [
+                        "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                        "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                        "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                        "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                        "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+                      ]
+                    },
+                    "audio": {
+                      "container": "RIFF/WAVE",
+                      "encoding": "PCM16",
+                      "channels": [1, 2],
+                      "assetsTotalBytes": 33554432,
+                      "policy": {
+                        "version": 1,
+                        "requestBytes": 2048,
+                        "voices": 16,
+                        "commandsPerSecond": 64,
+                        "wavChunks": 256,
+                        "fileBytes": 33554432,
+                        "durationSeconds": 600,
+                        "minimumSampleRate": 8000,
+                        "maximumSampleRate": 96000
+                      }
+                    },
+                    "native": {
+                      "distribution": "sistema-zero-audio",
+                      "requiresPython": ">=3.14.2,<3.15",
+                      "installation": "exported-package",
+                      "lifetime": "process",
+                      "dependencies": {
+                        "setuptools": "84.2.0",
+                        "miniaudio": "1.71",
+                        "cffi": "2.1.1",
+                        "pycparser": "3.11"
+                      },
+                      "notes": [
+                        "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                        "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                        "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                        "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                        "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+                      ]
+                    }
+                  },
+                  "descriptorArtifact": {
+                    "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                    "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                  },
+                  "typingArtifact": {
+                    "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                    "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                  },
+                  "browserArtifacts": [
+                    {
+                      "path": "worker.mjs",
+                      "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                    },
+                    {
+                      "path": "frame.mjs",
+                      "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                    },
+                    {
+                      "path": "standalone.mjs",
+                      "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                    },
+                    {
+                      "path": "playtest.mjs",
+                      "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                    }
+                  ]
+                }
+              ],
+              "features": ["turtle-compound-shapes"],
+              "previewHostAudioVersion": 1,
+              "files": [
+                {
+                  "path": "LICENSE-pyodide.txt",
+                  "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+                  "bytes": 16725
+                },
+                {
+                  "path": "LICENSE-python.txt",
+                  "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+                  "bytes": 13804
+                },
+                {
+                  "path": "LICENSE-tk.txt",
+                  "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198",
+                  "bytes": 2267
+                },
+                {
+                  "path": "SOURCES.txt",
+                  "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185",
+                  "bytes": 1503
+                },
+                {
+                  "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+                  "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba",
+                  "bytes": 5810
+                },
+                {
+                  "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+                  "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b",
+                  "bytes": 1715
+                },
+                {
+                  "path": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz",
+                  "sha256": "17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4",
+                  "bytes": 7266
+                },
+                {
+                  "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+                  "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16",
+                  "bytes": 8013
+                },
+                {
+                  "path": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz",
+                  "sha256": "3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a",
+                  "bytes": 181683
+                },
+                {
+                  "path": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz",
+                  "sha256": "4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae",
+                  "bytes": 180993
+                },
+                {
+                  "path": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz",
+                  "sha256": "50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4",
+                  "bytes": 171712
+                },
+                {
+                  "path": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz",
+                  "sha256": "8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32",
+                  "bytes": 81159
+                },
+                {
+                  "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+                  "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f",
+                  "bytes": 1578
+                },
+                {
+                  "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+                  "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7",
+                  "bytes": 292028
+                },
+                {
+                  "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+                  "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5",
+                  "bytes": 2331
+                },
+                {
+                  "path": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz",
+                  "sha256": "ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab",
+                  "bytes": 85213
+                },
+                {
+                  "path": "analysis-frame.mjs",
+                  "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97",
+                  "bytes": 5419
+                },
+                {
+                  "path": "analysis-worker.mjs",
+                  "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7",
+                  "bytes": 19988
+                },
+                {
+                  "path": "analysis.html",
+                  "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c",
+                  "bytes": 151
+                },
+                {
+                  "path": "boot-loader-derivation.json",
+                  "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466",
+                  "bytes": 840
+                },
+                {
+                  "path": "boot-reader.mjs",
+                  "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02",
+                  "bytes": 3782
+                },
+                {
+                  "path": "frame.html",
+                  "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe",
+                  "bytes": 211
+                },
+                {
+                  "path": "frame.mjs",
+                  "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e",
+                  "bytes": 321105
+                },
+                {
+                  "path": "http-compression-recipe.json",
+                  "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5",
+                  "bytes": 134
+                },
+                {
+                  "path": "inspect.mjs",
+                  "sha256": "d65d7c72db4a7a593837dd11830eadf0a5cc63f68145f3fa68eb69c952962c05",
+                  "bytes": 698874
+                },
+                {
+                  "path": "playtest.mjs",
+                  "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59",
+                  "bytes": 726063
+                },
+                {
+                  "path": "pyodide-lock.json",
+                  "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010",
+                  "bytes": 119077
+                },
+                {
+                  "path": "pyodide.asm.mjs",
+                  "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b",
+                  "bytes": 1530472
+                },
+                {
+                  "path": "pyodide.asm.wasm",
+                  "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6",
+                  "bytes": 9598218
+                },
+                {
+                  "path": "pyodide.mjs",
+                  "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1",
+                  "bytes": 21884
+                },
+                {
+                  "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                  "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+                  "bytes": 469
+                },
+                {
+                  "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                  "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49",
+                  "bytes": 2748
+                },
+                {
+                  "path": "python_stdlib.zip",
+                  "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+                  "bytes": 7066273
+                },
+                {
+                  "path": "standalone.mjs",
+                  "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad",
+                  "bytes": 724539
+                },
+                {
+                  "path": "turtle-protocol.mjs",
+                  "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57",
+                  "bytes": 3466
+                },
+                {
+                  "path": "turtle-renderer.mjs",
+                  "sha256": "a63a3802a92cb5e17a9c799f4d94a7bac621aeb49f8dfcfaefeffb577ab088b3",
+                  "bytes": 17126
+                },
+                {
+                  "path": "turtle/_sz_turtle_backend.py",
+                  "sha256": "58bf25afe157fb1ba451094971d0d75aa93d01637c9b3c5ecef588f1acd79638",
+                  "bytes": 22469
+                },
+                {
+                  "path": "turtle/_sz_turtle_colors.py",
+                  "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc",
+                  "bytes": 25484
+                },
+                {
+                  "path": "turtle/_sz_turtle_limits.py",
+                  "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862",
+                  "bytes": 435
+                },
+                {
+                  "path": "turtle/turtle.py",
+                  "sha256": "11ed61d21eff0f57035721641b791f9d35c7605ac96ef34ea0abbd17610a6bd3",
+                  "bytes": 121405
+                },
+                {
+                  "path": "worker.mjs",
+                  "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10",
+                  "bytes": 334096
+                }
+              ],
+              "httpRepresentations": [
+                {
+                  "path": "analysis-frame.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz"
+                },
+                {
+                  "path": "analysis-worker.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz"
+                },
+                {
+                  "path": "boot-reader.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz"
+                },
+                {
+                  "path": "frame.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz"
+                },
+                {
+                  "path": "inspect.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz"
+                },
+                {
+                  "path": "playtest.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz"
+                },
+                {
+                  "path": "pyodide.asm.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz"
+                },
+                {
+                  "path": "pyodide.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz"
+                },
+                {
+                  "path": "standalone.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz"
+                },
+                {
+                  "path": "turtle-protocol.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz"
+                },
+                {
+                  "path": "turtle-renderer.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz"
+                },
+                {
+                  "path": "worker.mjs",
+                  "encoding": "gzip",
+                  "artifactPath": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "members": {
+      "version": 1,
+      "catalog": {
+        "profiles": [
+          {
+            "id": "python-browser",
+            "languages": ["python"],
+            "kinds": ["classic", "pro"],
+            "modes": ["blocks", "bridge", "code"],
+            "levels": [],
+            "releases": [
+              {
+                "id": "2026-10-22-visual-games-1",
+                "manifestSha256": "96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e"
+              }
+            ]
+          }
+        ],
+        "releases": [
+          {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-22-visual-games-1",
+            "manifestSha256": "96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e",
+            "manifest": {
+              "manifestVersion": 1,
+              "profileId": "python-browser",
+              "releaseId": "2026-10-22-visual-games-1",
+              "programmingLanguage": "python",
+              "kinds": ["classic", "pro"],
+              "modes": ["blocks", "bridge", "code"],
+              "capabilities": [
+                "edit",
+                "execute",
+                "pause",
+                "publish",
+                "export-source",
+                "python-repl",
+                "assist"
+              ],
+              "extensions": [
+                {
+                  "id": "python-turtle",
+                  "versions": ["1.0.0"]
+                }
+              ],
+              "sourceTargets": ["browser", "desktop"],
+              "requiredBrowserFeatures": ["wasm", "worker", "jspi", "trusted-types"],
+              "artifacts": [
+                {
+                  "path": "LICENSE-pyodide.txt",
+                  "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+                },
+                {
+                  "path": "LICENSE-python.txt",
+                  "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+                },
+                {
+                  "path": "LICENSE-tk.txt",
+                  "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+                },
+                {
+                  "path": "SOURCES.txt",
+                  "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185"
+                },
+                {
+                  "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+                  "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+                },
+                {
+                  "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+                  "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+                },
+                {
+                  "path": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz",
+                  "sha256": "17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4"
+                },
+                {
+                  "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+                  "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+                },
+                {
+                  "path": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz",
+                  "sha256": "3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a"
+                },
+                {
+                  "path": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz",
+                  "sha256": "4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae"
+                },
+                {
+                  "path": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz",
+                  "sha256": "50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4"
+                },
+                {
+                  "path": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz",
+                  "sha256": "8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32"
+                },
+                {
+                  "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+                  "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f"
+                },
+                {
+                  "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+                  "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+                },
+                {
+                  "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+                  "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5"
+                },
+                {
+                  "path": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz",
+                  "sha256": "ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab"
+                },
+                {
+                  "path": "analysis-frame.mjs",
+                  "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97"
+                },
+                {
+                  "path": "analysis-worker.mjs",
+                  "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+                },
+                {
+                  "path": "analysis.html",
+                  "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+                },
+                {
+                  "path": "boot-loader-derivation.json",
+                  "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+                },
+                {
+                  "path": "boot-reader.mjs",
+                  "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+                },
+                {
+                  "path": "frame.html",
+                  "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+                },
+                {
+                  "path": "frame.mjs",
+                  "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                },
+                {
+                  "path": "http-compression-recipe.json",
+                  "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+                },
+                {
+                  "path": "inspect.mjs",
+                  "sha256": "d65d7c72db4a7a593837dd11830eadf0a5cc63f68145f3fa68eb69c952962c05"
+                },
+                {
+                  "path": "playtest.mjs",
+                  "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                },
+                {
+                  "path": "pyodide-lock.json",
+                  "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+                },
+                {
+                  "path": "pyodide.asm.mjs",
+                  "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+                },
+                {
+                  "path": "pyodide.asm.wasm",
+                  "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+                },
+                {
+                  "path": "pyodide.mjs",
+                  "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+                },
+                {
+                  "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                  "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                },
+                {
+                  "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                  "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                },
+                {
+                  "path": "python_stdlib.zip",
+                  "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+                },
+                {
+                  "path": "standalone.mjs",
+                  "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                },
+                {
+                  "path": "turtle-protocol.mjs",
+                  "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57"
+                },
+                {
+                  "path": "turtle-renderer.mjs",
+                  "sha256": "a63a3802a92cb5e17a9c799f4d94a7bac621aeb49f8dfcfaefeffb577ab088b3"
+                },
+                {
+                  "path": "turtle/_sz_turtle_backend.py",
+                  "sha256": "58bf25afe157fb1ba451094971d0d75aa93d01637c9b3c5ecef588f1acd79638"
+                },
+                {
+                  "path": "turtle/_sz_turtle_colors.py",
+                  "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+                },
+                {
+                  "path": "turtle/_sz_turtle_limits.py",
+                  "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+                },
+                {
+                  "path": "turtle/turtle.py",
+                  "sha256": "11ed61d21eff0f57035721641b791f9d35c7605ac96ef34ea0abbd17610a6bd3"
+                },
+                {
+                  "path": "worker.mjs",
+                  "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                }
+              ],
+              "python": {
+                "version": "3.14.2",
+                "packages": [],
+                "providedModules": [
+                  {
+                    "descriptor": {
+                      "descriptorVersion": 1,
+                      "kind": "portable-audio",
+                      "importName": "sz_audio",
+                      "version": "1.0.0",
+                      "provider": "sistema-zero",
+                      "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+                      "api": [
+                        {
+                          "name": "play",
+                          "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                          "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+                        },
+                        {
+                          "name": "stop",
+                          "signature": "(handle: int | None = None) -> None",
+                          "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+                        }
+                      ],
+                      "browser": {
+                        "installation": "runtime-bundled",
+                        "paths": "captured-project-assets",
+                        "requiresUserGesture": true,
+                        "lifetime": "execution-session",
+                        "notes": [
+                          "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                          "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                          "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                          "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                          "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+                        ]
+                      },
+                      "audio": {
+                        "container": "RIFF/WAVE",
+                        "encoding": "PCM16",
+                        "channels": [1, 2],
+                        "assetsTotalBytes": 33554432,
+                        "policy": {
+                          "version": 1,
+                          "requestBytes": 2048,
+                          "voices": 16,
+                          "commandsPerSecond": 64,
+                          "wavChunks": 256,
+                          "fileBytes": 33554432,
+                          "durationSeconds": 600,
+                          "minimumSampleRate": 8000,
+                          "maximumSampleRate": 96000
+                        }
+                      },
+                      "native": {
+                        "distribution": "sistema-zero-audio",
+                        "requiresPython": ">=3.14.2,<3.15",
+                        "installation": "exported-package",
+                        "lifetime": "process",
+                        "dependencies": {
+                          "setuptools": "84.2.0",
+                          "miniaudio": "1.71",
+                          "cffi": "2.1.1",
+                          "pycparser": "3.11"
+                        },
+                        "notes": [
+                          "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                          "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                          "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                          "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                          "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+                        ]
+                      }
+                    },
+                    "descriptorArtifact": {
+                      "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                      "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+                    },
+                    "typingArtifact": {
+                      "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                      "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+                    },
+                    "browserArtifacts": [
+                      {
+                        "path": "worker.mjs",
+                        "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                      },
+                      {
+                        "path": "frame.mjs",
+                        "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                      },
+                      {
+                        "path": "standalone.mjs",
+                        "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                      },
+                      {
+                        "path": "playtest.mjs",
+                        "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                      }
+                    ]
+                  }
+                ],
+                "features": ["turtle-compound-shapes"]
+              }
+            }
+          }
+        ]
+      },
+      "releases": [
+        {
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-22-visual-games-1",
+            "manifestSha256": "96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e"
+          },
+          "status": "active",
+          "proTemplateIds": ["python-blank"],
+          "blockIds": [
+            "sz_py_abs",
+            "sz_py_alias",
+            "sz_py_and",
+            "sz_py_arithmetic",
+            "sz_py_assign",
+            "sz_py_attribute",
+            "sz_py_boolean",
+            "sz_py_break",
+            "sz_py_call",
+            "sz_py_class",
+            "sz_py_collection_pop",
+            "sz_py_collection_remove",
+            "sz_py_compare",
+            "sz_py_continue",
+            "sz_py_delete",
+            "sz_py_dict_items",
+            "sz_py_dict_keys",
+            "sz_py_dict_values",
+            "sz_py_dictionary",
+            "sz_py_except",
+            "sz_py_expression",
+            "sz_py_float",
+            "sz_py_float_call",
+            "sz_py_for",
+            "sz_py_format_value",
+            "sz_py_function",
+            "sz_py_if",
+            "sz_py_import",
+            "sz_py_import_from",
+            "sz_py_input",
+            "sz_py_int",
+            "sz_py_integer",
+            "sz_py_interpolation",
+            "sz_py_keyword",
+            "sz_py_len",
+            "sz_py_list",
+            "sz_py_list_append",
+            "sz_py_math_ceil",
+            "sz_py_math_floor",
+            "sz_py_math_pi",
+            "sz_py_math_sqrt",
+            "sz_py_max",
+            "sz_py_min",
+            "sz_py_negative",
+            "sz_py_none",
+            "sz_py_not",
+            "sz_py_or",
+            "sz_py_parameter",
+            "sz_py_parameters",
+            "sz_py_pass",
+            "sz_py_positive",
+            "sz_py_print",
+            "sz_py_raise",
+            "sz_py_random_choice",
+            "sz_py_random_randint",
+            "sz_py_range",
+            "sz_py_return",
+            "sz_py_round",
+            "sz_py_set",
+            "sz_py_set_add",
+            "sz_py_set_create",
+            "sz_py_str",
+            "sz_py_subscript",
+            "sz_py_text",
+            "sz_py_text_join",
+            "sz_py_text_lower",
+            "sz_py_text_replace",
+            "sz_py_text_split",
+            "sz_py_text_strip",
+            "sz_py_text_upper",
+            "sz_py_try",
+            "sz_py_tuple",
+            "sz_py_turtle_module_Screen",
+            "sz_py_turtle_module_Shape",
+            "sz_py_turtle_module_Turtle",
+            "sz_py_turtle_module_addshape",
+            "sz_py_turtle_module_back",
+            "sz_py_turtle_module_backward",
+            "sz_py_turtle_module_begin_fill",
+            "sz_py_turtle_module_bgcolor",
+            "sz_py_turtle_module_bgpic",
+            "sz_py_turtle_module_bk",
+            "sz_py_turtle_module_bye",
+            "sz_py_turtle_module_circle",
+            "sz_py_turtle_module_clear",
+            "sz_py_turtle_module_clearscreen",
+            "sz_py_turtle_module_clearstamp",
+            "sz_py_turtle_module_clearstamps",
+            "sz_py_turtle_module_clone",
+            "sz_py_turtle_module_color",
+            "sz_py_turtle_module_colormode",
+            "sz_py_turtle_module_delay",
+            "sz_py_turtle_module_distance",
+            "sz_py_turtle_module_done",
+            "sz_py_turtle_module_dot",
+            "sz_py_turtle_module_down",
+            "sz_py_turtle_module_end_fill",
+            "sz_py_turtle_module_exitonclick",
+            "sz_py_turtle_module_fd",
+            "sz_py_turtle_module_fillcolor",
+            "sz_py_turtle_module_filling",
+            "sz_py_turtle_module_forward",
+            "sz_py_turtle_module_getscreen",
+            "sz_py_turtle_module_getshapes",
+            "sz_py_turtle_module_goto",
+            "sz_py_turtle_module_heading",
+            "sz_py_turtle_module_hideturtle",
+            "sz_py_turtle_module_home",
+            "sz_py_turtle_module_ht",
+            "sz_py_turtle_module_isdown",
+            "sz_py_turtle_module_isvisible",
+            "sz_py_turtle_module_left",
+            "sz_py_turtle_module_listen",
+            "sz_py_turtle_module_lt",
+            "sz_py_turtle_module_mainloop",
+            "sz_py_turtle_module_onclick",
+            "sz_py_turtle_module_ondrag",
+            "sz_py_turtle_module_onkey",
+            "sz_py_turtle_module_onkeypress",
+            "sz_py_turtle_module_onkeyrelease",
+            "sz_py_turtle_module_onrelease",
+            "sz_py_turtle_module_onscreenclick",
+            "sz_py_turtle_module_ontimer",
+            "sz_py_turtle_module_pd",
+            "sz_py_turtle_module_pencolor",
+            "sz_py_turtle_module_pendown",
+            "sz_py_turtle_module_pensize",
+            "sz_py_turtle_module_penup",
+            "sz_py_turtle_module_pos",
+            "sz_py_turtle_module_position",
+            "sz_py_turtle_module_pu",
+            "sz_py_turtle_module_register_shape",
+            "sz_py_turtle_module_reset",
+            "sz_py_turtle_module_resetscreen",
+            "sz_py_turtle_module_right",
+            "sz_py_turtle_module_rt",
+            "sz_py_turtle_module_seth",
+            "sz_py_turtle_module_setheading",
+            "sz_py_turtle_module_setpos",
+            "sz_py_turtle_module_setposition",
+            "sz_py_turtle_module_setup",
+            "sz_py_turtle_module_setx",
+            "sz_py_turtle_module_sety",
+            "sz_py_turtle_module_shape",
+            "sz_py_turtle_module_shapesize",
+            "sz_py_turtle_module_showturtle",
+            "sz_py_turtle_module_speed",
+            "sz_py_turtle_module_st",
+            "sz_py_turtle_module_stamp",
+            "sz_py_turtle_module_title",
+            "sz_py_turtle_module_towards",
+            "sz_py_turtle_module_tracer",
+            "sz_py_turtle_module_turtles",
+            "sz_py_turtle_module_turtlesize",
+            "sz_py_turtle_module_up",
+            "sz_py_turtle_module_update",
+            "sz_py_turtle_module_width",
+            "sz_py_turtle_module_window_height",
+            "sz_py_turtle_module_window_width",
+            "sz_py_turtle_module_write",
+            "sz_py_turtle_module_xcor",
+            "sz_py_turtle_module_ycor",
+            "sz_py_turtle_screen_addshape",
+            "sz_py_turtle_screen_bgcolor",
+            "sz_py_turtle_screen_bgpic",
+            "sz_py_turtle_screen_bye",
+            "sz_py_turtle_screen_clear",
+            "sz_py_turtle_screen_clearscreen",
+            "sz_py_turtle_screen_colormode",
+            "sz_py_turtle_screen_delay",
+            "sz_py_turtle_screen_exitonclick",
+            "sz_py_turtle_screen_getshapes",
+            "sz_py_turtle_screen_listen",
+            "sz_py_turtle_screen_mainloop",
+            "sz_py_turtle_screen_onclick",
+            "sz_py_turtle_screen_onkey",
+            "sz_py_turtle_screen_onkeypress",
+            "sz_py_turtle_screen_onkeyrelease",
+            "sz_py_turtle_screen_onscreenclick",
+            "sz_py_turtle_screen_ontimer",
+            "sz_py_turtle_screen_register_shape",
+            "sz_py_turtle_screen_reset",
+            "sz_py_turtle_screen_resetscreen",
+            "sz_py_turtle_screen_setup",
+            "sz_py_turtle_screen_title",
+            "sz_py_turtle_screen_tracer",
+            "sz_py_turtle_screen_turtles",
+            "sz_py_turtle_screen_update",
+            "sz_py_turtle_screen_window_height",
+            "sz_py_turtle_screen_window_width",
+            "sz_py_turtle_shape_addcomponent",
+            "sz_py_turtle_turtle_back",
+            "sz_py_turtle_turtle_backward",
+            "sz_py_turtle_turtle_begin_fill",
+            "sz_py_turtle_turtle_bk",
+            "sz_py_turtle_turtle_circle",
+            "sz_py_turtle_turtle_clear",
+            "sz_py_turtle_turtle_clearstamp",
+            "sz_py_turtle_turtle_clearstamps",
+            "sz_py_turtle_turtle_clone",
+            "sz_py_turtle_turtle_color",
+            "sz_py_turtle_turtle_distance",
+            "sz_py_turtle_turtle_dot",
+            "sz_py_turtle_turtle_down",
+            "sz_py_turtle_turtle_end_fill",
+            "sz_py_turtle_turtle_fd",
+            "sz_py_turtle_turtle_fillcolor",
+            "sz_py_turtle_turtle_filling",
+            "sz_py_turtle_turtle_forward",
+            "sz_py_turtle_turtle_getscreen",
+            "sz_py_turtle_turtle_goto",
+            "sz_py_turtle_turtle_heading",
+            "sz_py_turtle_turtle_hideturtle",
+            "sz_py_turtle_turtle_home",
+            "sz_py_turtle_turtle_ht",
+            "sz_py_turtle_turtle_isdown",
+            "sz_py_turtle_turtle_isvisible",
+            "sz_py_turtle_turtle_left",
+            "sz_py_turtle_turtle_lt",
+            "sz_py_turtle_turtle_onclick",
+            "sz_py_turtle_turtle_ondrag",
+            "sz_py_turtle_turtle_onrelease",
+            "sz_py_turtle_turtle_pd",
+            "sz_py_turtle_turtle_pencolor",
+            "sz_py_turtle_turtle_pendown",
+            "sz_py_turtle_turtle_pensize",
+            "sz_py_turtle_turtle_penup",
+            "sz_py_turtle_turtle_pos",
+            "sz_py_turtle_turtle_position",
+            "sz_py_turtle_turtle_pu",
+            "sz_py_turtle_turtle_reset",
+            "sz_py_turtle_turtle_right",
+            "sz_py_turtle_turtle_rt",
+            "sz_py_turtle_turtle_seth",
+            "sz_py_turtle_turtle_setheading",
+            "sz_py_turtle_turtle_setpos",
+            "sz_py_turtle_turtle_setposition",
+            "sz_py_turtle_turtle_setx",
+            "sz_py_turtle_turtle_sety",
+            "sz_py_turtle_turtle_shape",
+            "sz_py_turtle_turtle_shapesize",
+            "sz_py_turtle_turtle_showturtle",
+            "sz_py_turtle_turtle_speed",
+            "sz_py_turtle_turtle_st",
+            "sz_py_turtle_turtle_stamp",
+            "sz_py_turtle_turtle_towards",
+            "sz_py_turtle_turtle_turtlesize",
+            "sz_py_turtle_turtle_up",
+            "sz_py_turtle_turtle_width",
+            "sz_py_turtle_turtle_write",
+            "sz_py_turtle_turtle_xcor",
+            "sz_py_turtle_turtle_ycor",
+            "sz_py_update",
+            "sz_py_variable",
+            "sz_py_while"
+          ],
+          "categoryIds": [
+            "Animação e tempo",
+            "Aparência e imagens",
+            "Caneta e desenho",
+            "Classes e objetos",
+            "Entrada e saída",
+            "Eventos",
+            "Funções",
+            "Listas e coleções",
+            "Lógica e decisões",
+            "Movimento",
+            "Módulos",
+            "Números e matemática",
+            "Repetições",
+            "Tartarugas",
+            "Tela",
+            "Textos",
+            "Tratamento de erros",
+            "Variáveis"
+          ]
+        }
+      ]
+    },
+    "hosts": [
+      {
+        "runtime": {
+          "profileId": "python-browser",
+          "releaseId": "2026-10-22-visual-games-1",
+          "manifestSha256": "96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e"
+        },
+        "origin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+      }
+    ],
+    "previewOrigin": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev",
+    "frameOrigins": {
+      "admin": ["https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"],
+      "community": ["https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"],
+      "community-kids": ["https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"]
+    }
+  },
+  "workerCatalog": {
+    "sha256": "c59dc66309d9b706993445f3651bcbb4a6f440d162f008c3bb4eb16915a5ca07",
+    "key": "runtime-configs/c59dc66309d9b706993445f3651bcbb4a6f440d162f008c3bb4eb16915a5ca07.json",
+    "bytes": 20552
+  },
+  "workerBindings": {
+    "STUDIO_PYTHON_DISTRIBUTIONS_SHA256": "c59dc66309d9b706993445f3651bcbb4a6f440d162f008c3bb4eb16915a5ca07",
+    "STUDIO_PYTHON_PREVIEW_ORIGIN": "https://sistemazero-studio-runtime-staging.helena-bcc.workers.dev"
+  },
+  "configurationSha256": "57921b279d2ec7930dc1f3c3949450d1c3cb1e08f5a0f4864d282f9eaeac1a55",
+  "deployment": {
+    "release": {
+      "profileId": "python-browser",
+      "releaseId": "2026-10-22-visual-games-1",
+      "manifestSha256": "96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e",
+      "manifest": {
+        "manifestVersion": 1,
+        "profileId": "python-browser",
+        "releaseId": "2026-10-22-visual-games-1",
+        "programmingLanguage": "python",
+        "kinds": ["classic", "pro"],
+        "modes": ["blocks", "bridge", "code"],
+        "capabilities": [
+          "edit",
+          "execute",
+          "pause",
+          "publish",
+          "export-source",
+          "python-repl",
+          "assist"
+        ],
+        "extensions": [
+          {
+            "id": "python-turtle",
+            "versions": ["1.0.0"]
+          }
+        ],
+        "sourceTargets": ["browser", "desktop"],
+        "requiredBrowserFeatures": ["wasm", "worker", "jspi", "trusted-types"],
+        "artifacts": [
+          {
+            "path": "LICENSE-pyodide.txt",
+            "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5"
+          },
+          {
+            "path": "LICENSE-python.txt",
+            "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231"
+          },
+          {
+            "path": "LICENSE-tk.txt",
+            "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198"
+          },
+          {
+            "path": "SOURCES.txt",
+            "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185"
+          },
+          {
+            "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+            "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba"
+          },
+          {
+            "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+            "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b"
+          },
+          {
+            "path": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz",
+            "sha256": "17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4"
+          },
+          {
+            "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+            "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16"
+          },
+          {
+            "path": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz",
+            "sha256": "3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a"
+          },
+          {
+            "path": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz",
+            "sha256": "4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae"
+          },
+          {
+            "path": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz",
+            "sha256": "50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4"
+          },
+          {
+            "path": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz",
+            "sha256": "8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32"
+          },
+          {
+            "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+            "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f"
+          },
+          {
+            "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+            "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7"
+          },
+          {
+            "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+            "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5"
+          },
+          {
+            "path": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz",
+            "sha256": "ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab"
+          },
+          {
+            "path": "analysis-frame.mjs",
+            "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97"
+          },
+          {
+            "path": "analysis-worker.mjs",
+            "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7"
+          },
+          {
+            "path": "analysis.html",
+            "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c"
+          },
+          {
+            "path": "boot-loader-derivation.json",
+            "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466"
+          },
+          {
+            "path": "boot-reader.mjs",
+            "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02"
+          },
+          {
+            "path": "frame.html",
+            "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe"
+          },
+          {
+            "path": "frame.mjs",
+            "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+          },
+          {
+            "path": "http-compression-recipe.json",
+            "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5"
+          },
+          {
+            "path": "inspect.mjs",
+            "sha256": "d65d7c72db4a7a593837dd11830eadf0a5cc63f68145f3fa68eb69c952962c05"
+          },
+          {
+            "path": "playtest.mjs",
+            "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+          },
+          {
+            "path": "pyodide-lock.json",
+            "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010"
+          },
+          {
+            "path": "pyodide.asm.mjs",
+            "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b"
+          },
+          {
+            "path": "pyodide.asm.wasm",
+            "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6"
+          },
+          {
+            "path": "pyodide.mjs",
+            "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1"
+          },
+          {
+            "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+            "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+          },
+          {
+            "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+            "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+          },
+          {
+            "path": "python_stdlib.zip",
+            "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a"
+          },
+          {
+            "path": "standalone.mjs",
+            "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+          },
+          {
+            "path": "turtle-protocol.mjs",
+            "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57"
+          },
+          {
+            "path": "turtle-renderer.mjs",
+            "sha256": "a63a3802a92cb5e17a9c799f4d94a7bac621aeb49f8dfcfaefeffb577ab088b3"
+          },
+          {
+            "path": "turtle/_sz_turtle_backend.py",
+            "sha256": "58bf25afe157fb1ba451094971d0d75aa93d01637c9b3c5ecef588f1acd79638"
+          },
+          {
+            "path": "turtle/_sz_turtle_colors.py",
+            "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc"
+          },
+          {
+            "path": "turtle/_sz_turtle_limits.py",
+            "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862"
+          },
+          {
+            "path": "turtle/turtle.py",
+            "sha256": "11ed61d21eff0f57035721641b791f9d35c7605ac96ef34ea0abbd17610a6bd3"
+          },
+          {
+            "path": "worker.mjs",
+            "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+          }
+        ],
+        "python": {
+          "version": "3.14.2",
+          "packages": [],
+          "providedModules": [
+            {
+              "descriptor": {
+                "descriptorVersion": 1,
+                "kind": "portable-audio",
+                "importName": "sz_audio",
+                "version": "1.0.0",
+                "provider": "sistema-zero",
+                "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+                "api": [
+                  {
+                    "name": "play",
+                    "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                    "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+                  },
+                  {
+                    "name": "stop",
+                    "signature": "(handle: int | None = None) -> None",
+                    "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+                  }
+                ],
+                "browser": {
+                  "installation": "runtime-bundled",
+                  "paths": "captured-project-assets",
+                  "requiresUserGesture": true,
+                  "lifetime": "execution-session",
+                  "notes": [
+                    "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                    "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                    "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                    "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                    "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+                  ]
+                },
+                "audio": {
+                  "container": "RIFF/WAVE",
+                  "encoding": "PCM16",
+                  "channels": [1, 2],
+                  "assetsTotalBytes": 33554432,
+                  "policy": {
+                    "version": 1,
+                    "requestBytes": 2048,
+                    "voices": 16,
+                    "commandsPerSecond": 64,
+                    "wavChunks": 256,
+                    "fileBytes": 33554432,
+                    "durationSeconds": 600,
+                    "minimumSampleRate": 8000,
+                    "maximumSampleRate": 96000
+                  }
+                },
+                "native": {
+                  "distribution": "sistema-zero-audio",
+                  "requiresPython": ">=3.14.2,<3.15",
+                  "installation": "exported-package",
+                  "lifetime": "process",
+                  "dependencies": {
+                    "setuptools": "84.2.0",
+                    "miniaudio": "1.71",
+                    "cffi": "2.1.1",
+                    "pycparser": "3.11"
+                  },
+                  "notes": [
+                    "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                    "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                    "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                    "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                    "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+                  ]
+                }
+              },
+              "descriptorArtifact": {
+                "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+                "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+              },
+              "typingArtifact": {
+                "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+                "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+              },
+              "browserArtifacts": [
+                {
+                  "path": "worker.mjs",
+                  "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+                },
+                {
+                  "path": "frame.mjs",
+                  "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+                },
+                {
+                  "path": "standalone.mjs",
+                  "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+                },
+                {
+                  "path": "playtest.mjs",
+                  "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+                }
+              ]
+            }
+          ],
+          "features": ["turtle-compound-shapes"]
+        }
+      }
+    },
+    "distribution": {
+      "version": 1,
+      "pyodideVersion": "314.0.7",
+      "pythonVersion": "3.14.2",
+      "providedModules": [
+        {
+          "descriptor": {
+            "descriptorVersion": 1,
+            "kind": "portable-audio",
+            "importName": "sz_audio",
+            "version": "1.0.0",
+            "provider": "sistema-zero",
+            "summary": "Som portátil do Sistema Zero. É um módulo separado de Turtle e da biblioteca padrão do Python.",
+            "api": [
+              {
+                "name": "play",
+                "signature": "(path: str, *, loop: bool = False, volume: float = 1.0) -> int",
+                "summary": "Começa um WAV sem esperar seu fim e devolve o identificador do som. loop repete; volume vai de 0 a 1."
+              },
+              {
+                "name": "stop",
+                "signature": "(handle: int | None = None) -> None",
+                "summary": "Para o som indicado por play. Sem argumento, para todos os sons desta execução."
+              }
+            ],
+            "browser": {
+              "installation": "runtime-bundled",
+              "paths": "captured-project-assets",
+              "requiresUserGesture": true,
+              "lifetime": "execution-session",
+              "notes": [
+                "Disponível somente quando a release aprovada fornece este módulo; não precisa instalar pelo pip no navegador.",
+                "Use o caminho relativo de um WAV dos materiais capturados do projeto. Não aceita URL, comando de shell ou arquivo externo.",
+                "Clique em Jogar ou Executar para permitir o som. Stop, reinício ou fechamento da execução encerram as vozes.",
+                "No navegador, a página e a sessão podem continuar abertas para o REPL depois que o arquivo inicial termina; o áudio acompanha essa sessão.",
+                "Um módulo autoral com esse nome mantém a precedência normal do Python; não atribua a ele esta API."
+              ]
+            },
+            "audio": {
+              "container": "RIFF/WAVE",
+              "encoding": "PCM16",
+              "channels": [1, 2],
+              "assetsTotalBytes": 33554432,
+              "policy": {
+                "version": 1,
+                "requestBytes": 2048,
+                "voices": 16,
+                "commandsPerSecond": 64,
+                "wavChunks": 256,
+                "fileBytes": 33554432,
+                "durationSeconds": 600,
+                "minimumSampleRate": 8000,
+                "maximumSampleRate": 96000
+              }
+            },
+            "native": {
+              "distribution": "sistema-zero-audio",
+              "requiresPython": ">=3.14.2,<3.15",
+              "installation": "exported-package",
+              "lifetime": "process",
+              "dependencies": {
+                "setuptools": "84.2.0",
+                "miniaudio": "1.71",
+                "cffi": "2.1.1",
+                "pycparser": "3.11"
+              },
+              "notes": [
+                "Instale o pacote local e suas dependências pelo install.txt indicado no LEIA-ME da exportação, usando o Python do ambiente virtual na pasta principal do projeto.",
+                "A instalação separada permite importar sz_audio mesmo quando o arquivo inicial está em uma subpasta; os requisitos e módulos autorais são preservados.",
+                "As dependências nativas são separadas do lock do navegador. É necessário um dispositivo de saída disponível; a exportação não certifica a execução neste computador.",
+                "play não bloqueia nem mantém o processo Python aberto. Um script curto pode terminar antes de o som tocar; no desktop, mantenha o laço normal do programa, como turtle.done() ou turtle.mainloop(). Encerrar o processo encerra o áudio.",
+                "Não instale um pacote chamado turtle pelo pip. Turtle nativo usa a biblioteca padrão e o suporte gráfico Tk do computador."
+              ]
+            }
+          },
+          "descriptorArtifact": {
+            "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+            "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49"
+          },
+          "typingArtifact": {
+            "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+            "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97"
+          },
+          "browserArtifacts": [
+            {
+              "path": "worker.mjs",
+              "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10"
+            },
+            {
+              "path": "frame.mjs",
+              "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e"
+            },
+            {
+              "path": "standalone.mjs",
+              "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad"
+            },
+            {
+              "path": "playtest.mjs",
+              "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59"
+            }
+          ]
+        }
+      ],
+      "features": ["turtle-compound-shapes"],
+      "previewHostAudioVersion": 1,
+      "files": [
+        {
+          "path": "LICENSE-pyodide.txt",
+          "sha256": "1f256ecad192880510e84ad60474eab7589218784b9a50bc7ceee34c2b91f1d5",
+          "bytes": 16725
+        },
+        {
+          "path": "LICENSE-python.txt",
+          "sha256": "b0e25a78cffb43f4d92de8b61ccfa1f1f98ecbc22330b54b5251e7b6ba010231",
+          "bytes": 13804
+        },
+        {
+          "path": "LICENSE-tk.txt",
+          "sha256": "2cde822b93ca16ae535c954b7dfe658b4ad10df2a193628d1b358f1765e8b198",
+          "bytes": 2267
+        },
+        {
+          "path": "SOURCES.txt",
+          "sha256": "1974e400ea27dd7b752c27452cd9cd8e70d8a6cdc5d5d6432fe3abadb6676185",
+          "bytes": 1503
+        },
+        {
+          "path": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz",
+          "sha256": "00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba",
+          "bytes": 5810
+        },
+        {
+          "path": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz",
+          "sha256": "165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b",
+          "bytes": 1715
+        },
+        {
+          "path": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz",
+          "sha256": "17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4",
+          "bytes": 7266
+        },
+        {
+          "path": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz",
+          "sha256": "37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16",
+          "bytes": 8013
+        },
+        {
+          "path": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz",
+          "sha256": "3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a",
+          "bytes": 181683
+        },
+        {
+          "path": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz",
+          "sha256": "4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae",
+          "bytes": 180993
+        },
+        {
+          "path": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz",
+          "sha256": "50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4",
+          "bytes": 171712
+        },
+        {
+          "path": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz",
+          "sha256": "8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32",
+          "bytes": 81159
+        },
+        {
+          "path": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz",
+          "sha256": "86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f",
+          "bytes": 1578
+        },
+        {
+          "path": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz",
+          "sha256": "9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7",
+          "bytes": 292028
+        },
+        {
+          "path": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz",
+          "sha256": "ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5",
+          "bytes": 2331
+        },
+        {
+          "path": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz",
+          "sha256": "ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab",
+          "bytes": 85213
+        },
+        {
+          "path": "analysis-frame.mjs",
+          "sha256": "0e5885fe8d76c7df6b75b83e53f91ca5c7ec5039b9106ef37e37e000bfcadc97",
+          "bytes": 5419
+        },
+        {
+          "path": "analysis-worker.mjs",
+          "sha256": "c5c23b7ff96ae2760cc453c55e00de61e0ba19d53ccb380c0c099c3d1531a6a7",
+          "bytes": 19988
+        },
+        {
+          "path": "analysis.html",
+          "sha256": "13970058beb50f34f3653a3ed0b195d59501a52c0280f4b9baaa5427cbd55f1c",
+          "bytes": 151
+        },
+        {
+          "path": "boot-loader-derivation.json",
+          "sha256": "a8463b59d61b4e0685403d855ed3f6b20e29cc85d57d3d88a51b4f2da7837466",
+          "bytes": 840
+        },
+        {
+          "path": "boot-reader.mjs",
+          "sha256": "672b5b18280df2a34e439650f1ca9917e6f9a6c6bda63649c955ba62d50b8d02",
+          "bytes": 3782
+        },
+        {
+          "path": "frame.html",
+          "sha256": "f59ecd6bc140b7547ab61e5f4e244c8ded33822a12acb35e013bfb06c24335fe",
+          "bytes": 211
+        },
+        {
+          "path": "frame.mjs",
+          "sha256": "1fab674d7398af8cc3d586c190f14a93e028b9c57e8c9a22bb87c1db7a9c9b6e",
+          "bytes": 321105
+        },
+        {
+          "path": "http-compression-recipe.json",
+          "sha256": "8d674ea629041f3c2da3611af9dc7e5fa45112fa65b05dbe92ce41c7dcc5b0d5",
+          "bytes": 134
+        },
+        {
+          "path": "inspect.mjs",
+          "sha256": "d65d7c72db4a7a593837dd11830eadf0a5cc63f68145f3fa68eb69c952962c05",
+          "bytes": 698874
+        },
+        {
+          "path": "playtest.mjs",
+          "sha256": "4eb2ac1a702c4a9b1b983f9efd29358970e36da2e42f5f18d6045644346e2a59",
+          "bytes": 726063
+        },
+        {
+          "path": "pyodide-lock.json",
+          "sha256": "5dc2fc119108bc148c7457dc86e7675b5c87e1cafd420b9c34c1eaef7b36c010",
+          "bytes": 119077
+        },
+        {
+          "path": "pyodide.asm.mjs",
+          "sha256": "eb71d9513398562cdcde73ec7bb03b4871f6cc21de69d42aa69884994e503e9b",
+          "bytes": 1530472
+        },
+        {
+          "path": "pyodide.asm.wasm",
+          "sha256": "cc36e3cab04fdfc9a63ff13eb52eae2b911bf46c025cc7b281f394bd3de1d5e6",
+          "bytes": 9598218
+        },
+        {
+          "path": "pyodide.mjs",
+          "sha256": "1f221325de3f148ba9aa91bf429560a8cc59a52ac5c6a2c8031393f5ec8bcaf1",
+          "bytes": 21884
+        },
+        {
+          "path": "python-modules/sz_audio/1.0.0/__init__.pyi",
+          "sha256": "a106c0445d95c7b37424f79c75e3a67969a126322e4ce298654b03b3f48e1a97",
+          "bytes": 469
+        },
+        {
+          "path": "python-modules/sz_audio/1.0.0/descriptor.json",
+          "sha256": "6b5b150175565bf9360172a88819bef5200149cd8db55c62709d4934f126cf49",
+          "bytes": 2748
+        },
+        {
+          "path": "python_stdlib.zip",
+          "sha256": "afc02bfca854c42376d79358e1c808da58c49801de3b0e9e8b16e01b3a4d9b1a",
+          "bytes": 7066273
+        },
+        {
+          "path": "standalone.mjs",
+          "sha256": "eaea4c4e9a0d683b7b9f149cd4f049159991a1f5e2333ad529ed8f4c9510a9ad",
+          "bytes": 724539
+        },
+        {
+          "path": "turtle-protocol.mjs",
+          "sha256": "2ab82a77c9e1cc10f549899e1c4eadcf878d351cebf009e421a0aa878c5b0c57",
+          "bytes": 3466
+        },
+        {
+          "path": "turtle-renderer.mjs",
+          "sha256": "a63a3802a92cb5e17a9c799f4d94a7bac621aeb49f8dfcfaefeffb577ab088b3",
+          "bytes": 17126
+        },
+        {
+          "path": "turtle/_sz_turtle_backend.py",
+          "sha256": "58bf25afe157fb1ba451094971d0d75aa93d01637c9b3c5ecef588f1acd79638",
+          "bytes": 22469
+        },
+        {
+          "path": "turtle/_sz_turtle_colors.py",
+          "sha256": "468f1b95da4156d6c4b587d365b7f21a5f4913457b7d071221c7d1a4c2097fbc",
+          "bytes": 25484
+        },
+        {
+          "path": "turtle/_sz_turtle_limits.py",
+          "sha256": "e6ee8908c4eac8f079696e87e1c630836f78722adcd60647a07e1cdb08538862",
+          "bytes": 435
+        },
+        {
+          "path": "turtle/turtle.py",
+          "sha256": "11ed61d21eff0f57035721641b791f9d35c7605ac96ef34ea0abbd17610a6bd3",
+          "bytes": 121405
+        },
+        {
+          "path": "worker.mjs",
+          "sha256": "4f1928678999865c5caa954e9f551f3620d1a987bf05bf75967a187767f8dd10",
+          "bytes": 334096
+        }
+      ],
+      "httpRepresentations": [
+        {
+          "path": "analysis-frame.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/ae7092c002996d35eed474036613d67bb6d1f4a096a89dd97a6f1ca718893ac5.gz"
+        },
+        {
+          "path": "analysis-worker.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/00cad5af5add00a7cbda70df5ce5fbb0572c1e5cdc464018a691eceda6fec0ba.gz"
+        },
+        {
+          "path": "boot-reader.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/165465def5fb0a24e7a7ec131d18142781da1facf0d6b0294311922bce02511b.gz"
+        },
+        {
+          "path": "frame.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/8378eaae6050b021a06be62f0a228686f08d560bb29792078c995b49f9a14f32.gz"
+        },
+        {
+          "path": "inspect.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/50272bde6e44283c839d9b6f1d1c6174043f10fd8f88594e4cc93aca1e0da5d4.gz"
+        },
+        {
+          "path": "playtest.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/3b98f8c12d353655a4862875e8c301eb3e01774b8d67414ad8d6762f63c0e99a.gz"
+        },
+        {
+          "path": "pyodide.asm.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/9f3cdeb67749240be65b039846c516e590ebccaae2310fa105a0af8af1cc4ca7.gz"
+        },
+        {
+          "path": "pyodide.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/37634a76b2c64e3f40311b9929c3290187e10253795bf14ab36e51d50fedfd16.gz"
+        },
+        {
+          "path": "standalone.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/4cd1bbbee07ba2c205681fbf8ab609286bed6d7199f627bfafd8ae5442364eae.gz"
+        },
+        {
+          "path": "turtle-protocol.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/86528cc2b1afde5be792cb5d0665bf4921264825f161239ac964c1e90cb83a4f.gz"
+        },
+        {
+          "path": "turtle-renderer.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/17d3965cab66ff2bf808b245f61d32dc46ecad52f8a2c2675f161a3e06a32be4.gz"
+        },
+        {
+          "path": "worker.mjs",
+          "encoding": "gzip",
+          "artifactPath": "_http/gzip/ebe7381dffd7fd3ce7e5d3ab7f23f05d28f93ed867bc06f066829a29152725ab.gz"
+        }
+      ]
+    }
+  },
+  "prefix": "runtimes/96049b3d06ed50a75ef2f9e0b0a451539ac670631dc809c6187590ccefceab5e/",
+  "markerSha256": "522be51406551aeb7fb88f4a1b866189f6acc5a22f9cc7a1a4a78e449dfd33b9",
+  "authoringCatalogSha256": "29694149bfd9c634a5c716930cd81ca176cd64a9a5806cabc1f862efbe633deb",
+  "defaults": {
+    "programmingLanguage": "javascript",
+    "installedExtensions": []
+  },
+  "planSha256": "0e9b92f5a0aac71ab6deea039bbbd10a8b297b7723f9dd4623075e9f96ed4ccf"
+}

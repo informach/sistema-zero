@@ -1,0 +1,9 @@
+{
+  "checks": [
+    "base fill changes only the piece background",
+    "real brush, eraser, undo and composite picker",
+    "whole-model preset preview leaves source intact and commits group plus clip"
+  ],
+  "errors": [],
+  "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Continuar a pose', exact: true })\u001b[22m\n"
+}

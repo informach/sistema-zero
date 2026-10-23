@@ -221,7 +221,7 @@ function GeneralRanking({
         icon={Sparkles}
         titleAs="h2"
         title="O placar está só começando!"
-        description="Conclua uma fase ou passe num quiz para ganhar XP e aparecer aqui junto com os outros criadores."
+        description="Conclua uma aula ou passe num quiz para ganhar XP e aparecer aqui junto com os outros criadores."
       />
     )
   }
@@ -319,6 +319,7 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
             <AvatarWithAura
               photoUrl={entry.photoUrl}
               name={entry.firstName ?? (entry.isMe ? 'Você' : null)}
+              levelSlug={entry.levelSlug}
               size="lg"
               className={metal.avatar}
               label={entry.isMe ? 'Seu avatar' : `Avatar de ${entry.firstName ?? 'colega'}`}
@@ -332,7 +333,13 @@ function Podium({ entries }: { entries: RankingEntryView[] }) {
             <span className="mt-1.5 font-medium text-muted-foreground text-sm tabular-nums md:text-[0.9375rem]">
               {entry.xp.toLocaleString('pt-BR')} XP
             </span>
-            <LevelBadge levelSlug={entry.levelSlug} size="sm" className="mt-2 max-w-full" />
+            {entry.levelSlug ? (
+              <LevelBadge levelSlug={entry.levelSlug} size="sm" className="mt-2 max-w-full" />
+            ) : (
+              <span role="status" className="mt-2 text-muted-foreground text-xs">
+                Posto indisponível
+              </span>
+            )}
             <div
               className={cn(
                 'mt-3.5 grid w-full place-items-center rounded-t-[1rem] md:rounded-t-[1.5rem]',
@@ -368,13 +375,20 @@ function RankingRow({ entry }: { entry: RankingEntryView }) {
       <AvatarWithAura
         photoUrl={entry.photoUrl}
         name={entry.firstName ?? (entry.isMe ? 'Você' : null)}
+        levelSlug={entry.levelSlug}
         size="sm"
         className="size-9"
         label={entry.isMe ? 'Seu avatar' : `Avatar de ${entry.firstName ?? 'colega'}`}
       />
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2.5 gap-y-1">
         <ParticipantName entry={entry} className="truncate font-extrabold text-base" />
-        <LevelBadge levelSlug={entry.levelSlug} size="sm" />
+        {entry.levelSlug ? (
+          <LevelBadge levelSlug={entry.levelSlug} size="sm" />
+        ) : (
+          <span role="status" className="text-muted-foreground text-xs">
+            Posto indisponível
+          </span>
+        )}
       </div>
       <span className="shrink-0 font-extrabold text-muted-foreground text-[0.9375rem] tabular-nums">
         {entry.xp.toLocaleString('pt-BR')} XP
@@ -419,7 +433,7 @@ function Unavailable({ message, onRetry }: { message: string; onRetry: () => voi
     <KidsEmptyState
       tone="pausa"
       icon={Trophy}
-      // O recado É a seção da faixa (vem logo abaixo do h1 da página).
+      // O recado É a parte da faixa (vem logo abaixo do h1 da página).
       titleAs="h2"
       title="Placar em pausa"
       description={`${message} Tente novamente em instantes.`}
@@ -441,7 +455,7 @@ function HowToClimb({ canPublish }: { canPublish: boolean }) {
       <KidsSectionHeader
         id="como-subir-no-placar"
         title="XP é o que move o placar"
-        subtitle="Cada fase concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
+        subtitle="Cada aula concluída, quiz acertado e jogo publicado no Mural soma. Continue criando e a sua posição sobe sozinha."
         actions={
           <Link
             href="/cursos"

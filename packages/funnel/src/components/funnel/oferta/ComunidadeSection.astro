@@ -11,6 +11,7 @@ import type {
 import { visualDe } from '../../../funnels/comunidade-dos-criadores/oferta/visuals'
 import ComunidadeComparacao from './ComunidadeComparacao.astro'
 import ComunidadeProsa from './ComunidadeProsa.astro'
+import ComunidadeRelato from './ComunidadeRelato.astro'
 import ComunidadeVisual from './ComunidadeVisual.astro'
 
 interface Props {
@@ -27,6 +28,9 @@ const band = section.layout === 'band'
 const cards = section.layout === 'cards' && section.groups.length > 1
 const tools = section.layout === 'tools'
 const cases = section.layout === 'cases'
+// Relatos reais: a faixa (`relatos`) ou a fala solta que fecha uma seção de outro arranjo.
+const falas = section.falas ?? []
+const faixa = section.layout === 'relatos'
 
 // O ritmo da página: a cor de unidade de cada capítulo e o fundo, que nunca repete o da vizinha.
 const CORES = ['azul', 'rosa', 'verde', 'roxo', 'laranja'] as const
@@ -135,7 +139,7 @@ const situacoes = grupos.filter(({ group }) => group.title)
   <div class="folha">
     <div class="wrap">
       {experience && <span id="experiencia" class="anchor-target" aria-hidden="true"></span>}
-      <div class="cap-head kof-reveal">
+      <div class="cap-head">
         {band ? (
           <span class="kof-eyebrow"><span class="material-symbols-rounded" aria-hidden="true">{icone}</span>{section.eyebrow}</span>
         ) : (
@@ -146,7 +150,7 @@ const situacoes = grupos.filter(({ group }) => group.title)
       </div>
 
       {section.layout === 'journey' && (
-        <ol class="trilha kof-reveal" aria-label="Postos da Jornada do Criador">
+        <ol class="trilha" aria-label="Postos da Jornada do Criador">
           {journey.map(([slug, name, libera], i) => (
             <li class:list={['trilha-posto', { 'trilha-posto--libera': libera.length > 0 }]}>
               <span class="trilha-foto">
@@ -166,13 +170,13 @@ const situacoes = grupos.filter(({ group }) => group.title)
 
       {cards ? (
         <div class="cartas">
-          {grupos.map(({ group, visuais }, i) => (
-            <article class:list={['carta-interesse', 'kof-carta', 'kof-carta--fio', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
+          {grupos.map(({ group, visuais, icone }, i) => (
+            <article class:list={['carta-interesse', 'kof-carta', 'kof-carta--fio', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
               {visuais[0] && <ComunidadeVisual visual={visuais[0]} imagesBase={imagesBase} variant="plana" only="last" />}
               <div class="carta-corpo">
                 {group.title && (
                   <div class="sub-head">
-                    <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
+                    <span class="kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{icone ?? ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
                     <h3 class="kof-display">{group.title}</h3>
                   </div>
                 )}
@@ -184,7 +188,7 @@ const situacoes = grupos.filter(({ group }) => group.title)
       ) : tools ? (
         <div class="ferramentas">
           {grupos.map(({ group, visuais }, i) => (
-            <article class:list={['ferramenta', 'kof-carta', 'kof-carta--fio', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`, { inverso: i % 2 === 1 }]}>
+            <article class:list={['ferramenta', 'kof-carta', 'kof-carta--fio', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`, { inverso: i % 2 === 1 }]}>
               <div class="ferramenta-texto">
                 {group.title && (
                   <div class="sub-head">
@@ -201,7 +205,7 @@ const situacoes = grupos.filter(({ group }) => group.title)
       ) : cases ? (
         <ol class="situacoes">
           {situacoes.map(({ group, visuais, paragraphs, icone }, i) => (
-            <li class:list={['situacao', 'kof-reveal', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
+            <li class:list={['situacao', `cor-${CORES_GRUPO[i % CORES_GRUPO.length]}`]}>
               <span class="situacao-marco kof-ladrilho" aria-hidden="true"><span class="material-symbols-rounded">{icone ?? ICONES_GRUPO[i % ICONES_GRUPO.length]}</span></span>
               <article class="situacao-carta kof-carta kof-carta--fio">
                 <div class="situacao-texto">
@@ -216,7 +220,7 @@ const situacoes = grupos.filter(({ group }) => group.title)
       ) : (
         blocos.map(({ title, visuais, paragraphs, arranjo, icone, comparison }, i) => (
           (paragraphs.length > 0 || visuais.length > 0 || comparison) && (<>
-            {(paragraphs.length > 0 || visuais.length > 0) && <div class:list={['bloco', `bloco--${arranjo}`, 'kof-reveal', { inverso: (index + i) % 2 === 1, 'kof-carta': arranjo === 'texto' && title && !band, 'kof-carta--fio': arranjo === 'texto' && title && !band }]}>
+            {(paragraphs.length > 0 || visuais.length > 0) && <div class:list={['bloco', `bloco--${arranjo}`, { inverso: (index + i) % 2 === 1, 'kof-carta': arranjo === 'texto' && title && !band, 'kof-carta--fio': arranjo === 'texto' && title && !band }]}>
               <div class="bloco-texto">
                 {title && (
                   <div class="sub-head">
@@ -243,6 +247,12 @@ const situacoes = grupos.filter(({ group }) => group.title)
             {comparison && <ComunidadeComparacao comparison={comparison} />}
           </>)
         ))
+      )}
+
+      {falas.length > 0 && (
+        <div class:list={['relatos', faixa ? 'relatos--faixa' : 'relatos--soltas']}>
+          {falas.map((id) => <ComunidadeRelato id={id} imagesBase={imagesBase} variant={faixa ? 'faixa' : 'solta'} />)}
+        </div>
       )}
 
       {section.actions.length > 0 && (

@@ -1,3 +1,0 @@
-Se ainda travar, “Uma pista” mostra o próximo passo, uma pista de cada vez.
-
-“Verificar esta parte” confere os objetivos daquela parte, e uma faixa mostra o que falta para seguir.

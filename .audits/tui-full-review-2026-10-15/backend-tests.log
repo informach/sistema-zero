@@ -1,0 +1,582 @@
+bun test v1.3.11 (af24e281)
+
+packages\studio-runtime\tests\artifacts.test.ts:
+(pass) commits immutable files then serves real bytes with sandbox CSP and CORS
+(pass) unknown, encoded traversal, incomplete and expired artifacts are never served [15.00ms]
+(pass) changed build bytes abort publication and remove partial files
+(pass) validates output limits, duplicate names and canonical paths before uploading
+
+packages\studio-runtime\tests\capabilities.test.ts:
+(pass) full UTF-8 Canvas envelope crosses the exact boundary with replaced art [235.00ms]
+(pass) Canvas manual creation uses the complete source/material envelope within the same contract at every layer
+(pass) Oversized material profiles and unsupported paths cannot enter a paid remote builder run [15.00ms]
+
+packages\studio-runtime\tests\contracts.test.ts:
+(pass) contrato do executor Pro > validates actual project dependencies instead of inferring them from its starter
+(pass) contrato do executor Pro > rejects unavailable libraries, versions and manifest installation features
+(pass) contrato do executor Pro > accepts a completed npm range lock and rejects stale roots, transitives and integrity [16.00ms]
+(pass) contrato do executor Pro > the public package catalog exactly matches installed image versions
+(pass) contrato do executor Pro > aceita a árvore válida e remove arquivos de configuração não confiáveis
+(pass) contrato do executor Pro > rejeita travessia, node_modules e env
+(pass) contrato do executor Pro > exige identificador opaco, template conhecido e index
+(pass) contrato do executor Pro > gera dependências e configuração apenas a partir do template confiável
+(pass) contrato do executor Pro > imagem instala dependências reproduzíveis pelo lockfile
+
+packages\studio-runtime\tests\dependency-lock.test.ts:
+(pass) dependency preparation uses the installed exact graph and rejects arbitrary versions, registries and workspaces
+(pass) generated graph installs independently with npm ci and npm ls without changing the lock [7375.00ms]
+
+packages\studio-runtime\tests\game-kit-model.test.ts:
+(pass) simultaneous rows disappear atomically, retain board height, and score once
+(pass) rotation at the wall preserves a valid piece; blocked movement leaves it unchanged
+(pass) game over prevents subsequent mutations and twenty resets keep bounded state
+
+packages\studio-runtime\tests\game-kits.test.ts:
+(pass) vanilla-js: original sources typecheck and trusted Vite builds without external resources [469.00ms]
+(pass) vanilla-vite: original sources typecheck and trusted Vite builds without external resources [781.00ms]
+(pass) react-ts: original sources typecheck and trusted Vite builds without external resources [1297.00ms]
+(pass) three-js: original sources typecheck and trusted Vite builds without external resources [672.00ms]
+(pass) three-ts: original sources typecheck and trusted Vite builds without external resources [2313.00ms]
+(pass) canvas-puzzle: original sources typecheck and trusted Vite builds without external resources [937.00ms]
+(pass) canvas-survival: original sources typecheck and trusted Vite builds without external resources [1063.00ms]
+(pass) phaser-arcade: original sources typecheck and trusted Vite builds without external resources [1843.00ms]
+(pass) phaser-platformer: original sources typecheck and trusted Vite builds without external resources [1813.00ms]
+(pass) three-exploration: original sources typecheck and trusted Vite builds without external resources [1562.00ms]
+(pass) canvas-grid-arena: original sources typecheck and trusted Vite builds without external resources [1047.00ms]
+(pass) phaser-tactics: original sources typecheck and trusted Vite builds without external resources [1860.00ms]
+(pass) three-tactics: original sources typecheck and trusted Vite builds without external resources [1343.00ms]
+(pass) three-action: original sources typecheck and trusted Vite builds without external resources [1500.00ms]
+
+packages\studio-runtime\tests\host-bridge.test.ts:
+(pass) Pro host bridge authenticates controls/audio, bounds keys and releases held keys
+
+packages\studio-runtime\tests\inline-preview.test.ts:
+(pass) inline-preview > embute assets locais e impõe CSP/referrer sem manter recursos externos [94.00ms]
+(pass) inline-preview > insere a CSP antes de qualquer script em script antes do head [78.00ms]
+(pass) inline-preview > insere a CSP antes de qualquer script em comentário que contém head antes do head real [94.00ms]
+(pass) inline-preview > insere a CSP antes de qualquer script em head com atributos e caixa diferente [78.00ms]
+
+packages\studio-runtime\tests\publications.test.ts:
+(pass) promotion survives preview expiry/deletion, preserves exact source/art and never invokes a compiler on read
+(pass) verified cover checks the retained manifest and file before returning bytes
+(pass) moderation leaves a tombstone that prevents stale or new requests from resurrecting the link
+(pass) bounded collection retains all history, fresh orphan copies and ambiguous successful commits
+(pass) only validated, intact, current previews can be promoted, with no pointer on failure
+(pass) idempotency, owner checks, concurrent CAS, rollback and disable preserve the previous valid revision [16.00ms]
+(pass) moderation gates HTML, materials and conditional reads; authorization failure closes access
+
+packages\studio-runtime\tests\runtime-handler.test.ts:
+studio-runtime build failed 308 |               typeReport.typescript !== '5.9.3' ||
+309 |               typeof typeReport.checkJs !== 'boolean' ||
+310 |               !isStudioProValidationIdentity(typeReport.validation) ||
+311 |               typeReport.validation.runtimeFingerprint !== validationProfile.runtimeFingerprint
+312 |             )
+313 |               throw new Error('Relatório de tipos inválido.')
+                              ^
+error: Relatório de tipos inválido.
+      at fetch (C:\Users\tocha\projects\sistema-zero-tui\packages\studio-runtime\src\index.ts:313:25)
+
+(pass) handler do Studio Runtime > an outdated image cannot label validation as current or publish an artifact
+(pass) handler do Studio Runtime > preflight uses build paths, dependencies and binary hashes without allocating a sandbox
+(pass) handler do Studio Runtime > dependency preparation is authenticated, bounded and does not boot a container
+(pass) handler do Studio Runtime > validation owns an isolated container and includes exactly four proofs and one pack
+(pass) handler do Studio Runtime > a failed typecheck prevents build; a failed playtest prevents artifact publication; both destroy the container
+(pass) handler do Studio Runtime > duplicate browser proofs and oversized capture cannot produce a review artifact [78.00ms]
+(pass) handler do Studio Runtime > health check é público e token inválido não cria sandbox
+(pass) handler do Studio Runtime > rate limit responde 429 antes de criar sandbox
+(pass) handler do Studio Runtime > rejeita corpo maior que o contrato antes de criar sandbox
+(pass) handler do Studio Runtime > build válido devolve um artefato e sempre limpa a pasta temporária
+(pass) handler do Studio Runtime > erro de compilação responde 422 e ainda limpa a pasta
+(pass) handler do Studio Runtime > falha do sandbox responde 500 e tenta limpar a pasta
+
+packages\studio-runtime\tests\trusted-build.test.ts:
+(pass) build real ignora PostCSS executável fornecido pelo projeto e preserva CSS/TS [219.00ms]
+
+packages\studio-runtime\tests\typecheck-project.test.ts:
+(pass) HTML-only revisions have no source program, while an explicit empty tsconfig remains an error [484.00ms]
+(pass) real remote typechecking resolves installed declarations and reports semantic errors in closed files [2969.00ms]
+(pass) an installed but undeclared library cannot silently pass, and noCheck does not suppress evidence [3047.00ms]
+(pass) external config and compiler plugins fail explicitly instead of executing project code [563.00ms]
+
+packages\api-gateway\tests\unit\config.test.ts:
+(pass) loadGatewayConfig > staff facade preserves user credentials only to auth; delegated messaging stays HMAC auth-only [16.00ms]
+(pass) loadGatewayConfig > Studio credentials, usage and reconciliation require member-shell HMAC, never a browser JWT
+(pass) loadGatewayConfig > live boundaries preserve actors and reserve material registration for the BFF
+(pass) loadGatewayConfig > self-service mutante da conta é autenticado no gateway e preserva o Bearer
+(pass) loadGatewayConfig > config real expõe o batch de perfis somente com JWT staff+
+(pass) loadGatewayConfig > "Como fazer": a criança lê com qualquer conta ativa; a escrita é admin+ com auditoria
+(pass) loadGatewayConfig > valida e aplica defaults [16.00ms]
+(pass) loadGatewayConfig > rota apontando para serviço inexistente → erro
+(pass) loadGatewayConfig > rota jwt sem JWT_JWKS_URL → erro
+(pass) loadGatewayConfig > rota jwt COM JWT_JWKS_URL → ok
+(pass) loadGatewayConfig > consumer com hmacSecret vazio → erro (não sobe com auth desabilitada)
+(pass) loadGatewayConfig > upstream com url inválida → erro
+(pass) loadGatewayConfig > transform de tipo desconhecido → erro
+(pass) loadGatewayConfig > header-inject com valor vazio → erro
+(pass) loadGatewayConfig > CORS por rota só aceita origins — campo fantasma (methods etc.) falha no boot
+(pass) loadGatewayConfig > CORS por rota com só origins → ok
+(pass) loadGatewayConfig > maxBodyBytes por rota acima do teto global → erro (o servidor venceria)
+(pass) loadGatewayConfig > audit exige que todos os métodos da rota sejam mutantes
+(pass) loadGatewayConfig > rate limit por campo JSON exige que HMAC autentique o corpo
+(pass) loadGatewayConfig > produção: rota jwt sem JWT_ISSUER/JWT_AUDIENCE → erro
+(pass) gateway.config.ts (configuração real) > consulta do curso-presente é exclusiva do referrals e re-assinada para members
+(pass) gateway.config.ts (configuração real) > gallery preparation belongs to the active student; confirmation requires a signed actor
+(pass) gateway.config.ts (configuração real) > project checks reach members through the real route registry with a project-sized body
+(pass) gateway.config.ts (configuração real) > a cor do perfil atende GET e PUT em /members/preferences, com token interno [15.00ms]
+(pass) gateway.config.ts (configuração real) > seções e atividades preservam JWT ativo, token interno e limites nas rotas explícitas
+(pass) gateway.config.ts (configuração real) > toda rota audit-marcada declara SÓ métodos mutantes
+(pass) gateway.config.ts (configuração real) > ids de rota são únicos
+(pass) gateway.config.ts (configuração real) > portal do helpdesk aceita somente JWT de conta ativa e conserva o token interno
+(pass) gateway.config.ts (configuração real) > rotas novas (analytics + leitura de auditoria) presentes como GET autenticado
+(pass) gateway.config.ts (configuração real) > rankings do aluno e do admin preservam autenticação e token interno
+(pass) gateway.config.ts (configuração real) > restauração de entrega tem rota explícita e auditada; review não usa wildcard
+(pass) gateway.config.ts (configuração real) > persistência gerada pelo BFF do Zappy exige HMAC; demais rotas preservam JWT
+(pass) gateway.config.ts (configuração real) > rate limit HMAC do Zappy é isolado pelo ator autenticado no corpo
+(pass) gateway.config.ts (configuração real) > registro de download obrigatório só aceita o BFF autenticado por HMAC
+(pass) gateway.config.ts (configuração real) > backfill usa lotes suficientes para não esgotar o limite com bases pequenas
+(pass) gateway.config.ts (configuração real) > reserva das criações aceita o corpo com miniatura + até 128 partes (≥ 64 KB); commit idem
+
+packages\auth\tests\integration\http-server.test.ts:
+(pass) Auth HTTP server > login Kids por senha emite contexto adulto; login dos outros produtos continua sem contexto Kids [31.00ms]
+(pass) Auth HTTP server > GET /health → 200
+(pass) Auth HTTP server > POST /auth/register cria usuário e retorna tokens (sem passwordHash) → 201 [15.00ms]
+(pass) Auth HTTP server > POST /auth/register com senha curta → 400
+(pass) Auth HTTP server > POST /auth/register com e-mail duplicado → 409
+(pass) Auth HTTP server > POST /auth/register com e-mail inválido → 400 [16.00ms]
+(pass) Auth HTTP server > POST /auth/login com credenciais válidas → 200 + tokens
+(pass) Auth HTTP server > POST /auth/login com senha errada → 401 [16.00ms]
+(pass) Auth HTTP server > POST /auth/login com e-mail inexistente → 401
+(pass) Auth HTTP server > POST /auth/login com conta suspensa → 403
+(pass) Auth HTTP server > POST /auth/refresh rotaciona e detecta reuso (revoga família) → 401 [15.00ms]
+(pass) Auth HTTP server > POST /auth/logout revoga o refresh (refresh subsequente → 401)
+(pass) Auth HTTP server > POST /auth/logout allSessions revoga TODOS os dispositivos (famílias) [16.00ms]
+(pass) Auth HTTP server > GET /auth/me com access token → 200 (contrato do usuário)
+(pass) Auth HTTP server > GET /auth/me sem token → 401; token inválido → 401 [16.00ms]
+(pass) Auth HTTP server > GET /auth/me com token válido mas usuário removido → 401 (contrato null)
+(pass) Auth HTTP server > GET /auth/.well-known/jwks.json → 200 (HS256 = sem chaves)
+(pass) Password reset + perfil self-service > forgot-password com conta ativa → 200 + e-mail com link do community [15.00ms]
+(pass) Password reset + perfil self-service > forgot-password com platform=kids → link com a base kids
+(pass) Password reset + perfil self-service > forgot-password com platform inválida → 400 na borda [16.00ms]
+(pass) Password reset + perfil self-service > forgot-password com e-mail inexistente → 200 SEM envio (anti-enumeração)
+(pass) Password reset + perfil self-service > forgot-password com messaging fora do ar → 200 mesmo assim (best-effort)
+(pass) Password reset + perfil self-service > reset-password troca a senha, revoga sessões e consome o token [15.00ms]
+(pass) Password reset + perfil self-service > reset-password concorrente com o mesmo token → só uma troca é aceita
+(pass) Password reset + perfil self-service > reset-password com token desconhecido → 401; senha curta → 400 [16.00ms]
+(pass) Password reset + perfil self-service > reset-password com token expirado → 401
+(pass) Password reset + perfil self-service > novo forgot-password invalida o token anterior (1 token vivo) [16.00ms]
+(pass) Password reset + perfil self-service > PATCH /auth/me edita nome/telefone (sem e-mail); sem Bearer → 401 [15.00ms]
+(pass) Password reset + perfil self-service > POST /auth/me/password exige a senha atual e revoga sessões
+(pass) Password reset + perfil self-service > POST /auth/internal/password-tokens exige o token interno e emite token utilizável [16.00ms]
+(pass) Password reset + perfil self-service > POST /auth/internal/ensure-buyer exige o token interno
+(pass) Password reset + perfil self-service > POST /auth/internal/ensure-buyer cria (201) e é idempotente (200 com o MESMO userId)
+(pass) Password reset + perfil self-service > ensure-buyer reaproveita um usuário pré-existente (e-mail já cadastrado via /auth/register) [16.00ms]
+(pass) Password reset + perfil self-service > ensure-buyer faz backfill do telefone quando o usuário existia SEM telefone
+(pass) Password reset + perfil self-service > ensure-buyer NÃO sobrescreve telefone já cadastrado [15.00ms]
+(pass) Auth OTP (login passwordless + recuperação por código) > login por OTP: pede o código, verifica e emite tokens
+(pass) Auth OTP (login passwordless + recuperação por código) > responsável Kids pode entrar por e-mail antes de definir senha, sem mudar a regra dos outros produtos [16.00ms]
+(pass) Auth OTP (login passwordless + recuperação por código) > código de uso único: o mesmo código não loga duas vezes
+(pass) Auth OTP (login passwordless + recuperação por código) > verificação OTP concorrente com o mesmo código → só uma sessão é emitida [15.00ms]
+(pass) Auth OTP (login passwordless + recuperação por código) > código errado → 401; trava após o teto de tentativas (código certo deixa de valer)
+(pass) Auth OTP (login passwordless + recuperação por código) > anti-enumeração: pedir OTP p/ e-mail inexistente → 200 e NÃO envia nada [16.00ms]
+(pass) Auth OTP (login passwordless + recuperação por código) > conta sem senha definida NÃO recebe código de LOGIN (o verify o recusaria)
+(pass) Auth OTP (login passwordless + recuperação por código) > conta sem senha definida RECEBE código de password_reset (caminho de criar a senha)
+(pass) Auth OTP (login passwordless + recuperação por código) > recuperação por OTP: redefine a senha e o login passa com a nova [16.00ms]
+(pass) Auth OTP (login passwordless + recuperação por código) > reset por OTP concorrente com o mesmo código → só uma senha vence
+(pass) Auth OTP (login passwordless + recuperação por código) > OTP de sign_in não serve p/ reset (finalidades isoladas) [15.00ms]
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/users sem identidade do gateway → 401
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/users com X-Auth-User-* forjados mas SEM x-internal-token → 401 [16.00ms]
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/users como customer → 403
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/users como staff → 200 (leitura permitida) [16.00ms]
+(pass) Auth admin routes (/auth/admin/users) > PATCH como staff → 403 (escrita exige admin/superadmin)
+(pass) Auth admin routes (/auth/admin/users) > PATCH admin edita customer → 200 + view atualizada [15.00ms]
+(pass) Auth admin routes (/auth/admin/users) > PATCH admin promovendo a admin → 403 (guard hierárquico)
+(pass) Auth admin routes (/auth/admin/users) > PATCH com version defasada → 409
+(pass) Auth admin routes (/auth/admin/users) > PATCH alvo inexistente → 404 [16.00ms]
+(pass) Auth admin routes (/auth/admin/users) > POST /auth/admin/users/batch hidrata por ids (ignora inexistentes); sem id → 401
+(pass) Auth admin routes (/auth/admin/users) > POST /auth/admin/profiles/batch hidrata perfis ativos e arquivados com a conta responsável [15.00ms]
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/profiles — RBAC: sem ator → 401; customer → 403; staff lê (200)
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/profiles?q=<nome da criança> acha o perfil com a conta responsável
+(pass) Auth admin routes (/auth/admin/users) > vínculo de oficina exige token, perfil ativo e a família correta [16.00ms]
+(pass) Auth admin routes (/auth/admin/users) > diretório interno de recados exige token e exclui contas inativas, órfãos e perfis arquivados
+(pass) Auth admin routes (/auth/admin/users) > GET /auth/admin/profiles busca pelo nome completo do responsável [16.00ms]
+(pass) Auth admin routes (/auth/admin/users) > q por e-mail do responsável acha os perfis da conta; conta apagada → account: null
+(pass) Auth admin routes (/auth/admin/users) > %/_ no q são LITERAIS (escape do ILIKE), não curingas
+(pass) Auth admin routes (/auth/admin/users) > paginação: limit/offset com total do MESMO filtro; archived NÃO volta [15.00ms]
+(pass) Auth admin routes (/auth/admin/users) > :id que não é uuid → 400 na borda (não 500 do banco)
+(pass) Correções do full review (readyz / cooldown / 413) > GET /readyz → 200 quando pronto; 503 quando o banco falha [16.00ms]
+(pass) Correções do full review (readyz / cooldown / 413) > idempotencyKey do OTP vem do uuid do REGISTRO, nunca do código
+(pass) Correções do full review (readyz / cooldown / 413) > cooldown do OTP: re-pedido dentro da janela é no-op (não invalida o código vigente) [16.00ms]
+(pass) Correções do full review (readyz / cooldown / 413) > cooldown do OTP sob corrida: dois pedidos simultâneos emitem um único código [15.00ms]
+(pass) Correções do full review (readyz / cooldown / 413) > cooldown do forgot-password: re-pedido na janela não re-envia nem invalida o token
+(pass) Correções do full review (readyz / cooldown / 413) > cooldown do forgot-password sob corrida: dois pedidos simultâneos enviam um único link [16.00ms]
+(pass) Correções do full review (readyz / cooldown / 413) > corpo acima do limite em /refresh e /logout → 413
+(pass) Correções do full review (readyz / cooldown / 413) > corpo acima do limite sem content-length → 413 (fallback no onParse/onTransform) [15.00ms]
+(pass) Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impersonate/exchange) > staff não impersona (escrita exige admin/superadmin) → 403; sem gateway → 401
+(pass) Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impersonate/exchange) > fluxo completo: admin emite handoff → exchange devolve sessão do alvo com act [16.00ms]
+(pass) Impersonação (rotas /auth/admin/users/:id/impersonate + /auth/impersonate/exchange) > admin tentando impersonar admin → 403; alvo inexistente → 404; token lixo → 401
+(pass) Auth — perfis (estilo Netflix) > o teto vem do members: maxProfiles=0 → 409 (a conta não comprou)
+(pass) Auth — perfis (estilo Netflix) > equipe (superadmin): perfis ilimitados mesmo com allowance=0 (sem S2S) [16.00ms]
+(pass) Auth — perfis (estilo Netflix) > equipe (admin): perfis ilimitados mesmo com allowance=0 (sem S2S)
+(pass) Auth — perfis (estilo Netflix) > equipe (staff): perfis ilimitados mesmo com allowance=0 (sem S2S)
+(pass) Auth — perfis (estilo Netflix) > o pai decide o perfil público já na CRIAÇÃO (opt-in no POST; ausente → OFF) [15.00ms]
+(pass) Auth — perfis (estilo Netflix) > cria até o teto e barra o excedente; a lista volta ordenada
+(pass) Auth — perfis (estilo Netflix) > editar e arquivar: arquivar libera um slot do teto [16.00ms]
+(pass) Auth — perfis (estilo Netflix) > ownership: editar/arquivar perfil de OUTRA conta → 404 (não vaza)
+(pass) Auth — perfis (estilo Netflix) > foto inválida (não http(s)) → 400 [16.00ms]
+(pass) Auth — perfis (estilo Netflix) > data de nascimento: a CONTA grava/edita; a sessão de PERFIL é barrada (403)
+(pass) Auth — perfis (estilo Netflix) > cadastro com 18 anos completos → 400 PROFILE_AGE_RESTRICTED [15.00ms]
+(pass) Auth — perfis (estilo Netflix) > perfil público: a CONTA liga/desliga; a sessão de PERFIL é barrada (403); rota interna devolve nome+flag
+(pass) Auth — perfis (estilo Netflix) > guardas de origem: sem token interno → 401; sem identidade → 401
+(pass) Auth — sessão de perfil (PR2) > selecionar perfil → sessão de perfil (sub = perfil, claim pfl = {conta, nome}) [16.00ms]
+(pass) Auth — sessão de perfil (PR2) > sessão de perfil: edita o PRÓPRIO perfil; NÃO cria/arquiva nem edita irmãos
+(pass) Auth — sessão de perfil (PR2) > sessão de perfil NÃO escreve na CONTA: PATCH /auth/me e /me/password → 403 [15.00ms]
+(pass) Auth — sessão de perfil (PR2) > nome do perfil: mínimo de 3 caracteres (DTO) — abaixo disso → 400
+(pass) Auth — sessão de perfil (PR2) > sair do perfil: senha certa → sessão da conta (sem pfl); errada → 401; fora de perfil → 400 [16.00ms]
+(pass) Auth — sessão de perfil (PR2) > rotação re-deriva pfl; perfil ARQUIVADO encerra a sessão sem promover para conta
+(pass) Auth — sessão de perfil (PR2) > ownership: selecionar perfil de OUTRA conta → 404
+(pass) Auth — sessão de perfil (PR2) > impersonação: selecionar perfil PROPAGA o ator (claim act + TTL curto) — não lava a sessão [16.00ms]
+(pass) Auth — sessão de perfil (PR2) > impersonação: ator sumido/inativo no select → negado (403)
+(pass) Auth — sessão de perfil (PR2) > admin lista os perfis de uma conta (GET /auth/admin/users/:id/profiles) [15.00ms]
+(pass) Auth audit log (/auth/internal/audit + /auth/admin/audit) > write S2S exige x-internal-token (ausente/errado → 401)
+(pass) Auth audit log (/auth/internal/audit + /auth/admin/audit) > write S2S grava e a leitura admin devolve o registro [16.00ms]
+(pass) Auth audit log (/auth/internal/audit + /auth/admin/audit) > leitura admin: staff → 403 (sensível, só admin+); filtro por actorId
+(pass) Auth audit log (/auth/internal/audit + /auth/admin/audit) > leitura admin: actorId inválido é 400 na borda
+(pass) Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo antigo de perfis > login do responsável no Kids dura no máximo 12 horas; o dos outros produtos não muda [16.00ms]
+(pass) Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo antigo de perfis > arquivar perfil pede login recente do responsável Kids; outros produtos seguem iguais
+(pass) Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo antigo de perfis > mudar nascimento ou perfil público pede login recente; reenviar o mesmo valor não pede [15.00ms]
+(pass) Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo antigo de perfis > seleção e saída antigas recusam qualquer sessão do Kids no próprio Auth
+(pass) Kids: sessão adulta curta, login recente nos dados sensíveis e fluxo antigo de perfis > GET /auth/me numa sessão de perfil devolve só o próprio perfil, sem a ficha do responsável [16.00ms]
+(pass) Kids: fala da criança (voz → texto), consentimento dos pais por criança > perfil antigo vem com a fala desligada; a lista e o /auth/me da criança devolvem o campo
+(pass) Kids: fala da criança (voz → texto), consentimento dos pais por criança > a criança não liga nem desliga a própria fala (403 com mensagem clara) [15.00ms]
+(pass) Kids: fala da criança (voz → texto), consentimento dos pais por criança > o suporte nunca liga, mas pode desligar
+(pass) Kids: fala da criança (voz → texto), consentimento dos pais por criança > ligar pede login recente do responsável; desligar não pede
+(pass) Kids: fala da criança (voz → texto), consentimento dos pais por criança > o perfil público segue pedindo login recente nos DOIS sentidos (sem mudança) [16.00ms]
+(pass) Kids: fala da criança (voz → texto), consentimento dos pais por criança > criar já com a fala ligada pede login recente e nunca vem do suporte
+
+packages\auth\tests\unit\admin-users.test.ts:
+(pass) ListUsersService > filtra por role e status
+(pass) ListUsersService > busca q casa em e-mail/nome (case-insensitive)
+(pass) ListUsersService > pagina com limit/offset e devolve o total completo
+(pass) ListUsersService > clampa limit fora de faixa para o default/máximo
+(pass) ListUsersService > filtra por origem (signupSource) e janela de cadastro
+(pass) UpdateUserService — guards hierárquicos > admin edita customer (status + perfil) com sucesso e bumpa version
+(pass) UpdateUserService — guards hierárquicos > admin NÃO promove a admin/superadmin
+(pass) UpdateUserService — guards hierárquicos > admin NÃO toca em alvo admin/superadmin
+(pass) UpdateUserService — guards hierárquicos > ninguém altera o próprio papel/status (anti-lockout)
+(pass) UpdateUserService — guards hierárquicos > superadmin gerencia admins
+(pass) UpdateUserService — guards hierárquicos > alterar papel revoga as sessões vigentes do alvo
+(pass) UpdateUserService — guards hierárquicos > bloquear/suspender revoga as sessões vigentes do alvo
+(pass) UpdateUserService — guards hierárquicos > version defasada → VersionConflictError (409)
+(pass) UpdateUserService — guards hierárquicos > alvo inexistente → UserNotFoundError (404)
+(pass) UpdateUserService — guards hierárquicos > edição sem mudança real é no-op (não revoga sessões nem falha)
+
+packages\auth\tests\unit\create-user.test.ts:
+(pass) CreateUserService — criação pelo painel (convite) > admin cria customer ativo + envia welcome com link de definição de senha
+(pass) CreateUserService — criação pelo painel (convite) > convite com platform=kids → link com a base kids
+(pass) CreateUserService — criação pelo painel (convite) > platform=kids SEM env configurada → 400 e NÃO cria a conta
+(pass) CreateUserService — criação pelo painel (convite) > admin cria staff; e-mail é normalizado (lowercase)
+(pass) CreateUserService — criação pelo painel (convite) > admin NÃO cria admin/superadmin → 403
+(pass) CreateUserService — criação pelo painel (convite) > superadmin cria admin
+(pass) CreateUserService — criação pelo painel (convite) > ator sem papel de escrita → 403
+(pass) CreateUserService — criação pelo painel (convite) > e-mail duplicado → EMAIL_ALREADY_IN_USE (409)
+(pass) CreateUserService — criação pelo painel (convite) > senha aleatória não é utilizável (nenhuma senha conhecida verifica)
+(pass) CreateUserService — criação pelo painel (convite) > falha no envio do e-mail NÃO desfaz a criação (inviteSent: false)
+
+packages\auth\tests\unit\delete-user.test.ts:
+(pass) DeleteUserService > superadmin exclui um customer
+(pass) DeleteUserService > retry após a exclusão concluída devolve o recibo sem reabrir a operação
+(pass) DeleteUserService > preparação bloqueia a conta e devolve também perfis arquivados
+(pass) DeleteUserService > non-superadmin (admin) é barrado
+(pass) DeleteUserService > não exclui a própria conta
+(pass) DeleteUserService > não exclui contas admin/superadmin
+(pass) DeleteUserService > alvo inexistente → UserNotFoundError
+
+packages\auth\tests\unit\env.test.ts:
+(pass) loadEnv > defaults: HOST dual-stack e cooldowns de 60s
+(pass) loadEnv > produção SEM AUTH_INTERNAL_TOKEN → falha no boot (fail-closed)
+(pass) loadEnv > produção com AUTH_INTERNAL_TOKEN curto (<16) → falha no boot
+(pass) loadEnv > produção com config completa → ok
+(pass) loadEnv > produção SEM MEMBERS_INTERNAL_TOKEN → falha no boot (allowance S2S exige o token)
+(pass) loadEnv > produção com MEMBERS_BASE_URL localhost → falha no boot
+(pass) loadEnv > produção SEM messaging (GATEWAY_URL/AUTH_HMAC_SECRET) → falha no boot
+(pass) loadEnv > produção com GATEWAY_URL localhost → falha no boot
+(pass) loadEnv > produção com COMMUNITY_URL default (localhost) → falha no boot
+(pass) loadEnv > KIDS_COMMUNITY_URL: opcional em produção; setada com localhost → falha no boot
+(pass) loadEnv > dev/test SEM AUTH_INTERNAL_TOKEN → ok (checagem desligada fora de produção)
+(pass) loadEnv > HS256 sem segredo forte → falha no boot (invariante pré-existente)
+
+packages\auth\tests\unit\forgot-password.test.ts:
+(pass) ForgotPasswordService > propaga falha de infra ao emitir token; não responde sucesso silencioso
+
+packages\auth\tests\unit\gateway-messaging-client.test.ts:
+(pass) createGatewayMessagingClient > envia requisição ao gateway com signal de timeout
+
+packages\auth\tests\unit\impersonation-derived-sessions.test.ts:
+(pass) reemissão derivada de sessão impersonada > sessão de suporte não troca perfil sem provar a família vigente
+(pass) reemissão derivada de sessão impersonada > select de perfil revalida a matriz quando o alvo foi promovido
+(pass) reemissão derivada de sessão impersonada > saída do perfil revalida a matriz quando o ator foi rebaixado
+(pass) reemissão derivada de sessão impersonada > select e exit preservam o deadline absoluto da família de suporte
+
+packages\auth\tests\unit\impersonation-mode.test.ts:
+(pass) ChangeImpersonationModeService > ativa write ao rotacionar a mesma família impersonada
+(pass) ChangeImpersonationModeService > desativa write sem encerrar a impersonação
+(pass) ChangeImpersonationModeService > sessão normal não pode transformar o próprio refresh em modo de suporte [16.00ms]
+(pass) ChangeImpersonationModeService > falha de auditoria impede a elevação e mantém a família readonly
+(pass) ChangeImpersonationModeService > falha de auditoria nunca impede o rebaixamento para readonly
+(pass) ChangeImpersonationModeService > retry com o mesmo refresh é idempotente e não rotaciona a credencial
+(pass) ChangeImpersonationModeService > corrida entre mudança de modo e refresh não revoga a família inteira
+(pass) ChangeImpersonationModeService > refresh lê o modo canônico DEPOIS de vencer o claim de rotação
+(pass) ChangeImpersonationModeService > CAS perdido não deixa auditoria falsa de sucesso
+
+packages\auth\tests\unit\impersonation-rotation.test.ts:
+(pass) Impersonação — emissão e rotação > emissão impersonada: claim act no access + TTL curto + família marcada
+(pass) Impersonação — emissão e rotação > emissão NORMAL permanece intacta (sem act, TTL cheio, família limpa)
+(pass) Impersonação — emissão e rotação > rotação PRESERVA act e TTL curto (não estica de volta p/ 30 dias)
+(pass) Impersonação — emissão e rotação > ator removido/desativado → rotação revoga a família e nega
+(pass) Impersonação — emissão e rotação > alvo suspenso revoga a família impersonada em vez de poder voltar depois
+(pass) Impersonação — emissão e rotação > ator rebaixado perde a sessão de suporte na próxima rotação
+(pass) Impersonação — emissão e rotação > alvo promovido para admin invalida a sessão de um ator admin
+
+packages\auth\tests\unit\impersonation-token.test.ts:
+(pass) Impersonação — matriz de permissão (criação do handoff) > admin impersona customer e staff; superadmin impersona qualquer um
+(pass) Impersonação — matriz de permissão (criação do handoff) > admin NÃO impersona admin/superadmin (escalação barrada) → 403 [15.00ms]
+(pass) Impersonação — matriz de permissão (criação do handoff) > impersonar a si mesmo → 400; alvo inexistente → 404; alvo inativo → 409
+(pass) Impersonação — exchange do handoff > happy path: sessão do ALVO com claim act do ATOR + família marcada
+(pass) Impersonação — exchange do handoff > single-use: 2º exchange com o MESMO token → 401 (consumo atômico)
+(pass) Impersonação — exchange do handoff > corrida: 2 exchanges concorrentes — só UM vence
+(pass) Impersonação — exchange do handoff > token expirado / inexistente / vazio → 401 indistinguível
+(pass) Impersonação — exchange do handoff > ator desativado entre o pedido e o exchange → 401; alvo desativado → 409
+(pass) Impersonação — exchange do handoff > ator REBAIXADO (admin→customer) entre o pedido e o exchange → 401 (matriz re-checada — F5)
+
+packages\auth\tests\unit\migration-safety.test.ts:
+(pass) segurança das migrations de índices > detecta índice transacional em tabela já existente
+(pass) segurança das migrations de índices > permite índice da tabela criada na mesma migration
+(pass) segurança das migrations de índices > nenhuma migration nova usa CREATE INDEX do Drizzle em tabela existente
+
+packages\auth\tests\unit\platform.test.ts:
+(pass) resolvePlatformUrl — base do link por plataforma > default (sem platform) → main
+(pass) resolvePlatformUrl — base do link por plataforma > kids configurada → URL kids
+(pass) resolvePlatformUrl — base do link por plataforma > kids SEM env configurada → ValidationError (400 visível, nunca link errado)
+
+packages\auth\tests\unit\profile-age.test.ts:
+(pass) idade do perfil Kids > aceita quem ainda tem 17 anos
+(pass) idade do perfil Kids > usa o dia civil de São Paulo na virada UTC
+(pass) idade do perfil Kids > recusa cadastro com 18 anos completos usando código de domínio específico
+(pass) idade do perfil Kids > perfil já cadastrado não é bloqueado ao completar 18 anos e reenviar a mesma data
+
+packages\auth\tests\unit\profile-voice-input.test.ts:
+(pass) fala da criança: agregado > perfil novo nasce com a fala DESLIGADA e sem data de consentimento
+(pass) fala da criança: agregado > ligar carimba o consentimento; reenviar ligada preserva a data; desligar zera
+(pass) fala da criança: agregado > trilha: ligar e desligar deixam a mudança para gravar; reenviar o mesmo valor não
+(pass) fala da criança: agregado > trilha: o suporte só registra DESLIGAR, com o ator real
+(pass) fala da criança: agregado > trilha: ida e volta antes de salvar não é mudança
+(pass) fala da criança: régua para LIGAR > suporte nunca liga, mesmo com login recente
+(pass) fala da criança: régua para LIGAR > responsável do Kids com login antigo precisa entrar de novo
+(pass) fala da criança: régua para LIGAR > login recente ou sessão de outro produto liga
+(pass) fala da criança: serviços de perfil > criar com a fala ligada e login antigo recusa ANTES do teto e do insert
+(pass) fala da criança: serviços de perfil > criar com a fala ligada pelo suporte é recusado
+(pass) fala da criança: serviços de perfil > criar com false ou sem o campo não pede login recente, nasce desligada e sem trilha
+(pass) fala da criança: serviços de perfil > criar com a fala ligada e login recente grava o consentimento e a 1ª linha da trilha
+(pass) fala da criança: serviços de perfil > editar: desligar é livre (login antigo e suporte); ligar segue a régua
+(pass) fala da criança: serviços de perfil > editar: desligar já desligada ou mexer só no nome não grava linha
+(pass) fala da criança: serviços de perfil > edição defasada não desfaz o "desligar" gravado no meio do caminho
+
+packages\auth\tests\unit\purge-expired.test.ts:
+(pass) ciclo da purga > falha na purga do acesso por aparelho não pula a dos tokens
+(pass) ciclo da purga > autorizações encerradas usam a retenção própria de 90 dias
+
+packages\auth\tests\unit\refresh-rotation.test.ts:
+(pass) Rotação atômica do refresh token > claimForRotation é exclusivo: o 1º vence, o 2º recebe false
+(pass) Rotação atômica do refresh token > perder o claim = reuso: família inteira revogada + 401
+(pass) Rotação atômica do refresh token > fluxo feliz continua: claim vence → novos tokens na MESMA família
+(pass) Rotação atômica do refresh token > logout com token já rotacionado revoga também o sucessor da família
+
+packages\auth\tests\unit\resolve-client-ip.test.ts:
+(pass) resolveClientIp > trustProxy=false sempre retorna requestIP
+(pass) resolveClientIp > trustProxy=true com 1 hop retorna o IP anterior ao proxy confiável
+(pass) resolveClientIp > trustProxy=true com cadeia curta demais usa fallback do socket
+
+packages\auth\tests\unit\sentry-mirror.test.ts:
+(pass) withSentryMirror (logs ERROR → eventos Sentry) > espelha SÓ o nível error, com mensagem e contexto
+(pass) withSentryMirror (logs ERROR → eventos Sentry) > pula eventos já capturados como exceção (anti-duplicata)
+(pass) withSentryMirror (logs ERROR → eventos Sentry) > falha na captura NUNCA derruba o log (observabilidade é best-effort)
+
+packages\auth\tests\unit\staff-gateway.test.ts:
+(pass) staff gateway keeps HMAC and Studio credentials server-side and preserves build failure output
+
+packages\auth\tests\unit\staff-operations.test.ts:
+(pass) staff effects require current role, live ordinary session and a durable audit before dispatch
+
+packages\auth\tests\unit\study-access-policy.test.ts:
+(pass) acesso infantil: códigos e prazo absoluto > aceita copiar o código com espaços, hífen e letras minúsculas
+(pass) acesso infantil: códigos e prazo absoluto > prazo em dias começa no resgate, sem prolongamento por visita
+(pass) acesso infantil: códigos e prazo absoluto > somente hoje acaba à meia-noite de São Paulo, inclusive perto da virada UTC
+(pass) acesso infantil: códigos e prazo absoluto > não aceita contexto de aluno incompleto ou contexto adulto misturado
+
+packages\auth\tests\unit\token-issuer.test.ts:
+(pass) TokenIssuer (HS256) > issue + verify roundtrip carrega as claims de identidade
+(pass) TokenIssuer (HS256) > token de ALUNO: só o mínimo, e a equipe conserva o papel
+(pass) TokenIssuer (HS256) > token adulterado → null
+(pass) TokenIssuer (HS256) > falha do banco ao conferir sessão Kids não se transforma em token inválido
+(pass) TokenIssuer (HS256) > lixo → null
+(pass) TokenIssuer (HS256) > typ pinado: JWT da MESMA chave sem typ access → null (anti confusão de tipos)
+(pass) TokenIssuer (HS256) > jwks vazio em HS256
+(pass) TokenIssuer (RS256 + JWKS) > token é verificável pela chave pública da JWKS (caminho do gateway) [47.00ms]
+
+packages\auth\tests\unit\user-domain.test.ts:
+(pass) Email VO > normaliza (trim + lowercase)
+(pass) Email VO > rejeita formato inválido
+(pass) password policy > rejeita abaixo do mínimo
+(pass) password policy > aceita no mínimo
+(pass) UserAggregate > register usa defaults (customer/active), normaliza opcionais e emite evento
+(pass) UserAggregate > restore/toSnapshot é roundtrip fiel
+(pass) UserAggregate > mutators admin (bumpam version/updatedAt) > changeRole muda papel e bumpa version
+(pass) UserAggregate > mutators admin (bumpam version/updatedAt) > changeRole para o mesmo papel é no-op (não bumpa)
+(pass) UserAggregate > mutators admin (bumpam version/updatedAt) > changeStatus muda status e bumpa version
+(pass) UserAggregate > mutators admin (bumpam version/updatedAt) > updateProfile só bumpa quando algo muda; ignora nome em branco e undefined
+(pass) UserAggregate > mutators admin (bumpam version/updatedAt) > updateProfile seta/limpa avatarUrl e preserva passwordHash
+
+packages\core\src\studio\pro-assistance.test.ts:
+(pass) scope and context survive a strict canonical roundtrip; unsupported permissions and versions are refused
+(pass) event retention is bounded without resetting sequence numbers or changing the request
+(pass) accepts the canonical tutor source hash for selection and observed baseline
+
+packages\core\src\studio\pro-build.test.ts:
+(pass) STUDIO_PRO_BUILD_LIMITS > mantém o contrato de tamanho compartilhado pelo editor, BFF e runtime
+(pass) STUDIO_PRO_BUILD_LIMITS > identifica a cota que o BFF deve recusar antes de acionar o Worker
+(pass) STUDIO_PRO_BUILD_LIMITS > não aceita fonte que cabe em caracteres mas estoura o JSON enviado ao runtime [15.00ms]
+
+packages\messaging\tests\unit\address.test.ts:
+(pass) normalizeAddress > e-mail vira minúsculo
+(pass) normalizeAddress > telefone vira só dígitos (remove +, espaços e separadores)
+(pass) supressão com endereços em formatos diferentes > bounce gravado com +55 casa com envio sem + (e vice-versa)
+(pass) Message.create normaliza o destinatário > telefone com + é aceito e armazenado só com dígitos
+(pass) Message.create normaliza o destinatário > e-mail é armazenado em minúsculas
+
+packages\messaging\tests\unit\apply-delivery-status.test.ts:
+(pass) ApplyDeliveryStatusService — ordem do dedupe (aplicar ANTES de marcar) > conflito de versão com o worker → recarrega, re-aplica e marca (status não se perde)
+(pass) ApplyDeliveryStatusService — ordem do dedupe (aplicar ANTES de marcar) > falha DURA no processamento NÃO consome o evento — a reentrega reprocessa [16.00ms]
+(pass) ApplyDeliveryStatusService — ordem do dedupe (aplicar ANTES de marcar) > reentrega de evento já processado cai no dedupe (sem reprocessar)
+(pass) ApplyDeliveryStatusService — ordem do dedupe (aplicar ANTES de marcar) > evento acionável sem mensagem não é deduplicado e força retry do provedor
+(pass) ApplyDeliveryStatusService — ordem do dedupe (aplicar ANTES de marcar) > bounce adiciona supressão e suprime a mensagem
+
+packages\messaging\tests\unit\attachment-fetcher.test.ts:
+(pass) HttpAttachmentFetcher > busca a URL e devolve base64 + contentType da origem
+(pass) HttpAttachmentFetcher > allowlist vazia = qualquer host (dev liberado)
+(pass) HttpAttachmentFetcher > allowlist setada BLOQUEIA host fora da lista (permanente, anti-SSRF)
+(pass) HttpAttachmentFetcher > allowlist é case-insensitive e aceita o host listado
+(pass) HttpAttachmentFetcher > content-length declarado acima do teto → falha RE-TENTÁVEL
+(pass) HttpAttachmentFetcher > tamanho REAL lido acima do teto (sem content-length) → falha RE-TENTÁVEL
+(pass) HttpAttachmentFetcher > 4xx/5xx da origem → falha RE-TENTÁVEL (mesmo caminho de retry do provedor)
+(pass) HttpAttachmentFetcher > timeout → falha RE-TENTÁVEL [63.00ms]
+(pass) HttpAttachmentFetcher > URL inválida ou protocolo não-http(s) → falha PERMANENTE
+
+packages\messaging\tests\unit\env.test.ts:
+(pass) loadEnv — fail-closed em produção > dev: tokens opcionais (checagens desligadas)
+(pass) loadEnv — fail-closed em produção > produção sem MESSAGING_INTERNAL_TOKEN → falha no boot
+(pass) loadEnv — fail-closed em produção > produção sem MESSAGING_WEBHOOK_TOKEN → falha no boot
+(pass) loadEnv — fail-closed em produção > produção com REQUIRE_ADMIN=false → falha no boot
+(pass) loadEnv — fail-closed em produção > produção com SENDGRID_API_KEY sem a chave pública do webhook → falha no boot
+(pass) loadEnv — fail-closed em produção > produção sem METRICS_TOKEN → falha no boot
+(pass) loadEnv — fail-closed em produção > produção com token curto → falha no boot
+(pass) loadEnv — fail-closed em produção > produção sem allowlist de anexos → falha no boot
+(pass) loadEnv — fail-closed em produção > EVOLUTION_URL sem EVOLUTION_API_KEY (e vice-versa) → falha no boot
+(pass) loadEnv — fail-closed em produção > anexos: defaults seguros (5MB; allowlist vazia = dev liberado)
+(pass) loadEnv — fail-closed em produção > anexos: CSV de hosts é aparado, minúsculo e ignora entradas vazias
+(pass) loadEnv — fail-closed em produção > ATTACHMENT_MAX_BYTES inválido → falha no boot
+(pass) loadEnv — fail-closed em produção > produção completa → ok
+
+packages\messaging\tests\unit\instance-connection.test.ts:
+(pass) SetInstanceConnectionService — alerta de queda > CONECTADA → cai: marca DISCONNECTED e ALERTA (só na transição)
+(pass) SetInstanceConnectionService — alerta de queda > já DISCONNECTED → cai de novo: NÃO alerta (sem transição, sem spam)
+(pass) SetInstanceConnectionService — alerta de queda > reconecta (open): marca CONNECTED e NÃO alerta
+(pass) SetInstanceConnectionService — alerta de queda > PAUSED: reconexão da Evolution NÃO sobrescreve nem alerta
+
+packages\messaging\tests\unit\message.aggregate.test.ts:
+(pass) Message.create — validação > e-mail exige e-mail válido e assunto
+(pass) Message.create — validação > whatsapp exige telefone válido
+(pass) Message.create — validação > anexos: aceita em e-mail (normaliza contentType ausente para null)
+(pass) Message.create — validação > anexos: rejeita em whatsapp, url não-http(s) e mais de 3
+(pass) Message.create — validação > emite message.queued e nasce QUEUED quando não agendada
+(pass) Message.create — validação > nasce SCHEDULED quando scheduledAt é no futuro
+(pass) Message — máquina de estados > QUEUED → SENDING → SENT emite message.sent
+(pass) Message — máquina de estados > startSending inválido a partir de SENT lança
+(pass) Message — máquina de estados > recordSendFailure re-enfileira até o teto e então vira FAILED
+(pass) Message — máquina de estados > markDelivered é idempotente (no-op se já entregue)
+(pass) Message — máquina de estados > markRead a partir de DELIVERED
+(pass) Message — máquina de estados > suppress encerra a mensagem
+
+packages\messaging\tests\unit\pacing.test.ts:
+(pass) pacing — effectiveDailyCap (aquecimento) > sem aquecimento usa o teto cheio
+(pass) pacing — effectiveDailyCap (aquecimento) > no 1º dia de aquecimento usa o teto inicial baixo
+(pass) pacing — effectiveDailyCap (aquecimento) > sobe gradualmente durante o aquecimento
+(pass) pacing — effectiveDailyCap (aquecimento) > após o período de aquecimento usa o teto cheio
+(pass) pacing — isLaneAvailable > disponível quando habilitada, conectada, livre e com cota
+(pass) pacing — isLaneAvailable > indisponível se desabilitada ou desconectada
+(pass) pacing — isLaneAvailable > indisponível enquanto nextAvailableAt está no futuro (delay/descanso)
+(pass) pacing — isLaneAvailable > indisponível ao atingir o teto diário
+(pass) pacing — isLaneAvailable > o contador diário reseta ao virar o dia
+(pass) pacing — computeNextLaneState > incrementa contadores e agenda o próximo envio com o delay (jitter)
+(pass) pacing — computeNextLaneState > injeta o descanso e zera o contador ao atingir restAfterN
+(pass) pacing — computeNextLaneState > reseta os contadores quando o dia virou
+(pass) pacing — computeRetryAt > agenda dentro do cap do backoff exponencial
+
+packages\messaging\tests\unit\render-template.test.ts:
+(pass) renderTemplate > substitui variáveis no assunto e corpo de e-mail
+(pass) renderTemplate > escapa HTML dos VALORES no corpo de e-mail (anti-injeção)
+(pass) renderTemplate > NÃO escapa no WhatsApp (texto puro) e não tem assunto
+(pass) renderTemplate > falha quando faltam variáveis obrigatórias [15.00ms]
+
+packages\messaging\tests\unit\retention.test.ts:
+(pass) retenção de messages (cleanup) > remove SÓ terminais mais antigas que o corte; pendentes NUNCA
+
+packages\messaging\tests\unit\send-message.test.ts:
+(pass) SendMessageService — corrida da idempotência (check-then-insert) > duas requisições CONCORRENTES com a mesma chave → a perdedora devolve a vencedora (sem 500)
+(pass) Sender admin — promoção de default atômica > criar um novo default desmarca o anterior na mesma gravação (sempre exatamente 1 default)
+(pass) Sender admin — promoção de default atômica > promover default via update desmarca o anterior
+
+packages\messaging\tests\unit\send-worker.test.ts:
+(pass) SendWorker — e-mail (throttle por lote) > envia no máximo o tamanho do lote por tick (throttle) [16.00ms]
+(pass) SendWorker — e-mail (throttle por lote) > falha transitória re-enfileira com backoff (não vira FAILED)
+(pass) SendWorker — e-mail (throttle por lote) > falha permanente vira FAILED
+(pass) SendWorker — e-mail (throttle por lote) > sem remetente disponível → FAILED
+(pass) SendWorker — e-mail (throttle por lote) > token bucket: ticks back-to-back (NOTIFY) não furam a taxa
+(pass) SendWorker — e-mail (throttle por lote) > falha no update de UMA mensagem não derruba o resto do lote
+(pass) SendWorker — reaper de SENDING preso (lease de claim) > re-reivindica mensagem presa em SENDING com lease vencido e envia
+(pass) SendWorker — reaper de SENDING preso (lease de claim) > claim zumbi além do teto de tentativas → FAILED sem chamar o provedor
+(pass) SendWorker — anexos por URL (e-mail) > busca a URL e injeta o base64 + contentType no gateway (disposition attachment)
+(pass) SendWorker — anexos por URL (e-mail) > sem contentType no metadado usa o da origem
+(pass) SendWorker — anexos por URL (e-mail) > mensagem sem anexos não passa pelo fetcher (gateway sem attachments)
+(pass) SendWorker — anexos por URL (e-mail) > falha no fetch → RE-TENTÁVEL com backoff (não FAILED, SendGrid nem é chamado)
+(pass) SendWorker — anexos por URL (e-mail) > falha permanente do fetch (host bloqueado) → FAILED
+(pass) SendWorker — anexos por URL (e-mail) > fim a fim: HttpAttachmentFetcher real busca num Bun.serve efêmero
+(pass) SendWorker — WhatsApp (rotação + ritmo anti-ban) > serializa por número: 1 lane só envia 1 por tick (sem rajada)
+(pass) SendWorker — WhatsApp (rotação + ritmo anti-ban) > rotaciona entre números: 2 lanes enviam em números distintos
+(pass) SendWorker — WhatsApp (rotação + ritmo anti-ban) > respeita o teto diário (lane esgotada não envia)
+(pass) SendWorker — WhatsApp (rotação + ritmo anti-ban) > passa o delay de "digitando" e avança o ritmo da lane após enviar
+(pass) SendWorker — WhatsApp (rotação + ritmo anti-ban) > não envia para número suprimido
+
+packages\messaging\tests\unit\sendgrid-gateway.test.ts:
+(pass) SendGridEmailGateway — imagens inline (cid:) > anexa SÓ as imagens referenciadas por cid: no html, com disposition inline
+(pass) SendGridEmailGateway — imagens inline (cid:) > html sem cid: → sem campo attachments
+(pass) SendGridEmailGateway — anexos por URL (disposition attachment) > anexo de arquivo COEXISTE com a logo inline no mesmo array [16.00ms]
+(pass) SendGridEmailGateway — anexos por URL (disposition attachment) > anexos sem nenhum cid: no html → só o attachment
+
+packages\messaging\tests\unit\sendgrid-webhook.test.ts:
+(pass) verifySendGridSignature > aceita assinatura ECDSA válida
+(pass) verifySendGridSignature > rejeita corpo adulterado
+(pass) verifySendGridSignature > rejeita assinatura inválida sem lançar
+
+packages\messaging\tests\unit\staff-routes.test.ts:
+(pass) staff delegation isolates receipts by actor, rejects non-auth consumers and keeps 202 distinct from delivery [15.00ms]
+
+packages\messaging\tests\unit\template.aggregate.test.ts:
+(pass) Template.create > cria template de e-mail com assunto e variáveis
+(pass) Template.create > e-mail sem assunto falha
+(pass) Template.create > whatsapp ignora assunto (fica nulo)
+(pass) Template.create > update aplica alterações e revalida
+
+ 458 pass
+ 0 fail
+ 1643 expect() calls
+Ran 458 tests across 54 files. [36.54s]

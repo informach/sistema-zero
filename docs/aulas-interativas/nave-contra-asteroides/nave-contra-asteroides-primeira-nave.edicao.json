@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-abertura",
+    "video-seu-caderno-do-aluno",
+    "video-uma-vez-e-sempre",
+    "video-montar-areas-tela",
+    "video-coordenadas",
+    "video-criar-e-mostrar",
+    "video-criar-nave",
+    "video-desenho-por-quadro",
+    "video-motor-e-nave"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-uma-vez-e-sempre-K1",
+      "clipe": "video-uma-vez-e-sempre",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "para, e o contador Ações feitas mostra 1. É que Ao iniciar faz o que está dentro dele uma vez só, quando o jogo começa.",
+      "ancoraDepois": "Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. Olha só: a nave anda, anda,",
+      "falaPrincipal": "E para ela continuar andando?",
+      "falaPersonagem": "E para ela continuar andando?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-criar-nave-K1",
+      "clipe": "video-criar-nave",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.",
+      "ancoraDepois": "Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho. Repare: o bloco já chega com o nome nave. É por",
+      "falaPrincipal": "Para que servem todos esses campos?",
+      "falaPersonagem": "Para que servem todos esses campos?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-desenho-por-quadro-K1",
+      "clipe": "video-desenho-por-quadro",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "Mas tá vendo? A imagem continua igual. É que o jogo desenhou a nave só no começo, por isso a imagem não acompanhou o x.",
+      "ancoraDepois": "Agora eu troco para A cada quadro e avanço alguns quadros. Olha só: a nave aparece no lugar novo, mas as naves velhas",
+      "falaPrincipal": "A nave mudou de lugar e o desenho ficou parado?",
+      "falaPersonagem": "A nave mudou de lugar e o desenho ficou parado?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-desenho-por-quadro-K2",
+      "clipe": "video-desenho-por-quadro",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "continuam na tela e formam um rastro. Isso acontece porque o jogo desenha de novo, mas não apaga o que já estava lá.",
+      "ancoraDepois": "Por último, eu ligo Limpar a tela antes e avanço mais quadros. Agora aparece uma nave só, sempre no lugar novo, porque,",
+      "falaPrincipal": "E como apaga esse rastro?",
+      "falaPersonagem": "E como apaga esse rastro?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

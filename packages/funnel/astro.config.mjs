@@ -26,9 +26,9 @@ export default defineConfig({
     '/resultado': '/pro/no-comando-da-ia/resultado',
     '/checkout': '/pro/no-comando-da-ia/checkout',
     '/obrigado': '/pro/no-comando-da-ia/obrigado',
-    // Páginas legais antigas (públicas únicas) → versão PRO sob /pro/* (301).
-    '/termos-de-uso': '/pro/termos',
-    '/politica-de-privacidade': '/pro/privacidade',
+    // Endereços legais antigos (301): o índice dos Termos (um por oferta) e a Política única.
+    '/termos-de-uso': '/termos',
+    '/politica-de-privacidade': '/privacidade',
   },
   integrations: [
     react(),
@@ -37,21 +37,24 @@ export default defineConfig({
       // que o sitemap não enumera sozinho → listamos explicitamente. Ao adicionar
       // um funil indexável, inclua a URL da sua oferta aqui.
       customPages: [
-        `${site}/como-funciona/`,
         `${site}/pro/no-comando-da-ia/oferta`,
+        `${site}/pro/comunidade-dos-criadores/oferta`,
+        `${site}/pro/comunidade-dos-criadores/oferta/continuar`,
+        `${site}/pro/desafio-primeiro-jogo/oferta`,
         `${site}/kids/desafio-primeiro-jogo/oferta`,
-        `${site}/kids/desafio-primeiro-jogo/oferta/tempo-de-tela`,
-        `${site}/kids/desafio-primeiro-jogo/oferta/iniciacao-tecnologica`,
+        `${site}/kids/desafio-primeiro-jogo/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta`,
-        `${site}/kids/comunidade-dos-criadores/oferta/criacao-de-jogos`,
-        `${site}/kids/comunidade-dos-criadores/oferta/expressao-visual`,
-        `${site}/kids/comunidade-dos-criadores/oferta/formacao-tecnologica`,
+        `${site}/kids/comunidade-dos-criadores/oferta/criar-junto`,
         `${site}/kids/comunidade-dos-criadores/oferta/continuar`,
-        // Páginas legais por público (rotas dinâmicas não são enumeradas sozinhas).
-        `${site}/pro/termos`,
-        `${site}/pro/privacidade`,
-        `${site}/kids/termos`,
-        `${site}/kids/privacidade`,
+        // Páginas legais (SSR, não enumeradas sozinhas): o índice dos Termos, a Política única e
+        // o Termo de cada oferta.
+        `${site}/termos`,
+        `${site}/privacidade`,
+        `${site}/pro/no-comando-da-ia/termos`,
+        `${site}/kids/desafio-primeiro-jogo/termos`,
+        `${site}/kids/comunidade-dos-criadores/termos`,
+        `${site}/pro/comunidade-dos-criadores/termos`,
+        `${site}/pro/desafio-primeiro-jogo/termos`,
       ],
       // Mantém no sitemap só as páginas indexáveis (exclui as noindex/privadas).
       filter: (page) =>

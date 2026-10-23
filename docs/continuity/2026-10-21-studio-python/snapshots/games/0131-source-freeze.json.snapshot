@@ -1,0 +1,174 @@
+{
+  "state": "source-frozen-only-host-UNBOUND",
+  "checkedAt": "2026-10-21T01:28:49.373136+00:00",
+  "owner": "01a15a4f-d555-7c81-80a2-a0fe887e9bbf",
+  "commit": "9557e17bcafbe529d0079c8d941485b7f67061c4",
+  "parentFreeze": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-functional-r1\\current-host-browser-package-r7\\source-freeze.json",
+    "sha256": "3981ae0671a32b0f4f893a8e17fc9c0bc494155ea346e707cd33ecfe8e3fe900"
+  },
+  "authorization": "Root authorized Pac-Man-only application of reviewed r2 proposal, focused pure/light tests, isolated commit and future source/scenario preparation. No execution authorized.",
+  "variant": {
+    "game": "pacman",
+    "version": "portable-audio-1.1.0",
+    "entrypointSha256": "3ccbfc081e26b5ac8c3bab5e44dae35841dc0cd54e956af81a3ca5d913edcb76",
+    "manifestSha256": "689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d",
+    "qualified": false
+  },
+  "frozenOtherGame": {
+    "game": "space-arena",
+    "version": "portable-audio-1.2.0",
+    "entrypointSha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3",
+    "recipeAndGeneratorSuffixUnchanged": true,
+    "historicalReceiptsUnchanged": true,
+    "noNewQualification": true
+  },
+  "authorizedDifferences": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-pacman-portable.spec.ts",
+      "oldSha256": "18c576edf630af40680aeb465df363ecc68cff0b8baacf890383c92bce0484df",
+      "newSha256": "fc1cd837710ae64db2d4ce0ef3537b5867e10931cefb2cdade0de089ffff0d5b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman.ts",
+      "oldSha256": "2d20fdfeba746c70aae9c31cea7c301a28d55e30f0663e5c7b5db8025a9931ff",
+      "newSha256": "8d7320b4c865601c21392713b3bf28cb91fcdd19bdd2a9140698208aaecf836b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\gameVariants.ts",
+      "oldSha256": "3764ab93601625d7d6c3cd945cd05dff22390d4af137c4ec90ed73dc0bdc3122",
+      "newSha256": "37f1c769827aaac2d71ac757022e20e2293ba199c47d1fc6c2ee79f629d14ea9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-l0\\corpus\\pacman.json",
+      "oldSha256": "b0d575be9cf6571b750fdf27af75055f51d92e00b73b37c52d3cdb4aa1c56289",
+      "newSha256": "689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d"
+    }
+  ],
+  "unchangedFiles": 24,
+  "files": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\playwright.python-games-current.config.ts",
+      "sha256": "fa62bc6e35ce47e8e12aa7031145d51f77b5193607465470d1f3354ac1fd8d32"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-space-arena-portable.spec.ts",
+      "sha256": "67dbf41bfca1d21ba049ea866304cdf60fab9856dadd211632471be4155b61fa"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-pacman-portable.spec.ts",
+      "sha256": "fc1cd837710ae64db2d4ce0ef3537b5867e10931cefb2cdade0de089ffff0d5b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\current_games_host.ts",
+      "sha256": "85128c55f0b17334bbf6138f81de24f3122ce8d34f4c424cdf5ba650c5d3ef69"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\current_games_host.test.ts",
+      "sha256": "115ffa24830143b3e63612d1d072e1cfd065bdbb39fe1c1936620737dbf9d2e8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena.ts",
+      "sha256": "57511a50e8f3c95b2acf0f3a8d5ea2836ec9e9299c5c3f0e017d87466d3255ad"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena.test.ts",
+      "sha256": "f3a40c66a318fcb962108675768e161b0da1d9f4ed653c52059f76424b474395"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_browser.py",
+      "sha256": "5a7fa5cf3107d0040121f00ddf3a0476262e63fa06e06348078dc4099d6f8f02"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_observer.py",
+      "sha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman.ts",
+      "sha256": "8d7320b4c865601c21392713b3bf28cb91fcdd19bdd2a9140698208aaecf836b"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_observer.py",
+      "sha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_functional_observer.py",
+      "sha256": "fb56b424a7ea0a74d9cd6f5d085de282d4b55edcca27a8d3d12d400f19ab5a4e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\gameVariants.ts",
+      "sha256": "37f1c769827aaac2d71ac757022e20e2293ba199c47d1fc6c2ee79f629d14ea9"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-l0\\corpus\\pacman.json",
+      "sha256": "689bbeced12887dd08a44765c0e49151be1cf78e273f910e7e380d9278b1609d"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-l0\\corpus\\space-arena.json",
+      "sha256": "a63eb90cdd276a3e71ac6b20a7d9d62450e334d54187b280f57ef39d32f0db33"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\src\\runtime\\python\\snapshot.ts",
+      "sha256": "4874c37735e738d1a07e9e970772565767cf311d96674f002bcca904d3ab693f"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\src\\state\\pythonProjectValidation.ts",
+      "sha256": "138ed3b223bee0e562b907353a943fbd3724c191681b3aec0bd869d6e1c58ee8"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\core\\src\\creations\\content-fingerprint.ts",
+      "sha256": "386c64b4a86d9c792b9c2ea814c3f1843a8ab9692d469d0f5f2008aafa26f00c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\core\\src\\studio\\python-runtime-distribution.ts",
+      "sha256": "c71242708fb13e2c57dbcd5efe75c781e8b64034c2f1d62f6b26ee4e17593662"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\core\\src\\studio\\runtime-catalog.ts",
+      "sha256": "d5355c87e4a8c42356713e7ca286ea45ce3cca227dadf1c2b2e5b39e5602e95e"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\bun.lock",
+      "sha256": "8f162e14a76155be50bd1c3620d98a05cc8c4ff74c82cc2f83e64f4fe5ff019a"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\package.json",
+      "sha256": "7576b60ffe53ae1e9a0f70ccf92bc0a2f19a8efe979b7bd808a9f0452668b3b3"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\space_arena_input.py",
+      "sha256": "3e81dd9cb985629c8340aadb584b386f1c0302ecbffb454b732c5da5da675fce"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-space-arena-input.spec.ts",
+      "sha256": "d087f8dd47c2c81ae0528ba03d6e9e408b3dbbd0c3e7282921d1e3f07987a383"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\e2e-runtime\\python-pacman-render.spec.ts",
+      "sha256": "b7050f22244725d5dee892b89f1283e278547524c475996ce8011d3b33afe49c"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\packages\\studio\\playwright.python-games-render.config.ts",
+      "sha256": "02b8403e69a7a816133c3cdd74355342fef1a20b04483343d88e95cbad710ad6"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\game_observations.ts",
+      "sha256": "ffb2d1a29bfd24a9410cff533057e3e7b6bc1b5d1b258b90f5a3f47e20d141f5"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\game_observations.test.ts",
+      "sha256": "4e8e70358b4ee13840d825b1b80baa37b7a7456f1624c10f0c8813bb156208ad"
+    }
+  ],
+  "focusedControls": [
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\experiments\\studio-python-runtime\\qualification\\pacman_end_timer_test.py",
+      "sha256": "a4b891f75c87664b65f11e714f9e23ac1950e9c2107ca1fcbbddf6e4b2cf5916"
+    },
+    {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\docs\\plans\\2026-10-20-pacman-ending-timer-qualification.md",
+      "sha256": "7f3e50ea9e43e327b27e131a1bd5bd90fb308b9934d31c150c054bfb132e7e9a"
+    }
+  ],
+  "hostAuthority": "UNBOUND: Root must integrate, review current source/runtime graph, executable pins, fresh scan/seal/new namespace and a new absolute UTC window before any execution."
+}

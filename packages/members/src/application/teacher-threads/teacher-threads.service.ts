@@ -29,6 +29,11 @@ export interface TeacherMessageView {
   /** Nome de EXIBIÇÃO no envio (professor); null no aluno (a UI mostra "Você"). */
   authorName: string | null
   body: string
+  /**
+   * A criança FALOU e o servidor transcreveu (voz para texto, 14/10/2026). O Admin mostra o aviso
+   * para a equipe ler um erro de transcrição com boa vontade. `false` = digitado.
+   */
+  spoken: boolean
   createdAt: string
 }
 
@@ -81,6 +86,7 @@ function toMessageView(m: TeacherMessageRecord): TeacherMessageView {
     authorId: m.authorId,
     authorName: m.authorName,
     body: m.body,
+    spoken: m.spoken,
     createdAt: m.createdAt.toISOString(),
   }
 }
@@ -174,6 +180,8 @@ export interface TeacherPostByContextInput {
   authorId: string | null
   authorName: string | null
   body: string
+  /** Turno falado e transcrito (voz para texto). Só o aluno fala; ausente = digitado. */
+  spoken?: boolean
   /** Id determinístico do turno (idempotência do webhook do Mural). Ausente → aleatório. */
   dedupeId?: string
 }
@@ -219,12 +227,16 @@ export class TeacherThreadsService {
     return toThreadView(thread, page)
   }
 
-  /** Aluno responde a uma conversa SUA existente (não pode iniciar do zero). */
+  /**
+   * Aluno responde a uma conversa SUA existente (não pode iniciar do zero). `spoken` = a criança
+   * falou e o servidor transcreveu; ausente (app antigo) = digitado.
+   */
   async studentReply(
     userId: string,
     audience: CourseAudience,
     threadId: string,
     rawBody: string,
+    options: { spoken?: boolean } = {},
   ): Promise<TeacherThreadView> {
     const thread = await this.ownedThread(threadId, userId, audience)
     await this.repo.appendMessage({
@@ -233,6 +245,7 @@ export class TeacherThreadsService {
       authorId: userId,
       authorName: null,
       body: cleanBody(rawBody),
+      spoken: options.spoken === true,
       now: this.now(),
     })
     const page = await this.repo.listMessages(thread.id)
@@ -379,6 +392,8 @@ export class TeacherThreadsService {
       authorId: input.authorId,
       authorName: input.authorName,
       body,
+      // A marca é do ALUNO (a voz para texto é do app da criança): turno da equipe nunca é falado.
+      spoken: authorRole === 'student' && input.spoken === true,
       now,
       messageId: input.dedupeId,
       helpContext: input.helpContext,

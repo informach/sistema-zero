@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { initialKidsJourneyPolicy, projectKidsJourney } from '@sistemazero/core/journey'
 import { render, screen } from '@testing-library/react'
 import { BadgeShowcase } from '../src/components/kids/badge-showcase'
 import { BADGE_INFO, badgeTone } from '../src/components/kids/badges'
@@ -6,7 +7,7 @@ import { JourneyTimeline } from '../src/components/kids/journey-timeline'
 import type { GamificationMeView } from '../src/lib/types'
 
 /**
- * As seções do Meu perfil no desenho das telas-modelo (11/09/2026). O que se prova aqui é o
+ * As partes do Meu perfil no desenho das telas-modelo (11/09/2026). O que se prova aqui é o
  * que o desenho promete à criança: onde ela está, qual é o próximo passo, e quais
  * conquistas já são dela.
  */
@@ -19,6 +20,29 @@ const conquistadas: Record<string, string> = {
 
 function gamificacao(): GamificationMeView {
   return {
+    kidsJourney: projectKidsJourney({
+      policy: initialKidsJourneyPolicy(),
+      policyVersion: 1,
+      catalog: [
+        {
+          id: '00000000-0000-4000-8000-000000000001',
+          audience: 'kids',
+          modality: 'recorded',
+          status: 'published',
+          graduationOnly: false,
+          tier: 'primeiros-passos-2d',
+          slot: 1,
+          journeyRole: 'positioned',
+          hasShowcaseBlock: true,
+        },
+      ],
+      milestones: [],
+      earned: {
+        level: 'noob',
+        capabilities: [],
+        courseAccess: { entry: [], expanded: [], reward: [] },
+      },
+    }),
     xp: 565,
     streak: { current: 10, best: 10, activeToday: true },
     badges: Object.keys(BADGE_INFO).map((slug) => ({
@@ -29,7 +53,7 @@ function gamificacao(): GamificationMeView {
       slug: 'noob',
       next: 'coder',
       remaining: {
-        any: 1,
+        any: 0,
         'primeiros-passos-2d': 1,
         'iniciante-2d': 0,
         'iniciante-3d': 0,
@@ -44,8 +68,8 @@ function gamificacao(): GamificationMeView {
 
 describe('Minha jornada', () => {
   test('marca o posto atual e só o seguinte como "Próximo nível"', () => {
-    // Catálogo desconhecido (`null`) desenha a escada inteira.
-    render(<JourneyTimeline gamification={gamificacao()} courses={null} />)
+    // A seed publicada e o curso de entrada conhecido oferecem o próximo posto.
+    render(<JourneyTimeline gamification={gamificacao()} />)
     expect(screen.getAllByText('Você está aqui')).toHaveLength(1)
     expect(screen.getAllByText('Próximo nível')).toHaveLength(1)
     // O nome do posto sai do LEVEL_INFO, nunca da tela-modelo.
@@ -54,7 +78,7 @@ describe('Minha jornada', () => {
   })
 
   test('feitos universais e bônus dos apps em grupos separados', () => {
-    render(<JourneyTimeline gamification={gamificacao()} courses={null} />)
+    render(<JourneyTimeline gamification={gamificacao()} />)
     expect(screen.getByText('Meus feitos')).toBeTruthy()
     expect(screen.getByText('Bônus dos apps criativos')).toBeTruthy()
     expect(screen.getByText('Semana em chamas')).toBeTruthy()

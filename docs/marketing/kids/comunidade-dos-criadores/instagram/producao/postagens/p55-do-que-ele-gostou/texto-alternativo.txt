@@ -1,0 +1,44 @@
+SLIDE 1
+Curto (73 caracteres): Cena encenada: menino cria no computador enquanto o pai observa da porta.
+
+Longo: Cena encenada: menino cria no computador enquanto o pai observa da porta. Texto da arte: ‘Gostei’ é um começo de conversa. Antes de escolher a próxima atividade, descubra do que seu filho gostou.
+
+SLIDE 2
+Curto (73 caracteres): Cena encenada: menino aponta uma parte do jogo e o pai acompanha ao lado.
+
+Longo: Cena encenada: menino aponta uma parte do jogo e o pai acompanha ao lado. Texto da arte: Peça um exemplo. Foi o assunto, a explicação, uma parte que ele fez ou o resultado que apareceu?
+
+SLIDE 3
+Curto (70 caracteres): Cena encenada: mão no mouse e um bloco selecionado na tela do Estúdio.
+
+Longo: Cena encenada: mão no mouse e um bloco selecionado na tela do Estúdio. Texto da arte: Se ele está criando um jogo, observe como participa. Pode querer testar uma regra de novo ou entender por que algo não funcionou.
+
+SLIDE 4
+Curto (82 caracteres): Captura do Estúdio: paleta lilás selecionada e personagem com a mesma cor no jogo.
+
+Longo: Captura do Estúdio: paleta lilás selecionada e personagem com a mesma cor no jogo. Texto da arte: Talvez ele queira fazer uma escolha própria. Mudar a cor, acrescentar um personagem ou experimentar uma dificuldade diferente.
+
+SLIDE 5
+Curto (84 caracteres): Cena encenada: menino se vira e chama o pai para mostrar o personagem lilás na tela.
+
+Longo: Cena encenada: menino se vira e chama o pai para mostrar o personagem lilás na tela. Texto da arte: Ele também pode querer mostrar alguma descoberta. Deixe que conte o que fez e pergunte se gostaria de continuar.
+
+SLIDE 6
+Curto (76 caracteres): Cena encenada: pai escuta o filho à mesa da cozinha, sem computador à vista.
+
+Longo: Cena encenada: pai escuta o filho à mesa da cozinha, sem computador à vista. Texto da arte: Essas são possibilidades para observar, não uma lista que ele precisa cumprir. Se ficou com dúvida ou precisou de ajuda, conversem sobre essa parte também.
+
+SLIDE 7
+Curto (57 caracteres): Cena encenada: pai e filho conversam lado a lado no sofá.
+
+Longo: Cena encenada: pai e filho conversam lado a lado no sofá. Texto da arte: Conhecer a experiência e ouvir seu filho ajudam a escolher os próximos passos. Siga o perfil para entender melhor a criação de jogos.
+
+ORIGEM E CONTEXTO
+Slides 1, 2, 3, 5, 6 e 7: cenas geradas com uma família fictícia, sem nome de aluno ou depoimento. O menino tem aproximadamente 12 anos, pele morena clara, cabelo castanho ondulado, óculos retangulares azuis e camiseta amarela. O pai tem cabelo castanho, barba curta, camiseta clara e camisa azul aberta. A aparência se mantém ao longo da sequência.
+Slide 1: menino concentrado no computador, visto de lado; o pai observa discretamente da porta. A tela usa a captura do Estúdio como referência, com blocos à esquerda e um personagem quadrado verde à direita.
+Slide 2: pai sentado ao lado do filho, olhando para a parte que ele aponta na prévia do jogo. O personagem verde está no ar, em outro momento da execução.
+Slide 3: aproximação da mão da criança no mouse, com um bloco separado e selecionado na tela. O cursor indica o bloco que ela está ajustando. A captura de referência é do Estúdio real; a cena com a criança foi gerada. A imagem não comprova que uma criança real errou ou aprendeu.
+Slide 4: montagem editorial com capturas nativas do comando Criar sprite, da paleta com lilás selecionado e do personagem lilás em execução. A ampliação, a seta, o cursor desenhado e os rótulos Escolha a cor / Veja no jogo ajudam a ligar a escolha ao resultado. Não são controles novos da plataforma. O personagem está no ar para não se sobrepor à instrução das setas. É o Estúdio local com um projeto de demonstração, sem conta conectada e sem dados de aluno; não é captura de uma aula publicada.
+Slide 5: menino vira o rosto para o pai que está na porta, aponta a tela e o chama. O monitor mostra a execução ampliada do jogo, com o personagem lilás. A cena foi gerada com a captura da execução como referência. O enquadramento e a posição do personagem diferem do slide 4.
+Slide 6: pai e filho conversam à mesa da cozinha; o pai escuta enquanto o menino gesticula. Não há tela à vista.
+Slide 7: os dois sentam no sofá e conversam à mesma altura, com um caderno fechado na mesa. Não há lista de aprovação, resultado escolar ou diagnóstico de interesse.

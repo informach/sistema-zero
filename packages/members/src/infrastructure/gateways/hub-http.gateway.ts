@@ -52,6 +52,38 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
   const now = opts.now ?? (() => new Date())
 
   return {
+    async canUseAdultShowcase(userId: string, accountId: string) {
+      try {
+        const path = '/hub/internal/adult-community-access'
+        const rawBody = JSON.stringify({ userId, accountId })
+        const ts = Math.floor(now().getTime() / 1000)
+        const signature = signHmac(
+          opts.hmacSecret,
+          canonicalHmacMessage({ method: 'POST', path, body: rawBody }),
+          ts,
+        )
+        const response = await doFetch(`${base}${path}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-signature': `t=${ts},v1=${signature}` },
+          body: rawBody,
+          signal: AbortSignal.timeout(timeoutMs),
+        })
+        if (!response.ok) return null
+        const body: unknown = await response.json()
+        if (
+          !body ||
+          typeof body !== 'object' ||
+          !('audience' in body) ||
+          body.audience !== 'adult' ||
+          !('available' in body) ||
+          typeof body.available !== 'boolean'
+        )
+          return null
+        return body.available
+      } catch {
+        return null
+      }
+    },
     async notifyAccessChanged(userId: string, event: string): Promise<void> {
       try {
         const rawBody = JSON.stringify({ userId, event })
@@ -142,9 +174,17 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
       }
     },
 
-    async listShowcaseByAuthor(profileId: string, limit: number): Promise<PublicGameItem[] | null> {
+    async listShowcaseByAuthor(
+      profileId: string,
+      limit: number,
+      audience: 'adult' | 'kids' = 'kids',
+    ): Promise<PublicGameItem[] | null> {
       try {
-        const rawBody = JSON.stringify({ authorId: profileId, limit })
+        const rawBody = JSON.stringify({
+          authorId: profileId,
+          limit,
+          ...(audience === 'adult' ? { audience } : {}),
+        })
         const ts = Math.floor(now().getTime() / 1000)
         const signature = signHmac(
           opts.hmacSecret,
@@ -164,7 +204,8 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
           opts.logger?.warn('hub.showcase_by_author_failed', { status: res.status })
           return null
         }
-        const body = (await res.json()) as { items?: unknown }
+        const body = (await res.json()) as { items?: unknown; audience?: unknown }
+        if (audience === 'adult' && body.audience !== 'adult') return null
         if (!Array.isArray(body.items)) return null
         return body.items
           .filter((i): i is Record<string, unknown> => Boolean(i) && typeof i === 'object')
@@ -229,9 +270,12 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
       }
     },
 
-    async checkPlay(playId: string): Promise<PlayCheckResult | null> {
+    async checkPlay(
+      playId: string,
+      audience: 'adult' | 'kids' = 'kids',
+    ): Promise<PlayCheckResult | null> {
       try {
-        const rawBody = JSON.stringify({ playId })
+        const rawBody = JSON.stringify({ playId, ...(audience === 'adult' ? { audience } : {}) })
         const ts = Math.floor(now().getTime() / 1000)
         const signature = signHmac(
           opts.hmacSecret,
@@ -251,7 +295,12 @@ export function createHubHttpGateway(opts: HubHttpGatewayOptions): HubGateway {
           opts.logger?.warn('hub.play_check_failed', { status: res.status })
           return null
         }
-        const body = (await res.json()) as { visible?: unknown; authorId?: unknown }
+        const body = (await res.json()) as {
+          visible?: unknown
+          authorId?: unknown
+          audience?: unknown
+        }
+        if (audience === 'adult' && body.audience !== 'adult') return null
         return {
           visible: body.visible === true,
           authorId: typeof body.authorId === 'string' ? body.authorId : null,

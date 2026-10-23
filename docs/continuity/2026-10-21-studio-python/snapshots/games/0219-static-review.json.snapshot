@@ -1,0 +1,9 @@
+{
+  "state": "STATIC-PREPARATION-PASS-NO-NATIVE-START",
+  "packetSha256": "3d46e99b80448903029c780ba5f63cfa891398d377de99e724272bd743e4a063",
+  "pythonCompilePassed": true,
+  "nodeSyntaxPassed": true,
+  "expiredWindowRefusedBeforeOutputOrPythonSpawn": true,
+  "nativeEnvironmentFiles": 14,
+  "observerSha256": "1908592ec015b6dddc985300daa383bca0ed8f623c1e6bbc67cbe56a8d7fa5bc"
+}

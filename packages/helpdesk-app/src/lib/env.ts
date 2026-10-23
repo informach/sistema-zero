@@ -2,6 +2,20 @@ import 'server-only'
 import { z } from 'zod'
 
 /**
+ * URL pública de outro console (opcional). Em branco ou inválida conta como AUSENTE: é só um
+ * link, e o `getEnv` roda em toda página — uma variável mal preenchida no Railway não pode
+ * derrubar o app inteiro (o sintoma do erro é o link não aparecer). Só http(s): o valor vira
+ * `href`.
+ */
+const optionalAppUrl = z.preprocess(
+  (value) => (typeof value === 'string' && value.trim() === '' ? undefined : value),
+  z
+    .url({ protocol: /^https?$/ })
+    .optional()
+    .catch(undefined),
+)
+
+/**
  * Env do servidor (fail-fast). NUNCA é importado por Client Component — `server-only`
  * garante o erro de build se vazar para o bundle do cliente.
  */
@@ -20,6 +34,11 @@ const EnvSchema = z
 
     // Sentry (opcional): ausente = no-op. Espelho de erros LOCAIS do app.
     SENTRY_DSN: z.string().url().optional(),
+
+    // Os outros consoles da equipe, no menu do avatar (nova aba). OPCIONAIS: ausentes → o
+    // link some.
+    ADMIN_APP_URL: optionalAppUrl,
+    MARKETING_APP_URL: optionalAppUrl,
   })
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.
   .refine((e) => Boolean(e.JWT_HS256_SECRET || e.JWT_JWKS_URL), {

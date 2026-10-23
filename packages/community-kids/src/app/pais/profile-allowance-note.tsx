@@ -3,9 +3,12 @@
 import { Button } from '@sistemazero/ui/button'
 import { RefreshCw } from 'lucide-react'
 import Link from 'next/link'
-import { COMUNIDADE_OFERTA_URL } from '@/lib/links'
+import { comunidadeContinuarUrl } from '@/lib/links'
 import { comunidadeRaisesLimit, type ProfileAllowance } from '@/lib/profile-allowance'
 import { PARENT_SUPPORT_HREF } from './parent-routes'
+
+/** O caminho para a Comunidade, com a origem `pais-limite-perfis` no UTM. */
+const OFFER_HREF = comunidadeContinuarUrl('pais-limite-perfis')
 
 const OFFER_LINK =
   'font-semibold text-primary underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2'
@@ -34,12 +37,7 @@ export function ProfileAllowanceNote({
           comunidadeRaisesLimit(max) ? (
             <>
               Você usou todos os <strong>{max}</strong> {word} do seu plano. Para liberar mais,{' '}
-              <a
-                href={COMUNIDADE_OFERTA_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={OFFER_LINK}
-              >
+              <a href={OFFER_HREF} target="_blank" rel="noopener noreferrer" className={OFFER_LINK}>
                 amplie o seu acesso
               </a>
               .
@@ -68,12 +66,7 @@ export function ProfileAllowanceNote({
     return (
       <p className="mt-3 text-sm text-muted-foreground">
         Seu acesso atual não inclui novos perfis.{' '}
-        <a
-          href={COMUNIDADE_OFERTA_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={OFFER_LINK}
-        >
+        <a href={OFFER_HREF} target="_blank" rel="noopener noreferrer" className={OFFER_LINK}>
           Conheça a Comunidade dos Criadores
         </a>
         .

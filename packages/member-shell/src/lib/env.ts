@@ -5,7 +5,8 @@ import { z } from 'zod'
  * Env do servidor (fail-fast). NUNCA é importado por Client Component — `server-only`
  * garante o erro de build se vazar para o bundle do cliente.
  */
-const EnvSchema = z
+// Exportado para o teste do interruptor tolerante (`VOICE_INPUT_ENABLED`).
+export const EnvSchema = z
   .object({
     GATEWAY_URL: z.string().url().default('http://localhost:3000'),
     // Verificação do access JWT — HS256 (segredo compartilhado; dev/local) e/ou
@@ -38,6 +39,15 @@ const EnvSchema = z
       .optional(),
     // Bearer enviado pelo scheduler ao worker de limpeza R2 pós-TTL.
     CREATION_CLEANUP_CRON_SECRET: z.string().min(24).optional(),
+    STUDIO_AI_RECONCILE_CRON_SECRET: z.string().min(24).optional(),
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_BUILDER_EXECUTOR_SECRET: z.string().min(32).optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
+    STUDIO_PYTHON_LANGUAGE_URL: z.string().url().optional(),
+    STUDIO_PYTHON_LANGUAGE_TOKEN: z.string().min(32).optional(),
+    STUDIO_PYTHON_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PYTHON_RUNTIME_TOKEN: z.string().min(32).optional(),
+    OPENROUTER_STUDIO_BUILDER_MODEL: z.string().optional(),
     // Chave estável do cookie temporário da Área dos Pais do community-kids. Em
     // produção aquele app a exige no boot; aqui permanece opcional porque o shell
     // também serve apps que não possuem esse portão.
@@ -52,6 +62,9 @@ const EnvSchema = z
     R2_SECRET_ACCESS_KEY: z.string().optional(),
     R2_BUCKET: z.string().optional(),
     R2_PUBLIC_URL: z.string().url().optional(),
+    // Endpoint S3 compatível para QA local. Ausente usa o endpoint oficial da conta R2.
+    // HTTP só é aceito em loopback; nunca se envia credenciais a um host remoto sem TLS.
+    R2_S3_ENDPOINT: z.string().url().optional(),
     // Bucket PRIVADO (materiais didáticos) — leitura p/ a rota de download com marca
     // d'água. Sem URL pública; mesmas credenciais R2. Ausente → download responde 503.
     R2_PRIVATE_BUCKET: z.string().optional(),
@@ -73,14 +86,26 @@ const EnvSchema = z
     // no OPENROUTER_PENSA_MODEL, e este no OPENROUTER_MODEL.
     OPENROUTER_PENSA_SYNTHESIS_MODEL: z.string().optional(),
     OPENROUTER_ZAPPY_MODEL: z.string().optional(),
+    // Transcrição da fala da criança (voz → texto para a equipe). Ausentes → os padrões de
+    // `server/openrouter-transcribe.ts` (`openai/gpt-transcribe`, reserva `gpt-4o-mini-transcribe`).
+    OPENROUTER_TRANSCRIBE_MODEL: z.string().optional(),
+    OPENROUTER_TRANSCRIBE_FALLBACK_MODEL: z.string().optional(),
     OPENROUTER_REFERER: z.string().url().optional(),
-    // Interruptor de emergência. A jornada decide o acesso; equipe sempre entra.
-    ZAPPY_ENABLED: z
-      .enum(['true', 'false'])
-      .default('true')
-      .transform((value) => value === 'true'),
-    // Interruptor de emergência do rascunho da fase guardado na conta (10/10/2026). Desligado,
-    // o Estúdio e o Pinta da fase voltam a guardar só no navegador; o "envio em dia" deixa passar.
+    // Interruptor da fala da criança (14/10/2026), DESLIGADO por padrão: ligado e com a chave do
+    // OpenRouter, a opção aparece para os pais (que ligam por criança) e o botão de falar nas
+    // mensagens para a equipe.
+    // ⚠️ Tolerante DE PROPÓSITO: é a chave que se digita à mão no Railway, e um `enum` estrito
+    // derrubava o app inteiro (toda rota lê o `getEnv()`) com um "TRUE" ou "1". Só "true" liga.
+    VOICE_INPUT_ENABLED: z
+      .string()
+      .optional()
+      .transform((value) => value?.trim().toLowerCase() === 'true'),
+    // A voz do Zappy (ElevenLabs) liga sozinha quando a chave existe: sem interruptor de piloto
+    // (decisão dela, 14/10/2026). No Railway as duas são REFERÊNCIAS às do serviço admin.
+    ELEVENLABS_API_KEY: z.string().optional(),
+    ELEVENLABS_VOICE_ID: z.string().optional(),
+    // Interruptor de emergência do rascunho da aula guardado na conta (10/10/2026). Desligado,
+    // o Estúdio e o Pinta da aula voltam a guardar só no navegador; o "envio em dia" deixa passar.
     LESSON_DRAFTS_ENABLED: z
       .enum(['true', 'false'])
       .default('true')
@@ -114,6 +139,24 @@ const EnvSchema = z
     message: 'Em produção, MEMBER_SHELL_HMAC_SECRET é obrigatório para Zappy e downloads de aula',
     path: ['MEMBER_SHELL_HMAC_SECRET'],
   })
+  .refine(
+    (e) => {
+      if (!e.R2_S3_ENDPOINT) return true
+      const url = new URL(e.R2_S3_ENDPOINT)
+      return (
+        !url.username &&
+        !url.password &&
+        !url.search &&
+        !url.hash &&
+        (url.protocol === 'https:' ||
+          (url.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
+      )
+    },
+    {
+      message: 'R2_S3_ENDPOINT exige HTTPS ou HTTP em loopback, sem credenciais ou parâmetros',
+      path: ['R2_S3_ENDPOINT'],
+    },
+  )
 
 export type Env = z.infer<typeof EnvSchema>
 

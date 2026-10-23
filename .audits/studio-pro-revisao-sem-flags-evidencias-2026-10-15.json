@@ -1,0 +1,278 @@
+{
+  "verifiedAt": "2026-10-15T22:55:13.940Z",
+  "reviewBase": "95aad63db4b5caf21525adbb27248c96ed54e763",
+  "reviewBranch": "fix/studio-pro-full-review",
+  "findings": "F01–F10 corrected; see studio-pro-revisao-sem-flags-2026-10-15.md",
+  "releaseFlags": "Removed; journey/product authorization and technical preflight retained",
+  "tests": [
+    {
+      "package": "studio",
+      "command": "bun test src --timeout 15000",
+      "passed": 9048,
+      "failed": 0,
+      "skipped": 0,
+      "log": "studio-rereview-tests-final.txt",
+      "logSha256": "47f279fe5edbe515442447621f66e47ec935739b1a590f4ff31ea18d6edc3160"
+    },
+    {
+      "package": "member-shell",
+      "command": "bun test tests --timeout 15000",
+      "passed": 1590,
+      "failed": 0,
+      "skipped": 0,
+      "log": "studio-rereview-shell-tests-final.txt",
+      "logSha256": "5f09b0195b822180ab01c0762ef813e47ab7c1ec2d3cc2bbf272d2aa431070a4"
+    },
+    {
+      "package": "members",
+      "command": "bun test tests --timeout 15000",
+      "passed": 1414,
+      "failed": 0,
+      "skipped": 345,
+      "log": "studio-rereview-members-tests.txt",
+      "logSha256": "8a8f3a0d3e44a1e6a93224fe03a0816d2d430fdd9f31f92aa2565019c7dd4519"
+    },
+    {
+      "package": "community-kids",
+      "command": "bun test <22 Studio/Pensa/Molda files> --timeout 15000",
+      "passed": 194,
+      "failed": 0,
+      "skipped": 0,
+      "log": "studio-rereview-kids-tests.txt",
+      "logSha256": "ecacef311617ddb8beae719005c1e8f758a20ce2fb3466c77fecff2cdf766b5b"
+    },
+    {
+      "package": "core",
+      "command": "bun test src/studio --timeout 15000",
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "log": "studio-rereview-core-tests.txt",
+      "logSha256": "c5e1f77162970c5ceb1938da5c94621f6dde045eb7bcb33c48453f57b8fef8ff"
+    },
+    {
+      "package": "studio-runtime",
+      "command": "bun test --timeout 15000",
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "log": "studio-rereview-runtime-tests.txt",
+      "logSha256": "e163e2eb3360ab4cf6477b6742aba7ffc181507b2453cdf94a912c82c59f1e31"
+    }
+  ],
+  "typechecks": [
+    {
+      "package": "studio",
+      "exitCode": 0
+    },
+    {
+      "package": "member-shell",
+      "exitCode": 0
+    },
+    {
+      "package": "community-kids",
+      "exitCode": 0
+    },
+    {
+      "package": "members",
+      "exitCode": 0
+    },
+    {
+      "package": "admin",
+      "exitCode": 0
+    },
+    {
+      "package": "studio-runtime",
+      "exitCode": 0
+    }
+  ],
+  "browser": {
+    "command": "E2E_PORT=15341 bunx playwright test --config .cache/studio-rereview.playwright.config.ts",
+    "configuration": "Desktop Chrome, one worker; original Studio production webServer/baseURL; specs: pro-builder-review, pro-candidate-preview, pro-kit-sound, pro-publication",
+    "passed": 6,
+    "failed": 0,
+    "log": "studio-rereview-browser-final.txt",
+    "logSha256": "bd1766881bae705636afe1d6bde59615859ac7527cad29094284c6ae3bc682fc",
+    "checks": [
+      "StrictMode diff/apply/undo/disposal",
+      "candidate isolation and 20 swaps",
+      "expiry and unavailable artifact",
+      "published progress across revisions",
+      "audio opt-in, mute and disposal",
+      "360px captures inspected"
+    ],
+    "initialFailure": "Temporary runner omitted the baseURL needed by the audio fixture. Restored the original production webServer/baseURL; audio passed alone and the entire six-scenario selection passed afterward. No application code changed for this setup failure."
+  },
+  "docker": {
+    "image": "sistemazero-studio-runtime:verify",
+    "imageId": "sha256:f82c4ea1bea97daaf2ec15c414463a58b5956531c00f41488545180bfdcb5c70",
+    "validationFingerprint": "faf7548afcfd6d5d8c18a6ff4ba28dd4d96076baf89b85239e306292a5364b49",
+    "buildExitCode": 0,
+    "smokeExitCode": 0,
+    "validationExitCode": 0,
+    "network": "none",
+    "uid": 1000,
+    "cpu": 1,
+    "memory": "1GB",
+    "note": "Functional checks; durations are not benchmarks because typechecks were also running.",
+    "kits": [
+      {
+        "kit": "canvas-puzzle",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 13147,
+        "bytes": 67809,
+        "captureBytes": 44348,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "canvas-survival",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 28590,
+        "bytes": 114558,
+        "captureBytes": 55903,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "three-exploration",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 36864,
+        "bytes": 652592,
+        "captureBytes": 41477,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "canvas-grid-arena",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 16586,
+        "bytes": 66653,
+        "captureBytes": 39719,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "phaser-tactics",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 48145,
+        "bytes": 1282093,
+        "captureBytes": 51110,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      },
+      {
+        "kit": "three-tactics",
+        "ok": true,
+        "uid": 1000,
+        "durationMs": 20715,
+        "bytes": 583539,
+        "captureBytes": 64294,
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ]
+      }
+    ]
+  },
+  "generators": [
+    "check:pro-kits",
+    "check:pro-typescript-libs",
+    "check:validation-profile"
+  ],
+  "lint": {
+    "command": "bunx biome check <25 changed TS/TSX files>",
+    "checked": 25,
+    "errors": 0,
+    "warnings": 0
+  },
+  "bundleBudget": "Original production Vite budget assertions passed inside the full Studio suite; no thresholds changed",
+  "redGreen": [
+    {
+      "case": "pensa-scope",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "case": "deletion-fairness",
+      "before": 1,
+      "after": 0
+    },
+    {
+      "case": "pro-publication-access",
+      "before": 1,
+      "after": 0
+    }
+  ],
+  "limitations": [
+    "345 Members tests requiring database/services skipped in this run; earlier dedicated PostgreSQL evidence remains historical.",
+    "No paid OpenRouter/BYOK invocation, authenticated external-host session, Cloudflare deployment or physical-device certification in this review.",
+    "Previous 30-minute soak, terminal and nine-kit performance results were not rerun; see the earlier evidence report.",
+    "Ambiguous initial publication promotion and unaccepted webhook delivery retain documented operational reconciliation/replay procedures.",
+    "A07 remains outside the approved A01–A06 addendum."
+  ],
+  "publication": "Local commit and merge only; no push, deploy or remote migration"
+}

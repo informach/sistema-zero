@@ -1,5 +1,6 @@
 import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
+import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../../domain/course/lesson-block'
 import {
   assertInternalCaller,
   assertMemberShellConsumer,
@@ -20,7 +21,14 @@ const Input = t.Object({
     }),
     { minItems: 1, maxItems: 12 },
   ),
-  message: t.Optional(t.String({ maxLength: 2000 })),
+  /**
+   * Recado OPCIONAL ao professor, o mesmo teto do Estúdio e do Pinta (a coluna é
+   * `varchar(1000)`). Vale no preparo E no commit assinado: o preparo recusa ANTES de o BFF
+   * copiar os trabalhos no armazenamento.
+   */
+  message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
+  /** O recado foi falado e transcrito (voz para texto). Ausente = digitado. */
+  messageSpoken: t.Optional(t.Boolean()),
 })
 export function galleryDeliveryRoutes(deps: {
   gallery: GalleryDeliveryService
@@ -32,7 +40,7 @@ export function galleryDeliveryRoutes(deps: {
     )
     .post(
       '/lessons/:lessonId/blocks/:blockId/gallery-prepare',
-      ({ headers, params, body }) =>
+      ({ headers, params, body, request }) =>
         deps.gallery.prepare(
           {
             userId: resolveUserId(headers),
@@ -42,12 +50,13 @@ export function galleryDeliveryRoutes(deps: {
           params.lessonId,
           params.blockId,
           body,
+          { signal: request.signal },
         ),
       { params: Params, body: Input },
     )
     .post(
       '/internal/lessons/:lessonId/blocks/:blockId/gallery-commit',
-      ({ headers, params, body }) => {
+      ({ headers, params, body, request }) => {
         assertMemberShellConsumer(headers['x-consumer-id'])
         return deps.gallery.commit(
           body.actor,
@@ -55,6 +64,7 @@ export function galleryDeliveryRoutes(deps: {
           params.blockId,
           body.input,
           body.projectForChecks,
+          { signal: request.signal, copyGeneration: body.copyGeneration },
         )
       },
       {
@@ -63,6 +73,7 @@ export function galleryDeliveryRoutes(deps: {
           actor: t.Object({ userId: Id, accountId: Id, privileged: t.Boolean() }),
           input: Input,
           projectForChecks: t.Unknown(),
+          copyGeneration: Id,
         }),
       },
     )

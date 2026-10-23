@@ -1,3 +1,5 @@
+import type { StudioTutorFileReference, StudioTutorIntent } from '@sistemazero/core/studio'
+
 export type ZappyScope =
   | 'block'
   | 'mechanic'
@@ -17,7 +19,12 @@ export type ZappyScope =
   | 'quota'
 
 export interface ZappyStoredResponse {
+  programmingLanguage?: 'javascript' | 'python'
   id: string
+  intent?: StudioTutorIntent
+  kind?: 'classic' | 'pro'
+  fileReferences?: StudioTutorFileReference[]
+  sourceRevision?: number
   text: string
   scope: ZappyScope
   blockReferences: Array<{
@@ -61,6 +68,7 @@ export interface ZappyHistoryPage {
 }
 
 export interface ReserveZappyQuestionInput {
+  programmingLanguage?: 'javascript' | 'python'
   userId: string
   accountId: string
   projectId: string
@@ -81,7 +89,12 @@ export interface ReserveZappyQuestionResult {
    * Últimos turnos da conversa (cronológico, ≤6) — memória do tutor no prompt.
    * Só no caminho de pergunta NOVA (reclaim de lease fica sem, aceito).
    */
-  recentMessages?: Array<{ role: 'user' | 'assistant'; text: string }>
+  recentMessages?: Array<{
+    role: 'user' | 'assistant'
+    text: string
+    kind?: 'classic' | 'pro'
+    programmingLanguage?: 'javascript' | 'python'
+  }>
 }
 
 export interface CompleteZappyQuestionInput {

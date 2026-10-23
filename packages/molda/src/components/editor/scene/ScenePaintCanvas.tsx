@@ -18,6 +18,9 @@ export function ScenePaintCanvas({
   twoPoint = false,
   draft,
   scope,
+  sheet = false,
+  overlay,
+  viewScale = 1,
 }: {
   image: SceneImage
   palette: readonly SceneRgba[]
@@ -27,6 +30,9 @@ export function ScenePaintCanvas({
   twoPoint?: boolean
   draft?: ScenePaintDraft | null
   scope?: ScenePixelRegion
+  sheet?: boolean
+  overlay?: React.ReactNode
+  viewScale?: number
 }) {
   const { width, height } = image
   const root = useRef<HTMLButtonElement>(null)
@@ -35,6 +41,8 @@ export function ScenePaintCanvas({
   const live = useRef(actions)
   live.current = actions
   const [savedCursor, setCursor] = useState<Texel>([0, 0])
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
   const cursor: Texel = [Math.min(savedCursor[0], width - 1), Math.min(savedCursor[1], height - 1)]
   const hint = useId()
   const finish = useCallback((commit: boolean) => {
@@ -72,13 +80,21 @@ export function ScenePaintCanvas({
     else actions.end(true)
   }
   return (
-    <div className="space-y-2">
+    <div className={sheet ? 'mld-sheet-paint' : 'space-y-2'}>
       <button
         ref={root}
         type="button"
+        data-paint-canvas=""
         aria-label={COPY.scene.paintCanvas}
         aria-describedby={hint}
-        className="block w-full touch-none rounded-lg border-0 p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
+        className={`block w-full touch-none border-0 p-0 ${sheet ? 'outline-none' : 'rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent'}`}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => {
+          setFocused(false)
+          finish(false)
+        }}
         onPointerDown={(event) => {
           if (keyboard.current) finish(false)
           if (pointer.current !== null) {
@@ -99,8 +115,14 @@ export function ScenePaintCanvas({
           }
         }}
         onPointerMove={(event) => {
-          if (pointer.current !== event.pointerId) return
           const selected = point(event.clientX, event.clientY)
+          if (pointer.current !== event.pointerId) {
+            if (sheet && pointer.current === null && !keyboard.current && selected)
+              setCursor((before) =>
+                before[0] === selected[0] && before[1] === selected[1] ? before : selected,
+              )
+            return
+          }
           if (selected) setCursor(selected)
           actions.move(selected ? { point: selected, region: 'image' } : null)
         }}
@@ -149,27 +171,78 @@ export function ScenePaintCanvas({
           }
         }}
       >
-        <span className="relative block" style={{ maxWidth: (256 * width) / height }}>
-          <SceneImagePreview image={image} palette={palette} base={base} />
-          {(draft || scope) && (
-            <ScenePaintOverlay width={width} height={height} draft={draft} scope={scope} />
-          )}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute border border-white outline outline-1 outline-black"
-            style={{
-              left: `${(cursor[0] / width) * 100}%`,
-              bottom: `${(cursor[1] / height) * 100}%`,
-              width: `${100 / width}%`,
-              height: `${100 / height}%`,
-            }}
+        <span
+          className="relative block"
+          style={sheet ? undefined : { maxWidth: (256 * width) / height }}
+        >
+          <SceneImagePreview
+            image={image}
+            palette={palette}
+            base={base}
+            maxHeight={sheet ? height : 256}
+            square={sheet}
           />
+          {overlay}
+          {(draft || scope) && (
+            <ScenePaintOverlay
+              width={width}
+              height={height}
+              draft={draft}
+              scope={scope}
+              viewScale={viewScale}
+            />
+          )}
+          {sheet ? (
+            (hovered || focused) && (
+              <svg
+                aria-hidden="true"
+                viewBox={`0 0 ${width} ${height}`}
+                className="mld-uv-sheet-outlines"
+              >
+                <rect
+                  x={cursor[0]}
+                  y={height - cursor[1] - 1}
+                  width={1}
+                  height={1}
+                  fill="none"
+                  stroke="black"
+                  strokeWidth={3 / viewScale}
+                />
+                <rect
+                  x={cursor[0]}
+                  y={height - cursor[1] - 1}
+                  width={1}
+                  height={1}
+                  fill="none"
+                  stroke="white"
+                  strokeWidth={1 / viewScale}
+                />
+              </svg>
+            )
+          ) : (
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute border border-white outline outline-1 outline-black"
+              style={{
+                borderWidth: 1 / viewScale,
+                outlineWidth: 1 / viewScale,
+                left: `${(cursor[0] / width) * 100}%`,
+                bottom: `${(cursor[1] / height) * 100}%`,
+                width: `${100 / width}%`,
+                height: `${100 / height}%`,
+              }}
+            />
+          )}
         </span>
       </button>
-      <p id={hint} className="text-xs text-mld-muted">
-        {twoPoint ? COPY.scene.paintShapeKeyboard : COPY.scene.paintCanvasHint}
+      <p id={hint} className={sheet ? 'sr-only' : 'text-xs text-mld-muted'}>
+        {sheet
+          ? 'Use as setas para escolher um pixel. Enter pinta ou confirma. Esc cancela. Segure Espaço e arraste para mover a visualização.'
+          : twoPoint
+            ? COPY.scene.paintShapeKeyboard
+            : COPY.scene.paintCanvasHint}
       </p>
-      <p role="status" className="text-xs text-mld-muted">
+      <p role="status" className={sheet ? 'sr-only' : 'text-xs text-mld-muted'}>
         {COPY.scene.paintCursor(cursor[0] + 1, cursor[1] + 1)}
       </p>
     </div>

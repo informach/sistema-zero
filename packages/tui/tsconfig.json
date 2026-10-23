@@ -3,6 +3,7 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "jsxImportSource": "@opentui/react",
-    "types": ["bun", "react"]
+    "types": ["bun", "node", "react"],
+    "typeRoots": ["./node_modules/@types"]
   }
 }

@@ -1,3 +1,4 @@
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { Trophy } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import { FocusRefresh } from '@/components/kids/focus-refresh'
@@ -36,8 +37,7 @@ export default async function RankingPage() {
   const league = leagueRes?.status === 200 ? (leagueRes.body ?? null) : null
   const canPublish = canOpenFreeStudio(
     studioRes?.status === 200 && studioRes.body?.access?.['estudio-completo'] === true,
-    gamRes?.status === 200 ? gamRes.body?.level?.slug : undefined,
-    session.role,
+    kidsJourneyAccess(gamRes?.status === 200 ? gamRes.body : null),
     unlocksRes,
   )
 

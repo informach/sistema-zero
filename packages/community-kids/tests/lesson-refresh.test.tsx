@@ -15,7 +15,7 @@ import { type ReactNode, useEffect } from 'react'
  * A atualização da aula sem derrubar a atividade (11/10/2026). Relato dela: com o Estúdio
  * AMPLIADO, "Verificar esta parte" recarregou a página inteira (build novo no servidor: o
  * `router.refresh()` do Next 16 vira recarregamento) e, numa segunda vez, "recarregou os
- * bloquinhos" (o refresh re-semeava o editor). O que este arquivo trava:
+ * blocos" (o refresh re-semeava o editor). O que este arquivo trava:
  * 1. o agendador junta os pedidos e ESPERA a atividade ampliada fechar;
  * 2. o "Verificar" só atualiza quando o objetivo passou;
  * 3. a semente do Estúdio não depende do conteúdo que chega novo a cada refresh;
@@ -86,7 +86,12 @@ function comPlayer(refresh: () => void, filho: ReactNode) {
     viewerWatermark: null,
     initialPositionSeconds: null,
     refreshAfterLearning: refresh,
-    sectionProjectCheck: { sectionId: SECTION, revision: 'r'.repeat(32), blockId: 'projeto' },
+    sectionProjectCheck: {
+      sectionId: SECTION,
+      revision: 'r'.repeat(32),
+      blockId: 'projeto',
+      objectives: [{ id: 'revelar-ao-toque', label: 'Revele ao toque', kind: 'block' }],
+    },
   }
   return <LessonPlayerProvider value={value}>{filho}</LessonPlayerProvider>
 }
@@ -98,11 +103,21 @@ describe('"Verificar esta parte"', () => {
   })
 
   async function verificar(passed: boolean) {
-    globalThis.fetch = mock(async () =>
-      Response.json({ passed, results: [{ checkId: 'revelar-ao-toque', passed }] }),
-    ) as unknown as typeof fetch
+    let saved = false
+    globalThis.fetch = mock(async () => {
+      expect(saved).toBe(true)
+      return Response.json({ passed, results: [{ id: 'revelar-ao-toque', passed }] })
+    }) as unknown as typeof fetch
     const refresh = mock(() => {})
-    const handleRef = { current: { getProject: () => ({ id: 'p' }) } as never }
+    const handleRef = {
+      current: {
+        getProject: () => ({ id: 'p' }),
+        save: async () => {
+          await Promise.resolve()
+          saved = true
+        },
+      } as never,
+    }
     render(comPlayer(refresh, <SectionProjectCheck blockId="projeto" handleRef={handleRef} />))
     await act(async () => {
       fireEvent.click(screen.getByRole('button'))
@@ -122,7 +137,7 @@ describe('"Verificar esta parte"', () => {
 })
 
 describe('as travas no código', () => {
-  test('a semente do Estúdio da fase não depende do conteúdo que chega novo a cada refresh', () => {
+  test('a semente do Estúdio da aula não depende do conteúdo que chega novo a cada refresh', () => {
     const fonte = ler('member-shell/src/components/studio/studio-block.tsx')
     // As dependências do efeito de semente (o único com `seedLoadAttempt` na lista).
     const deps = fonte.match(/\}, \[([^\]]*seedLoadAttempt[^\]]*)\]\)/)?.[1]

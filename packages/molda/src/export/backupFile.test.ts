@@ -83,8 +83,19 @@ function zipWithDuplicateEntry(name: string, first: string, second: string): Pro
   })
 }
 
-describe('leitor de backup do Molda ("Trazer de volta")', () => {
+describe('leitor de backup do Molda ("Importar projeto")', () => {
   const json = galleryToJsonText([makeSky()], 123)
+
+  it('a larger local gallery does not authorize a 200 MiB external JSON allocation', async () => {
+    const zip = zipBytes({ [MOLDA_GALLERY_ZIP_ENTRY]: json })
+    const oversized = patchFirstSignature(zip, 0x02014b50, (view, offset) => {
+      view.setUint32(offset + 24, 200 * 1024 ** 2, true)
+    })
+    expect(await readMoldaBackupFile(new File([ownedBuffer(oversized)], 'oversized.zip'))).toEqual({
+      ok: false,
+      reason: 'too-large',
+    })
+  })
 
   it('abre o ZIP e lê somente diretório, cabeçalho e JSON, nunca a entrada grande ignorada', async () => {
     const ignored = new Uint8Array(2 * 1024 * 1024)

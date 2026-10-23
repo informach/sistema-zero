@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict'
+import {readFile,writeFile} from 'node:fs/promises'
+import {createHash} from 'node:crypto'
+import {resolve,dirname} from 'node:path'
+import {fileURLToPath} from 'node:url'
+import {buildProProject} from '../../../packages/studio/src/core/proProject'
+import {prepareEditableStudioProject} from '../../../packages/studio/src/state/editableProjectValidation'
+const here=dirname(fileURLToPath(import.meta.url)),root=resolve(here,'../../..')
+const fixture=JSON.parse(await readFile(resolve(root,'.cache/studio-python-l0/pro-legacy-hosted-9e33-r1/fixture.json'),'utf8'))
+const legacy=await readFile(resolve(root,'.cache/studio-python-l0/pro-legacy-hosted-members-9e33-r5/legacy-package.json'),'utf8')
+const files={...fixture.files,'package.json':legacy}
+const tree:Record<string,{kind:'dir'}|{kind:'file';content:string}>={src:{kind:'dir'}}
+for(const [path,content]of Object.entries(files)){assert.equal(typeof content,'string');tree[path]={kind:'file',content:content as string}}
+const raw=buildProProject('qa-legacy-vanilla-source','QA Pro legado',tree,'dev','vanilla-vite')
+raw.createdAt=0;raw.updatedAt=0
+const checked=await prepareEditableStudioProject(raw)
+assert.equal(checked.kind,'pro');assert.equal(checked.id,raw.id)
+assert.deepEqual(checked.tree,raw.tree)
+assert.equal(JSON.parse(legacy).devDependencies.vite,'8.0.16')
+const bytes=JSON.stringify(raw,null,2)+'\n'
+await writeFile(resolve(here,'legacy.szproject.json'),bytes,{flag:'wx'})
+await writeFile(resolve(here,'fixture-check.json'),JSON.stringify({canonicalReader:true,files:Object.entries(files).map(([path,content])=>({path,sha256:createHash('sha256').update(content as string).digest('hex')})),assets:0,expectedLockSha256:fixture.expectedLockSha256,fixtureSha256:createHash('sha256').update(bytes).digest('hex')},null,2)+'\n',{flag:'wx'})
+console.log(JSON.stringify({passed:true,canonicalReader:true,files:Object.keys(files).length,assets:0,providerCalls:0}))

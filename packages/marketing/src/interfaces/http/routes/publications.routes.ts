@@ -102,7 +102,7 @@ export function publicationsRoutes(deps: PublicationsRoutesDeps) {
     )
     .put(
       '/marketing/publications/:id/assets',
-      ({ params, body }) => deps.publications.setAssets(params.id, body.assetIds),
+      ({ params, body }) => deps.publications.setAssets(params.id, body.assetIds, body.version),
       { params: IdParams, body: PublicationAssetsBody },
     )
     .post(

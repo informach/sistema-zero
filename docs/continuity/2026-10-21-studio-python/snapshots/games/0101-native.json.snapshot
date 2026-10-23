@@ -1,0 +1,254 @@
+{
+  "state": "native-functional-passed",
+  "scenario": "Q05",
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "runnerSha256": "e6cefcb36ad08d6c2130c2a4c2eb3e9b05aec76d2f6837c21e02e88f803d83c1",
+  "observerSha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a",
+  "sourceReceiptSha256": "9acc5ea7b0d1d4fc4f9239299df2062f39281a894d39a45dc8ba3238efa3d419",
+  "observations": [
+    {
+      "kind": "installed",
+      "step": 0,
+      "sourceDeclaredSetup": [
+        1020,
+        620
+      ],
+      "pools": {
+        "enemies": 25,
+        "missiles": 30,
+        "stars": 20,
+        "powerups": 5
+      },
+      "particles": [
+        30,
+        20
+      ]
+    },
+    {
+      "kind": "authored-binding-invocation",
+      "step": 0,
+      "key": "s",
+      "release": false,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 0.0,
+        "thrust": 0.0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      }
+    },
+    {
+      "kind": "declared-state-injection",
+      "step": 0,
+      "operation": "isolate existing targets",
+      "values": {
+        "enemies": "x=-700+35*i,y=500",
+        "powerups": "x=-650+40*i,y=-500",
+        "missiles": "ready",
+        "velocities": 0,
+        "player": "origin,heading90,zero momentum/thrust"
+      }
+    },
+    {
+      "kind": "declared-state-injection",
+      "step": 0,
+      "operation": "existing object attributes",
+      "values": {
+        "object": "Powerup",
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 0,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 0,
+        "thrust": 0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": 0
+      },
+      "stampCount": 24,
+      "canvasItems": 75
+    },
+    {
+      "kind": "pickup-upgrade",
+      "step": 0,
+      "missiles": 31,
+      "first": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 0.0,
+        "da": 0.0,
+        "thrust": 5.25,
+        "state": "ready",
+        "fuel": 200.0,
+        "max_fuel": 220.00000000000003,
+        "damage": 5.5
+      }
+    },
+    {
+      "kind": "declared-state-injection",
+      "step": 0,
+      "operation": "isolate existing targets",
+      "values": {
+        "enemies": "x=-700+35*i,y=500",
+        "powerups": "x=-650+40*i,y=-500",
+        "missiles": "ready",
+        "velocities": 0,
+        "player": "origin,heading90,zero momentum/thrust"
+      }
+    },
+    {
+      "kind": "declared-state-injection",
+      "step": 0,
+      "operation": "existing object attributes",
+      "values": {
+        "object": "Powerup",
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "kind": "declared-state-injection",
+      "step": 0,
+      "operation": "existing object attributes",
+      "values": {
+        "object": "Missile",
+        "x": 100,
+        "y": 100,
+        "dx": 0,
+        "dy": 0,
+        "state": "active"
+      }
+    },
+    {
+      "kind": "rendered-frame",
+      "step": 1,
+      "player": {
+        "x": 0.0,
+        "y": 0.0,
+        "dx": 0.0,
+        "dy": 0.0,
+        "heading": 90.0,
+        "da": 0,
+        "thrust": 0,
+        "state": "active",
+        "health": 40,
+        "lives": 3,
+        "score": -50
+      },
+      "stampCount": 25,
+      "canvasItems": 78
+    },
+    {
+      "kind": "missile-powerup-penalty",
+      "step": 1,
+      "score": -50,
+      "sounds": [
+        "powerup.wav",
+        "explosion.wav",
+        "explosion.wav"
+      ]
+    },
+    {
+      "kind": "complete",
+      "step": 2,
+      "sounds": [
+        "powerup.wav",
+        "explosion.wav",
+        "explosion.wav"
+      ],
+      "clearWitnesses": [
+        {
+          "before": 3,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 24,
+          "after": 0,
+          "canvasItemsAfter": 4
+        },
+        {
+          "before": 25,
+          "after": 0,
+          "canvasItemsAfter": 4
+        }
+      ],
+      "methodWitnesses": [],
+      "radarWitnesses": [
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        },
+        {
+          "sprite": "Player",
+          "x": 400.0,
+          "y": -200.0,
+          "shape": "triangle",
+          "color": "white"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "rootMapEvents": 0,
+  "rootDestroyEvents": 1,
+  "audioReleased": true,
+  "freshInstall": false,
+  "physicalKeyboard": false,
+  "seed": 2026,
+  "cooperativeBudgetSeconds": 30,
+  "limits": [
+    "Explicit fixtures and QA invocations of authored bindings",
+    "Bounded QA completion after original clear; not natural game exit",
+    "No browser, acoustic, raster, Pro, performance or complete-game acceptance"
+  ],
+  "ownedTemp": "C:\\Users\\tocha\\AppData\\Local\\Temp\\sz-space-functional-1m2go1vt",
+  "zipSha256": "14b95ac84cf7eefc9ff3bdcd6abc6c743c230dd52c0632eaf2c1a0659608a6c1",
+  "entrySha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3",
+  "historicalBrowserDistribution": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+  "installedAudio": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Lib\\site-packages\\sz_audio",
+  "matchingModuleFiles": [
+    "__init__.py",
+    "__init__.pyi",
+    "_desktop.py",
+    "_mixer.py",
+    "_module.json",
+    "_wav.py",
+    "py.typed"
+  ],
+  "dependencies": {
+    "cffi": "2.1.1",
+    "miniaudio": "1.71",
+    "pycparser": "3.11"
+  },
+  "withdrawnBeforeSetup": true,
+  "fullGameReadyMs": 15553.765300021041,
+  "boundedFunctionalCompletion": true,
+  "functionalCompletionBoundary": "authored-timer-callback",
+  "audioBackend": "WASAPI",
+  "exportTreeUnchanged": true,
+  "ownedTempAbsent": true,
+  "elapsedMs": 15732.670400000643
+}

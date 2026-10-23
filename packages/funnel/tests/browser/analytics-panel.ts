@@ -76,8 +76,8 @@ try {
   await firstBatch
   assert.equal(await visitor.locator('#sz-metrics-notice').isVisible(), false)
   assert.ok(!(await context.cookies()).some((c) => c.name === 'sz_metrics'))
-  await visitor.getByRole('link', { name: /^Como funciona/ }).click()
-  await visitor.waitForURL('**/como-funciona/**')
+  await visitor.getByRole('link', { name: /^É para meu filho ou filha/ }).click()
+  await visitor.waitForURL('**/kids/comunidade-dos-criadores/quiz**')
   const capture = spawn(
     process.execPath,
     ['--import', 'tsx', 'scripts/analytics-snapshots.ts', '--page=/', '--width=1280', '--refresh'],
@@ -122,7 +122,7 @@ try {
   assert.ok((await page.locator('svg circle').count()) >= 1)
   await mkdir('output/analytics', { recursive: true })
   await page.screenshot({ path: 'output/analytics/painel-mapa.png', fullPage: true })
-  await page.getByLabel('Recortar uma seção ou elemento').selectOption('bio-como-funciona')
+  await page.getByLabel('Recortar uma seção ou elemento').selectOption('bio-quiz-infantil')
   await page.screenshot({ path: 'output/analytics/painel-recorte.png', fullPage: true })
   assert.deepEqual(errors, [])
   console.log(

@@ -46,6 +46,8 @@ export function createApplication(env: Env): Application {
       })
     : createNullReferralsGateway()
   if (!gatewayEnabled) logger.warn('referrals.gateway_disabled', {})
+  // Sem o app adulto o presente adulto responde "indisponível"; o Kids segue normal.
+  if (!env.COMMUNITY_URL) logger.warn('referrals.adult_gift_disabled', { missing: 'COMMUNITY_URL' })
 
   const redeem = new RedeemScholarshipService(
     repo,
@@ -53,6 +55,8 @@ export function createApplication(env: Env): Application {
     {
       courseSlug: env.SCHOLARSHIP_COURSE_SLUG,
       kidsCommunityUrl: env.KIDS_COMMUNITY_URL,
+      adultCourseSlug: env.SCHOLARSHIP_ADULT_COURSE_SLUG,
+      communityUrl: env.COMMUNITY_URL ?? null,
       leaseMs: env.REDEMPTION_LEASE_MS,
       campaigns: campaignRepo,
     },
@@ -61,13 +65,17 @@ export function createApplication(env: Env): Application {
   const invite = new CreateInviteService(
     repo,
     gateway,
-    { funnelPublicUrl: env.FUNNEL_PUBLIC_URL, dailyLimit: env.INVITE_DAILY_LIMIT },
+    {
+      funnelPublicUrl: env.FUNNEL_PUBLIC_URL,
+      dailyLimit: env.INVITE_DAILY_LIMIT,
+      adultGiftEnabled: Boolean(env.COMMUNITY_URL),
+    },
     logger,
   )
   const ambassadors = new AmbassadorAdminService(
     repo,
     gateway,
-    { funnelPublicUrl: env.FUNNEL_PUBLIC_URL },
+    { funnelPublicUrl: env.FUNNEL_PUBLIC_URL, adultGiftEnabled: Boolean(env.COMMUNITY_URL) },
     logger,
   )
 

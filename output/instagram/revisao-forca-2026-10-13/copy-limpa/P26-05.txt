@@ -1,3 +1,0 @@
-Peça que ele mostre qual regra faz o bastão crescer e qual faz cair.
-
-Ligar o que aparece na tela aos comandos abre uma conversa sobre a construção.

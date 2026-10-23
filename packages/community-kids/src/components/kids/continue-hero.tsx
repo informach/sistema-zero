@@ -63,7 +63,7 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
       title={course.title}
       description={
         publishing
-          ? 'Você concluiu esta aventura. Publique o projeto no Mural para registrar essa conquista na jornada.'
+          ? 'Você concluiu este curso. Publique o projeto no Mural para registrar essa conquista na jornada.'
           : undefined
       }
       footer={
@@ -83,7 +83,7 @@ export function ContinueHero({ courses }: { courses: MyCourseView[] }) {
             />
           </div>
           <span className="kids-marca-suave shrink-0 font-bold text-sm">
-            {course.progress.completedLessons}/{course.progress.totalLessons} fases
+            {course.progress.completedLessons}/{course.progress.totalLessons} aulas
           </span>
         </div>
       }

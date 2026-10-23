@@ -1,6 +1,7 @@
 import { useId } from 'react'
 import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
+import { type SceneMeasurementStep, snapSceneMeasurement } from '../../../scene/measurementStep'
 import { Button } from '../../ui/Button'
 
 /** A labelled native three-axis form; callers own units and command semantics. */
@@ -10,6 +11,7 @@ export function SceneVectorForm({
   values,
   disabled = false,
   min,
+  step,
   onApply,
 }: {
   label: string
@@ -17,20 +19,31 @@ export function SceneVectorForm({
   values: Vec3
   disabled?: boolean
   min?: number
+  step?: SceneMeasurementStep
   onApply(values: Vec3): void
 }) {
   const prefix = useId()
   return (
     <form
       className="space-y-3"
+      noValidate={step !== undefined}
       onSubmit={(event) => {
         event.preventDefault()
         const data = new FormData(event.currentTarget)
-        const read = (axis: string) => {
+        const read = (axis: string, index: number) => {
           const value = data.get(axis)
-          return typeof value === 'string' && value.trim() ? Number(value) : NaN
+          const raw = typeof value === 'string' && value.trim() ? Number(value) : NaN
+          if (step !== undefined && min !== undefined && raw <= 0) return NaN
+          return step !== undefined && raw !== values[index] && Number.isFinite(raw)
+            ? snapSceneMeasurement(raw, step, min)
+            : raw
         }
-        onApply([read('x'), read('y'), read('z')])
+        const next: Vec3 = [read('x', 0), read('y', 1), read('z', 2)]
+        if (next.some((value) => !Number.isFinite(value))) {
+          event.currentTarget.reportValidity()
+          return
+        }
+        onApply(next)
       }}
     >
       <p id={`${prefix}-hint`} className="text-xs text-mld-muted">
@@ -49,11 +62,24 @@ export function SceneVectorForm({
               aria-label={`${label} ${axis.toUpperCase()}`}
               aria-describedby={`${prefix}-hint`}
               type="number"
-              step="any"
+              step={step ?? 'any'}
               required
               disabled={disabled}
               min={min}
               defaultValue={values[i]}
+              onBlur={(event) => {
+                const input = event.currentTarget
+                const raw = Number(input.value)
+                if (
+                  step === undefined ||
+                  !input.value.trim() ||
+                  !Number.isFinite(raw) ||
+                  (min !== undefined && raw <= 0) ||
+                  raw === values[i]
+                )
+                  return
+                input.value = String(snapSceneMeasurement(raw, step, min))
+              }}
               className="min-h-10 w-full min-w-0 bg-transparent pr-2 text-right font-mono text-sm text-mld-text tabular-nums outline-none disabled:opacity-50"
             />
           </label>

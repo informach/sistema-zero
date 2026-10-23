@@ -1,0 +1,74 @@
+Oficina em desenvolvimento. A sincronização com o Estúdio ainda não está ligada aqui.
+
+Meus projetos
+estudo-de-usabilidade
+Mudanças por salvar
+Guardar agora
+Baixar projeto
+Exportar GLB
+Modelar
+Pintar
+Animar
+MOVIMENTO ESCOLHIDO
+Movimento escolhido
+Meu movimento
+NOME DO MOVIMENTO
+Criar movimento
+Renomear movimento
+Experimentar um movimento pronto
+Escolher
+Mover
+Girar
+Mudar tamanho
+Vista: Livre
+Enquadrar seleção
+Mostrar grade
+Mais ajustes do palco
+
+Pause, escolha uma peça e use Mover, Girar ou Mudar tamanho para experimentar uma pose.
+
+Gravar ao soltar as alças
+Gravar pose ajustada
+Cancelar ajuste da pose
+
+Opcional: cada arrasto guarda uma pose e pode ser desfeito.
+
+Peças e propriedades
+PEÇAS E GRUPOS
+Escolher várias
+caixa
+Peça
+Caixa
+Peça
+Caixa
+Peça
+
+A forma original fica guardada. Grave chaves ou poses para guardar o movimento neste momento.
+
+Reutilizar uma pose
+Caixa
+O que muda nesta chave?
+Mover
+Girar
+Mudar tamanho
+Mover
+Lado (X)
+Altura (Y)
+Profundidade (Z)
+
+Gravar cria uma chave deste tipo no momento escolhido.
+
+Gravar chaveExcluir chave deste momento
+Ajustar o movimento
+Ferramentas que vêm por aí
+Reproduzir movimento
+Ir ao começo
+Chave anterior
+Próxima chave
+Ir ao final
+0 de 2 segundos
+Mover
+Girar
+Mudar tamanho
+Ir para o tempo (segundos)
+Ir para esse momento

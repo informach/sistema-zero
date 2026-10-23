@@ -1,4 +1,5 @@
-import { courseJourneyState, creativeToolAvailability } from '@sistemazero/core/journey'
+import { courseJourneyState, kidsCreativeToolAvailability } from '@sistemazero/core/journey'
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { ArrowRight, BookOpen, Map as MapIcon, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
@@ -16,14 +17,12 @@ import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
 import { MissionsPanel } from '@/components/kids/missions-panel'
-import { nextLevelHintWithin } from '@/lib/journey-horizon'
 import {
   checkChallengeAccessReadonly,
   getAvatarReadonly,
   getChallengeReadonly,
   getGamificationReadonly,
   getMissionsReadonly,
-  listCatalog,
   listMyCourses,
 } from '@/server/members'
 import { getSession } from '@/server/session'
@@ -41,7 +40,7 @@ export default async function HomePage() {
   // layout (clients.ts memoiza por esse booleano) — uma ÚNICA ida ao gateway por
   // render nesta rota, a mais acessada. Missões antes vinham de um fetch client
   // pós-hidratação (waterfall); agora entram no Promise.all do servidor.
-  const [{ status, body }, gam, missions, avatarRes, showcaseRes, challengeAccess, catalogRes] =
+  const [{ status, body }, gam, missions, avatarRes, showcaseRes, challengeAccess] =
     await Promise.all([
       listMyCourses(),
       getGamificationReadonly({ withRanking: true }),
@@ -53,10 +52,6 @@ export default async function HomePage() {
       shell.hub.myShowcaseStatsReadonly().catch(() => null),
       // Desafio do mês: card SÓ com posse de Clube+Estúdio (produtos à parte).
       checkChallengeAccessReadonly().catch(() => null),
-      // Catálogo: limita a frase do próximo marco ao que EXISTE (horizonte do catálogo),
-      // p/ a home nunca prometer um número diferente do mapa. Best-effort — `null` = a
-      // busca falhou e a frase volta a ser a crua do members.
-      listCatalog().catch(() => null),
     ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
@@ -79,9 +74,7 @@ export default async function HomePage() {
     .sort((a, b) => courseRank(a) - courseRank(b))
   const gamification = gam.status === 200 ? (gam.body ?? null) : null
   const missionsData = missions.status === 200 ? (missions.body ?? null) : null
-  // `null` = catálogo DESCONHECIDO (≠ vazio): a frase cai na contagem crua do members.
-  const catalogCourses = catalogRes?.status === 200 ? (catalogRes.body?.courses ?? []) : null
-  const levelHint = nextLevelHintWithin(gamification?.level, catalogCourses)
+
   // Avatar é tri-state para o guia: presente, ausente ou desconhecido. Um erro do
   // members não pode virar "você ainda não criou", pois isso induziria uma ação
   // baseada em informação falsa. Outras superfícies seguem degradando a foto para null.
@@ -89,11 +82,11 @@ export default async function HomePage() {
   const avatarPhotoUrl = avatarState?.photoUrl ?? null
   const showcaseStats = showcaseRes?.status === 200 ? (showcaseRes.body ?? null) : null
   const challengeEligible =
-    creativeToolAvailability({
+    kidsCreativeToolAvailability({
       tool: 'estudio-completo',
       owned: true,
-      level: gamification?.level?.slug ?? null,
-    }) === 'available' &&
+      journey: kidsJourneyAccess(gamification),
+    }).state === 'available' &&
     challengeAccess?.status === 200 &&
     challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
     challengeAccess.body?.access?.['estudio-completo'] === true
@@ -164,7 +157,7 @@ export default async function HomePage() {
           <section className="kids-carta mt-6 p-6 md:p-7">
             <h2 className="sz-display text-xl md:text-[1.625rem]">Espaço para sua próxima ideia</h2>
             <p className="mt-2 font-medium text-[0.9375rem] text-muted-foreground">
-              Explore as ferramentas liberadas na sua oficina ou revisite um projeto das aventuras.
+              Explore as ferramentas liberadas na sua oficina ou revisite um projeto dos cursos.
             </p>
             <Link href="/criar" prefetch={false} className="sz-btn-gradient mt-4 px-6">
               Abrir minha oficina
@@ -177,7 +170,6 @@ export default async function HomePage() {
         <KidsBand tone="menta">
           <CreatorJourneyCard
             gamification={gamification}
-            levelHint={levelHint}
             avatarPhotoUrl={avatarPhotoUrl}
             name={greetName ?? null}
             showcaseStats={showcaseStats}
@@ -201,7 +193,7 @@ export default async function HomePage() {
         <section aria-labelledby="meus-cursos">
           <KidsSectionHeader
             id="meus-cursos"
-            title="Minhas aventuras"
+            title="Meus cursos"
             actions={
               <Link
                 href="/cursos"
@@ -215,14 +207,14 @@ export default async function HomePage() {
           {courses.length === 0 ? (
             <KidsEmptyState
               icon={BookOpen}
-              title="Nenhuma aventura liberada ainda"
+              title="Nenhum curso liberado ainda"
               description="Assim que sua compra for confirmada, seu acesso aparece aqui."
             />
           ) : unlocked.length === 0 ? (
             // Defensivo (tudo travado pela jornada): aponta o mapa em vez de sumir.
             <KidsEmptyState
               icon={MapIcon}
-              title="Suas próximas aventuras estão no mapa!"
+              title="Suos próximos cursos estão no mapa!"
               description="Abra o Mapa da Jornada para ver o que vem pela frente."
               action={
                 <Link href="/cursos" prefetch={false} className="sz-btn-gradient px-6">

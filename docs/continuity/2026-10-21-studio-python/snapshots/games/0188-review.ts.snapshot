@@ -1,0 +1,90 @@
+import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
+import { decodeGameObservations } from '../../../../experiments/studio-python-runtime/qualification/game_observations'
+
+// Artifact review only, executable AFTER Root reports END. No host connection.
+const base = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/games-space-input-eventloop-r1'
+const sha = (b: string | Uint8Array) => createHash('sha256').update(b).digest('hex')
+const inputs: { path: string; sha256: string }[] = []
+async function load(path: string) { const bytes = await readFile(path); inputs.push({ path, sha256: sha(bytes) }); return JSON.parse(bytes.toString()) }
+const receipt = await load(resolve(base, 'evidence/receipt.json'))
+const report = await load(resolve(base, 'evidence/browser/report.json'))
+const admission = await load(resolve(base, 'evidence/browser/host-admission.json'))
+const authority = await load(resolve(base, 'evidence/authority.json'))
+const plan = await load(resolve(base, 'plan.json'))
+assert.equal(receipt.state, 'PASS-PENDING-REVIEW'); assert.equal(receipt.stopped, null); assert.deepEqual(receipt.errors, [])
+for (const key of ['stable', 'hostNormal', 'observedReleased']) assert.equal(receipt[key], true)
+for (const key of ['forced', 'cleanupUnknown']) assert.equal(receipt[key], false)
+assert(receipt.portsAfter.length === 2 && receipt.portsAfter.every((p: any) => p.free))
+for (const child of [...receipt.roots, { result: receipt.samplerResult }]) { assert.equal(child.result.code, 0); assert.equal(child.result.signal, null); assert.equal(child.result.logsDrained, true) }
+assert(receipt.elapsedMs <= plan.policy.totalMs && report.stats.duration <= plan.policy.suiteMs)
+assert(Date.parse(receipt.endedAt) <= Date.parse(authority.windowEnd))
+assert.equal(admission.authoritySha256, inputs.find(x => x.path.endsWith('authority.json'))!.sha256)
+const freeze = await load(plan.sourceFreeze)
+assert.equal(inputs.at(-1)!.sha256, '3981ae0671a32b0f4f893a8e17fc9c0bc494155ea346e707cd33ecfe8e3fe900')
+assert.equal(freeze.files.length, 28)
+for (const file of freeze.files) assert.equal(sha(await readFile(file.path)), file.sha256)
+assert.equal(admission.freezeSha256, inputs.at(-1)!.sha256)
+assert.equal(admission.distribution.hash, 'a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a')
+assert.equal(authority.releaseManifestSha256, '0123ab8fd02e3aff2d4383fb8e8f93304c337d4018ad1263c21e8d1eafd0fb0e')
+assert.deepEqual([report.stats.expected, report.stats.unexpected, report.stats.flaky, report.stats.skipped], [1, 0, 0, 0])
+assert.equal(report.errors?.length ?? 0, 0)
+const cases: any[] = []
+function visit(s: any) { for (const spec of s.specs ?? []) for (const test of spec.tests ?? []) cases.push({ title: spec.title, test }); for (const c of s.suites ?? []) visit(c) }
+visit(report)
+assert.equal(cases.length, 1)
+assert.deepEqual(cases.map(x => x.title), plan.expectedTitles)
+assert.equal(cases[0].title, 'portable Space Arena real keyboard pause Stop and restart preserve original game')
+const test = cases[0].test
+assert.equal(test.projectName, 'chrome'); assert.equal(test.status, 'expected'); assert.equal(test.results.length, 1)
+const result = test.results[0]; assert.equal(result.status, 'passed'); assert(result.duration <= 90000)
+const attachments = Object.fromEntries(result.attachments.filter((a: any) => a.contentType === 'application/json').map((a: any) => [a.name, JSON.parse(Buffer.from(a.body, 'base64').toString())]))
+const identity = attachments['input-source-identity'], first = attachments['first-run-input'], final = attachments['input-lifecycle-final']
+assert.equal(identity.fixture.scenario, 'input-lifecycle')
+assert.equal(identity.baseline.variant.version, 'portable-audio-1.2.0')
+assert.equal(identity.baseline.runtime.manifestSha256, authority.releaseManifestSha256)
+assert.equal(identity.baseline.variant.entrypointSha256, 'd9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3')
+const observer = await readFile('experiments/studio-python-runtime/qualification/space_arena_observer.py', 'utf8')
+const driver = await readFile('experiments/studio-python-runtime/qualification/space_arena_input.py', 'utf8')
+assert.equal(identity.fixture.observerSha256, sha(observer))
+assert.equal(identity.fixture.driverSha256, sha(driver.replace('CONFIG = {"scenario": "input-lifecycle", "seed": 2026}', `CONFIG = ${JSON.stringify({ scenario: 'input-lifecycle', seed: 2026 })}`)))
+function observations(state: any) {
+  assert(state.events.length < 2048)
+  // Existing State schema does not serialize sequence fields; no continuity claim.
+  const ce = state.events.filter((e: any) => e.type === 'console')
+  assert(ce.every((e: any) => e.omittedChars === 0 && e.omittedLines === 0))
+  const text = ce.map((e: any) => e.text).join(''); assert(text.endsWith('\n'))
+  return decodeGameObservations(text, '__SZ_SPACE_INPUT__') as any[]
+}
+const a = observations(first.state), b = observations(final.state)
+assert.equal(first.state.status, 'running'); assert.equal(final.state.status, 'stopped')
+assert.equal(first.trusted.length, 19)
+assert.equal(first.state.error, undefined); assert.equal(final.state.error, undefined)
+for (const list of [a, b]) {
+  const ready = list.filter(e => e.kind === 'input-ready'); assert.equal(ready.length, 1)
+  assert.equal(ready[0].injectedState, false); assert.equal(ready[0].simulationCalls, 0); assert.equal(ready[0].gameState, 'splash')
+  assert.deepEqual(ready[0].pools, { enemies: 25, missiles: 30, stars: 20, powerups: 5, explosion: 30, exhaust: 20 })
+  assert(list.some(e => e.kind === 'playing-frame' && e.simulationCalls > 0))
+}
+const keys = a.filter(e => e.kind === 'input-delivered')
+assert.deepEqual(keys.map(e => [e.key, e.release]), [['s', false], ['Left', false], ['Left', true], ['Right', false], ['Right', true], ['Up', false], ['Up', false], ['Up', true], ['space', false], ['p', false], ['c', false], ['C', false], ['P', false]])
+assert.deepEqual(keys.filter(e => ['Left', 'Right'].includes(e.key)).map(e => e.player.da), [10, 0, -10, 0])
+assert.deepEqual(keys.filter(e => e.key === 'Up').map(e => e.player.thrust), [.2, .4, 0])
+assert.equal(keys.find(e => e.key === 'space').activeMissiles, 3)
+assert.deepEqual(keys.filter(e => ['c', 'C'].includes(e.key)).map(e => e.cameraVisible), [true, false])
+const pause = a.filter(e => e.kind === 'pause-proof'); assert.equal(pause.length, 1)
+assert(pause[0].elapsedSeconds >= 1.2); assert.equal(pause[0].fpsFrame, 0)
+assert.equal(pause[0].simulationCalls, keys.find(e => e.key === 'p').simulationCalls)
+assert.equal(keys.find(e => e.key === 'p').gameState, 'paused'); assert.equal(keys.find(e => e.key === 'P').gameState, 'playing')
+assert(first.trusted.length > 0 && first.trusted.every((e: any) => e.trusted))
+assert(first.trusted.some((e: any) => e.type === 'keydown' && e.key === 'ArrowUp' && e.repeat))
+assert(first.media.length >= 3 && first.media.some((m: any) => !m.paused && m.currentTime > .1))
+assert(final.media.length > first.media.length)
+assert(final.media.every((m: any) => m.paused && m.src === null))
+assert(b.some(e => e.kind === 'input-delivered' && e.key === 'S' && e.gameState === 'playing'))
+for (const input of inputs) assert.equal(sha(await readFile(input.path)), input.sha256)
+const review = { state: 'READONLY-SPACE-INPUT-12-LIMITED-PASS', at: new Date().toISOString(), inputs, matchedR7Pins: 28, variantVersion: 'portable-audio-1.2.0', sequenceFieldsSerialized: false, startedAt: receipt.startedAt, endedAt: receipt.endedAt, durationMs: result.duration, elapsedMs: receipt.elapsedMs, firstKeys: keys, pause: pause[0], trustedEvents: first.trusted, firstMedia: first.media, finalMedia: final.media, finalStatus: final.state.status, cleanup: { observedReleased: receipt.observedReleased, forced: receipt.forced, ports: receipt.portsAfter }, peaks: receipt.peaks, testAssertionsNotSeparatelySerialized: ['Host-control focus isolation', 'First Stop event quiescence 1100ms', 'Prior frame detached on prepare', 'Restart new media progressed while old voices remained released', 'Second Stop all voices released', 'No browser errors'], newGameExecution: false, rootMutation: false, scope: 'Actual trusted browser input and one Stop/restart of portable1.2 via existing test, no physical keyboard/device, full game, heard audio, 30-cycle endurance, golden or performance claim' }
+await writeFile(resolve(import.meta.dirname, 'review.json'), JSON.stringify(review, null, 2), { flag: 'wx' })
+console.log(JSON.stringify({ durationMs: review.durationMs, keys: keys.length, trusted: first.trusted.length, pauseSeconds: pause[0].elapsedSeconds, media: [first.media.length, final.media.length], status: final.state.status }))

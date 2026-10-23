@@ -1,6 +1,8 @@
 // Helper PURO (sem `server-only`) — privacidade do aluno na comunidade. Vive em
 // `lib/` p/ ser testável (o `routes/hub.ts` é `server-only` e não importa em teste).
 
+import type { AdultJourneyBadgeView } from './types'
+
 /**
  * Esconde o `authorId` CRU de TERCEIROS antes de a thread/comentário chegar ao browser
  * (o UUID opaco nunca sai do servidor para outras pessoas). O id do PRÓPRIO viewer é
@@ -57,10 +59,50 @@ export function redactAuthors<T>(body: T, viewerId: string | null, revealNames =
   return body
 }
 
+export interface AdultPublicIdentity {
+  displayName: string
+  /** A foto do avatar 3D (ausente sem foto). */
+  photoUrl?: string
+  /** A etapa da jornada adulta, para o anel da cor (ausente sem jornada). */
+  journey?: AdultJourneyBadgeView
+}
+
+/**
+ * Adult opt-in is live: a historical Hub snapshot cannot re-enable a private profile.
+ *
+ * Nome, foto e etapa de quem mostra o perfil (19/10/2026: o anel da cor da etapa no Mural e no
+ * Clube). Quem NÃO mostra fica sem nada disso, inclusive uma foto que um registro antigo do Hub
+ * trouxesse: a escolha da pessoa é lida agora, nunca do retrato.
+ */
+export function attachAdultPublicIdentities(
+  body: unknown,
+  identities: ReadonlyMap<string, AdultPublicIdentity>,
+): unknown {
+  if (!body || typeof body !== 'object') return body
+  if ('items' in body && Array.isArray(body.items))
+    return {
+      ...body,
+      items: body.items.map((item) => attachAdultPublicIdentities(item, identities)),
+    }
+  if ('authorId' in body && typeof body.authorId === 'string') {
+    const identity = identities.get(body.authorId)
+    if (!identity)
+      return { ...body, authorPublic: false, authorAvatarUrl: null, authorJourney: null }
+    return {
+      ...body,
+      authorPublic: true,
+      authorDisplayName: identity.displayName,
+      authorAvatarUrl: identity.photoUrl ?? null,
+      authorJourney: identity.journey ?? null,
+    }
+  }
+  return body
+}
+
 /** Avatar+nível de um autor (do members em lote) para o `attachAuthorAvatars`. */
 export interface AuthorAvatarInfo {
   photoUrl: string | null
-  level: string
+  level: string | null
 }
 
 /**

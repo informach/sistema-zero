@@ -203,9 +203,12 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
    * Cria um sprite. Um sprite é só um objeto { x, y, w, h, color, vx, vy } — e,
    * opcionalmente, uma imagem (opts.image, nome do asset) e/ou uma animação.
    */
+  // Private identity, not a mutable property on a student object. Capture add before source runs.
+  var _managedSprites = new WeakSet();
+  var _markManagedSprite = _managedSprites.add.bind(_managedSprites);
   function createSprite(options) {
     options = options || {};
-    return {
+    var sprite = {
       x: _finiteNumber(options.x, 0),
       y: _finiteNumber(options.y, 0),
       w: (_isFiniteNumber(options.w) && options.w > 0) ? options.w : 32,
@@ -217,6 +220,8 @@ export const gameTwoDSpritesRuntime = `  // ---- Imagens / assets ----
       anim: null,
       _hitboxArt: options.image ? _artHitboxOf(options.image) : null
     };
+    _markManagedSprite(sprite);
+    return sprite;
   }
 
   /** Invalida qualquer redraw automático ligado ao modo visual atual. */

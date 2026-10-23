@@ -68,9 +68,9 @@ async function montarPrevia(audience: 'adult' | 'kids' | undefined) {
       />,
     ),
   )
-  // O índice tem o nome do vocabulário do curso: "Partes da fase" no kids.
+  // O índice tem o mesmo nome nas duas comunidades desde a linguagem comum (21/10/2026).
   const indice = [...container.querySelectorAll('summary')].find((s) =>
-    s.textContent?.includes(audience === 'kids' ? 'Partes da fase' : 'Índice da aula'),
+    s.textContent?.includes('Partes da aula'),
   )
   return {
     container,
@@ -107,7 +107,9 @@ test('"Conferir livremente" monta a aula no layout da plataforma do curso', asyn
     // adulto aqui é a barra do topo e o gancho de tema.
     expect(adulto.indiceNoCabecalho).toBe(true)
     expect(adulto.temTemaKids).toBe(false)
-    expect(adulto.texto).toContain('Próxima seção')
+    // A linguagem é comum (21/10/2026): o adulto também lê "Próxima parte".
+    expect(adulto.texto).toContain('Próxima parte')
+    expect(adulto.texto).not.toContain('Próxima seção')
   } finally {
     await act(async () => adulto.root.unmount())
     adulto.container.remove()

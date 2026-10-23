@@ -1,0 +1,29 @@
+{
+  "completedAt": "2026-10-16T08:59:43.343409+00:00",
+  "commit": "7eea7d93c",
+  "merge": "7de6b2a69",
+  "stagingHead": "3511cd6c6acd9325fbc67eb27eb6a529345dec89",
+  "tests": {
+    "backend": 296,
+    "contracts": 9,
+    "console": 26,
+    "gateway": 90,
+    "bff": 28,
+    "kids": 50
+  },
+  "distinctTests": 499,
+  "postMerge": {
+    "postgresAutomationAndKnowledge": {
+      "pass": 38,
+      "fail": 0,
+      "assertions": 144
+    },
+    "memberShellTypecheck": "passed",
+    "kidsTypecheck": "passed"
+  },
+  "consoleBuild": "passed",
+  "migrations": "0000-0020 applied to empty PostgreSQL 16.15; no schema drift",
+  "databaseStopped": true,
+  "push": false,
+  "deploy": false
+}

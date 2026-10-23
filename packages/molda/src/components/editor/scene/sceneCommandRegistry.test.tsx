@@ -91,7 +91,7 @@ describe('registro de comandos da oficina', () => {
   })
 
   /** As teclas do Pintar do editor antigo, as mesmas que as crianças já sabem. */
-  test('na aba Pintar valem os atalhos do editor antigo, e só nela', () => {
+  test('atalhos respeitam o contexto: G preenche em Pintar e move em Modelar', () => {
     const tecla = (key: string) => ({
       key,
       ctrlKey: false,
@@ -100,7 +100,7 @@ describe('registro de comandos da oficina', () => {
       altKey: false,
     })
     const esperado = {
-      p: 'paint.pencil',
+      b: 'paint.pencil',
       e: 'paint.eraser',
       g: 'paint.fill',
       i: 'paint.picker',
@@ -113,7 +113,8 @@ describe('registro de comandos da oficina', () => {
     }
     for (const [key, id] of Object.entries(esperado)) {
       expect(sceneCommandForShortcut('paint', tecla(key)), key).toBe(id as never)
-      expect(sceneCommandForShortcut('model', tecla(key)), key).toBeNull()
+      const modelCommand = key === 'g' ? 'tool.move' : key === 'r' ? 'tool.rotate' : null
+      expect(sceneCommandForShortcut('model', tecla(key)), key).toBe(modelCommand)
     }
     // Com Ctrl, a tecla é do navegador (Ctrl+P imprime), não da oficina.
     expect(sceneCommandForShortcut('paint', { ...tecla('p'), ctrlKey: true })).toBeNull()
@@ -121,7 +122,10 @@ describe('registro de comandos da oficina', () => {
 
   /** A invariante do CLAUDE.md deixa de ser prosa: quem filtra é o próprio registro. */
   test('Animar esconde os destrutivos de modelagem, inclusive o Apagar', () => {
-    const modelar = contextualSceneCommands('model', 'rail').map((c) => c.id)
+    const modelar = [
+      ...contextualSceneCommands('model', 'rail'),
+      ...contextualSceneCommands('model', 'dock'),
+    ].map((c) => c.id)
     const animar = contextualSceneCommands('animate', 'rail').map((c) => c.id)
     expect(modelar).toContain('node.remove')
     expect(animar).not.toContain('node.remove')
@@ -138,7 +142,10 @@ describe('registro de comandos da oficina', () => {
 
   test('os grupos do trilho saem na ordem declarada, e grupo vazio não vira legenda solta', () => {
     const grupos = sceneRailGroups('model').map((entry) => entry.group)
-    expect(grupos).toEqual(['create', 'tools', 'piece', 'edit', 'pinned'])
+    // Group actions now live beside the hierarchy, leaving no piece section in the rail.
+    expect(grupos).toEqual(['create', 'tools', 'edit', 'pinned'])
+    expect(sceneCommand('node.group').slot).toBe('dock')
+    expect(sceneCommand('node.ungroup').slot).toBe('dock')
     for (const entry of sceneRailGroups('model')) expect(entry.commands.length).toBeGreaterThan(0)
   })
 

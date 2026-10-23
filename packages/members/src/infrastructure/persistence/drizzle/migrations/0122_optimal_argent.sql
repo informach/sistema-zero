@@ -1,0 +1,1 @@
+ALTER TABLE "members"."studio_builder_jobs" ADD COLUMN "notes" jsonb DEFAULT '[]'::jsonb NOT NULL;

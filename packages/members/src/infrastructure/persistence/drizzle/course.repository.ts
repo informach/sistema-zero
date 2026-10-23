@@ -15,12 +15,15 @@ import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
+import { memberStudioContentProjection } from './member-studio-content-projection'
 import {
   courses,
   lessonAttachments,
   activeLessonBlocks as lessonBlocks,
   lessons,
   modules,
+  studioLessonBaselines,
+  studioLessonBindings,
 } from './schema'
 import { JAVASCRIPT_TRIM_CHARACTERS } from './text-normalization'
 
@@ -37,6 +40,7 @@ function toCourse(row: typeof courses.$inferSelect): Course {
     audience: row.audience,
     sequentialLock: row.sequentialLock,
     videoBeforeActivity: row.videoBeforeActivity,
+    modality: row.modality,
     level: row.level,
     track: row.track,
     careerSlot: row.careerSlot,
@@ -167,7 +171,12 @@ export class DrizzleCourseRepository implements CourseRepository {
       .select()
       .from(courses)
       .where(
-        and(inArray(courses.slug, slugs), inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES])),
+        and(
+          inArray(courses.slug, slugs),
+          inArray(courses.status, [...ACCESSIBLE_COURSE_STATUSES]),
+          // Curso ao vivo não se libera por matrícula: fica fora de "meus cursos".
+          eq(courses.modality, 'recorded'),
+        ),
       )
       // Mesma régua da vitrine: mais antigos primeiro (antes era ordem indefinida).
       .orderBy(asc(courses.createdAt))
@@ -190,7 +199,14 @@ export class DrizzleCourseRepository implements CourseRepository {
     const rows = await this.db
       .select()
       .from(courses)
-      .where(and(eq(courses.status, 'published'), eq(courses.audience, audience)))
+      .where(
+        and(
+          eq(courses.status, 'published'),
+          eq(courses.audience, audience),
+          // Curso ao vivo só existe em Oficinas: fora do catálogo e da chave-mestra.
+          eq(courses.modality, 'recorded'),
+        ),
+      )
       // Ordem PADRÃO das vitrines: jornada de criação (mais antigos primeiro) —
       // decisão da usuária 13/07. A→Z virou opção do seletor no front.
       .orderBy(asc(courses.createdAt))
@@ -214,6 +230,7 @@ export class DrizzleCourseRepository implements CourseRepository {
           eq(courses.level, level),
           eq(courses.track, track),
           eq(courses.careerSlot, 1),
+          eq(courses.modality, 'recorded'),
         ),
       )
       .limit(1)
@@ -278,14 +295,24 @@ export class DrizzleCourseRepository implements CourseRepository {
 
   async findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null> {
     const [lesson] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
     if (!lesson) return null
     const wantAttachments = opts?.includeAttachments !== false
     const [blocks, attachments] = await Promise.all([
       this.db
-        .select()
+        .select({
+          id: lessonBlocks.id,
+          lessonId: lessonBlocks.lessonId,
+          kind: lessonBlocks.kind,
+          sortOrder: lessonBlocks.sortOrder,
+          archivedAt: lessonBlocks.archivedAt,
+          contentRevision: lessonBlocks.contentRevision,
+          content: opts?.includePrivateStudioAuthoring
+            ? lessonBlocks.content
+            : memberStudioContentProjection(lessonBlocks.content),
+        })
         .from(lessonBlocks)
         .where(eq(lessonBlocks.lessonId, lessonId))
         .orderBy(asc(lessonBlocks.sortOrder)),
@@ -334,6 +361,7 @@ export class DrizzleCourseRepository implements CourseRepository {
     lessonId: string,
     chain: string,
     kind: 'studio' | 'pinta',
+    owner?: { userId: string; accountId: string },
   ): Promise<{ blockId: string; lessonId: string } | null> {
     // Posição da aula atual no curso: (module.sortOrder, lesson.sortOrder).
     const [cur] = await this.db
@@ -343,6 +371,21 @@ export class DrizzleCourseRepository implements CourseRepository {
       .where(eq(lessons.id, lessonId))
       .limit(1)
     if (!cur) return null
+
+    // Coalesce the whole configuration, not its chain: a bound default/absent chain
+    // must stay absent even if the author later puts the block into another project.
+    const configuration =
+      kind === 'studio' && owner
+        ? sql`coalesce((
+      select ${studioLessonBaselines.configuration} from ${studioLessonBindings}
+      inner join ${studioLessonBaselines} on ${studioLessonBaselines.id} = ${studioLessonBindings.baselineId}
+      where ${studioLessonBindings.userId} = ${owner.userId}
+        and ${studioLessonBindings.accountId} = ${owner.accountId}
+        and ${studioLessonBindings.blockId} = ${lessonBlocks.id}
+        and ${studioLessonBaselines.courseId} = ${courseId}
+        and ${studioLessonBindings.workspaceId} is null
+    ), ${lessonBlocks.content})`
+        : sql`${lessonBlocks.content}`
 
     // Bloco do MESMO kind e da MESMA cadeia, em aula PUBLICADA do curso, ANTES da posição
     // atual (comparação de tupla row-value do Postgres). O mais próximo "para trás".
@@ -359,7 +402,7 @@ export class DrizzleCourseRepository implements CourseRepository {
           // `trim` nos DOIS lados: o `chain` do serviço já vem trimado; sem o `trim` no
           // valor armazenado, um `chain` autorado com espaço sobrando nunca casaria e o
           // carryover cairia silenciosamente no `initialProject` (perdendo o WIP do aluno).
-          sql`btrim(${lessonBlocks.content}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
+          sql`btrim(${configuration}->>'chain', ${JAVASCRIPT_TRIM_CHARACTERS}) = ${chain}`,
           sql`(${modules.sortOrder}, ${lessons.sortOrder}) < (${cur.modSort}, ${cur.lessonSort})`,
         ),
       )

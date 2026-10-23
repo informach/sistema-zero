@@ -21,16 +21,19 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > acesso pós-compra —, home na RAIZ `/` com grid de cursos, `/cursos` "Todos os cursos" com lock →
 > página de vendas, curso com módulos/aulas, player de aula com blocos polimórficos + anexos
 > (download autenticado com **marca d'água do e-mail do aluno** em PDF/imagem — bucket R2 privado) +
-> concluir + navegação, perfil com upload de avatar, compras, **classificação do curso** —
+> concluir + navegação, perfil (a foto é a do avatar 3D; o upload saiu da tela em 18/10/2026), compras, **classificação do curso** —
 > fluxo Udemy de 5 modais, ver Contratos — e **bloco e-book = LIVRO 3D interativo**
 > (react-three-fiber + pdf.js; PDF privado com marca d'água, ver §E-book)). A COMUNIDADE
 > (feed/fórum/etc.) é fatia futura.
 >
-> **Header (espelha a referência):** logo à esquerda (`w-[130px] md:w-[150px]`), menu CENTRALIZADO
-> (Início `/` + Todos os cursos `/cursos` — `nav.ts`), avatar à direita. Compras/Perfil/Sair vivem no **menu do avatar** (`user-menu.tsx`: cabeçalho com `UserAvatar` + nome + e-mail;
-> regras de exibição em `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe
-> rota `/home` (a referência era monolito com landing na raiz; aqui a home É a raiz). O layout do
-> grupo `(app)` hidrata `avatarUrl` fresco via `getMe()` (claims não carregam foto).
+> **Header (direção de arte de 18/10/2026, ver §Direção de arte adulta):** logo à esquerda, os seis
+> destinos com ícone E texto (Início, Cursos, Criar, Oficinas, Comunidade, Ajuda — `nav.ts`; do `xl`
+> para baixo descem, só com o texto, para uma segunda linha que rola de lado), o botão **Recados** com selo de
+> não-lidos e o menu do perfil à direita. Seu progresso, Meu avatar 3D, Meu espaço 3D, Meu perfil,
+> Compras e Sair vivem no **menu do perfil** (`user-menu.tsx`; regras de exibição em
+> `lib/user-display.ts` — nome → handle do e-mail → "Membro"/"M"). NÃO existe rota `/home` (a home É
+> a raiz). A imagem da pessoa é a **foto do avatar 3D** (`PersonAvatar`, como no Kids): o layout do
+> grupo `(app)` a busca com `getAvatarReadonly()` (claims não carregam foto); sem avatar, iniciais.
 
 > ⚠️ **EXTRAÇÃO 06/2026 — `@sistemazero/member-shell`:** todo o BFF (sessão/gateway/refresh/
 > mídia/marca d'água/clients), as libs puras, os componentes de DOMÍNIO (player, blocos, quiz,
@@ -45,6 +48,35 @@ Gateway** (NUNCA os serviços direto). Visual na paleta do Pen, com os temas **P
 > (`packages/member-shell/tests`); aqui ficou `tests/cookies.test.ts` (trava os nomes
 > `sz_member_*`). Dockerfile copia o `boot-check.mjs` DO member-shell; railway.json e ci.yml
 > incluem `/packages/member-shell/**` como gatilho de deploy deste app.
+
+## Oficinas ao vivo na comunidade adulta (cursos ao vivo, 14/10/2026)
+
+Os cursos ao vivo (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`) valem nas duas plataformas,
+pelo `audience` do curso. A sala e as regras moram no member-shell (§"Cursos ao vivo" de lá); aqui
+estão as portas:
+
+- **Páginas**: `/oficinas` (`LiveCatalog skin="adult"`: as turmas em que a pessoa tem vaga; nada de
+  divulgação em outra tela; ⚠️ desde 18/10/2026 o `SKINS.adult` do member-shell usa a classe
+  `sz-card-sm` e o token `--topo` DESTE app: renomear um deles derruba o cartão) e `/oficinas/aulas/[id]` (`live-room-client.tsx`: o `LiveClassroom` com
+  a aula do encontro no slot, `LessonBlocks` de sempre, dentro de `sz-aula-adulto`). Atualizar a
+  aula é RELER o JSON (`useLiveLesson`), nunca `router.refresh()`. O bloco Estúdio é o projeto ao
+  vivo, SEM o Mural (`publishToMural` fica desligado). Item **Oficinas** no menu do topo (`nav.ts`).
+- A página lê a sala e a aula no servidor (`loadLiveRoomInitial`, só leitura: o primeiro quadro já
+  é a sala com a aula) e a aula ainda fechada para a vaga (`LIVE_LESSON_CLOSED`) vira a espera
+  gentil `LiveLessonClosed`, nunca erro.
+- **BFF**: `api/live/[...path]` (`shell.routes.live`, a mesma lista do Kids),
+  `api/live/sessions/[id]/preview` (o jogo do Estúdio da sala num documento temporário do R2
+  privado) e `api/live/camera-assets/[asset]` (os fundos da câmera). `/oficinas` nos
+  `protectedPrefixes` do `proxy.ts`.
+- ⚠️⚠️ **`next.config.ts`**: SÓ a rota `/oficinas/aulas/:id` libera `camera`, `microphone` e
+  `display-capture` para `(self)` e acrescenta `https://*.r2.cloudflarestorage.com` ao `frame-src`;
+  a regra vem DEPOIS da geral, e a chave repetida vence (doc do Next). O resto do app segue com a
+  câmera e o microfone fechados. Por isso a sala se abre e se deixa por navegação COMPLETA (`<a>`):
+  os cartões da agenda e o "Voltar às oficinas" já são `<a>`.
+- **`globals.css`**: `--sz-lesson-stage-top` (abaixo do cabeçalho fixo: 6.75rem no celular, que
+  tem duas linhas, e 4.25rem a partir do md), a reserva da barra da chamada no `<main>`
+  (`--sz-live-bar-height`) e o fundo alternativo em volta da transmissão fixa.
+- Teste: `tests/live-room.test.ts` (os cabeçalhos da sala e do resto, as rotas e a pele adulta).
 
 ## Tema: a paleta do Pen, e a COR escolhida pela pessoa (17/09/2026)
 
@@ -107,6 +139,249 @@ adulto e virou um dos swatches. O antigo par Padrão⇄Pink não existe mais.
   `auditoria-contraste.js`. Medido em 11/09: todo texto habilitado passa (4,5:1; 3:1 no grande)
   nas oito páginas, nos dois temas.
 - ⚠️ O admin (`globals.css` próprio), o `@sistemazero/ui` e o member-shell NÃO mudaram.
+
+## Direção de arte adulta (18/10/2026)
+
+O público são **adultos iniciantes** que querem criar jogos e projetos digitais (a definição do
+Júlio). A proposta comercial de 18/10/2026 testa duas células com o mesmo curso: 50 a 70 anos e 30
+a 55 anos (curiosos por jogos e tecnologia, pais, quem jogava videogame na infância). O desenho usa
+o leitor mais exigente, o de 50 a 70 anos, como **régua de leitura** (letra, alvos, contraste,
+rótulos com texto), sem nada que fale de idade ou exclua a outra célula. O desenho de referência é
+o Canvas "Comunidade adulta · direção de arte" (todas as telas, desktop e celular); ele usa só o que
+a plataforma já faz.
+
+- ⭐ **Letra base de 20 px.** `html { font-size: 125% }` no `globals.css`: tudo que é `rem` (as
+  páginas, o `@sistemazero/ui`, o player e os blocos do member-shell) cresce junto, sem bifurcar
+  componente compartilhado. Menor letra permitida: **17 px** (`--text-xs` sobe para `0.85rem`; não
+  use `text-[0.8rem]` ou menos; o `size="sm"` do `Button`, que usa `text-[0.8rem]`, é corrigido no
+  `globals.css`). ⚠️ As telas cheias de ferramenta (`data-embedded`: Estúdio, Pinta, Molda, Pensa e
+  o avatar; e o jogo público `/jogar`, por `data-sz-public-player`) voltam a 100% e ao `--text-xs`
+  do Tailwind: são editores densos com medidas próprias. O Estúdio DENTRO da aula e da sala ao vivo
+  segue a raiz de 20 px, como o resto da aula; a letra dos blocos é do editor (zoom + e −).
+  ⚠️ Media query em `rem` continua medindo 16 px (`xl` = 1280 px), é regra do CSS, não da raiz.
+  ⚠️ Medida em px no JS de componente compartilhado não cresce com a raiz: o vídeo flutuante da aula
+  (`FLOAT_BAR_HEIGHT`/`FLOAT_FRAME` do member-shell) tem a barra e a moldura presas em px aqui.
+- **Fontes**: Atkinson Hyperlegible Next (texto, `--font-sans`) e Bricolage Grotesque (títulos,
+  `--font-display`, `.sz-display`), por `next/font/google` no layout raiz. Linha de 1.6.
+- **Vocabulário de classes** (bloco "A PELE DA COMUNIDADE ADULTA" do `globals.css`): `sz-page`
+  (largura e respiro), `sz-band` (a faixa do topo de cada página), `sz-kicker`, `sz-h1`…`sz-h4`,
+  `sz-lead`, `sz-card`/`sz-card-sm`/`sz-soft`, `sz-btn` (+ `-outline`, `-quiet`, `-white`, `-sm`),
+  `sz-iconbtn`, `sz-link`, `sz-chip` (+ `-ok`, `-acao`, `-aviso`, `-novo`, `-escuro`), `sz-num`,
+  `sz-tile`, `sz-label` (⚠️ nunca `sz-bar`: é a barra de ferramentas do Estúdio, no mesmo CSS).
+  Botão é retângulo de cantos de 12 px e 56 px de altura, sem relevo; o `[data-slot="button"]` do
+  `@sistemazero/ui` segue a mesma forma (48 px), só nas páginas da comunidade (o escopo é a raiz
+  sem `data-embedded`, num `:where()` sem peso). Chip sempre com ícone ou palavra, nunca só cor.
+  Tons: `--acao-tint` e `--sucesso-tint` por `color-mix`, `--aviso-tint` = o amarelo de superfície do
+  `ui`, `--aviso-texto` um literal de tinta: ⚠️ nada de hexadecimal da PALETA aqui (o contrato do
+  `ui` continua valendo). Foco: contorno de 3 px na cor de ação (`--ring`); a cor de ação clara só
+  sobre o escuro (barra do topo, faixas `--topo`), onde é ela que passa de 3:1.
+- **Primitivos de página** (`components/community/page.tsx`): `PageBand` (kicker, título, lead,
+  voltar, ações), `PageBody`, `BackLink`, `SectionHeader`. Cada página desenha a própria faixa de
+  ponta a ponta e cuida da largura (`sz-page`): o `CommunityFrame` só dá a moldura antiga
+  (`max-w-6xl`) à **aula** e à **sala ao vivo**, que são componentes do Kids e mantêm o layout.
+- **Aula**: mesmo layout do player compartilhado; muda só a pele (rodapé com botões de 56 px,
+  chips das atividades com fundo, a letra maior pela raiz). Nada de regra nova no member-shell.
+- **Créditos do Zappy e do Pensa**: o cálculo mora no `core` (`resolveAiCredits(view, { audience:
+  'adult' })`) e chega ao Pensa e ao Zappy do Estúdio pelo `audience`. O cartão fica em **Meu
+  perfil** (seção "Créditos e voz", âncora `#creditos`), como o cartão da área dos pais no Kids; a
+  página Criar só aponta para lá ("Quanto resta de créditos"). ⚠️ O painel (`ai-credits-panel.tsx`)
+  conta em "créditos" e escreve o aviso de esgotado ele mesmo; o `meter` do core também fala em
+  "créditos" e "o Zappy e o Pensa" (ver §Vocabulário).
+
+## Vocabulário: o recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido dela: a comunidade falava muito "IA". A tela nomeia o RECURSO, com o mesmo vocabulário do
+Kids:
+
+- **o Zappy**: o tutor do Estúdio (o painel do Estúdio já se chama assim nos dois apps). Na primeira
+  menção de uma tela, "o Zappy, o tutor do Estúdio"; numa lista, "o tutor Zappy no Estúdio".
+- **o Pensa**: planeja o jogo com a pessoa e divide o trabalho em missões.
+- **créditos**: o que o Zappy e o Pensa gastam. `CREDIT_USES` do painel diz tudo o que gasta:
+  "Cada pergunta ao Zappy ou pedido ao Pensa usa um crédito. A descrição automática ao publicar no
+  Mural também usa, assim como construir com o Zappy no modo Pro." (a descrição, `server/openrouter.ts`,
+  e o "Construir" do Pro, `server/studio-builder.ts`, reservam do mesmo total no member-shell).
+  "Créditos do Zappy e do Pensa", "Quanto resta de créditos", "Não gasta créditos" (Pinta e Molda).
+- **assistente virtual** (decisão dela, 20/10/2026), nunca "assistente automático".
+- Painel esgotado: a frase "as ferramentas continuam abertas, só sem o Zappy e o Pensa até renovar"
+  aparece UMA vez (no aviso; o parágrafo fixo a omite nesse estado).
+- Subtítulo de "Créditos e voz": "O Zappy, o tutor do Estúdio, e o Pensa já estão liberados na sua
+  jornada. Aqui você vê quantos créditos restam." só com a capacidade `pensa` também liberada
+  (`ai.pensaUnlocked`, lido em `perfil/page.tsx`); sem ela, a frase cita só o Zappy. A seção em si
+  aparece com a capacidade `ai`. Testes: `tests/credits-copy.test.tsx`.
+- A capacidade `ai` da jornada aparece como **"Zappy"** (Seu progresso) e "o tutor Zappy no
+  Estúdio" (o que a etapa libera); o selo do Criar diz "Zappy liberado na sua jornada".
+- **"IA" fica só em dois lugares**: o aviso de transparência `AI_DISCLOSURE` do painel de créditos
+  ("O Zappy e o Pensa são assistentes virtuais, feitos com inteligência artificial. Quem responde
+  não é uma pessoa da equipe.") e o nome do curso **No Comando da IA** (produto). No atendimento
+  compartilhado (member-shell), o autor da resposta automática segue "Assistente de IA".
+- Guarda: **`tests/copy-sem-ia.test.ts`** lê o texto de tela deste `src/` e do member-shell pelo
+  parser (a máquina `copy-scan` do Kids, importada só leitura) e reprova "IA"/"inteligência
+  artificial" fora da lista `PERMITIDOS` (trecho exato, uma vez por arquivo, com motivo).
+- O `core` (`resolveAiCredits`: "créditos", "Zappy e Pensa: …" no `ariaLabel`) e o `studio`
+  (`ProBuilderPanel`: "passos do Zappy"; `ZappyCredits`: "Vale para o Zappy e o Pensa"; `ShareDialog`:
+  "Gerar resumo com o Zappy") seguem o mesmo vocabulário desde 20/10/2026.
+
+## Entrada, páginas públicas, perfil público e Ajuda (19/10/2026)
+
+O resto do Canvas "Comunidade adulta · direção de arte" (as pranchas de entrada, páginas sem login,
+avatar, espaço 3D, perfil público e Como fazer), na mesma régua da seção anterior.
+
+- ⚠️ **Imagem de gente nunca é de idoso** (pedido dela, 19/10/2026): a régua de leitura é a de 50 a
+  70 anos, mas quem tem mais de 40 não gosta de se ver como velho. Ilustração de exemplo (avatar,
+  pessoa) é de jovem adulto; nada de "senhor/senhora" nem de vovó/vovô no texto.
+- **Entrada** (`(auth)/`): o layout do grupo só passa os filhos; cada página monta o
+  `AuthSplitShell` (`components/community/auth-split-shell.tsx`) com o painel marinho DELA
+  (`AuthAside`, só a partir de 1024 px). As peças dos formulários moram em
+  `components/community/auth/auth-fields.tsx`: campo de 64 px com rótulo em cima, erro escrito
+  embaixo (com ícone), "Mostrar"/"Esconder" com texto na senha, a regra dos 10 caracteres que
+  responde ao digitar, e avisos que ficam na tela (`AuthAlert`) no lugar dos toasts. Entrar tem
+  "Com senha" | "Com código por e-mail"; Esqueci minha senha tem os dois passos à vista e termina
+  num cartão "Senha nova salva"; Criar a senha (`/redefinir-senha?token=`) termina em "Senha
+  criada", e o link sem código, usado (`INVALID_RESET_TOKEN`) ou vencido (`RESET_TOKEN_EXPIRED`)
+  vira a página `InvalidLink` com o próximo passo. `/login?erro=impersonacao` mostra o aviso do
+  link de suporte vencido.
+- **`/ajuda/entrar`** (`(auth)/ajuda/entrar`): a ajuda PÚBLICA de quem não consegue entrar
+  (`noindex`). ⚠️ Mora debaixo do `/ajuda` logado, então o `proxy.ts` a declara em `publicPaths`
+  (opção nova do `createMemberProxy`). O contato é `contato@sistemazero.com.br`: o Help Desk lê essa
+  caixa e cada e-mail vira um chamado. Logado, o contato é sempre "Abrir chamado" na Ajuda.
+- **Páginas públicas**: `/jogar` usa `PublicPlayer skin="adult"` (member-shell: cabeçalho marinho
+  com logo, nome do jogo e "feito por …", "Controles na tela"/"Tela cheia" com texto, a linha de
+  como jogar, sem mascote; o Kids segue igual); `/validar` ganhou a logo e o cartão com a faixa
+  verde; `not-found.tsx` e o novo `error.tsx` usam `StatusScreen`
+  (`components/community/status-screen.tsx`, a barra escura só com a logo). ⚠️ O `error.tsx`
+  recebe `retry` (Next 16.2+), não `reset`: o `reset` só limpa o erro e re-renderiza sem buscar de
+  novo, então o "Tentar de novo" de um erro de servidor ficava preso no mesmo erro.
+- **Meu avatar 3D e Meu espaço 3D** usam a pele adulta do member-shell: `/meu-avatar` passa
+  `skin="adult"` e `/quarto` usa a entrada `AdultRoomBuilder` (`room-builder-adult`) com as dicas
+  de `src/lib/adult-trophy-hints.ts`. O desenho mora em `src/app/cosmetics-adult.css` (importado
+  pelo `globals.css`) e lê os tokens daqui: renomear um token quebra o teste
+  `tests/adult-cosmetics.test.ts`, não a cor calada.
+- **Formulários de entrada (review de 19/10/2026)**: o e-mail é conferido pela mesma régua do BFF
+  (`z.string().email()`), o recado de "código reenviado" e de troca de passo vai por uma região viva
+  sempre montada (`LiveMessage`) e o foco vai para o título ou o campo do passo novo.
+- **Perfil público** (`/criador/[id]`): faixa marinha com foto grande e quatro números, jogos antes
+  das conquistas, conquistas com a explicação (`adultBadgeInfo` de `src/lib/adult-badges.ts`: o
+  texto adulto, sem "fase"/"aventura"/"quarto", com o ícone do `BADGE_INFO` do member-shell; mora
+  AQUI porque o guarda `copy-vocabulario` do Kids varre o member-shell), espaço 3D "Só para ver" e o
+  aviso quando o perfil é seu. O voltar segue `?de=mural|ranking|perfil`.
+- **Mural, não Mostra**: a vitrine adulta se chama Mural dos Criadores em toda tela, como no Kids.
+- **Ajuda**: a busca leva ao Como fazer ("Buscar no Como fazer"); com tutorial publicado, a faixa
+  escura do Como fazer, as coleções com a contagem e os passo a passo em destaque
+  (`FEATURED_SLUGS`, do lote `docs/como-fazer-adulto`); sem tutorial, só a busca. O tutorial aberto
+  de uma aula (`?voltar=`, régua `resolveHelpReturn` do member-shell) mostra "Você veio da aula …"
+  com "Voltar para a aula", e os "Veja também" levam a volta junto.
+- **Como fazer adulto**: o conteúdo (8 coleções, 50 tutoriais) está em `docs/como-fazer-adulto/`
+  (`como-fazer.json` + `validar.ts` + README). Publicar é manual: Admin → Como fazer → plataforma
+  Adulto → importar → revisar e publicar. Os ícones `users` e `user` entraram na allowlist do core.
+
+## A cor da etapa da jornada (19/10/2026)
+
+Pedido dela: no perfil público, a etapa da jornada; e, como no Kids, um anel na cor da etapa em
+volta da foto. Prancha "Perfil público e a cor da etapa" e "Jornada adulta" no Canvas.
+
+- **A cor vem da POSIÇÃO** (`lib/journey-stage.ts`): `--etapa-1` … `--etapa-7` e `--etapa-lenda`
+  no `globals.css`, os MESMOS valores dos `--level-*` do Kids (as duas cores da marca por token).
+  A última posição é sempre a Lenda (dourado). O nome da etapa vem sempre escrito junto: a cor
+  nunca é a única pista. `stageBadgeOf(journey)` dá a etapa de quem tem a jornada inteira.
+- **Peças** (`components/community/journey/stage.tsx`, desenho `.sz-etapa-*` no `globals.css`):
+  `StageRing` (o anel, `dark` sobre o marinho), `StageChip`, `StageLine`, `StageDot`, `StageFace`
+  (foto ou iniciais com o anel) e `JourneyRibbon` (a fita, uma imagem com a frase inteira).
+- **Onde:** a foto do menu do perfil e do próprio menu (com a linha da etapa); o perfil público
+  (anel grande, chip e fita); Seu progresso (cartões coloridos, "Ao concluir, libera", cada um
+  levando à página da etapa); ranking e liga; Mural, Clube e as novidades do Mural na Início.
+- **`/cursos/etapa/[id]`**: a página da etapa (o que libera, os cursos que ela pede com o estado e
+  o próximo passo). A jornada vem do mesmo pedido do layout; os cursos, do catálogo (que traz o
+  `courseId`) e de Meus cursos. Etapa que não existe é 404.
+- A jornada é cadastrada no Admin; o script `journey:seed-adult` do members faz o cadastro inicial.
+- Testes: `tests/journey-stage.test.ts`.
+
+## Embaixador em Meu perfil (20/10/2026)
+
+O presente agora tem dois públicos (Kids e adulto) e o adulto também pode ser embaixador. Canvas
+"Presente Kids e adulto", prancha "Cadastro de embaixador".
+
+- ⚠️ **Regra da dona:** dentro da comunidade vale a identidade DESTE app. A seção
+  (`components/community/profile/ambassador-section.tsx`) usa `sz-card`, `sz-h3`,
+  `sz-btn`/`sz-btn-outline`, `sz-link` e texto apagado; a cara arcade da oferta adulta fica só no
+  funil. Atalho "Embaixador" no `ProfileNav`, antes de "Senha" (`showAmbassador`).
+- **Estados** (a lógica do cartão da área dos pais do Kids, na voz de "você"): sem cadastro (texto
+  dos dois presentes, valor do bônus vindo de `bonus.amountCents`, nunca cravado, termos e "Quero ser
+  embaixador(a)"); cadastrado (resgates, aviso de chave Pix, "Copiar link para um adulto",
+  "Copiar link para uma família" com o `shareUrl` antigo de reserva, "Abrir minha página");
+  pausado e `emailPending` (recado com o Atendimento, `/ajuda#atendimento`, sem links). Falha ao
+  copiar mostra o link para copiar à mão.
+- **Dados:** `perfil/page.tsx` lê no servidor com `shell.members.getAmbassadorEnrollmentReadonly()`,
+  SÓ quando `isOwnAdultAccountSession(session)`; sem resposta 200, a seção e o atalho somem (best
+  effort). O cadastro vai por **`api/embaixador`** (`shell.routes.ambassadorMe`), GET e POST
+  embrulhados com **`requireOwnAdultAccount`** (`server/own-account.ts`): sem sessão 401; claim
+  `kids` ou `activeProfile` 403 `OWN_ACCOUNT_REQUIRED`; QUALQUER sessão de suporte (`act`, em
+  qualquer modo, também na leitura) 403 `IMPERSONATION_FORBIDDEN`. ⚠️⚠️ A leitura também fecha
+  (review de 20/10/2026): a resposta traz o `pageUrl`, a capability-URL da página do embaixador,
+  que troca a chave Pix (`/ambassadors/by-token/:token/pix` no referrals). Aberta ao suporte, ela
+  deixava a equipe desviar o bônus. É a mesma régua do Kids, onde o `requireParentGateAccountOnly`
+  já recusa toda sessão de suporte. Numa sessão de suporte a seção e o atalho não aparecem.
+- Teste: `tests/ambassador-section.test.tsx` (estados, a rota de verdade com o shell falso e a régua
+  da página).
+- **Visitante do Mural adulto:** o presente adulto deixa a chave permanente
+  `adult-mural-dos-criadores-visitante`; depois dos 7 dias o hub devolve `canInteract: false` no
+  `mural-dos-criadores-adulto` (e recusa escrita com 403). Como no Kids, o `space-view-client.tsx`
+  esconde reagir (a `ReactionBar` vira só contagem), comentar, "Novo tópico" e remix, e mostra o
+  `ReadOnlyNote` ("Você pode ver e jogar o Mural. Para publicar, comentar e reagir, a Comunidade dos
+  Criadores abre tudo de novo." + "Ver como continuar", `comunidadeAdultoContinuarUrl('mural-visitante')`)
+  na grade e na conversa. O cabeçalho da página (`mural-dos-criadores-adulto/page.tsx`) lê o espaço
+  no servidor (`shell.hub.getSpaceReadonly`) e, quando o hub diz `canInteract: false`
+  (`lib/mural-visitor.ts`), tira "Publicar um jogo meu" e o "comente" da frase de abertura; com o
+  hub fora, a página segue como sempre (o hub decide no clique). Teste: `tests/mural-visitor.test.tsx`.
+
+## Entradas para a oferta de continuidade (20/10/2026)
+
+A página pública `…/pro/comunidade-dos-criadores/oferta/continuar` agora tem links vindos do app.
+A URL é a constante `COMUNIDADE_ADULTO_CONTINUAR_URL` de **`member-shell/lib/adult-links`**, e
+`comunidadeAdultoContinuarUrl(origem)` acrescenta `utm_source=plataforma&utm_medium=app&utm_content=<origem>`.
+⚠️ Não use o `FUNNEL_URL` aqui: ele aponta para outro funil.
+
+- **Ferramenta fechada com motivo** (`lib/tool-lock.ts`): `toolLockReason` é a régua ÚNICA do
+  `/criar` e das páginas `/estudio`, `/pinta`, `/molda`, `/pensa` e `/estudio/pro/[id]` (`plan` |
+  `journey` | `advanced`). `toolLock` entrega ao `ToolNotice` o motivo, o nome da etapa em que a
+  ferramenta abre (`toolStageTitle`: a posição a que se chega ao concluir a etapa que a libera,
+  como o "abre no nível" do Kids; sem etapa por concluir que a libere, `null` e nenhuma promessa),
+  a página da etapa atual (`currentStageHref`) e, em `plan`, se a jornada já entregou a ferramenta
+  (`earned`, `toolEarned`: as capacidades sobrevivem ao fim do acesso). O `ToolNotice` recebe
+  `tool` (chave, que também é o `utm_content` `ferramenta-<chave>`) e `lock`. As frases:
+  - `plan` já conquistada: "O {nome} faz parte da Comunidade dos Criadores. Com a assinatura, ele
+    volta a abrir na sua conta, com o que você já fez."; sem a capacidade: "… Na Comunidade, ele abre
+    quando você chega à etapa {etapa} da jornada." (sem etapa conhecida: "… ele abre conforme você
+    avança nas etapas da jornada."). Botão "Ver como continuar". ⚠️ As ferramentas adultas abrem
+    por ETAPA, nunca só com a assinatura.
+  - `journey`: "O {nome} abre quando você chega à etapa {etapa}. O caminho começa pelos cursos da
+    etapa atual." (vale para etapa a mais de uma de distância); sem etapa, "O {nome} abre conforme
+    você avança nas etapas da jornada.", e a segunda frase só quando há etapa atual. Etapa abaixo
+    do piso da jornada (aparece concluída sem ter entregado a capacidade) cai na frase sem etapa:
+    nada de "mais adiante".
+  - `advanced` (Pensa sem a capacidade `ai`): "O Pensa abre depois que você conclui um curso avançado da
+    jornada." `journey` e `advanced` levam à etapa atual ("Ver os cursos da etapa") ou a
+    `/progresso` ("Ver a sua jornada"). O "Por quê" do `/criar` para `journey` também não diz
+    "mais adiante" ("abre conforme você avança nas etapas da jornada.").
+- **Cursos** (`lib/continuity.ts`, `components/community/courses/continuity-card.tsx`): o cartão
+  "Você já tem o No Comando da IA. Com a Comunidade, os cursos adultos abrem nesta mesma conta, e as
+  ferramentas do Estúdio abrem conforme você avança nas etapas." aparece só com `no-comando-da-ia`
+  `true` e `adult-clube-dos-criadores` `false` em `checkCommunityContinuityAccessReadonly`
+  (member-shell; a rota `/members/access` ignora a chave-mestra de cursos). Falha fechada
+  (`showNciContinuityCard`).
+- **Curso bloqueado** (catálogo, trilha e etapa): `lockedCourseLink(salesPageUrl)` sempre devolve
+  destino, rótulo e aviso: com página própria, "Conhecer o curso" e "Abre a página do curso em outra
+  aba."; sem ela, a oferta de continuidade (`curso-bloqueado`) com "Conhecer a Comunidade" e "Abre a
+  página da Comunidade em outra aba.". O `shareUrl` do Compartilhar segue com o `FUNNEL_URL`.
+- **Compras**: "Voltar para a Comunidade" só na assinatura da Comunidade ADULTA `EXPIRED`
+  (Encerrada) mais recente (`comebackSubscriptionId`, régua do member-shell
+  `lib/subscription-comeback`). A Cancelada ainda dá acesso até o fim do período pago mais a
+  carência e não ganha botão (pagaria duas vezes); uma adulta Ativa esconde o botão; a Pendente não
+  conta. ⚠️ A view pública do payments não tem SKU, slug nem produto, só o nome: Compras EXIGE
+  "adult" no nome ("Comunidade dos Criadores (adultos)"). A oferta principal adulta passa a gravar
+  esse nome no funil; até lá, a assinatura adulta com o nome antigo ("Comunidade dos Criadores", o
+  mesmo da principal Kids) fica sem botão, para uma assinatura Kids da mesma conta nunca levar à
+  oferta adulta.
+- Testes: `tests/tool-lock.test.tsx`, `tests/continuity.test.tsx`.
 
 ## Arquitetura (o padrão central — preserve-o; espelha o @sistemazero/admin)
 
@@ -205,14 +480,15 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ## Invariantes (NÃO quebrar)
 
 1. **O community nunca chama os serviços direto** — tudo via gateway (`src/server/gateway.ts`).
-   Exceção CONSCIENTE (igual ao admin): `/api/me/avatar` fala com o **R2** (provedor externo) e por
-   isso tem guard de sessão próprio (`requireUploadSession(req)` em `src/server/media.ts` —
-   qualquer conta ATIVA, sem exigência de role; guard **ESTRITO**: token expirado NÃO autoriza —
-   `verifyAccessToken` + UMA tentativa de `tryRefresh` e re-verificação, como o admin;
-   `getSession` tolera exp SÓ p/ exibição; em MUTAÇÃO o guard também aplica a checagem
-   **anti-CSRF same-origin** — a rota fica fora do matcher do proxy). Upload tem **pre-check de
-   Content-Length** (`rejectOversizedRequest`) ANTES do `formData()` (o parse materializa o corpo
-   em memória) — **Content-Length é OBRIGATÓRIO** (411 se ausente; sem isso um corpo chunked
+   Exceção CONSCIENTE (igual ao admin): `/api/me/avatar` (⚠️ desde 18/10/2026 nenhuma tela a chama:
+   a foto da pessoa é a do avatar 3D, como no Kids, que também manteve a rota; as regras abaixo
+   valem enquanto ela existir) fala com o **R2** (provedor externo) e por isso tem guard de sessão
+   próprio (`requireUploadSession(req)` em `src/server/media.ts` — qualquer conta ATIVA, sem
+   exigência de role; guard **ESTRITO**: token expirado NÃO autoriza — `verifyAccessToken` + UMA
+   tentativa de `tryRefresh` e re-verificação, como o admin; `getSession` tolera exp SÓ p/ exibição;
+   em MUTAÇÃO o guard também aplica a checagem **anti-CSRF same-origin** — a rota fica fora do
+   matcher do proxy). Upload tem **pre-check de Content-Length** (`rejectOversizedRequest`)
+   ANTES do `formData()` (o parse materializa o corpo em memória) — **Content-Length é OBRIGATÓRIO** (411 se ausente; sem isso um corpo chunked
    passaria sem teto), excedente → 413 — e `mediaErrorResponse` **não vaza** a mensagem interna em
    prod (o erro vai pro **Sentry** via `captureServerException`; o `r2.ts` preserva a `cause`). Pipeline: multipart ≤5MB
    png/jpg/webp → sharp→WebP 512×512 (`image-optimizer.ts`, preset `avatar`) → R2
@@ -270,16 +546,19 @@ Browser → /api/* (Route Handlers, mesma origem, cookie HttpOnly)
 ```
 src/
   app/
-    layout.tsx              Root (Geist fonts, data-sz-palette no <html>, Providers: Toaster)
+    layout.tsx              Root (Atkinson Hyperlegible Next + Bricolage Grotesque + Geist Mono,
+                            data-sz-palette no <html>, Providers: Toaster)
     (auth)/                 Grupo público (AuthSplitShell: form + imagem da comunidade)
       login/ · esqueci-senha/ · redefinir-senha/   (page + *-form.tsx client)
     (app)/                  Grupo logado (layout gate + avatar fresco + CommunityTopnav)
       page.tsx              / (HOME) — grid "Meus cursos" (CourseCard + .sz-progress)
       cursos/               /cursos "Todos os cursos" (catálogo c/ lock → página de vendas)
+      cursos/trilha/[track]/ Trilha (2d|3d): os cursos da trilha por nível (`lib/course-levels.ts`)
       cursos/[slug]/        Módulos/aulas + "continuar de onde parei"
       cursos/[slug]/aulas/[lessonId]/  Player (blocos + anexos + concluir + prev/next + outline
                                        + classificação do curso na sidebar — ver Contratos)
-      perfil/               Foto (upload R2) + editar nome/telefone + trocar senha (e-mail IMUTÁVEL)
+      perfil/               Avatar 3D (foto do editor, sem upload) + nome/telefone + cor + identidade
+                            na comunidade + Créditos e voz (`#creditos`) + trocar senha (e-mail IMUTÁVEL)
       compras/              Tabela paginada + dialog de detalhe
     api/
       healthz/route.ts      liveness puro p/ o healthcheck do Railway (sem auth/upstream)
@@ -342,7 +621,7 @@ src/
 | `bun run dev` | Next dev server :3007 (Turbopack) |
 | `bun run build` / `start` | build (**`next build`** — Turbopack) + produção |
 | `bun run typecheck` | `tsc --noEmit` |
-| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs — rode com **sandbox off**, gotcha do monorepo) |
+| `bun test` | testes (watermark · markdown · download-mime · refresh · csrf · cookies · sentry · watermark-queue · ebook-prefs · tool-lock · continuity · copy-sem-ia — rode com **sandbox off**, gotcha do monorepo) |
 | `bun run check` / `check:fix` | Biome |
 
 Da raiz: `bun run dev:community`, `build:community`, `typecheck:community`.
@@ -494,7 +773,8 @@ valida e só então importa o `server.js` standalone).
 - **Classificação do curso (estilo Udemy)**: o detalhe do curso traz `myRating`
   (`CourseRatingView {rating 1..5 passo 0.5, comment, feedbackAnswers, …} | null`) e
   `salesPageUrl`. Na página da aula, link **"Deixe uma classificação"** na sidebar (abaixo do
-  progresso) — renderizado SÓ com `myRating === null`; assim que a nota é salva o link some
+  progresso); na página do curso, o botão contornado **"Avaliar o curso"** (`trigger="button"`) —
+  renderizados SÓ com `myRating === null`; assim que a nota é salva o link some
   (sem edição posterior nesta fatia). Fluxo de 5 modais (`course-rating-flow.tsx`, Dialog do
   ui com `titleAlign='center'` + `onBack`): (1) estrelas com MEIA estrela (`StarRating` do
   `@sistemazero/ui` — clicar já persiste) → (2) frase pela nota + textarea → (3) 6 perguntas

@@ -267,8 +267,8 @@ O piloto exige mudanças de conteúdo e de produto.
 
 ### Materiais de autoria
 
-O novo desenho substitui as regras incompatíveis de `docs/aulas-interativas/BRIEFING.md`,
-`docs/aulas-interativas/ESPEC-MANIFESTO.md` e da documentação interna do Admin. Mudanças numa aula
+O novo desenho substitui as regras incompatíveis de `docs/aulas-interativas-tecnico/BRIEFING.md`,
+`docs/aulas-interativas-tecnico/ESPEC-MANIFESTO.md` e da documentação interna do Admin. Mudanças numa aula
 continuam atualizando o trio:
 
 - proposta `.md`;

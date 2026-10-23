@@ -1,9 +1,18 @@
-import { eq, inArray, or, sql } from 'drizzle-orm'
+import * as P from '@sistemazero/core/pensa'
+import { and, eq, inArray, or, sql } from 'drizzle-orm'
 import type { UserDataPurgeRepository } from '../../../domain/ports/user-data-purge-repository.port'
 import type { Database } from './db'
+import { purgeLiveAccount } from './live-purge'
+import { DrizzlePensaProjectRepository } from './pensa-project.repository'
+import { lockPensaAccount, releasePensaReservation } from './pensa-reservations'
 import {
   accountDeletionFences,
+  adultJourneyGrants,
+  adultJourneyReached,
+  adultProfiles,
+  adultStudioBuilderProjectDeletions,
   aiUsageDaily,
+  aiUsageReservations,
   avatarConfigs,
   avatarInventory,
   certificatesIssued,
@@ -12,7 +21,10 @@ import {
   creationCleanupJobs,
   creations,
   entitlements,
+  galleryCopyAttempts,
   gamificationProfiles,
+  kidsJourneyEarned,
+  kidsJourneyPreparationOwners,
   leagueMembership,
   learningAttempts,
   lessonBlockProgress,
@@ -24,12 +36,23 @@ import {
   missionClaims,
   parentReportPrefs,
   parentReportsSent,
+  pensaExecutionEvents,
+  pensaOperations,
+  pensaProjectMembers,
+  pensaProjectRoles,
   pensaProjects,
+  pensaProviderUsage,
+  privateNarrations,
   profilePreferences,
   quizAttempts,
   renewalRemindersSent,
   roomInventory,
   roomState,
+  studioAiAccounts,
+  studioBlockGrants,
+  studioBuilderJobs,
+  studioBuilderProjectDeletions,
+  studioLessonBindings,
   studioSubmissions,
   teacherBroadcastRecipients,
   teacherThreads,
@@ -69,11 +92,114 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       createdAt: Date
     }
   }): Promise<void> {
+    userIds = [...userIds]
     if (userIds.length === 0) return
     await this.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${accountId}`}, 0))`,
+      const readScope = () =>
+        tx
+          .select({ id: pensaProjects.id })
+          .from(pensaProjects)
+          .where(
+            or(
+              inArray(pensaProjects.userId, userIds),
+              eq(pensaProjects.accountId, accountId),
+              inArray(
+                pensaProjects.id,
+                tx
+                  .select({ id: pensaProjectMembers.projectId })
+                  .from(pensaProjectMembers)
+                  .where(
+                    or(
+                      eq(pensaProjectMembers.accountId, accountId),
+                      inArray(pensaProjectMembers.profileId, userIds),
+                    ),
+                  ),
+              ),
+              inArray(
+                pensaProjects.id,
+                tx
+                  .select({ id: pensaOperations.projectId })
+                  .from(pensaOperations)
+                  .where(eq(pensaOperations.accountId, accountId)),
+              ),
+            ),
+          )
+          .orderBy(pensaProjects.id)
+      const affectedProjects = await readScope()
+      const projectIds = affectedProjects.map((p) => p.id)
+      const readPayers = () =>
+        projectIds.length
+          ? tx
+              .select({ accountId: pensaOperations.accountId })
+              .from(pensaOperations)
+              .where(
+                and(
+                  inArray(pensaOperations.projectId, projectIds),
+                  inArray(pensaOperations.status, ['queued', 'running', 'waiting', 'failed']),
+                ),
+              )
+          : Promise.resolve([])
+      const payers = await readPayers()
+      const lockedAccounts = [...new Set([accountId, ...payers.map((p) => p.accountId)])].sort()
+      for (const payerId of lockedAccounts) {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${payerId}`}, 0))`,
+        )
+        await lockPensaAccount(tx, payerId)
+      }
+      if (
+        (await readScope()).some((p) => !projectIds.includes(p.id)) ||
+        (await readPayers()).some((p) => !lockedAccounts.includes(p.accountId))
       )
+        throw new Error('Pensa account scope changed during purge; retry the transaction')
+      if (projectIds.length)
+        await tx
+          .select({ id: pensaProjects.id })
+          .from(pensaProjects)
+          .where(inArray(pensaProjects.id, projectIds))
+          .orderBy(pensaProjects.id)
+          .for('update')
+      if ((await readPayers()).some((p) => !lockedAccounts.includes(p.accountId)))
+        throw new Error('Pensa payer changed during purge; retry the transaction')
+      const operations = await tx
+        .select()
+        .from(pensaOperations)
+        .where(
+          and(
+            eq(pensaOperations.accountId, accountId),
+            inArray(pensaOperations.status, ['queued', 'running', 'waiting', 'failed']),
+          ),
+        )
+      for (const operation of operations) {
+        await releasePensaReservation(tx, operation.id, cleanup.createdAt)
+        await tx
+          .update(pensaOperations)
+          .set({
+            status: 'cancelled',
+            leaseId: null,
+            leaseUntil: null,
+            updatedAt: cleanup.createdAt,
+          })
+          .where(eq(pensaOperations.id, operation.id))
+      }
+      await tx
+        .delete(studioLessonBindings)
+        .where(
+          or(
+            inArray(studioLessonBindings.userId, userIds),
+            eq(studioLessonBindings.accountId, accountId),
+          ),
+        )
+      await purgeLiveAccount(tx, accountId, userIds)
+      // OAuth states cascade; no provider credential survives an account deletion.
+      await tx.delete(studioAiAccounts).where(eq(studioAiAccounts.accountId, accountId))
+      await tx.delete(studioBuilderJobs).where(eq(studioBuilderJobs.accountId, accountId))
+      await tx
+        .delete(studioBuilderProjectDeletions)
+        .where(eq(studioBuilderProjectDeletions.accountId, accountId))
+      await tx
+        .delete(adultStudioBuilderProjectDeletions)
+        .where(eq(adultStudioBuilderProjectDeletions.accountId, accountId))
       await tx
         .delete(teacherBroadcastRecipients)
         .where(
@@ -88,6 +214,13 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       for (const ownerId of [...userIds].sort()) {
         await tx.execute(
           sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${ownerId}`}, 0))`,
+        )
+      }
+      // Same account -> owner -> gamification order as award; drain an in-flight
+      // reward before erasing its ledger. Future deliveries observe the fence.
+      for (const ownerId of [...userIds].sort()) {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`gamification:${ownerId}`}, 0))`,
         )
       }
       await tx
@@ -161,12 +294,65 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
           or(inArray(learningAttempts.userId, userIds), eq(learningAttempts.accountId, accountId)),
         )
       // Tabelas só com `user_id`.
+      await tx
+        .delete(galleryCopyAttempts)
+        .where(
+          or(
+            inArray(galleryCopyAttempts.userId, userIds),
+            eq(galleryCopyAttempts.accountId, accountId),
+          ),
+        )
       await tx.delete(entitlements).where(inArray(entitlements.userId, userIds))
       await tx.delete(lessonCompletions).where(inArray(lessonCompletions.userId, userIds))
       await tx.delete(lessonProgress).where(inArray(lessonProgress.userId, userIds))
       await tx.delete(quizAttempts).where(inArray(quizAttempts.userId, userIds))
       await tx.delete(courseRatings).where(inArray(courseRatings.userId, userIds))
+      // Grants have no account column or cascading profile FK. Resolve ownership
+      // while its durable records still exist, including profiles omitted by Auth.
+      await tx
+        .delete(studioBlockGrants)
+        .where(
+          or(
+            inArray(studioBlockGrants.userId, userIds),
+            inArray(
+              studioBlockGrants.userId,
+              tx
+                .select({ userId: gamificationProfiles.userId })
+                .from(gamificationProfiles)
+                .where(eq(gamificationProfiles.accountId, accountId)),
+            ),
+            and(
+              eq(studioBlockGrants.audience, 'kids'),
+              inArray(
+                studioBlockGrants.userId,
+                tx
+                  .select({ userId: kidsJourneyEarned.userId })
+                  .from(kidsJourneyEarned)
+                  .where(eq(kidsJourneyEarned.accountId, accountId)),
+              ),
+            ),
+          ),
+        )
       await tx.delete(xpEvents).where(inArray(xpEvents.userId, userIds))
+      await tx.delete(adultProfiles).where(inArray(adultProfiles.userId, userIds))
+      await tx.delete(adultJourneyGrants).where(inArray(adultJourneyGrants.userId, userIds))
+      await tx.delete(adultJourneyReached).where(inArray(adultJourneyReached.userId, userIds))
+      await tx
+        .delete(kidsJourneyPreparationOwners)
+        .where(
+          or(
+            inArray(kidsJourneyPreparationOwners.userId, userIds),
+            eq(kidsJourneyPreparationOwners.accountId, accountId),
+          ),
+        )
+      await tx
+        .delete(kidsJourneyEarned)
+        .where(
+          or(
+            inArray(kidsJourneyEarned.userId, userIds),
+            eq(kidsJourneyEarned.accountId, accountId),
+          ),
+        )
       await tx.delete(userBadges).where(inArray(userBadges.userId, userIds))
       await tx.delete(coinEvents).where(inArray(coinEvents.userId, userIds))
       await tx.delete(avatarInventory).where(inArray(avatarInventory.userId, userIds))
@@ -180,11 +366,95 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
             eq(profilePreferences.accountId, accountId),
           ),
         )
-      // Projetos Pensa e conversas do professor pertencem ao perfil. Seus filhos
-      // têm FK CASCADE (ciclos/artefatos/tarefas e mensagens, respectivamente).
-      await tx
-        .delete(pensaProjects)
+      const pensaStore = new DrizzlePensaProjectRepository(this.db, () => cleanup.createdAt)
+      const ownedProjects = await tx
+        .select()
+        .from(pensaProjects)
         .where(or(inArray(pensaProjects.userId, userIds), eq(pensaProjects.accountId, accountId)))
+        .orderBy(pensaProjects.id)
+        .for('update')
+      for (const project of ownedProjects) {
+        const actor = { profileId: project.userId, accountId: project.accountId, privileged: false }
+        const state = await pensaStore.load(tx, actor, project.id)
+        await pensaStore.deleteData(tx, actor, state, cleanup.createdAt)
+      }
+      const joinedProjects = await tx
+        .selectDistinct({ projectId: pensaProjectMembers.projectId })
+        .from(pensaProjectMembers)
+        .where(
+          or(
+            inArray(pensaProjectMembers.profileId, userIds),
+            eq(pensaProjectMembers.accountId, accountId),
+          ),
+        )
+      for (const { projectId } of joinedProjects.sort((a, b) =>
+        a.projectId.localeCompare(b.projectId),
+      )) {
+        const [project] = await tx
+          .select()
+          .from(pensaProjects)
+          .where(eq(pensaProjects.id, projectId))
+          .for('update')
+        if (!project) continue
+        const state = await pensaStore.load(
+          tx,
+          { profileId: project.userId, accountId: project.accountId, privileged: false },
+          projectId,
+        )
+        const affected = P.pensaAssetDependentsForProfiles(state.revision, state.progress, userIds)
+        for (const p of P.invalidatePensaProgress(state.progress, [...affected]))
+          if (
+            affected.has(p.missionId) ||
+            (p.assigneeProfileId && userIds.includes(p.assigneeProfileId))
+          )
+            await pensaStore.saveProgress(
+              tx,
+              projectId,
+              {
+                ...p,
+                assigneeProfileId:
+                  p.assigneeProfileId && userIds.includes(p.assigneeProfileId)
+                    ? null
+                    : p.assigneeProfileId,
+                progressRevision: affected.has(p.missionId)
+                  ? p.progressRevision
+                  : p.progressRevision + 1,
+              },
+              cleanup.createdAt,
+            )
+        await tx
+          .delete(pensaProjectRoles)
+          .where(
+            and(
+              eq(pensaProjectRoles.projectId, projectId),
+              inArray(pensaProjectRoles.profileId, userIds),
+            ),
+          )
+        await tx
+          .delete(pensaProjectMembers)
+          .where(
+            and(
+              eq(pensaProjectMembers.projectId, projectId),
+              inArray(pensaProjectMembers.profileId, userIds),
+            ),
+          )
+        await tx
+          .update(pensaProjects)
+          .set({
+            teamRevision: project.teamRevision + 1,
+            executionRevision: project.executionRevision + 1,
+            updatedAt: cleanup.createdAt,
+          })
+          .where(eq(pensaProjects.id, projectId))
+      }
+      await tx
+        .delete(privateNarrations)
+        .where(
+          or(
+            inArray(privateNarrations.profileId, userIds),
+            eq(privateNarrations.accountId, accountId),
+          ),
+        )
       await tx
         .delete(teacherThreads)
         .where(or(inArray(teacherThreads.userId, userIds), eq(teacherThreads.accountId, accountId)))
@@ -242,6 +512,23 @@ export class DrizzleUserDataPurgeRepository implements UserDataPurgeRepository {
       // Dados que pertencem exclusivamente à CONTA responsável (inclusive o uso
       // de IA compartilhado entre perfis e o opt-out/histórico dos relatórios).
       await tx.delete(aiUsageDaily).where(eq(aiUsageDaily.accountId, accountId))
+      await tx
+        .delete(aiUsageReservations)
+        .where(
+          or(
+            eq(aiUsageReservations.accountId, accountId),
+            inArray(aiUsageReservations.profileId, userIds),
+          ),
+        )
+      await tx
+        .delete(pensaExecutionEvents)
+        .where(
+          or(
+            inArray(pensaExecutionEvents.profileId, userIds),
+            eq(pensaExecutionEvents.accountId, accountId),
+          ),
+        )
+      await tx.delete(pensaProviderUsage).where(eq(pensaProviderUsage.accountId, accountId))
       await tx.delete(parentReportsSent).where(eq(parentReportsSent.accountId, accountId))
       await tx.delete(parentReportPrefs).where(eq(parentReportPrefs.accountId, accountId))
     })

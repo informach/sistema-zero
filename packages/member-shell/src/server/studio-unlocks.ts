@@ -1,5 +1,13 @@
+import type { AdultJourneyView } from '@sistemazero/core/journey'
+import { hasStudioLanguageAchievement } from '@sistemazero/studio/course-language-access'
+import { isPythonCourseBlock } from '@sistemazero/studio/python-course-unlocks'
 import { SERVER_BLOCK_CATALOG } from '@sistemazero/studio/server-catalog'
-import { resolveStudioTier, type StudioTier } from '../lib/studio-tier'
+import {
+  hasKidsCapability,
+  isKidsStaffPreview,
+  type KidsJourneyAccess,
+} from '../lib/kids-journey-access'
+import { isPrivilegedRole, type StudioTier } from '../lib/studio-tier'
 
 /**
  * Deriva as EXTENSÕES a partir dos blocos conquistados.
@@ -34,24 +42,79 @@ export function extensionsForBlocks(blocks: readonly string[]): string[] {
 const KNOWN_BLOCKS = new Set(SERVER_BLOCK_CATALOG.map((entry) => entry.type))
 
 /**
- * O Estúdio livre de quem tem estes blocos conquistados. É a régua ÚNICA da paleta, do Zappy e
- * do Pensa: os três precisam oferecer exatamente os mesmos blocos e extensões.
- *
- * ⚠️ O `hasPalette` daqui só conta os blocos que o catálogo CONHECE: um currículo antigo com ids
- * que saíram do Studio daria `true` no `resolveStudioTier` (que só olha o tamanho da lista) e o
- * editor abriria com a caixa vazia. A lista em si (`allowBlocks`) segue como veio.
+ * Oferta de Python pela linguagem conquistada, após o gate do Estúdio Completo.
+ * O catálogo homologado e a autorização atual ainda decidem os ambientes disponíveis.
  */
-export function earnedStudioTier(
-  levelSlug: string | undefined,
+export function canShowPythonCreation(
+  role: string | undefined,
+  blocks: readonly string[],
+): boolean {
+  return isPrivilegedRole(role) || hasStudioLanguageAchievement('python', blocks)
+}
+
+/** JavaScript creation has the same language-specific requirement as Python. */
+export function canShowJavaScriptCreation(role: string | undefined, blocks: readonly string[]) {
+  return isPrivilegedRole(role) || hasStudioLanguageAchievement('javascript', blocks)
+}
+
+/** Modos adultos vêm da política adulta; a paleta vem dos cursos, sem usar rank Kids. */
+export function adultStudioTier(
+  journey: AdultJourneyView,
   role: string | undefined,
   blocks: readonly string[],
 ): StudioTier {
-  const tier = resolveStudioTier(levelSlug, role, {
-    blocks,
-    extensions: extensionsForBlocks(blocks),
-  })
-  if (!tier.allowBlocks) return tier
-  return { ...tier, hasPalette: tier.allowBlocks.some((type) => KNOWN_BLOCKS.has(type)) }
+  const privileged = isPrivilegedRole(role)
+  const has = (capability: 'studio' | 'bridge' | 'pro') =>
+    privileged || journey.capabilities.includes(capability)
+  const palette = [...new Set(blocks.filter((type) => KNOWN_BLOCKS.has(type)))]
+  const hasPalette = privileged || palette.length > 0 || blocks.some(isPythonCourseBlock)
+  const bridge = has('bridge')
+  const pro = has('pro')
+  return {
+    freeStudio: has('studio'),
+    level: 'avancado-3d',
+    ...(privileged ? {} : { allowBlocks: palette }),
+    hasPalette,
+    allowedExtensions: privileged
+      ? [...new Set(EXTENSION_BY_BLOCK.values())]
+      : extensionsForBlocks(palette),
+    initialExtensions: [],
+    allowedModes: bridge ? ['blocks', 'bridge'] : ['blocks'],
+    allowLevelReveal: false,
+    bridge,
+    pro,
+    canCreateProProject: pro,
+    canPromoteToPro: pro,
+  }
+}
+
+/**
+ * Kids modes come only from the persisted policy/earned view. Curriculum blocks remain the
+ * complete learner palette; the maximum catalog level is geometry, not a rank-based grant.
+ * Only an explicit own-account staff preview omits the palette restriction.
+ */
+export function kidsStudioTier(view: KidsJourneyAccess, blocks: readonly string[]): StudioTier {
+  const preview = isKidsStaffPreview(view)
+  const palette = [...new Set(blocks.filter((type) => KNOWN_BLOCKS.has(type)))]
+  const studio = hasKidsCapability(view, 'studio')
+  const bridge = studio && hasKidsCapability(view, 'bridge')
+  const pro = studio && hasKidsCapability(view, 'pro')
+  return {
+    freeStudio: studio,
+    level: 'avancado-3d',
+    ...(preview ? {} : { allowBlocks: palette }),
+    hasPalette: preview || palette.length > 0 || blocks.some(isPythonCourseBlock),
+    allowedExtensions: preview
+      ? [...new Set(EXTENSION_BY_BLOCK.values())]
+      : extensionsForBlocks(palette),
+    initialExtensions: [],
+    allowedModes: bridge ? ['blocks', 'bridge'] : ['blocks'],
+    allowLevelReveal: false,
+    bridge,
+    pro,
+    canCreateProProject: pro,
+    canPromoteToPro: pro,
+  }
 }
 
 /** Uma "gaveta" da caixa de ferramentas, do jeito que a criança a vê na paleta. */

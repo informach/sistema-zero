@@ -27,11 +27,11 @@
 - `packages/member-shell/src/components/scene-lesson-controls.tsx` — escolhe o texto e o estado acessível do botão da borda.
 - `packages/community-kids/tests/lesson-scene-design.test.tsx` — verifica o ciclo visual, as medidas e a ausência de conteúdo de cenário na cena.
 - `packages/community-kids/tests/lesson-scene-experiencia.test.tsx` — verifica que a pista avança depois do novo comando de ligar a borda.
-- `docs/aulas-interativas/qa/revisao-editorial-aula-01.ts` — fonte determinística do manifesto e da montagem da Aula 1.
-- `docs/aulas-interativas/qa/revisao-editorial-aula-01-texto.ts` — fonte determinística do roteiro em Markdown da Aula 1.
-- `docs/aulas-interativas/qa/validar-revisao-aula-01.ts` — prova a estrutura curricular e os critérios do Estúdio após a remoção.
-- `docs/aulas-interativas/corre-dino-v6/aula-01/{manifesto.json,montagem.json,roteiro.md,configuracao-estudio.json}` — candidatos de autoria que serão importados no Admin.
-- `docs/aulas-interativas/corre-dino-v6/{README.md,blocos-por-aula.json}` — inventário do curso e permissões da Aula 1, sem o bloco que deixou de ser ensinado.
+- `docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts` — fonte determinística do manifesto e da montagem da Aula 1.
+- `docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01-texto.ts` — fonte determinística do roteiro em Markdown da Aula 1.
+- `docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts` — prova a estrutura curricular e os critérios do Estúdio após a remoção.
+- `docs/aulas-interativas/kids/corre-dino-v6/aula-01/{manifesto.json,montagem.json,roteiro.md,configuracao-estudio.json}` — candidatos de autoria que serão importados no Admin.
+- `docs/aulas-interativas/kids/corre-dino-v6/{README.md,blocos-por-aula.json}` — inventário do curso e permissões da Aula 1, sem o bloco que deixou de ser ensinado.
 
 ### Task 1: Tornar o limite da tela visível somente pela borda
 
@@ -105,9 +105,9 @@ git commit -m "feat(lessons): esclarecer o limite da tela"
 ### Task 2: Reestruturar a receita da Aula 1 sem o leitor de tela
 
 **Files:**
-- Modify: `docs/aulas-interativas/qa/revisao-editorial-aula-01.ts:11-430`
-- Modify: `docs/aulas-interativas/qa/revisao-editorial-aula-01-texto.ts:12-84`
-- Modify: `docs/aulas-interativas/qa/validar-revisao-aula-01.ts:25-157`
+- Modify: `docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts:11-430`
+- Modify: `docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01-texto.ts:12-84`
+- Modify: `docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts:25-157`
 
 **Interfaces:**
 - Consumes: `reviseLessonOne(source: LearningManifest): LearningManifest` and `lessonOneCuts`.
@@ -137,7 +137,7 @@ Use ordinary `assert.deepEqual` values rather than Jest matchers in the Bun QA f
 
 - [ ] **Step 2: Run the Aula 1 QA to verify it fails**
 
-Run: `bun docs/aulas-interativas/qa/validar-revisao-aula-01.ts`
+Run: `bun docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts`
 
 Expected: FAIL until the recipe and the generated candidate agree on the new sections and missing description requirement.
 
@@ -172,9 +172,9 @@ Generate the five candidate artifacts from the same recipe, including the new St
 Run:
 
 ```powershell
-bun docs/aulas-interativas/qa/validar-revisao-aula-01.ts
-bun docs/aulas-interativas/qa/validar-manifestos-v6.ts
-bunx biome check --write docs/aulas-interativas/qa/revisao-editorial-aula-01.ts docs/aulas-interativas/qa/revisao-editorial-aula-01-texto.ts docs/aulas-interativas/qa/validar-revisao-aula-01.ts
+bun docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts
+bun docs/aulas-interativas-tecnico/qa/validar-manifestos-v6.ts
+bunx biome check --write docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01-texto.ts docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts
 ```
 
 Expected: PASS; the manifest validates, the generic reader remains legal elsewhere, and the Aula 1 recipe no longer generates reader material.
@@ -184,16 +184,16 @@ Expected: PASS; the manifest validates, the generic reader remains legal elsewhe
 Review that `manifesto.json`, `montagem.json` and `roteiro.md` match their generator inputs, and that the new `retireBlockKeys` contains every current reader block removed by this import. Commit only the recipe, test and Aula 1 generated artifacts:
 
 ```powershell
-git add docs/aulas-interativas/qa/revisao-editorial-aula-01.ts docs/aulas-interativas/qa/revisao-editorial-aula-01-texto.ts docs/aulas-interativas/qa/validar-revisao-aula-01.ts docs/aulas-interativas/corre-dino-v6/aula-01/manifesto.json docs/aulas-interativas/corre-dino-v6/aula-01/montagem.json docs/aulas-interativas/corre-dino-v6/aula-01/roteiro.md
+git add docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01.ts docs/aulas-interativas-tecnico/qa/revisao-editorial-aula-01-texto.ts docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts docs/aulas-interativas/kids/corre-dino-v6/aula-01/manifesto.json docs/aulas-interativas/kids/corre-dino-v6/aula-01/montagem.json docs/aulas-interativas/kids/corre-dino-v6/aula-01/roteiro.md
 git commit -m "feat(corre-dino): focar a primeira aula na tela"
 ```
 
 ### Task 3: Retirar a concessão da Aula 1 e fechar a revisão curricular
 
 **Files:**
-- Modify: `docs/aulas-interativas/corre-dino-v6/aula-01/configuracao-estudio.json:8-15`
-- Modify: `docs/aulas-interativas/corre-dino-v6/blocos-por-aula.json:aula-01`
-- Modify: `docs/aulas-interativas/corre-dino-v6/README.md:15-28`
+- Modify: `docs/aulas-interativas/kids/corre-dino-v6/aula-01/configuracao-estudio.json:8-15`
+- Modify: `docs/aulas-interativas/kids/corre-dino-v6/blocos-por-aula.json:aula-01`
+- Modify: `docs/aulas-interativas/kids/corre-dino-v6/README.md:15-28`
 
 **Interfaces:**
 - Consumes: the final stage/border/dino requirements from the source recipe.
@@ -211,7 +211,7 @@ assert.deepEqual(results('entrega-v7', project([stage, border, dino])), [true, t
 
 - [ ] **Step 2: Run focused QA to verify the old allow-list fails**
 
-Run: `bun docs/aulas-interativas/qa/validar-revisao-aula-01.ts`
+Run: `bun docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts`
 
 Expected: FAIL because the configuration still exposes the reader-description block and the delivery check still expects it.
 
@@ -224,11 +224,11 @@ Remove `sz_g2d_set_stage_description` only from the Aula 1 `allowBlocks` array a
 Run:
 
 ```powershell
-bun docs/aulas-interativas/qa/validar-revisao-aula-01.ts
-bun docs/aulas-interativas/qa/validar-manifestos-v6.ts
+bun docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts
+bun docs/aulas-interativas-tecnico/qa/validar-manifestos-v6.ts
 bun --cwd packages/core test src/learning/scene/lesson-one.test.ts src/learning/scene/tela-e-mundo.test.ts
 bun --cwd packages/community-kids test tests/lesson-scene-design.test.tsx tests/lesson-scene-experiencia.test.tsx
-bunx biome check --write docs/aulas-interativas/corre-dino-v6/aula-01/configuracao-estudio.json docs/aulas-interativas/corre-dino-v6/blocos-por-aula.json docs/aulas-interativas/corre-dino-v6/README.md
+bunx biome check --write docs/aulas-interativas/kids/corre-dino-v6/aula-01/configuracao-estudio.json docs/aulas-interativas/kids/corre-dino-v6/blocos-por-aula.json docs/aulas-interativas/kids/corre-dino-v6/README.md
 ```
 
 Expected: PASS; stage-size and generic screen-reader retain their independent core coverage while Corre Dino Aula 1 no longer mentions reader content.
@@ -238,7 +238,7 @@ Expected: PASS; stage-size and generic screen-reader retain their independent co
 Run `git diff --check`; search the Aula 1 candidate and recipe for `screen-reader`, `leitor de tela`, `descricao-v7` and `sz_g2d_set_stage_description`, expecting no matches. Confirm no unrelated dirty files are staged. Commit exactly the three course inventory files and the QA test:
 
 ```powershell
-git add docs/aulas-interativas/qa/validar-revisao-aula-01.ts docs/aulas-interativas/corre-dino-v6/aula-01/configuracao-estudio.json docs/aulas-interativas/corre-dino-v6/blocos-por-aula.json docs/aulas-interativas/corre-dino-v6/README.md
+git add docs/aulas-interativas-tecnico/qa/validar-revisao-aula-01.ts docs/aulas-interativas/kids/corre-dino-v6/aula-01/configuracao-estudio.json docs/aulas-interativas/kids/corre-dino-v6/blocos-por-aula.json docs/aulas-interativas/kids/corre-dino-v6/README.md
 git commit -m "docs(corre-dino): retirar leitor de tela da aula inicial"
 ```
 

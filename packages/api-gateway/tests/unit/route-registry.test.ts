@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import realConfig from '../../gateway.config'
 import { routeConfigSchema } from '../../src/infrastructure/config/gateway-config.schema'
 import { RouteRegistry } from '../../src/infrastructure/routing/route-registry'
 
@@ -117,65 +118,13 @@ const registry = new RouteRegistry([
     methods: ['GET'],
     pathPattern: '/members/admin/courses/*',
   }),
-  // Pensa (planejamento guiado) — literal `pensa` no 2º segmento.
-  r({ id: 'pensa-projects', methods: ['GET', 'POST'], pathPattern: '/members/pensa/projects' }),
-  r({
-    id: 'pensa-project',
-    methods: ['GET', 'PATCH', 'DELETE'],
-    pathPattern: '/members/pensa/projects/:projectId',
-  }),
-  // Equipe (26/09/2026): o literal `join` tem que vencer o `:projectId`.
-  r({ id: 'pensa-join', methods: ['POST'], pathPattern: '/members/pensa/projects/join' }),
-  r({
-    id: 'pensa-project-share',
-    methods: ['POST', 'DELETE'],
-    pathPattern: '/members/pensa/projects/:projectId/share',
-  }),
-  r({
-    id: 'pensa-project-member',
-    methods: ['DELETE'],
-    pathPattern: '/members/pensa/projects/:projectId/members/:profileId',
-  }),
-  r({
-    id: 'pensa-cycle-create',
-    methods: ['POST'],
-    pathPattern: '/members/pensa/projects/:projectId/cycles',
-  }),
-  r({
-    id: 'pensa-stage',
-    methods: ['GET'],
-    pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage',
-  }),
-  r({
-    id: 'pensa-conversation',
-    methods: ['PUT'],
-    pathPattern: '/members/pensa/cycles/:cycleId/stages/:stage/conversation',
-  }),
-  r({
-    id: 'pensa-advance',
-    methods: ['POST'],
-    pathPattern: '/members/pensa/cycles/:cycleId/advance',
-  }),
-  r({
-    id: 'pensa-tasks-replace',
-    methods: ['PUT', 'POST'],
-    pathPattern: '/members/pensa/cycles/:cycleId/tasks',
-  }),
-  r({
-    id: 'pensa-task-update',
-    methods: ['PATCH', 'DELETE'],
-    pathPattern: '/members/pensa/tasks/:taskId',
-  }),
-  r({
-    id: 'pensa-task-handoff',
-    methods: ['GET'],
-    pathPattern: '/members/pensa/tasks/:taskId/handoff',
-  }),
-  r({
-    id: 'pensa-task-progress',
-    methods: ['PATCH'],
-    pathPattern: '/members/pensa/tasks/:taskId/progress',
-  }),
+  ...realConfig.routes
+    .filter(
+      (route) =>
+        route.pathPattern.startsWith('/members/pensa/') ||
+        route.pathPattern.startsWith('/members/internal/pensa/'),
+    )
+    .map((route) => routeConfigSchema.parse(route)),
   // Indicações e bolsas: admin em wildcards (read/write por método) + internas
   // do funil (literais sob /referrals/internal) + o grant-manual do members.
   r({ id: 'referrals-admin-read', methods: ['GET'], pathPattern: '/referrals/admin/*' }),
@@ -482,57 +431,41 @@ describe('RouteRegistry', () => {
     )
   })
 
-  test('pensa: rotas por nº de segmentos/método; não colidem entre si nem com cursos', () => {
-    expect(registry.resolve('GET', '/members/pensa/projects', 'v1')?.route.id).toBe(
-      'pensa-projects',
+  test('Pensa canonical routes isolate public commands and HMAC capabilities', () => {
+    for (const method of ['GET', 'POST']) {
+      expect(registry.resolve(method, '/members/pensa/projects/p-1/messages', 'v1')?.route.id).toBe(
+        'members-pensa-messages',
+      )
+    }
+    expect(registry.resolve('POST', '/members/pensa/projects/join', 'v1')?.route.id).toBe(
+      'members-pensa-join',
     )
-    expect(registry.resolve('POST', '/members/pensa/projects', 'v1')?.route.id).toBe(
-      'pensa-projects',
+    expect(registry.resolve('PATCH', '/members/pensa/projects/p-1', 'v1')?.route.id).toBe(
+      'members-pensa-project',
     )
-    const detail = registry.resolve('PATCH', '/members/pensa/projects/p-1', 'v1')
-    expect(detail?.route.id).toBe('pensa-project')
-    expect(detail?.params.projectId).toBe('p-1')
-    // Apagar o plano entra na MESMA rota do detalhe (o DELETE foi somado aos métodos).
-    expect(registry.resolve('DELETE', '/members/pensa/projects/p-1', 'v1')?.route.id).toBe(
-      'pensa-project',
-    )
-    // 5 segmentos de cycles não caem no detalhe de 4.
-    expect(registry.resolve('POST', '/members/pensa/projects/p-1/cycles', 'v1')?.route.id).toBe(
-      'pensa-cycle-create',
-    )
-    // Stage (5 seg, GET) ≠ conversation (6 seg, PUT).
-    const stage = registry.resolve('GET', '/members/pensa/cycles/c-1/stages/z', 'v1')
-    expect(stage?.route.id).toBe('pensa-stage')
-    expect(stage?.params.stage).toBe('z')
+    expect(registry.resolve('PATCH', '/members/pensa/projects/p-1/draft', 'v1')).toBeUndefined()
     expect(
-      registry.resolve('PUT', '/members/pensa/cycles/c-1/stages/z/conversation', 'v1')?.route.id,
-    ).toBe('pensa-conversation')
-    expect(registry.resolve('POST', '/members/pensa/cycles/c-1/advance', 'v1')?.route.id).toBe(
-      'pensa-advance',
-    )
-    expect(registry.resolve('PATCH', '/members/pensa/tasks/t-1', 'v1')?.route.id).toBe(
-      'pensa-task-update',
-    )
-    expect(registry.resolve('GET', '/members/pensa/tasks/t-1/handoff', 'v1')?.route.id).toBe(
-      'pensa-task-handoff',
-    )
-    expect(registry.resolve('PATCH', '/members/pensa/tasks/t-1/progress', 'v1')?.route.id).toBe(
-      'pensa-task-progress',
-    )
+      registry.resolve('POST', '/members/internal/pensa/projects/p-1/draft/edit', 'v1')?.route.auth,
+    ).toMatchObject({ strategies: ['hmac'] })
     expect(
-      registry.resolve('GET', '/members/pensa/projects/p-1/studio-snapshot', 'v1'),
-    ).toBeUndefined()
-    // Autoria manual: POST /cycles/:id/tasks (append) e DELETE /tasks/:id (apagar).
-    expect(registry.resolve('POST', '/members/pensa/cycles/c-1/tasks', 'v1')?.route.id).toBe(
-      'pensa-tasks-replace',
-    )
-    expect(registry.resolve('PUT', '/members/pensa/cycles/c-1/tasks', 'v1')?.route.id).toBe(
-      'pensa-tasks-replace',
-    )
-    expect(registry.resolve('DELETE', '/members/pensa/tasks/t-1', 'v1')?.route.id).toBe(
-      'pensa-task-update',
-    )
-    // Literal `pensa` nunca cai em /members/courses/:slug.
+      registry.resolve('GET', '/members/pensa/projects/p-1/team-art/m-1/s-1/download', 'v1')
+        ?.params,
+    ).toMatchObject({ projectId: 'p-1', missionId: 'm-1', slotId: 's-1' })
+    expect(
+      registry.resolve('POST', '/members/internal/pensa/projects/p-1/view', 'v1')?.route.auth,
+    ).toMatchObject({ strategies: ['hmac'], allowedConsumers: ['member-shell'] })
+    expect(
+      registry.resolve('POST', '/members/internal/pensa/rewards/work', 'v1')?.route,
+    ).toMatchObject({ id: 'members-pensa-rewards-work', rateLimit: { by: 'principal' } })
+    for (const path of [
+      '/members/pensa/v2/projects',
+      '/members/pensa/projects/p-1/cycles',
+      '/members/pensa/cycles/c-1/advance',
+      '/members/pensa/tasks/t-1/progress',
+    ]) {
+      expect(registry.resolve('POST', path, 'v1')).toBeUndefined()
+      expect(registry.resolve('GET', path, 'v1')).toBeUndefined()
+    }
     expect(registry.resolve('GET', '/members/courses/pensa', 'v1')?.route.id).toBe(
       'members-course-detail',
     )

@@ -37,18 +37,39 @@ import { StudioBlockView } from './studio/studio-block'
  * montamos a URL canônica (youtube-nocookie/player.vimeo, na allowlist da CSP);
  * HTML arbitrário só roda em iframe `sandbox` SEM allow-same-origin.
  */
-export function LessonBlocks({ blocks }: { blocks: LessonBlockView[] }) {
+export function LessonBlocks({
+  blocks,
+  enableStudioShare = false,
+  enableHelpLinks = false,
+}: {
+  blocks: LessonBlockView[]
+  enableStudioShare?: boolean
+  enableHelpLinks?: boolean
+}) {
   const ordered = [...blocks].sort((a, b) => a.sortOrder - b.sortOrder)
   return (
     <div className="flex flex-col gap-6">
       {ordered.map((block) => (
-        <BlockRenderer key={block.id} block={block} />
+        <BlockRenderer
+          key={block.id}
+          block={block}
+          enableStudioShare={enableStudioShare}
+          enableHelpLinks={enableHelpLinks}
+        />
       ))}
     </div>
   )
 }
 
-function BlockRenderer({ block }: { block: LessonBlockView }) {
+function BlockRenderer({
+  block,
+  enableStudioShare,
+  enableHelpLinks,
+}: {
+  block: LessonBlockView
+  enableStudioShare: boolean
+  enableHelpLinks: boolean
+}) {
   const content = block.content as Record<string, unknown> | null
   if (!content || typeof content !== 'object') return null
 
@@ -56,7 +77,7 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
     case 'interactive':
       return <InteractiveLessonBlock block={block} />
     case 'rich_text':
-      return <RichText content={content as unknown as RichTextBlock} />
+      return <RichText content={content as unknown as RichTextBlock} helpLinks={enableHelpLinks} />
     // Sem `mascot`: o mascote é asset do kids. Aqui o balão vira recado destacado.
     case 'dialogue':
       return <DialogueBlockView content={content as unknown as DialogueBlock} />
@@ -88,6 +109,9 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           blockId={block.id}
           content={content as unknown as StudioBlock}
           studioState={(block.studioState as StudioStateView | null | undefined) ?? null}
+          enableShare={
+            enableStudioShare && Boolean((content as unknown as StudioBlock).showcase?.enabled)
+          }
         />
       )
     case 'pinta':
@@ -108,7 +132,7 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
           content={content as unknown as MaterialsBlock}
           // Este renderer é o do app ADULTO (o kids tem o `kids-lesson-blocks.tsx`), e lá não
           // existe `/como-fazer`: o item vira texto em vez de um link que abre 404.
-          helpLinks={false}
+          helpLinks={enableHelpLinks}
         />
       )
     default:
@@ -141,11 +165,11 @@ function ComingSoon({ content }: { content: ComingSoonBlock }) {
 
 // ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─
 // O conversor é puro e unit-testado em `@/lib/markdown` (superfície XSS-sensível).
-function RichText({ content }: { content: RichTextBlock }) {
+function RichText({ content, helpLinks = false }: { content: RichTextBlock; helpLinks?: boolean }) {
   const markdown = content.markdown ?? ''
   if (!markdown) return null
   // App adulto: `[texto](/como-fazer/<slug>)` vira texto (a biblioteca de ajuda é do Kids).
-  return <div className="lesson-prose">{renderMarkdown(markdown, { helpLinks: false })}</div>
+  return <div className="lesson-prose">{renderMarkdown(markdown, { helpLinks })}</div>
 }
 
 function ImageView({ content }: { content: ImageBlock }) {

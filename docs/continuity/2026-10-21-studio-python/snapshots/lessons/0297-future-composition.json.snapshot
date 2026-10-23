@@ -1,0 +1,367 @@
+{
+  "state": "ROOT-INTEGRATED-CANDIDATE-COMPOSITION-ONLY-NOT-EXECUTION-PLAN-NOT-SEALED",
+  "sourceHead": "b641c62916fedc9b08c145fba979a7b60716a75f",
+  "productHorizon": "8430486236649740f5f5a9b261c5aee91c64af19",
+  "qaSourcePreserved": "b763fb6e1773a122188fe37fa044b142c9442f62",
+  "hostHistoricalPinChanges": {
+    "historicalEntries": 861,
+    "trackedPaths": 824,
+    "changes": [
+      {
+        "path": "bun.lock",
+        "historicalSha256": "8f162e14a76155be50bd1c3620d98a05cc8c4ff74c82cc2f83e64f4fe5ff019a",
+        "candidateGitContentSha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd",
+        "candidateBytes": 539814,
+        "candidateGitBlob": "1ee20301e55a319bf859cafca2cde097e1697c7f",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "experiments/studio-python-l0/corpus/space-arena.json",
+        "historicalSha256": "a645c4c1ecbbe9a1c56e405b09a1b71679752139bc2b985c32e7741439013743",
+        "candidateGitContentSha256": "a63eb90cdd276a3e71ac6b20a7d9d62450e334d54187b280f57ef39d32f0db33",
+        "candidateBytes": 6388,
+        "candidateGitBlob": "d8edbc3ae7671e8546d7979ef59189454d814036",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "a645c4c1ecbbe9a1c56e405b09a1b71679752139bc2b985c32e7741439013743",
+        "ownCheckoutMatchesCandidate": false
+      },
+      {
+        "path": "experiments/studio-python-runtime/gameVariants.ts",
+        "historicalSha256": "5fff400a9c20c15ed2577574e9ec28894149efd22d408c87f64b79270fa5a90f",
+        "candidateGitContentSha256": "3764ab93601625d7d6c3cd945cd05dff22390d4af137c4ec90ed73dc0bdc3122",
+        "candidateBytes": 5379,
+        "candidateGitBlob": "b846ba70af656918f0d9eef2c862d9b3ed52bbb7",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "5fff400a9c20c15ed2577574e9ec28894149efd22d408c87f64b79270fa5a90f",
+        "ownCheckoutMatchesCandidate": false
+      },
+      {
+        "path": "packages/core/src/learning/project-structure.ts",
+        "historicalSha256": "b8c81ebfc52a14d91a97d0a9f546a544c95c1d31610b67703068f36ccf359f4a",
+        "candidateGitContentSha256": "c825dd37c1613245b868b0556a0b4f969d8fb0d369650d5d1135df1d1836fb4b",
+        "candidateBytes": 11331,
+        "candidateGitBlob": "8f3bc592dcda03c6c3e031d1065c1aed46f5827c",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "c825dd37c1613245b868b0556a0b4f969d8fb0d369650d5d1135df1d1836fb4b",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/core/src/learning/section-progression.ts",
+        "historicalSha256": "3eefe7ab500c3d8bdc5bcf57e24146eacc60f8c34ee1ddc2cf3429014cd16bec",
+        "candidateGitContentSha256": "d919dbfb3f342ba5a470eb837a4c45afb15fcdcfbec90c71610c93096c8bc8cc",
+        "candidateBytes": 32864,
+        "candidateGitBlob": "d4eb80a6c7d756d8abcf02cd59c7fcdc4dbaa5fa",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "d919dbfb3f342ba5a470eb837a4c45afb15fcdcfbec90c71610c93096c8bc8cc",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/core/src/studio/pro-dependencies.ts",
+        "historicalSha256": "4c224ea395a6784bf1a26f919d59aa59676f21e2a03da117825096d161e04015",
+        "candidateGitContentSha256": "e2e80d52257d220e294fc545f65f37c23e1a177522eb2a47ceebcbf1e263d47d",
+        "candidateBytes": 4005,
+        "candidateGitBlob": "6c9084e26602e1c8f20376b7db71868d5723fb49",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "e2e80d52257d220e294fc545f65f37c23e1a177522eb2a47ceebcbf1e263d47d",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/member-shell/src/server/studio-pro-runtime.ts",
+        "historicalSha256": "2d26b411065add1b5af1c7d083688300f0104a03d16fb7a1beadb6c9b4d23f51",
+        "candidateGitContentSha256": "3db141e6ca8fdd915d42b520595260cd384776e6f7c1c1c3610b98dbc2c9975d",
+        "candidateBytes": 14224,
+        "candidateGitBlob": "c66061f689490431bafb3b9b27e4eb88179c4dcc",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "3db141e6ca8fdd915d42b520595260cd384776e6f7c1c1c3610b98dbc2c9975d",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio-runtime/runtime/validation-profile.json",
+        "historicalSha256": "2b56d99f858cf8a600c4220cd990f55baad0469b2b9899b4602636dec91fae58",
+        "candidateGitContentSha256": "291e17139f61cf745f9121d7500dd393e7740567d213c0bf73e4e40de537832f",
+        "candidateBytes": 118,
+        "candidateGitBlob": "eee41707cda6a8139bb95eb3da10f262b003de6e",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "291e17139f61cf745f9121d7500dd393e7740567d213c0bf73e4e40de537832f",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio/package.json",
+        "historicalSha256": "7576b60ffe53ae1e9a0f70ccf92bc0a2f19a8efe979b7bd808a9f0452668b3b3",
+        "candidateGitContentSha256": "1324421f3acad86d71c7f8541913eeadea5d7cb5073654b9be3d7dfa0916de25",
+        "candidateBytes": 7252,
+        "candidateGitBlob": "be15dfe99aa4d4c68299f16d1c950d9e9db2daf0",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "1324421f3acad86d71c7f8541913eeadea5d7cb5073654b9be3d7dfa0916de25",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio/src/blockly/blockCatalog.ts",
+        "historicalSha256": "8b10684c4ecd0cf9c3e89914f260660aa9b6ad7906a89595164b16949f653c25",
+        "candidateGitContentSha256": "eacbe2b435f45bdda7b2d0e15fc6846a06b552d5bd5b3c4731a953ed89c09c09",
+        "candidateBytes": 17209,
+        "candidateGitBlob": "7ffaabe33ef609406d45dbdb8f986cf6fb779ece",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "eacbe2b435f45bdda7b2d0e15fc6846a06b552d5bd5b3c4731a953ed89c09c09",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio/src/components/code/pro-templates/base.ts",
+        "historicalSha256": "f1b9a996832a53673a93d156e07f75e9f5daaff498adf28df2fc276d26ef1b95",
+        "candidateGitContentSha256": "754d072817b31c3cfcf45ec5910b22ce4d3206d7baa795fbfac1d3dcef82003b",
+        "candidateBytes": 7559,
+        "candidateGitBlob": "b4a8f07a4feead9d6974049fe2a5b69acf7d724a",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "754d072817b31c3cfcf45ec5910b22ce4d3206d7baa795fbfac1d3dcef82003b",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio/src/components/code/pro-templates/games.ts",
+        "historicalSha256": "a5d173c3611641fb2ca19a89af1de7eced94362cfe41c05f6d6c62a7683d1174",
+        "candidateGitContentSha256": "d7b55d19579024645f42f30ba9bbede8361128841d8b5b96144989343eecb8c1",
+        "candidateBytes": 6372,
+        "candidateGitBlob": "38f57180b876aaab9363a352c37f66d3a80f2fc1",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "d7b55d19579024645f42f30ba9bbede8361128841d8b5b96144989343eecb8c1",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio/src/components/code/pro-templates/games/canvas-survival.sources.generated.ts",
+        "historicalSha256": "0ee59829a64c7851dc65e9c72b39900e0077e1a5451bebac78622878fe1cf2cc",
+        "candidateGitContentSha256": "f5d7dde7f161ed201e8d1e3bdda6b364dc24535eb9e93f06368056ccd32a97c1",
+        "candidateBytes": 119558,
+        "candidateGitBlob": "5ce7fc15524f82fec61a989609322d430aa4b33e",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "f5d7dde7f161ed201e8d1e3bdda6b364dc24535eb9e93f06368056ccd32a97c1",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/studio/src/components/code/pro-templates/games/grid.sources.generated.ts",
+        "historicalSha256": "eaa219606d5ee62c9e6b93429aa8dba671cd2c9d315b104a6768ae8f484d85fa",
+        "candidateGitContentSha256": "3649223b99ff417a54f8aac6bc69ccce871ee0d007a2a62a8a56eb6ffedc9034",
+        "candidateBytes": 142765,
+        "candidateGitBlob": "666b2aff3527c7f5825a60c606c837f623e78917",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "3649223b99ff417a54f8aac6bc69ccce871ee0d007a2a62a8a56eb6ffedc9034",
+        "ownCheckoutMatchesCandidate": true
+      }
+    ]
+  },
+  "appHistoricalPinChanges": {
+    "historicalEntries": 46,
+    "trackedPaths": 23,
+    "changes": [
+      {
+        "path": "bun.lock",
+        "historicalSha256": "8f162e14a76155be50bd1c3620d98a05cc8c4ff74c82cc2f83e64f4fe5ff019a",
+        "candidateGitContentSha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd",
+        "candidateBytes": 539814,
+        "candidateGitBlob": "1ee20301e55a319bf859cafca2cde097e1697c7f",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1",
+        "historicalSha256": "3eedd30c40cba370c31ff173db25e02c2966b3db43e7fb6c30f8f1e66bfdfe36",
+        "candidateGitContentSha256": "2c3d7526ba9e366fbdfa1a45fab690e42d7bfd1def67f2cc2b2c85d07cafc519",
+        "candidateBytes": 10184,
+        "candidateGitBlob": "3698bfe3301c925ace4b229a03fae780a91bae10",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "2c3d7526ba9e366fbdfa1a45fab690e42d7bfd1def67f2cc2b2c85d07cafc519",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1",
+        "historicalSha256": "06317eed29e344e069b15a94af54d6a1bb2d0adfdded54ba18bd8daeca80eb12",
+        "candidateGitContentSha256": "a19efa1b2743fe992faf6632be23f476d69f2d63e9de71dc88e80af642c27a2f",
+        "candidateBytes": 13442,
+        "candidateGitBlob": "e526fe05f4cc61d72aae10167659a886d16851ba",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "a19efa1b2743fe992faf6632be23f476d69f2d63e9de71dc88e80af642c27a2f",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/community-kids/tests/e2e/windows/python-lesson-process-ownership.ps1",
+        "historicalSha256": "7cad948075905ddb85b7b98778a53e081b8ffdc4d786c20c363b94523ce75a8a",
+        "candidateGitContentSha256": "80246ad3d28cf13e16690c72a6b469ce2e3507e85f924ab3ea5b47882dba3866",
+        "candidateBytes": 1741,
+        "candidateGitBlob": "25278617a05583df993d3456add796d57b7f0a66",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "80246ad3d28cf13e16690c72a6b469ce2e3507e85f924ab3ea5b47882dba3866",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/community-kids/tests/e2e/python-lesson-admin.ts",
+        "historicalSha256": "cd7877b0b5b507731a8abc3199d1f710ab0158598e541e3fbc64c68c6f25d695",
+        "candidateGitContentSha256": "e9014e5d22371af70ff17244c09dc580b1d0e3f5998fe0778dd3d35714afa4ba",
+        "candidateBytes": 21522,
+        "candidateGitBlob": "9b13904fdfcf9d44503850fbe0483abfaed88148",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "e9014e5d22371af70ff17244c09dc580b1d0e3f5998fe0778dd3d35714afa4ba",
+        "ownCheckoutMatchesCandidate": true
+      },
+      {
+        "path": "packages/community-kids/tests/e2e/python-lesson-kids.ts",
+        "historicalSha256": "19c0974df534742ec8380bb7c8041a3ee896ff7b049e9bb6552dc6894c92cf53",
+        "candidateGitContentSha256": "cab9417a9cad952665228a3fcc717e7a737dd73403b7893ab27b795368908b6c",
+        "candidateBytes": 18286,
+        "candidateGitBlob": "9d9d778ad40d05b9bc9753cbec21426bb19a39fc",
+        "sourceRevision": "b641c62916fedc9b08c145fba979a7b60716a75f",
+        "ownCheckoutSha256": "cab9417a9cad952665228a3fcc717e7a737dd73403b7893ab27b795368908b6c",
+        "ownCheckoutMatchesCandidate": true
+      }
+    ]
+  },
+  "requiredProducerPinAndNewModulesToReconcile": [
+    {
+      "relativePath": "packages/admin/tests/e2e/python-lesson-fixture.ts",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\admin\\tests\\e2e\\python-lesson-fixture.ts",
+      "bytes": 12260,
+      "sha256": "36d76f22013ace7716c633dd5b74f0cf20ef756d50eb2bab76d858d8ac1bab07",
+      "reason": "Required direct import of Admin CLI; bind enrollment journal fix",
+      "alreadyInHistoricalHostPins": false,
+      "alreadyInHistoricalAppPins": false
+    },
+    {
+      "relativePath": "packages/member-shell/src/lib/pro-toolchain.ts",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\member-shell\\src\\lib\\pro-toolchain.ts",
+      "bytes": 1430,
+      "sha256": "9ee18dbdf0c9c342fc6f67a2edbfda4439e148380f8932d917b77fe13b584dcd",
+      "reason": "New authorized host transport; TS fetch signature fix included",
+      "alreadyInHistoricalHostPins": false,
+      "alreadyInHistoricalAppPins": false
+    },
+    {
+      "relativePath": "packages/member-shell/src/server/free-pro-toolchain.ts",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\member-shell\\src\\server\\free-pro-toolchain.ts",
+      "bytes": 2995,
+      "sha256": "432842b811a9556e58de8bf56c4751d57d04f49ba42562ba52e4815a52678759",
+      "reason": "New free-host dependency preparation route helper",
+      "alreadyInHistoricalHostPins": false,
+      "alreadyInHistoricalAppPins": false
+    },
+    {
+      "relativePath": "packages/studio/src/core/proToolchain.ts",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\studio\\src\\core\\proToolchain.ts",
+      "bytes": 1277,
+      "sha256": "d19e69e0eef68d62d6ccbff987caeffd746f41a92a8047cd685327112ad49875",
+      "reason": "New public pro-toolchain export imported by server compatibility path",
+      "alreadyInHistoricalHostPins": false,
+      "alreadyInHistoricalAppPins": false
+    },
+    {
+      "relativePath": "packages/studio/src/state/proToolchainUpdate.ts",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\studio\\src\\state\\proToolchainUpdate.ts",
+      "bytes": 3494,
+      "sha256": "0dc9a6c7ca4aafe94a33041b3c936ca9a09c8b11687a672e1c0ca159c3e0b004",
+      "reason": "New ProPreview dependency/CAS operation module",
+      "alreadyInHistoricalHostPins": false,
+      "alreadyInHistoricalAppPins": false
+    },
+    {
+      "relativePath": "packages/community-kids/src/app/api/studio/pro-runtime/dependencies/route.ts",
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\community-kids\\src\\app\\api\\studio\\pro-runtime\\dependencies\\route.ts",
+      "bytes": 1208,
+      "sha256": "d826e69faaa6ab1ca2f8c5ad80680cf3c6fecac5af2ad85710c90725bec7a583",
+      "reason": "New Kids route included by future Next source horizon; not exercised by Python scenario",
+      "alreadyInHistoricalHostPins": false,
+      "alreadyInHistoricalAppPins": false
+    }
+  ],
+  "operatorCopiesForFutureExclusiveNamespace": [
+    {
+      "source": {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-windows-entry.mjs",
+        "bytes": 5914,
+        "sha256": "08bc4c86661d4912e42fb11e771ea06f7a9666ba5a1b4613d10efe7371333c64"
+      },
+      "futureRelativeDestination": "windows/windows-entry.mjs"
+    },
+    {
+      "source": {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-process-ownership.ps1",
+        "bytes": 1741,
+        "sha256": "80246ad3d28cf13e16690c72a6b469ce2e3507e85f924ab3ea5b47882dba3866"
+      },
+      "futureRelativeDestination": "windows/python-lesson-process-ownership.ps1"
+    },
+    {
+      "source": {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-browser-watch.ps1",
+        "bytes": 13442,
+        "sha256": "a19efa1b2743fe992faf6632be23f476d69f2d63e9de71dc88e80af642c27a2f"
+      },
+      "futureRelativeDestination": "windows/python-lesson-browser-watch.ps1"
+    },
+    {
+      "source": {
+        "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\packages\\community-kids\\tests\\e2e\\windows\\python-lesson-browser-owned.ps1",
+        "bytes": 10184,
+        "sha256": "2c3d7526ba9e366fbdfa1a45fab690e42d7bfd1def67f2cc2b2c85d07cafc519"
+      },
+      "futureRelativeDestination": "windows/python-lesson-browser-owned.ps1"
+    }
+  ],
+  "futurePlanFields": {
+    "codeHead": "b641c62916fedc9b08c145fba979a7b60716a75f",
+    "productHorizon": "8430486236649740f5f5a9b261c5aee91c64af19",
+    "state": "UNBOUND-no-authority",
+    "roles": [
+      "chain",
+      "adminNext",
+      "adminBrowser",
+      "kidsNext",
+      "kidsBrowser"
+    ],
+    "serial": "Stop/reconcile Admin Chrome+Next before Kids Next+Chrome; one Next heap1536 at a time",
+    "authority": "Must obtain new exact host/state/approval and canonical bind after Root review; no old witness reuse",
+    "memory": "Approved per-phase incremental envelopes and fresh process headroom; no generic4096 minimum"
+  },
+  "remainingBeforePlan": "Wait active CI843/deploy and Root integration/push/source-reconciliation instructions. Root actual evidence is22tests/136assertions, not27. No execution plan/seal/witness/approval/bind/window exists from this composition.",
+  "noPlanOrEnvOrSealWritten": true,
+  "parentComposition": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python-lessons\\.cache\\lessons-observation-r1\\future-composition.json",
+    "sha256": "ee647fbb73dcd1069264e0033c3ee7b443185f092243e6f21f5bf456fd7c769d"
+  },
+  "authorizedHorizonUpdate": {
+    "onlyPackageChange": "packages/studio/playground/vite.config.ts",
+    "sha256": "aa3268fee6d77a06d5a4d64b3ee9f1927c522c71cf17e4d0792eef9459d33a7b",
+    "gitBlob": "db96966ce0d79b42e397acf619033023d6009a64",
+    "addToExecutionPins": false,
+    "effect": "Playground Vite chunk grouping only; first real Admin/Kids uses Next, no playground/build tested here",
+    "previousPinByteChanges": 0
+  },
+  "observationFollowup": {
+    "commit": "b763fb6e1773a122188fe37fa044b142c9442f62",
+    "unknown": "NEG/incomplete ownership/unconfirmed cleanup, no ACK or unknown Kill",
+    "minimumPowerShell": "7.5",
+    "unchangedProductHorizon": "8430486236649740f5f5a9b261c5aee91c64af19",
+    "state": "ROOT-AND-INDEPENDENT-REVIEW-APPROVED-P2-CLOSED"
+  },
+  "ownCheckoutHead": "b763fb6e1773a122188fe37fa044b142c9442f62",
+  "rootIntegration": {
+    "commit": "b641c62916fedc9b08c145fba979a7b60716a75f",
+    "state": "feature-local-not-staging-or-pushed-as-reported",
+    "qaPaths": [
+      "packages/admin/tests/e2e/python-lesson-fixture.ts",
+      "packages/admin/tests/e2e/python-lesson-retained-handle-control.ps1",
+      "packages/admin/tests/e2e/python-lesson-supervisor-control.ps1",
+      "packages/admin/tests/e2e/python-lessons-acceptance.md",
+      "packages/admin/tests/python-lesson-admission.test.ts",
+      "packages/admin/tests/python-lesson-fixture.test.ts",
+      "packages/community-kids/tests/e2e/python-lesson-admin.ts",
+      "packages/community-kids/tests/e2e/python-lesson-admission.ts",
+      "packages/community-kids/tests/e2e/python-lesson-kids.ts",
+      "packages/community-kids/tests/e2e/windows/python-lesson-browser-owned.ps1",
+      "packages/community-kids/tests/e2e/windows/python-lesson-browser-watch.ps1",
+      "packages/community-kids/tests/e2e/windows/python-lesson-process-ownership.ps1",
+      "packages/community-kids/tests/e2e/windows/python-lesson-windows-entry.mjs"
+    ],
+    "fullPatchSha256": "0cd632bb551f900c02e721b253effff09427c2e860d634d920fb7fd8577e4edf",
+    "spaceChangesAreHistoricalHostPins": true,
+    "reconciliation": "Candidate hashes come from Git blobs, not a merged own checkout. Space source authority/closure must be reconciled after explicit source/freeze instruction. No Games source edits."
+  }
+}

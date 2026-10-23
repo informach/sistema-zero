@@ -807,7 +807,7 @@ describe('a previsão antes de mexer', () => {
 describe('as cinco cenas de desenho e a das vidas', () => {
   /**
    * O lote 4 da proposta. O Jogo do Meu Jeito não tinha UMA cena nativa: as cinco de desenho
-   * são as seções de demonstração dele que hoje esperam vídeo. A das vidas é o dia 4 do
+   * são as partes de demonstração dele que hoje esperam vídeo. A das vidas é o dia 4 do
    * Desafio, onde ponto e vida mudam por motivos diferentes.
    */
   function montar(scene: SceneId) {
@@ -1084,7 +1084,7 @@ describe('as cinco cenas de desenho e a das vidas', () => {
   })
 })
 
-describe('⚠️⚠️ a seção conta ao bloco o que ela já disse', () => {
+describe('⚠️⚠️ a parte conta ao bloco o que ela já disse', () => {
   const bloco = (scene: SceneId): InteractiveBlock => ({
     kind: 'interactive',
     title: SCENE_MODELS[scene].title,
@@ -1105,15 +1105,15 @@ describe('⚠️⚠️ a seção conta ao bloco o que ela já disse', () => {
     return c
   }
 
-  test('⚠️ o título não aparece DUAS vezes quando a seção já disse o mesmo', async () => {
-    // A Aula 1 do Corre Dino mostrava a mesma pergunta no cabeçalho da seção e no cartão da
+  test('⚠️ o título não aparece DUAS vezes quando a parte já disse o mesmo', async () => {
+    // A Aula 1 do Corre Dino mostrava a mesma pergunta no cabeçalho da parte e no cartão da
     // cena, a 130px de distância.
     const c = montar('world', { titulo: SCENE_MODELS.world.title, temDialogo: false })
     const titulo = await screen.findByRole('heading', { name: c.title })
     expect(titulo.className).toContain('sr-only')
     cleanup()
 
-    // ⚠️ E ele CONTINUA existindo: é o nome acessível da seção da cena.
+    // ⚠️ E ele CONTINUA existindo: é o nome acessível da parte da cena.
     montar('world', { titulo: 'Outro assunto', temDialogo: false })
     const proprio = await screen.findByRole('heading', { name: c.title })
     expect(proprio.className).not.toContain('sr-only')
@@ -1192,14 +1192,17 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
     obstacle: { name: 'asteroide', gender: 'm' as const },
     scenery: { name: 'nebulosa', gender: 'f' as const },
   }
-  test('⚠️⚠️ nenhuma palavra do Corre Dino sobra na tela vestida de outro curso', () => {
+  test.each(
+    SCENE_IDS,
+  )('⚠️⚠️ nenhuma palavra do Corre Dino sobra na tela vestida de outro curso: %s', (scene) => {
     /**
-     * ⚠️⚠️ **As 45, e não uma lista curada.** Ela era a lista das cenas "que o elenco existe
+     * ⚠️⚠️ **Todas as cenas do catálogo, e não uma lista curada.** Ela era a lista das cenas "que o elenco existe
      * para reaproveitar", e o comentário dela já registrava o defeito da própria ideia: a
      * varredura ficou verde enquanto duas bancadas extraídas voltavam a escrever "cacto" e
      * "Dino" crus, porque os arquivos novos não estavam nela. Curar a lista é carregar uma
-     * segunda lista de cenas para manter em dia — exatamente o que o lote 3 inteiro ataca —, e
-     * o custo de varrer todas é 800ms. O full review achou mais uma assim: a `screen-reader`
+     * segunda lista de cenas para manter em dia — exatamente o que o lote 3 inteiro ataca.
+     * Cada cena tem seu próprio teste e prazo, preservando a ordem de SCENE_IDS conforme o
+     * catálogo cresce. O full review achou mais uma assim: a `screen-reader`
      * descrevia o desenho como "Um dinossauro correndo diante de cactos", e "dinossauro" não é
      * termo do elenco (a régua casa "Dino"), então numa turma de nave a frase saía com meio
      * elenco trocado — justo na cena que ENSINA a descrever a tela para quem não a vê.
@@ -1208,41 +1211,39 @@ describe('o elenco veste a cena INTEIRA, não só o texto do catálogo', () => {
      * anuncia NO LUGAR do desenho, e não aparece nem no texto visível nem nos `aria-label`.
      */
     const falhas: string[] = []
-    for (const scene of SCENE_IDS) {
-      const c: InteractiveBlock = {
-        ...content(scene),
-        title: 'Título do professor',
-        instructions: 'Instrução do professor.',
-        activity: { type: 'experimentation', scene, cast: NAVE },
-      }
-      render(
-        <InteractiveLessonBlock
-          block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: c }}
-          previewContent={c}
-        />,
-      )
-      // O texto visível, os nomes acessíveis e o que o SVG conta a quem não enxerga.
-      const visivel = document.body.textContent ?? ''
-      const rotulos = [...document.querySelectorAll('[aria-label]')]
-        .map((el) => el.getAttribute('aria-label') ?? '')
-        .join(' | ')
-      const desenho = [...document.querySelectorAll('title, desc')]
-        .map((el) => el.textContent ?? '')
-        .join(' | ')
-      for (const alvo of [/Dino/i, /cactos?/i, /floresta/i])
-        for (const [onde, texto] of [
-          ['texto', visivel],
-          ['rótulo', rotulos],
-          ['desenho', desenho],
-        ] as const)
-          if (alvo.test(texto))
-            falhas.push(
-              `${scene}: ${onde} ainda fala do Corre Dino (${alvo}) — ${
-                texto.match(new RegExp(`.{0,40}${alvo.source}.{0,40}`, 'i'))?.[0] ?? ''
-              }`,
-            )
-      cleanup()
+    const c: InteractiveBlock = {
+      ...content(scene),
+      title: 'Título do professor',
+      instructions: 'Instrução do professor.',
+      activity: { type: 'experimentation', scene, cast: NAVE },
     }
+    render(
+      <InteractiveLessonBlock
+        block={{ id: 'b', blockRevision: 'r', kind: 'interactive', sortOrder: 0, content: c }}
+        previewContent={c}
+      />,
+    )
+    // O texto visível, os nomes acessíveis e o que o SVG conta a quem não enxerga.
+    const visivel = document.body.textContent ?? ''
+    const rotulos = [...document.querySelectorAll('[aria-label]')]
+      .map((el) => el.getAttribute('aria-label') ?? '')
+      .join(' | ')
+    const desenho = [...document.querySelectorAll('title, desc')]
+      .map((el) => el.textContent ?? '')
+      .join(' | ')
+    for (const alvo of [/Dino/i, /cactos?/i, /floresta/i])
+      for (const [onde, texto] of [
+        ['texto', visivel],
+        ['rótulo', rotulos],
+        ['desenho', desenho],
+      ] as const)
+        if (alvo.test(texto))
+          falhas.push(
+            `${scene}: ${onde} ainda fala do Corre Dino (${alvo}) — ${
+              texto.match(new RegExp(`.{0,40}${alvo.source}.{0,40}`, 'i'))?.[0] ?? ''
+            }`,
+          )
+    cleanup()
     expect([...new Set(falhas)]).toEqual([])
   })
 

@@ -1,3 +1,4 @@
+import { ValidationError } from '@sistemazero/core/errors'
 import type { Logger } from '@sistemazero/core/logging'
 import { CourseNotFoundError } from '../../domain/course/course.errors'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
@@ -11,10 +12,10 @@ import type { EntitlementSnapshot } from '../../domain/entitlement/entitlement-s
 import type { AccessType } from '../../domain/entitlement/fulfillment'
 import {
   createMuralVisitorSnapshot,
-  MURAL_FULL_REF,
-  MURAL_TRIAL_PRODUCT_ID,
+  MURAL_GIFT_ACCESS,
   MURAL_VISITOR_PRODUCT_ID,
   MURAL_VISITOR_REF,
+  type MuralAudience,
 } from '../../domain/entitlement/mural-visitor'
 import type { CatalogGateway } from '../../domain/ports/catalog-gateway.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
@@ -44,13 +45,25 @@ export type GrantManualCommand =
       courseRef: string
       expiresAt?: Date | null
       sourceId?: string
-      /** Fluxo de indicação S2S: nunca conceder um curso rascunho ou de outra audiência. */
-      requirePublishedKids?: boolean
+      /**
+       * Fluxo de indicação S2S: só concede um curso PUBLICADO deste público (nunca rascunho nem
+       * o curso do outro público). O público fica no snapshot (`giftAudience`) para os avisos de
+       * fim do presente escolherem template e link sem depender do curso depois.
+       */
+      requirePublishedAudience?: MuralAudience
     }
   | { mode: 'all_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'all_kids_courses'; userId: string; expiresAt?: Date | null; sourceId?: string }
   | { mode: 'mural_visitor'; userId: string; sourceId: string }
-  | { mode: 'mural_trial'; userId: string; courseRef: string; sourceId: string; expiresAt: Date }
+  | {
+      mode: 'mural_trial'
+      userId: string
+      courseRef: string
+      sourceId: string
+      expiresAt: Date
+      /** Ausente = `kids` (contrato histórico). `adult` concede o Mural adulto. */
+      audience?: MuralAudience
+    }
 
 /**
  * `product_id` sintético das chaves-mestra MANUAIS (a coluna é uuid NOT NULL e não há
@@ -99,9 +112,18 @@ interface GrantOneInput {
 export class GrantManualEntitlementService {
   constructor(private readonly deps: GrantManualDeps) {}
 
-  async isPublishedKidsCourse(courseRef: string): Promise<boolean> {
+  /** O curso pode ser presente deste público? (publicado, gravado e da mesma audiência). */
+  async isPublishedGiftCourse(
+    courseRef: string,
+    audience: MuralAudience = 'kids',
+  ): Promise<boolean> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
-    return course?.status === 'published' && course.audience === 'kids'
+    // Curso ao vivo não se libera por matrícula (a vaga é na turma): nunca vira presente.
+    return (
+      course?.status === 'published' &&
+      course.audience === audience &&
+      course.modality === 'recorded'
+    )
   }
 
   async execute(cmd: GrantManualCommand): Promise<GrantManualResult> {
@@ -117,7 +139,7 @@ export class GrantManualEntitlementService {
           expiresAt,
           now,
           cmd.sourceId,
-          cmd.requirePublishedKids,
+          cmd.requirePublishedAudience,
         )
       case 'all_courses':
         return this.grantAllCourses(cmd.userId, expiresAt, now, cmd.sourceId)
@@ -186,14 +208,21 @@ export class GrantManualEntitlementService {
     expiresAt: Date | null,
     now: Date,
     sourceId?: string,
-    requirePublishedKids = false,
+    requirePublishedAudience?: MuralAudience,
   ): Promise<GrantManualResult> {
     const course = await this.deps.courses.findCourseBySlug(courseRef)
     if (
       !course ||
-      (requirePublishedKids && (course.status !== 'published' || course.audience !== 'kids'))
+      (requirePublishedAudience &&
+        (course.status !== 'published' || course.audience !== requirePublishedAudience))
     )
       throw new CourseNotFoundError()
+    // O curso AO VIVO abre pela vaga na turma das oficinas, nunca por matrícula: a concessão
+    // seria uma matrícula morta (o `CheckAccessService` não a lê para curso ao vivo).
+    if (course.modality === 'live')
+      throw new ValidationError(
+        'Curso ao vivo não se libera por matrícula. A vaga é numa turma das oficinas.',
+      )
 
     // `product_id = course.id`: uuid estável → o índice de dedupe funciona (re-conceder
     // o mesmo curso ao mesmo membro colide em vez de duplicar). Snapshot sintético (sem oferta).
@@ -208,6 +237,8 @@ export class GrantManualEntitlementService {
       courseRef: course.slug,
       fulfillment: { accessType: 'course', courseRef: course.slug },
       resolvedAt: now.toISOString(),
+      // Só o presente S2S grava o público: o snapshot é imutável e sobrevive a mudanças no curso.
+      ...(requirePublishedAudience ? { giftAudience: requirePublishedAudience } : {}),
     }
     const view = await this.grantOne({
       userId,
@@ -322,6 +353,9 @@ export class GrantManualEntitlementService {
     now: Date,
   ): Promise<GrantManualResult> {
     // O prazo é o do curso já concedido por ESTE resgate, nunca sete dias a partir do retry.
+    // Adulto e Kids têm as MESMAS guardas; muda só o público exigido do curso e as chaves do Mural.
+    const audience = cmd.audience ?? 'kids'
+    const mural = MURAL_GIFT_ACCESS[audience]
     const course = await this.deps.courses.findCourseBySlug(cmd.courseRef)
     const enrollment = course
       ? await this.deps.entitlements.findByIdempotencyKey(
@@ -330,8 +364,11 @@ export class GrantManualEntitlementService {
       : null
     if (
       !cmd.sourceId.startsWith('scholarship:') ||
-      course?.audience !== 'kids' ||
+      course?.audience !== audience ||
       !enrollment?.isActiveAt(now) ||
+      // A matrícula precisa ser o presente DESTE público (gravado pelo `course` S2S). Snapshot
+      // antigo sem `giftAudience` só pode ser Kids: o presente adulto nasceu com o campo.
+      (enrollment.snapshot.giftAudience ?? 'kids') !== audience ||
       enrollment.toSnapshot().sourceKind !== 'manual' ||
       enrollment.toSnapshot().sourceId !== cmd.sourceId ||
       enrollment.toSnapshot().accessType !== 'course' ||
@@ -344,14 +381,14 @@ export class GrantManualEntitlementService {
         'O Mural temporário exige a matrícula ativa do presente, o mesmo vencimento e no máximo sete dias',
       )
     }
-    const visitorSnapshot = createMuralVisitorSnapshot('', '', now)
+    const visitorSnapshot = createMuralVisitorSnapshot('', '', now, audience)
     const trialSnapshot: EntitlementSnapshot = {
       ...visitorSnapshot,
-      productId: MURAL_TRIAL_PRODUCT_ID,
-      sku: MURAL_FULL_REF,
+      productId: mural.trialProductId,
+      sku: mural.fullRef,
       name: 'Participação no Mural durante o presente',
-      courseRef: MURAL_FULL_REF,
-      fulfillment: { accessType: 'community', courseRef: MURAL_FULL_REF },
+      courseRef: mural.fullRef,
+      fulfillment: { accessType: 'community', courseRef: mural.fullRef },
       // A data efetiva é a mesma da matrícula do curso, preservada em expiresAt.
       accessPolicy: { mode: 'fixed', durationValue: 7, durationUnit: 'days' },
     }
@@ -366,15 +403,15 @@ export class GrantManualEntitlementService {
     const granted = await this.grantMany([
       {
         ...common,
-        productId: MURAL_TRIAL_PRODUCT_ID,
-        courseRef: MURAL_FULL_REF,
+        productId: mural.trialProductId,
+        courseRef: mural.fullRef,
         snapshot: trialSnapshot,
         expiresAt: cmd.expiresAt,
       },
       {
         ...common,
-        productId: MURAL_VISITOR_PRODUCT_ID,
-        courseRef: MURAL_VISITOR_REF,
+        productId: mural.visitorProductId,
+        courseRef: mural.visitorRef,
         snapshot: visitorSnapshot,
         expiresAt: null,
       },
@@ -382,6 +419,7 @@ export class GrantManualEntitlementService {
     this.deps.logger?.info('grant.manual.mural_trial', {
       userId: cmd.userId,
       courseRef: cmd.courseRef,
+      audience,
     })
     return { granted }
   }

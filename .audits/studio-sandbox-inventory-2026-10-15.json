@@ -1,0 +1,2424 @@
+{
+  "root": "C:\\Users\\tocha\\Downloads\\sandbox-main\\sandbox-main",
+  "generatedAt": "2026-10-15T18:59:58.073Z",
+  "excluded": [
+    ".git",
+    "node_modules",
+    ".agents",
+    ".claude",
+    "reference"
+  ],
+  "includedFiles": 166,
+  "sourceFiles": 142,
+  "sourceLines": 19603,
+  "tests": [],
+  "licenseFiles": [],
+  "priorAudit": {
+    "commit": "ac18750e06d7678ca8a215fc61cb91e1e5709b50",
+    "comparedSourceFiles": 142,
+    "matchingIgnoringLineEndings": 142
+  },
+  "studioSnapshot": {
+    "branch": "feat/studio-pro-completo",
+    "head": "7981caf7a4fb6773ebb804405bf7ad6f6551814f",
+    "note": "The shared worktree has concurrent uncommitted work. These hashes identify the comparison, not a released version.",
+    "files": [
+      {
+        "file": "packages/core/src/studio/pro-builder.ts",
+        "sha256": "255fccd4f026e89a3789a92f84a35c6cfac4fcbc5b896a5e29e63ae4da4bb697"
+      },
+      {
+        "file": "packages/core/src/studio/pro-game-knowledge.ts",
+        "sha256": "8652645d3e232e597d713199b10d5076d357cf76ebc860e8fc06c63b1bd95c70"
+      },
+      {
+        "file": "packages/member-shell/src/server/studio-builder.ts",
+        "sha256": "4246e8bf9c6b45fd8f3b4e6a0a5d2df2e21100a49b3a7cab6018ca3f36af69ec"
+      },
+      {
+        "file": "packages/member-shell/src/server/studio-builder-tools.ts",
+        "sha256": "980d35b41cbdef7f61eb7a7509e069a41d732ff3f5e9f349541da91e23f1d55b"
+      },
+      {
+        "file": "packages/member-shell/src/routes/studio-builder.ts",
+        "sha256": "be9c8bb26c48cd7294abf90c76721e915d429b634cb81266af019a465b4889ae"
+      },
+      {
+        "file": "packages/members/src/infrastructure/persistence/drizzle/studio-builder.repository.ts",
+        "sha256": "3c99c1d6ae2eecf60c4370675bb926bc17266b7468dfc8101cf3f3e514f5329c"
+      },
+      {
+        "file": "packages/studio/src/components/tutor/ProBuilderPanel.tsx",
+        "sha256": "30279ef494f4539ff7b5eed982fab440ceaeb23bc34d33aa80340ced16c54e48"
+      },
+      {
+        "file": "packages/studio-runtime/runtime/playtest.mjs",
+        "sha256": "95d60d937d0e6e8bf0b3957104e2381abc2163e3a03228720b269678b41d9017"
+      },
+      {
+        "file": "packages/studio-runtime/runtime/gameplay.mjs",
+        "sha256": "b41d6a51c42f628aa497b3da28e8ea0463a4d6376a84d1da772ee3016ebe5e97"
+      },
+      {
+        "file": "packages/studio/pro-kits/canvas-survival/studio-kit.json",
+        "sha256": "60c12e7d68dd2a44b43e8b7db1bd2dc5eed85a3b18bc3499bdfd7499a7147832"
+      }
+    ]
+  },
+  "rows": [
+    {
+      "file": "app/(app)/billing/page.tsx",
+      "lines": 62,
+      "bytes": 2319,
+      "sha256": "bcf6ee2df4312c985d7a82b0db3aac287f3d37387864842eef7fb59a75400c52",
+      "normalizedSha256": "bcf6ee2df4312c985d7a82b0db3aac287f3d37387864842eef7fb59a75400c52",
+      "imports": [
+        "@clerk/nextjs",
+        "@clerk/nextjs/server",
+        "next",
+        "@/lib/billing/format",
+        "@/lib/billing/ledger",
+        "@/lib/billing/reconcile"
+      ],
+      "exports": [
+        "metadata",
+        "BillingPage"
+      ]
+    },
+    {
+      "file": "app/(app)/games/[id]/page.tsx",
+      "lines": 62,
+      "bytes": 2292,
+      "sha256": "db67274cbf394d4298b60da2c0ddb99e8820aa28ece56a5ea37740f411d40c65",
+      "normalizedSha256": "db67274cbf394d4298b60da2c0ddb99e8820aa28ece56a5ea37740f411d40c65",
+      "imports": [
+        "@clerk/nextjs/server",
+        "next/navigation",
+        "@/lib/billing/ledger",
+        "@/components/game-chat",
+        "@/components/game-menu",
+        "@/lib/games/model-catalog",
+        "@/lib/games/queries"
+      ],
+      "exports": [
+        "GamePage"
+      ]
+    },
+    {
+      "file": "app/(app)/layout.tsx",
+      "lines": 22,
+      "bytes": 643,
+      "sha256": "8743aecc59d5e325ec321c04af69df9d6b5f6a6ddcf0ec2ad30c1dabdfff3cff",
+      "normalizedSha256": "8743aecc59d5e325ec321c04af69df9d6b5f6a6ddcf0ec2ad30c1dabdfff3cff",
+      "imports": [
+        "@clerk/nextjs/server",
+        "@/components/app-sidebar",
+        "@/components/ui/sidebar",
+        "@/lib/billing/ledger",
+        "@/lib/games/queries"
+      ],
+      "exports": [
+        "AppLayout"
+      ]
+    },
+    {
+      "file": "app/(app)/page.tsx",
+      "lines": 39,
+      "bytes": 1107,
+      "sha256": "8cf46cc56ffa5ab630fbc72e8f5552cea7a42a1338fa896a71901d71a4ce5b6a",
+      "normalizedSha256": "8cf46cc56ffa5ab630fbc72e8f5552cea7a42a1338fa896a71901d71a4ce5b6a",
+      "imports": [
+        "@clerk/nextjs/server",
+        "next/image",
+        "@/components/new-game-composer",
+        "@/components/ui/empty"
+      ],
+      "exports": [
+        "Page"
+      ]
+    },
+    {
+      "file": "app/api/games/[id]/preview/route.ts",
+      "lines": 91,
+      "bytes": 3419,
+      "sha256": "1a4da5e589000131fcdd3ed888d314250e128e05e019e08a57284bd4882ed6ff",
+      "normalizedSha256": "1a4da5e589000131fcdd3ed888d314250e128e05e019e08a57284bd4882ed6ff",
+      "imports": [
+        "@sentry/nextjs",
+        "@/lib/daytona/utils",
+        "@/lib/games/queries",
+        "@/lib/observability"
+      ],
+      "exports": [
+        "GET"
+      ]
+    },
+    {
+      "file": "app/global-error.tsx",
+      "lines": 24,
+      "bytes": 403,
+      "sha256": "3de8b8d6815b48d42fea1d1af0a6e70520daa2df81922f3d8bc5205cd9bab90e",
+      "normalizedSha256": "3de8b8d6815b48d42fea1d1af0a6e70520daa2df81922f3d8bc5205cd9bab90e",
+      "imports": [
+        "@sentry/nextjs",
+        "next/error",
+        "react"
+      ],
+      "exports": [
+        "GlobalError"
+      ]
+    },
+    {
+      "file": "app/layout.tsx",
+      "lines": 56,
+      "bytes": 1367,
+      "sha256": "077e2e371fd251ad82576c4cc76c6dd43e1189f0ae148f1ca4f48e89d4c6605a",
+      "normalizedSha256": "077e2e371fd251ad82576c4cc76c6dd43e1189f0ae148f1ca4f48e89d4c6605a",
+      "imports": [
+        "@clerk/nextjs",
+        "@clerk/ui/themes",
+        "next/font/google",
+        "./globals.css",
+        "@/components/theme-provider",
+        "@/lib/utils",
+        "next"
+      ],
+      "exports": [
+        "metadata",
+        "RootLayout"
+      ]
+    },
+    {
+      "file": "app/sign-in/[[...sign-in]]/page.tsx",
+      "lines": 10,
+      "bytes": 192,
+      "sha256": "ac928e74045046ed8b836c2aa695d0cf05bcd720d31e9197321b43e341e75d9d",
+      "normalizedSha256": "ac928e74045046ed8b836c2aa695d0cf05bcd720d31e9197321b43e341e75d9d",
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "exports": [
+        "SignInPage"
+      ]
+    },
+    {
+      "file": "app/sign-up/[[...sign-up]]/page.tsx",
+      "lines": 10,
+      "bytes": 192,
+      "sha256": "14c81fe7b389666565f6a018adc05bb0ee62f4cb4552c5fbcab6e326534c899b",
+      "normalizedSha256": "14c81fe7b389666565f6a018adc05bb0ee62f4cb4552c5fbcab6e326534c899b",
+      "imports": [
+        "@clerk/nextjs"
+      ],
+      "exports": [
+        "SignUpPage"
+      ]
+    },
+    {
+      "file": "components/app-sidebar.tsx",
+      "lines": 201,
+      "bytes": 7158,
+      "sha256": "ab838cb478ff215cd41142086d9fb98dd235e36eb8dccc7dad9e2383f117024d",
+      "normalizedSha256": "ab838cb478ff215cd41142086d9fb98dd235e36eb8dccc7dad9e2383f117024d",
+      "imports": [
+        "@clerk/nextjs",
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "next/navigation",
+        "@/components/game-menu",
+        "@/components/ui/empty",
+        "@/components/ui/popover",
+        "@/components/ui/sidebar",
+        "@/lib/billing/format",
+        "@/lib/db/schema"
+      ],
+      "exports": [
+        "AppSidebar"
+      ]
+    },
+    {
+      "file": "components/chat-composer.tsx",
+      "lines": 104,
+      "bytes": 3082,
+      "sha256": "b078b02dd53f5b1e508d55451d00a0c71d06733eebaa743acf94f07bbbdfacbc",
+      "normalizedSha256": "b078b02dd53f5b1e508d55451d00a0c71d06733eebaa743acf94f07bbbdfacbc",
+      "imports": [
+        "lucide-react",
+        "@/components/model-picker",
+        "@/components/ui/button",
+        "@/components/ui/input-group",
+        "@/lib/games/model-catalog"
+      ],
+      "exports": [
+        "ChatComposer"
+      ]
+    },
+    {
+      "file": "components/chat-preview.tsx",
+      "lines": 250,
+      "bytes": 8992,
+      "sha256": "2f830d8dac4bf9af80e388b4b2e8d5460a4fcd3a5ff5b73aa45bde8915cc07a0",
+      "normalizedSha256": "2f830d8dac4bf9af80e388b4b2e8d5460a4fcd3a5ff5b73aa45bde8915cc07a0",
+      "imports": [
+        "@sentry/nextjs",
+        "react",
+        "@/components/ui/spinner"
+      ],
+      "exports": [
+        "ChatPreview"
+      ]
+    },
+    {
+      "file": "components/chat-thread.tsx",
+      "lines": 730,
+      "bytes": 27238,
+      "sha256": "70b9f72dc91e4c7801696ea5060b9ec4817fa9eb924026002c094c890158a7e7",
+      "normalizedSha256": "70b9f72dc91e4c7801696ea5060b9ec4817fa9eb924026002c094c890158a7e7",
+      "imports": [
+        "@ai-sdk/react",
+        "@sentry/nextjs",
+        "@trigger.dev/sdk/chat",
+        "@trigger.dev/sdk/chat/react",
+        "ai",
+        "ai",
+        "lucide-react",
+        "next/image",
+        "next/link",
+        "react",
+        "@/components/chat-composer",
+        "@/components/ui/alert",
+        "@/components/ui/bubble",
+        "@/components/ui/marker",
+        "@/components/ui/message",
+        "@/components/ui/message-scroller",
+        "@/components/ui/questionnaire",
+        "@/components/ui/spinner",
+        "@/lib/games/chat-actions",
+        "@/lib/games/model-catalog",
+        "@/lib/observability",
+        "@/lib/utils",
+        "@/trigger/chat"
+      ],
+      "exports": [
+        "ChatThread"
+      ]
+    },
+    {
+      "file": "components/game-chat.tsx",
+      "lines": 122,
+      "bytes": 4535,
+      "sha256": "354144031a7f714d5f8c99c7427197545c6f29875eeabc882f79c1410f5efc2b",
+      "normalizedSha256": "354144031a7f714d5f8c99c7427197545c6f29875eeabc882f79c1410f5efc2b",
+      "imports": [
+        "@trigger.dev/sdk/chat",
+        "ai",
+        "next/navigation",
+        "react",
+        "@/components/chat-preview",
+        "@/components/chat-thread",
+        "@/components/ui/resizable",
+        "@/lib/games/model-catalog"
+      ],
+      "exports": [
+        "GameChat"
+      ]
+    },
+    {
+      "file": "components/game-menu.tsx",
+      "lines": 233,
+      "bytes": 8277,
+      "sha256": "e0694954e5a665a59e6e832bae67e4420127418297365d093d957e3f3d2fbab9",
+      "normalizedSha256": "e0694954e5a665a59e6e832bae67e4420127418297365d093d957e3f3d2fbab9",
+      "imports": [
+        "lucide-react",
+        "next/navigation",
+        "react",
+        "@/components/ui/alert-dialog",
+        "@/components/ui/button",
+        "@/components/ui/dialog",
+        "@/components/ui/dropdown-menu",
+        "@/components/ui/field",
+        "@/components/ui/input",
+        "@/components/ui/spinner",
+        "@/lib/games/actions",
+        "@/lib/games/title"
+      ],
+      "exports": [
+        "GameMenu"
+      ]
+    },
+    {
+      "file": "components/model-picker.tsx",
+      "lines": 77,
+      "bytes": 2616,
+      "sha256": "cce4a279880d6bc29ce18344ea63f598729b5611c97c88005b6f59e2e6ecbfdd",
+      "normalizedSha256": "cce4a279880d6bc29ce18344ea63f598729b5611c97c88005b6f59e2e6ecbfdd",
+      "imports": [
+        "lucide-react",
+        "@/components/ui/dropdown-menu",
+        "@/components/ui/input-group",
+        "@/lib/games/model-catalog"
+      ],
+      "exports": [
+        "ModelPicker"
+      ]
+    },
+    {
+      "file": "components/new-game-composer.tsx",
+      "lines": 77,
+      "bytes": 2643,
+      "sha256": "e294e181929cb081b3c1b34b343e92549947958d8df5d3021ed7b91e97327051",
+      "normalizedSha256": "e294e181929cb081b3c1b34b343e92549947958d8df5d3021ed7b91e97327051",
+      "imports": [
+        "react",
+        "@/components/chat-composer",
+        "@/components/ui/button",
+        "@/lib/games/actions",
+        "@/lib/games/model-catalog",
+        "@/lib/games/suggestions"
+      ],
+      "exports": [
+        "NewGameComposer"
+      ]
+    },
+    {
+      "file": "components/theme-provider.tsx",
+      "lines": 72,
+      "bytes": 1444,
+      "sha256": "86d9517da24b16ceb107fb922582baba5e4b6ee04f1b6f751dfe6c9fe023d854",
+      "normalizedSha256": "86d9517da24b16ceb107fb922582baba5e4b6ee04f1b6f751dfe6c9fe023d854",
+      "imports": [
+        "react",
+        "next-themes"
+      ],
+      "exports": [
+        "{ ThemeProvider }"
+      ]
+    },
+    {
+      "file": "components/ui/accordion.tsx",
+      "lines": 73,
+      "bytes": 2598,
+      "sha256": "38fec90a34d857fff15ca47b4fab0f12171dbb44cb55a37d1f65f63a4eaf0c20",
+      "normalizedSha256": "38fec90a34d857fff15ca47b4fab0f12171dbb44cb55a37d1f65f63a4eaf0c20",
+      "imports": [
+        "@base-ui/react/accordion",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{ Accordion, AccordionItem, AccordionTrigger, AccordionContent }"
+      ]
+    },
+    {
+      "file": "components/ui/alert-dialog.tsx",
+      "lines": 188,
+      "bytes": 5272,
+      "sha256": "c9ab3a06e387ea9b59d4f1084521678816cf6b5d697d787f45df64213b07b112",
+      "normalizedSha256": "c9ab3a06e387ea9b59d4f1084521678816cf6b5d697d787f45df64213b07b112",
+      "imports": [
+        "react",
+        "@base-ui/react/alert-dialog",
+        "@/lib/utils",
+        "@/components/ui/button"
+      ],
+      "exports": [
+        "{\n  AlertDialog,\n  AlertDialogAction,\n  AlertDialogCancel,\n  AlertDialogContent,\n  AlertDialogDescription,\n  AlertDialogFooter,\n  AlertDialogHeader,\n  AlertDialogMedia,\n  AlertDialogOverlay,\n  AlertDialogPortal,\n  AlertDialogTitle,\n  AlertDialogTrigger,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/alert.tsx",
+      "lines": 77,
+      "bytes": 2048,
+      "sha256": "126a26b401ab2cd3f3855551d012b5dca7a96b7d6984a921add3ce2d441af4b6",
+      "normalizedSha256": "126a26b401ab2cd3f3855551d012b5dca7a96b7d6984a921add3ce2d441af4b6",
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Alert, AlertTitle, AlertDescription, AlertAction }"
+      ]
+    },
+    {
+      "file": "components/ui/aspect-ratio.tsx",
+      "lines": 23,
+      "bytes": 403,
+      "sha256": "c6db82ab2401e402c7c6d178ff59eb570535c76db5953b3bb78be564c5b24669",
+      "normalizedSha256": "c6db82ab2401e402c7c6d178ff59eb570535c76db5953b3bb78be564c5b24669",
+      "imports": [
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ AspectRatio }"
+      ]
+    },
+    {
+      "file": "components/ui/attachment.tsx",
+      "lines": 208,
+      "bytes": 6105,
+      "sha256": "a31f77d517247d84204d4f391656756c8d0f094d65a5aae2238e3731932d36a9",
+      "normalizedSha256": "a31f77d517247d84204d4f391656756c8d0f094d65a5aae2238e3731932d36a9",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/button"
+      ],
+      "exports": [
+        "{\n  Attachment,\n  AttachmentGroup,\n  AttachmentMedia,\n  AttachmentContent,\n  AttachmentTitle,\n  AttachmentDescription,\n  AttachmentActions,\n  AttachmentAction,\n  AttachmentTrigger,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/avatar.tsx",
+      "lines": 110,
+      "bytes": 3038,
+      "sha256": "357b2f9aac0192c071cb2ed65cb6e4c8ec01fa02fc15cf50d889b85731b75666",
+      "normalizedSha256": "357b2f9aac0192c071cb2ed65cb6e4c8ec01fa02fc15cf50d889b85731b75666",
+      "imports": [
+        "react",
+        "@base-ui/react/avatar",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Avatar,\n  AvatarImage,\n  AvatarFallback,\n  AvatarGroup,\n  AvatarGroupCount,\n  AvatarBadge,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/badge.tsx",
+      "lines": 53,
+      "bytes": 1925,
+      "sha256": "968b0403af74a785c9408ca69a677235e49d0c80b2c27fb9858ad421a8778c7d",
+      "normalizedSha256": "968b0403af74a785c9408ca69a677235e49d0c80b2c27fb9858ad421a8778c7d",
+      "imports": [
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Badge, badgeVariants }"
+      ]
+    },
+    {
+      "file": "components/ui/breadcrumb.tsx",
+      "lines": 126,
+      "bytes": 2586,
+      "sha256": "26f83fc8ed302d710851a71b705f5f8f28c805561c1fb6945370617267c5a4a9",
+      "normalizedSha256": "26f83fc8ed302d710851a71b705f5f8f28c805561c1fb6945370617267c5a4a9",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Breadcrumb,\n  BreadcrumbList,\n  BreadcrumbItem,\n  BreadcrumbLink,\n  BreadcrumbPage,\n  BreadcrumbSeparator,\n  BreadcrumbEllipsis,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/bubble.tsx",
+      "lines": 129,
+      "bytes": 4809,
+      "sha256": "c30f7689bb2be006fb12e5a5bf37e0c04eb2a3138327fb9324e293367394e9ba",
+      "normalizedSha256": "c30f7689bb2be006fb12e5a5bf37e0c04eb2a3138327fb9324e293367394e9ba",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ BubbleGroup, Bubble, BubbleContent, BubbleReactions }"
+      ]
+    },
+    {
+      "file": "components/ui/button-group.tsx",
+      "lines": 88,
+      "bytes": 2480,
+      "sha256": "fe97631e1a07bc0add09503c5032002e37f4c71ef5dd3c7475b856a29848583d",
+      "normalizedSha256": "fe97631e1a07bc0add09503c5032002e37f4c71ef5dd3c7475b856a29848583d",
+      "imports": [
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/separator"
+      ],
+      "exports": [
+        "{\n  ButtonGroup,\n  ButtonGroupSeparator,\n  ButtonGroupText,\n  buttonGroupVariants,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/button.tsx",
+      "lines": 59,
+      "bytes": 3240,
+      "sha256": "d14549ab3ba7a9d5d1f424c2599233bffa0b317121abf3b6efa2fb902d5e2781",
+      "normalizedSha256": "d14549ab3ba7a9d5d1f424c2599233bffa0b317121abf3b6efa2fb902d5e2781",
+      "imports": [
+        "@base-ui/react/button",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Button, buttonVariants }"
+      ]
+    },
+    {
+      "file": "components/ui/calendar.tsx",
+      "lines": 222,
+      "bytes": 8268,
+      "sha256": "0ea3d4bd2cf7b8edef5bd5a724518d94d609b15f2f4f42e489c63f532706e55c",
+      "normalizedSha256": "0ea3d4bd2cf7b8edef5bd5a724518d94d609b15f2f4f42e489c63f532706e55c",
+      "imports": [
+        "react",
+        "react-day-picker",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{ Calendar, CalendarDayButton }"
+      ]
+    },
+    {
+      "file": "components/ui/card.tsx",
+      "lines": 104,
+      "bytes": 2630,
+      "sha256": "d8113cbf964f8d1aadf2649d2944d8bbc6e3cfd49d36746f76868cbc4dde3cfe",
+      "normalizedSha256": "d8113cbf964f8d1aadf2649d2944d8bbc6e3cfd49d36746f76868cbc4dde3cfe",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Card,\n  CardHeader,\n  CardFooter,\n  CardTitle,\n  CardAction,\n  CardDescription,\n  CardContent,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/carousel.tsx",
+      "lines": 243,
+      "bytes": 5611,
+      "sha256": "c1830b952d87d4a089dc99913c7fe1510ed559f0f7d11d1d69bc349b4ee0cbfc",
+      "normalizedSha256": "c1830b952d87d4a089dc99913c7fe1510ed559f0f7d11d1d69bc349b4ee0cbfc",
+      "imports": [
+        "react",
+        "embla-carousel-react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  type CarouselApi,\n  Carousel,\n  CarouselContent,\n  CarouselItem,\n  CarouselPrevious,\n  CarouselNext,\n  useCarousel,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/chart.tsx",
+      "lines": 374,
+      "bytes": 10501,
+      "sha256": "0060b7708d85a5fffc914dcd1ee4753b5acfe83db7ba634b4cea280bd9f19c8f",
+      "normalizedSha256": "0060b7708d85a5fffc914dcd1ee4753b5acfe83db7ba634b4cea280bd9f19c8f",
+      "imports": [
+        "react",
+        "recharts",
+        "recharts",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "ChartConfig",
+        "{\n  ChartContainer,\n  ChartTooltip,\n  ChartTooltipContent,\n  ChartLegend,\n  ChartLegendContent,\n  ChartStyle,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/checkbox.tsx",
+      "lines": 30,
+      "bytes": 1539,
+      "sha256": "7221fec06ed8f697d03157cec8e668f84fcc6706391f487a90773b7fe4fc762d",
+      "normalizedSha256": "7221fec06ed8f697d03157cec8e668f84fcc6706391f487a90773b7fe4fc762d",
+      "imports": [
+        "@base-ui/react/checkbox",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{ Checkbox }"
+      ]
+    },
+    {
+      "file": "components/ui/collapsible.tsx",
+      "lines": 22,
+      "bytes": 658,
+      "sha256": "ead4349ff7b01d696ef89294a81d18ee1d3f732321398896462c834ab9b9e065",
+      "normalizedSha256": "ead4349ff7b01d696ef89294a81d18ee1d3f732321398896462c834ab9b9e065",
+      "imports": [
+        "@base-ui/react/collapsible"
+      ],
+      "exports": [
+        "{ Collapsible, CollapsibleTrigger, CollapsibleContent }"
+      ]
+    },
+    {
+      "file": "components/ui/combobox.tsx",
+      "lines": 298,
+      "bytes": 9031,
+      "sha256": "f85f566d4d53d69d2b87a625a12bbfc36585d48fe8797fd7ce555808307ce0ac",
+      "normalizedSha256": "f85f566d4d53d69d2b87a625a12bbfc36585d48fe8797fd7ce555808307ce0ac",
+      "imports": [
+        "react",
+        "@base-ui/react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input-group",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Combobox,\n  ComboboxInput,\n  ComboboxContent,\n  ComboboxList,\n  ComboboxItem,\n  ComboboxGroup,\n  ComboboxLabel,\n  ComboboxCollection,\n  ComboboxEmpty,\n  ComboboxSeparator,\n  ComboboxChips,\n  ComboboxChip,\n  ComboboxChipsInput,\n  ComboboxTrigger,\n  ComboboxValue,\n  useComboboxAnchor,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/command.tsx",
+      "lines": 197,
+      "bytes": 5005,
+      "sha256": "b80b0f0356add12993366cd4571ceae1416f50035ac189876373d0e5050308c5",
+      "normalizedSha256": "b80b0f0356add12993366cd4571ceae1416f50035ac189876373d0e5050308c5",
+      "imports": [
+        "react",
+        "cmdk",
+        "@/lib/utils",
+        "@/components/ui/dialog",
+        "@/components/ui/input-group",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Command,\n  CommandDialog,\n  CommandInput,\n  CommandList,\n  CommandEmpty,\n  CommandGroup,\n  CommandItem,\n  CommandShortcut,\n  CommandSeparator,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/context-menu.tsx",
+      "lines": 272,
+      "bytes": 8035,
+      "sha256": "8658b48f25544047357bc809e6f6485d2309e72cf310c521e92430003b0d56a8",
+      "normalizedSha256": "8658b48f25544047357bc809e6f6485d2309e72cf310c521e92430003b0d56a8",
+      "imports": [
+        "react",
+        "@base-ui/react/context-menu",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  ContextMenu,\n  ContextMenuTrigger,\n  ContextMenuContent,\n  ContextMenuItem,\n  ContextMenuCheckboxItem,\n  ContextMenuRadioItem,\n  ContextMenuLabel,\n  ContextMenuSeparator,\n  ContextMenuShortcut,\n  ContextMenuGroup,\n  ContextMenuPortal,\n  ContextMenuSub,\n  ContextMenuSubContent,\n  ContextMenuSubTrigger,\n  ContextMenuRadioGroup,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/dialog.tsx",
+      "lines": 161,
+      "bytes": 4075,
+      "sha256": "ccabf6cc674a68b09d9168904bb46b7c1075a67312cf6f51f3e38b8eeacd2fdb",
+      "normalizedSha256": "ccabf6cc674a68b09d9168904bb46b7c1075a67312cf6f51f3e38b8eeacd2fdb",
+      "imports": [
+        "react",
+        "@base-ui/react/dialog",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Dialog,\n  DialogClose,\n  DialogContent,\n  DialogDescription,\n  DialogFooter,\n  DialogHeader,\n  DialogOverlay,\n  DialogPortal,\n  DialogTitle,\n  DialogTrigger,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/direction.tsx",
+      "lines": 7,
+      "bytes": 103,
+      "sha256": "661ff5b9c0dc26edde1226bfedc0ab50976d84f8bae42ca83a38dc3b478fd4d4",
+      "normalizedSha256": "661ff5b9c0dc26edde1226bfedc0ab50976d84f8bae42ca83a38dc3b478fd4d4",
+      "imports": [
+        "@base-ui/react/direction-provider"
+      ],
+      "exports": [
+        "{\n  DirectionProvider,\n  useDirection,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/drawer.tsx",
+      "lines": 229,
+      "bytes": 11356,
+      "sha256": "b33d7b911b1a78fb524ee68bf483c4a1f538743ff04b91da56b3dc9b48fa70a6",
+      "normalizedSha256": "b33d7b911b1a78fb524ee68bf483c4a1f538743ff04b91da56b3dc9b48fa70a6",
+      "imports": [
+        "react",
+        "@base-ui/react/drawer",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Drawer,\n  DrawerPortal,\n  DrawerOverlay,\n  DrawerSwipeHandle,\n  DrawerTrigger,\n  DrawerClose,\n  DrawerContent,\n  DrawerHeader,\n  DrawerFooter,\n  DrawerTitle,\n  DrawerDescription,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/dropdown-menu.tsx",
+      "lines": 269,
+      "bytes": 8736,
+      "sha256": "1c1ae4ec02de9778286f84e0d15a1b74cc610c13c5b6a13c1ada2e6770eeb4e1",
+      "normalizedSha256": "1c1ae4ec02de9778286f84e0d15a1b74cc610c13c5b6a13c1ada2e6770eeb4e1",
+      "imports": [
+        "react",
+        "@base-ui/react/menu",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  DropdownMenu,\n  DropdownMenuPortal,\n  DropdownMenuTrigger,\n  DropdownMenuContent,\n  DropdownMenuGroup,\n  DropdownMenuLabel,\n  DropdownMenuItem,\n  DropdownMenuCheckboxItem,\n  DropdownMenuRadioGroup,\n  DropdownMenuRadioItem,\n  DropdownMenuSeparator,\n  DropdownMenuShortcut,\n  DropdownMenuSub,\n  DropdownMenuSubTrigger,\n  DropdownMenuSubContent,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/empty.tsx",
+      "lines": 105,
+      "bytes": 2397,
+      "sha256": "e65ee3ba54a21ed61e3c50041bb12a6a3fcb215c56611cda6795c23a7bd89f61",
+      "normalizedSha256": "e65ee3ba54a21ed61e3c50041bb12a6a3fcb215c56611cda6795c23a7bd89f61",
+      "imports": [
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Empty,\n  EmptyHeader,\n  EmptyTitle,\n  EmptyDescription,\n  EmptyContent,\n  EmptyMedia,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/field.tsx",
+      "lines": 239,
+      "bytes": 6266,
+      "sha256": "3c2272fd6ca7d1b478a48d9a9b796862541cfe0882b76899dfe1bcad25bd18be",
+      "normalizedSha256": "3c2272fd6ca7d1b478a48d9a9b796862541cfe0882b76899dfe1bcad25bd18be",
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/label",
+        "@/components/ui/separator"
+      ],
+      "exports": [
+        "{\n  Field,\n  FieldLabel,\n  FieldDescription,\n  FieldError,\n  FieldGroup,\n  FieldLegend,\n  FieldSeparator,\n  FieldSet,\n  FieldContent,\n  FieldTitle,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/hover-card.tsx",
+      "lines": 52,
+      "bytes": 1855,
+      "sha256": "7e7880883ba91290133e61f8bf1df72547795b8d9f2c13d4a17a51c17540d712",
+      "normalizedSha256": "7e7880883ba91290133e61f8bf1df72547795b8d9f2c13d4a17a51c17540d712",
+      "imports": [
+        "@base-ui/react/preview-card",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ HoverCard, HoverCardTrigger, HoverCardContent }"
+      ]
+    },
+    {
+      "file": "components/ui/input-group.tsx",
+      "lines": 159,
+      "bytes": 5264,
+      "sha256": "17e76f6e6093754756dd10182f833abf35f1020dc4a8a7ead8c0f9703576870b",
+      "normalizedSha256": "17e76f6e6093754756dd10182f833abf35f1020dc4a8a7ead8c0f9703576870b",
+      "imports": [
+        "react",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/textarea"
+      ],
+      "exports": [
+        "{\n  InputGroup,\n  InputGroupAddon,\n  InputGroupButton,\n  InputGroupText,\n  InputGroupInput,\n  InputGroupTextarea,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/input-otp.tsx",
+      "lines": 88,
+      "bytes": 2547,
+      "sha256": "f3fcf6c389dc9766c2183d443a1822b0e209f11ef4db0f2a33eb13ff68c1a848",
+      "normalizedSha256": "f3fcf6c389dc9766c2183d443a1822b0e209f11ef4db0f2a33eb13ff68c1a848",
+      "imports": [
+        "react",
+        "input-otp",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{ InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator }"
+      ]
+    },
+    {
+      "file": "components/ui/input.tsx",
+      "lines": 21,
+      "bytes": 1040,
+      "sha256": "f7d6ecff9a4d631feeaf401c02bb87e26ddb38131c55d15a43b9290747390847",
+      "normalizedSha256": "f7d6ecff9a4d631feeaf401c02bb87e26ddb38131c55d15a43b9290747390847",
+      "imports": [
+        "react",
+        "@base-ui/react/input",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Input }"
+      ]
+    },
+    {
+      "file": "components/ui/item.tsx",
+      "lines": 202,
+      "bytes": 4860,
+      "sha256": "3f5ec6eac0a7c2daea3f4403408974ff4bae1e949d328701bcf3a74a4554b6e0",
+      "normalizedSha256": "3f5ec6eac0a7c2daea3f4403408974ff4bae1e949d328701bcf3a74a4554b6e0",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/separator"
+      ],
+      "exports": [
+        "{\n  Item,\n  ItemMedia,\n  ItemContent,\n  ItemActions,\n  ItemGroup,\n  ItemSeparator,\n  ItemTitle,\n  ItemDescription,\n  ItemHeader,\n  ItemFooter,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/kbd.tsx",
+      "lines": 27,
+      "bytes": 837,
+      "sha256": "1e477363fca474e23b9a1f0e5d2920cd7319e076eaa5156ba29ea4722b96bba5",
+      "normalizedSha256": "1e477363fca474e23b9a1f0e5d2920cd7319e076eaa5156ba29ea4722b96bba5",
+      "imports": [
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Kbd, KbdGroup }"
+      ]
+    },
+    {
+      "file": "components/ui/label.tsx",
+      "lines": 21,
+      "bytes": 518,
+      "sha256": "7f19b8476658d25ff197c84030e58cd7395059d876a54630e025951e474ebdae",
+      "normalizedSha256": "7f19b8476658d25ff197c84030e58cd7395059d876a54630e025951e474ebdae",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Label }"
+      ]
+    },
+    {
+      "file": "components/ui/marker.tsx",
+      "lines": 72,
+      "bytes": 1948,
+      "sha256": "cbeeb7baa6a8bdc7402bec4e37cd12ced0d78ec808441e0bc1b61293b8ede7f5",
+      "normalizedSha256": "cbeeb7baa6a8bdc7402bec4e37cd12ced0d78ec808441e0bc1b61293b8ede7f5",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Marker, MarkerIcon, MarkerContent, markerVariants }"
+      ]
+    },
+    {
+      "file": "components/ui/menubar.tsx",
+      "lines": 281,
+      "bytes": 8181,
+      "sha256": "a0001ea6d9dfda9f52cf282438317f19cb99447947b54cb80dca764f04c308e9",
+      "normalizedSha256": "a0001ea6d9dfda9f52cf282438317f19cb99447947b54cb80dca764f04c308e9",
+      "imports": [
+        "react",
+        "@base-ui/react/menu",
+        "@base-ui/react/menubar",
+        "@/lib/utils",
+        "@/components/ui/dropdown-menu",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Menubar,\n  MenubarPortal,\n  MenubarMenu,\n  MenubarTrigger,\n  MenubarContent,\n  MenubarGroup,\n  MenubarSeparator,\n  MenubarLabel,\n  MenubarItem,\n  MenubarShortcut,\n  MenubarCheckboxItem,\n  MenubarRadioGroup,\n  MenubarRadioItem,\n  MenubarSub,\n  MenubarSubTrigger,\n  MenubarSubContent,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/message-scroller.tsx",
+      "lines": 132,
+      "bytes": 4062,
+      "sha256": "901c4a6a2a7d3f6227344f3a758debb7d0cb2f77f92c9acaf72a5e9e0ffdf777",
+      "normalizedSha256": "901c4a6a2a7d3f6227344f3a758debb7d0cb2f77f92c9acaf72a5e9e0ffdf777",
+      "imports": [
+        "react",
+        "@shadcn/react/message-scroller",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  MessageScrollerProvider,\n  MessageScroller,\n  MessageScrollerViewport,\n  MessageScrollerContent,\n  MessageScrollerItem,\n  MessageScrollerButton,\n  useMessageScroller,\n  useMessageScrollerScrollable,\n  useMessageScrollerVisibility,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/message.tsx",
+      "lines": 93,
+      "bytes": 2232,
+      "sha256": "9d2952bf3b641081f09aa2739535e6bbd1be0a4946789752a2c20d8aaef43185",
+      "normalizedSha256": "9d2952bf3b641081f09aa2739535e6bbd1be0a4946789752a2c20d8aaef43185",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  MessageGroup,\n  Message,\n  MessageAvatar,\n  MessageContent,\n  MessageFooter,\n  MessageHeader,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/native-select.tsx",
+      "lines": 62,
+      "bytes": 2093,
+      "sha256": "0010395c3c1cbedf60c47e52df4417a7a66944f0a85c8f9304ee900a2493648f",
+      "normalizedSha256": "0010395c3c1cbedf60c47e52df4417a7a66944f0a85c8f9304ee900a2493648f",
+      "imports": [
+        "react",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{ NativeSelect, NativeSelectOptGroup, NativeSelectOption }"
+      ]
+    },
+    {
+      "file": "components/ui/navigation-menu.tsx",
+      "lines": 169,
+      "bytes": 7393,
+      "sha256": "076ba62c2d4292970470455ab9719badec7fedd74aaaaa40a7955cc366128e97",
+      "normalizedSha256": "076ba62c2d4292970470455ab9719badec7fedd74aaaaa40a7955cc366128e97",
+      "imports": [
+        "@base-ui/react/navigation-menu",
+        "class-variance-authority",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  NavigationMenu,\n  NavigationMenuContent,\n  NavigationMenuIndicator,\n  NavigationMenuItem,\n  NavigationMenuLink,\n  NavigationMenuList,\n  NavigationMenuTrigger,\n  navigationMenuTriggerStyle,\n  NavigationMenuPositioner,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/pagination.tsx",
+      "lines": 131,
+      "bytes": 2864,
+      "sha256": "0aba86a91ba0a8d99e92846f10b395d0ddc1a8901a4f54418e8802c12fad57c1",
+      "normalizedSha256": "0aba86a91ba0a8d99e92846f10b395d0ddc1a8901a4f54418e8802c12fad57c1",
+      "imports": [
+        "react",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Pagination,\n  PaginationContent,\n  PaginationEllipsis,\n  PaginationItem,\n  PaginationLink,\n  PaginationNext,\n  PaginationPrevious,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/popover.tsx",
+      "lines": 96,
+      "bytes": 2734,
+      "sha256": "09ed7256f19a945c977ef92269188ae78d0a1e4a51681d5c96fb0a23dd78617c",
+      "normalizedSha256": "09ed7256f19a945c977ef92269188ae78d0a1e4a51681d5c96fb0a23dd78617c",
+      "imports": [
+        "react",
+        "@base-ui/react/popover",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Popover,\n  PopoverClose,\n  PopoverContent,\n  PopoverDescription,\n  PopoverHeader,\n  PopoverTitle,\n  PopoverTrigger,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/progress.tsx",
+      "lines": 84,
+      "bytes": 1740,
+      "sha256": "45e33890b5a82744fc27d0928f927c5942c1166e5e27de8f776b29112967d317",
+      "normalizedSha256": "45e33890b5a82744fc27d0928f927c5942c1166e5e27de8f776b29112967d317",
+      "imports": [
+        "@base-ui/react/progress",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Progress,\n  ProgressTrack,\n  ProgressIndicator,\n  ProgressLabel,\n  ProgressValue,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/questionnaire.tsx",
+      "lines": 325,
+      "bytes": 10207,
+      "sha256": "8ce28f44c89c2b98bc932e5d7941f46667b84c49b383f309fa6214ce9c1e89de",
+      "normalizedSha256": "8ce28f44c89c2b98bc932e5d7941f46667b84c49b383f309fa6214ce9c1e89de",
+      "imports": [
+        "react",
+        "@shadcn/react/questionnaire",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Questionnaire,\n  QuestionnaireActions,\n  QuestionnaireChoice,\n  QuestionnaireChoiceDescription,\n  QuestionnaireChoices,\n  QuestionnaireDescription,\n  QuestionnaireError,\n  QuestionnaireInput,\n  QuestionnaireItem,\n  QuestionnaireNext,\n  QuestionnairePrevious,\n  QuestionnaireProgress,\n  QuestionnaireSkip,\n  QuestionnaireSubmit,\n  QuestionnaireTitle,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/radio-group.tsx",
+      "lines": 39,
+      "bytes": 1835,
+      "sha256": "3fcee2611d534df43e2ca0d4db49024c656fc1183dd5ab4eb92f4c5d10bde2f7",
+      "normalizedSha256": "3fcee2611d534df43e2ca0d4db49024c656fc1183dd5ab4eb92f4c5d10bde2f7",
+      "imports": [
+        "@base-ui/react/radio",
+        "@base-ui/react/radio-group",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ RadioGroup, RadioGroupItem }"
+      ]
+    },
+    {
+      "file": "components/ui/resizable.tsx",
+      "lines": 51,
+      "bytes": 1671,
+      "sha256": "379baf7a1de109a1ea14419c99b76fbec1cb4f10d6ee13605b0b2940d615afeb",
+      "normalizedSha256": "379baf7a1de109a1ea14419c99b76fbec1cb4f10d6ee13605b0b2940d615afeb",
+      "imports": [
+        "react-resizable-panels",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ ResizableHandle, ResizablePanel, ResizablePanelGroup }"
+      ]
+    },
+    {
+      "file": "components/ui/scroll-area.tsx",
+      "lines": 56,
+      "bytes": 1624,
+      "sha256": "42de3962daca60255bf1d3cd90bd3c038db73a3ed61ecaac6cffc6a153181e4a",
+      "normalizedSha256": "42de3962daca60255bf1d3cd90bd3c038db73a3ed61ecaac6cffc6a153181e4a",
+      "imports": [
+        "react",
+        "@base-ui/react/scroll-area",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ ScrollArea, ScrollBar }"
+      ]
+    },
+    {
+      "file": "components/ui/select.tsx",
+      "lines": 202,
+      "bytes": 6655,
+      "sha256": "ca3bd1b370ea67b84632d435c22d8270752fa6013c06c365162af265e4a0e87e",
+      "normalizedSha256": "ca3bd1b370ea67b84632d435c22d8270752fa6013c06c365162af265e4a0e87e",
+      "imports": [
+        "react",
+        "@base-ui/react/select",
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Select,\n  SelectContent,\n  SelectGroup,\n  SelectItem,\n  SelectLabel,\n  SelectScrollDownButton,\n  SelectScrollUpButton,\n  SelectSeparator,\n  SelectTrigger,\n  SelectValue,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/separator.tsx",
+      "lines": 26,
+      "bytes": 545,
+      "sha256": "75085bd84ff6965e4a356c53a4689799cabf65caa93c0bba064d5a0c6fa78f13",
+      "normalizedSha256": "75085bd84ff6965e4a356c53a4689799cabf65caa93c0bba064d5a0c6fa78f13",
+      "imports": [
+        "@base-ui/react/separator",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Separator }"
+      ]
+    },
+    {
+      "file": "components/ui/sheet.tsx",
+      "lines": 139,
+      "bytes": 4433,
+      "sha256": "a8ff25079c1167230fc3a9ddce881a8fb24f8ebb1eecbc8189c7f1cf242018df",
+      "normalizedSha256": "a8ff25079c1167230fc3a9ddce881a8fb24f8ebb1eecbc8189c7f1cf242018df",
+      "imports": [
+        "react",
+        "@base-ui/react/dialog",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Sheet,\n  SheetTrigger,\n  SheetClose,\n  SheetContent,\n  SheetHeader,\n  SheetFooter,\n  SheetTitle,\n  SheetDescription,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/sidebar.tsx",
+      "lines": 724,
+      "bytes": 21633,
+      "sha256": "29e33400cfdd00cb499da3615ed2258d75192d2b2a5a5117a84d2db4242ed0bf",
+      "normalizedSha256": "29e33400cfdd00cb499da3615ed2258d75192d2b2a5a5117a84d2db4242ed0bf",
+      "imports": [
+        "react",
+        "@base-ui/react/merge-props",
+        "@base-ui/react/use-render",
+        "class-variance-authority",
+        "@/hooks/use-mobile",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "@/components/ui/input",
+        "@/components/ui/separator",
+        "@/components/ui/sheet",
+        "@/components/ui/skeleton",
+        "@/components/ui/tooltip",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Sidebar,\n  SidebarContent,\n  SidebarFooter,\n  SidebarGroup,\n  SidebarGroupAction,\n  SidebarGroupContent,\n  SidebarGroupLabel,\n  SidebarHeader,\n  SidebarInput,\n  SidebarInset,\n  SidebarMenu,\n  SidebarMenuAction,\n  SidebarMenuBadge,\n  SidebarMenuButton,\n  SidebarMenuItem,\n  SidebarMenuSkeleton,\n  SidebarMenuSub,\n  SidebarMenuSubButton,\n  SidebarMenuSubItem,\n  SidebarProvider,\n  SidebarRail,\n  SidebarSeparator,\n  SidebarTrigger,\n  useSidebar,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/skeleton.tsx",
+      "lines": 14,
+      "bytes": 275,
+      "sha256": "8110bba70d0cb9fe968c0b7bd092ad12258caef40b028b4a87f402bdab907faf",
+      "normalizedSha256": "8110bba70d0cb9fe968c0b7bd092ad12258caef40b028b4a87f402bdab907faf",
+      "imports": [
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Skeleton }"
+      ]
+    },
+    {
+      "file": "components/ui/slider.tsx",
+      "lines": 53,
+      "bytes": 1874,
+      "sha256": "d5f419f7f96a6aaf8c28251ceb58b48518379d8b61a9d7cb3f2dc9e254569290",
+      "normalizedSha256": "d5f419f7f96a6aaf8c28251ceb58b48518379d8b61a9d7cb3f2dc9e254569290",
+      "imports": [
+        "@base-ui/react/slider",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Slider }"
+      ]
+    },
+    {
+      "file": "components/ui/spinner.tsx",
+      "lines": 11,
+      "bytes": 322,
+      "sha256": "900f722c961fa6e1c28104809d56831c9056dc69599e49d364cc13a6f33966a3",
+      "normalizedSha256": "900f722c961fa6e1c28104809d56831c9056dc69599e49d364cc13a6f33966a3",
+      "imports": [
+        "@/lib/utils",
+        "lucide-react"
+      ],
+      "exports": [
+        "{ Spinner }"
+      ]
+    },
+    {
+      "file": "components/ui/switch.tsx",
+      "lines": 33,
+      "bytes": 1811,
+      "sha256": "cabbf7804a4d6768ef62f5c2256fbf39e214372318bb1b3b22d407f808c56249",
+      "normalizedSha256": "cabbf7804a4d6768ef62f5c2256fbf39e214372318bb1b3b22d407f808c56249",
+      "imports": [
+        "@base-ui/react/switch",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Switch }"
+      ]
+    },
+    {
+      "file": "components/ui/table.tsx",
+      "lines": 117,
+      "bytes": 2402,
+      "sha256": "a13f55a7c1406197608f223006cf16f211a257b213362caaef0d2abf3a389c8f",
+      "normalizedSha256": "a13f55a7c1406197608f223006cf16f211a257b213362caaef0d2abf3a389c8f",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{\n  Table,\n  TableHeader,\n  TableBody,\n  TableFooter,\n  TableHead,\n  TableRow,\n  TableCell,\n  TableCaption,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/tabs.tsx",
+      "lines": 83,
+      "bytes": 3497,
+      "sha256": "8bf9ee3935ab86c268a2a71cb5b4b67d3d5587ca9f2e0bf25f37ffdb1980434c",
+      "normalizedSha256": "8bf9ee3935ab86c268a2a71cb5b4b67d3d5587ca9f2e0bf25f37ffdb1980434c",
+      "imports": [
+        "@base-ui/react/tabs",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants }"
+      ]
+    },
+    {
+      "file": "components/ui/textarea.tsx",
+      "lines": 19,
+      "bytes": 842,
+      "sha256": "58b58d84fc54ba5f4ca46937870c619349fd9eccc4d494250ac7bc73a94e05e9",
+      "normalizedSha256": "58b58d84fc54ba5f4ca46937870c619349fd9eccc4d494250ac7bc73a94e05e9",
+      "imports": [
+        "react",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Textarea }"
+      ]
+    },
+    {
+      "file": "components/ui/toast.tsx",
+      "lines": 235,
+      "bytes": 7394,
+      "sha256": "79c101fe4678ae8e14adc3b973fccfdccba157d6b1171dc0489af9d136c8d31d",
+      "normalizedSha256": "79c101fe4678ae8e14adc3b973fccfdccba157d6b1171dc0489af9d136c8d31d",
+      "imports": [
+        "react",
+        "@base-ui/react/toast",
+        "@/lib/utils",
+        "@/components/ui/button",
+        "lucide-react"
+      ],
+      "exports": [
+        "{\n  Toaster,\n  Toast,\n  ToastAction,\n  ToastClose,\n  ToastContent,\n  ToastDescription,\n  ToastPortal,\n  ToastProvider,\n  ToastTitle,\n  ToastViewport,\n  createToastManager,\n  toast,\n  useToastManager,\n}"
+      ]
+    },
+    {
+      "file": "components/ui/toggle-group.tsx",
+      "lines": 90,
+      "bytes": 3183,
+      "sha256": "f7776d68b06148d9742fe4f21df45f931b2a259592192d4bda16a7039f508d15",
+      "normalizedSha256": "f7776d68b06148d9742fe4f21df45f931b2a259592192d4bda16a7039f508d15",
+      "imports": [
+        "react",
+        "@base-ui/react/toggle",
+        "@base-ui/react/toggle-group",
+        "class-variance-authority",
+        "@/lib/utils",
+        "@/components/ui/toggle"
+      ],
+      "exports": [
+        "{ ToggleGroup, ToggleGroupItem }"
+      ]
+    },
+    {
+      "file": "components/ui/toggle.tsx",
+      "lines": 46,
+      "bytes": 1762,
+      "sha256": "290d2cd01c768d1e3c894bfebcf9c3d1532191ae7ec1e48da1e405dab0a95c4c",
+      "normalizedSha256": "290d2cd01c768d1e3c894bfebcf9c3d1532191ae7ec1e48da1e405dab0a95c4c",
+      "imports": [
+        "@base-ui/react/toggle",
+        "class-variance-authority",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Toggle, toggleVariants }"
+      ]
+    },
+    {
+      "file": "components/ui/tooltip.tsx",
+      "lines": 67,
+      "bytes": 2846,
+      "sha256": "2cea2294d4947b88d815860f64e0b5e0eb47a59bde47cfd194aac2230c923865",
+      "normalizedSha256": "2cea2294d4947b88d815860f64e0b5e0eb47a59bde47cfd194aac2230c923865",
+      "imports": [
+        "@base-ui/react/tooltip",
+        "@/lib/utils"
+      ],
+      "exports": [
+        "{ Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }"
+      ]
+    },
+    {
+      "file": "drizzle.config.ts",
+      "lines": 20,
+      "bytes": 483,
+      "sha256": "cf00345680f645d30d4456ac9368cd03ebbf2a982301c084e27f5e075a2da5ce",
+      "normalizedSha256": "cf00345680f645d30d4456ac9368cd03ebbf2a982301c084e27f5e075a2da5ce",
+      "imports": [
+        "dotenv",
+        "@neon/env",
+        "drizzle-kit",
+        "./neon"
+      ],
+      "exports": []
+    },
+    {
+      "file": "eslint.config.mjs",
+      "lines": 22,
+      "bytes": 640,
+      "sha256": "aa560f5359e9f7c263ae42093a396f552122bdf79ef27a5b6eb8832f9d484284",
+      "normalizedSha256": "aa560f5359e9f7c263ae42093a396f552122bdf79ef27a5b6eb8832f9d484284",
+      "imports": [
+        "eslint/config",
+        "eslint-config-next/core-web-vitals",
+        "eslint-config-next/typescript"
+      ],
+      "exports": []
+    },
+    {
+      "file": "hooks/use-mobile.ts",
+      "lines": 20,
+      "bytes": 565,
+      "sha256": "ad0936f84f1df79d3697bfbff9c18f8ad58431c1cbaf2359c6a853b0fcc9f28b",
+      "normalizedSha256": "ad0936f84f1df79d3697bfbff9c18f8ad58431c1cbaf2359c6a853b0fcc9f28b",
+      "imports": [
+        "react"
+      ],
+      "exports": [
+        "useIsMobile"
+      ]
+    },
+    {
+      "file": "instrumentation-client.ts",
+      "lines": 64,
+      "bytes": 2394,
+      "sha256": "ec596698777eb2d152387d21077971710effbe473ce9946d73cf08e4761c4982",
+      "normalizedSha256": "ec596698777eb2d152387d21077971710effbe473ce9946d73cf08e4761c4982",
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": [
+        "onRouterTransitionStart"
+      ]
+    },
+    {
+      "file": "instrumentation.ts",
+      "lines": 15,
+      "bytes": 371,
+      "sha256": "8f3ca4061e14157204fba0c6c9af4b970d0c7d384e9f7f4acd9dba60f7dc68e7",
+      "normalizedSha256": "8f3ca4061e14157204fba0c6c9af4b970d0c7d384e9f7f4acd9dba60f7dc68e7",
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": [
+        "register",
+        "onRequestError"
+      ]
+    },
+    {
+      "file": "lib/billing/format.ts",
+      "lines": 46,
+      "bytes": 1807,
+      "sha256": "16da142331aa94693b0d14eff0b3ca4ec8db163e48a33a7dae768aa1211cfb00",
+      "normalizedSha256": "16da142331aa94693b0d14eff0b3ca4ec8db163e48a33a7dae768aa1211cfb00",
+      "imports": [],
+      "exports": [
+        "DOLLAR",
+        "formatCredits"
+      ]
+    },
+    {
+      "file": "lib/billing/ledger.ts",
+      "lines": 125,
+      "bytes": 4724,
+      "sha256": "7d55498aea5c7e1deb479ba3cd4b488e011b27795e1e0a46d29bb1c904f2506b",
+      "normalizedSha256": "7d55498aea5c7e1deb479ba3cd4b488e011b27795e1e0a46d29bb1c904f2506b",
+      "imports": [
+        "drizzle-orm",
+        "@/lib/db/client",
+        "@/lib/billing/format",
+        "@/lib/billing/reconcile"
+      ],
+      "exports": [
+        "{ DOLLAR }",
+        "FREE_CREDITS",
+        "getCreditBalance",
+        "chargeStep",
+        "OUT_OF_CREDITS",
+        "hasCreditsToBuild"
+      ]
+    },
+    {
+      "file": "lib/billing/pricing.ts",
+      "lines": 115,
+      "bytes": 3904,
+      "sha256": "2f0fb79520c7ee2e13d0b0edf5cc6facd5b95f2fcccd65435e945f4b586b9068",
+      "normalizedSha256": "2f0fb79520c7ee2e13d0b0edf5cc6facd5b95f2fcccd65435e945f4b586b9068",
+      "imports": [
+        "ai",
+        "@/lib/billing/format",
+        "@/lib/games/model-catalog"
+      ],
+      "exports": [
+        "MODEL_RATES",
+        "priceStep"
+      ]
+    },
+    {
+      "file": "lib/billing/reconcile.ts",
+      "lines": 146,
+      "bytes": 5410,
+      "sha256": "394dcbc15d88d394f74b8d1761a9f4f49c82825d96c94fd12dcc9ac9ab70e1ea",
+      "normalizedSha256": "394dcbc15d88d394f74b8d1761a9f4f49c82825d96c94fd12dcc9ac9ab70e1ea",
+      "imports": [
+        "@clerk/backend",
+        "@/lib/billing/format",
+        "@/lib/db/client",
+        "@/lib/observability"
+      ],
+      "exports": [
+        "reconcileCredits"
+      ]
+    },
+    {
+      "file": "lib/daytona/client.ts",
+      "lines": 8,
+      "bytes": 164,
+      "sha256": "6cd27e6396f928da2fb25a811d6c75db06f9280722bbaf9a19574778014f6dc0",
+      "normalizedSha256": "6cd27e6396f928da2fb25a811d6c75db06f9280722bbaf9a19574778014f6dc0",
+      "imports": [
+        "@daytona/sdk"
+      ],
+      "exports": [
+        "daytona"
+      ]
+    },
+    {
+      "file": "lib/daytona/utils.ts",
+      "lines": 326,
+      "bytes": 12433,
+      "sha256": "05f3086f87144d4f1752759e9508f91b58b826001ec0db37642b4692f298482e",
+      "normalizedSha256": "05f3086f87144d4f1752759e9508f91b58b826001ec0db37642b4692f298482e",
+      "imports": [
+        "@daytona/sdk",
+        "drizzle-orm",
+        "@/lib/daytona/client",
+        "@/lib/db/client",
+        "@/lib/games/seed",
+        "@/lib/observability"
+      ],
+      "exports": [
+        "GAME_DIR",
+        "createGameSandbox",
+        "deleteGameSandboxes",
+        "getGameSandbox",
+        "PREVIEW_PORT",
+        "PREVIEW_URL_TTL_SECONDS",
+        "startGameServer"
+      ]
+    },
+    {
+      "file": "lib/db/client.ts",
+      "lines": 25,
+      "bytes": 690,
+      "sha256": "da026a6c5513b518d8cdeb9c5331359cf5890f10d61a71803efd1fd79472caf0",
+      "normalizedSha256": "da026a6c5513b518d8cdeb9c5331359cf5890f10d61a71803efd1fd79472caf0",
+      "imports": [
+        "@neon/env",
+        "drizzle-orm/node-postgres",
+        "pg",
+        "@/neon",
+        "./schema",
+        "./schema"
+      ],
+      "exports": [
+        "db"
+      ]
+    },
+    {
+      "file": "lib/db/index.ts",
+      "lines": 8,
+      "bytes": 317,
+      "sha256": "90cd5cd71eb15ff0422a2dabc4e0eece27b466aa08471541b6c9d499db61e652",
+      "normalizedSha256": "90cd5cd71eb15ff0422a2dabc4e0eece27b466aa08471541b6c9d499db61e652",
+      "imports": [
+        "server-only",
+        "./client"
+      ],
+      "exports": []
+    },
+    {
+      "file": "lib/db/schema.ts",
+      "lines": 82,
+      "bytes": 2800,
+      "sha256": "372515479f2136710d6662b30878e74153a63ce5e6540912e7c8a7977029c851",
+      "normalizedSha256": "372515479f2136710d6662b30878e74153a63ce5e6540912e7c8a7977029c851",
+      "imports": [
+        "ai",
+        "drizzle-orm",
+        "drizzle-orm/pg-core"
+      ],
+      "exports": [
+        "games",
+        "Game",
+        "NewGame",
+        "creditLedger",
+        "CreditLedgerEntry",
+        "NewCreditLedgerEntry"
+      ]
+    },
+    {
+      "file": "lib/games/actions.ts",
+      "lines": 305,
+      "bytes": 11837,
+      "sha256": "63babb9d3065b634a9e0f88a9720e8ea84a453ce3d420fc222090a9b0931a9c9",
+      "normalizedSha256": "63babb9d3065b634a9e0f88a9720e8ea84a453ce3d420fc222090a9b0931a9c9",
+      "imports": [
+        "@ai-sdk/anthropic",
+        "@clerk/nextjs/server",
+        "@sentry/nextjs",
+        "ai",
+        "drizzle-orm",
+        "next/cache",
+        "next/navigation",
+        "@/lib/daytona/utils",
+        "@/lib/db",
+        "@/lib/games/authorize",
+        "@/lib/games/chat-session",
+        "@/lib/games/messages",
+        "@/lib/games/model-catalog",
+        "@/lib/games/title",
+        "@/lib/observability"
+      ],
+      "exports": [
+        "createGame",
+        "renameGame",
+        "deleteGame"
+      ]
+    },
+    {
+      "file": "lib/games/agent.ts",
+      "lines": 18,
+      "bytes": 755,
+      "sha256": "dbcfe10f46f0660d456599ae66b03ce918d76ddb374eb42f87a7c4f16dc066fa",
+      "normalizedSha256": "dbcfe10f46f0660d456599ae66b03ce918d76ddb374eb42f87a7c4f16dc066fa",
+      "imports": [
+        "./model-catalog",
+        "./models"
+      ],
+      "exports": [
+        "gameModelSettings"
+      ]
+    },
+    {
+      "file": "lib/games/authorize.ts",
+      "lines": 82,
+      "bytes": 2789,
+      "sha256": "1d60fcd7429426442dd7f5939b8217ecdaea97c00b0cbcfaab0b65ca2cc590ef",
+      "normalizedSha256": "1d60fcd7429426442dd7f5939b8217ecdaea97c00b0cbcfaab0b65ca2cc590ef",
+      "imports": [
+        "server-only",
+        "@clerk/nextjs/server",
+        "@sentry/nextjs",
+        "@/lib/db",
+        "@/lib/games/queries"
+      ],
+      "exports": [
+        "authorizeGame"
+      ]
+    },
+    {
+      "file": "lib/games/chat-actions.ts",
+      "lines": 93,
+      "bytes": 3267,
+      "sha256": "0e5502862ece49045886edec3b07a285b9e1772f4c5258fd1b4868de6555718e",
+      "normalizedSha256": "0e5502862ece49045886edec3b07a285b9e1772f4c5258fd1b4868de6555718e",
+      "imports": [
+        "@sentry/nextjs",
+        "@trigger.dev/sdk",
+        "@trigger.dev/sdk/ai",
+        "@/lib/billing/ledger",
+        "@/lib/games/authorize",
+        "@/lib/observability",
+        "@/trigger/chat"
+      ],
+      "exports": [
+        "startGameChatSession",
+        "mintGameChatAccessToken"
+      ]
+    },
+    {
+      "file": "lib/games/chat-session.ts",
+      "lines": 71,
+      "bytes": 2663,
+      "sha256": "19edaf0fb02aaf73afdba68ced0cd8a660da4f6b5abed70d2016aaeee7c7bb35",
+      "normalizedSha256": "19edaf0fb02aaf73afdba68ced0cd8a660da4f6b5abed70d2016aaeee7c7bb35",
+      "imports": [
+        "server-only",
+        "@sentry/nextjs",
+        "@trigger.dev/sdk",
+        "@/lib/observability"
+      ],
+      "exports": [
+        "endGameChatSession"
+      ]
+    },
+    {
+      "file": "lib/games/chat-store.ts",
+      "lines": 85,
+      "bytes": 2427,
+      "sha256": "cfa9e078c770f6205d8196c04814be5a967e005d168dc3ad5dca125faf317690",
+      "normalizedSha256": "cfa9e078c770f6205d8196c04814be5a967e005d168dc3ad5dca125faf317690",
+      "imports": [
+        "ai",
+        "drizzle-orm",
+        "@/lib/db/client"
+      ],
+      "exports": [
+        "loadGameMessages",
+        "loadGameOrgId",
+        "saveGameMessages",
+        "saveGameTurn"
+      ]
+    },
+    {
+      "file": "lib/games/instructions/engine.ts",
+      "lines": 299,
+      "bytes": 14234,
+      "sha256": "dceddb3960bcfe8e31b033dec6a3540acc97754f9e55ad1f115544d129e61aad",
+      "normalizedSha256": "dceddb3960bcfe8e31b033dec6a3540acc97754f9e55ad1f115544d129e61aad",
+      "imports": [],
+      "exports": [
+        "engine"
+      ]
+    },
+    {
+      "file": "lib/games/instructions/index.ts",
+      "lines": 23,
+      "bytes": 841,
+      "sha256": "4f753059950ab8d967e68548ae94895c892eb3b4939c154c5b87a21824aabb44",
+      "normalizedSha256": "4f753059950ab8d967e68548ae94895c892eb3b4939c154c5b87a21824aabb44",
+      "imports": [
+        "ai",
+        "./engine",
+        "./runtime",
+        "./workflow"
+      ],
+      "exports": [
+        "gameInstructions"
+      ]
+    },
+    {
+      "file": "lib/games/instructions/runtime.ts",
+      "lines": 92,
+      "bytes": 4203,
+      "sha256": "7d6f640f43c658b329815fc2d8edbb45b92aa8aeb585ef12e43d0e2c0bbf50a1",
+      "normalizedSha256": "7d6f640f43c658b329815fc2d8edbb45b92aa8aeb585ef12e43d0e2c0bbf50a1",
+      "imports": [
+        "@/lib/daytona/utils"
+      ],
+      "exports": [
+        "runtime"
+      ]
+    },
+    {
+      "file": "lib/games/instructions/workflow.ts",
+      "lines": 123,
+      "bytes": 6284,
+      "sha256": "704bd51ea5541bfd1573f4c86e3b262c9c2f9b6f79cc10fb86632d0305fb2458",
+      "normalizedSha256": "704bd51ea5541bfd1573f4c86e3b262c9c2f9b6f79cc10fb86632d0305fb2458",
+      "imports": [],
+      "exports": [
+        "workflow"
+      ]
+    },
+    {
+      "file": "lib/games/messages.ts",
+      "lines": 9,
+      "bytes": 345,
+      "sha256": "377b167e8fe21cc4e39d1605fa5fd96f10563b67887637110266c8d51b33861d",
+      "normalizedSha256": "377b167e8fe21cc4e39d1605fa5fd96f10563b67887637110266c8d51b33861d",
+      "imports": [
+        "server-only",
+        "ai"
+      ],
+      "exports": [
+        "generateMessageId"
+      ]
+    },
+    {
+      "file": "lib/games/model-catalog.ts",
+      "lines": 58,
+      "bytes": 2089,
+      "sha256": "6dd575f6225c4cdac2c624daff888cd9265184026ecd9d91d04321ea9efd9475",
+      "normalizedSha256": "6dd575f6225c4cdac2c624daff888cd9265184026ecd9d91d04321ea9efd9475",
+      "imports": [],
+      "exports": [
+        "GAME_MODELS",
+        "GameModelId",
+        "DEFAULT_GAME_MODEL_ID",
+        "isGameModelId"
+      ]
+    },
+    {
+      "file": "lib/games/models.ts",
+      "lines": 25,
+      "bytes": 1118,
+      "sha256": "7a0d4f3c2b33e11390036abcfbbf27708ca792a7b1ea18266100fc9ec402c65c",
+      "normalizedSha256": "7a0d4f3c2b33e11390036abcfbbf27708ca792a7b1ea18266100fc9ec402c65c",
+      "imports": [
+        "@ai-sdk/anthropic",
+        "ai",
+        "./model-catalog"
+      ],
+      "exports": [
+        "gameModels"
+      ]
+    },
+    {
+      "file": "lib/games/queries.ts",
+      "lines": 51,
+      "bytes": 1245,
+      "sha256": "46ae6fd8716b447c17d2a1033b257ccdf2dae2d28882f680186b4cf07157919a",
+      "normalizedSha256": "46ae6fd8716b447c17d2a1033b257ccdf2dae2d28882f680186b4cf07157919a",
+      "imports": [
+        "server-only",
+        "@clerk/nextjs/server",
+        "drizzle-orm",
+        "@/lib/db"
+      ],
+      "exports": [
+        "listGames",
+        "getGame"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/animation.js",
+      "lines": 349,
+      "bytes": 10419,
+      "sha256": "1474d803f798e2c5168bbcf6b60c8ea37cec5a0bde0b6077a92c9fb8c6e201e8",
+      "normalizedSha256": "1474d803f798e2c5168bbcf6b60c8ea37cec5a0bde0b6077a92c9fb8c6e201e8",
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "exports": [
+        "createTweens",
+        "Spring",
+        "SpringVec3",
+        "createShake",
+        "flash",
+        "pop",
+        "hover",
+        "createMixer",
+        "{ ease }"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/controls.js",
+      "lines": 453,
+      "bytes": 14144,
+      "sha256": "3ddf7dc25f344306676eef0a50241da87011bcb8e95cd5093a1decd57c5f22bf",
+      "normalizedSha256": "3ddf7dc25f344306676eef0a50241da87011bcb8e95cd5093a1decd57c5f22bf",
+      "imports": [
+        "three",
+        "three/addons/controls/OrbitControls.js",
+        "./math.js"
+      ],
+      "exports": [
+        "orbitCamera",
+        "followCamera",
+        "topDownCamera",
+        "sideCamera",
+        "firstPerson",
+        "thirdPerson",
+        "platformer",
+        "pointerOnGround",
+        "pointerPicker"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/debug.js",
+      "lines": 125,
+      "bytes": 3993,
+      "sha256": "8cc1be5835a7077cdb4db68cb9fbfce1f0449ccbde2033de8f1af6c8da464caf",
+      "normalizedSha256": "8cc1be5835a7077cdb4db68cb9fbfce1f0449ccbde2033de8f1af6c8da464caf",
+      "imports": [
+        "three"
+      ],
+      "exports": [
+        "showStats",
+        "showHelpers",
+        "showColliders",
+        "log"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/engine.js",
+      "lines": 272,
+      "bytes": 7914,
+      "sha256": "f9334fe0012faa9974c22638f03a4ae75d44cc3611da7a9b84510ba70babbd5d",
+      "normalizedSha256": "f9334fe0012faa9974c22638f03a4ae75d44cc3611da7a9b84510ba70babbd5d",
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "exports": [
+        "createEngine",
+        "disposeObject"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/hud.js",
+      "lines": 574,
+      "bytes": 17892,
+      "sha256": "9ea226e35eb3fd380dd43869ce08f7e1d10d60b3c63ac9b37c1a51050aab06b9",
+      "normalizedSha256": "9ea226e35eb3fd380dd43869ce08f7e1d10d60b3c63ac9b37c1a51050aab06b9",
+      "imports": [
+        "three",
+        "./materials.js"
+      ],
+      "exports": [
+        "createHud"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/index.js",
+      "lines": 124,
+      "bytes": 3219,
+      "sha256": "2a3626cadfd7feac842600755d60cb9bb94743dad8e4b95aa8ec543b33f69962",
+      "normalizedSha256": "2a3626cadfd7feac842600755d60cb9bb94743dad8e4b95aa8ec543b33f69962",
+      "imports": [
+        "./engine.js",
+        "./input.js",
+        "./hud.js",
+        "./sound.js",
+        "./animation.js",
+        "./math.js",
+        "./models.js",
+        "./materials.js",
+        "./lighting.js",
+        "./particles.js",
+        "./animation.js",
+        "./debug.js",
+        "./engine.js",
+        "./input.js",
+        "./hud.js",
+        "./sound.js",
+        "./physics.js",
+        "./postfx.js",
+        "./animation.js",
+        "./particles.js",
+        "./state.js",
+        "./controls.js",
+        "./materials.js"
+      ],
+      "exports": [
+        "* as math",
+        "* as models",
+        "* as materials",
+        "* as lights",
+        "* as effects",
+        "* as anim",
+        "* as debug",
+        "{ createEngine, disposeObject }",
+        "{ createInput }",
+        "{ createHud }",
+        "{ createAudio }",
+        "{ createPhysics, hits, inside }",
+        "{ createPostFX }",
+        "{\n  createTweens,\n  createMixer,\n  createShake,\n  Spring,\n  SpringVec3,\n  flash,\n  pop,\n  hover,\n  ease,\n}",
+        "{\n  createParticles,\n  createTrail,\n  createAmbience,\n  shockwave,\n}",
+        "{\n  createStateMachine,\n  createScore,\n  createStorage,\n  createTimer,\n  createTicker,\n  createCooldown,\n  createDifficulty,\n  createEvents,\n  formatTime,\n}",
+        "{\n  orbitCamera,\n  followCamera,\n  topDownCamera,\n  sideCamera,\n  firstPerson,\n  thirdPerson,\n  platformer,\n  pointerOnGround,\n  pointerPicker,\n}",
+        "{ palette, brand }",
+        "createGame"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/input.js",
+      "lines": 355,
+      "bytes": 12179,
+      "sha256": "f8606ee023e72202f8a862d9d371f6fa75ed8417e9a63220bf00cd08bc3e3fbb",
+      "normalizedSha256": "f8606ee023e72202f8a862d9d371f6fa75ed8417e9a63220bf00cd08bc3e3fbb",
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "exports": [
+        "createInput"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/lighting.js",
+      "lines": 232,
+      "bytes": 6954,
+      "sha256": "aabb672dab04a1e2d89c73ae6fbd0a2f74b08ace29fea6f5f1f5346cc2f3f3d1",
+      "normalizedSha256": "aabb672dab04a1e2d89c73ae6fbd0a2f74b08ace29fea6f5f1f5346cc2f3f3d1",
+      "imports": [
+        "three",
+        "./materials.js"
+      ],
+      "exports": [
+        "daylight",
+        "sunset",
+        "night",
+        "studio",
+        "moody",
+        "attachLight",
+        "blobShadow"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/materials.js",
+      "lines": 358,
+      "bytes": 10690,
+      "sha256": "7a7b84dc9c41821b6d3d8258ad9daa11591a74cd7f6971bb60a5823c91c5e3a3",
+      "normalizedSha256": "7a7b84dc9c41821b6d3d8258ad9daa11591a74cd7f6971bb60a5823c91c5e3a3",
+      "imports": [
+        "three"
+      ],
+      "exports": [
+        "brand",
+        "palette",
+        "mix",
+        "shade",
+        "standard",
+        "matte",
+        "metal",
+        "glow",
+        "flat",
+        "toon",
+        "glass",
+        "wireframe",
+        "outline",
+        "checkerTexture",
+        "gridTexture",
+        "noiseTexture",
+        "gradientTexture",
+        "sparkTexture",
+        "textTexture",
+        "skyGradient"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/math.js",
+      "lines": 190,
+      "bytes": 6019,
+      "sha256": "0bbac176982bb384d38267eb4dd083555a887c5ae2a7948d09bf779534d5dc36",
+      "normalizedSha256": "0bbac176982bb384d38267eb4dd083555a887c5ae2a7948d09bf779534d5dc36",
+      "imports": [],
+      "exports": [
+        "TAU",
+        "DEG",
+        "clamp",
+        "clamp01",
+        "lerp",
+        "inverseLerp",
+        "remap",
+        "damp",
+        "dampVec",
+        "dampQuat",
+        "moveTowards",
+        "wrap",
+        "angleDelta",
+        "lerpAngle",
+        "dampAngle",
+        "deadzone",
+        "smoothstep",
+        "pingPong",
+        "randRange",
+        "randInt",
+        "randSpread",
+        "chance",
+        "pick",
+        "shuffle",
+        "createRandom",
+        "ease"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/models.js",
+      "lines": 665,
+      "bytes": 18979,
+      "sha256": "92e70f367686b036a008b8aef540462b78252f2b71e532c4483218b4ed32be27",
+      "normalizedSha256": "92e70f367686b036a008b8aef540462b78252f2b71e532c4483218b4ed32be27",
+      "imports": [
+        "three",
+        "three/addons/loaders/GLTFLoader.js",
+        "three/addons/geometries/RoundedBoxGeometry.js",
+        "three/addons/utils/BufferGeometryUtils.js",
+        "./materials.js",
+        "./math.js"
+      ],
+      "exports": [
+        "castShadows",
+        "box",
+        "sphere",
+        "cylinder",
+        "cone",
+        "capsule",
+        "torus",
+        "ground",
+        "arena",
+        "crate",
+        "coin",
+        "tree",
+        "rock",
+        "cloud",
+        "character",
+        "vehicle",
+        "ring",
+        "label",
+        "instances",
+        "merge",
+        "createPool",
+        "loadModel",
+        "loadTexture"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/particles.js",
+      "lines": 417,
+      "bytes": 12619,
+      "sha256": "c48b67fcbcf6ac2cdef675fe1b6de4ea8f69e11a0989d93c3ab5908ab2054a46",
+      "normalizedSha256": "c48b67fcbcf6ac2cdef675fe1b6de4ea8f69e11a0989d93c3ab5908ab2054a46",
+      "imports": [
+        "three",
+        "./materials.js",
+        "./math.js"
+      ],
+      "exports": [
+        "createParticles",
+        "shockwave",
+        "createTrail",
+        "createAmbience"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/physics.js",
+      "lines": 345,
+      "bytes": 11184,
+      "sha256": "66c8298384d39eb2741e01e37b48acbbb76ed72b9bb049d704412e7216b16ed7",
+      "normalizedSha256": "66c8298384d39eb2741e01e37b48acbbb76ed72b9bb049d704412e7216b16ed7",
+      "imports": [
+        "three",
+        "./math.js"
+      ],
+      "exports": [
+        "createPhysics",
+        "hits",
+        "inside"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/postfx.js",
+      "lines": 114,
+      "bytes": 3884,
+      "sha256": "2c938c15dcf7a7f12cfd06bc13825bd1e6926df6e083cf82d5e40ee87692d6b2",
+      "normalizedSha256": "2c938c15dcf7a7f12cfd06bc13825bd1e6926df6e083cf82d5e40ee87692d6b2",
+      "imports": [
+        "three",
+        "three/addons/postprocessing/EffectComposer.js",
+        "three/addons/postprocessing/RenderPass.js",
+        "three/addons/postprocessing/UnrealBloomPass.js",
+        "three/addons/postprocessing/ShaderPass.js",
+        "three/addons/postprocessing/OutputPass.js",
+        "three/addons/shaders/VignetteShader.js",
+        "three/addons/shaders/FXAAShader.js"
+      ],
+      "exports": [
+        "createPostFX"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/sound.js",
+      "lines": 407,
+      "bytes": 10644,
+      "sha256": "f21f7af1d90a64b9c5238da60bdcf9ecf865cd0eaccb3911fab531687d0b1ef6",
+      "normalizedSha256": "f21f7af1d90a64b9c5238da60bdcf9ecf865cd0eaccb3911fab531687d0b1ef6",
+      "imports": [],
+      "exports": [
+        "createAudio"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/engine/state.js",
+      "lines": 323,
+      "bytes": 8263,
+      "sha256": "341dca972124ca3a96066c382723f4f287a72db99c6132c7a4d506079a152035",
+      "normalizedSha256": "341dca972124ca3a96066c382723f4f287a72db99c6132c7a4d506079a152035",
+      "imports": [],
+      "exports": [
+        "createEvents",
+        "createStateMachine",
+        "createScore",
+        "createStorage",
+        "createTimer",
+        "formatTime",
+        "createDifficulty",
+        "createTicker",
+        "createCooldown"
+      ]
+    },
+    {
+      "file": "lib/games/runtime/report.js",
+      "lines": 134,
+      "bytes": 5204,
+      "sha256": "e162742b324a9096c48bbbdc9673bf28088d9ab786110da364299e8cf5d49d0a",
+      "normalizedSha256": "e162742b324a9096c48bbbdc9673bf28088d9ab786110da364299e8cf5d49d0a",
+      "imports": [],
+      "exports": []
+    },
+    {
+      "file": "lib/games/runtime/welcome.js",
+      "lines": 165,
+      "bytes": 5613,
+      "sha256": "ea7eecc8c6ef7c60ecf500e6ad6813dcf294ed29f63d438537b9e585e5d71486",
+      "normalizedSha256": "ea7eecc8c6ef7c60ecf500e6ad6813dcf294ed29f63d438537b9e585e5d71486",
+      "imports": [
+        "three",
+        "./engine/index.js"
+      ],
+      "exports": []
+    },
+    {
+      "file": "lib/games/seed.ts",
+      "lines": 61,
+      "bytes": 2161,
+      "sha256": "04eadb1c640fb8e7cb0e3f54e11f51e115cef0a47ff9f3917947802ea7c6085f",
+      "normalizedSha256": "04eadb1c640fb8e7cb0e3f54e11f51e115cef0a47ff9f3917947802ea7c6085f",
+      "imports": [
+        "node:fs/promises",
+        "node:path",
+        "@daytona/sdk"
+      ],
+      "exports": [
+        "readRuntimeFiles"
+      ]
+    },
+    {
+      "file": "lib/games/suggestions.ts",
+      "lines": 108,
+      "bytes": 5204,
+      "sha256": "e65cde99b601d6ac0f7879264e1f72d9dc599cd5b5359433754e12481a823a7a",
+      "normalizedSha256": "e65cde99b601d6ac0f7879264e1f72d9dc599cd5b5359433754e12481a823a7a",
+      "imports": [
+        "lucide-react"
+      ],
+      "exports": [
+        "suggestions"
+      ]
+    },
+    {
+      "file": "lib/games/title.ts",
+      "lines": 18,
+      "bytes": 729,
+      "sha256": "a683d5f89ab0269543fb8457d5483197ce3afda77a5eaa0501099351718e77ce",
+      "normalizedSha256": "a683d5f89ab0269543fb8457d5483197ce3afda77a5eaa0501099351718e77ce",
+      "imports": [],
+      "exports": [
+        "TITLE_MAX_LENGTH",
+        "truncateTitle"
+      ]
+    },
+    {
+      "file": "lib/games/tools.ts",
+      "lines": 504,
+      "bytes": 19269,
+      "sha256": "6a915555055198b3987198878307dcd2c9b06be8d9e358300a321438efd2eaa5",
+      "normalizedSha256": "6a915555055198b3987198878307dcd2c9b06be8d9e358300a321438efd2eaa5",
+      "imports": [
+        "node:path",
+        "@daytona/sdk",
+        "ai",
+        "zod",
+        "@/lib/daytona/utils",
+        "@/lib/observability"
+      ],
+      "exports": [
+        "createGameTools",
+        "GameTools"
+      ]
+    },
+    {
+      "file": "lib/observability.ts",
+      "lines": 42,
+      "bytes": 1816,
+      "sha256": "ff675eba7b28e75ead9709f9ff585227e004cf81358d751df1a7e746fe7d4503",
+      "normalizedSha256": "ff675eba7b28e75ead9709f9ff585227e004cf81358d751df1a7e746fe7d4503",
+      "imports": [
+        "@sentry/core"
+      ],
+      "exports": [
+        "{ logger }",
+        "describeError",
+        "elapsed"
+      ]
+    },
+    {
+      "file": "lib/utils.ts",
+      "lines": 7,
+      "bytes": 166,
+      "sha256": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+      "normalizedSha256": "7c8c3dfc0cdd370d44932828eb067ef771c8fe7996693221d5d4b90af6d54f2d",
+      "imports": [
+        "clsx",
+        "tailwind-merge"
+      ],
+      "exports": [
+        "cn"
+      ]
+    },
+    {
+      "file": "neon.ts",
+      "lines": 21,
+      "bytes": 550,
+      "sha256": "dcc567e40e681d8184962c85a48002949c3e3ab07674c5643e84b75ae2d6d009",
+      "normalizedSha256": "dcc567e40e681d8184962c85a48002949c3e3ab07674c5643e84b75ae2d6d009",
+      "imports": [
+        "@neon/config/v1"
+      ],
+      "exports": []
+    },
+    {
+      "file": "next.config.ts",
+      "lines": 28,
+      "bytes": 718,
+      "sha256": "5a3763fc5b53713691f1e5ba65c2ae19aa084af34cb3387f94b8f5ea068e0402",
+      "normalizedSha256": "5a3763fc5b53713691f1e5ba65c2ae19aa084af34cb3387f94b8f5ea068e0402",
+      "imports": [
+        "@sentry/nextjs/config",
+        "next"
+      ],
+      "exports": []
+    },
+    {
+      "file": "postcss.config.mjs",
+      "lines": 8,
+      "bytes": 92,
+      "sha256": "7c013693fe1a211c61c8825d2f24a55435a81f48f03dd5affdbdad5679fd17cd",
+      "normalizedSha256": "7c013693fe1a211c61c8825d2f24a55435a81f48f03dd5affdbdad5679fd17cd",
+      "imports": [],
+      "exports": []
+    },
+    {
+      "file": "proxy.ts",
+      "lines": 11,
+      "bytes": 291,
+      "sha256": "9303b9c549903eed7c5a4b68f9686512f9a2759f4db3cf31b0f8384d565db6f5",
+      "normalizedSha256": "9303b9c549903eed7c5a4b68f9686512f9a2759f4db3cf31b0f8384d565db6f5",
+      "imports": [
+        "@clerk/nextjs/server"
+      ],
+      "exports": [
+        "config"
+      ]
+    },
+    {
+      "file": "sentry.edge.config.ts",
+      "lines": 54,
+      "bytes": 1874,
+      "sha256": "22130168925a44be833820611746f9e9048339951495ae0da69a48e93792b4fe",
+      "normalizedSha256": "22130168925a44be833820611746f9e9048339951495ae0da69a48e93792b4fe",
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": []
+    },
+    {
+      "file": "sentry.server.config.ts",
+      "lines": 64,
+      "bytes": 2456,
+      "sha256": "faca13ea8f5d328c42dd3ccf3e03fa08f8d7655719a51268ac94f938d15f509f",
+      "normalizedSha256": "faca13ea8f5d328c42dd3ccf3e03fa08f8d7655719a51268ac94f938d15f509f",
+      "imports": [
+        "@sentry/nextjs"
+      ],
+      "exports": []
+    },
+    {
+      "file": "trigger.config.ts",
+      "lines": 103,
+      "bytes": 4147,
+      "sha256": "a58a3f96c0ef2b27abe22c22315e0bb734cfaeb87135be17f8aada0f84944236",
+      "normalizedSha256": "a58a3f96c0ef2b27abe22c22315e0bb734cfaeb87135be17f8aada0f84944236",
+      "imports": [
+        "node:module",
+        "node:path",
+        "@sentry/esbuild-plugin",
+        "@trigger.dev/build/extensions",
+        "@trigger.dev/build/extensions",
+        "@trigger.dev/build/extensions/core",
+        "@trigger.dev/sdk"
+      ],
+      "exports": []
+    },
+    {
+      "file": "trigger/chat.ts",
+      "lines": 294,
+      "bytes": 12794,
+      "sha256": "132821106c15780a793d31a2e11ee88ee34b67c8be3fa7571b457e94eb05ff2b",
+      "normalizedSha256": "132821106c15780a793d31a2e11ee88ee34b67c8be3fa7571b457e94eb05ff2b",
+      "imports": [
+        "@trigger.dev/sdk/ai",
+        "ai",
+        "zod",
+        "@/lib/billing/ledger",
+        "@/lib/billing/pricing",
+        "@/lib/daytona/utils",
+        "@/lib/games/agent",
+        "@/lib/games/chat-store",
+        "@/lib/games/instructions",
+        "@/lib/games/model-catalog",
+        "@/lib/observability",
+        "@/lib/games/tools"
+      ],
+      "exports": [
+        "gameChat"
+      ]
+    },
+    {
+      "file": "trigger/example.ts",
+      "lines": 16,
+      "bytes": 453,
+      "sha256": "88f622c236cd913bc7c118778fec35162f9385b16a1f50af89f11046373997a1",
+      "normalizedSha256": "88f622c236cd913bc7c118778fec35162f9385b16a1f50af89f11046373997a1",
+      "imports": [
+        "@trigger.dev/sdk"
+      ],
+      "exports": [
+        "helloWorldTask"
+      ]
+    },
+    {
+      "file": "trigger/init.ts",
+      "lines": 119,
+      "bytes": 4375,
+      "sha256": "d88dd5e5595085c00dea75b908597ad7a54cef4546b600bcae4b16634dd27f72",
+      "normalizedSha256": "d88dd5e5595085c00dea75b908597ad7a54cef4546b600bcae4b16634dd27f72",
+      "imports": [
+        "@sentry/node",
+        "@trigger.dev/sdk"
+      ],
+      "exports": []
+    },
+    {
+      "file": "trigger/sentry-error-test.ts",
+      "lines": 19,
+      "bytes": 522,
+      "sha256": "e002f8e11694dee3bc4a8de0766c2670014aacb456b5a4cb4361a4fe5125a887",
+      "normalizedSha256": "e002f8e11694dee3bc4a8de0766c2670014aacb456b5a4cb4361a4fe5125a887",
+      "imports": [
+        "@trigger.dev/sdk"
+      ],
+      "exports": [
+        "sentryErrorTest"
+      ]
+    }
+  ]
+}

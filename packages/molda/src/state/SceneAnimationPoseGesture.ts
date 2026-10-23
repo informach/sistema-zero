@@ -1,6 +1,8 @@
 import { COPY } from '../core/copy'
 import type { Vec3 } from '../core/model'
-import { setSceneAnimationKeys } from '../scene/animationKeyBatch'
+import type { SceneAnimationClip } from '../scene/animation'
+import type { SceneAnimationKeyInput } from '../scene/animationCommands'
+import { mergeSceneAnimationDraft } from '../scene/animationDraft'
 import {
   pasteSceneAnimationPoseSet,
   type SceneAnimationPosePair,
@@ -11,10 +13,12 @@ import {
   type SceneAnimationPoseFrame,
 } from '../scene/animationPoseTransform'
 import type { MoldaSceneDocument } from '../scene/document'
+import { sameSceneContent } from '../scene/documentContent'
 import type { AffineMatrix } from '../scene/matrix'
+import { readSceneAnimationClip } from '../scene/readAnimation'
 import { prepareSceneAnimation, type SceneAnimationPose } from '../scene/sampleAnimation'
 import { prepareSceneTwoBonePose, type SceneTwoBonePoseFrame } from '../scene/twoBonePose'
-import { requireScene, SceneValidationError, tuple } from '../scene/validation'
+import { requireScene, tuple } from '../scene/validation'
 import type { EditorStore } from './editorStore'
 import type { SceneAnimationPlayer, SceneAnimationSnapshot } from './SceneAnimationPlayer'
 
@@ -25,7 +29,15 @@ export interface SceneAnimationPoseGestureSnapshot {
   dragging: boolean
   autoKey: boolean
   error: string | null
+  /**
+   * Um gesto RECUSADO (a peça travada, por exemplo) com uma pose por marcar em andamento: o
+   * recado aparece, mas o rascunho continua válido e Marcar pose continua possível. Some no
+   * próximo estado publicado.
+   */
+  refusal: string | null
   reach: SceneTwoBonePoseFrame['reach'] | null
+  canUndo: boolean
+  canRedo: boolean
 }
 interface PoseOwnerContext {
   source: NonNullable<SceneAnimationSnapshot['source']>
@@ -35,6 +47,10 @@ interface PoseOwnerContext {
 interface TransformOwner extends PoseOwnerContext {
   kind: 'transform'
   selection: string
+  draft: MoldaSceneDocument
+  past: Array<{ document: MoldaSceneDocument; pose: SceneAnimationPose | null }>
+  future: Array<{ document: MoldaSceneDocument; pose: SceneAnimationPose | null }>
+  beforePose: SceneAnimationPose | null
   prepared: ReturnType<typeof prepareSceneAnimationPoseTransform>
   frame: SceneAnimationPoseFrame
 }
@@ -60,16 +76,141 @@ export class SceneAnimationPoseGesture {
     dragging: false,
     autoKey: false,
     error: null,
+    refusal: null,
     reach: null,
+    canUndo: false,
+    canRedo: false,
   }
   private owner: PoseOwner | null = null
   private seed: SceneAnimationPoseFrame | null = null
   private generation = 0
   private readonly listeners = new Set<() => void>()
 
+  recoveryDraft() {
+    const owner = this.owner
+    if (!owner || !this.snapshot.pending || this.snapshot.dragging || !this.current(owner))
+      return null
+    if (owner.kind === 'two-bone') {
+      // Recovery copies prepared keys; it must not re-index geometry on every form adjustment.
+      const clip = { ...owner.source.clip, tracks: [...owner.source.clip.tracks] }
+      for (const input of owner.prepared.keys(owner.frame)) {
+        if (input.channel !== 'rotation') continue
+        const at = clip.tracks.findIndex(
+          (track) => track.nodeId === input.nodeId && track.channel === 'rotation',
+        )
+        const previous = clip.tracks[at]
+        const keys =
+          previous?.channel === 'rotation'
+            ? previous.keys.filter((key) => key.time !== input.key.time)
+            : []
+        keys.push(input.key)
+        keys.sort((a, b) => a.time - b.time)
+        const track = { nodeId: input.nodeId, channel: 'rotation' as const, keys }
+        if (at < 0) clip.tracks.push(track)
+        else clip.tracks[at] = track
+      }
+      return { source: owner.source.document, time: owner.time, clip }
+    }
+    const document = owner.kind === 'transform' ? owner.draft : owner.next
+    return {
+      source: owner.source.document,
+      time: owner.time,
+      clip: document.animations!.find((clip) => clip.id === owner.source.clip.id)!,
+    }
+  }
+  /** Leave an assisted form without losing its finished adjustment when selecting another piece. */
+  retainAssisted = () => {
+    this.interrupt()
+    const owner = this.owner
+    if (!owner) {
+      if (this.snapshot.error) this.cancel()
+      return
+    }
+    if (owner.kind === 'transform') return
+    if (!this.snapshot.pending) {
+      this.cancel()
+      return
+    }
+    try {
+      const draft =
+        owner.kind === 'pose-set'
+          ? owner.next
+          : owner.prepared.commit(owner.frame, owner.source.document)
+      const clip = draft.animations!.find((clip) => clip.id === owner.source.clip.id)!
+      const ids = [...new Set(clip.tracks.map((track) => track.nodeId))]
+      const prepared = prepareSceneAnimationPoseTransform(draft, clip.id, ids, owner.time)
+      const pose = this.snapshot.pose
+      this.release()
+      this.owner = {
+        kind: 'transform',
+        source: owner.source,
+        revision: owner.revision,
+        time: owner.time,
+        selection: JSON.stringify(ids),
+        draft,
+        prepared,
+        frame: prepared.original,
+        beforePose: null,
+        past: [{ document: owner.source.document, pose: null }],
+        future: [],
+      }
+      this.publish({ ...this.snapshot, pose, pending: true, dragging: false, reach: null })
+    } catch (error) {
+      this.reportError(error)
+    }
+  }
+  restoreDraft(input: SceneAnimationClip, time: number) {
+    if (this.snapshot.pending || this.snapshot.dragging) return false
+    try {
+      const clip = readSceneAnimationClip(input)
+      const document = this.editor.getState().content
+      const inputs = clip.tracks.flatMap((track) =>
+        track.keys
+          .filter((key) => key.time === time)
+          .map(
+            (key) =>
+              ({ nodeId: track.nodeId, channel: track.channel, key }) as SceneAnimationKeyInput,
+          ),
+      )
+      const draft = mergeSceneAnimationDraft(document, clip.id, time, document, inputs)
+      if (draft === document) return false
+      this.player.setClip(document, clip.id)
+      this.player.seek(time)
+      const source = this.player.getSnapshot().source!
+      const ids = [...new Set(inputs.map((input) => input.nodeId))]
+      const prepared = prepareSceneAnimationPoseTransform(draft, clip.id, ids, time)
+      this.owner = {
+        kind: 'transform',
+        source,
+        revision: this.editor.getState().contentRevision,
+        time,
+        selection: JSON.stringify(ids),
+        prepared,
+        frame: prepared.original,
+        draft,
+        beforePose: null,
+        past: [{ document, pose: null }],
+        future: [],
+      }
+      this.generation++
+      this.publish({
+        ...this.snapshot,
+        pose: { ...prepared.original.pose, source: document },
+        pending: true,
+        dragging: false,
+        error: null,
+      })
+      return true
+    } catch (error) {
+      this.reportError(error)
+      return false
+    }
+  }
+
   constructor(
     private readonly editor: EditorStore<MoldaSceneDocument>,
     private readonly player: SceneAnimationPlayer,
+    private readonly onRecorded?: (clipId: string, time: number) => void,
   ) {}
 
   getSnapshot = () => this.snapshot
@@ -79,8 +220,16 @@ export class SceneAnimationPoseGesture {
       this.listeners.delete(listener)
     }
   }
-  private publish(next: Omit<SceneAnimationPoseGestureSnapshot, 'kind'>) {
+  private publish(
+    next: Omit<SceneAnimationPoseGestureSnapshot, 'kind' | 'refusal'>,
+    refusal: string | null = null,
+  ) {
     const before = this.snapshot
+    next = {
+      ...next,
+      canUndo: this.owner?.kind === 'transform' && !!this.owner.past.length,
+      canRedo: this.owner?.kind === 'transform' && !!this.owner.future.length,
+    }
     const kind = this.owner?.kind ?? null
     if (
       before.kind === kind &&
@@ -89,10 +238,13 @@ export class SceneAnimationPoseGesture {
       before.dragging === next.dragging &&
       before.autoKey === next.autoKey &&
       before.error === next.error &&
-      before.reach === next.reach
+      before.refusal === refusal &&
+      before.reach === next.reach &&
+      before.canUndo === next.canUndo &&
+      before.canRedo === next.canRedo
     )
       return
-    this.snapshot = { ...next, kind }
+    this.snapshot = { ...next, refusal, kind }
     for (const listener of this.listeners) listener()
   }
   private current(owner: PoseOwnerContext) {
@@ -145,16 +297,47 @@ export class SceneAnimationPoseGesture {
     if (owner?.kind === 'two-bone') owner.prepared.cancel()
     return ++this.generation
   }
-  reportError = (error: unknown) => {
-    this.release()
+  reportError = (error: unknown, preserveDraft = false) => {
+    if (this.seed) this.end(false)
+    if (this.owner?.kind !== 'transform' && !preserveDraft) this.cancel()
     this.publish({
       ...this.snapshot,
-      pose: null,
-      pending: false,
       dragging: false,
-      error: error instanceof SceneValidationError ? error.message : COPY.scene.animationPoseFailed,
-      reach: null,
+      error: error instanceof Error ? error.message : COPY.scene.animationPoseFailed,
     })
+  }
+  /** Escape/blur stop only the current gesture. Completed draft gestures survive. */
+  interrupt = () => {
+    if (this.owner?.kind === 'transform' && this.seed) this.end(false)
+    if (this.owner?.kind === 'two-bone' && this.owner.drag) {
+      this.owner.frame = this.owner.drag.seed
+      this.owner.drag = undefined
+      this.publish({ ...this.snapshot, pose: this.owner.frame.pose, dragging: false })
+    }
+  }
+  undo = () => this.history('past', 'future')
+  redo = () => this.history('future', 'past')
+  private history(from: 'past' | 'future', to: 'past' | 'future') {
+    // Desfazer no MEIO de um arrasto só cancela esse arrasto; o gesto anterior fica.
+    if (this.owner?.kind === 'transform' && this.seed) {
+      this.end(false)
+      return true
+    }
+    this.interrupt()
+    const owner = this.owner
+    if (owner?.kind !== 'transform' || !this.current(owner)) return false
+    const next = owner[from].pop()
+    if (!next) return false
+    owner[to].push({ document: owner.draft, pose: this.snapshot.pose })
+    owner.draft = next.document
+    this.publish({
+      ...this.snapshot,
+      pose: next.pose,
+      pending: owner.draft !== owner.source.document,
+      dragging: false,
+      error: null,
+    })
+    return true
   }
   begin(ids: readonly string[]): boolean {
     // A pending assisted pose has explicit record/cancel controls; handles cannot silently replace it.
@@ -168,7 +351,7 @@ export class SceneAnimationPoseGesture {
     const state = this.editor.getState()
     if (!source || source.preview || error || source.document !== state.content) return false
     const selection = JSON.stringify([...new Set(ids)].sort())
-    if (this.owner && (!this.current(this.owner) || selection !== this.owner.selection)) {
+    if (this.owner && !this.current(this.owner)) {
       ticket = this.cancel()
       if (this.generation !== ticket) return false
     }
@@ -185,6 +368,10 @@ export class SceneAnimationPoseGesture {
           source,
           time,
           selection,
+          draft: state.content,
+          past: [],
+          future: [],
+          beforePose: null,
           revision: state.contentRevision,
           prepared,
           frame: prepared.original,
@@ -195,10 +382,33 @@ export class SceneAnimationPoseGesture {
         this.generation++
       }
       const owner = this.owner
+      owner.beforePose = this.snapshot.pose
+      owner.prepared = prepareSceneAnimationPoseTransform(owner.draft, source.clip.id, ids, time)
+      owner.selection = selection
+      owner.frame = owner.prepared.original
       this.seed = owner.frame
-      this.publish({ ...this.snapshot, pose: owner.frame.pose, dragging: true, error: null })
+      this.publish({
+        ...this.snapshot,
+        pose: { ...owner.frame.pose, source: source.document },
+        dragging: true,
+        error: null,
+      })
       return this.owner === owner && this.seed !== null && this.current(owner)
     } catch (error) {
+      // O gesto foi recusado, mas a pose por marcar continua inteira: ela não vira inválida.
+      const owner = this.owner
+      if (
+        owner?.kind === 'transform' &&
+        !this.seed &&
+        owner.draft !== owner.source.document &&
+        this.current(owner)
+      ) {
+        this.publish(
+          { ...this.snapshot, dragging: false },
+          error instanceof Error ? error.message : COPY.scene.animationPoseFailed,
+        )
+        return false
+      }
       this.reportError(error)
       return false
     }
@@ -209,6 +419,7 @@ export class SceneAnimationPoseGesture {
     pairs: readonly SceneAnimationPosePair[],
     mirror?: 'x' | 'y' | 'z',
   ) {
+    if (this.owner?.kind === 'transform' && this.snapshot.pending) return null
     const ticket = this.cancel()
     if (this.generation !== ticket) return null
     this.player.pause()
@@ -259,6 +470,7 @@ export class SceneAnimationPoseGesture {
   }
   /** One revocable input handle per assisted pose; automatic recording belongs only to direct drags. */
   beginTwoBone(chain: readonly [string, string, string]) {
+    if (this.owner?.kind === 'transform' && this.snapshot.pending) return null
     const ticket = this.cancel()
     if (this.generation !== ticket) return null
     this.player.pause()
@@ -460,9 +672,14 @@ export class SceneAnimationPoseGesture {
     }
     try {
       const frame = owner.prepared.apply(seed, delta)
-      const pending = owner.prepared.keys(frame).length > 0
+      const pending = owner.draft !== owner.source.document || owner.prepared.keys(frame).length > 0
       owner.frame = frame
-      this.publish({ ...this.snapshot, pose: frame.pose, pending, error: null })
+      this.publish({
+        ...this.snapshot,
+        pose: { ...frame.pose, source: owner.source.document },
+        pending,
+        error: null,
+      })
       return this.owner === owner && this.seed === seed && this.current(owner)
     } catch (error) {
       this.reportError(error)
@@ -478,14 +695,43 @@ export class SceneAnimationPoseGesture {
       this.cancel()
       return
     }
-    if (!commit) owner.frame = seed
-    const pending = owner.prepared.keys(owner.frame).length > 0
-    if (!pending) {
-      this.cancel()
-      return
+    if (commit) {
+      try {
+        const edits = owner.prepared.keys(owner.frame)
+        if (edits.length) {
+          const next = mergeSceneAnimationDraft(
+            owner.source.document,
+            owner.source.clip.id,
+            owner.time,
+            owner.draft,
+            edits,
+          )
+          owner.past.push({ document: owner.draft, pose: owner.beforePose })
+          owner.future = []
+          owner.draft = next
+        }
+      } catch (error) {
+        this.publish({
+          ...this.snapshot,
+          pose: owner.beforePose,
+          pending: owner.draft !== owner.source.document,
+          dragging: false,
+        })
+        this.reportError(error)
+        return
+      }
     }
-    this.publish({ ...this.snapshot, pose: owner.frame.pose, pending, dragging: false })
-    if (commit && this.snapshot.autoKey && this.owner === owner) this.record()
+    const pending = owner.draft !== owner.source.document
+    const pose =
+      commit && pending ? { ...owner.frame.pose, source: owner.source.document } : owner.beforePose
+    this.publish({
+      ...this.snapshot,
+      pose: pending ? pose : null,
+      pending,
+      dragging: false,
+      error: null,
+    })
+    if (commit && pending && this.snapshot.autoKey && this.owner === owner) this.record()
   }
   record = (): boolean => {
     const owner = this.owner
@@ -508,11 +754,7 @@ export class SceneAnimationPoseGesture {
           ? owner.next
           : owner.kind === 'two-bone'
             ? owner.prepared.commit(owner.frame, this.editor.getState().content)
-            : setSceneAnimationKeys(
-                owner.source.document,
-                owner.source.clip.id,
-                owner.prepared.keys(owner.frame),
-              )
+            : owner.draft
       ticket = this.cancel()
       if (this.generation !== ticket) return false
       // A subscriber can change the creation/clip while the preview is being removed.
@@ -523,10 +765,15 @@ export class SceneAnimationPoseGesture {
         if (state.asset.thumb) recorded.thumb = state.asset.thumb
         else delete recorded.thumb
         state.commit(recorded)
+        if (sameSceneContent(this.editor.getState().content, recorded))
+          this.onRecorded?.(owner.source.clip.id, owner.time)
       }
       return true
     } catch (error) {
-      if (this.generation === ticket) this.reportError(error)
+      if (this.generation === ticket) {
+        if (this.current(owner)) this.owner = owner
+        this.reportError(error, true)
+      }
       return false
     }
   }

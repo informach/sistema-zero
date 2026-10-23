@@ -1,24 +1,24 @@
+import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import {
   asset3DManifest,
   assetManifest,
   assetMetaManifest,
+  type JavaScriptProjectDocument,
   type Project,
   soundManifest,
 } from '#core'
-import {
-  type ExtensionPermission,
-  loadExtensionBootstrapScripts,
-  uniqueExtensionIds,
-} from '#extensions'
-import { findExtension } from '#official-extensions'
-import { loadGameUiFont } from '../official-extensions/gameUiFont'
+import { isDocumentRecord } from '../core/projectDocument'
 import { resolveGameUiFontId } from '../official-extensions/gameUiFonts/resolve'
+import {
+  buildJavaScriptClassicDocument,
+  loadJavaScriptClassicResources,
+} from '../runtime/javascript/classicDocument'
 import { prepareProjectForHost } from '../state/projectValidation'
-import { buildPreviewDoc } from './bootstrap'
-import { withCoreImports } from './coreImports'
 import type { PreviewSecurityProfile } from './csp'
 
 export interface RenderProjectOptions {
+  /** Opt-in host diagnostics. Inspectors return snapshots; the public game API is unchanged. */
+  runtimeInspection?: boolean
   /** Origem do host (targetOrigin dos interceptors — defesa em profundidade). */
   parentOrigin?: string
   /** Origens liberadas para fetch/XHR (opt-in; raríssimo num player público). */
@@ -27,6 +27,13 @@ export interface RenderProjectOptions {
   securityProfile?: PreviewSecurityProfile
   /** Orçamento síncrono do loopGuard (ms). */
   loopBudgetMs?: number
+  /** Host-owned packaged replacements for existing official ESM imports (e.g. offline desktop). */
+  runtimeImports?: Readonly<Record<string, string>>
+  /**
+   * Troca o `script.js` DEPOIS de o projeto ser preparado (o teste dos objetivos injeta o leitor
+   * de variáveis aqui, `check/instrumentCheckScript.ts`). Antes da preparação ele seria refeito.
+   */
+  transformScript?: (script: string) => string
 }
 
 /**
@@ -41,12 +48,29 @@ export interface RenderProjectOptions {
  * auto-suficientes (assets são data URLs) — nenhuma chamada externa é necessária.
  */
 export async function renderProjectToPreviewDocAsync(
-  project: Project,
-  opts: RenderProjectOptions = {},
+  project: Project | JavaScriptProjectDocument,
+  options: RenderProjectOptions = {},
 ): Promise<string> {
-  const playableProject = await prepareProjectForHost(project)
+  const captured = copyStudioProjectJson(project)
+  if (!isDocumentRecord(captured)) throw new Error('Não foi possível preparar este jogo.')
+  const opts = {
+    ...options,
+    fetchAllowedOrigins: options.fetchAllowedOrigins ? [...options.fetchAllowedOrigins] : undefined,
+    runtimeImports: options.runtimeImports ? { ...options.runtimeImports } : undefined,
+  }
+  if (captured.kind === 'pro')
+    throw new Error('Projetos Pro precisam de um artefato compilado para jogar ou capturar.')
+  const playableProject =
+    captured.formatVersion === 3
+      ? (await import('../state/javaScriptProjectValidation')).refineJavaScriptProjectDocument(
+          captured,
+        )
+      : await prepareProjectForHost(captured)
   if (!playableProject) throw new Error('Não foi possível preparar este jogo.')
-  const files = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
+  const prepared = playableProject.files ?? { 'index.html': '', 'style.css': '', 'script.js': '' }
+  const files = opts.transformScript
+    ? { ...prepared, 'script.js': opts.transformScript(prepared['script.js'] ?? '') }
+    : prepared
   const installedExtensions = Array.isArray(playableProject.installedExtensions)
     ? playableProject.installedExtensions
     : []
@@ -54,47 +78,27 @@ export async function renderProjectToPreviewDocAsync(
     ? playableProject.extraFiles
     : undefined
   const assets = Array.isArray(playableProject.assets) ? playableProject.assets : undefined
-  const ids = uniqueExtensionIds(
+  const resources = await loadJavaScriptClassicResources(
     installedExtensions.flatMap((e) => (e && typeof e.id === 'string' ? [e.id] : [])),
+    resolveGameUiFontId({ ir: playableProject.ir, files }),
   )
-  const extensions = ids.flatMap((id) => {
-    const extension = findExtension(id)
-    return extension ? [extension] : []
-  })
-  const extensionScripts = await loadExtensionBootstrapScripts(extensions)
-  // A fonte do jogo: só a ESCOLHIDA é carregada e viaja no documento. Um projeto
-  // sem extensão de jogo não paga nada por isso.
-  const gameUiFont = extensions.length
-    ? await loadGameUiFont(resolveGameUiFontId({ ir: playableProject.ir, files }))
-    : undefined
-  const extensionImports: Record<string, string> = {}
-  const permissions = new Set<ExtensionPermission>()
-  for (const id of ids) {
-    const ext = findExtension(id)
-    if (!ext) continue
-    if (ext.runtime.esmImports) Object.assign(extensionImports, ext.runtime.esmImports)
-    for (const p of ext.manifest.permissions) permissions.add(p)
-  }
 
-  return buildPreviewDoc({
+  return buildJavaScriptClassicDocument({
     html: files['index.html'] ?? '',
     css: files['style.css'] ?? '',
     js: files['script.js'] ?? '',
-    extensionScripts,
+    resources,
     extraFiles,
     assets: assetManifest(assets),
     assetsMeta: assetMetaManifest(assets),
     sounds: soundManifest(assets),
     models3d: asset3DManifest(assets),
-    gameUiFont,
     parentOrigin: opts.parentOrigin,
-    installedPermissions: Array.from(permissions),
     fetchAllowedOrigins: opts.fetchAllowedOrigins,
     securityProfile: opts.securityProfile,
     loopBudgetMs: opts.loopBudgetMs,
-    // + os imports do NÚCLEO (three.js) se o código os usa — lazy: 2D devolve o
-    // mesmo objeto, sem importmap.
-    extensionImports: withCoreImports(extensionImports, files['script.js']),
+    runtimeInspection: opts.runtimeInspection,
+    runtimeImports: opts.runtimeImports,
   })
 }
 

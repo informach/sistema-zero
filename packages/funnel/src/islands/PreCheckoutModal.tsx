@@ -15,8 +15,13 @@ export interface PreCheckoutModalProps {
   funnel: string
   /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
   couponCode?: string | null
-  /** Convite para continuar usando a conta que a família já conhece. */
+  /** Página de continuidade: pede o mesmo e-mail da conta que a pessoa (ou a família) já tem. */
   continuidade?: boolean
+  /**
+   * Oferta de assinatura (mensal ou anual): o texto fala do plano e da renovação, e o rodapé não
+   * promete Pix, que não vale no mensal. A Comunidade Kids já é tratada pela chave do funil.
+   */
+  assinatura?: boolean
 }
 
 export default function PreCheckoutModal({
@@ -24,6 +29,7 @@ export default function PreCheckoutModal({
   funnel,
   couponCode,
   continuidade = false,
+  assinatura = false,
 }: PreCheckoutModalProps) {
   const [open, setOpen] = useState(false)
   // Oferta ESCOLHIDA no CTA que abriu o modal (`data-checkout-oferta="<slug>"`,
@@ -37,6 +43,7 @@ export default function PreCheckoutModal({
   const [errors, setErrors] = useState<Errors>({})
   const [erroGeral, setErroGeral] = useState<string | null>(null)
   const firstFieldRef = useRef<HTMLInputElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
   const lastFocusedRef = useRef<HTMLElement | null>(null)
   const reduce = useReducedMotion()
   const uid = useId()
@@ -45,8 +52,10 @@ export default function PreCheckoutModal({
   // (audience ∈ {pro, kids}) — ver registry. Deixar isso explícito evita o pai
   // preencher os dados da criança aqui.
   const isKids = funnel.startsWith('kids/')
-  const isChallenge = funnel === 'kids/desafio-primeiro-jogo'
+  // O Desafio do Primeiro Jogo, Kids ou adulto (a mesma oferta de 30 dias; a ilha não lê o registry).
+  const isChallenge = funnel.endsWith('/desafio-primeiro-jogo')
   const isCommunity = funnel === 'kids/comunidade-dos-criadores'
+  const isSubscription = isCommunity || assinatura
 
   // Garante o lead (mesmo p/ quem cai direto na oferta) e marca viu_pagina_vendas
   // com o perfil que veio na URL (`?perfil=`), quando válido.
@@ -76,10 +85,10 @@ export default function PreCheckoutModal({
     })()
 
     function onDocClick(e: MouseEvent) {
-      const el = (e.target as HTMLElement | null)?.closest('[data-checkout-cta]')
+      const el = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-checkout-cta]')
       if (el) {
         e.preventDefault()
-        lastFocusedRef.current = document.activeElement as HTMLElement | null
+        lastFocusedRef.current = el
         setOferta(el.getAttribute('data-checkout-oferta'))
         setOpen(true)
         apiPost('/api/events', { eventName: 'abriu_checkout' }).catch(() => {})
@@ -92,13 +101,41 @@ export default function PreCheckoutModal({
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false)
+      const dialog = dialogRef.current
+      if (e.key !== 'Tab' || !dialog) return
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'button, input, select, textarea, a[href], [tabindex]',
+        ),
+      ).filter(
+        (el) => el.tabIndex >= 0 && !el.matches(':disabled') && el.getClientRects().length > 0,
+      )
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (!first || !last) {
+        e.preventDefault()
+        dialog.focus()
+      } else if (
+        !dialog.contains(document.activeElement) ||
+        (e.shiftKey && document.activeElement === first) ||
+        (!e.shiftKey && document.activeElement === last)
+      ) {
+        e.preventDefault()
+        ;(e.shiftKey ? last : first).focus()
+      }
+    }
+    function keepFocus(event: FocusEvent) {
+      if (event.target instanceof Node && !dialogRef.current?.contains(event.target))
+        firstFieldRef.current?.focus()
     }
     if (open) {
       document.addEventListener('keydown', onKey)
+      document.addEventListener('focusin', keepFocus)
       // Aguarda o frame de montagem do diálogo p/ mover o foco.
       const t = setTimeout(() => firstFieldRef.current?.focus(), 30)
       return () => {
         document.removeEventListener('keydown', onKey)
+        document.removeEventListener('focusin', keepFocus)
         clearTimeout(t)
       }
     }
@@ -173,6 +210,8 @@ export default function PreCheckoutModal({
           {...overlayAnim}
           transition={{ duration: reduce ? 0 : 0.2 }}
           role="dialog"
+          ref={dialogRef}
+          tabIndex={-1}
           aria-modal="true"
           aria-labelledby={`${uid}-title`}
           className={`fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm sm:items-center sm:p-4 ${
@@ -201,8 +240,8 @@ export default function PreCheckoutModal({
                 </h2>
                 <p className="mt-1 text-sm text-muted">
                   {isChallenge
-                    ? 'Confirme os dados do responsável. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.'
-                    : isCommunity
+                    ? `${isKids ? 'Confirme os dados do responsável' : 'Confirme seus dados'}. Na próxima tela, você revisa o valor, aplica o cupom se tiver um e escolhe como pagar.`
+                    : isSubscription
                       ? 'Na próxima tela, você confere o plano escolhido, o valor e como funciona a renovação antes de pagar.'
                       : isKids
                         ? 'Confirme os dados do responsável para ir ao pagamento seguro.'
@@ -238,9 +277,16 @@ export default function PreCheckoutModal({
                 ) : (
                   <>
                     <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
-                    criança (nome e idade) você cria depois, já dentro da plataforma.
+                    criança (nome e, se quiser, a data de nascimento) você cria depois, já dentro da
+                    plataforma.
                   </>
                 )}
+              </p>
+            )}
+            {!isKids && continuidade && (
+              <p className="mt-4 rounded-xl border border-cyan/30 bg-cyan/10 px-4 py-3 text-sm text-ink">
+                <strong>Se você já tem conta no Sistema Zero, use o mesmo e-mail.</strong> Assim, a
+                assinatura entra na conta onde estão os seus projetos e o seu progresso.
               </p>
             )}
 
@@ -312,7 +358,7 @@ export default function PreCheckoutModal({
                   ? 'Aguarde…'
                   : isChallenge
                     ? 'Continuar para o pagamento'
-                    : isCommunity
+                    : isSubscription
                       ? 'Continuar para o pagamento'
                       : 'Ir pro pagamento seguro →'}
               </button>
@@ -326,7 +372,7 @@ export default function PreCheckoutModal({
               <p className="text-center text-xs text-muted">
                 {isChallenge
                   ? 'Compra única por Pix ou cartão, sem renovação automática e com garantia de 7 dias.'
-                  : isCommunity
+                  : isSubscription
                     ? 'Assinatura mensal ou anual, com 7 dias de garantia. As formas de pagamento aparecem na próxima tela.'
                     : 'Pagamento via Pix ou cartão de crédito, com garantia de 7 dias.'}
               </p>

@@ -70,6 +70,7 @@ export class SceneComponentPicker {
     camera: Camera,
     pointer: { x: number; y: number; width: number; height: number; radius: number },
     through = false,
+    authorialOnly = false,
   ): string | null {
     if (this.disposed || selection.mode === 'face' || pointer.width <= 0 || pointer.height <= 0)
       return null
@@ -108,7 +109,12 @@ export class SceneComponentPicker {
       const cursor = new Vector2(pointer.x, pointer.y)
       for (const object of objects) {
         const instance = resource.instanceFor(object)
-        if (instance?.sourceNodeId !== selection.nodeId || instance.locked) continue
+        if (
+          instance?.sourceNodeId !== selection.nodeId ||
+          instance.locked ||
+          (authorialOnly && instance.id !== selection.nodeId)
+        )
+          continue
         const points = new Map(
           Object.entries(mesh.vertices).map(([id, point]) => {
             const world = new Vector3(...point).applyMatrix4(object.matrixWorld)

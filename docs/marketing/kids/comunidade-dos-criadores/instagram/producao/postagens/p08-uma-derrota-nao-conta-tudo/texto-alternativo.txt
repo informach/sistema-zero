@@ -1,0 +1,4 @@
+IMAGEM ÚNICA
+Curto (100 caracteres): Captura do Estúdio: Dragão com vida abaixo da metade e bloco que faz seu ataque atingir todo o time.
+
+Longo: Fundo azul, selo Por trás do jogo e frase hipotética “Sou ruim nisso.” em amarelo. Abaixo, em branco, Uma derrota não conta tudo o que seu filho já conseguiu. Na metade inferior há um recorte real da batalha da equipe: Dragão alaranjado de asas azuis, nome e coroa, barra de vida verde preenchida em menos da metade. Na execução, sua vida é 70 de 160. Logo abaixo, a captura real do bloco: O inimigo Dragao acerta TODO o time (dano 22). A captura não mostra o título do jogo nem as mensagens de batalha. O visual do Dragão é um asset gerado por IA, incorporado ao projeto executado; a tela e o bloco não foram inventados por IA. A frase inicial é hipotética, sem atribuição a aluno.

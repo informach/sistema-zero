@@ -1,5 +1,5 @@
 import { courseTierOf } from '@sistemazero/member-shell/lib/course-tier'
-import { levelForTier } from '@/lib/journey-map'
+import { type JourneyCoursePolicy, levelForTier } from '@/lib/journey-map'
 import type { CourseLevelSlug, CourseTrack } from '@/lib/types'
 
 /**
@@ -27,32 +27,27 @@ export interface CourseBackTarget {
   label: string
 }
 
-const MAPA: CourseBackTarget = { href: '/cursos', label: 'Voltar ao mapa' }
+const MAPA: CourseBackTarget = { href: '/cursos', label: 'Voltar aos cursos' }
 
-/**
- * A trilha DONA do curso — a que de fato o lista em `/cursos/trilha/[level]`.
- *
- * ⭐ Ficou de uma linha em 14/08. Antes o Iniciante 2D era DIVIDIDO entre dois postos
- * (Faísca via o curso-base, Construtor(a) via o resto), então era preciso desempatar
- * pelo `careerSlot` e ainda cobrir o fail-open do catálogo não etiquetado — mandar a
- * criança para a trilha errada a faria procurar o curso numa lista que não o contém.
- * Com o degrau de entrada próprio, **cada degrau tem UM dono**, e o dono é o destino.
- *
- * `lenda` fica FORA da jornada (bônus da formatura) e vive na trilha da Lenda.
- * Curso sem `level` (members antigo) → `null`, e a volta cai no mapa.
- */
-export function trilhaHrefForCourse(course: CourseBackInput): string | null {
+/** The canonical policy determines where a tier is shown; unknown state returns to the map. */
+export function trilhaHrefForCourse(
+  course: CourseBackInput,
+  journey: JourneyCoursePolicy | null,
+): string | null {
+  if (!journey) return null
   if (course.level === 'lenda') return '/cursos/trilha/god'
   const tier = courseTierOf(course.level, course.track)
   if (!tier) return null
-  return `/cursos/trilha/${levelForTier(tier)}`
+  const level = levelForTier(tier, journey)
+  return level ? `/cursos/trilha/${level}` : null
 }
 
 export function resolveCourseBack(
   from: string | undefined,
   course: CourseBackInput,
+  journey: JourneyCoursePolicy | null,
 ): CourseBackTarget {
   if (from === 'inicio') return { href: '/', label: 'Voltar ao início' }
-  const trilha = trilhaHrefForCourse(course)
+  const trilha = trilhaHrefForCourse(course, journey)
   return trilha ? { href: trilha, label: 'Voltar à trilha' } : MAPA
 }

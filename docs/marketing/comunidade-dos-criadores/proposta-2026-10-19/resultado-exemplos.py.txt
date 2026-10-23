@@ -1,0 +1,58 @@
+# Exemplos de resultado em conversa (perfil B) copiados de quiz_build.py do Canvas.
+# [[...]] marca a resposta da pessoa devolvida no texto. "Modo Criador" passou a "Comunidade dos Criadores".
+
+EX_ADULTO = dict(doc_title='Quiz adulto · resultado em conversa (perfil B, a ideia)', kicker='Seu resultado',
+    titulo='A sua ideia de jogo já existe. O que falta é um começo pequeno',
+    assinatura='Helena e Júlio, Sistema Zero',
+    blocos=[
+        ('p', 'Você contou que [[tem uma ideia de jogo há anos e nunca começou]], que joga [[de 7 a 14 horas por semana]] e que, quando tentou, [[abriu um programa e fechou no mesmo dia]]. A gente vê essa história com frequência, e ela tem uma explicação simples.'),
+        ('h', 'Por que a ideia continua na gaveta'),
+        ('p', 'De 7 a 14 horas por semana dão entre 364 e 728 horas por ano jogando, e você disse que [[quase nada disso virou alguma coisa sua]]. Não é falta de vontade: você já tentou. O problema é o ponto de partida. A ideia costuma ser grande, com mundo, história e dezenas de fases, e o programa que você abriu foi feito para estúdios: dezenas de janelas e nenhum próximo passo claro. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia volta para onde estava. É isso que incomoda você: [[ela continuar na gaveta]].'),
+        ('h', 'O que muda quando o primeiro jogo é pequeno'),
+        ('p', 'Fazer um jogo é escrever as regras da ideia em blocos: quando o jogador tocar aqui, acontece isso. Quando o primeiro jogo é pequeno de propósito, você termina, publica e mostra. É esse jogo pronto que tira a ideia grande da gaveta, uma fase de cada vez. A cena que você quer ver, [[um amigo jogando uma fase que você inventou]], é exatamente onde isso termina: um jogo que funciona na mão de outra pessoa, com um link que abre no celular.'),
+        ('h', 'Onde isso acontece'),
+        ('p', 'A Comunidade dos Criadores é a área adulta do Sistema Zero, em que você aprende criando jogos. Cada curso é um jogo completo: você joga a versão pronta, muda uma regra, testa e publica no Mural. Os blocos que cada curso ensina ficam na sua caixa de ferramentas, e o Estúdio livre abre logo na primeira etapa: é lá, com o que você já sabe usar, que a sua ideia vira projeto, uma fase de cada vez. Os primeiros cursos são clássicos: uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. Como você [[nunca programou]], a primeira fase tira a digitação do caminho: você monta a lógica em blocos e vê cada regra funcionar. A Ponte e o código chegam depois, quando a base estiver firme.'),
+        ('img', B['aula_adulto'], 'A aula da Nave Contra Asteroides: prévia com dados de teste: vídeo de um lado, Estúdio do outro e o botão de rodar o jogo'),
+        ('p', 'Quem prepara as aulas somos nós, Helena e Júlio, formados em Sistemas de Informação, com mais de dez anos programando. O Sistema Zero começou com os jogos que fizemos com os nossos filhos.'),
+        ('h', 'Duas coisas que você disse e que importam'),
+        ('p', 'Você precisa [[aprender sozinho, no seu horário]]. As aulas são gravadas, o vídeo fica ao lado do editor e o projeto fica salvo na sua conta: você para hoje e continua amanhã do mesmo ponto. E você [[usa um computador compartilhado]]: como as aulas são gravadas, basta combinar um horário em que ele esteja livre. Você disse também que [[qualquer ferramenta serve, se conseguir terminar]]. É por aí que a gente começa.'),
+        ('cta', 'Na próxima página, você vê a aula da Nave por dentro, os clássicos que vêm primeiro, as três fases até o código e os dois planos.', 'Ver como a ideia sai da gaveta'),
+    ])
+
+EX_917 = dict(doc_title='Quiz infantil · resultado em conversa 9 a 17 (perfil B, filha de 13 a 17)', kicker='Seu resultado',
+    titulo='As ideias de jogo da sua filha já existem. O que falta é vê-las funcionando',
+    assinatura='Helena e Júlio, Sistema Zero Kids',
+    blocos=[
+        ('p', 'Você contou que ela tem [[entre 13 e 17 anos]], que [[inventa jogo o tempo todo, mas fica só na conversa]] e que, quando algo não dá certo num jogo, [[ela tenta de outro jeito até dar certo]]. A gente conhece bem essa menina, porque é assim que começa quem gosta de criar.'),
+        ('h', 'Por que as ideias ficam na conversa'),
+        ('p', 'De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, e você disse que [[só um pouco disso vira alguma coisa que ela mesma fez]]. A vontade já está aí. O que falta é transformar a ideia em regras que o computador entende: quando tocar aqui, acontece isso. Enquanto esse passo não chega, cada ideia nova volta para a conversa, como a anterior. E é por isso que preocupa ver [[essa vontade passar antes de ela fazer um jogo]].'),
+        ('h', 'O que muda quando ela monta a regra'),
+        ('p', 'Criar um jogo é montar as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Ela monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou. Se não fez, ajusta, que é exatamente o que ela já faz quando algo trava. A cena que você quer ver, [[um amigo jogando um jogo que ela inventou]], é onde isso termina: um jogo que funciona na mão de outra pessoa.'),
+        ('h', 'Onde isso acontece'),
+        ('p', 'A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Cada curso é um jogo completo, e ela começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dela, com as peças dos cursos que ela terminou. A cada curso, ela ganha peças novas e consegue fazer jogos maiores, até os que ela inventa.'),
+        ('img', B['estudio'], 'O Estúdio com os blocos do jardim e o jogo rodando ao lado'),
+        ('p', 'O Daniel, pai do Rafael, viu isso acontecer em casa:'),
+        ('relato', B['daniel'], 'Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’', 'Daniel, pai do Rafael'),
+        ('h', 'O que você disse que precisa'),
+        ('p', 'Você quer [[conseguir acompanhar]]. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ela aprendeu é a mais simples: me mostra o que você mudou. Você disse também que [[qualquer ferramenta serve, se ela gostar]]; aqui a ferramenta é o Estúdio, da própria plataforma.'),
+        ('cta', 'Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dela e até o código, como você acompanha e os dois planos.', 'Ver como ela tira os jogos do papel'),
+    ])
+
+EX_M9 = dict(doc_title='Quiz infantil · resultado em conversa menor de 9 (perfil B, filha)', kicker='Seu resultado',
+    titulo='As brincadeiras dela já têm personagem, regra e fim. O que falta é um lugar para elas aparecerem',
+    assinatura='Helena e Júlio, Sistema Zero Kids',
+    blocos=[
+        ('p', 'Você contou que ela tem [[menos de 9 anos]], que [[está começando a ler]] e que [[inventa brincadeira e personagem o tempo todo]]. Contou também que vocês conseguem sentar juntos [[duas ou três vezes por semana, de 20 a 30 minutos]]. Isso é mais do que parece.'),
+        ('h', 'Por que as ideias ficam na brincadeira'),
+        ('p', 'Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ela inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ela fazer isso sozinha é a leitura e o mouse, e nessa idade ninguém espera que ela faça sozinha. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto. É por isso que acontece o que você disse que preocupa: [[as ideias dela ficarem só na brincadeira]].'),
+        ('h', 'O que muda quando vocês criam juntos'),
+        ('p', 'Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, [[o personagem dela aparecendo na tela]], começa na primeira sessão, com o bichinho que aparece quando ela toca no esconderijo. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.'),
+        ('h', 'Onde isso acontece'),
+        ('p', 'A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças aprendem criando jogos. Com menos de 9 anos, ela cria com você. Um dos primeiros projetos é o Cadê Todo Mundo, um jogo de procurar bichinhos no jardim. Depois de A Chave do Farol publicada, o Estúdio livre abre para o jogo que ela inventar, com as peças que vocês já usaram nas aulas. Quando ela começar a ler sozinha, passa a criar por conta própria, no mesmo perfil.'),
+        ('img', B['aula_kids'], 'A aula do Cadê Todo Mundo: o vídeo ao lado do Estúdio e o botão Ouvir'),
+        ('p', 'A Débora passou pelo Desafio do Primeiro Jogo com 7 anos e contou assim:'),
+        ('relato', B['debora'], 'Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.', 'Débora, aluna, 7 anos'),
+        ('h', 'O que você disse que precisa'),
+        ('p', 'Você precisa [[conseguir conduzir sem saber programar]]. O vídeo mostra cada passo, o Zappy lê as falas e os blocos dizem o que fazem, em português. O seu papel é ler, perguntar e deixar a escolha com ela.'),
+        ('cta', 'Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.', 'Ver como vocês criam jogos juntos'),
+    ])

@@ -98,23 +98,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     // A tela mostra um CENÁRIO (e não um personagem): a legenda diz o que a copy já afirma do Pinta.
     caption: 'Personagens, cenários e peças do jogo podem ser desenhados no Pinta.',
   },
-  reunida: {
-    mode: 'set',
-    frames: [
-      tela(
-        'aula-estudio',
-        'Aula',
-        'Aula com o vídeo e a fala do Zappy à esquerda e a atividade no Estúdio à direita.',
-      ),
-      tela('recados', 'Recados', 'Recados do professor com a dúvida enviada a partir da aula.'),
-      tela(
-        'mural',
-        'Mural',
-        'Mural dos Criadores com cartões de jogos e botões para jogar e copiar o link.',
-      ),
-    ],
-    caption: 'Aulas e ferramentas de criação reunidas na mesma plataforma.',
-  },
   pausa: {
     frames: [
       tela(
@@ -220,31 +203,37 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'A criança pode mostrar uma escolha e conferir seu efeito no projeto.',
   },
+  // 16/10/2026 (decisão da dona: a venda não mostra "em construção"): as capturas da Jornada
+  // trazem o cartão "Mais 6 postos estão sendo construídos". Aqui entra só o RECORTE da tela
+  // Minha jornada, com o título e os postos Faísca e Construtor (`tela-jornada-meus-postos`,
+  // recortado de `tela-jornada-postos` na caixa 600,30–2500,804 do @2x). O mapa (`tela-jornada`)
+  // saiu: a mensagem fica no meio dele. Recapturou? Refaça o recorte.
   jornada: {
-    mode: 'set',
     frames: [
       tela(
-        'jornada-postos',
+        'jornada-meus-postos',
         'Minha jornada',
-        'Minha jornada no perfil: cada posto com o que já foi liberado e os postos em construção.',
-      ),
-      tela(
-        'jornada',
-        'Jornada',
-        'Mapa da Jornada do Criador com o posto atual e as aventuras da trilha.',
+        'Minha jornada no perfil: o posto Faísca concluído e o posto atual, Construtor, com o que cada um liberou.',
+        950,
+        387,
       ),
     ],
-    caption: 'A Jornada mostra o próximo passo e os requisitos para liberar uma ferramenta.',
+    caption: 'A Jornada mostra em que posto a criança está e o que cada posto liberou.',
   },
+  // A captura inteira (`tela-catalogo`) traz no alto o fim do mapa, com "Mais 6 postos estão
+  // sendo construídos": entra só o RECORTE da lista de aventuras (`tela-catalogo-trilha`, caixa
+  // 600,330–2560,1600 do @2x). Recapturou? Refaça o recorte.
   catalogo: {
     frames: [
       tela(
-        'catalogo',
+        'catalogo-trilha',
         'Aventuras da trilha',
         'Aventuras da trilha Construtor: os cursos publicados, com aulas e progresso de cada um.',
+        980,
+        635,
       ),
     ],
-    caption: 'O catálogo disponível permite conhecer as atividades que podem ser iniciadas.',
+    caption: 'As aventuras da trilha mostram os cursos e o progresso em cada um.',
   },
   pensa: {
     mode: 'steps',
@@ -272,16 +261,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O Zappy oferece orientação; a criança faz o ajuste e testa o resultado.',
   },
-  planejamento: {
-    frames: [
-      tela(
-        'planejamento',
-        'Equipe do plano',
-        'Equipe do plano no Pensa: código do plano, lugares e quem já entrou.',
-      ),
-    ],
-    caption: 'As crianças podem compartilhar o plano e construir nas próprias ferramentas.',
-  },
   molda: {
     frames: [
       tela(
@@ -290,7 +269,8 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Molda com um personagem de blocos em três dimensões, ferramentas de modelar e a lista de peças.',
       ),
     ],
-    caption: 'As ferramentas posteriores têm requisitos próprios na Jornada.',
+    caption:
+      'O Molda abre no posto Explorador de Mundos, para criar personagens em três dimensões.',
   },
   codigo: {
     frames: [
@@ -300,7 +280,7 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
         'Estúdio no modo Ponte: os blocos, o código gerado e o jogo lado a lado.',
       ),
     ],
-    caption: 'O percurso prevê recursos que aproximam blocos e código.',
+    caption: 'No posto Gênio da Criação, o modo Ponte mostra os blocos ao lado do código.',
   },
   mural: {
     frames: [
@@ -323,23 +303,6 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
       ),
     ],
     caption: 'Os combinados e o aviso à equipe apoiam a participação nas conversas.',
-  },
-  espaco: {
-    mode: 'set',
-    frames: [
-      tela(
-        'avatar',
-        'Meu avatar',
-        'Meu avatar: personagem em 3D com opções de rosto, cabelo e roupas.',
-      ),
-      tela('quarto', 'Meu quarto', 'Meu quarto com cama, mesa e cadeira posicionadas no espaço.'),
-      tela(
-        'conquistas',
-        'Minhas conquistas',
-        'Minhas conquistas no perfil, com os marcos já alcançados e os que faltam.',
-      ),
-    ],
-    caption: 'A criança tem um espaço para seu avatar e seu percurso.',
   },
   missoes: {
     mode: 'set',
@@ -494,33 +457,24 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
     ],
     caption: 'O atendimento da família reúne dúvidas sobre conta e assinatura.',
   },
-  indicacao: {
-    frames: [
-      tela(
-        'pais-indicacao',
-        'Seja um embaixador',
-        'Cartão Seja um embaixador do Sistema Zero, na Conta da Área dos pais, com as condições do programa de indicações.',
-        1136,
-        266,
-      ),
-    ],
-    caption: 'O convite segue as condições apresentadas no programa de indicações.',
-  },
   // As telas da Área dos pais são capturas do staging de 11/10/2026 (páginas próprias), menos
   // "Minhas compras": ela vem de uma captura da própria dona na conta dela (02/10/2026), com os
   // dígitos do cartão embaçados, porque o staging não tem assinatura ativa para mostrar. O @2x
   // dela é ampliado: não há captura em escala 2.
+  // ⚠️ `creditos`: a captura ainda mostra o título antigo "Ajuda da IA neste mês". A tela passou a
+  // se chamar "Créditos do Zappy e do Pensa neste mês" (20/10/2026): refaça a captura antes de usar.
   creditos: {
     frames: [
       tela(
         'pais-creditos',
-        'Ajuda da IA neste mês',
-        'Quadro Ajuda da IA neste mês, na Conta da Área dos pais: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
+        'Créditos do Zappy e do Pensa',
+        'Quadro dos créditos do mês na Conta da Área dos pais, usados pelo Pensa e pela ajuda do Zappy: 0 de 500 no mês, renovação em 1º de novembro, 0 de 50 no dia e o aviso de que as crianças da família dividem o mesmo total.',
         384,
         239,
       ),
     ],
-    caption: 'O saldo de ajuda da IA do mês é um só para a família e aparece na Área dos pais.',
+    caption:
+      'Os créditos do Pensa e da ajuda do Zappy têm limite por dia e por mês, num só total para a família, que aparece na Área dos pais.',
   },
   compras: {
     frames: [
@@ -553,116 +507,10 @@ export const COMUNIDADE_VISUALS: Record<string, ComunidadeVisual> = {
 /**
  * Demonstrações citadas pela copy que ainda NÃO têm tela real. Não renderizam nada: a seção ou a
  * resposta segue só com o texto. Para ligar uma delas, capture a tela e mova a chave para
- * `COMUNIDADE_VISUALS` (os vínculos com as quatro páginas e com as dúvidas já existem).
+ * `COMUNIDADE_VISUALS`.
  */
 export const PENDING_VISUALS: Record<string, string> = {
   conexao: 'Aviso de sem conexão: o editor não mostra um estado próprio para fotografar.',
 }
 
 export const visualDe = (id: string): ComunidadeVisual | null => COMUNIDADE_VISUALS[id] ?? null
-
-export const FAQ_VISUALS: Record<string, readonly string[]> = {
-  programacao: ['aula', 'estudio'],
-  desenho: ['estudio', 'pinta'],
-  'aulas-gravadas': ['pausa'],
-  ajuda: ['recados'],
-  pais: ['responsavel'],
-  aprendizagem: ['aprendizagem', 'responsavel'],
-  interesse: ['aula'],
-  'so-desenho': ['integracao'],
-  papel: ['pinta', 'integracao'],
-  equipamento: ['aula'],
-  internet: ['salvamento'],
-  liberacao: ['jornada'],
-  catalogo: ['catalogo'],
-  ia: ['pensa', 'zappy'],
-  pensa: ['pensa'],
-  zappy: ['zappy'],
-  creditos: ['creditos'],
-  planejamento: ['planejamento'],
-  salvamento: ['salvamento'],
-  exportacao: ['exportacao'],
-  ferias: ['ferias'],
-  pontos: ['missoes'],
-  certificado: ['certificado'],
-  'apoio-especifico': ['aula'],
-  desafio: ['jornada'],
-  nivel: ['catalogo', 'estudio'],
-  roblox: ['estudio'],
-  '3d': ['molda'],
-  codigo: ['codigo'],
-  atendimento: ['conta'],
-  senha: ['senha'],
-  indicacao: ['indicacao'],
-  cancelamento: ['compras'],
-  reembolso: [],
-  irmaos: ['perfis'],
-  perfil: ['privacidade'],
-  'jogos-publicos': ['publicacao'],
-  convivencia: ['clube'],
-  custos: ['jornada', 'creditos'],
-  telas: ['pausa'],
-}
-
-/**
- * A faixa "Por dentro da Comunidade": uma tela de cada área, com o nome que a plataforma dá a ela
- * e UMA linha PESSOAL sobre a função: o filho fazendo algo ali ("Onde seu filho monta e testa os
- * jogos"), nunca a descrição da ferramenta. Só o que a copy das páginas já afirma de cada área,
- * sem condição de acesso (a faixa mostra o que existe; a liberação está no capítulo da Jornada).
- */
-export interface ComunidadeTourItem extends ComunidadeFrame {
-  resumo: string
-}
-
-const area = (frame: ComunidadeFrame, resumo: string): ComunidadeTourItem => ({ ...frame, resumo })
-
-export const TOUR: readonly ComunidadeTourItem[] = [
-  area(
-    tela(
-      'jogo-pronto',
-      'Aulas',
-      'Aula com vídeo, fala do Zappy e o jogo pronto para experimentar.',
-    ),
-    'Onde seu filho vê a explicação e faz o passo.',
-  ),
-  area(
-    tela('estudio', 'Estúdio', 'Estúdio com os blocos do jogo e a partida em execução.'),
-    'Onde seu filho monta e testa os jogos.',
-  ),
-  area(
-    tela('pinta', 'Pinta', 'Editor do Pinta com um personagem de cavaleiro.'),
-    'Onde ele desenha personagens e cenários.',
-  ),
-  area(
-    tela('pensa', 'Pensa', 'Plano de criação no Pensa, com as etapas e os cartões de tarefa.'),
-    'Onde ele transforma uma ideia em plano.',
-  ),
-  area(
-    tela('molda', 'Molda', 'Molda com um personagem de blocos em três dimensões.'),
-    'Onde ele cria em três dimensões.',
-  ),
-  area(
-    tela('catalogo', 'Jornada', 'Aventuras da trilha na Jornada do Criador.'),
-    'Onde ele vê o próximo passo.',
-  ),
-  area(
-    tela('mural', 'Mural', 'Mural dos Criadores com os jogos publicados.'),
-    'Onde ele apresenta o jogo que publicou.',
-  ),
-  area(
-    tela('recados', 'Recados', 'Recados do professor com uma dúvida de aula.'),
-    'Onde ele acompanha a ajuda que pediu.',
-  ),
-  area(
-    tela('quarto', 'Meu quarto', 'Meu quarto com cama, mesa e cadeira posicionadas no espaço.'),
-    'Onde ele monta um espaço do jeito dele.',
-  ),
-  area(
-    tela(
-      'como-fazer',
-      'Como fazer',
-      'Biblioteca de ajuda Como fazer, com os tutoriais por assunto.',
-    ),
-    'Onde ele consulta como fazer uma ação.',
-  ),
-]

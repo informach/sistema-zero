@@ -1,4 +1,4 @@
-import { sanitizeGiftAttribution } from '@sistemazero/core/referrals'
+import { type GiftAudience, sanitizeGiftAttribution } from '@sistemazero/core/referrals'
 import { z } from 'zod'
 import type { GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
@@ -39,6 +39,8 @@ const InviteBody = z.object({
   token: z.string().regex(TOKEN_RE),
   nome: z.string().trim().min(2).max(120),
   email: z.string().trim().toLowerCase().regex(EMAIL_RE).max(254),
+  /** Para quem é o presente do convite (20/10/2026); ausente = `kids`. */
+  audience: z.enum(['kids', 'adult'] as const satisfies readonly GiftAudience[]).optional(),
 })
 
 const PixBody = z.object({
@@ -93,8 +95,14 @@ export async function postAmbassadorInvite(
   const parsed = InviteBody.safeParse(await safeJson(request))
   if (!parsed.success) return jsonError('Confira os dados e tente novamente.', 400, 'BAD_REQUEST')
 
-  const { token, nome, email } = parsed.data
-  const res = await deps.gateway.createAmbassadorInvite(token, { name: nome, email })
+  const { token, nome, email, audience } = parsed.data
+  // O convite Kids viaja sem o campo, igual ao de antes do presente adulto: o referrals anterior
+  // a 20/10/2026 continua aceitando o convite enquanto os dois sobem.
+  const res = await deps.gateway.createAmbassadorInvite(token, {
+    name: nome,
+    email,
+    ...(audience === 'adult' ? { audience } : {}),
+  })
   if (res.status === 202) return json({ ok: true }, 202)
   // 404 token · 409 já-convidado/já-resgatou · 429 cap diário/teto do gateway.
   return passthrough(res, [404, 409, 429], deps.log, 'invite')

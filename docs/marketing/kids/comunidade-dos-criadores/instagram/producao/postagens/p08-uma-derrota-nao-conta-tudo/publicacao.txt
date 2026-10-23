@@ -1,0 +1,12 @@
+P08 · Uma derrota não conta tudo
+Imagem única · Segunda publicação da semana 11 · D08 (hipótese) · Por trás do jogo
+
+Arquivo: 01-p08.png, 1080 × 1350, proporção 4:5, sRGB.
+Legenda: legenda.txt. Texto alternativo: texto-alternativo.txt.
+CTA na legenda: seguir @criecomhelenaejulio. Sem palavra-chave ou ManyChat.
+
+Frase inicial hipotética, sem nome ou rosto de aluno. A demonstração foi preparada pela equipe a partir de O Chefão, do Jogo 2D Avançado. Não apresenta um resultado pedagógico, diagnóstico ou promessa de mudança de autoestima.
+Captura real: Dragão com 70 de 160 de vida; limiar da mudança de ataque é abaixo de 80. O time desta batalha tem um só herói. A regra e o bloco são reais. O Dragão recebeu um asset visual novo, gerado por IA e incorporado ao jogo; a tela foi capturada durante a execução. Não há pessoa gerada nesta peça.
+Na demonstração local, o nome do alvo dos golpes Investida e Curar foi normalizado de Voce para Você, correspondente ao personagem do runtime. Vida, limiar, dano e demais regras foram preservados. A captura ampliada exclui título, mensagens e outros painéis. O bloco vem do renderer real do Estúdio e aparece abaixo da captura para ficar legível.
+
+Não publicado nem agendado. Próxima imagem única: P29, terceira publicação da semana 12.

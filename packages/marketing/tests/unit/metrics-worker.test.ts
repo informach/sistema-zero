@@ -138,6 +138,11 @@ describe('metrics-worker genérico (decaimento)', () => {
     expect(s.metrics.accountSnapshots).toHaveLength(1)
     expect(s.metrics.accountSnapshots[0]?.followers).toBe(1234)
     expect(s.metrics.publicationSnapshots).toHaveLength(2)
+    expect(s.metrics.publicationSnapshots[0]).toMatchObject({
+      collectionVersion: 1,
+      shares: null,
+      saves: null,
+    })
     // Um único videos.list p/ os dois ids (lote = 1 unit).
     expect(s.api.statsCalls).toHaveLength(1)
     const stored = s.publications.rows.get(pub1.id)

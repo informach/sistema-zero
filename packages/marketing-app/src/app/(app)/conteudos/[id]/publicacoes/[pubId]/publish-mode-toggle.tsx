@@ -43,7 +43,7 @@ export function PublishModeToggle({
     accounts.autoCapableNetworks.includes(network) &&
     capable.length > 0
   const tooltip = forcesManualMode(format)
-    ? 'Stories não têm publicação automática (limite das redes)'
+    ? 'Stories usam publicação manual nesta versão do app'
     : 'A publicação automática chega quando a rede estiver conectada'
   // Auto indisponível ainda deixa DESLIGAR um auto legado — só não deixa ligar.
   const switchDisabled = disabled || (!autoAvailable && value !== 'auto')

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import type { ClassifyResult, DraftResult } from '../../src/application/ai/prompts'
+import type { ClassifyResult } from '../../src/application/ai/prompts'
 import { TicketAiService } from '../../src/application/ai/ticket-ai.service'
 import {
   type LlmClient,
@@ -8,6 +8,7 @@ import {
 } from '../../src/domain/ports/llm-client.port'
 import { AiWorker } from '../../src/infrastructure/workers/ai-worker'
 import { FakeLlmClient } from '../fakes/ai'
+import { testAnswers } from '../fakes/answers'
 import {
   InMemoryMessageRepository,
   InMemoryTicketIngestionRepository,
@@ -26,7 +27,13 @@ const CLS: ClassifyResult = {
   flags: { reembolso: false, juridico: false },
   summary: 'Vídeo não carrega no Estúdio.',
 }
-const DRAFT: DraftResult = { reply: 'Vamos resolver isso já.', kbCoverage: 'partial' }
+const DRAFT = {
+  citationIds: ['11111111-1111-4111-8111-111111111111'],
+  clarification: false,
+  reason: 'supported',
+  reply: 'Vamos resolver isso já.',
+  kbCoverage: 'partial',
+}
 
 class ControlledLlmClient implements LlmClient {
   private firstResolve: ((value: unknown) => void) | null = null
@@ -69,10 +76,9 @@ function build() {
     llm,
     tickets,
     messages,
-    async () => [],
+    testAnswers(llm),
     {
       maxThreadChars: 24_000,
-      maxKbChars: 12_000,
     },
     () => NOW,
   )
@@ -164,8 +170,8 @@ describe('AiWorker', () => {
       llm,
       tickets,
       messages,
-      async () => [],
-      { maxThreadChars: 24_000, maxKbChars: 12_000 },
+      testAnswers(llm),
+      { maxThreadChars: 24_000 },
       () => NOW,
     )
     const worker = new AiWorker({
@@ -208,6 +214,7 @@ describe('AiWorker', () => {
     expect(await tickets.byId(ticket.id)).toMatchObject({
       aiStatus: 'pending',
       aiSummary: null,
+      aiDraftRunId: null,
       aiDraft: null,
       aiAttempts: 0,
     })

@@ -1,6 +1,11 @@
 import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import {
+  studioPythonCspOrigins,
+  withStudioPublishedProCsp,
+  withStudioPythonCsp,
+} from '@sistemazero/core/studio/runtime-csp'
 import type { NextConfig } from 'next'
 
 // Raiz do MONOREPO: o file tracing do standalone precisa enxergar o workspace
@@ -14,6 +19,7 @@ const resolveFromKids = createRequire(
 const threePackageRoot = path.dirname(path.dirname(resolveFromKids.resolve('three')))
 
 const isDev = process.env.NODE_ENV !== 'production'
+const pythonFrameOrigins = studioPythonCspOrigins(process.env.STUDIO_PYTHON_FRAME_ORIGINS, isDev)
 
 /**
  * CSP da área do aluno (defesa em profundidade — não há sink de HTML cru: o
@@ -57,36 +63,41 @@ function buildCsp({ pro }: { pro: boolean }): string {
   const frameSrc = pro
     ? "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com https://*.webcontainer-api.io https://stackblitz.com https://*.staticblitz.com"
     : "frame-src 'self' blob: https://www.youtube-nocookie.com https://player.vimeo.com"
-  return [
-    "default-src 'self'",
-    "base-uri 'self'",
-    "object-src 'none'",
-    "frame-ancestors 'none'",
-    "form-action 'self'",
-    frameSrc,
-    // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
-    "img-src 'self' data: blob: https:",
-    "font-src 'self' data: https:",
-    // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
-    // `data:` p/ o SOM do Estúdio: o áudio que a criança envia é embutido como
-    // `data:audio/…` e tocado tanto pelo `<audio>` da prévia (nesta página) quanto
-    // pelo `new Audio()` do jogo, dentro do iframe `srcdoc` — que HERDA esta CSP
-    // (só pode RESTRINGIR, nunca relaxar), exatamente como o `script-src` abaixo.
-    // Sem `data:` aqui, o som carrega mas NÃO TOCA, e a recusa é silenciosa: só
-    // aparece no console como "Refused to load media from 'data:audio/…'".
-    "media-src 'self' blob: data: https:",
-    "style-src 'self' 'unsafe-inline' https:",
-    // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
-    // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
-    // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
-    // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
-    // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
-    // segue sendo a fronteira real.
-    scriptSrc,
-    "connect-src 'self' https:",
-    "worker-src 'self' blob:",
-    ...(isDev ? [] : ['upgrade-insecure-requests']),
-  ].join('; ')
+  const pythonCsp = withStudioPythonCsp(
+    [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      frameSrc,
+      // Capas de curso são URLs externas arbitrárias da autoria + avatares do R2.
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data: https:",
+      // Blocos de áudio (bucket R2 público) e vídeo "file" legado tocam URL externa.
+      // `data:` p/ o SOM do Estúdio: o áudio que a criança envia é embutido como
+      // `data:audio/…` e tocado tanto pelo `<audio>` da prévia (nesta página) quanto
+      // pelo `new Audio()` do jogo, dentro do iframe `srcdoc` — que HERDA esta CSP
+      // (só pode RESTRINGIR, nunca relaxar), exatamente como o `script-src` abaixo.
+      // Sem `data:` aqui, o som carrega mas NÃO TOCA, e a recusa é silenciosa: só
+      // aparece no console como "Refused to load media from 'data:audio/…'".
+      "media-src 'self' blob: data: https:",
+      "style-src 'self' 'unsafe-inline' https:",
+      // `data:` p/ o preview do Estúdio (@sistemazero/studio): o script.js do aluno é
+      // injetado como `<script src="data:text/javascript;base64,…">` dentro do iframe
+      // `srcdoc`, que HERDA esta CSP (só pode RESTRINGIR, nunca relaxar) — sem `data:`
+      // aqui, o preview do bloco/estúdio não executa o código da criança. Risco baixo: já
+      // há `'unsafe-inline'` e não existe sink de HTML cru; o sandbox SEM allow-same-origin
+      // segue sendo a fronteira real.
+      scriptSrc,
+      "connect-src 'self' https:",
+      "worker-src 'self' blob:",
+      ...(isDev ? [] : ['upgrade-insecure-requests']),
+    ].join('; '),
+    pythonFrameOrigins,
+  )
+  // Next client navigation keeps the original document policy for every Pro consumer.
+  return withStudioPublishedProCsp(pythonCsp, process.env.STUDIO_PRO_RUNTIME_URL, isDev)
 }
 
 const strictCsp = buildCsp({ pro: false })
@@ -99,7 +110,12 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+  // Microfone liberado para a PRÓPRIA origem (14/10/2026): a criança fala em vez de escrever
+  // para a equipe. Tem que ser global: o cabeçalho vale para o PRIMEIRO documento carregado e
+  // a navegação do Next o mantém, então liberar só na fase e nos Recados não funcionaria para
+  // quem chega por um link. `(self)` não alcança os iframes de terceiros nem as prévias em
+  // `srcdoc` sem `allow-same-origin`, e o navegador ainda pergunta antes de abrir o microfone.
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(self), geolocation=()' },
   // Isolamento de janela/recurso (defesa em profundidade numa área infantil). COOP
   // corta a referência de janela de um abridor cross-origin; CORP barra que outra
   // origem embuta as respostas autenticadas como subrecurso (sondagem por timing).
@@ -162,6 +178,15 @@ const nextConfig: NextConfig = {
     return [
       // Comuns a tudo (sem CSP; COOP/CORP/etc.).
       { source: '/:path*', headers: securityHeaders },
+      {
+        source: '/oficinas/aulas/:id',
+        headers: [
+          {
+            key: 'Permissions-Policy',
+            value: 'camera=(self), microphone=(self), display-capture=(self), geolocation=()',
+          },
+        ],
+      },
       // CSP ESTRITA em tudo, EXCETO a rota isolada do modo Código. O lookahead é
       // ancorado em `estudio/pro/` (com barra): uma rota IRMÃ futura de prefixo
       // parecido (ex.: `/estudio/professor`) recebe a CSP estrita normalmente, em
@@ -169,6 +194,30 @@ const nextConfig: NextConfig = {
       {
         source: '/((?!estudio/pro/).*)',
         headers: [{ key: 'Content-Security-Policy', value: strictCsp }],
+      },
+      {
+        source: '/oficinas/aulas/:id',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: strictCsp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
+      },
+      {
+        source: '/criar/oficinas/:workspaceId',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: strictCsp.replace(
+              "frame-src 'self' blob:",
+              "frame-src 'self' blob: https://*.r2.cloudflarestorage.com",
+            ),
+          },
+        ],
       },
       // Rota isolada do modo Código (PRO/WebContainer): CSP relaxada (WASM) + COEP
       // credentialless — escopados AQUI para não vazar p/ as páginas com vídeo.

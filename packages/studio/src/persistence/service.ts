@@ -1,8 +1,13 @@
-import type { Project } from '#core'
 // Import do MÓDULO PURO (não do barrel #blockly): o service vive no chunk do
 // núcleo e não pode arrastar Blockly (workspaceState → buildIR → blockly/core).
 import { isBlocksStateEmpty } from '../blockly/blocksStateShape'
-import { snapshotProjectWithCurrentAuthority } from '../state/bridgeAuthority'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
+import {
+  hasStaleJavaScriptBridgeBlocks,
+  snapshotProjectWithCurrentAuthority,
+} from '../state/bridgeAuthority'
+import { flushProjectOperations, registerProjectPersistence } from '../state/projectOperations'
+import { installLocalRevision, readLocalRevision } from '../state/projectStorageRevision'
 import type { BlocksHydrationStatus, ProjectStoreApi } from '../state/projectStore'
 import type { StudioPersistenceAdapter } from './types'
 
@@ -59,6 +64,8 @@ export interface PersistenceHandlers {
 
 export interface PersistenceService {
   handlers: PersistenceHandlers
+  /** Optional local lifecycle capability; never infers authority for remote adapters. */
+  beginOpening(id: string, options?: { signal?: AbortSignal }): () => void
   /**
    * Liga autosave (subscribe no store) + flush em pagehide/beforeunload e quando a aba fica
    * escondida. Devolve o detach.
@@ -68,6 +75,11 @@ export interface PersistenceService {
   hydrateAfterLoad(project: Project): void
   /** Salvar explícito (botão Salvar / handle.save()): cancela o debounce e persiste já. */
   save(): Promise<void>
+  /** Saves a complete original copy before activating the Pro document. */
+  promoteToPro(): Promise<void>
+  /** Cancel pending autosaves while an external writer owns the project. */
+  suspend(): void
+  resume(): void
   /** Tem onde persistir? false = persistence 'none' (host salva via onChange/onSave). */
   readonly hasAdapter: boolean
 }
@@ -215,11 +227,12 @@ export function createPersistenceService(
     // rejeita (task captura tudo), mas blindamos com o 2º handler.
     const next = prev ? prev.then(task, task) : task()
     saveChains.set(projectId, next)
-    void next.finally(() => {
+    const cleanup = () => {
       // Só limpa se ESTA execução ainda for a cauda — uma nova edição já pode
       // ter encadeado outra task no mesmo id.
       if (saveChains.get(projectId) === next) saveChains.delete(projectId)
-    })
+    }
+    void next.then(cleanup, cleanup)
     return next
   }
 
@@ -228,6 +241,7 @@ export function createPersistenceService(
   // 'pending'/'failed', os saves desta instância NÃO gravam a partição de blocos
   // — ver `snapshotForSave`.
   const blocksHydrationById = new Map<string, BlocksHydrationStatus>()
+  let blocksHydrationGeneration = 0
 
   function setHydrationStatus(projectId: string, status: BlocksHydrationStatus): void {
     blocksHydrationById.set(projectId, status)
@@ -251,6 +265,11 @@ export function createPersistenceService(
    * clear deliberado do aluno continua sendo persistido.
    */
   function snapshotForSave(project: Project): Project {
+    // A fresh local document may need a detached source-authoritative snapshot.
+    // Give the live document its lineage first, so that snapshot and subsequent
+    // edits keep one writer/CAS base. External adapters never gain a local stamp.
+    if (adapter?.localScope && !readLocalRevision(project))
+      installLocalRevision(project, adapter.localScope.identity)
     const currentAuthority = snapshotProjectWithCurrentAuthority(project)
     if (currentAuthority.blocksState == null) return currentAuthority
     if (!shouldStripBlocks(project.id)) return currentAuthority
@@ -282,17 +301,49 @@ export function createPersistenceService(
     pending.clear()
   }
 
+  let suspended = false
   const service: PersistenceService = {
     handlers: {},
+    beginOpening: (id, options) => adapter?.beginOpening?.(id, options) ?? (() => {}),
     attach,
     hydrateAfterLoad,
     save,
+    promoteToPro: async () => {
+      const currentId = store.getState().project?.id
+      if (!currentId || store.getState().project?.kind === 'pro') return
+      if (isFenced(serviceScopeIdentity, currentId))
+        throw new Error('Este projeto foi removido e não pode ser convertido.')
+      if (currentId && shouldStripBlocks(currentId))
+        throw new Error('Aguarde os blocos originais terminarem de carregar antes de converter.')
+      if (!adapter && !service.handlers.onSave)
+        throw new Error('É preciso guardar uma cópia original antes de converter este projeto.')
+      await save()
+      if (store.getState().project?.id !== currentId || isFenced(serviceScopeIdentity, currentId))
+        throw new Error('O projeto mudou durante o salvamento. A conversão foi cancelada.')
+      if (shouldStripBlocks(currentId))
+        throw new Error('Aguarde os blocos originais terminarem de carregar antes de converter.')
+      await store.getState().convertToPro(async (original) => {
+        await runSerialized(original.id, async () => {
+          if (adapter) await adapter.save(original)
+          await service.handlers.onSave?.(original)
+        })
+      })
+      await save()
+    },
+    suspend: () => {
+      suspended = true
+      clearAllTimers()
+    },
+    resume: () => {
+      suspended = false
+    },
     get hasAdapter() {
       return adapter !== null
     },
   }
 
   function emitChange(project: Project, reason: ChangeContext['reason']): void {
+    if (suspended) return
     try {
       service.handlers.onChange?.(project, { reason })
     } catch (err) {
@@ -310,6 +361,9 @@ export function createPersistenceService(
   }
 
   function hydrateAfterLoad(project: Project): void {
+    // A retry/new opening retires callbacks from the previous read, including
+    // its timeout and rejection. Adapters need not support physical cancellation.
+    const generation = ++blocksHydrationGeneration
     // Mantém no Map só o projeto vivo desta instância: status de projetos já
     // fechados não interessam mais (um save enfileirado deles carrega blocksState
     // null em memória, que o guard do persistProject já pula sozinho).
@@ -319,21 +373,23 @@ export function createPersistenceService(
     // Elegibilidade (status fica 'idle' — nada é trancado): sem partição a
     // restaurar (adapter sem loadBlocksState), projeto pro (blocos não se
     // aplicam) ou o host já entregou o projeto COMPLETO.
-    if (!adapter?.loadBlocksState) return
-    if (project.kind === 'pro') return
+    if (!adapter?.loadBlocksState || project.kind === 'pro' || project.blocksState != null) {
+      setHydrationStatus(project.id, 'idle')
+      return
+    }
     // A partição existente pertence aos blocos antigos: o texto da Ponte foi
     // editado depois. Não a restaura por cima do código novo; o reverse-parse
     // produzirá uma partição coerente e então retirará esta marca.
-    if (project.bridgeCodeAhead === true) {
+    if (hasStaleJavaScriptBridgeBlocks(project)) {
       setHydrationStatus(project.id, 'discarded')
       return
     }
-    if (project.blocksState != null) return
     setHydrationStatus(project.id, 'pending')
     // O timeout NÃO abandona a leitura: só troca 'pending'→'failed' para a UI
     // destravar (a tranca continua protegendo a partição). Se a leitura resolver
     // depois, o `.then` abaixo ainda restaura normalmente.
     const timeout = setTimeout(() => {
+      if (generation !== blocksHydrationGeneration) return
       if (blocksHydrationById.get(project.id) !== 'pending') return
       console.warn(
         '[sz] a restauração dos blocos salvos está demorando — a partição fica protegida até resolver.',
@@ -344,12 +400,13 @@ export function createPersistenceService(
       .loadBlocksState(project)
       .then((blocksState) => {
         clearTimeout(timeout)
+        if (generation !== blocksHydrationGeneration) return
         const current = store.getState()
         if (current.project?.id !== project.id) {
           blocksHydrationById.delete(project.id)
           return
         }
-        if (current.project.bridgeCodeAhead === true) {
+        if (hasStaleJavaScriptBridgeBlocks(current.project)) {
           setHydrationStatus(project.id, 'discarded')
           return
         }
@@ -366,7 +423,11 @@ export function createPersistenceService(
         // restauração tardia clobraria os blocos vivos "salvos". Um canvas vivo
         // vazio, por outro lado, não codifica trabalho nenhum (edições de
         // arquivo são preservadas — o patch só troca o blocksState).
-        if (!isBlocksStateEmpty(current.project.blocksState)) {
+        if (
+          isPythonProject(current.project)
+            ? current.project.blocksState != null
+            : !isBlocksStateEmpty(current.project.blocksState)
+        ) {
           setHydrationStatus(project.id, 'discarded')
           return
         }
@@ -375,6 +436,7 @@ export function createPersistenceService(
       })
       .catch((err) => {
         clearTimeout(timeout)
+        if (generation !== blocksHydrationGeneration) return
         console.warn(
           '[sz] não foi possível restaurar o layout salvo dos blocos:',
           err instanceof Error ? err.message : err,
@@ -388,12 +450,14 @@ export function createPersistenceService(
   }
 
   function persistAndMark(project: Project): Promise<void> {
+    if (suspended) return Promise.resolve()
     // Já excluído antes de começar: não persiste de volta o que foi apagado.
     // (checa fora da cadeia para nem enfileirar a task do projeto apagado.)
     if (isFenced(serviceScopeIdentity, project.id)) return Promise.resolve()
     // Encadeia no mutex por id: dois autosaves do mesmo projeto confirmam EM
     // ORDEM (o 2º só envia ao adapter depois do 1º resolver).
     return runSerialized(project.id, async () => {
+      if (suspended) return
       // Re-checa DENTRO da cadeia: o delete pode ter chegado enquanto este save
       // esperava o anterior na fila.
       if (isFenced(serviceScopeIdentity, project.id)) return
@@ -421,7 +485,19 @@ export function createPersistenceService(
     })
   }
 
+  function stageLocally(project: Project): void {
+    if (adapter?.stage && !isFenced(serviceScopeIdentity, project.id)) {
+      void adapter.stage(snapshotForSave(project)).catch((err) => {
+        const message = formatPersistenceError(err)
+        if (store.getState().project === project) store.getState().markSaveFailed(message)
+        emitError(message)
+      })
+    }
+  }
+
   function schedule(project: Project): void {
+    if (suspended) return
+    stageLocally(project)
     // NÃO se limpa a cerca aqui: create/import/duplicate sempre usam um ULID
     // NOVO, então o agendamento de uma edição NUNCA precisa reabrir a cerca de um
     // id legitimamente. Limpar incondicionalmente aqui (no caminho do autosave de
@@ -450,7 +526,8 @@ export function createPersistenceService(
     pending.set(project.id, { timer, project, since })
   }
 
-  function flushPending(): void {
+  function flushPending(exiting = false): void {
+    if (suspended) return
     // O editor pode ainda estar dentro do debounce próprio (ex.: Blockly, 120ms),
     // sem nenhuma mutação visível na store. Materializá-lo DEVE vir antes até do
     // dedupe: a escrita síncrona re-arma `flushed` por meio de `schedule`.
@@ -470,15 +547,27 @@ export function createPersistenceService(
     }
     clearAllTimers()
     for (const project of snapshots) {
+      stageLocally(project)
       // reason 'flush': fechamento (pagehide/beforeunload/unmount/save). O fetch
       // do adapter remoto será abortado pela navegação, então o host precisa
       // trocar para navigator.sendBeacon / fetch keepalive ao ver este reason.
       emitChange(snapshotForSave(project), 'flush')
-      void persistAndMark(project)
+      if (exiting && adapter?.flushOnExit && !isFenced(serviceScopeIdentity, project.id)) {
+        void adapter
+          .flushOnExit(snapshotForSave(project), {
+            incompleteBlocks: shouldStripBlocks(project.id),
+          })
+          .catch((error) => {
+            const message = formatPersistenceError(error)
+            if (store.getState().project === project) store.getState().markSaveFailed(message)
+            emitError(message)
+          })
+      } else void persistAndMark(project)
     }
   }
 
   function attach(): () => void {
+    const unregisterPersistence = registerProjectPersistence(store, adapter)
     attachedAutosaveDelay = autosaveDelay
     attachedAutosaveMaxWait = autosaveMaxWait
     const unsub = store.subscribe((state, prev) => {
@@ -491,14 +580,21 @@ export function createPersistenceService(
       if (!state.isDirty) return
       schedule(state.project)
     })
-    const flushOnPageExit = () => flushPending()
+    const flushOnPageExit = () => flushPending(true)
     // Aba ESCONDIDA (trocar de app ou bloquear a tela no iPad, trocar de aba): o
     // navegador pode descartar uma página em segundo plano sem `pagehide` nenhum (o
     // Safari do iPad faz isso), e o `visibilitychange` para `hidden` é o último evento
     // com que dá para contar. Grava o que estiver pendente, como na saída. Voltar para
     // a aba não faz nada: o dedupe do `flushed` só re-arma com uma edição nova.
     const flushWhenHidden = () => {
-      if (document.visibilityState === 'hidden') flushPending()
+      if (document.visibilityState === 'hidden') flushPending(true)
+      else {
+        const current = store.getState()
+        if (adapter?.flushOnExit && flushed && current.project && current.isDirty) {
+          flushed = false
+          void persistAndMark(current.project)
+        }
+      }
     }
     // `pagehide`/`beforeunload`/`visibilitychange` só existem no browser. O Studio é
     // browser-only (`ssr:false`), mas instanciar o serviço fora do DOM (SSR, testes sem
@@ -516,6 +612,7 @@ export function createPersistenceService(
       // Unmount também drena o que está pendente — fechar um modal com o
       // Studio não pode perder a última edição.
       flushPending()
+      unregisterPersistence()
       unsub()
       if (hasWindow) {
         window.removeEventListener('pagehide', flushOnPageExit)
@@ -528,11 +625,23 @@ export function createPersistenceService(
   }
 
   async function save(): Promise<void> {
+    if (suspended) throw new Error('Este projeto está em observação.')
     // Salvar é um limite de snapshot tanto quanto pagehide/unmount. A store só é
     // lida depois que os editores materializam os buffers que ainda seguram.
     coordination.flushPendingEditorEdits?.()
+    if (store.getState().project?.kind === 'pro') {
+      try {
+        await flushProjectOperations(store)
+      } catch (error) {
+        const message = formatPersistenceError(error)
+        store.getState().markSaveFailed(message)
+        emitError(message)
+        throw error
+      }
+    }
     const project = store.getState().project
     if (!project) return
+    stageLocally(project)
     // Nem um save explícito limpa a cerca: ele pode ter sido disparado por uma
     // referência obsoleta enquanto o delete ainda disputa com um save em voo.
     // IDs novos são ULIDs; um reaproveitamento excepcional só volta a ser

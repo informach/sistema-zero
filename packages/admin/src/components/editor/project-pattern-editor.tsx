@@ -9,6 +9,37 @@ type Model = {
   inputs: (block: ServerBlockCatalogEntry) => ServerBlockCatalogEntry['connections']['children']
 }
 
+/** Imported flexible criteria stay visible instead of being edited as exact literals. */
+export function projectFieldConstraintText(
+  pattern: ProjectBlockPattern,
+  name: string,
+): string | null {
+  if (pattern.fieldAlternatives?.some((alternative) => Object.hasOwn(alternative, name)))
+    return `Combinações aceitas (campos juntos): ${pattern.fieldAlternatives
+      .map((alternative) =>
+        Object.entries(alternative)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(', '),
+      )
+      .join(' OU ')}`
+  const options = pattern.fieldOptions?.[name]
+  if (options) return `Valores aceitos: ${options.join(', ')}`
+  const range = pattern.fieldRanges?.[name]
+  if (range) {
+    const bounds: string[] = []
+    if (range.min !== undefined)
+      bounds.push(`${range.minExclusive ? 'maior que' : 'maior ou igual a'} ${range.min}`)
+    if (range.max !== undefined)
+      bounds.push(`${range.maxExclusive ? 'menor que' : 'menor ou igual a'} ${range.max}`)
+    return `Número ${bounds.join(' e ')}`
+  }
+  const text = pattern.fieldText?.[name]
+  if (!text) return null
+  return text.containsAll
+    ? `Texto não vazio; termos exigidos: ${text.containsAll.map((group) => `(${group.join(' OU ')})`).join(' E ')}`
+    : 'Texto não vazio'
+}
+
 function inputLabel(name: string) {
   const fixed: Record<string, string> = {
     BODY: 'Ações dentro do bloco',
@@ -52,7 +83,7 @@ export function ProjectPatternEditor({
   const sockets = model.inputs(block)
   return (
     <div className="space-y-2">
-      {depth > 0 && block.connections.previous !== undefined && (
+      {depth > 0 && block.connections.previous !== undefined && !pattern.beforePattern && (
         <label className="block text-sm">
           Antes de qual comando neste mesmo espaço?
           <Select
@@ -72,17 +103,32 @@ export function ProjectPatternEditor({
           </Select>
         </label>
       )}
+      {pattern.beforePattern && depth < 4 && (
+        <fieldset className="ml-2 space-y-2 border-l pl-3">
+          <legend className="text-sm">Antes deste comando na mesma sequência</legend>
+          <p className="text-sm">
+            {model.available.find((entry) => entry.type === pattern.beforePattern?.blockType)
+              ?.label ?? `Peça indisponível: ${pattern.beforePattern.blockType}`}
+          </p>
+          <ProjectPatternEditor
+            pattern={pattern.beforePattern}
+            model={model}
+            depth={depth + 1}
+            onChange={(updated) => onChange({ ...pattern, beforePattern: updated })}
+          />
+        </fieldset>
+      )}
       {depth > 0 &&
         block.parameters.map((parameter) => {
-          const options =
-            parameter.kind === 'fields' ? pattern.fieldOptions?.[parameter.name] : undefined
-          if (options)
+          const constraint =
+            parameter.kind === 'fields' ? projectFieldConstraintText(pattern, parameter.name) : null
+          if (constraint)
             return (
               <div key={`fields:${parameter.name}`} className="text-sm">
                 <span>
                   {parameter.label} ({parameter.name})
                 </span>
-                <p className="text-muted-foreground">Valores aceitos: {options.join(', ')}</p>
+                <p className="text-muted-foreground">{constraint}</p>
               </div>
             )
           const value = String(pattern[parameter.kind]?.[parameter.name] ?? '')
@@ -111,7 +157,10 @@ export function ProjectPatternEditor({
                 <Input
                   type={parameter.numeric ? 'number' : 'text'}
                   value={value}
-                  disabled={Boolean(pattern.inputBlocks?.[parameter.name])}
+                  disabled={Boolean(
+                    pattern.inputBlocks?.[parameter.name] ||
+                      pattern.inputBlocksAll?.[parameter.name],
+                  )}
                   placeholder="Qualquer valor"
                   onChange={(event) => update(event.target.value)}
                 />
@@ -120,12 +169,53 @@ export function ProjectPatternEditor({
           )
         })}
       {depth < 4 && sockets.length > 0 && (
-        <details open={Boolean(Object.keys(pattern.inputBlocks ?? {}).length)}>
+        <details
+          open={Boolean(
+            Object.keys(pattern.inputBlocks ?? {}).length ||
+              Object.keys(pattern.inputBlocksAll ?? {}).length,
+          )}
+        >
           <summary className="cursor-pointer text-sm">Conferir peças conectadas</summary>
           <p className="text-xs text-muted-foreground">
             Escolha o espaço e a peça esperada nele. Em uma sequência, a peça pode estar em qualquer
             posição dentro desse espaço.
           </p>
+          {Object.entries(pattern.inputBlocksAll ?? {}).map(([name, checks]) => (
+            <fieldset key={`all:${name}`} className="ml-2 space-y-2 border-l pl-3">
+              <legend className="text-sm">
+                {inputLabel(name)} — todas as peças no mesmo espaço
+              </legend>
+              <p className="text-xs text-muted-foreground">
+                Cada critério deve aparecer nesta mesma sequência. Isso não exige ocorrências
+                diferentes.
+              </p>
+              {checks.map((check, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: Imported criteria have no IDs; this editor only edits fixed slots, never inserts, removes or reorders them.
+                <div key={`${name}:${index}`} className="space-y-2">
+                  <p className="text-sm">
+                    {model.available.find((entry) => entry.type === check.blockType)?.label ??
+                      `Peça indisponível: ${check.blockType}`}
+                  </p>
+                  <ProjectPatternEditor
+                    pattern={check}
+                    model={model}
+                    depth={depth + 1}
+                    onChange={(updated) =>
+                      onChange({
+                        ...pattern,
+                        inputBlocksAll: {
+                          ...pattern.inputBlocksAll,
+                          [name]: checks.map((existing, current) =>
+                            current === index ? updated : existing,
+                          ),
+                        },
+                      })
+                    }
+                  />
+                </div>
+              ))}
+            </fieldset>
+          ))}
           {sockets.map((socket) => {
             const child = pattern.inputBlocks?.[socket.name]
             const candidates = model.available.filter((entry) => {
@@ -201,6 +291,7 @@ export function ProjectPatternEditor({
               .filter(
                 (socket) =>
                   !pattern.inputBlocks?.[socket.name] &&
+                  !pattern.inputBlocksAll?.[socket.name] &&
                   pattern.inputs?.[socket.name] === undefined,
               )
               .map((socket) => (

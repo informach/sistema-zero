@@ -1,0 +1,121 @@
+--- a/packages/admin/tests/e2e/python-lesson-fixture.ts
++++ b/packages/admin/tests/e2e/python-lesson-fixture.ts
+@@ -50,6 +50,10 @@
+ export interface PythonLessonFixture {
+   runId: string
+   modality: 'live' | 'recorded'
++  /** Public metadata from the Root-reviewed hosted binding, never credentials. */
++  hostedAdminOrigin?: string
++  audience?: 'adult' | 'kids'
++  variant?: 'hosted-js-pro'
+   state: 'creating-empty-lesson' | 'empty-lesson-awaiting-admin-ui' | 'enrolled-before-call'
+   title: string
+   courseId?: string
+@@ -65,7 +69,14 @@
+ }
+ 
+ /** Exact local BFF only. Authentication is owned by the real Admin browser context. */
+-export function pythonAdminOrigin(value: string) {
++export function pythonAdminOrigin(value: string, reviewedHostedOrigin?: string) {
++  if (reviewedHostedOrigin !== undefined) {
++    assert.equal(value, reviewedHostedOrigin, 'Exact Root-reviewed hosted Admin origin required')
++    const parsed = new URL(value)
++    assert.equal(parsed.protocol, 'https:')
++    assert.equal(parsed.origin, value)
++    return value
++  }
+   assert.equal(value, 'http://localhost:43107', 'Use the reviewed exact Admin parent')
+   return value
+ }
+@@ -76,7 +87,7 @@
+   fixture: PythonLessonFixture,
+   onStep: (fixture: PythonLessonFixture) => Promise<void>,
+ ) {
+-  pythonAdminOrigin(origin)
++  pythonAdminOrigin(origin, fixture.hostedAdminOrigin)
+   let calls = 0
+   return async (method: string, path: string, data?: unknown, status = 200) => {
+     assert(++calls <= 8, 'Bounded producer; never retry a mutation automatically')
+@@ -100,7 +111,7 @@
+   id: z.uuid(),
+   slug: z.string(),
+   title: z.string(),
+-  audience: z.literal('kids'),
++  audience: z.enum(['kids', 'adult']),
+   modality: z.enum(['live', 'recorded']),
+   status: z.literal('draft'),
+   careerSlot: z.null(),
+@@ -125,9 +136,10 @@
+ function ownCourse(fixture: PythonLessonFixture, value: unknown) {
+   identity(fixture.runId)
+   const course = courseTreeSchema.parse(value)
++  assert.equal(course.audience, fixture.audience ?? 'kids')
+   assert.equal(course.id, fixture.courseId)
+-  assert.equal(course.slug, `qa-python-${fixture.runId}`)
+-  assert.equal(course.title, `QA Python ${fixture.modality} ${fixture.runId}`)
++  assert.equal(course.slug, `qa-${fixture.variant === 'hosted-js-pro' ? 'js-pro' : 'python'}-${fixture.runId}`)
++  assert.equal(course.title, `QA ${fixture.variant === 'hosted-js-pro' ? 'JS Pro' : 'Python'} ${fixture.modality} ${fixture.runId}`)
+   assert.equal(course.title, fixture.title)
+   assert.equal(course.modality, fixture.modality)
+   const module = course.modules[0]
+@@ -139,7 +151,7 @@
+   assert.equal(lesson.id, fixture.lessonId)
+   assert.equal(lesson.courseId, fixture.courseId)
+   assert.equal(lesson.moduleId, fixture.moduleId)
+-  assert.equal(lesson.slug, `qa-python-${fixture.runId}`)
++  assert.equal(lesson.slug, `qa-${fixture.variant === 'hosted-js-pro' ? 'js-pro' : 'python'}-${fixture.runId}`)
+   return course
+ }
+ 
+@@ -165,16 +177,18 @@
+   request: QaRequest
+   origin: string
+   modality: 'live' | 'recorded'
++  hosted?: { adminOrigin: string; audience: 'adult' | 'kids' }
+   onStep: (fixture: PythonLessonFixture) => Promise<void>
+ }) {
+-  pythonAdminOrigin(input.origin)
++  pythonAdminOrigin(input.origin, input.hosted?.adminOrigin)
+   assert(['live', 'recorded'].includes(input.modality))
+   const runId = randomUUID()
+   const fixture: PythonLessonFixture = {
+     runId,
++    ...(input.hosted ? { hostedAdminOrigin: input.hosted.adminOrigin, audience: input.hosted.audience, variant: 'hosted-js-pro' as const } : {}),
+     modality: input.modality,
+     state: 'creating-empty-lesson',
+-    title: `QA Python ${input.modality} ${runId}`,
++    title: `QA ${input.hosted ? 'JS Pro' : 'Python'} ${input.modality} ${runId}`,
+     steps: [],
+   }
+   const send = journal(input.request, input.origin, fixture, input.onStep)
+@@ -183,10 +197,10 @@
+       'POST',
+       '/api/members/courses',
+       {
+-        slug: `qa-python-${runId}`,
++        slug: `qa-${input.hosted ? 'js-pro' : 'python'}-${runId}`,
+         title: fixture.title,
+         status: 'draft',
+-        audience: 'kids',
++        audience: input.hosted?.audience ?? 'kids',
+         modality: input.modality,
+         level: 'avancado',
+         track: '2d',
+@@ -202,7 +216,7 @@
+     await send(
+       'POST',
+       `/api/members/courses/${fixture.courseId}/modules`,
+-      { title: 'Projeto Python', summary: null },
++      { title: input.hosted ? 'Projeto JS Pro' : 'Projeto Python', summary: null },
+       201,
+     ),
+   )
+@@ -211,7 +225,7 @@
+     await send(
+       'POST',
+       `/api/members/modules/${fixture.moduleId}/lessons`,
+-      { slug: `qa-python-${runId}`, title: 'Minha execução Python', estimatedMinutes: 15 },
++      { slug: `qa-${input.hosted ? 'js-pro' : 'python'}-${runId}`, title: input.hosted ? 'Minha execução JS Pro' : 'Minha execução Python', estimatedMinutes: 15 },
+       201,
+     ),
+   )

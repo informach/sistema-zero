@@ -227,7 +227,7 @@ export const gameTwoDExamples = [
   }),
   withMetadata(gorilasVsRobotExample, {
     difficulty: 'advanced',
-    concepts: ['inteligência artificial', 'trajetória', 'turnos'],
+    concepts: ['robô adversário', 'trajetória', 'turnos'],
     genre: 'artilharia',
   }),
   withMetadata(stickHeroExample, {

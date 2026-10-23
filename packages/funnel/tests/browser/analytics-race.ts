@@ -43,7 +43,9 @@ try {
   const opened = page.waitForResponse((r) => r.url().endsWith('/api/analytics/session'))
   const measured = page.waitForResponse((r) => r.url().endsWith('/api/analytics/events') && r.ok())
   await page.goto(`${base}/kids/comunidade-dos-criadores/quiz?utm_source=qa_bootstrap_race`)
-  await page.locator('.cq-intro button.kof-btn').click()
+  // v6: a primeira pergunta (filho ou filha) fica na própria entrada; a resposta é a primeira
+  // interação.
+  await page.locator('[data-analytics-question] button:not([disabled])').first().click()
   leadId = (await (await created).json()).id
   assert.ok(leadId)
   assert.equal(await links(), 0, 'Lead creation did not have an analytical cookie')

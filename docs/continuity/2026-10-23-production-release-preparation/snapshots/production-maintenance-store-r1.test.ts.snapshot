@@ -1,0 +1,353 @@
+import { afterEach, expect, test } from 'bun:test'
+import { createHash } from 'node:crypto'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import {
+  KEY, LIMITS, PINS, SERVICES, argumentsFor, assertPreserved, intentName,
+  maintenanceStates, mutationRequest, projectContext, reserveIntent, storeOnce,
+  validateCheck, validateEvidence, validateMaps, validatePlan,
+} from './production-maintenance-store-r1.mjs'
+
+const cache = dirname(fileURLToPath(import.meta.url))
+const NOW = Date.parse('2026-10-23T02:00:00.000Z')
+const iso = (ms: number) => new Date(ms).toISOString()
+const names = Object.keys(SERVICES)
+const hash = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex')
+const proofFiles = {
+  launchers: 'production-pensa-writer-images-readonly-r2-final.json',
+  journals: 'production-old-image-migration-readonly-r1.json',
+  next: 'production-next-predeploy-readonly-r1.json',
+}
+const realProofs = Object.fromEntries(await Promise.all(Object.entries(proofFiles).map(async ([key, file]) =>
+  [key, JSON.parse(await readFile(join(cache, file), 'utf8'))],
+)))
+const refs = Object.fromEntries(await Promise.all(Object.entries(proofFiles).map(async ([key, file]) =>
+  [key, { path: `.cache/python-reference-games/${file}`, sha256: hash(await readFile(join(cache, file))) }],
+)))
+const plan = () => ({ kind: 'production-maintenance-store-plan', version: 1,
+  projectId: PINS.project, environmentId: PINS.environment, phase: PINS.phase,
+  createdAt: iso(NOW - 60_000), expiresAt: iso(NOW + 600_000),
+  maintenancePlan: { path: '.cache/python-reference-games/production-pensa-five-service-maintenance-plan-r1.md', sha256: PINS.maintenancePlanSha256 }, proofs: structuredClone(refs),
+})
+const dirs: string[] = []
+const cacheDirs: string[] = []
+async function directory() { const dir = await mkdtemp(join(tmpdir(), 'sz-maintenance-store-inert-')); dirs.push(dir); return dir }
+afterEach(async () => {
+  for (const dir of dirs.splice(0)) {
+    if (!resolve(dir).startsWith(resolve(tmpdir(), 'sz-maintenance-store-inert-'))) throw new Error('Unsafe test cleanup')
+    await rm(dir, { recursive: true })
+  }
+  for (const dir of cacheDirs.splice(0)) {
+    if (dirname(resolve(dir)) !== resolve(cache) || !/^(production-maintenance-check-members-inert-cli-|maintenance-store-inert-input-)/.test(dir.split(/[\\/]/).at(-1)!)) throw new Error('Unsafe cache test cleanup')
+    await rm(dir, { recursive: true })
+  }
+})
+
+// Synthetic provider-boundary data; this is NOT a raw provider response or a new observation.
+function rawContext() {
+  return Object.fromEntries(names.flatMap((service, index) => {
+    const target = SERVICES[service]
+    const deployment = { id: target.deployment, projectId: PINS.project, environmentId: PINS.environment,
+      serviceId: target.id, status: 'SUCCESS', deploymentStopped: false, snapshotId: target.snapshot,
+      meta: { commitHash: target.commit, imageDigest: target.image,
+        serviceManifest: { deploy: { preDeployCommand: target.preDeploy, startCommand: target.start } } },
+      instances: [{ id: target.instance, status: 'RUNNING' }],
+    }
+    return [
+      [`s${index}`, { serviceId: target.id, environmentId: PINS.environment,
+        preDeployCommand: target.preDeploy, startCommand: target.start,
+        activeDeployments: [structuredClone(deployment)], latestDeployment: deployment,
+        resolvedFileConfig: { deploymentId: target.deployment, commitHash: target.commit, fileManifest: {} },
+      }],
+      [`p${index}`, { edges: [], pageInfo: { hasNextPage: false } }],
+    ]
+  }))
+}
+const privateValue = 'inert-private-fixture-never-a-real-credential'
+function maps() {
+  return Object.fromEntries(names.map(service => [service, {
+    declared: { EXISTING_PRIVATE: privateValue, EXISTING_REFERENCE: '${{shared.SYNTHETIC}}', [KEY]: 'off' },
+    rendered: { EXISTING_PRIVATE: privateValue, EXISTING_REFERENCE: 'synthetic-resolved' , [KEY]: 'off' },
+  }]))
+}
+function baseline() { return { context: projectContext(rawContext()), maps: maps() } }
+function afterStore(before: ReturnType<typeof baseline>, service: string) {
+  const result = structuredClone(before)
+  result.maps[service].declared[KEY] = 'full'; result.maps[service].rendered[KEY] = 'full'
+  return result
+}
+function checkReceipt() {
+  return { kind: 'production-maintenance-store', version: 1, mode: 'check', service: 'members',
+    state: 'READ_ONLY_READY', operatorSha256: 'a'.repeat(64), pins: PINS, targets: SERVICES,
+    mutationAttempts: 0, skipDeploys: true, maintenanceActivatedByThisOperator: false,
+    mapsStable: true, plan: { path: '.cache/python-reference-games/inert-plan.json', sha256: 'b'.repeat(64) }, finishedAt: iso(NOW),
+  }
+}
+function deps(before: ReturnType<typeof baseline>, service = 'members') {
+  const events: string[] = [], checkpoints: object[] = [], requests: object[] = []
+  let inspections = 0
+  return { events, checkpoints, requests,
+    inspect: async () => { events.push('inspect'); return inspections++ === 0 ? structuredClone(before) : afterStore(before, service) },
+    preflight: async () => { events.push('preflight') },
+    reserve: async () => { events.push('reserve') },
+    checkpoint: async (value: object) => { events.push(`checkpoint:${(value as { state: string }).state}`); checkpoints.push(value) },
+    send: async (request: object) => { events.push('send'); requests.push(request); return true },
+  }
+}
+
+test('closed CLI accepts only phase1 service check/apply with explicit public pins', () => {
+  for (const service of names) for (const mode of ['check', 'apply']) {
+    const args = [mode, service, `production-maintenance-${mode}-${service}-inert-r1`, '.cache/python-reference-games/input.json', 'a'.repeat(64)]
+    expect(argumentsFor(args)).toEqual({ mode, service, run: args[2], input: args[3], expected: args[4] })
+    for (const invalid of [[...args, '--force'], [...args.slice(0, 4), 'A'.repeat(64)], [mode, 'auth', ...args.slice(2)], [mode, service, '../escape', ...args.slice(3)]])
+      expect(() => argumentsFor(invalid)).toThrow('ARGUMENTS_INVALID')
+  }
+  expect(() => argumentsFor(['reload', 'members', 'run'])).toThrow()
+})
+
+test('plan is pinned, production-only, closed shape and expires honestly', () => {
+  expect(validatePlan(plan(), NOW)).toEqual(plan())
+  for (const patch of [
+    { environmentId: 'f634cff6-aafb-4804-8b69-172fad4e946e' }, { projectId: 'other' }, { phase: 'reload' },
+    { createdAt: iso(NOW + 1) }, { createdAt: iso(NOW - LIMITS.proofMs - 1) },
+    { expiresAt: iso(NOW) }, { expiresAt: iso(NOW + LIMITS.proofMs + 1) }, { arbitrary: true },
+    { maintenancePlan: { ...plan().maintenancePlan, sha256: '0'.repeat(64) } },
+    { proofs: { ...refs, unexpected: refs.next } },
+  ]) expect(() => validatePlan({ ...plan(), ...patch }, NOW)).toThrow()
+})
+
+test('real sanitized receipts are admissible at their historical time, not a fresh provider proof', () => {
+  expect(() => validateEvidence(realProofs, NOW)).not.toThrow()
+  const finished = Math.min(...Object.values(realProofs).map((p: any) => Date.parse(p.finishedAt)))
+  expect(() => validateEvidence(realProofs, finished + LIMITS.proofMs + 1)).toThrow('OBSERVATIONAL_PROOF_STALE')
+  expect(hash(awaitableStaticPlanBytes)).toBe(PINS.maintenancePlanSha256)
+})
+const awaitableStaticPlanBytes = await readFile(join(cache, 'production-pensa-five-service-maintenance-plan-r1.md'))
+
+test('proof negatives reject old images, absent launcher, mutation and mismatched DB head', () => {
+  const mutations = [
+    (p: any) => { p.launchers.environmentId = 'staging' },
+    (p: any) => { p.launchers.targets.pop() },
+    (p: any) => { p.launchers.targets[0].before.imageDigest = 'sha256:' + '0'.repeat(64) },
+    (p: any) => { p.launchers.targets[0].ssh.launcherSha256 = '0'.repeat(64) },
+    (p: any) => { p.launchers.targets[0].ssh.identityChecks.environment = false },
+    (p: any) => { p.journals.migratorExecuted = true },
+    (p: any) => { p.journals.targets[0].remote.database.last.sha256 = '0'.repeat(64) },
+    (p: any) => { p.next.targets[0].startOverrideAbsent = false },
+    (p: any) => { p.next.targets[0].after.preDeploy.configuredAbsent = false },
+  ]
+  for (const mutate of mutations) { const value = structuredClone(realProofs); mutate(value); expect(() => validateEvidence(value, NOW)).toThrow() }
+})
+
+test('journal proof refuses an explicit failed remote identity check', () => {
+  const value = structuredClone(realProofs)
+  value.journals.targets[0].remote.identityChecks.environment = false
+  expect(() => validateEvidence(value, NOW)).toThrow('INSTALLED_DATABASE_JOURNAL_MISMATCH')
+})
+
+test('five active contexts pin deployment, snapshot, commit, image, instance and absence of pending', () => {
+  expect(projectContext(rawContext())).toHaveLength(5)
+  const changes = [
+    (r: any) => { r.s0.environmentId = 'staging' },
+    (r: any) => { r.s0.latestDeployment.status = 'DEPLOYING' },
+    (r: any) => { r.s0.latestDeployment.snapshotId = SERVICES.kids.snapshot },
+    (r: any) => { r.s0.latestDeployment.meta.commitHash = SERVICES.kids.commit },
+    (r: any) => { r.s0.activeDeployments.push(structuredClone(r.s0.activeDeployments[0])) },
+    (r: any) => { r.p0.edges.push({ node: { id: 'inert-new', status: 'BUILDING' } }) },
+    (r: any) => { r.p0.pageInfo.hasNextPage = true },
+    (r: any) => { r.s0.latestDeployment.instances[0].id = SERVICES.kids.instance },
+    (r: any) => { r.s0.latestDeployment.instances.push({ id: SERVICES.kids.instance, status: 'DRAINING' }) },
+    (r: any) => { r.s0.resolvedFileConfig.commitHash = SERVICES.kids.commit },
+  ]
+  for (const mutate of changes) { const value = rawContext(); mutate(value); expect(() => projectContext(value)).toThrow() }
+})
+
+test('predeploy/start are corroborated in all three sources; Next omission is not assumed null', () => {
+  // The actual Next reader requires hasOwn for both manifest fields before emitting its proof.
+  for (const [service, index] of names.map((name, index) => [name, index] as const)) {
+    for (const key of ['preDeployCommand', 'startCommand']) {
+      const wrong = rawContext(); wrong[`s${index}`][key] = 'unexpected command'
+      expect(() => projectContext(wrong)).toThrow('PREDEPLOY_OR_START_CHANGED')
+      const file = rawContext(); file[`s${index}`].resolvedFileConfig.fileManifest.deploy = { [key]: 'unexpected command' }
+      expect(() => projectContext(file)).toThrow('PREDEPLOY_OR_START_CHANGED')
+      const omitted = rawContext(); delete omitted[`s${index}`].latestDeployment.meta.serviceManifest.deploy[key]
+      expect(() => projectContext(omitted)).toThrow('COMMAND_SOURCE_UNCONFIRMED')
+      if (SERVICES[service].preDeploy === null) {
+        const empty = rawContext(); empty[`s${index}`].latestDeployment.meta.serviceManifest.deploy[key] = []
+        expect(projectContext(empty)).toHaveLength(5)
+      }
+    }
+  }
+})
+
+test('only absent/off/full literals are admitted and selected full refuses replay', () => {
+  const value = maps(); delete value.members.declared[KEY]; delete value.members.rendered[KEY]
+  expect(maintenanceStates(value, 'members')[0]).toEqual({ service: 'members', state: 'absent' })
+  value.kids.declared[KEY] = 'full'; value.kids.rendered[KEY] = 'full'
+  expect(maintenanceStates(value, 'members')[1].state).toBe('full')
+  expect(() => maintenanceStates(value, 'kids')).toThrow('SELECTED_ALREADY_FULL_RECONCILE_REQUIRED')
+  for (const invalid of ['', 'FULL', 'partial', '${{shared.MODE}}']) {
+    const bad = maps(); bad.members.declared[KEY] = invalid; bad.members.rendered[KEY] = invalid
+    expect(() => maintenanceStates(bad, 'members')).toThrow('MAINTENANCE_VALUE_UNEXPECTED')
+  }
+  const inherited = maps(); delete inherited.members.declared[KEY]
+  expect(() => maintenanceStates(inherited, 'members')).toThrow('MAINTENANCE_REFERENCE_OR_INHERITANCE_REFUSED')
+})
+
+test('all five RAM maps retain every unrelated value and literal/reference representation', () => {
+  const before = baseline(), after = afterStore(before, 'members')
+  expect(() => assertPreserved(before.maps, after.maps, 'members', true)).not.toThrow()
+  for (const service of names) for (const kind of ['declared', 'rendered']) {
+    const changed = structuredClone(after.maps); changed[service][kind].EXISTING_PRIVATE = 'changed-private'
+    expect(() => assertPreserved(before.maps, changed, 'members', true)).toThrow('VARIABLE_MAP_CHANGED')
+    const added = structuredClone(after.maps); added[service][kind].EXTRA = 'unexpected'
+    expect(() => assertPreserved(before.maps, added, 'members', true)).toThrow('VARIABLE_MAP_CHANGED')
+  }
+  const identity = maps(); identity.hub.declared.RAILWAY_ENVIRONMENT_ID = 'staging'
+  expect(() => validateMaps(identity)).toThrow('VARIABLE_IDENTITY_CHANGED')
+})
+
+test('mutation argv has only one fixed public value via stdin and skipDeploys for exact target', () => {
+  for (const service of names) {
+    const request = mutationRequest(service)
+    expect(request.stdin).toBe('full')
+    expect(request.argv).toEqual(['variable', 'set', KEY, '--stdin', '--skip-deploys', '--project', PINS.project, '--environment', PINS.environment, '--service', SERVICES[service].id, '--json'])
+    expect(request.argv.join(' ')).not.toContain(privateValue)
+    expect(intentName(service)).toBe(`production-maintenance-store-${service}.intent.json`)
+  }
+  expect(() => mutationRequest('auth')).toThrow('SERVICE_INVALID')
+})
+
+test('one store follows fresh context + maps, preflight, durable intent and receipt; no activation claim', async () => {
+  const before = baseline(), dependencies = deps(before)
+  const result = await storeOnce('members', before, dependencies)
+  expect(dependencies.events).toEqual(['inspect', 'preflight', 'reserve', 'checkpoint:STORE_FULL_INTENT', 'send', 'checkpoint:ACKNOWLEDGED_READBACK_PENDING', 'inspect', 'checkpoint:CONFIGURATION_STORED_NO_RELOAD'])
+  expect(dependencies.requests).toHaveLength(1)
+  expect(result).toMatchObject({ state: 'CONFIGURATION_STORED_NO_RELOAD', mutationAttempts: 1, readbackVerified: true, allOtherVariablesByteEqual: true, remoteOutcomeUnknown: false, maintenanceActivatedByThisOperator: false })
+  expect(JSON.stringify(dependencies.checkpoints)).not.toContain(privateValue)
+  expect(JSON.stringify(result)).not.toContain('EXISTING_REFERENCE')
+})
+
+test('changed context/maps or expired preflight before intent never sends', async () => {
+  for (const failure of ['context', 'maps', 'expired', 'reserve', 'checkpoint']) {
+    const before = baseline(), dependencies = deps(before)
+    if (failure === 'context') dependencies.inspect = async () => ({ ...before, context: [] })
+    if (failure === 'maps') dependencies.inspect = async () => { const result = structuredClone(before); result.maps.admin.rendered.EXISTING_PRIVATE = 'changed'; return result }
+    if (failure === 'expired') dependencies.preflight = async () => { throw new Error('proof expired') }
+    if (failure === 'reserve') dependencies.reserve = async () => { throw new Error('intent exists') }
+    if (failure === 'checkpoint') dependencies.checkpoint = async () => { throw new Error('disk failure') }
+    const outcome = await storeOnce('members', before, dependencies).then(() => null, error => error)
+    expect(outcome).toBeInstanceOf(Error); expect(dependencies.requests).toHaveLength(0)
+  }
+})
+
+test('lost ACK stays unknown even when readback matches and never retries', async () => {
+  const before = baseline(), dependencies = deps(before)
+  dependencies.send = async request => { dependencies.requests.push(request); throw new Error(`private transport ${privateValue}`) }
+  const result = await storeOnce('members', before, dependencies)
+  expect(result).toMatchObject({ state: 'ACK_UNKNOWN_READBACK_MATCHED_NO_REPLAY', mutationAttempts: 1, remoteOutcomeUnknown: true, cliAcknowledged: false, readbackVerified: true, maintenanceActivatedByThisOperator: false })
+  expect(dependencies.requests).toHaveLength(1)
+  expect(JSON.stringify(result)).not.toContain(privateValue)
+})
+
+test('unknown/readback failures do not claim preservation or configured full', async () => {
+  const before = baseline(), dependencies = deps(before)
+  let n = 0
+  dependencies.inspect = async () => { if (n++ === 0) return before; throw new Error(`provider ${privateValue}`) }
+  dependencies.send = async request => { dependencies.requests.push(request); throw new Error('lost') }
+  const result = await storeOnce('members', before, dependencies)
+  expect(result).toMatchObject({ state: 'ACK_UNKNOWN_READBACK_UNCONFIRMED_NO_REPLAY', remoteOutcomeUnknown: true, readbackVerified: false, configuredFull: false, allOtherVariablesByteEqual: false, failureCode: 'LOCAL_OR_PROVIDER_UNCONFIRMED' })
+  expect(dependencies.requests).toHaveLength(1)
+})
+
+test('ACK with changed unrelated variable or deployment remains unqualified', async () => {
+  for (const kind of ['maps', 'deployment', 'post-checkpoint']) {
+    const before = baseline(), dependencies = deps(before); let n = 0
+    dependencies.inspect = async () => {
+      if (n++ === 0) return before
+      const after = afterStore(before, 'members')
+      if (kind === 'maps') after.maps.kids.rendered.EXISTING_PRIVATE = 'raced'
+      if (kind === 'deployment') after.context = []
+      return after
+    }
+    const checkpoint = dependencies.checkpoint
+    dependencies.checkpoint = async value => { if (kind === 'post-checkpoint' && (value as any).state === 'ACKNOWLEDGED_READBACK_PENDING') throw new Error('disk'); await checkpoint(value) }
+    const result = await storeOnce('members', before, dependencies)
+    expect(result.state).toBe('ACKNOWLEDGED_READBACK_UNCONFIRMED')
+    expect(result.maintenanceActivatedByThisOperator).toBe(false)
+    expect(dependencies.requests).toHaveLength(1)
+  }
+})
+
+test('per-service permanent intent survives ACK loss; a different run/check cannot send twice', async () => {
+  const dir = await directory(), before = baseline(), first = deps(before)
+  first.reserve = () => reserveIntent(dir, 'members', { run: 'first', checkSha: 'a'.repeat(64) })
+  first.send = async request => { first.requests.push(request); throw new Error('lost ACK') }
+  await storeOnce('members', before, first)
+  const second = deps(before)
+  second.reserve = () => reserveIntent(dir, 'members', { run: 'second', checkSha: 'b'.repeat(64) })
+  const outcome = await storeOnce('members', before, second).then(() => null, error => error)
+  expect(outcome.message).toBe('PERMANENT_INTENT_EXISTS_OR_UNAVAILABLE')
+  expect(first.requests).toHaveLength(1); expect(second.requests).toHaveLength(0)
+  expect(JSON.parse(await readFile(join(dir, intentName('members')), 'utf8')).run).toBe('first')
+  await reserveIntent(dir, 'kids', { run: 'different-service' })
+  expect(JSON.parse(await readFile(join(dir, intentName('kids')), 'utf8')).run).toBe('different-service')
+})
+
+test('check receipt binds service/operator/public context and short freshness only', () => {
+  const receipt = checkReceipt()
+  expect(validateCheck(receipt, 'members', 'a'.repeat(64), NOW)).toEqual(receipt.plan)
+  for (const patch of [{ service: 'kids' }, { operatorSha256: 'b'.repeat(64) }, { mutationAttempts: 1 }, { skipDeploys: false }, { mapsStable: false }, { finishedAt: iso(NOW - LIMITS.checkMs - 1) }, { finishedAt: iso(NOW + 1) }])
+    expect(() => validateCheck({ ...receipt, ...patch }, 'members', 'a'.repeat(64), NOW)).toThrow()
+  // Secret maps/digests intentionally do not cross processes. Apply validates its own RAM baseline.
+  expect(JSON.stringify(receipt)).not.toContain(privateValue)
+})
+
+test('exclusive wx intent has exactly one winner under concurrent local attempts', async () => {
+  const dir = await directory()
+  const result = await Promise.allSettled([
+    reserveIntent(dir, 'hub', { attempt: 1 }),
+    reserveIntent(dir, 'hub', { attempt: 2 }),
+  ])
+  expect(result.filter(item => item.status === 'fulfilled')).toHaveLength(1)
+  expect(result.filter(item => item.status === 'rejected')).toHaveLength(1)
+  expect([1, 2]).toContain(JSON.parse(await readFile(join(dir, intentName('hub')), 'utf8')).attempt)
+})
+
+test('Node24 import and invalid local file pins never invoke CLI or fetch', async () => {
+  const node = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'
+  const inputDir = await mkdtemp(join(cache, 'maintenance-store-inert-input-')); cacheDirs.push(inputDir)
+  const inputPath = join(inputDir, 'input.json')
+  await writeFile(inputPath, JSON.stringify(plan()))
+  const operator = pathToFileURL(join(cache, 'production-maintenance-store-r1.mjs')).href
+  const caseId = crypto.randomUUID()
+  const cases = [
+    { suffix: 'tamper', input: `.cache/python-reference-games/${inputDir.split(/[\\/]/).at(-1)}/input.json`, expected: '0'.repeat(64), code: 'PINNED_FILE_CHANGED' },
+    { suffix: 'missing', input: `.cache/python-reference-games/${inputDir.split(/[\\/]/).at(-1)}/absent.json`, expected: '0'.repeat(64), code: 'LOCAL_OR_PROVIDER_UNCONFIRMED' },
+    { suffix: 'outside', input: '.cache/python-reference-games/../../package.json', expected: '0'.repeat(64), code: 'REFERENCE_OUTSIDE_CACHE' },
+  ]
+  for (const item of cases) {
+    const run = `production-maintenance-check-members-inert-cli-${caseId}-${item.suffix}`
+    cacheDirs.push(join(cache, run))
+    const code = `import {createRequire,syncBuiltinESMExports} from 'node:module';
+      const require=createRequire(import.meta.url);let calls=0;
+      require('node:child_process').execFile=()=>{calls++;throw new Error('CLI_FORBIDDEN_IN_TEST')};
+      syncBuiltinESMExports();globalThis.fetch=()=>{calls++;throw new Error('FETCH_FORBIDDEN_IN_TEST')};
+      const mod=await import(${JSON.stringify(operator)});if(calls!==0)throw new Error('IMPORT_SIDE_EFFECT');
+      const result=await mod.main(${JSON.stringify(['check', 'members', run, item.input, item.expected])});
+      if(result!==1||calls!==0)throw new Error('INVALID_OFFLINE_BOUNDARY');`
+    const child = Bun.spawn([node, '--input-type=module', '--eval', code], { stdout: 'pipe', stderr: 'pipe', cwd: resolve(cache, '../..') })
+    const timer = setTimeout(() => child.kill(), 5000)
+    const [stdout, stderr, status] = await Promise.all([new Response(child.stdout).text(), new Response(child.stderr).text(), child.exited])
+    clearTimeout(timer)
+    expect(status).toBe(0); expect(stderr).toBe('')
+    const receipt = JSON.parse(await readFile(join(cache, run, 'receipt.json'), 'utf8'))
+    expect(receipt.state).toBe('PREFLIGHT_REFUSED')
+    expect(receipt.failureCode).toBe(item.code)
+    expect(receipt.graphqlReadCalls).toBe(0)
+    expect(receipt.mutationAttempts).toBe(0)
+    expect(stdout).not.toContain(privateValue)
+  }
+})

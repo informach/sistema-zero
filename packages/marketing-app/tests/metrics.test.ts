@@ -46,6 +46,31 @@ describe('buildFollowersChartRows', () => {
 })
 
 describe('followersDelta / followersDeltaByNetwork', () => {
+  it('ausência no extremo não vira queda nem delta parcial de uma rede', () => {
+    const incomplete: FollowersSeriesView['series'][number] = {
+      accountId: 'ig-missing',
+      network: 'instagram',
+      displayName: 'Conta',
+      points: [
+        { date: '2026-07-01', followers: 100 },
+        { date: '2026-07-03', followers: null },
+      ],
+    }
+    expect(followersDelta(incomplete)).toBeNull()
+    expect(
+      followersDeltaByNetwork({ series: [...view.series, incomplete] }, 'instagram'),
+    ).toBeNull()
+    expect(buildFollowersChartRows({ series: [incomplete] }).at(-1)?.['ig-missing']).toBeNull()
+    expect(
+      followersDelta({
+        ...incomplete,
+        points: [
+          { date: '2026-07-01', followers: 100 },
+          { date: '2026-07-03', followers: 0 },
+        ],
+      }),
+    ).toBe(-100)
+  })
   it('delta = último − primeiro; queda vira negativo', () => {
     expect(followersDelta(view.series[0] as FollowersSeriesView['series'][number])).toBe(30)
     expect(followersDelta(view.series[1] as FollowersSeriesView['series'][number])).toBe(-10)

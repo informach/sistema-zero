@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "name": "fix-bug",
+  "description": "Investigar e corrigir um bug, executar um check declarado e revisar o resultado integrado.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "task": {
+        "type": "string"
+      },
+      "check": {
+        "type": "string"
+      },
+      "checkDigest": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      }
+    },
+    "required": ["task", "check", "checkDigest"],
+    "additionalProperties": false
+  },
+  "nodes": [
+    {
+      "id": "fix",
+      "kind": "agent",
+      "mode": "build",
+      "prompt": {
+        "$ref": "inputs.task"
+      },
+      "dependsOn": [],
+      "context": [],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["summary", "evidence"],
+        "additionalProperties": false
+      }
+    },
+    {
+      "id": "check",
+      "kind": "capability",
+      "dependsOn": ["fix"],
+      "tool": "project_check_run",
+      "input": {
+        "name": {
+          "$ref": "inputs.check"
+        },
+        "expectedDigest": {
+          "$ref": "inputs.checkDigest"
+        }
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": ["code"],
+        "properties": {
+          "code": {
+            "const": 0
+          }
+        }
+      }
+    },
+    {
+      "id": "review",
+      "kind": "agent",
+      "mode": "plan",
+      "prompt": "Revise o diff atual e as evidências do check. Identifique riscos e descreva somente o que foi validado. Não altere arquivos nesta revisão.",
+      "dependsOn": ["check"],
+      "context": [
+        {
+          "$ref": "artifacts.check"
+        },
+        {
+          "$ref": "artifacts.fix"
+        }
+      ],
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["summary", "evidence"],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

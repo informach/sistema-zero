@@ -1,10 +1,12 @@
 import 'server-only'
+import { retryAfterHeaders } from '@sistemazero/marketing-contracts'
 import { NextResponse } from 'next/server'
 import { normalizeUpstreamError } from '@/lib/upstream'
 
 interface UpstreamResult {
   status: number
   body: unknown
+  retryAfterMs?: number
 }
 
 /**
@@ -14,7 +16,10 @@ interface UpstreamResult {
  * corpo interno do upstream. Use SEMPRE no pass-through em vez de
  * `NextResponse.json(body, { status })`. (Padrão herdado do admin.)
  */
-export function forwardUpstream({ status, body }: UpstreamResult): NextResponse {
+export function forwardUpstream({ status, body, retryAfterMs }: UpstreamResult): NextResponse {
   if (status < 400) return NextResponse.json(body, { status })
-  return NextResponse.json(normalizeUpstreamError(body), { status })
+  return NextResponse.json(normalizeUpstreamError(body), {
+    status,
+    headers: retryAfterHeaders(retryAfterMs),
+  })
 }

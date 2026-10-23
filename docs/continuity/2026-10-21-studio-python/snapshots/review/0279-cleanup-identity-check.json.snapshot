@@ -1,0 +1,215 @@
+{
+  "at": "2026-10-20T18:15:07.8172468Z",
+  "checkedIdentities": [
+    {
+      "processId": 1680,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:39.503191-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 4564,
+      "originalName": "node.exe",
+      "originalCreation": "2026-10-20T15:13:38.523482-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 13264,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:29.891617-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 13396,
+      "originalName": "bun.exe",
+      "originalCreation": "2026-10-20T15:13:25.84593-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 14508,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:39.060305-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 15356,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:05.63314-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 17880,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:07.960416-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 19916,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:48.281657-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 20380,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:29.883466-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 21232,
+      "originalName": "cmd.exe",
+      "originalCreation": "2026-10-20T15:13:25.827487-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 22940,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:05.325719-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 24408,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:40.981911-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 24536,
+      "originalName": "node.exe",
+      "originalCreation": "2026-10-20T15:13:27.740764-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 30504,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:48.242025-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 31564,
+      "originalName": "cmd.exe",
+      "originalCreation": "2026-10-20T15:13:27.721073-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 33724,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:05.685858-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 34776,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:49.566586-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 35424,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:07.356943-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 36444,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:39.587254-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 36536,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:39.209618-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 36816,
+      "originalName": "node.exe",
+      "originalCreation": "2026-10-20T15:14:04.53569-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 37024,
+      "originalName": "node.exe",
+      "originalCreation": "2026-10-20T15:13:36.283-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 37272,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:05.188508-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 38480,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:05.978568-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 38672,
+      "originalName": "msedge.exe",
+      "originalCreation": "2026-10-20T15:14:05.623559-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 39532,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:39.514309-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 40356,
+      "originalName": "node.exe",
+      "originalCreation": "2026-10-20T15:13:25.039806-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 41588,
+      "originalName": "conhost.exe",
+      "originalCreation": "2026-10-20T15:13:25.045756-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    },
+    {
+      "processId": 41784,
+      "originalName": "chrome.exe",
+      "originalCreation": "2026-10-20T15:13:48.274002-03:00",
+      "sameOwnedIdentityAlive": false,
+      "pidReusedByOtherIdentity": false
+    }
+  ],
+  "sameOwnedAliveCount": 0,
+  "listenersOnOwnedPorts": [],
+  "reusedPids": [],
+  "runnerPid": 40356,
+  "runnerStillPresent": false,
+  "browserAcceptance": "16 actual cases; exact report preserved",
+  "noAdditionalExecution": true
+}

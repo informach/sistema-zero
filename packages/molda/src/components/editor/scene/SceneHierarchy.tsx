@@ -2,21 +2,26 @@ import { useId, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { ModelSceneNode } from '../../../scene/document'
 import type { SceneIndex } from '../../../scene/graph'
-import { Button } from '../../ui/Button'
 import {
   Box,
+  ChevronDown,
+  ChevronRight,
   Circle,
   Crosshair,
   Cylinder,
   Eye,
   EyeOff,
-  Group,
+  Folder,
   Lock,
+  LockOpen,
   type LucideIcon,
   Spline,
   TriangleRight,
   Waypoints,
 } from '../../ui/icons'
+import { SceneHierarchyName } from './SceneHierarchyName'
+import { useSceneHierarchyDrag } from './useSceneHierarchyDrag'
+import type { SceneHierarchyOrganization } from './useSceneHierarchyOrganization'
 
 /** A forma que cada linha mostra no ladrilho colorido: a da geometria, ou o tipo do nó. */
 export type SceneHierarchyShape =
@@ -29,43 +34,54 @@ export type SceneHierarchyShape =
   | 'group'
   | 'locator'
 
-const SHAPE_LOOK: Record<SceneHierarchyShape, [LucideIcon, string]> = {
-  box: [Box, 'var(--mld-fill-box)'],
-  wedge: [TriangleRight, 'var(--mld-fill-wedge)'],
-  cylinder: [Cylinder, 'var(--mld-fill-cylinder)'],
-  sphere: [Circle, 'var(--mld-fill-sphere)'],
-  mesh: [Waypoints, 'var(--mld-fill-special)'],
-  path: [Spline, 'var(--mld-fill-special)'],
-  group: [Group, 'var(--mld-fill-group)'],
-  locator: [Crosshair, 'var(--mld-fill-group)'],
+/** O ícone de linha de cada forma e a TINTA dele (a cor da forma, que segue o tema). */
+export const SHAPE_LOOK: Record<SceneHierarchyShape, [LucideIcon, string]> = {
+  box: [Box, 'var(--mld-shape-box)'],
+  wedge: [TriangleRight, 'var(--mld-shape-wedge)'],
+  cylinder: [Cylinder, 'var(--mld-shape-cylinder)'],
+  sphere: [Circle, 'var(--mld-shape-sphere)'],
+  mesh: [Waypoints, 'var(--mld-shape-special)'],
+  path: [Spline, 'var(--mld-shape-special)'],
+  group: [Folder, 'var(--mld-shape-cylinder)'],
+  locator: [Crosshair, 'var(--mld-shape-group)'],
 }
 
 /**
  * Native nested lists/disclosures: every action is a real focusable button, including on touch.
  *
- * Cada linha é um CARTÃO (a tela-modelo, 11/09/2026): o ladrilho na cor da forma com o ícone
- * branco, o nome, o tipo embaixo e o olho no fim. O olho é só INDICADOR (mostrar e esconder
- * moram em "Mais sobre a peça"): um segundo botão na linha seria um alvo pequeno ao lado do
- * grande, e o nome acessível da linha continua o de sempre ("Escolher corpo").
+ * Cada linha é a ÁRVORE dos prints (15/10/2026): o ícone de linha na cor da forma (a pasta
+ * para o grupo), o nome, e o olho e o cadeado no fim. Sem o cartão alto com o tipo embaixo, que
+ * fazia uma lista de seis peças rolar. No Modelar olho e cadeado são botões; nas outras abas
+ * só aparecem como INDICADOR quando a peça está escondida ou travada. O nome acessível da linha
+ * continua o de sempre ("Escolher corpo"), e o estado vai no `title`.
  */
 export function SceneHierarchy({
   index,
   selected,
   onSelect,
   shapeOf,
+  onFlag,
+  poseCounts,
+  paintColors,
+  organization,
 }: {
   index: SceneIndex<ModelSceneNode>
   selected: readonly string[]
   onSelect(id: string, additive: boolean): void
   /** A forma de cada peça, que só a oficina sabe (a geometria mora fora do grafo). */
   shapeOf?(node: ModelSceneNode): SceneHierarchyShape
+  onFlag?(id: string, flag: 'hidden' | 'locked', value: boolean): void
+  poseCounts?: ReadonlyMap<string, number>
+  paintColors?: ReadonlyMap<string, readonly string[]>
+  organization?: SceneHierarchyOrganization
 }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set())
   const prefix = useId()
   const copy = COPY.scene
+  const drag = useSceneHierarchyDrag(organization?.owner ?? index, selected, organization)
   function branch(ids: readonly string[], depth = 0) {
     return (
-      <ul className="space-y-1.5">
+      <ul>
         {ids.map((id) => {
           const node = index.nodes.get(id)
           if (!node) return null
@@ -78,11 +94,25 @@ export function SceneHierarchy({
           const Visibility = node.hidden ? EyeOff : Eye
           return (
             <li key={id}>
-              <div className="flex min-h-11 items-center gap-1">
-                {children.length > 0 && (
-                  <Button
-                    variant="ghost"
-                    className="min-w-11 shrink-0 px-1"
+              <fieldset
+                aria-label={node.name}
+                className="mld-hierarchy-row flex min-w-0 items-center gap-0.5"
+                data-drop-target={drag.target === id || undefined}
+                onDragOver={(event) => drag.over(event, id)}
+                onDragLeave={drag.leave}
+                onDrop={(event) => {
+                  if (drag.drop(event, id))
+                    setCollapsed((before) => {
+                      const next = new Set(before)
+                      next.delete(id)
+                      return next
+                    })
+                }}
+              >
+                {children.length > 0 ? (
+                  <button
+                    type="button"
+                    className="mld-hierarchy-toggle grid shrink-0 place-items-center rounded-lg text-mld-muted hover:bg-mld-bg hover:text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
                     aria-label={open ? copy.hide(node.name) : copy.show(node.name)}
                     aria-expanded={open}
                     aria-controls={childId}
@@ -95,46 +125,110 @@ export function SceneHierarchy({
                       })
                     }
                   >
-                    {open ? '▾' : '▸'}
-                  </Button>
+                    {open ? (
+                      <ChevronDown aria-hidden="true" className="size-4" />
+                    ) : (
+                      <ChevronRight aria-hidden="true" className="size-4" />
+                    )}
+                  </button>
+                ) : (
+                  <span aria-hidden="true" className="mld-hierarchy-toggle shrink-0" />
                 )}
-                <button
+                <SceneHierarchyName
+                  key={id}
+                  id={id}
+                  name={node.name}
+                  organization={organization}
                   type="button"
                   aria-label={copy.select(node.name)}
                   aria-pressed={chosen}
-                  className="mld-piece flex min-h-13 min-w-0 flex-1 items-center gap-2.5 px-2 py-1.5 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent"
+                  title={[
+                    copy.nodeKind[node.kind],
+                    node.hidden ? copy.hiddenHint : '',
+                    node.locked ? copy.lockedHint : '',
+                    organization ? 'Duplo clique ou F2 para renomear' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                  className={`mld-piece flex-1 ${node.hidden ? 'text-mld-muted' : ''}`}
+                  draggable={organization?.canDrag(id) ?? false}
+                  onDragStart={(event) => drag.start(event, id)}
+                  onDragEnd={drag.end}
                   onClick={(event) =>
                     onSelect(id, event.shiftKey || event.ctrlKey || event.metaKey)
                   }
                 >
-                  <span
+                  <Icon
                     aria-hidden="true"
-                    className="grid size-8 shrink-0 place-items-center rounded-lg text-white"
-                    style={{ background: fill }}
-                  >
-                    <Icon className="size-4" />
+                    className="size-[1.125rem] shrink-0"
+                    style={{ color: fill }}
+                  />
+                  <span className={`min-w-0 flex-1 truncate ${node.hidden ? 'opacity-60' : ''}`}>
+                    {node.name}
                   </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-extrabold text-mld-text">
-                      {node.name}
+                  {poseCounts && (
+                    <span className="shrink-0 text-[11px] text-mld-muted">
+                      {poseCounts.get(id) ?? 0} poses
                     </span>
-                    <span className="block text-xs text-mld-muted">
-                      {copy.nodeKind[node.kind]}
-                      {node.hidden ? ` · ${copy.hiddenHint}` : ''}
-                      {node.locked ? ` · ${copy.lockedHint}` : ''}
+                  )}
+                  {paintColors?.get(id)?.length ? (
+                    <span
+                      role="img"
+                      aria-label={`Cores de ${node.name}: ${paintColors.get(id)!.join(', ')}`}
+                      className="flex shrink-0 -space-x-1"
+                    >
+                      {paintColors.get(id)!.map((color) => (
+                        <span
+                          key={color}
+                          className="size-3 rounded-full border border-mld-surface"
+                          style={{ background: color }}
+                        />
+                      ))}
                     </span>
-                  </span>
-                  {node.locked && (
+                  ) : null}
+                  {!onFlag && !poseCounts && node.locked && (
                     <Lock aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
                   )}
-                  <Visibility aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
-                </button>
-              </div>
+                  {!onFlag && !poseCounts && node.hidden && (
+                    <EyeOff aria-hidden="true" className="size-4 shrink-0 text-mld-muted" />
+                  )}
+                </SceneHierarchyName>
+                {onFlag && (
+                  <>
+                    <button
+                      type="button"
+                      className="mld-tree-action"
+                      // Nome FIXO com `aria-pressed`: "Ocultar caixa, pressionado" é a peça
+                      // escondida. Trocar o nome junto do estado lia ao contrário.
+                      aria-label={`Ocultar ${node.name}`}
+                      title={node.hidden ? `Mostrar ${node.name}` : `Ocultar ${node.name}`}
+                      aria-pressed={node.hidden}
+                      onClick={() => onFlag(id, 'hidden', !node.hidden)}
+                    >
+                      <Visibility aria-hidden="true" className="size-4" />
+                    </button>
+                    <button
+                      type="button"
+                      className="mld-tree-action"
+                      aria-label={`Travar ${node.name}`}
+                      title={node.locked ? `Destravar ${node.name}` : `Travar ${node.name}`}
+                      aria-pressed={node.locked}
+                      onClick={() => onFlag(id, 'locked', !node.locked)}
+                    >
+                      {node.locked ? (
+                        <Lock aria-hidden="true" className="size-4" />
+                      ) : (
+                        <LockOpen aria-hidden="true" className="size-4" />
+                      )}
+                    </button>
+                  </>
+                )}
+              </fieldset>
               {children.length > 0 && (
                 <div
                   id={childId}
                   hidden={!open}
-                  className={depth < 4 ? 'mt-1.5 ml-3 border-l border-mld-border pl-1' : 'mt-1.5'}
+                  className={depth < 4 ? 'mld-hierarchy-children' : undefined}
                 >
                   {branch(children, depth + 1)}
                 </div>
@@ -145,5 +239,21 @@ export function SceneHierarchy({
       </ul>
     )
   }
-  return <section aria-label={copy.hierarchy}>{branch(index.roots)}</section>
+  return (
+    <section aria-label={copy.hierarchy} className="mld-hierarchy">
+      {drag.active && (
+        <fieldset
+          aria-label="Fora dos grupos"
+          className="mld-hierarchy-root-drop"
+          data-drop-target={drag.target === null || undefined}
+          onDragOver={(event) => drag.over(event, null)}
+          onDragLeave={drag.leave}
+          onDrop={(event) => drag.drop(event, null)}
+        >
+          Soltar fora dos grupos
+        </fieldset>
+      )}
+      {branch(index.roots)}
+    </section>
+  )
 }

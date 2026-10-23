@@ -8,7 +8,6 @@ import type {
 } from '../../src/domain/ports/tool-usage-repository.port'
 import type { InMemoryCreationsRepository } from './creations-in-memory'
 import type { InMemoryCourseRepository, InMemoryStudioSubmissionRepository } from './in-memory'
-import type { InMemoryPensaRepository } from './pensa-in-memory'
 
 /**
  * Espelho fiel do `DrizzleToolUsageRepository` sobre os fakes existentes:
@@ -18,7 +17,10 @@ import type { InMemoryPensaRepository } from './pensa-in-memory'
  */
 export class InMemoryToolUsageRepository implements ToolUsageRepository {
   constructor(
-    private readonly pensa: InMemoryPensaRepository,
+    private readonly pensa: {
+      projects: Map<string, { userId: string; updatedAt: Date }>
+      completedProjects: Set<string>
+    },
     private readonly creations: InMemoryCreationsRepository,
     private readonly submissions: InMemoryStudioSubmissionRepository,
     private readonly courses: InMemoryCourseRepository,
@@ -29,19 +31,18 @@ export class InMemoryToolUsageRepository implements ToolUsageRepository {
     const out = new Map<string, LearnerPensaUsage>()
     for (const p of this.pensa.projects.values()) {
       if (!set.has(p.userId)) continue
-      const prev = out.get(p.userId) ?? { projects: 0, cyclesCompleted: 0, lastActivityAt: null }
+      const prev = out.get(p.userId) ?? { projects: 0, projectsCompleted: 0, lastActivityAt: null }
       prev.projects += 1
       if (!prev.lastActivityAt || p.updatedAt.getTime() > prev.lastActivityAt.getTime()) {
         prev.lastActivityAt = p.updatedAt
       }
       out.set(p.userId, prev)
     }
-    for (const c of this.pensa.cycles.values()) {
-      if (c.stage !== 'done') continue
-      const project = this.pensa.projects.get(c.projectId)
+    for (const id of this.pensa.completedProjects) {
+      const project = this.pensa.projects.get(id)
       if (!project) continue
       const prev = out.get(project.userId)
-      if (prev) prev.cyclesCompleted += 1
+      if (prev) prev.projectsCompleted += 1
     }
     return out
   }

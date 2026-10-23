@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-caixa-decide",
+    "video-ligar-raio-x",
+    "video-ajustar-area",
+    "video-retirar-contorno",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-caixa-decide-K1",
+      "clipe": "video-caixa-decide",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "o cacto até aparecer BATEU! Os desenhos ainda nem se encostaram: a área pega um pedaço vazio em volta do desenho.",
+      "ancoraDepois": "Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só",
+      "falaPrincipal": "Dá para diminuir só essa área?",
+      "falaPersonagem": "Dá para diminuir só essa área?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-retirar-contorno-K1",
+      "clipe": "video-retirar-contorno",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.",
+      "ancoraDepois": "Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos",
+      "falaPrincipal": "Como eu tiro só o contorno?",
+      "falaPersonagem": "Como eu tiro só o contorno?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

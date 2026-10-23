@@ -1,0 +1,339 @@
+{
+  "version": 1,
+  "createdUtc": "2026-10-21T08:15:59.2526216Z",
+  "sourceWorktree": "C:\\Users\\tocha\\projects\\sistema-zero-python-review",
+  "head": "5c81f089edce0bc5822692a85fa7a0e8d1e4a597",
+  "branch": "feat/qa-native-job-owner",
+  "scope": "Authoring Python/JS and completed staging selector; no operational authority",
+  "prohibited": [
+    "tokens",
+    "cookies",
+    "storageState",
+    "raw logs",
+    "private keys",
+    "provider envelopes",
+    "old grants or start authorities"
+  ],
+  "files": [
+    {
+      "path": "package.json",
+      "kind": "git-snapshot-reference",
+      "sha256": "535d00ee2316939dbb991f9d524e85bb743811774beec115ae206c107c3358d5"
+    },
+    {
+      "path": "bun.lock",
+      "kind": "git-snapshot-reference",
+      "sha256": "8a989c05e39bd7697878ee147575ff00dfa7830d6d0e96b3abbbdad14cb47dfd"
+    },
+    {
+      "path": "docs/qa/2026-10-20-studio-python-authoring-browser.md",
+      "kind": "git-snapshot-reference",
+      "sha256": "800b140d4b675944efbb755e4503bcc8a1c3327d6a1cc953d9e30e9ef5c841f8"
+    },
+    {
+      "path": "docs/plans/2026-10-16-estudio-python-validacao-entregas.md",
+      "kind": "git-snapshot-reference",
+      "sha256": "d4e5bdf531641216236065a9e15bafeb3b33f61a31f39fcb3582d02616f6131c"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-19-studio-python-final-acceptance.md",
+      "kind": "git-snapshot-reference",
+      "sha256": "818bd436676673b2c88d791db0864cfb11ace4fc3621300d904fd3cde299b8ff"
+    },
+    {
+      "path": "docs/runbooks/staging-deploy-baseline.md",
+      "kind": "git-snapshot-reference",
+      "sha256": "2e6136a18ee06eedb41237f261fe31e6811ebf4a8db0ec202916e940516b0a98"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-21-staging-successful-baseline.md",
+      "kind": "git-snapshot-reference",
+      "sha256": "84b21818a3896bfe66843dcddedf595d1c34e99093b9e4e606f3645ffcd79933"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-21-qa-windows-native-job-ownership.md",
+      "kind": "git-snapshot-reference",
+      "sha256": "81c29c2c3755570e22991906e4d2212ed81598802dfaa3d20c7d5e10c2051cb8"
+    },
+    {
+      "path": "docs/superpowers/plans/2026-10-21-qa-lessons-native-callers.md",
+      "kind": "preserve-untracked-other-owner",
+      "sha256": "750876520a847890ea7b3bc76a6c499df0e16ede0c0002808606f7eb8c8475d4"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "kind": "git-snapshot-reference",
+      "sha256": "c1a3985d267c6bad0e05be8fe7a250780b49dd7c53b5c5dac29016d152717e40"
+    },
+    {
+      "path": ".github/staging-deploy-bootstrap-v1.json",
+      "kind": "git-snapshot-reference",
+      "sha256": "618957438f7326eed40592d3b97652c011e0cc6542d1108d2747106c1335c475"
+    },
+    {
+      "path": ".github/staging-deploy-epoch-v1.json",
+      "kind": "git-snapshot-reference",
+      "sha256": "4c506f5d3a2367ee3b6e104f1a0dcab9a5d096f6758ac48cc48855a1b916baf1"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-baseline.mjs",
+      "kind": "git-snapshot-reference",
+      "sha256": "fff676a2b385fcc4fb7d2a0e4bd23b347e960c57638cd27290f6de4114cc38ed"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-baseline.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "e66c0dd93c6e1498c8f02087d4a618825bbee7c98c98b854a8e3a1a812b9b35a"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-transport.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "5d8cdfbf95679d26585fc71e013314944d5475fb2dc53f053b3882a57beb1f1d"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-backlog.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "ecc48a21d4908ef92a8408fc5a90834f713b4821514d0d385bacf549a2ccd256"
+    },
+    {
+      "path": "scripts/ci/staging-deploy-workflow.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "10fe03b7cc568ab29996c7bd141b3cdcf4b40d75989577a39f30dc0dfd5dedac"
+    },
+    {
+      "path": "packages/studio/src/components/assets/AssetsPanel.tsx",
+      "kind": "git-snapshot-reference",
+      "sha256": "eeff1503cc26d810ae78a0a2fff1b174aaa0b8e8a3c38626a7906b969952bcf3"
+    },
+    {
+      "path": "packages/studio/src/components/assets/__tests__/AssetsPanelEditDrawing.cases.tsx",
+      "kind": "git-snapshot-reference",
+      "sha256": "f782a67af418d46260543ee232346a3267bd477df6b6d0c4d068c7bd3f6157f4"
+    },
+    {
+      "path": "packages/studio/src/studio/tutorSafety.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "78bb4a4a31b44866b0b28bbff4f054df9206111e76836f5f427279827775fb62"
+    },
+    {
+      "path": "packages/studio/src/studio/tutorSafetyPython.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "8454a9b09e24cfeeabb1b670d44fbd63c074f5233162b15fefd7d9cd27f3492e"
+    },
+    {
+      "path": "packages/studio/src/studio/tutorProContext.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "d1ebbf161bb000d5928576f13af1a33b816e9a06eeb28dad22a3a497c85a463b"
+    },
+    {
+      "path": "packages/member-shell/src/server/zappy-python.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "8b76d3d9c1c5f3f1b4989ad502ed4e352c6eb13d5cd6410063ea8773eb7cdd66"
+    },
+    {
+      "path": "packages/member-shell/src/server/zappy-safety.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "e49a3b71dd2f867880ef9880c3b986f54977ae10b294f64d80bb2156d528efed"
+    },
+    {
+      "path": "packages/member-shell/tests/studio-zappy-python.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "daada532252422317f067305f330accbb59d54c9dec923847a878bca623ee847"
+    },
+    {
+      "path": "packages/studio/src/export/pythonWeb.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "b24dee6bbbfd53df1c9cb4f218ecc87fcfcd4fe5e64afe9b2c2d8d8d79758f25"
+    },
+    {
+      "path": "packages/studio/src/persistence/service.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "36b266a27d5dd3ad0f6f94d737b262cc92c14e5add8bd8aa9c667d1ab0adbc74"
+    },
+    {
+      "path": "packages/studio/src/python/blocks/workspaceDraft.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "a8dddc0704e27819c62ec11a489b21e3b535df7df1b40bb3fbcdf45fa6928d60"
+    },
+    {
+      "path": "packages/studio/src/python/blocks/workspaceDraftPersistence.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "a6d6b784e3e93e1d0602ef1806176f46e4bfb2bdb7536f5dd0302370d181e67f"
+    },
+    {
+      "path": "packages/studio/src/state/bridgeAuthority.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "89cf07106c344119e31291df2547e90a3093ff3938ba52c450c40147d0f0c48b"
+    },
+    {
+      "path": "packages/studio/src/state/persistence.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "7d00a4eccb5b8d6f547a8457cbbee9dbb268776579887a330d310c0fdc8c5a13"
+    },
+    {
+      "path": "packages/studio/src/state/projectStore.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "879a5cb3af7b6ebe2f35c6961e15f348a602d40a4f39ea32d75beadab37dd2ea"
+    },
+    {
+      "path": "packages/studio/src/python/extensions/operations.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "32b48449909732d5d7692c6b1172d4f841e5bcf5456db7b4d8297e87196378b9"
+    },
+    {
+      "path": "packages/studio/src/python/extensions/operations.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "34b50a28d526e0876a269922a31a6f73a82c89db50c8bc22a09181dbf4888af0"
+    },
+    {
+      "path": "packages/studio/src/python/extensions/removalReferences.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "d5f8b247281cbe1f5f7371621d67814222a1dcaee92cc1b6afc1f77e1ed8b29c"
+    },
+    {
+      "path": "packages/studio/src/python/extensions/removalReferences.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "4de4856757f7252dfd0a3341c4ffc631452f0a03c511e91be8a8a8c5f9c938f3"
+    },
+    {
+      "path": "packages/studio/src/components/extensions/PythonExtensionsPanel.tsx",
+      "kind": "git-snapshot-reference",
+      "sha256": "fad20aa2bc323cad856f135797019184594acf9771c972d2fa9fc731c8585cb1"
+    },
+    {
+      "path": "packages/studio/src/components/extensions/PythonExtensionsPanel.test.tsx",
+      "kind": "git-snapshot-reference",
+      "sha256": "1644be1240413d9300a27a8260b02531e3bf4a0c2e69d78e50125e32469c7521"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/extension-removal.spec.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "1277b9f96208674a8a6d02a67253127973fdbe3283d2cceface2f9329feba4cd"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/source-editor.spec.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "755b4fc3f24d41eb1638b615750d4bc1db59c5b4a6b820a1d4a5a09a0a6c2e07"
+    },
+    {
+      "path": "packages/studio/e2e-python-editor/bridge-workspace.spec.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "4e1a497d7a64bad00f653e79baf115c982e2933e7fdc1f3d799b7f179a238d7f"
+    },
+    {
+      "path": "packages/studio/playwright.python-editor.config.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "803ec55e290ae1c145e61afc424352885e9c9336da9af976d45381b15bf839e2"
+    },
+    {
+      "path": "packages/studio/playwright.python-bridge.config.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "ad7966ad99a3eebba827e59a733af9d0fe99ffac0a37538f2274e9648de165db"
+    },
+    {
+      "path": "packages/studio/e2e/smoke.spec.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "3396088b5a761a2a7168b5cfcb1a88b20d625d99b5a5fba0e5dd51f7916a2ab4"
+    },
+    {
+      "path": "packages/studio/e2e/pro-workspace.spec.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "9307a729cf930d6e6a898ea772990933804e38b69de196ba70fd9cc7e5391f39"
+    },
+    {
+      "path": "packages/studio/playground/App.tsx",
+      "kind": "git-snapshot-reference",
+      "sha256": "b7167aae7ec78b393215f0b5d5c7b608fcbe0f701b5e5816170ab70fa8c88d52"
+    },
+    {
+      "path": "packages/studio/playground/LandingApp.tsx",
+      "kind": "git-snapshot-reference",
+      "sha256": "2d3480fa412895e052d92ff3352303572c4e859ca83d1f11dd172c04328c4d51"
+    },
+    {
+      "path": "packages/studio/playground/initialQuery.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "2f38e4228d3dd5d7d229424b89e487ad9b25fe6c122efb3abcebfe208a54370e"
+    },
+    {
+      "path": "packages/studio/src/playground-navigation.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "2bf350369ebb216ca469dd75b57ab91a3ca05a94c10128527f11c82a5c68cbe7"
+    },
+    {
+      "path": "packages/ui/tests/tool-chrome.test.ts",
+      "kind": "git-snapshot-reference",
+      "sha256": "6804907930a1ace5847f802d7cf6a280b0a7c2b0f527ac50f7fc2e64f0897ece"
+    },
+    {
+      "path": "packages/ui/src/styles/tool-chrome.css",
+      "kind": "git-snapshot-reference",
+      "sha256": "d86019d3f3354ed03311023281199a791c795cee674b9a0202ac61afa91481f7"
+    },
+    {
+      "path": "packages/studio/playground/styles.css",
+      "kind": "git-snapshot-reference",
+      "sha256": "7e9dc591edb42e6210da09cc57453d5c287dc32ab6dd628b1935802f7451bd91"
+    },
+    {
+      "path": "packages/studio/scripts/test-isolated.mjs",
+      "kind": "git-snapshot-reference",
+      "sha256": "887e11fe0fb3658810b1b179a0fbf490cb9263a426b19ec640baffa8d93a51c6"
+    },
+    {
+      "path": ".cache/authoring-browser-r4/receipt.json",
+      "kind": "historical-receipt",
+      "sha256": "03154e7308c99e40113997776fbe4842364bf57132a860187765695119956966"
+    },
+    {
+      "path": ".cache/authoring-browser-r5/preflight.json",
+      "kind": "historical-receipt",
+      "sha256": "aa0ae31ccd162b377b6ef942bab472533d670ca50bdee4e2cd664f259a811172"
+    },
+    {
+      "path": ".cache/authoring-browser-r5/receipt.json",
+      "kind": "historical-receipt",
+      "sha256": "6a8bcbf3f8acc3f214a67696b4de38f8687079b6a66dcca800248030efc994cf"
+    },
+    {
+      "path": ".cache/authoring-browser-r5/cleanup-identity-check.json",
+      "kind": "historical-receipt",
+      "sha256": "c254b3c041c60c747acdb68c74e6001abbfe916e0ffa9f3c1f026d90bee8fb61"
+    },
+    {
+      "path": ".cache/authoring-review-receipt-r4.json",
+      "kind": "historical-receipt",
+      "sha256": "c36c90bd503e957e51fe67dc8b8760dfa100b4862ed4797dd2c5131b1600dc39"
+    },
+    {
+      "path": ".cache/authoring-review-receipt-r4-review.json",
+      "kind": "historical-receipt",
+      "sha256": "c2989ab6ebcdcff3e4c91f7dd95b37363e7d1e27a5651413d7f18abdb5f591f7"
+    },
+    {
+      "path": ".cache/authoring-172-convergence-r1/receipt.json",
+      "kind": "historical-receipt",
+      "sha256": "07f6554f1b28c7041c001527f1cd024b6bacd88b704875e60186223ec3d01797"
+    },
+    {
+      "path": ".cache/authoring-js-ci-face8-r1/observer-final-attempt1-20261021T002834125Z.json",
+      "kind": "historical-receipt",
+      "sha256": "58acbeb3cb65842cf4a8d4c9d204f3139d1d51feee6f14116e08745dba2654fe"
+    },
+    {
+      "path": ".cache/authoring-js-ci-face8-r1/parent-eight-targets-receipt.json",
+      "kind": "historical-receipt",
+      "sha256": "a6b337f666a0ab26146a3c051d48da1a95fdaec7bced719dfe5452f1d3e04c39"
+    },
+    {
+      "path": ".cache/authoring-js-ci-face8-r1/source-qualification.json",
+      "kind": "historical-receipt",
+      "sha256": "9f89ee85532029b76b6d47d5232f3ecb463e56fccc22f34f09657e330ce3037f"
+    },
+    {
+      "path": ".cache/authoring-selector-backlog-r1/handoff-r1.json",
+      "kind": "historical-receipt",
+      "sha256": "f9c44a91457c0290f231b5657882ce0a9f40159e53ca01e3f6c8375c03bb0e8d"
+    }
+  ]
+}

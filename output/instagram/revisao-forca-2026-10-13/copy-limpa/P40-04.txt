@@ -1,3 +1,0 @@
-Programar pede transformar uma intenção em passos que a ferramenta consiga executar.
-
-Na brincadeira, vocês procuram uma instrução que faltou. No jogo, testam se a sequência ficou completa.

@@ -1,0 +1,42 @@
+[
+  {
+    "project": "React",
+    "root": "C:\\Users\\tocha\\AppData\\Local\\Temp\\studio-source-export-NjsFn8",
+    "commands": [
+      [
+        "npm",
+        "install",
+        "--no-audit",
+        "--no-fund"
+      ],
+      [
+        "npm",
+        "run",
+        "build"
+      ]
+    ],
+    "sourceFiles": 9,
+    "independentInstallation": true,
+    "built": true
+  },
+  {
+    "project": "Convertido",
+    "root": "C:\\Users\\tocha\\AppData\\Local\\Temp\\studio-source-export-xajmJC",
+    "commands": [
+      [
+        "npm",
+        "install",
+        "--no-audit",
+        "--no-fund"
+      ],
+      [
+        "npm",
+        "run",
+        "build"
+      ]
+    ],
+    "sourceFiles": 12,
+    "independentInstallation": true,
+    "built": true
+  }
+]

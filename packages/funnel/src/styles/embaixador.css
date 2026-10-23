@@ -1,0 +1,742 @@
+/*
+ * embaixador.css: o painel do embaixador (`/embaixador/<token>`), Canvas "Presente Kids e adulto ·
+ * proposta" (quadro Embaixador, 20/10/2026). Um painel neutro, que serve aos dois públicos: chão e
+ * cartões da paleta Kids (`--kof-*`, o `<html>` é `theme-kids`) com os títulos em Bricolage e o
+ * corpo em Atkinson (as fontes do tema arcade, já declaradas pelo global.css). As peças de cada
+ * público falam a língua dele: a carta Kids usa o contorno de tinta e a Baloo; a carta adulta leva a
+ * classe `theme-arcade` só para ler os tokens `--cda-*` (como o cartão adulto da bio). Tudo sob
+ * `.emb`, sem cor própria.
+ */
+.emb {
+  --emb-titulo: "Bricolage Grotesque", system-ui, sans-serif;
+  --emb-corpo: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, sans-serif;
+  --emb-margem: clamp(16px, 4vw, 40px);
+  overflow-x: clip;
+  background: var(--kof-chao);
+  color: var(--kof-tinta);
+  font-family: var(--emb-corpo);
+  font-size: 1.1875rem;
+  line-height: 1.6;
+}
+.emb h1,
+.emb h2,
+.emb h3,
+.emb p,
+.emb ul,
+.emb ol,
+.emb figure {
+  margin: 0;
+}
+.emb ul,
+.emb ol {
+  padding: 0;
+  list-style: none;
+}
+.emb a:focus-visible,
+.emb button:focus-visible,
+.emb input:focus-visible,
+.emb textarea:focus-visible,
+.emb summary:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 2px;
+}
+.emb .emb-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.emb .emb-pular {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 60;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font-weight: 700;
+}
+.emb .emb-pular:focus {
+  top: 16px;
+}
+.emb .emb-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 56px var(--emb-margem);
+}
+.emb .emb-sec {
+  border-bottom: 1px solid var(--kof-linha);
+}
+.emb .emb-sec--branca {
+  background: var(--kof-carta);
+}
+.emb .emb-pilha {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.emb .emb-cabeca {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 880px;
+}
+
+/* ── Tipografia ─────────────────────────────────────────────────────────────── */
+.emb .emb-h1 {
+  font-family: var(--emb-titulo);
+  font-size: clamp(2.1rem, 4.2vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.emb .emb-h2 {
+  font-family: var(--emb-titulo);
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  font-weight: 800;
+  line-height: 1.1;
+}
+.emb .emb-h3 {
+  font-family: var(--emb-titulo);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+.emb .emb-p {
+  color: var(--kof-tinta-suave);
+}
+.emb .emb-lead {
+  color: var(--kof-tinta-suave);
+  font-size: 1.04em;
+}
+.emb .emb-ajuda {
+  color: var(--kof-tinta-suave);
+  font-size: 0.9375rem;
+}
+.emb .emb-rotulo {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.emb .emb-etiqueta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--kof-azul-fundo);
+  color: var(--kof-acao-degrau);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* ── Topo e aviso ───────────────────────────────────────────────────────────── */
+.emb .emb-topo {
+  border-bottom: 1px solid var(--kof-linha);
+  background: var(--kof-carta);
+}
+.emb .emb-topo__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px var(--emb-margem);
+}
+.emb .emb-marca {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  color: var(--kof-tinta-suave);
+  text-decoration: none;
+}
+.emb .emb-marca img {
+  display: block;
+  width: auto;
+  height: 18px;
+}
+.emb .emb-marca span {
+  padding-left: 12px;
+  border-left: 1px solid var(--kof-linha);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.emb .emb-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 22px;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.emb .emb-nav__link {
+  color: var(--kof-tinta);
+  text-decoration: none;
+}
+.emb .emb-nav__link:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.emb .emb-aviso {
+  border-bottom: 1px solid var(--kof-linha);
+  background: var(--kof-amarelo-fundo);
+}
+.emb .emb-aviso p {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px var(--emb-margem);
+  font-size: 1rem;
+}
+.emb .emb-aviso svg {
+  flex: none;
+}
+
+/* ── Botões, campos e links ─────────────────────────────────────────────────── */
+.emb .emb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 2px solid var(--kof-acao);
+  border-radius: 12px;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.emb .emb-btn:hover {
+  border-color: var(--kof-acao-hover);
+  background: var(--kof-acao-hover);
+}
+.emb .emb-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.emb .emb-btn--contorno {
+  background: var(--kof-carta);
+  color: var(--kof-acao);
+}
+.emb .emb-btn--contorno:hover {
+  background: var(--kof-azul-fundo);
+}
+.emb .emb-btn--inicio {
+  align-self: flex-start;
+}
+.emb .emb-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid var(--kof-campo);
+  border-radius: 12px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  font: inherit;
+  font-size: 1.0625rem;
+}
+.emb .emb-input::placeholder {
+  color: var(--kof-tinta-suave);
+}
+.emb .emb-input--link {
+  flex: 1 1 280px;
+  width: auto;
+  background: var(--kof-sup2);
+}
+.emb .emb-input--mensagem {
+  padding: 16px;
+  background: var(--kof-sup2);
+  line-height: 1.55;
+  resize: vertical;
+}
+.emb .emb-link {
+  align-self: flex-start;
+  color: var(--kof-acao);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.emb .emb-ok {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.emb .emb-erro,
+.emb .emb-alerta {
+  color: var(--kof-vermelho);
+  font-size: 1rem;
+  font-weight: 700;
+}
+.emb .emb-alerta {
+  color: var(--kof-tinta);
+}
+
+/* ── O seletor de público ───────────────────────────────────────────────────── */
+.emb .emb-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.emb .emb-publicos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 20px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.emb .emb-publico {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 22px;
+  cursor: pointer;
+  opacity: 0.86;
+}
+.emb .emb-publico.is-marcado {
+  opacity: 1;
+  outline: 4px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.emb .emb-publico__radio {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.emb .emb-publico:has(.emb-publico__radio:focus-visible) {
+  outline: 4px solid var(--kof-tinta);
+  outline-offset: 3px;
+}
+.emb .emb-publico__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.emb .emb-publico__marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  color: transparent;
+}
+.emb .emb-publico__corpo {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.emb .emb-publico__imagem {
+  flex: none;
+  width: 132px;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: left top;
+}
+.emb .emb-publico__texto {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+.emb .emb-publico__titulo {
+  font-size: 1.5625rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+/* A carta Kids: contorno de tinta, cantos redondos e a Baloo. */
+.emb .emb-publico--kids {
+  border: 3px solid var(--kof-tinta);
+  border-radius: 22px;
+  background: var(--kof-carta);
+  box-shadow: 4px 4px 0 var(--kof-carta-degrau);
+}
+.emb .emb-publico--kids.is-marcado {
+  box-shadow: 8px 8px 0 var(--kof-acao);
+}
+.emb .emb-publico--kids .emb-publico__selo {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 3px solid var(--kof-tinta);
+  border-radius: 10px;
+  background: var(--kof-amarelo);
+  color: var(--kof-tinta);
+  font-family: var(--kof-display);
+  font-size: 1rem;
+  font-weight: 800;
+  transform: rotate(-2deg);
+}
+.emb .emb-publico--kids .emb-publico__marca {
+  border: 3px solid var(--kof-tinta);
+  border-radius: 50%;
+  background: var(--kof-carta);
+}
+.emb .emb-publico--kids.is-marcado .emb-publico__marca {
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+}
+.emb .emb-publico--kids .emb-publico__imagem {
+  border: 3px solid var(--kof-tinta);
+  border-radius: 10px;
+}
+.emb .emb-publico--kids .emb-publico__titulo {
+  font-family: var(--kof-display);
+  color: var(--kof-tinta);
+}
+.emb .emb-publico--kids .emb-publico__texto > span {
+  color: var(--kof-tinta-suave);
+}
+/* A carta adulta: arcade, com os tokens `--cda-*` da classe `theme-arcade` da própria carta. */
+.emb .emb-publico--adult {
+  border: 3px solid var(--cda-linha-forte);
+  background: var(--cda-fundo);
+  color: var(--cda-texto);
+  box-shadow: 4px 4px 0 var(--kof-carta-degrau);
+}
+.emb .emb-publico--adult.is-marcado {
+  box-shadow: 8px 8px 0 var(--cda-rosa);
+}
+.emb .emb-publico--adult .emb-publico__selo {
+  padding: 5px 10px;
+  background: var(--cda-verde);
+  color: var(--cda-fundo);
+  font-family: var(--cda-pixel);
+  font-size: 0.8125rem;
+}
+.emb .emb-publico--adult .emb-publico__marca {
+  border: 3px solid var(--cda-linha-forte);
+  background: var(--cda-fundo-2);
+}
+.emb .emb-publico--adult.is-marcado .emb-publico__marca {
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+}
+.emb .emb-publico--adult .emb-publico__imagem {
+  border: 3px solid var(--cda-linha-forte);
+  object-position: left;
+}
+.emb .emb-publico--adult .emb-publico__titulo {
+  font-family: var(--cda-titulo);
+}
+.emb .emb-publico--adult .emb-publico__texto > span {
+  color: var(--cda-texto-suave);
+}
+
+/* ── Cartões do painel ──────────────────────────────────────────────────────── */
+.emb .emb-grade {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+}
+.emb .emb-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  padding: 26px;
+  border: 1px solid var(--kof-linha);
+  border-radius: 20px;
+  background: var(--kof-carta);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--kof-tinta) 6%, transparent);
+}
+.emb .emb-cartao--link {
+  flex: 1 1 560px;
+}
+.emb .emb-cartao--suave {
+  background: var(--kof-sup2);
+}
+.emb .emb-coluna {
+  display: flex;
+  flex: 1 1 380px;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.emb .emb-form {
+  gap: 12px;
+}
+.emb .emb-cartao__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.emb .emb-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.emb .emb-chip--kids {
+  border: 2px solid var(--kof-tinta);
+  border-radius: 10px;
+  background: var(--kof-amarelo);
+}
+.emb .emb-chip--adult {
+  background: var(--cda-fundo);
+  color: var(--cda-verde);
+  font-family: var(--cda-pixel);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+.emb .emb-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.emb .emb-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+.emb .emb-aviso-link {
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: var(--kof-amarelo-fundo);
+  font-size: 1rem;
+}
+.emb .emb-manual {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.emb .emb-resgates {
+  gap: 8px;
+}
+.emb .emb-resgates__titulo {
+  color: var(--kof-tinta-suave);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.emb .emb-resgates__numero {
+  font-family: var(--emb-titulo);
+  font-size: 2.75rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ── Bônus ──────────────────────────────────────────────────────────────────── */
+.emb .emb-bonus {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 32px;
+}
+.emb .emb-bonus__texto {
+  display: flex;
+  flex: 1 1 460px;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.emb .emb-bonus > .emb-cartao {
+  flex: 1 1 380px;
+}
+.emb .emb-bonus__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.emb .emb-bonus__lista li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--kof-linha);
+  border-radius: 12px;
+  font-size: 1rem;
+}
+
+/* ── Para quem faz sentido, passos e a tabela ───────────────────────────────── */
+.emb .emb-perfis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+.emb .emb-perfil {
+  display: flex;
+  flex: 1 1 420px;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 24px;
+}
+.emb .emb-perfil p {
+  font-size: 1.0625rem;
+}
+.emb .emb-perfil--kids {
+  border: 3px solid var(--kof-tinta);
+  border-radius: 20px;
+  background: var(--kof-carta);
+  box-shadow: 6px 6px 0 var(--kof-amarelo);
+}
+.emb .emb-perfil--kids strong {
+  font-family: var(--kof-display);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.emb .emb-perfil--kids p {
+  color: var(--kof-tinta-suave);
+}
+.emb .emb-perfil--adult {
+  border: 3px solid var(--cda-linha-forte);
+  background: var(--cda-fundo);
+  color: var(--cda-texto);
+  box-shadow: 6px 6px 0 var(--cda-rosa);
+}
+.emb .emb-perfil--adult strong {
+  font-family: var(--cda-titulo);
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.emb .emb-perfil--adult p {
+  color: var(--cda-texto-suave);
+}
+.emb .emb-passos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
+  gap: 16px;
+}
+.emb .emb-passos li {
+  display: flex;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--kof-linha);
+  border-radius: 16px;
+  background: var(--kof-carta);
+  font-size: 1.0625rem;
+}
+.emb .emb-passos__numero {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+  font-weight: 700;
+}
+.emb .emb-tabela {
+  overflow-x: auto;
+  border: 1px solid var(--kof-linha);
+  border-radius: 16px;
+  background: var(--kof-carta);
+}
+.emb .emb-tabela table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  font-size: 1.0625rem;
+}
+.emb .emb-tabela thead tr {
+  background: var(--kof-sup2);
+  text-align: left;
+}
+.emb .emb-tabela th,
+.emb .emb-tabela td {
+  padding: 14px 18px;
+  vertical-align: top;
+}
+.emb .emb-tabela tbody tr {
+  border-top: 1px solid var(--kof-linha);
+}
+.emb .emb-tabela tbody th {
+  text-align: left;
+}
+.emb .emb-tabela__kids {
+  font-family: var(--kof-display);
+  font-size: 1.25rem;
+}
+.emb .emb-tabela__adulto {
+  font-family: var(--emb-titulo);
+  font-size: 1.25rem;
+}
+.emb .emb-duvidas {
+  display: grid;
+  gap: 12px;
+  max-width: 900px;
+}
+.emb .emb-duvida {
+  padding: 14px 18px;
+  border: 1px solid var(--kof-linha);
+  border-radius: 14px;
+  background: var(--kof-carta);
+}
+.emb .emb-duvida summary {
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.emb .emb-duvida p {
+  margin-top: 10px;
+  color: var(--kof-tinta-suave);
+  font-size: 1.0625rem;
+}
+.emb .emb-fim {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.emb .emb-fim p {
+  max-width: 760px;
+}
+.emb .emb-status {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+@media (max-width: 520px) {
+  .emb .emb-topo-cta {
+    display: none;
+  }
+  .emb .emb-marca span {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+@media (max-width: 760px) {
+  .emb .emb-nav__link {
+    display: none;
+  }
+  .emb .emb-publico__corpo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .emb .emb-publico__imagem {
+    width: 100%;
+  }
+}

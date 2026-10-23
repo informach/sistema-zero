@@ -7,11 +7,17 @@ export interface LeadAttributionV1 {
   eventCode: string | null
   initialCouponCode: string | null
   landingPath: string
+  /**
+   * Variante da manchete do quiz que a família viu (teste A/B, ex.: `padrao`, `tela`). Só existe
+   * quando o quiz a envia; ausente nas demais entradas (o formato antigo continua igual).
+   */
+  quizHeadline?: string
 }
 
 const TOKEN = /^[a-zA-Z0-9][a-zA-Z0-9._+-]*$/
 const CODE = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/
 const PATH = /^\/[a-zA-Z0-9/_-]*$/
+const HEADLINE = /^[a-z0-9][a-z0-9-]{0,31}$/
 
 function cleanToken(value: unknown, max = 100): string | null {
   if (typeof value !== 'string') return null
@@ -53,6 +59,8 @@ export function sanitizeLeadAttribution(value: unknown): LeadAttributionV1 | nul
     initialCouponCode: cleanCode(raw.initialCouponCode)?.toUpperCase() ?? null,
     landingPath: cleanPath(raw.landingPath),
   }
+  const headline = typeof raw.quizHeadline === 'string' ? raw.quizHeadline.trim() : ''
+  if (HEADLINE.test(headline)) result.quizHeadline = headline
   return Object.values(result).some((entry) => entry !== null && entry !== 1 && entry !== '/')
     ? result
     : null

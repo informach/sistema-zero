@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { ValidationError } from '@sistemazero/core/errors'
 import {
   defaultLessonSection,
   evaluateLearning,
@@ -9,16 +10,23 @@ import {
   isLearningManifest,
   type LessonDraft,
   type LessonDraftChange,
+  readManifestStudioProjectExamples,
 } from '@sistemazero/core/learning'
 import { createLessonAsset, pintaAssetToWire } from '@sistemazero/pinta/assets'
 import { eq, sql } from 'drizzle-orm'
+import {
+  caminhoAula,
+  listarArquivosAulas,
+} from '../../../../docs/aulas-interativas-tecnico/qa/caminhos'
 import { LearningImportService } from '../../src/application/learning/learning-import.service'
 import { importedLearningId } from '../../src/domain/learning/learning-import'
+import { LessonDraftConflictError } from '../../src/domain/learning/lesson-draft.errors'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import type { Database } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLearningRepository } from '../../src/infrastructure/persistence/drizzle/learning.repository'
 import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
+import { memberStudioContentProjection } from '../../src/infrastructure/persistence/drizzle/member-studio-content-projection'
 import {
   courses,
   lessonAttachments,
@@ -32,6 +40,15 @@ import {
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
 
 const actor = randomUUID()
+
+async function rejectionOf(operation: Promise<unknown>): Promise<unknown> {
+  try {
+    await operation
+    return null
+  } catch (error) {
+    return error
+  }
+}
 const interactive: InteractiveBlock = {
   kind: 'interactive',
   title: 'Ordene',
@@ -99,6 +116,224 @@ export function lessonDraftCases(getDb: () => Database) {
     return { db, now, courseId, moduleId, lessonId, repo, reader, content, change, publish }
   }
   describe('shared lesson draft and atomic publication', () => {
+    async function exampleFixture() {
+      const f = await fixture()
+      const project = {
+        formatVersion: 2,
+        id: 'same-project-id',
+        kind: 'classic',
+        name: 'Criar',
+        files: { 'index.html': '', 'style.css': '', 'script.js': '' },
+        installedExtensions: [],
+      }
+      const block = await f.content.createBlock(f.lessonId, 'studio', {
+        kind: 'studio',
+        initialProject: project,
+        purpose: 'experiment',
+      })
+      const initial = await f.repo.read(f.lessonId)
+      const section = initial.document.sections[0]
+      if (!section) throw new Error('Expected a section')
+      const draft = await f.change(initial, {
+        type: 'structure',
+        sections: initial.document.sections.map((part) =>
+          part.id === section.id ? { ...part, workspaceBlockId: block.id } : part,
+        ),
+      })
+      return { ...f, project, block, section, draft }
+    }
+
+    test('private examples use the real draft CAS and idempotency ledger without cross-workspace reuse', async () => {
+      const f = await exampleFixture()
+      const exampleId = randomUUID()
+      const command = {
+        expectedRevision: f.draft.revision,
+        operationId: randomUUID(),
+        change: {
+          type: 'studio-example' as const,
+          blockId: f.block.id,
+          sectionId: f.section.id,
+          role: 'solution' as const,
+          action: { type: 'save' as const, exampleId, project: f.project },
+        },
+      }
+      const first = await f.repo.change(f.lessonId, actor, command)
+      const replay = await f.repo.change(f.lessonId, actor, command)
+      expect(replay.revision).toBe(first.revision)
+      expect(replay.document).toEqual(first.document)
+      const stale = await rejectionOf(
+        f.repo.change(f.lessonId, actor, { ...command, operationId: randomUUID() }),
+      )
+      expect(stale).toBeInstanceOf(LessonDraftConflictError)
+      expect(stale).toMatchObject({ code: 'LESSON_DRAFT_CONFLICT' })
+      const overwritten = await rejectionOf(
+        f.repo.change(f.lessonId, actor, {
+          ...command,
+          change: {
+            ...command.change,
+            action: {
+              ...command.change.action,
+              project: { ...f.project, name: 'Different bytes' },
+            },
+          },
+        }),
+      )
+      expect(overwritten).toBeInstanceOf(LessonDraftConflictError)
+      expect(overwritten).toMatchObject({ code: 'LESSON_DRAFT_CONFLICT' })
+      const other = await exampleFixture()
+      const foreign = await rejectionOf(
+        other.change(other.draft, {
+          type: 'studio-example',
+          blockId: other.block.id,
+          sectionId: other.section.id,
+          role: 'solution',
+          action: { type: 'reuse', exampleId },
+        }),
+      )
+      expect(foreign).toBeInstanceOf(ValidationError)
+      expect(foreign).toMatchObject({
+        code: 'VALIDATION_ERROR',
+        message: expect.stringContaining('neste Estúdio'),
+      })
+      const final = await f.repo.read(f.lessonId)
+      expect(final.revision).toBe(first.revision)
+      expect(final.document).toEqual(first.document)
+    })
+
+    test('updating and publishing a section solution preserves every stored submission field', async () => {
+      const f = await exampleFixture()
+      const save = (draft: LessonDraft, exampleId: string, name: string) =>
+        f.change(draft, {
+          type: 'studio-example',
+          blockId: f.block.id,
+          sectionId: f.section.id,
+          role: 'solution',
+          action: { type: 'save', exampleId, project: { ...f.project, name } },
+        })
+      await f.publish(await save(f.draft, randomUUID(), 'Solução v1'))
+      const [original] = await f.db
+        .insert(studioSubmissions)
+        .values({
+          id: randomUUID(),
+          userId: randomUUID(),
+          accountId: randomUUID(),
+          lessonId: f.lessonId,
+          courseId: f.courseId,
+          blockId: f.block.id,
+          project: { ...f.project, name: 'Meu jogo original' },
+          message: 'terminei!',
+          score: 100,
+          results: [{ checkId: 'loop', passed: true }],
+          submittedAt: f.now,
+          checkedAt: f.now,
+          passedAt: f.now,
+        })
+        .returning()
+      if (!original) throw new Error('Expected the existing student submission')
+      const readSubmission = () =>
+        f.db.select().from(studioSubmissions).where(eq(studioSubmissions.id, original.id))
+      // A changed immutable snapshot gets a new ID through the section-example command.
+      const nextExampleId = randomUUID()
+      const updated = await save(await f.repo.read(f.lessonId), nextExampleId, 'Solução v2')
+      expect(await readSubmission()).toEqual([original])
+      await f.publish(updated)
+      expect(await readSubmission()).toEqual([original])
+      const published = await f.repo.readPublished(f.lessonId)
+      expect(
+        published.document.blocks.find((block) => block.id === f.block.id)?.content,
+      ).toMatchObject({
+        projectExamples: {
+          sections: { [f.section.id]: { solutionExampleId: nextExampleId } },
+          examples: { [nextExampleId]: { ...f.project, name: 'Solução v2' } },
+        },
+      })
+    })
+
+    test('large private examples are projected inside PostgreSQL and authoring snapshots stay complete', async () => {
+      const f = await exampleFixture()
+      const before = await f.reader.findLessonWithContent(f.lessonId)
+      const privateMarker = 'PRIVATE_PROJECT_EXAMPLE_SQL_SENTINEL'
+      const saved = await f.change(f.draft, {
+        type: 'studio-example',
+        blockId: f.block.id,
+        sectionId: f.section.id,
+        role: 'solution',
+        action: {
+          type: 'save',
+          exampleId: randomUUID(),
+          project: {
+            ...f.project,
+            files: { ...f.project.files, 'script.js': `//${privateMarker}${'x'.repeat(900_000)}` },
+          },
+        },
+      })
+      await f.publish(saved)
+      const projected = await f.reader.findLessonWithContent(f.lessonId)
+      const privateView = await f.reader.findLessonWithContent(f.lessonId, {
+        includePrivateStudioAuthoring: true,
+      })
+      const published = await f.repo.readPublished(f.lessonId)
+      expect(JSON.stringify(projected)).not.toContain(privateMarker)
+      expect(JSON.stringify(privateView)).toContain(privateMarker)
+      expect(JSON.stringify(published.document)).toContain(privateMarker)
+      expect(projected?.blocks[0]?.contentRevision).toBe(before?.blocks[0]?.contentRevision)
+      const [sizes] = await f.db
+        .select({
+          raw: sql<number>`octet_length(${lessonBlocks.content}::text)`,
+          public: sql<number>`octet_length(${memberStudioContentProjection(lessonBlocks.content)}::text)`,
+        })
+        .from(lessonBlocks)
+        .where(eq(lessonBlocks.id, f.block.id))
+      expect(sizes?.raw).toBeGreaterThan(900_000)
+      expect(sizes?.public).toBeLessThan(10_000)
+      const tooLargeInitial = {
+        ...f.project,
+        files: { ...f.project.files, 'script.js': 'x'.repeat(1_300_000) },
+      }
+      await expect(
+        f.content.updateBlock(f.block.id, 'studio', {
+          kind: 'studio',
+          initialProject: tooLargeInitial,
+          purpose: 'experiment',
+        }),
+      ).rejects.toThrow('2 MiB')
+      expect(
+        await f.reader.findLessonWithContent(f.lessonId, { includePrivateStudioAuthoring: true }),
+      ).toEqual(privateView)
+      const fittingInitial = {
+        ...f.project,
+        files: { ...f.project.files, 'script.js': 'x'.repeat(1_150_000) },
+      }
+      expect(
+        await f.content.updateBlock(f.block.id, 'studio', {
+          kind: 'studio',
+          initialProject: fittingInitial,
+          purpose: 'experiment',
+        }),
+      ).not.toBeNull()
+      const beforeNonStudio = await f.reader.findLessonWithContent(f.lessonId, {
+        includePrivateStudioAuthoring: true,
+      })
+      await expect(
+        f.content.createBlock(f.lessonId, 'rich_text', {
+          kind: 'rich_text',
+          markdown: 'x'.repeat(50_000),
+        }),
+      ).rejects.toThrow('2 MiB')
+      expect(
+        await f.reader.findLessonWithContent(f.lessonId, { includePrivateStudioAuthoring: true }),
+      ).toEqual(beforeNonStudio)
+      const structure = await new DrizzleLearningRepository(f.db).getStructure(f.lessonId)
+      if (!structure) throw new Error('Expected a published structure')
+      await expect(
+        new DrizzleLearningRepository(f.db).saveStructure(
+          f.lessonId,
+          structure.revision,
+          structure.sections.map((part) => ({ ...part, workspaceBlockId: null })),
+        ),
+      ).rejects.toThrow('parte')
+    })
+
     test('aula criada em rascunho passa a publicada pelo mesmo fluxo de revisão', async () => {
       const f = await fixture()
       await f.db.update(lessons).set({ isPublished: false }).where(eq(lessons.id, f.lessonId))
@@ -712,9 +947,8 @@ export function lessonDraftCases(getDb: () => Database) {
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
     test('every current manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
-      const root = resolve(import.meta.dir, '../../../../docs/aulas-interativas/aulas')
       // A importação exercita todos os manifestos atuais, copiados do fluxo criativo.
-      const paths = [...new Bun.Glob('*.manifesto.json').scanSync(root)]
+      const paths = listarArquivosAulas().filter((path) => path.endsWith('.manifesto.json'))
       // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
       expect(paths.length).toBeGreaterThanOrEqual(28)
       let plannedCount = 0
@@ -725,7 +959,7 @@ export function lessonDraftCases(getDb: () => Database) {
       // isso continua sendo uma comparação entre dois lados independentes.
       let plannedEsperado = 0
       for (const path of paths) {
-        const manifest: unknown = await Bun.file(resolve(root, path)).json()
+        const manifest: unknown = await Bun.file(caminhoAula(path)).json()
         if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
         plannedEsperado += manifest.blocks.filter(
           (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',
@@ -775,7 +1009,24 @@ export function lessonDraftCases(getDb: () => Database) {
             const actual: unknown = draft.document.blocks.find(
               (block) => block.id === importedLearningId(f.lessonId, 'block', entry.key),
             )?.content
-            expect(actual).toEqual(entry.content)
+            let expected = entry.content
+            if (entry.content.kind === 'studio' && entry.content.projectExamples !== undefined) {
+              const read = readManifestStudioProjectExamples(entry.content.projectExamples)
+              if (read.kind !== 'valid') throw new Error(`Invalid Studio examples in ${path}`)
+              expected = {
+                ...entry.content,
+                projectExamples: {
+                  ...read.value,
+                  sections: Object.fromEntries(
+                    Object.entries(read.value.sections).map(([key, binding]) => [
+                      importedLearningId(f.lessonId, 'section', key),
+                      binding,
+                    ]),
+                  ),
+                },
+              }
+            }
+            expect(actual).toEqual(expected)
           }
         // O vídeo preservado precisa pertencer a uma seção. O importador usa a última
         // seção de fechamento quando existe; caso contrário, usa a última seção.

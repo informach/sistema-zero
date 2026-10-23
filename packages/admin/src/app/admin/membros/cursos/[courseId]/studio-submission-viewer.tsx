@@ -9,7 +9,7 @@ import { type GallerySubmission, isGallerySubmission } from '@sistemazero/core/l
  */
 import { isPintaAssetLike } from '@sistemazero/pinta/assets'
 import type { PintaHandle } from '@sistemazero/pinta/lesson'
-import type { Project, StudioHandle } from '@sistemazero/studio'
+import type { EditableStudioProject, StudioHandle } from '@sistemazero/studio'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -26,6 +26,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { GallerySubmissionViewer } from '@/components/professor/gallery-submission-viewer'
@@ -53,7 +54,7 @@ function downloadPintaJson(asset: unknown): void {
   URL.revokeObjectURL(url)
 }
 
-function downloadProjectJson(project: Project): void {
+function downloadProjectJson(project: EditableStudioProject): void {
   const name = (project as { name?: string }).name ?? 'projeto'
   const safe = name.replace(/[^\w.-]+/g, '-').slice(0, 60) || 'projeto'
   const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
@@ -337,6 +338,7 @@ export function StudioSubmissionViewer({
             <Card className="space-y-1 p-3">
               <div className="flex items-center gap-1.5 font-medium text-sm">
                 <MessageSquare className="size-4" /> Recado do aluno
+                {detail.messageSpoken ? <SpokenChip /> : null}
               </div>
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">{detail.message}</p>
             </Card>
@@ -352,36 +354,6 @@ export function StudioSubmissionViewer({
             title={lessonTitle}
             studentName={studentName}
           />
-
-          {/* Correção automática (atividade). Sem atividade → score null, omite. */}
-          {detail.score !== null ? (
-            <Card className="space-y-2 p-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <span>Correção automática: {detail.score}/100</span>
-                <span className={detail.passed ? 'text-success' : 'text-destructive'}>
-                  {detail.passed ? '· aprovado' : '· não aprovado'}
-                </span>
-              </div>
-              {detail.results?.length ? (
-                <ul className="flex flex-col gap-1">
-                  {detail.results.map((r) => (
-                    <li key={r.checkId} className="flex items-start gap-2 text-xs">
-                      <span className={r.passed ? 'text-success' : 'text-destructive'} aria-hidden>
-                        {r.passed ? '✓' : '✗'}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        {r.checkId}
-                        {r.message ? ` — ${r.message}` : ''}
-                      </span>
-                      <span className="shrink-0 text-muted-foreground">
-                        {r.verifiedBy === 'server' ? 'servidor' : 'cliente'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
-            </Card>
-          ) : null}
 
           {/* key por aluno+bloco+VERSÃO: remonta o editor (re-semeia) ao trocar de entrega —
               inclusive via "Próxima pendente" (mesmo aluno, bloco diferente) e após o

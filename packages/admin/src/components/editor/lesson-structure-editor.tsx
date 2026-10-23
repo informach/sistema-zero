@@ -19,28 +19,85 @@ import { Button } from '@sistemazero/ui/button'
 import { useRef, useState } from 'react'
 import { PintaEmbed } from '@/components/pinta/pinta-embed'
 import { StudioEmbed } from '@/components/studio/studio-embed'
+import type { StudioAuthoringRuntimeScope } from '@/components/studio/use-studio-authoring-runtime'
 import type { AttachmentView, BlockView, CourseAudience } from '@/lib/types'
 import { LessonRehearsal } from './lesson-rehearsal'
 import { LessonSectionAuthoring, type SectionAuthoringProps } from './lesson-section-authoring'
 
-function ToolPreview({ block }: { block: BlockView }) {
+function ToolPreview({
+  block,
+  runtimeScope,
+}: {
+  block: BlockView
+  runtimeScope?: StudioAuthoringRuntimeScope
+}) {
   const studio = useRef<StudioHandle | null>(null)
   const pinta = useRef<PintaHandle | null>(null)
   const rehearsal = useLessonPreview()
   const [checkResult, setCheckResult] = useState('')
-  const initialProject = useRef(
-    block.content.kind === 'studio'
-      ? (rehearsal?.workspaces[block.id] ?? block.content.initialProject)
-      : undefined,
-  )
+  const [session, setSession] = useState(() => ({
+    project:
+      block.content.kind === 'studio'
+        ? (rehearsal?.workspaces[block.id] ?? block.content.initialProject)
+        : undefined,
+    revision: rehearsal?.workspaceRevisions?.[block.id] ?? runtimeScope?.context.draftRevision,
+    generation: 0,
+  }))
+  const outdated = session.revision !== runtimeScope?.context.draftRevision
   if (block.content.kind === 'studio')
     return (
       <div className="space-y-3">
+        {outdated && (
+          <div role="alert" className="space-y-2 rounded-lg border border-border p-3 text-sm">
+            <p>
+              O rascunho da aula mudou. Seu projeto anterior continua abaixo, com a execução
+              pausada. Baixe uma cópia antes de abrir a versão atual, se quiser guardá-lo.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  const project = studio.current?.getProject() ?? session.project
+                  if (!project) return
+                  const { downloadProjectAsJSON } = await import('@sistemazero/studio')
+                  downloadProjectAsJSON(project)
+                }}
+              >
+                Guardar projeto anterior
+              </Button>
+              <Button
+                onClick={() => {
+                  if (block.content.kind !== 'studio') return
+                  const project = block.content.initialProject
+                  setSession({
+                    project,
+                    revision: runtimeScope?.context.draftRevision,
+                    generation: session.generation + 1,
+                  })
+                  setCheckResult('')
+                  if (project)
+                    rehearsal?.onWorkspaceChange(
+                      block.id,
+                      project,
+                      runtimeScope?.context.draftRevision,
+                    )
+                }}
+              >
+                Abrir rascunho atual
+              </Button>
+            </div>
+          </div>
+        )}
         <StudioEmbed
+          key={session.generation}
+          runtimeScope={outdated ? undefined : runtimeScope}
+          editingAccess={outdated ? 'observer' : 'author'}
           handleRef={studio}
-          initialProject={initialProject.current}
+          initialProject={session.project}
           onChange={
-            rehearsal ? (project) => rehearsal.onWorkspaceChange(block.id, project) : undefined
+            rehearsal
+              ? (project) => rehearsal.onWorkspaceChange(block.id, project, session.revision)
+              : undefined
           }
           features={{ ai: false, export: false }}
           lessonConfig={{
@@ -49,13 +106,14 @@ function ToolPreview({ block }: { block: BlockView }) {
             allowBlocks: block.content.allowBlocks,
             allowCategories: block.content.allowCategories,
             allowLevelReveal: block.content.allowLevelReveal,
-            activity: block.content.activity,
+            pythonLevel: block.content.pythonLevel,
           }}
         />
         {rehearsal && (
           <>
             <Button
               variant="outline"
+              disabled={outdated}
               onClick={async () => {
                 try {
                   setCheckResult(
@@ -127,6 +185,7 @@ function materiaisResolvidos(anexos: Map<string, AttachmentView>) {
 export function LessonStructureEditor(
   props: SectionAuthoringProps & {
     preview: boolean
+    draftRevision?: string
     onPreviewChange: (value: boolean) => void
     /**
      * Plataforma do curso. A prévia e o ensaio precisam montar a aula como o ALUNO
@@ -141,6 +200,7 @@ export function LessonStructureEditor(
   const { lesson, document, preview, onPreviewChange, audience } = props
   const kids = audience === 'kids'
   const [rehearsalMode, setRehearsalMode] = useState(false)
+  const [exampleEditing, setExampleEditing] = useState(false)
   const blocks = new Map(lesson.blocks.map((b) => [b.id, b]))
   const previewLesson: LessonDetailView = {
     id: lesson.id,
@@ -163,7 +223,26 @@ export function LessonStructureEditor(
       const block = blocks.get(item.id)
       if (!block) return null
       if (block.kind === 'studio' || block.kind === 'pinta')
-        return <ToolPreview key={block.id} block={block} />
+        return (
+          <ToolPreview
+            key={block.id}
+            block={block}
+            runtimeScope={
+              props.draftRevision
+                ? {
+                    userId: props.authorId,
+                    context: {
+                      kind: 'authoring',
+                      lessonId: lesson.id,
+                      draftRevision: props.draftRevision,
+                      blockId: block.id,
+                      purpose: 'rehearsal',
+                    },
+                  }
+                : undefined
+            }
+          />
+        )
       if (block.content.kind === 'video' && !block.content.src)
         return (
           <p key={block.id} className="rounded-xl border border-dashed border-border p-5">
@@ -184,12 +263,16 @@ export function LessonStructureEditor(
               livremente.
             </p>
           </div>
-          <Button variant="outline" onClick={() => onPreviewChange(!preview)}>
+          <Button
+            variant="outline"
+            disabled={exampleEditing}
+            onClick={() => onPreviewChange(!preview)}
+          >
             {preview ? 'Voltar à edição' : 'Prévia do rascunho'}
           </Button>
         </div>
       )}
-      {preview && (
+      {preview && !exampleEditing && (
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Modo da prévia">
             <Button
@@ -209,6 +292,8 @@ export function LessonStructureEditor(
           </div>
           {rehearsalMode ? (
             <LessonRehearsal
+              authorId={props.authorId}
+              draftRevision={props.draftRevision}
               lesson={previewLesson}
               document={document}
               renderBlocks={renderPreviewBlocks}
@@ -226,7 +311,7 @@ export function LessonStructureEditor(
         </div>
       )}
       <div hidden={preview}>
-        <LessonSectionAuthoring {...props} />
+        <LessonSectionAuthoring {...props} onExampleEditingChange={setExampleEditing} />
       </div>
     </section>
   )

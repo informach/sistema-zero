@@ -1,3 +1,4 @@
+import type { CourseModality } from '@sistemazero/core/course/modality'
 import type {
   Course,
   Lesson,
@@ -38,6 +39,8 @@ export interface CourseView {
   sequentialLock: boolean
   /** Atividade da seção abre só depois que o aluno assiste ao vídeo uma vez. */
   videoBeforeActivity: boolean
+  /** Gravado (`recorded`) ou ao vivo (`live`): o ao vivo só existe em Oficinas, fora da Jornada. */
+  modality: CourseModality
   /**
    * Blocos que este curso LIBERA no Estúdio livre quando o aluno satisfaz o critério
    * atual (bônus Kids: conclusão; demais: conclusão + Mural). Vem de
@@ -76,6 +79,7 @@ export function toCourseView(c: Course, hasShowcaseBlock?: boolean): CourseView 
     journeyRole: c.journeyRole,
     sequentialLock: c.sequentialLock,
     videoBeforeActivity: c.videoBeforeActivity,
+    modality: c.modality,
     studioUnlockBlocks: resolveStudioUnlockBlocks(c),
     clonedFrom: resolveClonedFrom(c),
     ...(hasShowcaseBlock === undefined ? {} : { hasShowcaseBlock }),

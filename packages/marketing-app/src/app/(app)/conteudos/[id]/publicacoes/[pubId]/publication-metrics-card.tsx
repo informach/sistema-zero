@@ -61,6 +61,8 @@ export function PublicationMetricsCard({ publicationId }: { publicationId: strin
           <MetricItem label="Views" value={latest.views} />
           <MetricItem label="Likes" value={latest.likes} />
           <MetricItem label="Comentários" value={latest.comments} />
+          <MetricItem label="Compartilhamentos" value={latest.shares} />
+          <MetricItem label="Salvamentos" value={latest.saves} />
         </div>
         {points.length > 1 ? (
           <ResponsiveContainer width="100%" height={80}>
@@ -69,13 +71,17 @@ export function PublicationMetricsCard({ publicationId }: { publicationId: strin
               <Tooltip
                 content={({ active, payload }) => {
                   const point = payload?.[0]?.payload as
-                    | { capturedAt: string; views: number }
+                    | { capturedAt: string; views: number | null }
                     | undefined
                   if (!active || !point) return null
                   return (
                     <div className="rounded-md border border-border bg-card px-2 py-1 text-xs shadow-md">
                       {formatShortSp(point.capturedAt)} ·{' '}
-                      <span className="font-medium">{NUMBER_FMT.format(point.views)} views</span>
+                      <span className="font-medium">
+                        {point.views === null
+                          ? 'Views indisponíveis'
+                          : `${NUMBER_FMT.format(point.views)} views`}
+                      </span>
                     </div>
                   )
                 }}
@@ -92,17 +98,22 @@ export function PublicationMetricsCard({ publicationId }: { publicationId: strin
           </ResponsiveContainer>
         ) : null}
         <p className="text-xs text-muted-foreground">
-          Último snapshot em {formatShortSp(latest.capturedAt)}.
+          Último snapshot em {formatShortSp(latest.capturedAt)}. “—” indica dado não disponível.{' '}
+          {Object.values(latest.availability).includes('legacy-unknown')
+            ? 'Há zeros históricos sem confirmação de que a rede forneceu o dado.'
+            : ''}
         </p>
       </CardContent>
     </Card>
   )
 }
 
-function MetricItem({ label, value }: { label: string; value: number }) {
+function MetricItem({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="rounded-lg bg-muted/60 px-2 py-1.5">
-      <p className="text-sm font-bold tabular-nums">{NUMBER_FMT.format(value)}</p>
+      <p className="text-sm font-bold tabular-nums">
+        {value === null ? '—' : NUMBER_FMT.format(value)}
+      </p>
       <p className="text-[10px] text-muted-foreground">{label}</p>
     </div>
   )

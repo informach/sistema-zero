@@ -28,6 +28,7 @@ import {
   readMoldaBackupFile,
   readMoldaBackupProjects,
 } from '../../export/backupFile'
+import { MAX_BACKUP_FILE_BYTES } from '../../export/backupFormat'
 import { triggerDownload } from '../../export/download'
 import { importMoldaJson } from '../../export/projectJson'
 import { GALLERY_ZIP_FILE_NAME, GalleryZipError, zipGalleryBlob } from '../../export/zip'
@@ -48,7 +49,7 @@ const KIND_FILTERS: readonly GalleryKindFilter[] = ['all', ...MOLDA_ASSET_KINDS]
 const GALLERY_PAGE_SIZE = 60
 
 const RESTORE_MESSAGES: Record<MoldaBackupReadFailure, string> = {
-  'too-large': COPY.gallery.restoreTooLarge,
+  'too-large': COPY.gallery.restoreTooLarge(MAX_BACKUP_FILE_BYTES / (1024 * 1024)),
   'invalid-zip': COPY.gallery.importFailed,
   'missing-backup': COPY.gallery.restoreZipMissing,
   'duplicate-backup': COPY.gallery.restoreZipDuplicate,
@@ -265,7 +266,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
   const ready = loaded && !error
   const empty = ready && assets.length === 0 && readIssues.length === 0
 
-  // "Trazer de volta": no cartão lilás e, se a galeria não carregou, junto do "Tentar de novo"
+  // "Importar projeto": no cartão lilás e, se a galeria não carregou, junto do "Tentar de novo"
   // (antes do desenho das faixas ele morava no cabeçalho e estava sempre à mão).
   const restoreButton = (
     <button
@@ -316,7 +317,7 @@ export function GalleryScreen({ onOpen }: { onOpen: (id: string) => void }): JSX
             <div className="sz-tool-band__inner lg:pt-12 lg:pb-9">
               {/* Linha 1: [menu][voltar] + título e subtítulo à esquerda; à direita o selo, o
                   atalho do Estúdio (com a posse dele) e o "Criar novo". O "Baixar tudo" e o
-                  "Trazer de volta" moram no cartão lilás do fim (o arquivo das criações: levar e
+                  "Importar projeto" moram no cartão lilás do fim (o arquivo das criações: levar e
                   trazer), como no Pinta. */}
               <div className="sz-tool-header">
                 <div className="sz-tool-header__lead">

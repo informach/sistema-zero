@@ -70,12 +70,12 @@ acompanhada pelo pipeline do repositório.
 ### Task 3: Aula piloto e fontes pedagógicas
 
 **Files:**
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.manifesto.json`
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.md`
-- Modify: `docs/aulas-interativas/aulas/desafio-dia-1.roteiro.md`
-- Modify: `docs/aulas-interativas/cenas/CENAS-NOVAS.md`
-- Modify: `docs/aulas-interativas/CATALOGO-CENAS.json`
-- Test: `docs/aulas-interativas/qa/validar-manifestos.ts`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.manifesto.json`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.md`
+- Modify: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-dia-1.roteiro.md`
+- Modify: `docs/aulas-interativas-tecnico/cenas/CENAS-NOVAS.md`
+- Modify: `docs/aulas-interativas-tecnico/CATALOGO-CENAS.json`
+- Test: `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`
 
 **Interfaces:**
 - Consumes: preset `duas-caixas-nave` atualizado e padrão real 800 × 480 do Estúdio.

@@ -1,0 +1,651 @@
+{
+  "source": "Vila do Dragão · exemplo original atual",
+  "errors": [],
+  "states": [
+    {
+      "name": "abertura",
+      "file": "abertura.png",
+      "saved": {
+        "flags": {
+          "intro": true
+        },
+        "items": [],
+        "map": "vila",
+        "hx": 2,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": false,
+      "ready": false,
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "VILA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "FERRARIA",
+          "x": 304,
+          "y": 56
+        },
+        {
+          "text": "Ferreiro",
+          "x": 36,
+          "y": 540
+        },
+        {
+          "text": "PORTA DA CAVERNA",
+          "x": 564,
+          "y": 478
+        },
+        {
+          "text": "Objetivo: ouça o Ferreiro",
+          "x": 32,
+          "y": 536
+        },
+        {
+          "text": "Ele está vindo falar com você.",
+          "x": 32,
+          "y": 566
+        },
+        {
+          "text": "Mover: setas/WASD  •  Interagir: ESPAÇO",
+          "x": 32,
+          "y": 602
+        },
+        {
+          "text": "Ei, viajante! A vila do dragao precisa ",
+          "x": 36,
+          "y": 566
+        }
+      ]
+    },
+    {
+      "name": "ferreiro-entrega",
+      "file": "04-ferreiro.png",
+      "saved": {
+        "flags": {
+          "intro": true
+        },
+        "items": [],
+        "map": "vila",
+        "hx": 2,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": false,
+      "ready": false,
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "VILA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "FERRARIA",
+          "x": 304,
+          "y": 56
+        },
+        {
+          "text": "Ferreiro",
+          "x": 36,
+          "y": 540
+        },
+        {
+          "text": "PORTA DA CAVERNA",
+          "x": 564,
+          "y": 478
+        },
+        {
+          "text": "O dragão roubou o ouro. Tome a chave e entre na caverna ao sul!",
+          "x": 36,
+          "y": 566
+        },
+        {
+          "text": "[espaço]",
+          "x": 830,
+          "y": 608
+        }
+      ]
+    },
+    {
+      "name": "chave-recebida",
+      "file": "05-chave.png",
+      "saved": {
+        "flags": {
+          "intro": true,
+          "missao-pronta": true,
+          "aceitou-missao": true
+        },
+        "items": [
+          {
+            "name": "chave",
+            "image": "",
+            "qty": 1
+          }
+        ],
+        "map": "vila",
+        "hx": 2,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": true,
+      "ready": true,
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "VILA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "FERRARIA",
+          "x": 304,
+          "y": 56
+        },
+        {
+          "text": "Ferreiro",
+          "x": 430,
+          "y": 190
+        },
+        {
+          "text": "PORTA DA CAVERNA",
+          "x": 564,
+          "y": 478
+        },
+        {
+          "text": "Objetivo: entre na caverna",
+          "x": 32,
+          "y": 536
+        },
+        {
+          "text": "Siga o caminho até a porta no canto inferior direito.",
+          "x": 32,
+          "y": 566
+        },
+        {
+          "text": "Mover: setas/WASD  •  Interagir: ESPAÇO",
+          "x": 32,
+          "y": 602
+        },
+        {
+          "text": "C",
+          "x": 663,
+          "y": 568
+        }
+      ]
+    },
+    {
+      "name": "caminho-saindo-da-vila",
+      "file": "03-caminho.png",
+      "saved": {
+        "flags": {
+          "intro": true,
+          "missao-pronta": true,
+          "aceitou-missao": true
+        },
+        "items": [
+          {
+            "name": "chave",
+            "image": "",
+            "qty": 1
+          }
+        ],
+        "map": "vila",
+        "hx": 8,
+        "hy": 4,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": true,
+      "ready": true,
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "VILA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "FERRARIA",
+          "x": 304,
+          "y": 56
+        },
+        {
+          "text": "Ferreiro",
+          "x": 430,
+          "y": 190
+        },
+        {
+          "text": "PORTA DA CAVERNA",
+          "x": 564,
+          "y": 478
+        },
+        {
+          "text": "Objetivo: entre na caverna",
+          "x": 32,
+          "y": 536
+        },
+        {
+          "text": "Siga o caminho até a porta no canto inferior direito.",
+          "x": 32,
+          "y": 566
+        },
+        {
+          "text": "Mover: setas/WASD  •  Interagir: ESPAÇO",
+          "x": 32,
+          "y": 602
+        },
+        {
+          "text": "C",
+          "x": 663,
+          "y": 568
+        }
+      ]
+    },
+    {
+      "name": "diante-da-porta",
+      "file": "07-porta.png",
+      "saved": {
+        "flags": {
+          "intro": true,
+          "missao-pronta": true,
+          "aceitou-missao": true
+        },
+        "items": [
+          {
+            "name": "chave",
+            "image": "",
+            "qty": 1
+          }
+        ],
+        "map": "vila",
+        "hx": 8,
+        "hy": 6,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": true,
+      "ready": true,
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "VILA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "FERRARIA",
+          "x": 304,
+          "y": 56
+        },
+        {
+          "text": "Ferreiro",
+          "x": 430,
+          "y": 190
+        },
+        {
+          "text": "PORTA DA CAVERNA",
+          "x": 564,
+          "y": 478
+        },
+        {
+          "text": "Objetivo: entre na caverna",
+          "x": 32,
+          "y": 536
+        },
+        {
+          "text": "Siga o caminho até a porta no canto inferior direito.",
+          "x": 32,
+          "y": 566
+        },
+        {
+          "text": "Mover: setas/WASD  •  Interagir: ESPAÇO",
+          "x": 32,
+          "y": 602
+        },
+        {
+          "text": "C",
+          "x": 663,
+          "y": 568
+        }
+      ]
+    },
+    {
+      "name": "entrou-na-caverna",
+      "file": "entrada-caverna.png",
+      "saved": {
+        "flags": {
+          "intro": true,
+          "missao-pronta": true,
+          "aceitou-missao": true
+        },
+        "items": [
+          {
+            "name": "chave",
+            "image": "",
+            "qty": 1
+          }
+        ],
+        "map": "caverna",
+        "hx": 1,
+        "hy": 5,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": true,
+      "ready": true,
+      "state": "jogando",
+      "texts": [
+        {
+          "text": "CAVERNA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "SAÍDA",
+          "x": 8,
+          "y": 310
+        },
+        {
+          "text": "Dragão",
+          "x": 496,
+          "y": 88
+        },
+        {
+          "text": "Objetivo: enfrente o Dragão",
+          "x": 32,
+          "y": 536
+        },
+        {
+          "text": "ESPAÇO: enfrentar o Dragão",
+          "x": 32,
+          "y": 566
+        },
+        {
+          "text": "Mover: setas/WASD  •  Interagir: ESPAÇO",
+          "x": 32,
+          "y": 602
+        },
+        {
+          "text": "C",
+          "x": 663,
+          "y": 568
+        }
+      ]
+    },
+    {
+      "name": "batalha",
+      "file": "08-batalha.png",
+      "saved": {
+        "flags": {
+          "intro": true,
+          "missao-pronta": true,
+          "aceitou-missao": true
+        },
+        "items": [
+          {
+            "name": "chave",
+            "image": "",
+            "qty": 1
+          }
+        ],
+        "map": "caverna",
+        "hx": 7,
+        "hy": 2,
+        "hp": 30,
+        "max": 30,
+        "str": 8,
+        "def": 2,
+        "lvl": 1,
+        "xp": 0,
+        "maxXp": 20,
+        "potions": [
+          {
+            "name": "Poção",
+            "heal": 20
+          }
+        ],
+        "energy": 10,
+        "poison": 0,
+        "special": {
+          "name": "Espada flamejante",
+          "dmg": 18,
+          "cost": 4
+        },
+        "pkmTeam": [],
+        "pkmBalls": []
+      },
+      "key": true,
+      "ready": true,
+      "state": "batalha",
+      "texts": [
+        {
+          "text": "CAVERNA DO DRAGÃO",
+          "x": 24,
+          "y": 34
+        },
+        {
+          "text": "SAÍDA",
+          "x": 8,
+          "y": 310
+        },
+        {
+          "text": "Dragão",
+          "x": 480,
+          "y": 146
+        },
+        {
+          "text": "Objetivo: enfrente o Dragão",
+          "x": 32,
+          "y": 536
+        },
+        {
+          "text": "ESPAÇO: enfrentar o Dragão",
+          "x": 32,
+          "y": 566
+        },
+        {
+          "text": "Mover: setas/WASD  •  Interagir: ESPAÇO",
+          "x": 32,
+          "y": 602
+        },
+        {
+          "text": "C",
+          "x": 663,
+          "y": 568
+        },
+        {
+          "text": "Você",
+          "x": 480,
+          "y": 376.40000000000003
+        },
+        {
+          "text": "Batalha! Seu time contra Dragão.",
+          "x": 14,
+          "y": 22
+        },
+        {
+          "text": "Você  (do seu time)",
+          "x": 676,
+          "y": 66
+        },
+        {
+          "text": "Vida: 30 / 30",
+          "x": 676,
+          "y": 88
+        },
+        {
+          "text": "Energia: 10 / 10",
+          "x": 676,
+          "y": 108
+        },
+        {
+          "text": "Força: 8     Defesa: 2",
+          "x": 676,
+          "y": 128
+        },
+        {
+          "text": "Golpes: Espada flamejante (18)",
+          "x": 676,
+          "y": 148
+        },
+        {
+          "text": "Vez de Você  —  vida 30/30  energia 10",
+          "x": 286,
+          "y": 240
+        },
+        {
+          "text": "> Atacar (força)",
+          "x": 286,
+          "y": 280
+        },
+        {
+          "text": "  Espada flamejante (dano 18, energia 4)",
+          "x": 286,
+          "y": 314
+        },
+        {
+          "text": "  Defender (dano pela metade)",
+          "x": 286,
+          "y": 348
+        },
+        {
+          "text": "  Item (poção)",
+          "x": 286,
+          "y": 382
+        },
+        {
+          "text": "  Fugir",
+          "x": 286,
+          "y": 416
+        }
+      ]
+    }
+  ]
+}

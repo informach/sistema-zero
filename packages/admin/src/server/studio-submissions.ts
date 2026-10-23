@@ -17,9 +17,6 @@ export interface RawGlobalSubmission extends RawSubmissionIdentity {
   courseTitle: string
   audience: 'adult' | 'kids'
   submittedAt: string
-  score: number | null
-  checkedAt: string | null
-  passed: boolean
   message: string | null
   answered: boolean
 }

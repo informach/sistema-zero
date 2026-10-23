@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
 import type { StudyGrantView } from '@sistemazero/member-shell/lib/study-access'
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { archiveProfile } from '../src/app/pais/_components/remove-profile'
 import { ChildClient } from '../src/app/pais/crianca/[id]/child-client'
 import { PARENT_SECTIONS } from '../src/app/pais/parent-routes'
 import { ParentsClient } from '../src/app/pais/parents-client'
 import { guideDismissedKey, guideWelcomeSeenKey } from '../src/lib/guide'
-import { COMUNIDADE_OFERTA_URL } from '../src/lib/links'
+import { comunidadeContinuarUrl } from '../src/lib/links'
 import type { ProfileAllowance } from '../src/lib/profile-allowance'
+import { StudyRequestError } from '../src/lib/study-access-client'
 import type { ChildDashboardView, ProfileView } from '../src/lib/types'
 
 const originalFetch = globalThis.fetch
@@ -249,7 +251,7 @@ describe('a Família', () => {
     expect(screen.getByText('Vencido')).toBeTruthy()
   })
 
-  test('a fase do link que trouxe o responsável segue até a página da criança', () => {
+  test('a aula do link que trouxe o responsável segue até a página da criança', () => {
     install()
     render(
       <ParentsClient
@@ -281,7 +283,7 @@ describe('a Família', () => {
     const atLimit = renderFamily({ allowance: { kind: 'limited', maxProfiles: 1 } })
     expect(screen.queryByRole('link', { name: /Adicionar criança/ })).toBeNull()
     expect(screen.getByRole('link', { name: 'amplie o seu acesso' }).getAttribute('href')).toBe(
-      COMUNIDADE_OFERTA_URL,
+      comunidadeContinuarUrl('pais-limite-perfis'),
     )
     atLimit.unmount()
     // No teto da Comunidade (o assinante), assinar de novo não abre vaga: o caminho é o Atendimento.
@@ -365,7 +367,7 @@ describe('a página da criança', () => {
     expect(acesso.getAttribute('aria-selected')).toBe('true')
   })
 
-  test('com a fase do link, a volta à Família a leva junto', () => {
+  test('com a aula do link, a volta à Família a leva junto', () => {
     install()
     render(
       <ChildClient
@@ -381,6 +383,96 @@ describe('a página da criança', () => {
     const main = screen.getByRole('main')
     expect(within(main).getByRole('link', { name: 'Família' }).getAttribute('href')).toBe(
       '/pais?aluno=%2Fcursos%2Fcade%2Faulas%2F1',
+    )
+  })
+
+  test('sem data de nascimento, um convite opcional leva ao formulário', () => {
+    install()
+    renderChild(true)
+    expect(
+      screen.getByText(
+        'Informe a data de nascimento para a plataforma avisar você quando André completar 18 anos.',
+      ),
+    ).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Informar a data' }).getAttribute('href')).toBe(
+      `/pais/crianca/${profileId}/editar`,
+    )
+    expect(screen.queryByRole('region', { name: 'Aviso dos 18 anos' })).toBeNull()
+  })
+
+  test('aos 18 anos o perfil segue e o aviso mostra a área adulta e o arquivamento', async () => {
+    const calls: Array<{ path: string; method: string }> = []
+    install()
+    const listas = globalThis.fetch
+    globalThis.fetch = Object.assign(
+      mock(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const path = String(input)
+        const method = init?.method ?? 'GET'
+        calls.push({ path, method })
+        if (method === 'DELETE') return new Response(null, { status: 409 })
+        return listas(input, init)
+      }),
+      { preconnect: originalFetch.preconnect },
+    )
+    const year = new Date().getFullYear() - 19
+    render(
+      <ChildClient
+        accountId="parent"
+        parentName="Helena"
+        profile={{ ...andre, birthDate: `${year}-01-01` }}
+        photoUrl={null}
+        initialTab="acesso"
+        familyReady={true}
+      />,
+    )
+    const aviso = screen.getByRole('region', { name: 'Aviso dos 18 anos' })
+    expect(aviso.textContent).toContain(
+      'André fez 18 anos. O perfil Kids continua funcionando enquanto a sua assinatura estiver ativa, com os projetos que já estão aqui. Agora André também pode ter uma conta própria na área adulta, que começa nova e usa o mesmo Estúdio.',
+    )
+    expect(
+      within(aviso)
+        .getByRole('link', { name: /Conhecer a área adulta/ })
+        .getAttribute('href'),
+    ).toBe(
+      'https://sistemazero.com.br/pro/comunidade-dos-criadores/oferta/continuar?utm_source=plataforma&utm_medium=app&utm_content=pais-perfil-18',
+    )
+    expect(screen.queryByText(/Informe a data de nascimento/)).toBeNull()
+    // Arquivar passa pela MESMA confirmação do editor antes de qualquer pedido.
+    fireEvent.click(within(aviso).getByRole('button', { name: 'Arquivar perfil' }))
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByText('Arquivar perfil')).toBeTruthy()
+    expect(dialog.textContent).toContain(
+      'Arquivar o perfil de André? Ele sai da sua conta e libera a vaga do plano, e André deixa de entrar com ele. O progresso e os projetos ficam guardados, mas não aparecem mais na plataforma.',
+    )
+    // O perfil de quem fez 18 anos não é chamado de criança.
+    expect(dialog.textContent).not.toContain('criança')
+    expect(calls.some((call) => call.method === 'DELETE')).toBe(false)
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Arquivar' }))
+    await waitFor(() =>
+      expect(calls).toContainEqual({ path: `/api/profiles/${profileId}`, method: 'DELETE' }),
+    )
+  })
+
+  test('arquivar com login antigo leva o código do servidor (o atalho "Entrar de novo")', async () => {
+    globalThis.fetch = Object.assign(
+      mock(async () =>
+        Response.json({ error: { code: 'PARENT_REAUTH_REQUIRED' } }, { status: 403 }),
+      ),
+      { preconnect: originalFetch.preconnect },
+    )
+    const reauth = await archiveProfile(profileId).catch((error: unknown) => error)
+    expect(reauth).toBeInstanceOf(StudyRequestError)
+    expect((reauth as StudyRequestError).code).toBe('PARENT_REAUTH_REQUIRED')
+
+    globalThis.fetch = Object.assign(
+      mock(async () => new Response('<html>erro</html>', { status: 502 })),
+      { preconnect: originalFetch.preconnect },
+    )
+    const failed = await archiveProfile(profileId).catch((error: unknown) => error)
+    expect(failed).toBeInstanceOf(StudyRequestError)
+    expect((failed as StudyRequestError).code).toBe('PROFILE_ARCHIVE_FAILED')
+    expect((failed as StudyRequestError).message).toBe(
+      'Não foi possível arquivar o perfil. Tente novamente.',
     )
   })
 

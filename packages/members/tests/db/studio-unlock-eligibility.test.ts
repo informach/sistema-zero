@@ -6,6 +6,7 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleGamificationRepository } from '../../src/infrastructure/persistence/drizzle/gamification.repository'
+import { addColumnsWithDefaults } from './additive-columns'
 import { prepareTestDatabase } from './test-database'
 
 /**
@@ -34,7 +35,7 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
     // O banco é compartilhado entre os arquivos de tests/db. A preparação aditiva
     // funciona tanto com as tabelas mínimas de outra suíte quanto com o schema completo.
     await conn.sql.unsafe('create table if not exists members.courses (id uuid primary key)')
-    for (const column of [
+    await addColumnsWithDefaults(conn, 'courses', [
       'version integer not null default 0',
       "slug text not null default ''",
       "title text not null default ''",
@@ -45,12 +46,12 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
       'career_slot smallint',
       'sequential_lock boolean not null default true',
       'video_before_activity boolean not null default false',
+      // Cursos ao vivo (0113): as consultas da Jornada/Estúdio filtram a modalidade.
+      "modality text not null default 'recorded'",
       'metadata jsonb',
       'created_at timestamptz not null default now()',
       'updated_at timestamptz not null default now()',
-    ]) {
-      await conn.sql.unsafe(`alter table members.courses add column if not exists ${column}`)
-    }
+    ])
 
     await conn.sql.unsafe('create table if not exists members.xp_events (user_id uuid not null)')
     for (const column of [
@@ -84,9 +85,9 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
          'kids', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_bonus'] })}::jsonb)`
     await conn.sql`
       insert into members.xp_events
-        (id, user_id, audience, source_type, source_id, amount)
+        (id, user_id, audience, source_type, source_id, amount, created_at)
       values
-        (${randomUUID()}, ${userId}, 'kids', 'course_complete', ${bonusCourseId}, 0)`
+        (${randomUUID()}, ${userId}, 'kids', 'course_complete', ${bonusCourseId}, 0, now())`
 
     expect(await repo.listStudioUnlocksByCourse(userId, 'kids')).toEqual([
       { courseId: bonusCourseId, blocks: ['sz_bonus'] },
@@ -109,9 +110,9 @@ describe.skipIf(!testDatabaseUrl)('ferramentas de bônus Kids (SQL real)', () =>
          'adult', 'iniciante', '2d', null, ${JSON.stringify({ studioUnlockBlocks: ['sz_cross_audience'] })}::jsonb)`
     await conn.sql`
       insert into members.xp_events
-        (id, user_id, audience, source_type, source_id, amount)
+        (id, user_id, audience, source_type, source_id, amount, created_at)
       values
-        (${randomUUID()}, ${movedUserId}, 'kids', 'course_complete', ${movedCourseId}, 0)`
+        (${randomUUID()}, ${movedUserId}, 'kids', 'course_complete', ${movedCourseId}, 0, now())`
 
     expect(await repo.listStudioUnlocksByCourse(movedUserId, 'kids')).toEqual([])
     expect(await repo.getStudioUnlockRevision(movedUserId, 'kids')).toBe(studioUnlockRevision([]))

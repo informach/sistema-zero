@@ -42,6 +42,16 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
 > pelos tetos — `ExportForStudioResult` com `reason` tipada). Zero React lá
 > dentro (o import dinâmico do host não puxa o app); o host seta o namespace
 > pelo `setPintaStorageNamespace` RE-EXPORTADO no próprio subpath.
+>
+> ⭐ **`exportLoadedAssetForStudio(asset)`** (14/10/2026, "Trazer da equipe" do Pensa em
+> equipe): o MESMO payload do `exportAssetForStudio(id)`, a partir de um desenho JÁ carregado e
+> **sem tocar o IndexedDB** (o desenho é da COLEGA: desceu da conta dela como `.pinta.json` e o
+> host o lê com `assetFromJson`). Os dois passam pelo mesmo `exportResolvedForStudio`. O MAPA
+> sozinho não tem as peças que aponta: volta `{ok:false, reason:'needs-tileset', message}` com
+> `NEEDS_TILESET_MESSAGE` (frase de criança, exportada), e NUNCA vai buscar as peças na galeria
+> deste perfil (seria um desenho de outra pessoa com o mesmo id). Testes em
+> `export/studioLibrary.test.ts` (zero leitura/gravação no IDB pelo `idbMockStats`, payload
+> idêntico ao do caminho da galeria, mapa sem peças, pixel sem canvas).
 
 - **`setPintaStorageNamespace(viewerId)`** — o host chama ANTES de montar (isola a galeria por
   PERFIL no IndexedDB; vazio = store default `sistema-zero-pinta`; mesmo contrato do studio).
@@ -57,70 +67,26 @@ planeja → **Pinta desenha** → Estúdio constrói. Biblioteca INTERNA do mono
   `studioOwned?` (só muda a COPY do sucesso da ponte), `onOpenStudio?`,
   `sendToStudio?(PintaExportedAsset) → PintaSendResult` — **ausente = o botão "Usar no Estúdio"
   não aparece** (degrade, padrão Pensa); desde 08/2026 o botão também exige
-  **`asset.projectRef`** (desenho de um jogo do Pensa, onde ele marca o progresso da missão) —
+  **`asset.projectRef`** (desenho de um jogo do Pensa; o envio não conclui uma missão) —
   desenho avulso chega ao Estúdio pelo "Trazer do Pinta" de lá —, **`resyncToStudio?`** e **`initialAssetId?`** (ponte de
   MÃO DUPLA, 08/2026 — ver abaixo), **`taskSession?: PintaTaskSession`** e
   **`initialIntent?: PintaInitialIntent`**: `{projectRef, artKind?, style?}` vindo do Cartão de
-  Criação aberto por `/pinta?tarefa=<id>` — abre o
+  Criação aberto por `/pinta?missao=<id>` — abre o
   "Criar novo" pré-configurado UMA vez no mount (`takeInitialIntent` no appContext consome via
   ref; voltar do editor à galeria NÃO reabre). Com `artKind`, escolher o ESTILO pula o passo de
   tipo (`NewAssetDialog.initialRole` mapeia sprite/background/tileset → kind do estilo), o nome
   vem sugerido (`heroi`/`cenario`/`pecas` com sufixo anti-colisão) e o topo mostra o selo
   "Desenho para o jogo: <nome>". Fechar o diálogo descarta o intent.
 
-`TaskBriefPanel` mantém “Brief do meu jogo”, passos e critérios visíveis. Abrir um desenho liga
-seu id ao `outputRef` e inicia a tarefa. A conclusão exige os itens obrigatórios, um asset local
-vinculado e, quando `requiresStudioUse`, o sucesso de “Usar no Estúdio”. O host persiste o
-progresso; o Pinta continua sem backend próprio. Contrato transversal: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+`PintaTaskSession` é o contrato compartilhado `PensaMissionSession` de `@sistemazero/ui/pensa-mission-session`. `TaskBriefPanel` usa `PensaMissionPanel`: objetivo, regras, como conferir, referências, anotação e ações de missão. Não há passos de implementação, checklist nem progresso mantido pelo Pinta.
 
-⭐ **"Voltar ao plano" no painel (09/2026)**: com `PintaTaskSession.onReturnToPlan` (opcional;
-ausente = o botão não aparece) o painel ganha o botão de volta ao plano do Pensa, na galeria E no
-editor, inclusive com a tarefa concluída. O rótulo é o MESMO do Molda (`COPY.task.back`) e não muda
-enquanto guarda (`disabled` + `aria-busy` com o mesmo texto: trocá-lo mudaria o nome acessível no
-meio da ação). O id do plano já vem em `session.project.id` — nenhum parâmetro novo de URL.
-⭐⭐ **A seta que recolhe (18/09/2026)**: o brief era um `<details open>` — recolhia, mas com o
-triângulo do navegador (que criança não acha) e esquecendo a escolha ao sair. Virou botão de
-verdade (44px, `aria-expanded`, chevron `aria-hidden`), e o painel ganhou `mb-2`: o host empilha
-brief e palco sem vão nenhum, e sem a margem um encosta no outro. Quem LEMBRA é o HOST — o par
-OPCIONAL `collapsed`/`onCollapsedChange` do `PintaTaskSession` desce como DADO, o mesmo idioma do
-`menu.hidden`/`onToggle` do `hostChrome`, porque este pacote não conhece `viewerId` nem
-`localStorage`. Sem o par (playground, `<PintaLesson>`, admin) ele recolhe por conta própria e
-esquece ao sair. ⚠ Com o par, quem manda é o host: clicar AVISA e não abre sozinho.
-⚠ Recolhido, o `aria-controls` SAI (o corpo desmonta, e apontar para um id ausente é referência
-pendurada para o leitor de tela — a mesma régua do `Panel` deste pacote).
-⭐⭐ **Recolhido sobra UMA linha, e o painel veste a casca da comunidade (19/09/2026).** Dois
-pedidos dela no mesmo dia: *"quando fechar pode fechar tudo, mantendo só uma linha ali: o título e
-a setinha, para a gente deixar bastante espaço para as ferramentas"* e *"esse cartão está
-totalmente fora do design da identidade visual da comunidade"*.
-- **A casca é compartilhada**: `.sz-tool-guide` (`__head|__kicker|__title|__body|__foot|__alert`)
-  do `@sistemazero/ui/tool-chrome.css`, a MESMA do guia do Estúdio e do Molda — cartão branco,
-  canto de 20px, Baloo de 15px, 14/18px de respiro. O `rounded-2xl border-2 border-pin-accent/40
-  px-3 py-2` próprio saiu, e com ele o texto colado na curva (12px de lado e 8px embaixo, o que
-  ela relatou). Medido no playground: recolhido 141px → 50px de altura, com 19px à esquerda e
-  15px abaixo do título. Os botões viraram `.sz-tool-pill--primary|outline|quiet`.
-- ⚠️⚠️ **O pé de ROTINA passou a recolher junto** (o "Voltar ao plano" e a linha de situação), o
-  que REVOGA em parte o invariante de 18/09. A regra que ficou no lugar: **recolher esconde
-  conteúdo e ação de rotina, NUNCA um problema.** O recado de falha e o aviso do desenho ausente
-  — com os dois botões que o resolvem — seguem FORA do que recolhe, e a criança recupera a rotina
-  com um clique na seta, que nunca sai da tela. `TaskBriefPanel.test.tsx` trava os dois lados (e
-  não a tag: o teste antigo exigia `<details>` e foi reescrito).
-- ⚠️ O sobretítulo "GUIA DO PENSA" SOME recolhido: com ele o cabeçalho tem duas linhas, e ela
-  pediu uma. Aberto ele volta, porque é o que diz de onde veio aquele painel.
-- **Full review do lote (19/09/2026), o que ele mudou aqui:** a SITUAÇÃO da tarefa subiu para o
-  cabeçalho (`.sz-tool-guide__state`) — ela morava no corpo, que recolhe, então a criança perdia
-  de vista se a tarefa estava pronta justo quando escolhia recolher; e com o recado de falha na
-  tela o PÉ fica, porque "tente de novo" tem de apontar para um botão que existe (a regra é o
-  problema E o que o resolve). O "Vincular outro desenho" trocou a pílula quieta pela de contorno:
-  dentro do recado tingido, a quieta media 1,04:1 sem fio nenhum no tema claro.
-- ⚠️ Cobertura declarada: o sobretítulo que some e a situação no cabeçalho têm teste; a fiação do
-  `?tarefa=` do playground, não.
-⚠️ O `PintaApp` GUARDA antes de navegar: ele pega a store do editor aberto pelo `onEditorReady` do
-contexto (2º consumidor, ao lado do bloco de aula) e só chama o host com `flush().ok`, a mesma
-disciplina do "Voltar" do editor; falhou, o painel mostra o recado no `syncError` e NÃO navega (o
-flush de desmonte é `void` e não serve de garantia). ⚠️ NÃO mexer no `hostChrome.back`, que é só da
-galeria e sempre "Voltar para Criar". Testes: `TaskBriefPanel.test.tsx` (existência, a pílula compartilhada, clique
-duplo, falha) e `PintaApp.test.tsx` (a ORDEM gravação → navegação numa lista compartilhada, e a
-gravação que rejeita).
+Entregas são referências persistidas por `assetSlotId`, com criação e revisão salva na conta. Com um único slot e nenhuma entrega, o editor salva antes de propor o vínculo inicial; várias partes exigem escolha explícita. O painel permite ligar o desenho aberto à parte escolhida. Uma missão concluída precisa ser reaberta antes de substituir sua entrega. Criar a arte e incorporá-la ao jogo são missões distintas: “Usar no Estúdio” não conclui nem bloqueia a missão de arte.
+
+`PintaApp`/`taskSessionSave` fazem flush antes de concluir, vincular, continuar, pedir ajuda ou voltar ao plano. Falha conserva a edição, impede navegação/conclusão e mostra recado. O host confirma a gravação na conta, valida a criação e envia a revisão real; não invente `saveRevision`. O editor não remonta ao atualizar progresso. A troca para outra missão de arte ocorre somente depois do salvamento.
+
+O painel recolhe para título e estado com a preferência recebida do host; falhas continuam visíveis. A receita de cor, geometria e acessibilidade é compartilhada em `@sistemazero/ui/tool-chrome.css`. O host abre `/pinta?missao=<id>` e retorna a `/pensa?plano=<projectId>`. O chrome de galeria permanece independente, com “Voltar para Criar”.
+
+Testes: `TaskBriefPanel.test.tsx` (conferência funcional, vínculo por parte, erro recolhido) e `PintaApp.test.tsx` (flush antes de ação e navegação, falha impede saída). Contrato transversal: [reestruturação do Pensa](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
 
 ## Chrome do HOST na barra (07/09/2026)
 
@@ -3177,26 +3143,12 @@ Eram DOIS caminhos com o mesmo sintoma, e o segundo explica o "apaga":
 
 Três revisores (estado/eventos · CSS/cascata/criança · testes). Os achados que viraram código:
 
-- ⭐⭐ **[ALTO] Recolher escondia o ÚNICO caminho de recuperar um desenho que sumiu.** O bloco
-  `outputMissing` (o `role="alert"` "Este desenho não está neste aparelho" mais os botões
-  "Recriar com este brief" e "Vincular outro desenho") morava DENTRO do brief. Era tolerável
-  enquanto o `<details>` nascia aberto toda vez; com a seta que LEMBRA, deixou de ser: a criança
-  que recolheu uma vez abriria a tarefa noutro aparelho e veria só o título, sem nada dizendo que
-  existe saída. Desceu para o pé. **Recolher esconde o brief, nunca um problema.**
-  ⚠️ REVOGADO EM PARTE em 19/09/2026: o PÉ passou a recolher (ela pediu uma linha só), então o
-  aviso não mora mais nele — é irmão do corpo e do pé, e vai junto com os dois botões que o
-  resolvem. A regra ficou mais forte: recolher esconde conteúdo e ação de ROTINA, nunca um
-  problema nem o que o resolve.
+- **Recuperação de desenho ausente:** o painel compartilhado recebe `recovery`, fora do corpo recolhível, e mantém o aviso e as ações para escolher/criar um desenho visíveis. A conferência normal permanece no corpo. `TaskBriefPanel.test.tsx` cobre a recuperação com o painel recolhido.
 - ⭐ **[MÉDIO] A rede do duplo clique usa o `shapeHitAt`**, não o `shapeBounds`: aquele trata a
   ROTAÇÃO (a caixa a ignora, e está documentado), então num texto girado a primeira versão
   errava nos dois sentidos — em cima do glifo não abria, e no vazio abria. Trava PURA em
   `vector/hitTest.test.ts` ("TEXTO girado"), com o anti-vácuo do mesmo ponto sem o giro.
-- ⭐ **[MÉDIO] Recolher o brief re-disparava o PATCH de progresso.** O `EditorScreen` tinha o
-  OBJETO `adapter.taskSession` nas deps do efeito que vincula o desenho à tarefa, e o host o
-  remonta a cada mudança do adapter — desde a seta, a cada clique nela. Com a tarefa ainda
-  `planned` (ou com o primeiro PATCH em voo, ou depois de um que falhou offline), isso remarcava
-  com o MESMO `expectedUpdatedAt`: 409, recarga do brief e toast de erro. A dep virou o
-  `progress`, que vem por referência do handoff; a sessão vem de um ref.
+- **Vínculo inicial de arte:** somente uma missão com uma única parte e nenhuma entrega pode propor o vínculo inicial. O editor faz flush antes e o host confirma a gravação na conta; várias partes exigem associação explícita. Atualizações de recolhimento não gravam progresso.
 - **[MÉDIO] `openAsset`/`closeEditor` do contexto viraram `useCallback`**: o `context` depende do
   adapter, e com eles nascendo inline o `onOpenCard` da galeria mudava de identidade a cada clique
   na seta, quebrando o `memo` de TODOS os cartões — contra o invariante escrito no próprio
@@ -3412,8 +3364,8 @@ por px reais.
   multi-touch, PNG vazio, contraste do selinho, Mão/pan, flip, teclado, zoom honesto do mapa,
   pintura incremental no arrasto do mapa). ZIP: a pasta `vetores/` MORREU — vetor sai em
   `personagens/`/`cenarios/`/`tilesets/` ao lado do pixel (+ `.svg` extra).
-- **Cartão de Criação Pensa→Pinta (08/2026):** `projectRef`, `PintaInitialIntent` e
-  `PintaTaskSession` restauram contexto por `/pinta?tarefa=<id>`; o host busca e persiste a
+- **Missão funcional Pensa→Pinta:** `projectRef`, `PintaInitialIntent` e
+  `PintaTaskSession` restauram contexto por `/pinta?missao=<id>`; o host busca e persiste a
   sessão no backend. Não use `sessionStorage` para o handoff.
 - **Ponte de MÃO DUPLA com o Estúdio (08/2026, não commitado)**: `initialAssetId` (deep link
   `/pinta?desenho=`) + `resyncToStudio` (reenvio ao parar de desenhar). QA em browser real feito no

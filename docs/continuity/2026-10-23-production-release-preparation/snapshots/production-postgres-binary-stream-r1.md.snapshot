@@ -1,0 +1,67 @@
+# PostgreSQL 18: backup cifrado e prova de restauração — preparo offline r1
+
+Preparado em 2026-10-23. **Nenhum dump, SSH, container, SQL remoto ou chave de produção foi executado/criado neste lote.** Este documento substitui as suposições de versão do roteiro anterior; não substitui seus gates de manutenção. O módulo de transporte não contém seleção de provedor, comandos Railway, conexão PostgreSQL nem ponto de entrada executável.
+
+## Evidência disponível e escolha mínima
+
+- Recibo `production-postgres-metadata-root-r3/receipt.json`, SHA256 `7df4a70951d363e777afd028a20877673228e8b4e508491e1988f6cd1ce36ba1`: servidor `180006` = PostgreSQL **18.6**, banco `34608831` bytes (33,01 MiB), identidade/conexão somente leitura verificadas às 03:41 UTC. Não contém extensões, locale, versão de `pg_dump` ou prova de fence.
+- Roteiro anterior `production-postgres-restore-proof-offline-r1.md`, SHA256 `f8e3d23eedc731457ccd823f4438b71b740468316aaabd92c3388439eb9ecc13`: preservado. O backup nativo listado continua sem prova de conclusão/restauração; este lote não o promove a backup qualificado.
+- `age.exe` instalado: **v1.3.2**, SHA256 `2821a4ed191da07372acd302e5f6feae7a7985e285e1417765ebe74025af45f0`. Os testes usam o executável real e identidade efêmera exclusiva de teste; nunca poderá proteger dado real.
+- `docker image inspect` local, sem iniciar containers: `postgres:18` / `postgres@sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722`, Linux amd64, `PG_VERSION=18.6-1.pgdg13+2`, `PG_MAJOR=18`, `PGDATA=/var/lib/postgresql/18/docker`, volume declarado `/var/lib/postgresql`. Escolha proposta: **esta imagem Debian pelo digest**, sem pull/build. Alternativa cacheada `18-alpine` digest `d3e1620b530c944afa6e887d22eb899824da68e19c52024bf98f5220c88a65b2` declara 18.6; não precisa ser usada.
+- Os campos da imagem são metadados, não execução dos binários. `pg_dump --version` no alvo e `pg_restore --version` no container ainda devem ser observados. O `pg_dump` não pode ter major inferior ao servidor. Usar 18.6 em ambos evita uma diferença desnecessária. [Versões PostgreSQL](https://www.postgresql.org/docs/18/libpq-status.html), [compatibilidade do pg_dump](https://www.postgresql.org/docs/18/app-pgdump.html).
+
+## Chave e local durável propostos — Root decide antes de executar
+
+Artefato: `C:\Users\tocha\SistemaZeroRecovery\production\postgres\2026-10-23\<run-exclusivo>\database.dump.age`, fora dos checkouts e de pastas sincronizadas. Não foi criado. Confirmar resolução real do diretório, ACL restrita e espaço livre antes de abrir o arquivo. A escrita usa `wx`: um nome existente recusa execução, não sobrescreve nem recomeça.
+
+Usar **identidade age X25519 dedicada a esta recuperação**, não chave SSH/token existente. Root gera a chave em sessão local protegida; o transporte recebe apenas o recipient público. Guardar a identidade em cofre de senhas existente e uma cópia de recuperação independente, ambas verificadas por leitura. Para o teste de recuperação, materializar uma cópia temporária fora do checkout, com ACL restrita, ou utilizar um mecanismo age já qualificado que não exponha o segredo. Nunca colocar identidade/passphrase em argv, recibos, Git, chat ou junto do único artefato. Não há keygen de produção neste módulo.
+
+Uma cópia somente local do ciphertext não prova tolerância à perda deste computador. Copiar o `.age` e seu recibo de hashes para armazenamento durável independente aprovado e conferir SHA256 da cópia; recuperar a identidade do cofre/cópia independente e provar descriptografia. Isso é gate anterior a uma migração destrutiva, não tarefa posterior opcional.
+
+## Pré-requisitos ainda pendentes
+
+1. Root fecha a manutenção/fence e os escritores relevantes; o recibo de tamanho anterior à manutenção não é fence. Confirmar identidade fresca do Postgres e que a conexão Members aponta ao banco selecionado. Não supor que `POSTGRES_DB`/usuário padrão são o mesmo alvo sem comparação em RAM.
+2. No deployment/instância PostgreSQL exatos do novo inventário, confirmar `pg_dump --version`, `pg_restore --version` e contrato de credenciais já presente no processo remoto. Não instalar cliente, criar usuário ou copiar senha para argv/arquivo remoto. As variáveis `PG*`/`POSTGRES_*` utilizáveis ainda não foram observadas por este lote.
+3. Uma transação **READ ONLY / REPEATABLE READ**, com timeouts e fechamento, coleta apenas metadados técnicos: `current_database` comparado em RAM ao alvo; `server_version_num`; `pg_extension` com nome/versão/schema; encoding, provider/locale/collation do banco; namespaces/tabelas/constraints/índices/sequências; journals e contagens Pensa já definidas pelo operador canônico. Não imprimir linhas pessoais, connection strings ou SQL de objetos arbitrários em logs.
+4. Comparar extensões com `pg_available_extension_versions` no destino isolado, usando o mesmo nome/versão. A busca offline em migrations Members/Hub não encontrou `CREATE EXTENSION`; **isso não prova ausência no servidor**. `pg_dump` grava a declaração da extensão, não suas bibliotecas/control/scripts. Se faltar extensão ou locale, parar e revisar a imagem, sem instalar pacotes silenciosamente nem omitir objetos do restore. [Contrato oficial de extensões](https://www.postgresql.org/docs/18/extend-extensions.html).
+5. Comparação dump/oráculos precisa de **mesmo snapshot exportado** ou quiescência efetivamente provada durante toda a coleta/dump. O transporte não implementa coordenador de snapshots. Não comparar `n_live_tup` com contagem exata, nem chamar a comparação consistente apenas porque cada SELECT foi READ ONLY.
+
+## Transporte preparado e o que ele prova
+
+`production-postgres-binary-stream-r1.mjs` exporta somente:
+
+- `captureEncryptedDump({producer:{command,args,env},ageExe,ageSha256,recipient,outputPath,...})`: filho sem shell e três pipes, stdout binário → prefixo `PGDMP`/contador/SHA256 incremental → age → ciphertext exclusivo com `fsync`/close. Producer e age devem fechar com saída zero. Stderr é contado/limitado e descartado; conteúdo nunca vai ao recibo. Se existir stderr do `pg_dump`, o executor precisa classificá-lo em RAM antes de qualificar; o transporte não diz que avisos são inofensivos.
+- `verifyEncryptedDump({ageExe,ageSha256,identityPath,inputPath,expected,...})`: decrypt completo para um hash sink, sem gravar plaintext. Exige saída zero, EOF autenticado, hash/tamanho exatos de cipher e plaintext, e relê o hash do ciphertext após a passagem. Não tenta restore.
+
+O limite padrão de 1 GiB e prazo de 10 minutos são limites operacionais propostos, não estimativa do tamanho/tempo de dump. O banco físico de 33 MiB não determina o tamanho do archive. Interrupção, erro ou timeout preserva arquivo incompleto como **UNQUALIFIED**, sem overwrite/retry automático. Forced stop usa apenas handle do filho ainda sem evento `exit`; não usa PID/taskkill, nem afirma que descendentes ou SQL remoto foram encerrados. Exige diagnóstico antes de nova tentativa.
+
+Não usar pipeline/redireção binária do PowerShell, `encoding:'utf8'`, `--session`/tmux ou buffer completo do dump. O código Railway 5.62.1 seleciona `ssh -T` com stdin/stdout não-TTY e encaminha os streams; o relay pode devolver status textual mesmo com exit zero. [Fonte nativa pinada](https://github.com/railwayapp/cli/blob/v5.62.1/src/commands/ssh/native.rs).
+
+**Prova feita:** filho Node real fragmenta bytes 0–255 em chunks de 997 bytes, recusa qualquer TTY, atravessa pipes e age real, recupera hash/tamanho idênticos. **Prova ainda necessária:** probe sintético pelo caminho Railway SSH real, no alvo pinado, usando precisamente o mesmo spawn/stdio do dump. Não houve SSH nesta tarefa; a evidência local não comprova o relay remoto. O probe deve emitir payload conhecido com `PGDMP` e bytes não-textuais, sem tocar no banco, e comparar hash pré-calculado. O envelope de execução remoto precisa ter guarda de identidade e watchdog fechado; não reutilizar o operador de metadados que decodifica stdout como texto.
+
+O comando de dump futuro, após provar as variáveis remotas e identidade, é `pg_dump --format=custom --no-password --lock-wait-timeout=5s`, usando a conexão aprovada no ambiente remoto e stdout. Sem filtro de tabelas/schema, sem `--no-owner`/`--no-privileges` no archive, sem `--file` em produção. **Ainda não existe neste lote um comando SSH de produção pronto para aplicar**, porque faltam cliente/credenciais/identidade/extension preflight e fence frescos.
+
+`PGDMP` isolado não prova um archive íntegro: o teste aceita cinco bytes como transporte, mas mantém `formatVerified:false` e `restoreQualified:false`. Todo sucesso do módulo termina literalmente em `NOT_RESTORE_QUALIFIED`.
+
+## Restauração mínima que Root poderá executar depois do preflight
+
+1. Confirmar imagem pelo digest escolhido e versões executáveis, sem pull. Verificar proteção do disco/VHDX do Docker e política de retenção. `tmpfs` evita volume persistente, **não prova ausência de swap ou proteção da RAM/disco**. Não alegar apagamento criptográfico no cleanup.
+2. Criar um único container próprio, nome exclusivo e CID registrado, sem publicar portas, `--network none`, sem mount de checkout/credenciais/socket Docker/volume existente. Limites propostos: `--memory 1g --cpus 1 --pids-limit 256`. Usar `--read-only --cap-drop ALL --security-opt no-new-privileges --user postgres`, tmpfs `/var/lib/postgresql` (512 MiB), `/var/run/postgresql` e `/tmp`, permissões suficientes para o usuário postgres, sem presumir UID numérico. Só configuração local: `POSTGRES_HOST_AUTH_METHOD=trust`; iniciar `postgres -c listen_addresses=''`. Esses flags são uma receita proposta, ainda não qualificada neste computador; se o entrypoint recusar, parar e revisar, não ampliar rede/permissões automaticamente.
+3. Após readiness local via `docker exec <CID> pg_isready`, confirmar versão e extensões disponíveis. Criar DB exclusivo de ensaio via `createdb --template=template0`, com encoding/locale/provider compatíveis com os metadados capturados; não assumir `C`/default equivalente. Nenhum app ou migrator roda nesse container.
+4. Executar primeiro `verifyEncryptedDump` até EOF com a **identidade recuperada da cópia durável**, não só a original ainda em RAM. Exigir hashes capturados e autenticidade. O age autentica por chunks e pode emitir plaintext antes de perceber truncamento final; [especificação oficial](https://age-encryption.org/v1) e testes negativos reais demonstram essa fronteira.
+5. Em nova passagem binária do mesmo `.age` pinado, `age --decrypt --identity <cópia-protegida>` → `docker exec -i <CID> pg_restore --list`; consumir saída apenas em RAM e projetar contagens/classificações técnicas. Não persistir TOC bruto com nomes autorais. Validar ambos exits; isso ainda não restaura dados.
+6. Em outra passagem do mesmo ciphertext verificado, enviar bytes para `docker exec -i <CID> pg_restore --exit-on-error --single-transaction --no-owner --no-privileges --dbname=<DB-local-exclusivo>`. Sem `-t`, `--clean`, `--create`, jobs paralelos ou conexão remota. Esperar sucesso de age, transporte e pg_restore, reler ciphertext e conferir hash/tamanho. Falha em qualquer ponta torna o ensaio não qualificado; mesmo uma transação local confirmada não converte decrypt falho em aceite. [pg_restore oficial](https://www.postgresql.org/docs/18/app-pgrestore.html).
+7. Comparar estrutura, extensões, journals, sequências e oráculos Pensa definidos no passo 3 dos pré-requisitos, usando apenas resultados técnicos/contagens. Conferir que o arquivo cifrado final, a recuperação da chave e o contexto de origem correspondem ao recibo. `--no-owner --no-privileges` adapta o ensaio e não qualifica recriação de roles/ACLs do cluster; estes não são fornecidos por `pg_dump` de um banco.
+8. Guardar recibo sanitizado + hashes + exits + bytes + oráculos + imagem/CID (sem dados pessoais/chaves). Parar/remover **somente o CID próprio** e confirmar ausência, preservando backup cifrado e recuperação. Não tocar no container PG18 usado por outros agentes. O root só libera 0126/0128 após esse gate e os demais gates de manutenção, nunca pelo resultado da suíte sintética.
+
+## Teste executado
+
+Node **24.22.0** / age **1.3.2**, 13 testes, 13 pass, 0 fail, aproximadamente **2,02 s**. Testes serializados, sem serviços/provedores. Cobre roundtrip binário real, truncamento/corrupção após plaintext parcial, hash/tamanho exatos, exit não-zero, status textual/PGDMP curto, prefixo sozinho não qualifica formato, arquivo existente, cota de bytes, timeout/cleanup incerto, stderr limitado e pin age divergente. O único keygen foi efêmero **de teste**, em diretório OS temp gerenciado; cleanup confirmou `ENOENT`. Nenhuma chave/recipient foi impressa, e não houve dump real.
+
+Comando de reprodução local, que gera exclusivamente identidade e payload sintéticos:
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' --test --test-concurrency=1 '.cache/python-reference-games/production-postgres-binary-stream-r1.test.mjs'
+```
+
+O teste não qualifica a versão do cliente remoto, a lista real de extensões, o relay SSH, a recuperação de uma chave de produção, armazenamento independente ou restauração PostgreSQL. Todos permanecem gates explícitos.

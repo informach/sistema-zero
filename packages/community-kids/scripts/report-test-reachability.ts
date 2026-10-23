@@ -84,7 +84,7 @@ const criticalFiles = [
   'components/kids/public-player.tsx',
   'components/kids/room/room-builder.tsx',
   'components/kids/room/room-builder-view.tsx',
-  'components/kids/use-pensa-task-handoff.ts',
+  'components/kids/use-pensa-mission-session.tsx',
   'lib/gamepad-visibility.ts',
   'lib/stage-fit.ts',
   'lib/guide.ts',

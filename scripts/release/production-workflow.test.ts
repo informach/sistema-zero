@@ -1,100 +1,64 @@
-import { afterEach, describe, expect, test } from 'bun:test'
-import { chmodSync, mkdtempSync, rmSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 
-const temporary: string[] = []
-afterEach(() => {
-  for (const path of temporary.splice(0)) rmSync(path, { recursive: true, force: true })
+interface Workflow {
+  on: Record<string, unknown>
+  concurrency?: { group: string; 'cancel-in-progress': boolean }
+  jobs: Record<
+    string,
+    {
+      if?: string
+      'timeout-minutes'?: number
+      steps: Array<{ run?: string; uses?: string; env?: Record<string, string> }>
+    }
+  >
+}
+const read = (name: string) =>
+  Bun.YAML.parse(
+    readFileSync(new URL(`../../.github/workflows/${name}.yml`, import.meta.url), 'utf8'),
+  ) as Workflow
+
+test('production has one deliberate owner and source checks precede provider setup', () => {
+  const workflow = read('deploy-production')
+  expect(Object.keys(workflow.on)).toEqual(['workflow_dispatch'])
+  expect(workflow.concurrency).toEqual({ group: 'deploy-production', 'cancel-in-progress': false })
+  const job = workflow.jobs['deploy-production']!
+  expect(job.if).toBe("github.ref == 'refs/heads/main'")
+  expect(job['timeout-minutes']).toBe(180)
+  const source = job.steps.findIndex((step) => step.run?.includes('production-release.mjs source'))
+  const provider = job.steps.findIndex((step) => step.uses?.includes('setup-railway'))
+  const deploy = job.steps.findIndex((step) => step.run?.includes('production-release.mjs deploy'))
+  expect(source).toBeGreaterThan(0)
+  expect(source).toBeLessThan(provider)
+  expect(provider).toBeLessThan(deploy)
+  expect(job.steps.slice(0, provider).some((step) => step.env?.RAILWAY_TOKEN)).toBe(false)
+  expect(job.steps.map((step) => step.run ?? '').join('\n')).not.toMatch(
+    /serviceInstanceDeployV2|config\.mjs apply|sleep/,
+  )
+  expect(job.steps[deploy]!.env?.RAILWAY_ENVIRONMENT_ID).toBe(
+    '19c212a5-85c0-493c-9630-a7a0569e8412',
+  )
+  expect(job.steps[deploy]!.env?.INITIALIZE_RECORDER).toBe(
+    // biome-ignore lint/suspicious/noTemplateCurlyInString: Literal GitHub expression in YAML.
+    '${{ github.event.inputs.initialize_recorder }}',
+  )
+  expect(workflow.on.workflow_dispatch).toMatchObject({
+    inputs: { initialize_recorder: { type: 'boolean', default: false, required: false } },
+  })
 })
 
-// Runs the actual workflow shell on Linux, with transport replaced by a local executable.
-// No Railway or GitHub request can leave this test.
-describe.skipIf(process.platform === 'win32')('production workflow gates', () => {
-  async function run(scenario: string) {
-    const directory = mkdtempSync(join(tmpdir(), 'sz-release-workflow-'))
-    temporary.push(directory)
-    const workflow = Bun.YAML.parse(
-      await Bun.file(
-        new URL('../../.github/workflows/deploy-production.yml', import.meta.url),
-      ).text(),
-    ) as {
-      jobs: { 'deploy-production': { steps: Array<{ run?: string }> } }
-    }
-    const script = workflow.jobs['deploy-production'].steps.find((step) => step.run)?.run
-    if (!script) throw new Error('Missing production deployment shell')
-    await Bun.write(
-      join(directory, 'run.sh'),
-      script.replace(/\$\{\{[^}]+\}\}/g, 'test-placeholder'),
-    )
-    await Bun.write(
-      join(directory, 'curl'),
-      `#!/bin/bash
-printf '%s\\n' "$*" >> "$CALLS"
-case "$*" in
-  *commits/main*) printf '{"sha":"%s"}\\n' "$MAIN_SHA" ;;
-  *serviceInstanceDeployV2*) echo '{"data":{"serviceInstanceDeployV2":"deployment-test"}}' ;;
-  *activeDeployments*)
-    if [ "$SCENARIO" = missing ] && [[ "$*" == *fc8a1b29* ]]; then
-      echo '{"data":{"serviceInstance":{"activeDeployments":[]}}}'
-    else
-      echo '{"data":{"serviceInstance":{"activeDeployments":[{"id":"before","status":"SUCCESS","meta":{"commitHash":"before-sha"}}]}}}'
-    fi ;;
-  *deployment-test*)
-    if [ "$SCENARIO" = skipped ]; then STATUS=SKIPPED; else STATUS=SUCCESS; fi
-    printf '{"data":{"deployment":{"id":"deployment-test","status":"%s","meta":{"commitHash":"wrong-sha"}}}}\\n' "$STATUS" ;;
-  *) echo '{"data":{"environments":{"edges":[{"node":{"name":"production","id":"19c212a5-85c0-493c-9630-a7a0569e8412"}}]}}}' ;;
-esac
-`,
-    )
-    await Bun.write(join(directory, 'sleep'), '#!/bin/sh\nexit 0\n')
-    chmodSync(join(directory, 'curl'), 0o755)
-    chmodSync(join(directory, 'sleep'), 0o755)
-    const child = Bun.spawn(['bash', 'run.sh'], {
-      cwd: directory,
-      env: {
-        PATH: `${directory}:${process.env.PATH}`,
-        RAILWAY_TOKEN: 'test',
-        RAILWAY_API: 'http://unused.invalid',
-        PROJECT_ID: 'project-test',
-        FORCED: 'members,community-kids',
-        EXPECTED_SHA: 'a'.repeat(40),
-        MAIN_SHA: scenario === 'head' ? 'b'.repeat(40) : 'a'.repeat(40),
-        SCENARIO: scenario,
-        CALLS: join(directory, 'calls'),
-      },
-      stdout: 'pipe',
-      stderr: 'pipe',
-    })
-    const [out, error, code] = await Promise.all([
-      new Response(child.stdout).text(),
-      new Response(child.stderr).text(),
-      child.exited,
-    ])
-    return { code, output: out + error, calls: await Bun.file(join(directory, 'calls')).text() }
-  }
-
-  test('a changed main cannot trigger any deployment', async () => {
-    const result = await run('head')
-    expect(result.code).not.toBe(0)
-    expect(result.output).toContain('main difere do SHA aprovado')
-    expect(result.calls).not.toContain('serviceInstanceDeployV2')
-  })
-  test('every selected service is checked before any deployment', async () => {
-    const result = await run('missing')
-    expect(result.code).not.toBe(0)
-    expect(result.output).toContain('não tem deployment ativo saudável')
-    expect(result.calls).not.toContain('serviceInstanceDeployV2')
-  })
-  test('SKIPPED does not count as a successful release', async () => {
-    const result = await run('skipped')
-    expect(result.code).not.toBe(0)
-    expect(result.output).toContain('SKIPPED')
-    expect(result.output).toContain('não convergiu')
-  })
-  test('SUCCESS on a different commit fails the release', async () => {
-    const result = await run('wrong-sha')
-    expect(result.code).not.toBe(0)
-    expect(result.output).toContain('SHA divergente')
-  })
+test('push-main IaC cannot mutate or enable native deployment behind the canonical owner', () => {
+  const workflow = read('railway-config')
+  const pushJobs = Object.values(workflow.jobs).filter((job) =>
+    job.if?.includes("event_name == 'push'"),
+  )
+  expect(pushJobs).toHaveLength(1)
+  const commands = pushJobs.flatMap((job) => job.steps.map((step) => step.run ?? '')).join('\n')
+  expect(commands).toContain('railway-config.mjs check production')
+  expect(commands).not.toMatch(
+    /railway-config\.mjs apply|serviceInstanceDeployV2|kids-journey-rollout\.mjs deploy/,
+  )
+  expect(
+    readFileSync(new URL('../../.github/workflows/deploy-production.yml', import.meta.url), 'utf8'),
+  ).not.toContain('WAITING')
 })

@@ -6,11 +6,15 @@
   "private": true,
   "module": "src/index.ts",
   "exports": {
+    "./identity": "./src/identity/index.ts",
+    "./pensa": "./src/pensa/index.ts",
+    "./live": "./src/live/index.ts",
     ".": "./src/index.ts",
     "./ai-credits": "./src/ai-credits/index.ts",
     "./journey": "./src/journey/index.ts",
     "./help": "./src/help/index.ts",
     "./referrals": "./src/referrals/index.ts",
+    "./course/modality": "./src/course/modality.ts",
     "./course/module-rive": "./src/course/module-rive.ts",
     "./creations": "./src/creations/index.ts",
     "./security": "./src/security/index.ts",
@@ -19,11 +23,14 @@
     "./result": "./src/result/index.ts",
     "./http": "./src/http/index.ts",
     "./studio": "./src/studio/index.ts",
+    "./staff": "./src/staff/index.ts",
+    "./studio/*": "./src/studio/*.ts",
     "./time": "./src/time/index.ts",
     "./zappy": "./src/zappy/index.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/scene": "./src/learning/scene/index.ts",
-    "./palette": "./src/palette/index.ts"
+    "./palette": "./src/palette/index.ts",
+    "./profiles": "./src/profiles/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
@@ -32,6 +39,9 @@
     "check:fix": "biome check --write .",
     "format": "biome format --write .",
     "lint": "biome lint ."
+  },
+  "dependencies": {
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/bun": "latest"

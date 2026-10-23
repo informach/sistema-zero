@@ -2,7 +2,7 @@
 
 Versão vigente: `comunidade-orientacao-v4`, revisada em 02/10/2026. Ver [revisão das perguntas e da argumentação](revisao-argumentacao-personalizada.md). Os códigos de respostas e as regras de prioridade permanecem, mas a formulação e a ordem das perguntas mudaram. A v4 inicia uma nova sessão para respostas de versões anteriores e conserva o lead original. A [direção para tráfego frio](revisao-trafego-frio.md) continua válida.
 
-Textos públicos: [perguntas](../copy/quiz-comunidade.md) e [resultados](../copy/resultados-quiz.md). Fundamentos: [pesquisa](pesquisa-e-estrategia.md). Mudanças e problemas corrigidos: [revisão da proposta](revisao-proposta.md).
+Histórico das versões 2 a 4 (a v5 está no [README](README.md)). Textos públicos da v4: [perguntas](../copy/historico/2026-10-16-quiz-v4/quiz-comunidade.md) e [resultados](../copy/historico/2026-10-16-quiz-v4/resultados-quiz.md). Fundamentos: [pesquisa](pesquisa-e-estrategia.md). Mudanças e problemas corrigidos: [revisão da proposta](revisao-proposta.md).
 
 ## 1. Significado do perfil
 
@@ -143,7 +143,7 @@ Na presença de condição não atendida, manter a atividade caseira como sugest
 
 Os textos formam uma biblioteca condicional. Não concatenar todos os blocos.
 
-Os [exemplos da v2](exemplos-de-resultado.md) conservam o histórico editorial. Os [exemplos completos da v4](exemplos-de-resultado-v4.md) mostram a montagem atual. Títulos como “Resultado A” e nomes técnicos de módulos são identificadores editoriais; a interface publica apenas o título dirigido à família e o texto escolhido.
+Os [exemplos da v2](exemplos-de-resultado.md) conservam o histórico editorial. Os [exemplos completos da v4](../copy/historico/2026-10-16-quiz-v4/exemplos-de-resultado-v4.md) mostram a montagem atual. Títulos como “Resultado A” e nomes técnicos de módulos são identificadores editoriais; a interface publica apenas o título dirigido à família e o texto escolhido.
 
 ### Prioridade definida
 

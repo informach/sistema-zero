@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import { createEmptyProject } from '@sistemazero/studio/project'
+import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
 
 // `server-only` lança fora do React Server; neutraliza para testar os handlers.
 mock.module('server-only', () => ({}))
@@ -92,6 +93,7 @@ const SUMMARY = {
 
 function buildRoutes(
   over: {
+    audience?: 'adult' | 'kids'
     session?: unknown | null
     members?: Record<string, unknown>
     storage?: Record<string, unknown>
@@ -133,7 +135,10 @@ function buildRoutes(
   }
   const routes = createCreationsRoutes({
     // `session: null` = sem sessão (o `??` engoliria o null).
-    session: { getSession: async () => (over.session === undefined ? USER : over.session) },
+    session: {
+      audience: over.audience ?? 'kids',
+      getSession: async () => (over.session === undefined ? USER : over.session),
+    },
     members,
     storage: over.storage ?? storage,
   } as never)
@@ -148,6 +153,67 @@ const deleteRequest = (baseRevision: number) =>
     body: JSON.stringify({ baseRevision }),
   })
 const item = { params: Promise.resolve({ tool: 'studio', itemId: 'proj-1' }) }
+
+describe('protocolo de isolamento adulto durante deploy e rollback', () => {
+  test('members antigo não recebe reserva, commit ou exclusão e não ganha URL assinada', async () => {
+    const { routes, calls } = buildRoutes({ audience: 'adult' })
+    expect(
+      (
+        await routes.creationsUploadUrl.POST(
+          post({
+            formatVersion: 2,
+            name: 'Jogo',
+            kind: 'classic',
+            itemUpdatedAt: '2026-10-18T12:00:00Z',
+            bytes: 100,
+          }),
+          item,
+        )
+      ).status,
+    ).toBe(503)
+    expect((await routes.creationsCommit.POST(post({ revision: 2 }), item)).status).toBe(503)
+    expect((await routes.creationsDelete.DELETE(deleteRequest(2), item)).status).toBe(503)
+    expect(calls.reserveCreationUpload).toBeUndefined()
+    expect(calls.commitCreationUpload).toBeUndefined()
+    expect(calls.deleteCreation).toBeUndefined()
+    expect(r2.presignPut).toEqual([])
+    expect(r2.deleted).toEqual([])
+  })
+  test('reserva adulta só assina chave do contexto adulto confirmado', async () => {
+    for (const confirmed of [false, true]) {
+      const { routes } = buildRoutes({
+        audience: 'adult',
+        members: {
+          listCreations: async () => ({ status: 200, body: { audience: 'adult', items: [] } }),
+          reserveCreationUpload: async () => ({
+            status: 200,
+            body: {
+              revision: 2,
+              formatVersion: 2,
+              bytes: 100,
+              parts: [],
+              storageKey: `creations/${confirmed ? 'adult/' : ''}user-1/studio/proj-1/2.json.gz`,
+            },
+          }),
+        },
+      })
+      const response = await routes.creationsUploadUrl.POST(
+        post({
+          formatVersion: 2,
+          name: 'Jogo',
+          kind: 'classic',
+          itemUpdatedAt: '2026-10-18T12:00:00Z',
+          bytes: 100,
+        }),
+        item,
+      )
+      expect(response.status).toBe(confirmed ? 200 : 503)
+    }
+    expect(r2.presignPut.map((entry) => entry.key)).toEqual([
+      'creations/adult/user-1/studio/proj-1/2.json.gz',
+    ])
+  })
+})
 
 beforeEach(() => {
   r2.presignPut.length = 0
@@ -531,7 +597,12 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
     )
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({ item: SUMMARY })
-    expect(sentToMembers).toEqual({ revision: 3, uploadedParts: [HASH_A], verifiedPartHashes: [] })
+    expect(sentToMembers).toEqual({
+      revision: 3,
+      uploadedParts: [HASH_A],
+      verifiedPartHashes: [],
+      verifiedFormatVersion: 2,
+    })
     await settle()
     expect(r2.deletedBatches).toEqual([released])
   })
@@ -615,6 +686,42 @@ describe('BFF das criações — PARTES (assets do Estúdio por conteúdo)', () 
 })
 
 describe('BFF das criações — commit', () => {
+  test('promove o documento Python v3 e preserva a revisão de recursos conferida', async () => {
+    const project = { ...documentFixture('python', 'classic'), id: 'proj-1', assets: [] }
+    const { routes, calls } = buildRoutes({
+      storage: {
+        ...storage,
+        readJson: async () => ({
+          format: 'sz-studio-parts',
+          version: 1,
+          program: project,
+          assets: [HASH_A],
+        }),
+      },
+    })
+    const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+    expect(res.status).toBe(200)
+    expect((calls.commitCreationUpload?.[0] as unknown[])[2]).toEqual({
+      revision: 2,
+      verifiedPartHashes: [HASH_A],
+      verifiedFormatVersion: 3,
+    })
+  })
+
+  test('recusa fonte Python v3 corrompida antes de promover a revisão', async () => {
+    const project = { ...documentFixture('python', 'classic'), id: 'proj-1', assets: [] }
+    const { routes, calls } = buildRoutes({
+      storage: {
+        ...storage,
+        readJson: async () => ({ ...project, files: { 'main.py': 42 } }),
+      },
+    })
+    const res = await routes.creationsCommit.POST(post({ revision: 2 }), item)
+    expect(res.status).toBe(409)
+    expect(await res.json()).toMatchObject({ error: { code: 'CREATION_DOCUMENT_INVALID' } })
+    expect(calls.commitCreationUpload).toBeUndefined()
+  })
+
   test('confere o documento do R2 antes do commit e recusa formato antigo sem promover nem apagar', async () => {
     const { routes, calls } = buildRoutes({
       storage: {
@@ -635,6 +742,7 @@ describe('BFF das criações — commit', () => {
     expect((calls.commitCreationUpload?.[0] as unknown[])[2]).toEqual({
       revision: 2,
       verifiedPartHashes: [],
+      verifiedFormatVersion: 2,
     })
     expect(r2.deleted).toEqual(['creations/u/studio/proj-1/1.json.gz'])
     const body = await res.json()
@@ -645,6 +753,16 @@ describe('BFF das criações — commit', () => {
     const { routes } = buildRoutes()
     const res = await routes.creationsCommit.POST(post({ revision: 2, bytes: 1 }), item)
     expect(res.status).toBe(400)
+  })
+
+  test('o navegador não pode declarar a versão verificada do documento no commit', async () => {
+    const { routes, calls } = buildRoutes()
+    const res = await routes.creationsCommit.POST(
+      post({ revision: 2, verifiedFormatVersion: 3 }),
+      item,
+    )
+    expect(res.status).toBe(400)
+    expect(calls.commitCreationUpload).toBeUndefined()
   })
 
   test('o DELETE do blob anterior no R2 fica FORA do caminho crítico: a resposta do commit sai mesmo com o R2 pendurado', async () => {
@@ -882,7 +1000,7 @@ describe('BFF das criações — respostas e sessão', () => {
   })
 })
 
-describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
+describe('BFF das criações — o rascunho da aula (10/10/2026)', () => {
   const BLOCO = '22222222-2222-4222-8222-222222222222'
   const daFase = (tool: string) => ({ params: Promise.resolve({ tool, itemId: BLOCO }) })
 
@@ -905,7 +1023,10 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
     }
   })
 
-  test('reserva do `lesson-studio` repassa a impressão digital ao members', async () => {
+  test.each([
+    'v1',
+    'v2',
+  ])('reserva do `lesson-studio` repassa a impressão %s ao members', async (version) => {
     const { routes, calls } = buildRoutes({
       members: {
         reserveCreationUpload: async (...args: unknown[]) => {
@@ -917,7 +1038,7 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
         },
       },
     })
-    const fingerprint = `v1:${'a'.repeat(64)}`
+    const fingerprint = `${version}:${'a'.repeat(64)}`
     const res = await routes.creationsUploadUrl.POST(
       post({
         name: 'Meu jogo',
@@ -963,7 +1084,7 @@ describe('BFF das criações — o rascunho da fase (10/10/2026)', () => {
         },
       },
     })
-    // O documento do R2 tem OUTRO id: o Estúdio da fase é recusado como o livre.
+    // O documento do R2 tem OUTRO id: o Estúdio da aula é recusado como o livre.
     const recusado = await routes.creationsCommit.POST(
       post({ revision: 1 }),
       daFase('lesson-studio'),

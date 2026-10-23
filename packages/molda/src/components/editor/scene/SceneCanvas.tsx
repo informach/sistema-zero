@@ -4,7 +4,8 @@ import { COPY } from '../../../core/copy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import type { ScenePaintTarget } from '../../../scene/imagePaint'
+import type { ScenePaintRgba, ScenePaintTarget } from '../../../scene/imagePaint'
+import type { SceneMeasurementStep } from '../../../scene/measurementStep'
 import type { SceneComponentSelection } from '../../../scene/meshComponents'
 import type { SceneSkinPaintSettings } from '../../../scene/skinPaint'
 import type { SceneAnimationPlayer } from '../../../state/SceneAnimationPlayer'
@@ -13,6 +14,7 @@ import type { SceneFlipbookPlayer } from '../../../state/SceneFlipbookPlayer'
 import type { SceneSkinPaintSession } from '../../../state/sceneSkinPaintSession'
 import type { SceneSkinWeightTarget } from '../../../viewport/SceneSkinWeightOverlay'
 import type {
+  SceneGuideInput,
   ScenePaintActions,
   SceneTransformActions,
   SceneTransformTool,
@@ -27,16 +29,20 @@ import {
   Camera,
   ChevronDown,
   Grid3x3,
-  Info,
   Lasso,
+  Lightbulb,
   type LucideIcon,
+  Minus,
   MousePointer2,
   Move3d,
+  Plus,
   Rotate3d,
   Scale3d,
   Scan,
+  ScanEye,
   SlidersHorizontal,
   SquareDashedMousePointer,
+  X,
 } from '../../ui/icons'
 import { isTypingTarget } from '../../ui/interaction'
 import { ReferenceImageGuide } from '../model/ReferenceImageGuide'
@@ -44,8 +50,12 @@ import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneFirstSteps } from './SceneFirstSteps'
 import { type SceneSkinBrushMode, SceneSkinPaintControls } from './SceneSkinPaintControls'
 import { SceneSkinWeightMapControls } from './SceneSkinWeightMapControls'
+import { SceneStageDropdown } from './SceneStageDropdown'
 import { SceneTile } from './SceneTile'
+import { sceneCommand } from './sceneCommandRegistry'
+import { useCanvasHints } from './useCanvasHints'
 import { useSceneViewport } from './useSceneViewport'
+import type { SceneWorkshopTool } from './useSceneWorkshop'
 
 type SceneCanvasTool = SceneTransformTool | 'box' | 'lasso'
 
@@ -69,9 +79,25 @@ export interface SceneCanvasSlots {
   toggles?: HTMLElement | null
   /** "Vista" e "Enquadrar seleção". */
   view?: HTMLElement | null
+  paintScope?: HTMLElement | null
+  context?: HTMLElement | null
 }
 
 interface Props {
+  hintControls?: ReactNode
+  measurementStep?: SceneMeasurementStep
+  onMeasurementStepChange?(step: SceneMeasurementStep): void
+  guideInput?: SceneGuideInput | null
+  guidePoint?(point: import('../../../core/model').Vec3): void
+  previewGuide?: import('../../../viewport/ScenePreviewGuide').ScenePreviewGuideState | null
+  cameraRequest?: { view: CameraView } | null
+  reveal?: readonly string[]
+  tool?: SceneWorkshopTool
+  onToolChange?(tool: SceneWorkshopTool): void
+  looking?: boolean
+  onLookingChange?(looking: boolean): void
+  onHover?(id: string | null): void
+  onSampleInk?(color: ScenePaintRgba): void
   document: MoldaSceneDocument
   selection: readonly string[]
   isolation: readonly string[] | null
@@ -88,15 +114,20 @@ interface Props {
   onEndFaces?(): void
   onInterrupt?(): void
   paintTarget?: ScenePaintTarget | null
+  paintScope?: import('../../../viewport/sceneViewportTypes').ScenePaintSurfaceScope | null
+  paintGuides?: import('../../../viewport/ScenePaintGuides').ScenePaintGuideSettings | null
+  onPaintScopeChange?(mode: 'all' | 'selected'): void
   paint?: ScenePaintActions
   flipbook: SceneFlipbookPlayer
   animation?: SceneAnimationPlayer
   animationPose?: SceneAnimationPoseGesture
   mode?: 'model' | 'paint' | 'animation'
+  /** Show editable bone guides while the bones workspace is open. */
+  showBones?: boolean
   /** Espelho de pintura ligado na caixa de ferramentas da aba Pintar. */
   paintMirror?: boolean
   /** O que cobre o palco por um tempo, como a face de perto da aba Pintar. */
-  overlay?: ReactNode
+  detailPanel?: ReactNode
   onEndPaint?(): void
   skinPaint?: SceneSkinPaintSession
   /** Foto da criação para a galeria; o palco decide quando ela vale. */
@@ -157,20 +188,43 @@ function SceneCanvasAttempt({
   animation,
   animationPose,
   mode = 'model',
+  showBones = false,
   paintTarget = null,
+  paintScope = null,
+  paintGuides = null,
+  onPaintScopeChange,
   paintMirror = false,
-  overlay = null,
+  detailPanel = null,
   onEndPaint,
   skinPaint,
   onThumb,
   onViewport,
   slots,
   viewExtras = null,
+  tool: controlledTool,
+  onToolChange,
+  looking,
+  onLookingChange,
+  onHover,
+  onSampleInk,
+  reveal,
+  guideInput,
+  guidePoint,
+  previewGuide,
+  cameraRequest,
+  hintControls,
+  measurementStep,
+  onMeasurementStepChange,
 }: Props & { onRetry(): void }) {
-  const [tool, setTool] = useState<SceneCanvasTool>('select')
+  const [localTool, setLocalTool] = useState<SceneWorkshopTool>('select')
+  const tool = controlledTool ?? localTool
+  const setTool = onToolChange ?? setLocalTool
   const [through, setThrough] = useState(false)
-  const [look, setLook] = useState(false)
-  const [supportGuides, setSupportGuides] = useState(false)
+  const [localLook, setLocalLook] = useState(false)
+  const look = looking ?? localLook
+  const setLook = onLookingChange ?? setLocalLook
+  const [supportGuideOverride, setSupportGuideOverride] = useState<boolean | null>(null)
+  const supportGuides = supportGuideOverride ?? (mode === 'animation' || showBones)
   const [brushMode, setBrushMode] = useState<SceneSkinBrushMode>('off')
   const [brushRadius, setBrushRadius] = useState('1')
   const [brushStrength, setBrushStrength] = useState(25)
@@ -231,6 +285,11 @@ function SceneCanvasAttempt({
     () => canAnimate && !!animationPose?.getSnapshot().pose?.twoBoneGuide,
     () => false,
   )
+  const pendingPose = useSyncExternalStore(
+    animationPose?.subscribe ?? inactiveSubscription,
+    () => !!animationPose?.getSnapshot().pending,
+    () => false,
+  )
   const reviewingSet = useSyncExternalStore(
     animationPose?.subscribe ?? inactiveSubscription,
     () => canAnimate && animationPose?.getSnapshot().kind === 'pose-set',
@@ -246,6 +305,11 @@ function SceneCanvasAttempt({
       ? can('model.area-select')
       : can(mode === 'animation' ? 'animate.create' : 'model.pieces'))
   const activeTool =
+    look ||
+    guideInput?.rig ||
+    tool === 'pivot' ||
+    tool === 'cut' ||
+    tool === 'knife' ||
     mode === 'paint' ||
     !allowedTool(tool) ||
     reviewingSet ||
@@ -265,6 +329,10 @@ function SceneCanvasAttempt({
     selection,
     isolation,
     select: onSelect,
+    hover: onHover,
+    guideInput,
+    guidePoint,
+    sampleInk: !look && mode === 'paint' ? onSampleInk : undefined,
     selectMany: onSelectMany,
     factory,
     transform,
@@ -279,8 +347,10 @@ function SceneCanvasAttempt({
     flipbook,
     animation,
     animationPose: mode === 'animation' ? animationPose : undefined,
-    paintTarget: look ? null : paintTarget,
-    paintMode: mode === 'paint' ? (look ? 'look' : 'paint') : 'off',
+    paintTarget: look || onSampleInk ? null : paintTarget,
+    paintScope: mode === 'paint' && !look && !onSampleInk ? paintScope : null,
+    paintGuides: mode === 'paint' && !look ? paintGuides : null,
+    paintMode: look ? 'look' : mode === 'paint' ? 'paint' : 'off',
     paintMirror: mode === 'paint' && paintMirror,
     supportGuides: supportGuides && mode !== 'paint' && !paintTarget && !componentSelection,
     weightTarget,
@@ -292,18 +362,39 @@ function SceneCanvasAttempt({
     onViewport?.(view.viewport)
     return () => onViewport?.(null)
   }, [view.viewport, onViewport])
+  useEffect(() => {
+    if (reveal?.length) view.viewport?.ensureVisible?.(reveal)
+  }, [view.viewport, reveal])
   const cancelPaint = () => {
     skinPaint?.cancel()
     view.viewport?.cancelGesture()
   }
   const [gridVisible, setGridVisible] = useState(true)
-  const [movementStep, setMovementStep] = useState<number | null>(null)
+  const [localMovementStep, setLocalMovementStep] = useState<SceneMeasurementStep>(1)
+  const movementStep = measurementStep === undefined ? localMovementStep : measurementStep
+  const setMovementStep = onMeasurementStepChange ?? setLocalMovementStep
+  const [transformSpace, setTransformSpace] = useState<'world' | 'local'>('world')
+  const [animationTransformSpace, setAnimationTransformSpace] = useState<'world' | 'local'>('local')
+  const preciseSpace =
+    mode === 'animation' ? animationTransformSpace : can('model.precise') ? transformSpace : 'world'
   const [camera, setCamera] = useState<CameraView>('free')
+  useEffect(() => {
+    view.viewport?.setPreviewGuide?.(previewGuide ?? null)
+  }, [view.viewport, previewGuide])
+  useEffect(() => {
+    if (cameraRequest) {
+      view.viewport?.setView(cameraRequest.view)
+      setCamera(cameraRequest.view)
+    }
+  }, [view.viewport, cameraRequest])
   const copy = COPY.scene
   useEffect(() => {
     view.viewport?.setGridVisible?.(gridVisible)
     view.viewport?.setMovementStep?.(movementStep)
   }, [view.viewport, gridVisible, movementStep])
+  useEffect(() => {
+    view.viewport?.setTransformSpace?.(preciseSpace)
+  }, [view.viewport, preciseSpace])
 
   // ── as ferramentas ──────────────────────────────────────────────────────────────────────
   const showTools = mode !== 'paint' && !paintTarget
@@ -332,6 +423,9 @@ function SceneCanvasAttempt({
     ((name === 'move' || name === 'rotate' || name === 'scale') && !selection.length)
   const chooseTool = (name: SceneCanvasTool) => {
     cancelPaint()
+    // Com a oficina no controle, é ela quem encerra o Olhar, e só quando a troca acontece de
+    // fato: uma prévia de pivô ou de divisão pode segurar a troca ("Continuar ajustando").
+    if (!onToolChange) setLook(false)
     setBrushMode('off')
     setTool(name)
   }
@@ -340,7 +434,11 @@ function SceneCanvasAttempt({
       key={name}
       icon={TOOL_ICONS[name]}
       label={toolLabel(name)}
-      pressed={!skinPaintSettings && activeTool === name}
+      keyHint={sceneCommand(`tool.${name}`).shortcut?.display}
+      aria-keyshortcuts={sceneCommand(`tool.${name}`).shortcut?.display}
+      pressed={
+        !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
+      }
       disabled={toolDisabled(name)}
       onClick={() => chooseTool(name)}
     />
@@ -350,7 +448,9 @@ function SceneCanvasAttempt({
       key={name}
       variant="ghost"
       className="px-3 text-sm"
-      aria-pressed={!skinPaintSettings && activeTool === name}
+      aria-pressed={
+        !skinPaintSettings && tool !== 'pivot' && tool !== 'cut' && !look && activeTool === name
+      }
       disabled={toolDisabled(name)}
       onClick={() => chooseTool(name)}
     >
@@ -362,25 +462,39 @@ function SceneCanvasAttempt({
   const areaTools = slots?.areaTools === undefined ? [] : tools.filter(isArea)
 
   // ── a dica do momento ───────────────────────────────────────────────────────────────────
-  const hint = skinPaintSettings
-    ? copy.skinPaint.hint
-    : mode === 'animation'
-      ? reviewingSet
-        ? copy.poseSet.review
-        : assisting
-          ? copy.twoBone.drag
-          : copy.animationViewportHint
-      : componentSelection
-        ? areaTool !== 'point'
-          ? copy.componentAreaHint
-          : activeTool === 'select'
-            ? componentSelection.mode === 'face'
-              ? copy.faceHint
-              : copy.componentPickHints[componentSelection.mode]
-            : copy.componentTransformHint
-        : areaTool === 'point'
-          ? copy.gizmoHint
-          : copy.areaHint
+  const hint = guideInput?.rig
+    ? guideInput.rig.enabled
+      ? 'Toque para marcar as articulações. Arraste no fundo para olhar.'
+      : 'Experimente a dobra pelo painel. Sua criação só muda ao usar a montagem.'
+    : tool === 'pivot'
+      ? guideInput?.pivot?.snapVertex
+        ? 'Toque em um ponto destacado para escolher onde a peça gira.'
+        : 'Arraste as alças para mudar onde a peça gira.'
+      : tool === 'knife'
+        ? guideInput?.knife?.edgesOnly
+          ? 'Clique em uma linha para escolher a faixa. Enter aplica; Esc cancela. Arraste para olhar.'
+          : 'Clique na superfície para marcar o traçado. Enter aplica; Esc cancela. Arraste para olhar.'
+        : tool === 'cut'
+          ? 'Marque pontos nas arestas para cortar a peça.'
+          : skinPaintSettings
+            ? copy.skinPaint.hint
+            : mode === 'animation'
+              ? reviewingSet
+                ? copy.poseSet.review
+                : assisting
+                  ? copy.twoBone.drag
+                  : copy.animationViewportHint
+              : componentSelection
+                ? areaTool !== 'point'
+                  ? copy.componentAreaHint
+                  : activeTool === 'select'
+                    ? componentSelection.mode === 'face'
+                      ? copy.faceHint
+                      : copy.componentPickHints[componentSelection.mode]
+                    : copy.componentTransformHint
+                : areaTool === 'point'
+                  ? copy.gizmoHint
+                  : copy.areaHint
   const throughBox = (areaTool !== 'point' || componentSelection) && (
     <label className="flex min-h-11 items-center gap-2 text-sm">
       <input
@@ -397,31 +511,22 @@ function SceneCanvasAttempt({
           : copy.selectThrough}
     </label>
   )
-  const paintModes = paintTarget && (
-    <>
-      <Button
-        className="text-sm"
-        aria-pressed={!look}
-        disabled={!view.viewport}
-        onClick={() => {
-          view.viewport?.cancelGesture()
-          setLook(false)
-        }}
-      >
-        {copy.paintOnModel}
-      </Button>
-      <Button
-        className="text-sm"
-        aria-pressed={look}
-        disabled={!view.viewport}
-        onClick={() => {
-          view.viewport?.cancelGesture()
-          setLook(true)
-        }}
-      >
-        {copy.paintLook}
-      </Button>
-    </>
+  const paintModes = look && (
+    <Button
+      className="text-sm"
+      aria-pressed={!look}
+      disabled={!view.viewport}
+      onClick={() => {
+        view.viewport?.cancelGesture()
+        setLook(false)
+      }}
+    >
+      {mode === 'paint'
+        ? 'Voltar a pintar'
+        : mode === 'animation'
+          ? 'Voltar à pose'
+          : 'Voltar a modelar'}
+    </Button>
   )
 
   // ── olhar o modelo: grade, ajustes, vista, enquadrar ─────────────────────────────────────
@@ -437,7 +542,7 @@ function SceneCanvasAttempt({
       onClick={() => setGridVisible((visible) => !visible)}
     >
       <Grid3x3 aria-hidden="true" />
-      {copy.showGrid}
+      <span className="sr-only">{copy.showGrid}</span>
     </button>
   ) : (
     <Button
@@ -452,7 +557,7 @@ function SceneCanvasAttempt({
   )
   const frame = () => {
     skinPaint?.cancel()
-    view.viewport?.frame(true)
+    view.viewport?.frame(false)
   }
   const frameButton = shell ? (
     <button
@@ -462,7 +567,7 @@ function SceneCanvasAttempt({
       onClick={frame}
     >
       <Scan aria-hidden="true" />
-      {COPY.editor.model.views.selection}
+      <span className="mld-float-label">Enquadrar</span>
     </button>
   ) : (
     <Button variant="ghost" className="px-3 text-sm" disabled={!view.viewport} onClick={frame}>
@@ -475,13 +580,13 @@ function SceneCanvasAttempt({
   // Na barra de cima o menu DESCE; flutuando sobre o palco (o desenho antigo, no pé), ele SOBE.
   // `right` = o grupo da direita da barra, que só vai para a direita a partir de `sm`: abaixo
   // disso ele cai numa linha própria, colado à esquerda, e o menu ancorado à direita abria com
-  // os rótulos fora da tela. `left` estreita no celular: o resumo não começa na borda, e os
-  // 240px do menu passavam da tela.
+  // os rótulos fora da tela. Os ajustes ficam no fim da barra em todos os tamanhos: seu menu
+  // se alinha pela borda direita para não ser recortado pelo palco junto ao inspetor.
   // `stage` = a vista flutuando no palco (o Animar): o palco recorta o que passa do pé dele, e
   // no celular em pé as sete vistas em fila passavam; em duas colunas elas cabem.
   const DROP_ALIGN = {
     right: 'left-0 sm:right-0 sm:left-auto',
-    left: 'left-0 max-sm:w-52',
+    settings: 'right-0',
     stage: 'left-0 grid w-[min(18rem,calc(100vw-2rem))] grid-cols-2',
   } as const
   const dropClass = (align: keyof typeof DROP_ALIGN) =>
@@ -493,11 +598,18 @@ function SceneCanvasAttempt({
     <details className="relative">
       <summary className={summaryClass}>
         {shell && <Camera aria-hidden="true" className="size-4" />}
-        {SCENE_SHELL_COPY.camera(COPY.editor.model.views[camera])}
+        <span className={shell ? 'mld-float-label' : undefined}>
+          {SCENE_SHELL_COPY.camera(COPY.editor.model.views[camera])}
+        </span>
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
       {/* Flutuando no palco (o Animar) o grupo fica à ESQUERDA: o menu abre para a direita. */}
-      <div className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}>
+      <SceneStageDropdown
+        className={dropClass(shell && slots.view === undefined ? 'stage' : 'right')}
+      >
+        <Button variant="ghost" className="text-sm" onClick={() => view.viewport?.frame(true)}>
+          Enquadrar só a escolhida
+        </Button>
         {CAMERA_VIEWS.map((name) => (
           <Button
             key={name}
@@ -515,49 +627,75 @@ function SceneCanvasAttempt({
           </Button>
         ))}
         {viewExtras}
-      </div>
+      </SceneStageDropdown>
     </details>
   )
+  const hints = useCanvasHints(mode)
   const settingsMenu = (
     // Apoios e passo do movimento: pouco usados, e o passo é o mais abstrato daqui.
     <details className="relative">
       <summary className={summaryClass}>
         {shell && <SlidersHorizontal aria-hidden="true" className="size-4" />}
-        {SCENE_SHELL_COPY.stageSettings}
+        <span className={shell ? 'sr-only' : undefined}>{SCENE_SHELL_COPY.stageSettings}</span>
         {shell && <ChevronDown aria-hidden="true" className="size-4" />}
       </summary>
-      <div className={dropClass('left')}>
+      <SceneStageDropdown className={dropClass('settings')}>
+        {hints.hidden && (
+          <>
+            <Button className="text-sm" onClick={hints.restore}>
+              Mostrar dicas do palco
+            </Button>
+            {hints.unavailable && (
+              <p role="status" className="text-xs">
+                A dica ficou oculta só nesta sessão; o navegador não permitiu guardar a preferência.
+              </p>
+            )}
+          </>
+        )}
+        {can('model.precise') && mode !== 'paint' && (
+          <label className="flex min-h-11 items-center gap-2 px-1 text-sm">
+            <span>Eixos de Mover e Girar</span>
+            <select
+              name="molda-transform-space"
+              value={preciseSpace}
+              disabled={!view.viewport?.setTransformSpace}
+              onChange={(event) => {
+                const space = event.target.value === 'local' ? 'local' : 'world'
+                if (mode === 'animation') setAnimationTransformSpace(space)
+                else setTransformSpace(space)
+              }}
+              className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
+            >
+              <option value="world">Mundo</option>
+              <option value="local">Locais da peça</option>
+            </select>
+          </label>
+        )}
         {mode !== 'paint' && !paintTarget && !componentSelection && (
           <Button
             variant="ghost"
             className="justify-start px-3 text-sm"
             disabled={!view.viewport}
             aria-pressed={supportGuides}
-            onClick={() => setSupportGuides((shown) => !shown)}
+            onClick={() => setSupportGuideOverride(!supportGuides)}
           >
             {copy.supportGuides}
           </Button>
         )}
         <label className="flex min-h-11 items-center gap-2 px-1 text-sm">
-          <span>{copy.movementStep}</span>
-          <select
-            name="molda-movement-step"
-            value={movementStep ?? 'free'}
-            disabled={!view.viewport?.setMovementStep}
-            onChange={(event) =>
-              setMovementStep(event.target.value === 'free' ? null : Number(event.target.value))
-            }
-            className="min-h-11 rounded-lg border border-mld-border bg-mld-bg px-2"
-          >
-            <option value="free">{copy.movementFree}</option>
-            {[0.1, 0.5, 1].map((step) => (
-              <option key={step} value={step}>
-                {step.toLocaleString('pt-BR')}
-              </option>
-            ))}
-          </select>
+          <input
+            type="checkbox"
+            name="molda-fractional-measurements"
+            className="size-5 accent-mld-accent"
+            checked={movementStep !== 1}
+            onChange={(event) => setMovementStep(event.target.checked ? 0.1 : 1)}
+          />
+          Permitir números quebrados
         </label>
-      </div>
+        <p className="flex min-h-11 items-center gap-2 px-1 text-sm">
+          {copy.movementStep}: {movementStep.toLocaleString('pt-BR')}
+        </p>
+      </SceneStageDropdown>
     </details>
   )
   // Sem slots (o desenho antigo e o teste que monta o palco sozinho): a faixa no pé do palco.
@@ -593,33 +731,83 @@ function SceneCanvasAttempt({
     </section>
   )
 
-  const hintCard = (
-    <div className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2">
-      {mode === 'paint' && !paintTarget && (
-        // Região viva: o recado muda com o toque, e quem usa leitor de tela precisa ouvir.
-        <p role="status" className="flex items-center gap-2 text-sm font-bold">
-          <Info aria-hidden="true" className="size-4 shrink-0 text-mld-accent" />
-          {SCENE_PAINT_COPY.choosePiece}
-        </p>
-      )}
-      {paintModes}
-      {paintTarget && (
-        // No celular a dica ocuparia o palco: ela mora nos Primeiros passos também.
-        <p className="hidden text-xs text-mld-muted md:block">
-          {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
-        </p>
-      )}
-      {/* A casca que não preparou lugar para as ferramentas recebe-as aqui, no palco. */}
-      {showTools && shell && slots.tools === undefined && tools.map(toolButton)}
-      {showTools && (
-        <p className="flex items-center gap-2 text-sm text-mld-text">
-          <Info aria-hidden="true" className="size-4 shrink-0 text-mld-accent" />
-          <span>{hint}</span>
-        </p>
-      )}
-      {throughBox}
-    </div>
+  // "Olhar" é um estado que dura: pílula com o olho, tingida enquanto ligado.
+  const lookButton = (
+    <button
+      type="button"
+      className="sz-tool-pill sz-tool-pill--outline mld-look px-3 text-[0.8125rem]"
+      aria-pressed={look}
+      title={look ? SCENE_SHELL_COPY.looking : undefined}
+      onClick={() => {
+        cancelPaint()
+        setLook(!look)
+      }}
+    >
+      <ScanEye aria-hidden="true" />
+      <span className="mld-float-label">Olhar</span>
+    </button>
   )
+  const dismissibleHint =
+    tool !== 'pivot' &&
+    tool !== 'cut' &&
+    tool !== 'knife' &&
+    !pendingPose &&
+    !reviewingSet &&
+    !assisting &&
+    !look &&
+    !hintControls &&
+    !componentSelection &&
+    !skinPaintSettings
+  const hintCard =
+    detailPanel || (dismissibleHint && hints.hidden) ? null : (
+      <div
+        data-dismissible={dismissibleHint}
+        className="mld-stage-card pointer-events-auto flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 px-3 py-2"
+      >
+        {mode === 'paint' && !paintTarget && paintScope?.mode !== 'all' && (
+          // Região viva: o recado muda com o toque, e quem usa leitor de tela precisa ouvir.
+          <p role="status" className="flex items-center gap-2 text-sm font-bold">
+            <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
+            {SCENE_PAINT_COPY.choosePiece}
+          </p>
+        )}
+        {paintModes}
+        {(paintTarget || (mode === 'paint' && paintScope?.mode === 'all')) && (
+          // A faixa da dica é dela (não cobre o palco), então ela aparece também no celular.
+          <p className="flex items-center gap-2 text-[0.8125rem] font-semibold text-mld-text">
+            <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
+            {!!document.animations?.length && 'Editando a forma inicial. '}
+            {look ? copy.paintLookHint : SCENE_PAINT_COPY.modelHint}
+          </p>
+        )}
+        {/* A casca que não preparou lugar para as ferramentas recebe-as aqui, no palco. */}
+        {showTools && shell && slots.tools === undefined && tools.map(toolButton)}
+        {showTools && !look && (
+          <p className="flex items-center gap-2 text-sm font-semibold text-mld-text">
+            <Lightbulb aria-hidden="true" className="mld-hint-bulb" />
+            <span role={mode === 'animation' && pendingPose ? 'status' : undefined}>
+              {mode === 'model' &&
+                tool !== 'pivot' &&
+                !!document.animations?.length &&
+                'Editando a forma inicial. '}
+              {mode === 'animation' && pendingPose ? copy.animationPosePending : hint}
+            </span>
+          </p>
+        )}
+        {throughBox}
+        {hintControls}
+        {dismissibleHint && (
+          <button
+            type="button"
+            className="mld-dismiss-hint"
+            aria-label="Fechar dica do palco"
+            onClick={hints.dismiss}
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        )}
+      </div>
+    )
 
   const stageCards = (
     <>
@@ -670,23 +858,54 @@ function SceneCanvasAttempt({
       )}
     </>
   )
-  const poseCard = mode === 'animation' && animationPose && (
+
+  const paintScopeControl = (
+    <fieldset
+      className="mld-paint-scope flex items-center gap-1 text-xs font-bold"
+      aria-label="Pintar em"
+    >
+      <span className="px-2 text-mld-muted">Pintar em:</span>
+      <Button
+        variant="ghost"
+        className="px-3 text-xs"
+        aria-pressed={paintScope?.mode === 'all'}
+        onClick={() => onPaintScopeChange?.('all')}
+      >
+        Todas as peças
+      </Button>
+      <Button
+        variant="ghost"
+        className="px-3 text-xs"
+        aria-pressed={paintScope?.mode === 'selected'}
+        onClick={() => onPaintScopeChange?.('selected')}
+      >
+        Só a escolhida
+      </Button>
+    </fieldset>
+  )
+  const poseCard = !shell && mode === 'animation' && animationPose && (
     <SceneAnimationPoseControls gesture={animationPose} enabled={canAnimate} />
   )
 
   return (
     <section
       aria-label={componentSelection ? copy.componentViewport : copy.viewport}
-      className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
+      className="mld-stage-surface relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-mld-bg"
       onKeyDown={(event) => {
         if (event.key !== 'Escape' || event.defaultPrevented) return
         // O Esc de um diálogo aberto por cima do palco (a "Imagem de apoio") é do diálogo, e o de
         // um campo (o "Passo do movimento") é do campo: soltar a peça atrás deles é surpresa.
         if (isMoldaDialogOpen() || isTypingTarget(event.target)) return
+        if (look) {
+          cancelPaint()
+          setLook(false)
+          event.preventDefault()
+          return
+        }
         let handled = false
         if (mode === 'animation') {
           animation?.pause()
-          animationPose?.cancel()
+          animationPose?.interrupt()
           handled = true
         }
         cancelPaint()
@@ -697,6 +916,13 @@ function SceneCanvasAttempt({
         event.preventDefault()
       }}
     >
+      {mode === 'paint' &&
+        onPaintScopeChange &&
+        place(slots?.paintScope, paintScopeControl, () => (
+          <div className="mld-float absolute top-3 right-3 z-20 max-w-[calc(100%-1.5rem)]">
+            {paintScopeControl}
+          </div>
+        ))}
       {/* Sem o lugar pedido, o `inline` não desenha nada: o grupo sai no palco, mais abaixo. */}
       {showTools && place(slots?.tools, mainTools.map(toolTile), () => null)}
       {showTools &&
@@ -705,7 +931,7 @@ function SceneCanvasAttempt({
       {place(
         slots?.toggles,
         <>
-          {gridButton}
+          {slots?.view === undefined && gridButton}
           {settingsMenu}
         </>,
         () => null,
@@ -713,11 +939,25 @@ function SceneCanvasAttempt({
       {place(
         slots?.view,
         <>
+          {lookButton}
           {cameraMenu}
+          {slots?.view !== undefined && gridButton}
           {frameButton}
         </>,
         () => null,
       )}
+      {/*
+       * No pé do palco a dica é a pílula ESCURA (a âncora navy da casa): o tema escuro vale só
+       * dentro dela, e os botões que moram ali (o "Voltar a pintar") herdam a tinta clara.
+       */}
+      {slots?.context !== undefined &&
+        place(
+          slots.context,
+          <div data-molda-theme="dark" className="contents">
+            {hintCard}
+          </div>,
+          () => null,
+        )}
       {shell ? (
         <>
           {/*
@@ -733,7 +973,7 @@ function SceneCanvasAttempt({
             <div className="flex min-h-0 max-w-full flex-col items-start gap-2">
               {floatingView}
               <div className="flex min-h-0 max-w-full flex-col items-start gap-2 overflow-y-auto">
-                {hintCard}
+                {slots.context === undefined && hintCard}
                 {stageCards}
               </div>
             </div>
@@ -781,12 +1021,56 @@ function SceneCanvasAttempt({
         </p>
       )}
       <div className="relative flex min-h-0 flex-1">
+        {detailPanel}
+        <div className="mld-zoom">
+          <button
+            type="button"
+            aria-label="Aproximar"
+            title="Aproximar"
+            disabled={!view.viewport?.zoom}
+            onClick={() => view.viewport?.zoom?.(1.2)}
+          >
+            <Plus aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            aria-label="Afastar"
+            title="Afastar"
+            disabled={!view.viewport?.zoom}
+            onClick={() => view.viewport?.zoom?.(1 / 1.2)}
+          >
+            <Minus aria-hidden="true" />
+          </button>
+        </div>
+        {/* O palco continua 3D durante a pintura; a legenda compartilha as cores das alças. */}
+        {shell && (
+          <p aria-hidden="true" className="mld-axis-legend">
+            <span className="mld-axis-item">
+              <span className="mld-axis" data-axis="x">
+                X
+              </span>
+              {SCENE_SHELL_COPY.axes[0]}
+            </span>
+            <span className="mld-axis-item">
+              <span className="mld-axis" data-axis="y">
+                Y
+              </span>
+              {SCENE_SHELL_COPY.axes[1]}
+            </span>
+            <span className="mld-axis-item">
+              <span className="mld-axis" data-axis="z">
+                Z
+              </span>
+              {SCENE_SHELL_COPY.axes[2]}
+            </span>
+          </p>
+        )}
         <ReferenceImageGuide
           view={camera}
           disabled={!view.viewport || !!view.error || view.lost}
           available={can('model.reference')}
           // O canto de cima é das ferramentas flutuantes (no desenho antigo) e da dica (na casca).
-          triggerPlacement={shell ? 'right-3 bottom-17' : 'bottom-16 left-3'}
+          triggerPlacement={shell ? 'left-3 bottom-3' : 'bottom-16 left-3'}
           compactTrigger={shell}
         >
           <canvas
@@ -841,21 +1125,22 @@ function SceneCanvasAttempt({
               {copy.drawIssues(view.issueCount)}
             </p>
           )}
-          {overlay}
-          <SceneFirstSteps
-            key={document.id}
-            side={shell ? 'right' : 'left'}
-            compact={shell}
-            context={
-              mode === 'animation'
-                ? 'animation'
-                : mode === 'paint' || paintTarget
-                  ? 'paint'
-                  : weightTarget
-                    ? 'skin'
-                    : 'model'
-            }
-          />
+          {!shell && (
+            <SceneFirstSteps
+              key={document.id}
+              side={shell ? 'right' : 'left'}
+              compact={shell}
+              context={
+                mode === 'animation'
+                  ? 'animation'
+                  : mode === 'paint' || paintTarget
+                    ? 'paint'
+                    : weightTarget
+                      ? 'skin'
+                      : 'model'
+              }
+            />
+          )}
         </ReferenceImageGuide>
       </div>
     </section>

@@ -1,0 +1,31 @@
+{
+  "id": "P08",
+  "checkedAt": "2026-10-15T09:07:31.594Z",
+  "errors": [],
+  "published": false,
+  "visualReview": "Arte integral, captura do jogo, bloco real e prévia móvel inspecionados. Dragão e barra inteira visíveis; barra abaixo da metade, sem título ou mensagem de batalha no recorte. Bloco completo e legível. Copy preservada; sem criança, diagnóstico ou depoimento atribuído.",
+  "copyWords": 14,
+  "game": {
+    "hp": 70,
+    "maxHp": 160,
+    "ratio": 0.4375,
+    "allies": 1,
+    "playerActions": 13,
+    "normalAttacks": 12,
+    "areaAttacks": 1,
+    "finalState": "fim"
+  },
+  "block": "O inimigo Dragao acerta TODO o time (dano 22)",
+  "png": {
+    "width": 1080,
+    "height": 1350,
+    "sha256": "440af30045f99edbce1c5b7575cbcab09dadf08565b02eecf8389fdc7d6d446d"
+  },
+  "nextStaticPost": "P29",
+  "counts": {
+    "carousels": 30,
+    "statics": 7,
+    "pngs": 227
+  },
+  "links": 36
+}

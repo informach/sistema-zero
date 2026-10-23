@@ -6,6 +6,7 @@ import type { GatewayModule } from '../server/gateway'
 import { r2DeleteUgcPrefixes } from '../server/r2'
 
 interface CleanupJob {
+  scope?: 'pensa' | 'gallery'
   id: string
   accountId: string
   userIds: string[]
@@ -23,7 +24,7 @@ function authorized(request: Request, expected: string): boolean {
 
 /** Worker HTTP para um scheduler: claim distribuído no Members, limpeza no R2, ack durável. */
 export function createCreationCleanupWorkerRoutes(deps: {
-  gateway: GatewayModule
+  gateway: Pick<GatewayModule, 'gatewayFetchHmac'>
   deletePrefixes?: typeof r2DeleteUgcPrefixes
 }) {
   return {
@@ -43,28 +44,43 @@ export function createCreationCleanupWorkerRoutes(deps: {
           )
         }
 
+        let rewardsFailed = false
+        try {
+          const drained = await deps.gateway.gatewayFetchHmac(
+            '/members/internal/pensa/rewards/work',
+            { method: 'POST', body: {} },
+          )
+          rewardsFailed = drained.status < 200 || drained.status >= 300
+        } catch {
+          rewardsFailed = true
+        }
         let completed = 0
         let failed = 0
         for (let index = 0; index < 25; index += 1) {
+          // Declara que entende a limpeza de PLANO (`scope: 'pensa'`, que nunca finaliza a
+          // conta). Sem a declaração o members só entrega exclusão de conta: um worker antigo
+          // finalizaria a conta da família inteira a partir do job de um plano.
           const claimed = await deps.gateway.gatewayFetchHmac<{ job?: CleanupJob }>(
             '/members/internal/creation-cleanups/claim',
-            { method: 'POST' },
+            { method: 'POST', body: { scopes: ['pensa', 'gallery'] } },
           )
           if (claimed.status === 204) break
           const job = claimed.body?.job
           if (claimed.status >= 400 || !job) {
             return NextResponse.json(
-              { completed, failed, upstreamStatus: claimed.status },
+              { completed, failed, rewardsFailed, upstreamStatus: claimed.status },
               { status: 502 },
             )
           }
           try {
             await (deps.deletePrefixes ?? r2DeleteUgcPrefixes)(job.prefixes)
             const finalizeBody = { accountId: job.accountId, userIds: job.userIds }
-            for (const path of [
-              '/hub/internal/account-deletion/finalize',
-              '/members/internal/account-deletion/finalize',
-            ]) {
+            for (const path of job.scope
+              ? []
+              : [
+                  '/hub/internal/account-deletion/finalize',
+                  '/members/internal/account-deletion/finalize',
+                ]) {
               const finalized = await deps.gateway.gatewayFetchHmac(path, {
                 method: 'POST',
                 body: finalizeBody,
@@ -99,7 +115,13 @@ export function createCreationCleanupWorkerRoutes(deps: {
           // A limpeza de contas já concluída não volta para a fila por uma falha independente.
           tombstoneCompactionFailed = true
         }
-        return NextResponse.json({ completed, failed, compacted, tombstoneCompactionFailed })
+        return NextResponse.json({
+          completed,
+          failed,
+          compacted,
+          tombstoneCompactionFailed,
+          rewardsFailed,
+        })
       },
     },
   }

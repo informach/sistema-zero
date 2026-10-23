@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-preenchimento-contorno",
+    "video-novo-asteroide",
+    "video-forma-pedra",
+    "video-curvas",
+    "video-crateras",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-preenchimento-contorno-K1",
+      "clipe": "video-preenchimento-contorno",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.",
+      "ancoraDepois": "É que Sem cor não é branco: é transparente, por isso dá para ver o fundo. Quando você pega um desenho para colorir, as",
+      "falaPrincipal": "Cadê a cor de dentro?",
+      "falaPersonagem": "Cadê a cor de dentro?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-crateras-K1",
+      "clipe": "video-crateras",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.",
+      "ancoraDepois": "Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e",
+      "falaPrincipal": "Posso fazer uma cratera grande e outra pequena?",
+      "falaPersonagem": "Posso fazer uma cratera grande e outra pequena?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

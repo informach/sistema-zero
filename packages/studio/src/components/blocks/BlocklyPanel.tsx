@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import type { JSX } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { javaScriptProject } from '../../core/editableProject'
 import 'blockly/blocks'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -24,7 +25,7 @@ import {
 } from '#blockly'
 import { type InstalledExtension, isCategoryAllowed, type LearningProfile } from '#core'
 import { extensionMinLevel } from '#extensions'
-import { generateProjectFilesWithMap } from '#generators'
+import { GENERATED_JS_HEADER, generateProjectFilesWithMap } from '#generators'
 import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
@@ -60,10 +61,6 @@ ensureBlocklyInitialized()
 
 const EMPTY_INSTALLED_EXTENSIONS: InstalledExtension[] = []
 const BLOCKLY_REGENERATION_DELAY_MS = 120
-// Cabeçalho dos arquivos gerados dos blocos. DEVE casar com `BRIDGE_JS_HEADER`
-// (modes/bridgeReverseParse) para o memo de source-map por `ir` reusar o mapa
-// entre o regenerate e o efeito canônico do BridgeMode (chave inclui o header).
-const REGEN_JS_HEADER = '// Gerado pelo Sistema Zero Studio'
 function blocklyWorkspaceConfiguration(
   theme: 'dark' | 'light',
   horizontalLayout: boolean,
@@ -307,10 +304,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
   const { blocksState, installedExtensions, projectMode, blocksHydration, projectToolsKey } =
     useProjectStore(
       useShallow((s) => ({
-        blocksState: s.project?.blocksState ?? null,
-        projectToolsKey: s.project?.projectTools?.join('\n') ?? '',
-        installedExtensions: s.project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
-        projectMode: s.project?.mode ?? 'blocks',
+        blocksState: javaScriptProject(s.project)?.blocksState ?? null,
+        projectToolsKey: javaScriptProject(s.project)?.projectTools?.join('\n') ?? '',
+        installedExtensions:
+          javaScriptProject(s.project)?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+        projectMode: javaScriptProject(s.project)?.mode ?? 'blocks',
         blocksHydration: s.blocksHydration,
       })),
     )
@@ -430,6 +428,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       level: learning.level,
       revealed: learning.allowLevelReveal && revealAdvanced,
       allowBlocks: learning.allowBlocks,
+      grantedBlockIds: learning.grantedBlockIds,
       projectTools,
       currentBlockTypes: currentBlockTypesKey ? currentBlockTypesKey.split('\n') : [],
       allowCategories: learning.allowCategories,
@@ -470,7 +469,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
         const s = projectStoreApi.getState()
         if (
           options.force &&
-          (s.project?.bridgeCodeAhead === true || s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch)
+          (javaScriptProject(s.project)?.bridgeCodeAhead === true ||
+            s.bridgeCodeEditEpoch > s.bridgeBlocksSyncedEpoch)
         )
           return
       }
@@ -483,7 +483,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const built = buildIRFromWorkspace(workspace)
       // Lê o projeto mais recente do store (evita closure obsoleta) e preserva a
       // casca do documento (head/doctype) que os blocos não representam.
-      const current = projectStoreApi.getState().project
+      const current = javaScriptProject(projectStoreApi.getState().project)
       const ir = current?.ir?.htmlShell ? { ...built, htmlShell: current.ir.htmlShell } : built
       // ⭐ Abrir não é editar. Na CARGA (force) com os mesmos blocos que estão salvos,
       // nada do que a criança fez mudou: o que falta completar é só o que DERIVA deles.
@@ -518,11 +518,11 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       const { files, sourceMap } = generateProjectFilesWithMap({
         ir,
         projectName: projectNameForGen,
-        jsHeader: REGEN_JS_HEADER,
+        jsHeader: GENERATED_JS_HEADER,
       })
       // Semeia o memo por `ir`: na Ponte, o efeito canônico do BridgeMode reusa
       // este mapa em vez de regerar o projeto de novo com o MESMO `ir`.
-      primeCanonicalSourceMap(ir, projectNameForGen, REGEN_JS_HEADER, sourceMap)
+      primeCanonicalSourceMap(ir, projectNameForGen, GENERATED_JS_HEADER, sourceMap)
       // Modo Ponte: ao CARREGAR os blocos (force), NUNCA reescrever os arquivos do
       // aluno com o canônico — "código é sagrado". Só sincronizamos o IR (para os
       // ids/__declIds e o sourcemap de HTML/JS ficarem completos) e o blocksState
@@ -1055,7 +1055,7 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // abrir o seletor de imagem (multi-instância: nada de global). `projectStoreApi`
     // é estável (store desta instância), então o efeito segue rodando uma vez.
     ;(injected as unknown as { __szAssets?: () => unknown }).__szAssets = () =>
-      projectStoreApi.getState().project?.assets ?? []
+      javaScriptProject(projectStoreApi.getState().project)?.assets ?? []
     // Miniaturas de sprite NO BLOCO: refresh automático quando um declarador de
     // sprite muda (watcher de eventos do workspace) e quando os ASSETS do projeto
     // mudam (renomear/trocar imagem na aba "Imagens" não gera evento Blockly —
@@ -1066,9 +1066,9 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // carga/reconstrução (senão a seleção "some" ao reabrir ou voltar da Ponte).
     const detachAnimNames = attachAnimationNameWatcher(injected)
     const detachProjectAreaGuard = attachProjectAreaGuard(injected)
-    let prevAssets = projectStoreApi.getState().project?.assets
+    let prevAssets = javaScriptProject(projectStoreApi.getState().project)?.assets
     const unsubscribeAssetsWatch = projectStoreApi.subscribe((state) => {
-      const assets = state.project?.assets
+      const assets = javaScriptProject(state.project)?.assets
       if (assets === prevAssets) return
       prevAssets = assets
       refreshSpriteThumbs(injected)
@@ -1105,7 +1105,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
     // mapeia o workspace de volta ao projectStore desta instância + ao aviso.
     const pasteHandlers: PasteTargetHandlers = {
       getInstalledExtensions: () =>
-        projectStoreApi.getState().project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+        javaScriptProject(projectStoreApi.getState().project)?.installedExtensions ??
+        EMPTY_INSTALLED_EXTENSIONS,
       installExtensionById: (id) => {
         const ext = findExtension(id)
         if (!ext) return false
@@ -1114,7 +1115,8 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       isBlockTypeKnown: (type) =>
         isBlockTypeKnown(
           type,
-          projectStoreApi.getState().project?.installedExtensions ?? EMPTY_INSTALLED_EXTENSIONS,
+          javaScriptProject(projectStoreApi.getState().project)?.installedExtensions ??
+            EMPTY_INSTALLED_EXTENSIONS,
         ),
       notify: notifyPaste,
     }

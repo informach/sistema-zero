@@ -1,0 +1,8 @@
+import { defineConfig } from '@playwright/test'
+import currentHost from './playwright.python-games-current.config'
+
+// Optional separate diagnostic. Same current-host admission; no service/build.
+export default defineConfig({
+  ...currentHost,
+  testMatch: ['python-pacman-render.spec.ts'],
+})

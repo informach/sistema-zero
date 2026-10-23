@@ -57,7 +57,36 @@
   --sz-tool-sig-pensa: var(--sz-kids-laranja-viva, oklch(0.8 0.15 70));
   --sz-tool-sig-molda: var(--sz-kids-roxo, #8b5cf6);
   --sz-tool-on-sig: oklch(1 0 0);
-  --sz-tool-on-sig-pensa: var(--sz-kids-cta-tinta, #3a2400);
+  /* A tinta ESCURA do âmbar, derivada da própria assinatura (a mesma régua dos `-ink` abaixo, só mais escura). Era o
+     `--sz-kids-cta-tinta`, que é a tinta BRANCA da ação: texto e ícone sobre o ladrilho âmbar
+     reprovavam o contraste. */
+  --sz-tool-on-sig-pensa: color-mix(in oklab, var(--sz-tool-sig-pensa) 33%, oklch(0 0 0));
+  /* Os tons da MISSÃO DO PENSA nas oficinas (20/10/2026, desenho aprovado): o creme do topo
+     âmbar com a tinta e o degrau do Pensa, o fundo claro de cada oficina no selo dela e o menta
+     do "pronta". São fundos que não trocam de tema, com a tinta ESCURA fixa por cima (o
+     `--sz-tool-on-tint`), então moram aqui. Derivados da assinatura ou lidos do kids e, na
+     comunidade adulta (que não tem os `--sz-kids-*`), da paleta gerada (`--sz-yellow-surface`,
+     `--sz-mint`, `--sz-lilac`, `--sz-ink`): seguem a identidade do host sem repetir valor. */
+  --sz-tool-on-tint: var(--sz-kids-tinta, var(--sz-ink, #26314a));
+  --sz-tool-sig-pensa-tint: var(--sz-kids-amarelo-bg, var(--sz-yellow-surface, #fff3c4));
+  --sz-tool-sig-pensa-ink: color-mix(in oklab, var(--sz-tool-sig-pensa) 52%, oklch(0 0 0));
+  --sz-tool-sig-pensa-step: color-mix(in oklab, var(--sz-tool-sig-pensa) 70%, oklch(0 0 0));
+  --sz-tool-sig-estudio-tint: color-mix(in oklab, var(--sz-tool-sig-estudio) 12%, oklch(1 0 0));
+  --sz-tool-sig-estudio-ink: color-mix(in oklab, var(--sz-tool-sig-estudio) 80%, oklch(0 0 0));
+  --sz-tool-sig-pinta-tint: color-mix(in oklab, var(--sz-tool-sig-pinta) 14%, oklch(1 0 0));
+  --sz-tool-sig-pinta-ink: color-mix(in oklab, var(--sz-tool-sig-pinta) 76%, oklch(0 0 0));
+  --sz-tool-sig-molda-tint: var(
+    --sz-kids-lilas-bg,
+    var(--sz-lilac, color-mix(in oklab, var(--sz-tool-sig-molda) 16%, oklch(1 0 0)))
+  );
+  --sz-tool-sig-molda-ink: color-mix(in oklab, var(--sz-tool-sig-molda) 78%, oklch(0 0 0));
+  --sz-tool-sig-molda-deep: color-mix(in oklab, var(--sz-tool-sig-molda) 50%, oklch(0 0 0));
+  --sz-tool-sig-ok-tint: var(--sz-kids-menta-bg, var(--sz-mint, #dcf0e4));
+  --sz-tool-sig-ok-ink: color-mix(
+    in oklab,
+    var(--sz-kids-verde, var(--sz-green, #0b7a54)) 82%,
+    oklch(0 0 0)
+  );
   /* O AMARELO do "novo" (o "+" do cartão "Novo projeto", o ladrilho do cartão de fechamento):
      é o `--sz-kids-amarelo` da marca, o mesmo ouro das páginas do kids. Fundo que não muda de
      tema, com a tinta escura por cima nos dois (10,88:1; branco daria 1,48:1). */
@@ -824,123 +853,660 @@
     color: var(--sz-tool-muted);
   }
 
-  /* ── GUIA DA TAREFA do Pensa (19/09/2026) ─────────────────────────────────────────────
-     O painel que abre dentro da oficina quando a criança chega por um Cartão de Criação:
-     `TaskBriefPanel` (pinta), `TaskGuidePanel` (studio) e `MoldaTaskGuide` (community-kids).
-     São TRÊS componentes, em dois pacotes e no host, e até aqui cada um tinha inventado a
-     própria casca (fio de 2px no acento do Pinta, fio da marca no Molda, faixa sem canto no
-     Estúdio) — o que ela leu como "totalmente fora da identidade visual da comunidade".
-     Agora os três vestem ESTA receita: o cartão branco da família do `.sz-tool-card`, porque
-     o guia É um cartão, só que com um cabeçalho que recolhe e um pé. CHAPADO: o relevo 3D é
-     das galerias, e o guia mora no editor.
-     ⚠️ Os três só nascem com uma sessão de tarefa do Pensa, e ela só existe no community-kids
-     e nos playgrounds — os mesmos hosts que importam esta folha (o bloco de aula do Pinta, o
-     `studio-embed` do admin e a comunidade adulta nunca montam uma). Classe sem folha não
-     desenha NADA (ao contrário de token, que tem fallback): host novo que monte um guia
-     importa o `tool-chrome.css` junto.
-     ⚠️ Margem, largura e teto de altura ficam FORA daqui, como utilitária no consumidor: elas
-     variam por painel, e os testes do Pinta e do Estúdio as leem como classe literal. */
-  /* O respiro que faltava: 18px dos lados, 14px em cima e embaixo. Recolhido, o cabeçalho é o
-     ÚNICO filho, então é ele quem dá o respiro do cartão inteiro — e num canto de 20px um
-     padding menor faz o texto encostar na curva (o relato dela era o Pinta, com 12px e 8px). */
-  .sz-tool-guide__head {
+  /* ── MISSÃO DO PENSA nas oficinas (20/10/2026) ───────────────────────────────────────
+     O painel que abre dentro do Estúdio, do Pinta e do Molda quando a criança chega por uma
+     missão: `PensaMissionPanel` (este pacote), usado pelo `TaskGuidePanel` (studio), pelo
+     `TaskBriefPanel` (pinta) e pelo `MoldaMissionGuide` (member-shell).
+     ⭐⭐ Pedido dela, desenho aprovado em 20/10/2026 (PainelOficina/PainelPinta/PainelMolda): o
+     painel NUNCA cobre a oficina, nem aberto nem recolhido. Ele é uma coluna PRÓPRIA à
+     direita (360px) e a oficina se ajusta ao espaço que sobra (`PensaMissionLayout`).
+     Recolhido, vira um trilho de 64px na borda; clicar no trilho abre de novo. Abaixo de
+     1100px de largura da oficina, o painel é uma faixa EMBAIXO dela, que recolhe para uma
+     linha. Quem perde espaço é o painel, nunca a oficina.
+     ⚠️ A régua é a LARGURA DA OFICINA (container query), não a da janela: com o menu lateral
+     aberto a 1366px sobram 1098px, e a coluna de 360px deixaria a oficina espremida. O
+     `container-type: inline-size` não ancora os `fixed` sem portal (o Dialog do Pinta): o
+     contêiner de tamanho inline não liga o containment de layout.
+     ⚠️ O layout estrutural (flex, alturas) mora INLINE no componente: um host sem esta folha
+     (bloco de aula, admin) continua com a mesma cadeia de altura. Daqui vêm só o contêiner e a
+     direção (coluna embaixo, linha à direita). Classe sem folha não desenha nada: quem monta
+     uma missão importa o `tool-chrome.css`.
+     As cores fixas (âmbar do Pensa, a cor de cada oficina, o lilás da equipe) moram nas
+     constantes do topo: são fundos que não trocam de tema, com a tinta escura por cima.
+     O relevo 3D dos botões é o do desenho aprovado (o degrau da ação e o do cartão), com
+     classes próprias: as pílulas `.sz-tool-pill` continuam chapadas nos editores. */
+  /* Com missão a folha manda no layout (o componente tira o inline). Na tela estreita a faixa
+     fica EMBAIXO da oficina e a coluna rola: a oficina nunca desce do piso das ferramentas
+     embarcadas (34rem, o mesmo `min-h-[34rem]` das molduras do kids), e o que não couber da
+     faixa aparece rolando, em vez de espremer ou cortar a oficina. Com espaço, a oficina cresce
+     e a faixa (ou a linha recolhida, 4.875rem com o respiro) cabe inteira. */
+  .sz-tool-mission-layout.has-panel {
+    container: sz-mission / inline-size;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+  }
+  .has-panel > .sz-tool-mission-layout__row {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--sz-tool-bg);
+  }
+  /* A oficina pinta DENTRO da caixa dela: uma dica alta do Pinta num celular baixo descia por
+     cima da faixa. Só o eixo vertical é recortado: um menu que abre de lado aparece inteiro. */
+  .has-panel .sz-tool-mission-layout__work {
+    display: flex;
+    flex: 1 0 0;
+    flex-direction: column;
+    min-width: 0;
+    min-height: min(34rem, calc(100% - 4.875rem));
+    overflow-y: clip;
+  }
+  .sz-tool-mission-panel {
+    flex: none;
+    min-height: 0;
+    margin: 0.75rem;
+    overflow: hidden;
+    border-radius: var(--sz-tool-radius-card);
+    font-family: var(--sz-tool-font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .sz-tool-mission-panel button,
+  .sz-tool-mission-panel textarea,
+  .sz-tool-mission-panel select {
+    font-family: var(--sz-tool-font-sans);
+  }
+  .sz-tool-mission-panel__heading {
+    display: flex;
+    flex: none;
+    margin: 0;
+    font: inherit;
+  }
+  /* O topo âmbar (aberto) e o trilho/linha (recolhido) são o MESMO botão: o foco sobrevive à
+     troca. O fundo é fixo e claro nos dois temas, então a tinta também é fixa. */
+  .sz-tool-mission-panel__head,
+  .sz-tool-mission-panel__rail {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    min-height: var(--sz-tool-hit);
-    padding: 0.875rem 1.125rem;
-  }
-  /* ⚠️ O primeiro filho (o bloco do título) come o espaço livre, senão a situação flutuaria no
-     MEIO do cabeçalho em vez de colar na seta — é o que acontecia no Molda, que tem três filhos
-     e não trazia `flex-1` no título (achado do full review de 19/09/2026). */
-  .sz-tool-guide__head > :first-child {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-  /* ⚠️ O cabeçalho do Estúdio é um contêiner com o botão DENTRO (o padrão de disclosure com
-     cabeçalho, porque ali o título é um `<h2>`), e o botão já traz o próprio alvo de 44px. Sem
-     este respiro menor o cabeçalho somaria 14 + 44 + 14 = 72px, contra os ~47px dos irmãos —
-     justo no painel que vira a faixa do topo no celular. */
-  div.sz-tool-guide__head {
-    padding-block: 0.125rem;
-  }
-  /* Quando o cabeçalho INTEIRO é o botão de abrir e recolher (Pinta e Molda), e o botão de
-     dentro quando ele não é (Estúdio): as duas formas respondem igual ao ponteiro e ao foco. */
-  button.sz-tool-guide__head,
-  .sz-tool-guide__head button {
+    gap: 0.75rem;
     width: 100%;
+    min-height: var(--sz-tool-hit);
+    padding: 0.875rem 1rem;
     border: 0;
-    background: transparent;
-    color: inherit;
+    background: var(--sz-tool-sig-pensa-tint);
+    color: var(--sz-tool-on-tint);
     font: inherit;
     text-align: left;
     cursor: pointer;
     touch-action: manipulation;
     transition: background-color 0.12s ease;
   }
-  /* ⚠️ O raio inteiro só quando o cabeçalho é o cartão INTEIRO (recolhido). Aberto, herdar os
-     quatro cantos deixava o hover com dois entalhes arredondados flutuando sobre o corpo. */
-  button.sz-tool-guide__head {
-    border-start-start-radius: inherit;
-    border-start-end-radius: inherit;
+  .sz-tool-mission-panel__head:hover,
+  .sz-tool-mission-panel__rail:hover {
+    background: color-mix(in oklab, var(--sz-tool-sig-pensa-tint) 88%, var(--sz-tool-sig-pensa));
   }
-  button.sz-tool-guide__head:only-child {
-    border-radius: inherit;
+  .sz-tool-mission-panel__lamp {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.6875rem;
+    background: var(--sz-tool-sig-pensa);
+    color: var(--sz-tool-on-sig-pensa);
+    box-shadow: 0 3px 0 var(--sz-tool-sig-pensa-step);
   }
-  button.sz-tool-guide__head:hover:not(:disabled),
-  .sz-tool-guide__head button:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--sz-tool-surface) 92%, var(--sz-tool-ink));
+  .sz-tool-mission-panel__head-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 0;
+    line-height: 1.2;
   }
-  button.sz-tool-guide__head:focus-visible,
-  .sz-tool-guide__head button:focus-visible {
-    outline: 2px solid var(--sz-tool-accent);
-    outline-offset: -2px;
+  /* ⚠️ 12px, o piso da casa para criança (o mesmo do `.sz-tool-kicker` das galerias). */
+  /* Quebra em vez de cortar: o "missão 4 de 9" fica no FIM da linha e era ele que sumia. */
+  .sz-tool-mission-panel__kicker {
+    overflow-wrap: anywhere;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--sz-tool-sig-pensa-ink);
   }
-  /* O sobretítulo que diz de onde veio o painel, e o nome da tarefa no Baloo de 15px do
-     `.sz-tool-card-title`. */
-  /* ⚠️ 12px, o piso da casa para criança — o mesmo do `.sz-tool-kicker` das galerias. Nasceu em
-     11px e o full review de 19/09/2026 pegou: texto para criança de 8 anos não desce disso. */
-  .sz-tool-guide__kicker {
-    display: block;
-    font-family: var(--sz-tool-font-display);
+  /* A tipografia vem do `.sz-tool-card-title`; aqui o título cresce e quebra em até duas
+     linhas, porque divide o topo com os selos. */
+  .sz-tool-mission-panel__title {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: 1.0625rem;
+    color: var(--sz-tool-on-tint);
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  .sz-tool-mission-panel__chips {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+  .sz-tool-mission-panel__chip,
+  .sz-tool-mission-panel__state {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.5rem;
+    padding: 0 0.625rem;
+    border-radius: var(--sz-tool-radius-pill);
     font-size: 0.75rem;
     font-weight: 800;
     line-height: 1.2;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--sz-tool-muted);
+    white-space: nowrap;
   }
-  /* A tipografia vem do `.sz-tool-card-title`, lá em cima: aqui só o que é do guia (ele vive
-     numa linha que também tem a situação e a seta, então o título é quem cede e trunca). */
-  .sz-tool-guide__title {
-    display: block;
+  .sz-tool-mission-panel__chip--studio {
+    background: var(--sz-tool-sig-estudio-tint);
+    color: var(--sz-tool-sig-estudio-ink);
+  }
+  .sz-tool-mission-panel__chip--pinta {
+    background: var(--sz-tool-sig-pinta-tint);
+    color: var(--sz-tool-sig-pinta-ink);
+  }
+  .sz-tool-mission-panel__chip--molda {
+    background: var(--sz-tool-sig-molda-tint);
+    color: var(--sz-tool-sig-molda-ink);
+  }
+  .sz-tool-mission-panel__state {
+    background: color-mix(in oklab, var(--sz-tool-sig-pensa-tint) 35%, oklch(1 0 0));
+    color: var(--sz-tool-sig-pensa-ink);
+  }
+  .sz-tool-mission-panel__state[data-state="done"] {
+    background: var(--sz-tool-sig-ok-tint);
+    color: var(--sz-tool-sig-ok-ink);
+  }
+  .sz-tool-mission-panel__chevron {
+    flex: none;
+    transition: rotate 0.12s ease;
+  }
+  /* Recolhido, na tela estreita (e com recado): uma linha "Missão 4/9 · título". */
+  .sz-tool-mission-panel__rail {
+    min-height: 3.25rem;
+    padding: 0.5rem 0.875rem;
+    gap: 0.625rem;
+  }
+  .sz-tool-mission-panel__rail .sz-tool-mission-panel__lamp {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.625rem;
+  }
+  .sz-tool-mission-panel__rail .sz-tool-mission-panel__chevron {
+    rotate: -90deg;
+  }
+  .sz-tool-mission-panel__head .sz-tool-mission-panel__chevron {
+    rotate: 90deg;
+  }
+  .sz-tool-mission-panel__fraction,
+  .sz-tool-mission-panel__rail-text {
+    display: none;
+  }
+  .sz-tool-mission-panel__bar-text {
+    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--sz-tool-sig-pensa-ink);
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-  /* A situação da tarefa (Planejada / Em andamento / Concluída), no canto do cabeçalho. Fica
-     FORA do que recolhe de propósito: é a única coisa que a criança precisa saber sem abrir. */
-  .sz-tool-guide__state {
+  .sz-tool-mission-panel__head:focus-visible,
+  .sz-tool-mission-panel__rail:focus-visible {
+    outline: 3px solid var(--sz-tool-accent);
+    outline-offset: -3px;
+  }
+  /* Aberto, na tela estreita, quem rola é a coluna inteira (sem rolagem dentro de rolagem); na
+     coluna da direita, só o corpo rola e as ações ficam sempre à vista. */
+  .sz-tool-mission-panel__main {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+  .sz-tool-mission-panel__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .sz-tool-mission-panel__foot {
+    display: flex;
     flex: none;
-    padding: 0.25rem 0.625rem;
-    border-radius: var(--sz-tool-radius-pill);
+    flex-direction: column;
+    gap: 0.625rem;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid color-mix(in oklab, var(--sz-tool-line) 55%, var(--sz-tool-surface));
+  }
+  .sz-tool-mission-panel__team {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.875rem;
+    background: var(--sz-tool-sig-molda-tint);
+    color: var(--sz-tool-sig-molda-deep);
+    font-size: 0.875rem;
+  }
+  .sz-tool-mission-panel__avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    border-radius: 50%;
+    background: var(--sz-tool-sig-molda);
+    color: var(--sz-tool-on-sig);
+    font-weight: 800;
+  }
+  .sz-tool-mission-panel__note {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .sz-tool-mission-panel__note > label {
+    font-size: 0.875rem;
+    font-weight: 800;
+  }
+  .sz-tool-mission-panel textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 3.75rem;
+    padding: 0.5rem 0.625rem;
+    border: 2px solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+    font-size: 0.875rem;
+    resize: vertical;
+  }
+  .sz-tool-mission-panel select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--sz-tool-hit);
+    padding: 0 0.75rem;
+    border: 2px solid var(--sz-tool-line);
+    border-radius: var(--sz-tool-radius-control);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+    font-size: 0.875rem;
+  }
+  .sz-tool-mission-panel textarea:focus-visible,
+  .sz-tool-mission-panel select:focus-visible {
+    outline: 3px solid var(--sz-tool-accent);
+    outline-offset: 2px;
+  }
+  /* "Ajuda para esta missão" e "Onde parei" dobrado: sem o triângulo cru do navegador. */
+  .sz-tool-mission-panel details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: 1.75rem;
+    font-size: 0.875rem;
+    font-weight: 800;
+    list-style: none;
+    cursor: pointer;
+  }
+  .sz-tool-mission-panel details > summary::-webkit-details-marker {
+    display: none;
+  }
+  .sz-tool-mission-panel details > summary::after {
+    content: "";
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-inline-end: 0.25rem;
+    border-right: 2.5px solid currentColor;
+    border-bottom: 2.5px solid currentColor;
+    rotate: 45deg;
+    translate: 0 -2px;
+  }
+  .sz-tool-mission-panel details[open] > summary::after {
+    rotate: -135deg;
+    translate: 0 2px;
+  }
+  .sz-tool-mission-panel details > summary:focus-visible {
+    outline: 3px solid var(--sz-tool-accent);
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+  }
+  .sz-tool-mission-panel__help {
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.875rem;
     background: var(--sz-tool-surface-2);
+  }
+  .sz-tool-mission-panel__help ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sz-tool-mission-panel__help a {
+    color: color-mix(in oklab, var(--sz-tool-accent) 82%, var(--sz-tool-ink));
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-underline-offset: 3px;
+  }
+  .sz-tool-mission-panel__help a:focus-visible {
+    outline: 3px solid var(--sz-tool-accent);
+    outline-offset: 2px;
+  }
+  .sz-tool-mission-panel__blocked {
+    margin: 0;
+    padding: 0.625rem 0.75rem;
+    border-radius: var(--sz-tool-radius-control);
+    background: color-mix(in oklab, var(--sz-tool-warn) 12%, var(--sz-tool-surface));
+    color: color-mix(in oklab, var(--sz-tool-warn) 80%, var(--sz-tool-ink));
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .sz-tool-mission-panel__done {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0.75rem 0.875rem;
+    border-radius: 1rem;
+    background: var(--sz-tool-ok-tint);
+    color: color-mix(in oklab, var(--sz-tool-ok) 82%, var(--sz-tool-ink));
+    font-weight: 800;
+  }
+  .sz-tool-mission-panel__done svg {
+    flex: none;
+    margin-top: 0.1875rem;
+  }
+  .sz-tool-mission-panel__done:focus-visible {
+    outline: 3px solid var(--sz-tool-accent);
+    outline-offset: 2px;
+  }
+  .sz-tool-mission-panel__hint {
+    margin: 0;
     color: var(--sz-tool-muted);
-    /* ⚠️ 12px, o piso da casa para criança. Ela nasceu com os 10px que vieram de um
-       `text-[10px]` do Estúdio, e promover isso à folha teria espalhado o tamanho errado. */
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+  .sz-tool-mission-panel__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.625rem;
+  }
+  /* Os botões do painel, no relevo do desenho aprovado: o degrau da ação na principal e o
+     do cartão nas outras. Apertar afunda a peça; o hover só troca a cor. */
+  .sz-tool-mission-panel__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: var(--sz-tool-hit);
+    margin-bottom: 4px;
+    padding: 0 1.125rem;
+    border: 0;
+    border-radius: var(--sz-tool-radius-pill);
+    background: var(--sz-tool-surface);
+    color: var(--sz-tool-ink);
+    box-shadow:
+      inset 0 0 0 2px var(--sz-tool-line),
+      0 4px 0 var(--sz-tool-degrau);
+    font-size: 0.9375rem;
     font-weight: 800;
     line-height: 1.2;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition:
+      background-color 0.12s ease,
+      box-shadow 0.12s ease,
+      translate 0.12s ease;
+  }
+  .sz-tool-mission-panel__btn--primary {
+    min-height: 3rem;
+    background: var(--sz-tool-cta);
+    color: var(--sz-tool-on-cta);
+    box-shadow: 0 4px 0 var(--sz-tool-cta-degrau);
+  }
+  .sz-tool-mission-panel__btn--compact {
+    padding: 0 1rem;
+    font-size: 0.875rem;
+  }
+  .sz-tool-mission-panel__btn--small {
+    align-self: flex-start;
+    padding: 0 0.875rem;
+    font-size: 0.875rem;
+  }
+  .sz-tool-mission-panel__btn:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-surface) 93%, var(--sz-tool-ink));
+  }
+  .sz-tool-mission-panel__btn--primary:hover:not(:disabled) {
+    background: color-mix(in oklab, var(--sz-tool-cta) 88%, var(--sz-tool-ink));
+  }
+  .sz-tool-mission-panel__btn:active:not(:disabled) {
+    translate: 0 3px;
+    box-shadow:
+      inset 0 0 0 2px var(--sz-tool-line),
+      0 1px 0 var(--sz-tool-degrau);
+  }
+  .sz-tool-mission-panel__btn--primary:active:not(:disabled) {
+    box-shadow: 0 1px 0 var(--sz-tool-cta-degrau);
+  }
+  .sz-tool-mission-panel__btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .sz-tool-mission-panel__btn[aria-disabled="true"] {
+    cursor: progress;
+  }
+  .sz-tool-mission-panel__link {
+    min-height: var(--sz-tool-hit);
+    padding: 0 0.25rem;
+    border: 0;
+    background: none;
+    color: color-mix(in oklab, var(--sz-tool-accent) 82%, var(--sz-tool-ink));
+    font-size: 0.875rem;
+    font-weight: 800;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .sz-tool-mission-panel__link:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  .sz-tool-mission-panel__btn:focus-visible,
+  .sz-tool-mission-panel__link:focus-visible {
+    outline: 3px solid var(--sz-tool-accent);
+    outline-offset: 3px;
+  }
+  .sz-tool-mission-panel__notice {
+    margin: 0;
+    padding-inline: 1rem;
+    color: var(--sz-tool-muted);
+    font-size: 0.875rem;
+  }
+  .sz-tool-mission-panel__notice:not(:empty) {
+    padding-block: 0.625rem;
+  }
+  /* Recolhido, o recado de andamento fica para o leitor de tela (a região viva continua
+     montada); só os problemas aparecem. */
+  .sz-tool-mission-panel__sr,
+  .sz-tool-mission-panel.is-collapsed .sz-tool-mission-panel__notice {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
     white-space: nowrap;
+    border: 0;
   }
-  .sz-tool-guide__body {
-    padding: 0 1.125rem 1rem;
+  /* Os itens das oficinas dentro de "Para esta missão" (Pinta e Molda): a marca de pronto e o
+     que falta. */
+  .sz-tool-mission-panel__slot {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
   }
-  .sz-tool-guide__foot {
-    padding: 0.75rem 1.125rem 1.125rem;
-    border-top: 1px solid var(--sz-tool-line);
+  .sz-tool-mission-panel__mark {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 1.625rem;
+    height: 1.625rem;
+    border-radius: 50%;
+    background: var(--sz-tool-surface);
+    box-shadow: inset 0 0 0 2px var(--sz-tool-line);
+    color: var(--sz-tool-surface);
   }
+  .sz-tool-mission-panel__mark.is-done {
+    background: var(--sz-tool-ok);
+    box-shadow: none;
+  }
+  .sz-tool-mission-panel__slot-body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+  .sz-tool-mission-panel__slot-body p {
+    margin: 0;
+  }
+  .sz-tool-mission-panel__slot-body label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-self: stretch;
+    font-weight: 800;
+  }
+  .sz-tool-mission-panel__slot-note {
+    color: var(--sz-tool-muted);
+    font-size: 0.8125rem;
+  }
+
+  /* A coluna só entra quando deixa ao editor ao menos 1024px, além da largura
+     do painel e de sua margem, mesmo com outro tamanho de fonte raiz. Encaixá-la antes
+     trocava o Studio para o layout de abas e remontava Blockly/Monaco ao abrir
+     ou recolher uma missão. */
+  @container sz-mission (min-width: calc(1024px + 22.5rem + 0.75rem)) {
+    .has-panel > .sz-tool-mission-layout__row {
+      flex-direction: row;
+      overflow: hidden;
+    }
+    .has-panel .sz-tool-mission-layout__work {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .sz-tool-mission-panel {
+      width: 22.5rem;
+      margin: 0.75rem 0.75rem 0.75rem 0;
+    }
+    .sz-tool-mission-panel__head .sz-tool-mission-panel__chevron {
+      rotate: none;
+    }
+    .sz-tool-mission-panel__main {
+      overflow: hidden;
+    }
+    .sz-tool-mission-panel__body {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+    }
+    /* Recolhido com um recado, a coluna fica com a largura de sempre, só com a linha e o
+       recado: problema não se esconde num trilho de 64px. */
+    .sz-tool-mission-panel.is-collapsed.has-alert {
+      align-self: flex-start;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) {
+      width: 4rem;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__heading {
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__rail {
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 0.75rem;
+      height: 100%;
+      min-height: 0;
+      padding: 0.75rem 0 0.875rem;
+      overflow: hidden;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__lamp {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 0.75rem;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__fraction {
+      display: block;
+      font-family: var(--sz-tool-font-display);
+      font-size: 0.9375rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--sz-tool-sig-pensa-ink);
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__rail-text {
+      display: block;
+      flex: 0 1 auto;
+      min-height: 0;
+      overflow: hidden;
+      font-size: 0.875rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      writing-mode: vertical-rl;
+      rotate: 180deg;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__bar-text {
+      display: none;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__state {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .sz-tool-mission-panel.is-collapsed:not(.has-alert) .sz-tool-mission-panel__chevron {
+      margin-top: auto;
+      rotate: 180deg;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sz-tool-mission-panel__head,
+    .sz-tool-mission-panel__rail,
+    .sz-tool-mission-panel__chevron,
+    .sz-tool-mission-panel__btn {
+      transition: none;
+    }
+    .sz-tool-mission-panel__btn:active:not(:disabled) {
+      translate: none;
+    }
+  }
+
   /* O recado de PROBLEMA, que sobrevive ao recolher (decisão dela, 19/09/2026): recolher
      esconde conteúdo e ação de rotina, NUNCA um problema. */
   /* ⚠️ Dentro do recado, a pílula "quieta" some: o fundo dela é o do APP (`--sz-tool-bg`) e, sobre
@@ -970,21 +1536,9 @@
     background: color-mix(in oklab, var(--sz-tool-warn) 12%, var(--sz-tool-surface));
     color: color-mix(in oklab, var(--sz-tool-warn) 80%, var(--sz-tool-ink));
   }
-  /* O Estúdio é o único dos três que vira COLUNA LATERAL a partir de `lg`: lá o fio em volta
-     vira o fio do lado que separa do editor (painel encaixado não tem canto solto). O fio é o
-     `--sz-tool-line`, e não o `--sz-tool-card-edge`, que é TRANSPARENTE no tema claro: uma
-     borda de cartão some de propósito, uma divisória não pode sumir. Vem DEPOIS da base, com a
-     mesma especificidade — quem decide é a ordem, sem `!important`. */
-  .sz-tool-guide--aside {
-    border: 0;
-    border-bottom: 1px solid var(--sz-tool-line);
-    border-radius: 0;
-  }
-  @media (min-width: 64rem) {
-    .sz-tool-guide--aside {
-      border-bottom: 0;
-      border-inline-end: 1px solid var(--sz-tool-line);
-    }
+  /* No painel da missão o recado respira por igual (vem DEPOIS da base: vence a ordem). */
+  .sz-tool-mission-panel > .sz-tool-guide__alert {
+    margin: 0.75rem;
   }
 
   /* ── O 3D DO BRILLIANT nas GALERIAS (11/09/2026, decisão dela) ─────────────────────────
@@ -1109,5 +1663,73 @@
       ):is(:hover, :active):not(:disabled) {
       translate: none;
     }
+  }
+  .sz-tool-mission-content {
+    display: grid;
+    gap: 1rem;
+    line-height: 1.6;
+  }
+  .sz-tool-mission-content h3 {
+    margin: 0 0 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 800;
+  }
+  .sz-tool-mission-content p {
+    margin: 0;
+  }
+  .sz-tool-mission-content ul {
+    margin: 0;
+    padding-inline-start: 1.3rem;
+  }
+  .sz-tool-mission-content li + li {
+    margin-top: 0.6rem;
+  }
+  /* O conteúdo da missão DENTRO do painel das oficinas (`variant="panel"`): o rótulo pequeno
+     em cima de cada bloco, "Para esta missão" em caixinhas e "Como conferir" no menta. A
+     leitura do planejador (acima) segue igual. Mesma especificidade e DEPOIS: vence a ordem. */
+  .sz-tool-mission-content--panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    line-height: 1.5;
+  }
+  .sz-tool-mission-content--panel h3,
+  .sz-tool-mission-content--panel h4 {
+    margin: 0;
+    color: var(--sz-tool-muted);
+    font-size: 0.8125rem;
+    font-weight: 800;
+  }
+  .sz-tool-mission-content--panel p {
+    margin: 0.125rem 0 0;
+  }
+  .sz-tool-mission-content__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+  .sz-tool-mission-content__item {
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.875rem;
+    background: var(--sz-tool-surface-2);
+    font-size: 0.875rem;
+  }
+  /* Sem as bolinhas cruas do navegador (o diagnóstico do desenho aprovado): cada item é uma
+     linha separada pelo respiro. */
+  .sz-tool-mission-content--panel ul {
+    margin: 0.125rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sz-tool-mission-content--panel li + li {
+    margin-top: 0.375rem;
+  }
+  .sz-tool-mission-content__check {
+    padding: 0.75rem;
+    border-radius: 0.875rem;
+    background: var(--sz-tool-ok-tint);
+  }
+  .sz-tool-mission-content__check h3 {
+    color: color-mix(in oklab, var(--sz-tool-ok) 80%, var(--sz-tool-ink));
   }
 }

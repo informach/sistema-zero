@@ -1,0 +1,123 @@
+{
+  "state": "causal-control-completed-not-game-acceptance",
+  "python": "3.14.2 (tags/v3.14.2:df79316, Dec  5 2025, 17:18:21) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python-games\\.cache\\studio-python-l0\\games-native-env-r1\\Scripts\\python.exe",
+  "monotonicInfo": {
+    "implementation": "QueryPerformanceCounter()",
+    "monotonic": true,
+    "adjustable": false,
+    "resolution": 1e-07
+  },
+  "rows": [
+    {
+      "name": "tk-after",
+      "nominalMs": 3000,
+      "callbackCount": 1,
+      "registrationBefore": {
+        "qpcBeforeNs": 380542053198900,
+        "tclMicroseconds": 1792556003454610,
+        "qpcAfterNs": 380542053215000
+      },
+      "registrationAfter": {
+        "qpcBeforeNs": 380542053241000,
+        "tclMicroseconds": 1792556003454640,
+        "qpcAfterNs": 380542053243500
+      },
+      "firing": {
+        "qpcBeforeNs": 380545053321700,
+        "tclMicroseconds": 1792556006454949,
+        "qpcAfterNs": 380545053339700
+      },
+      "tclElapsedLowerUs": 3000309,
+      "tclElapsedUpperUs": 3000339,
+      "qpcElapsedLowerNs": 3000078200,
+      "qpcElapsedUpperNs": 3000140800,
+      "tclDeadlineDefinitelyMet": true,
+      "qpcDefinitelyBelow3s": false,
+      "tclDefinitelyBelow3s": false
+    },
+    {
+      "name": "turtle-ontimer",
+      "nominalMs": 3000,
+      "callbackCount": 1,
+      "registrationBefore": {
+        "qpcBeforeNs": 380545053483100,
+        "tclMicroseconds": 1792556006455099,
+        "qpcAfterNs": 380545053486800
+      },
+      "registrationAfter": {
+        "qpcBeforeNs": 380545053506800,
+        "tclMicroseconds": 1792556006455123,
+        "qpcAfterNs": 380545053509400
+      },
+      "firing": {
+        "qpcBeforeNs": 380548066523300,
+        "tclMicroseconds": 1792556009468495,
+        "qpcAfterNs": 380548066542300
+      },
+      "tclElapsedLowerUs": 3013372,
+      "tclElapsedUpperUs": 3013396,
+      "qpcElapsedLowerNs": 3013013900,
+      "qpcElapsedUpperNs": 3013059200,
+      "tclDeadlineDefinitelyMet": true,
+      "qpcDefinitelyBelow3s": false,
+      "tclDefinitelyBelow3s": false
+    },
+    {
+      "name": "actual-observer-timer-AST",
+      "nominalMs": 3000,
+      "callbackCount": 1,
+      "registrationBefore": {
+        "qpcBeforeNs": 380548066632400,
+        "tclMicroseconds": 1792556009468595,
+        "qpcAfterNs": 380548066635000
+      },
+      "registrationAfter": {
+        "qpcBeforeNs": 380548066665100,
+        "tclMicroseconds": 1792556009468627,
+        "qpcAfterNs": 380548066666600
+      },
+      "firing": {
+        "qpcBeforeNs": 380551075730800,
+        "tclMicroseconds": 1792556012477927,
+        "qpcAfterNs": 380551075750900
+      },
+      "tclElapsedLowerUs": 3009300,
+      "tclElapsedUpperUs": 3009332,
+      "qpcElapsedLowerNs": 3009064200,
+      "qpcElapsedUpperNs": 3009118500,
+      "tclDeadlineDefinitelyMet": true,
+      "qpcDefinitelyBelow3s": false,
+      "tclDefinitelyBelow3s": false
+    }
+  ],
+  "observerEvents": [
+    {
+      "event": "timer-scheduled",
+      "value": {
+        "delay": 3000,
+        "callback": "fired",
+        "scheduledClock": 380548.0666448
+      }
+    },
+    {
+      "event": "timer-fired",
+      "value": {
+        "delay": 3000,
+        "callback": "fired",
+        "scheduledClock": 380548.0666448,
+        "elapsedSeconds": 3.0090624999720603
+      }
+    }
+  ],
+  "errors": [],
+  "cooperativeDeadline": false,
+  "rootMap": 0,
+  "rootDestroy": 1,
+  "noGameAudio": true,
+  "nominalMs": 3000,
+  "sourcePacketSha256": "3d46e99b80448903029c780ba5f63cfa891398d377de99e724272bd743e4a063",
+  "tclPatchlevel": "8.6.15",
+  "tkPatchlevel": "8.6.15",
+  "elapsedNs": 9180629500
+}

@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": [
+    "video-contato",
+    "video-batida-acaba-partida",
+    "video-mapa-do-jogo",
+    "video-batida-sentida",
+    "video-trocar-nao-limpa",
+    "video-caminho-de-volta",
+    "video-entrega"
+  ],
+  "intervencoes": [
+    {
+      "id": "video-contato-K1",
+      "clipe": "video-contato",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "acontece. Quando as áreas pontilhadas se encostam, aparece BATEU! Mas os desenhos ainda têm um espacinho entre eles.",
+      "ancoraDepois": "O jogo não olha o desenho: ele confere se as áreas se encostaram. É como os carrinhos de bate-bate: o para-choque",
+      "falaPrincipal": "Ué, a batida aconteceu antes de os desenhos encostarem?",
+      "falaPersonagem": "Ué, a batida aconteceu antes de os desenhos encostarem?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-batida-acaba-partida-K1",
+      "clipe": "video-batida-acaba-partida",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "de: ela chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu.",
+      "ancoraDepois": "Agora deixe à vista o espaço vazio dentro da colisão. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue",
+      "falaPrincipal": "E o que vai acontecer quando ele bater?",
+      "falaPersonagem": "E o que vai acontecer quando ele bater?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-batida-sentida-K1",
+      "clipe": "video-batida-sentida",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "som a um acontecimento, o pulo. Agora a gente vai fazer a mesma coisa com a batida, colocando os efeitos dentro dela.",
+      "ancoraDepois": "Os efeitos vêm antes da mudança de estado: primeiro o jogo mostra a batida e, por último, passa para a tela de fim. Por",
+      "falaPrincipal": "O som vem antes de mostrar a tela de fim?",
+      "falaPersonagem": "O som vem antes de mostrar a tela de fim?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-trocar-nao-limpa-K1",
+      "clipe": "video-trocar-nao-limpa",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "com os cactos da anterior e acaba na hora, com uma batida. Mudar o estado só troca a tela. Ele não arruma a pista.",
+      "ancoraDepois": "É porque os cactos da outra partida ficaram ali. Agora, no fim, eu troco a ação para Reiniciar o jogo. Clico em Tocar",
+      "falaPrincipal": "Mas por que a partida recomeça e já termina?",
+      "falaPersonagem": "Mas por que a partida recomeça e já termina?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-caminho-de-volta-K1",
+      "clipe": "video-caminho-de-volta",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "clique uma vez no + ao lado de senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.",
+      "ancoraDepois": "A gente vai dizer o que fazer no estado fim. Deixe à vista o lugar vazio da pergunta desse ramo. Abra Jogo 2D, depois",
+      "falaPrincipal": "E como ele volta para o começo?",
+      "falaPersonagem": "E como ele volta para o começo?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

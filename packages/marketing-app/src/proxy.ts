@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
-import { REFRESH_COOKIE } from '@/lib/cookies'
+import { BROWSER_COOKIE, DESKTOP_COOKIE } from '@/lib/cookies'
 import { isSameOriginRequest, requiresOriginCheck } from '@/lib/csrf'
 
 /**
@@ -18,6 +18,8 @@ import { isSameOriginRequest, requiresOriginCheck } from '@/lib/csrf'
 
 // Prefixos das páginas do grupo autenticado `(app)` (o grupo não aparece na URL).
 const APP_PREFIXES = [
+  '/conectar-desktop',
+  '/bancada',
   '/pipeline',
   '/calendario',
   '/ideias',
@@ -42,7 +44,7 @@ export function proxy(req: NextRequest) {
     )
   }
 
-  if (isAppPath(pathname) && !req.cookies.has(REFRESH_COOKIE)) {
+  if (isAppPath(pathname) && !req.cookies.has(BROWSER_COOKIE) && !req.cookies.has(DESKTOP_COOKIE)) {
     const url = req.nextUrl.clone()
     url.pathname = '/login'
     url.search = ''

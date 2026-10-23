@@ -46,11 +46,20 @@ export async function sha256Hex(text: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('')
 }
 
-/** `v1:` + SHA-256 hex. A versão na frente deixa a régua mudar sem confundir impressões antigas. */
-export const CONTENT_FINGERPRINT_PATTERN = /^v1:[a-f0-9]{64}$/
+/** Studio v1/v2 and Pinta v1. Versions describe the hashing rule, not the document format. */
+export const CONTENT_FINGERPRINT_PATTERN = /^v[12]:[a-f0-9]{64}$/
 
 export function isContentFingerprint(value: unknown): value is string {
   return typeof value === 'string' && CONTENT_FINGERPRINT_PATTERN.test(value)
+}
+
+/** Different versions do not prove equality or an edit; persistence still needs its own checks. */
+export function compareContentFingerprints(
+  left: string | null | undefined,
+  right: string | null | undefined,
+): 'equal' | 'different' | 'incomparable' {
+  if (!left || !right || left.split(':', 1)[0] !== right.split(':', 1)[0]) return 'incomparable'
+  return left === right ? 'equal' : 'different'
 }
 
 /** Sem `crypto.subtle` (contexto inseguro, navegador muito antigo) não há impressão. */
@@ -79,6 +88,22 @@ function isCourseLibraryAsset(asset: Record<string, unknown>): boolean {
  */
 export async function studioContentFingerprint(project: unknown): Promise<string | null> {
   if (!record(project) || !canHash()) return null
+  const current = project.formatVersion === 3
+  // Unknown environments must never fall through to the historical JavaScript rule.
+  if (
+    current
+      ? !['javascript', 'python'].includes(String(project.programmingLanguage)) ||
+        !record(project.runtime) ||
+        (project.programmingLanguage === 'python' && !record(project.python))
+      : (project.formatVersion !== undefined &&
+          project.formatVersion !== 1 &&
+          project.formatVersion !== 2) ||
+        (project.programmingLanguage !== undefined &&
+          project.programmingLanguage !== 'javascript') ||
+        project.runtime !== undefined ||
+        project.python !== undefined
+  )
+    return null
   const assets = Array.isArray(project.assets) ? project.assets.filter(record) : []
   const extensions = Array.isArray(project.installedExtensions)
     ? project.installedExtensions
@@ -90,6 +115,35 @@ export async function studioContentFingerprint(project: unknown): Promise<string
     .filter((asset) => !isCourseLibraryAsset(asset))
     .map((asset) => canonicalJson(asset))
     .sort()
+  if (current) {
+    // Documents are validated at the boundary. Include execution configuration and
+    // resolved dependencies, but not installation dates, editor state or assistance.
+    const versions = Array.isArray(project.installedExtensions)
+      ? project.installedExtensions.map((extension: unknown) => {
+          if (!record(extension)) return null
+          return { id: extension.id, version: extension.version }
+        })
+      : []
+    if (versions.some((extension) => !extension)) return null
+    return `v2:${await sha256Hex(
+      canonicalJson({
+        v: 2,
+        programmingLanguage: project.programmingLanguage,
+        kind: project.kind,
+        runtime: project.runtime,
+        python: project.programmingLanguage === 'python' ? project.python : null,
+        devScript:
+          project.programmingLanguage === 'javascript' && record(project.proMeta)
+            ? project.proMeta.devScript
+            : null,
+        files: project.files ?? null,
+        extraFiles: project.extraFiles ?? [],
+        tree: project.tree ?? null,
+        extensions: versions.map(canonicalJson).sort(),
+        assets: own,
+      }),
+    )}`
+  }
   const payload = {
     v: 1,
     kind: project.kind === 'pro' ? 'pro' : 'classic',

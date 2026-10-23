@@ -1,0 +1,121 @@
+{
+  "source": "Corrida Infinita 3D básica, regras originais",
+  "captureMethod": "Relógio controlado e entradas de teclado. Frames intermediários não são desenhados para evitar fila de GPU; lógica, colisões e câmera originais continuam a cada quadro. O renderizador original desenha o estado final.",
+  "errors": [],
+  "states": [
+    {
+      "name": "inicio",
+      "tempo": 0,
+      "velocidade": 0.14,
+      "rodando": true,
+      "pista": 0,
+      "heroX": 0,
+      "boxes": []
+    },
+    {
+      "name": "captura",
+      "tempo": 64,
+      "velocidade": 0.4600000000000003,
+      "rodando": true,
+      "pista": 0,
+      "heroX": 8.109792095824704e-14,
+      "boxes": [
+        {
+          "x": 2.2,
+          "z": -55.58399999999999
+        },
+        {
+          "x": 0,
+          "z": -30.614400000000053
+        },
+        {
+          "x": -2.2,
+          "z": -5.889599999999896
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "tempo": 7,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 8,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 8,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 12,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 15,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 20,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 21,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 29,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 30,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 33,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 38,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 40,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 44,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 47,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 51,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 56,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 57,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 59,
+      "key": "ArrowLeft"
+    },
+    {
+      "tempo": 60,
+      "key": "ArrowRight"
+    },
+    {
+      "tempo": 62,
+      "key": "ArrowLeft"
+    }
+  ],
+  "scoreVisible": "64"
+}

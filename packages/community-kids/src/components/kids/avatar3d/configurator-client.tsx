@@ -1,37 +1,14 @@
 'use client'
 
-import dynamic from 'next/dynamic'
-import type { AvatarReturnPath } from '@/lib/avatar-return'
-import { KidsMascot } from '../mascot'
+import { AvatarConfiguratorClient as Shared } from '@sistemazero/member-shell/components/cosmetics/avatar3d/configurator-client'
+import type { ComponentProps } from 'react'
+import { KidsCosmetics } from '../cosmetics-presentation'
 
-/**
- * Carrega o configurador 3D SÓ no cliente (`ssr:false`): three/fiber/drei + o `<Canvas>`
- * não rodam no SSR e o chunk pesado só baixa nesta rota. Espelha o `studio-full-client`.
- */
-const AvatarConfigurator = dynamic(
-  () => import('./configurator').then((m) => m.AvatarConfigurator),
-  { ssr: false, loading: () => <ConfiguratorLoading /> },
-)
-
-function ConfiguratorLoading() {
+export * from '@sistemazero/member-shell/components/cosmetics/avatar3d/configurator-client'
+export function AvatarConfiguratorClient(props: ComponentProps<typeof Shared>) {
   return (
-    // Espelha a raiz do configurador: imersivo no celular, em fluxo a partir do `md` (senão o
-    // esqueleto cobriria a barra da esquerda enquanto o 3D carrega).
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-background md:static md:z-auto md:h-full md:min-h-0 md:flex-1">
-      <KidsMascot expression="thinking" className="size-24 animate-pulse" />
-      <p className="[font-family:var(--font-display)] font-bold text-muted-foreground">
-        Preparando seu avatar 3D…
-      </p>
-    </div>
+    <KidsCosmetics>
+      <Shared {...props} />
+    </KidsCosmetics>
   )
-}
-
-export function AvatarConfiguratorClient({ returnTo }: { returnTo: AvatarReturnPath }) {
-  // Fundo da cena casa com o tema DA COMUNIDADE (hoje só claro), não com a
-  // preferência do SO — igual ao Estúdio (`studio-full-client`). Cosmético; `resolvedTheme` pode
-  // vir `undefined` na 1ª render (pré-hidratação) → claro por padrão, ajusta ao montar.
-  // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
-  // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
-  // comportamento. Se o eixo claro/escuro voltar, ele volta com atributo e hook próprios.
-  return <AvatarConfigurator dark={false} returnTo={returnTo} />
 }

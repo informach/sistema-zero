@@ -2,9 +2,16 @@ import { z } from 'zod'
 import { isAnalyticsEnabled } from '../analytics/identity'
 import { quizDefinition } from '../analytics/quiz-definition'
 import type { QuizDefinition } from '../analytics/types'
+import type { QuizStep } from '../content/quiz-config'
 import type { FunnelRepo, Lead } from '../db/repo'
 import { leadBelongsToFunnel } from '../funnels/lead-scope'
-import { getFunnelByKey, isFunnelKey, isQuizComplete } from '../funnels/registry'
+import {
+  branchEventName,
+  type FunnelQuiz,
+  getFunnelByKey,
+  isFunnelKey,
+  isQuizComplete,
+} from '../funnels/registry'
 import { ContactSchema } from '../lib/contact-schema'
 import { json, jsonError, safeJson } from '../lib/http'
 import { sanitizeLeadAttribution } from '../lib/lead-attribution'
@@ -59,6 +66,16 @@ const EventBody = z.object({
   step: z.string().max(64).optional(),
   metadata: EventMetadata.optional(),
 })
+
+/**
+ * Posição da pergunta como a pessoa a viu: na lista ativa do percurso dela, quando o quiz tem
+ * percursos (ramos e condicionais), e na lista declarada nos outros.
+ */
+function questionPosition(quiz: FunnelQuiz, step: QuizStep, answers: QuizAnswers): number {
+  const active = quiz.activeSteps?.(answers)
+  const index = active ? active.findIndex((s) => s.key === step.key) : -1
+  return (index >= 0 ? index : quiz.steps.indexOf(step)) + 1
+}
 
 /** Respostas do quiz (snake_case → valor) — usado pelo resume do quiz na ilha. */
 export function leadAnswers(lead: Lead): QuizAnswers {
@@ -187,13 +204,15 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
       : s.key === key,
   )
   if (!step) return jsonError('Pergunta desconhecida.', 400, 'BAD_REQUEST')
-  const questionMetadata = lead.quizDefinitionId
-    ? {
-        quiz_definition_id: lead.quizDefinitionId,
-        question_id: step.key,
-        question_position: quiz.steps.indexOf(step) + 1,
-      }
-    : {}
+  const metadataFor = (answers: QuizAnswers) =>
+    lead.quizDefinitionId
+      ? {
+          quiz_definition_id: lead.quizDefinitionId,
+          question_id: step.key,
+          question_position: questionPosition(quiz, step, answers),
+          ...(step.ramo ? { question_branch: step.ramo } : {}),
+        }
+      : {}
   // O resultadoKey das calculadoras é DERIVADO no servidor (invariante 3): o cliente
   // só envia campo1/campo2. Recusa um envio DIRETO do resultado (anti-forja do valor).
   if (
@@ -245,6 +264,7 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
     }
     const next = quiz.applyAnswer(previous, key, answer)
     if (!next) return jsonError('Resposta inválida para este percurso.', 400, 'BAD_REQUEST')
+    const questionMetadata = metadataFor(next)
     const complete = isQuizComplete(quiz, next)
     const profile = complete ? (quiz.computePerfil?.(next) ?? null) : null
     const saved = await deps.repo.saveQuizAnswers(
@@ -281,6 +301,17 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
       metadata,
       `${id}:quiz:${next._quiz_revision}`,
     )
+    // Entrar num ramo (ex.: a idade que abre o "menor de 9") é a primeira etapa dele no /admin.
+    // Uma vez por ramo e lead: trocar de ramo e voltar não conta duas vezes.
+    const branch = quiz.branchOf?.(next) ?? null
+    if (branch && branch !== (quiz.branchOf?.(previous) ?? null))
+      await deps.repo.insertEvent(
+        id,
+        branchEventName(branch),
+        step.lastStep,
+        metadata,
+        `${id}:ramo:${branch}`,
+      )
     if (complete)
       await deps.repo.insertEvent(
         id,
@@ -294,6 +325,7 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   const merged = { ...(lead.quizAnswers ?? {}), [key]: answer }
   const derived = quiz.derive?.(merged) ?? {}
   const combined = { ...merged, ...derived }
+  const questionMetadata = metadataFor(combined)
   const stepComplete =
     step.tipo === 'calculadora' || step.tipo === 'calculadora_prefilled'
       ? [step.campo1.key, step.campo2.key, step.resultadoKey].every((k) => combined[k] != null)

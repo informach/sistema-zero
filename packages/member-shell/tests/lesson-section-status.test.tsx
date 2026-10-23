@@ -22,17 +22,17 @@ function faixa(props: Parameters<typeof LessonSectionStatus>[0]) {
 }
 
 describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
-  test('a seção pronta vira a faixa verde, com um recado só', () => {
+  test('a parte pronta vira a faixa verde, com um recado só', () => {
     const markup = faixa({
       items: [item('VIDEO_GATE_NOT_WATCHED', 'Veja o vídeo')],
       completed: true,
     })
     expect(markup).toContain('data-state="pronto"')
-    // Sem provedor vale o vocabulário ADULTO ("seção"); o Kids lê "parte" (abaixo).
-    expect(markup).toContain('Tudo pronto nesta seção. Pode seguir!')
+    // Sem provedor vale a linguagem comum ("parte"), a mesma do Kids (abaixo).
+    expect(markup).toContain('Tudo pronto nesta parte. Pode seguir!')
     // Na ÚLTIMA seção não há o que seguir: o botão ao lado é "Concluir aula".
     const ultima = faixa({ items: [], completed: true, ultima: true })
-    expect(ultima).toContain('Tudo pronto nesta seção!')
+    expect(ultima).toContain('Tudo pronto nesta parte!')
     expect(ultima).not.toContain('Pode seguir')
     // Pronta, os itens pendentes não aparecem (o estado vence a lista).
     expect(markup).not.toContain('Veja o vídeo')
@@ -59,7 +59,6 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
       ['LEARNING_GATE_INCOMPLETE', 'lucide-flask-conical'],
       ['QUIZ_GATE_NOT_PASSED', 'lucide-list-checks'],
       ['STUDIO_GATE_NOT_SUBMITTED', 'lucide-code'],
-      ['STUDIO_GATE_NOT_PASSED', 'lucide-code'],
       ['PINTA_GATE_NOT_SUBMITTED', 'lucide-palette'],
       ['MATERIAL_GATE_NOT_ACCESSED', 'lucide-backpack'],
       ['CERTIFICATE_GATE_NOT_ISSUED', 'lucide-award'],
@@ -102,7 +101,7 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     // Os demais ficam na lista de dentro, na ordem em que vieram.
     const ul = markup.slice(markup.indexOf('<ul'))
     expect(ul.indexOf('Passe no quiz')).toBeGreaterThan(-1)
-    expect(ul.indexOf('Passe no quiz')).toBeLessThan(ul.indexOf('Envie seu projeto'))
+    expect(ul.indexOf('Passe no quiz')).toBeLessThan(ul.indexOf('Envie o seu projeto'))
     // Só o primeiro leva o prefixo.
     expect(markup.split('Para seguir:').length - 1).toBe(1)
   })
@@ -110,10 +109,10 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
   test('⚠️ a mensagem de AUTORIA é do professor: fora do ensaio vira a frase de criança', () => {
     const autoria = item(
       'authoring',
-      'A verificação desta seção precisa ser configurada pelo professor.',
+      'A verificação desta parte precisa ser configurada pelo professor.',
     )
     const criança = faixa({ items: [autoria], completed: false })
-    expect(criança).toContain('Esta seção ainda está sendo preparada')
+    expect(criança).toContain('Esta parte ainda está sendo preparada')
     expect(criança).not.toContain('configurada pelo professor')
     // É um estado, não um pedido: sem "Para seguir:".
     expect(criança).not.toContain('Para seguir:')
@@ -121,15 +120,15 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
 
     // Dois `authoring` com textos diferentes viram UMA frase fora do ensaio (sem "+1").
     const dois = faixa({
-      items: [autoria, item('authoring', 'Configure os critérios de conclusão desta seção.')],
+      items: [autoria, item('authoring', 'Configure os critérios de conclusão desta parte.')],
       completed: false,
     })
-    expect(dois.split('Esta seção ainda está sendo preparada').length - 1).toBe(1)
+    expect(dois.split('Esta parte ainda está sendo preparada').length - 1).toBe(1)
     expect(dois).not.toContain('sz-lesson-status-mais')
 
     const ensaio = faixa({ items: [autoria], completed: false, preview: true })
-    expect(ensaio).toContain('A verificação desta seção precisa ser configurada pelo professor.')
-    expect(ensaio).not.toContain('Esta seção ainda está sendo preparada')
+    expect(ensaio).toContain('A verificação desta parte precisa ser configurada pelo professor.')
+    expect(ensaio).not.toContain('Esta parte ainda está sendo preparada')
   })
 
   test('no Kids a faixa fala "parte"; no adulto, "seção" (o `LessonCopy`)', () => {
@@ -146,7 +145,7 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     ).toContain('Esta parte ainda está sendo preparada')
   })
 
-  test('sem itens da seção, o `fallback` do player vira o item da aula; sem nada, nada', () => {
+  test('sem itens da parte, o `fallback` do player vira o item da aula; sem nada, nada', () => {
     const comFallback = faixa({
       items: [],
       completed: false,
@@ -173,7 +172,7 @@ describe('LessonSectionStatus: a faixa "o que falta para seguir"', () => {
     expect(faixa({ items: [], completed: false, fallback: null })).toBe('')
   })
 
-  test('com itens da seção o `fallback` não aparece (a seção sabe melhor do que a aula)', () => {
+  test('com itens da parte o `fallback` não aparece (a parte sabe melhor do que a aula)', () => {
     const markup = faixa({
       items: [item('QUIZ_GATE_NOT_PASSED', 'Passe no quiz')],
       completed: false,

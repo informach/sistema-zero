@@ -167,6 +167,11 @@ export interface R2PutObjectPrivateInput {
  * Sobe um objeto no bucket PRIVADO (materiais didáticos). Devolve só a key —
  * NUNCA existe URL pública; o download é servido pelo community (com marca d'água).
  */
+export async function r2DeletePrivateObject(key: string): Promise<void> {
+  const cfg = requirePrivateR2Config()
+  await getClient(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: key }))
+}
+
 export async function r2PutObjectPrivate(input: R2PutObjectPrivateInput): Promise<{ key: string }> {
   const cfg = requirePrivateR2Config()
   const key = normalizeKey(input.key)
@@ -250,6 +255,101 @@ export async function r2PresignPrivatePut(
     signableHeaders: new Set(pinLength ? ['content-type', 'content-length'] : ['content-type']),
   })
   return { key, uploadUrl }
+}
+
+/** Credenciais da CONTA R2 (o bucket vem do chamador, já conferido contra a configuração). */
+function requireAccountConfig(): {
+  accountId: string
+  accessKeyId: string
+  secretAccessKey: string
+} {
+  const env = getEnv()
+  if (!env.R2_ACCOUNT_ID || !env.R2_ACCESS_KEY_ID || !env.R2_SECRET_ACCESS_KEY) {
+    throw new MediaNotConfiguredError(
+      'Envio ao Vimeo indisponível: configure R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY.',
+    )
+  }
+  return {
+    accountId: env.R2_ACCOUNT_ID,
+    accessKeyId: env.R2_ACCESS_KEY_ID,
+    secretAccessKey: env.R2_SECRET_ACCESS_KEY,
+  }
+}
+
+/**
+ * Tamanho de um objeto PRIVADO de um bucket conhecido (a gravação de um encontro). ⚠️ O bucket
+ * chega aqui já conferido por `resolveRecordingBucket`: esta função nunca recebe nome vindo do
+ * navegador.
+ */
+export async function r2HeadObjectIn(bucket: string, key: string): Promise<{ sizeBytes: number }> {
+  const cfg = requireAccountConfig()
+  try {
+    const result = await getClient(cfg).send(
+      new HeadObjectCommand({ Bucket: bucket, Key: normalizeKey(key) }),
+    )
+    return { sizeBytes: result.ContentLength ?? 0 }
+  } catch (error) {
+    throw new Error('Não foi possível ler a gravação no armazenamento.', { cause: error })
+  }
+}
+
+/** Small private operation receipts, never a URL exposed to the browser. */
+export async function r2DeleteObjectIn(bucket: string, key: string): Promise<void> {
+  await getClient(requireAccountConfig()).send(
+    new DeleteObjectCommand({ Bucket: bucket, Key: key }),
+  )
+}
+
+export async function r2ReadJsonIn(bucket: string, key: string): Promise<unknown | null> {
+  try {
+    const result = await getClient(requireAccountConfig()).send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    )
+    if (!result.Body || (result.ContentLength ?? 0) > 16_384)
+      throw new Error('Registro de envio inválido.')
+    return JSON.parse(await result.Body.transformToString())
+  } catch (error) {
+    if (error instanceof Error && error.name === 'NoSuchKey') return null
+    throw error
+  }
+}
+
+export async function r2WriteJsonIn(
+  bucket: string,
+  key: string,
+  value: unknown,
+  createOnly = false,
+): Promise<boolean> {
+  try {
+    await getClient(requireAccountConfig()).send(
+      new PutObjectCommand({
+        Bucket: bucket,
+        Key: key,
+        Body: JSON.stringify(value),
+        ContentType: 'application/json',
+        CacheControl: 'private, no-store',
+        ...(createOnly ? { IfNoneMatch: '*' } : {}),
+      }),
+    )
+    return true
+  } catch (error) {
+    if (createOnly && error instanceof Error && error.name === 'PreconditionFailed') return false
+    throw error
+  }
+}
+
+/** URL GET temporária de um objeto PRIVADO de um bucket conhecido (o Vimeo baixa por ela). */
+export async function r2PresignGetIn(
+  bucket: string,
+  key: string,
+  expiresInSeconds: number,
+): Promise<string> {
+  const cfg = requireAccountConfig()
+  return getSignedUrl(
+    getClient(cfg),
+    new GetObjectCommand({ Bucket: bucket, Key: normalizeKey(key) }),
+    { expiresIn: expiresInSeconds },
+  )
 }
 
 /** URL GET de curta duração para um anexo UGC já autorizado pelo Hub. */

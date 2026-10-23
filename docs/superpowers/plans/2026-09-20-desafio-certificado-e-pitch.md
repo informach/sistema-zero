@@ -43,10 +43,10 @@
 ### Task 2: Conteúdo da nova aula
 
 **Files:**
-- Create: `docs/aulas-interativas/aulas/desafio-certificado.md`
-- Create: `docs/aulas-interativas/aulas/desafio-certificado.manifesto.json`
-- Create: `docs/aulas-interativas/aulas/desafio-certificado.roteiro.md`
-- Modify: `docs/aulas-interativas/qa/validar-manifestos.ts`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.md`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.manifesto.json`
+- Create: `docs/aulas-interativas/kids/desafio-primeiro-jogo/desafio-certificado.roteiro.md`
+- Modify: `docs/aulas-interativas-tecnico/qa/validar-manifestos.ts`
 
 **Interfaces:**
 - Consumes: manifesto v5, bloco `{ "kind": "certificate" }`, vídeo planejado e URL da oferta da Comunidade.
@@ -54,13 +54,13 @@
 
 - [x] **Step 1: Redigir proposta, manifesto e roteiro:** o vídeo reconhece o jogo criado, explica que a Comunidade oferece outros cursos e ferramentas conforme a Carreira e convida o responsável a consultar a oferta; não cita preço fixo.
 - [x] **Step 2: Ajustar o validador:** esperar 28 manifestos e aceitar critério de certificado sem aviso de conclusão vazia.
-- [x] **Step 3: Validar:** `bun docs/aulas-interativas/qa/validar-manifestos.ts` deve retornar 28 válidos e zero avisos.
+- [x] **Step 3: Validar:** `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts` deve retornar 28 válidos e zero avisos.
 
 ### Task 3: Índices e revisão final
 
 **Files:**
-- Modify: `docs/aulas-interativas/modulos-desafio-primeiro-jogo.md`
-- Modify: `docs/aulas-interativas/README.md`
+- Modify: `docs/aulas-interativas-tecnico/modulos-desafio-primeiro-jogo.md`
+- Modify: `docs/aulas-interativas-tecnico/historico-organizacao.md`
 - Modify: índices e verificações adicionais que contêm uma lista operacional das aulas atuais.
 
 **Interfaces:**

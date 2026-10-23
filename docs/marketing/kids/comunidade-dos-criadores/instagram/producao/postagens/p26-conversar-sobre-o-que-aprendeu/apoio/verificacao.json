@@ -1,0 +1,324 @@
+{
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/03-p21-a-p30.md",
+  "sourceSectionHash": "41e6fbe62ebe02633bf51aabe63f4e453b04c8e6e0ffe94d36d3aa1e8ad56777",
+  "copyEqual": true,
+  "slides": [
+    {
+      "number": 1,
+      "file": "01-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "series",
+          "top": 0,
+          "bottom": 45.59375,
+          "height": 45.59375,
+          "left": 0,
+          "right": 195.953125
+        },
+        {
+          "kind": "copy lead",
+          "top": 84.75,
+          "bottom": 293.0625,
+          "height": 208.3125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 332.21875,
+          "bottom": 442.1875,
+          "height": 109.96875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 481.34375,
+          "bottom": 1116,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 2,
+      "file": "02-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 160.59375,
+          "height": 160.59375,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 254.015625,
+          "bottom": 888.671875,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 982.09375,
+          "bottom": 1116,
+          "height": 133.90625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 54
+    },
+    {
+      "number": 3,
+      "file": "03-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 141.5,
+          "height": 141.5,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "example-label",
+          "top": 216.171875,
+          "bottom": 250.171875,
+          "height": 34,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "game-pair",
+          "top": 324.859375,
+          "bottom": 914.859375,
+          "height": 590,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 989.53125,
+          "bottom": 1116,
+          "height": 126.46875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 4,
+      "file": "04-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 136.875,
+          "height": 136.875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "comparison",
+          "top": 263.203125,
+          "bottom": 863.203125,
+          "height": 600,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 989.53125,
+          "bottom": 1116,
+          "height": 126.46875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 5,
+      "file": "05-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 157.75,
+          "height": 157.75,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "rule",
+          "top": 268.640625,
+          "bottom": 878.640625,
+          "height": 610,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 989.53125,
+          "bottom": 1116,
+          "height": 126.46875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 51
+    },
+    {
+      "number": 6,
+      "file": "06-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 139.1875,
+          "height": 139.1875,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 222.875,
+          "bottom": 857.53125,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 941.203125,
+          "bottom": 1116,
+          "height": 174.796875,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 47
+    },
+    {
+      "number": 7,
+      "file": "07-p26.png",
+      "width": 1080,
+      "height": 1350,
+      "contentHeight": 1126,
+      "scrollHeight": 1126,
+      "footerTop": 1289.40625,
+      "children": [
+        {
+          "kind": "copy lead",
+          "top": 0,
+          "bottom": 222.703125,
+          "height": 222.703125,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "media photo",
+          "top": 285.078125,
+          "bottom": 919.734375,
+          "height": 634.65625,
+          "left": 0,
+          "right": 952
+        },
+        {
+          "kind": "copy tail",
+          "top": 982.09375,
+          "bottom": 1116,
+          "height": 133.90625,
+          "left": 0,
+          "right": 952
+        }
+      ],
+      "smallestCopy": 54
+    }
+  ],
+  "images": [
+    {
+      "src": "apoio/01-conversa-na-tela.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/01-blocos-completos.png",
+      "loaded": true,
+      "width": 3600,
+      "height": 2700
+    },
+    {
+      "src": "apoio/02-ele-mostra.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/02-mostrando-o-jogo.png",
+      "loaded": true,
+      "width": 1440,
+      "height": 1920
+    },
+    {
+      "src": "apoio/05-regra-do-mouse.png",
+      "loaded": true,
+      "width": 1606,
+      "height": 744
+    },
+    {
+      "src": "apoio/06-procuram-juntos.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "src": "apoio/07-gesto-da-ponte.png",
+      "loaded": true,
+      "width": 1536,
+      "height": 1024
+    }
+  ],
+  "errors": [],
+  "fonts": {
+    "normal": true,
+    "bold": true
+  }
+}

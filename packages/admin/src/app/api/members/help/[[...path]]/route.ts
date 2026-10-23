@@ -1,20 +1,6 @@
 import { NextResponse } from 'next/server'
 import { forwardUpstream } from '@/server/forward'
-import {
-  actHelpTutorial,
-  archiveHelpCollection,
-  createHelpCollection,
-  createHelpTutorial,
-  exportHelp,
-  getHelpTutorial,
-  importHelp,
-  listHelpCollections,
-  listHelpTutorials,
-  reorderHelpCollections,
-  restoreHelpCollection,
-  updateHelpCollection,
-  updateHelpTutorial,
-} from '@/server/help'
+import { createHelpAdminClient } from '@/server/help'
 
 type Context = { params: Promise<{ path?: string[] }> }
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -31,27 +17,32 @@ async function handle(req: Request, context: Context) {
   const [head, second, third] = path
   const json = async () => req.json().catch(() => null)
   const url = new URL(req.url)
+  const audience = url.searchParams.get('audience') ?? 'kids'
+  if (audience !== 'kids' && audience !== 'adult')
+    return NextResponse.json({ error: { message: 'Público inválido.' } }, { status: 400 })
+  const help = createHelpAdminClient(audience)
 
   if (head === 'collections') {
     if (path.length === 1) {
-      if (req.method === 'GET') return forwardUpstream(await listHelpCollections())
-      if (req.method === 'POST') return forwardUpstream(await createHelpCollection(await json()))
+      if (req.method === 'GET') return forwardUpstream(await help.listHelpCollections())
+      if (req.method === 'POST')
+        return forwardUpstream(await help.createHelpCollection(await json()))
       return invalid()
     }
     if (path.length === 2 && second === 'order' && req.method === 'PUT') {
       const body = (await json()) as { ids?: unknown } | null
       const ids = Array.isArray(body?.ids) ? body.ids.filter((id) => typeof id === 'string') : []
-      return forwardUpstream(await reorderHelpCollections(ids))
+      return forwardUpstream(await help.reorderHelpCollections(ids))
     }
     if (second && UUID.test(second)) {
       if (path.length === 2 && req.method === 'PATCH') {
-        return forwardUpstream(await updateHelpCollection(second, await json()))
+        return forwardUpstream(await help.updateHelpCollection(second, await json()))
       }
       if (path.length === 3 && req.method === 'POST' && third === 'archive') {
-        return forwardUpstream(await archiveHelpCollection(second))
+        return forwardUpstream(await help.archiveHelpCollection(second))
       }
       if (path.length === 3 && req.method === 'POST' && third === 'restore') {
-        return forwardUpstream(await restoreHelpCollection(second))
+        return forwardUpstream(await help.restoreHelpCollection(second))
       }
     }
     return invalid()
@@ -61,35 +52,35 @@ async function handle(req: Request, context: Context) {
     if (path.length === 1) {
       if (req.method === 'GET') {
         return forwardUpstream(
-          await listHelpTutorials({
+          await help.listHelpTutorials({
             status: url.searchParams.get('status') ?? undefined,
             collectionId: url.searchParams.get('collectionId') ?? undefined,
             q: url.searchParams.get('q') ?? undefined,
           }),
         )
       }
-      if (req.method === 'POST') return forwardUpstream(await createHelpTutorial(await json()))
+      if (req.method === 'POST') return forwardUpstream(await help.createHelpTutorial(await json()))
       return invalid()
     }
     if (path.length === 2 && second === 'export' && req.method === 'GET') {
-      return forwardUpstream(await exportHelp())
+      return forwardUpstream(await help.exportHelp())
     }
     if (path.length === 2 && second === 'import' && req.method === 'POST') {
-      return forwardUpstream(await importHelp(await json()))
+      return forwardUpstream(await help.importHelp(await json()))
     }
     if (second && UUID.test(second)) {
       if (path.length === 2 && req.method === 'GET') {
-        return forwardUpstream(await getHelpTutorial(second))
+        return forwardUpstream(await help.getHelpTutorial(second))
       }
       if (path.length === 2 && req.method === 'PATCH') {
-        return forwardUpstream(await updateHelpTutorial(second, await json()))
+        return forwardUpstream(await help.updateHelpTutorial(second, await json()))
       }
       if (
         path.length === 3 &&
         req.method === 'POST' &&
         (third === 'publish' || third === 'unpublish' || third === 'archive')
       ) {
-        return forwardUpstream(await actHelpTutorial(second, third, await json()))
+        return forwardUpstream(await help.actHelpTutorial(second, third, await json()))
       }
     }
     return invalid()

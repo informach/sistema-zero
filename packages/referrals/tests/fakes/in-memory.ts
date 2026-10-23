@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import type { GiftAttribution, GiftSource } from '@sistemazero/core/referrals'
+import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
 import type {
   EnsureBuyerInput,
   GatewayResult,
@@ -80,6 +80,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       displayName: ambassador.name,
       ownerEmail: ambassador.email,
       status: 'active',
+      audience: 'kids',
       createdAt: new Date(),
     }
     this.ambassadors.push(ambassador)
@@ -101,17 +102,14 @@ export class InMemoryReferralRepository implements ReferralRepository {
       .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
       .slice(opts.offset, opts.offset + opts.limit)
       .map((a) => {
-        const code = this.codes.find((c) => c.ambassadorId === a.id)
+        const code = this.kidsCodeOf(a.id)
         return {
           id: a.id,
           name: a.name,
           email: a.email,
           code: code?.code ?? '',
           status: a.status,
-          redemptionsCompleted: code
-            ? this.redemptions.filter((r) => r.codeId === code.id && r.status === 'completed')
-                .length
-            : 0,
+          redemptionsCompleted: this.completedForAmbassador(a.id),
           invitesSent: this.invites.filter((i) => i.ambassadorId === a.id && i.status === 'sent')
             .length,
           linkEmailSentAt: a.linkEmailSentAt,
@@ -126,7 +124,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
     const a = this.ambassadors.find((x) => x.id === id)
     if (!a) return null
-    return { ...a, code: this.codes.find((c) => c.ambassadorId === id)?.code ?? null }
+    return { ...a, code: this.kidsCodeOf(id)?.code ?? null }
   }
 
   async findAmbassadorByToken(
@@ -134,14 +132,12 @@ export class InMemoryReferralRepository implements ReferralRepository {
   ): Promise<(AmbassadorRecord & { code: string | null; stats: AmbassadorStats }) | null> {
     const a = this.ambassadors.find((x) => x.pageToken === token)
     if (!a) return null
-    const code = this.codes.find((c) => c.ambassadorId === a.id)
+    const code = this.kidsCodeOf(a.id)
     return {
       ...a,
       code: code?.code ?? null,
       stats: {
-        redemptionsCompleted: code
-          ? this.redemptions.filter((r) => r.codeId === code.id && r.status === 'completed').length
-          : 0,
+        redemptionsCompleted: this.completedForAmbassador(a.id),
         invitesSent: this.invites.filter((i) => i.ambassadorId === a.id && i.status === 'sent')
           .length,
       },
@@ -193,11 +189,63 @@ export class InMemoryReferralRepository implements ReferralRepository {
     }
     if (patch.pageToken !== undefined) a.pageToken = patch.pageToken
     a.updatedAt = new Date()
-    return { ...a, code: this.codes.find((c) => c.ambassadorId === id)?.code ?? null }
+    return { ...a, code: this.kidsCodeOf(id)?.code ?? null }
   }
 
   async findCodeByCode(code: string): Promise<CodeRecord | null> {
     return this.codes.find((c) => c.code === code) ?? null
+  }
+
+  /** O `code` das leituras de embaixador é o Kids (espelha o JOIN filtrado do Drizzle). */
+  kidsCodeOf(ambassadorId: string) {
+    return this.codes.find((c) => c.ambassadorId === ambassadorId && c.audience === 'kids')
+  }
+
+  private completedForAmbassador(ambassadorId: string): number {
+    const codeIds = new Set(
+      this.codes.filter((c) => c.ambassadorId === ambassadorId).map((c) => c.id),
+    )
+    return this.redemptions.filter((r) => codeIds.has(r.codeId) && r.status === 'completed').length
+  }
+
+  async listCodesByAmbassador(ambassadorId: string): Promise<CodeRecord[]> {
+    return this.codes.filter((c) => c.ambassadorId === ambassadorId)
+  }
+
+  /** Força UMA colisão de código no próximo ensureAmbassadorCode. */
+  failNextEnsureCode = false
+
+  async ensureAmbassadorCode(input: {
+    ambassadorId: string
+    audience: GiftAudience
+    code: string
+  }): Promise<
+    { kind: 'ok'; code: CodeRecord; created: boolean } | { kind: 'code_collision' } | null
+  > {
+    const existing = this.codes.find(
+      (c) => c.ambassadorId === input.ambassadorId && c.audience === input.audience,
+    )
+    if (existing) return { kind: 'ok', code: existing, created: false }
+    const ambassador = this.ambassadors.find((a) => a.id === input.ambassadorId)
+    if (!ambassador) return null
+    if (this.failNextEnsureCode || this.codes.some((c) => c.code === input.code)) {
+      this.failNextEnsureCode = false
+      return { kind: 'code_collision' }
+    }
+    const code: CodeRecord & { createdAt: Date } = {
+      id: randomUUID(),
+      code: input.code,
+      ownerKind: 'ambassador',
+      ambassadorId: ambassador.id,
+      accountUserId: null,
+      displayName: ambassador.name,
+      ownerEmail: ambassador.email,
+      status: ambassador.status === 'active' ? 'active' : 'disabled',
+      audience: input.audience,
+      createdAt: new Date(),
+    }
+    this.codes.push(code)
+    return { kind: 'ok', code, created: true }
   }
 
   async findAmbassadorByAccount(
@@ -205,7 +253,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
     const a = this.ambassadors.find((x) => x.accountUserId === accountUserId)
     if (!a) return null
-    return { ...a, code: this.codes.find((c) => c.ambassadorId === a.id)?.code ?? null }
+    return { ...a, code: this.kidsCodeOf(a.id)?.code ?? null }
   }
 
   async findAmbassadorByEmail(
@@ -213,7 +261,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   ): Promise<(AmbassadorRecord & { code: string | null }) | null> {
     const a = this.ambassadors.find((x) => x.email === email)
     if (!a) return null
-    return { ...a, code: this.codes.find((c) => c.ambassadorId === a.id)?.code ?? null }
+    return { ...a, code: this.kidsCodeOf(a.id)?.code ?? null }
   }
 
   async setAmbassadorPixByToken(pageToken: string, pixKey: string): Promise<boolean> {
@@ -259,18 +307,23 @@ export class InMemoryReferralRepository implements ReferralRepository {
   async insertRedemption(input: {
     codeId: string
     email: string
+    audience: GiftAudience
     name: string
     phone: string | null
     sourceSnapshot?: GiftSource
     courseSlug?: string
     attribution?: GiftAttribution | null
   }): Promise<{ created: boolean; redemption: RedemptionRecord }> {
-    const existing = this.redemptions.find((r) => r.email === input.email)
+    // Espelha o UNIQUE (email, audience).
+    const existing = this.redemptions.find(
+      (r) => r.email === input.email && r.audience === input.audience,
+    )
     if (existing) return { created: false, redemption: existing }
     const redemption: RedemptionRecord = {
       id: randomUUID(),
       codeId: input.codeId,
       email: input.email,
+      audience: input.audience,
       name: input.name,
       phone: input.phone,
       sourceSnapshot: input.sourceSnapshot,
@@ -378,8 +431,11 @@ export class InMemoryReferralRepository implements ReferralRepository {
     if (r) r.welcomeSentAt = null
   }
 
-  async findRedemptionByEmail(email: string): Promise<RedemptionRecord | null> {
-    return this.redemptions.find((r) => r.email === email) ?? null
+  async findRedemptionByEmail(
+    email: string,
+    audience: GiftAudience,
+  ): Promise<RedemptionRecord | null> {
+    return this.redemptions.find((r) => r.email === email && r.audience === audience) ?? null
   }
 
   async listRedemptionsByCode(codeId: string, limit: number): Promise<RedemptionRecord[]> {
@@ -447,14 +503,16 @@ export class InMemoryReferralRepository implements ReferralRepository {
 
   // ── Conversões ────────────────────────────────────────────────────────────
 
-  async findRedemptionWithCodeByEmail(
+  async listRedemptionsWithCodeByEmail(
     email: string,
-  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord } | null> {
-    const redemption = this.redemptions.find((r) => r.email === email)
-    if (!redemption) return null
-    const code = this.codes.find((c) => c.id === redemption.codeId)
-    if (!code) return null
-    return { redemption, code }
+  ): Promise<{ redemption: RedemptionRecord; code: CodeRecord }[]> {
+    return this.redemptions
+      .filter((r) => r.email === email)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
+      .flatMap((redemption) => {
+        const code = this.codes.find((c) => c.id === redemption.codeId)
+        return code ? [{ redemption, code }] : []
+      })
   }
 
   async insertConversion(input: {
@@ -617,8 +675,11 @@ export class FakeReferralsGateway implements ReferralsGateway {
   muralTrialResult: GatewayResult = { status: 200, body: { ok: true, granted: 2 } }
   sendEmailResult: GatewayResult = { status: 202, body: {} }
 
-  async getGiftAvailability(courseRef: string): Promise<GatewayResult> {
-    this.calls.push({ kind: 'getGiftAvailability', input: { courseRef } })
+  async getGiftAvailability(courseRef: string, audience?: GiftAudience): Promise<GatewayResult> {
+    this.calls.push({
+      kind: 'getGiftAvailability',
+      input: audience ? { courseRef, audience } : { courseRef },
+    })
     return this.availabilityResult
   }
 

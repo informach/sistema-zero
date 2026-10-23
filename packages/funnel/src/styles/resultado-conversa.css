@@ -1,0 +1,420 @@
+/*
+ * resultado-conversa.css: o resultado em conversa dos quizzes da Comunidade dos Criadores
+ * (ResultadoConversa.astro, 20/10/2026), nos três temas do Canvas de 19/10:
+ *   .rc--kids     9 a 17, cartas com contorno na tinta e sombra amarela (tokens `--kof-*`);
+ *   .rc--kids-m9  menor de 9, creme e pastéis sem contorno, botão em pílula (tokens `--kof-*`);
+ *   .rc--adulto   arcade escuro, cantos retos e fonte de pixel (tokens `--cda-*`, theme-arcade).
+ *
+ * Nenhuma cor própria: cada tema só aponta os aliases `--rc-*` para os tokens do tema da página,
+ * e os tons claros saem de `color-mix(in oklab, ...)`. Tudo sob `.rc`.
+ */
+
+.rc {
+  --rc-margem: clamp(16px, 4vw, 40px);
+  background: var(--rc-fundo);
+  color: var(--rc-tinta);
+  font-family: var(--rc-corpo);
+  font-size: 1.1875rem;
+  line-height: 1.6;
+  overflow-x: clip;
+}
+
+.rc--kids {
+  --rc-fundo: var(--kof-chao);
+  --rc-topo: var(--kof-carta);
+  --rc-topo-borda: 3px solid var(--kof-tinta);
+  --rc-tinta: var(--kof-tinta);
+  --rc-suave: var(--kof-tinta-suave);
+  --rc-marca: color-mix(in oklab, var(--kof-amarelo) 30%, var(--kof-carta));
+  --rc-titulo: var(--kof-display);
+  --rc-corpo: var(--kof-corpo);
+  --rc-selo-fonte: var(--kof-corpo);
+  --rc-selo-cor: var(--kof-tinta-suave);
+  --rc-tela-borda: 3px solid var(--kof-tinta);
+  --rc-tela-raio: 16px;
+  --rc-tela-sombra: 6px 6px 0 var(--kof-amarelo);
+  --rc-relato-fundo: var(--kof-carta);
+  --rc-relato-borda: 3px solid var(--kof-tinta);
+  --rc-relato-raio: 18px;
+  --rc-relato-sombra: 4px 4px 0 var(--kof-tinta);
+  --rc-cta-fundo: var(--kof-acao);
+  --rc-cta-tinta: var(--kof-sobre-acao);
+  --rc-cta-borda: 3px solid var(--kof-tinta);
+  --rc-cta-raio: 18px;
+  --rc-botao-fundo: var(--kof-carta);
+  --rc-botao-tinta: var(--kof-tinta);
+  --rc-botao-borda: 3px solid var(--kof-tinta);
+  --rc-botao-raio: 14px;
+  --rc-botao-sombra: 4px 4px 0 var(--kof-tinta);
+  --rc-pilula-borda: 2px solid var(--kof-tinta);
+  --rc-foco: var(--kof-acao);
+}
+
+.rc--kids-m9 {
+  --rc-fundo: color-mix(in oklab, var(--kof-amarelo-fundo) 35%, var(--kof-carta));
+  --rc-topo: var(--kof-carta);
+  --rc-topo-borda: 0;
+  --rc-tinta: var(--kof-tinta);
+  --rc-suave: var(--kof-tinta-suave);
+  --rc-marca: color-mix(in oklab, var(--kof-laranja) 24%, var(--kof-carta));
+  --rc-titulo: var(--kof-display);
+  --rc-corpo: var(--kof-corpo);
+  --rc-selo-fonte: var(--kof-corpo);
+  --rc-selo-cor: var(--kof-tinta-suave);
+  --rc-tela-borda: 3px solid var(--kof-tinta);
+  --rc-tela-raio: 16px;
+  --rc-tela-sombra: 6px 6px 0 var(--kof-amarelo);
+  --rc-relato-fundo: var(--kof-carta);
+  --rc-relato-borda: 0;
+  --rc-relato-raio: 24px;
+  --rc-relato-sombra: 0 4px 0 var(--kof-tinta);
+  /* O laranja pastel do CTA da página "criar junto" (tinta sobre ele). */
+  --rc-cta-fundo: color-mix(
+    in oklab,
+    color-mix(in oklab, var(--kof-laranja) 30%, var(--kof-rosa-clara)) 40%,
+    var(--kof-amarelo)
+  );
+  --rc-cta-tinta: var(--kof-tinta);
+  --rc-cta-borda: 0;
+  --rc-cta-raio: 24px;
+  --rc-botao-fundo: var(--kof-carta);
+  --rc-botao-tinta: var(--kof-tinta);
+  --rc-botao-borda: 0;
+  --rc-botao-raio: 999px;
+  --rc-botao-sombra: 0 4px 0 var(--kof-tinta);
+  --rc-pilula-borda: 2px solid var(--kof-tinta);
+  --rc-foco: var(--kof-tinta);
+}
+
+.rc--adulto {
+  --rc-fundo: var(--cda-fundo);
+  --rc-topo: var(--cda-fundo);
+  --rc-topo-borda: 2px solid var(--cda-linha);
+  --rc-tinta: var(--cda-texto);
+  --rc-suave: var(--cda-legenda);
+  --rc-marca: color-mix(in oklab, var(--cda-azul) 22%, var(--cda-fundo));
+  --rc-titulo: var(--cda-titulo);
+  --rc-corpo: var(--cda-corpo);
+  --rc-selo-fonte: var(--cda-pixel);
+  --rc-selo-cor: var(--cda-amarelo);
+  --rc-tela-borda: 3px solid var(--cda-linha-forte);
+  --rc-tela-raio: 0;
+  --rc-tela-sombra: 8px 8px 0 var(--cda-amarelo);
+  --rc-relato-fundo: var(--cda-carta);
+  --rc-relato-borda: 3px solid var(--cda-linha-forte);
+  --rc-relato-raio: 0;
+  --rc-relato-sombra: 5px 5px 0 var(--cda-rosa);
+  --rc-cta-fundo: var(--cda-carta);
+  --rc-cta-tinta: var(--cda-texto);
+  --rc-cta-borda: 3px solid var(--cda-amarelo);
+  --rc-cta-raio: 0;
+  --rc-botao-fundo: var(--cda-amarelo);
+  --rc-botao-tinta: var(--cda-fundo);
+  --rc-botao-borda: 3px solid var(--cda-fundo);
+  --rc-botao-raio: 0;
+  --rc-botao-sombra: 5px 5px 0 var(--cda-rosa);
+  --rc-pilula-borda: 2px solid var(--cda-linha-forte);
+  --rc-foco: var(--cda-amarelo);
+}
+
+.rc p,
+.rc h1,
+.rc h2,
+.rc figure,
+.rc blockquote {
+  margin: 0;
+}
+.rc img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.rc a:focus-visible,
+.rc button:focus-visible {
+  outline: 3px solid var(--rc-foco);
+  outline-offset: 3px;
+}
+.rc .rc-pular {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 20;
+  padding: 0.5rem 1rem;
+  background: var(--rc-botao-fundo);
+  color: var(--rc-botao-tinta);
+  font-weight: 800;
+}
+.rc .rc-pular:focus {
+  top: 1rem;
+}
+
+/* ── Topo: a marca e o rótulo da página ─────────────────────────────────────── */
+.rc .rc-topo {
+  background: var(--rc-topo);
+  border-bottom: var(--rc-topo-borda);
+}
+.rc .rc-topo-in {
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding: 14px var(--rc-margem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.rc .rc-logo {
+  height: 22px;
+  width: auto;
+}
+.rc--adulto .rc-logo {
+  height: 18px;
+}
+.rc .rc-topo-rotulo {
+  font-size: 0.9375rem;
+  color: var(--rc-suave);
+}
+
+/* ── A carta ─────────────────────────────────────────────────────────────────── */
+.rc .rc-carta {
+  box-sizing: border-box;
+  max-width: 780px;
+  margin-inline: auto;
+  padding: 44px var(--rc-margem) 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.rc .rc-selo {
+  font-family: var(--rc-selo-fonte);
+  font-size: 0.875rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--rc-selo-cor);
+}
+.rc .rc-aviso {
+  font-size: 1rem;
+  color: var(--rc-suave);
+}
+.rc .rc-titulo {
+  margin-bottom: 8px;
+  font-family: var(--rc-titulo);
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.06;
+  color: var(--rc-tinta);
+  text-wrap: balance;
+}
+.rc .rc-h {
+  margin-top: 22px;
+  font-family: var(--rc-titulo);
+  font-weight: 800;
+  font-size: 1.6875rem;
+  line-height: 1.15;
+  color: var(--rc-tinta);
+}
+.rc .rc-p {
+  font-size: 1.1875rem;
+  line-height: 1.65;
+}
+.rc mark {
+  background: var(--rc-marca);
+  color: inherit;
+  padding: 0 4px;
+  border-radius: 4px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* ── Uma tela real e um relato ───────────────────────────────────────────────── */
+.rc .rc-tela {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rc .rc-tela img {
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  object-fit: cover;
+  object-position: top;
+  border: var(--rc-tela-borda);
+  border-radius: var(--rc-tela-raio);
+  box-shadow: var(--rc-tela-sombra);
+  box-sizing: border-box;
+}
+.rc .rc-tela figcaption {
+  font-size: 0.875rem;
+  color: var(--rc-suave);
+}
+.rc .rc-relato {
+  margin-top: 8px;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  background: var(--rc-relato-fundo);
+  border: var(--rc-relato-borda);
+  border-radius: var(--rc-relato-raio);
+  padding: 16px 18px;
+  box-shadow: var(--rc-relato-sombra);
+}
+.rc .rc-relato img {
+  flex: 0 0 auto;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--rc-tinta);
+  box-sizing: border-box;
+}
+.rc .rc-relato-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rc .rc-relato blockquote {
+  font-size: 1.0625rem;
+}
+.rc .rc-relato figcaption {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--rc-suave);
+}
+
+/* ── O próximo passo ─────────────────────────────────────────────────────────── */
+.rc .rc-cta {
+  margin-top: 18px;
+  background: var(--rc-cta-fundo);
+  color: var(--rc-cta-tinta);
+  border: var(--rc-cta-borda);
+  border-radius: var(--rc-cta-raio);
+  padding: 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.rc .rc-cta p {
+  font-size: 1.125rem;
+  line-height: 1.55;
+}
+.rc .rc-botao {
+  display: inline-flex;
+  align-items: center;
+  min-height: 58px;
+  padding: 0 26px;
+  background: var(--rc-botao-fundo);
+  color: var(--rc-botao-tinta);
+  font-weight: 800;
+  font-size: 1.125rem;
+  line-height: 1.25;
+  text-decoration: none;
+  border: var(--rc-botao-borda);
+  border-radius: var(--rc-botao-raio);
+  box-shadow: var(--rc-botao-sombra);
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+.rc .rc-botao:hover {
+  transform: translate(-1px, -1px);
+}
+.rc .rc-botao:active {
+  transform: translate(2px, 2px);
+  box-shadow: none;
+}
+.rc .rc-cta-nota {
+  font-size: 0.875rem;
+  opacity: 0.85;
+}
+.rc .rc-assinatura {
+  margin-top: 14px;
+  font-size: 1.0625rem;
+  color: var(--rc-tinta);
+  opacity: 0.85;
+}
+
+/* ── "Esse resultado parece com você?" ───────────────────────────────────────── */
+.rc .rc-opiniao {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 0.9375rem;
+  color: var(--rc-suave);
+}
+.rc .rc-opiniao-linha {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.rc .rc-opiniao-titulo {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+}
+.rc .rc-opiniao-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rc .rc-opiniao-botao {
+  min-height: 36px;
+  border: var(--rc-pilula-borda);
+  border-radius: 999px;
+  padding: 4px 14px;
+  background: transparent;
+  color: var(--rc-tinta);
+  font: inherit;
+  cursor: pointer;
+}
+.rc .rc-opiniao-botao[aria-pressed="true"] {
+  background: var(--rc-tinta);
+  color: var(--rc-fundo);
+}
+.rc .rc-opiniao-botao:disabled {
+  cursor: progress;
+}
+.rc .rc-opiniao-link {
+  color: var(--rc-tinta);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rc .rc-opiniao-linha .rc-opiniao-link {
+  margin-left: auto;
+}
+.rc .rc-opiniao-obrigado {
+  color: var(--rc-tinta);
+}
+.rc .rc-opiniao-erro {
+  color: var(--rc-tinta);
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .rc .rc-carta {
+    padding-top: 32px;
+  }
+  .rc .rc-h {
+    font-size: 1.5rem;
+  }
+  .rc .rc-cta {
+    padding: 20px;
+  }
+  .rc .rc-botao {
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    text-align: center;
+    padding-block: 12px;
+  }
+  .rc .rc-opiniao-linha .rc-opiniao-link {
+    margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc .rc-botao {
+    transition: none;
+  }
+}

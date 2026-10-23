@@ -1,0 +1,113 @@
+{
+  "before": {
+    "at": "2026-10-20T18:13:24.534Z",
+    "operatorPid": 23048,
+    "freeBytes": 5344796672,
+    "ports": [
+      {
+        "port": 5297,
+        "host": "127.0.0.1",
+        "free": true
+      },
+      {
+        "port": 5297,
+        "host": "::1",
+        "free": true
+      },
+      {
+        "port": 5298,
+        "host": "127.0.0.1",
+        "free": true
+      },
+      {
+        "port": 5298,
+        "host": "::1",
+        "free": true
+      }
+    ],
+    "windowEndUTC": "2026-10-20T18:23:00Z",
+    "remainingMs": 575465,
+    "preflightOnly": false,
+    "horizon": {
+      "head": "44a27bde60c6ccc5cc8d68e75310f54d172deafe",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "distributionHash": "a8a6c625e8c35552c66265f03a7de1bcda96f44306306206d2ac5f88366b6b4a",
+    "inputSha256": {
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\run.mjs": "6b958f0e91326c1d7139567951a9d2b02b4d96b2b996eda95c7cffb1d50c9346",
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\playwright.config.mts": "08979de0376333b4a3a4c6c7d5bde469459d5ab68545a0cb50f9f2460bb76a63",
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\packages\\studio\\e2e-python-editor\\source-editor.spec.ts": "755b4fc3f24d41eb1638b615750d4bc1db59c5b4a6b820a1d4a5a09a0a6c2e07",
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\packages\\studio\\e2e-python-editor\\bridge-workspace.spec.ts": "4e1a497d7a64bad00f653e79baf115c982e2933e7fdc1f3d799b7f179a238d7f",
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\packages\\studio\\e2e-python-editor\\extension-removal.spec.ts": "1277b9f96208674a8a6d02a67253127973fdbe3283d2cceface2f9329feba4cd"
+    },
+    "node": {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+      "sha256": "ba93f9a70bd86fce3ebbb39ec758501458453467aa92a34a0a3602d1e3fc2b9c"
+    },
+    "bun": {
+      "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\bun-1.4.3-isolated\\extracted\\bun-windows-x64\\bun.exe",
+      "sha256": "095db4abae203d42f29fdec26da4a882fcde6333cdd84e40c0c7828c0cf543f6"
+    },
+    "origins": [
+      "http://127.0.0.1:5297",
+      "http://127.0.0.1:5298"
+    ]
+  },
+  "owned": {
+    "pid": 40356,
+    "executable": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\node-v24.22.0\\node-v24.22.0-win-x64\\node.exe",
+    "args": [
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\packages\\studio\\node_modules\\@playwright\\test\\cli.js",
+      "test",
+      "--config",
+      "C:\\Users\\tocha\\projects\\sistema-zero-python-review\\.cache\\authoring-browser-r5\\playwright.config.mts",
+      "--workers=1",
+      "--retries=0",
+      "--global-timeout=360000",
+      "--grep",
+      "Undo cannot|rejected source|Ponte synchronizes|mode routing|Turtle removal"
+    ],
+    "started": "2026-10-20T18:13:25.043Z"
+  },
+  "result": {
+    "code": 0,
+    "signal": null,
+    "error": null,
+    "logsDrained": true
+  },
+  "forcedStop": null,
+  "after": {
+    "at": "2026-10-20T18:14:32.848Z",
+    "horizon": {
+      "head": "44a27bde60c6ccc5cc8d68e75310f54d172deafe",
+      "diffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ports": [
+      {
+        "port": 5297,
+        "host": "127.0.0.1",
+        "free": true
+      },
+      {
+        "port": 5297,
+        "host": "::1",
+        "free": true
+      },
+      {
+        "port": 5298,
+        "host": "127.0.0.1",
+        "free": true
+      },
+      {
+        "port": 5298,
+        "host": "::1",
+        "free": true
+      }
+    ],
+    "freeBytes": 5152845824,
+    "runtimeOrigin": "http://127.0.0.1:61662",
+    "runtimePortReleased": true
+  },
+  "stable": true,
+  "released": true
+}

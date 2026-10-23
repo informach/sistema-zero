@@ -104,7 +104,7 @@ function makeInput(
     account: makeAccount(),
     accessToken: 'tt-token',
     assets,
-    orderedAssetIds: [],
+    orderedMedia: [],
     assetBytes: async (_asset, start, endInclusive) => new Uint8Array(endInclusive - start + 1),
     assetUrl: () => Promise.reject(new Error('não usado pelo TikTok')),
     get session() {

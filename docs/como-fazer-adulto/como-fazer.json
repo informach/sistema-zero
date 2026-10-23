@@ -1,0 +1,2570 @@
+{
+  "collections": [
+    {
+      "slug": "primeiros-passos",
+      "title": "Primeiros passos",
+      "description": "O menu do alto, os Recados, o seu progresso e onde achar um passo a passo.",
+      "icon": "compass",
+      "tone": "marca",
+      "position": 0
+    },
+    {
+      "slug": "aulas",
+      "title": "Aulas e cursos",
+      "description": "Seções, vídeo, materiais, quiz, pedido de ajuda, conclusão da aula, certificado e avaliação do curso.",
+      "icon": "book",
+      "tone": "marca",
+      "position": 1
+    },
+    {
+      "slug": "estudio",
+      "title": "Estúdio",
+      "description": "O Estúdio dentro da aula e o Estúdio completo: blocos, jogo funcionando, envio ao professor e seus projetos.",
+      "icon": "blocks",
+      "tone": "estudio",
+      "position": 2
+    },
+    {
+      "slug": "pinta",
+      "title": "Pinta",
+      "description": "Desenhos, primeiras ferramentas e como levar a sua arte para o jogo.",
+      "icon": "palette",
+      "tone": "pinta",
+      "position": 3
+    },
+    {
+      "slug": "pensa",
+      "title": "Pensa",
+      "description": "O plano do seu jogo, parte por parte, até a ferramenta certa.",
+      "icon": "lightbulb",
+      "tone": "pensa",
+      "position": 4
+    },
+    {
+      "slug": "molda",
+      "title": "Molda",
+      "description": "Criações 3D: modelos, texturas e céus para os seus jogos.",
+      "icon": "box",
+      "tone": "molda",
+      "position": 5
+    },
+    {
+      "slug": "comunidade",
+      "title": "Comunidade e oficinas",
+      "description": "Mural dos Criadores, Clube dos Criadores, Desafio do mês e oficinas ao vivo com a turma.",
+      "icon": "users",
+      "tone": "marca",
+      "position": 6
+    },
+    {
+      "slug": "conta",
+      "title": "Conta e acesso",
+      "description": "Entrar, senha, dados pessoais, cor, avatar e espaço 3D, ajuda da IA, compras e atendimento.",
+      "icon": "user",
+      "tone": "marca",
+      "position": 7
+    }
+  ],
+  "tutorials": [
+    {
+      "slug": "primeiros-continuar-o-curso",
+      "collection": "primeiros-passos",
+      "position": 0,
+      "draft": {
+        "title": "Como continuar o seu curso de onde parou",
+        "summary": "No Início, use o botão de continuar e volte para a aula e a parte em que você parou.",
+        "keywords": [
+          "continuar",
+          "onde parei",
+          "de onde parei",
+          "voltar",
+          "retomar",
+          "curso",
+          "aula",
+          "início",
+          "próxima aula",
+          "parei",
+          "começar"
+        ],
+        "steps": [
+          {
+            "id": "inicio",
+            "title": "Abra o Início",
+            "body": "Clique em **Início**, no menu do alto. No topo da página aparece qual é a sua próxima aula."
+          },
+          {
+            "id": "continuar",
+            "title": "Clique para continuar",
+            "body": "No cartão do curso, clique em **Continuar a aula**, seguido do número da aula. A aula abre na seção em que você parou."
+          },
+          {
+            "id": "cursos",
+            "title": "Ou escolha pelo curso",
+            "body": "Em **Seus cursos**, clique em **Continuar** no cartão do curso que você quer. Na página do curso, o botão **Continuar de onde parei** leva para a próxima aula."
+          },
+          {
+            "id": "lista",
+            "title": "Veja as outras aulas",
+            "body": "Para escolher outra aula, clique em **Ver todas as aulas**. A aula marcada com **Continue aqui** é a próxima, e as aulas com cadeado abrem quando a anterior for concluída."
+          }
+        ],
+        "related": ["aula-abrir-e-passar-de-secao", "aula-usar-o-indice", "primeiros-menu-do-alto"]
+      }
+    },
+    {
+      "slug": "primeiros-menu-do-alto",
+      "collection": "primeiros-passos",
+      "position": 1,
+      "draft": {
+        "title": "Como andar pelo menu do alto",
+        "summary": "Saiba o que fica em Início, Cursos, Criar, Oficinas, Comunidade e Ajuda, e onde estão os Recados e o seu perfil.",
+        "keywords": [
+          "menu",
+          "barra",
+          "navegar",
+          "onde fica",
+          "cadê",
+          "início",
+          "cursos",
+          "criar",
+          "oficinas",
+          "comunidade",
+          "ajuda",
+          "perfil",
+          "sair",
+          "logout"
+        ],
+        "steps": [
+          {
+            "id": "destinos",
+            "title": "Conheça os seis destinos",
+            "body": "No alto da tela ficam **Início**, **Cursos**, **Criar**, **Oficinas**, **Comunidade** e **Ajuda**. Clique em um deles para abrir a página."
+          },
+          {
+            "id": "o-que-tem",
+            "title": "Saiba o que tem em cada um",
+            "body": "Em **Cursos** ficam os seus cursos, organizados por trilha. Em **Criar** ficam as ferramentas, como o Estúdio e o Pinta. Em **Ajuda** ficam os tutoriais e o atendimento da equipe."
+          },
+          {
+            "id": "recados",
+            "title": "Encontre os Recados",
+            "body": "À direita fica o botão **Recados**, com as respostas da equipe. Quando há mensagem nova, ele mostra quantas são. No celular, ele aparece só com o desenho de um envelope."
+          },
+          {
+            "id": "perfil",
+            "title": "Abra o menu do perfil",
+            "body": "Clique na sua foto ou nas suas iniciais, no canto direito. Ali estão **Seu progresso**, **Meu avatar 3D**, **Meu espaço 3D**, **Meu perfil**, as suas compras e **Sair**."
+          },
+          {
+            "id": "tela-menor",
+            "title": "Em telas menores",
+            "body": "Em telas mais estreitas, os destinos descem para uma segunda linha, logo abaixo da barra. Se algum não aparecer, deslize essa linha para o lado."
+          }
+        ],
+        "related": [
+          "primeiros-ler-os-recados",
+          "primeiros-ver-o-progresso",
+          "primeiros-achar-um-passo-a-passo"
+        ]
+      }
+    },
+    {
+      "slug": "primeiros-ver-o-progresso",
+      "collection": "primeiros-passos",
+      "position": 2,
+      "draft": {
+        "title": "Como ver o seu progresso",
+        "summary": "Abra o menu da sua foto e clique em Seu progresso para ver XP, sequência, jornada e conquistas.",
+        "keywords": [
+          "progresso",
+          "xp",
+          "pontos",
+          "experiência",
+          "sequência",
+          "dias seguidos",
+          "conquistas",
+          "medalhas",
+          "ranking",
+          "jornada",
+          "etapa",
+          "moedas",
+          "pausa",
+          "férias"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra Seu progresso",
+            "body": "Clique na sua foto ou nas suas iniciais, no canto direito, e depois em **Seu progresso**."
+          },
+          {
+            "id": "numeros",
+            "title": "Confira os números",
+            "body": "No alto aparecem **Experiência**, com os seus pontos de XP, **Sequência**, em dias, e **Ranking geral**. Quando a sua conta tem moedas, aparece também **Moedas**."
+          },
+          {
+            "id": "jornada",
+            "title": "Veja a sua jornada",
+            "body": "Em **Sua jornada**, cada etapa mostra se está concluída, em andamento ou fechada. Na etapa em andamento, **Falta:** diz o que ainda é preciso para avançar."
+          },
+          {
+            "id": "conquistas",
+            "title": "Veja as conquistas",
+            "body": "Em **Conquistas** ficam as que você já ganhou, com a data, e as que ainda faltam."
+          },
+          {
+            "id": "pausa",
+            "title": "Programe uma pausa, se precisar",
+            "body": "Em **Sua sequência**, escolha o **Início da pausa** e o **Fim da pausa** e clique em **Programar pausa**. Durante a pausa, a sequência não se perde."
+          }
+        ],
+        "related": ["primeiros-menu-do-alto", "conta-montar-o-espaco"]
+      }
+    },
+    {
+      "slug": "primeiros-ler-os-recados",
+      "collection": "primeiros-passos",
+      "position": 3,
+      "draft": {
+        "title": "Como ler e responder os Recados da equipe",
+        "summary": "As respostas da equipe às suas dúvidas e aos seus projetos chegam no botão Recados, no alto da tela.",
+        "keywords": [
+          "recados",
+          "mensagens",
+          "mensagem",
+          "resposta",
+          "equipe",
+          "professor",
+          "professora",
+          "dúvida",
+          "conversa",
+          "avisos",
+          "caixa de entrada",
+          "notificação"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra os Recados",
+            "body": "Clique em **Recados**, no alto da tela, à direita. O número ao lado mostra quantos recados novos há."
+          },
+          {
+            "id": "escolher",
+            "title": "Escolha uma conversa",
+            "body": "Clique na conversa que você quer ler. A etiqueta mostra o assunto, como **Dúvida na aula** ou **Entrega**, e **Novo** marca o que você ainda não leu."
+          },
+          {
+            "id": "responder",
+            "title": "Escreva a sua resposta",
+            "body": "No campo **Sua resposta**, escreva o que quer dizer e clique em **Enviar resposta**. A resposta da equipe aparece nesta mesma conversa."
+          },
+          {
+            "id": "voltar",
+            "title": "Volte para a aula",
+            "body": "Quando a conversa nasceu de uma dúvida numa aula, clique em **Voltar à seção** para abrir a parte de que ela fala."
+          },
+          {
+            "id": "inicio",
+            "title": "Veja também no Início",
+            "body": "Os recados mais recentes aparecem no cartão **Recados**, na página **Início**."
+          }
+        ],
+        "related": ["aula-pedir-ajuda", "estudio-enviar-ao-professor", "conta-abrir-chamado"]
+      }
+    },
+    {
+      "slug": "primeiros-achar-um-passo-a-passo",
+      "collection": "primeiros-passos",
+      "position": 4,
+      "draft": {
+        "title": "Como achar um passo a passo no Como fazer",
+        "summary": "Escreva o que você quer fazer na busca e abra o tutorial que combina com a sua dúvida.",
+        "keywords": [
+          "como fazer",
+          "ajuda",
+          "tutorial",
+          "tutoriais",
+          "passo a passo",
+          "buscar",
+          "procurar",
+          "pesquisar",
+          "dúvida",
+          "manual",
+          "instruções"
+        ],
+        "steps": [
+          {
+            "id": "ajuda",
+            "title": "Abra a Ajuda",
+            "body": "Clique em **Ajuda**, no menu do alto."
+          },
+          {
+            "id": "buscar",
+            "title": "Escreva o que você quer fazer",
+            "body": "No campo de busca, no alto da página, escreva uma ou duas palavras, como “senha” ou “certificado”, e aperte a tecla Enter."
+          },
+          {
+            "id": "colecoes",
+            "title": "Ou escolha uma coleção",
+            "body": "Na seção **Como fazer**, clique numa coleção, como Aulas e cursos ou Estúdio, para ver os tutoriais dela. Na página **Como fazer**, os resultados mudam enquanto você escreve em **Buscar tutorial**."
+          },
+          {
+            "id": "ler",
+            "title": "Siga os passos",
+            "body": "Abra o tutorial e siga os passos com a tela do lado. No fim, **Veja também** sugere outros tutoriais parecidos."
+          },
+          {
+            "id": "equipe",
+            "title": "Fale com a equipe, se precisar",
+            "body": "Não achou? Clique em **Falar com a equipe**, no fim da lista, e veja [como abrir um chamado](/como-fazer/conta-abrir-chamado)."
+          }
+        ],
+        "related": ["conta-abrir-chamado", "primeiros-letra-maior"]
+      }
+    },
+    {
+      "slug": "primeiros-letra-maior",
+      "collection": "primeiros-passos",
+      "position": 5,
+      "draft": {
+        "title": "Como deixar a letra maior no computador",
+        "summary": "Use Ctrl e + para aumentar tudo na tela e Ctrl e 0 para voltar ao tamanho normal.",
+        "keywords": [
+          "letra",
+          "letra maior",
+          "letra pequena",
+          "fonte",
+          "tamanho",
+          "zoom",
+          "ampliar",
+          "aumentar",
+          "diminuir",
+          "enxergar",
+          "ler melhor",
+          "lupa",
+          "tela pequena"
+        ],
+        "steps": [
+          {
+            "id": "aumentar",
+            "title": "Aumente a página",
+            "body": "Segure a tecla Ctrl e aperte a tecla de mais (+). Cada vez que apertar, a página fica um pouco maior. No Mac, use a tecla Command no lugar do Ctrl."
+          },
+          {
+            "id": "diminuir",
+            "title": "Diminua, se passou do ponto",
+            "body": "Segure Ctrl e aperte a tecla de menos (-) para diminuir um pouco."
+          },
+          {
+            "id": "normal",
+            "title": "Volte ao normal",
+            "body": "Segure Ctrl e aperte a tecla 0 (zero). A página volta ao tamanho de antes."
+          },
+          {
+            "id": "blocos",
+            "title": "No Estúdio, aumente os blocos",
+            "body": "Os blocos do Estúdio têm um tamanho próprio. Veja [como aumentar o tamanho dos blocos](/como-fazer/estudio-aumentar-os-blocos)."
+          }
+        ],
+        "related": ["estudio-aumentar-os-blocos", "primeiros-achar-um-passo-a-passo"]
+      }
+    },
+    {
+      "slug": "aula-abrir-e-passar-de-secao",
+      "collection": "aulas",
+      "position": 0,
+      "draft": {
+        "title": "Como abrir uma aula e passar de seção",
+        "summary": "Abra a aula pela página do curso e use Próxima parte e Anterior, no pé da aula.",
+        "keywords": [
+          "aula",
+          "seção",
+          "seções",
+          "próxima",
+          "próxima seção",
+          "anterior",
+          "avançar",
+          "voltar",
+          "abrir aula",
+          "curso",
+          "módulo",
+          "travado",
+          "bloqueado"
+        ],
+        "steps": [
+          {
+            "id": "curso",
+            "title": "Abra o curso",
+            "body": "Clique em **Cursos**, no menu do alto, e abra o curso. Você também pode clicar em **Continuar** no cartão do curso, no **Início**."
+          },
+          {
+            "id": "aula",
+            "title": "Escolha a aula",
+            "body": "Na página do curso, clique na aula que quer abrir. A marca **Continue aqui** mostra a próxima aula, e as aulas com cadeado abrem quando a anterior for concluída."
+          },
+          {
+            "id": "secoes",
+            "title": "Passe de seção",
+            "body": "Cada aula tem seções, e o alto da aula mostra em qual você está, por exemplo “Seção 2 de 5”. No pé da aula, clique em **Próxima parte** para avançar e em **Anterior** para voltar."
+          },
+          {
+            "id": "falta",
+            "title": "Veja o que falta",
+            "body": "Se **Próxima parte** estiver apagado, leia a faixa ao lado: depois de **Para seguir:** aparece o que ainda falta. Quando aparecer **Tudo pronto nesta parte. Pode seguir!**, avance."
+          },
+          {
+            "id": "sair",
+            "title": "Volte ao curso",
+            "body": "Para sair da aula, clique na seta redonda, no canto de cima, à esquerda. Ela leva de volta à página do curso."
+          }
+        ],
+        "related": ["aula-usar-o-indice", "aula-concluir", "primeiros-continuar-o-curso"]
+      }
+    },
+    {
+      "slug": "aula-usar-o-indice",
+      "collection": "aulas",
+      "position": 1,
+      "draft": {
+        "title": "Como usar o Índice da aula",
+        "summary": "Veja as partes da aula, as que você já concluiu e as que ainda faltam, e vá direto para uma delas.",
+        "keywords": [
+          "índice",
+          "sumário",
+          "seções",
+          "lista",
+          "pular",
+          "ir para",
+          "concluída",
+          "pendente",
+          "lista de aulas",
+          "outras aulas",
+          "menu da aula"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o índice",
+            "body": "No alto da aula, ao lado do título, clique em **Índice da aula**. No celular, aparece só o desenho de uma lista."
+          },
+          {
+            "id": "ler",
+            "title": "Leia a lista",
+            "body": "As partes concluídas mostram um sinal de visto. **Atividade pendente** avisa que ainda falta fazer algo ali, e **Abre após concluir a anterior** marca as partes ainda fechadas."
+          },
+          {
+            "id": "ir",
+            "title": "Vá para uma parte",
+            "body": "Clique no nome de uma parte liberada para abri-la."
+          },
+          {
+            "id": "aulas",
+            "title": "Veja as outras aulas",
+            "body": "Para trocar de aula, clique na alça da borda direita da tela (**Mostrar lista de aulas**). A lista mostra os módulos, as aulas e o seu progresso no curso."
+          }
+        ],
+        "related": ["aula-abrir-e-passar-de-secao", "aula-avaliar-o-curso"]
+      }
+    },
+    {
+      "slug": "aula-pausar-e-rever-o-video",
+      "collection": "aulas",
+      "position": 2,
+      "draft": {
+        "title": "Como pausar e rever o vídeo da aula",
+        "summary": "Pare o vídeo para acompanhar um passo ou volte um trecho para ouvir de novo.",
+        "keywords": [
+          "vídeo",
+          "pausar",
+          "parar",
+          "rever",
+          "voltar o vídeo",
+          "ouvir de novo",
+          "assistir",
+          "repetir",
+          "play",
+          "som",
+          "volume"
+        ],
+        "steps": [
+          {
+            "id": "controles",
+            "title": "Mostre os controles",
+            "body": "Passe o mouse sobre o vídeo ou clique nele para os controles aparecerem. O desenho dos botões pode mudar de um vídeo para outro."
+          },
+          {
+            "id": "pausar",
+            "title": "Pause quando precisar",
+            "body": "Clique no botão de pausa, o das duas barrinhas, para parar enquanto você faz o que o vídeo mostra."
+          },
+          {
+            "id": "voltar",
+            "title": "Volte ao trecho",
+            "body": "Na barra de tempo, embaixo do vídeo, clique um pouco antes do trecho que você quer ouvir de novo."
+          },
+          {
+            "id": "continuar",
+            "title": "Continue assistindo",
+            "body": "Clique no botão com um triângulo para continuar. Repita o trecho quantas vezes quiser."
+          },
+          {
+            "id": "estudio",
+            "title": "Com o Estúdio expandido",
+            "body": "Se você clicar em **Expandir** no Estúdio com o vídeo tocando, o vídeo continua pequeno num canto da tela. O botão **Vídeo** mostra ou esconde esse vídeo."
+          }
+        ],
+        "related": ["aula-abrir-e-passar-de-secao", "estudio-usar-na-aula"]
+      }
+    },
+    {
+      "slug": "aula-baixar-materiais",
+      "collection": "aulas",
+      "position": 3,
+      "draft": {
+        "title": "Como baixar os materiais da aula",
+        "summary": "Clique em Baixar ao lado de cada arquivo e encontre o arquivo na pasta de downloads.",
+        "keywords": [
+          "material",
+          "materiais",
+          "arquivo",
+          "baixar",
+          "download",
+          "pdf",
+          "apostila",
+          "anexo",
+          "imprimir",
+          "documento",
+          "obrigatório",
+          "material de apoio"
+        ],
+        "steps": [
+          {
+            "id": "encontrar",
+            "title": "Encontre os materiais",
+            "body": "Abra a aula e a parte que traz os arquivos. Na página do curso, o quadro **Materiais de apoio** mostra quais aulas têm arquivos."
+          },
+          {
+            "id": "baixar",
+            "title": "Baixe o arquivo",
+            "body": "Clique em **Baixar**, ao lado do nome do arquivo. Espere passar o **Preparando…** e aparecer **Baixado**."
+          },
+          {
+            "id": "pasta",
+            "title": "Encontre no computador",
+            "body": "Procure o arquivo na pasta Downloads do computador. Os arquivos em PDF e as imagens saem com o seu e-mail marcado."
+          },
+          {
+            "id": "obrigatorio",
+            "title": "Confira os obrigatórios",
+            "body": "Se aparecer **Obrigatório para avançar**, baixe esse arquivo antes de ir para a próxima seção."
+          }
+        ],
+        "related": ["aula-abrir-e-passar-de-secao", "aula-emitir-certificado"]
+      }
+    },
+    {
+      "slug": "aula-responder-o-quiz",
+      "collection": "aulas",
+      "position": 4,
+      "draft": {
+        "title": "Como responder o quiz da aula",
+        "summary": "Marque as respostas, clique em Enviar quiz e veja o resultado e as explicações.",
+        "keywords": [
+          "quiz",
+          "perguntas",
+          "respostas",
+          "prova",
+          "teste",
+          "questionário",
+          "exercício",
+          "nota",
+          "acertos",
+          "porcentagem",
+          "refazer",
+          "gabarito"
+        ],
+        "steps": [
+          {
+            "id": "marcar",
+            "title": "Marque as respostas",
+            "body": "Leia cada pergunta e clique na resposta que você escolher. Todas as perguntas precisam de uma resposta."
+          },
+          {
+            "id": "enviar",
+            "title": "Envie o quiz",
+            "body": "Clique em **Enviar quiz**, no fim das perguntas. O botão só funciona depois que todas estão respondidas."
+          },
+          {
+            "id": "conferir",
+            "title": "Confira o resultado",
+            "body": "Cada resposta mostra se está certa ou errada, e **Por quê:** traz a explicação. Se você ainda não alcançou a porcentagem pedida, aparece quanto fez e quanto precisa."
+          },
+          {
+            "id": "refazer",
+            "title": "Tente de novo",
+            "body": "As respostas certas ficam guardadas. Troque só as que faltam e clique em **Enviar quiz** outra vez. Se aparecer **Você poderá refazer o quiz em**, espere o tempo marcado."
+          },
+          {
+            "id": "seguir",
+            "title": "Siga a aula",
+            "body": "Quando aparecer **Quiz concluído**, siga para a próxima seção ou conclua a aula."
+          }
+        ],
+        "related": ["aula-concluir", "aula-pedir-ajuda"]
+      }
+    },
+    {
+      "slug": "aula-pedir-ajuda",
+      "collection": "aulas",
+      "position": 5,
+      "draft": {
+        "title": "Como pedir ajuda sem sair da aula",
+        "summary": "Clique em Preciso de ajuda, escreva a sua dúvida e acompanhe a resposta nos Recados.",
+        "keywords": [
+          "ajuda",
+          "dúvida",
+          "travei",
+          "pergunta",
+          "professor",
+          "professora",
+          "equipe",
+          "não consigo",
+          "erro",
+          "preciso de ajuda",
+          "suporte",
+          "socorro"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o pedido de ajuda",
+            "body": "No pé da aula, clique em **Preciso de ajuda**. Abre um campo para você escrever."
+          },
+          {
+            "id": "escrever",
+            "title": "Conte onde travou",
+            "body": "Em **Em que ponto desta parte você ficou com dúvida?**, escreva o que tentou fazer e o que apareceu na tela. A conversa fica ligada a esta parte da aula."
+          },
+          {
+            "id": "enviar",
+            "title": "Envie",
+            "body": "Clique em **Enviar para a equipe**. Aparece o aviso de que o pedido foi enviado e de que a resposta chega nos seus recados."
+          },
+          {
+            "id": "acompanhar",
+            "title": "Acompanhe a resposta",
+            "body": "Clique em **Ver conversa** para abrir o pedido. Quando a equipe responder, a mensagem chega em **Recados**, no alto da tela."
+          }
+        ],
+        "related": ["primeiros-ler-os-recados", "conta-abrir-chamado"]
+      }
+    },
+    {
+      "slug": "aula-concluir",
+      "collection": "aulas",
+      "position": 6,
+      "draft": {
+        "title": "Como concluir uma aula",
+        "summary": "Entenda o que aparece em Para seguir e quando o botão Concluir aula fica liberado.",
+        "keywords": [
+          "concluir",
+          "terminar",
+          "finalizar",
+          "completar",
+          "aula concluída",
+          "próxima aula",
+          "não consigo concluir",
+          "botão apagado",
+          "travado"
+        ],
+        "steps": [
+          {
+            "id": "ultima",
+            "title": "Chegue à última seção",
+            "body": "O botão **Concluir aula** fica no pé da última seção da aula."
+          },
+          {
+            "id": "falta",
+            "title": "Veja o que falta",
+            "body": "Se o botão estiver apagado, leia a faixa ao lado dele. Ela diz o que ainda falta, como passar no quiz ou enviar o projeto do Estúdio."
+          },
+          {
+            "id": "concluir",
+            "title": "Conclua",
+            "body": "Quando estiver tudo pronto, clique em **Concluir aula**. Aparece o aviso **Aula concluída!** e, se houver uma próxima aula, ela abre."
+          },
+          {
+            "id": "conferir",
+            "title": "Confira no curso",
+            "body": "Na aula concluída, o lugar do botão passa a mostrar **Aula concluída**. Na página do curso, a aula ganha o sinal de visto."
+          }
+        ],
+        "related": [
+          "aula-abrir-e-passar-de-secao",
+          "aula-responder-o-quiz",
+          "estudio-enviar-ao-professor"
+        ]
+      }
+    },
+    {
+      "slug": "aula-emitir-certificado",
+      "collection": "aulas",
+      "position": 7,
+      "draft": {
+        "title": "Como emitir o seu certificado",
+        "summary": "Na aula do certificado, clique em Baixar meu certificado e guarde o PDF.",
+        "keywords": [
+          "certificado",
+          "diploma",
+          "comprovante",
+          "pdf",
+          "emitir",
+          "baixar certificado",
+          "conclusão",
+          "curso concluído",
+          "imprimir"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra a aula do certificado",
+            "body": "Conclua as aulas anteriores e abra a aula que traz o quadro do certificado. Se ainda faltar alguma aula, o quadro avisa que é preciso concluir as anteriores."
+          },
+          {
+            "id": "emitir",
+            "title": "Emita o certificado",
+            "body": "Clique em **Baixar meu certificado**. O certificado em PDF é baixado para o seu computador."
+          },
+          {
+            "id": "guardar",
+            "title": "Guarde o arquivo",
+            "body": "Procure o PDF na pasta Downloads. Você pode guardar, imprimir ou mandar para quem quiser."
+          },
+          {
+            "id": "de-novo",
+            "title": "Baixe de novo quando quiser",
+            "body": "Volte à mesma aula e clique em **Baixar certificado (PDF)**. É sempre o mesmo certificado."
+          }
+        ],
+        "related": ["aula-concluir", "aula-baixar-materiais"]
+      }
+    },
+    {
+      "slug": "aula-avaliar-o-curso",
+      "collection": "aulas",
+      "position": 8,
+      "draft": {
+        "title": "Como avaliar um curso",
+        "summary": "Deixe uma classificação de uma a cinco estrelas e, se quiser, um comentário.",
+        "keywords": [
+          "avaliar",
+          "avaliação",
+          "estrelas",
+          "nota",
+          "opinião",
+          "comentário",
+          "classificação",
+          "gostei",
+          "sugestão"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra a avaliação",
+            "body": "Na página do curso, clique em **Avaliar o curso**. Dentro de uma aula, use **Deixe uma classificação**, no alto da lista de aulas."
+          },
+          {
+            "id": "estrelas",
+            "title": "Escolha as estrelas",
+            "body": "Em **Como você classificaria este curso?**, clique nas estrelas, de uma a cinco."
+          },
+          {
+            "id": "comentario",
+            "title": "Conte o motivo",
+            "body": "Se quiser, escreva o que achou do curso e clique em **Salvar e continuar**."
+          },
+          {
+            "id": "perguntas",
+            "title": "Responda às perguntas rápidas",
+            "body": "Responda **Sim**, **Não** ou **Não sei** em cada pergunta e clique em **Salvar e continuar**. Se preferir, clique em **Pular**."
+          },
+          {
+            "id": "terminar",
+            "title": "Termine",
+            "body": "Na última tela, clique em **Salvar e sair**. Depois de avaliar, o botão de avaliação sai da página do curso."
+          }
+        ],
+        "related": ["aula-usar-o-indice"]
+      }
+    },
+    {
+      "slug": "estudio-usar-na-aula",
+      "collection": "estudio",
+      "position": 0,
+      "draft": {
+        "title": "Como usar o Estúdio dentro da aula",
+        "summary": "Use Expandir, Recomeçar e Outra versão na Atividade no Estúdio, sem sair da aula.",
+        "keywords": [
+          "estúdio",
+          "atividade",
+          "blocos",
+          "aula",
+          "expandir",
+          "tela cheia",
+          "reduzir",
+          "recomeçar",
+          "começar de novo",
+          "outra versão",
+          "projeto da aula"
+        ],
+        "steps": [
+          {
+            "id": "encontrar",
+            "title": "Encontre a atividade",
+            "body": "Nas partes com programação, o Estúdio aparece no quadro **Atividade no Estúdio**, com os blocos e o jogo."
+          },
+          {
+            "id": "expandir",
+            "title": "Ganhe espaço",
+            "body": "Clique em **Expandir** para o Estúdio ocupar a tela toda. Para voltar à aula, clique em **Reduzir**."
+          },
+          {
+            "id": "recomecar",
+            "title": "Comece de novo, se precisar",
+            "body": "Clique em **Recomeçar** e confirme em **Recomeçar** na janela **Recomeçar do projeto inicial?**. O que você já enviou ao professor continua guardado."
+          },
+          {
+            "id": "outra-versao",
+            "title": "Use a outra versão",
+            "body": "Se você mexeu no projeto em dois computadores, pode aparecer **Outra versão**. Clique nele e em **Trazer** para trocar as duas versões de lugar."
+          },
+          {
+            "id": "salvo",
+            "title": "Confira se salvou",
+            "body": "No alto do quadro, **Salvo na sua conta** mostra que o projeto está guardado. Veja [como saber se o projeto foi salvo](/como-fazer/estudio-saber-se-salvou)."
+          }
+        ],
+        "related": [
+          "estudio-enviar-ao-professor",
+          "estudio-saber-se-salvou",
+          "estudio-ver-o-jogo-funcionando"
+        ]
+      }
+    },
+    {
+      "slug": "estudio-ver-o-jogo-funcionando",
+      "collection": "estudio",
+      "position": 1,
+      "draft": {
+        "title": "Como ver o seu jogo funcionando",
+        "summary": "Abra a pré-visualização e confira o resultado dos blocos enquanto você monta o jogo.",
+        "keywords": [
+          "pré-visualização",
+          "prévia",
+          "ver o jogo",
+          "rodar",
+          "testar",
+          "jogar",
+          "executar",
+          "olho",
+          "olhinho",
+          "erro",
+          "console",
+          "não funciona"
+        ],
+        "steps": [
+          {
+            "id": "previa",
+            "title": "Mostre o jogo",
+            "body": "No alto do Estúdio, clique no botão do olho (**Mostrar pré-visualização**). O jogo aparece ao lado dos blocos. Para esconder, o mesmo botão vira **Ocultar pré-visualização**."
+          },
+          {
+            "id": "abas",
+            "title": "Em tela estreita, use as abas",
+            "body": "Se o Estúdio mostrar abas, clique em **Pré-visualização** para ver o jogo e em **Blocos** para voltar aos blocos."
+          },
+          {
+            "id": "testar",
+            "title": "Teste a mudança",
+            "body": "Mude um bloco e espere o jogo atualizar. Clique dentro do jogo antes de usar as teclas do teclado."
+          },
+          {
+            "id": "erro",
+            "title": "Veja o que deu errado",
+            "body": "Se o jogo não funcionar, clique em **Mais opções** → **Mostrar** → **Console**. Se aparecer **Ver o bloco que causou o erro**, clique nele para achar o bloco."
+          }
+        ],
+        "related": ["estudio-usar-na-aula", "estudio-aumentar-os-blocos"]
+      }
+    },
+    {
+      "slug": "estudio-aumentar-os-blocos",
+      "collection": "estudio",
+      "position": 2,
+      "draft": {
+        "title": "Como aumentar o tamanho dos blocos",
+        "summary": "Use os botões de mais e de menos, no canto da área dos blocos, para ler os blocos com folga.",
+        "keywords": [
+          "aumentar",
+          "zoom",
+          "blocos pequenos",
+          "letra dos blocos",
+          "tamanho",
+          "ampliar",
+          "diminuir",
+          "lupa",
+          "enxergar",
+          "ler os blocos",
+          "centralizar"
+        ],
+        "steps": [
+          {
+            "id": "encontrar",
+            "title": "Encontre os botões",
+            "body": "No canto de baixo, à direita da área dos blocos, ficam três botões redondos: um com o sinal de mais, um com o sinal de menos e um para centralizar."
+          },
+          {
+            "id": "aumentar",
+            "title": "Aumente",
+            "body": "Clique no botão com o sinal de mais. Cada clique deixa os blocos um pouco maiores."
+          },
+          {
+            "id": "diminuir",
+            "title": "Diminua ou centralize",
+            "body": "O botão com o sinal de menos deixa os blocos menores. O botão de centralizar volta ao tamanho do começo e traz os blocos para o meio."
+          },
+          {
+            "id": "mover",
+            "title": "Arraste para ver o resto",
+            "body": "Com os blocos maiores, arraste um espaço vazio da área dos blocos para ver o que ficou de fora."
+          },
+          {
+            "id": "pagina",
+            "title": "Aumente a página toda",
+            "body": "Para deixar maior também o resto da tela, veja [como deixar a letra maior no computador](/como-fazer/primeiros-letra-maior)."
+          }
+        ],
+        "related": ["primeiros-letra-maior", "estudio-ver-o-jogo-funcionando"]
+      }
+    },
+    {
+      "slug": "estudio-saber-se-salvou",
+      "collection": "estudio",
+      "position": 3,
+      "draft": {
+        "title": "Como saber se o projeto foi salvo",
+        "summary": "Veja o aviso de salvamento no alto do Estúdio, dentro da aula e no Estúdio completo.",
+        "keywords": [
+          "salvar",
+          "salvo",
+          "guardar",
+          "guardado",
+          "perdi",
+          "sumiu",
+          "nuvem",
+          "conta",
+          "outro computador",
+          "sem internet",
+          "salvamento"
+        ],
+        "steps": [
+          {
+            "id": "aula",
+            "title": "Na aula",
+            "body": "No alto da **Atividade no Estúdio**, espere aparecer **Salvo na sua conta**. Enquanto guarda, aparece **Salvando na sua conta…**."
+          },
+          {
+            "id": "sem-internet",
+            "title": "Se a internet cair",
+            "body": "Se aparecer **Sem internet. Salvo neste aparelho**, o projeto ficou só neste computador. Espere aparecer **Salvo na sua conta** antes de trocar de computador."
+          },
+          {
+            "id": "completo",
+            "title": "No Estúdio completo",
+            "body": "No alto do editor aparece **Salvo**. Ao lado, a nuvem mostra que o projeto também está na sua conta: passe o mouse sobre ela para ler **Guardado na sua conta**."
+          },
+          {
+            "id": "salvar",
+            "title": "Salve na hora",
+            "body": "Se aparecer **Alterações não salvas**, espere um pouco ou clique em **Mais opções** → **O meu jogo** → **Salvar**."
+          }
+        ],
+        "related": ["estudio-usar-na-aula", "estudio-criar-projeto-livre"]
+      }
+    },
+    {
+      "slug": "estudio-enviar-ao-professor",
+      "collection": "estudio",
+      "position": 4,
+      "draft": {
+        "title": "Como enviar o projeto para o professor",
+        "summary": "Mande para a equipe o jogo que você montou na aula. Depois de enviar, você pode continuar mexendo e mandar de novo.",
+        "keywords": [
+          "enviar",
+          "entregar",
+          "entrega",
+          "mandar",
+          "professor",
+          "professora",
+          "equipe",
+          "projeto",
+          "atividade",
+          "reenviar",
+          "enviar de novo",
+          "trabalho"
+        ],
+        "steps": [
+          {
+            "id": "salvo",
+            "title": "Confira se o projeto está salvo",
+            "body": "No alto da **Atividade no Estúdio**, espere aparecer **Salvo na sua conta**."
+          },
+          {
+            "id": "botao",
+            "title": "Clique em Enviar meu projeto",
+            "body": "O botão **Enviar meu projeto** fica no alto da **Atividade no Estúdio**, dentro da aula."
+          },
+          {
+            "id": "recado",
+            "title": "Escreva um recado, se quiser, e envie",
+            "body": "Na janela **Enviar para a equipe?**, use o campo **Recado** (opcional) para contar o que você fez ou onde travou. Depois clique em **Enviar**."
+          },
+          {
+            "id": "resposta",
+            "title": "Acompanhe a resposta",
+            "body": "Aparece **Projeto enviado! em** e a data. Quando a equipe conferir, a aula mostra **O professor já conferiu sua entrega.**, e o retorno chega nos **Recados**."
+          },
+          {
+            "id": "reenviar",
+            "title": "Mudou o projeto? Envie de novo",
+            "body": "O botão passa a se chamar **Enviar de novo**. A equipe recebe a versão nova."
+          }
+        ],
+        "related": [
+          "estudio-saber-se-salvou",
+          "comunidade-publicar-no-mural",
+          "primeiros-ler-os-recados"
+        ]
+      }
+    },
+    {
+      "slug": "estudio-criar-projeto-livre",
+      "collection": "estudio",
+      "position": 5,
+      "draft": {
+        "title": "Como criar um projeto livre no Estúdio",
+        "summary": "Comece um jogo seu, fora das aulas, pela página Criar.",
+        "keywords": [
+          "projeto novo",
+          "novo jogo",
+          "criar jogo",
+          "estúdio",
+          "estúdio completo",
+          "meus jogos",
+          "começar",
+          "projeto livre",
+          "do zero",
+          "abrir projeto"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Estúdio",
+            "body": "Clique em **Criar**, no menu do alto. No cartão do Estúdio, clique em **Abrir o Estúdio** ou só em **Abrir**. Se aparecer **Ainda não liberado**, o cartão explica o motivo."
+          },
+          {
+            "id": "novo",
+            "title": "Comece um projeto",
+            "body": "Na tela **Meus Jogos**, clique em **+ Novo projeto** ou no cartão **Novo projeto**."
+          },
+          {
+            "id": "nome",
+            "title": "Dê um nome",
+            "body": "Escreva o **Nome do projeto** e clique em **Criar e abrir**. Se o nome já existir, escolha outro."
+          },
+          {
+            "id": "blocos",
+            "title": "Monte com os blocos",
+            "body": "O editor abre com os blocos que você conquistou nos cursos. O Estúdio guarda o projeto enquanto você trabalha."
+          },
+          {
+            "id": "voltar",
+            "title": "Volte aos seus jogos",
+            "body": "Clique na seta do canto de cima (**Voltar à lista de projetos**). Para continuar depois, clique em **Abrir** no cartão do projeto."
+          }
+        ],
+        "related": [
+          "estudio-saber-se-salvou",
+          "estudio-imagens-e-sons",
+          "estudio-baixar-e-importar"
+        ]
+      }
+    },
+    {
+      "slug": "estudio-imagens-e-sons",
+      "collection": "estudio",
+      "position": 6,
+      "draft": {
+        "title": "Como colocar imagens e sons no jogo",
+        "summary": "Adicione imagens e sons ao projeto e escolha o arquivo nos blocos.",
+        "keywords": [
+          "imagem",
+          "imagens",
+          "foto",
+          "figura",
+          "som",
+          "sons",
+          "música",
+          "áudio",
+          "materiais",
+          "enviar arquivo",
+          "sprite",
+          "personagem",
+          "adicionar"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra os materiais",
+            "body": "Com o projeto aberto, clique em **Mais opções** → **Materiais** → **Imagens** ou **Sons**. Abre a janela **Materiais do jogo**."
+          },
+          {
+            "id": "enviar",
+            "title": "Envie um arquivo",
+            "body": "Em **Imagens**, clique em **Enviar imagem** e escolha o arquivo no computador. Em **Sons**, use **Enviar som**. Esses botões aparecem quando o projeto permite enviar arquivos."
+          },
+          {
+            "id": "pinta",
+            "title": "Traga um desenho seu",
+            "body": "No Estúdio completo, clique em **Trazer do Pinta**, encontre o desenho e clique em **Adicionar ao projeto**. Veja [como levar um desenho para o Estúdio](/como-fazer/pinta-levar-para-o-estudio)."
+          },
+          {
+            "id": "usar",
+            "title": "Escolha nos blocos",
+            "body": "Feche a janela e, no bloco que usa a imagem ou o som, escolha o nome do arquivo. Para tocar um som, use blocos como **Tocar o som**."
+          },
+          {
+            "id": "lembrete",
+            "title": "Confira no jogo",
+            "body": "O arquivo só aparece no jogo quando um bloco usa o nome dele. Confira na pré-visualização."
+          }
+        ],
+        "related": [
+          "pinta-levar-para-o-estudio",
+          "molda-levar-para-o-estudio",
+          "estudio-ver-o-jogo-funcionando"
+        ]
+      }
+    },
+    {
+      "slug": "estudio-baixar-e-importar",
+      "collection": "estudio",
+      "position": 7,
+      "draft": {
+        "title": "Como baixar e importar o seu projeto",
+        "summary": "Guarde uma cópia do jogo no computador para abrir depois no Estúdio.",
+        "keywords": [
+          "baixar",
+          "download",
+          "cópia",
+          "backup",
+          "exportar",
+          "importar",
+          "arquivo",
+          "json",
+          "guardar no computador",
+          "levar o jogo"
+        ],
+        "toolRef": "estudio-completo",
+        "steps": [
+          {
+            "id": "baixar",
+            "title": "Baixe o projeto",
+            "body": "Com o jogo aberto, clique em **Mais opções** → **Levar o jogo** → **Baixar o projeto**. O navegador baixa um arquivo .json."
+          },
+          {
+            "id": "lista",
+            "title": "Ou baixe pela lista",
+            "body": "Na tela **Meus Jogos**, clique em **Mais ações** no cartão do projeto e depois em **Exportar**."
+          },
+          {
+            "id": "importar",
+            "title": "Traga a cópia de volta",
+            "body": "Na tela **Meus Jogos**, clique em **Importar** e escolha o arquivo .json. Um projeto novo é criado, e os seus outros projetos não mudam."
+          },
+          {
+            "id": "avisos",
+            "title": "Leia os avisos",
+            "body": "Se aparecer **Projeto importado, mas fique atento:**, leia o aviso e clique em **Entendi**."
+          },
+          {
+            "id": "formatos",
+            "title": "Escolha o download certo",
+            "body": "**Baixar o código** e **Baixar para publicar** geram arquivos .zip para outros usos. Para abrir de novo no Estúdio, use **Baixar o projeto**."
+          }
+        ],
+        "related": ["estudio-criar-projeto-livre", "estudio-saber-se-salvou"]
+      }
+    },
+    {
+      "slug": "pinta-criar-um-desenho",
+      "collection": "pinta",
+      "position": 0,
+      "draft": {
+        "title": "Como criar um desenho no Pinta",
+        "summary": "Escolha o jeito de desenhar, o tipo de desenho, o tamanho e um nome.",
+        "keywords": [
+          "pinta",
+          "desenho",
+          "desenhar",
+          "novo desenho",
+          "criar",
+          "personagem",
+          "cenário",
+          "pixel art",
+          "vetor",
+          "mapa",
+          "ilustração",
+          "imagem"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Pinta",
+            "body": "Clique em **Criar**, no menu do alto, e em **Abrir o Pinta** ou só em **Abrir**. Na tela **Meus desenhos**, clique em **Criar novo**."
+          },
+          {
+            "id": "estilo",
+            "title": "Escolha como desenhar",
+            "body": "Em **Como você quer desenhar?**, escolha **Pixel art** para desenhar com quadradinhos ou **Vetor** para desenhar com formas e linhas lisas."
+          },
+          {
+            "id": "tipo",
+            "title": "Escolha o que criar",
+            "body": "Em **O que você quer criar?**, escolha **Personagem**, **Cenário de fundo**, **Peças do cenário** ou **Mapa**. O mapa pede um conjunto de peças do cenário já criado."
+          },
+          {
+            "id": "tamanho",
+            "title": "Escolha o tamanho",
+            "body": "Em **Qual o tamanho?**, escolha um tamanho e clique em **Avançar**."
+          },
+          {
+            "id": "nome",
+            "title": "Dê um nome e comece",
+            "body": "Escreva o nome com letras minúsculas e traços, como “meu-heroi”, e clique em **Começar a desenhar**. O Pinta guarda sozinho e mostra **Salvo**."
+          }
+        ],
+        "related": ["pinta-primeiras-ferramentas", "pinta-levar-para-o-estudio"]
+      }
+    },
+    {
+      "slug": "pinta-primeiras-ferramentas",
+      "collection": "pinta",
+      "position": 1,
+      "draft": {
+        "title": "Como usar as primeiras ferramentas do Pinta",
+        "summary": "Escolha uma cor e faça os primeiros traços.",
+        "keywords": [
+          "lápis",
+          "pincel",
+          "borracha",
+          "balde",
+          "balde de tinta",
+          "cor",
+          "cores",
+          "pintar",
+          "traço",
+          "apagar",
+          "conta-gotas",
+          "ferramentas",
+          "paleta"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "cor",
+            "title": "Escolha a cor",
+            "body": "Com o desenho aberto, clique numa cor da paleta. Para outra cor, use **Nova cor**."
+          },
+          {
+            "id": "traco",
+            "title": "Faça um traço",
+            "body": "No Pixel art, escolha **Lápis** e arraste sobre o desenho. No Vetor, escolha **Pincel** e arraste. Solte o botão do mouse para terminar o traço."
+          },
+          {
+            "id": "pintar",
+            "title": "Pinte ou apague",
+            "body": "No Pixel art, **Balde de tinta** preenche uma área e **Borracha** apaga. **Tamanho do traço** deixa o lápis e a borracha mais grossos ou mais finos."
+          },
+          {
+            "id": "conta-gotas",
+            "title": "Pegue uma cor do desenho",
+            "body": "Escolha **Conta-gotas** e clique na cor que quer copiar. Depois, volte à ferramenta de desenhar."
+          },
+          {
+            "id": "corrigir",
+            "title": "Corrija quando errar",
+            "body": "Errou um traço? Veja [como desfazer uma mudança no Pinta](/como-fazer/pinta-desfazer)."
+          }
+        ],
+        "related": ["pinta-desfazer", "pinta-criar-um-desenho"]
+      }
+    },
+    {
+      "slug": "pinta-desfazer",
+      "collection": "pinta",
+      "position": 2,
+      "draft": {
+        "title": "Como desfazer uma mudança no Pinta",
+        "summary": "Volte um traço e traga de volta, se mudar de ideia.",
+        "keywords": [
+          "desfazer",
+          "voltar",
+          "errei",
+          "engano",
+          "apagar",
+          "ctrl z",
+          "refazer",
+          "voltar atrás",
+          "corrigir"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "desfazer",
+            "title": "Volte uma mudança",
+            "body": "Com o desenho aberto, clique em **Desfazer**, na barra de cima. No teclado, segure Ctrl e aperte Z."
+          },
+          {
+            "id": "refazer",
+            "title": "Traga de volta",
+            "body": "Se desfez sem querer, clique em **Refazer**. Ele só funciona quando há algo para trazer de volta."
+          },
+          {
+            "id": "varias",
+            "title": "Volte várias vezes",
+            "body": "Cada clique em **Desfazer** volta mais uma mudança, da mais nova para a mais antiga."
+          },
+          {
+            "id": "galeria",
+            "title": "Cuidado ao apagar da galeria",
+            "body": "Apagar um desenho em **Meus desenhos** é diferente de desfazer um traço. A janela **Apagar este desenho?** pede confirmação, e isso não dá para desfazer."
+          }
+        ],
+        "related": ["pinta-primeiras-ferramentas", "pinta-criar-um-desenho"]
+      }
+    },
+    {
+      "slug": "pinta-levar-para-o-estudio",
+      "collection": "pinta",
+      "position": 3,
+      "draft": {
+        "title": "Como levar um desenho para o Estúdio",
+        "summary": "Adicione o desenho ao projeto e use-o nos blocos do jogo.",
+        "keywords": [
+          "pinta",
+          "estúdio",
+          "desenho no jogo",
+          "levar",
+          "trazer",
+          "importar desenho",
+          "imagem",
+          "sprite",
+          "personagem",
+          "usar no jogo",
+          "png"
+        ],
+        "toolRef": "pinta",
+        "steps": [
+          {
+            "id": "guardar",
+            "title": "Termine o desenho",
+            "body": "Termine o desenho no Pinta e espere aparecer **Salvo**."
+          },
+          {
+            "id": "abrir",
+            "title": "Abra o projeto no Estúdio",
+            "body": "No Estúdio completo, abra o projeto e clique em **Mais opções** → **Materiais** → **Imagens**."
+          },
+          {
+            "id": "trazer",
+            "title": "Traga o desenho",
+            "body": "Clique em **Trazer do Pinta**, procure o desenho e clique em **Adicionar ao projeto**. O cartão passa a mostrar que ele já está no projeto."
+          },
+          {
+            "id": "usar",
+            "title": "Use nos blocos",
+            "body": "Feche a janela e, no bloco que usa imagem, escolha o nome do desenho. Confira o resultado na pré-visualização."
+          },
+          {
+            "id": "aula",
+            "title": "No Estúdio da aula",
+            "body": "Dentro da aula, o Estúdio não mostra **Trazer do Pinta**. No Pinta, abra o desenho, clique em **Baixar** e escolha **Imagem (PNG)**. Depois, no Estúdio da aula, use **Enviar imagem** em **Imagens**, quando esse botão aparecer."
+          }
+        ],
+        "related": ["estudio-imagens-e-sons", "pinta-criar-um-desenho"]
+      }
+    },
+    {
+      "slug": "pensa-criar-um-plano",
+      "collection": "pensa",
+      "position": 0,
+      "draft": {
+        "title": "Como criar um plano no Pensa",
+        "summary": "Conte a sua ideia de jogo e confira o caminho que o Pensa organiza para você construir.",
+        "keywords": [
+          "pensa",
+          "plano",
+          "planejar",
+          "ideia",
+          "jogo novo",
+          "criar jogo",
+          "organizar",
+          "começar",
+          "projeto",
+          "roteiro",
+          "ia",
+          "renomear"
+        ],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Pensa",
+            "body": "Clique em **Criar**, no menu do alto, e em **Abrir** no cartão do Pensa. Se o cartão mostrar **Ainda não liberado**, ele explica o motivo."
+          },
+          {
+            "id": "ideia",
+            "title": "Conte a sua ideia",
+            "body": "Em **Qual jogo você quer criar?**, escreva no campo **Sua ideia ou mudança** como você imagina o jogo. Depois, clique em **Organizar meu jogo**."
+          },
+          {
+            "id": "esperar",
+            "title": "Espere a organização",
+            "body": "Enquanto aparece **Organizando seu jogo…**, o Pensa confere as partes e a ordem. Se ele fizer perguntas, clique na opção que combina com a sua ideia."
+          },
+          {
+            "id": "conferir",
+            "title": "Confira o caminho",
+            "body": "Em **Confira este caminho**, leia o resumo do jogo e as partes. Se estiver do seu jeito, clique em **Este é o meu jogo**. Para ajustar, clique em **Quero mudar uma coisa**."
+          },
+          {
+            "id": "nome",
+            "title": "Dê um nome e volte depois",
+            "body": "Para trocar o nome, clique em **Renomear**, escreva o **Nome do jogo** e clique em **Guardar nome**. Para voltar outro dia, clique em **Continuar** no cartão do jogo."
+          }
+        ],
+        "related": ["pensa-etapas-zero", "pensa-abrir-na-ferramenta", "conta-consumo-da-ia"]
+      }
+    },
+    {
+      "slug": "pensa-etapas-zero",
+      "collection": "pensa",
+      "position": 1,
+      "draft": {
+        "title": "Como seguir as etapas Z, E, R e O",
+        "summary": "Entenda as quatro letras do caminho no Pensa e o que você faz em cada uma.",
+        "keywords": [
+          "zero",
+          "etapas",
+          "z e r o",
+          "método",
+          "caminho",
+          "zerar a bagunça",
+          "enxergar o jogo",
+          "realizar por partes",
+          "observar e melhorar",
+          "pensa",
+          "ordem"
+        ],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "caminho",
+            "title": "Veja onde você está",
+            "body": "No alto do Pensa, a faixa com as letras Z, E, R e O mostra em que etapa do caminho você está. A etapa atual fica destacada."
+          },
+          {
+            "id": "z",
+            "title": "Z: Zerar a bagunça",
+            "body": "Em **Zerar a bagunça**, você conta a sua ideia. O Pensa faz perguntas para entender o jogo."
+          },
+          {
+            "id": "e",
+            "title": "E: Enxergar o jogo",
+            "body": "Em **Enxergar o jogo**, o Pensa mostra o resumo do jogo e o caminho com as partes. Clique em **Este é o meu jogo** quando estiver do seu jeito."
+          },
+          {
+            "id": "r",
+            "title": "R: Realizar por partes",
+            "body": "Em **Realizar por partes**, você constrói uma parte de cada vez, no Estúdio, no Pinta ou no Molda. Veja [como abrir a próxima parte](/como-fazer/pensa-abrir-na-ferramenta)."
+          },
+          {
+            "id": "o",
+            "title": "O: Observar e melhorar",
+            "body": "Em **Observar e melhorar**, falta o teste final: jogar o jogo inteiro e conferir. Quando tudo estiver conferido, aparece **Seu jogo está pronto!**."
+          }
+        ],
+        "related": ["pensa-criar-um-plano", "pensa-abrir-na-ferramenta", "pensa-marcar-como-pronta"]
+      }
+    },
+    {
+      "slug": "pensa-abrir-na-ferramenta",
+      "collection": "pensa",
+      "position": 2,
+      "draft": {
+        "title": "Como abrir a próxima parte na ferramenta certa",
+        "summary": "Leve a próxima parte do plano para o Pinta, o Estúdio ou o Molda.",
+        "keywords": [
+          "pensa",
+          "próxima parte",
+          "tarefa",
+          "missão",
+          "abrir",
+          "ferramenta",
+          "estúdio",
+          "pinta",
+          "molda",
+          "continuar",
+          "plano",
+          "meu caminho"
+        ],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "plano",
+            "title": "Abra o seu plano",
+            "body": "Abra o Pensa e clique em **Continuar** no cartão do jogo."
+          },
+          {
+            "id": "ler",
+            "title": "Leia a próxima parte",
+            "body": "O cartão da próxima parte mostra **O que vou criar**, **Como essa parte deve funcionar** e **Como conferir**. Leia com calma antes de começar."
+          },
+          {
+            "id": "abrir",
+            "title": "Vá para a ferramenta",
+            "body": "Clique em **Continuar no Estúdio**, **Continuar no Pinta** ou **Continuar no Molda**, conforme a parte. A ferramenta abre com o painel do Pensa ao lado."
+          },
+          {
+            "id": "apagado",
+            "title": "Se o botão estiver apagado",
+            "body": "Uma mensagem logo acima do botão explica o que precisa acontecer antes, como terminar outra parte."
+          },
+          {
+            "id": "caminho",
+            "title": "Veja o caminho inteiro",
+            "body": "Em **Meu caminho**, cada parte mostra **Por fazer**, **Fazendo** ou **Pronta**. Para ver o jogo no Estúdio, clique em **Abrir meu jogo**."
+          }
+        ],
+        "related": ["pensa-marcar-como-pronta", "pensa-etapas-zero"]
+      }
+    },
+    {
+      "slug": "pensa-marcar-como-pronta",
+      "collection": "pensa",
+      "position": 3,
+      "draft": {
+        "title": "Como marcar uma parte como pronta",
+        "summary": "Confira a parte no painel do Pensa, dentro da ferramenta, e marque quando estiver pronta.",
+        "keywords": [
+          "pronta",
+          "concluir",
+          "concluída",
+          "terminar",
+          "conferir",
+          "marcar",
+          "tarefa",
+          "missão",
+          "pensa",
+          "painel",
+          "onde parei",
+          "nota"
+        ],
+        "toolRef": "pensa",
+        "steps": [
+          {
+            "id": "painel",
+            "title": "Abra o painel do Pensa",
+            "body": "[Abra a parte pelo plano](/como-fazer/pensa-abrir-na-ferramenta). Na ferramenta, o painel do Pensa mostra o título da parte. Se ele estiver recolhido, clique no título para abrir."
+          },
+          {
+            "id": "conferir",
+            "title": "Confira o resultado",
+            "body": "Faça a parte e leia **Como conferir**. Cada item com **Pronto quando:** diz o que a sua criação precisa fazer."
+          },
+          {
+            "id": "marcar",
+            "title": "Marque como pronta",
+            "body": "Clique em **Conferi e está pronto**. Na parte de preparar o jogo, o botão é **Já preparei**, e no teste final é **Experimentei**."
+          },
+          {
+            "id": "seguir",
+            "title": "Siga o caminho",
+            "body": "Depois de marcar, clique em **Continuar meu caminho** ou no botão da próxima ferramenta. Para mudar algo, use **Quero mexer de novo**."
+          },
+          {
+            "id": "nota",
+            "title": "Deixe uma nota, se parar no meio",
+            "body": "Em **Onde parei**, escreva um lembrete e clique em **Guardar nota**. Para voltar ao Pensa, clique em **Voltar ao plano**."
+          }
+        ],
+        "related": ["pensa-abrir-na-ferramenta", "pensa-etapas-zero"]
+      }
+    },
+    {
+      "slug": "molda-comecar-uma-criacao",
+      "collection": "molda",
+      "position": 0,
+      "draft": {
+        "title": "Como começar uma criação no Molda",
+        "summary": "Escolha um modelo, uma textura ou um céu para criar em 3D.",
+        "keywords": [
+          "molda",
+          "3d",
+          "modelo",
+          "textura",
+          "céu",
+          "criar",
+          "nova criação",
+          "objeto 3d",
+          "começar",
+          "modelos prontos"
+        ],
+        "toolRef": "molda",
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Molda",
+            "body": "Clique em **Criar**, no menu do alto, e em **Abrir o Molda** ou só em **Abrir**. Na tela **Minhas criações 3D**, clique em **Criar novo**."
+          },
+          {
+            "id": "tipo",
+            "title": "Escolha o que criar",
+            "body": "Em **O que você quer criar?**, escolha **Modelo**, **Textura** ou **Céu**. Para começar de uma criação pronta, escolha **Modelos prontos**."
+          },
+          {
+            "id": "opcoes",
+            "title": "Escolha como vai ser",
+            "body": "Em **Como vai ser?**, escolha as opções que aparecem para esse tipo e clique em **Continuar**."
+          },
+          {
+            "id": "nome",
+            "title": "Dê um nome",
+            "body": "Em **Que nome vai ter?**, use só letras, números e hífen, como “minha-nave”. Clique em **Criar** e a criação abre."
+          }
+        ],
+        "related": ["molda-montar-e-pintar", "molda-guardar-e-reabrir"]
+      }
+    },
+    {
+      "slug": "molda-montar-e-pintar",
+      "collection": "molda",
+      "position": 1,
+      "draft": {
+        "title": "Como montar e pintar um modelo 3D",
+        "summary": "Junte peças, mude o tamanho e pinte o modelo no Molda.",
+        "keywords": [
+          "molda",
+          "montar",
+          "peça",
+          "caixa",
+          "bola",
+          "cilindro",
+          "mover",
+          "girar",
+          "tamanho",
+          "pintar",
+          "cor",
+          "modelo 3d"
+        ],
+        "toolRef": "molda",
+        "steps": [
+          {
+            "id": "peca",
+            "title": "Adicione uma peça",
+            "body": "Com o modelo aberto, fique na aba **Modelar**. Clique em **Caixa**, **Rampa**, **Cilindro** ou **Bola** para pôr a peça na oficina."
+          },
+          {
+            "id": "mudar",
+            "title": "Mude a peça",
+            "body": "Clique na peça para escolher. Use **Mover**, **Girar** ou **Tamanho** e arraste as alças coloridas. **Desfazer** volta a última mudança."
+          },
+          {
+            "id": "pintar",
+            "title": "Abra a pintura",
+            "body": "Clique na aba **Pintar**, escolha uma cor e a ferramenta **Pincel**."
+          },
+          {
+            "id": "traco",
+            "title": "Pinte o modelo",
+            "body": "Arraste sobre a peça para pintar. Para girar a vista, arraste no fundo. **Balde** preenche uma área e **Borracha** apaga a tinta."
+          },
+          {
+            "id": "dicas",
+            "title": "Peça dicas",
+            "body": "Clique em **Primeiros passos**, escolha **Como montar** ou **Como pintar** e avance com **Próxima dica**."
+          }
+        ],
+        "related": ["molda-comecar-uma-criacao", "molda-guardar-e-reabrir"]
+      }
+    },
+    {
+      "slug": "molda-guardar-e-reabrir",
+      "collection": "molda",
+      "position": 2,
+      "draft": {
+        "title": "Como guardar e reabrir uma criação no Molda",
+        "summary": "Saia da oficina com a criação guardada e baixe uma cópia, se quiser.",
+        "keywords": [
+          "molda",
+          "salvar",
+          "guardar",
+          "sair",
+          "reabrir",
+          "abrir de novo",
+          "cópia",
+          "backup",
+          "baixar",
+          "importar",
+          "arquivo"
+        ],
+        "toolRef": "molda",
+        "steps": [
+          {
+            "id": "guardar",
+            "title": "Guarde o modelo",
+            "body": "Com o modelo aberto, clique em **Guardar agora** e espere aparecer **Salvo**. A nuvem ao lado mostra que ele também está na sua conta."
+          },
+          {
+            "id": "sair",
+            "title": "Volte à galeria",
+            "body": "Clique no botão de voltar da barra de cima (**Meus projetos**). Na janela **Voltar aos projetos?**, clique em **Guardar e voltar**. Para continuar mexendo, clique em **Ficar na oficina**."
+          },
+          {
+            "id": "reabrir",
+            "title": "Abra de novo",
+            "body": "Em **Minhas criações 3D**, encontre a criação e clique na imagem dela para abrir."
+          },
+          {
+            "id": "copia",
+            "title": "Baixe uma cópia",
+            "body": "Dentro da oficina, **Baixar projeto** guarda um arquivo .molda.json. Na galeria, **Baixar tudo** guarda todas as criações num arquivo .zip."
+          },
+          {
+            "id": "importar",
+            "title": "Traga a cópia de volta",
+            "body": "Na galeria, clique em **Importar projeto** e escolha o .molda.json ou o .zip. A cópia entra como criação nova, sem substituir as que você já tem."
+          }
+        ],
+        "related": ["molda-montar-e-pintar", "molda-levar-para-o-estudio"]
+      }
+    },
+    {
+      "slug": "molda-levar-para-o-estudio",
+      "collection": "molda",
+      "position": 3,
+      "draft": {
+        "title": "Como levar uma criação do Molda para o Estúdio",
+        "summary": "Traga o modelo, a textura ou o céu para um projeto de jogo.",
+        "keywords": [
+          "molda",
+          "estúdio",
+          "modelo 3d",
+          "textura",
+          "céu",
+          "trazer do molda",
+          "levar",
+          "importar",
+          "jogo 3d",
+          "usar no jogo",
+          "extensão"
+        ],
+        "toolRef": "molda",
+        "steps": [
+          {
+            "id": "guardar",
+            "title": "Guarde a criação no Molda",
+            "body": "Termine e guarde a criação, como em [guardar e reabrir no Molda](/como-fazer/molda-guardar-e-reabrir)."
+          },
+          {
+            "id": "extensao",
+            "title": "Prepare o projeto 3D",
+            "body": "No Estúdio completo, abra o projeto. Para usar modelos e céus, clique em **Mais opções** → **O meu jogo** → **Extensões** e em **Instalar** numa extensão 3D. Texturas entram como imagens."
+          },
+          {
+            "id": "trazer",
+            "title": "Abra Trazer do Molda",
+            "body": "Clique em **Mais opções** → **Materiais** → **Modelos 3D** e depois em **Trazer do Molda**."
+          },
+          {
+            "id": "adicionar",
+            "title": "Escolha a criação",
+            "body": "Encontre a criação e clique em **Adicionar ao projeto**. Se aparecer **O que muda nesta cópia**, leia e clique em **Aceitar mudanças e adicionar**."
+          },
+          {
+            "id": "usar",
+            "title": "Use nos blocos",
+            "body": "Feche a janela e escolha o nome da criação no bloco que usa modelo, céu ou imagem. O original continua guardado no Molda."
+          }
+        ],
+        "related": ["estudio-imagens-e-sons", "molda-guardar-e-reabrir"]
+      }
+    },
+    {
+      "slug": "comunidade-publicar-no-mural",
+      "collection": "comunidade",
+      "position": 0,
+      "draft": {
+        "title": "Como publicar o seu jogo no Mural",
+        "summary": "Use Compartilhar no Estúdio para mostrar o seu jogo à comunidade. Na aula, envie ao professor antes.",
+        "keywords": [
+          "mural",
+          "mural dos criadores",
+          "mostra",
+          "publicar",
+          "compartilhar",
+          "mostrar",
+          "link",
+          "jogo",
+          "comunidade",
+          "capa",
+          "divulgar"
+        ],
+        "steps": [
+          {
+            "id": "preparar",
+            "title": "Teste o jogo",
+            "body": "Abra o projeto no Estúdio e confira se ele funciona. Na aula, primeiro [envie o projeto para o professor](/como-fazer/estudio-enviar-ao-professor)."
+          },
+          {
+            "id": "compartilhar",
+            "title": "Clique em Compartilhar",
+            "body": "Clique em **Compartilhar**, no alto do Estúdio. Abre a janela **Compartilhar no Mural dos Criadores**."
+          },
+          {
+            "id": "textos",
+            "title": "Confira o nome e o resumo",
+            "body": "Confira o **Título** e o **Resumo do projeto**. Na aula, só o resumo aparece para você conferir e ajustar."
+          },
+          {
+            "id": "capa",
+            "title": "Escolha a capa",
+            "body": "Em **Capa do projeto**, clique em **Gerar capa** e espere a imagem. Para usar uma imagem sua, clique em **Enviar uma imagem**."
+          },
+          {
+            "id": "publicar",
+            "title": "Publique",
+            "body": "Com título, resumo e capa prontos, clique em **Publicar** e espere a confirmação. No Estúdio completo, use **Copiar link** para mandar o jogo a quem quiser."
+          },
+          {
+            "id": "copia",
+            "title": "Lembre que é uma cópia",
+            "body": "O Mural guarda o jogo do jeito que estava ao publicar, e mudanças feitas depois no Estúdio não mudam essa versão. Na aula, o jogo é compartilhado uma vez só."
+          }
+        ],
+        "related": [
+          "comunidade-jogar-no-mural",
+          "estudio-enviar-ao-professor",
+          "comunidade-desafio-do-mes"
+        ]
+      }
+    },
+    {
+      "slug": "comunidade-jogar-no-mural",
+      "collection": "comunidade",
+      "position": 1,
+      "draft": {
+        "title": "Como jogar os jogos do Mural",
+        "summary": "Abra um jogo da comunidade e conheça o que a turma criou.",
+        "keywords": [
+          "mural",
+          "mostra",
+          "jogar",
+          "jogos",
+          "comunidade",
+          "ver jogos",
+          "mais jogados",
+          "novidades",
+          "fazer minha versão",
+          "comentar",
+          "remix"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o Mural",
+            "body": "Clique em **Comunidade**, no menu do alto, e em **Ver o Mural**. Abre a página **Mural dos Criadores**."
+          },
+          {
+            "id": "filtrar",
+            "title": "Escolha o que ver",
+            "body": "Clique em **Novidades** para ver os jogos mais recentes ou em **Mais jogados** para ver os preferidos da comunidade."
+          },
+          {
+            "id": "jogar",
+            "title": "Jogue",
+            "body": "Clique em **Jogar** no cartão do jogo. Ele abre em outra aba do navegador. Para voltar ao Mural, feche a aba do jogo."
+          },
+          {
+            "id": "versao",
+            "title": "Faça a sua versão",
+            "body": "Com o Estúdio liberado, clique em **Fazer minha versão**. Uma cópia entra nos seus jogos do Estúdio, e o jogo original não muda."
+          },
+          {
+            "id": "comentar",
+            "title": "Comente e reaja",
+            "body": "Clique no botão **Comentários e reações**, no cartão, para ler o que a turma disse e deixar o seu comentário."
+          }
+        ],
+        "related": ["comunidade-publicar-no-mural", "comunidade-desafio-do-mes"]
+      }
+    },
+    {
+      "slug": "comunidade-conversar-no-clube",
+      "collection": "comunidade",
+      "position": 2,
+      "draft": {
+        "title": "Como conversar no Clube dos Criadores",
+        "summary": "Leia os tópicos, comente e abra uma conversa nova.",
+        "keywords": [
+          "clube",
+          "clube dos criadores",
+          "comunidade",
+          "fórum",
+          "conversa",
+          "tópico",
+          "comentar",
+          "perguntar",
+          "grupo",
+          "canal",
+          "mensagem"
+        ],
+        "steps": [
+          {
+            "id": "entrar",
+            "title": "Entre no Clube",
+            "body": "Clique em **Comunidade**, no menu do alto. No cartão do Clube dos Criadores, clique em **Entrar** ou no nome de um canal."
+          },
+          {
+            "id": "canal",
+            "title": "Escolha um canal",
+            "body": "Cada canal é um assunto. Nos canais marcados com **Só a equipe publica**, só a equipe escreve, e **Novidades** mostra onde há mensagem nova."
+          },
+          {
+            "id": "comentar",
+            "title": "Leia e comente",
+            "body": "Clique num tópico para ler a conversa. Em **Escreva um comentário**, escreva a sua mensagem e clique em **Comentar**."
+          },
+          {
+            "id": "novo",
+            "title": "Abra uma conversa nova",
+            "body": "Clique em **Novo tópico**, preencha o **Título** e a mensagem e clique em **Publicar**."
+          },
+          {
+            "id": "aprovacao",
+            "title": "Espere a aprovação, se aparecer",
+            "body": "Algumas mensagens passam pela equipe antes de aparecer para todos. Enquanto isso, a mensagem mostra **Aguardando aprovação**."
+          },
+          {
+            "id": "aparecer",
+            "title": "Escolha como você aparece",
+            "body": "Com o perfil público desligado, as outras pessoas veem você como “Colega”. Para mudar, clique em **Alterar em Meu perfil**."
+          }
+        ],
+        "related": ["comunidade-jogar-no-mural", "conta-mudar-nome-e-telefone"]
+      }
+    },
+    {
+      "slug": "comunidade-desafio-do-mes",
+      "collection": "comunidade",
+      "position": 3,
+      "draft": {
+        "title": "Como participar do Desafio do mês",
+        "summary": "Veja o tema do mês e publique o seu jogo com a opção de participar marcada.",
+        "keywords": [
+          "desafio",
+          "desafio do mês",
+          "tema",
+          "tema do mês",
+          "concurso",
+          "competição",
+          "participar",
+          "game jam",
+          "mural",
+          "publicar"
+        ],
+        "steps": [
+          {
+            "id": "tema",
+            "title": "Veja o tema",
+            "body": "No **Mural dos Criadores**, clique em **Ver o desafio do mês**. A página mostra o tema e a descrição do mês."
+          },
+          {
+            "id": "criar",
+            "title": "Crie o jogo",
+            "body": "Em **Como participar**, clique em **Criar meu jogo** para abrir o Estúdio. Pode ser um jogo novo ou a sua versão de um jogo do Mural."
+          },
+          {
+            "id": "marcar",
+            "title": "Marque a opção ao publicar",
+            "body": "Na janela de **Compartilhar**, marque **Participar do Desafio do mês** antes de clicar em **Publicar**. A opção aparece durante o mês do desafio."
+          },
+          {
+            "id": "conferir",
+            "title": "Confira a sua participação",
+            "body": "Em **A sua participação**, aparece **Participou neste mês** depois que o seu jogo entra. Use **Ver jogos do desafio** para jogar os jogos das outras pessoas."
+          },
+          {
+            "id": "acesso",
+            "title": "Se o botão for outro",
+            "body": "Se aparecer **Consultar requisitos e acesso** no lugar de **Criar meu jogo**, clique nele para ver o que falta na sua jornada."
+          }
+        ],
+        "related": ["comunidade-publicar-no-mural", "comunidade-jogar-no-mural"]
+      }
+    },
+    {
+      "slug": "comunidade-entrar-na-oficina",
+      "collection": "comunidade",
+      "position": 4,
+      "draft": {
+        "title": "Como entrar numa oficina ao vivo",
+        "summary": "Teste a câmera e o microfone e entre na sala na hora do encontro.",
+        "keywords": [
+          "oficina",
+          "oficinas",
+          "ao vivo",
+          "aula ao vivo",
+          "encontro",
+          "entrar",
+          "câmera",
+          "microfone",
+          "sala",
+          "turma",
+          "professora",
+          "chamada"
+        ],
+        "steps": [
+          {
+            "id": "preparar",
+            "title": "Prepare o computador",
+            "body": "Use um computador com Chrome ou Edge e, se puder, um fone de ouvido. O fone evita que o som da turma volte pelo microfone."
+          },
+          {
+            "id": "abrir",
+            "title": "Abra a oficina",
+            "body": "Clique em **Oficinas**, no menu do alto. Em **Sua próxima oficina**, clique em **Entrar na oficina** quando chegar a hora. Antes disso, o botão é **Ver o encontro**."
+          },
+          {
+            "id": "testar",
+            "title": "Teste câmera e microfone",
+            "body": "Na sala, clique em **Testar câmera** e em **Testar microfone**. Só você vê esse teste. Clique em **Encerrar teste** quando terminar."
+          },
+          {
+            "id": "entrar",
+            "title": "Entre na sala",
+            "body": "Clique em **Entrar na sala**. Você entra com a câmera e o microfone desligados e espera na recepção até a professora chamar."
+          },
+          {
+            "id": "participar",
+            "title": "Participe",
+            "body": "Use **Ligar o microfone** e **Ligar a câmera** quando quiser. Para falar, clique em **Quero falar**. Se travar em algum ponto, clique em **Pedir ajuda**."
+          }
+        ],
+        "related": ["comunidade-rever-a-gravacao"]
+      }
+    },
+    {
+      "slug": "comunidade-rever-a-gravacao",
+      "collection": "comunidade",
+      "position": 5,
+      "draft": {
+        "title": "Como assistir à gravação de uma oficina",
+        "summary": "Encontre o encontro em Oficinas e abra a gravação dentro do prazo.",
+        "keywords": [
+          "gravação",
+          "rever",
+          "assistir de novo",
+          "oficina",
+          "encontro passado",
+          "perdi a aula",
+          "replay",
+          "vídeo",
+          "ao vivo",
+          "prazo"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra as oficinas",
+            "body": "Clique em **Oficinas**, no menu do alto, e desça até **Já aconteceram**."
+          },
+          {
+            "id": "prazo",
+            "title": "Confira o prazo",
+            "body": "Cada encontro mostra até quando você pode rever e continuar. Depois dessa data, aparece **Prazo encerrado**."
+          },
+          {
+            "id": "rever",
+            "title": "Abra o encontro",
+            "body": "Clique em **Rever e continuar**. A gravação aparece no lugar da transmissão, junto com a aula daquele encontro."
+          },
+          {
+            "id": "pronta",
+            "title": "Se a gravação ainda não estiver lá",
+            "body": "Se aparecer **A gravação aparece aqui quando ficar pronta.**, volte mais tarde."
+          },
+          {
+            "id": "video",
+            "title": "Pause e volte quando precisar",
+            "body": "Use os controles do vídeo como nas aulas. Veja [como pausar e rever o vídeo](/como-fazer/aula-pausar-e-rever-o-video)."
+          }
+        ],
+        "related": ["comunidade-entrar-na-oficina", "aula-pausar-e-rever-o-video"]
+      }
+    },
+    {
+      "slug": "conta-entrar-com-codigo",
+      "collection": "conta",
+      "position": 0,
+      "draft": {
+        "title": "Como entrar com código por e-mail",
+        "summary": "Entre sem digitar a senha, com um código de 6 números que chega no seu e-mail.",
+        "keywords": [
+          "entrar",
+          "login",
+          "logar",
+          "acessar",
+          "código",
+          "código de acesso",
+          "senha",
+          "esqueci",
+          "e-mail",
+          "sem senha"
+        ],
+        "steps": [
+          {
+            "id": "modo",
+            "title": "Escolha entrar com código",
+            "body": "Na tela de entrada, clique em **Com código por e-mail**."
+          },
+          {
+            "id": "email",
+            "title": "Peça o código",
+            "body": "Escreva o seu **E-mail** e clique em **Enviar código**. Se houver uma conta com esse e-mail, chega um código de 6 números. Confira também a caixa de spam."
+          },
+          {
+            "id": "codigo",
+            "title": "Digite o código",
+            "body": "No campo **Código de acesso**, digite os 6 números e clique em **Entrar**."
+          },
+          {
+            "id": "reenviar",
+            "title": "Se o código não chegar",
+            "body": "Clique em **Reenviar código** ou em **Usar outro e-mail**. O código funciona para quem já criou a senha da conta."
+          }
+        ],
+        "related": ["conta-trocar-a-senha"]
+      }
+    },
+    {
+      "slug": "conta-trocar-a-senha",
+      "collection": "conta",
+      "position": 1,
+      "draft": {
+        "title": "Como trocar a senha",
+        "summary": "Em Meu perfil, digite a senha atual e a nova.",
+        "keywords": [
+          "senha",
+          "trocar senha",
+          "mudar senha",
+          "nova senha",
+          "alterar senha",
+          "esqueci a senha",
+          "esqueci minha senha",
+          "recuperar senha",
+          "segurança"
+        ],
+        "steps": [
+          {
+            "id": "perfil",
+            "title": "Abra Meu perfil",
+            "body": "Clique na sua foto ou nas suas iniciais, no canto direito, e depois em **Meu perfil**. No menu da página, clique em **Senha**."
+          },
+          {
+            "id": "preencher",
+            "title": "Preencha os campos",
+            "body": "Em **Alterar senha**, escreva a **Senha atual**, a **Nova senha**, com pelo menos 10 caracteres, e repita a nova em **Confirmar nova senha**."
+          },
+          {
+            "id": "salvar",
+            "title": "Salve",
+            "body": "Clique em **Alterar senha**. Você sai de todos os aparelhos e entra de novo com a senha nova."
+          },
+          {
+            "id": "esqueci",
+            "title": "Se esqueceu a senha atual",
+            "body": "Na tela de entrada, clique em **Esqueci minha senha**. Escreva o **E-mail da sua conta**, clique em **Enviar código**, digite o código e a senha nova e clique em **Salvar a senha nova**."
+          }
+        ],
+        "related": ["conta-entrar-com-codigo", "conta-mudar-nome-e-telefone"]
+      }
+    },
+    {
+      "slug": "conta-mudar-nome-e-telefone",
+      "collection": "conta",
+      "position": 2,
+      "draft": {
+        "title": "Como mudar o nome e o telefone",
+        "summary": "Atualize os seus dados em Meu perfil.",
+        "keywords": [
+          "nome",
+          "sobrenome",
+          "telefone",
+          "celular",
+          "dados",
+          "cadastro",
+          "mudar nome",
+          "atualizar dados",
+          "e-mail",
+          "perfil",
+          "nome de exibição"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra os dados pessoais",
+            "body": "Abra **Meu perfil**, pelo menu da sua foto, e clique em **Dados pessoais**."
+          },
+          {
+            "id": "editar",
+            "title": "Mude o que precisar",
+            "body": "Corrija **Nome**, **Sobrenome** ou **Telefone**. No telefone, use o DDD e o número."
+          },
+          {
+            "id": "salvar",
+            "title": "Salve",
+            "body": "Clique em **Salvar dados** e espere o aviso **Dados salvos.**"
+          },
+          {
+            "id": "comunidade",
+            "title": "Mude o nome na comunidade",
+            "body": "O nome que aparece para a comunidade fica em **Na comunidade**, no campo **Nome de exibição**. Depois de mudar, clique em **Salvar preferências**."
+          },
+          {
+            "id": "email",
+            "title": "Para trocar o e-mail",
+            "body": "O e-mail não muda por aqui. Se precisar trocar, [abra um chamado com a equipe](/como-fazer/conta-abrir-chamado)."
+          }
+        ],
+        "related": ["conta-trocar-a-senha", "conta-escolher-a-cor", "comunidade-conversar-no-clube"]
+      }
+    },
+    {
+      "slug": "conta-escolher-a-cor",
+      "collection": "conta",
+      "position": 3,
+      "draft": {
+        "title": "Como escolher a cor da plataforma",
+        "summary": "Escolha uma das seis cores em Meu perfil.",
+        "keywords": [
+          "cor",
+          "cores",
+          "tema",
+          "aparência",
+          "mudar cor",
+          "azul",
+          "turquesa",
+          "verde",
+          "laranja",
+          "rosa",
+          "roxo",
+          "personalizar"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra a cor da plataforma",
+            "body": "Abra **Meu perfil**, pelo menu da sua foto, e clique em **Cor da plataforma**."
+          },
+          {
+            "id": "escolher",
+            "title": "Escolha uma cor",
+            "body": "Clique num dos seis círculos: azul, turquesa, verde, laranja, rosa ou roxo. Os botões, os links e os destaques mudam na hora."
+          },
+          {
+            "id": "guardar",
+            "title": "Pronto, já está guardada",
+            "body": "A escolha é guardada sozinha, sem botão de salvar. Embaixo das cores aparece **Cor escolhida:** e o nome da cor."
+          },
+          {
+            "id": "computador",
+            "title": "Vale em qualquer computador",
+            "body": "A cor vale em qualquer computador em que você entrar com a sua conta. Se aparecer uma falha, clique em **Tentar de novo**."
+          }
+        ],
+        "related": ["conta-mudar-nome-e-telefone", "conta-montar-o-avatar"]
+      }
+    },
+    {
+      "slug": "conta-montar-o-avatar",
+      "collection": "conta",
+      "position": 4,
+      "draft": {
+        "title": "Como montar o seu avatar 3D",
+        "summary": "Escolha a aparência, salve e tire a foto na Cabine de fotos.",
+        "keywords": [
+          "avatar",
+          "boneco",
+          "personagem",
+          "foto",
+          "foto do perfil",
+          "aparência",
+          "roupa",
+          "cabelo",
+          "cabine de fotos",
+          "3d",
+          "moedas"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o avatar",
+            "body": "Clique na sua foto ou nas suas iniciais e depois em **Meu avatar 3D**. Em **Meu perfil**, o botão **Criar meu avatar** (ou **Editar meu avatar**) leva ao mesmo lugar."
+          },
+          {
+            "id": "escolher",
+            "title": "Escolha a aparência",
+            "body": "Em **Personalizar**, escolha uma parte do avatar, como **Cabelo** ou **Blusa**, e clique na opção e na cor que quiser. **Sortear visual** monta uma combinação para você."
+          },
+          {
+            "id": "moedas",
+            "title": "Peças com preço",
+            "body": "Algumas peças custam moedas. Ao clicar numa delas, você vê uma prévia e decide se quer usar. Para desistir, clique em **Agora não**."
+          },
+          {
+            "id": "salvar",
+            "title": "Salve",
+            "body": "Clique em **Salvar** e espere o aviso **Mudanças salvas.**"
+          },
+          {
+            "id": "foto",
+            "title": "Tire a foto",
+            "body": "Clique em **Cabine de fotos**, escolha uma pose e clique em **Tirar foto**. Essa foto aparece no menu do alto e na comunidade. Para sair, clique em **Voltar ao meu perfil**."
+          }
+        ],
+        "related": ["conta-montar-o-espaco", "conta-escolher-a-cor"]
+      }
+    },
+    {
+      "slug": "conta-montar-o-espaco",
+      "collection": "conta",
+      "position": 5,
+      "draft": {
+        "title": "Como montar o seu espaço 3D",
+        "summary": "Coloque móveis e troféus no seu espaço e clique em Salvar espaço.",
+        "keywords": [
+          "espaço 3d",
+          "meu espaço",
+          "quarto",
+          "sala",
+          "móveis",
+          "decorar",
+          "troféus",
+          "enfeites",
+          "plantas",
+          "ambiente",
+          "personagem"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o espaço",
+            "body": "Clique na sua foto ou nas suas iniciais e depois em **Meu espaço 3D**."
+          },
+          {
+            "id": "itens",
+            "title": "Escolha os itens",
+            "body": "Nas abas, como **Móveis**, **Enfeites**, **Troféus** e **Plantas**, clique num item para colocá-lo no espaço."
+          },
+          {
+            "id": "arrumar",
+            "title": "Arrume as peças",
+            "body": "Arraste a peça com o mouse para mudar de lugar. Com uma peça escolhida, use **Girar**, **Pôr em cima de…** ou **Tirar**."
+          },
+          {
+            "id": "teclado",
+            "title": "Use o teclado, se preferir",
+            "body": "As setas movem a peça, a tecla R gira, a tecla Delete tira e a tecla Esc solta a peça."
+          },
+          {
+            "id": "salvar",
+            "title": "Salve",
+            "body": "Clique em **Salvar espaço** e espere o aviso **Espaço salvo.** Cada conquista na comunidade vira um troféu para o seu espaço."
+          }
+        ],
+        "related": ["conta-montar-o-avatar", "primeiros-ver-o-progresso"]
+      }
+    },
+    {
+      "slug": "conta-consumo-da-ia",
+      "collection": "conta",
+      "position": 6,
+      "draft": {
+        "title": "Como acompanhar o consumo da IA",
+        "summary": "Em Meu perfil, na seção IA e voz, veja quantos pedidos ainda restam hoje e neste mês.",
+        "keywords": [
+          "ia",
+          "inteligência artificial",
+          "consumo",
+          "pedidos",
+          "limite",
+          "quanto resta",
+          "tutor",
+          "pensa",
+          "créditos",
+          "acabou",
+          "voz",
+          "falar"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra IA e voz",
+            "body": "Abra **Meu perfil** e clique em **IA e voz**. Essa parte aparece quando a ajuda da IA está liberada na sua jornada. Na página **Criar**, o link **Quanto resta da ajuda da IA** leva ao mesmo lugar."
+          },
+          {
+            "id": "ler",
+            "title": "Veja quanto resta",
+            "body": "Em **Quanto resta**, os quadros **Hoje** e **Neste mês** mostram quantos pedidos ainda restam e quando a conta começa de novo."
+          },
+          {
+            "id": "conta",
+            "title": "Saiba o que conta",
+            "body": "Cada pergunta ao tutor do Estúdio ou pedido ao Pensa conta um pedido."
+          },
+          {
+            "id": "acabou",
+            "title": "Quando acabar",
+            "body": "As ferramentas continuam abertas, só sem a ajuda da IA, até a conta renovar."
+          },
+          {
+            "id": "voz",
+            "title": "Ligue a voz, se quiser",
+            "body": "Quando aparecer a parte **Voz**, marque **Usar voz no Pensa e no tutor** e clique em **Salvar preferência** para falar em vez de digitar."
+          }
+        ],
+        "related": ["pensa-criar-um-plano"]
+      }
+    },
+    {
+      "slug": "conta-compras-e-assinatura",
+      "collection": "conta",
+      "position": 7,
+      "draft": {
+        "title": "Como ver compras e cancelar a assinatura",
+        "summary": "Em Compras e assinatura, veja as cobranças e até quando vai o período pago.",
+        "keywords": [
+          "compras",
+          "pagamento",
+          "assinatura",
+          "cancelar",
+          "cobrança",
+          "recibo",
+          "cartão",
+          "boleto",
+          "plano",
+          "fatura",
+          "reembolso"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra as compras",
+            "body": "Clique na sua foto ou nas suas iniciais e depois em **Compras e assinatura**."
+          },
+          {
+            "id": "assinatura",
+            "title": "Veja a assinatura",
+            "body": "Em **Minha assinatura** aparecem o valor, o cartão e a data aproximada da próxima cobrança."
+          },
+          {
+            "id": "compras",
+            "title": "Veja cada compra",
+            "body": "Na lista de compras, clique numa linha para abrir **Detalhes da compra**, com descrição, valor, método, data e status."
+          },
+          {
+            "id": "cancelar",
+            "title": "Cancele, se quiser",
+            "body": "Clique em **Cancelar assinatura**. Na janela, confirme em **Cancelar assinatura** ou clique em **Manter assinatura** para desistir."
+          },
+          {
+            "id": "acesso",
+            "title": "Saiba até quando vai o acesso",
+            "body": "Depois de cancelar, você não é cobrado de novo, e o acesso continua até o fim do período já pago. Dúvidas sobre pagamento podem ir por [chamado](/como-fazer/conta-abrir-chamado)."
+          }
+        ],
+        "related": ["conta-abrir-chamado"]
+      }
+    },
+    {
+      "slug": "conta-abrir-chamado",
+      "collection": "conta",
+      "position": 8,
+      "draft": {
+        "title": "Como abrir um chamado com a equipe",
+        "summary": "Na página Ajuda, use Abrir chamado e acompanhe a resposta na mesma conversa.",
+        "keywords": [
+          "chamado",
+          "suporte",
+          "atendimento",
+          "falar com a equipe",
+          "contato",
+          "problema",
+          "ajuda",
+          "reclamação",
+          "pergunta",
+          "ticket",
+          "reembolso"
+        ],
+        "steps": [
+          {
+            "id": "abrir",
+            "title": "Abra o atendimento",
+            "body": "Clique em **Ajuda**, no menu do alto, e desça até **Atendimento**. Clique em **Abrir chamado**."
+          },
+          {
+            "id": "preencher",
+            "title": "Conte o que aconteceu",
+            "body": "Preencha o **Assunto**, escolha o tema em **Sobre o que você precisa de ajuda?** e escreva em **Como podemos ajudar?** o que você tentou fazer e o que apareceu na tela."
+          },
+          {
+            "id": "enviar",
+            "title": "Envie",
+            "body": "Clique em **Enviar chamado**. A conversa abre, e o chamado fica na lista do **Atendimento**."
+          },
+          {
+            "id": "resposta",
+            "title": "Leia a primeira resposta",
+            "body": "Às vezes o assistente de IA responde primeiro. Se resolveu, clique em **Resolveu meu problema**. Se não, clique em **Não ajudou** ou em **Falar com a equipe**."
+          },
+          {
+            "id": "acompanhar",
+            "title": "Acompanhe a conversa",
+            "body": "Clique em **Atualizar** para ver respostas novas. Para responder, escreva em **Sua mensagem** e clique em **Enviar mensagem**."
+          },
+          {
+            "id": "aula",
+            "title": "Dúvida de aula vai pela aula",
+            "body": "Para uma dúvida sobre uma aula, use **Preciso de ajuda** dentro dela. Veja [como pedir ajuda sem sair da aula](/como-fazer/aula-pedir-ajuda)."
+          }
+        ],
+        "related": ["aula-pedir-ajuda", "primeiros-ler-os-recados"]
+      }
+    }
+  ]
+}

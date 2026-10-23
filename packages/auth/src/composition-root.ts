@@ -11,6 +11,8 @@ import { ResendInviteService } from './application/admin/resend-invite/resend-in
 import { SearchProfilesService } from './application/admin/search-profiles/search-profiles.service'
 import { SetUserPasswordService } from './application/admin/set-password/set-user-password.service'
 import { UpdateUserService } from './application/admin/update-user/update-user.service'
+import { BrowserSessionService } from './application/browser/browser-session.service'
+import { DesktopSessionService } from './application/desktop/desktop-session.service'
 import { EnsureBuyerService } from './application/ensure-buyer/ensure-buyer.service'
 import { GetMeService } from './application/get-me/get-me.service'
 import { GetOwnProfileService } from './application/get-me/get-own-profile.service'
@@ -18,9 +20,15 @@ import { ChangeImpersonationModeService } from './application/impersonation/chan
 import { CreateImpersonationTokenService } from './application/impersonation/create-impersonation-token.service'
 import { ExchangeImpersonationTokenService } from './application/impersonation/exchange-impersonation-token.service'
 import { ImpersonationSessionValidator } from './application/impersonation/impersonation-session-validator'
+import { ReadProfileCohortService } from './application/internal/read-profile-cohort.service'
 import { WriteAuditLogService } from './application/internal/write-audit-log/write-audit-log.service'
 import { LoginService } from './application/login/login.service'
 import { LogoutService } from './application/logout/logout.service'
+import {
+  adultNoticeJobState,
+  NotifyAdultProfilesService,
+} from './application/maintenance/notify-adult-profiles.service'
+import { ProfileAdmissionWorker } from './application/maintenance/profile-admission-worker'
 import { purgeExpiredRecords } from './application/maintenance/purge-expired'
 import { ChangeMyPasswordService } from './application/me/change-password.service'
 import { UpdateProfileService } from './application/me/update-profile.service'
@@ -35,26 +43,36 @@ import { CreateProfileService } from './application/profiles/create-profile.serv
 import { ExitProfileSessionService } from './application/profiles/exit-profile-session.service'
 import { GetPublicProfileService } from './application/profiles/get-public-profile.service'
 import { ListProfilesService } from './application/profiles/list-profiles.service'
+import { ProfileAdmissionService } from './application/profiles/profile-admission.service'
 import { SelectProfileService } from './application/profiles/select-profile.service'
 import { UpdateProfileDetailsService } from './application/profiles/update-profile.service'
 import { RefreshService } from './application/refresh/refresh.service'
 import { RegisterService } from './application/register/register.service'
+import { StaffOperationsService } from './application/staff/staff-operations.service'
 import { StudyAccessService } from './application/study-access/study-access.service'
 import { AuthTokenService } from './application/tokens/auth-token.service'
 import type { Env } from './infrastructure/config/env'
 import { createMembersAllowanceGateway } from './infrastructure/gateways/members-allowance.gateway'
+import { createMembersProfileJourneyGateway } from './infrastructure/gateways/members-profile-journey.gateway'
 import {
   createGatewayMessagingClient,
   createNullMessagingClient,
 } from './infrastructure/messaging/gateway-messaging-client'
+import { createStaffGateway } from './infrastructure/messaging/staff-gateway'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleAuditLogRepository } from './infrastructure/persistence/drizzle/audit-log.repository'
+import { DrizzleBrowserSessionRepository } from './infrastructure/persistence/drizzle/browser-session.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
+import { DrizzleDesktopSessionRepository } from './infrastructure/persistence/drizzle/desktop-session.repository'
 import { DrizzleImpersonationTokenRepository } from './infrastructure/persistence/drizzle/impersonation-token.repository'
 import { DrizzleOtpCodeRepository } from './infrastructure/persistence/drizzle/otp-code.repository'
 import { DrizzlePasswordResetTokenRepository } from './infrastructure/persistence/drizzle/password-reset-token.repository'
 import { DrizzleProfileRepository } from './infrastructure/persistence/drizzle/profile.repository'
+import { DrizzleProfileAdmissionRepository } from './infrastructure/persistence/drizzle/profile-admission.repository'
+import { DrizzleProfileAdultNoticeRepository } from './infrastructure/persistence/drizzle/profile-adult-notice.repository'
+import { DrizzleProfileCohortRepository } from './infrastructure/persistence/drizzle/profile-cohort.repository'
 import { DrizzleRefreshTokenRepository } from './infrastructure/persistence/drizzle/refresh-token.repository'
+import { withSessionAdvisoryLock } from './infrastructure/persistence/drizzle/session-advisory-lock'
 import { DrizzleStudyAccessRepository } from './infrastructure/persistence/drizzle/study-access.repository'
 import { DrizzleUserRepository } from './infrastructure/persistence/drizzle/user.repository'
 import { createBunPasswordHasher } from './infrastructure/security/bun-password-hasher'
@@ -85,6 +103,11 @@ const PURGE_INTERVAL_MS = 6 * 60 * 60 * 1000
 const PURGE_GRACE_MS = 7 * 24 * 60 * 60 * 1000
 /** Retenção da trilha de auditoria (compliance) — bem mais longa que a dos tokens. */
 const AUDIT_RETENTION_MS = 365 * 24 * 60 * 60 * 1000
+/**
+ * Advisory lock (de SESSÃO) do aviso de 18 anos — 1 réplica por ciclo. Mesmo espaço GLOBAL
+ * do banco compartilhado: precisa ser única entre os serviços.
+ */
+const ADULT_NOTICE_ADVISORY_LOCK_KEY = '1635430518'
 
 /**
  * Raiz de composição (injeção de dependências). ÚNICO lugar onde adapters
@@ -110,6 +133,7 @@ export async function createApplication(env: Env): Promise<Application> {
   // Adapters
   const users = new DrizzleUserRepository(db)
   const studyAccessRepository = new DrizzleStudyAccessRepository(db)
+  const desktopSessionRepository = new DrizzleDesktopSessionRepository(db)
   const refreshTokens = new DrizzleRefreshTokenRepository(db)
   const passwordResetTokens = new DrizzlePasswordResetTokenRepository(db)
   const otpCodes = new DrizzleOtpCodeRepository(db)
@@ -127,6 +151,7 @@ export async function createApplication(env: Env): Promise<Application> {
   })
 
   // E-mail via gateway → messaging (HMAC). Sem config completa → no-op (best-effort).
+  const messagingConfigured = Boolean(env.GATEWAY_URL && env.AUTH_HMAC_SECRET)
   const messaging =
     env.GATEWAY_URL && env.AUTH_HMAC_SECRET
       ? createGatewayMessagingClient({
@@ -139,6 +164,10 @@ export async function createApplication(env: Env): Promise<Application> {
 
   const signing = await loadSigningMaterial(env, logger)
   const tokenIssuer = createJoseTokenIssuer({
+    validateDesktopSession: (claims) =>
+      claims.desktop
+        ? desktopSessionRepository.validate(claims.desktop, claims.sub, new Date())
+        : Promise.resolve(false),
     validateKidsSession: (claims) =>
       claims.kids
         ? studyAccessRepository.validateSession(
@@ -159,6 +188,12 @@ export async function createApplication(env: Env): Promise<Application> {
     impersonationRefreshTtlSeconds: env.IMPERSONATION_REFRESH_TTL_SECONDS,
   })
   const studyAccess = new StudyAccessService(studyAccessRepository, profilesRepo, users, authTokens)
+  const desktopSessions = new DesktopSessionService(desktopSessionRepository, users, authTokens)
+  const browserSessions = new BrowserSessionService(
+    new DrizzleBrowserSessionRepository(connection.db),
+    users,
+    authTokens,
+  )
 
   // Hash "isca" p/ equalizar o tempo do login quando o e-mail não existe (anti-enumeração).
   const dummyHash = await hasher.hash('timing-equalizer-not-a-real-password')
@@ -309,12 +344,24 @@ export async function createApplication(env: Env): Promise<Application> {
     logger,
   )
   // Perfis (estilo Netflix) gerenciados pelo responsável.
+  const profileAdmission = new ProfileAdmissionService(
+    new DrizzleProfileAdmissionRepository(db),
+    createMembersProfileJourneyGateway({
+      baseUrl: env.MEMBERS_BASE_URL,
+      admissionToken: env.MEMBERS_PROFILE_ADMISSION_TOKEN,
+      timeoutMs: env.MEMBERS_REQUEST_TIMEOUT_MS,
+    }),
+    () => new Date(),
+    logger,
+  )
+  const profileAdmissionWorker = new ProfileAdmissionWorker(profileAdmission, logger)
   const listProfiles = new ListProfilesService(profilesRepo)
   const createProfile = new CreateProfileService(
     profilesRepo,
     profileAllowance,
     () => randomUUID(),
     () => new Date(),
+    profileAdmission,
   )
   const updateProfileDetails = new UpdateProfileDetailsService(profilesRepo, () => new Date())
   const archiveProfile = new ArchiveProfileService(profilesRepo, () => new Date())
@@ -347,6 +394,22 @@ export async function createApplication(env: Env): Promise<Application> {
   }
 
   const server = createServer({
+    staffOperations: new StaffOperationsService(
+      users,
+      refreshTokens,
+      tokenIssuer,
+      auditLogs,
+      createStaffGateway({
+        gatewayUrl: env.GATEWAY_URL,
+        consumerId: env.AUTH_CONSUMER_ID,
+        hmacSecret: env.AUTH_HMAC_SECRET,
+        studioUrl: env.STUDIO_PRO_RUNTIME_URL,
+        studioToken: env.STUDIO_PRO_RUNTIME_TOKEN,
+        timeoutMs: env.GATEWAY_REQUEST_TIMEOUT_MS,
+      }),
+    ),
+    browserSessions,
+    desktopSessions,
     studyAccess,
     env,
     logger,
@@ -385,6 +448,7 @@ export async function createApplication(env: Env): Promise<Application> {
     // Report dos pais (S2S members): identidade mínima em lote.
     users,
     profilesRepo,
+    readProfileCohort: new ReadProfileCohortService(new DrizzleProfileCohortRepository(db)),
     profiles: {
       listProfiles,
       createProfile,
@@ -423,24 +487,81 @@ export async function createApplication(env: Env): Promise<Application> {
         graceMs: PURGE_GRACE_MS,
         auditRetentionMs: AUDIT_RETENTION_MS,
       })
+      for (let batch = 0; batch < 20; batch++) {
+        const removed = await desktopSessionRepository.purgePairings(
+          new Date(Date.now() - 24 * 60 * 60 * 1000),
+        )
+        if (removed < 5000) break
+      }
     })
   }
 
   let purgeTimer: ReturnType<typeof setInterval> | null = null
+  let purgeCycle: Promise<void> | null = null
+
+  // Aviso de 18 anos: e-mail único ao responsável; o perfil segue funcionando.
+  const notifyAdultProfiles = new NotifyAdultProfilesService(
+    new DrizzleProfileAdultNoticeRepository(db),
+    messaging,
+    () => new Date(),
+    logger,
+  )
+  // Sem Messaging configurado o job NÃO sobe: o cliente nulo resolveria o envio e o aviso seria
+  // registrado como dado sem e-mail nenhum (o dedupe é para sempre).
+  const adultNoticeState = adultNoticeJobState({
+    nodeEnv: env.NODE_ENV,
+    intervalMs: env.PROFILE_ADULT_NOTICE_INTERVAL_MS,
+    messagingConfigured,
+  })
+  let adultNoticeTimer: ReturnType<typeof setInterval> | null = null
+  let adultNoticeCycle: Promise<void> | null = null
+  let stopping = false
+  const purgeSafely = () => {
+    if (purgeCycle || stopping) return
+    purgeCycle = runPurgeCycle()
+      .catch((error) =>
+        logger.error('tokens.purge.failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        purgeCycle = null
+      })
+  }
+  const runAdultNoticeCycle = () => {
+    if (adultNoticeCycle || stopping) return // ciclo anterior ainda enviando nesta réplica
+    adultNoticeCycle = withSessionAdvisoryLock(connection.sql, ADULT_NOTICE_ADVISORY_LOCK_KEY, () =>
+      notifyAdultProfiles.runCycle(() => !stopping).then(() => undefined),
+    )
+      .then(() => undefined)
+      .catch((error) =>
+        logger.error('profile.adult_notice.cycle_failed', {
+          error: error instanceof Error ? error.message : String(error),
+        }),
+      )
+      .finally(() => {
+        adultNoticeCycle = null
+      })
+  }
 
   return {
     logger,
     async start() {
-      const purgeSafely = () =>
-        runPurgeCycle().catch((error) =>
-          logger.error('tokens.purge.failed', {
-            error: error instanceof Error ? error.message : String(error),
-          }),
-        )
+      profileAdmissionWorker.start()
+      if (adultNoticeState === 'enabled') {
+        // Boot + intervalo (deploys frequentes não deixam o job sem rodar).
+        runAdultNoticeCycle()
+        adultNoticeTimer = setInterval(runAdultNoticeCycle, env.PROFILE_ADULT_NOTICE_INTERVAL_MS)
+      } else if (adultNoticeState === 'messaging-not-configured') {
+        logger.warn('profile.adult_notice.disabled', {
+          reason: 'messaging-not-configured',
+          detail: 'sem GATEWAY_URL + AUTH_HMAC_SECRET o aviso de 18 anos não roda',
+        })
+      }
       // Um ciclo no boot (deploys mais frequentes que o intervalo não deixam a
       // purga órfã) + intervalo. O advisory lock segura a concorrência entre réplicas.
-      void purgeSafely()
-      purgeTimer = setInterval(() => void purgeSafely(), PURGE_INTERVAL_MS)
+      purgeSafely()
+      purgeTimer = setInterval(purgeSafely, PURGE_INTERVAL_MS)
       // `::` = dual-stack (IPv4+IPv6) — necessário p/ o private networking do
       // Railway (`auth.railway.internal` resolve IPv6).
       server.listen({ port: env.PORT, hostname: env.HOST })
@@ -448,7 +569,12 @@ export async function createApplication(env: Env): Promise<Application> {
     },
     async stop() {
       if (purgeTimer) clearInterval(purgeTimer)
+      stopping = true
+      if (adultNoticeTimer) clearInterval(adultNoticeTimer)
       await server.stop()
+      await adultNoticeCycle
+      await profileAdmissionWorker.stop()
+      await purgeCycle
       await connection.close()
       logger.info('app.stopped')
     },

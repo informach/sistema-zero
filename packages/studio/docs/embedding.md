@@ -129,7 +129,7 @@ Cross-Origin-Embedder-Policy: credentialless
 
 No Next: `headers()` do next.config.ts. ⚠️ COEP afeta TODO recurso cross-origin da página (imagens/iframes precisam de CORS/CORP) — ligue só na rota do editor.
 
-CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-unsafe-eval' blob: https://*.webcontainer-api.io`, `connect-src https://*.webcontainer-api.io https://*.staticblitz.com`, `frame-src blob: https://*.webcontainer-api.io`; a IA (BYOK/host) precisa de `connect-src https://openrouter.ai`; o preview e os workers do Monaco precisam de `worker-src 'self' blob:` e `frame-src 'self' blob:`.
+CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-unsafe-eval' blob: https://*.webcontainer-api.io`, `connect-src https://*.webcontainer-api.io https://*.staticblitz.com`, `frame-src blob: https://*.webcontainer-api.io`; o preview e os workers do Monaco precisam de `worker-src 'self' blob:` e `frame-src 'self' blob:`. O Zappy usa o adaptador/BFF autorizado pelo host; o Studio não precisa permitir OpenRouter diretamente no navegador.
 
 ## 6. Limitações conhecidas
 
@@ -137,7 +137,7 @@ CSP, se o host usa uma: o terminal precisa de `script-src 'unsafe-eval' 'wasm-un
 - **Preview do editor é de MESMA THREAD:** o iframe `srcdoc` null-origin compartilha a thread principal do host. O guarda de laços corta loops síncronos instrumentados, mas trabalho síncrono pesado que NÃO é laço (`Array.from({length: 1e10})`, `JSON.parse` gigante, ReDoS, recursão profunda) congela a thread e o watchdog só DETECTA — não interrompe. No player público, configure `originAdapter` para navegar a uma origem/processo dedicado; o editor criativo continua local por compatibilidade.
 - **O perfil `creative` mantém o canal residual de GET passivo:** ele libera `https:` em `img/media/font/frame-src` para o ambiente de criação. O `StudioProjectPlayer` usa `strict` por padrão e fecha esse canal; só reabra com `securityProfile="creative"` quando o conteúdo publicado realmente depender de recursos externos.
 - **Tema do Monaco é GLOBAL por página** (consequência do namespace único do Monaco — há um só tema ativo via `monaco.editor.setTheme`). Duas instâncias simultâneas em Código/Ponte (ex.: rota `/dual`) acabam adotando o ÚLTIMO tema definido; não há isolamento de tema por instância no Monaco. O Blockly, ao contrário, aplica tema por workspace. (Os models, esses sim, são isolados por instância: o `path` é salgado com um id estável por instância.)
-- Settings (tema via toggle, fonte do código, chave BYOK) são preferência do USUÁRIO, compartilhada entre instâncias e persistida em IndexedDB.
+- Settings (tema via toggle e fonte do código) são preferência do USUÁRIO, compartilhada entre instâncias e persistida em IndexedDB.
 - O smoke obrigatório na primeira integração Next/Turbopack: modo Código (autocomplete = workers do Monaco) e modo Ponte (digitar HTML → blocos = worker de reverse-parse). Se o worker `.ts` relativo falhar no bundler do host, ver plano B no CLAUDE.md (factory injetável).
 
 ## 7. Modo Profissional (`features.professional`)

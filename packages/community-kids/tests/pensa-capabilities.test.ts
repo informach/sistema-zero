@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { canOpenPensaStudioTask } from '../src/lib/pensa-capabilities'
+import { kidsStaffPreview, kidsView } from './kids-journey-fixtures'
 
 const COM_BLOCO = { status: 200, body: { blocks: ['sz_g2d_setup_stage'] } }
 const SEM_BLOCO = { status: 200, body: { blocks: [] } }
@@ -9,24 +10,21 @@ describe('capability Pensa → Estúdio', () => {
     expect(
       canOpenPensaStudioTask({
         studioProductOwned: true,
-        levelSlug: 'noob',
-        role: 'student',
+        journey: kidsView([]),
         unlocks: COM_BLOCO,
       }),
     ).toBe(false)
     expect(
       canOpenPensaStudioTask({
         studioProductOwned: false,
-        levelSlug: 'god',
-        role: 'student',
+        journey: kidsView(['studio'], 'god'),
         unlocks: COM_BLOCO,
       }),
     ).toBe(false)
     expect(
       canOpenPensaStudioTask({
         studioProductOwned: true,
-        levelSlug: 'god',
-        role: 'student',
+        journey: kidsView(['studio'], 'god'),
         unlocks: COM_BLOCO,
       }),
     ).toBe(true)
@@ -34,27 +32,24 @@ describe('capability Pensa → Estúdio', () => {
     expect(
       canOpenPensaStudioTask({
         studioProductOwned: true,
-        levelSlug: 'god',
-        role: 'student',
+        journey: kidsView(['studio'], 'god'),
         unlocks: SEM_BLOCO,
       }),
     ).toBe(false)
   })
 
-  it('falha fechado sem rank conhecido e preserva o acesso da equipe interna', () => {
+  it('falha fechado sem policy publicada e preserva o acesso da equipe interna', () => {
     expect(
       canOpenPensaStudioTask({
         studioProductOwned: true,
-        levelSlug: undefined,
-        role: 'student',
+        journey: null,
         unlocks: COM_BLOCO,
       }),
     ).toBe(false)
     expect(
       canOpenPensaStudioTask({
         studioProductOwned: true,
-        levelSlug: 'noob',
-        role: 'staff',
+        journey: kidsStaffPreview,
         unlocks: SEM_BLOCO,
       }),
     ).toBe(true)

@@ -7,6 +7,7 @@ import type {
 import type { Idea } from '../../domain/idea/idea'
 import type { MediaAsset } from '../../domain/media/media-asset'
 import type { DriveFile } from '../../domain/ports/drive-client.port'
+import { hasProviderCheckpoint } from '../../domain/publication/publication'
 import type { Publication } from '../../domain/publication/publication-record'
 import type { SocialAccount } from '../../domain/social-account/social-account'
 
@@ -147,6 +148,7 @@ export function toPublicationView(pub: Publication, assetIds: string[] = []) {
     assetIds,
     // O vídeo já subiu ao provedor (metadados congelados; reagendar é resync).
     hasRemoteVideo: typeof pub.providerSession.videoId === 'string',
+    mediaFrozen: hasProviderCheckpoint(pub.providerSession),
     createdAt: pub.createdAt.toISOString(),
     updatedAt: pub.updatedAt.toISOString(),
   }

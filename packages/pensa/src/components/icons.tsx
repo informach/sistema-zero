@@ -5,7 +5,15 @@
  */
 import type { ReactNode } from 'react'
 
-function Icon({ size = 20, children }: { size?: number; children: ReactNode }) {
+function Icon({
+  size = 20,
+  strokeWidth = 2,
+  children,
+}: {
+  size?: number
+  strokeWidth?: number
+  children: ReactNode
+}) {
   return (
     <svg
       width={size}
@@ -13,7 +21,7 @@ function Icon({ size = 20, children }: { size?: number; children: ReactNode }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -24,7 +32,7 @@ function Icon({ size = 20, children }: { size?: number; children: ReactNode }) {
   )
 }
 
-type IconProps = { size?: number }
+type IconProps = { size?: number; strokeWidth?: number }
 
 /** O painel lateral (o botão do menu do host); `open` = o menu está escondido. */
 export function PanelIcon({ open, size }: IconProps & { open: boolean }) {
@@ -37,172 +45,213 @@ export function PanelIcon({ open, size }: IconProps & { open: boolean }) {
   )
 }
 
-/** Lápis (renomear). */
-export function PencilIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
-      <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
-      <path d="m15 5 4 4" />
-    </Icon>
-  )
-}
-
 /** Seta para a esquerda (voltar). */
-export function ArrowLeftIcon({ size }: IconProps) {
+export function ArrowLeftIcon(props: IconProps) {
   return (
-    <Icon size={size}>
+    <Icon strokeWidth={2.4} {...props}>
       <path d="M19 12H5" />
       <path d="m12 19-7-7 7-7" />
     </Icon>
   )
 }
 
-/** Seta para a direita ("Continuar"). */
-export function ArrowRightIcon({ size }: IconProps) {
+/** A lâmpada do Pensa (a assinatura âmbar). */
+export function BulbIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <path d="M5 12h14" />
-      <path d="m12 5 7 7-7 7" />
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V17h6v-.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z" />
     </Icon>
   )
 }
 
-/** Lixeira ("Apagar"): o mesmo desenho que o Pinta e o Molda usam na galeria. */
-export function TrashIcon({ size }: IconProps) {
+/** A faísca das ideias. */
+export function SparkleIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <path d="M3 6h18" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
-      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      <path d="M10 11v6" />
-      <path d="M14 11v6" />
+    <Icon strokeWidth={2.6} {...props}>
+      <path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" />
     </Icon>
   )
 }
 
-export function PlusIcon({ size }: IconProps) {
+export function PlusIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <path d="M5 12h14" />
-      <path d="M12 5v14" />
+    <Icon strokeWidth={2.8} {...props}>
+      <path d="M12 5v14M5 12h14" />
     </Icon>
   )
 }
 
-/** O alvo do plano (o "◉" do cartão). */
-export function TargetIcon({ size }: IconProps) {
+export function CheckIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <circle cx="12" cy="12" r="9" />
-      <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
-    </Icon>
-  )
-}
-
-/** A bandeirinha da linha de andamento do plano. */
-export function FlagIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
-      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
-      <path d="M4 22v-7" />
-    </Icon>
-  )
-}
-
-/** A lâmpada do selo "Pensa · sua oficina de planos". */
-export function LightbulbIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
-      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
-      <path d="M9 18h6" />
-      <path d="M10 22h4" />
-    </Icon>
-  )
-}
-
-/** O Estúdio (a grade de blocos). */
-export function BlocksIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
-      <rect width="7" height="7" x="3" y="3" rx="1.5" />
-      <rect width="7" height="7" x="14" y="3" rx="1.5" />
-      <rect width="7" height="7" x="14" y="14" rx="1.5" />
-      <rect width="7" height="7" x="3" y="14" rx="1.5" />
-    </Icon>
-  )
-}
-
-/** O Pinta (a paleta). */
-export function PaletteIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
-      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.55-2.5 5.55-5.55C21.97 6.01 17.46 2 12 2z" />
-      <circle cx="13.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-      <circle cx="17.5" cy="10.5" r="1" fill="currentColor" stroke="none" />
-      <circle cx="8.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
-      <circle cx="6.5" cy="12.5" r="1" fill="currentColor" stroke="none" />
-    </Icon>
-  )
-}
-
-/** O Molda (o cubo). */
-export function CubeIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
-      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-      <path d="m3.3 7 8.7 5 8.7-5" />
-      <path d="M12 22V12" />
-    </Icon>
-  )
-}
-
-/** O visto (etapa vencida no mapa). */
-export function CheckIcon({ size }: IconProps) {
-  return (
-    <Icon size={size}>
+    <Icon strokeWidth={3} {...props}>
       <path d="M20 6 9 17l-5-5" />
     </Icon>
   )
 }
 
-/** O visto no círculo (o "Plano aprovado!"). */
-export function CircleCheckIcon({ size }: IconProps) {
+export function CloseIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <circle cx="12" cy="12" r="10" />
-      <path d="m9 12 2 2 4-4" />
+    <Icon strokeWidth={2.4} {...props}>
+      <path d="M6 6l12 12M18 6 6 18" />
     </Icon>
   )
 }
 
-/** O olho do "Você está revendo uma etapa". */
-export function EyeIcon({ size }: IconProps) {
+export function LockIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0" />
+    <Icon strokeWidth={2.2} {...props}>
+      <rect x="4" y="10" width="16" height="11" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </Icon>
+  )
+}
+
+export function PencilIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+    </Icon>
+  )
+}
+
+export function PlayIcon({ size = 16 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M8 5v14l11-7z" fill="currentColor" />
+    </svg>
+  )
+}
+
+export function DotsIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <g fill="currentColor">
+        <circle cx="5" cy="12" r="2" />
+        <circle cx="12" cy="12" r="2" />
+        <circle cx="19" cy="12" r="2" />
+      </g>
+    </svg>
+  )
+}
+
+export function PauseIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <g fill="currentColor">
+        <rect x="6" y="5" width="4" height="14" rx="1" />
+        <rect x="14" y="5" width="4" height="14" rx="1" />
+      </g>
+    </svg>
+  )
+}
+
+export function ArchiveIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <rect x="3" y="4" width="18" height="4" rx="1" />
+      <path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4" />
+    </Icon>
+  )
+}
+
+export function HistoryIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+      <path d="M3 3v5h5M12 7v5l3 2" />
+    </Icon>
+  )
+}
+
+export function TrashIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />
+    </Icon>
+  )
+}
+
+export function UsersIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <circle cx="9" cy="8" r="3" />
+      <circle cx="17" cy="9" r="2.5" />
+      <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c2.8 0 5 2 5 5" />
+    </Icon>
+  )
+}
+
+export function FlagIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.4} {...props}>
+      <path d="M6 21V4M6 4h11l-2 4 2 4H6" />
+    </Icon>
+  )
+}
+
+export function MapIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14" />
+    </Icon>
+  )
+}
+
+export function ChatIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z" />
+    </Icon>
+  )
+}
+
+export function CardIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M8 8h8M8 12h8M8 16h5" />
+    </Icon>
+  )
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.4} {...props}>
+      <path d="M4 6h16M4 12h16M4 18h10" />
+    </Icon>
+  )
+}
+
+export function EyeIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.2} {...props}>
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" />
       <circle cx="12" cy="12" r="3" />
     </Icon>
   )
 }
 
-/** As duas pessoas do "Equipe · N" e da janela da equipe. */
-export function UsersIcon({ size }: IconProps) {
+export function ShieldIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    <Icon strokeWidth={2.6} {...props}>
+      <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" />
     </Icon>
   )
 }
 
-/** Copiar o código do plano. */
-export function CopyIcon({ size }: IconProps) {
+export function AlertIcon(props: IconProps) {
   return (
-    <Icon size={size}>
-      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    <Icon strokeWidth={2.6} {...props}>
+      <path d="M12 8v5M12 16.5v.5" />
+      <circle cx="12" cy="12" r="9" />
+    </Icon>
+  )
+}
+
+export function SendIcon(props: IconProps) {
+  return (
+    <Icon strokeWidth={2.6} {...props}>
+      <path d="M5 12h14M13 6l6 6-6 6" />
     </Icon>
   )
 }

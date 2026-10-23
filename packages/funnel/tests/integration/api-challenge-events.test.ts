@@ -54,6 +54,24 @@ describe('POST /api/internal/challenge-events', () => {
     expect(JSON.stringify(events)).not.toContain('@')
   })
 
+  test('assinatura da Comunidade adulta não credita a jornada do Desafio', async () => {
+    const { repo, events } = createFakeRepo()
+    const accountId = randomUUID()
+    const challenge = await repo.createLead('kids/desafio-primeiro-jogo')
+    await repo.updateLead(challenge.id, {
+      offerRef: 'desafio-primeiro-jogo-30-dias',
+      buyerUserId: accountId,
+    })
+    await repo.markPaid(challenge.id, new Date('2026-09-16T12:00:00Z'))
+    const adult = await repo.createLead('pro/comunidade-dos-criadores')
+    await repo.updateLead(adult.id, { offerRef: 'comunidade-dos-criadores-adulto-mensal' })
+    await repo.markPaid(adult.id, new Date('2026-09-20T12:00:00Z'))
+    await repo.recordCommunitySubscription(adult.id, accountId)
+    expect(events.some((event) => event.eventName === 'community_subscription_approved')).toBe(
+      false,
+    )
+  })
+
   test('assinatura da Comunidade volta para a jornada anterior do Desafio', async () => {
     const { repo, events } = createFakeRepo()
     const accountId = randomUUID()

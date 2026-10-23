@@ -26,6 +26,8 @@ import { copyDocument, type MigrationChange, type ProjectMigrationResult } from 
 
 export type { MigrationChange, ProjectMigrationResult } from './types'
 
+const HISTORICAL_JAVASCRIPT_FORMAT = 2
+
 /** Módulo de entrada isolado. Não grava, não publica e não modifica o original. */
 export async function migrateProjectDocument(raw: unknown): Promise<ProjectMigrationResult> {
   const fromVersion = projectFormatVersion(raw)
@@ -34,6 +36,19 @@ export async function migrateProjectDocument(raw: unknown): Promise<ProjectMigra
   if (fromVersion === CURRENT_PROJECT_FORMAT_VERSION)
     return { document, fromVersion, toVersion: CURRENT_PROJECT_FORMAT_VERSION, changes }
 
+  if (fromVersion !== 1)
+    throw new ProjectDocumentError(
+      'migration-required',
+      'A atualização deste ambiente precisa ser feita separadamente.',
+    )
+  return migrateJavaScriptV1ToV2(document, changes)
+}
+
+/** Historical source transformations belong only to 1→2, regardless of the current writer. */
+async function migrateJavaScriptV1ToV2(
+  document: Record<string, unknown>,
+  changes: MigrationChange[],
+): Promise<ProjectMigrationResult> {
   const files = document.files as Record<string, unknown>
   for (const [name, value] of Object.entries(files)) {
     if (typeof value === 'string' && /\.(?:js|mjs|ts|tsx|jsx)$/.test(name))
@@ -109,7 +124,7 @@ export async function migrateProjectDocument(raw: unknown): Promise<ProjectMigra
   document.projectTools = migrateGameTwoDToolTypes(
     retainProjectTools(document.projectTools, document.blocksState),
   )
-  document.formatVersion = CURRENT_PROJECT_FORMAT_VERSION
+  document.formatVersion = HISTORICAL_JAVASCRIPT_FORMAT
   changes.push({ rule: 'document.format', path: '$.formatVersion' })
-  return { document, fromVersion, toVersion: CURRENT_PROJECT_FORMAT_VERSION, changes }
+  return { document, fromVersion: 1, toVersion: HISTORICAL_JAVASCRIPT_FORMAT, changes }
 }

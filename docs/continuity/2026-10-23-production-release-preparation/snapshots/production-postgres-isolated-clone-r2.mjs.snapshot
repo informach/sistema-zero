@@ -1,0 +1,150 @@
+/** Root-executed local-only PG18 clone proof; import has no effects. */
+import { execFile } from 'node:child_process';
+import { randomBytes, createHash } from 'node:crypto';
+import { mkdir, open, readFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE);
+export const DOCKER = 'C:/Program Files/Docker/Docker/resources/bin/docker.exe';
+export const DOCKER_HOST = 'npipe:////./pipe/dockerDesktopLinuxEngine';
+export const IMAGE = 'sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722';
+export const RESTORE_DB = 'sz_restore';
+export const VERSION = 'pg_restore (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)';
+const LABEL = 'sz.postgres.rehearsal';
+const TMPFS = { '/var/lib/postgresql': 'rw,nosuid,nodev,size=256m,mode=1777',
+  '/var/run/postgresql': 'rw,nosuid,nodev,size=8m,mode=1777', '/tmp': 'rw,nosuid,nodev,size=8m,mode=1777' };
+const check = (ok, code) => { if (!ok) throw new Error(code); };
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+export const dockerPrefix = ['--host', DOCKER_HOST];
+
+export function createArgs(owner) {
+  check(/^[a-z0-9-]{1,100}$/.test(owner.name) && /^[a-f0-9]{32}$/.test(owner.nonce), 'CLONE_OWNER_INVALID');
+  return ['create', '--pull', 'never', '--name', owner.name, '--label', `${LABEL}=${owner.nonce}`,
+    '--network', 'none', '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+    '--user', 'postgres', '--memory', '384m', '--memory-swap', '384m', '--pids-limit', '64', '--cpus', '1',
+    ...Object.entries(TMPFS).flatMap(([path, options]) => ['--tmpfs', `${path}:${options}`]),
+    '--env', 'POSTGRES_HOST_AUTH_METHOD=trust', '--env', 'POSTGRES_INITDB_ARGS=--encoding=UTF8 --locale=en_US.utf8',
+    `postgres@${IMAGE}`, 'postgres', '-c', 'listen_addresses='];
+}
+export function verifyDescriptor(raw, owner) {
+  check(Array.isArray(raw) && raw.length === 1, 'CLONE_INSPECTION_UNCONFIRMED');
+  const c = raw[0], h = c.HostConfig;
+  check(c.Id === owner.id && /^[a-f0-9]{64}$/.test(c.Id) && c.Name === `/${owner.name}` && c.Image === IMAGE &&
+    c.Config?.Labels?.[LABEL] === owner.nonce && c.Config.User === 'postgres', 'CLONE_IDENTITY_UNCONFIRMED');
+  check(h?.NetworkMode === 'none' && h.ReadonlyRootfs === true && h.Privileged === false &&
+    h.Memory === 384 * 1024 * 1024 && h.MemorySwap === h.Memory && h.PidsLimit === 64 && h.NanoCpus === 1_000_000_000 &&
+    h.CapDrop?.includes('ALL') && (h.CapAdd?.length ?? 0) === 0 &&
+    h.SecurityOpt?.some(value => value === 'no-new-privileges' || value === 'no-new-privileges:true') &&
+    (h.Binds?.length ?? 0) === 0 && (h.Devices?.length ?? 0) === 0 && h.PublishAllPorts === false &&
+    Object.keys(h.PortBindings ?? {}).length === 0 && Object.values(c.NetworkSettings?.Ports ?? {}).every(value => value === null), 'CLONE_ISOLATION_UNCONFIRMED');
+  check(Object.keys(h.Tmpfs ?? {}).length === 3 && Object.entries(TMPFS).every(([path, value]) => h.Tmpfs[path] === value) &&
+    (c.Mounts ?? []).every(m => m.Type === 'tmpfs' && Object.hasOwn(TMPFS, m.Destination)), 'CLONE_STORAGE_UNCONFIRMED');
+  return { id: c.Id, name: owner.name, image: c.Image, network: 'none', publishedPorts: 0, readOnlyRoot: true,
+    user: 'postgres', memoryBytes: h.Memory, memorySwapBytes: h.MemorySwap, pidsLimit: h.PidsLimit, cpus: 1,
+    storage: 'OWN_TMPFS_ONLY', tmpfsDataBytes: 256 * 1024 * 1024 };
+}
+
+export async function docker(args, input = '', timeout = 20000) {
+  return new Promise((yes, no) => {
+    const child = execFile(DOCKER, [...dockerPrefix, ...args], { windowsHide: true, encoding: 'utf8', timeout, maxBuffer: 65536 },
+      (error, stdout) => error ? no(new Error('LOCAL_DOCKER_COMMAND_UNCONFIRMED')) : yes(stdout));
+    child.stdin?.on('error', () => {}); child.stdin?.end(input);
+  });
+}
+export const METADATA_SQL = `BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT jsonb_build_object('version',current_setting('server_version_num')::int,'encoding',pg_encoding_to_char(d.encoding),
+ 'provider',d.datlocprovider,'collate',d.datcollate,'ctype',d.datctype,'collationVersion',pg_database_collation_actual_version(d.oid),
+ 'pgTrgmAvailable',EXISTS(SELECT FROM pg_available_extension_versions WHERE name='pg_trgm' AND version='1.6'),
+ 'extensions',(SELECT jsonb_agg(jsonb_build_object('name',e.extname,'version',e.extversion,'schema',n.nspname) ORDER BY e.extname)
+ FROM pg_extension e JOIN pg_namespace n ON n.oid=e.extnamespace)) FROM pg_database d WHERE d.datname=current_database();
+ROLLBACK;`;
+export function projectMetadata(stdout, requirePgTrgm = true) {
+  const value = JSON.parse(stdout.trim());
+  check(value.version === 180006 && value.encoding === 'UTF8' && value.provider === 'c' && value.collate === 'en_US.utf8' &&
+    value.ctype === 'en_US.utf8' && value.collationVersion === '2.41' && value.pgTrgmAvailable === true, 'CLONE_LOCALE_OR_EXTENSION_MISMATCH');
+  const expected = requirePgTrgm
+    ? [{ name: 'pg_trgm', version: '1.6', schema: 'public' }, { name: 'plpgsql', version: '1.0', schema: 'pg_catalog' }]
+    : [{ name: 'plpgsql', version: '1.0', schema: 'pg_catalog' }];
+  check(Array.isArray(value.extensions) && value.extensions.length === expected.length && expected.every((e, i) =>
+    Object.entries(e).every(([key, v]) => value.extensions[i]?.[key] === v)), 'CLONE_EXTENSIONS_MISMATCH');
+  return { serverVersionNum: value.version, encoding: value.encoding, provider: value.provider, collate: value.collate,
+    ctype: value.ctype, collationVersion: value.collationVersion, pgTrgmAvailable: true, extensions: expected };
+}
+export async function queryClone(owner, db, sql) {
+  check(db === 'postgres' || db === RESTORE_DB, 'CLONE_DATABASE_INVALID');
+  return docker(['exec', '-i', owner.id, 'psql', '-X', '-w', '-A', '-t', '-q', '--set=ON_ERROR_STOP=1', '--dbname', db], sql, 30000);
+}
+export async function assertOwned(owner) { return verifyDescriptor(JSON.parse(await docker(['inspect', owner.id])), owner); }
+
+/** Always removes only the acknowledged, inspected, nonce-labelled own CID. */
+export async function checkpointThenCreate(owner, checkpoint, create) {
+  check(typeof checkpoint === 'function', 'OWNER_CHECKPOINT_REQUIRED');
+  await checkpoint({ ...owner });
+  return create();
+}
+export async function withIsolatedClone(run, use, checkpointOwner) {
+  check(/^production-postgres-[a-z0-9-]{1,60}$/.test(run), 'RUN_INVALID');
+  const owner = { id: null, name: `sz-pg-${run.slice(20)}-${randomBytes(4).toString('hex')}`, nonce: randomBytes(16).toString('hex') };
+  const result = { state: 'UNQUALIFIED', phase: 'create', owner, createAttempted: false, descriptor: null, metadata: null, result: null, cleanup: 'NOT_CREATED', failure: null };
+  try {
+    const rawId = await checkpointThenCreate(owner, checkpointOwner, async () => {
+      result.createAttempted = true;
+      return (await docker(createArgs(owner))).trim();
+    });
+    check(/^[a-f0-9]{64}$/.test(rawId), 'CLONE_CREATE_ACK_UNCONFIRMED'); owner.id = rawId;
+    result.phase = 'inspect'; result.cleanup = 'PENDING'; result.descriptor = await assertOwned(owner);
+    result.phase = 'start';
+    await docker(['start', owner.id]);
+    result.phase = 'ready'; const deadline = Date.now() + 30000; let ready = false;
+    while (Date.now() < deadline) {
+      try {
+        // Avoid accepting the entrypoint's temporary initialization server.
+        await docker(['exec', owner.id, 'sh', '-c', 'test "$(cat /proc/1/comm)" = postgres && pg_isready -q -t 1 --dbname postgres'], '', 3000);
+        ready = true; break;
+      }
+      catch { await new Promise(resolve => setTimeout(resolve, 500)); }
+    }
+    check(ready, 'CLONE_READY_UNCONFIRMED');
+    result.phase = 'client'; check((await docker(['exec', owner.id, 'pg_restore', '--version'])).trim() === VERSION, 'CLONE_CLIENT_VERSION_MISMATCH');
+    // Only the new throwaway postgres database gets this proof extension, never production.
+    result.phase = 'extension'; await queryClone(owner, 'postgres', "CREATE EXTENSION pg_trgm VERSION '1.6';");
+    result.phase = 'metadata';
+    result.metadata = projectMetadata(await queryClone(owner, 'postgres', METADATA_SQL));
+    result.phase = 'createdb'; await docker(['exec', owner.id, 'createdb', '--template=template0', '--encoding=UTF8', '--locale-provider=libc',
+      '--lc-collate=en_US.utf8', '--lc-ctype=en_US.utf8', RESTORE_DB]);
+    projectMetadata(await queryClone(owner, RESTORE_DB, METADATA_SQL), false);
+    result.phase = 'callback'; result.result = await use(owner); result.state = 'ISOLATED_CLONE_PROOF_PASSED'; result.phase = 'completed';
+  } catch (error) { result.failure = typeof error?.message === 'string' && /^[A-Z_]+$/.test(error.message) ? error.message : 'CLONE_OR_CALLBACK_UNCONFIRMED'; }
+  finally {
+    if (owner.id) {
+      try {
+        await assertOwned(owner); await docker(['rm', '--force', owner.id]);
+        check((await docker(['ps', '-aq', '--no-trunc', '--filter', `id=${owner.id}`])).trim() === '', 'CLONE_STILL_PRESENT');
+        result.cleanup = 'OWN_CID_REMOVED_VERIFIED';
+      } catch { result.cleanup = 'UNCONFIRMED'; result.state = 'UNQUALIFIED'; }
+    } else if (result.createAttempted) result.cleanup = 'CREATE_OUTCOME_UNCONFIRMED_NO_RETRY';
+  }
+  return result;
+}
+
+async function main(args) {
+  check(process.versions.node === '24.22.0' && args.length === 1, 'ARGUMENTS_OR_NODE_INVALID');
+  check(/^production-postgres-clone-[a-z0-9-]{1,40}$/.test(args[0]), 'RUN_INVALID');
+  const out = join(CACHE, args[0]); await mkdir(out);
+  const receipt = { kind: 'isolated-postgres-clone-proof', startedAt: new Date().toISOString(), sourceSha256: sha(await readFile(FILE)),
+    providerCalls: 0, productionDatabaseConnections: 0, dumpAttempted: false, restoreQualified: false };
+  const file = await open(join(out, 'receipt.json'), 'wx', 0o600);
+  const save = async () => { await file.truncate(0); await file.write(JSON.stringify(receipt, null, 2) + '\n', 0, 'utf8'); await file.sync(); };
+  try {
+    await save(); receipt.clone = await withIsolatedClone(args[0], async () => null, async owner => {
+      receipt.cloneCreateIntent = { owner, state: 'OWNER_RECORDED_BEFORE_CREATE' }; await save();
+    });
+    receipt.finishedAt = new Date().toISOString(); await save();
+  }
+  finally { await file.close(); }
+  console.log(JSON.stringify({ run: args[0], state: receipt.clone.state, cleanup: receipt.clone.cleanup }));
+  return receipt.clone.state === 'ISOLATED_CLONE_PROOF_PASSED' && receipt.clone.cleanup === 'OWN_CID_REMOVED_VERIFIED' ? 0 : 1;
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE)
+  main(process.argv.slice(2)).then(code => { process.exitCode = code; }, () => { console.error('LOCAL_CLONE_INITIALIZATION_UNCONFIRMED'); process.exitCode = 1; });

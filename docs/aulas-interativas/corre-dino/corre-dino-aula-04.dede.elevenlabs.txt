@@ -1,0 +1,5 @@
+[curious] Como faz para o som tocar em todo pulo?
+
+[long pause]
+
+[thoughtful] No meu jogo, o segundo toque também fez som.

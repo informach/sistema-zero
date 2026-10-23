@@ -1,6 +1,15 @@
 ---
+// Página pública do presente (`/bolsa/<codigo>`). O público vem do CÓDIGO (20/10/2026):
+// `kids` → PresenteLayout + PresenteOferta (o responsável cadastra, app Kids); `adult` →
+// PresenteAdultoLayout + PresenteAdultoOferta (a própria pessoa cadastra, app adulto). Código
+// inexistente ou referrals fora do ar não revela público: a tela de status usa o tema Kids, o de
+// antes do presente adulto.
+import PresenteAdultoLayout from '../../components/referrals/PresenteAdultoLayout.astro'
+import PresenteAdultoOferta from '../../components/referrals/PresenteAdultoOferta.astro'
 import PresenteLayout from '../../components/referrals/PresenteLayout.astro'
 import PresenteOferta from '../../components/referrals/PresenteOferta.astro'
+import { PRESENTE_KIDS } from '../../content/presente'
+import { PRESENTE_ADULTO } from '../../content/presente-adulto'
 import { getDeps } from '../../server/deps'
 import { resolveReferralGiftPage } from '../../server/referral-gift-page'
 export const prerender = false
@@ -10,8 +19,29 @@ const { gateway, env } = getDeps()
 const page = await resolveReferralGiftPage(gateway, codigo)
 if (page.kind === 'not_found') Astro.response.status = 404
 if (page.kind === 'unavailable') Astro.response.status = 503
-const communityUrl = env.KIDS_COMMUNITY_URL.replace(/\/$/, '')
+const semBarra = (url: string) => url.replace(/\/$/, '')
+const status =
+  page.kind === 'not_found' ? PRESENTE_KIDS.estados.naoEncontrado : PRESENTE_KIDS.estados.foraDoAr
 ---
-<PresenteLayout title="Seu presente: Cadê Todo Mundo? | Sistema Zero" description="Seu filho pode aprender a fazer um jogo de procurar personagens funcionar. Sete dias de curso gratuito, sem cartão." action={page.kind === 'ready' ? { href: '#resgatar', label: 'Quero o presente' } : undefined}>
-  {'gift' in page ? <PresenteOferta gift={page.gift} kind={page.kind} communityUrl={communityUrl} /> : <section class="section"><div class="wrap gift-status"><h1>{page.kind === 'unavailable' ? 'Não conseguimos abrir seu convite agora.' : 'Este convite não está disponível.'}</h1><p>{page.kind === 'unavailable' ? 'Tente recarregar a página em alguns instantes. Isso não cria um cadastro nem começa o prazo do curso.' : 'Confira se o link foi copiado por inteiro. Se precisar, fale com a pessoa que enviou o convite ou com a nossa equipe.'}</p><a class="kof-link" href="mailto:contato@sistemazero.com.br">Falar com o Sistema Zero</a><a class="kof-link" href={`${communityUrl}/login`}>Já tenho conta: entrar na plataforma</a></div></section>}
-</PresenteLayout>
+{'gift' in page ? (
+  page.audience === 'adult' ? (
+    <PresenteAdultoLayout title={PRESENTE_ADULTO.seoTitle} description={PRESENTE_ADULTO.description} ready={page.kind === 'ready'}>
+      <PresenteAdultoOferta gift={page.gift} kind={page.kind} communityUrl={semBarra(env.COMMUNITY_URL)} />
+    </PresenteAdultoLayout>
+  ) : (
+    <PresenteLayout title={PRESENTE_KIDS.seoTitle} description={PRESENTE_KIDS.description} ready={page.kind === 'ready'}>
+      <PresenteOferta gift={page.gift} kind={page.kind} communityUrl={semBarra(env.KIDS_COMMUNITY_URL)} />
+    </PresenteLayout>
+  )
+) : (
+  <PresenteLayout title={PRESENTE_KIDS.seoTitle} description={PRESENTE_KIDS.description} secoes={false}>
+    <section class="c9-sec pk-pontilhado"><div class="c9-wrap">
+      <div class="pk-estado pk-estado--pagina c9-cor--azul-claro">
+        <span class="c9-tag">{status.etiqueta}</span>
+        <h1 class="pk-estado__titulo">{status.titulo}</h1>
+        <p class="c9-p">{status.texto}</p>
+        <a class="pk-link" href="mailto:contato@sistemazero.com.br">{PRESENTE_KIDS.estados.contato}</a>
+      </div>
+    </div></section>
+  </PresenteLayout>
+)}

@@ -1,0 +1,43 @@
+SLIDE 1
+Curto (95 caracteres): Menina joga no celular; o carrossel explica o uso do computador para criar na nossa plataforma.
+
+Longo: Menina joga no celular; o carrossel explica o uso do computador para criar na nossa plataforma. Texto da arte: Seu filho usa bem o celular. Para criar na nossa plataforma, ele vai usar computador ou notebook.
+
+SLIDE 2
+Curto (76 caracteres): Menina usa o mouse no notebook; a tela mostra os blocos e o jogo no Estúdio.
+
+Longo: Menina usa o mouse no notebook; a tela mostra os blocos e o jogo no Estúdio. Texto da arte: A tela precisa mostrar o projeto e as ferramentas de criação. O mouse ajuda a escolher, arrastar e posicionar cada parte.
+
+SLIDE 3
+Curto (82 caracteres): Vista de cima: uma mão no teclado do notebook e outra no mouse para testar o jogo.
+
+Longo: Vista de cima: uma mão no teclado do notebook e outra no mouse para testar o jogo. Texto da arte: O teclado também entra na atividade. Ele serve para escrever e pode controlar o personagem durante o teste do jogo.
+
+SLIDE 4
+Curto (82 caracteres): Quadra Maluca em andamento, com cinco bolas, e comandos reais de teclado e câmera.
+
+Longo: Quadra Maluca em andamento, com cinco bolas, e comandos reais de teclado e câmera. Texto da arte: Neste exemplo, o jogador se movimenta com as teclas e olha ao redor com o mouse. Ao criar, a criança monta e testa essas respostas.
+
+SLIDE 5
+Curto (74 caracteres): Ilustração de notebook, mouse, teclado e navegador com conexão à internet.
+
+Longo: Ilustração de notebook, mouse, teclado e navegador com conexão à internet. Texto da arte: Nossa plataforma funciona pelo navegador, com internet. Antes de comprar outro aparelho, confira se o computador da família atende à atividade.
+
+SLIDE 6
+Curto (67 caracteres): Computador da família com um lembrete ao lado: terça e quinta, 17h.
+
+Longo: Computador da família com um lembrete ao lado: terça e quinta, 17h. Texto da arte: Se o computador é compartilhado, combinem um horário para usar. Ter acesso ao aparelho faz parte de preparar o começo.
+
+SLIDE 7
+Curto (79 caracteres): A mesma menina cria no notebook, usando mouse e teclado, com o Estúdio na tela.
+
+Longo: A mesma menina cria no notebook, usando mouse e teclado, com o Estúdio na tela. Texto da arte: Aqui mostramos como as crianças criam jogos na prática. Siga o perfil para conhecer esse caminho.
+
+ORIGEM E CONTEXTO
+Slides 1, 2, 3, 6 e 7: fotografias geradas, com menina fictícia de cerca de 12 anos. Pele morena clara, cabelo castanho escuro na altura do queixo, franja e camiseta amarela. Ela mantém a mesma aparência ao longo da sequência; não é aluna identificada ou depoente.
+Slide 1: menina sentada no sofá, usando o celular na horizontal. O jogo colorido na tela é genérico e inventado; não representa a Comunidade nem sugere que nossa ferramenta de criação funciona no celular.
+Slides 2 e 3: notebook com teclado integrado, mouse azul à direita e uma mão em cada controle. No slide 2, o ângulo destaca a tela e o uso do mouse; no slide 3, destaca as mãos e o teclado. Captura real do Estúdio foi fornecida ao gerador para compor as telas, com os blocos à esquerda e a Quadra Maluca em execução à direita. As fotografias são composições, não registros de uso por uma aluna real.
+Slide 4: captura direta da Quadra Maluca, exemplo do Jogo 3D Avançado. O herói está no centro, cinco bolas rosas saltam sobre o chão roxo, três caixas marrons aparecem à frente e a pista de gelo está à esquerda. O placar mostra Bolas: 0/5. Abaixo, dois comandos reais do Blockly: mover com WASD e pular com espaço; girar a câmera ao arrastar o mouse. O jogo e os comandos foram capturados em funcionamento, sem redesenho por IA.
+Slide 5: ilustração gerada em 3D, com notebook, mouse azul, teclado externo e símbolo de navegador conectado à internet. Rótulos editoriais: Computador, Mouse, Teclado, Internet. O teclado externo ajuda a representar o item, mas também é possível usar o teclado integrado do notebook, mostrado nas outras cenas; não é uma lista de compras.
+Slide 6: notebook aberto no Estúdio, em uma mesa de uso familiar. Ao lado, um bilhete amarelo diz “terça e quinta” e “17h”. É um horário fictício para exemplificar um combinado da família, não um horário fixo de aulas. Não há pessoas nesta cena.
+Slide 7: a mesma menina diante do notebook, usando mouse e teclado, observando a tela da plataforma. A chamada final convida a seguir o perfil.

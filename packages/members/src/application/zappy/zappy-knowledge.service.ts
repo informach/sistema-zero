@@ -135,15 +135,23 @@ export class ZappyKnowledgeService {
     private readonly clock: () => Date,
     /** O "Como fazer": tutoriais publicados entram na busca sem gate de matrícula. */
     private readonly help?: Pick<HelpService, 'searchForZappy'>,
+    private readonly adultHelp?: Pick<HelpService, 'searchForZappy'>,
   ) {}
 
   async sync(
     input: ZappyKnowledgeSyncInput,
-  ): Promise<{ id: string; status: string; changed: boolean }> {
+  ): Promise<{ id: string | null; status: string; changed: boolean }> {
     const authority = await this.repository.sourceAuthorityForRef(input.sourceRef)
     if (!authority) throw new Error('Fonte publicada do Zappy não encontrada')
     if (authority.lessonId !== input.lessonId) {
       throw new Error('Aula não corresponde à fonte do Zappy')
+    }
+    // Curso AO VIVO (14/10/2026) nunca entra na base do Zappy. O Admin sincroniza ao publicar
+    // QUALQUER aula, então a recusa é um 200 calado (`skipped`), e o que já estivesse indexado
+    // (o curso era gravado antes) sai agora, sem esperar a faxina do reconcile.
+    if (authority.modality === 'live') {
+      await this.repository.deleteByRef(input.sourceRef)
+      return { id: null, status: 'skipped', changed: false }
     }
     if (input.courseId && input.courseId !== authority.courseId) {
       throw new Error('Curso não corresponde à aula da fonte do Zappy')
@@ -194,6 +202,7 @@ export class ZappyKnowledgeService {
    */
   async search(input: {
     userId: string
+    audience?: 'kids' | 'adult'
     accountId: string
     privileged: boolean
     query: string
@@ -202,7 +211,7 @@ export class ZappyKnowledgeService {
     const courses = await this.listMyCourses.execute(
       input.userId,
       input.privileged,
-      'kids',
+      input.audience ?? 'kids',
       input.accountId,
     )
     const available = courses.filter((course) => !course.careerLock.locked)
@@ -225,7 +234,9 @@ export class ZappyKnowledgeService {
     const [lessonHits, helpHits] = await Promise.all([
       this.repository.search(lessonIds, normalized, input.limit ?? 5),
       // Best-effort: a ajuda nunca derruba a resposta didática.
-      this.help ? this.help.searchForZappy(normalized, HELP_HITS_MAX).catch(() => []) : [],
+      (input.audience === 'adult' ? this.adultHelp : this.help)
+        ?.searchForZappy(normalized, HELP_HITS_MAX)
+        .catch(() => []) ?? [],
     ])
     return [...lessonHits, ...helpHits]
   }

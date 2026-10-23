@@ -4,7 +4,7 @@
  * tutorial existe, slugs únicos, `related` e os links `[..](/como-fazer/<slug>)` do corpo apontam
  * para tutoriais do lote. Sai com código 1 se algo reprovar.
  *
- * Também confere o vocabulário da aventura (Diretrizes Pedagógicas, seção 6), que é regra da
+ * Também confere o vocabulário do curso (Diretrizes Pedagógicas, seção 6), que é regra da
  * criança e não do core: o core é dividido com o Admin e com a comunidade adulta, que falam de
  * curso e aula. Ver `vocabularioDaAventura` abaixo.
  *
@@ -24,10 +24,10 @@ import {
   concordanciasErradas,
   guiasPessoa,
   palavrasDaEscola,
-} from '../aulas-interativas/qa/palavras-da-escola'
+} from '../aulas-interativas-tecnico/qa/palavras-da-escola'
 
 /**
- * O vocabulário da aventura nos textos que a criança lê: título, resumo, título e corpo de cada
+ * O vocabulário do curso nos textos que a criança lê: título, resumo, título e corpo de cada
  * passo e o texto alternativo da imagem (que o leitor de tela lê em voz alta). Ficam de fora:
  * - as `keywords`, porque a busca precisa achar o tutorial quando a criança digita "aula",
  *   "curso" ou "professor" por costume;
@@ -40,8 +40,8 @@ import {
  *   plano e do botão **Concluir tarefa**.
  * - "etapa" passa só no Pensa. Lá ela nomeia os passos do método ZERO ("Etapa Z", "Voltar para a
  *   etapa atual"), e trocar o nome no Pensa é decisão em aberto da dona (pendências de
- *   06/10/2026). Fora do Pensa, "etapa" é a seção da escola e reprova.
- * - Botão é "clique em", como nas falas das fases (decisão de 06/10/2026): "toque em **Botão**"
+ *   06/10/2026). Fora do Pensa, "etapa" é a parte da escola e reprova.
+ * - Botão é "clique em", como nas falas das aulas (decisão de 06/10/2026): "toque em **Botão**"
  *   reprova. O toque fica para os objetos DENTRO do jogo ("toque nos esconderijos"), que não
  *   aparecem em negrito, porque o negrito desta biblioteca é o nome de um botão ou controle.
  *

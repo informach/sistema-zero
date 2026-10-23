@@ -18,6 +18,10 @@ export class GetAiUsageStatsService {
   constructor(
     private readonly aiUsage: AiUsageRepository,
     private readonly clock: () => Date,
+    private readonly studio?: Pick<
+      import('../../domain/ports/studio-ai-usage.port').StudioAiUsageRepository,
+      'stats'
+    >,
   ) {}
 
   async execute(month?: string): Promise<AiUsageMonthStats> {
@@ -26,6 +30,10 @@ export class GetAiUsageStatsService {
     if (!MONTH_RE.test(target)) {
       throw new ValidationError('Mês inválido (esperado YYYY-MM)')
     }
-    return this.aiUsage.statsForMonth(target, today, TOP_ACCOUNTS_LIMIT)
+    const [usage, studioCosts] = await Promise.all([
+      this.aiUsage.statsForMonth(target, today, TOP_ACCOUNTS_LIMIT),
+      this.studio?.stats(target, this.clock()),
+    ])
+    return { ...usage, ...(studioCosts ? { studioCosts } : {}) }
   }
 }

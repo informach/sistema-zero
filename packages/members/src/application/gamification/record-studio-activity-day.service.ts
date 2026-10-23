@@ -1,7 +1,9 @@
+import { creativeToolAccessRef } from '@sistemazero/core/creations'
 import type { CourseAudience } from '../../domain/course/course'
 import { AccessDeniedError } from '../../domain/entitlement/entitlement.errors'
 import { ESTUDIO_ACCESS_REF } from '../../domain/gamification/missions'
 import type { AccessCheckService } from '../access-check/access-check.service'
+import type { AdultJourneyService } from '../adult-journey/adult-journey.service'
 import type { AwardGamificationService } from './award-gamification.service'
 
 export type RecordStudioActivityDayResult =
@@ -23,6 +25,7 @@ export class RecordStudioActivityDayService {
   constructor(
     private readonly accessCheck: AccessCheckService,
     private readonly award: AwardGamificationService,
+    private readonly adultJourney?: AdultJourneyService,
   ) {}
 
   async execute(input: {
@@ -31,11 +34,15 @@ export class RecordStudioActivityDayService {
     audience: CourseAudience
     privileged: boolean
   }): Promise<RecordStudioActivityDayResult> {
+    if (input.audience === 'adult') {
+      if (input.userId !== input.accountId || !this.adultJourney)
+        throw new AccessDeniedError('Conta adulta inválida')
+      await this.adultJourney.assert(input.userId, 'studio', input.privileged)
+    }
+    const accessRef = creativeToolAccessRef(ESTUDIO_ACCESS_REF, input.audience)
     if (!input.privileged) {
-      const result = await this.accessCheck.execute(input.accountId, [ESTUDIO_ACCESS_REF])
-      const allowed =
-        result.grants.includes(ESTUDIO_ACCESS_REF) ||
-        result.communities.includes(ESTUDIO_ACCESS_REF)
+      const result = await this.accessCheck.execute(input.accountId, [accessRef])
+      const allowed = result.grants.includes(accessRef) || result.communities.includes(accessRef)
       if (!allowed) throw new AccessDeniedError('Você não tem acesso ao Estúdio Completo')
     }
 

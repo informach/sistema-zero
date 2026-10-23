@@ -1,0 +1,150 @@
+/** Prepared, import-inert. Root only: one pinned PG SSH SELECT, no dump/provider mutation. */
+import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { lstat, mkdir, open, readFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { PINS, TARGET, nativeEnvironment, projectContext, failureCode as metadataFailure } from './production-postgres-metadata-r3.mjs';
+
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..');
+export const PG = Object.freeze({ serviceId: PINS.postgresService,
+  deploymentId: '03647ac9-88bd-449e-852d-4ce80137177c', snapshotId: '88686eeb-f927-4da7-ba10-374c9808b775',
+  instanceId: '31fd85c1-4bcc-44c6-a360-d7f487a7d229',
+  imageDigest: 'sha256:fcc6686a3f4f1962fe4ed77a15884553b7bd611ae1cea3204687968c5c09d517' });
+const SH = 'production-postgres-execution-preflight-r1.sh';
+const SH_SHA = '4db9fd8a3c02527cedd17e0200083192668602086cfe76569706c26041c777dd';
+const METADATA_SHA = '511639952415cfb94ebbc24e97063f2bc0b6f023de38104097dec3864e1d7616';
+const PREFIX = 'SZ_PG_EXECUTION_PREFLIGHT_V1 ';
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+class Refusal extends Error { constructor(code) { super(code); this.code = code; } }
+function check(ok, code) { if (!ok) throw new Refusal(code); }
+const safeCode = error => error instanceof Refusal ? error.code : metadataFailure(error);
+const record = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+const text = (value, length = 256) => typeof value === 'string' && value.length <= length && !/[\x00-\x1f\x7f]/.test(value);
+
+export function pinnedContext(data) {
+  const context = projectContext(data);
+  check(Object.entries(PG).every(([key, value]) => context.postgres[key] === value), 'PG_PIN_CHANGED');
+  return context;
+}
+
+/** All input values are transient; return only booleans, never names, URLs or digests. */
+export function verifyDatabaseTarget(members, postgres) {
+  check(record(members) && record(postgres), 'VARIABLES_UNCONFIRMED');
+  check(['PGDATABASE', 'PGUSER', 'PGPASSWORD'].every(key => typeof postgres[key] === 'string' && postgres[key].length > 0), 'PG_VARIABLES_MISSING');
+  let url;
+  try { url = new URL(members.DATABASE_URL); } catch { throw new Refusal('DATABASE_URL_INVALID'); }
+  check(['postgres:', 'postgresql:'].includes(url.protocol) && !url.hash, 'DATABASE_URL_INVALID');
+  // Only non-identity options needed by the existing libpq connection may remain.
+  check([...url.searchParams.keys()].every(key => ['sslmode', 'connect_timeout', 'application_name'].includes(key)), 'DATABASE_URL_OPTIONS_UNCONFIRMED');
+  let db, user;
+  try { db = decodeURIComponent(url.pathname.slice(1)); user = decodeURIComponent(url.username); }
+  catch { throw new Refusal('DATABASE_URL_INVALID'); }
+  check(db.length > 0 && db === postgres.PGDATABASE && user.length > 0 && user === postgres.PGUSER, 'DATABASE_IDENTITY_MISMATCH');
+  const privateHost = postgres.RAILWAY_PRIVATE_DOMAIN;
+  const configuredHost = postgres.PGHOST;
+  const host = typeof privateHost === 'string' && privateHost.length > 0 ? privateHost : configuredHost;
+  check(typeof host === 'string' && /^[a-z0-9][a-z0-9.-]*\.railway\.internal$/.test(host) && url.hostname === host, 'DATABASE_HOST_MISMATCH');
+  check(configuredHost === undefined || configuredHost === '' || configuredHost === host, 'PG_HOST_CONFLICT');
+  const pgPort = postgres.PGPORT ?? '5432';
+  check(typeof pgPort === 'string' && /^[1-9][0-9]{0,4}$/.test(pgPort) && Number(pgPort) <= 65535 && (url.port || '5432') === pgPort, 'DATABASE_PORT_MISMATCH');
+  return { protocolVerified: true, databaseMatchesPgEnvironment: true, userMatchesPgEnvironment: true,
+    hostMatchesPgPrivateTarget: true, portMatchesPgEnvironment: true,
+    privateDomainProvided: typeof privateHost === 'string' && privateHost.length > 0 };
+}
+
+export function projectOutput(stdout) {
+  check(typeof stdout === 'string' && Buffer.byteLength(stdout) <= 65536, 'SSH_OUTPUT_UNCONFIRMED');
+  const lines = stdout.split(/\r?\n/).filter(line => line.startsWith(PREFIX));
+  check(lines.length === 1, 'SSH_PROOF_MISSING');
+  let value;
+  try { value = JSON.parse(lines[0].slice(PREFIX.length)); } catch { throw new Refusal('SSH_OUTPUT_UNCONFIRMED'); }
+  const db = value?.inventory;
+  check(value?.state === 'READ_ONLY_EXECUTION_METADATA' && record(db), 'REMOTE_READ_UNCONFIRMED');
+  for (const [key, command] of [['pgDumpVersion', 'pg_dump'], ['pgRestoreVersion', 'pg_restore'], ['psqlVersion', 'psql']]) {
+    check(text(value[key], 160) && new RegExp(`^${command} \\(PostgreSQL\\) 18\\.[0-9]+( \\([A-Za-z0-9.+:~ -]+\\))?$`).test(value[key]), 'CLIENT_VERSION_UNCONFIRMED');
+  }
+  check(db.identityVerified === true && db.serverVersionNum === 180006 && db.readOnly === true && db.isolation === 'repeatable read' && db.loopbackConnection === true &&
+    Number.isSafeInteger(db.serverPort) && db.serverPort > 0 && db.serverPort <= 65535, 'REMOTE_POLICY_UNCONFIRMED');
+  check(text(db.encoding, 32) && db.encoding.length > 0 && ['b', 'c', 'i'].includes(db.localeProvider), 'LOCALE_UNCONFIRMED');
+  const locale = {};
+  for (const key of ['lcCollate', 'lcCtype', 'locale', 'icuRules', 'collationVersionRecorded', 'collationVersionActual']) {
+    check(db[key] === null || text(db[key], key === 'icuRules' ? 4096 : 256), 'LOCALE_UNCONFIRMED'); locale[key] = db[key];
+  }
+  check(Array.isArray(db.extensions) && db.extensions.length <= 128 && db.extensions.every(e => record(e) &&
+    text(e.name, 63) && e.name.length > 0 && text(e.version, 128) && e.version.length > 0 && text(e.schema, 63) && e.schema.length > 0) &&
+    new Set(db.extensions.map(e => e.name)).size === db.extensions.length, 'EXTENSIONS_UNCONFIRMED');
+  return { pgDumpVersion: value.pgDumpVersion, pgRestoreVersion: value.pgRestoreVersion, psqlVersion: value.psqlVersion,
+    inventory: { identityVerified: true, serverVersionNum: 180006, readOnly: true, isolation: 'repeatable read', loopbackConnection: true,
+      serverPort: db.serverPort, encoding: db.encoding, localeProvider: db.localeProvider, ...locale,
+      extensions: db.extensions.map(({ name, version, schema }) => ({ name, version, schema })) } };
+}
+
+function unchangedTargetVariables(before, after) {
+  return before.members.DATABASE_URL === after.members.DATABASE_URL &&
+    ['PGDATABASE', 'PGUSER', 'PGPASSWORD', 'PGHOST', 'PGPORT', 'RAILWAY_PRIVATE_DOMAIN'].every(key => before.postgres[key] === after.postgres[key]);
+}
+
+export async function main(args = process.argv.slice(2)) {
+  check(args.length === 1 && /^production-postgres-execution-[a-z0-9-]+$/.test(args[0]), 'ARGUMENTS_INVALID');
+  check(process.versions.node === PINS.node && !process.versions.bun, 'NODE_VERSION');
+  const run = args[0], out = join(CACHE, run); await mkdir(out);
+  const handle = await open(join(out, 'receipt.json'), 'wx', 0o600);
+  const deadline = Date.now() + 100000;
+  const receipt = { kind: 'production-postgres-execution-preflight', version: 1, state: 'RUNNING', startedAt: new Date().toISOString(),
+    operatorSha256: sha(await readFile(FILE)), remoteScriptSha256: SH_SHA, providerReads: 0, sshAttempts: 0, providerMutations: 0,
+    databaseWritesRequested: false, dumpAttempted: false, backupQualified: false, restoreQualified: false };
+  const save = async patch => { Object.assign(receipt, patch); await handle.truncate(0); await handle.write(JSON.stringify(receipt, null, 2) + '\n', 0, 'utf8'); await handle.sync(); };
+  const cli = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe');
+  const identity = 'C:/Users/tocha/.ssh/id_ed25519', env = nativeEnvironment(process.env);
+  const native = (argv, input = '', timeout = 20000) => new Promise((yes, no) => {
+    if (Date.now() >= deadline) { no(new Refusal('DEADLINE')); return; }
+    const child = execFile(cli, argv, { cwd: ROOT, env, windowsHide: true, encoding: 'utf8', timeout: Math.min(timeout, deadline - Date.now()), maxBuffer: 65536 },
+      (error, stdout) => error ? no(new Refusal('CLI_OR_SSH_UNCONFIRMED')) : yes(stdout));
+    child.stdin?.on('error', () => {}); child.stdin?.end(input);
+  });
+  const api = async (query, variables) => {
+    await save({ providerReads: receipt.providerReads + 1 });
+    let raw;
+    try { raw = JSON.parse(await native(['api', '--compact', query, '--variables', '@-'], JSON.stringify(variables))); }
+    catch { throw new Refusal('API_UNCONFIRMED'); }
+    check(raw.data && !raw.errors, 'API_UNCONFIRMED'); return raw.data;
+  };
+  const observe = async () => {
+    const fields = 'id projectId environmentId serviceId status snapshotId deploymentStopped meta instances{id status}';
+    const query = `query($id:String!,$s:String!,$e:String!,$pg:String!,$input:DeploymentListInput!,$pgInput:DeploymentListInput!){deployment(id:$id){${fields}} serviceInstance(serviceId:$s,environmentId:$e){serviceId environmentId activeDeployments{id} latestDeployment{id}} pending:deployments(first:1,input:$input){edges{node{id}}pageInfo{hasNextPage}} pg:serviceInstance(serviceId:$pg,environmentId:$e){serviceId environmentId activeDeployments{${fields}}latestDeployment{id}} pgPending:deployments(first:1,input:$pgInput){edges{node{id}}pageInfo{hasNextPage}}}`;
+    const input = serviceId => ({ projectId: PINS.project, environmentId: PINS.environment, serviceId, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } });
+    return pinnedContext(await api(query, { id: TARGET.deploymentId, s: TARGET.serviceId, e: PINS.environment, pg: PG.serviceId,
+      input: input(TARGET.serviceId), pgInput: input(PG.serviceId) }));
+  };
+  const variables = async () => {
+    const data = await api('query($p:String!,$e:String!,$s:String!,$pg:String!){members:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$s) postgres:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$pg)}',
+      { p: PINS.project, e: PINS.environment, s: TARGET.serviceId, pg: PG.serviceId });
+    verifyDatabaseTarget(data.members, data.postgres); return data;
+  };
+  try {
+    await save({});
+    const program = await readFile(join(CACHE, SH));
+    check(sha(program) === SH_SHA, 'SOURCE_PIN_CHANGED');
+    for (const [name, expected] of [['production-postgres-metadata-r3.mjs', METADATA_SHA], ['production-maintenance-store-r1.mjs', PINS.storeSha256]])
+      check(sha(await readFile(join(CACHE, name))) === expected, 'SOURCE_PIN_CHANGED');
+    const identityStat = await lstat(identity); check(identityStat.isFile() && !identityStat.isSymbolicLink(), 'SSH_IDENTITY_INVALID');
+    check((await native(['--version'])).trim() === PINS.railway, 'CLI_VERSION');
+    const varsBefore = await variables(), before = await observe(), observed = Date.now();
+    await save({ before, databaseTarget: verifyDatabaseTarget(varsBefore.members, varsBefore.postgres), state: 'SSH_READ_INTENT', sshAttempts: 1 });
+    check(Date.now() - observed <= 5000, 'CONTEXT_EXPIRED');
+    const stdout = await native(['ssh', '--project', PINS.project, '--environment', PINS.environment, '--service', PG.serviceId,
+      '--deployment-instance', PG.instanceId, '--identity-file', identity, '--', 'sh', '-s'], program, 35000);
+    const metadata = projectOutput(stdout), after = await observe(), varsAfter = await variables();
+    check(metadata.inventory.serverPort === Number(varsBefore.postgres.PGPORT ?? '5432'), 'REMOTE_PORT_MISMATCH');
+    await save({ after, metadata });
+    check(JSON.stringify(before) === JSON.stringify(after), 'CONTEXT_CHANGED');
+    check(unchangedTargetVariables(varsBefore, varsAfter), 'DATABASE_TARGET_CHANGED');
+    await save({ state: 'PG_EXECUTION_METADATA_VERIFIED', databaseTargetVerifiedBeforeAndAfter: true, targetVariablesUnchanged: true });
+  } catch (error) { await save({ state: 'UNCONFIRMED', failureCode: safeCode(error) }); }
+  finally { try { await save({ finishedAt: new Date().toISOString() }); } finally { await handle.close(); } }
+  console.log(JSON.stringify({ run, state: receipt.state, sshAttempts: receipt.sshAttempts }));
+  return receipt.state === 'PG_EXECUTION_METADATA_VERIFIED' ? 0 : 1;
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE)
+  main().then(code => { process.exitCode = code; }, () => { console.error('LOCAL_INITIALIZATION_UNCONFIRMED'); process.exitCode = 1; });

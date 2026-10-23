@@ -1,0 +1,101 @@
+[engaging, energetic, conversational voice] Hoje você vai ensinar o seu jogo a contar os personagens que você encontra.
+
+[engaging, energetic, conversational voice] Olha aqui o jardim, do jeito que ficou na Aula 1: quando eu toco num esconderijo, ele fica invisível e o personagem aparece.
+
+[curious] Ué, por que o número ficou no zero?
+
+[engaging, energetic, conversational voice] É que o jogo ainda não conta quem você encontra. Então, agora a gente vai fazer esse número contar cada personagem encontrado. Clique em Próxima parte para começar.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Vamos ver como o jogo guarda a contagem. Nesta experiência, a gente vai usar uma variável, um lugar onde o jogo guarda um número que pode mudar.
+
+[confident, clear, unhurried voice] Repare em Achados: esse número mostra quantos personagens a gente já encontrou. A cada personagem, ele muda.
+
+[engaging, energetic, conversational voice] Sabe o placar de um jogo de futebol? A cada gol, o placar soma um. Aqui no jardim é parecido: cada personagem encontrado é como um gol, e o jogo soma um em Achados.
+
+[interested, animated voice] Olha aqui: quando eu toco num esconderijo, Achados vai para 1, porque eu encontrei um personagem e o jogo somou um. Se eu toco em outro, ele soma de novo, e agora é 2.
+
+[curious] E se eu tocar num espaço vazio do jardim?
+
+[engaging, energetic, conversational voice] Vamos ver. [interested, animated voice] Olha aqui: eu toco num espaço vazio. Tá vendo? O número não muda. Isso acontece porque a regra que soma está ligada aos esconderijos: ela só funciona quando eu toco num esconderijo. Ali não tinha nenhum, então nada foi somado.
+
+[engaging, energetic, conversational voice] Por último, eu clico em Recomeçar a busca, e Achados volta para zero, igual ao placar no começo de um jogo novo.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Aqui no seu jogo, toque num esconderijo. Tá vendo? O personagem aparece, mas Achados continua em zero, porque o seu jogo ainda não conta.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada personagem encontrado somava um em Achados. Agora a gente vai fazer o seu jogo contar do mesmo jeito!
+
+[engaging, energetic, conversational voice] Para começar, procure a área Quando acontecer. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até encontrá-la. Dentro dessa área, encontre o bloco Quando clicar ou tocar num sprite do grupo esconderijos.
+
+[confident, clear, unhurried voice] Repare que dentro dele já está o bloco da Aula 1, Deixar o sprite escolhido com 0% de visibilidade.
+
+[curious] E onde entra o bloco que conta?
+
+[engaging, energetic, conversational voice] Ele vai entrar logo abaixo do bloco de visibilidade, dentro de Quando clicar ou tocar. Então deixe esse lugar à vista.
+
+[confident, clear, unhurried voice] Agora abra Programação e depois Variáveis, e pegue o bloco Somar 1 em variável contador.
+
+[confident, clear, unhurried voice] Arraste e solte logo abaixo de Deixar o sprite escolhido com 0% de visibilidade.
+
+[engaging, energetic, conversational voice] O número 1 já está certo, porque cada personagem vale um achado. Mas o bloco chega com contador, e a variável do seu jogo se chama achados. Então clique em contador e escolha achados.
+
+[upbeat, encouraging voice] Agora vamos testar! Toque num esconderijo. [interested, animated voice] Olha só: o personagem aparece, e Achados vira 1!
+
+[engaging, energetic, conversational voice] Toque em outro, e o número vai para 2. Quando você tocar no último, ele chega a 3 e aparece a mensagem Você achou todo mundo! E quem faz essa mensagem aparecer é a contagem que você acabou de montar: a mensagem aparece quando Achados chega a 3.
+
+[curious] E se eu tocar no mesmo lugar de novo?
+
+[engaging, energetic, conversational voice] Vamos ver. Agora toque de novo no mesmo lugar. [confident, clear, unhurried voice] Repare: o número continua em 3. É que o esconderijo invisível não recebe outro toque, então o mesmo personagem não conta duas vezes.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: os dois blocos estão dentro de Quando clicar ou tocar, primeiro o esconderijo escolhido fica invisível e, logo abaixo, o jogo soma 1 em achados. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[engaging, energetic, conversational voice] Seu jogo é salvo automaticamente enquanto você monta. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Chegou a surpresa! Agora você pode escolher quais personagens vão se esconder e onde cada um vai ficar.
+
+[engaging, energetic, conversational voice] No Passo a passo do projeto, você encontra os bichos e os esconderijos, com o nome de cada um. E a mensagem do final também pode ser sua. Tudo o que você mudar fica no seu jogo.
+
+[engaging, energetic, conversational voice] Vamos começar pelos bichos. Encontre a área Ao iniciar. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer. [confident, clear, unhurried voice] Repare nos blocos Criar sprite que estão nela: cada um cria um bicho ou um esconderijo do jardim.
+
+[engaging, energetic, conversational voice] Olhe o fim de um bloco que cria um bicho. Depois de com imagem, está o nome da imagem, como coelho. Clique nesse nome, e vai abrir uma lista com as imagens do jogo. Aí é só clicar em outro bicho, como o gato. Se não achar, role a lista.
+
+[engaging, energetic, conversational voice] Com os esconderijos é do mesmo jeito: num bloco que cria um esconderijo, clique no nome da imagem, como arbusto, e escolha outro esconderijo, como o toco.
+
+[interested, animated voice] Olha só: o esconderijo novo ficou no mesmo lugar e do mesmo tamanho. Isso acontece porque todos os bichos deste jogo foram desenhados do mesmo tamanho, e todos os esconderijos também. Por isso, o desenho novo cabe certinho no lugar do antigo.
+
+[confident, clear, unhurried voice] Agora troque, nos outros blocos Criar sprite, os bichos e os esconderijos que você quiser, até o jardim ficar do seu jeito. O que você gostou pode ficar como está.
+
+[upbeat, encouraging voice] Se quiser, mude também a mensagem do final. Encontre a área Enquanto estiver rodando, arrastando um espaço vazio entre os blocos se precisar. Dentro de um bloco Se, está o bloco Escrever com a frase Você achou todo mundo! Clique nessa frase e escreva uma frase curta, do seu jeito.
+
+[engaging, energetic, conversational voice] Antes de testar, dê uma olhada no jardim. Se algum bicho aparecer antes do toque, ou se um desenho ficar grande demais, é porque a imagem escolhida é do outro tipo. Aí é só clicar de novo no nome da imagem e escolher um desenho do mesmo tipo: bicho no bloco do bicho, esconderijo no bloco do esconderijo.
+
+[upbeat, encouraging voice] Agora teste: encontre todo mundo de novo. Os bichos vão aparecer atrás dos esconderijos, do jeito que você deixou, e no fim vem a mensagem! Se a frase passar da tela, deixe a frase mais curta e teste de novo.
+
+[engaging, energetic, conversational voice] O jogo ficou com a sua cara! É essa versão que você pode publicar no Mural. Para enviar o projeto, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora chegou a hora de publicar o seu jogo, do jeito que você deixou, para a sua família e os seus amigos jogarem!
+
+[engaging, energetic, conversational voice] Para isso, clique em Compartilhar, no alto do Estúdio. Aqui, ele pode aparecer só como uma setinha para cima. [confident, clear, unhurried voice] Repare que o resumo do projeto já vem preenchido, então pode deixar como está.
+
+[engaging, energetic, conversational voice] Depois, clique em Gerar capa e espere a imagem aparecer. [interested, animated voice] Olha só: essa é a capa que vai apresentar o seu jogo!
+
+[confident, clear, unhurried voice] Confira se a capa ficou boa e clique em Publicar. Agora espere a publicação terminar.
+
+[pleased, lively voice] Seu jogo está no Mural! Agora você, a sua família e os seus amigos podem jogar o jogo que você criou.
+
+[curious] E para mostrar o jogo para alguém?
+
+[confident, clear, unhurried voice] Clique em Copiar link de jogar e mande esse link para a sua família e os seus amigos. Quem receber pode jogar direto, até no celular.
+
+[engaging, energetic, conversational voice] Depois de copiar o link, clique em Fechar e, por fim, em Concluir aula.

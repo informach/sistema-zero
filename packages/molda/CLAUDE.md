@@ -1,5 +1,105 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Recuperação local, UV e animação — 18/10/2026
+
+- `maxGalleryBytes` é o fallback da capacidade adaptativa, não um orçamento de importação.
+  Documentos e backups usam limites de memória separados. Capturar os dados do caller antes
+  de aguardar estimativa de quota; a revisão e as referências ainda são conferidas na transação.
+- A recuperação usa dois checkpoints por sessão e blocos DEFLATE sem perdas. `inspect` informa
+  índices ilegíveis sem esconder outras sessões válidas. Só coletar cópias iguais ao projeto
+  salvo por comparação transacional; o checkpoint mais recente já salvo supera os anteriores
+  daquela sessão. Formatos desconhecidos e cópias corrompidas permanecem preservados.
+- `committedRevision` identifica operações concluídas, separado das prévias e de miniaturas.
+  Aviso de saída complementa os checkpoints e nunca substitui a recuperação após cada operação.
+- Girar UV usa pixels da textura, inclusive em imagens retangulares. Gestos confirmam uma vez
+  e cancelam ao trocar de dono. O divisor da folha também aplica a coordenada de `pointerup`.
+- Animar começa com eixos locais. Em `local-delta`, o frame das alças inclui o transform de
+  repouso inteiro para não converter rotação de peças redimensionadas em cisalhamento.
+- Mensagens infantis usam criação, cópia e mudanças. Ao alterar textos da oficina, rodar também
+  `bun test tests/copy-vocabulario.test.ts` em `packages/community-kids`, que varre o Molda.
+
+Revisão de publicação: `docs/plans/2026-10-18-molda-release-full-review.md`.
+
+## Arquivos de projeto e modelos 3D — 18/10/2026
+
+- A galeria organiza os projetos. **Importar projeto**, no cartão inferior, abre o arquivo
+  `.molda.json` ou o pacote `.zip` do Molda, criando cópias independentes.
+- Modelos GLB/glTF, OBJ e Blockbench entram por **Trazer 3D**, dentro da oficina. Seus painéis
+  mantêm a revisão, a confirmação da troca e o desfazer. Não há importação de modelos na galeria.
+- Esta orientação substitui a proposta inicial de `molda-gallery-import-design.md`.
+
+## Edição de malha e pintura UV — 17/10/2026
+
+- Cortar divide a superfície com a faca; Loop cut percorre faixas de quadriláteros. A seleção
+  de componentes fica no palco. Linhas têm a opção explícita Selecionar loop inteiro; faces
+  podem expandir para as vizinhas do mesmo plano. `componentFaceIds` identifica faces autorais,
+  separado de `faceIds`, que também representa superfícies nativas de pintura.
+- Puxar funciona em faces, linhas e pontos, inclusive pelas alças de mover. Criar face/linha,
+  inset de uma região plana, flip X/Y/Z e grupos na árvore têm comandos reversíveis. O inset
+  cria uma borda no contorno da região, preservando suas divisões internas.
+- Tamanho e posição usam passos de 1 por padrão; a opção de valores quebrados usa 0,1.
+  `measurementReference` mantém campos e alças coerentes após reflexões e pivôs personalizados.
+- Folha de pintura reúne Pintar e Ajustar mapa. Fica à esquerda do 3D, com divisor, ampliação,
+  zoom e mão; em telas estreitas, Ver modelo/Ver folha alternam a área central. O UV não fica
+  no menu Opções. Números e ferramentas avançadas ficam recolhidos em menus locais.
+- O bitmap da folha mantém as dimensões originais da imagem, inclusive em texturas retangulares.
+  Pontos e alças UV ficam em SVG com alvos medidos em pixels de tela. Enter confirma; Espaço
+  arrasta a visualização. Navegar cancela um gesto de autoria pendente. Zoom durante um arrasto
+  atualiza a origem desse arrasto para não restaurar uma câmera antiga.
+- A identidade da store faz parte das sessões UV e de arrasto na árvore. Dois editores podem
+  compartilhar exatamente o mesmo documento; substituir a store deve invalidar gestos antigos.
+- `Button size="compact"` é a variante para barras compactas, com alvo de 44 px. A observação
+  histórica sobre `px-4` abaixo vale para o tamanho padrão. `SceneToolbarMenu` mantém os menus
+  no tema do Molda sem aumentar a altura da barra.
+
+Proposta e entrega: `docs/plans/2026-10-17-molda-pintura-uv-interface-proposta.md` e
+`docs/plans/2026-10-17-molda-pintura-uv-implementacao.md`. Revisão para publicação:
+`docs/plans/2026-10-17-molda-release-review/qa/verification-report.md`.
+
+Verificação: `bun run test`, `bun run typecheck`, `bun run e2e`; build do playground com
+`bunx vite build --config playground/vite.config.ts`. O CI de staging publica o consumidor
+`community-kids` depois dos gates do monorepo.
+
+## Oficina padrão — 14/10/2026
+
+Modelos sempre abrem na oficina com Modelar, Pintar e Animar. Não existe flag de V2,
+variável de ambiente, opção de adapter ou parâmetro de URL para ativá-la. O playground
+usa o mesmo caminho do app. `formatVersion` continua sendo a versão do arquivo, necessária
+à leitura, importação e recuperação; não escolhe uma experiência alternativa.
+
+A decisão do responsável substitui as orientações históricas de ativação gradual abaixo:
+nenhuma criança usa o Molda em produção ainda. A refatoração e a revisão estão em
+`docs/plans/2026-10-14-molda-usabilidade-entrega.md` e
+`docs/plans/2026-10-14-molda-usabilidade-full-review.md`.
+
+Prévia de pintura usa `editor.stage`: autosave, flush e backup leem `saveSnapshot`, sem
+persistir a preparação antes da ação confirmada. `commit`/`commitGesture` encerram a prévia
+em um passo de desfazer. Rascunhos de pose são separados por perfil e criação.
+
+## Direção de arte da oficina — 15/10/2026
+
+Relatório: `docs/plans/2026-10-15-molda-direcao-de-arte-full-review.md` (antes/depois e os 25
+achados de código corrigidos). A pele segue as telas-modelo (`--sz-tool-*`) e os cinco prints:
+
+- **Receitas novas em `molda.css`** (`@layer components`): `.mld-float` (cartões que flutuam no
+  palco), `.mld-zoom`, `.mld-axis`/`.mld-axis-legend` (X/Y/Z com `--mld-axis-*`, as MESMAS cores
+  das alças: `tintGizmoAxes` recolore o TransformControls), `.mld-piece` (linha baixa da árvore),
+  `.mld-kind-chip`, `.mld-chip-btn`, `.mld-step`, `.mld-disclosure` (todo `<details>` do painel),
+  `.mld-rail-more`, `.mld-width-seg`, `.mld-scrubber`, `.mld-transport-btn`. Ladrilho em repouso
+  é TRANSPARENTE; `tint` pinta as formas; `keyHint` só para atalho que existe (paint P/G/E/I).
+- **Palco = uma superfície**: `--mld-stage-bg` no `.mld-workshop-stage`; o 3D e a imagem de apoio
+  levam `.mld-stage-surface` (fundo transparente, regra SEM camada para vencer o `bg-*`).
+- **Dica na pílula escura**: o `hintCard` no lugar `context` vai dentro de um
+  `<div data-molda-theme="dark" className="contents">`; os botões dela herdam o tema escuro.
+- ⚠️ `Button` tem `px-4` e o Tailwind não faz merge: `px-0/1/2/3` passados por `className`
+  PERDEM. Para botão estreito, use `<button>` com as próprias classes (a seta da árvore sumia).
+- Selo de salvar: `data-state` = `saved|saving|dirty|pose|error`; "Pose por marcar" e "Não
+  salvou" nunca encolhem para o ícone; o erro tem região viva FORA do `<details>`.
+- O título "Peças e propriedades" do painel encaixado é `sr-only` (segue nome da região e alvo de
+  foco). Apagar/Desagrupar devolvem o foco ao palco (`focusWorkshopStage`).
+- Copy: o título das formas é "Adicionar" (`COPY.scene.add` e `addShape`), o do Pintar é
+  "Ferramentas"; os e2e acham por esses textos.
+
 ## ⚠️⚠️ `content-visibility: auto` num cartão que recebe o ponteiro faz o cursor PISCAR (13/09/2026)
 
 Relato dela: "quando passo o mouse em cima de um card de um projeto em andamento, o mouse fica
@@ -69,7 +169,7 @@ borda, balde, cores extras, e o "Vestir a peça"), `state/` (persistência Index
 namespace, em memória, galleryStore, editorStore, sessionStore), `viewport/` (o palco three.js
 com o atlas, a prévia PMREM do céu, a prévia caixa + bola da textura), `export/` (JSON, PNG, GLB
 e RGBE PRÓPRIOS, `modelGlb`, `skyHdr`, `texturePng`, `studioLibrary` com lista + export dos
-três tipos, `zip` + `backupFile` do "Baixar tudo"/"Trazer de volta"), `templates/` (os modelos
+três tipos, `zip` + `backupFile` do "Baixar tudo"/"Importar projeto"), `templates/` (os modelos
 prontos), `assets/` (face pura), `components/` (MoldaApp, galeria completa com o `TemplatePicker`,
 casca do editor, a bancada do modelo com MONTAR e PINTAR + "Vestir com textura" + "Baixar .glb";
 o céu com presets/sol/cores/nuvens/estrelas/exposição + "Baixar .hdr"; a textura com a folha de
@@ -111,17 +211,17 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   peça, atlas cheio, acima do teto) fica FORA dos arquivos prontos mas DENTRO do backup. O céu
   custa ~0,5 s cada (render 1024×512): a galeria mostra "Preparando..." e a montagem cede a
   thread entre criações (`yieldBetween`). fflate sob demanda.
-- **"Trazer de volta" é um botão inteligente** (`src/export/backupFile.ts`, `readMoldaBackupFile`,
+- **"Importar projeto" é um botão inteligente** (`src/export/backupFile.ts`, `readMoldaBackupFile`,
   molde do leitor do Pinta): aceita o `.zip` OU o `.molda.json` solto; no ZIP lê por FAIXAS
   (diretório central, cabeçalho e só os bytes de `galeria.molda.json`, inflate em stream) e nunca
   carrega os `.glb`/`.hdr`; recusa criptografia, ZIP64, entrada duplicada e JSON acima de
-  `MAX_BACKUP_FILE_BYTES` (2 × `maxGalleryBytes`, para cobrir o base64 do JSON). O leitor aceita
+  `MAX_BACKUP_FILE_BYTES` (2 × `maxDocumentBytes`, para cobrir o base64 do JSON). O leitor aceita
   toda a contagem do ZIP clássico e limita o diretório central; o `accept` inclui `.zip`.
 - Testes: `templates/catalog.test.ts`, `model/isoThumb.test.ts`, `export/zip.test.ts`,
   `export/backupFile.test.ts` e os dois casos novos de `MoldaApp.test.tsx` (modelo pronto →
   editor; ZIP e JSON de volta). QA no playground (Chrome real): a grade dos 5 modelos, o carro
   criado do template no palco (10 peças, 320 triângulos, rodas em pé), o `.zip` do "Baixar tudo"
-  e o "Trazer de volta" desse mesmo `.zip`.
+  e o "Importar projeto" desse mesmo `.zip`.
 
 ## Textura + Vestir a peça (L5)
 
@@ -339,7 +439,7 @@ O que ainda PENDE fora do pacote: o QA no kids `:3008` com dois perfis e o QA da
   parâmetros. "Criar
   novo" em 3 passos (tipo → opções → nome), renomear (bloqueado com a criação ABERTA), duplicar,
   apagar (confirmação), "Baixar tudo" (`galeria.molda.json`, writer do envelope `molda-gallery`
-  v2; reader aceita v1 e v2) e "Trazer de volta" (`importMoldaJson` nunca lança; aceita criação
+  v2; reader aceita v1 e v2) e "Importar projeto" (`importMoldaJson` nunca lança; aceita criação
   solta).
 - Copy 100 % em `core/copy.ts`: pt-BR, SEM travessão, sem "etapa"/"curso-base" (os testes do
   kids varrem o `src/` dele; o Molda é `@source`, então as CLASSES entram, as strings não, mas a
@@ -778,8 +878,8 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   (fachada quadrada compatível). Material usa branco quando o fundo já foi composto
   na imagem; sRGB não deve ser interpretado como linear. Recursos saem das caches
   quando a última instância deixa de usá-los, com dispose idempotente.
-- Oficina interna em `components/editor/scene`, montada lazy apenas pelo playground
-  `?oficina=nova`; nenhuma ativação do escritor público/cloud. `openSceneWorkshop`
+- Oficina padrão em `components/editor/scene`, montada lazy para todos os modelos
+  no app e no playground, sem opção de ativação. `openSceneWorkshop`
   promove explicitamente no store recebido e nunca abre legado por baixo de v2
   inválido/futuro. `createSceneEditorStore` possui o token CAS e só o avança após
   escrita bem-sucedida; conflito permanece exportável e não adota token de outra aba.
@@ -1495,20 +1595,18 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   `ModelEditor.test.tsx` assere a PROPRIEDADE (nada gravado passado o tempo), não o log.
 - Volta da ponte e backup (lote 234): `useStudioResync` recebe `exportAsset` e não conhece
   formato; a oficina passa `exportLoadedSceneForStudio`, com o snapshot já salvo e seu perfil.
-  O aviso `COPY.scene.development` só aparece SEM `resyncToStudio` (host interno).
+  A ponte com o Estúdio é opcional; sua ausência não muda o editor nem indica uma versão experimental.
   ⚠️ `exportAssetForStudio` precisa tolerar falha na leitura v1: sem isso a exceção subia e
   a geração seguinte, dona da criação promovida, nunca era consultada. "Baixar tudo" leva a
   geração nova em `projetos/<nome>.molda.json` (o arquivo do "Baixar projeto"); o envelope
   `galeria.molda.json` continua SÓ v1 e não muda de forma.
-- Virada pública (lote 233): `MoldaHostAdapter.sceneWorkshop` governa a PROMOÇÃO, não o
-  acesso. ⚠️⚠️ Criação já na geração seguinte é listada e aberta na oficina SEMPRE, com a
-  chave ligada ou não: é isso que torna desligar reversível, senão voltar atrás deixaria o
-  trabalho da criança preso num editor que não sabe lê-lo. Modelo antigo só vai para a
-  oficina com a chave ligada. ⚠️ `MOLDA_DOCUMENT_WRITE_VERSION` continua 1 PARA SEMPRE: é o
+- Oficina padrão (atualizado em 14/10/2026): todo modelo abre na mesma oficina, inclusive
+  arquivos antigos, convertidos na abertura. Não há chave de ativação.
+  `MOLDA_DOCUMENT_WRITE_VERSION` continua 1: é o
   carimbo do escritor v1 (`assertMoldaDocumentWritable`), e virá-lo faria toda gravação v1
   lançar. Quem escreve o formato novo é a persistência de cena, que não passa por ele.
   ⚠️ Falha ao listar o inventário da geração seguinte NÃO pode derrubar a galeria v1.
-  Rollout e volta atrás: `docs/plans/2026-09-10-molda-rollout.md`.
+  O antigo plano de rollout foi substituído pela decisão de oficina única.
 - Retomada da nuvem (lote 239, 10/09): `MoldaSceneCloudSource.owns` inclui lápides; o
   espelho escolhe a geração dona local mesmo quando desce um documento v1. `saveIfUnchanged`
   converte esse v1 pelo migrador existente, restaura cenas apagadas pela revisão da lápide e
@@ -1534,11 +1632,9 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   ⚠️ Com isolamento ativo devolve `null`: foto velha e inteira vale mais que uma nova pela
   metade. A foto é derivada (`setThumb`): nenhum passo de desfazer, nenhuma revisão de
   conteúdo. Criação que ficou para trás só ganha foto quando a criança a abre.
-- Oficina seguinte no app (lote 228): `MoldaHostAdapter.sceneWorkshop`, DESLIGADA por
-  padrão. Ligada, a galeria lista as duas gerações numa lista só (`GallerySceneSource` no
-  `createGalleryStore`) e a oficina É o editor de MODELOS: abrir um modelo antigo o PROMOVE.
-  ⚠️ O discriminador é `summary.formatVersion === 2` (a GERAÇÃO), nunca o `kind`: o
-  documento seguinte é sempre `kind: 'model'`. ⚠️ As duas gerações vivem no MESMO banco
+- Oficina no app (atualizado em 14/10/2026): a galeria lista os formatos suportados numa
+  lista só (`GallerySceneSource` no `createGalleryStore`). `kind: 'model'` sempre abre
+  a oficina 3D; textura e céu abrem seus editores próprios. Os formatos vivem no MESMO banco
   (`getMoldaGenerationStore`), porque `storedDocumentKey` resolve as duas na mesma chave.
   ⚠️ `unlistedReadIssues`: criação que a galeria lista NÃO é arquivo ilegível, senão ela
   aparece como cartão e como aviso de recuperação ao mesmo tempo. ⚠️ A inscrição de
@@ -1546,8 +1642,7 @@ código do Blockbench. Primeiro lote: guardas de formato, recuperação e benchm
   tratada. ⚠️⚠️ `three-mesh-bvh` tem DUAS cópias no monorepo (o drei do kids fixa a 0.8,
   o Molda usa a 0.9) e cada uma aumenta `BufferGeometry` com o seu `boundsTree`: escrever
   o campo direto reprova o typecheck do KIDS, não o do Molda. Use `setBoundsTree`.
-  Pendem antes de ligar: miniatura da geração nova, ramo v2 da nuvem, "Baixar tudo" e
-  a ponte do Estúdio.
+  Miniaturas, nuvem, "Baixar tudo" e ponte do Estúdio estão integrados à oficina.
 - Destino da cópia (lote 227): o painel de exportação escolhe entre "Para outros programas"
   (padrão, GLB portátil) e "Para o Estúdio" (`animatedPaint`). ⚠️ O destino faz parte da
   IDENTIDADE do pedido: entrou no `SceneGlbToken` e `readSceneGlbReply` recusa a resposta
@@ -2536,7 +2631,7 @@ rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
   criações): os chips de tipo com ÍCONES DE LINHA (`KIND_ICONS` em `gallery/kinds.tsx`: cubo, grade,
   sol com nuvem; "Todos" sem ícone; o rótulo é o PLURAL do tipo) e a busca (Esc limpa). ⚠️ A barra
   de busca e chips DEIXOU de ser `sticky` (ela agora mora na faixa creme, que rola junto: é o
-  desenho do Pinta e do Estúdio). O `<input type=file>` do "Trazer de volta" mora aqui, sempre
+  desenho do Pinta e do Estúdio). O `<input type=file>` do "Importar projeto" mora aqui, sempre
   montado (o botão que o aciona fica no cartão lilás, que não existe carregando).
 - **céu**: `RecoveryNotice`, a grade `.sz-tool-grid` compartilhada (`<ul>` de sempre, com o mesmo
   `aria-label`) com o cartão **"Nova criação"** como PRIMEIRO item (`<li data-mld-new-card>`); some
@@ -2550,7 +2645,7 @@ rolam juntas dentro de `[data-mld-scroll-root]` (`.sz-tool-bands`, receitas de
 - **lilás** (sempre que a galeria carregou, INCLUSIVE vazia): `.sz-tool-cta-card` com o ladrilho
   amarelo do cubo, "N criações guardadas na sua conta" (só com `account`) ou "neste aparelho", e o
   arquivo das criações em pílulas creme: "Baixar tudo" (com criações; cancelar com o progresso,
-  como antes) e "Trazer de volta". Os dois SAÍRAM do cabeçalho, como no Pinta. Textos novos em
+  como antes) e "Importar projeto". Os dois SAÍRAM do cabeçalho, como no Pinta. Textos novos em
   `core/galleryShellCopy.ts` (o `copy.ts` é editado por mais de uma frente).
 - **Cartão** (`AssetCard`): `.sz-tool-card` (branco, 20px, sem borda aparente e sem o pulo do
   `mld-pop`), o nome em cima (`.sz-tool-card-title`) com o `KindChip` ao lado, a miniatura na caixa
@@ -2650,6 +2745,6 @@ contêiner (o `opacity-100` é utilitária e vence o esmaecido do `.mld-tile`).
   recorta o que passa do pé dele). O "Mais ajustes do palco" é mais estreito no celular.
 - O erro de salvar encolhe com reticências (a frase inteira no `title` e na região viva): rígido,
   ele empurrava desfazer e refazer para fora da barra.
-- "Trazer de volta" também aparece quando a galeria não carregou, junto do "Tentar de novo".
+- "Importar projeto" também aparece quando a galeria não carregou, junto do "Tentar de novo".
 - Testes: o e2e de layout ganhou a aba Animar (os movimentos cabem na tela em todo tamanho) e o
   `MoldaApp.test.tsx`, a galeria que não carregou.

@@ -1,12 +1,10 @@
 import type { GmailConnection } from '../../src/domain/connection/gmail-connection'
-import type { KbArticle } from '../../src/domain/kb/kb-article'
 import type { ConnectionRepository } from '../../src/domain/ports/connection-repository.port'
 import type {
   CustomerTicketOwner,
   CustomerTicketRepository,
   CustomerTicketsFilter,
 } from '../../src/domain/ports/customer-ticket-repository.port'
-import type { KbRepository } from '../../src/domain/ports/kb-repository.port'
 import type { MessageRepository } from '../../src/domain/ports/message-repository.port'
 import type {
   OAuthState,
@@ -32,6 +30,7 @@ import type {
   AiClassificationUpdate,
   AiWriteGuard,
   ListTicketsFilter,
+  TicketOperationalPatch,
   TicketRepository,
 } from '../../src/domain/ports/ticket-repository.port'
 import { DEFAULT_SETTINGS, type HelpdeskSettings } from '../../src/domain/settings/settings'
@@ -59,6 +58,15 @@ const clone = <T>(value: T): T => structuredClone(value)
 
 export class InMemoryTicketRepository implements TicketRepository {
   readonly rows = new Map<string, Ticket>()
+  readonly notes: TicketMessage[] = []
+  async appendNote(note: TicketMessage, at: Date) {
+    const ticket = this.rows.get(note.ticketId)
+    if (!ticket) return false
+    applyHumanTakeover(ticket, at)
+    ticket.version++
+    this.notes.push(clone(note))
+    return true
+  }
 
   async create(ticket: Ticket): Promise<void> {
     this.rows.set(ticket.id, clone(ticket))
@@ -77,12 +85,27 @@ export class InMemoryTicketRepository implements TicketRepository {
     return true
   }
 
+  async patch(
+    id: string,
+    expectedVersion: number,
+    changes: TicketOperationalPatch,
+    at: Date,
+  ): Promise<Ticket | null> {
+    const current = this.rows.get(id)
+    if (!current || current.version !== expectedVersion) return null
+    applyHumanTakeover(current, at)
+    const row = { ...current, ...clone(changes), version: expectedVersion + 1, updatedAt: at }
+    this.rows.set(id, row)
+    return clone(row)
+  }
+
   async list(filter: ListTicketsFilter, now: Date): Promise<{ items: Ticket[]; total: number }> {
     const q = filter.q?.toLowerCase()
     const all = [...this.rows.values()]
       .filter((ticket) => ticket.createdAt.getTime() <= now.getTime())
       // A fila nunca mistura atendimento com ruído: ausente = só `human`.
       .filter((t) => (filter.triage === 'automated' ? t.triage !== 'human' : t.triage === 'human'))
+      .filter((t) => !filter.handlingMode || t.handlingMode === filter.handlingMode)
       .filter((t) => !filter.status || t.status === filter.status)
       .filter((t) => !filter.category || t.category === filter.category)
       .filter(
@@ -100,8 +123,8 @@ export class InMemoryTicketRepository implements TicketRepository {
       .sort(
         (a, b) =>
           ticketSlaRank(a, now) - ticketSlaRank(b, now) ||
-          (ticketSla(a, now)?.deadlineAt.getTime() ?? Number.MAX_SAFE_INTEGER) -
-            (ticketSla(b, now)?.deadlineAt.getTime() ?? Number.MAX_SAFE_INTEGER) ||
+          ticketQueuePosition(a, now).deadlineAt.getTime() -
+            ticketQueuePosition(b, now).deadlineAt.getTime() ||
           b.lastMessageAt.getTime() - a.lastMessageAt.getTime() ||
           a.id.localeCompare(b.id),
       )
@@ -199,9 +222,16 @@ export class InMemoryTicketRepository implements TicketRepository {
     return true
   }
 
-  async applyDraft(id: string, guard: AiWriteGuard, draft: string, at: Date): Promise<boolean> {
+  async applyDraft(
+    id: string,
+    guard: AiWriteGuard,
+    draft: string,
+    runId: string | null,
+    at: Date,
+  ): Promise<boolean> {
     const t = this.rows.get(id)
     if (!t || !this.acceptsAiWrite(t, guard)) return false
+    t.aiDraftRunId = runId
     t.aiDraft = draft
     t.aiDraftAt = at
     t.aiDraftEdited = false
@@ -256,14 +286,41 @@ export class InMemoryTicketRepository implements TicketRepository {
 }
 
 export class InMemoryMessageRepository implements MessageRepository {
+  constructor(private readonly notes: TicketMessage[] = []) {}
   readonly rows: TicketMessage[] = []
 
   async create(message: TicketMessage): Promise<void> {
     this.rows.push(clone(message))
   }
 
+  async page(ticketId: string, input: Parameters<MessageRepository['page']>[1]) {
+    const cursor = input.after ?? input.before
+    return [...this.rows, ...this.notes]
+      .map((m, i) => ({ ...clone(m), position: i + 1 }))
+      .filter((m) => m.ticketId === ticketId)
+      .filter(
+        (m) =>
+          !input.publicOnly ||
+          (m.visibility === 'customer' &&
+            m.kind !== 'note' &&
+            (!m.deliveryState || m.deliveryState === 'sent')),
+      )
+      .filter(
+        (m) =>
+          !cursor || (input.after ? m.position > cursor.position : m.position < cursor.position),
+      )
+      .sort((a, b) => (input.after ? a.position - b.position : b.position - a.position))
+      .slice(0, input.limit + 1)
+  }
+  async evidence(_ids: string[]) {
+    return []
+  }
+  async publicSource(_ticketId: string, _citationId: string, _at: Date) {
+    return null
+  }
+
   async byTicketId(ticketId: string): Promise<TicketMessage[]> {
-    return this.rows
+    return [...this.rows, ...this.notes]
       .filter((m) => m.ticketId === ticketId)
       .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
       .map(clone)
@@ -330,14 +387,66 @@ export class InMemoryPortalNotificationOutboxRepository
 
 /** Contrato transacional do portal reproduzido em memória para testes HTTP. */
 export class InMemoryCustomerTicketRepository implements CustomerTicketRepository {
+  private readonly commands = new Map<
+    string,
+    { hash: string; ticketId: string; messageId: string }
+  >()
   constructor(
     private readonly tickets: InMemoryTicketRepository,
     private readonly messages: InMemoryMessageRepository,
   ) {}
 
-  async createWithInitialMessage(input: { ticket: Ticket; message: TicketMessage }): Promise<void> {
+  private readonly lifecycleCommands = new Map<string, string>()
+  async command(input: Parameters<CustomerTicketRepository['command']>[0]) {
+    const ticket = this.tickets.rows.get(input.ticketId)
+    if (!ticket || !this.owns(ticket, input.owner)) return null
+    const key = `${input.owner.accountId}:${input.commandKey}`
+    const hash = `${input.ticketId}:${input.action}`
+    const prior = this.lifecycleCommands.get(key)
+    if (this.commands.has(key) || (prior && prior !== hash)) throw new ConcurrencyConflictError()
+    if (prior) return clone(ticket)
+    if (
+      input.action === 'resolve' &&
+      !this.messages.rows.some(
+        (m) =>
+          m.ticketId === ticket.id &&
+          m.direction === 'outbound' &&
+          m.visibility === 'customer' &&
+          (!m.deliveryState || m.deliveryState === 'sent'),
+      )
+    )
+      throw new ConcurrencyConflictError()
+    ticket.handlingMode = 'human'
+    ticket.humanTakeover = true
+    ticket.handlingEpoch++
+    ticket.version++
+    if (input.action === 'resolve') {
+      ticket.status = 'resolved'
+      ticket.resolvedAt = input.at
+      ticket.humanSlaStartedAt = null
+    } else {
+      ticket.handoffReason = 'customer_requested'
+      if (!['closed', 'resolved'].includes(ticket.status)) ticket.status = 'open'
+      ticket.humanSlaStartedAt ??= ticket.automationStartedAt
+    }
+    this.lifecycleCommands.set(key, hash)
+    return clone(ticket)
+  }
+
+  async createWithInitialMessage(
+    input: Parameters<CustomerTicketRepository['createWithInitialMessage']>[0],
+  ) {
+    const key = `${input.ticket.requesterAccountId}:${input.commandKey}`
+    const replay = this.replay(key, input.commandHash)
+    if (replay) return replay
     this.tickets.rows.set(input.ticket.id, clone(input.ticket))
     this.messages.rows.push(clone(input.message))
+    this.commands.set(key, {
+      hash: input.commandHash,
+      ticketId: input.ticket.id,
+      messageId: input.message.id,
+    })
+    return { ticket: clone(input.ticket), message: clone(input.message) }
   }
 
   async listOwned(filter: CustomerTicketsFilter): Promise<{ items: Ticket[]; total: number }> {
@@ -372,9 +481,14 @@ export class InMemoryCustomerTicketRepository implements CustomerTicketRepositor
     message: TicketMessage
     at: Date
     aiEnabled: boolean
+    commandKey: string
+    commandHash: string
   }): Promise<{ ticket: Ticket; message: TicketMessage } | null> {
     const ticket = this.tickets.rows.get(input.ticketId)
     if (!ticket || !this.owns(ticket, input.owner)) return null
+    const key = `${input.owner.accountId}:${input.commandKey}`
+    const replay = this.replay(key, input.commandHash)
+    if (replay) return replay
     ticket.version += 1
     ticket.messageCount += 1
     if (input.at.getTime() > ticket.lastMessageAt.getTime()) ticket.lastMessageAt = input.at
@@ -386,6 +500,7 @@ export class InMemoryCustomerTicketRepository implements CustomerTicketRepositor
     ticket.aiGeneration += 1
     ticket.aiSummary = null
     ticket.aiSummaryAt = null
+    ticket.aiDraftRunId = null
     ticket.aiDraft = null
     ticket.aiDraftAt = null
     ticket.aiDraftEdited = false
@@ -396,6 +511,11 @@ export class InMemoryCustomerTicketRepository implements CustomerTicketRepositor
     ticket.aiLastError = null
     ticket.updatedAt = input.at
     this.messages.rows.push(clone(input.message))
+    this.commands.set(key, {
+      hash: input.commandHash,
+      ticketId: ticket.id,
+      messageId: input.message.id,
+    })
     return { ticket: clone(ticket), message: clone(input.message) }
   }
 
@@ -405,6 +525,16 @@ export class InMemoryCustomerTicketRepository implements CustomerTicketRepositor
       (ticket.requesterAccountId === null &&
         ticket.requesterEmail.toLowerCase() === owner.email.toLowerCase())
     )
+  }
+  private replay(key: string, hash: string) {
+    const command = this.commands.get(key)
+    if (!command) return null
+    if (command.hash !== hash)
+      throw new ConcurrencyConflictError('Chave de idempotência já usada para outro pedido')
+    const ticket = this.tickets.rows.get(command.ticketId)
+    const message = this.messages.rows.find((item) => item.id === command.messageId)
+    if (!ticket || !message) throw new Error('Command result absent')
+    return { ticket: clone(ticket), message: clone(message) }
   }
 }
 
@@ -510,6 +640,7 @@ export class InMemoryTicketIngestionRepository implements TicketIngestionReposit
       existing.aiGeneration += 1
       existing.aiSummary = null
       existing.aiSummaryAt = null
+      existing.aiDraftRunId = null
       existing.aiDraft = null
       existing.aiDraftAt = null
       existing.aiDraftEdited = false
@@ -629,51 +760,7 @@ export class InMemoryReplyDeliveryRepository implements ReplyDeliveryRepository 
   }
 }
 
-export class InMemoryKbRepository implements KbRepository {
-  readonly rows = new Map<string, KbArticle>()
-
-  async create(article: KbArticle): Promise<void> {
-    this.rows.set(article.id, clone(article))
-  }
-
-  async byId(id: string): Promise<KbArticle | null> {
-    const row = this.rows.get(id)
-    return row ? clone(row) : null
-  }
-
-  async update(article: KbArticle, expectedVersion: number): Promise<boolean> {
-    const current = this.rows.get(article.id)
-    if (!current || current.version !== expectedVersion) return false
-    article.version = expectedVersion + 1
-    this.rows.set(article.id, clone(article))
-    return true
-  }
-
-  async delete(id: string): Promise<boolean> {
-    return this.rows.delete(id)
-  }
-
-  async list(filter: {
-    limit: number
-    offset: number
-  }): Promise<{ items: KbArticle[]; total: number }> {
-    const all = [...this.rows.values()].sort(
-      (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime(),
-    )
-    return {
-      items: all.slice(filter.offset, filter.offset + filter.limit).map(clone),
-      total: all.length,
-    }
-  }
-
-  async listPublished(limit: number): Promise<KbArticle[]> {
-    return [...this.rows.values()]
-      .filter((a) => a.published)
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime() || a.id.localeCompare(b.id))
-      .slice(0, limit)
-      .map(clone)
-  }
-}
+export { InMemoryKbRepository } from './knowledge'
 
 export class InMemorySettingsRepository implements SettingsRepository {
   value: HelpdeskSettings = { ...DEFAULT_SETTINGS }
@@ -770,3 +857,6 @@ export class InMemoryOAuthStateRepository implements OAuthStateRepository {
     return deleted
   }
 }
+
+import { ConcurrencyConflictError } from '../../src/domain/helpdesk-errors'
+import { applyHumanTakeover } from '../../src/domain/ticket/automation'

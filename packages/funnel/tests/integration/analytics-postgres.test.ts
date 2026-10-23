@@ -100,12 +100,12 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
       name: 'quiz_question_view',
       quizDefinitionId: definition.id,
       quizAttemptId: lead.id,
-      questionId: 'q1',
+      questionId: 'genero',
     }
     await analytics.append([questionView, { ...questionView, id: crypto.randomUUID() }], now)
-    await business.saveQuizAnswers(lead.id, {}, { q1: '9_a_11' }, 'comunidade_q1', null, {
-      metadata: { quiz_definition_id: definition.id, question_id: 'q1' },
-      step: 'comunidade_q1',
+    await business.saveQuizAnswers(lead.id, {}, { genero: 'filho' }, 'comunidade_v6_genero', null, {
+      metadata: { quiz_definition_id: definition.id, question_id: 'genero' },
+      step: 'comunidade_v6_genero',
       eventKey: `${lead.id}:answer:1`,
     })
     const report = await analyticsReport(db, {
@@ -127,7 +127,7 @@ test.skipIf(!url)('PostgreSQL: duplicação, coorte, confirmação e revogação
       viewport: 390,
     })
     expect(report.journeys).toEqual([{ route: 'Com quiz', sessions: 1, paid: 1 }])
-    expect(report.quizzes[0]?.questions).toEqual([{ id: 'q1', viewed: 1, answered: 1 }])
+    expect(report.quizzes[0]?.questions).toEqual([{ id: 'genero', viewed: 1, answered: 1 }])
     const retried = await business.createLead(definition.funnel)
     leadIds.push(retried.id)
     await analytics.linkLead(session.id, retried.id, now)

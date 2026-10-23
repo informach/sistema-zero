@@ -22,6 +22,7 @@ import {
   type SceneStampSettings,
   sceneStampSize,
 } from '../scene/imageStamp'
+import { prepareSceneInk } from '../scene/paintInk'
 import { requireScene } from '../scene/validation'
 import type { EditorStore } from './editorStore'
 
@@ -108,11 +109,13 @@ export function createScenePaintShapeGesture(
       source: MoldaSceneDocument,
       imageId: string,
       operation: SceneImageOperation,
+      prepared?: MoldaSceneDocument,
     ): Promise<boolean>
   },
 ) {
   let active: {
     source: MoldaSceneDocument
+    prepared: MoldaSceneDocument
     imageId: string
     width: number
     height: number
@@ -145,14 +148,17 @@ export function createScenePaintShapeGesture(
           'revision',
           'A imagem mudou. Comece o desenho novamente.',
         )
-        const { image } = resolveScenePaintTarget(source, target)
+        const ink =
+          'color' in settings ? prepareSceneInk(source, target.imageId, settings.color) : null
+        const prepared = ink?.document ?? source
+        const { image } = resolveScenePaintTarget(prepared, target)
         const point = readImagePoint(sample.point, image)
         const operation = draftOperation(
-          settings,
+          ink && 'brush' in settings ? { ...settings, color: ink.color } : settings,
           image,
           target.layerId,
           point,
-          PALETTE_SIZE + (source.extraColors?.length ?? 0),
+          PALETTE_SIZE + (prepared.extraColors?.length ?? 0),
         )
         const revision = state.contentRevision
         const draft: ScenePaintDraft = {
@@ -166,6 +172,7 @@ export function createScenePaintShapeGesture(
         }
         active = {
           source,
+          prepared,
           imageId: image.id,
           width: image.width,
           height: image.height,
@@ -213,6 +220,7 @@ export function createScenePaintShapeGesture(
                 point: current.draft.to,
               }
             : { ...current.operation, to: current.draft.to },
+          current.prepared,
         )
       else
         ports.select({

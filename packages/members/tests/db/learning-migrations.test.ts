@@ -996,10 +996,79 @@ describe.skipIf(!url)(
         [{ ...record, revision: 'changed', completedAt: null, projectPassed: false }],
         evidence,
       )
-      expect(await repo.getSectionProgress(owner, lessonId)).toEqual([record])
+      expect(await repo.getSectionProgress(owner, lessonId)).toEqual([
+        { ...record, objectiveResults: null },
+      ])
       expect(
         await repo.getSectionProgress({ ...owner, userId: randomUUID() }, lessonId),
       ).toHaveLength(0)
+      // Objetivos da parte (18/10/2026): a memória do último resultado de cada objetivo.
+      const outra = { userId: randomUUID(), accountId: randomUUID() }
+      const base = { ...record, completedAt: null, projectPassed: false }
+      const falhou = [
+        { id: 'laco', passed: false },
+        { id: 'extra', passed: false },
+      ]
+      await repo.saveSectionProgress(
+        outra,
+        lessonId,
+        structure.revision,
+        [{ ...base, objectiveResults: falhou }],
+        evidence,
+      )
+      expect((await repo.getSectionProgress(outra, lessonId))[0]?.objectiveResults).toEqual(falhou)
+      // Concluir a parte (sem resultado na gravação) mantém a memória da mesma revisão.
+      await repo.saveSectionProgress(
+        outra,
+        lessonId,
+        structure.revision,
+        [{ ...base, completedAt: now.toISOString(), projectPassed: true }],
+        evidence,
+      )
+      const fechada = (await repo.getSectionProgress(outra, lessonId))[0]
+      expect(fechada?.completedAt).toBe(now.toISOString())
+      expect(fechada?.objectiveResults).toEqual(falhou)
+      // Depois de fechada, a verificação ainda atualiza a memória (o extra da criança)…
+      const extra = [
+        { id: 'laco', passed: true },
+        { id: 'extra', passed: true },
+      ]
+      await repo.saveSectionProgress(
+        outra,
+        lessonId,
+        structure.revision,
+        [{ ...base, projectPassed: true, objectiveResults: extra }],
+        evidence,
+      )
+      const depois = (await repo.getSectionProgress(outra, lessonId))[0]
+      expect(depois?.objectiveResults).toEqual(extra)
+      expect(depois?.completedAt).toBe(now.toISOString())
+      // …mas nunca a de outra revisão (outra regra, outra pergunta).
+      await repo.saveSectionProgress(
+        outra,
+        lessonId,
+        structure.revision,
+        [{ ...base, revision: 'changed', objectiveResults: falhou }],
+        evidence,
+      )
+      expect((await repo.getSectionProgress(outra, lessonId))[0]?.objectiveResults).toEqual(extra)
+      // Uma parte ainda aberta que muda de revisão esquece o resultado antigo.
+      const terceira = { userId: randomUUID(), accountId: randomUUID() }
+      await repo.saveSectionProgress(
+        terceira,
+        lessonId,
+        structure.revision,
+        [{ ...base, objectiveResults: falhou }],
+        evidence,
+      )
+      await repo.saveSectionProgress(
+        terceira,
+        lessonId,
+        structure.revision,
+        [{ ...base, revision: 'changed' }],
+        evidence,
+      )
+      expect((await repo.getSectionProgress(terceira, lessonId))[0]?.objectiveResults).toBeNull()
       // Include explicit criteria in the source so clone coverage verifies portable references too.
       await db
         .update(lessonStructures)
@@ -1022,9 +1091,9 @@ describe.skipIf(!url)(
         expectedSourceVersion: 0,
         expectedSourceAudience: 'kids',
         audience: 'adult',
+        modality: 'recorded',
         slug: 'learning-qa-clone',
         title: 'Clone',
-        dropStudioUnlockBlocks: true,
       })
       if (!clone) throw new Error('Missing clone')
       const [clonedLesson] = await db.select().from(lessons).where(eq(lessons.courseId, clone.id))

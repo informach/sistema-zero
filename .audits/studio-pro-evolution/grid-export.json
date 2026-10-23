@@ -1,0 +1,83 @@
+{
+  "measuredAt": "2026-10-16T10:33:24.649Z",
+  "evidence": [
+    {
+      "id": "canvas-grid-arena",
+      "envelopeBytes": 91979,
+      "zipBytes": 31613,
+      "sources": 23,
+      "assets": 1,
+      "artifactBytes": 20377,
+      "captureBytes": 26081,
+      "independentNpmCi": true,
+      "lockUnchanged": true,
+      "playtest": {
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ],
+        "screenshot": "__studio-proof.png"
+      }
+    },
+    {
+      "id": "phaser-tactics",
+      "envelopeBytes": 102791,
+      "zipBytes": 35014,
+      "sources": 24,
+      "assets": 1,
+      "artifactBytes": 1224426,
+      "captureBytes": 33752,
+      "independentNpmCi": true,
+      "lockUnchanged": true,
+      "playtest": {
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ],
+        "screenshot": "__studio-proof.png"
+      }
+    },
+    {
+      "id": "three-tactics",
+      "envelopeBytes": 108605,
+      "zipBytes": 36722,
+      "sources": 24,
+      "assets": 1,
+      "artifactBytes": 512688,
+      "captureBytes": 46587,
+      "independentNpmCi": true,
+      "lockUnchanged": true,
+      "playtest": {
+        "evidence": [
+          {
+            "kind": "playtest",
+            "status": "passed",
+            "detail": "Boot, pausa, entrada, objetivo e reinício; derrota quando prevista pelo kit. Driver de regras do kit original."
+          },
+          {
+            "kind": "capture",
+            "status": "passed",
+            "detail": "Frame real capturado em 1024 × 640. Revise enquadramento, contraste e HUD antes de aplicar."
+          }
+        ],
+        "screenshot": "__studio-proof.png"
+      }
+    }
+  ]
+}

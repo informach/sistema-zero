@@ -10,13 +10,14 @@ import type { ButtonHTMLAttributes, CSSProperties, JSX, Ref } from 'react'
 import type { LucideIcon } from '../../ui/icons'
 
 /** A grade dos ladrilhos: duas colunas na coluna; uma fileira só quando ela deita (abaixo de `lg`). */
-export const SCENE_TILE_GRID =
-  'grid gap-1.5 max-lg:auto-cols-[4.75rem] max-lg:grid-flow-col lg:grid-cols-2'
+export const SCENE_TILE_GRID = 'mld-tool-tiles grid grid-cols-1 gap-1.5'
 
 export function SceneTile({
   icon: Icon,
   label,
   ink,
+  tint = false,
+  keyHint,
   pressed,
   className,
   style,
@@ -27,6 +28,13 @@ export function SceneTile({
   label: string
   /** A cor do ícone (a da forma); o ladrilho ligado usa a tinta dele. */
   ink?: string
+  /** Fundo claro na cor de `ink` (as formas de "Adicionar"). */
+  tint?: boolean
+  /**
+   * A tecla do atalho, desenhada no canto (só com mouse). Só para atalhos que EXISTEM: o
+   * `aria-keyshortcuts` continua sendo o anúncio para quem usa leitor de tela.
+   */
+  keyHint?: string
   /** Ladrilho de ESCOLHA (uma ferramenta): liga o visual e o `aria-pressed`. */
   pressed?: boolean
   ref?: Ref<HTMLButtonElement>
@@ -34,13 +42,20 @@ export function SceneTile({
   return (
     <button
       type={type ?? 'button'}
+      aria-label={label}
       aria-pressed={pressed}
+      data-tint={tint && ink ? '' : undefined}
       className={clsx('mld-tile', className)}
       style={ink ? ({ ...style, '--mld-tile-ink': ink } as CSSProperties) : style}
       {...props}
     >
       <Icon aria-hidden="true" />
-      <span>{label}</span>
+      <span className="mld-tile-label">{label}</span>
+      {keyHint && (
+        <span aria-hidden="true" className="mld-tile-key">
+          {keyHint}
+        </span>
+      )}
     </button>
   )
 }

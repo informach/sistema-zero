@@ -30,7 +30,7 @@ describe('CTA do cartão de curso', () => {
     expect(getByRole('link', { name: /Cadê Todo Mundo/ }).getAttribute('href')).toBe(
       '/cursos/cade-todo-mundo',
     )
-    expect(getByText('Acessar aventura')).toBeTruthy()
+    expect(getByText('Acessar curso')).toBeTruthy()
   })
 
   test('curso sem matrícula aponta ao responsável em uma página externa', () => {
@@ -47,7 +47,7 @@ describe('CTA do cartão de curso', () => {
     expect(link.getAttribute('rel')).toContain('noopener')
     expect(getByText('Mostrar ao responsável')).toBeTruthy()
     expect(link.getAttribute('aria-label')).toContain('nova aba')
-    expect(getByText('Aventura extra')).toBeTruthy()
+    expect(getByText('Curso extra')).toBeTruthy()
   })
 
   test('sem página externa não promete acesso clicável', () => {

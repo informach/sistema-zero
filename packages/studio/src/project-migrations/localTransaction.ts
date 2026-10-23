@@ -1,4 +1,4 @@
-import type { IdbWrite } from '../state/idbTransaction'
+import { conditionalGeneration, conditionalWrite, type IdbWrite } from '../state/idbTransaction'
 import type { ProjectStorageScope } from '../state/projectStorageRuntime'
 
 function equal(a: unknown, b: unknown): boolean {
@@ -26,44 +26,23 @@ function equal(a: unknown, b: unknown): boolean {
 }
 
 /**
- * Só a migração, antes de abrir o editor, usa leitura e escrita condicionais na
- * mesma transação. O autosave/flush continua pedindo e confirmando sem leituras.
- * Conversão e hash já terminaram: este callback compara e promove sincronicamente.
+ * Conversão e hash já terminaram: a promoção compara e escreve sincronicamente.
+ * Usa o mesmo registro de transações condicionais do editor, interrompível na saída.
  */
 export function promoteLocalMigration(
   store: ProjectStorageScope['store'],
   expected: ReadonlyArray<readonly [IDBValidKey, unknown]>,
   write: IdbWrite,
+  identity = 'studio-project-migration',
 ): Promise<boolean> {
-  return store(
-    'readwrite',
-    (objectStore) =>
-      new Promise<boolean>((resolve, reject) => {
-        const transaction = objectStore.transaction
-        const requests = expected.map(([key]) => objectStore.get(key))
-        let remaining = requests.length
-        let promoted = false
-        transaction.oncomplete = () => resolve(promoted)
-        transaction.onabort = () =>
-          reject(transaction.error ?? new Error('A conversão local foi interrompida.'))
-        const finish = () => {
-          try {
-            if (requests.every((request, index) => equal(request.result, expected[index]![1]))) {
-              for (const [key, value] of write.puts ?? []) objectStore.put(value, key)
-              for (const key of write.deletes ?? []) objectStore.delete(key)
-              promoted = true
-            }
-            transaction.commit()
-          } catch (error) {
-            transaction.abort()
-            reject(error)
-          }
-        }
-        for (const request of requests)
-          request.onsuccess = () => {
-            if (--remaining === 0) finish()
-          }
-        if (!remaining) finish()
-      }),
+  return conditionalWrite(
+    store,
+    identity,
+    conditionalGeneration(identity),
+    expected.map(([key]) => key),
+    (values) => {
+      const promoted = values.every((value, index) => equal(value, expected[index]![1]))
+      return { write: promoted ? write : {}, result: promoted }
+    },
   )
 }

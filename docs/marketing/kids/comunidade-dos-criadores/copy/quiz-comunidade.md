@@ -1,154 +1,262 @@
-# Descubra por onde seu filho pode começar a criar com tecnologia.
+<!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/quiz/. Edite o código e rode `bun scripts/espelho-quiz-comunidade.ts` (em packages/funnel). -->
 
-Os jogos de que seu filho gosta, os desenhos que faz e as perguntas que traz podem ajudar vocês a escolher uma atividade. Conte o que você observa em casa e o que gostaria que ele aprendesse.
+# Quiz da Comunidade Kids: entrada, ramos e perguntas
 
-Você vai receber uma sugestão explicada a partir das suas respostas e uma ideia para experimentar com ele em casa.
+_Versão `comunidade-orientacao-v6`. As perguntas falam só da criança e da casa; nenhuma tela antes do resultado cita a Comunidade nem apresenta a criação de jogos como solução. O texto é escrito no masculino e vira "ela" quando a entrada é "Na minha filha"._
 
-- Um caminho ligado aos interesses dele
-- O que procurar numa atividade para esse momento
-- Seu resultado na tela, sem cadastro
+## Entrada
 
-Responda pensando em um filho de cada vez. Você pode indicar o que ainda não sabe.
+_Para mães, pais e responsáveis_
 
-Uma orientação do Sistema Zero Kids para mães, pais e responsáveis por crianças e adolescentes de 9 a 14 anos. Você pode responder pelo celular.
+**Manchete padrão** (Padrão: ele vive no jogo):
 
-**Descobrir um caminho para meu filho**
+# Seu filho vive no jogo. Em 3 minutos, veja como usar isso para ele aprender de verdade.
 
-## Pergunta 1
+**Manchete com `?manchete=tela`** (Tela: a dor do tempo de tela):
 
-Qual é a idade do filho em quem você está pensando?
+# Seu filho passa horas na tela. Em 3 minutos, veja o que faria esse tempo render alguma coisa.
 
-- Até 8 anos
-- De 9 a 11 anos
-- De 12 a 14 anos
-- 15 anos ou mais
+Responda sobre a rotina dele. O resultado aparece na hora, sem cadastro.
 
-## Pergunta 2
+Uma orientação do Sistema Zero Kids. Dá para responder pelo celular.
 
-No último mês, qual destas atividades ele procurou com mais frequência por vontade própria?
+## Ramos
 
-Considere o último mês e escolha o que mais observou. Pode ser no computador, no celular ou fora das telas.
+- `9a17`: 9 a 17 anos
+- `m9`: Menor de 9
+- `adulto`: 18 ou mais
 
-- Jogar
-- Desenhar
-- Tentar criar ou modificar um jogo
-- Procurar entender como um programa funciona
-- Assistir a vídeos
-- Outra atividade
-- Variou bastante; não percebi uma atividade mais frequente
-- Não sei dizer
+### Saída de 18 ou mais
 
-## Pergunta 3
+**A partir de 18 anos, é a área adulta**
 
-Seu filho já falou que gostaria de fazer alguma destas coisas?
+O Sistema Zero tem uma área para quem tem 18 anos ou mais, com conta própria. Quem responde é a própria pessoa, no quiz adulto.
 
-Pode marcar mais de uma vontade. Se ele ainda não falou sobre isso ou você não souber dizer, escolha a opção correspondente.
+[Abrir o quiz adulto]
 
-- Fazer um jogo próprio
-- Criar desenhos ou personagens
-- Entender como se programa
-- Fazer outro tipo de criação
-- Ele ainda não falou em criar algo assim
-- Ainda não sei dizer o que ele gostaria de criar
+## Perguntas
 
-## Pergunta 4
+### Entrada. Em quem você está pensando?
 
-Quando encontra uma dificuldade ao aprender algo no computador, o que ele costuma fazer primeiro?
+_Etapa: Entrada. Chave `genero`. No /admin: Filho ou filha._
 
-Pense numa situação que você já viu acontecer. Se ainda não observou, pode indicar isso.
+Uma criança de cada vez.
 
-- Volta a uma explicação ou a um exemplo
-- Pede ajuda a uma pessoa
-- Faz algumas tentativas para ver o que acontece
-- Varia bastante conforme a atividade
-- Ainda não observei uma situação assim
+- `filho`: No meu filho
+- `filha`: Na minha filha
 
-## Pergunta 5
+### Entrada. Quantos anos ele tem?
 
-O que você gostaria de entender melhor antes de escolher uma atividade para ele?
+_Etapa: Entrada. Chave `idade`. No /admin: Idade._
 
-Escolha o ponto que mais pesa para você agora.
+- `menos_9`: Menos de 9
+- `9_12`: De 9 a 12
+- `13_17`: De 13 a 17
+- `18_mais`: Ele tem 18 anos ou mais
 
-- Se ela vai despertar o interesse do meu filho
-- Como ele vai dar os primeiros passos
-- Que ajuda terá quando surgir uma dúvida
-- Como eu vou acompanhar o que ele está aprendendo
-- Como encaixar a atividade na rotina
-- Se o investimento cabe no nosso planejamento
-- Ainda não tenho uma dúvida principal
+### 9 a 17 anos. Num dia comum, quanto tempo ele passa em jogos e vídeos?
 
-## Pergunta 6
+_Etapa: A rotina dele. Chave `tempo_tela`. No /admin: Tempo de tela._
 
-Pensando numa atividade nova, o que você mais gostaria de ver seu filho fazendo?
+Some celular, computador, tablet e videogame. Vale uma estimativa.
 
-Imagine uma atividade que valesse a pena para vocês. Escolha até duas possibilidades; se ainda estiver conhecendo os caminhos, pode dizer isso.
+- `menos_1h`: Menos de 1 hora
+- `1_2h`: De 1 a 2 horas
+- `2_4h`: De 2 a 4 horas
+- `mais_4h`: Mais de 4 horas
 
-- Usando parte do tempo de tela que já tem para criar algo e mostrar o que aprendeu
-- Tirando uma ideia de jogo do papel e testando como ela funciona
-- Criando desenhos e personagens e encontrando novos usos para essas ideias
-- Aprendendo programação passo a passo e entendendo como os comandos funcionam
-- O que procuro não aparece nessas opções
-- Preciso conhecer atividades antes de escolher
+### 9 a 17 anos. Em casa, ele pode usar um computador?
 
-## Se você escolher dois objetivos
+_Etapa: A rotina dele. Chave `computador`. No /admin: Computador._
 
-Você marcou dois objetivos. Qual deles gostaria de explorar primeiro?
+Pode ser o da família.
 
-- Primeiro objetivo escolhido na pergunta anterior.
-- Segundo objetivo escolhido na pergunta anterior.
-- Os dois têm o mesmo peso para mim.
+- `sim`: Sim, ele pode usar
+- `organizar`: Temos, mas preciso organizar os horários
+- `celular_tablet`: Por enquanto, só celular ou tablet
+- `verificar`: Ainda preciso ver
 
-## Quando houver interesse em criar jogos
+### 9 a 17 anos. Qual destas frases parece mais com a sua casa?
 
-Para criar jogos, ele precisa usar uma ferramenta específica?
+_Etapa: A cena de casa. Chave `cena`. No /admin: Cena de casa._
 
-Pense no que ele espera criar. Se ainda não conversaram sobre a ferramenta, pode indicar isso.
+- `A`: Ele vive no jogo e no vídeo, e não faz nada com isso
+- `B`: Ele inventa jogo o tempo todo, mas fica só na conversa
+- `C`: Ele desenha personagem o tempo todo, e fica no caderno
+- `D`: Ele quer saber como os jogos são feitos, e eu não sei ensinar
+- `F`: Na lição, ele copia o exemplo e trava quando a pergunta muda
+- `nenhum`: Nenhuma dessas
 
-- Precisa ser Roblox
-- Precisa ser Minecraft
-- Precisa ser outra ferramenta específica
-- Podemos conhecer outra ferramenta de criação de jogos
-- Ainda preciso conversar sobre isso com meu filho
+### 9 a 17 anos. Quando alguma coisa não dá certo num jogo ou num aplicativo, o que ele faz primeiro?
 
-## Quando houver interesse em desenho
+_Etapa: A cena de casa. Chave `quando_trava`. No /admin: Quando trava._
 
-Como vocês gostariam de aproveitar o interesse pelo desenho?
+- `larga`: Larga e vai fazer outra coisa
+- `chama`: Chama alguém para resolver
+- `tenta`: Tenta de outro jeito até dar certo
+- `procura`: Procura um vídeo ou um exemplo
+- `nao_reparou`: Ainda não reparei
 
-Escolha a possibilidade que combina mais com o que vocês procuram.
+### 9 a 17 anos. Quanto do tempo em jogos e vídeos vira alguma coisa que ele mesmo fez?
 
-- Criar personagens e imagens que possam entrar em jogos
-- Quero uma atividade de desenho que não envolva jogos
-- Ainda não conheço essas possibilidades; gostaria de ver um exemplo
-- O desenho é um interesse dele, mas não é uma condição para a nossa escolha
+_Etapa: A cena de casa. Chave `tempo_criacao`. No /admin: Calculadora do tempo de tela._
 
-## Pergunta 7
+Na tela, o título repete o tempo por dia: "Menos de 1 hora por dia dá até 365 horas"; "De 1 a 2 horas por dia dão entre 365 e 730 horas"; "De 2 a 4 horas por dia dão entre 730 e 1.460 horas"; "Mais de 4 horas por dia dão mais de 1.460 horas".
 
-Que tipo de acompanhamento você consideraria para seu filho aprender em casa?
+- `quase_nada`: Quase nada
+- `um_pouco`: Um pouco
+- `boa_parte`: Boa parte
+- `nao_sei`: Não sei dizer
 
-Pense no que faria sentido para ele e para a rotina de vocês.
+### 9 a 17 anos. Se nada mudar no próximo ano, o que mais preocupa?
 
-- Considero aulas gravadas com ajuda por mensagens
-- Prefiro aulas ao vivo, mas posso conhecer outras formas de acompanhamento
-- Ainda não sei qual formato funcionaria melhor para nós
-- Ter um professor ao vivo durante a atividade é indispensável
+_Etapa: A cena de casa. Chave `preocupacao`. No /admin: Preocupação._
 
-## Pergunta 8
+- `A`: A tela continuar só para assistir e jogar
+- `B`: A vontade de criar passar antes de ele fazer um jogo
+- `C`: Os desenhos ficarem na gaveta
+- `D`: A curiosidade dele passar em branco
+- `F`: A dificuldade na escola virar desânimo
+- `nenhum`: Nada, quero aproveitar o interesse dele
 
-Como seu filho teria acesso a um computador para fazer uma atividade em casa?
+### 9 a 17 anos. Daqui a três meses, qual cena você gostaria de ver?
 
-Pode ser um computador compartilhado. Considere o acesso à internet, ao mouse e ao teclado.
+_Etapa: O que você quer. Chave `cena_desejada`. No /admin: Cena desejada._
 
-- Ele poderá usar um computador
-- Temos computador, mas preciso organizar os horários de uso
-- Por enquanto, só temos celular ou tablet disponíveis para ele
-- Ainda preciso verificar
+- `A`: Ele me chamando: olha o que eu fiz
+- `B`: Um amigo jogando um jogo que ele inventou
+- `C`: O personagem que ele desenhou se mexendo na tela
+- `D`: Ele me explicando como um jogo funciona por dentro
+- `F`: Ele explicando uma conta com as palavras dele
 
-**Ver a sugestão para meu filho**
+### 9 a 17 anos. Para dar certo aí em casa, o que precisa estar garantido?
 
-## Para outra faixa de idade
+_Etapa: O que você quer. Chave `garantia`. No /admin: O que precisa estar garantido._
 
-Esta orientação foi pensada para famílias com filhos de 9 a 14 anos.
+- `sozinho`: Ele conseguir sozinho, porque eu não entendo disso
+- `recorrer`: Ter a quem recorrer quando travar
+- `acompanhar`: Eu conseguir acompanhar
+- `tempo_tela`: Caber no tempo de tela combinado
+- `orcamento`: Caber no orçamento
+- `ao_vivo`: Ter professor ao vivo
 
-Os exemplos e as sugestões deste quiz foram preparados para essa faixa. A idade informada, sozinha, não diz o que seu filho consegue fazer.
+### 9 a 17 anos. Juntando tudo, o que você quer para ele?
 
-Para escolher uma atividade em outra fase, vale observar os interesses dele, a linguagem da orientação e o apoio de que precisa. Este quiz não vai indicar um caminho específico para essa idade.
+_Etapa: O que você quer. Chave `sintese`. No /admin: Frase-síntese._
+
+- `A`: Que o tempo de tela sirva para alguma coisa
+- `B`: Que as ideias de jogo dele saiam do papel
+- `C`: Que os desenhos dele ganhem vida
+- `D`: Que ele aprenda a programar de verdade
+- `F`: Que ele entenda o que estuda e use na prática
+- `conhecer`: Ainda estou conhecendo
+
+### 9 a 17 anos · extra (perfil B). Ele precisa criar jogos numa ferramenta específica?
+
+_Etapa: O que você quer. Chave `ferramenta`. No /admin: Ferramenta (perfil B)._
+
+- `roblox`: Precisa ser no Roblox
+- `minecraft`: Precisa ser no Minecraft
+- `outra`: Precisa ser em outra ferramenta específica
+- `pode_outra`: Qualquer ferramenta serve, se ele gostar
+- `conversar`: Ainda vou conversar com ele
+
+### 9 a 17 anos · extra (perfil C). Para os desenhos dele, o que faz mais sentido?
+
+_Etapa: O que você quer. Chave `desenho`. No /admin: Desenhos (perfil C)._
+
+- `movimento`: Que os personagens façam coisas: andem, pulem, reajam
+- `so_desenho`: Que ele desenhe melhor, com traço e técnica
+- `nao_sei`: Ainda não sei
+
+### 9 a 17 anos · extra (perfil F). Em que parte da escola ele mais trava?
+
+_Etapa: O que você quer. Chave `escola`. No /admin: Escola (perfil F)._
+
+- `leitura`: Entender o que o enunciado pede
+- `matematica`: Entender as contas, e não só repetir o exemplo
+- `problemas`: Começar e organizar uma tarefa de várias etapas
+- `ciencias`: Entender por que as coisas acontecem, em ciências
+- `vai_bem`: Ele vai bem; quero que use na prática o que aprende
+- `reforco`: Ele precisa recuperar matéria atrasada da série
+
+### Menor de 9. Ele já lê?
+
+_Etapa: A rotina de vocês. Chave `m9_leitura`. No /admin: Leitura._
+
+- `nao_le`: Ainda não
+- `comecando`: Está começando
+- `prefere`: Lê, mas prefere que eu leia
+- `le_sozinho`: Lê sozinho
+
+### Menor de 9. Vocês têm computador em casa?
+
+_Etapa: A rotina de vocês. Chave `m9_computador`. No /admin: Computador._
+
+- `sim`: Sim, podemos usar
+- `organizar`: Sim, mas preciso organizar horário
+- `celular_tablet`: Só celular ou tablet
+- `verificar`: Ainda vou ver
+
+### Menor de 9. Por semana, quanto tempo vocês conseguem sentar juntos no computador?
+
+_Etapa: A rotina de vocês. Chave `m9_tempo_juntos`. No /admin: Tempo juntos._
+
+Chute.
+
+- `uma_vez`: Uns 20 minutos, uma vez
+- `duas_tres`: Duas ou três vezes, de 20 a 30 minutos
+- `mais`: Mais do que isso
+- `nao_sei`: Ainda não sei
+
+### Menor de 9. Qual destas frases parece mais com ele?
+
+_Etapa: A cena de casa. Chave `m9_cena`. No /admin: Frase que parece com ele._
+
+- `A`: Só fica no joguinho pronto do tablet
+- `B`: Inventa brincadeira e personagem o tempo todo
+- `D`: Quer saber como tudo funciona e apertar tudo
+- `irmao`: Quer fazer o que o irmão mais velho faz
+- `nenhum`: Nenhuma dessas
+
+### Menor de 9. Se nada mudar, o que mais preocupa?
+
+_Etapa: A cena de casa. Chave `m9_preocupacao`. No /admin: Preocupação._
+
+- `A`: A tela continuar só para assistir e jogar
+- `B`: As ideias dele ficarem só na brincadeira
+- `D`: A curiosidade dele passar em branco
+- `nenhum`: Nada, quero aproveitar a fase
+
+### Menor de 9. Daqui a três meses, qual cena você gostaria de ver?
+
+_Etapa: O que você quer. Chave `m9_cena_desejada`. No /admin: Cena desejada._
+
+- `A`: Ele me chamando para ver o que a gente fez
+- `B`: O personagem dele aparecendo na tela
+- `D`: Ele me explicando o que cada botão faz
+- `A2`: Os avós jogando um jogo nosso
+
+### Menor de 9. Para dar certo aí em casa, o que precisa estar garantido?
+
+_Etapa: O que você quer. Chave `m9_garantia`. No /admin: O que precisa estar garantido._
+
+- `conduzir`: Eu conseguir conduzir sem saber programar
+- `curto`: Caber em sessões curtas
+- `seguro`: Ser um lugar seguro
+- `orcamento`: Caber no orçamento
+- `sozinho`: Ele conseguir sozinho, não tenho tempo
+- `ao_vivo`: Ter professor ao vivo
+
+### Menor de 9. Juntando tudo, o que você quer?
+
+_Etapa: O que você quer. Chave `m9_sintese`. No /admin: Frase-síntese._
+
+- `A`: Um tempo de tela nosso, com alguma coisa feita no fim
+- `B`: As ideias dele virando um jogo
+- `D`: Ele entender, brincando, como as coisas funcionam
+- `conhecer`: Ainda estou conhecendo
+
+## Regra do perfil
+
+Nos dois ramos, a cena de casa e a frase-síntese valem 3; a preocupação e a cena desejada valem 2. Com 4 pontos ou mais, o diagnóstico é claro; abaixo, a carta avisa que as respostas apontaram para mais de um lado. No menor de 9, a cena dos avós soma para o tempo a dois, e o irmão mais velho não soma.

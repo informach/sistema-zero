@@ -1,4 +1,5 @@
 import type { EntitlementRepository } from '../../domain/ports/entitlement-repository.port'
+import type { LiveBenefitsPort } from '../../domain/ports/live-benefits.port'
 
 export interface ProfileAllowance {
   /** Teto de perfis (estilo Netflix) que a CONTA pode criar na plataforma kids. */
@@ -30,16 +31,21 @@ export class GetProfileAllowanceService {
     private readonly entitlements: EntitlementRepository,
     private readonly clock: () => Date,
     private readonly opts: GetProfileAllowanceOptions,
+    private readonly live?: Pick<LiveBenefitsPort, 'maxProfiles'>,
   ) {}
 
   async execute(accountId: string): Promise<ProfileAllowance> {
-    const active = await this.entitlements.listActiveByUser(accountId, this.clock())
-    if (active.length === 0) return { maxProfiles: 0 }
+    const now = this.clock()
+    const [active, liveProfiles] = await Promise.all([
+      this.entitlements.listActiveByUser(accountId, now),
+      this.live?.maxProfiles(accountId, now) ?? 0,
+    ])
+    if (active.length === 0) return { maxProfiles: liveProfiles }
     let max = 0
     for (const e of active) {
       const m = e.snapshot.fulfillment?.maxProfiles
       if (typeof m === 'number' && m > max) max = m
     }
-    return { maxProfiles: max > 0 ? max : this.opts.defaultMaxProfiles }
+    return { maxProfiles: Math.max(liveProfiles, max > 0 ? max : this.opts.defaultMaxProfiles) }
   }
 }

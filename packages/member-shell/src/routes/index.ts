@@ -1,7 +1,10 @@
 import { createHash } from 'node:crypto'
+import { isContentFingerprint } from '@sistemazero/core/creations'
 import { createGalleryDeliveryRoutes } from './gallery-delivery'
 import { createLearningRoutes } from './learning'
 import { createProfilePreferencesRoutes } from './profile-preferences'
+import { createStudioFreeRuntimeRoutes } from './studio-free-runtime'
+import { createStudioLessonRuntimeRoutes } from './studio-lesson-runtime'
 import 'server-only'
 import { redirect } from 'next/navigation'
 import { NextResponse } from 'next/server'
@@ -182,6 +185,9 @@ const CreateProfileBody = z.object({
   // O pai decide o perfil público já na criação (tutorial de 1º acesso, 08/2026);
   // o auth aceita o campo no create e a rota de lá é parent-only por construção.
   publicProfileEnabled: z.boolean().optional(),
+  // A criança pode falar em vez de escrever para a equipe (14/10/2026). Só os pais decidem: a
+  // regra (e o login recente para LIGAR) é do auth.
+  voiceInputEnabled: z.boolean().optional(),
 })
 const UpdateProfileBody = z
   .object({
@@ -189,13 +195,15 @@ const UpdateProfileBody = z
     whatsapp: ProfileWhatsapp,
     birthDate: ProfileBirthDate,
     publicProfileEnabled: z.boolean().optional(),
+    voiceInputEnabled: z.boolean().optional(),
   })
   .refine(
     (b) =>
       b.name !== undefined ||
       b.whatsapp !== undefined ||
       b.birthDate !== undefined ||
-      b.publicProfileEnabled !== undefined,
+      b.publicProfileEnabled !== undefined ||
+      b.voiceInputEnabled !== undefined,
     'Nada para atualizar',
   )
 const ExitProfileBody = z.object({ password: z.string().min(1).max(200) })
@@ -243,7 +251,16 @@ const ParentReportPrefsBody = z.object({
 const ImpersonationModeBody = z.object({ mode: z.enum(IMPERSONATION_MODES) })
 
 /** Resposta do aluno numa conversa com o professor (o members revalida ≤1000 + trim). */
-const TeacherReplyBody = z.object({ body: z.string().trim().min(1).max(1000) })
+const TeacherReplyBody = z.object({
+  body: z.string().trim().min(1).max(1000),
+  // O texto veio da fala transcrita (botão "Falar" do Kids): a equipe vê o chip "falado".
+  spoken: z.boolean().optional(),
+})
+
+/** O recado do envio veio da fala transcrita? Só `true` conta. */
+function readMessageSpoken(raw: unknown): boolean {
+  return (raw as { messageSpoken?: unknown } | null)?.messageSpoken === true
+}
 
 const QuizAttemptBody = z.object({
   // Espelha o TypeBox do members: ≤100 questões, ≤20 choices/questão, chaves/ids ≤64.
@@ -276,7 +293,7 @@ const invalidInput = () => NextResponse.json({ error: { code: 'INVALID_INPUT' } 
  */
 function readFingerprint(raw: unknown): string | undefined {
   const value = (raw as { fingerprint?: unknown } | null)?.fingerprint
-  return typeof value === 'string' && /^v1:[a-f0-9]{64}$/.test(value) ? value : undefined
+  return isContentFingerprint(value) ? value : undefined
 }
 
 /** Valida ids de path (perfil etc.) ANTES de tocar gateway/R2 — fail-fast e não
@@ -977,6 +994,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const limit = clampInt(url.searchParams.get('limit'), 20, 1, 100)
       const cursor = url.searchParams.get('cursor') ?? undefined
       const { status, body } = await members.getRanking({ limit, cursor })
+      if (session.audience === 'adult' && status === 200 && body?.audience !== 'adult')
+        return NextResponse.json({ error: { code: 'ADULT_PROTOCOL_REQUIRED' } }, { status: 503 })
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1073,12 +1092,13 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
           )
         }
 
-        const stored = await optimizeAndStoreAvatar(file, user.id, 'avatar3d')
+        const namespace = session.audience === 'adult' ? 'avatar3d-adult' : 'avatar3d'
+        const stored = await optimizeAndStoreAvatar(file, user.id, namespace)
         const { status, body } = await members.setAvatarPhoto(stored.url)
         if (status !== 200) {
           return NextResponse.json(body ?? { error: { code: 'UPDATE_FAILED' } }, { status })
         }
-        await removeStaleAvatars(user.id, stored.key, 'avatar3d')
+        await removeStaleAvatars(user.id, stored.key, namespace)
         return NextResponse.json({ url: stored.url })
       } catch (error) {
         return mediaErrorResponse(error)
@@ -1128,6 +1148,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   const missionsGet = {
     GET: async () => {
       const { status, body } = await members.getMissions()
+      if (session.audience === 'adult' && status === 200 && body?.audience !== 'adult')
+        return NextResponse.json({ error: { code: 'ADULT_PROTOCOL_REQUIRED' } }, { status: 503 })
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1137,6 +1159,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     POST: async (_req: Request, ctx: { params: Promise<{ slug: string }> }) => {
       const readonly = await requireWritableSession()
       if (readonly) return readonly
+      if (session.audience === 'adult') {
+        const protocol = await members.getMissions()
+        if (protocol.status !== 200 || protocol.body?.audience !== 'adult')
+          return NextResponse.json({ error: { code: 'ADULT_PROTOCOL_REQUIRED' } }, { status: 503 })
+      }
       const { slug } = await ctx.params
       const { status, body } = await members.claimMission(slug)
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
@@ -1299,8 +1326,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
   }
 
   /**
-   * Embaixador da Bolsa do Primeiro Jogo (auto-cadastro do responsável). Tela
-   * EXCLUSIVA dos pais — o shim do KIDS gateia com `requireParentGateAccountOnly`.
+   * Embaixador do presente (auto-cadastro). O corpo do referrals passa INTEIRO: `shareUrls`
+   * (`{ kids, adult }`, 20/10/2026) e o `shareUrl` antigo (Kids) chegam ao cartão como vieram.
+   * Quem pode chamar é decidido no shim de cada app: o Kids gateia com
+   * `requireParentGateAccountOnly`; o adulto com `requireOwnAdultAccount` (sem perfil, e GET e
+   * POST recusam qualquer sessão de suporte: o `pageUrl` troca a chave Pix).
    */
   const ambassadorMe = {
     GET: async () => {
@@ -1398,6 +1428,8 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         results,
         message,
         readFingerprint(raw),
+        readMessageSpoken(raw),
+        req.signal,
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1409,6 +1441,38 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       const { lessonId, blockId } = await ctx.params
       const { status, body } = await members.getStudioCarryover(lessonId, blockId)
       return NextResponse.json(body ?? { project: null }, { status })
+    },
+  }
+
+  const studioContext = {
+    POST: async (req: Request, ctx: { params: Promise<{ lessonId: string; blockId: string }> }) => {
+      const { lessonId, blockId } = await ctx.params
+      // O bloco da aula abre com POST SEM corpo; no Request do Next o `body` desse POST ainda é
+      // um stream (vazio), então a ausência é decidida pelo texto, não pela existência do stream.
+      const text = await req.text().catch(() => null)
+      let input: unknown = null
+      if (text !== null && text.trim() === '') input = {}
+      else if (text !== null) {
+        try {
+          input = JSON.parse(text)
+        } catch {
+          input = null
+        }
+      }
+      const parsed = z
+        .object({
+          confirm: z
+            .object({
+              baselineId: z.string().regex(/^[a-f0-9]{64}$/),
+              environment: z.unknown(),
+            })
+            .optional(),
+        })
+        .safeParse(input)
+      if (!parsed.success)
+        return NextResponse.json({ error: { message: 'Contexto inválido.' } }, { status: 400 })
+      const { status, body } = await members.openLessonStudio(lessonId, blockId, parsed.data)
+      return NextResponse.json(body, { status, headers: { 'Cache-Control': 'private, no-store' } })
     },
   }
 
@@ -1444,6 +1508,7 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
         asset,
         message,
         readFingerprint(raw),
+        readMessageSpoken(raw),
       )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
@@ -1505,7 +1570,11 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
       if (!UUID_RE.test(threadId)) return invalidInput()
       const parsed = TeacherReplyBody.safeParse(await req.json().catch(() => null))
       if (!parsed.success) return invalidInput()
-      const { status, body } = await members.postTeacherMessage(threadId, parsed.data.body)
+      const { status, body } = await members.postTeacherMessage(
+        threadId,
+        parsed.data.body,
+        parsed.data.spoken === true,
+      )
       return NextResponse.json(body ?? { ok: status === 200 }, { status })
     },
   }
@@ -1778,6 +1847,9 @@ export function createShellRoutes(deps: ShellRoutesDeps) {
     learningHelp,
     studioSubmit,
     studioCarryover,
+    studioContext,
+    studioRuntime: createStudioLessonRuntimeRoutes(members),
+    studioFree: createStudioFreeRuntimeRoutes(members, session.audience),
     studioSubmissionGet,
     pintaSubmit,
     pintaSubmissionGet,

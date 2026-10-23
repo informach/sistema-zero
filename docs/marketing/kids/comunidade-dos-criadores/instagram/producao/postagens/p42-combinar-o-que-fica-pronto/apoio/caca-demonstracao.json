@@ -1,0 +1,2519 @@
+{
+  "html": [
+    {
+      "type": "element",
+      "tag": "div",
+      "id": "score",
+      "text": "Naves: 0 de 10"
+    },
+    {
+      "type": "element",
+      "tag": "div",
+      "id": "shields",
+      "text": "Escudos: 3"
+    },
+    {
+      "type": "element",
+      "tag": "div",
+      "id": "results",
+      "children": [
+        {
+          "type": "element",
+          "tag": "div",
+          "id": "results-box",
+          "children": [
+            {
+              "type": "element",
+              "tag": "h1",
+              "id": "result-title",
+              "text": "Fim da patrulha"
+            },
+            {
+              "type": "element",
+              "tag": "p",
+              "children": [
+                {
+                  "type": "text",
+                  "text": "Naves abatidas: "
+                },
+                {
+                  "type": "element",
+                  "tag": "span",
+                  "id": "final-score"
+                }
+              ]
+            },
+            {
+              "type": "element",
+              "tag": "button",
+              "id": "retry",
+              "text": "Jogar de novo"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "css": [
+    {
+      "type": "googleFont",
+      "family": "Press Start 2P"
+    },
+    {
+      "selector": "body",
+      "declarations": {
+        "margin": "0",
+        "overflow": "hidden",
+        "font-family": "\"Press Start 2P\", cursive"
+      }
+    },
+    {
+      "selector": "canvas",
+      "declarations": {
+        "display": "block",
+        "width": "100vw",
+        "height": "100vh"
+      }
+    },
+    {
+      "selector": "#score",
+      "declarations": {
+        "position": "absolute",
+        "top": "20px",
+        "left": "20px",
+        "font-size": "1.1em",
+        "color": "white"
+      }
+    },
+    {
+      "selector": "#shields",
+      "declarations": {
+        "position": "absolute",
+        "top": "20px",
+        "right": "20px",
+        "font-size": "1.1em",
+        "color": "#22d3ee"
+      }
+    },
+    {
+      "selector": "#results",
+      "declarations": {
+        "position": "absolute",
+        "top": "0",
+        "left": "0",
+        "min-width": "100%",
+        "min-height": "100%",
+        "display": "flex",
+        "align-items": "center",
+        "justify-content": "center",
+        "visibility": "hidden"
+      }
+    },
+    {
+      "selector": "#results.visivel",
+      "declarations": {
+        "visibility": "visible"
+      }
+    },
+    {
+      "selector": "#results-box",
+      "declarations": {
+        "display": "flex",
+        "flex-direction": "column",
+        "align-items": "center",
+        "background-color": "white",
+        "color": "#050818",
+        "padding": "20px",
+        "text-align": "center"
+      }
+    },
+    {
+      "selector": "#results-box button",
+      "declarations": {
+        "background-color": "#22d3ee",
+        "color": "white",
+        "padding": "16px 32px",
+        "font-family": "inherit",
+        "cursor": "pointer"
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "extensionId": "game-3d"
+    }
+  ],
+  "version": 2,
+  "behavior": {
+    "start": [
+      {
+        "type": "g3d:createFullscreenScene",
+        "varName": "cena",
+        "bg": "#050818"
+      },
+      {
+        "type": "g3d:setSky",
+        "worldVar": "cena",
+        "top": "#0b1030",
+        "bottom": "#1e1b4b"
+      },
+      {
+        "type": "g3d:topCamera",
+        "worldVar": "cena",
+        "followVar": ""
+      },
+      {
+        "type": "g3d:setFog",
+        "worldVar": "cena",
+        "color": "#050818",
+        "near": {
+          "type": "num",
+          "value": 44
+        },
+        "far": {
+          "type": "num",
+          "value": 130
+        }
+      },
+      {
+        "type": "g3d:addSunLight",
+        "worldVar": "cena",
+        "color": "#dbeafe",
+        "intensity": {
+          "type": "num",
+          "value": 2
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "chao",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 1
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#213659"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "chao",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": -0.5
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX0",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX0",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": -18
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ0",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ0",
+        "x": {
+          "type": "num",
+          "value": -18
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX1",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX1",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": -15
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ1",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ1",
+        "x": {
+          "type": "num",
+          "value": -15
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX2",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX2",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": -12
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ2",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ2",
+        "x": {
+          "type": "num",
+          "value": -12
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX3",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX3",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": -9
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ3",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ3",
+        "x": {
+          "type": "num",
+          "value": -9
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX4",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX4",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": -6
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ4",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ4",
+        "x": {
+          "type": "num",
+          "value": -6
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX5",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX5",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": -3
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ5",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ5",
+        "x": {
+          "type": "num",
+          "value": -3
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX6",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX6",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ6",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ6",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX7",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX7",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 3
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ7",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ7",
+        "x": {
+          "type": "num",
+          "value": 3
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX8",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX8",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 6
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ8",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ8",
+        "x": {
+          "type": "num",
+          "value": 6
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX9",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX9",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 9
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ9",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ9",
+        "x": {
+          "type": "num",
+          "value": 9
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX10",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX10",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 12
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ10",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ10",
+        "x": {
+          "type": "num",
+          "value": 12
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX11",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX11",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 15
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ11",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ11",
+        "x": {
+          "type": "num",
+          "value": 15
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaX12",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 36
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.025
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaX12",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 18
+        }
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "linhaZ12",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.025
+        },
+        "height": {
+          "type": "num",
+          "value": 0.02
+        },
+        "depth": {
+          "type": "num",
+          "value": 36
+        },
+        "color": "#375575"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "linhaZ12",
+        "x": {
+          "type": "num",
+          "value": 18
+        },
+        "y": {
+          "type": "num",
+          "value": 0.015
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createBox",
+        "varName": "nucleo",
+        "worldVar": "cena",
+        "size": {
+          "type": "num",
+          "value": 2
+        },
+        "color": "#38bdf8"
+      },
+      {
+        "type": "g3d:setMaterial",
+        "objVar": "nucleo",
+        "kind": "glow"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nucleo",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": -0.4
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createModel",
+        "varName": "nave",
+        "worldVar": "cena"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_corpo",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.65
+        },
+        "height": {
+          "type": "num",
+          "value": 0.35
+        },
+        "depth": {
+          "type": "num",
+          "value": 2
+        },
+        "color": "#22d3ee"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_corpo",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_corpo"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_asa",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 2.8
+        },
+        "height": {
+          "type": "num",
+          "value": 0.13
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.8
+        },
+        "color": "#22d3ee"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_asa",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": -0.02
+        },
+        "z": {
+          "type": "num",
+          "value": 0.3
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_asa"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_cabine",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.4
+        },
+        "height": {
+          "type": "num",
+          "value": 0.2
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.7
+        },
+        "color": "#d9f8ff"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_cabine",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.23
+        },
+        "z": {
+          "type": "num",
+          "value": -0.15
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_cabine"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_motorE",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.35
+        },
+        "height": {
+          "type": "num",
+          "value": 0.3
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.8
+        },
+        "color": "#334d75"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_motorE",
+        "x": {
+          "type": "num",
+          "value": -0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 0.65
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_motorE"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_motorD",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.35
+        },
+        "height": {
+          "type": "num",
+          "value": 0.3
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.8
+        },
+        "color": "#334d75"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_motorD",
+        "x": {
+          "type": "num",
+          "value": 0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 0.65
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_motorD"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_fogoE",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.23
+        },
+        "height": {
+          "type": "num",
+          "value": 0.2
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.4
+        },
+        "color": "#ffcb5e"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_fogoE",
+        "x": {
+          "type": "num",
+          "value": -0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 1.2
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_fogoE"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "nave_fogoD",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.23
+        },
+        "height": {
+          "type": "num",
+          "value": 0.2
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.4
+        },
+        "color": "#ffcb5e"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave_fogoD",
+        "x": {
+          "type": "num",
+          "value": 0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 1.2
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "nave",
+        "partVar": "nave_fogoD"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "nave",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.6
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:createModel",
+        "varName": "moldeCaca",
+        "worldVar": "cena"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_corpo",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.65
+        },
+        "height": {
+          "type": "num",
+          "value": 0.35
+        },
+        "depth": {
+          "type": "num",
+          "value": 2
+        },
+        "color": "#ef4444"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_corpo",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_corpo"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_asa",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 2.8
+        },
+        "height": {
+          "type": "num",
+          "value": 0.13
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.8
+        },
+        "color": "#ef4444"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_asa",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": -0.02
+        },
+        "z": {
+          "type": "num",
+          "value": 0.3
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_asa"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_cabine",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.4
+        },
+        "height": {
+          "type": "num",
+          "value": 0.2
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.7
+        },
+        "color": "#d9f8ff"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_cabine",
+        "x": {
+          "type": "num",
+          "value": 0
+        },
+        "y": {
+          "type": "num",
+          "value": 0.23
+        },
+        "z": {
+          "type": "num",
+          "value": -0.15
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_cabine"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_motorE",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.35
+        },
+        "height": {
+          "type": "num",
+          "value": 0.3
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.8
+        },
+        "color": "#334d75"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_motorE",
+        "x": {
+          "type": "num",
+          "value": -0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 0.65
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_motorE"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_motorD",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.35
+        },
+        "height": {
+          "type": "num",
+          "value": 0.3
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.8
+        },
+        "color": "#334d75"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_motorD",
+        "x": {
+          "type": "num",
+          "value": 0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 0.65
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_motorD"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_fogoE",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.23
+        },
+        "height": {
+          "type": "num",
+          "value": 0.2
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.4
+        },
+        "color": "#ffcb5e"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_fogoE",
+        "x": {
+          "type": "num",
+          "value": -0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 1.2
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_fogoE"
+      },
+      {
+        "type": "g3d:createBlock",
+        "varName": "moldeCaca_fogoD",
+        "worldVar": "cena",
+        "width": {
+          "type": "num",
+          "value": 0.23
+        },
+        "height": {
+          "type": "num",
+          "value": 0.2
+        },
+        "depth": {
+          "type": "num",
+          "value": 0.4
+        },
+        "color": "#ffcb5e"
+      },
+      {
+        "type": "g3d:setPosition",
+        "objVar": "moldeCaca_fogoD",
+        "x": {
+          "type": "num",
+          "value": 0.9
+        },
+        "y": {
+          "type": "num",
+          "value": 0
+        },
+        "z": {
+          "type": "num",
+          "value": 1.2
+        }
+      },
+      {
+        "type": "g3d:addToModel",
+        "modelVar": "moldeCaca",
+        "partVar": "moldeCaca_fogoD"
+      },
+      {
+        "type": "g3d:setVisible",
+        "objVar": "moldeCaca",
+        "mode": "hide"
+      },
+      {
+        "type": "g3d:createSwarm",
+        "varName": "cacas",
+        "worldVar": "cena"
+      },
+      {
+        "type": "var",
+        "name": "pontos",
+        "value": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "var",
+        "name": "escudo",
+        "value": {
+          "type": "num",
+          "value": 3
+        }
+      },
+      {
+        "type": "var",
+        "name": "naveX",
+        "value": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "var",
+        "name": "naveZ",
+        "value": {
+          "type": "num",
+          "value": 0
+        }
+      },
+      {
+        "type": "var",
+        "name": "rodando",
+        "value": {
+          "type": "bool",
+          "value": true
+        }
+      }
+    ],
+    "events": [
+      {
+        "type": "event",
+        "target": "retry",
+        "event": "click",
+        "body": [
+          {
+            "type": "g3d:forEachInSwarm",
+            "swarmVar": "cacas",
+            "itemName": "item",
+            "body": [
+              {
+                "type": "g3d:removeFromSwarm",
+                "swarmVar": "cacas",
+                "itemVar": "item"
+              }
+            ]
+          },
+          {
+            "type": "assign",
+            "name": "pontos",
+            "value": {
+              "type": "num",
+              "value": 0
+            }
+          },
+          {
+            "type": "assign",
+            "name": "escudo",
+            "value": {
+              "type": "num",
+              "value": 3
+            }
+          },
+          {
+            "type": "assign",
+            "name": "naveX",
+            "value": {
+              "type": "num",
+              "value": 0
+            }
+          },
+          {
+            "type": "assign",
+            "name": "naveZ",
+            "value": {
+              "type": "num",
+              "value": 0
+            }
+          },
+          {
+            "type": "assign",
+            "name": "rodando",
+            "value": {
+              "type": "bool",
+              "value": true
+            }
+          },
+          {
+            "type": "g3d:setPosition",
+            "objVar": "nave",
+            "x": {
+              "type": "num",
+              "value": 0
+            },
+            "y": {
+              "type": "num",
+              "value": 0.6
+            },
+            "z": {
+              "type": "num",
+              "value": 0
+            }
+          },
+          {
+            "type": "setProperty",
+            "targetId": "score",
+            "property": "textContent",
+            "value": {
+              "type": "str",
+              "value": "Naves: 0 de 10"
+            }
+          },
+          {
+            "type": "setProperty",
+            "targetId": "shields",
+            "property": "textContent",
+            "value": {
+              "type": "str",
+              "value": "Escudos: 3"
+            }
+          },
+          {
+            "type": "classOp",
+            "targetId": "results",
+            "op": "remove",
+            "className": "visivel"
+          }
+        ]
+      }
+    ],
+    "loops": [
+      {
+        "type": "g3d:animate",
+        "worldVar": "cena",
+        "body": [
+          {
+            "type": "if",
+            "cond": {
+              "type": "var",
+              "name": "rodando"
+            },
+            "then": [
+              {
+                "type": "g3d:spin",
+                "objVar": "nucleo",
+                "axis": "y",
+                "speed": {
+                  "type": "num",
+                  "value": 0.6
+                }
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "logical",
+                  "op": "||",
+                  "left": {
+                    "type": "g3d:keyDown",
+                    "key": "ArrowLeft"
+                  },
+                  "right": {
+                    "type": "g3d:keyDown",
+                    "key": "KeyA"
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveX",
+                    "value": {
+                      "type": "binop",
+                      "op": "-",
+                      "left": {
+                        "type": "var",
+                        "name": "naveX"
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 0.18
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "logical",
+                  "op": "||",
+                  "left": {
+                    "type": "g3d:keyDown",
+                    "key": "ArrowRight"
+                  },
+                  "right": {
+                    "type": "g3d:keyDown",
+                    "key": "KeyD"
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveX",
+                    "value": {
+                      "type": "binop",
+                      "op": "+",
+                      "left": {
+                        "type": "var",
+                        "name": "naveX"
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 0.18
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "logical",
+                  "op": "||",
+                  "left": {
+                    "type": "g3d:keyDown",
+                    "key": "ArrowUp"
+                  },
+                  "right": {
+                    "type": "g3d:keyDown",
+                    "key": "KeyW"
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveZ",
+                    "value": {
+                      "type": "binop",
+                      "op": "-",
+                      "left": {
+                        "type": "var",
+                        "name": "naveZ"
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 0.18
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "logical",
+                  "op": "||",
+                  "left": {
+                    "type": "g3d:keyDown",
+                    "key": "ArrowDown"
+                  },
+                  "right": {
+                    "type": "g3d:keyDown",
+                    "key": "KeyS"
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveZ",
+                    "value": {
+                      "type": "binop",
+                      "op": "+",
+                      "left": {
+                        "type": "var",
+                        "name": "naveZ"
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 0.18
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": "<",
+                  "left": {
+                    "type": "var",
+                    "name": "naveX"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": -16
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveX",
+                    "value": {
+                      "type": "num",
+                      "value": -16
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": ">",
+                  "left": {
+                    "type": "var",
+                    "name": "naveX"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": 16
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveX",
+                    "value": {
+                      "type": "num",
+                      "value": 16
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": "<",
+                  "left": {
+                    "type": "var",
+                    "name": "naveZ"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": -16
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveZ",
+                    "value": {
+                      "type": "num",
+                      "value": -16
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": ">",
+                  "left": {
+                    "type": "var",
+                    "name": "naveZ"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": 16
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "naveZ",
+                    "value": {
+                      "type": "num",
+                      "value": 16
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "g3d:setPosition",
+                "objVar": "nave",
+                "x": {
+                  "type": "var",
+                  "name": "naveX"
+                },
+                "y": {
+                  "type": "num",
+                  "value": 0.6
+                },
+                "z": {
+                  "type": "var",
+                  "name": "naveZ"
+                }
+              },
+              {
+                "type": "g3d:forEachInSwarm",
+                "swarmVar": "cacas",
+                "itemName": "item",
+                "body": [
+                  {
+                    "type": "if",
+                    "cond": {
+                      "type": "logical",
+                      "op": "&&",
+                      "left": {
+                        "type": "g3d:keyDown",
+                        "key": "Space"
+                      },
+                      "right": {
+                        "type": "g3d:isNear",
+                        "aVar": "nave",
+                        "bVar": "item",
+                        "dist": {
+                          "type": "num",
+                          "value": 2.6
+                        }
+                      }
+                    },
+                    "then": [
+                      {
+                        "type": "g3d:removeFromSwarm",
+                        "swarmVar": "cacas",
+                        "itemVar": "item"
+                      },
+                      {
+                        "type": "assign",
+                        "name": "pontos",
+                        "value": {
+                          "type": "binop",
+                          "op": "+",
+                          "left": {
+                            "type": "var",
+                            "name": "pontos"
+                          },
+                          "right": {
+                            "type": "num",
+                            "value": 1
+                          }
+                        }
+                      },
+                      {
+                        "type": "g3d:playEffect",
+                        "kind": "coin"
+                      },
+                      {
+                        "type": "setProperty",
+                        "targetId": "score",
+                        "property": "textContent",
+                        "value": {
+                          "type": "binop",
+                          "op": "+",
+                          "left": {
+                            "type": "binop",
+                            "op": "+",
+                            "left": {
+                              "type": "str",
+                              "value": "Naves: "
+                            },
+                            "right": {
+                              "type": "var",
+                              "name": "pontos"
+                            }
+                          },
+                          "right": {
+                            "type": "str",
+                            "value": " de 10"
+                          }
+                        }
+                      }
+                    ],
+                    "else": [
+                      {
+                        "type": "if",
+                        "cond": {
+                          "type": "g3d:isNear",
+                          "aVar": "nave",
+                          "bVar": "item",
+                          "dist": {
+                            "type": "num",
+                            "value": 1.4
+                          }
+                        },
+                        "then": [
+                          {
+                            "type": "g3d:removeFromSwarm",
+                            "swarmVar": "cacas",
+                            "itemVar": "item"
+                          },
+                          {
+                            "type": "assign",
+                            "name": "escudo",
+                            "value": {
+                              "type": "binop",
+                              "op": "-",
+                              "left": {
+                                "type": "var",
+                                "name": "escudo"
+                              },
+                              "right": {
+                                "type": "num",
+                                "value": 1
+                              }
+                            }
+                          },
+                          {
+                            "type": "g3d:playEffect",
+                            "kind": "hit"
+                          },
+                          {
+                            "type": "setProperty",
+                            "targetId": "shields",
+                            "property": "textContent",
+                            "value": {
+                              "type": "binop",
+                              "op": "+",
+                              "left": {
+                                "type": "str",
+                                "value": "Escudos: "
+                              },
+                              "right": {
+                                "type": "var",
+                                "name": "escudo"
+                              }
+                            }
+                          }
+                        ],
+                        "else": [
+                          {
+                            "type": "if",
+                            "cond": {
+                              "type": "g3d:isNear",
+                              "aVar": "nave",
+                              "bVar": "item",
+                              "dist": {
+                                "type": "num",
+                                "value": 13
+                              }
+                            },
+                            "then": [
+                              {
+                                "type": "g3d:moveTowards",
+                                "objVar": "item",
+                                "x": {
+                                  "type": "g3d:getPos",
+                                  "objVar": "nave",
+                                  "axis": "x"
+                                },
+                                "y": {
+                                  "type": "num",
+                                  "value": 0.6
+                                },
+                                "z": {
+                                  "type": "g3d:getPos",
+                                  "objVar": "nave",
+                                  "axis": "z"
+                                },
+                                "factor": {
+                                  "type": "num",
+                                  "value": 0.06
+                                }
+                              }
+                            ],
+                            "else": [
+                              {
+                                "type": "g3d:spin",
+                                "objVar": "item",
+                                "axis": "y",
+                                "speed": {
+                                  "type": "num",
+                                  "value": 1.6
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": ">=",
+                  "left": {
+                    "type": "var",
+                    "name": "pontos"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": 10
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "rodando",
+                    "value": {
+                      "type": "bool",
+                      "value": false
+                    }
+                  },
+                  {
+                    "type": "g3d:playEffect",
+                    "kind": "coin"
+                  },
+                  {
+                    "type": "setProperty",
+                    "targetId": "result-title",
+                    "property": "textContent",
+                    "value": {
+                      "type": "str",
+                      "value": "Ás dos céus!"
+                    }
+                  },
+                  {
+                    "type": "setProperty",
+                    "targetId": "final-score",
+                    "property": "textContent",
+                    "value": {
+                      "type": "var",
+                      "name": "pontos"
+                    }
+                  },
+                  {
+                    "type": "classOp",
+                    "targetId": "results",
+                    "op": "add",
+                    "className": "visivel"
+                  }
+                ]
+              },
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": "<=",
+                  "left": {
+                    "type": "var",
+                    "name": "escudo"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": 0
+                  }
+                },
+                "then": [
+                  {
+                    "type": "assign",
+                    "name": "rodando",
+                    "value": {
+                      "type": "bool",
+                      "value": false
+                    }
+                  },
+                  {
+                    "type": "g3d:playEffect",
+                    "kind": "explosion"
+                  },
+                  {
+                    "type": "setProperty",
+                    "targetId": "result-title",
+                    "property": "textContent",
+                    "value": {
+                      "type": "str",
+                      "value": "Nave abatida..."
+                    }
+                  },
+                  {
+                    "type": "setProperty",
+                    "targetId": "final-score",
+                    "property": "textContent",
+                    "value": {
+                      "type": "var",
+                      "name": "pontos"
+                    }
+                  },
+                  {
+                    "type": "classOp",
+                    "targetId": "results",
+                    "op": "add",
+                    "className": "visivel"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "g3d:everySeconds",
+        "secs": {
+          "type": "num",
+          "value": 1.6
+        },
+        "body": [
+          {
+            "type": "if",
+            "cond": {
+              "type": "var",
+              "name": "rodando"
+            },
+            "then": [
+              {
+                "type": "if",
+                "cond": {
+                  "type": "binop",
+                  "op": "<",
+                  "left": {
+                    "type": "g3d:countSwarm",
+                    "swarmVar": "cacas"
+                  },
+                  "right": {
+                    "type": "num",
+                    "value": 6
+                  }
+                },
+                "then": [
+                  {
+                    "type": "var",
+                    "name": "angulo",
+                    "value": {
+                      "type": "binop",
+                      "op": "*",
+                      "left": {
+                        "type": "randomFloat"
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 6.283
+                      }
+                    },
+                    "kind": "const"
+                  },
+                  {
+                    "type": "g3d:spawnInSwarm",
+                    "swarmVar": "cacas",
+                    "originalVar": "moldeCaca",
+                    "x": {
+                      "type": "binop",
+                      "op": "*",
+                      "left": {
+                        "type": "mathUnary",
+                        "fn": "cos",
+                        "arg": {
+                          "type": "var",
+                          "name": "angulo"
+                        }
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 14
+                      }
+                    },
+                    "y": {
+                      "type": "num",
+                      "value": 0.6
+                    },
+                    "z": {
+                      "type": "binop",
+                      "op": "*",
+                      "left": {
+                        "type": "mathUnary",
+                        "fn": "sin",
+                        "arg": {
+                          "type": "var",
+                          "name": "angulo"
+                        }
+                      },
+                      "right": {
+                        "type": "num",
+                        "value": 14
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

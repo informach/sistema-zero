@@ -1,1 +1,0 @@
-O projeto guarda o que foi construído. Uma anotação pode guardar a próxima ação que ele tinha em mente.

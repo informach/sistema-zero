@@ -1,8 +1,8 @@
-import type { FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
+import type { FunnelCheckoutIntro, FunnelCopy, FunnelLanding, FunnelObrigado } from '../registry'
 
 export const DESAFIO_PRODUTO: FunnelCopy = { nome: 'Desafio do Primeiro Jogo', precoLabel: 'R$ 67' }
 export const DESAFIO_LANDING: FunnelLanding = {
-  badge: 'Para mães, pais e responsáveis · 9 a 14 anos',
+  badge: 'Para mães, pais e responsáveis · 9 a 17 anos',
   h1: 'Descubra por onde seu filho pode começar a criar jogos',
   subtitulo:
     'Conte o que você observa em casa e o que gostaria de experimentar com ele. Você recebe uma orientação para esse começo e conhece o Desafio do Primeiro Jogo.',
@@ -33,5 +33,13 @@ export const DESAFIO_OBRIGADO: FunnelObrigado = {
       texto:
         'A montagem tem três etapas para distribuir durante o prazo de acesso. As explicações podem ser pausadas e revistas. Se aparecer uma dúvida, usem o “Preciso de ajuda” no rodapé da aula.',
     },
+  ],
+}
+
+// Abertura do checkout (acima do card do produto).
+export const DESAFIO_CHECKOUT: FunnelCheckoutIntro = {
+  titulo: 'Falta pouco para o primeiro jogo começar',
+  paragrafos: [
+    'Revise o valor, informe os dados do responsável e escolha a forma de pagamento. Depois da aprovação, seu filho terá 30 dias para criar, testar e publicar o primeiro jogo.',
   ],
 }

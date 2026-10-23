@@ -1,0 +1,18 @@
+---
+import Footer from '../components/Footer.astro'
+import LegalDocument from '../components/LegalDocument.astro'
+import { PRIVACIDADE } from '../content/legal/privacidade'
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+// A Política de Privacidade única do Sistema Zero (20/10/2026), com o capítulo de crianças e
+// adolescentes e o de adultos. `/kids/privacidade`, `/pro/privacidade` e
+// `/politica-de-privacidade` chegam aqui por redirecionamento. SSR pelos security headers.
+export const prerender = false
+
+Astro.response.headers.set('cache-control', 'public, max-age=300, stale-while-revalidate=3600')
+---
+
+<BaseLayout title={`${PRIVACIDADE.titulo} | Sistema Zero`} description={PRIVACIDADE.descricao}>
+  <LegalDocument doc={PRIVACIDADE} />
+  <Footer />
+</BaseLayout>

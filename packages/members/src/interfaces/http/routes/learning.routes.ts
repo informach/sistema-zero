@@ -1,9 +1,13 @@
+import { ValidationError } from '@sistemazero/core/errors'
+import { isSectionCompletion } from '@sistemazero/core/learning'
 import { PALETTES, readPalette } from '@sistemazero/core/palette'
+import { StudioAuthoringRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { Elysia, t } from 'elysia'
 import type { GalleryDeliveryService } from '../../../application/learning/gallery-delivery.service'
 import type { LearningService } from '../../../application/learning/learning.service'
 import type { LearningImportService } from '../../../application/learning/learning-import.service'
 import type { ProfilePreferencesService } from '../../../application/profile-preferences/profile-preferences.service'
+import type { AuthorizeAuthoringRuntimeService } from '../../../application/studio/authorize-authoring-runtime.service'
 import type { LessonDraftRepository } from '../../../domain/ports/lesson-draft-repository.port'
 import {
   assertInternalCaller,
@@ -23,6 +27,7 @@ import {
   LearningNavigationBody,
   LearningProgressBody,
   LearningReportQuery,
+  ProjectChecksTestBody,
   SectionProjectBody,
   SectionProjectParams,
 } from '../learning.dtos'
@@ -41,6 +46,7 @@ export interface LearningRoutesDeps {
   preferences: ProfilePreferencesService
   imports: LearningImportService
   drafts: LessonDraftRepository
+  authorizeStudioRuntime: AuthorizeAuthoringRuntimeService
   internalToken?: string
   requireAdminEnabled: boolean
 }
@@ -92,13 +98,10 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       .post(
         '/lessons/:lessonId/section-help',
         ({ headers, params, body }) =>
-          deps.learning.help(
-            actor(headers),
-            params.lessonId,
-            body.sectionId,
-            body.body,
-            body.requestId,
-          ),
+          deps.learning.help(actor(headers), params.lessonId, body.sectionId, body.body, {
+            requestId: body.requestId,
+            spoken: body.spoken,
+          }),
         { params: LearningLessonParams, body: LearningHelpBody },
       )
       .put(
@@ -115,19 +118,31 @@ export function learningRoutes(deps: LearningRoutesDeps) {
       )
       .post(
         '/lessons/:lessonId/sections/:sectionId/project-check',
-        ({ headers, params, body }) =>
+        ({ headers, params, body, request }) =>
           deps.learning.checkProject(
             actor(headers),
             params.lessonId,
             params.sectionId,
             body.revision,
             body.project,
+            { signal: request.signal, liveContext: body.liveContext },
           ),
         { params: SectionProjectParams, body: SectionProjectBody },
       )
       .group('/admin', (app) =>
         app
           .onBeforeHandle(({ headers }) => requireAdmin(headers, deps.requireAdminEnabled))
+          .post(
+            '/studio/authoring-runtime',
+            ({ headers, body, set }) => {
+              set.headers['cache-control'] = 'private, no-store'
+              return deps.authorizeStudioRuntime.execute(
+                { ...actor(headers), readOnly: Boolean(headers['x-auth-impersonator-id']?.trim()) },
+                body,
+              )
+            },
+            { body: StudioAuthoringRuntimeRequestSchema },
+          )
           .get('/lessons/:id/draft', ({ params }) => deps.drafts.read(params.id), {
             params: IdParams,
           })
@@ -207,6 +222,28 @@ export function learningRoutes(deps: LearningRoutesDeps) {
           .get('/lessons/:id/structure', ({ params }) => deps.learning.adminStructure(params.id), {
             params: IdParams,
           })
+          .post(
+            '/project-checks/test',
+            ({ headers, body }) => {
+              // A regra passa pelo validador do core antes de ir ao executor.
+              const completion = {
+                version: 1 as const,
+                blockIds: [],
+                projectChecks: body.checks.map((check) => ({ ...check, label: '' })),
+              }
+              if (!isSectionCompletion(completion))
+                throw new ValidationError('Os objetivos têm valores inválidos.')
+              return deps.learning.sections.testObjectives({
+                checks: completion.projectChecks ?? [],
+                project: body.project,
+                ...(body.initialProject === undefined
+                  ? {}
+                  : { initialProject: body.initialProject }),
+                requester: `admin-${resolveUserId(headers)}`,
+              })
+            },
+            { body: ProjectChecksTestBody },
+          )
           .post(
             '/lessons/:id/import-preview',
             async ({ params, body }) => {

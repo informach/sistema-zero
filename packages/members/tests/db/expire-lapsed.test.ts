@@ -85,8 +85,8 @@ describe.skipIf(!testDatabaseUrl)('expireLapsed no Postgres real', () => {
   }): Promise<string> {
     const id = randomUUID()
     await conn.sql`
-      insert into members.entitlements (id, user_id, status, expires_at, source_id, idempotency_key)
-      values (${id}, ${randomUUID()}, ${opts.status},
+      insert into members.entitlements (id, user_id, product_id, status, expires_at, source_id, idempotency_key)
+      values (${id}, ${randomUUID()}, ${randomUUID()}, ${opts.status},
               ${opts.expiresAt}, ${`${marca}${opts.rotulo}`}, ${`${marca}${opts.rotulo}`})
     `
     return id

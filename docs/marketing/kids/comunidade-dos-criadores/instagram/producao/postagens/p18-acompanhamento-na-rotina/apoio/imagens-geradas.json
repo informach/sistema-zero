@@ -1,0 +1,70 @@
+[
+  {
+    "slide": 1,
+    "file": "01-agenda.png",
+    "prompt": "Use case: photorealistic-natural. NEW landscape 3:2 editorial photograph for a Brazilian parenting Instagram carousel. Busy family routine. In the foreground at a wooden dining table, open cream paper weekly planner with faint blank horizontal lines, NO letters or numbers; adult mother's right hand holds a blue pen above page. Include mother's upper body and natural face on left side: fictional Brazilian woman age 38, medium brown skin, black curly hair loosely tied back, small gold earrings, light blue cotton blouse. She is thoughtful, not angry or overwhelmed. In background on right, her fictional 11-year-old son, medium brown skin, short tight black curls, mustard yellow plain T-shirt, seated at his own computer, looking back toward mother. Computer monitor seen mostly from back/side, no visible screen needed. Large planner page occupies lower central half for handwritten agenda to be composited later. Child softly blurred but recognizable facial features, mother hand and planner sharp. Bright natural afternoon light, lived-in modest cozy home, normal realistic anatomy, 50mm editorial photography. No text, logos, watermark, no invented UI. Both people are entirely fictional, not real named students.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1c74b5a3-ced9-43a5-9595-8c1af08b092a.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [],
+    "sha256": "f5c382792ad03a6b5cb894516b8c33e3cb9c3587f2d48bf5b55142e6ca8b361c",
+    "sourceSha256": "f5c382792ad03a6b5cb894516b8c33e3cb9c3587f2d48bf5b55142e6ca8b361c"
+  },
+  {
+    "slide": 2,
+    "file": "02-folheto.png",
+    "prompt": "Use case photorealistic-natural. NEW landscape 3:2 editorial overhead still-life photograph for Brazilian parenting carousel. On a warm light wooden table, one cream A4 leaflet printed with very faint pale blue horizontal rules but absolutely NO text, and an ordinary adult analog wristwatch with dark brown leather strap lying diagonally across far upper-right corner. Small closed blue pencil case near upper-left edge, a graphite pencil beside page. Main empty page occupies center from x300 to1200 and y180 to900, unobscured, for exact Portuguese text to be added later in editing. Calm realistic domestic afternoon lighting, paper and wood texture, photograph not illustration, no people, no hands, no logos, no words or numbers except ordinary analog watch face ticks. No app UI or branding.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-e1cc7b50-f964-4d1a-b4bd-fcf2fcf967f1.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [],
+    "sha256": "b57697e9a124b98176e746d7b0f2f9f68f72e9863c9c2177e1891c3ee29599ac",
+    "sourceSha256": "b57697e9a124b98176e746d7b0f2f9f68f72e9863c9c2177e1891c3ee29599ac"
+  },
+  {
+    "slide": 3,
+    "file": "03-duvida.png",
+    "prompt": "Use case photorealistic-natural. Create a NEW landscape 3:2 editorial photograph of the EXACT SAME fictional boy from reference: age11, medium brown skin, short tight black curls, plain mustard yellow T-shirt. Alone at wooden desk, seen from behind and slightly to right, one hand resting still on the mouse, looking thoughtfully at desktop monitor as he considers a question. Monitor on right has a completely blank flat dark-gray screen fully visible without head/hands overlapping, for actual platform screenshot to be inserted later. Camera medium-wide, head left of monitor, ordinary cozy Brazilian home in late afternoon window light, calm not distressed. Keep reference identity, believable anatomy and hands. No text, logos, generated UI or watermark.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-039b2dd9-86af-4463-aa68-778a26bac60e.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1c74b5a3-ced9-43a5-9595-8c1af08b092a.png"
+    ],
+    "sha256": "9d8d11614a2bb928ef38085b09db80c35d66368fd9b4f7bac4915b7d3174f06c",
+    "sourceSha256": "9d8d11614a2bb928ef38085b09db80c35d66368fd9b4f7bac4915b7d3174f06c"
+  },
+  {
+    "slide": 4,
+    "file": "04-conhecer-aula.png",
+    "prompt": "Use case photorealistic-natural. NEW landscape 3:2 editorial photo using the EXACT SAME fictional mother from reference, medium brown skin, black curly hair tied loosely back, small gold hoop earrings, light blue cotton blouse. Mother alone sitting at wooden desk, studying an example lesson on desktop computer. Over-shoulder three-quarter camera showing her profile on LEFT, blank dark-gray monitor screen on RIGHT large and fully visible, hand on mouse stays below display. Screen will receive authentic course interface in editing, do NOT invent UI. Small closed notebook by keyboard. Concentrated interested expression, afternoon natural light in same modest cozy Brazilian home, realistic anatomy, no text/logo/watermark.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-9fc7c14f-f000-4bb7-8e87-6ae040896e45.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1c74b5a3-ced9-43a5-9595-8c1af08b092a.png"
+    ],
+    "sha256": "43d9615b7c2cb7a40819dc8e74ad8e90d3fc7dc00a978b15ab99e11f2b8f67e4",
+    "sourceSha256": "43d9615b7c2cb7a40819dc8e74ad8e90d3fc7dc00a978b15ab99e11f2b8f67e4"
+  },
+  {
+    "slide": 7,
+    "file": "07-acompanhar.png",
+    "prompt": "Use case photorealistic-natural. NEW landscape 3:2 editorial photo preserving EXACT SAME fictional mother and boy faces from reference, mother medium brown skin, black curly hair loosely tied back, small gold earrings, light blue blouse; boy age11, short black curls, mustard yellow T-shirt. Evening warm lamplight, dark sky visible through window. Mother has just arrived from work, handbag placed beside her chair, sits beside boy at computer. Boy shows the monitor with his hand BELOW screen; mother smiles naturally at his explanation, engaged not exaggerated. Camera from side shows both faces on RIGHT and a desktop monitor on LEFT with fully visible blank dark-gray screen for authentic platform capture insertion. Both look toward display. Different pose/angle from cover, natural anatomy, no text, logos, watermark or invented UI.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-c00d2288-5ad9-4bb9-b761-7cb14094d01f.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1c74b5a3-ced9-43a5-9595-8c1af08b092a.png"
+    ],
+    "sha256": "b7c377eb37e5ad8c3c485a4adcf2a92b14f31d9ed5c88cbc84ea50728b500125",
+    "sourceSha256": "b7c377eb37e5ad8c3c485a4adcf2a92b14f31d9ed5c88cbc84ea50728b500125"
+  },
+  {
+    "slide": 8,
+    "file": "08-anotar.png",
+    "prompt": "Use case photorealistic-natural. NEW landscape 3:2 editorial close-up photo preserving EXACT SAME fictional mother from reference, medium brown skin, black curly hair loosely tied, light blue cotton blouse. Mother seated alone at wooden dining table calmly taking notes about the help her child will need. Overhead three-quarter view from her left shoulder, face in soft profile upperleft, her right hand holds blue pen at far lower-right edge of small cream blank notebook. Main page is large in center, entirely clear, with NO text and NO existing markings, to add exact handwriting later. Phone turned facedown and a simple mug nearby. Warm calm evening lighting, ordinary home, paper and skin textures, realistic hand. No clock crossed out, no suggestion of guaranteed free time, no text/logos/watermark.",
+    "source": "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-80b84bab-c70a-4595-a0cb-725189815b7c.png",
+    "tool": "image_gen.imagegen (nativa)",
+    "references": [
+      "C:\\Users\\tocha\\.codex\\generated_images\\01a1177a-9196-73f3-b995-b63ba3002ced\\exec-1c74b5a3-ced9-43a5-9595-8c1af08b092a.png"
+    ],
+    "sha256": "bd7b582ac14fe3d2f949a6e0d4b764b273eddd500b4b9458467e167e78d874aa",
+    "sourceSha256": "bd7b582ac14fe3d2f949a6e0d4b764b273eddd500b4b9458467e167e78d874aa"
+  }
+]

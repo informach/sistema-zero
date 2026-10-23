@@ -1,0 +1,137 @@
+# Phase 1: armazenar manutenção full em cinco serviços de produção
+
+**Estado: preparação offline para revisão de Root. Nenhum `check` ou `apply` real foi executado nesta entrega. Não há autorização de apply decorrente deste documento.** O operador só armazena uma variável pública com `--skip-deploys`. Não implementa reload, deploy, SQL, SSH, backup, fence de writers nem reabertura.
+
+## Escopo fechado
+
+Fonte: `production-maintenance-store-r1.mjs`. Testes: `production-maintenance-store-r1.test.ts`.
+
+Contrato de entrada:
+
+```text
+check <members|kids|adult|admin|hub> <run> <planpath> <SHA256-do-plano>
+apply <members|kids|adult|admin|hub> <run> <checkpath> <SHA256-do-recibo-check>
+```
+
+`run` precisa ser novo, no formato `production-maintenance-check-<serviço>-<sufixo>` ou `production-maintenance-apply-<serviço>-<sufixo>`. Referências são relativas à raiz, dentro de `.cache/python-reference-games/`; arquivo regular, tamanho limitado e SHA de bytes exigidos. Arquivo final symlink é recusado. Diretórios de cache precisam permanecer sob controle local do operador; não tratar a validação lexical como defesa contra troca concorrente de junctions em diretórios ancestrais.
+
+Única operação de escrita disponível:
+
+```text
+railway.exe variable set RELEASE_MAINTENANCE_MODE --stdin --skip-deploys
+  --project 415d5a1c-5f75-432c-8445-b395d0977ce3
+  --environment 19c212a5-85c0-493c-9630-a7a0569e8412
+  --service <ID fixo do serviço selecionado> --json
+```
+
+O stdin contém somente `full`. Nenhuma variável, token ou mapa privado entra em argv, arquivo temporário ou recibo. O serviço e ambiente não vêm do contexto global da CLI. Não há parâmetro para mudar chave/valor/projeto, selecionar staging, desligar manutenção, criar segredo ou disparar redeploy.
+
+Node exigido: **24.22.0**, sem Bun no operador. CLI nativa exigida: **railway 5.62.1**, em `%APPDATA%/npm/node_modules/@railway/cli/bin/railway.exe`. Preserva o ambiente nativo necessário à CLI e remove overrides `RAILWAY_TOKEN`, `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_TOKEN`, `RAILWAY_API`; usa a autenticação já instalada, sem lê-la ou copiá-la. Testes leves usam Bun 1.3.11; três subcasos importam/executam apenas preflight local no Node24 com `execFile` e `fetch` substituídos por recusas fatais.
+
+## Alvos e provas
+
+`PINS` e `SERVICES` estão fixos na fonte: projeto/ambiente acima, cinco service IDs, deployments, snapshots, SHA Git, digest de imagem e instância RUNNING já observados. Um novo deployment, mesmo com a mesma imagem, recusa este operador até revisão explícita do novo contexto. Não atualizar pins só para conseguir passar.
+
+| Serviço | Deployment fixo | Base da imagem |
+| --- | --- | --- |
+| Members | `9d8368c2-d915-4dbf-898c-28c2b7978133` | `6f93dcbfe8f176017b7b1ace5114d480ad5853b1` |
+| Kids | `48c12111-5bb3-449a-90d4-525af1f51aa8` | `91d3e99aae0b602e9ad5548efb2106355f9fe801` |
+| Adult | `9b8cf594-86f8-4534-bde9-000d433fd836` | `e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28` |
+| Admin | `10c8d309-1f50-4b52-aa47-693543b010f1` | `6f93dcbfe8f176017b7b1ace5114d480ad5853b1` |
+| Hub | `ba08042b-d2bf-4063-87e7-97ea452cf030` | `a270417ba4acffe97629793bb3fb62ac0e134519` |
+
+O plano estático de manutenção é `production-pensa-five-service-maintenance-plan-r1.md`, SHA256 `6f6ac9aab04dc4bf124839eec10a9c5cf6e2205535f693b8bceb8c61b1fd7330`. O launcher instalado exige SHA256 `9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f`, 2.726 bytes e identidade remota conferida nos cinco alvos.
+
+O plano JSON referencia três recibos por caminho + SHA de bytes:
+
+1. `production-pensa-writer-images-readonly-r2-final.json`: cinco imagens e launcher instalado, zero mutação/SQL, antes/depois exatos, única instância RUNNING conhecida.
+2. `production-old-image-migration-readonly-r1.json`: journals instalados Members/Hub iguais ao último hash/time dos bancos respectivos, leitura readonly/repeatable-read, sem executar migrador ou app. A validação agora exige os cinco `remote.identityChecks` verdadeiros.
+3. `production-next-predeploy-readonly-r1.json`: Kids/Adult/Admin sem override preDeploy/start nas três fontes. O próprio leitor real exige `Object.hasOwn` para ambos os campos do manifesto antes de emitir o estado positivo. Portanto a fonte phase1 mantém essa guarda; não fabricamos ausência por omissão do JSON.
+
+Observações: no máximo **30 min** desde `finishedAt` de cada recibo; plano criado no passado, expiração explícita no futuro, validade máxima de 30 min. Check: no máximo **10 min** desde seu `finishedAt`, mesmo operador por SHA e mesmos pins. Todos os prazos são revalidados imediatamente antes da reserva/envio.
+
+## Plano inicial e frescura
+
+Arquivo preparado: `production-maintenance-store-plan-r1.json`, SHA256:
+
+`2536fd65bc3851102ae3ee82efad0bc8332610987dee1f78467b5aa06d216586`
+
+Ele contém referências aos **recibos reais existentes**, sem trocar datas:
+
+- `createdAt`: `2026-10-23T01:56:10.628Z`, a última conclusão entre as três observações.
+- `expiresAt`: `2026-10-23T02:08:56.488Z`, a primeira expiração das três.
+- Validação histórica passou no instante de criação derivado; validação atual offline recusou `PLAN_EXPIRED_OR_TOO_LONG`.
+
+Esse plano inicial é auditável, mas **não está pronto para check/apply atual**. Root precisa atualizar as três observações por leitores já revisados, sob nomes de saída novos, e preparar outro JSON com os novos caminhos/hashes/prazos. Não editar recibos antigos nem apenas avançar createdAt/expiresAt. Os leitores antigos possuem saídas `wx` fixas: não rerodá-los cegamente sobre o mesmo arquivo; revisar primeiro seus novos paths. Nova coleta de SQL/SSH não pertence a este operador nem foi executada nesta preparação.
+
+## Fluxo e limites da preservação
+
+Cada `check` lê todas as cinco identidades e todos os mapas declarados/renderizados duas vezes. Contexto é observado antes/depois de cada leitura de mapas. Requer SUCCESS único, zero pending com paginação fechada, mesma instância e comandos esperados. Estados da chave só podem ser literal `off`, ausente ou `full`; referências/herança, valores desconhecidos e `full` já presente no serviço selecionado recusam.
+
+O `apply` valida o recibo check, relê plano e provas pinados, então estabelece **uma nova baseline em RAM**. Confere contexto/estados públicos contra o check. Imediatamente antes da escrita repete a inspeção dos cinco serviços, confere todos os valores dessa baseline e revalida os prazos. Reserva intenção permanente, grava e fsync o checkpoint de tentativa, envia uma única invocação de CLI e faz readback dos cinco contextos/mapas. Somente a chave selecionada pode mudar para `full`; todas as demais chaves/valores, inclusive representações declaradas e valores resolvidos, precisam ficar byte a byte iguais dentro do apply.
+
+**Não há igualdade byte a byte entre mapas do processo check e mapas do processo apply.** Check não persiste mapas nem hashes de segredos. A igualdade secreta é dentro de cada processo. Exige freeze externo de operadores/IaC durante toda a sequência. Não há compare-and-swap na operação utilizada; existe uma janela entre última leitura e escrita. Um writer externo pode causar recusa no readback, mas o operador não promete impedir a corrida nem reverter a alteração.
+
+Limites por invocação: prazo de operação 300 s para admitir chamadas nativas, cada CLI até 20 s, buffer máximo 8 MiB. Não há retry do wrapper. O CLI/provedor pode ter comportamento interno próprio; `commandRetries:0` não afirma quantidade física de requests HTTP. O encerramento por timeout de uma chamada que já enviou bytes produz resultado incerto, não prova cancelamento remoto.
+
+## Intent e resultado incerto
+
+Intenção fixa por serviço, independente de run/check/plano/revisão do operador:
+
+```text
+.cache/python-reference-games/production-maintenance-store-members.intent.json
+.cache/python-reference-games/production-maintenance-store-kids.intent.json
+.cache/python-reference-games/production-maintenance-store-adult.intent.json
+.cache/python-reference-games/production-maintenance-store-admin.intent.json
+.cache/python-reference-games/production-maintenance-store-hub.intent.json
+```
+
+Criação `wx`, arquivo fsync, antes do primeiro envio. Não há exclusão automática; qualquer presença bloqueia novas invocações, inclusive check do mesmo serviço, neste CLI. Um check com hash diferente não libera outro apply. Se a intenção foi reservada e um erro local ocorreu antes do envio, ela também permanece; Root precisa reconciliar explicitamente em outra leitura/revisão. Não apagar para retry.
+
+| Estado | Interpretação |
+| --- | --- |
+| `READ_ONLY_READY` | Check passou naquele instante, sem escrita; não é manutenção ativa. |
+| `CONFIGURATION_STORED_NO_RELOAD` | CLI terminou com sucesso, readback exato e contexto preservado; nenhum reload solicitado. |
+| `ACK_UNKNOWN_READBACK_MATCHED_NO_REPLAY` | CLI/ACK incerto; estado desejado foi observado. Exit não-zero e nenhuma repetição automática. |
+| `ACK_UNKNOWN_READBACK_UNCONFIRMED_NO_REPLAY` | CLI/ACK incerto e readback não qualificado; parar, preservar intenção/recibos. |
+| `ACKNOWLEDGED_READBACK_UNCONFIRMED` | CLI confirmou, mas preservação/contexto/checkpoint não foi qualificado; parar. |
+| `PREFLIGHT_REFUSED` | Não chegou ao envio. Pode já haver intenção anterior; não inferir que seja seguro tentar outra run. |
+| `STORE_ATTEMPT_UNCONFIRMED_NO_REPLAY` | Falha após registrar tentativa; outcome permanece conservador. |
+
+Toda saída é nova. Recibo contém apenas contexto público/pins/estados/contagens/códigos fechados, não stdout/stderr de provider, mapas, valores privados ou hashes de segredos. Erro desconhecido vira `LOCAL_OR_PROVIDER_UNCONFIRMED`. Não imprimir objeto de erro completo ao investigar.
+
+## Comandos para Root, somente depois de provas frescas e aprovação
+
+Desde `C:/Users/tocha/projects/sistema-zero-python-review-fixes`, executável:
+
+```text
+C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe
+```
+
+Forma exata, usando arquivos/hashes **reais novos fornecidos pelo Root**, sem IDs inventados:
+
+```text
+<Node24.22> .cache/python-reference-games/production-maintenance-store-r1.mjs check kids production-maintenance-check-kids-root-r1 <plano-fresco-path> <SHA256-plano-fresco>
+<Node24.22> .cache/python-reference-games/production-maintenance-store-r1.mjs apply kids production-maintenance-apply-kids-root-r1 .cache/python-reference-games/production-maintenance-check-kids-root-r1/receipt.json <SHA256-recibo-check-real>
+```
+
+Root confere recibo/pin entre cada par. Sequência proposta de armazenamento: Kids → Adult → Admin → Hub → Members, sempre **CHECK → revisão do recibo → APPLY → revisão do readback**, serial. Não criar cinco checks e depois aplicar: um apply muda o estado público observado pelos checks seguintes, que precisam ser frescos. Se todas as configurações forem armazenadas, parar na phase1; os processos antigos continuam atendendo até reload separado.
+
+Não executar este operador durante qualquer reload/deploy e não usar sucesso de phase1 como autorização para migrar. A phase2 (reload de imagem antiga, execução potencial de preDeploy, retirada real de processos, HTTP manutenção, contagens/backup e migrações destrutivas) permanece no plano estático e requer seus próprios gates/operador. `full` só interfere no launcher quando ele é iniciado; não intercepta preDeploy.
+
+## Verificação offline desta entrega
+
+- Fonte inicial recebida preservada em `production-maintenance-store-r1-initial.mjs.snapshot`, SHA256 `c4a3c83eecaa2a3532a8748cce3ceb9715af9253d2ccbaa5a117d8468c8ce896`.
+- RED: 16 passaram / 1 falhou / 216 assertions; falha causal de identidade remota negativa no journal aceito pelo validador. Log `production-maintenance-store-r1-tests-red.log`.
+- Alteração funcional: validação dos cinco checks de identidade remota no journal; sem mudar pins, flags, escopo de provider ou comandos.
+- GREEN: **19 testes / 0 falhas / 240 assertions**, Bun 1.3.11, 325 ms. Log `production-maintenance-store-r1-tests-green.log`.
+- Inclui prova de intenção `wx` real em diretório temporário, perda de ACK + segundo check/hash diferente com zero segundo envio, readback conflitante, recusa de stale/wrong environment/deployment/preDeploy/shape e preservação de mapas.
+- Node24: import inerte e preflight local para hash adulterado, arquivo ausente e path fora do cache, com toda chamada `execFile/fetch` impedida. Não se trata de teste de autenticação, CLI real contra provider ou manutenção de produção.
+
+Comando leve de repetição autorizada somente para revisão:
+
+```text
+bun test ./.cache/python-reference-games/production-maintenance-store-r1.test.ts
+```
+
+Os testes usam as provas históricas no instante fixo 02:00Z para validar o contrato; também exigem recusa quando elas expiram. Isso não renova sua frescura operacional. Os únicos arquivos apagados pelo teste são diretórios próprios de fixture com prefixo e caminho verificados; nenhuma intenção operacional é criada ou removida.

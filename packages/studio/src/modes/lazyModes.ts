@@ -7,10 +7,14 @@ import type { IDEMode } from '#core'
 const importBlocksMode = () => import('./BlocksMode')
 const importBridgeMode = () => import('./BridgeMode')
 const importCodeMode = () => import('./CodeMode')
+const importPythonModes = () => import('./python/lazyModes')
 
 export const BlocksMode = lazy(() => importBlocksMode().then((m) => ({ default: m.BlocksMode })))
 export const BridgeMode = lazy(() => importBridgeMode().then((m) => ({ default: m.BridgeMode })))
 export const CodeMode = lazy(() => importCodeMode().then((m) => ({ default: m.CodeMode })))
+export const PythonMode = lazy(() =>
+  importPythonModes().then((module) => ({ default: module.PythonMode })),
+)
 
 /**
  * Inicia o download/avaliação do chunk do modo informado sem renderizá-lo.
@@ -18,7 +22,15 @@ export const CodeMode = lazy(() => importCodeMode().then((m) => ({ default: m.Co
  * de interações críticas: importar Código/Ponte ainda pode avaliar Monaco ou
  * Blockly no thread principal.
  */
-export function prefetchMode(mode: IDEMode | undefined): void {
+export function prefetchMode(
+  mode: IDEMode | undefined,
+  language: 'javascript' | 'python' | 'unknown' = 'javascript',
+): void {
+  if (language === 'unknown') return
+  if (language === 'python') {
+    void importPythonModes().then((module) => module.prefetchPythonMode(mode))
+    return
+  }
   switch (mode) {
     case 'code':
       void importCodeMode()

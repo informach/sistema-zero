@@ -3,7 +3,8 @@ export interface AccountSnapshot {
   id: string
   socialAccountId: string
   capturedAt: Date
-  followers: number
+  collectionVersion: number
+  followers: number | null
   raw: Record<string, unknown>
 }
 
@@ -11,11 +12,12 @@ export interface PublicationSnapshot {
   id: string
   publicationId: string
   capturedAt: Date
-  views: number
-  likes: number
-  comments: number
-  shares: number
-  saves: number
+  collectionVersion: number
+  views: number | null
+  likes: number | null
+  comments: number | null
+  shares: number | null
+  saves: number | null
   reach: number | null
   watchTimeSeconds: number | null
   avgWatchRatio: number | null

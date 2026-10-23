@@ -14,18 +14,19 @@ do e-mail e do portal), thread + resposta com IA, base de conhecimento e configu
 Gmail + assinatura). **Next.js 16 (App Router) + React 19 + Tailwind v4**; o back-end é o
 **[@sistemazero/helpdesk](../helpdesk)** (porta 3013), consumido SEMPRE via api-gateway. Molde
 arquitetural: **`packages/marketing-app`** (BFF via gateway, cookies HttpOnly, réplica única).
-Porta **3014**. Domínio futuro: `helpdesk.sistemazero.com.br` (ou `atendimento`).
+Porta **3014**. Domínio de produção: `atendimento.sistemazero.com.br`. O admin mostra um painel
+somente leitura deste atendimento em `/admin/atendimento`, com atalhos para cá (`/tickets?queue=`,
+`?status=`, `/tickets/<id>`): mudar o nome desses filtros de URL quebra os atalhos de lá.
 
 > Estado: **F0–F7 COMPLETAS (01/09/2026)** — todas as telas no ar: **Painel** (exceções de SLA,
 > risco e tickets sem responsável + gráfico de volume de 14 dias), **Caixa de entrada** (atalhos
 > de atenção/atribuição, filtros status/categoria/busca e badges de SLA/canal), **Ticket**
-> (thread com citação colapsada + painel resumo IA + editor prefilled com o rascunho + Enviar/
+> (thread com citação colapsada + painel resumo IA + editor com inserção explícita do rascunho + Enviar/
 > Regenerar/Resumir/Nota; timeout de envio permite verificar o Gmail antes de liberar uma nova
 > resposta; 409 → toast + soft-reload; chamado do PORTAL: o editor diz "Publicar resposta" e
 > a mensagem vai para a conversa do /ajuda + aviso por e-mail, SEM depender da caixa Gmail —
-> o canal é do ticket, decidido no backend), **Base de conhecimento** (CRUD + toggle
-> Publicado), **Configurações** (conexão Gmail conectar/reconectar + assinatura + **regras de
-> triagem**). IA é somente copiloto: todo rascunho exige revisão e envio humano.
+> o canal é do ticket, decidido no backend), **Base de conhecimento** (revisões, indexação, publicação, fontes, lacunas e teste), **Configurações** (conexão Gmail conectar/reconectar + assinatura + **regras de
+> triagem**). O copiloto exige revisão e envio humano. O piloto automático do portal é separado, desligado por padrão e administrado em Configurações.
 > **Triagem (09/2026):** a fila padrão é só atendimento; o chip "Triagem" (`Atendimento` |
 > `Automáticos`, param `?triage=automated`) mostra o que a triagem deixou fora, com o
 > `TicketTriageBadge` (nulo em `human`) na linha e no cabeçalho do detalhe; a mensagem diz
@@ -126,7 +127,9 @@ Setup local: Postgres up + auth/gateway/helpdesk rodando + usuário staff → `b
 
 `GATEWAY_URL` (prod: obrigatório explícito) · `JWT_HS256_SECRET` (dev) e/ou `JWT_JWKS_URL` (prod,
 obrigatório; recusa HS256) · `JWT_ISSUER`/`JWT_AUDIENCE` (obrigatórios em prod) · `SENTRY_DSN`
-(opcional). Regras em `src/instrumentation.ts` E `scripts/boot-check.mjs` (manter em sincronia).
+(opcional) · `ADMIN_APP_URL`/`MARKETING_APP_URL` (opcionais: os outros consoles, admin e marketing, no menu do avatar em
+nova aba; ausentes → o link some. O menu é o `ConsoleUserMenu` do `@sistemazero/ui`, com a lista
+montada no `(app)/layout.tsx` por `consoleAppLinks`). Regras em `src/instrumentation.ts` E `scripts/boot-check.mjs` (manter em sincronia).
 
 ## Deploy (Railway) — pendências da usuária
 
@@ -144,3 +147,12 @@ CI); envs nos 2 ambientes:
 - [ ] Nenhum `server/*`/`env` importado por Client Component. Sem `any` novo.
 - [ ] Endpoint novo no backend? Atualizou `@sistemazero/helpdesk-contracts` (+ allowlist do
       catch-all se for 1º segmento novo).
+
+## Automação e conversa (16/10/2026)
+
+A conversa e o portal fazem polling incremental limitado, pausam em aba oculta e preservam o
+editor. O backend fornece `replyChannel`, autoria e estado; não inferir canal por `source` apenas.
+`Assumir atendimento`, resposta, nota e mudanças operacionais invalidam a geração automática.
+O histórico da IA permite revisar sombra/copiloto/piloto sem publicar. Admin configura política,
+registra avaliação vinculada aos parâmetros e consulta métricas. Fontes públicas são consultadas
+pelo BFF dos portais; nunca enviar o `AiRunView` ao cliente. Consulte o [guia operacional](../../docs/helpdesk/operacao-ia.md).

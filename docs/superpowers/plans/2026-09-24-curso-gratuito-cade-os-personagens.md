@@ -38,19 +38,19 @@
 - [x] **Step 2: Rodar** o teste isolado e confirmar a falha esperada por cena ainda inexistente.
 - [x] **Step 3: Implementar** `SceneId`, porta do toque restrita à nova cena, motor, catálogo, pistas e leituras. `stepScene` guarda evidência apenas após cada toque. A conclusão não depende de responder pergunta.
 - [x] **Step 4: Desenhar** palco e controles com um esconderijo e um personagem; instrução abaixo da cena, ligação e toque acessíveis por mouse/teclado/toque, usando a mesma ordem adaptativa das outras cenas.
-- [ ] **Step 5: Rodar** testes de core, player e validação de tipos dos pacotes tocados. Atualizar `docs/aulas-interativas/CATALOGO-CENAS.json` com a entrada fiel ao catálogo real.
+- [ ] **Step 5: Rodar** testes de core, player e validação de tipos dos pacotes tocados. Atualizar `docs/aulas-interativas-tecnico/CATALOGO-CENAS.json` com a entrada fiel ao catálogo real.
 
 ### Task 2: Projeto inicial e evidências do Jogo 2D
 
 **Files:**
-- Create: `docs/aulas-interativas/qa/cade-todo-mundo-projeto.ts` para montar o snapshot inicial de forma reproduzível e validar a sequência de blocos.
-- Create: recursos visuais locais do projeto sob `docs/aulas-interativas/recursos/cade-todo-mundo/`.
-- Test: `docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts`.
+- Create: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.ts` para montar o snapshot inicial de forma reproduzível e validar a sequência de blocos.
+- Create: recursos visuais locais do projeto sob `docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/`.
+- Test: `docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.test.ts`.
 
 **Interfaces:** Produz `initialProject` formato 2, com `installedExtensions: [{ id: 'game-2d', version: '1.2.0', installedAt: 0 }]`, imagens `ProjectAsset` válidas e `blocksState` derivado da IR. As aulas usam `chain: 'cade-todo-mundo'`.
 
 - [ ] **Step 1: Escrever teste vermelho** para `sanitizeProjectAssets` não descartar imagens, `blocksState` ter as áreas e blocos preparados, o projeto instalar somente `game-2d`, e cada toque no mesmo esconderijo contar no máximo uma vez.
-- [ ] **Step 2: Rodar** `bun test docs/aulas-interativas/qa/cade-todo-mundo-projeto.test.ts` e confirmar a falha.
+- [ ] **Step 2: Rodar** `bun test docs/aulas-interativas-tecnico/qa/cade-todo-mundo-projeto.test.ts` e confirmar a falha.
 - [ ] **Step 3: Construir** três personagens e três esconderijos SVG pequenos, sem referência externa; guardar como data URLs válidas em `assets` do snapshot. Gerar `blocksState` de IR com a função usada por `packages/studio/src/projects/tilemapGame.ts`.
 - [ ] **Step 4: Preparar** criação, desenho, grupo, placar e vitória no projeto. A criança acrescentará a reação ao toque na primeira aula e a contagem na segunda. Verificar a ordem de desenho e reinício por teste do runtime/preview.
 - [ ] **Step 5: Rodar** o teste do projeto e o teste da biblioteca de blocos do Estúdio.
@@ -58,23 +58,23 @@
 ### Task 3: Aula 1 do gratuito
 
 **Files:**
-- Create: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-1.md`, `.roteiro.md`, `.manifesto.json`.
-- Create: caderno visual de uma página sob `docs/aulas-interativas/recursos/cade-todo-mundo/`.
-- Modify: `docs/aulas-interativas/qa/novo-modelo.ts`.
+- Create: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-1.md`, `.roteiro.md`, `.manifesto.json`.
+- Create: caderno visual de uma página sob `docs/aulas-interativas-tecnico/recursos/cade-todo-mundo/`.
+- Modify: `docs/aulas-interativas-tecnico/qa/novo-modelo.ts`.
 
 **Interfaces:** Manifesto v5 com `courseSlug: 'cade-todo-mundo'`, `lessonSlug: 'aula-1'`, `workspaceKey: 'projeto'` nas seções práticas e `activity.scene: 'touch-response'` na seção conceitual.
 
 - [ ] **Step 1: Escrever proposta** com triagem dos conceitos e tempos: abertura; caderno; toque e resposta; primeira programação. A vitória no evento precisa aparecer após o toque no jogo da criança.
 - [ ] **Step 2: Escrever roteiro falado completo** de um vídeo por seção, com contexto no começo, analogia antes do termo, caminho completo da paleta, todos os encaixes e teste na área do jogo. O vídeo conceitual não narra a sequência da cena.
 - [ ] **Step 3: Escrever manifesto** com um `plannedVideo` por seção, um diálogo curto por ponte, caderno opcional, cena obrigatória e checks da montagem. Usar o snapshot da Task 2 e nenhuma extensão além de `game-2d`.
-- [ ] **Step 4: Rodar** `bun docs/aulas-interativas/qa/validar-manifestos.ts` e testes de importação do manifesto. Confirmar vídeo e atividade em `completion` onde ambos existem.
+- [ ] **Step 4: Rodar** `bun docs/aulas-interativas-tecnico/qa/validar-manifestos.ts` e testes de importação do manifesto. Confirmar vídeo e atividade em `completion` onde ambos existem.
 
 ### Task 4: Aula 2 e certificado
 
 **Files:**
-- Create: `docs/aulas-interativas/aulas/cade-todo-mundo-aula-2.md`, `.roteiro.md`, `.manifesto.json`.
-- Create: `docs/aulas-interativas/aulas/cade-todo-mundo-certificado.md`, `.roteiro.md`, `.manifesto.json`.
-- Create: `docs/aulas-interativas/modulos-cade-todo-mundo.md`.
+- Create: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-aula-2.md`, `.roteiro.md`, `.manifesto.json`.
+- Create: `docs/aulas-interativas/kids/cade-todo-mundo/cade-todo-mundo-certificado.md`, `.roteiro.md`, `.manifesto.json`.
+- Create: `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`.
 
 **Interfaces:** Aula 2 continua a mesma cadeia da Aula 1, sem substituir o projeto salvo. Certificado usa `kind: 'certificate'` e não contém oferta.
 
@@ -99,7 +99,7 @@
 ### Task 6: Revisão integral
 
 **Files:**
-- Modify: `docs/aulas-interativas/README.md`, `BRIEFING.md` apenas se houver regra nova realmente geral; atualizar referências e documentação do curso.
+- Modify: `docs/aulas-interativas-tecnico/historico-organizacao.md`, `BRIEFING.md` apenas se houver regra nova realmente geral; atualizar referências e documentação do curso.
 - Test: todos os arquivos de teste afetados acima.
 
 **Interfaces:** Entrega os três manifestos importáveis após a cena existir, sem gravações vinculadas nem publicação automática.

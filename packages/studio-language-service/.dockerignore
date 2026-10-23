@@ -1,0 +1,7 @@
+*
+!runtime/
+!runtime/package.json
+!runtime/package-lock.json
+!dist/
+!dist/server.mjs
+!Dockerfile

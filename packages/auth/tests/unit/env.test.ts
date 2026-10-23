@@ -17,14 +17,37 @@ const PROD_BASE: Record<string, string> = {
   COMMUNITY_URL: 'https://comunidade.example.com',
   MEMBERS_BASE_URL: 'http://members.railway.internal:3004',
   MEMBERS_INTERNAL_TOKEN: 'token-interno-members-de-producao',
+  MEMBERS_PROFILE_ADMISSION_TOKEN: 'profile-admission-token-for-tests',
 }
 
 describe('loadEnv', () => {
+  test('produção exige a credencial específica de admissão, além do token interno geral', () => {
+    const { MEMBERS_PROFILE_ADMISSION_TOKEN: _omitted, ...rest } = PROD_BASE
+    expect(() => loadEnv(rest)).toThrow(/MEMBERS_PROFILE_ADMISSION_TOKEN/)
+  })
   test('defaults: HOST dual-stack e cooldowns de 60s', () => {
     const env = loadEnv(BASE)
     expect(env.HOST).toBe('::')
     expect(env.OTP_REQUEST_COOLDOWN_SECONDS).toBe(60)
     expect(env.RESET_REQUEST_COOLDOWN_SECONDS).toBe(60)
+  })
+
+  test('aviso de 18 anos: intervalo default 6 h, 0 desliga, negativo ou acima do teto falha', () => {
+    expect(loadEnv(BASE).PROFILE_ADULT_NOTICE_INTERVAL_MS).toBe(6 * 60 * 60 * 1000)
+    expect(
+      loadEnv({ ...BASE, PROFILE_ADULT_NOTICE_INTERVAL_MS: '0' }).PROFILE_ADULT_NOTICE_INTERVAL_MS,
+    ).toBe(0)
+    expect(() => loadEnv({ ...BASE, PROFILE_ADULT_NOTICE_INTERVAL_MS: '-1' })).toThrow(
+      /PROFILE_ADULT_NOTICE_INTERVAL_MS/,
+    )
+    // Acima do teto do setInterval o timer dispararia em loop.
+    expect(() => loadEnv({ ...BASE, PROFILE_ADULT_NOTICE_INTERVAL_MS: '2147483648' })).toThrow(
+      /PROFILE_ADULT_NOTICE_INTERVAL_MS/,
+    )
+    expect(
+      loadEnv({ ...BASE, PROFILE_ADULT_NOTICE_INTERVAL_MS: '2147483647' })
+        .PROFILE_ADULT_NOTICE_INTERVAL_MS,
+    ).toBe(2_147_483_647)
   })
 
   test('produção SEM AUTH_INTERNAL_TOKEN → falha no boot (fail-closed)', () => {

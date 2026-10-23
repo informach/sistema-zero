@@ -1,0 +1,212 @@
+# Roteiro de produção · Faça os asteroides cair
+
+**Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
+
+## Seção 1. Compare o intervalo entre as pedras
+
+### Clipe `video-intervalo-das-pedras` · Compare o intervalo entre as pedras
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-intervalo-das-pedras`
+
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila de pessoas passando por uma porta, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados numa porta e depois passando um de cada vez, com o Zappy organizando a fila, com a legenda "um de cada vez"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o intervalo: quanto tempo o jogo espera entre uma pedra e outra.
+
+[interested, animated voice] Olha aqui: Criar asteroide está em A cada quadro. Eu clico em Tempo e deixo passar mais ou menos um segundo. Tá vendo? Nascem umas 30 pedras, uma em cada quadro, grudadas umas nas outras. Vira um amontoado, e ninguém conseguiria passar por ali.
+
+[engaging, energetic, conversational voice] É como a fila de pessoas passando por uma porta: se todo mundo passa junto, vira um amontoado, mas, se cada um espera a sua vez, sobra espaço entre um e outro.
+
+[engaging, energetic, conversational voice] Agora eu levo Criar asteroide para a caixa A cada 40 quadros, e tudo recomeça do zero. Deixo passar uns quatro segundos. [interested, animated voice] Olha só: nasce uma pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.
+
+[curious] Se eu diminuir a espera, a pedra cai mais rápido?
+
+[engaging, energetic, conversational voice] Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas das outras, mas repare: cada pedra desce o mesmo tanto, 180 em 60 quadros, igual antes. Ou seja, o intervalo muda quantas pedras nascem, e não a velocidade de cada uma. No seu jogo, o relógio vai criar uma pedra a cada 40 quadros.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-intervalo-das-pedras-K1 | Dedé | 1 | pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima. | Se eu diminuir a espera, a pedra cai mais rápido? | Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-intervalo-das-pedras-K1`: entrada — Concluir o teste de 40 quadros, com espaços entre as pedras. Saída — Trocar para 20 quadros e comparar quantidade e distância percorrida; manter a velocidade igual nos dois testes.
+
+
+**Recado na página (não gravar):** Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.
+
+## Seção 2. Prepare a criação dos asteroides
+
+### Clipe `video-grupo-e-relogio` · Prepare a criação dos asteroides
+
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-grupo-e-relogio`
+
+**Na tela:** Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no "Tá vendo?", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+
+**Fala para ElevenLabs:**
+
+```text
+[confident, clear, unhurried voice] Clique no seu jogo e espere um pouco. Tá vendo? Nenhuma pedra aparece, porque o jogo ainda não cria pedras.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o relógio de 40 quadros, as pedras nasciam com espaço entre elas. Agora a gente vai preparar as pedras e o relógio no seu jogo!
+
+[engaging, energetic, conversational voice] As pedras também vão ser muitas, por isso ficam num grupo, criado uma vez quando o jogo começa. Deixe à vista o fim de Ao iniciar, logo depois de Criar grupo de sprites tiros.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. [confident, clear, unhurried voice] Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.
+
+[curious] E quando vai nascer cada pedra?
+
+[engaging, energetic, conversational voice] Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de tempos em tempos. Por isso, deixe à vista o espaço logo abaixo do bloco inteiro A cada quadro do jogo, ainda dentro de Enquanto estiver rodando.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadros. Arraste e solte logo abaixo de A cada quadro do jogo, mas fora dele, ainda dentro de Enquanto estiver rodando. Os dois blocos ficam como vizinhos, um embaixo do outro.
+
+[engaging, energetic, conversational voice] O número do intervalo chega em 30. Troque por 40, porque o seu jogo vai criar uma pedra a cada 40 quadros. Assim, A cada quadro do jogo continua cuidando de cada imagem da partida, e A cada 40 quadros espera esse intervalo para fazer o que estiver dentro dele.
+
+[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites asteroides, e, dentro de Enquanto estiver rodando, A cada 40 quadros está logo abaixo de A cada quadro do jogo, como vizinho, e não encaixado dentro dele. Por enquanto, nenhuma pedra cai, porque o relógio ainda está vazio.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-grupo-e-relogio-K1 | Dedé | 1 | e solte no fim de Ao iniciar. Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha. | E quando vai nascer cada pedra? | Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-grupo-e-relogio-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+
+**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+## Seção 3. Sorteie onde a pedra nasce
+
+### Clipe `video-posicao-sorteada` · Sorteie onde a pedra nasce
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-posicao-sorteada`
+
+**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda "Sortear lugar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o sorteio: como o jogo escolhe onde cada pedra nasce.
+
+[interested, animated voice] Olha aqui: eu clico em Sortear lugar na régua de cima. Sai um lugar, e uma marca aparece na régua. Eu clico de novo, e sai outro lugar. [confident, clear, unhurried voice] Repare: cada clique é um sorteio novo, sempre entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.
+
+[curious] Mas por que criar a pedra fora da tela?
+
+[engaging, energetic, conversational voice] A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo pela borda de cima. Assim, ninguém vê a pedra aparecer do nada. No seu jogo, o x do asteroide vai ser sorteado, e o y vai começar em -30, acima da tela.
+
+[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-posicao-sorteada-K1 | Dedé | 1 | entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo. | Mas por que criar a pedra fora da tela? | A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-posicao-sorteada-K1`: entrada — Fazer os sorteios e mostrar a pedra acima da borda, sem iniciar o tempo ainda. Saída — Apontar a posição inicial e clicar em Tempo só quando a professora anunciar o gesto.
+
+
+**Recado na página (não gravar):** Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.
+
+## Seção 4. Crie e mostre as pedras caindo
+
+### Clipe `video-asteroide` · Crie e mostre as pedras caindo
+
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-asteroide`
+
+**Na tela:** Começar pela retomada: esperar alguns segundos e, no "Tá vendo?", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+
+**Fala para ElevenLabs:**
+
+```text
+[confident, clear, unhurried voice] Clique no seu jogo e espere um pouco. Tá vendo? Ainda não cai nenhuma pedra, porque o relógio está vazio.
+
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada pedra nascia num lugar sorteado, acima da tela, e entrava caindo. Agora a gente vai pôr o asteroide no relógio do seu jogo!
+
+[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de A cada 40 quadros.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco No grupo criar um asteroide. Arraste para dentro de A cada 40 quadros e solte quando aparecer o encaixe. O grupo já vem asteroides: mantenha.
+
+[engaging, energetic, conversational voice] Agora o lugar onde a pedra nasce. Em vez de um número fixo no x, a pedra vai nascer num lugar sorteado, por isso deixe à vista o número do campo x do asteroide. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um x aleatório na tela e solte em cima desse número.
+
+[engaging, energetic, conversational voice] Troque o y para -30, para a pedra nascer acima da tela. O tamanho já vem em 40: mantenha. O vx já vem em 0, por isso a pedra não anda para os lados. Troque o vy para 3: sem o sinal de menos, a pedra desce. Se quiser, escolha uma cor que apareça bem no fundo.
+
+[engaging, energetic, conversational voice] Agora as pedras precisam andar, sair do grupo quando passarem da tela e aparecer, em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo tiros. Abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.
+
+[curious] E como tira as pedras que saem da tela?
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte nesse encaixe. Mantenha sprite no campo chamado e deixe o espaço de dentro vazio.
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo da limpeza dos asteroides. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe.
+
+[confident, clear, unhurried voice] Agora clique na área do jogo e espere. [interested, animated voice] Olha só: as pedras entram pela parte de cima e caem! Atire em uma delas. Por enquanto, o tiro atravessa a pedra, e isso é esperado, porque você ainda não programou o acerto.
+
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está No grupo asteroides criar um asteroide, com um x aleatório na tela, y -30, tamanho 40, vx 0 e vy 3. E, no fim de A cada quadro do jogo, estão Mover os sprites do grupo asteroides, Tirar do grupo asteroides quem sair da tela e Desenhar o grupo asteroides, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-asteroide-K1 | Dedé | 1 | usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter. | E como tira as pedras que saem da tela? | Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-asteroide-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+
+
+**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+
+## Seção 5. Teste e envie a sua chuva de pedras
+
+### Clipe `video-entrega` · Teste e envie a sua chuva de pedras
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-entrega`
+
+**Na tela:** Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos. Ao terminar, clicar em Verificar esta parte, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+
+**Fala para ElevenLabs:**
+
+```text
+[upbeat, encouraging voice] Agora teste o seu jogo inteiro. Clique na área do jogo e olhe as pedras: elas entram pela parte de cima, uma a cada 40 quadros, e caem sempre no mesmo ritmo, porque a velocidade de cada uma é vy 3.
+
+[engaging, energetic, conversational voice] Depois mova a nave e atire. As setas e os tiros precisam continuar funcionando como antes, agora com as pedras caindo. Por enquanto o tiro atravessa as pedras, e isso é esperado: o acerto vem na próxima aula.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar esta parte. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+```
+
+
+**Recado na página (não gravar):** Hora de testar a sua chuva de pedras! Confira as pedras caindo, as setas e os tiros, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.

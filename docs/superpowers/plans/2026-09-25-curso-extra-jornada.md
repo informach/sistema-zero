@@ -31,7 +31,7 @@
 - `packages/admin/src/app/admin/membros/cursos/{course-form-dialog.tsx,courses-client.tsx}` and `packages/community-kids/src/components/kids/{catalog-course-card.tsx,course-card.tsx}`: truthful UI.
 - `packages/community-kids/src/lib/journey-map.ts`: sort the filtered trail into the three approved groups.
 - Existing core, members, admin and Kids tests: regressions for all roles and both entitlement paths.
-- `docs/jornada-do-criador.md` and `docs/aulas-interativas/modulos-cade-todo-mundo.md`: operator guidance.
+- `docs/jornada-do-criador.md` and `docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md`: operator guidance.
 
 ---
 
@@ -177,7 +177,7 @@ bun run --filter @sistemazero/community-kids typecheck
 - [ ] **Step 5: Commit the UI and docs.**
 
 ```powershell
-git add packages/admin packages/member-shell packages/community-kids docs/jornada-do-criador.md docs/aulas-interativas/modulos-cade-todo-mundo.md
+git add packages/admin packages/member-shell packages/community-kids docs/jornada-do-criador.md docs/aulas-interativas-tecnico/modulos-cade-todo-mundo.md
 git commit -m "feat(kids): show extra courses in the Faísca trail"
 ```
 

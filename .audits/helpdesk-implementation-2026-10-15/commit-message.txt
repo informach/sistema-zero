@@ -1,0 +1,10 @@
+feat(helpdesk): integrate governed knowledge and AI support
+
+Implement batches L0-L5 with reviewed knowledge revisions, evidence-based
+copilot, durable portal automation, human handoff, and shared portal UX.
+Preserve Gmail reconciliation, authorization, human notifications and SLA.
+Add evaluated-policy gates, usage diagnostics, retention and evaluation tools.
+
+Reviewed each batch and the integrated implementation against current staging.
+Validated 443 tests across relevant suites, PostgreSQL concurrency/migrations,
+consumer typechecks, console build and changed-file lint. Automation stays off.

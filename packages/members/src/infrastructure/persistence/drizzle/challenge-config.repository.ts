@@ -1,4 +1,5 @@
 import { asc, eq, inArray } from 'drizzle-orm'
+import type { CourseAudience } from '../../../domain/course/course'
 import type {
   ChallengeConfigRepository,
   ChallengeCustomThemeRecord,
@@ -8,28 +9,27 @@ import type {
   UpsertChallengeOverrideInput,
 } from '../../../domain/ports/challenge-config-repository.port'
 import type { Database } from './db'
-import { challengeCustomThemes, challengeMonthOverrides } from './schema'
+import {
+  adultChallengeCustomThemes,
+  adultChallengeMonthOverrides,
+  challengeCustomThemes,
+  challengeMonthOverrides,
+} from './schema'
 
 type ThemeRow = typeof challengeCustomThemes.$inferSelect
 type OverrideRow = typeof challengeMonthOverrides.$inferSelect
-
-function toThemeRecord(row: ThemeRow): ChallengeCustomThemeRecord {
-  return {
-    id: row.id,
-    emoji: row.emoji,
-    title: row.title,
-    description: row.description,
-    archived: row.archived,
-    createdAt: row.createdAt,
-    updatedAt: row.updatedAt,
-  }
+function toThemeRecord(row: ThemeRow, audience: CourseAudience): ChallengeCustomThemeRecord {
+  return { ...row, audience }
 }
-
-function toOverride(row: OverrideRow, theme: ThemeRow | null): ChallengeOverrideWithTheme {
+function toOverride(
+  row: OverrideRow,
+  theme: ThemeRow | null,
+  audience: CourseAudience,
+): ChallengeOverrideWithTheme {
   return {
     monthKey: row.monthKey,
     builtinSlug: row.builtinSlug,
-    customTheme: theme ? toThemeRecord(theme) : null,
+    customTheme: theme ? toThemeRecord(theme, audience) : null,
     updatedAt: row.updatedAt,
     updatedByUserId: row.updatedByUserId,
   }
@@ -37,82 +37,65 @@ function toOverride(row: OverrideRow, theme: ThemeRow | null): ChallengeOverride
 
 export class DrizzleChallengeConfigRepository implements ChallengeConfigRepository {
   constructor(private readonly db: Database) {}
-
-  async findOverrideWithTheme(monthKey: string): Promise<ChallengeOverrideWithTheme | null> {
-    const rows = await this.db
-      .select()
-      .from(challengeMonthOverrides)
-      .leftJoin(
-        challengeCustomThemes,
-        eq(challengeMonthOverrides.customThemeId, challengeCustomThemes.id),
-      )
-      .where(eq(challengeMonthOverrides.monthKey, monthKey))
+  private tables(audience: CourseAudience) {
+    return audience === 'adult'
+      ? { themes: adultChallengeCustomThemes, overrides: adultChallengeMonthOverrides }
+      : { themes: challengeCustomThemes, overrides: challengeMonthOverrides }
+  }
+  async findOverrideWithTheme(monthKey: string, audience: CourseAudience = 'kids') {
+    const { themes, overrides } = this.tables(audience)
+    const [row] = await this.db
+      .select({ override: overrides, theme: themes })
+      .from(overrides)
+      .leftJoin(themes, eq(overrides.customThemeId, themes.id))
+      .where(eq(overrides.monthKey, monthKey))
       .limit(1)
-    const row = rows[0]
-    if (!row) return null
-    return toOverride(row.challenge_month_overrides, row.challenge_custom_themes)
+    return row ? toOverride(row.override, row.theme, audience) : null
   }
-
-  async listOverridesWithThemes(monthKeys: string[]): Promise<ChallengeOverrideWithTheme[]> {
-    if (monthKeys.length === 0) return []
+  async listOverridesWithThemes(monthKeys: string[], audience: CourseAudience = 'kids') {
+    if (!monthKeys.length) return []
+    const { themes, overrides } = this.tables(audience)
     const rows = await this.db
-      .select()
-      .from(challengeMonthOverrides)
-      .leftJoin(
-        challengeCustomThemes,
-        eq(challengeMonthOverrides.customThemeId, challengeCustomThemes.id),
-      )
-      .where(inArray(challengeMonthOverrides.monthKey, monthKeys))
-    return rows.map((row) => toOverride(row.challenge_month_overrides, row.challenge_custom_themes))
+      .select({ override: overrides, theme: themes })
+      .from(overrides)
+      .leftJoin(themes, eq(overrides.customThemeId, themes.id))
+      .where(inArray(overrides.monthKey, monthKeys))
+    return rows.map((row) => toOverride(row.override, row.theme, audience))
   }
-
-  async upsertOverride(input: UpsertChallengeOverrideInput): Promise<void> {
-    await this.db
-      .insert(challengeMonthOverrides)
-      .values({
-        monthKey: input.monthKey,
-        builtinSlug: input.builtinSlug,
-        customThemeId: input.customThemeId,
-        updatedAt: input.now,
-        updatedByUserId: input.updatedByUserId,
-      })
-      .onConflictDoUpdate({
-        target: challengeMonthOverrides.monthKey,
-        set: {
-          builtinSlug: input.builtinSlug,
-          customThemeId: input.customThemeId,
-          updatedAt: input.now,
-          updatedByUserId: input.updatedByUserId,
-        },
-      })
+  async upsertOverride(input: UpsertChallengeOverrideInput) {
+    const { overrides } = this.tables(input.audience ?? 'kids')
+    const values = {
+      monthKey: input.monthKey,
+      builtinSlug: input.builtinSlug,
+      customThemeId: input.customThemeId,
+      updatedAt: input.now,
+      updatedByUserId: input.updatedByUserId,
+    }
+    await this.db.insert(overrides).values(values).onConflictDoUpdate({
+      target: overrides.monthKey,
+      set: values,
+    })
   }
-
-  async deleteOverride(monthKey: string): Promise<void> {
-    await this.db
-      .delete(challengeMonthOverrides)
-      .where(eq(challengeMonthOverrides.monthKey, monthKey))
+  async deleteOverride(monthKey: string, audience: CourseAudience = 'kids') {
+    const { overrides } = this.tables(audience)
+    await this.db.delete(overrides).where(eq(overrides.monthKey, monthKey))
   }
-
-  async listCustomThemes(): Promise<ChallengeCustomThemeRecord[]> {
-    const rows = await this.db
-      .select()
-      .from(challengeCustomThemes)
-      .orderBy(asc(challengeCustomThemes.title))
-    return rows.map(toThemeRecord)
+  async listCustomThemes(audience: CourseAudience = 'kids') {
+    const { themes } = this.tables(audience)
+    return (await this.db.select().from(themes).orderBy(asc(themes.title))).map((row) =>
+      toThemeRecord(row, audience),
+    )
   }
-
-  async findCustomTheme(id: string): Promise<ChallengeCustomThemeRecord | null> {
-    const rows = await this.db
-      .select()
-      .from(challengeCustomThemes)
-      .where(eq(challengeCustomThemes.id, id))
-      .limit(1)
-    return rows[0] ? toThemeRecord(rows[0]) : null
+  async findCustomTheme(id: string, audience: CourseAudience = 'kids') {
+    const { themes } = this.tables(audience)
+    const [row] = await this.db.select().from(themes).where(eq(themes.id, id)).limit(1)
+    return row ? toThemeRecord(row, audience) : null
   }
-
-  async createCustomTheme(input: CreateChallengeThemeInput): Promise<ChallengeCustomThemeRecord> {
-    const rows = await this.db
-      .insert(challengeCustomThemes)
+  async createCustomTheme(input: CreateChallengeThemeInput) {
+    const audience = input.audience ?? 'kids'
+    const { themes } = this.tables(audience)
+    const [row] = await this.db
+      .insert(themes)
       .values({
         id: input.id,
         emoji: input.emoji,
@@ -123,19 +106,21 @@ export class DrizzleChallengeConfigRepository implements ChallengeConfigReposito
         updatedAt: input.now,
       })
       .returning()
-    return toThemeRecord(rows[0] as ThemeRow)
+    if (!row) throw new Error('Tema não foi persistido')
+    return toThemeRecord(row, audience)
   }
-
   async updateCustomTheme(
     id: string,
     patch: ChallengeThemePatch,
     now: Date,
-  ): Promise<ChallengeCustomThemeRecord | null> {
-    const rows = await this.db
-      .update(challengeCustomThemes)
+    audience: CourseAudience = 'kids',
+  ) {
+    const { themes } = this.tables(audience)
+    const [row] = await this.db
+      .update(themes)
       .set({ ...patch, updatedAt: now })
-      .where(eq(challengeCustomThemes.id, id))
+      .where(eq(themes.id, id))
       .returning()
-    return rows[0] ? toThemeRecord(rows[0]) : null
+    return row ? toThemeRecord(row, audience) : null
   }
 }

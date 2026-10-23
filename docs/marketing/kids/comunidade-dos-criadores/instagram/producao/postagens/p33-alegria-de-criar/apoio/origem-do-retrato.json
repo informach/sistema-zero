@@ -1,0 +1,17 @@
+{
+  "person": "Fernando",
+  "role": "Aluno",
+  "source": "output/instagram/alunos/2026-10-09/referencias/fernando.png",
+  "file": "fernando-retrato-real.png",
+  "sha256": "5ea10059accded13c73271e588cac9f750c85575f7572ae5393a19b8e089f630",
+  "kind": "Referência real enviada pelo usuário, preservada localmente em 09/10; captura do vídeo do relato",
+  "testimonial": "AV06",
+  "fullQuote": "Eu me sinto criando meus próprios jogos muito feliz, animado, para ver depois o que que vai dar.",
+  "quoteSeconds": [
+    0,
+    8.14
+  ],
+  "frameSeconds": null,
+  "aiGenerated": false,
+  "transform": "Enquadramento por CSS; arquivo fonte preservado, sem recriação, retoque ou troca da tela."
+}

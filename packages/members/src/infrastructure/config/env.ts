@@ -1,3 +1,4 @@
+import { galleryStudioStorageBaseURL } from '@sistemazero/core/learning'
 import { z } from 'zod'
 
 /**
@@ -56,6 +57,14 @@ const EnvSchema = z
       .int()
       .positive()
       .default(2 * 1024 * 1024),
+    // Trusted deployment configuration. Never populated from an authoring/project request.
+    // Missing preserves JS v2; v3 publication requires a verified approved catalog.
+    STUDIO_AUTHORING_POLICY_JSON: z.string().min(1).max(2_000_000).optional(),
+    STUDIO_RUNTIME_HOSTS_JSON: z.string().min(1).max(200_000).optional(),
+    // Dedicated authenticated Python service. Never fall back to the JS/Pro service.
+    STUDIO_PYTHON_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PYTHON_RUNTIME_TOKEN: z.string().min(16).optional(),
+    STUDIO_GALLERY_STORAGE_BASE_URL: z.string().url().max(2048).optional(),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
@@ -102,6 +111,8 @@ const EnvSchema = z
       .string()
       .min(16, 'INTERNAL_API_TOKEN deve ter ao menos 16 caracteres')
       .optional(),
+    // Dedicated Auth→Members admission credential; missing always denies this private route.
+    MEMBERS_PROFILE_ADMISSION_TOKEN: z.string().min(16).optional(),
 
     // Carência (dias) somada ao fim do ciclo da assinatura ao calcular `expiresAt`.
     SUBSCRIPTION_GRACE_DAYS: z.coerce.number().int().nonnegative().default(3),
@@ -112,6 +123,30 @@ const EnvSchema = z
     // (grava mas nunca recusa).
     AI_LIMIT_DAILY: z.coerce.number().int().positive().default(50),
     AI_LIMIT_MONTHLY: z.coerce.number().int().positive().default(500),
+    // Independent AES-256 keys ({version: 64 hex chars}); retain old versions during rotation.
+    STUDIO_AI_VAULT_KEYS: z.string().optional(),
+    // O executor dos objetivos que RODAM o jogo (`POST /v1/check` do studio-runtime). Os mesmos
+    // nomes do Kids e do Admin: o token é o INTERNAL_TOKEN do Worker. Sem os dois, as partes com
+    // esses objetivos respondem "não consegui testar agora".
+    STUDIO_PRO_RUNTIME_URL: z.string().url().optional(),
+    STUDIO_PRO_RUNTIME_TOKEN: z.string().min(16).optional(),
+    STUDIO_BUILDER_EXECUTOR_URL: z.string().url().optional(),
+    ADULT_STUDIO_BUILDER_EXECUTOR_URL: z.string().url().optional(),
+    STUDIO_BUILDER_EXECUTOR_SECRET: z.string().min(32).optional(),
+    STUDIO_AI_VAULT_ACTIVE_ID: z.string().optional(),
+    STUDIO_AI_CALLBACK_ORIGINS: z.string().optional(),
+    // Technical ceilings for Studio inference; subscription interaction quotas remain separate.
+    STUDIO_AI_DAILY_MICRO_USD: z.coerce.number().int().min(1).max(1_000_000_000).default(1_000_000),
+    STUDIO_AI_MONTHLY_MICRO_USD: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(1_000_000_000)
+      .default(10_000_000),
+    STUDIO_AI_MAX_CONCURRENT: z.coerce.number().int().min(1).max(4).default(2),
+    STUDIO_AI_EXTERNAL_DAILY_RUNS: z.coerce.number().int().min(1).max(2000).default(200),
+    STUDIO_AI_MAX_PROMPT_PRICE: z.coerce.number().positive().max(100).default(1),
+    STUDIO_AI_MAX_COMPLETION_PRICE: z.coerce.number().positive().max(500).default(4),
 
     // Retenção do dedupe de webhooks (`processed_webhooks`): linhas mais antigas
     // que isto são apagadas pelo ciclo periódico de limpeza (fora do hot path;
@@ -141,6 +176,24 @@ const EnvSchema = z
     // + GATEWAY_URL + MEMBERS_HMAC_SECRET) — sem eles é no-op silencioso (dev).
     // AUTH (S2S direto): e-mail/nome do responsável + nomes das crianças.
     AUTH_BASE_URL: z.string().url().optional(),
+    // Explicit operational rehearsal gate; credentials alone never enable a classroom.
+    LIVE_MEDIA_READY: z
+      .preprocess((value) => value === true || value === 'true' || value === '1', z.boolean())
+      .default(false),
+    LIVE_SFU_APP_ID: z.string().optional(),
+    LIVE_SFU_APP_SECRET: z.string().optional(),
+    LIVE_TURN_KEY_ID: z.string().optional(),
+    LIVE_TURN_API_TOKEN: z.string().optional(),
+    LIVE_SUPERVISOR_URL: z.string().url().optional(),
+    LIVE_SUPERVISOR_TOKEN: z.string().min(32).optional(),
+    LIVE_RECORDER_URL: z.string().url().optional(),
+    LIVE_RECORDER_TOKEN: z.string().min(32).optional(),
+    // O bucket REAL onde o gravador grava o MP4 (o `R2_BUCKET` do live-recorder): o Admin assina
+    // a URL temporária da gravação revisada para mandá-la ao Vimeo. Vazio = ausente.
+    LIVE_RECORDING_BUCKET: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.string().min(1).max(63).optional(),
+    ),
     AUTH_INTERNAL_TOKEN: z
       .string()
       .min(16, 'AUTH_INTERNAL_TOKEN deve ter ao menos 16 caracteres')
@@ -165,6 +218,9 @@ const EnvSchema = z
     PARENT_REPORT_BATCH_LIMIT: z.coerce.number().int().positive().default(200),
     // URL pública do app kids (CTA "Ver na plataforma" do e-mail → /perfis).
     KIDS_COMMUNITY_URL: z.string().url().optional(),
+    // URL pública do app adulto (21/10/2026): links dos avisos do Desafio adulto. Ausente, os
+    // avisos adultos que levam ao app esperam (os que levam ao funil saem).
+    COMMUNITY_URL: z.string().url().optional(),
     // ── Lembrete de RENOVAÇÃO (anual à vista) ───────────────────────────────
     // Janela (dias antes do vencimento) + ciclo do job + teto por ciclo.
     RENEWAL_REMINDER_DAYS_BEFORE: z.coerce.number().int().min(1).max(60).default(7),
@@ -195,10 +251,92 @@ const EnvSchema = z
       .optional()
       .transform((value) => normalizeAvatarPhotoPrefixes(value)),
   })
+  .refine(
+    (env) => {
+      if (!env.STUDIO_GALLERY_STORAGE_BASE_URL) return true
+      try {
+        galleryStudioStorageBaseURL(
+          env.STUDIO_GALLERY_STORAGE_BASE_URL,
+          env.NODE_ENV !== 'production',
+        )
+        return true
+      } catch {
+        return false
+      }
+    },
+    {
+      message: 'A base das cópias da galeria deve usar HTTPS, sem credenciais, query ou fragmento.',
+      path: ['STUDIO_GALLERY_STORAGE_BASE_URL'],
+    },
+  )
+  .refine(
+    (env) => Boolean(env.STUDIO_PYTHON_RUNTIME_URL) === Boolean(env.STUDIO_PYTHON_RUNTIME_TOKEN),
+    {
+      message: 'Configure URL e token do serviço Python juntos.',
+      path: ['STUDIO_PYTHON_RUNTIME_URL'],
+    },
+  )
+  .refine(
+    (env) => {
+      if (!env.STUDIO_PYTHON_RUNTIME_URL) return true
+      const url = new URL(env.STUDIO_PYTHON_RUNTIME_URL)
+      return (
+        !url.username &&
+        !url.password &&
+        !url.hash &&
+        !url.search &&
+        (url.protocol === 'https:' ||
+          (url.protocol === 'http:' &&
+            env.NODE_ENV !== 'production' &&
+            ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)))
+      )
+    },
+    {
+      message: 'O serviço Python deve usar HTTPS (HTTP somente em localhost de desenvolvimento).',
+      path: ['STUDIO_PYTHON_RUNTIME_URL'],
+    },
+  )
+  .refine(
+    (env) =>
+      Boolean(env.STUDIO_BUILDER_EXECUTOR_URL || env.ADULT_STUDIO_BUILDER_EXECUTOR_URL) ===
+      Boolean(env.STUDIO_BUILDER_EXECUTOR_SECRET),
+    {
+      message: 'Configure URL e segredo do executor Studio juntos.',
+      path: ['STUDIO_BUILDER_EXECUTOR_URL'],
+    },
+  )
+  .refine(
+    (env) => {
+      return [env.STUDIO_BUILDER_EXECUTOR_URL, env.ADULT_STUDIO_BUILDER_EXECUTOR_URL].every(
+        (value) => {
+          if (!value) return true
+          const url = new URL(value)
+          return (
+            !url.username &&
+            !url.password &&
+            !url.hash &&
+            !url.search &&
+            (url.protocol === 'https:' ||
+              (url.protocol === 'http:' &&
+                env.NODE_ENV !== 'production' &&
+                ['localhost', '127.0.0.1'].includes(url.hostname)))
+          )
+        },
+      )
+    },
+    {
+      message: 'O executor Studio deve usar HTTPS (HTTP somente em localhost de desenvolvimento).',
+      path: ['STUDIO_BUILDER_EXECUTOR_URL'],
+    },
+  )
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.INTERNAL_API_TOKEN), {
     message:
       'INTERNAL_API_TOKEN é obrigatório em produção (defesa em profundidade da API do aluno)',
     path: ['INTERNAL_API_TOKEN'],
+  })
+  .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.MEMBERS_PROFILE_ADMISSION_TOKEN), {
+    message: 'MEMBERS_PROFILE_ADMISSION_TOKEN é obrigatório em produção para a admissão Kids',
+    path: ['MEMBERS_PROFILE_ADMISSION_TOKEN'],
   })
   .refine((env) => env.NODE_ENV !== 'production' || Boolean(env.CATALOG_INTERNAL_TOKEN), {
     message:

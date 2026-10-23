@@ -12,7 +12,13 @@ import type {
   ToolUsageRepository,
 } from '../../../domain/ports/tool-usage-repository.port'
 import type { Database } from './db'
-import { creations, lessonBlocks, pensaCycles, pensaProjects, studioSubmissions } from './schema'
+import {
+  creations,
+  lessonBlocks,
+  pensaExecutionEvents,
+  pensaProjects,
+  studioSubmissions,
+} from './schema'
 
 /**
  * Agregações de USO por aprendiz (ficha admin), sempre em LOTE (GROUP BY
@@ -24,7 +30,7 @@ export class DrizzleToolUsageRepository implements ToolUsageRepository {
 
   async pensaUsageByUsers(userIds: string[]): Promise<Map<string, LearnerPensaUsage>> {
     if (userIds.length === 0) return new Map()
-    const [projects, cycles] = await Promise.all([
+    const [projects, completedProjects] = await Promise.all([
       this.db
         .select({
           userId: pensaProjects.userId,
@@ -36,17 +42,22 @@ export class DrizzleToolUsageRepository implements ToolUsageRepository {
         .groupBy(pensaProjects.userId),
       this.db
         .select({ userId: pensaProjects.userId, done: count() })
-        .from(pensaCycles)
-        .innerJoin(pensaProjects, eq(pensaCycles.projectId, pensaProjects.id))
-        .where(and(inArray(pensaProjects.userId, userIds), eq(pensaCycles.stage, 'done')))
+        .from(pensaExecutionEvents)
+        .innerJoin(pensaProjects, eq(pensaExecutionEvents.projectKey, pensaProjects.id))
+        .where(
+          and(
+            inArray(pensaProjects.userId, userIds),
+            eq(pensaExecutionEvents.kind, 'project_verified'),
+          ),
+        )
         .groupBy(pensaProjects.userId),
     ])
-    const doneBy = new Map(cycles.map((r) => [r.userId, r.done]))
+    const doneBy = new Map(completedProjects.map((r) => [r.userId, r.done]))
     const out = new Map<string, LearnerPensaUsage>()
     for (const r of projects) {
       out.set(r.userId, {
         projects: r.projects,
-        cyclesCompleted: doneBy.get(r.userId) ?? 0,
+        projectsCompleted: doneBy.get(r.userId) ?? 0,
         lastActivityAt: r.lastActivityAt ?? null,
       })
     }

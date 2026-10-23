@@ -14,9 +14,18 @@ import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import { moldaToolFamilyIds } from '../../../core/toolFamilies'
-import { addScenePrimitive, convertSceneNodesToMesh, editSceneMesh } from '../../../scene/commands'
+import {
+  addScenePrimitive,
+  convertSceneNodesToMesh,
+  editSceneMesh,
+  groupSceneNodes,
+  setSceneNodeFlag,
+  transformSceneNodes,
+} from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import type { ScenePaintTarget } from '../../../scene/imagePaint'
+import { buildSceneGeometry } from '../../../scene/geometry'
+import type { ScenePaintContact, ScenePaintTarget } from '../../../scene/imagePaint'
+import { identityMatrix } from '../../../scene/matrix'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
 import { sceneFaceViewTexel, scenePaintFaceView } from '../../../scene/paintFaceView'
 import { scenePaintFaceBounds } from '../../../scene/paintSurfaceBounds'
@@ -25,6 +34,7 @@ import { createGalleryStore } from '../../../state/galleryStore'
 import { createMemoryPersistence } from '../../../state/memoryPersistence'
 import { frontControls } from '../../../testing/domContract'
 import { makeModel, makeTexture } from '../../../testing/fixtures'
+import { sceneBentPaint } from '../../../testing/sceneBentPaint'
 import type {
   ScenePaintMode,
   SceneViewportCallbacks,
@@ -39,6 +49,29 @@ afterEach(() => {
   cleanup()
 })
 
+test('Organizar quadradinhos respects inherited group locks as well as unlocked pieces', async () => {
+  const f = twoBoxes()
+  const grouped = groupSceneNodes(f.document, [f.door], { nextId: () => 'locked-group' })
+  const source = setSceneNodeFlag(grouped, ['locked-group'], 'locked', true)
+  const { editor, view } = mount(source)
+  try {
+    fireEvent.click(await screen.findByRole('button', { name: COPY.scene.select('porta') }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    const organize = screen.getByRole<HTMLButtonElement>('button', {
+      name: SCENE_PAINT_COPY.simpleUv,
+    })
+    expect(organize.disabled).toBe(true)
+    expect(editor.getState().saveSnapshot()).toBe(source)
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('parede') }))
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: SCENE_PAINT_COPY.simpleUv }).disabled,
+    ).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 /** Uma caixa nova, sem tinta nenhuma: é o que a criança tem ao começar. */
 function twoBoxes() {
   let n = 0
@@ -47,6 +80,49 @@ function twoBoxes() {
   const one = addScenePrimitive(base, 'box', 'porta', nextId)
   const two = addScenePrimitive(one, 'box', 'parede', nextId)
   return { document: two, door: one.nodes.at(-1)!.id, wall: two.nodes.at(-1)!.id }
+}
+
+test('the sheet divider applies the release position even without an intermediate pointer move', async () => {
+  const { document, door } = twoBoxes()
+  const { editor, tap, view, stage } = mount(document)
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    tap(door)
+    fireEvent.click(screen.getByRole('button', { name: 'Pintar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Folha de pintura' }))
+    const divider = await screen.findByRole('separator', { name: 'Largura da folha' })
+    divider.parentElement!.getBoundingClientRect = () => new DOMRect(100, 0, 1000, 500)
+    let captured: number | null = null
+    Object.assign(divider, {
+      setPointerCapture: (id: number) => {
+        captured = id
+      },
+      hasPointerCapture: (id: number) => captured === id,
+      releasePointerCapture: () => {
+        captured = null
+      },
+    })
+    const before = editor.getState().content
+    fireEvent.pointerDown(divider, { pointerId: 1, button: 0, clientX: 480 })
+    fireEvent.pointerUp(divider, { pointerId: 1, button: 0, clientX: 650 })
+    expect(Number(divider.getAttribute('aria-valuenow'))).toBeCloseTo(55, 8)
+    expect(editor.getState().content).toBe(before)
+    expect(editor.getState().canUndo).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
+function customColorInput() {
+  act(() => {
+    const details = screen
+      .getByText(SCENE_PAINT_COPY.customColor, { selector: 'summary' })
+      .closest('details')!
+    details.open = true
+    fireEvent(details, new Event('toggle'))
+  })
+  return screen.getByLabelText('Cor hexadecimal') as HTMLInputElement
 }
 
 function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode = (node) => node) {
@@ -58,6 +134,7 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
   })
   const stage = {
     callbacks: null as SceneViewportCallbacks | null,
+    document: null as MoldaSceneDocument | null,
     target: null as ScenePaintTarget | null,
     mode: null as ScenePaintMode | null,
     mirror: false,
@@ -65,7 +142,10 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
   const factory: SceneViewportFactory = (_canvas, callbacks) => {
     stage.callbacks = callbacks
     const port: SceneViewportPort = {
-      setDocument: () => [],
+      setDocument: (next) => {
+        stage.document = next
+        return []
+      },
       setSelection: () => {},
       setIsolation: () => {},
       setView: () => {},
@@ -113,6 +193,56 @@ function mount(asset: MoldaSceneDocument, wrap: (node: ReactNode) => ReactNode =
   return { editor, view, stage, tap, drag }
 }
 
+test('Modelar mostra a prévia booleana e confirma em um único desfazer', async () => {
+  const { document, door, wall } = twoBoxes()
+  const offset = identityMatrix()
+  offset[12] = 1
+  const moved = transformSceneNodes(document, [wall], offset)
+  const { editor, stage, view } = mount(moved)
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    act(() => {
+      stage.callbacks!.select(door, false)
+      stage.callbacks!.select(wall, true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Diferença' }))
+    expect(editor.getState().asset).toBe(moved)
+    await waitFor(() => expect(stage.document?.nodes.some((node) => node.id === wall)).toBe(false))
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }))
+    await waitFor(() => expect(stage.document?.nodes.some((node) => node.id === wall)).toBe(true))
+    fireEvent.click(screen.getByRole('button', { name: 'Diferença' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar resultado' }))
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(false)
+    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(true)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
+test('a miniatura atualizada durante o cálculo não descarta a prévia booleana', async () => {
+  const { document, door, wall } = twoBoxes()
+  const offset = identityMatrix()
+  offset[12] = 1
+  const { editor, stage, view } = mount(transformSceneNodes(document, [wall], offset))
+  try {
+    await waitFor(() => expect(stage.callbacks).not.toBeNull())
+    act(() => {
+      stage.callbacks!.select(door, false)
+      stage.callbacks!.select(wall, true)
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'União' }))
+    act(() => editor.getState().setThumb('updated-thumbnail'))
+    fireEvent.click(await screen.findByRole('button', { name: 'Confirmar resultado' }))
+    expect(editor.getState().asset.thumb).toBe('updated-thumbnail')
+    expect(editor.getState().asset.nodes.some((node) => node.id === wall)).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 const swatch = (document: MoldaSceneDocument, index: number) =>
   screen.getByRole('button', {
     name: COPY.a11y.colorSwatch(index, resolvePaletteColors(document)[index]!),
@@ -125,9 +255,197 @@ const material = (document: MoldaSceneDocument, nodeId: string) => {
 }
 
 describe('a aba Pintar', () => {
-  test('da oficina aberta ao primeiro traço: 3 interações à vista, nenhum painel aberto', async () => {
+  test('um modelo aberto pode ganhar interior pintável em um passo de desfazer', async () => {
+    const { document, door } = twoBoxes()
+    const converted = convertSceneNodesToMesh(document, [door])
+    const open = editSceneMesh(converted, door, (mesh) => {
+      const faces = { ...mesh.faces }
+      delete faces.py
+      return { ...mesh, faces }
+    })
+    const { editor, stage, view, tap } = mount(open)
+    try {
+      await waitFor(() => expect(stage.callbacks).not.toBeNull())
+      tap(door, 'px')
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      fireEvent.click(screen.getByRole('button', { name: 'Criar lado interno pintável' }))
+      const current = editor.getState().asset
+      const node = current.nodes.find((entry) => entry.id === door)!
+      if (node.kind !== 'mesh') throw new Error('Expected mesh')
+      const mesh = current.geometries.find((entry) => entry.id === node.geometryId)!
+      if (mesh.kind !== 'mesh') throw new Error('Expected mesh')
+      expect(Object.keys(mesh.faces)).toHaveLength(10)
+      expect(screen.queryByRole('button', { name: 'Criar lado interno pintável' })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.geometries).toEqual(open.geometries)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+      const insideFace = Object.keys(mesh.faces).find(
+        (id) => mesh.faces[id]!.materialId !== undefined,
+      )!
+      const triangle = buildSceneGeometry(mesh).faceIds.indexOf(insideFace)
+      act(() => {
+        stage.callbacks!.paint!.begin({
+          kind: 'surface',
+          nodeId: door,
+          faceId: insideFace,
+          triangle,
+          barycentric: [1 / 3, 1 / 3, 1 / 3],
+          frame: 0,
+        })
+        stage.callbacks!.paint!.end(true)
+      })
+      expect(editor.getState().asset.images.length).toBeGreaterThan(open.images.length)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('um traço direto numa peça torta oferece preparação junto das cores, sem mudar a criação antes da escolha', async () => {
+    const { document, nodeId } = sceneBentPaint()
+    const { editor, stage, view } = mount(document)
+    try {
+      await waitFor(() => expect(stage.callbacks).not.toBeNull())
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      const geometry = document.geometries.find((entry) => entry.kind === 'mesh')!
+      const buffers = buildSceneGeometry(geometry)
+      act(() => {
+        stage.callbacks!.paint!.begin({
+          kind: 'surface',
+          nodeId,
+          faceId: 'nx',
+          triangle: buffers.faceIds.indexOf('nx'),
+          barycentric: [1 / 3, 1 / 3, 1 / 3],
+          frame: 0,
+        })
+      })
+      const colors = screen.getByRole('region', { name: SCENE_PAINT_COPY.colors })
+      const prepare = within(colors).getByRole('button', { name: SCENE_PAINT_COPY.split })
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(editor.getState().asset).toBe(document)
+      expect(editor.getState().canUndo).toBe(false)
+      fireEvent.click(prepare)
+      expect(stage.target?.nodeId).toBe(nodeId)
+      act(() => {
+        stage.callbacks!.paint!.begin({ point: [1, 1], region: 'face' })
+        stage.callbacks!.paint!.end(true)
+      })
+      expect(editor.getState().canUndo).toBe(true)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.geometries).toEqual(document.geometries)
+      expect(editor.getState().asset.images).toEqual(document.images)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('a cor de fundo de uma peça torta muda sem preparar UV, criar imagens ou dividir faces', async () => {
+    const { document, nodeId } = sceneBentPaint()
+    const { editor, stage, view } = mount(document)
+    try {
+      await waitFor(() => expect(stage.callbacks).not.toBeNull())
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      fireEvent.click(screen.getByRole('button', { name: 'Balde' }))
+      fireEvent.click(screen.getByRole('radio', { name: 'Cor de fundo da peça' }))
+      fireEvent.click(swatch(document, 2))
+      const geometry = document.geometries.find((entry) => entry.kind === 'mesh')!
+      const buffers = buildSceneGeometry(geometry)
+      act(() => {
+        stage.callbacks!.paint!.begin({
+          kind: 'surface',
+          nodeId,
+          faceId: 'nx',
+          triangle: buffers.faceIds.indexOf('nx'),
+          barycentric: [1 / 3, 1 / 3, 1 / 3],
+          frame: 0,
+        })
+      })
+      expect(material(editor.getState().asset, nodeId).baseColor).not.toEqual(
+        material(document, nodeId).baseColor,
+      )
+      expect(editor.getState().asset.geometries).toEqual(document.geometries)
+      expect(editor.getState().asset.images).toEqual(document.images)
+      expect(screen.queryByRole('alert')).toBeNull()
+      expect(screen.queryByRole('button', { name: SCENE_PAINT_COPY.split })).toBeNull()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.materials).toEqual(document.materials)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('pintar outra peça pronta retira o pedido de preparação da peça anterior', async () => {
+    const bent = sceneBentPaint()
+    const document = addScenePrimitive(bent.document, 'box', 'outra peça')
+    const flatId = document.nodes.at(-1)!.id
+    const { editor, stage, view } = mount(document)
+    const contact = (nodeId: string): ScenePaintContact => {
+      const source = editor.getState().content
+      const node = source.nodes.find((entry) => entry.id === nodeId)!
+      if (node.kind !== 'mesh') throw new Error('Missing painted piece')
+      const geometry = source.geometries.find((entry) => entry.id === node.geometryId)!
+      return {
+        kind: 'surface',
+        nodeId,
+        faceId: 'nx',
+        triangle: buildSceneGeometry(geometry).faceIds.indexOf('nx'),
+        barycentric: [1 / 3, 1 / 3, 1 / 3],
+        frame: 0,
+      }
+    }
+    try {
+      await waitFor(() => expect(stage.callbacks).not.toBeNull())
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      act(() => stage.callbacks!.paint!.begin(contact(bent.nodeId)))
+      expect(screen.getByRole('button', { name: SCENE_PAINT_COPY.split })).toBeDefined()
+      act(() => {
+        expect(stage.callbacks!.paint!.begin(contact(flatId))).toBe(true)
+        stage.callbacks!.paint!.end(true)
+      })
+      expect(screen.queryByRole('button', { name: SCENE_PAINT_COPY.split })).toBeNull()
+      expect(screen.queryByRole('alert')).toBeNull()
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('visitar Pintar e salvar conserva o documento confirmado; o primeiro traço guarda a superfície', async () => {
     const { document, door } = twoBoxes()
     const { editor, view, stage, tap, drag } = mount(document)
+    try {
+      await waitFor(() => expect(stage.callbacks !== null).toBe(true))
+      tap(door)
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      expect(editor.getState().content.images.length).toBeGreaterThan(document.images.length)
+      await act(() => editor.getState().flush())
+      expect(editor.getState().saveSnapshot()).toBe(document)
+      expect(editor.getState().savedAsset).toBe(document)
+      expect(editor.getState().canUndo).toBe(false)
+      drag([
+        [1, 1],
+        [2, 1],
+      ])
+      await act(() => editor.getState().flush())
+      expect(editor.getState().savedAsset.images.length).toBeGreaterThan(document.images.length)
+      act(() => editor.getState().undo())
+      expect(editor.getState().content.images).toEqual(document.images)
+      expect(editor.getState().canUndo).toBe(false)
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('da oficina aberta ao primeiro traço: 3 interações à vista, nenhum painel aberto', async () => {
+    const { document, door } = twoBoxes()
+    const { editor, view, stage, tap, drag } = mount(document, (children) => (
+      <MoldaToolAccessProvider access={{ allow: moldaToolFamilyIds(['basic']) }}>
+        {children}
+      </MoldaToolAccessProvider>
+    ))
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     // 1. Tocar na peça, no palco.
     tap(door)
@@ -160,7 +478,9 @@ describe('a aba Pintar', () => {
     expect(editor.getState().canUndo).toBe(false)
     await waitFor(() => expect(stage.target).toBeNull())
     expect(screen.queryByRole('alert')).toBeNull()
-    expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     editor.getState().dispose()
   })
 
@@ -199,7 +519,9 @@ describe('a aba Pintar', () => {
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     expect(stage.target).toBeNull()
-    expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     tap(door)
     expect(stage.target?.nodeId).toBe(door)
     fireEvent.click(swatch(editor.getState().asset, 5))
@@ -239,7 +561,9 @@ describe('a aba Pintar', () => {
     fireEvent.keyDown(shell, { key: 'Escape' })
     await waitFor(() => expect(stage.target).toBeNull())
     expect(stage.mode).toBe('paint')
-    expect(screen.getByText(SCENE_PAINT_COPY.choosePiece)).toBeDefined()
+    expect(
+      screen.getByRole('button', { name: 'Todas as peças' }).getAttribute('aria-pressed'),
+    ).toBe('true')
     // Soltar a peça sem pintar devolve a criação como estava, sem passo de desfazer.
     expect(editor.getState().asset).toBe(document)
     expect(editor.getState().canUndo).toBe(false)
@@ -338,10 +662,11 @@ describe('pintar de perto', () => {
     // Escolher a face não pinta nada: o lápis volta, agora de perto.
     expect(editor.getState().canUndo).toBe(false)
     const prepared = editor.getState().asset
-    const sheet = screen.getByRole('img', { name: SCENE_PAINT_COPY.closeUpSheet })
+    const sheet = screen.getByRole('button', { name: SCENE_PAINT_COPY.closeUpSheet })
     const width = bounds.x1 - bounds.x0 + 1
     const height = bounds.y1 - bounds.y0 + 1
-    sheet.getBoundingClientRect = () => new DOMRect(0, 0, width * 10, height * 10)
+    sheet.querySelector('canvas')!.getBoundingClientRect = () =>
+      new DOMRect(0, 0, width * 10, height * 10)
     Object.assign(sheet, { setPointerCapture: () => {}, hasPointerCapture: () => false })
     fireEvent.pointerDown(sheet, { pointerId: 1, button: 0, clientX: 5, clientY: 5 })
     fireEvent.pointerUp(sheet, { pointerId: 1, button: 0, clientX: 5, clientY: 5 })
@@ -359,7 +684,7 @@ describe('pintar de perto', () => {
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.closeUp }))
     fireEvent.pointerDown(sheet, { pointerId: 2, button: 0, clientX: 15, clientY: 5 })
     expect(editor.getState().asset).toBe(painted)
-    expect(screen.getByRole('img', { name: SCENE_PAINT_COPY.closeUpSheet })).toBe(sheet)
+    expect(screen.getByRole('button', { name: SCENE_PAINT_COPY.closeUpSheet })).toBe(sheet)
     expect(
       screen.getByRole('button', { name: COPY.scene.paintPencil }).getAttribute('aria-pressed'),
     ).toBe('true')
@@ -499,7 +824,7 @@ describe('atalhos do editor antigo na aba Pintar', () => {
   const pressed = (name: string) =>
     screen.getByRole('button', { name }).getAttribute('aria-pressed') === 'true'
 
-  test('P, E, G, I, 1 a 3, M, R e F trocam a ferramenta; a dica mostra a tecla', async () => {
+  test('B, E, G, I, 1 a 3, M, R e F trocam a ferramenta; a dica mostra a tecla', async () => {
     const { document, door } = twoBoxes()
     const { editor, stage, tap, view } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
@@ -507,14 +832,14 @@ describe('atalhos do editor antigo na aba Pintar', () => {
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     const shell = view.getByRole('region', { name: COPY.scene.title })
     const press = (key: string) => fireEvent.keyDown(shell, { key })
-    expect(screen.getByRole('button', { name: COPY.scene.paintPencil }).title).toContain('(P)')
+    expect(screen.getByRole('button', { name: COPY.scene.paintPencil }).title).toContain('(B)')
     expect(press('e')).toBe(false)
     expect(pressed(COPY.scene.paintEraser)).toBe(true)
     press('g')
     expect(pressed(COPY.scene.paintFill)).toBe(true)
     press('i')
     expect(pressed(COPY.scene.paintPicker)).toBe(true)
-    press('p')
+    press('b')
     expect(pressed(COPY.scene.paintPencil)).toBe(true)
     press('3')
     expect(pressed(SCENE_PAINT_COPY.width[3])).toBe(true)
@@ -573,23 +898,22 @@ describe('atalhos do editor antigo na aba Pintar', () => {
 })
 
 describe('"+ Nova cor" na aba Pintar', () => {
-  test('N passos do seletor viram UMA cor, que vira a do lápis, e UM desfazer', async () => {
+  test('escolher tinta não altera o projeto; a cor entra com o primeiro traço e permanece escolhida após desfazer', async () => {
     const { document, door } = twoBoxes()
-    const { editor, stage, tap, drag, view } = mount(document)
+    const { editor, stage, tap, drag } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     tap(door)
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
     const colors = resolvePaletteColors(editor.getState().asset).length
-    const input = view.container.querySelector<HTMLInputElement>(
-      'input[name="molda-scene-new-color"]',
-    )!
+    const input = customColorInput()
     // O seletor nativo dispara `input` a cada passo do arrasto e `change` só ao fechar.
-    fireEvent.input(input, { target: { value: '#123456' } })
-    fireEvent.input(input, { target: { value: '#234567' } })
-    fireEvent.input(input, { target: { value: '#345678' } })
-    expect(editor.getState().asset.extraColors).toEqual(['#345678'])
-    expect(swatch(editor.getState().asset, colors).getAttribute('aria-pressed')).toBe('true')
+    fireEvent.change(input, { target: { value: '#123456' } })
+    fireEvent.change(input, { target: { value: '#234567' } })
     fireEvent.change(input, { target: { value: '#345678' } })
+    expect(editor.getState().asset.extraColors).toBeUndefined()
+    expect(editor.getState().canUndo).toBe(false)
+    expect(input.value).toBe('#345678')
+    fireEvent.blur(input)
     await act(async () => {
       await Promise.resolve()
     })
@@ -599,18 +923,17 @@ describe('"+ Nova cor" na aba Pintar', () => {
     ])
     const painted = editor.getState().asset.images.at(-1)!.layers[0]!.pixels
     expect(painted.includes(colors)).toBe(true)
-    // Desfazer o traço, e depois a cor (que levou junto o preparo da tinta): um passo cada.
-    fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+    // O preparo, a cor e o traço pertencem ao mesmo passo de Desfazer.
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
     expect(editor.getState().asset.extraColors).toBeUndefined()
     expect(editor.getState().asset.images).toEqual(document.images)
     expect(editor.getState().canUndo).toBe(false)
-    // O lápis volta a uma cor que existe, e o traço pinta de verdade.
+    // A tinta continua escolhida mesmo quando o desfazer remove a cor da paleta do projeto.
     tap(door)
     drag([[9, 9]])
     const again = editor.getState().asset.images.at(-1)!
-    expect(again.layers[0]!.pixels.includes(colors)).toBe(false)
-    expect(again.layers[0]!.pixels[9 * again.width + 9]).toBe(7)
+    expect(again.layers[0]!.pixels.includes(colors)).toBe(true)
+    expect(again.layers[0]!.pixels[9 * again.width + 9]).toBe(colors)
     expect(screen.queryByRole('alert')).toBeNull()
     editor.getState().dispose()
   })
@@ -710,20 +1033,18 @@ describe('o review da aba Pintar', () => {
     editor.getState().dispose()
   })
 
-  test('com o foco no seletor de cor escondido, os atalhos continuam valendo', async () => {
+  test('digitar no hexadecimal não aciona atalhos de pintura', async () => {
     const { document, door } = twoBoxes()
-    const { editor, stage, tap, view } = mount(document)
+    const { editor, stage, tap } = mount(document)
     await waitFor(() => expect(stage.callbacks).not.toBeNull())
     tap(door)
     fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
-    const input = view.container.querySelector<HTMLInputElement>(
-      'input[name="molda-scene-new-color"]',
-    )!
+    const input = customColorInput()
     input.focus()
     fireEvent.keyDown(input, { key: 'e' })
     expect(
       screen.getByRole('button', { name: COPY.scene.paintEraser }).getAttribute('aria-pressed'),
-    ).toBe('true')
+    ).toBe('false')
     editor.getState().dispose()
   })
 

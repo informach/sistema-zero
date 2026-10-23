@@ -1,0 +1,48 @@
+{
+  "kind": "owned-provider-and-ps-caller",
+  "resourceProfile": "hosted-functional-2048",
+  "functionalOnly": true,
+  "performanceQualified": false,
+  "startedAt": "2026-10-21T07:31:50.951Z",
+  "planSha256": "f43d24df752e7fb37f290ec42e9dbc1d867a389c944d9964f943eba3ff273966",
+  "attemptId": "bc320d6f-6333-4d9b-9a60-d8c171d7c082",
+  "phase": "owner",
+  "failure": "owner-or-contract-refused",
+  "retained": false,
+  "children": [
+    {
+      "kind": "readonly-cli",
+      "pid": 21700,
+      "closed": true,
+      "code": 0,
+      "signal": null,
+      "error": false
+    },
+    {
+      "kind": "ps-owner",
+      "pid": 34900,
+      "closed": true,
+      "code": 1,
+      "signal": null,
+      "error": false
+    }
+  ],
+  "events": [
+    {
+      "phase": "provider-readonly-start",
+      "pid": 21700,
+      "closed": false
+    },
+    {
+      "phase": "provider-readonly-close",
+      "pid": 21700,
+      "closed": true,
+      "exitCode": 0
+    }
+  ],
+  "secretPersisted": false,
+  "stdoutBytes": 233,
+  "stderrBytes": 0,
+  "passed": false,
+  "endedAt": "2026-10-21T07:32:38.439Z"
+}

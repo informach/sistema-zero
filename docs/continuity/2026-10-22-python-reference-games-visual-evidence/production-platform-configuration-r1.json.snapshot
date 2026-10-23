@@ -1,0 +1,353 @@
+{
+  "schemaVersion": 1,
+  "kind": "production-platform-configuration-preparation",
+  "recordedAt": "2026-10-22T22:51:25.206Z",
+  "state": "CONFIGURATION_ONLY_APPLICATION_ROLLOUT_PENDING",
+  "target": {
+    "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "environment": "19c212a5-85c0-493c-9630-a7a0569e8412"
+  },
+  "groups": [
+    {
+      "group": "adult-builder",
+      "startedAt": "2026-10-22T22:31:53.530Z",
+      "finishedAt": "2026-10-22T22:32:43.686Z",
+      "codeCommit": "1634d66a68cf840de5f79f68b7f07e19c2eb4192",
+      "receipt": {
+        "path": ".cache/python-reference-games/production-platform-adult-builder-apply-r1/receipt.json",
+        "sha256": "9fd37312fd5174de64d779a48d89009a2e71ba82f595be5d6628edf1acd74a27"
+      },
+      "operations": [
+        {
+          "service": "members",
+          "key": "ADULT_STUDIO_BUILDER_EXECUTOR_URL",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        },
+        {
+          "service": "community",
+          "key": "STUDIO_BUILDER_EXECUTOR_SECRET",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        },
+        {
+          "service": "community",
+          "key": "OPENROUTER_API_KEY",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        }
+      ],
+      "activeDeploymentsUnchanged": true
+    },
+    {
+      "group": "adult-cleanup",
+      "startedAt": "2026-10-22T22:33:33.227Z",
+      "finishedAt": "2026-10-22T22:34:23.507Z",
+      "codeCommit": "1634d66a68cf840de5f79f68b7f07e19c2eb4192",
+      "receipt": {
+        "path": ".cache/python-reference-games/production-platform-adult-cleanup-apply-r1/receipt.json",
+        "sha256": "fd8bc82e634861d3cd57649854e7088fea9333306511f83befcc3c008fc476d0"
+      },
+      "operations": [
+        {
+          "service": "community",
+          "key": "GATEWAY_HMAC_SECRET",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        },
+        {
+          "service": "hub",
+          "key": "ADULT_BFF_BASE_URL",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        }
+      ],
+      "activeDeploymentsUnchanged": true
+    },
+    {
+      "group": "kids-funnel",
+      "startedAt": "2026-10-22T22:37:14.753Z",
+      "finishedAt": "2026-10-22T22:37:39.785Z",
+      "codeCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+      "receipt": {
+        "path": ".cache/python-reference-games/production-platform-kids-funnel-apply-r1/receipt.json",
+        "sha256": "d9d9992159263940e65b944c1a3b8b72da78487a024d614c1e9970f388c9167e"
+      },
+      "operations": [
+        {
+          "service": "community-kids",
+          "key": "FUNNEL_URL",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        }
+      ],
+      "activeDeploymentsUnchanged": true
+    },
+    {
+      "group": "studio-ai-vault",
+      "startedAt": "2026-10-22T22:38:20.990Z",
+      "finishedAt": "2026-10-22T22:39:11.848Z",
+      "codeCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+      "receipt": {
+        "path": ".cache/python-reference-games/production-platform-studio-ai-vault-apply-r1/receipt.json",
+        "sha256": "2f7c803e3d182c953c1af2b15ddaaa65255fc9a674c628ebdb5a224ea134f934"
+      },
+      "operations": [
+        {
+          "service": "members",
+          "key": "STUDIO_AI_VAULT_KEYS",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        },
+        {
+          "service": "members",
+          "key": "STUDIO_AI_VAULT_ACTIVE_ID",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        },
+        {
+          "service": "members",
+          "key": "STUDIO_AI_CALLBACK_ORIGINS",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        }
+      ],
+      "activeDeploymentsUnchanged": true
+    },
+    {
+      "group": "studio-ai-reconcile",
+      "startedAt": "2026-10-22T22:40:06.198Z",
+      "finishedAt": "2026-10-22T22:40:31.181Z",
+      "codeCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+      "receipt": {
+        "path": ".cache/python-reference-games/production-platform-studio-ai-reconcile-apply-r1/receipt.json",
+        "sha256": "3dbe710cbccaf52c3ccaa761f4d241f6251048a16f2759e5620129ed7f37bad1"
+      },
+      "operations": [
+        {
+          "service": "community-kids",
+          "key": "STUDIO_AI_RECONCILE_CRON_SECRET",
+          "state": "APPLIED_VERIFIED",
+          "acknowledged": true,
+          "readbackMatched": true
+        }
+      ],
+      "activeDeploymentsUnchanged": true
+    }
+  ],
+  "totalVariableWrites": 10,
+  "newApplicationDeploymentsRequested": 0,
+  "nativeAutodeploy": {
+    "evidence": {
+      "path": ".cache/python-reference-games/production-postconfig-native-r1.json",
+      "sha256": "8b2c25c783814e8543c066bedc8070dbbb3ab62f3baab9b307511e00556359f3"
+    },
+    "observedAt": "2026-10-22T22:42:11.521Z",
+    "configurationSha256": "d356f4386d1d4debecfa445adbaaa2e0a2a959c3c8292b854d409aeb79751177",
+    "configurationEtag": "a992da39187c703482ca0baa5637fc1a916a550b707a73eace5d77f6607440f0",
+    "services": [
+      {
+        "name": "admin",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "6f93dcbfe8f176017b7b1ace5114d480ad5853b1"
+        ]
+      },
+      {
+        "name": "api-gateway",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "acfb06ac1f9e6bde31572daf4732b68e10192881"
+        ]
+      },
+      {
+        "name": "auth",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "41196a40dd14a2a9ac660ca6b30da7e20c5b0b13"
+        ]
+      },
+      {
+        "name": "catalog",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "a270417ba4acffe97629793bb3fb62ac0e134519"
+        ]
+      },
+      {
+        "name": "community",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28"
+        ]
+      },
+      {
+        "name": "community-kids",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "91d3e99aae0b602e9ad5548efb2106355f9fe801"
+        ]
+      },
+      {
+        "name": "fiscal",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "090996fcb79a70720d17d06dccf309c2f7d53e67"
+        ]
+      },
+      {
+        "name": "funnel",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "6f93dcbfe8f176017b7b1ace5114d480ad5853b1"
+        ]
+      },
+      {
+        "name": "helpdesk",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "41196a40dd14a2a9ac660ca6b30da7e20c5b0b13"
+        ]
+      },
+      {
+        "name": "helpdesk-app",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "6f93dcbfe8f176017b7b1ace5114d480ad5853b1"
+        ]
+      },
+      {
+        "name": "hub",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "a270417ba4acffe97629793bb3fb62ac0e134519"
+        ]
+      },
+      {
+        "name": "live-recorder",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 0,
+        "activeSourceCommits": []
+      },
+      {
+        "name": "marketing",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "a270417ba4acffe97629793bb3fb62ac0e134519"
+        ]
+      },
+      {
+        "name": "marketing-app",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "6f93dcbfe8f176017b7b1ace5114d480ad5853b1"
+        ]
+      },
+      {
+        "name": "members",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "6f93dcbfe8f176017b7b1ace5114d480ad5853b1"
+        ]
+      },
+      {
+        "name": "messaging",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "41196a40dd14a2a9ac660ca6b30da7e20c5b0b13"
+        ]
+      },
+      {
+        "name": "payments",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "a270417ba4acffe97629793bb3fb62ac0e134519"
+        ]
+      },
+      {
+        "name": "referrals",
+        "enabled": false,
+        "pendingCount": 0,
+        "activeCount": 1,
+        "activeSourceCommits": [
+          "acfb06ac1f9e6bde31572daf4732b68e10192881"
+        ]
+      }
+    ],
+    "sourceMetadataMatchesCommittedMap": true,
+    "activeDeploymentsMatchPreConfigurationState": true
+  },
+  "iac": {
+    "evidence": {
+      "path": ".cache/python-reference-games/production-config-plan-native-off-r11.receipt.json",
+      "sha256": "fadefda3a6275be4f1141cc0ea4c174704188776020329d8a9223c8523254019"
+    },
+    "planSha256": "c2ea017b7789531b221c907af53de05b343446bba7cd6921943226ccf38c9e5c",
+    "sourceTree": "539a8375ae0101608527676865451751526d229f",
+    "changeCount": 0
+  },
+  "legacyLanguageTokenProbe": {
+    "evidence": {
+      "path": ".cache/python-reference-games/production-language-owner-count-r1/auth-probe-root-r1.json",
+      "sha256": "fd47011368aea9e640827c666fb28a3c109efea932578fbd7a1207e6cf50365e"
+    },
+    "state": "LEGACY_TOKEN_CONFIRMED_UNKNOWN_ROUTE_NO_DO",
+    "version": "ec49d7aa-d9d6-4eba-b903-7cfdb7a3c694",
+    "httpStatus": 404,
+    "durableObjectInvocations": 0,
+    "leaseCountQualified": false
+  },
+  "limits": {
+    "configurationNotLoadedByNewApplicationYet": true,
+    "pythonMembersCatalogNotActivated": true,
+    "pythonProductionWorkersNotPromoted": true,
+    "reconciliationCronNotActivated": true,
+    "seedsNotApplied": true,
+    "liveMediaNotQualified": true,
+    "authenticatedHostedUiNotQualified": true,
+    "secretValuesOrIndividualSecretHashesRecorded": false,
+    "financialValuesRecorded": false
+  }
+}

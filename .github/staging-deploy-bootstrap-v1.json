@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "headSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+  "ci": {
+    "runId": 39514471699,
+    "attempt": 1,
+    "jobId": 118956576693
+  },
+  "coverage": {
+    "ciServices": ["admin", "auth", "community-kids", "members"],
+    "extraServices": [
+      "api-gateway",
+      "catalog",
+      "community",
+      "fiscal",
+      "funnel",
+      "helpdesk",
+      "helpdesk-app",
+      "hub",
+      "live-recorder",
+      "marketing",
+      "marketing-app",
+      "messaging",
+      "payments",
+      "referrals"
+    ],
+    "ciReceiptSha256": "7f864008353810cf9ea6c28b9a33dbcdce0b9e682398fa727c5e34e42b66d0f7",
+    "extraReceiptSha256": "3954fb0ca9629fcf11ccc11911203cd52f5cfd055ea422efc2e0136c9aa55e45"
+  },
+  "ready": {
+    "receiptSha256": "d4a64118343f9f27432e50d39c0fa6fd4e19e0447ae666a56cfe8797514e72f7",
+    "services": [
+      {
+        "name": "api-gateway",
+        "serviceId": "2b7748bc-d3e3-4aff-bd94-3f514b53c44f",
+        "deploymentId": "2ee44b10-2912-4555-8c12-6156f01af2d9",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "auth",
+        "serviceId": "8c57d71d-3a8e-48f1-9627-63f1528b9a48",
+        "deploymentId": "6b9c9713-dd14-4de9-a4c6-5dcd33fc91d9",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "catalog",
+        "serviceId": "0e59f903-6bd8-4c3e-8792-34ea7479c13c",
+        "deploymentId": "6c8506af-b5fe-4fef-a3c4-63d5765b3b06",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "payments",
+        "serviceId": "1d2455ac-05cd-436b-a39d-3f07392713f3",
+        "deploymentId": "772d87aa-b36f-47cb-88bc-c945a60c591c",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "members",
+        "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+        "deploymentId": "d42609b8-3d83-482a-8636-f13b3ec4a8df",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "messaging",
+        "serviceId": "93fb9f5c-3d08-43da-a3cb-4c0207bd2ee0",
+        "deploymentId": "25245225-4704-463d-a506-4fb1dc5b1fd4",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "funnel",
+        "serviceId": "a617f2d2-6a58-46a2-8669-2eaf192712f0",
+        "deploymentId": "53bd5cf5-adea-42ac-8515-dbc2c7a88eb6",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "admin",
+        "serviceId": "e00eca0b-5323-4424-9b58-fdb073cfce82",
+        "deploymentId": "ec5e6d44-599e-4ae4-9470-f93c707f6a46",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "community",
+        "serviceId": "9df1b493-4cea-4b36-bec8-7299f054c17d",
+        "deploymentId": "12b119c1-e71b-455e-bd35-d666919c675c",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "community-kids",
+        "serviceId": "fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f",
+        "deploymentId": "45a0bebd-9367-434e-bc26-6243c89830d7",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "hub",
+        "serviceId": "00b27b18-0587-460b-ba90-b6b24c423e45",
+        "deploymentId": "e92156b8-96c5-45e7-a7aa-5a92fb1856a1",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "fiscal",
+        "serviceId": "2ea11afd-bdfd-4736-b400-c3db13fd8a0e",
+        "deploymentId": "57adcfb0-d3ec-402f-bba5-d50adda9a10e",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "marketing",
+        "serviceId": "7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737",
+        "deploymentId": "d574b67a-d5ff-42e1-8e20-e621a2a4320e",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "marketing-app",
+        "serviceId": "95f3752d-95f7-45ab-a52a-19aa126d77ab",
+        "deploymentId": "e842df48-646c-4ccb-ad40-f49451dc1fc5",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "referrals",
+        "serviceId": "1ad1c5ce-977c-4d7d-95a4-b8b08f2dc258",
+        "deploymentId": "cd3029c8-00b1-45c3-bf31-50827adba8a3",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "helpdesk",
+        "serviceId": "9afe3810-715b-48a8-9772-108d576293b4",
+        "deploymentId": "983324a5-8d9f-4a57-8372-1eab12b9f2d5",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "helpdesk-app",
+        "serviceId": "dfa706a7-bebf-44c8-96bb-1248ca685b4e",
+        "deploymentId": "a9ab544c-d09a-4929-b414-f941b7e5e046",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      },
+      {
+        "name": "live-recorder",
+        "serviceId": "a4e0c11a-03be-4ada-bd79-d8f4cdf8d3fd",
+        "deploymentId": "766a5cf2-7b6b-4f9d-9a8d-ce2960d81761",
+        "commitSha": "face8acef32f1e924f1461557e82716ea7acc3dc",
+        "status": "SUCCESS"
+      }
+    ]
+  }
+}

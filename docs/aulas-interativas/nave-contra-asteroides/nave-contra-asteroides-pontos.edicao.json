@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "modeloDeProducao": "ElevenLabs v4",
+  "master": "A professora grava toda a fala; a versão adulta conserva o master integral.",
+  "pausaEntrePartes": {
+    "tag": "[long pause]",
+    "alvoDeEdicaoSegundos": 3,
+    "duracaoGarantidaPelaTag": false
+  },
+  "clipes": ["video-variavel", "video-pontos-e-placar"],
+  "intervencoes": [
+    {
+      "id": "video-variavel-K1",
+      "clipe": "video-variavel",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "num caderno: o número fica anotado, mesmo que ninguém esteja vendo. O placar do estádio só mostra o que já foi anotado.",
+      "ancoraDepois": "Agora eu ligo Mostrar placar. Olha só: a tela mostra Pontos: 2, o mesmo número guardado. Clico em Somar 1 em pontos",
+      "falaPrincipal": "Como eu mostro os pontos que já estão guardados?",
+      "falaPersonagem": "Como eu mostro os pontos que já estão guardados?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-pontos-e-placar-K1",
+      "clipe": "video-pontos-e-placar",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "contador por pontos e clique fora do campo. O valor já vem em 0: mantenha, porque cada partida começa sem pontos.",
+      "ancoraDepois": "O ponto só pode ser somado quando um tiro acerta uma pedra. Por isso, a soma vai dentro da colisão entre tiros e",
+      "falaPrincipal": "Onde eu coloco o bloco que soma?",
+      "falaPersonagem": "Onde eu coloco o bloco que soma?",
+      "tags": ["[curious]"]
+    }
+  ]
+}

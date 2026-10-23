@@ -1,3 +1,5 @@
+import { COURSE_MODALITIES } from '@sistemazero/core/course/modality'
+import { CONTENT_FINGERPRINT_PATTERN } from '@sistemazero/core/creations'
 import {
   HELP_COLLECTION_ICONS,
   HELP_COLLECTION_TONES,
@@ -6,9 +8,10 @@ import {
   HELP_TUTORIAL_STATUSES,
   HELP_VIDEO_PROVIDERS,
 } from '@sistemazero/core/help'
+import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
 import { t } from 'elysia'
+import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
-import { fieldOptionsSchema, ProjectBlockRelationshipsSchema } from './project-pattern.schema'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -21,6 +24,17 @@ const SLUG = t.String({ minLength: 1, maxLength: 200, pattern: '^[a-z0-9]+(?:-[a
 
 // ── Params de rota com ids uuid (Elysia valida ANTES do handler → 400) ──────
 export const IdParams = t.Object({ id: UUID })
+/**
+ * Corpo OPCIONAL do claim: os tipos de job que o worker entende além da conta. Sem corpo
+ * (worker antigo) = só exclusão de conta. Strings livres e curtas: escopo desconhecido é
+ * ignorado no serviço, para um worker mais novo não virar 422 num members mais velho.
+ */
+export const CreationCleanupClaimBody = t.Optional(
+  t.Object({
+    scopes: t.Optional(t.Array(t.String({ minLength: 1, maxLength: 32 }), { maxItems: 8 })),
+  }),
+)
+
 export const CreationCleanupFailureBody = t.Object({
   error: t.String({ minLength: 1, maxLength: 1000 }),
   attempts: t.Integer({ minimum: 1, maximum: 1000 }),
@@ -98,22 +112,30 @@ export const AiUsageStatsQuery = t.Object({
   month: t.Optional(t.String({ minLength: 7, maxLength: 7 })),
 })
 
+/** `?days=` do funil do Pensa (ausente → 30). */
+export const PensaFunnelQuery = t.Object({
+  days: t.Optional(t.Numeric({ minimum: 1, maximum: 365 })),
+})
+
 // ── Zappy do Studio ─────────────────────────────────────────────────────────
 const STUDIO_LOCAL_PROJECT_ID = t.String({
   minLength: 1,
   maxLength: 128,
-  pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$',
+  pattern: STUDIO_READABLE_PROJECT_ID_PATTERN.source,
 })
 export const ZappyHistoryQuery = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   projectId: STUDIO_LOCAL_PROJECT_ID,
   before: t.Optional(UUID),
 })
 const ZappyActor = t.Object({
+  audience: t.Optional(t.Union([t.Literal('adult'), t.Literal('kids')])),
   userId: UUID,
   accountId: UUID,
   privileged: t.Boolean(),
 })
 export const ZappyInternalQuestionBody = t.Object({
+  programmingLanguage: t.Optional(t.Union([t.Literal('javascript'), t.Literal('python')])),
   actor: ZappyActor,
   projectId: STUDIO_LOCAL_PROJECT_ID,
   clientMessageId: UUID,
@@ -137,7 +159,24 @@ export const ZappyInternalResponseBody = t.Object({
   /** Motivo da reprova da validação (auditoria; nunca volta à criança). */
   rejection: t.Optional(t.String({ minLength: 1, maxLength: 40 })),
   response: t.Object({
+    programmingLanguage: t.Optional(t.Union([t.Literal('javascript'), t.Literal('python')])),
     id: UUID,
+    intent: t.Optional(t.Union([t.Literal('explain'), t.Literal('investigate')])),
+    kind: t.Optional(t.Union([t.Literal('classic'), t.Literal('pro')])),
+    fileReferences: t.Optional(
+      t.Array(
+        t.Object({
+          path: t.String({ minLength: 1, maxLength: 240 }),
+          startLine: t.Optional(t.Integer({ minimum: 1, maximum: 10_000_000 })),
+          endLine: t.Optional(t.Integer({ minimum: 1, maximum: 10_000_000 })),
+          sourceHash: t.Optional(t.String({ pattern: '^sha256-[A-Za-z0-9+/]{43}=$' })),
+          contextDigest: t.Optional(t.String({ pattern: '^sha256-[A-Za-z0-9+/]{43}=$' })),
+          excerptId: t.Optional(t.String({ pattern: '^[A-Za-z0-9_-]{1,64}$' })),
+        }),
+        { maxItems: 5 },
+      ),
+    ),
+    sourceRevision: t.Optional(t.Integer({ minimum: 0 })),
     text: t.String({ minLength: 1, maxLength: 8000 }),
     scope: t.Union([
       t.Literal('block'),
@@ -337,7 +376,14 @@ export const GrantWebhookBody = t.Object({
  * `mural_visitor` preserva o contrato histórico. As chaves-mestra seguem só no admin JWT.
  * `sourceId` = procedência auditável (ex.: `scholarship:<redemptionId>`); o
  * `sourceKind` fica `'manual'` (enum intocado). `expiresAt` ausente/null = vitalícia.
+ * `audience` (20/10/2026, só em `course` e `mural_trial`): público do presente; ausente = `kids`.
+ * `adult` exige curso adulto publicado e concede o Mural adulto.
  */
+const GiftAudienceField = t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')]))
+
+/** Query de `GET /members/webhooks/gift-course/:slug`: `audience` ausente = `kids`. */
+export const GiftCourseQuery = t.Object({ audience: GiftAudienceField })
+
 const ManualGrantBase = {
   userId: UUID,
   expiresAt: t.Optional(t.Union([t.String({ maxLength: 40 }), t.Null()])),
@@ -354,6 +400,7 @@ export const GrantManualWebhookBody = t.Union([
     ...ManualGrantBase,
     mode: t.Literal('course'),
     courseRef: t.String({ minLength: 1, maxLength: 200 }),
+    audience: GiftAudienceField,
   }),
   t.Object({
     ...ManualGrantBase,
@@ -367,6 +414,7 @@ export const GrantManualWebhookBody = t.Union([
     courseRef: t.String({ minLength: 1, maxLength: 200 }),
     sourceId: t.String({ pattern: '^scholarship:', minLength: 13, maxLength: 120 }),
     expiresAt: t.String({ format: 'date-time', maxLength: 40 }),
+    audience: GiftAudienceField,
   }),
 ])
 
@@ -460,6 +508,8 @@ export const CloneCourseBody = t.Object({
   audience: AUDIENCE,
   slug: t.Optional(SLUG),
   title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+  // Cursos ao vivo (14/10/2026): ausente = a modalidade da origem.
+  modality: t.Optional(t.Union(COURSE_MODALITIES.map((modality) => t.Literal(modality)))),
 })
 
 export const MemberDetailQuery = t.Object({
@@ -509,6 +559,7 @@ export const ShowcaseWebhookBody = t.Object({
  * revalida o MÊS e degrada com 200 sem award em mismatch (nunca 5xx — retry martelaria).
  */
 export const ChallengeWebhookBody = t.Object({
+  publishedAt: t.Optional(t.String({ format: 'date-time' })),
   userId: UUID,
   accountId: UUID,
   audience: AUDIENCE,
@@ -567,6 +618,7 @@ export const MuralMessageWebhookBody = t.Object({
  * + o XP DIÁRIO `studio_publish_day` (1×/dia — a âncora de streak de quem só cria).
  */
 export const StandaloneShowcaseWebhookBody = t.Object({
+  publishedAt: t.Optional(t.String({ format: 'date-time' })),
   userId: UUID,
   accountId: UUID,
   audience: AUDIENCE,
@@ -655,253 +707,6 @@ export const QuizAttemptBody = t.Object({
 })
 
 // ── Pensa (planejamento guiado — rotas /members/pensa/*) ────────────────────
-// Enums espelham os `pensa_*` do schema; params com uuid validados na borda.
-const PENSA_STAGE = t.Union([
-  t.Literal('z'),
-  t.Literal('e'),
-  t.Literal('r'),
-  t.Literal('o'),
-  t.Literal('done'),
-])
-// Etapas de TRABALHO (aceitam escrita/advance — `done` fica de fora).
-const PENSA_WORK_STAGE = t.Union([t.Literal('z'), t.Literal('e'), t.Literal('r'), t.Literal('o')])
-const PENSA_ARTIFACT_TYPE = t.Union([
-  t.Literal('idea'),
-  t.Literal('game_design'),
-  t.Literal('visual_direction'),
-  t.Literal('task_plan'),
-  t.Literal('plan_review'),
-])
-const PENSA_PROJECT_NAME = t.String({ minLength: 2, maxLength: 120 })
-
-export const PensaProjectParams = t.Object({ projectId: UUID })
-/** `profileId` = um perfil da equipe, ou `me` (sair da equipe). */
-export const PensaMemberParams = t.Object({
-  projectId: UUID,
-  profileId: t.Union([UUID, t.Literal('me')]),
-})
-/** Corpo de `POST /members/pensa/projects/join`: o código como a criança digitou. */
-export const PensaJoinBody = t.Object(
-  { code: t.String({ minLength: 4, maxLength: 16 }) },
-  { additionalProperties: false },
-)
-export const PensaCycleParams = t.Object({ cycleId: UUID })
-/** GET da stage view aceita qualquer etapa (inclusive `done`). */
-export const PensaStageParams = t.Object({ cycleId: UUID, stage: PENSA_STAGE })
-/** Escrita de conversa só em etapa de TRABALHO (não há chat em `done`). */
-export const PensaConversationParams = t.Object({ cycleId: UUID, stage: PENSA_WORK_STAGE })
-export const PensaArtifactValidateParams = t.Object({ cycleId: UUID, type: PENSA_ARTIFACT_TYPE })
-export const PensaTaskParams = t.Object({ taskId: UUID })
-
-/** Corpo de `POST /members/pensa/projects` — o serviço trima e revalida 2..120. */
-export const PensaCreateProjectBody = t.Object(
-  {
-    name: PENSA_PROJECT_NAME,
-  },
-  { additionalProperties: false },
-)
-
-/** Corpo de `PATCH /members/pensa/projects/:projectId` (parcial). */
-export const PensaUpdateProjectBody = t.Object(
-  {
-    name: t.Optional(PENSA_PROJECT_NAME),
-    status: t.Optional(t.Union([t.Literal('active'), t.Literal('archived')])),
-  },
-  { additionalProperties: false },
-)
-
-/** Corpo de `POST /members/pensa/projects/:projectId/cycles`. */
-export const PensaCreateCycleBody = t.Object({ goal: t.String({ minLength: 2, maxLength: 500 }) })
-
-// Turno do chat guiado. O TETO da conversa (80 msgs / 262K chars) é do use case
-// (trim); aqui só o formato + um teto folgado por mensagem (anti-DoS na borda).
-const PENSA_CHAT_MESSAGE = t.Object({ content: t.String({ minLength: 1, maxLength: 100_000 }) })
-/** Corpo de `PUT /members/pensa/cycles/:cycleId/stages/:stage/conversation`. */
-export const PensaConversationBody = t.Object({
-  userMessage: PENSA_CHAT_MESSAGE,
-  assistantMessage: PENSA_CHAT_MESSAGE,
-  /** Presente = SUBSTITUI o state inteiro (etapa z: PensaZState). */
-  state: t.Optional(t.Record(t.String({ maxLength: 200 }), t.Unknown(), { maxProperties: 64 })),
-  /** Sumarização (quando o cap cortou mensagens antigas). */
-  summary: t.Optional(t.String({ maxLength: 20_000 })),
-})
-
-/**
- * Corpo de `POST /members/pensa/cycles/:cycleId/artifacts` — `content` é JSON
- * opaco; o TETO (262K chars stringificado) é validado no use case (TypeBox não
- * limita bytes de agregado), sob o teto de corpo de 1 MB da rota.
- */
-export const PensaArtifactBody = t.Object({
-  stage: PENSA_WORK_STAGE,
-  type: PENSA_ARTIFACT_TYPE,
-  content: t.Unknown(),
-})
-
-/** Corpo de `POST /members/pensa/cycles/:cycleId/advance`. */
-export const PensaAdvanceBody = t.Object({ from: PENSA_WORK_STAGE })
-
-const PENSA_TASK_DESTINATION = t.Union([
-  t.Literal('pinta'),
-  t.Literal('studio'),
-  t.Literal('molda'),
-])
-const PENSA_TASK_CATEGORY = t.Union([
-  t.Literal('art'),
-  t.Literal('setup'),
-  t.Literal('gameplay'),
-  t.Literal('scene'),
-  t.Literal('ui'),
-  t.Literal('polish'),
-])
-const PensaGuideItemSchema = t.Object({
-  id: t.String({ minLength: 1, maxLength: 100 }),
-  text: t.String({ minLength: 1, maxLength: 500 }),
-  hint: t.Optional(t.String({ maxLength: 500 })),
-  required: t.Boolean(),
-})
-const PensaTaskGuideSchema = t.Object({
-  steps: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 20 }),
-  criteria: t.Array(PensaGuideItemSchema, { minItems: 1, maxItems: 10 }),
-})
-const PensaPintaContextSchema = t.Object({
-  kind: t.Literal('pinta'),
-  assetId: t.String({ minLength: 1, maxLength: 100 }),
-  artKind: t.Union([
-    t.Literal('sprite'),
-    t.Literal('background'),
-    t.Literal('tileset'),
-    t.Literal('tilemap'),
-  ]),
-  style: t.Union([t.Literal('pixel'), t.Literal('vector'), t.Literal('either')]),
-  preset: t.Optional(t.String({ maxLength: 100 })),
-  palette: t.Array(
-    t.Object({
-      role: t.String({ minLength: 1, maxLength: 80 }),
-      color: t.String({ maxLength: 20 }),
-    }),
-    { maxItems: 16 },
-  ),
-  appearance: t.String({ minLength: 1, maxLength: 2000 }),
-  animations: t.Array(t.String({ maxLength: 200 }), { maxItems: 20 }),
-  states: t.Array(t.String({ maxLength: 200 }), { maxItems: 20 }),
-  usage: t.String({ minLength: 1, maxLength: 2000 }),
-  requiresStudioUse: t.Boolean(),
-})
-const PensaStudioBlockSchema = t.Object({
-  id: t.String({ minLength: 1, maxLength: 160 }),
-  label: t.String({ minLength: 1, maxLength: 200 }),
-  category: t.String({ minLength: 1, maxLength: 100 }),
-  subcategory: t.String({ minLength: 1, maxLength: 100 }),
-  area: t.Union([
-    t.Literal('structure'),
-    t.Literal('appearance'),
-    t.Literal('start'),
-    t.Literal('events'),
-    t.Literal('loops'),
-    t.Literal('value'),
-  ]),
-  extension: t.Union([t.String({ maxLength: 100 }), t.Null()]),
-})
-const PensaStudioContextSchema = t.Object({
-  kind: t.Literal('studio'),
-  dimension: t.Union([t.Literal('2d'), t.Literal('3d')]),
-  visualAssetIds: t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
-  blockIds: t.Array(t.String({ maxLength: 160 }), { maxItems: 80 }),
-  blocks: t.Array(PensaStudioBlockSchema, { maxItems: 80 }),
-  mechanicDocumentIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
-  extensionIds: t.Array(t.String({ maxLength: 100 }), { maxItems: 10 }),
-})
-const PensaMoldaContextSchema = t.Object({
-  kind: t.Literal('molda'),
-  assetId: t.String({ minLength: 1, maxLength: 100 }),
-  artKind: t.Union([t.Literal('model'), t.Literal('texture'), t.Literal('sky')]),
-  appearance: t.String({ minLength: 1, maxLength: 2000 }),
-  usage: t.String({ minLength: 1, maxLength: 2000 }),
-  palette: t.Array(
-    t.Object({
-      role: t.String({ minLength: 1, maxLength: 80 }),
-      color: t.String({ maxLength: 20 }),
-    }),
-    { maxItems: 16 },
-  ),
-})
-const PensaTaskContextSchema = t.Union([
-  PensaPintaContextSchema,
-  PensaStudioContextSchema,
-  PensaMoldaContextSchema,
-])
-
-// REPLACE total das tasks. O teto de NEGÓCIO (≤60 → 409 PENSA_QUOTA_EXCEEDED) é
-// do use case — o `maxItems` da borda é só anti-DoS (mais folgado, senão viraria 400).
-export const PensaTasksReplaceBody = t.Object({
-  tasks: t.Array(
-    t.Object({
-      title: t.String({ minLength: 1, maxLength: 200 }),
-      summary: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-      key: t.String({ minLength: 1, maxLength: 100 }),
-      destination: PENSA_TASK_DESTINATION,
-      category: PENSA_TASK_CATEGORY,
-      estimatedMinutes: t.Integer({ minimum: 5, maximum: 240 }),
-      dependencies: t.Optional(
-        t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 40 }),
-      ),
-      guide: PensaTaskGuideSchema,
-      context: PensaTaskContextSchema,
-    }),
-    { maxItems: 200 },
-  ),
-})
-
-/**
- * Edição do plano. Progresso vive numa rota separada e só é escrito pelas
- * ferramentas de destino.
- */
-export const PensaTaskUpdateBody = t.Object({
-  position: t.Optional(t.Integer({ minimum: 0, maximum: 1000 })),
-  title: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
-  summary: t.Optional(t.Union([t.String({ maxLength: 2000 }), t.Null()])),
-  destination: t.Optional(PENSA_TASK_DESTINATION),
-  category: t.Optional(PENSA_TASK_CATEGORY),
-  estimatedMinutes: t.Optional(t.Integer({ minimum: 5, maximum: 240 })),
-  dependencies: t.Optional(t.Array(UUID, { maxItems: 40 })),
-  guide: t.Optional(PensaTaskGuideSchema),
-  context: t.Optional(PensaTaskContextSchema),
-})
-const PensaTaskOutputRefSchema = t.Union([
-  t.Object({
-    kind: t.Literal('molda_asset'),
-    assetId: t.String({ minLength: 1, maxLength: 200 }),
-    assetName: t.Optional(t.String({ maxLength: 200 })),
-    assetKind: t.Union([t.Literal('model'), t.Literal('texture'), t.Literal('sky')]),
-  }),
-  t.Object({
-    kind: t.Literal('pinta_asset'),
-    assetId: t.String({ minLength: 1, maxLength: 200 }),
-    assetName: t.Optional(t.String({ maxLength: 200 })),
-    usedInStudioAt: t.Optional(t.String({ maxLength: 60 })),
-  }),
-  t.Object({
-    kind: t.Literal('studio_project'),
-    projectId: t.String({ minLength: 1, maxLength: 200 }),
-    saveRevision: t.Optional(t.String({ maxLength: 200 })),
-  }),
-])
-export const PensaTaskProgressBody = t.Object({
-  status: t.Optional(
-    t.Union([t.Literal('planned'), t.Literal('in_progress'), t.Literal('completed')]),
-  ),
-  completedStepIds: t.Optional(
-    t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 20 }),
-  ),
-  completedCriteriaIds: t.Optional(
-    t.Array(t.String({ minLength: 1, maxLength: 100 }), { maxItems: 10 }),
-  ),
-  outputRef: t.Optional(t.Union([PensaTaskOutputRefSchema, t.Null()])),
-  expectedUpdatedAt: t.Optional(t.Union([t.String({ format: 'date-time' }), t.Null()])),
-})
-
-// ── Admin (painel `@sistemazero/admin`) ─────────────────────────────────────
-
 const ENTITLEMENT_STATUS = t.Union([
   t.Literal('active'),
   t.Literal('revoked'),
@@ -992,6 +797,8 @@ const COURSE_LEVEL = t.Union([
 ])
 // Eixo 2D/3D do curso — espelha o enum `course_track` do schema.
 const COURSE_TRACK = t.Union([t.Literal('2d'), t.Literal('3d')])
+// Modalidade (14/10/2026) — deriva de `COURSE_MODALITIES` do core (fonte única).
+const COURSE_MODALITY = t.Union(COURSE_MODALITIES.map((modality) => t.Literal(modality)))
 const TITLE = t.String({ minLength: 1, maxLength: 300 })
 const NULLABLE_TEXT = t.Optional(t.Union([t.String({ maxLength: 20_000 }), t.Null()]))
 // URLs escritas pelo admin exigem esquema http(s) — sem isto um `javascript:`
@@ -1040,8 +847,12 @@ const CourseBodyProperties = {
   journeyRole: t.Optional(
     t.Union([t.Literal('positioned'), t.Literal('reward'), t.Literal('extra')]),
   ),
+  // Gravado ou ao vivo. AUSENTE: create → `recorded`; update → PRESERVA a atual (régua do
+  // audience). ⚠️ Declarado aqui de propósito: o `normalize` do Elysia descarta campo que o
+  // schema não conhece, e a modalidade nunca chegaria ao serviço.
+  modality: t.Optional(t.Union([COURSE_MODALITY, t.Null()])),
   // Blocos que este curso LIBERA no Estúdio livre ao satisfazer o critério atual:
-  // bônus Kids exige conclusão; curso Kids com posição e Adult exigem também Mural.
+  // bônus Kids e Adult exigem conclusão; curso Kids com posição exige também Mural.
   // Mesmo formato do `allowBlocks` da aula, só que no CURSO. Vira
   // `metadata.studioUnlockBlocks`. AUSENTE **PRESERVA** a lista atual (régua do
   // audience/level, não a do salesPageUrl): build antigo do admin não apaga currículo.
@@ -1049,8 +860,8 @@ const CourseBodyProperties = {
   // cursos anteriores é esperado: quem acumula é o ALUNO (a paleta é a união deduplicada dos
   // cursos conquistados) e ele recebe só o que ainda não tinha. O teto é folgado de propósito
   // (o catálogo do studio tem ~1467 blocos): um teto justo viraria erro de validação num
-  // curso grande. A existência de cada id é conferida pelo ADMIN contra o catálogo (o
-  // members não o importa).
+  // curso grande. JavaScript mantém a validação existente no Admin. O Members também
+  // confere os IDs Python e suas dependências explícitas contra o catálogo compartilhado.
   studioUnlockBlocks: t.Optional(
     t.Union([
       t.Array(t.String({ minLength: 1, maxLength: 80, pattern: '^[A-Za-z0-9_]+$' }), {
@@ -1072,6 +883,7 @@ export const ListCoursesQuery = t.Object({
   q: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
   status: t.Optional(COURSE_STATUS),
   audience: t.Optional(AUDIENCE),
+  modality: t.Optional(COURSE_MODALITY),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 100 })),
   offset: t.Optional(t.Numeric({ minimum: 0, maximum: 1_000_000 })),
 })
@@ -1251,115 +1063,36 @@ const StudioLevelSchema = t.Union([
 const StudioModeSchema = t.Union([t.Literal('blocks'), t.Literal('bridge'), t.Literal('code')])
 /**
  * Snapshot `Project` do Estúdio (autoria do admin = `initialProject`; entrega do
- * aluno = corpo do submit). O TypeBox exige `name`+`files` e tolera propriedades adicionais.
+ * aluno = corpo do submit). JS/Classic usam files; Python Pro usa somente tree.
+ * A borda preserva os campos do documento; a validação estrutural inteira é do service.
  * O service também valida `kind:pro`, árvore e template contra o catálogo fechado. O
  * @sistemazero/studio sanitiza o shape inteiro na autoria e de novo no aluno. O teto de
  * tamanho do agregado é aplicado no service.
  */
-const StudioProjectSchema = t.Object(
-  {
-    name: t.String({ maxLength: 200 }),
-    files: t.Record(t.String({ maxLength: 200 }), t.String({ maxLength: 2_000_000 })),
-  },
-  { additionalProperties: true },
-)
-// ── Atividade com auto-correção (fase 2) ────────────────────────────────────
-// Values are JSON at both the HTTP boundary and in the domain.
-const ActivityJsonValue = t.Recursive((self) =>
-  t.Union([
-    t.String(),
-    t.Number(),
-    t.Boolean(),
-    t.Null(),
-    t.Array(self),
-    t.Record(t.String(), self),
-  ]),
-)
-const ActivityCheckBase = {
-  id: t.String({ minLength: 1, maxLength: 64 }),
-  label: t.String({ minLength: 1, maxLength: 200 }),
-  hint: t.Optional(t.String({ maxLength: 1000 })),
-  weight: t.Optional(t.Number({ exclusiveMinimum: 0 })),
-}
-const StructureRuleSchema = t.Union([
-  t.Object({ type: t.Literal('usesLoop') }),
-  t.Object({
-    type: t.Literal('declaresVariable'),
-    name: t.String({ minLength: 1, maxLength: 80 }),
-  }),
-  t.Object({ type: t.Literal('definesFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
-  t.Object({ type: t.Literal('callsFunction'), name: t.String({ minLength: 1, maxLength: 80 }) }),
-  t.Object({
-    type: t.Literal('usesBlock'),
-    blockType: t.String({ minLength: 1, maxLength: 80 }),
-    area: t.Optional(
-      t.Union(
-        (['structure', 'appearance', 'molds', 'start', 'events', 'loops'] as const).map((area) =>
-          t.Literal(area),
-        ),
-      ),
-    ),
-    withinBlock: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
-    ...ProjectBlockRelationshipsSchema,
-    fields: t.Optional(
-      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
-        maxProperties: 20,
-      }),
-    ),
-    fieldOptions: t.Optional(fieldOptionsSchema()),
-    inputs: t.Optional(
-      t.Record(t.String(), t.Union([t.String({ maxLength: 200 }), t.Number(), t.Boolean()]), {
-        maxProperties: 20,
-      }),
-    ),
-  }),
+const StudioProjectSchema = t.Union([
+  t.Object(
+    {
+      name: t.String({ maxLength: 200 }),
+      files: t.Record(t.String({ maxLength: 200 }), t.String({ maxLength: 2_000_000 })),
+    },
+    { additionalProperties: true },
+  ),
+  t.Object(
+    {
+      formatVersion: t.Literal(3),
+      programmingLanguage: t.Literal('python'),
+      kind: t.Literal('pro'),
+      name: t.String({ maxLength: 200 }),
+      tree: t.Record(t.String({ maxLength: 240 }), t.Unknown()),
+    },
+    { additionalProperties: true },
+  ),
 ])
-const BehaviorRuleSchema = t.Union([
-  t.Object({ type: t.Literal('consoleContains'), text: t.String({ maxLength: 2000 }) }),
-  t.Object({ type: t.Literal('domSelectorExists'), selector: t.String({ maxLength: 500 }) }),
-  t.Object({
-    type: t.Literal('domSelectorText'),
-    selector: t.String({ maxLength: 500 }),
-    text: t.String({ maxLength: 2000 }),
-  }),
-  t.Object({
-    type: t.Literal('globalEquals'),
-    name: t.String({ maxLength: 80 }),
-    value: ActivityJsonValue,
-  }),
-])
-const ActivityCheckSchema = t.Union([
-  t.Object({ ...ActivityCheckBase, kind: t.Literal('structure'), rule: StructureRuleSchema }),
-  t.Object({ ...ActivityCheckBase, kind: t.Literal('behavior'), rule: BehaviorRuleSchema }),
-  t.Object({
-    ...ActivityCheckBase,
-    kind: t.Literal('testcase'),
-    functionName: t.String({ minLength: 1, maxLength: 80 }),
-    cases: t.Array(
-      t.Object({
-        id: t.Optional(t.String({ maxLength: 64 })),
-        args: t.Array(ActivityJsonValue, { maxItems: 20 }),
-        expected: ActivityJsonValue,
-      }),
-      {
-        maxItems: 50,
-      },
-    ),
-  }),
-  t.Object({
-    ...ActivityCheckBase,
-    kind: t.Literal('code'),
-    source: t.String({ maxLength: 20_000 }),
-  }),
-])
-const StudioActivitySchema = t.Object({
-  instructions: t.String({ maxLength: 20_000 }),
-  checks: t.Array(ActivityCheckSchema, { maxItems: 50 }),
-  passingScore: t.Optional(t.Integer({ minimum: 0, maximum: 100 })),
-})
-
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
+  // Retain only so legacy writers reject explicitly instead of silently stripping the field.
+  projectExamples: t.Optional(t.Unknown()),
+  pythonLevel: t.Optional(t.Union([t.Literal(1), t.Literal(2), t.Literal(3)])),
   kind: t.Literal('studio'),
   gallery: t.Optional(t.Object({ minItems: t.Literal(1), maxItems: t.Literal(1) })),
   purpose: t.Optional(t.Union([t.Literal('experiment'), t.Literal('submission')])),
@@ -1369,7 +1102,11 @@ const StudioBlockSchema = t.Object({
   allowCategories: t.Optional(t.Array(t.String({ maxLength: 80 }), { maxItems: 100 })),
   allowedModes: t.Optional(t.Array(StudioModeSchema, { maxItems: 3 })),
   allowLevelReveal: t.Optional(t.Boolean()),
-  activity: t.Optional(StudioActivitySchema),
+  /**
+   * Gabarito da professora (18/10/2026): o projeto que cumpre os objetivos da parte. Só a
+   * autoria o lê ("Testar agora" e a revisão para publicar); a view do aluno NUNCA o leva.
+   */
+  solutionProject: t.Optional(t.Unknown()),
   /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
   chain: t.Optional(t.String({ maxLength: 80 })),
   /** Vitrine (Mural dos Criadores) — config da auto-publicação; ver StudioBlock. */
@@ -1533,6 +1270,16 @@ export const LessonBlockContentSchema = t.Union([
 export const StudioSubmissionParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota de carryover do Estúdio (carregar o projeto da aula contínua anterior). */
 export const StudioCarryoverParams = t.Object({ lessonId: UUID, blockId: UUID })
+export const StudioLessonContextBody = t.Optional(
+  t.Object({
+    confirm: t.Optional(
+      t.Object({
+        baselineId: t.String({ pattern: '^[a-f0-9]{64}$' }),
+        environment: t.Unknown(),
+      }),
+    ),
+  }),
+)
 /** Params da rota de payload da vitrine (Mural) — elegibilidade + conteúdo do post. */
 export const ShowcasePayloadParams = t.Object({ lessonId: UUID, blockId: UUID })
 /** Params da rota admin de UMA entrega (por bloco + aluno). `id` = blockId. */
@@ -1542,24 +1289,21 @@ export const AdminStudioSubmissionParams = t.Object({ id: UUID, userId: UUID })
 export const ReviewSubmissionParams = t.Object({ blockId: UUID, userId: UUID })
 export const ReviewSubmissionBody = t.Object({ reviewed: t.Boolean() })
 
-/** Resultado reportado pelo cliente p/ uma checagem (correção híbrida). */
-const ClientCheckResultSchema = t.Object({
-  checkId: t.String({ maxLength: 64 }),
-  passed: t.Boolean(),
-  message: t.Optional(t.String({ maxLength: 2000 })),
-})
 /** Corpo de `POST /members/lessons/:lessonId/blocks/:blockId/studio-submission` (aluno). */
 export const StudioSubmissionBody = t.Object({
   project: StudioProjectSchema,
-  /** Resultados das checagens rodadas no cliente (behavior/testcase/code). */
-  results: t.Optional(t.Array(ClientCheckResultSchema, { maxItems: 50 })),
   /** Recado OPCIONAL do aluno ao professor (modal de envio). Vazio → sem recado. */
-  message: t.Optional(t.String({ maxLength: 1000 })),
+  message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
   /**
-   * Impressão digital do conteúdo enviado (`v1:<sha256>`, do navegador): é o que o "envio em
+   * O recado foi FALADO e transcrito pelo servidor (voz para texto, 14/10/2026). Opcional: app
+   * antigo não manda e vale `false`. Sem recado, é ignorado.
+   */
+  messageSpoken: t.Optional(t.Boolean()),
+  /**
+   * Impressão digital versionada do conteúdo enviado (do navegador): é o que o "envio em
    * dia" compara com o rascunho guardado na conta. Opcional (cliente antigo = sem conferência).
    */
-  fingerprint: t.Optional(t.String({ pattern: '^v1:[a-f0-9]{64}$' })),
+  fingerprint: t.Optional(t.String({ pattern: CONTENT_FINGERPRINT_PATTERN.source })),
 })
 
 /**
@@ -1569,7 +1313,9 @@ export const StudioSubmissionBody = t.Object({
 export const PintaSubmissionBody = t.Object({
   asset: PintaAssetSchema,
   /** Recado OPCIONAL da criança ao professor. Vazio → sem recado. */
-  message: t.Optional(t.String({ maxLength: 1000 })),
+  message: t.Optional(t.String({ maxLength: MAX_SUBMISSION_MESSAGE_CHARS })),
+  /** O recado foi falado e transcrito (voz para texto). Ausente = digitado. */
+  messageSpoken: t.Optional(t.Boolean()),
   /**
    * Impressão digital do conteúdo enviado (`v1:<sha256>`, do navegador): é o que o "envio em
    * dia" compara com o rascunho guardado na conta. Opcional (cliente antigo = sem conferência).
@@ -1591,6 +1337,11 @@ const TEACHER_CONTEXT = t.Union([
  */
 export const TeacherThreadReplyBody = t.Object({
   body: t.String({ minLength: 1, maxLength: 8000 }),
+  /**
+   * Resposta FALADA pela criança e transcrita pelo servidor (voz para texto, 14/10/2026).
+   * Opcional (app antigo = digitado). Só a rota do ALUNO a usa; a do professor a ignora.
+   */
+  spoken: t.Optional(t.Boolean()),
 })
 /** Query da caixa de entrada do ALUNO (`GET /members/teacher-threads`). */
 export const TeacherThreadsQuery = t.Object({
@@ -1769,10 +1520,10 @@ export const CreationUploadBody = t.Object({
     ),
   ),
   /**
-   * Impressão digital do conteúdo (`v1:<sha256>`, régua do core): o "envio em dia" a compara com
+   * Impressão digital versionada do conteúdo (régua do core): o "envio em dia" a compara com
    * a do envio. Opcional; promovida no commit junto com os outros metadados.
    */
-  fingerprint: t.Optional(t.String({ pattern: '^v1:[a-f0-9]{64}$' })),
+  fingerprint: t.Optional(t.String({ pattern: CONTENT_FINGERPRINT_PATTERN.source })),
 })
 
 /** Exclusões também são condicionais: uma lápide velha não pode apagar uma edição nova. */
@@ -1782,6 +1533,7 @@ export const CreationDeleteBody = t.Object({
 })
 
 export const CreationListQuery = t.Object({
+  audience: t.Optional(AUDIENCE),
   cursor: t.Optional(t.String({ minLength: 1, maxLength: 512 })),
   limit: t.Optional(t.Numeric({ minimum: 1, maximum: 500 })),
 })
@@ -1795,6 +1547,8 @@ export const CreationCommitBody = t.Object({
   verifiedPartHashes: t.Optional(
     t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 }),
   ),
+  /** Versão lida pelo BFF do documento validado; deve ser igual à reserva sob lock. */
+  verifiedFormatVersion: t.Optional(t.Integer({ minimum: 1, maximum: 65_535 })),
   uploadedParts: t.Optional(t.Array(t.String({ pattern: '^[a-f0-9]{64}$' }), { maxItems: 128 })),
 })
 

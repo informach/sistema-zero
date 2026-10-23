@@ -313,48 +313,46 @@ export const COPY = {
     animationRename: 'Renomear movimento',
     animationCopyName: (name: string) => `${name.slice(0, 40)} (cópia)`,
     animationTimeline: 'Linha do tempo',
-    animationStrip: (channel: string, count: number) => `${channel}: ${count} momentos com chaves`,
+    animationStrip: (channel: string, count: number) => `${channel}: ${count} poses`,
     animationStripHint:
-      'Toque numa faixa para ir à chave mais próxima. No teclado, use as setas; Home e End vão à primeira e à última chave.',
-    animationKeyTools: 'Ajustar várias chaves',
+      'Toque numa faixa para ir à pose mais próxima. No teclado, use as setas; Home e End vão à primeira e à última pose.',
+    animationKeyTools: 'Ajustar várias poses',
     animationKeyToolsHint:
-      'Escolha um intervalo nas peças selecionadas. Mover ou copiar nunca apaga uma chave que já está no destino.',
+      'Escolha um intervalo nas peças selecionadas. Mover ou copiar nunca apaga uma pose que já está no destino.',
     animationRangeStart: 'Do tempo (segundos)',
     animationRangeEnd: 'Até o tempo (segundos)',
-    animationRangeChannel: 'Tipos de chave',
+    animationRangeChannel: 'Canais das poses',
     animationAllChannels: 'Todos os tipos',
     animationOffset: 'Deslocar quantos segundos?',
     animationOffsetHint:
-      'Um valor positivo leva as chaves para depois. Um valor negativo leva para antes.',
+      'Um valor positivo leva as poses para depois. Um valor negativo leva para antes.',
     animationRangeCount: (count: number) =>
-      `${count} ${count === 1 ? 'chave escolhida' : 'chaves escolhidas'}`,
+      `${count} ${count === 1 ? 'pose escolhida' : 'poses escolhidas'}`,
     animationRangeInvalid: 'Confira o começo e o final do intervalo.',
-    animationKeysMove: 'Mover chaves',
-    animationKeysCopy: 'Copiar chaves',
-    animationKeysRemove: 'Excluir chaves escolhidas',
+    animationKeysMove: 'Mover poses',
+    animationKeysCopy: 'Copiar poses',
+    animationKeysRemove: 'Apagar poses escolhidas',
     animationPlay: 'Reproduzir movimento',
     animationPause: 'Pausar movimento',
     animationStart: 'Ir ao começo',
     animationEnd: 'Ir ao final',
-    animationPrevious: 'Chave anterior',
-    animationNext: 'Próxima chave',
+    animationPrevious: 'Pose anterior',
+    animationNext: 'Próxima pose →',
     animationTime: 'Tempo do movimento',
     animationSeconds: 'Ir para o tempo (segundos)',
     animationSeek: 'Ir para esse momento',
     animationTimeValue: (time: number, duration: number) =>
       `${time.toLocaleString('pt-BR', { maximumFractionDigits: 3 })} de ${duration.toLocaleString('pt-BR', { maximumFractionDigits: 3 })} segundos`,
-    animationViewportHint:
-      'Pause, escolha uma peça e use Mover, Girar ou Mudar tamanho para experimentar uma pose.',
+    animationViewportHint: 'Mexa a peça e aperte Marcar pose para guardar esse momento.',
     animationHint:
       'A forma original fica guardada. Grave chaves ou poses para guardar o movimento neste momento.',
     animationPoseFailed: 'Não foi possível ajustar essa pose. Tente novamente ou use os campos.',
     animationPoseAdjust: 'Ajuste da pose',
-    animationPoseRecord: 'Gravar pose ajustada',
-    animationPoseCancel: 'Cancelar ajuste da pose',
-    animationPoseAutoKey: 'Gravar ao soltar as alças',
+    animationPoseRecord: 'Marcar pose',
+    animationPoseCancel: 'Descartar ajustes',
+    animationPoseAutoKey: 'Marcar sozinho',
     animationPoseAutoKeyHint: 'Opcional: cada arrasto guarda uma pose e pode ser desfeito.',
-    animationPosePending:
-      'Pose em prévia. Grave ou cancele antes de mudar o tempo, a peça ou o movimento. Esc cancela.',
+    animationPosePending: 'Pose ainda não marcada. Ajuste as peças e use Marcar pose.',
     animationPoseFieldsHint: 'Grave ou cancele a pose em prévia para voltar aos campos.',
     bendLimit: {
       title: 'Até onde pode dobrar?',
@@ -419,7 +417,7 @@ export const COPY = {
     animationAffineHint:
       'Essa peça precisa de uma transformação local compatível para entrar neste movimento importado.',
     animationChannel: 'O que muda nesta chave?',
-    animationChannels: { translation: 'Mover', rotation: 'Girar', scale: 'Mudar tamanho' },
+    animationChannels: { translation: 'Mover', rotation: 'Girar', scale: 'Tamanho' },
     animationAxes: {
       translation: ['Lado (X)', 'Altura (Y)', 'Profundidade (Z)'],
       rotation: ['Giro X (graus)', 'Giro Y (graus)', 'Giro Z (graus)'],
@@ -517,9 +515,9 @@ export const COPY = {
     meshCounts: (vertices: number, faces: number) => `${vertices} pontos e ${faces} faces`,
     editFaces: 'Editar malha',
     editSkinBase: 'Editar forma-base',
-    supportGuides: 'Ver apoios',
+    supportGuides: 'Ver ossos e apoios',
     supportGuidesHint:
-      'Os pontos mostram os grupos e apoios originais, mesmo atrás das peças. Toque num ponto para escolher. Use a lista da oficina para escolher pelo nome.',
+      'Toque no ponto de um osso para escolher. Use Girar ou Mover para manipulá-lo. A lista da oficina mostra os nomes.',
     skinBaseHint:
       'Você está editando a forma-base, sem a dobra dos ossos. Ao terminar, a peça volta a mostrar a deformação. Os pesos continuam guardados.',
     componentModes: { vertex: 'Pontos', edge: 'Linhas', face: 'Faces' },
@@ -531,20 +529,31 @@ export const COPY = {
     componentTitles: { vertex: 'Pontos da peça', edge: 'Linhas da peça', face: 'Faces da peça' },
     componentPickHints: {
       vertex: 'Toque num ponto. Escolher várias junta pontos à seleção. Esc volta às peças.',
-      edge: 'Toque numa linha da malha. Escolher várias junta linhas à seleção. Esc volta às peças.',
+      edge: 'Clique em um trecho. Marque “Selecionar loop inteiro” no painel para escolher o loop. Escolher várias junta linhas à seleção. Esc volta às peças.',
     },
     componentViewport: 'Modelo 3D. Arraste para olhar. Toque para escolher uma parte da malha.',
     componentTransformHint:
-      'Use Mover, Girar ou Mudar tamanho na seleção. Pontos ligados também ajustam as faces vizinhas, sem mover a peça inteira. Esc cancela o arrasto.',
+      'Use Mover, Girar ou Tamanho na seleção. Pontos ligados também ajustam as faces vizinhas, sem mover a peça inteira. Esc cancela o arrasto.',
     componentCounts: {
       vertex: (count: number) => (count === 1 ? '1 ponto escolhido' : `${count} pontos escolhidos`),
       edge: (count: number) => (count === 1 ? '1 linha escolhida' : `${count} linhas escolhidas`),
     },
     componentAll: { vertex: 'Escolher todos os pontos', edge: 'Escolher todas as linhas' },
     componentNone: 'Limpar partes escolhidas',
+    componentWholeLoop: 'Selecionar loop inteiro',
+    componentCoplanarFaces: 'Selecionar faces do mesmo lado',
+    componentCoplanarHint: 'Clique em uma face para selecionar as faces ligadas no mesmo plano.',
     componentConnected: 'Escolher partes ligadas',
     componentMoreSelection: 'Mais jeitos de escolher',
     uvTitle: 'Encaixar a pintura (UV)',
+    uvAdvanced: 'Avançado',
+    uvVisualHint:
+      'Escolha uma face no modelo ou aqui. Arraste um ponto para ajustar, ou o meio da parte escolhida para mover.',
+    uvPixelSnap: 'Encaixar nos pixels',
+    uvNoTexture: 'Pinte a peça primeiro para ver os quadradinhos da pintura aqui.',
+    uvMixedImages: 'Essas faces usam folhas diferentes. Escolha uma face para ajustar sua pintura.',
+    uvRotateQuarter: 'Girar 90°',
+    uvVisualNotice: 'Isso muda onde a pintura aparece. Você pode desfazer.',
     uvCanvasControl: 'Escolher ou ajustar no mapa da pintura',
     uvCorners: 'Cantos e bordas da pintura',
     uvCornerHint:
@@ -556,7 +565,7 @@ export const COPY = {
     uvCornerAxis: (axis: 'U' | 'V') => `${axis} do canto`,
     uvCornerApply: 'Aplicar posição do canto',
     uvCornerKeyboard:
-      'Arraste um canto pelo número. No teclado: espaço começa, setas movem pelo passo escolhido e espaço ou Enter confirma. Escape cancela. O contorno é uma prévia; a pintura 3D muda ao confirmar.',
+      'Arraste um ponto e solte para aplicar. Teclado: espaço começa, setas movem, Enter confirma e Esc cancela.',
     uvStitch: 'Alinhar a borda da face vizinha',
     uvStitchHint:
       'A borda vai deste canto até o próximo. Escolha também a face vizinha: alinhar copia as duas posições desta borda para ela, sem mover o restante da ilha. Isso pode esticar a pintura da vizinha. Você pode desfazer.',
@@ -571,7 +580,7 @@ export const COPY = {
     uvFaceNumber: (number: number) => `Face ${number}`,
     uvIslands: (islands: number, seams: number) =>
       `${islands} ilhas de pintura, ${seams} linhas de contorno ou costura.`,
-    uvSelectIslands: 'Escolher ilhas inteiras',
+    uvSelectIslands: 'Escolher parte inteira',
     uvTransform: 'Ajustar o encaixe escolhido',
     uvFields: {
       u: 'Mover de lado (U)',
@@ -786,9 +795,9 @@ export const COPY = {
     paintCanvasHint:
       'Arraste para pintar. No teclado, use as setas para escolher um pixel e Espaço para pintar. Esc cancela o traço. A linha de baixo da imagem é a linha 1.',
     paintCursor: (x: number, y: number) => `Pixel escolhido: coluna ${x}, linha ${y}.`,
-    paintPencil: 'Lápis',
+    paintPencil: 'Pincel',
     paintEraser: 'Borracha',
-    paintPicker: 'Conta-gotas',
+    paintPicker: 'Pegar cor',
     paintPickerHint:
       'Toque em um pixel para copiar sua cor nesta camada e voltar ao lápis. A cor não inclui as outras camadas nem a opacidade do material. Um pixel vazio da paleta escolhe a borracha.',
     paintBrush: 'Largura do traço',
@@ -842,9 +851,9 @@ export const COPY = {
     paintHint:
       'A imagem e a peça usam a mesma pintura. Um traço tem um único desfazer. A borracha revela as camadas de baixo ou a cor de base.',
     paintOnModel: 'Pintar no modelo',
-    paintLook: 'Olhar o modelo',
+    paintLook: 'Olhar',
     paintModelHint:
-      'Arraste nas faces da peça que usam esta imagem. O traço não atravessa outras peças. Para mudar o olhar com os dedos, escolha Olhar o modelo.',
+      'Arraste na peça escolhida para pintar. Use Olhar para girar a câmera e volte ao Pincel para continuar.',
     paintLookHint:
       'Arraste para olhar e use dois dedos para aproximar ou afastar. Depois, escolha Pintar no modelo para continuar o traço.',
     softMovement: 'Mover vizinhos suavemente',
@@ -864,7 +873,7 @@ export const COPY = {
       shrink: 'Retira as partes que tocam vizinhas não escolhidas. Não apaga nada do modelo.',
       invert: 'Escolhe o que ficou de fora e solta o que estava escolhido.',
       ring: 'Passa para o lado oposto de cada face de quatro pontos. Para nas bordas e nas ligações ambíguas.',
-      loop: 'Segue a continuação das linhas, sem virar nas ligações com muitos caminhos. Para em triângulos e bordas.',
+      loop: 'Segue a continuação das linhas, inclusive nos cortes da faca. Para nas bordas e nas ligações com muitos caminhos.',
     },
     componentRemove: {
       vertex: 'Apagar pontos e faces ligadas',
@@ -892,11 +901,11 @@ export const COPY = {
       cut: 'Escolha dois pontos de lados diferentes de uma face. Uma linha reta divide a face sem mudar sua pintura.',
       line: 'Escolha dois pontos para ligar. A linha ajuda a construir, mas não cria uma superfície nem muda a pintura.',
     },
-    finishFaces: 'Voltar às peças',
+    finishFaces: 'Concluir edição',
     facesTitle: 'Faces da peça',
     faceHint: 'Toque numa face. Shift escolhe várias. Esc volta às peças.',
     faceTransformHint:
-      'Use Mover, Girar ou Mudar tamanho nas faces escolhidas. Os pontos ligados também ajustam as faces vizinhas. Esc cancela o arrasto.',
+      'Use Mover, Girar ou Tamanho nas faces escolhidas. Os pontos ligados também ajustam as faces vizinhas. Esc cancela o arrasto.',
     faceViewport: 'Modelo 3D. Arraste para olhar. Toque para escolher uma face.',
     faceCount: (count: number) => (count === 1 ? '1 face escolhida' : `${count} faces escolhidas`),
     faceAll: 'Escolher todas as faces',
@@ -931,11 +940,24 @@ export const COPY = {
       extrude:
         'Puxa cada região plana para fora. Valores negativos empurram para dentro. A medida é da peça, antes da escala. Não recorta outras partes; as laterais novas repetem a pintura.',
       inset:
-        'Cria uma borda em cada face escolhida. A porcentagem aproxima os pontos do centro, sem mudar a pintura.',
+        'Cria uma borda ao redor de cada região plana escolhida. As faces internas continuam unidas. A porcentagem aproxima os pontos do centro, mantendo a pintura contínua.',
     },
     extrudeAmount: 'Quanto puxar',
+    extrudeHandlesHint:
+      'Arraste as alças de Mover no modelo para puxar a face, ou ajuste o valor abaixo.',
+    createFaceEdge: {
+      label: 'Criar face ou linha',
+      description: 'Ligue os pontos ou crie uma face entre as linhas escolhidas.',
+      edgeHint:
+        'Escolha duas linhas para criar a face entre elas, ou escolha as linhas de um contorno.',
+      vertexHint: 'Dois pontos criam uma linha. Três ou mais pontos criam uma face.',
+      preserveHint:
+        'A peça mantém os pontos e a pintura que já tinha. A parte criada fica selecionada.',
+    },
     thicknessAmount: 'Espessura da peça',
     insetAmount: 'Borda em porcentagem',
+    insetSelectionHint:
+      'Crie uma borda ao redor da seleção. As faces internas ficam unidas para você puxar depois.',
     subdivideAmount: 'Quantidade de divisões',
     previewHint: 'Veja no modelo. Só confirme quando gostar do resultado.',
     previewConfirm: 'Confirmar ajuste',
@@ -953,14 +975,20 @@ export const COPY = {
     locked: 'Travar mudanças',
     move: 'Mover',
     rotate: 'Girar',
-    scale: 'Mudar tamanho',
+    scale: 'Tamanho',
     pivot: 'Ponto de giro',
     axesHint: 'X: lados. Y: altura. Z: frente e trás.',
     pivotHint: 'Mude o ponto de giro sem mover a peça. Os valores são relativos à peça.',
     scaleHint: '1 mantém o tamanho. 2 dobra. 0,5 deixa pela metade.',
     apply: 'Aplicar ajuste',
     invalidNumber: 'Preencha os três valores com números válidos.',
-    positiveScale: 'Use um tamanho maior que zero. Para inverter, use Espelhar.',
+    positiveScale: 'Use um tamanho maior que zero. Para inverter, use Virar.',
+    plane: 'Plano',
+    flipTitle: 'Virar',
+    flipAxis: (axis: string) => `Virar no eixo ${axis}`,
+    flipInPlace: 'Manter no lugar',
+    flipHint: 'Leva as peças ou o grupo para o lado oposto da oficina no eixo escolhido.',
+    flipInPlaceHint: 'Inverte a forma em torno do centro da seleção, mantendo o conjunto no lugar.',
     organize: 'Colocar dentro de um grupo',
     root: 'Fora dos grupos',
     noGroups: 'Agrupe algumas peças para organizar aqui.',
@@ -1044,20 +1072,18 @@ export const COPY = {
     exit: {
       open: 'Meus projetos',
       title: 'Voltar aos projetos?',
-      hint: 'As mudanças aplicadas serão guardadas. Ajustes em prévia e poses que você ainda não gravou serão cancelados.',
+      hint: 'Estamos guardando as mudanças confirmadas antes de voltar aos seus projetos.',
       stay: 'Ficar na oficina',
       save: 'Guardar e voltar',
       saving: 'Guardando antes de sair...',
       failed: 'Não consegui guardar. Você pode ficar na oficina ou baixar uma cópia antes de sair.',
       discard: 'Sair sem guardar',
     },
-    development:
-      'Oficina em desenvolvimento. A sincronização com o Estúdio ainda não está ligada aqui.',
     starting: 'Abrindo a oficina...',
     openError: 'Não consegui abrir essa criação. O arquivo original continua guardado.',
     createBox: 'Adicionar caixa',
     boxName: 'Caixa',
-    add: 'Adicionar forma ou ponto',
+    add: 'Adicionar',
     selectTool: 'Escolher',
     selectBox: 'Caixa de seleção',
     selectLasso: 'Laço',
@@ -1136,8 +1162,7 @@ export const COPY = {
     pathAround: 'Lados do tubo',
     pathCaps: 'Fechar as pontas',
     pathClosed: 'Caminho fechado',
-    movementStep: 'Passo do movimento',
-    movementFree: 'Livre',
+    movementStep: 'Passo das medidas',
     showGrid: 'Mostrar grade',
     applyPathSettings: 'Aplicar formato do tubo',
     pathPoint: 'Ponto do caminho',
@@ -1204,7 +1229,7 @@ export const COPY = {
     removeConfirm: 'Apagar',
     cancel: 'Cancelar',
     storageBudget:
-      'Sua galeria chegou ao limite de 96 MB. Apague uma criação grande para continuar salvando.',
+      'Não há espaço suficiente para guardar as últimas mudanças. Guarde uma cópia do projeto e tente novamente.',
     downloadAll: 'Baixar tudo',
     /** A geração seguinte tem o "Baixar projeto" próprio dentro da oficina. */
     downloadSkippedScene: (count: number) =>
@@ -1215,16 +1240,17 @@ export const COPY = {
     downloadCancelled: 'Parei de preparar o pacote.',
     downloadReady: 'Baixei a sua galeria! Procure o .zip na pasta de downloads.',
     downloadFailed: 'Não consegui montar o pacote agora. Tente de novo daqui a pouco.',
-    importJson: 'Trazer de volta',
-    importHint: 'Escolha o .zip ou o .molda.json que você baixou antes.',
+    importJson: 'Importar projeto',
+    importHint: 'Escolha um projeto do Molda (.molda.json) ou um pacote de projetos (.zip).',
     imported: (count: number) =>
-      count === 1 ? 'Trouxe 1 criação de volta!' : `Trouxe ${count} criações de volta!`,
+      count === 1 ? 'Importei 1 projeto!' : `Importei ${count} projetos!`,
     importedPartial: (count: number) =>
-      `Trouxe ${count} criações. Não consegui trazer todas; conserve o backup e confira o espaço disponível. As criações que já estavam aqui continuam guardadas.`,
-    importedNone: 'Esse arquivo não tinha nenhuma criação que eu conseguisse ler.',
+      `Importei ${count} projetos. Não consegui importar todos; guarde o arquivo e confira o espaço disponível. Os projetos que já estavam aqui continuam guardados.`,
+    importedNone: 'Esse arquivo não tinha nenhum projeto do Molda que eu conseguisse abrir.',
     importFailed:
-      'Não consegui ler esse arquivo. Ele veio do "Baixar tudo" do Molda (.zip ou .molda.json)?',
-    restoreTooLarge: 'Esse backup é grande demais. Escolha um arquivo de até 32 MB.',
+      'Não consegui abrir esse projeto. Escolha um arquivo .molda.json ou .zip que você baixou do Molda.',
+    restoreTooLarge: (maximumMb: number) =>
+      `Esse arquivo é grande demais. Escolha um arquivo de até ${maximumMb} MB.`,
     restoreZipMissing: 'Esse .zip não tem a galeria do Molda.',
     restoreZipDuplicate:
       'Esse .zip tem mais de uma galeria do Molda e não é seguro trazê-lo de volta.',
@@ -1239,9 +1265,9 @@ export const COPY = {
         '  ceus/      arquivos .hdr  → o bloco "Usar o céu 360°"',
         '',
         'No Estúdio, o jeito mais fácil continua sendo o botão "Trazer do Molda" do painel de imagens.',
-        'Para voltar com tudo para o Molda, use o botão "Trazer de volta" e escolha este .zip.',
+        'Para abrir seus projetos no Molda, use o botão "Importar projeto" e escolha este .zip.',
         'Conserve galeria.molda.json e a pasta projetos/: juntos, eles guardam toda a galeria.',
-        'Trazer de volta restaura as duas gerações em novas cópias, sem substituir suas criações.',
+        'Importar projeto cria novas cópias, sem substituir seus projetos guardados.',
       ],
       /** A geração seguinte viaja no arquivo nativo dela, não num .glb pronto. */
       project: (name: string, file: string) =>
@@ -1324,12 +1350,14 @@ export const COPY = {
     stepOptions: 'Como vai ser?',
     stepName: 'Que nome vai ter?',
     progress: (current: number, total: number) => `Passo ${current} de ${total}`,
-    texelsLabel: 'Texels por bloco',
-    texelsHint: 'Quantos pontinhos de tinta cabem em cada bloco da grade. Dá para mudar depois.',
+    texelsLabel: 'Detalhes da pintura',
+    texelsHint:
+      'No padrão, 1 pixel da pintura ocupa 1 unidade da peça. Mais pixels permitem detalhes menores.',
     texelsOptions: {
-      2: 'Poucos',
-      4: 'Normal',
-      8: 'Muitos',
+      1: '1 pixel por unidade',
+      2: '2 pixels por unidade',
+      4: '4 pixels por unidade',
+      8: '8 pixels por unidade',
     } as Record<number, string>,
     sizeLabel: 'Tamanho da folha',
     sizeHint: 'Em pixels. 32 é um bom começo.',
@@ -1798,19 +1826,19 @@ export const COPY = {
       tiled: 'Repetida 3×3',
       preview3d: 'Prévia 3D',
       tools: {
-        pencil: 'Lápis',
+        pencil: 'Pincel',
         eraser: 'Borracha',
         fill: 'Balde',
-        picker: 'Conta-gotas',
+        picker: 'Pegar cor',
         line: 'Linha',
         rectangle: 'Retângulo',
         ellipse: 'Elipse',
       },
       fillShape: 'Preencher forma',
       shapeHint:
-        'Arraste para desenhar. Solte para guardar ou aperte Esc para cancelar. Com Sem emenda, o traço segue o caminho curto pela borda.',
-      seamless: 'Sem emenda',
-      shiftHalf: 'Deslocar meio',
+        'Arraste para desenhar. Solte para guardar ou aperte Esc para cancelar. Com Pintar pela borda, o traço continua no outro lado da folha.',
+      seamless: 'Pintar pela borda',
+      shiftHalf: 'Deslocar só a prévia',
       transparentHint: 'A borracha deixa o pixel transparente. No jogo, transparente vira preto.',
       unsupported: 'Sem prévia 3D neste navegador.',
       download: {

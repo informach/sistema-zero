@@ -1,0 +1,52 @@
+{
+  "id": "qa-legacy-vanilla-source",
+  "formatVersion": 2,
+  "projectTools": [],
+  "name": "QA Pro legado",
+  "createdAt": 0,
+  "updatedAt": 0,
+  "mode": "code",
+  "kind": "pro",
+  "tree": {
+    "src": {
+      "kind": "dir"
+    },
+    "package.json": {
+      "kind": "file",
+      "content": "{\n  \"name\": \"sz-app\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --host 0.0.0.0 --strictPort false\",\n    \"build\": \"vite build\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"vite\": \"8.0.16\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+    },
+    "vite.config.ts": {
+      "kind": "file",
+      "content": "import { defineConfig } from 'vite'\n\nexport default defineConfig({\n  base: './',\n  server: {\n    host: '0.0.0.0',\n    strictPort: false,\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n})\n"
+    },
+    "tsconfig.json": {
+      "kind": "file",
+      "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"jsx\": \"react-jsx\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\",\n      \"DOM.Iterable\"\n    ],\n    \"skipLibCheck\": true,\n    \"types\": [\n      \"vite/client\"\n    ],\n    \"noEmit\": true\n  },\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+    },
+    "index.html": {
+      "kind": "file",
+      "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu app</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <h1 id=\"app\">Olá, Vite + TypeScript!</h1>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+    },
+    "src/main.ts": {
+      "kind": "file",
+      "content": "const app = document.getElementById('app')\nif (app) app.textContent = 'Editado em TypeScript ✨'\n"
+    },
+    "src/style.css": {
+      "kind": "file",
+      "content": "body { font-family: system-ui; padding: 2rem; }\n"
+    }
+  },
+  "proMeta": {
+    "devScript": "dev",
+    "templateId": "vanilla-vite"
+  },
+  "files": {
+    "index.html": "",
+    "style.css": "",
+    "script.js": ""
+  },
+  "extraFiles": [],
+  "ir": null,
+  "blocksState": null,
+  "installedExtensions": []
+}

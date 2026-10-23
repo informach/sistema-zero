@@ -16,7 +16,8 @@ export interface Principal {
  * - `{ ok: 'skip' }` → não se aplica (ex.: sem header Bearer) → tenta a próxima.
  */
 export type AuthResult =
-  | { ok: true; principal: Principal }
+  /** Composite auth retains the verified service separately from the user's principal. */
+  | { ok: true; principal: Principal; authenticatedConsumerId?: string }
   | { ok: false; status: 401 | 403 | 503; code: string; message: string }
   | { ok: 'skip' }
 

@@ -1,0 +1,7 @@
+{
+  "source": "packages/studio/src/official-extensions/game-2d-advanced/examples/arenaGoblinsExample.ts",
+  "sha256": "49ea2e02c7fb2f009b24f68c240bd71c60b0b64bccd06e1ac76f0ceb38c1198a",
+  "example": "arenaGoblinsExample",
+  "runtime": "packages/studio/src/official-extensions/game-2d-advanced/runtime.ts",
+  "change": "Nenhuma regra ou aparência alterada. Entradas reais e observador somente de leitura."
+}

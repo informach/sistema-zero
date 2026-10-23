@@ -1,3 +1,0 @@
-Um bloco coloca um desenho como fundo do jogo. Pode entrar um castelo, uma rua ou um planeta.
-
-Ele escolhe o desenho, coloca no projeto e testa o personagem naquele cenário.

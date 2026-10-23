@@ -1,9 +1,12 @@
-import type { Project } from '#core'
+import { isPythonProject, type EditableStudioProject as Project } from '../core/editableProject'
 import { perfSpanAsync } from '../core/perf'
+import type { StudioRuntimeCapture } from '../runtime/capture'
 import { MAX_PROJECT_THUMB_CHARS, writeProjectThumb } from '../state/persistence'
-import type { ProjectStorageScope } from '../state/projectStorageRuntime'
+import {
+  captureProjectStorageScope,
+  type ProjectStorageScope,
+} from '../state/projectStorageRuntime'
 import { resolveCoverAsset } from './coverAsset'
-import { captureCoverFromProject } from './coverCapture'
 import { consumeProjectSnapshot, type ProjectSnapshot, peekProjectSnapshot } from './latestSnapshot'
 
 /** Tamanho da miniatura do card (proporção do palco 800×480). */
@@ -75,7 +78,10 @@ interface ResolvedThumb {
   snapshot?: ProjectSnapshot
 }
 
-async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
+async function resolveThumb(
+  project: Project,
+  runtimeCapture?: StudioRuntimeCapture | null,
+): Promise<ResolvedThumb | null> {
   // ⭐ A capa ESCOLHIDA vence tudo: derivada da própria imagem, nunca da foto do preview nem
   // da reserva. `null` (sem canvas) não grava nada: a capa anterior fica, como sempre.
   const chosen = resolveCoverAsset(project)
@@ -83,8 +89,16 @@ async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
     const dataUrl = await downscaleToThumb(chosen.dataUrl)
     return dataUrl ? { dataUrl } : null
   }
+  if (isPythonProject(project)) {
+    const image = await runtimeCapture?.capture(project)
+    const dataUrl = image ? await downscaleToThumb(image) : null
+    return dataUrl ? { dataUrl } : null
+  }
   const doPreview = peekProjectSnapshot(project.id)
   if (doPreview) return { dataUrl: doPreview.dataUrl, snapshot: doPreview }
+  // The renderer is only needed for this fallback, not to open the editor or
+  // reuse a chosen cover / an existing preview snapshot.
+  const { captureCoverFromProject } = await import('./coverCapture')
   const cover = await captureCoverFromProject(project)
   if (!cover) return null
   const dataUrl = await downscaleToThumb(cover)
@@ -100,16 +114,25 @@ async function resolveThumb(project: Project): Promise<ResolvedThumb | null> {
  * Devolve se uma miniatura NOVA foi gravada (`false` = a capa anterior ficou como
  * estava): é o retorno que a escolha de capa usa para não deixar o selo mentir.
  */
-export function captureAndStoreProjectThumb(project: Project): Promise<boolean> {
-  return perfSpanAsync('studio:thumb:capture', () => captureAndStoreUnmeasured(project))
+export function captureAndStoreProjectThumb(
+  project: Project,
+  runtimeCapture?: StudioRuntimeCapture | null,
+): Promise<boolean> {
+  return perfSpanAsync('studio:thumb:capture', () =>
+    captureAndStoreUnmeasured(project, runtimeCapture),
+  )
 }
 
-async function captureAndStoreUnmeasured(project: Project): Promise<boolean> {
+async function captureAndStoreUnmeasured(
+  project: Project,
+  runtimeCapture?: StudioRuntimeCapture | null,
+): Promise<boolean> {
+  const storageScope = captureProjectStorageScope()
   try {
-    const thumb = await resolveThumb(project)
+    const thumb = await resolveThumb(project, runtimeCapture)
     if (!thumb) return false
     // O `writeProjectThumb` avisa a lista (`PROJECT_THUMB_UPDATED_EVENT`) e o espelho da nuvem.
-    const stored = await writeProjectThumb(project.id, thumb.dataUrl)
+    const stored = await writeProjectThumb(project.id, thumb.dataUrl, {}, storageScope)
     if (!stored) return false
     if (thumb.snapshot) consumeProjectSnapshot(thumb.snapshot)
     return true
@@ -129,12 +152,13 @@ export async function storeChosenCoverThumb(
   project: Project,
   options: { storageScope?: ProjectStorageScope } = {},
 ): Promise<boolean> {
+  const storageScope = options.storageScope ?? captureProjectStorageScope()
   try {
     const chosen = resolveCoverAsset(project)
     if (!chosen) return false
     const dataUrl = await downscaleToThumb(chosen.dataUrl)
     if (!dataUrl) return false
-    return await writeProjectThumb(project.id, dataUrl, { silent: true }, options.storageScope)
+    return await writeProjectThumb(project.id, dataUrl, { silent: true }, storageScope)
   } catch {
     return false
   }

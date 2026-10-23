@@ -78,7 +78,9 @@ export class DuplicateSlugError extends DomainError {
 /** O fluxo de clone é exclusivamente entre plataformas distintas. → 409. */
 export class CloneSameAudienceError extends DomainError {
   readonly code = 'CLONE_SAME_AUDIENCE'
-  constructor(message = 'O curso só pode ser clonado para a outra plataforma') {
+  constructor(
+    message = 'O clone precisa ir para a outra plataforma ou para a outra modalidade (gravado ou ao vivo)',
+  ) {
     super(message)
   }
 }
@@ -87,6 +89,30 @@ export class CloneSameAudienceError extends DomainError {
 export class JourneySlotConflictError extends DomainError {
   readonly code = 'CAREER_SLOT_CONFLICT'
   constructor(message = 'Já existe um curso nesta posição da jornada') {
+    super(message)
+  }
+}
+
+/**
+ * Trocar a modalidade (gravado ⇄ ao vivo) de um curso que já tem turma das oficinas. A turma é
+ * feita das aulas do curso ao vivo: virar gravado deixaria a turma sem curso. → 409.
+ */
+export class CourseModalityLockedError extends DomainError {
+  readonly code = 'COURSE_MODALITY_LOCKED'
+  constructor(
+    message = 'Este curso já tem turma nas oficinas. A modalidade só muda num curso sem turma.',
+  ) {
+    super(message)
+  }
+}
+
+/**
+ * Aula de curso AO VIVO fora da vaga da criança: sem turma no curso, ou o encontro desta aula
+ * ainda não começou ou o prazo dele acabou. → 403 (a criança não tem acesso a ESTA aula agora).
+ */
+export class LiveLessonClosedError extends DomainError {
+  readonly code = 'LIVE_LESSON_CLOSED'
+  constructor(message = 'Este encontro abre no dia marcado, para quem tem vaga na turma.') {
     super(message)
   }
 }
@@ -202,14 +228,6 @@ export class PintaChainTypeMismatchError extends DomainError {
   readonly code = 'PINTA_CHAIN_TYPE_MISMATCH'
   // Sem `message` default de propósito: a mensagem é o valor do erro (nomeia a aula e o tipo),
   // então quem lança PRECISA montá-la. Herda o construtor do DomainError.
-}
-
-/** Aula tem atividade do Estúdio com nota de corte ainda não atingida — conclusão bloqueada. → 409. */
-export class StudioGateNotPassedError extends DomainError {
-  readonly code = 'STUDIO_GATE_NOT_PASSED'
-  constructor(message = 'Atinja a nota mínima da atividade do Estúdio para concluir a aula') {
-    super(message)
-  }
 }
 
 /** Bloco de certificado inexistente na aula (ou o bloco não é um certificado). → 404. */

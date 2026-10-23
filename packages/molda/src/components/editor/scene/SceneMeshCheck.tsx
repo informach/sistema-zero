@@ -6,8 +6,10 @@ import type { useSceneComponents } from './useSceneComponents'
 
 export function SceneMeshCheck({
   check,
+  expanded = false,
 }: {
   check: ReturnType<typeof useSceneComponents>['check']
+  expanded?: boolean
 }) {
   const copy = COPY.scene
   const start = useRef<HTMLButtonElement>(null)
@@ -22,7 +24,8 @@ export function SceneMeshCheck({
   }, [check.busy, check.preview])
   return (
     <details
-      className="rounded-lg border border-mld-border p-2"
+      open={expanded || undefined}
+      className={expanded ? 'mld-component-check' : 'rounded-lg border border-mld-border p-2'}
       onToggle={(event) => {
         if (!event.currentTarget.open && (check.busy || check.preview)) check.cancel()
       }}

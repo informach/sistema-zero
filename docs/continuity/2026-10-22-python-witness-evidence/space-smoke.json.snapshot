@@ -1,0 +1,527 @@
+{
+  "playMs": 10000,
+  "measuredPlayMs": 10404.2444,
+  "qualification": "diagnostic",
+  "witness": "QA6x6 RGB token after original player render/pose effect,same Turtle update;no game/pool changes;read-only RAF observation plus one display opportunity,not GPU scanout",
+  "authoredFps": {
+    "count": 9,
+    "median": 49,
+    "p95": 50,
+    "max": 50
+  },
+  "intervals": {
+    "count": 497,
+    "median": 16.700000000000728,
+    "p95": 33.400000000001455,
+    "max": 33.60000000000218
+  },
+  "frameBuckets": {
+    "oneFrame": 370,
+    "twoFrames": 127,
+    "more": 0
+  },
+  "paintWork": {
+    "count": 502,
+    "median": 0.19999999552965164,
+    "p95": 0.30000000447034836,
+    "max": 0.5
+  },
+  "longPaints": 0,
+  "longTasks": 0,
+  "inputs": 30,
+  "causalInputToPresentation": {
+    "count": 30,
+    "median": 53.70000000298023,
+    "p95": 64.19999999552965,
+    "max": 68.5
+  },
+  "causalEvidence": {
+    "generation": "0f9e72cf-56e3-4965-a5fe-b1bc417c8206",
+    "inputs": [
+      {
+        "id": 1,
+        "key": "Left",
+        "at": 16232.5
+      },
+      {
+        "id": 2,
+        "key": "Right",
+        "at": 16587.60000000149
+      },
+      {
+        "id": 3,
+        "key": "Up",
+        "at": 16931.70000000298
+      },
+      {
+        "id": 4,
+        "key": "Left",
+        "at": 17278.30000000447
+      },
+      {
+        "id": 5,
+        "key": "Right",
+        "at": 17624.10000000149
+      },
+      {
+        "id": 6,
+        "key": "Up",
+        "at": 17970.70000000298
+      },
+      {
+        "id": 7,
+        "key": "Left",
+        "at": 18328.90000000596
+      },
+      {
+        "id": 8,
+        "key": "Right",
+        "at": 18672.60000000149
+      },
+      {
+        "id": 9,
+        "key": "Up",
+        "at": 19018.90000000596
+      },
+      {
+        "id": 10,
+        "key": "Left",
+        "at": 19362.90000000596
+      },
+      {
+        "id": 11,
+        "key": "Right",
+        "at": 19708.10000000149
+      },
+      {
+        "id": 12,
+        "key": "Up",
+        "at": 20053.5
+      },
+      {
+        "id": 13,
+        "key": "Left",
+        "at": 20397.90000000596
+      },
+      {
+        "id": 14,
+        "key": "Right",
+        "at": 20746.20000000298
+      },
+      {
+        "id": 15,
+        "key": "Up",
+        "at": 21103.70000000298
+      },
+      {
+        "id": 16,
+        "key": "Left",
+        "at": 21447.70000000298
+      },
+      {
+        "id": 17,
+        "key": "Right",
+        "at": 21792.40000000596
+      },
+      {
+        "id": 18,
+        "key": "Up",
+        "at": 22136.20000000298
+      },
+      {
+        "id": 19,
+        "key": "Left",
+        "at": 22486
+      },
+      {
+        "id": 20,
+        "key": "Right",
+        "at": 22843.30000000447
+      },
+      {
+        "id": 21,
+        "key": "Up",
+        "at": 23189
+      },
+      {
+        "id": 22,
+        "key": "Left",
+        "at": 23535.10000000149
+      },
+      {
+        "id": 23,
+        "key": "Right",
+        "at": 23879.10000000149
+      },
+      {
+        "id": 24,
+        "key": "Up",
+        "at": 24224.5
+      },
+      {
+        "id": 25,
+        "key": "Left",
+        "at": 24569.30000000447
+      },
+      {
+        "id": 26,
+        "key": "Right",
+        "at": 24915.90000000596
+      },
+      {
+        "id": 27,
+        "key": "Up",
+        "at": 25259.90000000596
+      },
+      {
+        "id": 28,
+        "key": "Left",
+        "at": 25604.5
+      },
+      {
+        "id": 29,
+        "key": "Right",
+        "at": 25947.60000000149
+      },
+      {
+        "id": 30,
+        "key": "Up",
+        "at": 26293.70000000298
+      }
+    ],
+    "shown": [
+      {
+        "id": 1,
+        "key": "Left",
+        "observedAt": 16259,
+        "at": 16275.70000000298
+      },
+      {
+        "id": 2,
+        "key": "Right",
+        "observedAt": 16625.70000000298,
+        "at": 16642.40000000596
+      },
+      {
+        "id": 3,
+        "key": "Up",
+        "observedAt": 16975.80000000447,
+        "at": 16992.5
+      },
+      {
+        "id": 4,
+        "key": "Left",
+        "observedAt": 17325.90000000596,
+        "at": 17342.5
+      },
+      {
+        "id": 5,
+        "key": "Right",
+        "observedAt": 17676.10000000149,
+        "at": 17692.60000000149
+      },
+      {
+        "id": 6,
+        "key": "Up",
+        "observedAt": 18009.40000000596,
+        "at": 18026.20000000298
+      },
+      {
+        "id": 7,
+        "key": "Left",
+        "observedAt": 18359.80000000447,
+        "at": 18376.30000000447
+      },
+      {
+        "id": 8,
+        "key": "Right",
+        "observedAt": 18709.90000000596,
+        "at": 18726.30000000447
+      },
+      {
+        "id": 9,
+        "key": "Up",
+        "observedAt": 19060,
+        "at": 19076.60000000149
+      },
+      {
+        "id": 10,
+        "key": "Left",
+        "observedAt": 19410,
+        "at": 19426.5
+      },
+      {
+        "id": 11,
+        "key": "Right",
+        "observedAt": 19743.5,
+        "at": 19762.60000000149
+      },
+      {
+        "id": 12,
+        "key": "Up",
+        "observedAt": 20093.70000000298,
+        "at": 20110.40000000596
+      },
+      {
+        "id": 13,
+        "key": "Left",
+        "observedAt": 20427.20000000298,
+        "at": 20443.80000000447
+      },
+      {
+        "id": 14,
+        "key": "Right",
+        "observedAt": 20777.30000000447,
+        "at": 20793.80000000447
+      },
+      {
+        "id": 15,
+        "key": "Up",
+        "observedAt": 21144,
+        "at": 21160.70000000298
+      },
+      {
+        "id": 16,
+        "key": "Left",
+        "observedAt": 21477.60000000149,
+        "at": 21494.10000000149
+      },
+      {
+        "id": 17,
+        "key": "Right",
+        "observedAt": 21827.40000000596,
+        "at": 21844.20000000298
+      },
+      {
+        "id": 18,
+        "key": "Up",
+        "observedAt": 22177.70000000298,
+        "at": 22194.30000000447
+      },
+      {
+        "id": 19,
+        "key": "Left",
+        "observedAt": 22528,
+        "at": 22544.90000000596
+      },
+      {
+        "id": 20,
+        "key": "Right",
+        "observedAt": 22861.20000000298,
+        "at": 22879.40000000596
+      },
+      {
+        "id": 21,
+        "key": "Up",
+        "observedAt": 23228.10000000149,
+        "at": 23244.80000000447
+      },
+      {
+        "id": 22,
+        "key": "Left",
+        "observedAt": 23561.70000000298,
+        "at": 23578.20000000298
+      },
+      {
+        "id": 23,
+        "key": "Right",
+        "observedAt": 23911.80000000447,
+        "at": 23928.30000000447
+      },
+      {
+        "id": 24,
+        "key": "Up",
+        "observedAt": 24262.10000000149,
+        "at": 24279.5
+      },
+      {
+        "id": 25,
+        "key": "Left",
+        "observedAt": 24595.30000000447,
+        "at": 24611.90000000596
+      },
+      {
+        "id": 26,
+        "key": "Right",
+        "observedAt": 24947.80000000447,
+        "at": 24962.20000000298
+      },
+      {
+        "id": 27,
+        "key": "Up",
+        "observedAt": 25295.40000000596,
+        "at": 25312.20000000298
+      },
+      {
+        "id": 28,
+        "key": "Left",
+        "observedAt": 25645.70000000298,
+        "at": 25662.40000000596
+      },
+      {
+        "id": 29,
+        "key": "Right",
+        "observedAt": 25979.10000000149,
+        "at": 25995.70000000298
+      },
+      {
+        "id": 30,
+        "key": "Up",
+        "observedAt": 26329.30000000447,
+        "at": 26345.90000000596
+      }
+    ],
+    "pending": false
+  },
+  "evidence": {
+    "baseline": {
+      "corpusManifestSha256": "a63eb90cdd276a3e71ac6b20a7d9d62450e334d54187b280f57ef39d32f0db33",
+      "files": [
+        {
+          "name": "LICENSE",
+          "originalSha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+        },
+        {
+          "name": "bgm.wav",
+          "originalSha256": "fdccf404c0bed8bb43efaeee2cc5b6d74cd02ae9d10b5041ca3d135c530f62b2"
+        },
+        {
+          "name": "explosion.wav",
+          "originalSha256": "e2f6e630948943da62f319de07ad3bc5d476748c506524ec554671f1e66ce9e0"
+        },
+        {
+          "name": "hunter.gif",
+          "originalSha256": "4f20d348ab693c812966ced4084ea16f2fba03b1a3bd8ceaa7061be5f5312e6a"
+        },
+        {
+          "name": "mine.gif",
+          "originalSha256": "343898928f1d211a453615532a19542ce9e9638bbd38e18a17e95e10a6398597"
+        },
+        {
+          "name": "missile_fire.wav",
+          "originalSha256": "58af2142682571a97a1ea00a9634b1c0bcc20318038fe71f9df0ceadb26ffab3"
+        },
+        {
+          "name": "powerup.gif",
+          "originalSha256": "e2274d25b52872982636667a9bb9b67a451c76711745813b7e982fc4c2a40d74"
+        },
+        {
+          "name": "powerup.wav",
+          "originalSha256": "8e7d80abb40195b1b550722d62a846e2ac0826053d4547f7dce76dbde924168e"
+        },
+        {
+          "name": "space_arena.py",
+          "originalSha256": "08b3d85002d9c59383a80410d18c58b7ecacce2c108e1075039e16ee2ea0a928"
+        },
+        {
+          "name": "space_arena_1.py",
+          "originalSha256": "38c6282fbe7607b6355843d15ee0a268f49fafef944942adbaae85551591cef7"
+        },
+        {
+          "name": "space_arena_10.py",
+          "originalSha256": "881e8c301120ba31349b323b762a9a4d2c797b7fd82aa835f088029ba6c38acb"
+        },
+        {
+          "name": "space_arena_11.py",
+          "originalSha256": "9a15d5944b21222a010f53e889f6e03fa3ab90275b62bbb6bfe58d83de52da5e"
+        },
+        {
+          "name": "space_arena_12.py",
+          "originalSha256": "82de139586951321788ae60c5424ce8c96a579672670594ec25b113e732bd147"
+        },
+        {
+          "name": "space_arena_13.py",
+          "originalSha256": "166f01b052f8ed76a1c04a5e08ce50d087ee57d007f1ddfd61b379bf7447b346"
+        },
+        {
+          "name": "space_arena_15.py",
+          "originalSha256": "c9cd9ef3f7429d40251634e25b0ba1e882b9e8121f77f7cb6c520e16154a8f0b"
+        },
+        {
+          "name": "space_arena_16.py",
+          "originalSha256": "48aab00034b7b706694c7b6fd97e43d87668c575ac302b4214d38d63ef5ebee9"
+        },
+        {
+          "name": "space_arena_17.py",
+          "originalSha256": "39ff5ef857fab38e9f10a1d493858eaf867924287fca8df862935e79b8252f5d"
+        },
+        {
+          "name": "space_arena_18.py",
+          "originalSha256": "13b3a6c452cfb5873d9c7ff7016f43b1f08fe28c9b9d8e05497e94f9a61cca3d"
+        },
+        {
+          "name": "space_arena_19.py",
+          "originalSha256": "d5bdd5e08ead50f7dd3eda4f3a10d20339c25b2d0e202f7138167d2fdb23fe0e"
+        },
+        {
+          "name": "space_arena_2.py",
+          "originalSha256": "e9d4f5207a6c0f128b45f528ded3856b808e6d55fad188c2ab77af67f6d9cf51"
+        },
+        {
+          "name": "space_arena_3.py",
+          "originalSha256": "cc538f6195f8dee9bb358ca9476ba214d6f94ceffb945ac335797c41e7512b67"
+        },
+        {
+          "name": "space_arena_4.py",
+          "originalSha256": "038bc006041e706b0701e48ace08eb9b13ef524076de6f03405e8e0f291bc0bd"
+        },
+        {
+          "name": "space_arena_5.py",
+          "originalSha256": "b603865eb55218bb0e038f657a2fbeb08fa8d3144becbadb576ed3c596096aae"
+        },
+        {
+          "name": "space_arena_6.py",
+          "originalSha256": "2385a998cc4a1a534082801ac057e6c3c870b1283abbac0ad798bb53f5d11b3f"
+        },
+        {
+          "name": "space_arena_7.py",
+          "originalSha256": "9adb822fb04f0b125644c8280187cdb3b5b7a6ea4408aaaeaa52f2b19d044724"
+        },
+        {
+          "name": "space_arena_8.py",
+          "originalSha256": "496a047584035781ba5d19b57e8d407bf6ecfbab946773e977554326006c1dd1"
+        },
+        {
+          "name": "space_arena_9.py",
+          "originalSha256": "53db76c0e2435ffd1320279c47c4c815ef3b5b44995ec363563869e06cc5f1b0"
+        },
+        {
+          "name": "surveillance.gif",
+          "originalSha256": "404708f660a9d50ef19180b317f2cd5de7ee79f57c115e17002979f246cb1c3e"
+        },
+        {
+          "name": "thruster.wav",
+          "originalSha256": "bbc3ca306929ffb373ed84e1513d48afc851a0f31bf615b6c86ef58bc93d9eb3"
+        }
+      ],
+      "variant": {
+        "status": "source-adapted-not-game-qualified",
+        "version": "portable-audio-1.2.0",
+        "recipe": "experiments/studio-python-runtime/gameVariants.ts",
+        "entrypointSha256": "d9934ba00b889e0f714aa6e117b62b123f2303476c2543b57d2486457da264f3",
+        "permittedChanges": [
+          "Replace explicit OS-specific audio function with versioned portable audio; preserve all five WAV assets and scheduled background playback.",
+          "Replace four randint float bounds at source lines 775, 776, 792, 793 with exact integer bounds; CPython 3.14 rejects the original integral floats.",
+          "Replace OS console clearing in the FPS display with an explicit portable diagnostic output, without changing game time or drawing.",
+          "Replace the busy splash/paused/playing loop with official Turtle ontimer/mainloop. Preserve playing rules once per callback; move previous-frame clear before rendering and schedule nominal 60 Hz without catch-up or sleeps."
+        ],
+        "requiresReferenceReproduction": [
+          "New event-driven portable-audio-1.2.0 is NOT covered by portable-audio-1.1.0 receipts. Requires fresh native/browser input, pause/resume, render/clear and audio/timer qualification."
+        ]
+      },
+      "runtime": {
+        "profileId": "python-probe",
+        "releaseId": "probe-1",
+        "manifestSha256": "b2d3ff75d8d39b715e3c03f426228d48992d3c761ee9117739281c4c082c4b82"
+      }
+    },
+    "fixture": {
+      "scenario": "performance-input",
+      "observerSha256": "7e5cf907ac894acb35a0b7fa044a8a53664efb2beb858ac4c69e1212cd3d890a",
+      "driverSha256": "aef65306d8a2ac4fd6c626a534ba730e347c6c217614edbeda5dd2ce387fc6a1",
+      "presentationSha256": "d61a9f842d5cf65e0345651aff59348f9fdba636a203c7498321eae497e9d890",
+      "scope": "No state injection or QA key invocation; browser input and real Stop required, not full game or physical-device acceptance"
+    }
+  },
+  "scope": "Local qualification server, this machine, original game; not the 8 GB reference PC"
+}

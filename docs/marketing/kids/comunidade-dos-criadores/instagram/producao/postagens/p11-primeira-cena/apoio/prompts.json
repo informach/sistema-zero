@@ -1,0 +1,31 @@
+[
+  {
+    "slide": 1,
+    "file": "01-ideia-no-papel.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape 3:2 editorial photograph for slide 1 of an Instagram carousel for Brazilian parents, Crie com Helena e Júlio.\nCreate a fresh, believable scene: a Brazilian boy about 11 years old with medium brown skin, short dark curly hair, a round youthful face, wearing a cobalt blue cotton t-shirt, sitting at a light wooden kitchen table enthusiastically explaining his imagined adventure game to his father. His father about 38, medium brown skin, short curly hair, light stubble, pale blue linen shirt, listens with warm curiosity at the same eye level. They are entirely fictional people.\nA large white paper hand-drawn fantasy map is clearly visible on the table, with a castle near the top, a small green dragon in a corner, winding paths between a village and a cave, and colored pencil marks. The boy gestures with his left hand and holds a blue pencil in his right. Genuine conversation, not looking at camera. Both faces and their natural hands visible, natural human proportions.\nScene: modest contemporary Brazilian kitchen, warm cream walls, cobalt blue detail in background, daylight, lived-in but tidy. Medium oblique view from slightly above table level so the map and faces tell the story together. Avoid laptops or any screen in this scene. Photography with real skin texture and soft natural lighting, rich but realistic colors, magazine editorial quality. The image illustrates a child with a big idea before he knows how to start; not anxiety, not staged celebration.\nNo overlay text, no watermark, no logos, no invented interface. Do not typeset the slide copy; we will add it separately. Full image, no frame.",
+    "references": [],
+    "selected": true
+  },
+  {
+    "slide": 2,
+    "file": "02-escolher-o-comeco.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. New landscape 3:2 editorial photograph, the second scene in the same Brazilian family's story.\nInput 1 is a character identity and home reference ONLY: preserve the EXACT same fictional 11-year-old boy's face, brown skin, short curly hair, cobalt t-shirt, and his father's identity. Create a different photograph and composition, not a collage of the reference.\nInput 2 is the exact real interface our computer screen MUST display: Minha aventura editor, blue toolbar at top, vertical palette at left, empty light gray dotted workspace in center and empty white preview on right. Use this supplied screenshot as the screen content, respecting its layout and colors. Do not replace it with unrelated coding, a web browser, video or generic game art.\nScene: closer three-quarter view of the boy at a small wooden desk with a desktop monitor and keyboard. We see his face in profile/three-quarter view on left, thoughtful and engaged, eyes directed toward the empty editor. The monitor on right faces HIM, physically correct and also visible to camera. His father sits close alongside, just partly in frame, listening while looking at the boy's map. The hand-drawn fantasy map from input 1 lies beside the keyboard, clearly including its village/castle/cave/path, with a blue pencil resting on it. No one is drawing now, the pencil is still. The boy has one natural hand beside the mouse and gestures lightly with the other as he talks through where to start. Emotion is considering a first scene, not crying, anger or boredom.\nSame warm cream and blue home aesthetic, modest and genuine. Natural daylight, real skin and cotton textures, premium editorial photography, medium close shot with face and empty workspace both readable. Full image, no border, no typeset slide text or watermark, no fake logo. Use a plausible screen perspective and do not invent controls or fill the blank editor with code.",
+    "references": [
+      "01-ideia-no-papel.png",
+      "02-estudio-vazio.png"
+    ],
+    "selected": true
+  },
+  {
+    "slide": 6,
+    "file": "06-duas-listas.png",
+    "tool": "image_gen.imagegen (nativo)",
+    "prompt": "Use case: photorealistic-natural. Asset: landscape 3:2 close editorial photo, slide 6 in a Brazilian parenting carousel about choosing one small first task for a big game idea.\nReference image is for the same home, wooden table, colors and fictional family's skin tones only. Create a new top-down/very slight oblique close-up of a large off-white piece of paper on that kitchen table, nearly filling the frame. The paper is divided into two neat columns by a hand-drawn blue pencil line. The child's small brown hand at bottom left rests beside the paper holding the same blue pencil, father's slightly larger brown hand at top right lightly points at the first column; anatomically correct hands, no faces needed. Small sliver of the fantasy map visible beyond the top edge, not distracting.\nThe lists are the hero: very legible natural handwritten Brazilian Portuguese, dark blue ink, realistic slight irregularities but no misspellings. Exact written headings:\nLeft column: \"Começar por aqui\"\nRight column: \"Guardar para depois\"\nUnder LEFT heading, exactly ONE bullet item, wrapped into 3 short lines, with abundant blank paper below:\n\"o herói sai da vila\ne chega à porta\"\nUnder RIGHT heading, four separate bullet items:\n\"enfrentar o dragão\"\n\"resgatar o ouro\"\n\"visitar o castelo\"\n\"inventar personagens\"\nOne modest yellow underline under the left heading and a simple small square checkbox beside its SINGLE entry. The right column is visibly fuller, not messy or crossed out. Each heading fits its column, wrap heading in two lines if necessary. Keep all text inside the paper margins; it must be readable at Instagram size. No extra words. Never duplicate the single left task or add extra tasks there.\nSoft morning light, warm wooden surface, cream paper, blue pencil. Crisp paper grain and believable ink, full photographic image, no digital UI, no overlay caption, no watermark, no logo. Avoid cartoon drawing of a hand; photographic hands.",
+    "references": [
+      "01-ideia-no-papel.png"
+    ],
+    "selected": true
+  }
+]

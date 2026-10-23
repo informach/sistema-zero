@@ -68,7 +68,9 @@ const goldenCatalogs = {
     // pergunta só (os motores já ignoram maiúsculas; a fonte perguntava "p" e "P"
     // e a criança via dois blocos idênticos lado a lado), e o brilho da batida
     // passou a apagar também nas telas de pausa e de fim.
-    sha256: 'b99ca30043c1e8631cea8a7bc8574c7aaa6149a272090d50d58f555a1437bd39',
+    // 20/10: o conceito "inteligência artificial" do Gorilas vs Robô virou "robô
+    // adversário" (a tela nomeia o recurso, sem "IA"; pedido da dona).
+    sha256: 'fd58fd4c57317f26a1ad405d4f59ff233062c4fdbf142fb1a491ea6f0ff02b3e',
   },
   'game-2d-advanced': {
     // 01/10: Descida da Neve entra no FIM da vitrine ("Meu primeiro jogo" continua

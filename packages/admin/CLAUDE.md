@@ -1,5 +1,203 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+`/admin/professor/jornada-kids` lê somente a política persistida. Os oito nomes/ordem são
+metadata; requisitos, ferramentas e tierAccess vêm do registro. Postos e acesso às etapas
+têm painéis separados. Initializing/erro não cria seed ou Faísca no cliente. A permissão visual
+`permissions.canEdit` vem da mesma guarda de mutação do Members; getSession/papel isolado não
+prova conta própria. Todas as escritas seguem passando pelo BFF/gateway e são reautorizadas.
+
+Comparar chama o backend e identifica a simulação de novo aluno; não é relatório da coorte.
+Preparar exige motivo; ID fica no URL para retomar. Retomada não faz advance/publish. Avanço
+de lote é manual e publicação envia versão/três hashes da mesma preparação ready, sem ator
+do navegador ou retry invisível. Histórico tem erro próprio. Editor tem DOM/API e tipos locais
+qualificados; navegador real e integração JWT/banco ainda pendentes. Consulte os recibos em
+`.compozy/tasks/kids-configurable-journey/` antes de declarar rollout pronto.
+
+## Autoria do Estúdio em duas linguagens (18/10/2026)
+
+O projeto inicial e os exemplos privados por parte usam `EditableStudioProject`; JavaScript permanece o padrão. A escolha de ambiente, extensões e tipo vem das opções autorizadas, com troca explícita que preserva o projeto quando cancelada ou recusada. Python tem nível e paleta próprios; não traduzir a curadoria JavaScript por nome.
+
+Cada editor de exemplo possui working copy com id e handle próprios, recebe o contexto de autoria vigente (autor/aula/revisão/bloco) e conserva essa identidade enquanto salva snapshots. O UUID do snapshot é independente de `Project.id` e nunca vira chave React do editor. Seu runtime Python é independente do inicial e perde autorização quando o contexto muda. Um campo `runtime` no documento sozinho não habilita execução. Objetivos ficam na seção; modelos, colagem e testes de execução JavaScript não aceitam regras Python. O editor Python usa sua inspeção autorizada.
+
+Rascunhos podem guardar critérios incompletos; publicação os valida. "Testar agora" só mostra sucesso geral com resultados conclusivos: espera, falha do executor ou limite de análise não são aprovação. A publicação confere estrutura e exige gabarito para execução, mas ainda não exige uma evidência persistida de teste de execução aprovado.
+
+## Gabarito e "Testar agora" dos objetivos (18/10/2026)
+
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). A atividade/autocorreção foi centralizada nos objetivos da parte. Em **Para avançar**, `section-project-examples.tsx` edita entrada para ensaio e uma solução possível. O registro canônico `StudioBlock.projectExamples` associa UUIDs de snapshots aos IDs de partes; comando `studio-example` salva/reutiliza/remove associações sob o CAS normal. A estrutura não retransmite projetos. Normal writers recusam `solutionProject`; o formato antigo só entra pelo conversor explícito, sem fallback na avaliação. Os exemplos nunca chegam à criança.
+
+`SectionCompletionEditor`: por objetivo, **dica** (até `PROJECT_CHECK_HINT_MAX`, vazia tira a
+chave) e **Desafio extra** (`optional`), com o selo Obrigatório/Desafio extra; **"Testar agora"**
+roda `lib/objectives-test.ts` (`testSectionObjectives`, puro) contra o inicial canônico e a solução da parte; entrada é diagnóstico da etapa, nunca substitui o baseline. Obrigatórios todos verdadeiros no inicial geram aviso explícito de checagem não discriminante, sem afirmar que vídeo/quiz/entrega já passaram. Obrigatório falso na solução recusa publicação; ausência, erro ou leitura inconclusiva não viram falso nem aprovação. O upload de projeto ficou como
+"Testar com outro projeto (arquivo)". A nota 0–100 saiu do viewer, da aba Entregas do curso e da
+fila de Entregas (e dos tipos/BFF). Testes: `tests/objectives-test.test.ts` e
+`tests/section-completion-editor.test.tsx`.
+
+**Objetivos que RODAM o jogo (etapa 3):** a regra ganhou "O jogo faz algo" e "A função responde
+certo" (`components/editor/execution-rule-editor.tsx` + as réguas puras de `lib/execution-rule.ts`:
+passos esperar/apertar/segurar/clicar, o que conferir no fim, casos da função digitados como no
+código). O "Testar agora" confere a estrutura na hora e manda os de execução ao executor
+(`runExecutionTest` → BFF `POST /api/members/project-checks/test` → members `POST
+/members/admin/project-checks/test`, staff+, 160 s no gateway), um pedido para o inicial e outro para
+o gabarito; a linha mostra "testando…", o motivo visto no gabarito e a tela final (captura). Mudou
+um objetivo de execução ou um projeto depois do clique? A linha pede "aperte Testar agora".
+`CallOpts.timeoutMs` no `server/gateway.ts`. Testes: `tests/execution-objectives.test.tsx`.
+
+**Etapa 4 (regra em JavaScript, modelos, kits, copiar/colar):** a regra "Regra em JavaScript (para
+quem programa)" (`script-rule-editor.tsx`: passos + o corpo de uma função que devolve `true`; `jogo`
+são as variáveis no clássico e o estado do kit no Pro). `objective-tools.tsx` traz "Começar de um
+modelo" (`lib/objective-templates.ts`: modelos filtrados pelo tipo do bloco, `templatesFor`, e as
+SUGESTÕES do kit Pro, `kitSuggestions`, com a meta do `src/config.ts` como a mais firme, `game.goal`)
+e "Copiar objetivos"/"Colar objetivos" (`lib/objectives-clipboard.ts`: JSON com marcador de formato;
+colar confere cada um com o `isSectionCompletion` do core, dá ids NOVOS e respeita 20 por parte e 8
+que rodam o jogo, dizendo o que ficou de fora). Sem permissão para a área de transferência, o texto
+aparece para copiar à mão. Testes: `tests/objective-tools.test.tsx` (todo modelo e toda sugestão
+nascem válidos e sem aviso de autoria no projeto em que aparecem).
+
+## Atendimento no admin: painel somente leitura + links entre consoles (17/10/2026)
+
+Decisão da dona: o app de atendimento (`helpdesk-app`) continua sendo onde se TRABALHA; o admin
+só mostra o que pede ação e leva até lá, em outra aba.
+
+- **Painel `/admin/atendimento`** (grupo Gestão, ícone `Headset`; `atendimento-client.tsx` +
+  `volume-chart.tsx`). Cartões "Precisa de atenção" (SLA estourado, em risco, sem responsável —
+  destacados quando > 0), "Fila" (novos, em aberto, aguardando cliente, resolvidos hoje/7 dias),
+  lista "Precisa de você" (5 tickets mais urgentes) e volume de 14 dias. Cada cartão e cada
+  ticket abre o app de atendimento JÁ no filtro (`HELPDESK_PATHS` em `lib/helpdesk-panel.ts`:
+  `?queue=attention|unassigned`, `?status=new|open|waiting`, `/tickets/<id>`), em nova aba
+  com `rel="noopener noreferrer"`. Botão "Abrir atendimento" no cabeçalho. NADA escreve no
+  helpdesk daqui.
+- **BFF**: `GET /api/helpdesk/stats` (pass-through de `/helpdesk/tickets/stats`) e
+  `GET /api/helpdesk/attention` (`/helpdesk/tickets?sla=attention&limit=5`, reduzido por
+  `toAttentionView` a id/assunto/solicitante/responsável/prazo: rascunho e resumo da IA NÃO
+  saem do BFF). Adapter `server/helpdesk.ts`. As rotas `/helpdesk/*` do gateway são staff+, o
+  mesmo público do admin: nenhuma rota nova no gateway. Tipos de `@sistemazero/helpdesk-contracts`
+  (dependência nova do admin, só `import type`).
+- Falha de carga NUNCA vira zero (traço + aviso, a mesma regra do painel do helpdesk-app); o
+  último dado bom fica na tela quando um "Atualizar" falha.
+- **Menu do avatar** = `ConsoleUserMenu` do `@sistemazero/ui` (os três consoles tinham cópias):
+  ganhou o grupo "Apps" com os OUTROS consoles e, sempre, os Bastidores da Informach
+  (`https://admin.informach.com.br/`, fixo) — `consoleAppLinks` de `@sistemazero/ui/console-apps`, montado no `app/admin/layout.tsx` a partir da env e passado
+  por `AdminSidebar` → `UserMenu`.
+- **Envs OPCIONAIS** `HELPDESK_APP_URL` e `MARKETING_APP_URL` (`optionalAppUrl` em `lib/env.ts`,
+  igual nos três consoles): ausente, em branco, sem `https://` ou fora de http(s) → o link e os
+  atalhos SOMEM (o painel avisa e segue mostrando os números). Não é fail-fast de propósito: é
+  só um link, e o `getEnv` roda em toda página. Criadas no Railway (staging e produção) em
+  17/10/2026 e registradas em `.railway/variables.ts` (as do helpdesk-app e do marketing-app
+  também).
+- ⚠️ Cada console tem login próprio (cookies `__Host-` presos à origem): abrir o atendimento
+  pela primeira vez pede login lá. Login único entre consoles ficou para depois (o molde seria
+  o handoff de uso único da impersonação).
+- Testes: `tests/helpdesk-panel.test.ts` (puros) e `tests/atendimento-panel.test.tsx` (tela,
+  falha vira traço, sem URL, menu do avatar).
+
+## Cursos ao vivo: a oficina é um curso de modalidade "ao vivo" (14/10/2026)
+
+Decisão da dona (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`): o editor de roteiro das
+oficinas (encontros com instruções, etapas, materiais e "Projeto inicial" que só listava JSON
+importado) foi REPROVADO. Criar uma oficina agora é criar um CURSO, no editor de cursos e aulas de
+sempre, com a modalidade "Ao vivo". Contrato no core: `core/course/modality` e `core/live/contracts`.
+
+- **Modalidade no curso** (`cursos/course-form-dialog.tsx`): "Modalidade" (Gravado / Ao vivo),
+  padrão Gravado, com a linha `LIVE_MODALITY_HINT` (`lib/course-modality.ts`). O payload SEMPRE
+  leva `modality` (members antigo descarta). Ao vivo esconde a posição na Jornada, as ferramentas
+  que o curso libera no Estúdio, a trava sequencial e o "vídeo antes da atividade", e manda
+  `careerSlot: null` SEM `journeyRole` (o members recusa os dois no curso ao vivo). Trocar a
+  modalidade na edição passa pelo aviso `modalityChangeWarning` e, com turma, o members responde
+  409: o recado dele vai ao toast (cai no `default` do `courseSaveError`). `onSaved(saved?)`
+  recebe o curso salvo. `CourseView.modality?` é opcional (ausente = gravado, `courseModalityOf`).
+- **Lista de cursos**: selo "Ao vivo", filtro "Gravados e ao vivo / Só gravados / Só ao vivo"
+  (`?modality=`, o BFF `GET /api/members/courses` repassa só `recorded|live` por
+  `modalityFilterParam`). ⚠️ O painel da Jornada pede `modality=recorded` E filtra no cliente
+  (`isLiveCourse`): members antigo ignora o parâmetro. O clone manda `modality` junto (o clone
+  mantém a modalidade) e o diálogo diz que o clone também é ao vivo.
+- **Aula de curso ao vivo** (`lesson-editor-client.tsx`, `courseInfo.modality`): cartão fixo
+  `LiveBroadcastCard` ("Transmissão do encontro") no topo de todas as áreas; o catálogo de conteúdo
+  (`catalogKinds(audience, live)`) não oferece vídeo; as estruturas prontas não semeiam vídeo; bloco
+  de vídeo ANTIGO continua editável com aviso (no editor dele e no percurso); "Ver aula publicada"
+  some (`studentLessonLink` devolve `null`: a aula ao vivo abre pela sala do encontro);
+  `lessonEditorialWarnings(doc, { live })` não cobra vídeo. Em cada parte, "Anotações da
+  professora" (`TeacherNotesField`, `LessonSection.teacherNotes`, até `TEACHER_NOTES_MAX` 4000,
+  só ela vê na sala): o texto fica como digitado e vazio TIRA o campo (`teacherNotesValue`).
+  O manifesto exporta `teacherNotes` (recusa o longo demais com o nome da parte); a importação
+  avisa quando o arquivo traz `plannedVideo` numa aula ao vivo e mostra o recado do servidor.
+- **Oficinas ao vivo (`/admin/oficinas`, `workshops-admin.tsx`)** virou a gestão das TURMAS dos
+  cursos ao vivo da plataforma do seletor (`/admin/oficinas` entrou em
+  `PLATFORM_SCOPED_PREFIXES`; `GET /api/admin/live/catalog?audience=`, trocar a plataforma recarrega
+  e fecha os diálogos). Um cartão por curso de `catalog.courses` com as turmas dele
+  (`cohortsByCourse`; turma sem curso listado vai para "Outras turmas"). "Criar curso ao vivo" abre
+  o `CourseFormDialog` já em Ao vivo e na plataforma ativa (⚠️ o `prefill` é memorizado: objeto novo
+  a cada render reiniciava o formulário). **Nova turma** (`CohortCreateDialog`): título, fuso
+  (`LIVE_TIME_ZONES`; o do computador só vira padrão quando é do Brasil), vagas, dias de acesso,
+  professoras (`teacher-picker`) e um início/fim por AULA PUBLICADA, convertidos do fuso da turma
+  para UTC por `zonedLocalToUtcIso` (nunca `new Date(local)`, que lê o fuso do computador);
+  `buildSchedule` recusa fim antes do início e encontro que começa antes do fim do anterior.
+  `POST /api/admin/live/courses/:courseId/cohorts` com `LiveCreateCohort` SEM `courseId`. Curso sem
+  aula publicada: o diálogo explica e leva ao editor. Ficaram como estavam: turma nasce rascunho com
+  "Abrir inscrições" ali mesmo, "Editar turma" (status e professoras, só admin; arquivar pede
+  confirmação), Inscrições (com a família via `POST /api/admin/accounts/batch`), reposição e
+  agenda. SAÍRAM: o editor de roteiro, `live-steps-editor`, `live-studio-editor`,
+  `lib/live-studio-curation.ts`, a importação de projeto/templates e a rota
+  `/api/media/live-materials` (a curadoria do Estúdio é a do bloco Estúdio da aula; os materiais
+  são os da aula).
+- ⚠️ **O BFF `/api/admin/live/[...path]` é DO PAINEL** (`lib/live-admin-route-policy.ts` +
+  `server/live-admin-proxy.ts`), não mais o `createLiveRouteHandler` do member-shell com
+  `scope: 'admin'` (que segue lá, sem uso). Lista explícita: GET `catalog` (`audience`, `cursor`,
+  `limit` conferidos), `cohorts/:id/enrollments`, `lessons/:id/teacher-notes`; POST
+  `courses/:id/cohorts`, inscrições, gravação (publicar/pausar/retomar/parar), reposição e ajuda no
+  projeto; PATCH `cohorts/:id`. Corpo até 256 KB; 5xx vira "A oficina não respondeu", 4xx passa o
+  recado normalizado. ⚠️ `occurrences/:id/recording/source|vimeo` NÃO entram na lista: a chave do
+  arquivo e o registro do vídeo só passam pela rota dedicada abaixo.
+- **Gravação → Vimeo** (`app/api/admin/live/occurrences/[id]/recording/vimeo/route.ts` +
+  `server/live-recording-vimeo.ts`): POST pede ao members `GET …/recording/source`
+  (`{storageKey, bucket, title?}`), confere o bucket (`resolveRecordingBucket`: o
+  `LIVE_RECORDING_BUCKET` do Admin ou o `R2_PRIVATE_BUCKET`; bucket desconhecido = 503 dizendo a env
+  que falta, nunca assinatura às cegas), lê o tamanho (HEAD, obrigatório no `pull`), assina um GET
+  de 6 h no R2 e cria o vídeo por `upload.approach: 'pull'` com `view=disable, embed=whitelist`,
+  domínios e pasta (`finishVimeoVideoSetup`, a mesma régua dos vídeos das aulas), e grava
+  `PUT …/recording/vimeo` `{videoId, embedUrl, status: 'processing'}`; se o members não registrar,
+  o vídeo órfão é apagado do Vimeo. Dois cliques dividem UM envio (`globalThis`). GET
+  `?videoId=` reconcilia o status (`mapVimeoStatus`, agora com `uploading_error` do pull) e grava
+  `ready`/`failed` no members. Sessão ESTRITA (`requireLocalAdminSession(..., { allowStaff: true })`:
+  a professora pode ser staff; quem decide sobre a gravação é o members) com a mesma origem.
+  No member-shell, `live-recording-review.tsx` envia ao publicar (falha não desfaz a publicação),
+  mostra o passo do Vimeo (`vimeoStepView`), pergunta a cada 5 s e depois 15 s até 45 min
+  ("Conferir agora" depois disso) e chama `onUpdated` quando fica pronto. ⚠️ O último envio fica
+  num memo de módulo por encontro: a sala remonta ao publicar, e sem ele um envio ainda sem eco no
+  servidor oferecia mandar um segundo vídeo.
+- ⚠️⚠️ **A sala da professora (`/admin/professor/ao-vivo/<id>`) só se abre por navegação
+  COMPLETA: `<a href={roomHref(id)}>`, nunca `<Link>`.** O navegador aplica os cabeçalhos do
+  PRIMEIRO documento carregado e a navegação do Next mantém os dele (sem câmera, microfone e o
+  frame do R2 da prévia). A `Permissions-Policy` geral libera `camera`, `microphone` e
+  `display-capture` para `(self)`; o `frame-src` com o R2 é POR ROTA.
+  `tests/live-room-navigation.test.ts` confere os cabeçalhos e varre `src/` atrás de `<Link>`.
+- **Agenda** (`app/admin/professor/ao-vivo/agenda-client.tsx`): lê `/api/live/catalog` (as turmas
+  da professora) e agrupa em Hoje, Próximos e Encerrados (`lib/live-agenda.ts`).
+- Testes: `course-modality` (formulário, lista, Jornada, `studentLessonLink`),
+  `live-course-authoring` (catálogo sem vídeo, revisão, anotações, manifesto, importação),
+  `live-workshops-admin` (plataforma, turma nova no fuso, ordem das datas, curso sem aula, criar
+  curso ao vivo), `live-schedule`, `live-admin-route-policy` (lista e handler),
+  `live-recording-vimeo` (serviço com gateway, R2 e Vimeo falsos) e `live-recording-vimeo-review`
+  (a tela da gravação), mais `live-agenda`, `live-teachers`, `live-room-navigation` e
+  `live-teacher-room`. ⚠️ Nos testes de tela, asserção sobre ELEMENTO vira booleano
+  (`querySelector(...) !== null`): um elemento do happy-dom impresso na mensagem de falha estourou a
+  memória do bun (crash a 4,5 GB na prova por mutação).
+
+## O selo "falado" (14/10/2026)
+
+Quando a criança FALOU a mensagem (a voz vira texto no Kids e não é guardada), a equipe vê o selo
+`SpokenChip` (`components/admin/spoken-chip.tsx`, ícone `Mic`, "falado" e "transcrito
+automaticamente" para o leitor): numa palavra estranha, o erro é da transcrição, não da criança.
+Aparece nas mensagens da criança no diálogo de Recados e no painel do curso
+(`TeacherMessageView.spoken`), e no recado da entrega (visor, lista do curso, fila de Entregas e
+linha do tempo da ficha do aluno, `messageSpoken`). Os dois campos são OPCIONAIS: members antigo
+= sem selo. Não há áudio para ouvir. ⚠️ A rota da lista do curso
+(`api/members/courses/[id]/studio-submissions`) monta cada linha CAMPO A CAMPO, pela função pura
+`lib/course-submission-rows.ts`: campo novo do members precisa entrar ali, senão some (foi o que
+aconteceu com o selo até o full review). Testes: `tests/studio-submission-viewer.test.tsx`
+("recado falado") e `tests/course-submission-rows.test.ts`.
+
 > **Contrato vigente das aulas (26/09/2026):** o editor de bloco interativo oferece
 > **Jogo pronto para jogar**, **Experimentação** e **HTML personalizado**. Cena pronta é experimentação conduzida pela
 > criança. O palpite e a pergunta final são partes opcionais da experiência; pergunta isolada
@@ -538,7 +736,7 @@ chip é "Conta (responsável)"). Seções: "Cursos de <criança>" com `CoursePro
 `lastActivityAt` relativo + badge da plataforma; o members v2 só manda cursos REAIS: ferramenta
 não vira mais "curso 0%") e "Ferramentas e comunidades de <criança>" com os cartões de USO
 (`components/members/usage-cards.tsx`, PUROS — a futura ficha da criança reusa): Pensa
-(planos/lançamentos), Pinta (desenhos na nuvem/entregas), **Molda (criações na nuvem: modelos,
+(projetos/projetos concluídos), Pinta (desenhos na nuvem/entregas), **Molda (criações na nuvem: modelos,
 texturas e céus; sem entregas porque não há bloco de aula — 06/09/2026, sku `molda`, entre Pinta e
 Estúdio na ordem da jornada; `LearnerToolUsageView.molda` é OPCIONAL: members antigo sem o campo
 → "Indisponível agora", testado em `tests/usage-cards.test.tsx`)**, Estúdio (jogos na
@@ -984,6 +1182,8 @@ Da raiz: `bun run dev:admin`, `bun run build:admin`, `bun run start:admin`.
   local de `/api/media/*`).
 - `JWT_ISSUER`/`JWT_AUDIENCE`: **OBRIGATÓRIOS em produção** (fail-fast no boot — mesma regra do
   gateway; prod = `sistemazero-auth`/`sistemazero`); em dev, casar com o auth ativa a checagem.
+- `HELPDESK_APP_URL` / `MARKETING_APP_URL` (opcionais): os outros consoles da equipe, no menu do
+  avatar e no painel `/admin/atendimento`. Ausentes → os links somem.
 - `SENTRY_DSN` (opcional): espelho de erros LOCAIS do painel (pipeline de mídia + exceções de Route
   Handler/RSC via `onRequestError`). Ausente = no-op. ⚠️ **Sem SDK** — o `src/server/sentry.ts` fala
   o protocolo de ingestão via `fetch` (o tracing do standalone/Turbopack não copia pacotes externos
@@ -1089,7 +1289,13 @@ Dockerfile: valida e só então importa o `server.js` standalone).
   listagem. **Uso de IA (07/2026):** página `/admin/ia` (grupo Gestão, ícone Sparkles) — cards
   mês/hoje/contas + breakdown por feature + top contas (badge "equipe") + seletor de mês; BFF
   `GET /api/members/ai-usage` (hidrata nomes via batchGetUsers) → gateway
-  `GET /members/admin/ai-usage`.
+  `GET /members/admin/ai-usage`. **Funil do Pensa (16/10/2026):** o card
+  `admin/ia/pensa-funnel-card.tsx` lê `GET /api/members/pensa-funnel?days=7|30|90`
+  → `GET /members/admin/pensa/funnel`. Conta projetos uma vez por equipe: definição,
+  plano completo, aceite, primeira funcionalidade (instalação não conta), teste final e
+  conclusão. Mostra também projetos aguardando escolha e adaptações aceitas. Somente
+  contagens, sem narrativa das crianças. Regras puras em `lib/pensa-funnel.ts` e testes
+  em `tests/pensa-funnel.test.ts`. Uso do Pensa expõe `projectsCompleted`.
 - Pagamentos (via gateway, JWT+RBAC): `GET /payments/admin/payments` (`?q&status&method&consumerId&from&to&limit&offset`)
   → `Paginated<PaymentView>`; `GET /payments/admin/payments/:id`; `GET /payments/admin/subscriptions`
   (`?q&status&consumerId&limit&offset`) → `Paginated<SubscriptionView>`; `GET /payments/admin/subscriptions/:id`;
@@ -1612,5 +1818,21 @@ gera o mesmo arquivo para levar de staging a produção) e `/admin/como-fazer/[i
 A rota `/admin/embaixadores` usa `ConvitesClient`: campanhas na aba inicial; o painel existente de pessoas e bônus permanece na outra. BFF `/api/admin/referrals/campaigns` passa pelo gateway com sessão e RBAC. O relatório inicial conta resgates e conversões, não confunde cadastro com atividade da criança. A ficha da conta permite examinar o progresso dos perfis.
 
 Datas do formulário são explicitamente de Brasília (`campaign-dates.ts`). Título público difere de nome interno. Código não muda após criar; duplicar exige outro. Prévia é somente leitura no funil. O QR é gerado localmente pelo member-shell com o link público retornado pelo serviço; jamais usar a capability privada do embaixador. Migração e pendências em `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
+
+**Público do presente (20/10/2026):** cada campanha é `audience: 'kids' | 'adult'` (contrato do
+`@sistemazero/core/referrals`; ausente = Kids). O editor tem o grupo "Público do presente" (dois
+cartões de rádio com o texto do Canvas "Presente Kids e adulto") e trava fora do rascunho pelo
+status GRAVADO (o referrals responde 409 `CAMPAIGN_AUDIENCE_LOCKED`, que vira
+`AUDIENCE_LOCKED_MESSAGE`); o corpo leva sempre o `audience`, para o PATCH nunca trocar por
+omissão. A lista tem a coluna Público (badge), o detalhe mostra o badge e "Pessoa" no lugar de
+"Responsável" nas adultas, duplicar leva o público junto e a prévia (`previewUrl`) manda
+`audience`. O BFF repassa o corpo inteiro e o QR já sai certo (o público vem do código).
+**Aviso do curso adulto:** com o público Adulto, o editor consulta a lista de Cursos que o painel já
+tem (`/api/members/courses?q=cade-todo-mundo-adulto&audience=adult`) e, se o slug exato não está
+`published`, mostra `ADULT_COURSE_UNPUBLISHED_MESSAGE` (`role="status"`). É a mesma régua do
+`isPublishedGiftCourse` do members. Falha da consulta (403 de papel, members fora) não mostra nada.
+⚠️ Limite conhecido: o slug é o PADRÃO do referrals (`ADULT_GIFT_COURSE_SLUG`); se a env
+`SCHOLARSHIP_ADULT_COURSE_SLUG` for trocada lá, troque aqui também. Testes:
+`tests/campaign-audience.test.tsx` e a guarda de copy em `tests/ambassador-copy.test.ts`.
 
 Edição envia `expectedUpdatedAt` da versão exibida: o serviço recusa outra aba desatualizada com 409. Não reenviar automaticamente com versão nova, pois isso apagaria a proteção de conflito. Lista/detalhe ignoram respostas antigas; falha limpa resultados e oferece atualização. Regressão em `tests/campaigns-client.test.tsx`.

@@ -1,6 +1,8 @@
 import {
   type AiClassificationView,
   type AiStatus,
+  type HandlingMode,
+  type HandoffReason,
   TICKET_CATEGORIES as SHARED_TICKET_CATEGORIES,
   TICKET_STATUSES as SHARED_TICKET_STATUSES,
   type TicketCategory,
@@ -27,6 +29,14 @@ export type {
 export type AiClassification = AiClassificationView
 
 export interface Ticket {
+  handlingMode: HandlingMode
+  handlingEpoch: number
+  humanTakeover: boolean
+  automationStartedAt: Date | null
+  humanSlaStartedAt: Date | null
+  handoffReason: HandoffReason | null
+  automationReplies: number
+  automationClarifications: number
   id: string
   version: number
   /** Thread do Gmail quando a conversa já passou por e-mail (unique quando presente). */
@@ -58,6 +68,7 @@ export interface Ticket {
   messageCount: number
   aiSummary: string | null
   aiSummaryAt: Date | null
+  aiDraftRunId: string | null
   aiDraft: string | null
   aiDraftAt: Date | null
   aiDraftEdited: boolean

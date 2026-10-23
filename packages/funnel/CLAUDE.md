@@ -19,10 +19,11 @@ Plataforma **multi-funil** de vendas (vários produtos, por público). Cada funi
 `/<audience>/<produto>/<passo>` — `audience ∈ {pro (adultos), kids (crianças)}`. Passos:
 `quiz → resultado → oferta (página de vendas) → checkout (Hotmart-style; Pix/cartão na UI, boleto só API) → obrigado`,
 com **upsell/downsell** opcionais. Só `oferta+checkout+obrigado` são obrigatórios; `quiz`,
-`resultado`, `upsell`, `downsell` são opcionais por funil. + legais (`/politica-de-privacidade`,
-`/termos-de-uso`) e painel `/admin` (globais, fora dos funis).
+`resultado`, `upsell`, `downsell` são opcionais por funil. + legais (`/privacidade`, a Política
+única, e `/termos`, o índice dos Termos; cada oferta tem o seu Termo em `/<audience>/<produto>/termos`,
+e as URLs antigas redirecionam) e painel `/admin` (globais, fora dos funis).
 
-O 1º funil é **No Comando da IA** (R$ 37) em `/pro/no-comando-da-ia/*`. `/` → funil default;
+O 1º funil é **No Comando da IA** (R$ 37) em `/pro/no-comando-da-ia/*`. `/` é a página da bio (ver abaixo);
 `/pro` e `/kids` são landings de área (redirecionam ao produto, ou "em breve" se vazia); URLs
 planas antigas (`/quiz`, `/oferta`, …) redirecionam (301) ao funil default. **Ver `## Multi-funil`.**
 
@@ -68,14 +69,18 @@ recebem tudo por prop: `Quiz` (steps/total/landing/funnel/donePath), `PreCheckou
 (basePath/funnel), `CheckoutForm`→`Pix/Card` (successPath; boleto é só API — `startBoleto` +
 `/api/checkout/boleto`, sem ilha). `[audience]/index.astro`
 = landing de área (redireciona ao produto, ou "em breve" se vazia). **`/` (raiz,
-`src/pages/index.astro`) = página "bio" da marca kids** (destino do link da bio do Instagram
-@criecomhelenaejulio): entrada com avatar, posicionamento e três acessos: como funciona (principal),
-oferta do Desafio e oferta da Comunidade. Cada acesso explica seu papel; o Desafio informa pagamento único e 30 dias, e a Comunidade informa assinatura e inclusão do Desafio. Os quizzes ficam para campanhas específicas e não são um passo obrigatório da entrada pelo Instagram. A apresentação
-com prints reais, percurso jogar → experimentar → programar → continuar → criar, recursos e FAQ
-fica em `/como-funciona/` (`src/pages/como-funciona.astro`), com seção própria para orientação pelas
-atividades, Como fazer, Pensa, Zappy, Mural/Clube e equipe via Recados. Reutiliza tokens das ofertas, conteúdo
-em `src/content/home-comunidade.ts` e estilos `comunidade-home.css`. O Desafio apresenta uma primeira experiência paga; a Comunidade oferece assinatura e pode ser contratada diretamente. Ambos têm acesso direto à oferta na página inicial. Links preservam a
+`src/pages/index.astro`) = página "bio"** (link da bio do Instagram @criecomhelenaejulio; Canvas
+`PaginaBio.html`, desde 20/10/2026): foto de Helena e Júlio, "Criar jogos não tem idade." e dois
+cartões, um para cada quiz: "É para mim" → `/pro/comunidade-dos-criadores/quiz`
+(`data-analytics-id="bio-quiz-adulto"`) e "É para meu filho ou filha" →
+`/kids/comunidade-dos-criadores/quiz` (`bio-quiz-infantil`). Sem atalho para oferta, por decisão da
+dona; o cartão adulto leva a classe `theme-arcade` só para ler os tokens `--cda-*`. Links preservam a
 atribuição sanitizada, com HTML `no-store`; a raiz não cria lead. URLs planas antigas → 301.
+**`/como-funciona/` saiu em 20/10/2026** (decisão da dona): as páginas de oferta já explicam como a
+plataforma funciona e a bio leva aos quizzes. `src/pages/como-funciona.astro` só faz 301 para
+`/kids/comunidade-dos-criadores/oferta#experiencia`, com a query; os links do Desafio apontam direto
+para lá (o menu do Desafio usa a própria seção `#experiencia`), e a página saiu do sitemap e das
+métricas (`analyticsPage` reconhece só a bio fora dos funis).
 
 **Métricas próprias (03/10/2026):** `src/analytics/`, `components/Analytics.astro` no BaseLayout,
 `/api/analytics/*`, `/api/admin/analytics` e aba Métricas. Por decisão explícita de 03/10/2026,
@@ -177,17 +182,29 @@ kids. Ilustrações dos personagens: 3D cartoon, geradas com chroma key `#00B140
 WebP pelo script `preparar-assets-funil-kids.py` do repo de marketing (fluxo-criativo); a capa do
 checkout/OG vem de `FunnelDef.checkoutImage`; no Desafio, `farol-capa.webp` mostra o projeto real atual.
 
+**Tema arcade (`theme: 'arcade'`, funil adulto da Comunidade, 20/10/2026):** as cores e as fontes do
+desenho (Bricolage Grotesque, Silkscreen e Atkinson Hyperlegible Next, por `@fontsource`) moram UMA
+vez em `src/styles/theme-arcade.css`, como tokens `--cda-*` sob `.theme-arcade`; o `global.css` o
+importa e faz o mapeamento semântico (`--color-*`, cantos retos, CTA amarelo com sombra rosa), então
+checkout, obrigado, pré-checkout e Termos re-skinam como no Kids. As receitas `.theme-arcade
+.btn-primary`/`.card` ficam no FIM do `global.css` (depois das regras base, senão o biome acusa
+especificidade decrescente).
+
 **Oferta POR FUNIL (`src/pages/[audience]/[produto]/oferta.astro` despacha o body):** a rota resolve
-preço/perfil e despacha em 3 vias: `f.content.sales ? NoComandoOfertaBody : f.key ===
-COMUNIDADE_DOS_CRIADORES.key ? ComunidadeOfertaBody : DesafioOfertaBody` (um 4º body bespoke →
-promover a um map local `Record<funnelKey, Component>`). `content.sales` (shape `SalesSections`) é
+preço/perfil e `components/funnel/OfertaPage.astro` escolhe o body pela CHAVE do funil, nunca por
+exclusão (funil sem body declarado lança): `content.sales` → `NoComandoOfertaBody`; Comunidade Kids →
+`Comunidade917Body` (`/oferta`), `ComunidadeMenor9Body` (`/oferta/criar-junto`) ou
+`ComunidadeContinuarBody` (`/oferta/continuar`); Comunidade adulta → `ComunidadeAdultoOfertaBody`
+ou `ComunidadeAdultoContinuarBody` (`/oferta/continuar`, prop `comunidadeAdultoPage`); Desafio Kids →
+`Desafio917Body` (`/oferta`) ou `DesafioMenor9Body` (`/oferta/criar-junto`, prop `desafioPage`);
+Desafio adulto → `DesafioAdultoBody` (ver "Desafio do Primeiro Jogo em três públicos"). `content.sales` (shape `SalesSections`) é
 **opcional** — funis com layout de vendas próprio (Desafio, Comunidade) trazem a cópia no próprio
 body e ficam sem `sales`. Cada body monta o seu PRÓPRIO `<BaseLayout>` (título/tema/JSON-LD/
 preload). `src/components/funnel/oferta/NoComandoOfertaBody.astro` = template padrão (16 seções a
-partir de `SALES`); `DesafioOfertaBody.astro` compartilha `kids-oferta.css` e
-`comunidade-oferta.css`, com complementos em `desafio-farol.css` sob `.df`, sem duplicar os
-valores dos tokens. Usa Material Symbols self-hosted; `ComunidadeOfertaBody.astro` = layout em `src/styles/comunidade-oferta.css`, prefixado por `.cdc`
-(sem o escopo do Astro; ver "Direção de arte das quatro páginas"). ⚠️ Astro escopa somando um
+partir de `SALES`). O layout `.cdc` mora em
+`src/styles/comunidade-oferta.css` (sem o escopo do Astro; ver "Direção de arte das quatro páginas"),
+hoje vestido pelas páginas do presente e do embaixador (o quiz e o resultado antigos do Desafio,
+que também o vestiam, saíram em 21/10/2026). ⚠️ Astro escopa somando um
 atributo por elo do seletor: um override tipo `.kid.verde .name` só vence a base `.kid .char .name`
 se incluir os MESMOS elos (`.kid.verde .char .name`). Os CTAs de compra levam `data-checkout-cta` →
 o `PreCheckoutModal` (mesma ilha do NCI) abre o checkout; opcionalmente levam também
@@ -197,43 +214,72 @@ Links/QRs promocionais aceitam `?cupom=` e o alias `?coupon=`. A rota normaliza 
 faz a cotação autoritativa e repassa o código pelo `PreCheckoutModal`; a UI só exibe desconto
 confirmado pelo servidor. Cupom inválido/esgotado ou falha técnica bloqueia os componentes de
 pagamento até o adulto aplicar outro código ou clicar explicitamente em “Continuar sem cupom”.
-Para ASSINATURA, a rota da oferta também resolve a IRMÃ do alternador (`offer.altOffer` →
+Nas cinco páginas de assinatura da Comunidade (Kids e adulta), `cupomDaOferta`
+(`comunidade-dos-criadores/oferta/cupom.ts`, 20/10/2026) dá o código ao modal e o aviso da seção dos
+planos; os preços dos planos seguem os do catálogo, porque o cupom foi cotado contra a oferta
+principal e pode não valer no outro plano. Para ASSINATURA, a rota da oferta também resolve a IRMÃ do alternador (`offer.altOffer` →
 `getActiveOffer`) e passa `plans {main, alt}` ao body próprio (o Comunidade normaliza mensal/anual
 por `billingIntervalMonths`, sem assumir qual é a principal da env). ⚠️ O fallback de preço da rota
 (`env.PRODUCT_PRICE_CENTS`) é o do NCI — body de outro funil com catálogo fora deve usar o SEU
 fallback (`COMUNIDADE_PRECO_FALLBACK`).
 
-**Funil kids "Desafio do Primeiro Jogo" (Farol, 03/10/2026):** 9–14 anos, computador,
+**Funil kids "Desafio do Primeiro Jogo" (Farol, 03/10/2026; 9 a 17 desde 21/10/2026):** computador,
 pagamento único, 30 dias de curso e Mural completo contados da aprovação; depois Mural visitante.
 R$ 67 é a referência editorial: preço/cupom vêm do catálogo e da cotação. O contrato exige
 `one_time/fixed/30/days`, garantia de sete dias. O funil público deve apontar para
 `desafio-primeiro-jogo-30-dias`; a oferta `desafio-primeiro-jogo` continua reservada aos contratos
 vitalícios históricos e ao fluxo de bolsas. Não mudar direitos históricos para fazer a oferta passar.
 
-`src/funnels/desafio-primeiro-jogo/quiz/` contém perguntas, motor, definição e resultado.
-Versão `desafio-farol-v3` (tráfego frio, 03/10/2026): o quiz qualifica e aquece, e NENHUMA tela
-antes do resultado cita o Desafio, o Farol, preço, prazo ou oferta (decisão da dona; a entrada
-mora em `quiz/entry-copy.ts` e a régua é `tests/browser/desafio-quiz-frio.ts`). O Desafio aparece
-no resultado (`presentation`) como a primeira experiência na plataforma da Comunidade. A pergunta
-final `abertura_criacao` (era `interesse_no_projeto`) mede abertura para o tipo de atividade, não
-aceitação do produto; a justificativa de cada pergunta está em
-`docs/marketing/kids/desafio-primeiro-jogo/revisao-quiz-frio-e-bio.md`. Oito perguntas principais,
-prioridade condicional entre dois motivos e motivo de recusa; idade/equipamento cedo, sem
-pontuação por personalidade. Motivo adulto,
-interesse observado, condição prática e destino são campos distintos. Empate não força perfil;
-C continua expressão visual, com limite de arte preparada explicado. O registry usa
-`activeSteps/applyAnswer/isComplete`; API mantém revisão, sessão e definição analítica.
-`DesafioQuiz.tsx` e `DesafioResultado.astro` usam a mesma composição Kids, rodapé institucional
-fora de `.cdc`, erros recuperáveis e convite copiável sem cadastro de contato.
+**Quizzes do Desafio em conversa (21/10/2026, Canvas "Quiz do Desafio · Kids e adulto",
+https://claude.ai/artifact/7RLNMmkCa6yMrSUnWR9UHs; registro em
+`docs/marketing/kids/desafio-primeiro-jogo/quiz-2026-10-21.md`):** o mesmo motor e as mesmas peles
+dos quizzes da Comunidade (ver "Peças comuns aos dois quizzes em conversa"), com perguntas mais curtas
+e um resultado que fala de um jogo só, A Chave do Farol. NENHUMA tela antes do resultado cita o
+Desafio, o Farol, curso, aula, plataforma, preço ou prazo, nem as saídas e o topo (decisão da dona;
+a régua é `tests/browser/desafio-quiz-frio.ts`). Única exceção, deliberada: a opção adulta "Não ser
+curso de criança", que é o medo do adulto nas palavras dele. Os links do quiz levam a atribuição da
+página (UTMs, `event_code` e o `cupom` do anúncio, que a oferta só lê da própria URL):
+`linkWithAttribution` em `useSpinQuiz.ts` (resultado e saídas) e `funnelLinkWithAttribution` no botão
+da carta, em `resultado.astro`.
+- **Kids v5** (`desafio-primeiro-jogo/quiz/`, `desafio-farol-v5`, `presentation: 'desafio-kids'`):
+  filho ou filha em cartas, a idade em cartas e sete perguntas por ramo (`9a17` e `m9`, chaves `m9_*`);
+  "18 ou mais" sai para o quiz adulto do Desafio. Perfil por soma (cena 3, cena desejada 2, síntese 3;
+  empate vai para a síntese, depois para a cena; abaixo de 4 pontos a carta avisa). O 9 a 17 usa os
+  slugs da v4 (`tempo-de-tela`, `criacao-de-jogos`, `expressao-visual`, `iniciacao-tecnologica`) para a
+  aba Perfis continuar comparável; o menor de 9 tem `m9-*`. Eventos `respondeu_desafio_v5_*` e
+  `entrou_ramo_<id>`; manchetes `padrao` e `?manchete=tela`; a v4 fica em `questions-v4.ts` só como
+  `legacySteps`. Carta (`result.ts`/`result-copy.ts`): 4 títulos, a tela do jogo, um relato
+  (André no A e no D, Rafael no B e no C, Débora no menor de 9) e o botão para `/oferta` ou
+  `/oferta/criar-junto`; só celular ou tablet e professor ao vivo trocam o botão por "Ver os
+  requisitos e como funciona", com a âncora da seção que responde (`#duvidas` para o computador,
+  `#aula` no 9 a 17 e `#sessao` no menor de 9 para o professor ao vivo). Texto no masculino, `flexionar` troca para "ela".
+- **Adulto v1** (`desafio-adulto/quiz/`, `desafio-adulto-v1`, `presentation: 'desafio-adulto'`):
+  "Começar" e o link "Tenho menos de 18 anos" (saída para o quiz Kids do Desafio, nada gravado),
+  oito perguntas sem ramo nem condicional, manchetes `padrao` e `?manchete=ideia`. Carta sem relato,
+  com o parágrafo dos fundadores da página adulta; só celular ou tablet, professor ao vivo e trabalhar
+  com jogos trocam o botão (`/pro/desafio-primeiro-jogo/oferta` com `#duvidas`, `#aula` ou `#jogo`). O título das necessidades
+  conta as frases ("Duas coisas…", "Três coisas…"). O topo leva só a logo, sem nome de produto.
+- O botão das duas cartas leva a nota "O preço aparece na próxima página." (`cta.nota`; sem ela vale a
+  da assinatura, "O preço e os planos…"). O `resultado.astro` não tem mais ramo próprio do Desafio: a
+  `/resultado` desenha a carta de qualquer `FunnelQuiz.conversa`.
+- **Espelho:** `bun scripts/espelho-quiz-desafio.ts` →
+  `docs/marketing/kids/desafio-primeiro-jogo/copy/{quiz,resultados-quiz,adulto-quiz,adulto-resultados-quiz}.md`.
+- **Testes:** `desafio-quiz.test.ts` e `desafio-adulto-quiz.test.ts` (as combinações das perguntas de
+  perfil nos dois gêneros, Light Copy, produto fora antes do resultado, exemplos do Canvas, espelho),
+  `api-desafio-quiz.test.ts`, `quiz-branches.test.ts` (definições fixadas, ramos no /admin),
+  `api-admin.test.ts`; navegador, com banco, `desafio-quiz-frio.ts` e `desafio-farol.ts` (a carta,
+  o feedback, rever e outra criança).
+- Saíram com o quiz antigo: `DesafioQuizLayout`, `DesafioResultado`, `DesafioConvite`,
+  `DesafioVisual`, `visuals.ts`, `server/desafio-price.ts`, `desafio-farol.css` e `comunidade-quiz.css`.
 
-Ofertas: `/kids/desafio-primeiro-jogo/oferta` (primeiro jogo), `/oferta/tempo-de-tela` e
-`/oferta/iniciacao-tecnologica`. Mesma entrega/checkout, argumentos e ordem próprios em
-`offer.ts`/`offer-copy.ts`. O alias `/oferta/primeiro-jogo` redireciona ao padrão. As ofertas
+Ofertas: desde 21/10/2026, três páginas (ver "Desafio do Primeiro Jogo em três públicos"). As
+variantes por motivo (`/oferta/tempo-de-tela`, `/oferta/iniciacao-tecnologica` e o alias
+`/oferta/primeiro-jogo`) fazem 301 para `/oferta` com a query. As ofertas
 usam `no-store` e conferem o contrato antes de vender; indisponibilidade não recebe preço fictício.
 O quiz não mostra preço; o resultado continua informativo quando não consegue consultar o preço.
 
-A raiz é a bio, `/como-funciona/` apresenta a plataforma e a Comunidade continua sendo a
-opção ampla, que pode ser contratada diretamente. Links usam `funnelLinkWithAttribution`.
+A raiz é a bio e a Comunidade continua sendo a opção ampla, que pode ser contratada diretamente
+(`/como-funciona/` virou 301 para a experiência da página de 9 a 17 em 20/10/2026). Links usam `funnelLinkWithAttribution`.
 Capturas do Farol e do caderno são reais; telas compartilhadas identificam a interface e o
 curso usado no exemplo. Não recolocar nave, asteroides, Mapa dos Pais ou depoimentos antigos
 como prova do Farol. Detalhes, testes e pendências operacionais em
@@ -251,6 +297,121 @@ responsável… o perfil da criança você cria depois, na plataforma") e rotula
 "… do responsável". Evita o pai preencher os dados da criança no pré-checkout (o perfil da
 criança nasce depois, na área kids).
 
+## Desafio do Primeiro Jogo em três públicos (21/10/2026)
+
+Implementação do Canvas "Desafio do Primeiro Jogo · três páginas", aprovado pela dona (registro em
+`docs/marketing/kids/desafio-primeiro-jogo/implementacao-2026-10-21.md`). Decisões: a faixa Kids é
+9 a 17; o adulto tem a MESMA oferta do Kids (R$ 67 de referência, pagamento único, 30 dias,
+garantia de 7, cupom aceito); os relatos do Rafael, da Débora e do André ficam, com a legenda do
+código; a copy Kids fala de "seu filho" e "ele" (a maioria dos alunos são meninos).
+
+- **Páginas Kids:** `/kids/desafio-primeiro-jogo/oferta` (9 a 17, `Desafio917Body` +
+  `oferta/pagina-9a17.ts` + `styles/desafio-917.css` sob `.c917`, vestindo `comunidade-917.css`) e
+  `/oferta/criar-junto` (menor de 9 criando com um adulto, `DesafioMenor9Body` + `pagina-menor9.ts` +
+  `desafio-menor9.css` sob `.cm9`). `DESAFIO_SUBPAGINAS`/`isDesafioSubpagina` em `offer.ts`;
+  `DESAFIO_OFERTAS_ANTIGAS` dão 301. Relatos por id (`RELATOS_DESAFIO_9A17`, `RELATOS_DESAFIO_MENOR9`).
+- **Funil adulto** `pro/desafio-primeiro-jogo` (`src/funnels/desafio-adulto/`), registrado no `FUNNELS`
+  desde 21/10/2026, DEPOIS da Comunidade adulta (o `/pro` segue no NCI; a ordem é pinada por teste). A
+  env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` existe no Railway de staging e de produção (criada pela
+  dona) e está declarada em `.railway/variables.ts`; a oferta e o Termo estão no sitemap. Desde
+  21/10/2026 o quiz Kids do Desafio leva quem marca 18 ou mais ao quiz adulto do Desafio, e o adulto
+  leva quem tem menos de 18 ao Kids (`desafioAdultQuizPath`/`desafioKidsQuizPath` em `quiz.astro`).
+  `DesafioAdultoBody` + `oferta/pagina.ts` +
+  `styles/desafio-adulto.css` sob `.cda` (tema arcade), quiz e resultado desde 21/10/2026 (ver
+  "Quizzes do Desafio em conversa"; as dúvidas têm `id="duvidas"`), Termo próprio
+  `termos-desafio-adulto.ts` (`desafio-adulto-2026-10-21`), `chargeName` "(adultos)". Oferta pela env
+  `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` (`desafio-primeiro-jogo-adulto-30-dias`, criada pelo seed do
+  catálogo com o curso `desafio-primeiro-jogo-adulto` e o Mural adulto). O jogo e os blocos são os
+  mesmos do Kids (o `projeto-final.szproject.json` e o `blocos.json` adultos são idênticos), por isso
+  vêm de `/img/desafio-primeiro-jogo` sem legenda de versão; a página do Caderno é a do PDF adulto
+  (`/img/desafio-adulto/farol-caderno.png`, página 18). Os 4 passos da aula ainda são telas do Kids, com
+  a nota dizendo isso, até haver capturas da área adulta (o curso adulto precisa estar publicado em
+  staging).
+- **Preço** só do catálogo: `oferta/preco.ts` (`precoDoDesafio` com o cupom já cotado, `preencherPreco`
+  troca `{{preco}}` e `{{preco_dia}}`; o por dia é `precoPorDiaCents`, sempre acima da conta exata).
+- **Os dois Desafios nas etapas compartilhadas:** `isDesafioFunnel(key)` no registry (`checkout.astro`,
+  `obrigado.astro`); o `PreCheckoutModal` reconhece por `funnel.endsWith('/desafio-primeiro-jogo')`
+  (ilha não importa o registry) e só o Kids mostra o aviso dos dados do responsável. O e-mail de
+  boas-vindas com a data final tem duas versões: `challenge-access-approved` no Kids e, desde
+  21/10/2026, `challenge-access-approved-adult` no adulto (e-mail e WhatsApp; `nome`, `link`,
+  `expira_em`, `acao`; o link é o de sempre do adulto, `COMMUNITY_URL` com `/redefinir-senha?token=` ou
+  `/cursos`). Se o Messaging ainda responder 404 `TEMPLATE_NOT_FOUND` para a chave adulta, `sendOne`
+  reenvia com a chave genérica (`welcome`/`new-access`), a mesma Idempotency-Key e o mesmo link
+  (`fallbackKey`). No Members, o adulto ganha o Mural adulto visitante depois dos 30 dias e os avisos
+  de prazo e progresso nas versões `-adult` (ver o `CLAUDE.md` do Members).
+- **Navegador:** `tests/browser/desafio-ofertas.ts` confere as páginas registradas (as três, desde
+  o registro do adulto).
+- **Espelhos:** `bun scripts/espelho-copy-desafio.ts` →
+  `docs/marketing/kids/desafio-primeiro-jogo/copy/pagina-{9-a-17,menor-9,adulto}.md`.
+- **Testes:** `desafio-offer-copy.test.ts` (rotas, despacho, 301, contrato igual, env, Light Copy,
+  imagens, relatos, dois CTAs, preço, espelhos), `comunidade-offer-css.test.ts` (as três folhas só por
+  tokens), o browser `tests/browser/desafio-ofertas.ts` e, com banco, `tests/browser/desafio-quiz-frio.ts`
+  e `desafio-farol.ts` (os quizzes).
+
+## Comunidade dos Criadores em três públicos (20/10/2026)
+
+Implementação do Canvas "Três páginas de oferta · proposta", aprovado pela dona em 19/10/2026 (fonte e
+quadros em `docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/`; registro em
+`docs/marketing/comunidade-dos-criadores/implementacao-2026-10-20.md`).
+
+- **Páginas Kids:** `/kids/comunidade-dos-criadores/oferta` (9 a 17, `Comunidade917Body` +
+  `oferta/pagina-9a17.ts` + `styles/comunidade-917.css` sob `.c917`) e `/oferta/criar-junto` (menor de
+  9 criando com um adulto, `ComunidadeMenor9Body` + `pagina-menor9.ts` + `comunidade-menor9.css` sob
+  `.cm9`). Copy em módulos tipados, preços dos planos ao vivo, dois CTAs com `data-checkout-oferta`,
+  sem os botões "Jogue um jogo". Espelhos: `copy/pagina-9-a-17.md`, `copy/pagina-menor-9.md` e
+  `copy/pagina-e-continuidade.md` (`bun scripts/espelho-copy-comunidade.ts`). Relato fora de todas as
+  páginas e resultados vai para `RELATOS_RESERVA` (`oferta/relatos.ts`) com o motivo.
+- **Continuidades (20/10/2026, Canvas "PaginaContinuarKids" e "PaginaContinuarAdulto"):** para quem já
+  conhece a plataforma, na ordem alívio (o que ficou guardado) → situações com o próximo passo → o que
+  fica × o que a assinatura acrescenta → Jornada ou etapas → prova → planos com quando começa, mesmo
+  e-mail e garantia. Kids: `/oferta/continuar`, `ComunidadeContinuarBody` + `oferta/pagina-continuar.ts`
+  + `comunidade-continuar.css` (sob `.c917`, vestindo o layout da 9 a 17; o verde conduz), faixa no
+  topo para a criança que chega pela tela de ferramenta fechada, cinco situações (a primeira é "ainda
+  no primeiro projeto"), os oito postos conferidos contra `initialKidsJourneyPolicy` no teste, falas
+  N18, AV11 e N15, 9 dúvidas, faixa 9 a 17. Adulta: `/pro/comunidade-dos-criadores/oferta/continuar`
+  (`isComunidadeAdultoSubpagina`, `comunidade-adulto/oferta/index.ts`), `ComunidadeAdultoContinuarBody`
+  + `comunidade-adulto/oferta/continuar.ts` + `comunidade-adulto-continuar.css` (sob `.cda`), metáfora
+  do save (tela de carregar jogo, SAVE 1 a 4: quem cancelou, quem já tem conta, quem fez 18 no Kids,
+  quem acompanha alguém no Kids), sem contagem regressiva; o que a página adulta já diz (requisitos,
+  cartão dos planos, escada, tela do Mural, links legais) vem de `PAGINA_ADULTO` por referência.
+  Espelho adulto em `adulto/copy/pagina-continuar.md`. A continuidade antiga (motor de seções,
+  `ComunidadeOfertaBody`, `continuidade*.ts`, `shared.ts`, faixa `TOUR`) saiu; o espelho dela ficou em
+  `copy/historico/2026-10-20-continuidade-antiga/`.
+- **Quiz Kids v6** (`comunidade-dos-criadores/quiz/`): entrada com cartas filho/filha e a idade em
+  cartas; ramos `9a17` (chaves da v5) e `m9` (chaves `m9_*`, pontuação própria); "18 ou mais" sai para
+  o quiz adulto. Eventos `respondeu_comunidade_v6_*`, `entrou_ramo_<id>` ao entrar num ramo (cadeias
+  por ramo no /admin), `legacySteps` = v5 + v4. Espelho: `bun scripts/espelho-quiz-comunidade.ts`.
+- **Funil adulto** `pro/comunidade-dos-criadores` (`src/funnels/comunidade-adulto/`), registrado
+  DEPOIS do NCI (o `/pro` segue no NCI): oferta `ComunidadeAdultoOfertaBody` (`styles/comunidade-adulto.css`
+  sob `.cda`, tema arcade), quiz v1 (`ComunidadeAdultoQuiz.tsx`; entrada com "Começar" e o link
+  "Tenho menos de 18 anos", saída para o quiz Kids sem gravar idade), resultado em carta
+  (`buildAdultResult`), Termo próprio `comunidade-adulto-2026-10-20`. Oferta pela env
+  `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES` (`comunidade-dos-criadores-adulto-mensal`, irmã anual
+  pelo `altOffer`; ofertas criadas pelo seed do catálogo). As telas adultas são PRÉVIAS com legenda
+  "prévia com dados de teste": trocar por capturas reais antes de produção. Espelho:
+  `bun scripts/espelho-comunidade-adulto.ts` → `docs/marketing/comunidade-dos-criadores/adulto/copy/`.
+- **Peças comuns aos dois quizzes em conversa:** `islands/spin-quiz/useSpinQuiz.ts` (sessão,
+  revisão, token, conflito, próxima tela), `QuizConversaLayout.astro`, `styles/quiz-spin.css` (`.qz`,
+  peles `--kids`, `--m9`, `--adulto` só por variáveis), resultado `components/funnel/resultado/
+  ResultadoConversa.astro` + `content/resultado-conversa.ts` (blocos `p|h|img|relato|cta`, trechos
+  `[[...]]` viram destaque) + `QuizResultadoFeedback.tsx`. `FunnelQuiz.conversa` liga o construtor da
+  carta do funil; a `/resultado` desenha qualquer funil que o declare. Desde 21/10/2026 as ilhas são
+  genéricas: `spin-quiz/KidsConversaQuiz.tsx` (`KidsQuizConfig`) e `spin-quiz/AdultoConversaQuiz.tsx`
+  (`AdultoQuizConfig`), e cada funil tem uma ilha fina com a sua configuração (`ComunidadeQuiz`,
+  `ComunidadeAdultoQuiz`, `DesafioQuiz`, `DesafioAdultoQuiz`), porque funções não atravessam as props
+  do Astro. Os `data-analytics-id` próprios levam o prefixo da configuração.
+- **Etapas compartilhadas sem chave presa ao Kids:** a abertura do checkout vem de
+  `FunnelContent.checkout` (título vira o h1) e a confirmação do obrigado de `FunnelObrigado.titulo`,
+  `acesso`, `passosTitulo` e `botao`. ⚠️ Duas expressões Astro separadas só por espaço perdem o
+  espaço (`{a} {b}` renderiza "a.B"): junte numa template string. O `PreCheckoutModal` recebe
+  `assinatura` no adulto para o rodapé não prometer Pix no mensal.
+- **Testes:** `comunidade-adulto-funnel.test.ts` (registro e ordem do `/pro`, despacho, copy, imagens,
+  CTAs, etapas compartilhadas, espelho), `comunidade-adulto-quiz.test.ts`, `bio.test.ts`, e o browser
+  `tests/browser/comunidade-oferta.ts` (as cinco páginas: 9 a 17, menor de 9, continuidade Kids, adulta
+  e continuidade adulta; preços ao vivo, pré-checkout até o checkout, 301 das páginas antigas e da
+  `/como-funciona`, 404 das subpáginas que o adulto não tem; `QA_CHROMIUM_PATH=/opt/pw-browsers/chromium`
+  na nuvem).
+
 **Funil kids "Comunidade dos Criadores" (`kids/comunidade-dos-criadores`, ASSINATURA mensal R$ 97 /
 anual R$ 797, 07/2026):** a assinatura da plataforma kids inteira; **quiz opcional de orientação**
 em `/kids/comunidade-dos-criadores/quiz` (implementado em 01/10/2026). Oferta → checkout → obrigado
@@ -265,67 +426,133 @@ página levam `data-checkout-oferta` com o slug de cada oferta. Registrado DEPOI
 "acesso AO Desafio" × "acesso À Comunidade"). Imagens em `public/img/comunidade-dos-criadores/`
 (capa do checkout = `checkout-capa.webp`, arte "Corre, Dino!"; hero/ilustras começaram como cópias
 dos assets do Desafio — a arte nova substitui por cima com os MESMOS nomes). A página bio da raiz
-(`/`) apresenta Como funciona primeiro, o Desafio como primeiro passo e a Comunidade como
-continuidade ou contratação direta. A ampliação dos prints é compartilhada
-entre a raiz e as ofertas pelo componente `ComunidadeImageZoom.astro`.
-**Quatro copies da Comunidade (01/10/2026):** a referência vigente está em
-`docs/marketing/kids/comunidade-dos-criadores/copy/`. Conteúdo tipado em
-`src/funnels/comunidade-dos-criadores/oferta/`, com fatos e 40 respostas comuns em `shared.ts`.
+(`/`) leva aos dois quizzes desde 20/10/2026 (ver acima). A ampliação dos prints
+(`ComunidadeImageZoom.astro`) é compartilhada pelo Desafio e pelo quiz do Desafio.
+**Copies da Comunidade:** a copy vive no código, em
+`src/funnels/comunidade-dos-criadores/oferta/`; `docs/marketing/kids/comunidade-dos-criadores/copy/pagina-*.md`
+é o espelho gerado por `bun scripts/espelho-copy-comunidade.ts` (o teste reprova espelho velho). Desde
+20/10/2026 cada página tem a copy inteira no próprio módulo: `pagina-9a17.ts`, `pagina-menor9.ts` e
+`pagina-continuar.ts` (fatos, dúvidas e relatos citados ali); o `shared.ts` com as 26 respostas comuns e
+o `FAQ_EXTRA` saíram com as páginas de perfil.
+**Proposta de copy de 16/10/2026 (aprovada pela dona e implementada):** diagnóstico, régua e copy
+de cada página em `docs/marketing/kids/comunidade-dos-criadores/copy/proposta-melhoria-2026-10-16/`.
+Tese comum (no jogo pronto alguém já decidiu tudo; criando, ele decide e o jogo responde), a
+plataforma orienta (Ouvir, Verificar esta parte, O que falta para seguir, Guardado na sua conta;
+Uma pista só nos experimentos) e Recados SÓ nas dúvidas. A Chave do Farol é o curso de entrada que
+leva ao Construtor; a ordem dos projetos é Cadê Todo Mundo, A Chave do Farol, Nave Contra
+Asteroides, O Jogo do Meu Jeito e Corre, Dino (nomes sem `?`/`!` na copy). Por decisão dela, a copy
+mostra o que a plataforma oferece e NÃO fala de curso em preparação ou de ferramenta "ainda não
+liberada" (o teste reprova "em preparação"); a liberação por posto continua explicada. Zappy:
+"falas do Zappy" nas aulas (desde a primeira, sem créditos) × "ajuda do Zappy no Estúdio" (Inventor,
+com créditos), sempre distinguidas. **Relatos reais**
+(`oferta/relatos.ts`, termos de autorização assinados): cartelas AV do destaque Avaliações e
+trechos N conferidos por segunda transcrição (segundos em `trechos-novos.md` da proposta);
+identificação igual à do Instagram (André e Débora como Aluno/Aluna). Até 20/10/2026, nas páginas de
+perfil: seção `layout: 'relatos'` = faixa de cartas com retrato; `falas` em outra seção = fala solta no
+fim (nunca em `band`); `page.founder` trocava os fundadores (`FOUNDER_COM_ESCOLA` na F,
+`FOUNDER_SEM_RELATO` em B e E); `offer.falas` punha uma fala antes dos planos. Hoje cada página cita os
+relatos pelo id (`RELATOS_9A17`, `RELATOS_MENOR9`, `RELATOS_CONTINUAR`) e os não citados ficam em
+`RELATOS_RESERVA` com o motivo. Retratos `relato-*.webp` recortados dos quadros dos
+vídeos (`depo-*.webp` para Rafael, Débora e André). Os vídeos de criança explicando o próprio jogo
+(V1/V2 da proposta) ainda não entraram: falta hospedagem. Os `copy/pagina-*.md` viraram ESPELHO
+gerado da copy tipada (versões anteriores em `copy/historico/2026-10-16-antes-da-proposta/`).
 
-A página padrão é `/kids/comunidade-dos-criadores/oferta` (aprender criando jogos, da primeira
-experiência às próprias ideias; o perfil interno continua `tempo-de-tela`). As variantes usam `/oferta/criacao-de-jogos`, `/oferta/expressao-visual` e
-`/oferta/formacao-tecnologica`. São apresentações do mesmo produto e do mesmo checkout.
+Desde 20/10/2026 a página padrão `/kids/comunidade-dos-criadores/oferta` é a de 9 a 17 anos e
+`/oferta/criar-junto` a do menor de 9 (ver "Comunidade dos Criadores em três públicos"); as cinco
+páginas de perfil (`tempo-de-tela`, `criacao-de-jogos`, `expressao-visual`, `formacao-tecnologica`,
+`habilidades-escolares`) fazem 301 para `/oferta` mantendo a query. O que segue sobre os perfis A a F
+é histórico.
 `server/offer-page.ts` resolve os dados comerciais para as rotas; Responses de erro devem
 retornar na ROTA, nunca no componente Astro compartilhado. `OfertaPage.astro` despacha os bodies.
 CTA principal aponta para `#planos`; link secundário para `#experiencia`.
 A página pública `/oferta/continuar` atende famílias que já conhecem a plataforma, sem presumir
-conclusão: copy e 50 respostas em `continuidade.ts`/`continuidade-faq.ts`, com as mesmas telas,
-componentes e estilos dos quatro perfis. É uma etapa de relacionamento, não um quinto avatar.
-O parâmetro antigo de origem foi removido, sem redirecionamento especial. Os convites de assinatura
-no Kids e nos serviços de continuidade/expiração do Members apontam para a nova rota.
-A página E usa `#proximo-passo`, `#experiencia` e `#garantia`, compara os acessos e explica o início
-do período contratado. O pré-checkout lembra de usar o mesmo e-mail do responsável. Seus dados
-sobrescrevem somente a oferta e as respostas desta página; as quatro copies anteriores permanecem.
-Registro e validação: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
-As dúvidas têm pesos e ordem próprios, mantendo as mesmas respostas e imagens correspondentes.
+conclusão; desde 20/10/2026 é a `ComunidadeContinuarBody` (ver "Comunidade dos Criadores em três
+públicos"). É uma etapa de relacionamento, não um quinto avatar. Os convites de assinatura no Kids e
+nos serviços de continuidade/expiração do Members apontam para ela. Histórico da versão de 01/10 a
+20/10: `docs/marketing/kids/comunidade-dos-criadores/implementacao-continuidade.md`.
+**Habilidades escolares (15/10/2026, até 20/10/2026; hoje a URL faz 301):** `/oferta/habilidades-escolares` era uma sexta apresentação
+da assinatura, em `habilidades-escolares.ts`/`habilidades-escolares-faq.ts`; desde a v5 do quiz
+(16/10/2026) é o destino do perfil F. A dor e a explicação ficavam imediatamente abaixo do hero;
+`tourAfterSection: 'f01'` colocava o tour depois dessa seção (o `ComunidadeTour.astro` saiu em 20/10/2026).
+As quatro cartas (leitura, matemática, ciências e resolver problemas) ligam tarefas do projeto às
+habilidades escolares, com ícones por assunto; quatro cartas ficam 2×2 no computador.
+Ciências usa o experimento do jardim; não há promessa de notas nem de reforço por série.
+Registro: `docs/marketing/kids/comunidade-dos-criadores/implementacao-habilidades-escolares.md`.
+Até 20/10/2026 as dúvidas tinham pesos e ordem próprios: as 26 comuns mais as próprias de cada página
+(FAQ_EXTRA em B e C, respostas da escola na F, continuidade na E). Hoje cada página lista as suas.
 Não prometer revisão de toda atividade, prazo de resposta ou jogo pronto em prazo universal.
 Recados é canal de dúvidas; a progressão e a disponibilidade dos cursos condicionam as ferramentas.
 Preços e equivalência mensal vêm dos planos ao vivo. O anual informa pagamento anual, com Pix
-sem renovação automática e cartão recorrente. Sem economia comparativa fixa ou relatos novos.
+sem renovação automática e cartão recorrente. A economia do anual (`{{economia_anual}}`, selo do
+cartão) é calculada ao vivo como 12 mensalidades menos o anual; sem economia positiva a frase sai
+(`comEconomia`). Nenhum valor escrito à mão; relatos só os de `relatos.ts`.
 Pré-checkout, checkout e obrigado preservam os dados do responsável e a continuidade de quem já
 começou. Guardas: `tests/unit/comunidade-offer-copy.test.ts` e `comunidade-funnel.test.ts`.
 O manifesto `oferta/visuals.ts` relaciona cada demonstração às suas telas, legenda e texto
 alternativo. **Só telas REAIS (01/10/2026, decisão da dona):** as 28 prévias SVG saíram; o que
 ainda não tem captura fica em `PENDING_VISUALS` e NÃO renderiza (a seção ou a resposta segue só
-com o texto). Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; os vínculos
-com as quatro páginas e com `FAQ_VISUALS` já existem. Ver "Direção de arte das quatro páginas".
-Os termos kids (`content/legal-kids.ts`) cobrem os DOIS produtos (Desafio: compra única; Comunidade:
-assinatura recorrente no cartão ou anual à vista, cancelamento sem multa, carência, garantia na
-contratação inicial e em cada nova contratação anual via Pix, Mural de visitante após o fim).
-**Quiz da Comunidade (v4, tráfego frio):** entrada e perguntas não pressupõem conhecer o produto.
-Resultado entrega orientação e atividade antes de apresentar a Comunidade e seus prints reais.
-Resultado desenvolve ações do filho, mecanismo e benefício; formato, apoio e dúvida são compostos sem repetição, com prints pertinentes. Perguntas seguem situação → dificuldade/dúvida → desejo → condições; IDs permanecem estáveis. Copy de entrada compartilhada em `quiz/entry-copy.ts`; perguntas de formato e equipamento tratam
-da rotina geral. `FunnelQuiz.version` inicia novo lead para respostas de versão anterior,
-preservando o lead antigo. Oito perguntas-base, QT/QB/QC condicionais, inputs nativos e
-respostas múltiplas em Q3/Q4. `QuizAnswers` aceita `string[]` no JSONB existente, sem migração.
-`FunnelQuiz.applyAnswer/isComplete` validam, limpam ramos inativos e recalculam o perfil. PATCH
-exige revisão e token da sessão, derivados da sessão atual; o cookie HttpOnly continua sendo a
-única origem da propriedade do lead. A gravação compara o JSON anterior atomicamente. Outro
-filho recebe novo lead. Empate/exploração/outra procura mantêm perfil null; destino geral não
-significa avatar A. Resultado SSR em componente próprio, com prints reais e link para uma das
-quatro ofertas; `/oferta/continuar` não é resultado. Feedback é persistido antes de confirmar.
-Metadados `perfilLabels` enumeram os perfis no admin, inclusive para resultados compostos sem
-blocos estáticos em `result.profiles`. Referência: `docs/marketing/kids/comunidade-dos-criadores/quiz/`.
-⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
+com o texto). ⚠️ **Nada de "em construção" nas telas (16/10/2026):** as capturas da Jornada trazem
+o cartão "Mais 6 postos estão sendo construídos"; o visual `jornada` usa só o RECORTE
+`tela-jornada-meus-postos` (Faísca + Construtor) e o mapa saiu; o `catalogo` usa
+o recorte `tela-catalogo-trilha`, sem o fim do mapa. Recapturou, refaça o recorte
+(caixa no comentário de `visuals.ts`); `comunidade-offer-copy.test.ts` reprova a tela inteira. Ligar uma pendente = capturar e mover a chave para `COMUNIDADE_VISUALS`; as páginas
+pedem a tela pelo id (`visualDe`), e o `FAQ_VISUALS` saiu em 20/10/2026. Ver "Direção de arte das quatro páginas".
+**Termos e Privacidade (20/10/2026):** um Termo por oferta (`content/legal/termos-desafio.ts`,
+`termos-comunidade-kids.ts`, `termos-comunidade-adulto.ts`; o NCI mantém o seu em `content/legal.ts`),
+ligado ao funil por `FunnelDef.legal = { termos, termsVersion }` e servido em
+`/<audience>/<produto>/termos`; a versão vai congelada no snapshot de cada compra
+(`termsVersionForFunnel`). Mudou o texto de um Termo? Suba a `termsVersion`. A Política de
+Privacidade é única (`content/legal/privacidade.ts`, `/privacidade`), com capítulos para crianças e
+adolescentes e para adultos. `/termos` é o índice; `/kids/termos`, `/pro/termos`, `/termos-de-uso`,
+`/kids/privacidade`, `/pro/privacidade` e `/politica-de-privacidade` redirecionam. Rodapé, checkout e
+obrigado apontam o Termo da oferta da página (`Footer termosHref`). Revisão jurídica pendente.
+**Quiz da Comunidade (v5, 16/10/2026, SPIN + resultado-ponte; substituído pela v6 em 20/10/2026,
+ver "Comunidade dos Criadores em três públicos"; leads da v5 seguem legíveis por `legacySteps`):** proposta aprovada e decisões em
+`docs/marketing/kids/comunidade-dos-criadores/quiz/revisao-copy-2026-10-16.md` e no README da pasta.
+O quiz é a fase ANTES da oferta: qualifica e sobe o nível de consciência. Nenhuma tela antes do
+resultado cita Comunidade/aula/curso/plataforma/preço nem apresenta criar jogos como solução ("jogo"
+só quando descreve a família); o teste `comunidade-quiz.test.ts` reprova. Dez perguntas em SPIN
+(`quiz/questions.ts`, chaves semânticas `crianca`…`sintese`, eventos `respondeu_comunidade_v5_*`) e
+UMA condicional nos perfis B (`ferramenta`), C (`desenho`) e F (`escola`). A P1 (filho/filha + idade)
+fica na própria entrada; `genero.ts` (`paraFeminino`) troca o texto para "ela" (copy escrita no
+masculino, sem adjetivo que muda com o gênero; o teste varre 1.080 combinações). A I6 é a
+calculadora (horas/dia × 365, em faixa; `stepOnScreen`). **Perfil = soma de pontos**
+(`engine.ts`): cena de casa 3, preocupação 2, cena desejada 2, frase-síntese 3; empate → síntese,
+depois cena; a cena desejada não tem opção neutra (sempre sai perfil); < 4 pontos = "caminho mais
+perto". Cinco perfis: A tempo de tela, B jogos, C desenho, D programação, **F habilidades escolares**
+(→ `/oferta/habilidades-escolares`). QT, estado misto e resultado sem perfil SAÍRAM. **Resultado**
+(`result.ts`/`result-copy.ts`/`ComunidadeResultado.astro`): título com o PROBLEMA → quadro "O que você
+contou" (espelho de cada resposta) → "Por que isso acontece" (só afirma a cena de casa se a família a
+escolheu) → "O que muda isso" (criação de jogos, ainda sem produto) → "Onde isso acontece"
+(Comunidade, UMA tela real, relatos de `relatos.ts`) → "Antes de seguir" (condições) → "O próximo
+passo" (botão; sem preço). Recados SÓ quando a necessidade é "a quem recorrer". Sem a atividade de
+casa. **Manchete A/B:** `quiz/entry-copy.ts` (`QUIZ_HEADLINES`); a rota lê `?manchete=tela` e a ilha
+grava a variante em `attribution.quizHeadline` (`lib/lead-attribution.ts`, campo opcional). **Admin:**
+Performance e Perfis aceitam `?quiz=atual` (versão pela definição gravada no lead, via
+`analytics_quiz_definitions`; quem foi direto à oferta não tem definição e fica de fora) e
+`?manchete=<id>` (`QuizScope` no repo + fake; manchete escolhida força `quiz=atual`; a padrão é
+`FunnelQuiz.defaultHeadline` e conta também os leads sem registro). O painel mostra os filtros
+quando o funil tem quiz versionado (`AdminFunnelInfo.quiz`) e só liga o recorte por padrão no funil
+com teste A/B. Os links do resultado de volta ao quiz mantêm a manchete
+(`quizPathWithHeadline`); "Responder pensando em outra criança" vai a `quiz#outra-crianca` e a ilha
+reinicia ali (com definição e manchete). "ele" na copy é SEMPRE a criança (o personagem usa o
+substantivo), senão `paraFeminino` erra; o botão usa `completesQuiz`. Performance nomeia as perguntas
+(`rotuloCurto`) e a condicional (`condicional`) não quebra a cadeia "da etapa"; leads da v4 ficam
+legíveis em Respostas por `legacySteps` (`questions-v4.ts`). Espelho editorial gerado:
+`bun scripts/espelho-quiz-comunidade.ts` → `copy/quiz-comunidade.md` e `copy/resultados-quiz.md` (o
+teste reprova espelho velho; v4 em `copy/historico/2026-10-16-quiz-v4/`). Mantido da v4:
+`FunnelQuiz.version` inicia novo lead para respostas de versão anterior (lead antigo preservado);
+PATCH exige revisão e token da sessão; outro filho recebe novo lead; feedback persistido antes de
+confirmar. ⚠️ O PATCH recusa com 409 `QUIZ_CONFLICT` a gravação num lead de OUTRA versão do quiz (aba
 aberta antes do deploy): o `applyAnswer` tomaria as respostas antigas por vazias e apagaria o lead.
 **Desenho do quiz (02/10/2026, "mesmo estilo da oferta"):** `comunidade-quiz.css` (`.cq`) usa as
 receitas da oferta (`kof-eyebrow`, `cap-chip` na cor da etapa via `STAGE_CHIP`, `kof-ladrilho`,
 `kof-banda`, `kof-marca`, `fundo-folha`, `bloco--lado|largo`) e não cria cor própria. Etapas com
-linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. O resultado
-(`ComunidadeResultado.astro`) é uma sequência de capítulos: herói com o Zappy, orientação + a
-atividade de casa (carta fixa ao rolar no computador), a Comunidade em folha branca com o aviso
-amarelo das diferenças, o dia a dia em blocos com tela (cada tela UMA vez; texto que diz "abaixo"
-ou tela com mais de um quadro vai para `bloco--largo`), o convite no cartão azul e a opinião.
+linha de ligação e check nas feitas; opções táteis com o degrau de 3 px. Na v5 o resultado é: herói
+com o Zappy, o quadro "O que você contou" na banda navy (fixo ao rolar à direita no computador,
+antes do texto no celular), a Comunidade em folha branca com a tela (`bloco--largo` quando a tela
+tem mais de um quadro), os relatos, o aviso amarelo "Antes de seguir", o próximo passo no cartão azul
+e a opinião.
 
 **Redesenho visual da Comunidade (30/09/2026, "a oficina do criador"):** a copy v2 ficou intacta e a
 página ganhou o desenho da plataforma kids: topo navy com a logo kids e o preço, herói com a TELA
@@ -333,13 +560,13 @@ REAL de uma aula num cartão azul (`.kof-marca`) e o Dedé e o Zappy apresentand
 ladrilhos coloridos nos benefícios, banda navy nos relatos (3 cartas-criador + o Mural real) e no
 convite, a fita dos 8 postos da Jornada (`jornada-<slug>.webp`, copiados do kids), objeções em
 cartas com ladrilho por unidade, o plano anual como o cartão da marca com o selo amarelo de
-economia, FAQ em cartas, reveal ao rolar e a barra fixa do celular (`.kof-mobar`, `href="#planos"`,
+economia, FAQ em cartas, reveal ao rolar (saiu em 20/10/2026) e a barra fixa do celular (`.kof-mobar`, `href="#planos"`,
 sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
 `docs/plans/2026-09-30-comunidade-redesenho-visual.md`.
 - ⚠️ **As RECEITAS da identidade moram em `src/styles/kids-oferta.css`** (importado pelo body):
   aliases `--kof-*` que só apontam para `--sz-community-*`, e as classes `.kof-btn`, `.kof-carta`,
   `.kof-marca`, `.kof-eyebrow`, `.kof-chip`, `.kof-ladrilho`, `.kof-selo`, `.kof-banda`,
-  `.kof-tela`, `.kof-decor`, `.kof-reveal`, `.kof-mobar` (só o que a página usa: o balão de
+  `.kof-tela`, `.kof-decor`, `.kof-mobar` (só o que a página usa: o balão de
   personagem e o "stat" da banda do Desafio NÃO vieram). O funil recebe da
   plataforma só os TOKENS, nunca as receitas (`.kids-carta`/`.sz-btn-gradient` ficam no kids), por
   isso elas nascem aqui, por token, sem nenhuma cor própria. O LAYOUT mora em
@@ -350,7 +577,8 @@ sem `data-checkout-cta`: a contagem segue 2). Plano e prints:
   `in oklab`, sem `!important`, namespaces, Baloo 800 no `BaseLayout` (os títulos são 800).
 - ⚠️ **Contraste medido** (`tests/unit/comunidade-offer-contrast.test.ts`, lê a paleta gerada do
   ui pelo caminho e usa o `contrast()` de lá): o link azul sobre o chão-alt dá 4,27 e REPROVA, então
-  nas seções de chão-alt (planos e dúvidas) todo `.kof-link` mora dentro de uma carta branca; a
+  no layout `.cdc` (Desafio, presente, embaixador) todo `.kof-link` sobre o `.fundo-alt` fica na tinta
+  com o traço azul, e volta ao azul dentro de uma `.kof-carta` (o teste trava as duas regras); a
   `.kof-eyebrow` quebra linha abaixo de 760px (com `nowrap` numa coluna `1fr` a pílula vira a
   largura MÍNIMA da coluna e empurra o herói para fora da margem a 390px).
 - ⚠️ **As telas `tela-*.webp` são capturas REAIS do kids em staging** (perfil de teste), geradas por
@@ -405,8 +633,8 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   outra pendente), o texto fica inteiro ao lado dela, sem parágrafo solto. As pendentes saem
   DEPOIS do vínculo. Mexer em `visuals`/`heroVisual`/`layout` é decisão de desenho; os textos não
   se tocam.
-- **Página de continuidade (`continuar`, 01/10/2026):** mesma direção de arte, com três peças
-  próprias. (1) `layout: 'cases'` em `#proximo-passo`: uma carta por SITUAÇÃO (`.situacoes`), com
+- **Página de continuidade (`continuar`, 01/10/2026 a 20/10/2026; hoje tem corpo próprio):** mesma
+  direção de arte, com três peças próprias. (1) `layout: 'cases'` em `#proximo-passo`: uma carta por SITUAÇÃO (`.situacoes`), com
   o marco na cor do grupo ligado por uma linha, texto e a tela dela (`only="first"`); na folha
   branca a carta vira painel na cor do chão. (2) A comparação de acessos
   (`ComunidadeComparacao.astro`, `group.comparison`) é uma carta por PAR, metade neutra → seta →
@@ -414,11 +642,15 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   semântica); no celular o par empilha e o rótulo de cada coluna entra na carta. O CSS mora no
   layout (`.cdc .comparacao-*`), sem `<style>` no componente. (3) `ENFASE_NUMA_LINHA` em
   `oferta/arte.ts` (largura da ênfase do título em `em`: o h1 encolhe por `cqi` até a frase azul
-  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho).
-- **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), nas cinco páginas:**
-  `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção), `ICONES_DE_GRUPO` (ícone de cada
-  subtítulo) e `ICONES_DE_DUVIDAS` (assuntos das dúvidas, por página). Sem entrada vale o ícone
-  pela posição; seção nova com assunto que a posição não acerta ganha uma linha ali.
+  caber inteira numa linha; antes o equilíbrio de linhas deixava "continuar" sozinho). Desde 16/10
+o mapa ficou vazio, e saiu em 20/10 com a continuidade antiga (os cartões `cases` e a comparação
+seguem no motor de seções, sem página que os use).
+- **`oferta/arte.ts` (o que depende do ASSUNTO, não da posição), no motor de seções:**
+  `ICONES_DE_CAPITULO` (chip do capítulo, por id de seção) e `ICONES_DE_GRUPO` (ícone de cada
+  subtítulo). Sem entrada vale o ícone pela posição. Desde 20/10/2026 sobra só `experiencia:
+  'extension'` (o primeiro capítulo do presente e do embaixador; as outras entradas eram da
+  continuidade antiga), e o teste exige que toda entrada aponte para uma seção do presente ou do
+  embaixador.
 - **Revisão das cinco páginas (01/10/2026):** o TEXTO fica ao lado da tela que ele descreve. Ao
   mexer em `visuals`, confira o par de cada bloco (o grupo sem subtítulo se divide: a 1ª tela vai
   com a primeira metade dos parágrafos, as demais com a segunda): o parágrafo do Clube estava ao
@@ -434,15 +666,12 @@ palavra; mudou a composição, e todas as imagens passaram a ser telas reais.
   outra aba). ⚠️ O `<dialog>` precisa de `margin: auto`: o reset do Tailwind zera a margem e ele
   ia para o canto.
 - **Destaques** (`oferta/destaques.ts` + `destacar.ts` + `ComunidadeProsa.astro`): trechos
-  LITERAIS da copy em `<strong>` (marca-texto amarelo), por id de seção, `<perfil>:convite`,
-  `origem` e `assinatura`. O teste exige que cada trecho exista uma única vez no texto da seção e
-  que o parágrafo, remontado, seja idêntico: editar a copy quebra o destaque em voz alta.
-- **Faixa "Por dentro da Comunidade"** (`TOUR`): dez telas com o nome da área e UMA linha
-  PESSOAL de função, sempre o filho fazendo algo ali ("Onde seu filho monta e testa os jogos",
-  "Onde ele desenha personagens e cenários"). Decisão da dona (01/10/2026): frase que descreve a
-  FERRAMENTA ("Desenhos digitais que podem participar dos projetos") foi recusada como genérica.
-  Sem condição de acesso: a faixa mostra o que existe; quem explica a liberação é o capítulo da
-  Jornada.
+  LITERAIS da copy em `<strong>` (marca-texto amarelo), por id de seção do motor. O mapa ficou vazio
+  em 20/10 (as entradas eram da continuidade antiga); o mecanismo segue para as seções do presente.
+- **Faixa "Por dentro da Comunidade"** (`TOUR`, até 20/10/2026): dez telas com o nome da área e UMA
+  linha PESSOAL de função ("Onde seu filho monta e testa os jogos"); saiu com a continuidade antiga.
+  A regra da dona continua valendo para frases novas: descrever o filho fazendo algo ali, nunca a
+  ferramenta.
 - **Capturas** (`scripts/captura-telas-kids.ts`, reescrito em roteiros): cada roteiro leva a
   plataforma a um estado e tira 1x e @2x, inteira ou recortada. `KIDS_SO` aceita nome de foto ou
   de roteiro; `KIDS_CDP_PORT` anexa a um Chrome já logado. ⚠️⚠️ **O token de sessão do kids GIRA**:
@@ -494,15 +723,16 @@ funil + coluna Funil; Perfis/Performance rotulam por funil (perguntas viram "Per
 **Landings de indicação (`/bolsa/[codigo]` e `/embaixador/[token]`, 08/2026 — Fase 1 do sistema
 de indicações):** páginas FLAT fora do registry (molde `/renovar` — registrar um funil exigiria
 `FUNNEL_OFFER_<KEY>` no Railway), tema kids, `no-store` + `noindex` (a do embaixador é
-capability-URL: o token de 32 bytes É a chave de acesso, sem conta/senha). O funil é só a BORDA:
+capability-URL: o token de 32 bytes É a chave de acesso, sem conta/senha; desde 20/10/2026 há um
+tema por público, ver "Presente por convite e campanha"). O funil é só a BORDA:
 o estado (códigos, embaixadores, resgates, convites) vive no **@sistemazero/referrals**, alcançado
 via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferralCode`,
 `getAmbassadorByToken`, `createAmbassadorInvite`, `redeemScholarship`). SSR resolve o código/token
 (404 amigável UNIFORME p/ inexistente/desativado; gateway fora → tela "recarregue", NUNCA afirmar
 que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
-na resposta do referrals: `false` mantém o link, mas mostra "em preparação" sem formulário;
+na resposta do referrals: `false` mantém o link, mas mostra "ainda não abriu" sem formulário;
 resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
-**Cadê Todo Mundo?** (9–14 anos), não o Desafio ou a assinatura. Quando disponível, passa
+**Cadê Todo Mundo** (Kids 9 a 14 anos ou a versão adulta), não o Desafio ou a assinatura. Quando disponível, passa
 os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
@@ -523,12 +753,12 @@ garantia/liberado/pago — ⚠️ **"liberado, pagamento a caminho" SÓ com chav
 página sem resolver), campo de **chave Pix** (salvar → POST `/api/embaixador/pix` →
 `postAmbassadorPix` → PATCH by-token no referrals, envelope [200/404/429]; ⚠️ o catch distingue
 4xx — chave inválida é DETERMINÍSTICO, a copy não pode dizer "tente em instantes"; a mensagem é
-`role="alert"` + `aria-describedby` no input, e EDITAR o campo limpa o "Chave Pix salva!", senão
+`role="alert"` + `aria-describedby` no input, e EDITAR o campo limpa o "Chave Pix salva.", senão
 quem corrige a chave sai achando que salvou) e o texto dos
 termos (agradecimento único por Pix, sem vínculo; a usuária valida o texto com o contador ANTES
 de divulgar). Client `updateAmbassadorPix` no `gateway-client.ts`; `TOKEN_RE` único no
 `server/referrals.ts` (invite + pix); o `[token].astro` tipa o bônus por
-`EmbaixadorPainelProps['bonus']` (shape da ilha, sem cópia); a rota de escrita já caía no regex
+`EmbaixadorBonusProps['bonus']` (shape da ilha `EmbaixadorBonus`, sem cópia; até 20/10/2026 o bônus morava no `EmbaixadorPainel`); a rota de escrita já caía no regex
 `/embaixador/` do `RATE_LIMITED_WRITE`.
 
 **Pendência (decidida):**
@@ -763,8 +993,8 @@ histórico (conflito preserva o original — re-aponte do webhook passa sem cupo
 
 ## Renderização (tudo SSR desde o 2º full review 06/2026)
 
-- **NÃO há mais páginas pré-renderizadas.** `quiz`, `politica-de-privacidade` e `termos-de-uso`
-  viraram SSR (`prerender = false`) DE PROPÓSITO: página pré-renderizada é servida estática pelo
+- **NÃO há mais páginas pré-renderizadas.** `quiz`, `privacidade`, `termos` e
+  `[audience]/[produto]/termos` são SSR (`prerender = false`) DE PROPÓSITO: página pré-renderizada é servida estática pelo
   adapter **sem passar pela middleware** → ficava SEM security headers (CSP/HSTS/XFO) em produção,
   onde NÃO há CDN/proxy p/ repô-los. O custo de render é trivial e elas levam `cache-control:
   public` curto (`max-age=60` no quiz, `max-age=300` nas legais). ⚠️ Se uma página voltar ao
@@ -1009,6 +1239,14 @@ sozinho ao voltar pro dev.
 E **não** rode `bun run dev` com `NODE_ENV=production` no shell. O `NODE_ENV=development` no `.env` é
 legítimo (consumido por `src/lib/env.ts` p/ `secureCookie`) — não é a causa.
 
+## Gotcha: o build quebra com `Missing field tsconfigPaths` no Tailwind
+
+Desde 16/10/2026 o Vite da raiz do monorepo é o 8 (rolldown), e o `@tailwindcss/vite` do funil passou
+a resolvê-lo como peer, enquanto o Astro 6 roda o Vite 7: o `astro build` (o mesmo do Dockerfile)
+falhava em `[@tailwindcss/vite:generate:build] Missing field tsconfigPaths`. O funil fixa
+`vite: 7.3.3` nas devDependencies para os plugins do Tailwind e do React ligarem o MESMO Vite do Astro.
+Subiu o Astro e ele trouxe outro Vite? Ajuste o pin para a versão de `astro/vite` no `bun.lock`.
+
 ## Gotcha: ilha não hidrata com `504 (Outdated Optimize Dep)`
 
 **Sintoma:** uma ilha **lazy** (`client:idle` ou carregada por `import()` dinâmico) não hidrata; o
@@ -1032,15 +1270,79 @@ no cold-start). Também ali: as deps do **`@sistemazero/ui`** (`lucide-react`/`c
 ilha lazy/import dinâmico, inclua-a ali também. Um restart simples basta (mudar `optimizeDeps` muda o
 config-hash → re-otimização automática).
 
-## Presente por convite e campanha (02/10/2026)
+## Presente por convite e campanha (02/10/2026; Kids e adulto desde 20/10/2026)
 
-`/bolsa/[codigo]`, `/embaixador/[token]` e `/kids/embaixadores` usam `components/referrals`, o CSS das ofertas e `content/presente.ts`. O rodapé fica fora de `.cdc`. Os prints atuais são reutilizados. Por decisão de 03/10/2026, o presente libera publicar o jogo do curso, comentar e reagir no Mural durante os sete dias. Depois fica a visita para ver e jogar; o link publicado continua enquanto a publicação estiver disponível. Cópias e ferramentas livres não estão incluídas. A faixa comunicada é **9–14 anos**, igual à oferta, inclusive nas perguntas e nos convites de WhatsApp/e-mail.
+**Dois públicos (Canvas "Presente Kids e adulto · proposta", aprovado em 20/10/2026; quadros
+RecebimentoKids, RecebimentoAdulto, Embaixador e Estados):** o público vem do CÓDIGO.
+`resolveReferralGiftPage` lê `audience` da resposta de `GET referrals/internal/codes/:code` (ausente ou
+`null` = `kids`, para o referrals anterior; valor desconhecido falha fechado como `unavailable`) e devolve
+`audience` no topo e no `gift` (`ResolvedGiftView`). `/bolsa/[codigo].astro` despacha:
+- **Kids** → `PresenteLayout` (`theme-kids`, logo Kids, `Footer audience="kids"` com o Termo da Comunidade
+  Kids) + `PresenteOferta`, na linguagem da página de 9 a 17: receitas em `kids-oferta.css`, layout em
+  `comunidade-917.css` (`.c917`) e as peças do presente em `styles/presente-kids.css` (`.pk-*`). Copy em
+  `PRESENTE_KIDS` (`content/presente.ts`). Quem lê é o responsável.
+- **Adulto** → `PresenteAdultoLayout` (`theme-arcade`, logo e selo da oferta adulta, `Footer
+  audience="pro"` com `/pro/comunidade-dos-criadores/termos`) + `PresenteAdultoOferta`, no layout
+  `.cda` de `comunidade-adulto.css` com as peças de `styles/presente-adulto.css` (`.pa-*`). Copy em
+  `PRESENTE_ADULTO` (`content/presente-adulto.ts`), com marca do topo, foto dos fundadores, prévia do
+  Mural e links legais de `PAGINA_ADULTO` por referência. Decisões da dona: as telas do curso são as
+  capturas Kids com a legenda "Tela da versão Kids do curso. Na área adulta, a aparência é outra."; o
+  Mural é `/img/comunidade-adulto/previa-mural.webp` com "Prévia do Mural adulto com dados de teste."; o
+  link do jogo publicado continua depois dos 7 dias, como no Kids.
+- Código inexistente (404) ou referrals fora do ar (503) não revelam público: tela de status no tema
+  Kids, sem os atalhos das seções (`secoes={false}`).
+- Estados (os dois temas, copy em `estados` de cada módulo): `preparing` "ainda não abriu", `scheduled`
+  "abre em dd/mm/aaaa", `paused`, `ended` "terminaram em dd/mm/aaaa" (sem data no convite pessoal) com a
+  retomada em `<details id="retomar">` (`BolsaResgate retryOnly`). O botão do topo e a barra fixa do
+  celular (`lib/barra-fixa.ts`) só aparecem com o formulário aberto; abaixo de 520px o botão do topo sai.
 
-`/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.
+**`BolsaResgate` (`audience`, padrão `kids`):** copy por público em `content/presente-resgate.ts`
+(`RESGATE_COPY`, client-safe; a ilha NÃO lê env, a URL do app chega por prop: `KIDS_COMMUNITY_URL` no Kids,
+`COMMUNITY_URL` no adulto). Kids: aviso "Estes dados são do responsável", campos do responsável, aceite
+"é o responsável pela criança" + Termo Kids, concluído "O presente está liberado para a sua família" e
+"crie o perfil do seu filho". Adulto: "Seu nome", "Seu e-mail", telefone opcional, sem aviso de perfil,
+aceite "tem 18 anos ou mais" + Termo adulto, concluído "Está tudo pronto para o seu primeiro jogo" com
+"Entrar na Comunidade" (`/login`) e "Criar ou recuperar a senha" (`/esqueci-senha`). `SCHOLARSHIP_ALREADY_
+REDEEMED` agora é "este e-mail já resgatou um presente DESTE público" (o mesmo e-mail pode ter um Kids e
+um adulto): bloco "Este e-mail já recebeu um presente Kids/adulto", e no adulto "Ver como continuar" vai a
+`/pro/comunidade-dos-criadores/oferta/continuar`. O Mural da confirmação segue `muralAccess` (trial =
+"liberado até a mesma data"; visitor = só ver e jogar). Vencimento por `dataBrasilia` ("27/10/2026, às
+14h"). Visual pelas classes `bz-*`, desenhadas em `presente-kids.css` e `presente-adulto.css`. Não afirmar
+entrega confirmada a partir de HTTP 202 do messaging ("está a caminho do seu e-mail").
 
-O painel privado usa no-store, no-referrer e canonical público sem token. O link do WhatsApp é sempre o presente público. A confirmação de resgate informa vencimento em Brasília e aceitação do e-mail, com acesso/recuperação de senha. Não afirmar entrega confirmada a partir de HTTP 202 do messaging.
+**Painel do embaixador (`/embaixador/[token]`):** `EmbaixadorLayout` + `styles/embaixador.css` (`.emb`,
+painel neutro: chão e cartões `--kof-*`, títulos Bricolage e corpo Atkinson; a carta adulta leva a classe
+`theme-arcade` só para ler os tokens `--cda-*`, como o cartão da bio). Copy em `content/embaixador.ts`
+(`PAINEL_EMBAIXADOR`, `EMBAIXADOR_DUVIDAS`). O `GET by-token` traz `shareUrls: {kids, adult}` (o `shareUrl`
+segue como o link Kids de reserva; `linksDoEmbaixador`), e a ilha `EmbaixadorPainel` tem o seletor "Para
+quem é o presente" (rádios nativos, Kids por padrão), o link, a mensagem de WhatsApp editável (uma por
+público) e o convite por e-mail com o `audience` escolhido; link `null` mostra o aviso e desliga o convite
+daquele público. `postAmbassadorInvite` valida `audience` (`kids|adult`) e só repassa o campo quando é
+`adult` (o Kids viaja como antes, compatível com o referrals anterior). O bônus e a chave Pix moram na ilha
+`EmbaixadorBonus` (seção `#bonus`), com o valor SEMPRE de `bonus.amountCents` ("Kids ou adulta"). A
+contagem de resgates é o total (o contrato não separa por público). Seções: para quem faz sentido, os três
+passos, a tabela "O que o presente inclui", as dúvidas e o fechamento.
 
-O referrals e o funil precisam ser liberados de forma coordenada, após a migration do serviço e o seed dos templates de campanha. Pendências e validação: `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
+`/kids/embaixadores` (público, indexado) usa o `ProgramaLayout` (o antigo `PresenteLayout`, layout `.cdc`)
+e fala dos dois presentes: hero, `AMBASSADOR_SECTIONS`, entrada pelo app adulto (`/perfil`) ou pela Área
+dos pais, e as dúvidas de `EMBAIXADOR_DUVIDAS`; a experiência detalhada (`GIFT_SECTIONS`/`GIFT_FAQ`) é a
+do presente Kids. A faixa Kids comunicada é **9 a 14 anos**; o adulto, 18 anos ou mais. O nome do curso
+vai sem a interrogação ("Cadê Todo Mundo").
+
+`/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro; aceita `?audience=kids|adult` (padrão `kids`) para a prévia do Admin. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.
+
+O painel privado usa no-store, no-referrer e canonical público sem token. O link do WhatsApp é sempre o presente público. As rotas continuam `/bolsa` e `/embaixador`, então `middleware.ts` e `rate-limit-paths.ts` não mudaram.
+
+**Testes:** `referral-gift-page.test.ts` (público do código e despacho da rota), `referral-gift-copy.test.tsx`
+(regras de voz nos módulos dos dois públicos, `BolsaResgate` Kids e adulto, seletor e convite do painel,
+bônus pelo serviço), `referrals-handlers.test.ts` (convite com `audience`), `comunidade-offer-css.test.ts`
+(as três folhas novas só por tokens) e `comunidade-offer-contrast.test.ts` (pares do formulário nos dois
+temas). Navegador: `node --import tsx tests/browser/presente.ts` depois do `bun run build` (referrals falso
+pelo gateway falso; Kids, Kids legado, adulto, estados, prévias e painel a 390 e 1440 px, resgates e o
+convite com o público; capturas em `QA_OUTPUT`, `QA_CHROMIUM_PATH=/opt/pw-browsers/chromium-1194/chrome-linux/chrome`
+na nuvem).
+
+O referrals e o funil precisam ser liberados de forma coordenada, após a migration do serviço e o seed dos templates (os adultos inclusive). Sem o curso `cade-todo-mundo-adulto` publicado, o link adulto mostra o estado "ainda não abriu" (`giftAvailable=false`). Pendências e validação: `docs/marketing/kids/cade-todo-mundo/implementacao.md`.
 
 ## Acesso infantil por aparelho (10/10/2026)
 

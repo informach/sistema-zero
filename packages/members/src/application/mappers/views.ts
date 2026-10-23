@@ -1,4 +1,8 @@
-import type { LessonRequirement, SectionProgressView } from '@sistemazero/core/learning'
+import type {
+  LessonRequirement,
+  SectionCompletionView,
+  SectionProgressView,
+} from '@sistemazero/core/learning'
 import {
   type LessonLearningProgress,
   type LessonSection,
@@ -7,7 +11,11 @@ import {
 import type { AvatarCategory, AvatarSlot } from '../../domain/avatar/avatar3d-catalog'
 import type { CertificateRecord } from '../../domain/certificate/certificate'
 import type { Course, LessonWithContent, ModuleWithLessons } from '../../domain/course/course'
-import { hasComingSoonBlock, type MaterialItem } from '../../domain/course/lesson-block'
+import {
+  hasComingSoonBlock,
+  type MaterialItem,
+  toMemberFacingStudioContent,
+} from '../../domain/course/lesson-block'
 import { toMemberFacingQuizContent } from '../../domain/course/quiz'
 import type { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { COIN_VALUES } from '../../domain/gamification/coins'
@@ -186,6 +194,9 @@ export interface LessonCompleteView extends CourseProgressView {
 
 /** Perfil de gamificação do aluno (widgets/perfil — `GET /members/gamification/me`). */
 export interface GamificationMeView {
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
+  kidsJourney?: import('@sistemazero/core/journey').KidsJourneyView
+  kidsPreview?: import('@sistemazero/core/journey').KidsJourneyStaffPreview
   xp: number
   /** Revisão curta das ferramentas do Estúdio; presente na vitrine kids. */
   studioUnlockRevision?: string
@@ -214,13 +225,24 @@ export interface GamificationMeView {
    * (por dificuldade). Derivado dos cursos qualificados (concluído + publicado no
    * Mural). Rótulo/cor/ícone são apresentação e vivem no app.
    */
-  level: StudentLevel
+  /** null only for an explicit own-account staff preview, never a missing child policy. */
+  level: StudentLevel | null
   /**
    * Colocação no ranking de XP da VITRINE pedida (`?ranking=true` junto do
    * `?audience=`) — XP/perfil/coorte são por audiência, então os rankings
    * adult/kids são separados. Ausente quando o caller não pediu.
    */
   ranking?: { position: number; totalStudents: number }
+}
+
+/**
+ * A etapa da jornada ADULTA de uma pessoa, para as listas (o anel da cor da etapa). `title` nulo =
+ * terminou todas as etapas (a interface dá o nome e a cor dessa última posição).
+ */
+export interface AdultJourneyBadgeView {
+  position: number
+  total: number
+  title: string | null
 }
 
 /** Linha pública do ranking geral. Nunca carrega ids internos de conta. */
@@ -230,13 +252,18 @@ export interface RankingEntryView {
   isMe: boolean
   firstName: string | null
   photoUrl: string | null
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  /** Rank enrichment unavailable; never a replacement Noob. */
+  journeyUnavailable?: true
   /** Só existe quando o perfil kids aceitou ser público. */
   profileId?: string
+  /** Só no adulto, e só para quem mostra o perfil (ou a própria pessoa). */
+  journey?: AdultJourneyBadgeView
 }
 
 /** Página pública do ranking geral, com a própria linha disponível fora da página. */
 export interface RankingLeaderboardView {
+  audience?: 'adult'
   items: RankingEntryView[]
   total: number
   limit: number
@@ -252,7 +279,9 @@ export interface AdminRankingEntryView {
   xp: number
   lastActivityDate: string | null
   photoUrl: string | null
-  levelSlug: StudentLevelSlug
+  levelSlug: StudentLevelSlug | null
+  /** Rank enrichment unavailable; never a replacement Noob. */
+  journeyUnavailable?: true
 }
 
 /** Página interna; `totalMatches` permite paginar buscas sem alterar a posição global. */
@@ -284,6 +313,9 @@ export interface AvatarPartView {
  * e-mail/telefone/nascimento/conta NUNCA). `ranking` null = fora da coorte.
  */
 export interface PublicProfileView {
+  audience?: 'adult'
+  displayName?: string
+  journey?: import('@sistemazero/core/journey').AdultJourneyView
   profileId: string
   xp: number
   ranking: { position: number; totalStudents: number } | null
@@ -324,6 +356,7 @@ export interface MissionView {
 
 /** Missões do aluno por cadência (`GET …/missions/me`). */
 export interface MissionsMeView {
+  audience?: 'adult'
   daily: MissionView[]
   weekly: MissionView[]
   monthly: MissionView[]
@@ -342,16 +375,20 @@ export interface LeagueEntryView {
   isMe: boolean
   /** Foto do avatar 3D (`null`/ausente → boneco padrão). */
   photoUrl?: string | null
-  /** Slug do nível p/ a aura (ausente → Noob/Faísca). */
-  levelSlug?: StudentLevelSlug
+  /** Posto canônico; null quando a jornada Kids está indisponível. */
+  levelSlug?: StudentLevelSlug | null
+  journeyUnavailable?: true
   /** 1º nome do colega (só a vitrine kids revela; ausente → "Colega"). */
   firstName?: string | null
   /** id do perfil — SÓ quando público (opt-in) → link p/ `/crianca/[id]`. */
   profileId?: string
+  /** Só no adulto, e só para quem mostra o perfil (ou a própria pessoa). */
+  journey?: AdultJourneyBadgeView
 }
 
 /** Liga semanal do aluno (`GET …/league/me`). */
 export interface LeagueMeView {
+  audience?: 'adult'
   tier: string
   weekKey: string
   /** Quantos sobem no topo / caem na base ESTA semana (0 = semana amistosa, pouca massa). */
@@ -427,6 +464,8 @@ export interface AvatarStateView {
 }
 
 export interface MyCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -459,6 +498,7 @@ export function toMyCourseView(
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): MyCourseView {
   return {
+    courseId: course.id,
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
@@ -481,6 +521,8 @@ export function toMyCourseView(
  * com a flag de acesso do aluno. Sem progresso (isso é da home/detalhe).
  */
 export interface CatalogCourseView {
+  /** Stable curriculum identity for explicit policy requirements; labels/slugs may change. */
+  courseId: string
   courseSlug: string
   title: string
   subtitle: string | null
@@ -512,6 +554,7 @@ export function toCatalogCourseView(
   milestones: CourseMilestonesView = { completed: false, showcased: false },
 ): CatalogCourseView {
   return {
+    courseId: course.id,
     courseSlug: course.slug,
     title: course.title,
     subtitle: course.subtitle,
@@ -570,7 +613,7 @@ export function resolveSalesPageUrl(course: Course): string | null {
  * a paleta do aluno passa a ser a UNIÃO dos cursos que ele já conquistou, em vez de
  * um conjunto fixo por nível. Lista vazia/ausente = este curso não libera nada. Sem
  * reserva desde 02/10/2026: quem não conquistou bloco nenhum tem o Estúdio livre trancado
- * (`resolveStudioTier`/`earnedStudioTier` no member-shell).
+ * (`kidsStudioTier`/`adultStudioTier` no member-shell).
  * Tolerante a lixo: só strings não-vazias entram, e a ordem é preservada sem repetir.
  */
 export function resolveStudioUnlockBlocks(course: Course): string[] {
@@ -744,10 +787,6 @@ export interface StudioStateView {
   submitted: boolean
   /** ISO da última entrega; `null` se ainda não enviou. */
   submittedAt: string | null
-  /** Nota da última correção (atividade); `null` sem atividade ou sem entrega. */
-  lastScore?: number | null
-  /** Atingiu a nota de corte (sticky). `false` sem atividade/entrega. */
-  passed?: boolean
   /**
    * O professor já conferiu ESTA entrega (o carimbo dele é posterior ao último
    * envio). Reenviar volta para `false` — a entrega nova ainda não foi olhada.
@@ -773,7 +812,6 @@ export interface LessonBlockView {
   /**
    * Presente só em blocos de Pinta. MESMA forma do `studioState` (a entrega mora na mesma
    * tabela), em campo separado para o front não precisar adivinhar de qual bloco o estado é.
-   * `lastScore`/`passed` chegam nulos/false: não há auto-correção de desenho.
    */
   pintaState?: StudioStateView | null
   /**
@@ -815,10 +853,13 @@ export interface EbookDownloadView {
 
 export interface LessonDetailView {
   requirements?: LessonRequirement[]
-  sections?: Pick<
+  sections?: (Pick<
     LessonSection,
-    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool' | 'completion'
-  >[]
+    'id' | 'title' | 'blockIds' | 'workspaceBlockId' | 'externalTool'
+  > & {
+    /** A VISTA do critério: os objetivos sem a regra (`sectionCompletionView`). */
+    completion?: SectionCompletionView
+  })[]
   legacyLayout?: boolean
   structureRevision?: string | null
   sectionProgress?: SectionProgressView
@@ -913,13 +954,15 @@ export function toLessonDetailView(
       }
       // Estúdio: a config (initialProject/level/allowlist) NÃO é segredo — o aluno
       // precisa dela para montar o editor. Anexa só o estado da entrega (já enviou?).
+      // ⚠️ O GABARITO da professora nunca sai (nem para a equipe: a view é a do aluno), e a
+      // `activity` de conteúdo antigo (a auto-correção que saiu em 18/10/2026) também não.
       if (b.content.kind === 'studio') {
         return {
           id: b.id,
           blockRevision: b.contentRevision,
           kind: b.kind,
           sortOrder: b.sortOrder,
-          content: b.content,
+          content: toMemberFacingStudioContent(b.content),
           studioState: studioStates.get(b.id) ?? { submitted: false, submittedAt: null },
         }
       }

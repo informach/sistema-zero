@@ -23,10 +23,15 @@ export class UpstreamStats implements UpstreamStatsView {
   }
 
   end(id: string, latencyMs: number): void {
-    this.inFlightMap.set(id, Math.max(0, this.inFlight(id) - 1))
+    this.cancel(id)
     // Amostra de latência nunca negativa (defesa contra clock não-monotônico do chamador).
     const sample = Math.max(0, latencyMs)
     const prev = this.ewma.get(id)
     this.ewma.set(id, prev === undefined ? sample : this.alpha * sample + (1 - this.alpha) * prev)
+  }
+
+  /** Client withdrawal releases capacity without fabricating a latency sample. */
+  cancel(id: string): void {
+    this.inFlightMap.set(id, Math.max(0, this.inFlight(id) - 1))
   }
 }

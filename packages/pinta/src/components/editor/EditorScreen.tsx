@@ -40,7 +40,6 @@ import {
   TILEMAP_ZOOM_LEVELS,
   VECTOR_ZOOM_LEVELS,
 } from '../../state/sessionStore'
-import { updateTaskProgress } from '../../state/taskProgress'
 import { usePintaApp } from '../appContext'
 import { ExportDialog } from '../export/ExportDialog'
 import { HostCloudStatus, HostMenuButton, usePintaHostChrome } from '../hostChrome'
@@ -445,20 +444,6 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         ...(payload.tileset ? { tileset: payload.tileset } : {}),
         ...(payload.tilemap ? { tilemap: payload.tilemap } : {}),
       })
-      let taskProgressSaved = true
-      if (result.ok && adapter.taskSession) {
-        taskProgressSaved = await updateTaskProgress(adapter.taskSession, {
-          ...(adapter.taskSession.progress.status === 'planned'
-            ? { status: 'in_progress' as const }
-            : {}),
-          outputRef: {
-            kind: 'pinta_asset',
-            assetId: asset.id,
-            assetName: result.name ?? asset.name,
-            usedInStudioAt: new Date().toISOString(),
-          },
-        })
-      }
       const successCopy = payload.tilemap
         ? adapter.studioOwned
           ? COPY.sendToStudio.mapSuccess
@@ -466,13 +451,7 @@ function EditorTopbar({ onBack, closing }: { onBack: () => void; closing: boolea
         : adapter.studioOwned
           ? COPY.sendToStudio.success
           : COPY.sendToStudio.successLocked
-      showToast(
-        result.ok
-          ? taskProgressSaved
-            ? successCopy
-            : COPY.editor.taskStudioProgressError
-          : (result.error ?? COPY.sendToStudio.error),
-      )
+      showToast(result.ok ? successCopy : (result.error ?? COPY.sendToStudio.error))
     } catch {
       showToast(COPY.sendToStudio.error)
     } finally {
@@ -756,28 +735,39 @@ export function EditorScreen({ assetId }: { assetId: string }): JSX.Element | nu
   // A sessão vem de um ref para o corpo usar sempre a mais fresca, sem entrar nas deps.
   const taskSessionRef = useRef(adapter.taskSession)
   taskSessionRef.current = adapter.taskSession
-  const taskProgress = adapter.taskSession?.progress ?? null
-  // biome-ignore lint/correctness/useExhaustiveDependencies: o `progress` é o gatilho de verdade; a sessão vem do ref
+  const missionId = adapter.taskSession?.mission.id
+  const alreadyLinked = Boolean(adapter.taskSession?.progress.deliveries.length)
   useEffect(() => {
-    const sessao = taskSessionRef.current
-    if (!stores || !sessao || sessao.progress.status === 'completed') return
-    const asset = stores.editor.getState().asset
-    const current = sessao.progress.outputRef
-    if (current?.assetId === asset.id && sessao.progress.status !== 'planned') return
-    void updateTaskProgress(sessao, {
-      ...(sessao.progress.status === 'planned' ? { status: 'in_progress' as const } : {}),
-      outputRef: {
-        kind: 'pinta_asset',
-        assetId: asset.id,
-        assetName: asset.name,
-        ...(current?.assetId === asset.id && current.usedInStudioAt
-          ? { usedInStudioAt: current.usedInStudioAt }
-          : {}),
-      },
-    }).then((saved) => {
-      if (!saved) showToast(COPY.editor.taskLinkError)
-    })
-  }, [stores, taskProgress, showToast])
+    const session = taskSessionRef.current
+    const slot = session?.assetSlots[0]
+    if (
+      !stores ||
+      !session ||
+      session.mission.id !== missionId ||
+      !slot ||
+      session.assetSlots.length !== 1 ||
+      alreadyLinked ||
+      session.progress.status === 'completed'
+    )
+      return
+    let active = true
+    void stores.editor
+      .getState()
+      .flush()
+      .then(async (saved) => {
+        if (!saved.ok || !active) return
+        await session.onBindCreation({
+          assetSlotId: slot.id,
+          creationId: stores.editor.getState().asset.id,
+        })
+      })
+      .catch(() => {
+        if (active) showToast(COPY.editor.taskLinkError)
+      })
+    return () => {
+      active = false
+    }
+  }, [stores, missionId, alreadyLinked, showToast])
 
   // Flush do autosave em pagehide e no desmonte (voltar/troca de tela).
   useEffect(() => {

@@ -7,6 +7,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { SpokenChip } from '@/components/admin/spoken-chip'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { StudioSubmissionCourseRow } from '@/lib/types'
 import { StudioSubmissionViewer } from './studio-submission-viewer'
@@ -134,17 +135,6 @@ export function CourseSubmissionsPanel({
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="truncate text-sm font-medium">{studentName(r)}</span>
-                        {r.score !== null ? (
-                          <span
-                            className={`shrink-0 rounded px-1.5 py-0.5 text-xs ${
-                              r.passed
-                                ? 'bg-success/15 text-success-foreground'
-                                : 'bg-muted text-muted-foreground'
-                            }`}
-                          >
-                            {r.score}/100
-                          </span>
-                        ) : null}
                       </div>
                       {r.childName ? (
                         <div className="truncate text-xs text-muted-foreground">
@@ -157,6 +147,7 @@ export function CourseSubmissionsPanel({
                       {r.message ? (
                         <div className="mt-0.5 flex items-center gap-1 text-foreground text-xs">
                           <MessageSquare className="size-3 shrink-0" /> Deixou um recado
+                          {r.messageSpoken ? <SpokenChip /> : null}
                         </div>
                       ) : null}
                     </div>

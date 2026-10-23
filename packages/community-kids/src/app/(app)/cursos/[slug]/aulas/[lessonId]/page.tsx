@@ -1,3 +1,4 @@
+import { isVoiceInputConfigured } from '@sistemazero/member-shell/server/openrouter-transcribe'
 import { notFound } from 'next/navigation'
 import { journeyLockReason, KidsLockedCourse } from '@/components/kids/kids-locked-course'
 import { KidsLockedLesson } from '@/components/kids/kids-locked-lesson'
@@ -65,10 +66,18 @@ export default async function LessonPage({
       nextLessonHref={nextLessonHref}
       viewerWatermark={session?.id ? `Perfil ${session.id.slice(0, 8)}` : null}
       viewerId={session?.id ?? null}
-      // O rascunho da fase guardado na conta: desligado pelo interruptor de emergência e na
+      // O rascunho da aula guardado na conta: desligado pelo interruptor de emergência e na
       // sessão de suporte só leitura (o BFF recusaria as escritas de qualquer jeito).
       lessonDraftsEnabled={
         getEnv().LESSON_DRAFTS_ENABLED && session?.act?.mode !== 'readonly' && Boolean(session?.id)
+      }
+      // Falar em vez de escrever para a equipe (14/10/2026): a criança, com a fala ligada pelos
+      // pais e no servidor. Sessão de suporte nunca grava a voz de ninguém.
+      voiceInput={
+        activeProfile?.voiceInputEnabled === true &&
+        session?.kids?.kind === 'student' &&
+        !session.act &&
+        isVoiceInputConfigured()
       }
       ratingViewer={{
         name: activeProfile?.name ?? session?.activeProfile?.name ?? null,

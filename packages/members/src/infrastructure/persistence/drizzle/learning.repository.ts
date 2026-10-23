@@ -9,6 +9,7 @@ import type {
 import {
   isLegacyLessonLayout,
   legacyLessonSections,
+  lessonStudioProjectExampleIssues,
   mergeVideoWatchAnswers,
   validateLessonSections,
 } from '@sistemazero/core/learning'
@@ -21,6 +22,7 @@ import type {
   LearningRepository,
   SaveLearningProgress,
 } from '../../../domain/ports/learning-repository.port'
+import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
 import type { Database } from './db'
 import { lockLearningOwner } from './learning-owner-lock'
 import { lockLessonStructure } from './lesson-structure'
@@ -35,6 +37,7 @@ import {
   lessonStructures,
   lessons,
 } from './schema'
+import { assertPublishedStudioExamples } from './studio-examples-publication-gate'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 const owned = (owner: LearningOwner) =>
@@ -67,7 +70,10 @@ function attemptView(row: typeof learningAttempts.$inferSelect): LearningAttempt
 }
 
 export class DrizzleLearningRepository implements LearningRepository {
-  constructor(private readonly db: Database) {}
+  constructor(
+    private readonly db: Database,
+    private readonly studioPolicy?: StudioAuthoringPolicy,
+  ) {}
 
   async listEvidence(owner: LearningOwner, lessonId: string, beforeId?: string) {
     const scope = and(
@@ -171,6 +177,7 @@ export class DrizzleLearningRepository implements LearningRepository {
       revision: r.revision,
       completedAt: r.completedAt?.toISOString() ?? null,
       projectPassed: r.projectPassed,
+      objectiveResults: r.objectiveResults ?? null,
     }))
   }
   async saveSectionProgress(
@@ -205,8 +212,11 @@ export class DrizzleLearningRepository implements LearningRepository {
           .values({
             ...owner,
             lessonId,
-            ...r,
+            sectionId: r.sectionId,
+            revision: r.revision,
+            projectPassed: r.projectPassed,
             completedAt: r.completedAt ? new Date(r.completedAt) : null,
+            objectiveResults: r.objectiveResults ?? null,
           })
           .onConflictDoUpdate({
             target: [
@@ -218,12 +228,37 @@ export class DrizzleLearningRepository implements LearningRepository {
               revision: r.revision,
               completedAt: r.completedAt ? new Date(r.completedAt) : null,
               projectPassed: sql`case when ${lessonSectionProgress.revision} = ${r.revision} then ${lessonSectionProgress.projectPassed} or ${r.projectPassed} else ${r.projectPassed} end`,
+              // Só a verificação escreve o último resultado; quem só conclui a parte o mantém
+              // (na mesma revisão). Revisão nova: o resultado guardado era de outra regra.
+              objectiveResults:
+                r.objectiveResults === null
+                  ? sql`null`
+                  : r.objectiveResults !== undefined
+                    ? sql`${JSON.stringify(r.objectiveResults)}::jsonb`
+                    : sql`case when ${lessonSectionProgress.revision} = ${r.revision} then ${lessonSectionProgress.objectiveResults} else null end`,
             },
             setWhere: and(
               eq(lessonSectionProgress.accountId, owner.accountId),
               sql`${lessonSectionProgress.completedAt} is null`,
             ),
           })
+        // A memória da lista segue a criança DEPOIS de a parte fechar: ela continua verificando
+        // (um extra, por exemplo), e a parte concluída nunca é reaberta por isto. Só na mesma
+        // revisão, que é a da regra que gerou o resultado.
+        if (r.objectiveResults !== undefined)
+          await tx
+            .update(lessonSectionProgress)
+            .set({ objectiveResults: r.objectiveResults })
+            .where(
+              and(
+                eq(lessonSectionProgress.userId, owner.userId),
+                eq(lessonSectionProgress.accountId, owner.accountId),
+                eq(lessonSectionProgress.lessonId, lessonId),
+                eq(lessonSectionProgress.sectionId, r.sectionId),
+                eq(lessonSectionProgress.revision, r.revision),
+                sql`${lessonSectionProgress.completedAt} is not null`,
+              ),
+            )
       }
     })
   }
@@ -246,6 +281,10 @@ export class DrizzleLearningRepository implements LearningRepository {
       const blocks = await tx.select().from(lessonBlocks).where(eq(lessonBlocks.lessonId, lessonId))
       const invalid = validateLessonSections(sections, blocks)
       if (invalid) throw new ValidationError(invalid)
+      // This legacy structural endpoint does not carry an authoring preview/undo document.
+      // Refuse destructive retargeting instead of silently dropping private associations.
+      const [exampleIssue] = lessonStudioProjectExampleIssues(sections, blocks)
+      if (exampleIssue) throw new ValidationError(exampleIssue.message)
       if (lesson.isPublished && sections.some((s) => s.pendingMedia.length))
         throw new ValidationError('Despublique a aula antes de marcar mídias pendentes.')
       const revision = randomUUID()
@@ -255,6 +294,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           .values({ lessonId, revision, sections })
           .onConflictDoNothing()
           .returning()
+        if (saved) await assertPublishedStudioExamples(tx, lessonId, this.studioPolicy)
         return saved ? { revision, sections } : null
       }
       const [saved] = await tx
@@ -267,6 +307,7 @@ export class DrizzleLearningRepository implements LearningRepository {
           ),
         )
         .returning()
+      if (saved) await assertPublishedStudioExamples(tx, lessonId, this.studioPolicy)
       return saved ? { revision, sections } : null
     })
   }

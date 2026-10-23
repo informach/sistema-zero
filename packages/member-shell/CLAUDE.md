@@ -1,5 +1,446 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Jornada Kids canônica (implementação isolada, 19/10/2026)
+
+O caminho Kids traduz a view canônica pelo adapter kidsStudioTier/kids-journey-access; não
+calcula liberação por rank fixo ou usa defaults de nível quando Members falha. Produto, paleta
+curricular, extensões, linguagem e runtime permanecem autoridades separadas. Preview de equipe
+própria vem de endpoint explícito e não concede posto ou earned virtual. Guardas de rota fazem
+a autorização real; flags/roles do cliente não habilitam Pro/IA. Preserve remix/leitura de
+projetos já existentes e todos os contratos JS/Python. Antigos exemplos resolveStudioTier nos
+registros históricos abaixo não são autoridade normal Kids. Gates integrados ainda pendentes.
+
+## Prévia da equipe no Pensa também no perfil da PRÓPRIA conta (20/10/2026)
+
+O Kids obriga toda conta (equipe inclusive) a escolher um perfil antes de aprender, então a equipe
+no Pensa está numa sessão de perfil. `loadPensaContext` (`server/pensa/context.ts`) aceita a prévia
+da equipe (`kidsPreview`) em dois casos, ambos com papel privilegiado ATIVO, `actor.privileged`,
+`actor.profileId === user.id`, vitrine Kids e SEM `act` (suporte nunca): a conta sozinha (como
+antes) ou o perfil da própria conta (`activeProfile.accountId === actor.accountId`, contexto não
+`parent`). Só no segundo caso o `pensaTeamCapabilities(actor, id, { staffSession: 'own-account' })`
+manda o campo à rota interna HMAC do Members: é a afirmação que o Members precisa, porque o `actor`
+não carrega impersonação (ver o CLAUDE.md do members). Sem ela o Members devolve a jornada real e a
+prévia segue recusada aqui. Cliente comum e adulto: sem mudança. Testes no fim de
+`tests/pensa-capabilities.test.ts` (o campo enviado e a prévia aceita; suporte, perfil de outra
+conta e equipe inativa recusados; perfil de cliente igual).
+
+## Oferta de continuidade adulta (20/10/2026)
+
+- **`lib/adult-links.ts`**: `COMUNIDADE_ADULTO_CONTINUAR_URL` (constante de produção, como o
+  `COMUNIDADE_OFERTA_URL` do Kids) e `comunidadeAdultoContinuarUrl(origem)` com
+  `utm_source=plataforma&utm_medium=app&utm_content=<origem>`. Os dois apps usam: o adulto nas
+  entradas da continuidade e o Kids no aviso dos 18 anos da área dos pais
+  (`areaAdultaContinuarUrl` de `community-kids/src/lib/links.ts` só repassa para cá). Teste em
+  `tests/adult-links.test.ts`.
+- **`lib/subscription-comeback.ts`**: o botão de voltar para a Comunidade em Compras (adulto) e na
+  Conta dos pais (Kids). `comebackSubscriptionId(subs, isProduct)` dá a assinatura mais recente do
+  produto SÓ se ela estiver `EXPIRED` (Encerrada); `CANCELED` ainda tem acesso até o fim do período
+  pago mais a carência (o botão faria pagar duas vezes) e segura o de uma encerrada mais antiga; uma
+  `ACTIVE` do produto esconde todas; `PENDING` não conta. ⚠️ A view pública de "Minhas assinaturas"
+  do payments (`MySubscriptionView`) não tem SKU, slug, produto nem público, só a descrição (o nome
+  do produto do checkout). Por isso o público sai do NOME: `isAdultComunidadeSubscription` exige
+  "adult" ("Comunidade dos Criadores (adultos)", nome que a oferta principal adulta passa a gravar
+  no funil) e `isKidsComunidadeSubscription` o exclui (a principal Kids cobra como "Comunidade dos
+  Criadores"). Teste em `tests/subscription-comeback.test.ts`.
+- **`checkCommunityContinuityAccessReadonly()`** no cliente do members: uma ida a
+  `/members/access` com `NCI_ACCESS_REF` (`no-comando-da-ia`) e o Clube da audiência. Aditivo; o
+  Kids não chama. Quem lê é o cartão de Cursos do community (ver o CLAUDE.md de lá).
+
+## Peças com a pele da comunidade adulta (19/10/2026)
+
+Pedidos da direção de arte adulta (o CLAUDE.md do community, §"Entrada, páginas públicas…"). O
+padrão de tudo abaixo continua sendo o Kids, byte por byte.
+
+- **`createMemberProxy({ publicPaths })`**: caminhos públicos DENTRO de um prefixo protegido (o
+  caminho exato e as subrotas). O adulto usa `['/ajuda/entrar']`. Teste em
+  `tests/proxy-palette.test.ts`.
+- **`PublicPlayer({ skin: 'adult' })`** e `PublicStage({ frameClassName })`: cabeçalho marinho com a
+  logo, o nome do jogo e o crédito escritos, botões com texto, a linha de como jogar e os estados
+  sem mascote. ⚠️ Lê tokens do adulto (`--topo`, `--topo-borda`, `--topo-texto`).
+- **O bloco E-book (livro 3D) é só para ler** (decisão dela, 19/10/2026): o "Baixar PDF" saiu
+  do `EbookBlockView` nos DOIS apps; o arquivo se baixa pelo bloco de materiais. O acesso conta
+  ao abrir o livro (`onMaterialAccess('opened')`); o `downloaded` antigo segue valendo no core.
+- **`lib/help-return.ts`** (`resolveHelpReturn(valor, rótulo)`): a allowlist do `?voltar=` do Como
+  fazer saiu do Kids para cá (o Kids reexporta com "Voltar para a fase"; o adulto usa "Voltar para a
+  aula") e devolve também `courseSlug`/`lessonId`.
+- **Meu avatar 3D e Meu espaço 3D na pele adulta** (`skin="adult"`, `components/cosmetics`): a
+  MESMA lógica (`configurator.tsx`, `room-builder.tsx`) com outra tela (`configurator-adult.tsx`,
+  `room-builder-view-adult.tsx`) e as frases de `skin.ts`. ⚠️⚠️ A tela adulta só entra por uma
+  ENTRADA própria (`configurator-adult-entry` e `room-builder-adult`, exportadas no
+  `package.json`): o `configurator.tsx` recebe `adultView` e o `room-builder.tsx` recebe `view`,
+  então quem importa só o Kids nunca baixa a tela adulta (o review de 19/10/2026 achou o pacote do
+  Kids carregando os dois). O `AvatarConfiguratorClient` escolhe o `dynamic` pela pele; o
+  `RoomBuilderView` virou só do Kids (sem `skin`). As dicas dos troféus adultos chegam do app por
+  `trophyHints` (nunca a dica do Kids), e o desenho mora no `cosmetics-adult.css` do community,
+  que lê tokens do `globals.css` de lá (`community/tests/adult-cosmetics.test.ts` trava as classes
+  e os tokens). Sem o avatar carregado, o painel adulto diz "Carregando" em vez das peças.
+
+## A etapa da jornada adulta nas listas (19/10/2026)
+
+- `AdultJourneyBadgeView {position, total, title}` (`lib/types.ts`): `journey?` em
+  `RankingEntryView`/`LeagueEntryView` e `authorJourney?` nos tópicos/comentários do hub. `total`
+  inclui a Lenda (a última posição, `title: null`).
+- **Hub adulto:** `attachAdultPublicIdentities` recebe `{displayName, photoUrl?, journey?}` por
+  autor e grava `authorDisplayName`, `authorAvatarUrl` e `authorJourney` SÓ de quem mostra o
+  perfil; quem não mostra sai com `authorAvatarUrl`/`authorJourney` `null`, mesmo que um registro
+  antigo do Hub trouxesse a foto. `getAdultPublicIdentities` devolve foto e etapa.
+- `courseId` obrigatório em `CatalogCourseView`/`MyCourseView`: identidade canônica usada pelas jornadas Kids e adulta.
+
+## Estúdio JS/Python e audiência do host (18/10/2026)
+
+Os dois hosts usam os mesmos editores e rotas; a audiência estática de `createShell` acompanha descoberta, autorização e owners dos hooks. A identidade real do adulto segue para Members/Pensa; o namespace local `adult:<id>` serve apenas ao armazenamento. O BFF recusa contexto de audiência incompatível e o servidor reaplica política e posse na operação.
+
+JavaScript continua padrão para documentos antigos. A página pública usa o player que despacha por linguagem e revisão publicada. Aula Pro JavaScript só compila após vínculo durável editável; Python usa seu ambiente autorizado. Mudança de fonte/autosave não recria o interpretador; perda de acesso, troca de contexto ou revisão de autoria retira sua autorização.
+
+Testes HTTP/Next precisam dos construtores nativos de Request/Response/Headers. Hooks que registram HappyDOM rodam em fixtures de `qa/` chamadas por wrappers descobertos pelo `bun test`; não instalar DOM global no runner BFF. O cache de sessão pertence à vida da página, por isso restaurar apenas `document` depois de um teste não isola o módulo. Preservar asserções e prazos dos casos ao separar processos.
+
+## Objetivos da parte no cartão da criança (18/10/2026)
+
+[`docs/plans/2026-10-18-objetivos-do-estudio.md`](../../docs/plans/2026-10-18-objetivos-do-estudio.md). `components/studio/section-project-check.tsx` (`SectionProjectCheck` → `ObjectivesCard`):
+UM botão ("Verificar esta parte"), a lista dos obrigatórios e, separada, a dos **Desafios extras**
+(5 XP uma vez). A dica só aparece num objetivo que FALTOU depois de verificar (antes tiraria a
+descoberta). O resultado guardado (`savedResults`) volta ao reabrir; o desta tela vence. Mexer no
+projeto depois de verificar marca o resultado como "de antes da mudança": o bloco passa
+`subscribeProjectChanges` (o `onChange` do Estúdio com `updatedAt`) e só uma edição POSTERIOR à
+verificação conta (o autosave do mesmo projeto não). As frases moram em `copy.verificacao` do
+`LessonCopy` (os dois vocabulários). Ganchos `sz-lesson-objectives*`/`sz-lesson-objective*` com
+`data-state`/`data-extra`/`data-stale` (invariante 8). O antigo `StudioActivityPanel`, o
+`getActivityResult` do envio e o `STUDIO_GATE_NOT_PASSED` saíram. `LessonDetailView.sections[]
+.completion` aceita a vista (aluno) OU a `SectionCompletion` inteira (prévia do admin);
+`LessonSections` converte com `projectObjectiveView`. O "Verificar" espera a Ponte terminar de ler o
+código (`bridgeCodeAhead`, até 3 s) antes de mandar o projeto; o members responde 409
+`STUDIO_PROJECT_SYNCING` se ainda chegar lendo.
+Com objetivos que RODAM o jogo (`kind` `game`/`function`/`script`), o botão ocupado diz
+`verificacao.testando` e o BFF chama o gateway com `timeoutMs: 165_000` (`CallOpts.timeoutMs`,
+novo; o padrão segue 60 s). O members responde 424 `PROJECT_CHECK_UNAVAILABLE` ("Não consegui
+testar o seu jogo agora. Tente de novo."; 424 e não 503 para o disjuntor do gateway não contar a
+queda do executor contra o members) e 429 `PROJECT_CHECK_BUSY`; nada é guardado nesses casos. Se o
+executor RECUSA o projeto, a criança lê "Não consegui testar este projeto. Peça ajuda à equipe."
+(o motivo só vai ao "Testar agora" da autoria). Parte só com desafios extras: o servidor responde
+`passed: false` (não há obrigatório), mas o cartão diz `verificacao.soExtras` ou
+`verificacao.cumprido`, nunca "ainda falta".
+
+> **Oficinas ao vivo (14/10/2026):** `createLiveRouteHandler` recebe `support` da sessão
+> (`isSupportSession`, qualquer `act`) e recusa toda chamada não-GET com `SUPPORT_SESSION`; a
+> prévia do Kids usa a mesma regra. O Members repete a recusa por `x-auth-impersonator-id`.
+> `live-recording-status.tsx` ganhou os rótulos de `empty` e `unavailable`.
+
+## Desenho sobre a tela e quadro branco (14/10/2026)
+
+Na sala ao vivo, a PROFESSORA desenha sobre a demonstração que transmite (ou num quadro branco),
+como no modo de desenho dos programas de gravação de tela. O desenho entra na PRÓPRIA imagem
+publicada: a turma vê e ele fica na gravação (feita das trilhas publicadas). A criança não tem
+ferramentas de desenho.
+
+- **Compositor** (`lib/live/screen-annotation.ts`): um `<canvas>` que pinta a cada quadro a aba
+  capturada (ou o fundo do quadro, branco ou escuro) e por cima o desenho; `canvas.captureStream(15)`
+  é a trilha publicada como `demo` DESDE O COMEÇO do compartilhamento (sem desenho ele só repassa a
+  tela). O transporte não troca trilha no meio e não foi mexido: trocar entre tela e quadro, e
+  ligar a aba depois de começar pelo quadro, só muda a imagem do compositor. Tamanho = o da aba
+  (teto 1920x1080, par), 1600x900 para quem começa pelo quadro.
+- ⚠️⚠️ **O relógio do compositor mora num Worker** (`lib/live/background-clock.ts` +
+  `background-clock.worker.ts`, `startBackgroundClock`). A
+  professora opera a aba de demonstração e a da sala fica em segundo plano, onde o Chrome segura o
+  `setInterval` da página em 1 por segundo e para o `requestAnimationFrame`. Medido no Chrome do
+  sistema com a aba escondida: relógio na página = 1 quadro por segundo para a turma; Worker = 15
+  (o compositor de verdade, 25 s escondido). Sem Worker, cai no `setInterval`.
+  ⚠️ O FUNDO DA CÂMERA (`media-camera-effects.ts`) usa o MESMO relógio desde 14/10/2026: com o
+  `setInterval` da página, a câmera da professora com efeito caía para 1 quadro por segundo na aba
+  escondida e, minutos depois (o Chrome segura em 1 por minuto), o vigia de 4 s a desligava.
+  Regra: imagem que vai para a turma nunca anda no relógio da página.
+- **15 quadros por segundo na tela e na demonstração** (`liveVideoEncodings` no
+  `media-transport.ts`, teto 1,5 Mbps; câmera 20 a 600 kbps): eram 10, e a seta e a caneta
+  chegavam aos saltos na tela da criança. O teste amarra ao `ANNOTATION_FPS`. ⚠️ A CAPTURA da aba
+  (`captureLiveTab`, `media-devices.ts`) também pede 15: até 14/10/2026 ela pedia `max: 10`, e a
+  fonte a 10 deixava a codificação a 15 sem efeito (o Estúdio da professora seguia aos saltos). O
+  teste confere o pedido feito ao navegador. Medido com captura de aba REAL no Chrome
+  (`admin/tmp/desenho-real/`, descartável): com a fonte a 10 a turma recebia 14,4 quadros por
+  segundo, mas só 9,6 imagens NOVAS; com 15, 13,3.
+- ⚠️⚠️ **A demonstração é OUTRA aba** (`captureLiveTab({ currentTab: false })`): `preferCurrentTab`
+  falso e `selfBrowserSurface: 'exclude'`, então a sala SAI da lista do Chrome. Com o padrão
+  (`currentTab` verdadeiro, que é o certo para compartilhar a própria sala) o Chrome punha a SALA
+  em destaque, justamente a aba que a validação recusa ("Escolha esta aba…"). ⚠️ A validação pelo
+  identificador da aba (`getCaptureHandle`) não se prova no Chrome automatizado: com
+  `--auto-select-tab-capture-source-by-title` ele chega `null` sempre, inclusive em HTTPS. Confira
+  "Transmitir aba de demonstração" à mão em staging.
+- **Modelo puro** (`lib/live/annotation.ts`): formas VETORIAIS (caneta, marca-texto, seta,
+  retângulo, círculo, texto), uma camada por superfície (tela e quadro guardam desenhos
+  separados), desfazer por versões (forma nova, uma passada inteira de borracha e "limpar tudo"
+  desfazem do mesmo jeito, teto de 100 passos), borracha que apaga a forma tocada (e interpola o
+  arrasto rápido), conversão da prévia para o quadro com as faixas do `object-fit: contain`, a luz
+  mágica que some em 1 s (efêmera, nunca vira forma) e os atalhos.
+- **Interface**: `components/live/live-annotation-toolbar.tsx` (barra, `LiveAnnotationSurfaceSwitch`
+  e `LiveAnnotationControls`, que fica no painel da professora) e `live-annotation-stage.tsx`, o
+  modo desenho: o próprio canvas do compositor numa camada de tela cheia (`useModalA11y`), com a
+  barra em cima. Atalhos: P caneta, M marca-texto, A seta, R retângulo, C círculo, T texto,
+  E borracha, L luz mágica, Q tela ⇄ quadro, Ctrl+Z desfazer, Esc sai (o desenho fica na
+  transmissão até ela limpar). Letras dentro do campo de texto não viram ferramenta, e o Esc do
+  campo desiste do texto sem fechar o modo desenho. Alvos de 44px.
+- **No hook** (`useLiveMedia`): `capture('demo')` embrulha a aba no compositor; `startBoard`
+  publica o quadro sem aba; `shareDemoScreen` põe a aba no compositor que já está no ar. Os dois
+  processadores (fundo da câmera e compositor) moram em `processors` e saem pelo `release`, em
+  toda saída (parar, recusa da sala, queda da conexão, desmontar). O "Parar de compartilhar" do
+  navegador (`track` `ended`) e a troca de aba (`capturehandlechange`) encerram a demonstração
+  inteira, quadro incluído. Sem canvas capturável, a aba vai crua como antes, sem as ferramentas.
+- Testes: `tests/live-annotation.test.ts` (modelo) e `tests/live-screen-annotation.test.ts`
+  (compositor com contexto 2D, vídeo, trilhas e relógio falsos, e o Worker de verdade); no admin,
+  `live-annotation-stage.test.tsx` (barra, atalhos, ponteiro, texto, luz) e
+  `live-annotation-media.test.tsx` (o hook publica a trilha composta e solta tudo). Provados por
+  mutação em cópia (42 mutantes; sobra um equivalente: o `release` do `publish` é coberto também
+  pelo `toggle`). Ensaio visual fora do git em `packages/admin/tmp/desenho-visual/`.
+
+## Cursos ao vivo: a sala é o layout da aula (14/10/2026)
+
+Decisão dela (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`, §§1, 5, 8 e 10): a oficina virou
+um CURSO de modalidade ao vivo e a sala é a AULA gravada com a transmissão. Esquerda: a transmissão
+FIXA no alto e a orientação curta da parte embaixo; direita: a atividade da parte. A divisória
+arrasta; ampliada a atividade, a transmissão vira o flutuante; no celular empilha.
+
+- **`LessonSections` ganhou `stage?: ReactNode` e `sectionControl?: LiveSectionControl | null`.**
+  Sem as duas, NADA muda: a árvore, as classes e a navegação são as de sempre (travado em
+  `community-kids/tests/live-lesson-room.test.tsx`, primeiro caso).
+  - `stage` mora no alto da coluna da esquerda (`sz-lesson-stage`, gancho novo) e é o MESMO nó
+    entre as partes (o painel da esquerda nunca desmonta). Com ele, a orientação vai num invólucro
+    (`sz-lesson-stage-content`) que some na aba "Criar" SEM levar a transmissão junto.
+  - ⚠️⚠️ **Fixa (`sticky`) só ao lado da atividade e no estreito** (`arrastavel || largura < 768`).
+    Lado a lado o painel ganha `self-stretch` para a transmissão grudar enquanto a criança rola a
+    atividade; empilhado o painel vira `display: contents` e ela gruda no alto da PARTE inteira
+    (o bloco de conteúdo do sticky passa a ser o `PanelGroup`). Numa parte só de leitura no
+    computador ela fica no fluxo, com a altura contida pela janela (fixa, cobriria o texto). O topo
+    do sticky é `--sz-lesson-stage-top` (cada app o põe abaixo da barra fixa dele).
+  - ⚠️⚠️ **Nunca `sticky` enquanto flutua**: o `z-20` faria do invólucro um contexto de
+    empilhamento e o flutuante (`fixed`, z-85) ficaria preso embaixo da atividade ampliada.
+  - **O flutuante é o do vídeo da aula** (`LessonVideoFrame` + `LessonVideoFloatContext`): com
+    qualquer atividade ampliada a transmissão flutua sempre (é ao vivo, não há "parada"); o
+    interruptor da barra da atividade e o Minimizar a escondem. Com `stage`, o vídeo de seção não
+    flutua (um flutuante só). `VideoFloatSlot.label` e `VideoToggle.label` (opcionais) nomeiam o
+    que flutua: "Ao vivo" com as partes conduzidas e "Gravação" sem elas (o título cabe no degrau
+    pequeno de 300px; "Transmissão" truncava), e o interruptor diz "Transmissão".
+  - **`sectionControl`**: a trava passa a ser SÓ "a professora ainda não abriu" (a progressão por
+    conclusão não vale no encontro); voltar pode, pular não, e o "Próxima parte" travado diz
+    "A professora abre já já" (`aria-describedby`). A MUDANÇA de `currentId` leva a tela junto, na
+    hora e localmente (a navegação registrada no servidor vai em tentativa, em silêncio), com o
+    aviso `role="status"` "A turma está na parte N" por 6 s. Quem voltou para rever fica lá até a
+    professora abrir OUTRA parte. Com o controle, o "Preciso de ajuda" do rodapé some (o pedido de
+    ajuda é o da barra da chamada) e a faixa "Pode seguir!" não aparece enquanto ela espera a
+    professora. As frases moram em `components/live/live-section-copy.tsx` (a única pasta em que a
+    criança lê "professora"; `.tsx` porque o mapa de exports do pacote só abre `components/live/*.tsx`).
+  - `onSectionChange` passou a mandar também o `sectionId` (a sala relata a parte à professora).
+- **O Estúdio da sala é o bloco Estúdio da aula** ("um projeto só"):
+  `LessonPlayerContextValue.liveWorkspace` (`LiveLessonWorkspace`, `lib/live/lesson-slot.ts`)
+  faz o `StudioBlockView` virar o `LiveBlockWorkspace` (`live-workspace.tsx`, por `next/dynamic`,
+  para as aulas gravadas não pagarem por ele): o projeto ao vivo da criança
+  (`GET /api/live/workspaces?sessionId=&blockId=`; a professora acompanha com `&learnerId=`), lease,
+  revisões, ajuda da professora e a curadoria DO BLOCO. Sem "Enviar para a equipe"; o Compartilhar
+  no Mural continua (`publishToMural`, só o Kids liga). Amplia como os editores (`fixed`, saída
+  marcada `editor`, `useReportActivityExpanded`) e ⚠️ reduz sozinho quando a aula o esconde (a
+  professora abriu uma parte sem ele): ampliado e escondido, seguiria dizendo "atividade ampliada".
+- **`LiveClassroom` recebe a aula pelo slot** `renderLesson(props: LiveLessonSlotProps)`. Contrato
+  combinado: `lesson`, `stage`, `sectionControl`, `teacher`, `teacherNotes?`,
+  `onSectionReport({sectionId, completedSectionIds})`; acréscimos da sala: `liveWorkspace`,
+  `onOutline({sections, attachments})` (as partes para os controles da professora e os anexos para
+  os Materiais da barra) e `audience`. Kids e adulto montam o player de verdade com
+  `components/live/use-live-lesson.tsx` (`useLiveLesson`): a aula vem pela rota de aula de SEMPRE
+  (`/api/live/courses/:slug/lessons/:id` → `/members/courses/:slug/lessons/:id`) e ⚠️⚠️ atualizar é
+  RELER o JSON, nunca `router.refresh()` (num build novo ele vira recarregamento e derrubaria a
+  chamada). O Admin monta a prévia do documento publicado e busca as anotações da professora por
+  `/api/admin/live/lessons/:id/teacher-notes` (o `LiveClassroom` as passa no slot).
+- **Réguas puras** em `lib/live/sections.ts`: `learnerSectionControl` (encontro `live` = as
+  abertas; recepção = nenhuma aberta, a tela mostra a primeira; fora disso `null`, tudo livre;
+  servidor sem a lista = livre, nunca preso), `teacherSectionControl` (todas abertas, acompanhando
+  a atual), `nextSectionId`, `chapterSeconds`, `sectionLabel`.
+- **Professora**: `LiveTeacherControls` ganhou `sections` ("Partes do encontro": a atual,
+  "Próxima parte (N)" e a lista para abrir qualquer uma, comando `open-section`, só com o encontro
+  ao vivo). Os cartões (`LiveParticipants` + `participantStatus`) dizem "Parte N · título" pelo
+  `activity.sectionId` e o selo "Concluiu a parte da turma" pelo `completedSectionIds` (a conclusão
+  é durável; vale com o relato velho). O relato da criança no batimento leva `stepId: null`,
+  `sectionId` e `completedSectionIds` (até 60).
+- **A criança** (`live-learner-room.tsx`): o palco (`LiveStage`) com "Ampliar a transmissão"
+  (tela cheia do navegador; sem ela, cobre a página), a barra da chamada ACIMA do rodapé da aula
+  (`sz-live-controls`, publica `--sz-live-bar-height` para a página reservar) e, fora do encontro,
+  a gravação no lugar da transmissão (`live-recording-stage.tsx`): Vimeo pronto toca no player das
+  aulas com a marca d'água; antes disso, o MP4 (`LiveReplay bare`). Capítulos: trocar de parte leva
+  o vídeo ao trecho dela (só na troca, nunca na abertura) e "Ver este trecho" leva quando a criança
+  pedir (`LessonVideoControls.seek`, opcional, no `VimeoPlayer` e no `LiveReplay`). Os cartões
+  trocam a pele pela plataforma do curso (a carta do Kids ou o cartão sóbrio do adulto).
+- **Saiu da sala o roteiro antigo**: instruções, etapas e materiais do `plan`, o
+  `LiveLearningActivities` (arquivo e teste apagados), o "suggest-step" e as rotas
+  `sessions/:id/learning-*` da lista do BFF. Turma sem `room.lesson` cai no recado "Esta turma é de
+  um formato antigo" (`live-legacy-notice.tsx`).
+- **BFF** (`lib/live-route-policy.ts`): `GET courses/:slug/lessons/:id` (só a sala da criança),
+  `GET lessons/:id/teacher-notes` (só o escopo admin) e o encaminhamento de `blockId`/`learnerId`
+  (uuid) na consulta (`routes/live.ts`).
+- **Oficinas**: `LiveCatalog` agrupa as turmas por CURSO ("Suas oficinas": encontros, o próximo, as
+  gravações para rever); "Conheça as oficinas" ficou só para o roteiro antigo (nada de divulgação).
+  `skin="adult"` para a comunidade adulta (⚠️ desde 18/10/2026 a pele adulta usa a classe
+  `sz-card-sm` e o token `--topo`, que moram no `globals.css` da comunidade adulta).
+- ⭐⭐ **Desempenho** (pedido dela: "criança não tem paciência de esperar e repara tudo"). A sala é
+  consultada a cada 3 s e chega como objeto NOVO (o relógio do servidor, o "visto há pouco" de
+  cada um); nada disso pode re-renderizar a aula:
+  - O `LessonRoom` (`live-learner-room.tsx`) MEMORIZA o elemento da aula (`renderLesson`) com as
+    propriedades comparadas pelo conteúdo (a aula, as partes abertas como texto, o projeto ao
+    vivo, os relatos), e o palco é UM elemento só (`StageSlot`) que lê o que desenhar do
+    `StageContext`, um modelo memorizado com valores estáveis (o modo, quem está na tela, os
+    fluxos de mídia, que são ESTADO no `useLiveMedia`). Na chamada o palco nem sabe a parte (só a
+    gravação a usa). A professora: o mesmo, com o `TeacherStageSlot`.
+  - O `LiveClassroom` compara a turma recebida pelo conteúdo (`admittedKey`) antes de montar o
+    `liveWorkspace`; o `renderLesson` dos apps é estável (`useCallback` com os campos do leitor).
+  - O `LiveBlockWorkspace` é `memo`, o `StudioBlockView` memoriza a curadoria, e o editor dentro
+    do `WorkspaceEditor` é um ELEMENTO memorizado (handlers estáveis, constantes de modo e
+    recursos): a barra de status, a ajuda e a consulta do projeto (1 s) não o re-renderizam. A
+    consulta do projeto só vira estado quando muda o que a tela usa (`remember`).
+  - Nada pula: a porta da sala ("Entrar na sala", "Testar meu computador" num diálogo) mora
+    DENTRO do palco em 16:9 (`DoorStage`), então entrar só troca o que está no palco; o palco,
+    o placeholder, a gravação (MP4 e Vimeo, carregada por `next/dynamic`) e o esqueleto da aula
+    (`LiveLessonSkeleton`) reservam 16:9 desde o primeiro quadro; as câmeras da turma passam POR
+    CIMA do vídeo; a linha do "Ver este trecho" fica reservada; o editor reserva a altura dele
+    antes de chegar. ⭐ Com a transmissão, a coluna da esquerda é dela em TODAS as partes: uma
+    parte sem atividade leva o conteúdo para a direita (`semFerramenta` no `LessonSections`), e a
+    transmissão não muda de lugar nem de tamanho quando a professora abre a parte seguinte.
+  - Primeiro quadro: a página lê a sala e a aula no servidor (`server/live-room-initial.ts`,
+    `loadLiveRoomInitial`, só leitura e melhor esforço) e passa `initialRoom`/`initialLesson`;
+    sem isso eram três quadros ("Abrindo…", esqueleto, aula).
+  - O código do Estúdio (o `LiveBlockWorkspace` e o editor) é baixado no tempo OCIOSO depois que
+    a aula chega, quando ela tem um bloco Estúdio (`useLiveLesson`): sob demanda, sem atrasar a
+    transmissão e sem a criança esperar ao chegar à parte dele.
+  - Números do ensaio (`community-kids/tmp/sala-visual`, `perf.spec.ts`, 1366×768, Chromium com a
+    câmera falsa): 2 minutos de sala parada = **0** renders do Estúdio, do `LessonSections` e do
+    palco; troca de parte pela professora = 1,9 s (dentro de 1 consulta), **0** render do Estúdio
+    e do palco, 1 do `LessonSections`; deslocamento de layout (CLS) ao entrar e ao conectar = 0, na
+    troca de parte = 0,0004; palco à vista em 1,4 s desde a navegação (ensaio sem servidor) e a
+    transmissão tocando 155 ms depois do "Entrar na sala".
+- **Aula ainda fechada para a vaga** (`403 LIVE_LESSON_CLOSED`, frente curso: a matrícula e a
+  chave-mestra não abrem curso ao vivo, a vaga da sessão abre no dia marcado): o `useLiveLesson`
+  devolve `closed` e tenta de novo a cada 15 s; os apps mostram `LiveLessonClosed` (a transmissão
+  no lugar e "O encontro ainda vai abrir"), nunca um erro cru.
+- ⚠️ **Pendente do servidor** (frentes curso e oficina): `occurrence.sections`/`marks`, o comando
+  `open-section`, o relato `sectionId`/`completedSectionIds`, `GET /members/live/workspaces?
+  sessionId=&blockId=` (e a variante da professora com `learnerId`), a rota das anotações, o acesso
+  da aula ao vivo pelo grant (inclusive as partes abertas pela professora: a progressão por
+  conclusão do members recusaria `navigation` e atividades de uma parte "trancada") e a gravação
+  com `vimeo`/`chapters`. Sem a lista de partes, a sala roda livre e a gravação em MP4.
+- Testes: `tests/live-sections.test.ts`, `tests/live-participants.test.ts` (parte e conclusão),
+  `tests/live-route-policy.test.ts`; no Kids, `live-lesson-room.test.tsx` (a aula com as props
+  novas, de verdade) e `live-classroom-slot.test.ts` (o slot em processo próprio); no Admin,
+  `teacher-live-room.test.ts`; no adulto, `live-room.test.ts`. Ensaio visual (fora do git):
+  `community-kids/tmp/sala-visual/`.
+
+## Falar em vez de escrever: a voz vira texto para a equipe (14/10/2026)
+
+Decisão dela: a criança FALA a mensagem para a equipe, o servidor transcreve na hora, ela CONFERE
+e envia TEXTO. **Nenhum áudio é guardado** (nem disco, nem R2, nem log, nem Sentry); por dentro
+tudo continua sendo texto, com uma marca de que veio da fala (o chip "falado" do Admin).
+
+- **`lib/voice/transcription.ts`** (puro): o formato pelos BYTES (`audioFormatFromBytes`: WebM,
+  MP4 como `m4a` do Safari, OGG, WAV), as palavras-chave da plataforma (`TRANSCRIBE_KEYWORDS`), o
+  prompt (`transcribePrompt`, que DESCREVE a situação: os modelos o leem como o texto antes da
+  fala), o filtro de alucinação (`isHallucinatedTranscript`: o texto INTEIRO igual a "Obrigado por
+  assistir", "Legendas pela comunidade Amara.org" e afins, nunca remove pedaço; a assinatura
+  "amara org" só conta como PALAVRAS inteiras, senão "a Samara organizou" caía) e os tetos (2 MB,
+  1 KB, contexto de 200 e o TEXTO: 1000 caracteres por padrão, `PENSA_SPOKEN_TEXT_MAX_CHARS` = 4000
+  só quando o formulário pede pelo cabeçalho `x-sz-voice-max-chars`, régua `spokenTextMaxChars`:
+  qualquer outro valor vira 1000). ⚠️ Em 14/10/2026 o servidor tinha tirado o teto de TODOS os
+  formulários para servir o Pensa; o full review devolveu o padrão.
+- **`server/openrouter-transcribe.ts`**: `openai/gpt-transcribe` pelo OpenRouter (a MESMA
+  `OPENROUTER_API_KEY`), reserva `openai/gpt-4o-mini-transcribe` (vocabulário no TEXTO do prompt,
+  ela não tem `keywords`). Corpo JSON com o áudio em base64, `language: 'pt'`, `temperature: 0` e
+  `provider: { data_collection: 'deny', options: { openai: { prompt, keywords } } }`.
+  ⚠️⚠️ **Sem `zdr`**: com ele o OpenRouter responde 404 "No endpoints found matching your data
+  policy" para TODO modelo da OpenAI (sondagem de 14/10/2026); ela escolheu o gpt-transcribe sem
+  a trava, porque ele acertou o vocabulário. Prazo único de 30 s (20 s por chamada), uma nova
+  tentativa em 429/5xx/rede, depois a reserva; 401/402/403 param na hora. ⚠️ Nenhum erro, log ou
+  Sentry leva o áudio, o texto ou o corpo do provedor (`TranscribeError(reason)` fixo; o corpo de
+  erro é descartado sem ler). Não copie o padrão do `pensa-llm.ts`.
+- **`routes/voice.ts`** (`POST /api/voice/transcribe`, dentro do matcher do proxy): sessão de
+  CRIANÇA (`kids.kind === 'student'`), nenhuma sessão de suporte (nem em modo de escrita),
+  `x-sz-viewer` estrito, interruptor, `Content-Type: audio/*`, a escolha dos pais RELIDA a cada
+  pedido (`auth.getMyProfile()`, só `voiceInputEnabled === true` liga; desligar vale no pedido
+  seguinte), leitura em fluxo com teto de 2 MB, bytes mágicos e, POR ÚLTIMO, os limites: UMA
+  transcrição por vez por perfil (`inflight`), depois minuto (6) → hora (40) → global (600/h), em
+  `globalThis`. ⚠️⚠️ A ordem é do mais estreito para o mais largo porque `check` CONSOME: com o
+  global primeiro, as recusas do minuto de UMA criança insistindo gastavam a cota de todas e
+  desligavam a fala da plataforma por uma hora (achado do full review, travado por teste com
+  `setSystemTime`). Erro que não é `TranscribeError` vira 503 e registra só o NOME. Fora da cota
+  de IA compartilhada: pedir ajuda nunca disputa com o Zappy. O contexto da fase vem em `x-sz-voice-context` com percent-encoding
+  (emoji num título quebraria o cabeçalho). Resposta `{text}`; erros `VOICE_*` com frase.
+- **O gravador** (`lib/voice/use-voice-recorder.ts`) e o **botão**
+  (`components/voice-input/voice-input-button.tsx`, `VoiceInputButton`): captura mono com
+  cancelamento de eco, supressão de ruído e ganho automático; "Pode falar" só no `start` do
+  gravador e 300 ms de cauda no "Parar"; mínimo 0,8 s, máximo 60 s; o medidor (`AnalyserNode`)
+  barra o silêncio ANTES de sair do aparelho (é onde os modelos inventam frases). ⚠️ No iOS o
+  `AudioContext` nasce DENTRO do clique (nada de `await` antes) e é retomado de novo depois que o
+  microfone abre. ⚠️ O filtro de silêncio só vale quando o medidor leu ALGUM som (`meterOk`):
+  contexto suspenso lê zeros absolutos, e sem essa guarda toda fala virava "Não ouvi nada" (o
+  servidor decide nesse caso). Outra mídia da fase e aba escondida param, DESCARTAM, soltam o
+  microfone e DIZEM por quê (`interrupted`); `pagehide` e desmontagem descartam calados. O texto
+  entra na caixa somado ao que havia, cortado no teto em unidades UTF-16 (como o `maxLength` e o
+  `.max()` contam; `juntarFala` nunca parte emoji e não marca "falado" quando nada entrou), com o
+  foco na caixa e o "Ouvir o que eu falei". O botão é UM só (vira "Parar") e fica `aria-disabled`
+  quando ocupado, para não perder o foco; "Cancelar" aparece enquanto o microfone abre; o
+  contexto é cortado por caractere DENTRO do `try` (o emoji partido travava o botão). Envia por
+  `sessionFetch`. Some sem `getUserMedia`/`MediaRecorder`.
+- **Onde aparece:** só com `LessonPlayerContextValue.voiceInput` (o Kids passa; o adulto e o Admin
+  nunca) no pedido de ajuda (`lesson-sections.tsx`), no recado do Estúdio (`studio-block`), do
+  Pinta (`pinta-block`) e da galeria (`lesson-gallery-delivery`); nos Recados o Kids passa
+  `voiceEnabled`. O teto maior da transcrição é opt-in do `VoiceInputButton`
+  (`transcriptMaxChars`, que o gravador manda no cabeçalho): só o Pensa passa 4000; recados, ajuda
+  da fase e o tutor ficam nos 1000 (a ajuda da fase tem caixa de 8000, e mesmo assim não pede). Cada formulário guarda um `*Spoken` que liga com a fala e volta a falso quando a
+  caixa é esvaziada ou enviada. ⚠️⚠️ O `useCallback` do envio PRECISA ter o `messageSpoken` nas
+  dependências: sem ele o Estúdio e o Pinta mandavam a marca antiga (o lint pegou, 14/10/2026).
+  ⚠️⚠️ Todo formulário passa `onBusyChange` e segura o "Enviar" enquanto a fala vira texto:
+  enviando no meio, o diálogo do Estúdio, do Pinta e da galeria fechava e abortava a
+  transcrição (o recado saía sem a fala), e na ajuda e nos Recados a limpeza do envio apagava o
+  texto que chegasse depois. O recado da galeria tem teto de 1000 (o da coluna no banco).
+- **Contrato:** `spoken` no `section-help` e no `TeacherReplyBody`, `messageSpoken` no envio do
+  Estúdio, do Pinta e da galeria (7º/6º argumento posicional dos clients); `ProfileView` e
+  `ProfileWriteInput.voiceInputEnabled?` (opcional: auth antigo = desligado) e
+  `TeacherMessageView.spoken?`. `isVoiceInputConfigured()` = `VOICE_INPUT_ENABLED` + chave.
+- **Env:** `VOICE_INPUT_ENABLED` (só `true`, sem diferença de maiúsculas, liga; QUALQUER outro
+  valor desliga, de propósito: um `enum` estrito derrubava o app inteiro com um "TRUE" digitado no
+  Railway), `OPENROUTER_TRANSCRIBE_MODEL` e `OPENROUTER_TRANSCRIBE_FALLBACK_MODEL` (opcionais).
+- **Testes:** `tests/voice-transcribe.test.ts` (regras puras, provedor falso: parâmetros, nova
+  tentativa, reserva, 401, alucinação, prazo, aborto no meio da chamada, nada do provedor nem do
+  áudio nos erros; cada recusa da rota, a ordem dos limites com o relógio e uma por vez) e
+  `tests/voice-spoken-forwarding.test.ts` (a marca atravessa o BFF e os clients).
+  O botão, os pais e os Recados são testados no Kids (DOM de verdade). Sondagem com gravações de
+  ADULTOS: `scripts/sondar-transcricao.ts` (mesma configuração do servidor).
+
+## Pensa: planejamento funcional (16/10/2026)
+
+Contrato vigente: [docs/pensa-planner.md](../../docs/pensa-planner.md) e
+[especificação](../../docs/plans/2026-10-16-pensa-reestruturacao-spec.md).
+A criança define todo o jogo escolhido. Missões descrevem resultado, regras e conferência;
+não prescrevem cliques, blocos ou código. ZERO orienta a experiência e não é estado documental.
+
+- server/pensa concentra catálogo, contexto, inspeção, planejamento, ajuda, privacidade,
+  proteção e projeção das missões. server/pensa-client e routes/pensa usam /api/pensa
+  e /members/pensa, sem seleção de versão nem leitores de payload anterior.
+- O BFF deriva capacidades atuais de quem executa cada missão, consulta catálogos/manuais
+  oficiais e explica adaptações que precisam de escolha explícita. Falha de leitura é
+  recuperável; não equivale a recurso bloqueado. Nunca somar recursos de dois perfis.
+- Todos os pedidos conferem sessão, x-sz-viewer, suporte somente leitura e os gates de
+  acesso pertinentes. Actor, capacidades, leases e configuração verificada viajam só por
+  /members/internal/pensa, com HMAC do consumer member-shell.
+- Worker preserva ator/pagador originais persistidos. Definição, esqueleto integral,
+  cartões por lote, revisão local/cruzada e auditoria têm manifesto e claims individuais.
+  Contexto mede bytes e conserva decisões; reparos não passam por fora do orçamento.
+- UUIDs de autoridade são resolvidos no servidor. Replanejamento inclui cartões e critérios
+  anteriores, conserva identidades e publica somente candidato completo validado.
+- ProjectView retorna disponibilidade e próxima ação. Mutações de projeto atualizam essa
+  view; comandos de missão retornam MissionHandoff. Mensagens e revisões têm paginação.
+- inspection lê o documento de bilhete autorizado, incluindo programa multipart sem
+  baixar partes de assets. Verifica autoria/runtime/extensões e revisão salva. Isso
+  comprova configuração, não afirma que o jogo funciona.
+- Proteção e restore preservam prepare/copy/verify/commit. Aguardar todas as cópias em voo
+  antes de abort/limpeza. Commit revalida recursos e tokens; depois, resolver view nova,
+  sem reutilizar observação anterior ao restore.
+- Narração usa referências tipadas de definição/draft/missão/mensagem, nunca texto livre
+  do browser. Preservar voz opcional, autorização, cotas, cancelamento e privacidade.
+- O cron de limpeza existente também retoma recompensas pendentes; falha de prêmio é
+  independente da limpeza. Jobs Pensa nunca finalizam a conta.
+- Testes usam respostas determinísticas nas fronteiras pagas. E2E nativo em packages/pensa
+  combina app/sessão Kids/BFF/worker/API/PostgreSQL reais; não simular progresso do backend.
+
 ## A atualização da aula não derruba a atividade (11/10/2026)
 
 Relato dela (staging, Cadê aula 2 parte 3): com o Estúdio AMPLIADO, "Verificar esta parte"
@@ -277,6 +718,24 @@ em primeiro plano. Compartilhado pelos sinos do Kids e Adultos.
 `SectionProjectCheck` mostra cada objetivo e só atualiza progresso após resposta persistida.
 Não confundir estrutura verificada no servidor com execução comprovada do jogo.
 
+## O recurso tem nome, sem "IA" solta (20/10/2026)
+
+Pedido da dona para os dois apps: a tela diz **o Zappy** (o tutor do Estúdio; no Kids, também as
+falas das fases, que são da equipe e não gastam), **o Pensa**, **créditos** (o que os assistentes
+gastam: Zappy no Estúdio, Pensa, a descrição automática do Mural em `server/openrouter.ts` e o
+"Construir" do Pro) e **assistente virtual**, nunca "IA" solta. Aqui: "A conexão do Zappy precisa da
+atenção do responsável…" (`routes/studio-zappy.ts`), a recusa de reserva do "Construir"
+(`studioBuilderReservationDenied` em `server/studio-builder.ts`, aparece no `job.error` do painel do
+Pro): frase de gente por motivo (`Record<StudioAiDenial,…>`, nunca o código `cost-month`), "ideias"
+na criança e "créditos" no adulto, e o caminho por público (Kids: "Peça ao responsável para
+conferir os limites e a conexão na área da família."; adulto: "Veja quanto resta em Meu perfil." nos
+tetos de dia e mês, nada nos de gasto e conexão), testada em `tests/studio-builder.test.ts`; e
+"O assistente está consultando…/respondeu" no atendimento (`customer-helpdesk-portal.tsx`). O
+autor da resposta automática do atendimento segue **"Assistente de IA"** (`customer-helpdesk-content.tsx`):
+é o aviso de transparência, ao lado da equipe. Os guardas `copy-sem-ia` do Kids e do adulto varrem
+`components`, `lib`, `routes` e `server` deste pacote (texto de tela pelo parser; o `new Error` de
+`server/` e os prompts do modelo não contam). Vocabulário completo nos CLAUDE.md dos dois apps.
+
 ## O vocabulário das telas de aula: `LessonCopy` (06/10/2026)
 
 As telas de aula que os dois apps dividem falam a língua de cada app: no adulto curso, aula, seção e
@@ -540,98 +999,9 @@ bucket. Nada mais lê essa chave (conferido em 06/10/2026). O armazenamento é i
 mockar o módulo `server/r2` vazaria para a suíte. Teste: `tests/certificate-pdf.test.ts` (inclui a rota
 com um R2 de mentira: monta, guarda e serve na chave versionada, e nunca lê a da v1).
 
-**Pensa (planejador de jogos — 08/2026):** o shell expõe o BFF de `@sistemazero/pensa` e espelha
-os contratos do members em `lib/types.ts` e `server/clients.ts`. `createPensaRoutes` valida e repassa
-projetos, ciclos, cinco artefatos, tarefas, handoff e progresso. Escritas respeitam o modo
-explícito da impersonação (`readonly` bloqueia; `write` preserva as validações normais). `GET
-/tasks/:id/handoff` preserva o plano e informa a capability; `PATCH
-/tasks/:id/progress` valida IDs e transições.
-
-**Equipe do Pensa (26/09/2026):** o BFF ganhou o espelho do plano compartilhado. Tipos em
-`lib/types.ts`: `PensaProjectRole` (`owner | member`), `role`/`team` nas views de lista
-(`{memberCount, ownerFirstName}`) e detalhe (`{memberCount, shareEnabled}`),
-`PensaProjectMembersView` (lista com 1º nome e rosto; `shareCode` só chega ao DONO) e
-`PensaShareView` (`{code, display}`). Clients `pensaShareProject`/`pensaUnshareProject`/
-`pensaListProjectMembers`/`pensaRemoveProjectMember`/`pensaJoinProject`; handlers `pensaJoin`
-(`POST /api/pensa/projects/join`, Zod `JoinBody {code 4..16}` strict, o código vai como a criança
-digitou e quem normaliza é o members), `pensaShare` (POST/DELETE `…/:projectId/share`),
-`pensaMembers` (GET) e `pensaMember` (DELETE `…/:projectId/members/:profileId`, aceita `me` ou
-UUID; outra coisa é 404 sem ir ao gateway). Toda escrita passa pelo `requireWritableSession` da
-rota do Pensa (impersonação `readonly` barra ANTES do gateway); os 403/404/409 do members
-atravessam com `error.message` inteiro, porque é a frase que a janela da criança mostra. Regras
-(dono/membro, tetos, código) são do members: ver `../members/CLAUDE.md` §Pensa e
-`../../docs/pensa-planner.md` §Equipe. Teste: `tests/pensa-team-routes.test.ts`.
-
-`createPensaAiRoutes` mantém o chat SSE da etapa Z e gera somente `idea`, `game_design`,
-`visual_direction`, `task_plan` e `plan_review`. `planner-contract.ts` usa Zod 4, filtra
-`SERVER_BLOCK_CATALOG` e `SERVER_MECHANIC_DOCUMENTS` pelo `StudioTier`, recebe apenas IDs da IA e
-resolve rótulo, categoria, subcategoria, área e extensão no servidor. ⚠️ Campo sem valor nos
-schemas que vão ao provider é `.nullable()`, NUNCA `.optional()`, e o `jsonSchemaFor` troca
-`oneOf`→`anyOf`: o modo estrito do `response_format` exige `required` com todas as chaves e não
-aceita `oneOf` (400 real do `pensa_task_plan_v1`, 08/2026); o teste de deriva em
-`tests/pensa-ai.test.ts` trava os quatro schemas e `resolveTaskPlan` normaliza `null`→ausente
-antes do members (o DTO de lá usa `t.Optional`, que não aceita null). Sem stream o corpo só chega
-no FIM da geração: `completePensaJson` aceita `bodyTimeoutMs` (task_plan 180s, visual_direction
-90s — 30s derrubava o plano real, "pendurou o corpo" 08/2026), timeout de corpo NÃO re-tenta
-(`PensaLlmError.retryable=false`) e **ABORTA o socket do fetch** ao estourar (senão a conexão
-seguia pendurada); a rota loga o erro técnico e devolve frase gentil à criança.
-**O `pensaGenerateArtifact.POST` responde `text/event-stream` (08/2026):** o PRÉ-VOO
-(sessão/impersonação/jornada/validação/projeto/quota) segue JSON com os envelopes de sempre;
-dali em diante o stream manda `: ok` imediato (TTFB antes do LLM), `: ping` a cada 15s e um único
-evento terminal — `done` com o corpo antigo (`{artifact}`) ou `error` `{status, code, message?}`.
-Sem isso a borda (Railway; Cloudflare em prod ~100s) derrubava com **502** o POST mudo de minutos
-do task_plan (o banner mostrava o fallback "Não deu certo agora."). ⚠️ Desconexão do cliente NÃO
-aborta a geração (≠ chat): o resultado persiste no members e um F5 o mostra — abortar no meio
-podia deixar `pensaReplaceTasks` aplicado sem o artefato salvo. A geração rejeita referência
-inventada, drift, dependência futura e Bíblia Visual sem exatamente um Cartão de Criação por asset —
-mas **arte 2D citada em `visualAssetIds` de tarefa do Estúdio é NORMALIZADA, não reprovada**
-(08/2026): o modelo insiste em citar o fundo/sprite que o jogo USA
-(3 gerações seguidas reprovadas no QA) e a referência é redundante — a cobertura 1:1 segue garantida
-pela tarefa Pinta; id desconhecido continua reprovando. JSON quebrado do modelo (SyntaxError após o
-nudge) também vira frase gentil, não o erro cru do parser.
-
-⭐⭐ **Plano 3D que reprovava com erro técnico na tela (02/10/2026).** A criança via "A tarefa
-molda_tela_vitoria_background não corresponde à criação 3D da Bíblia Visual": um fundo 2D da tela
-de vitória mandado ao Molda, e o `mapGenerateError` mandava a mensagem da validação crua. Hoje o
-caminho do `task_plan` é `buildTaskPlan` (`planner-contract.ts`), em quatro passos:
-- **O pedido diz a ferramenta de cada item** (`visualCardChecklist`, a mesma régua de
-  `visualCardFor` que a validação usa): `- id (nome, kind) → tarefa pinta|molda com assetId e
-  artKind`, ou "uma única tarefa studio" para o mundo (e para modelo/material/céu sem o Molda).
-  ⚠️ `moldaUsable` = Molda liberado **E** jogo 3D: num jogo 2D o pedido dizia "Molda disponível"
-  e o `resolveTaskPlan` recusava o cartão que o próprio pedido sugeriu.
-- **`normalizeArtCards` arruma o que o inventário decide sozinho**: artKind errado num cartão da
-  ferramenta CERTA sai do inventário, e o destino passa a seguir o contexto. ⚠️ Cartão na
-  ferramenta ERRADA (fundo 2D no Molda) só troca de ferramenta na 2ª geração (`switchTools`), e aí
-  o título e o guia viram texto neutro ("Desenhar <item>", "No Pinta, crie …"): o texto do modelo
-  falava da ferramenta errada. Na 1ª ele reprova e o modelo recebe o cartão certo no motivo. Item
-  inexistente, mundo num cartão de arte e Molda fora do alcance seguem para a validação reprovar.
-- **`stripRedundantArtFromStudioTasks`** (era `stripPintaArtFromStudioTasks`) tira das tarefas do
-  Estúdio a arte 2D, o item que já tem cartão do Molda e a 2ª citação em diante de um item que só
-  o Estúdio cria. E o `resolveGuide` põe sufixo (`-2`, `-3`) no id repetido de passo/critério,
-  que o members recusaria com 400. A paleta do CARTÃO tem papel de no máximo 80 caracteres
-  (`CardPaletteSchema`, o teto do DTO do members).
-- **Uma segunda geração com o motivo**: só para `PensaCatalogDriftError`, com "O PLANO ANTERIOR FOI
-  RECUSADO: <motivo>" no fim do pedido. Os motivos de `validateVisualTaskCoverage` dizem o cartão
-  certo de cada item (`cardInstruction`). Falha da IA, timeout e JSON não repetem; a 2ª vai com
-  `maxAttempts: 1` (sem o reparo de JSON por dentro) e só acontece se a 1ª levou menos de
-  `PLAN_RETRY_DEADLINE_MS` (150 s). A quota é cobrada uma vez.
-- **O que não depende do modelo não gasta geração**: Bíblia Visual com item repetido (que
-  reprovaria QUALQUER plano) e artefato aprovado que não passa mais no schema
-  (`validatedContent`) viram `PensaStepError` dizendo que etapa refazer, antes de chamar a IA.
-⚠️⚠️ **A mensagem do erro da geração vai INTEIRA para a tela da criança.** Só o
-`PensaStepError` (etapa sem aprovação: "Aprove a Carta da Ideia antes de seguir.", com os nomes do
-`ARTIFACT_LABELS` do pacote) é escrito para ela; drift, provider, parser e Zod vão ao log
-(`[pensa-ai] …`) e a tela recebe uma frase gentil. As recusas do members (`membersFailure`, no
-substituir tarefas, salvar e validar) passam como vieram SÓ nas de regra (403, 409, 429, que lá
-são frases para criança); 404 vira "Esse plano não está mais aqui.", 400/422 e 5xx viram frase.
-Pelo mesmo motivo os achados da auditoria (`plan-audit.ts`, a lista da Revisão do Plano) chamam o
-cartão pelo TÍTULO, o item pelo nome e o bloco pelo rótulo, sem id, "asset" ou "metadados", e o
-corte do título é por CARACTERE (`clipText`: um emoji partido não salva). Testes:
-`tests/pensa-ai.test.ts` ("o plano 3D que reprovava", "a Revisão do Plano fala com o nome que a
-criança vê" e "plano de tarefas 3D", com a IA trocada pelo `completeJson` opcional de
-`createPensaAiRoutes`).
-A etapa O repete a auditoria contra o catálogo atual. O chat chama o OpenRouter no BFF; ownership e
-persistência passam pelo members. Contrato: [`../../docs/pensa-planner.md`](../../docs/pensa-planner.md).
+**Pensa:** o BFF, a equipe, as capacidades, o planejamento e a narração usam o contrato
+funcional de 16/10/2026 descrito acima e em docs/pensa-planner.md. Schemas vêm de core/pensa;
+não recriar DTOs de ciclos, artefatos ou tarefas em lib/types.
 
 **Pinta (editor de assets de jogos, 07/2026):** diferente do Pensa, o Pinta NÃO tem backend — os
 desenhos vivem no IndexedDB do navegador (por perfil) e a ponte "Usar no Estúdio" grava direto na
@@ -702,10 +1072,8 @@ está instalado, então o campo deixou de influenciar a paleta.
   `HubThreadSort`; a ordem padrão é a AUSÊNCIA do parâmetro). Valor fora da lista cai na padrão
   em vez de virar o 400 do hub: um filtro não pode derrubar a página. Teste em
   `tests/hub-thread-sort.test.ts`.
-- **Cartões Pensa→Pinta/Estúdio:** `planner-contract.ts` exige `assetId` em cada arte 2D e
-  `visualAssetIds` para modelo, mundo e material. O plano continua completo sem entitlement; o
-  handoff informa o bloqueio. O Pinta exige asset vinculado e, quando configurado, envio ao
-  Estúdio. O Estúdio usa somente blocos, manuais e extensões liberados pelo tier.
+- **Missões Pensa nas oficinas:** slots ligam arte salva a missões de criação e integração
+  separadas. O plano aceito usa recursos atuais de quem executa, conforme o contrato funcional.
 - **Report dos pais (Lote E):** o handler `childrenStats` repassa os campos novos da view do
   members — `submissionsCount`, `week.submissionsSubmitted` (Estúdio + Pinta, apresentados como
   **entregas**) e `games` (jogos do Mural na semana; `null` = hub
@@ -930,19 +1298,23 @@ linkEmailSent?}` — URLs ABSOLUTAS, o app não conhece a base do funil; `create
 o e-mail do link saiu. ⚠️ **`emailPending`**: o e-mail já é de um embaixador e a plataforma não
 verifica e-mail, então o referrals NÃO vincula — o magic-link vai para a caixa do dono e a resposta
 vem SEM links; o app precisa ter estado próprio p/ isso, senão vira "não cadastrado" mudo).
-O kids embrulha o shim com `requireParentGateAccountOnly` (tela exclusiva dos pais); o community
-adulto não monta a UI hoje.
+O kids embrulha o shim com `requireParentGateAccountOnly` (tela exclusiva dos pais).
+**Presente Kids e adulto (20/10/2026):** a view ganhou `ambassador.shareUrls?: AmbassadorShareUrls`
+(`{ kids, adult }`, tipo do `@sistemazero/core/referrals`); o `shareUrl` fica (é o Kids) para
+tolerar referrals antigo, e quem renderiza cai nele quando `shareUrls` falta. O handler repassa o
+corpo inteiro (teste `tests/ambassador-me-route.test.ts`). O community adulto agora monta a seção
+"Embaixador" em Meu perfil: lê no servidor com `getAmbassadorEnrollmentReadonly()` (sem refresh
+nem cookie, só na sessão da própria conta) e escreve pelo shim `api/embaixador`, embrulhado com
+`requireOwnAdultAccount` (sem perfil nem claim Kids; GET e POST recusam QUALQUER sessão de suporte,
+até no modo escrita, porque o `pageUrl` é a capability-URL que troca a chave Pix).
+`hub.getSpaceReadonly(slug)` (RSC, sem refresh) é a leitura do espaço que o cabeçalho do Mural
+adulto usa para esconder "Publicar um jogo meu" do visitante (`canInteract: false`).
 
-**Quota de IA por conta (07/2026):** `server/ai-quota.ts` — `consumeAiQuota(members, feature)`
-(features `pensa-chat`/`pensa-synthesis`/`studio-describe`) consome ANTES do OpenRouter via
-`POST /members/ai-usage/consume` (client `members.aiUsageConsume`); **FAIL-OPEN** (members
-fora/5xx → allowed com log — o 10/min in-process fica como anti-burst; o teto in-process de
-150/dia do Pensa SAIU, substituído pela quota durável). Recusa: chat SSE → **429 JSON**
-`{code:'AI_QUOTA_EXCEEDED', scope}` no pré-voo; generate idem (só nos tipos COM LLM);
-`studio/describe` → **200** `{description:'', fallback:true, quotaExceeded:true, scope}`
-(fail-soft, a criança escreve). Copy gentil em `aiQuotaMessage(scope)`; o Pensa propaga o `scope`
-duck-typed até o `friendlyErrorMessage` (pacote pensa) e o ShareDialog do Studio cai no modo
-manual com hint.
+**Quota compartilhada de IA:** `consumeAiQuota` em server/ai-quota.ts continua servindo
+studio-describe e os consumidores existentes. Descrição do Mural recusada permite escrita
+manual com indicação da quota. O Pensa usa reservas e claims duráveis em Members para
+pensa-planning/pensa-help, com contadores próprios e orçamento externo; não passa pelo
+antigo chat SSE nem gera artefatos documentais. Ver a seção funcional acima.
 
 **Perfis estilo Netflix (PR5, kids):** o shell expõe o **client de perfis**
 (`createProfilesClient` em `server/clients.ts` → `/auth/profiles*` no auth) e os **route
@@ -2743,8 +3115,8 @@ ci.yml mapeia `packages/member-shell/*` → deploy dos apps consumidores — mud
 - Cada pergunta revalida sessão, posse do Estúdio, jornada/modo/extensões e cursos liberados;
   impersonação não conversa. Reserva idempotente precede a resposta determinística; somente chamadas
   reais ao modelo consomem o crédito `studio-zappy`.
-- **Rollout por MÉRITO (08/2026 — substituiu o piloto fechado):** `ZAPPY_ENABLED=true` +
-  jornada **≥ `hacker`** (Inventor(a), o 3º degrau). A equipe ignora o interruptor e o nível
+- **Acesso pela jornada (revisado em 15/10/2026):** jornada **≥ `hacker`**
+  (Inventor(a), o 3º degrau), sem flags de liberação. A equipe ignora o nível
   para QA. Não existe allowlist de contas nem degrau configurável: a barra vive em
   **`AI_APPS_MIN_LEVEL`**, compartilhada com o Pensa — os dois CHAMAM a IA, e o custo por uso é o
   motivo de adiar. ⚠️ **O Pinta NÃO usa mais essa barra** (14/08): desenhar não custa por uso,
@@ -2835,15 +3207,12 @@ INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária rel
   este lote engordou o prompt DE PROPÓSITO (receitas + esboço + memória, teto 48KB) — pior caso
   ~$0,042/pergunta, ~$21/mês por conta que estourasse a quota. O **4.1-mini ($0,40/$1,60) é 5×
   mais barato que o 4.1 e uma geração à frente do 4o-mini**, então não volta a ser o modelo que
-  dava resposta vaga: ~$0,008/pergunta. ⚠️ O **Pensa fica no `gpt-4.1`** (JSON grande do
-  `task_plan`, poucas chamadas por ciclo). Cascata: `ZAPPY_MODEL → PENSA_MODEL → MODEL`, todas
-  `.optional()` — **o lote não exigiu env nova**. Só o community-kids tem OpenRouter configurado;
-  o community adulto não roda Zappy.
-- **Quota não é alavanca de custo** (medido 06/08, antes de mexer): equipe JÁ é ilimitada
-  (`privileged` → `unlimited:true` no members) e o teto `AI_LIMIT_DAILY`/`MONTHLY` é **global por
-  CONTA**, somando Pensa + Zappy + descrição do Mural — baixá-lo corta o Pensa junto (1 ciclo ≈
-  25-30 interações). Além disso teto não reduz custo MÉDIO, só a cauda. Se um dia cortar, corte o
-  MENSAL, nunca o diário. Medir primeiro no `/admin/ia` (breakdown por feature e por conta).
+  dava resposta vaga: ~$0,008/pergunta. O modelo do Pensa é resolvido pelas variáveis
+  OPENROUTER_PENSA_SYNTHESIS_MODEL → OPENROUTER_PENSA_MODEL → OPENROUTER_MODEL, sem nome fixo
+  no runtime. Os valores de custo acima registram a investigação de 06/08, não uma medição
+  da reestruturação funcional atual.
+- **Quota:** limites compartilhados permanecem na infraestrutura existente. Pensa registra
+  cada chamada real, com reserva e orçamento de fase/unidade, como descrito no contrato vigente.
 - **Segurança infantil intacta:** URL, cerca de código, anti-grooming, PII na pergunta e quota
   seguem fail-closed. As flexibilizações são cirúrgicas: tag única sem atributo, `class`/`return`
   em texto, e `ANSWER_PHONE_RE` (telefone com DDD) usado SÓ no lado da RESPOSTA — a redação da
@@ -2852,14 +3221,11 @@ INTEIRA por uma referência ruim. Daí a "resposta genérica" que a usuária rel
 ## Jornada do criador — 07/09/2026
 
 Ver `../../docs/plans/creator-journey-rollout.md` para ordem de implantação e rollback.
-`server/pensa-capabilities.ts` usa os blocos conquistados e a disponibilidade das ferramentas
-na geração/auditoria. Desde 02/10/2026 não há fallback de currículo vazio: sem bloco conquistado o
-Estúdio não é destino (`studioAvailable` exige `tier.hasPalette`), porque a porta do `/estudio`
-estaria trancada e a geração paga sairia com o catálogo vazio. Molda é destino de
-cartões 3D (model/texture/sky); IDs do inventário visual e da criação persistida são distintos.
-Os contratos e schemas do BFF reconhecem `molda`/`molda_asset`.
-A auditoria exige explicitamente a disponibilidade atual de Molda, Pinta e Estúdio;
-não basta o catálogo de blocos continuar compatível com um plano antigo.
+`server/pensa/context.ts` resolve blocos conquistados, oficinas disponíveis, autoria,
+ferramentas do Molda e criações autorizadas por pessoa. Ausência de paleta bloqueia autoria
+por blocos; Pro segue sua autorização própria. Planejamento e aceite revalidam recursos,
+sem manter tarefas impossíveis como executáveis. Slots de arte e criações têm identidades
+separadas; criar e integrar são missões distintas.
 
 `hub.myShowcaseDeliveryReadonly(courseId)` consulta entrega por ator, sem aceitar ID de outro
 perfil. Campos aditivos do detalhe do curso: id, milestones e showcaseLessonId.
@@ -2880,7 +3246,7 @@ experiência nova. O que ficou de pé:
   são os ladrilhos (`sceneReadout` do core).
 - **`AvisoDoFarol` (`scene-farol.tsx`) é a faixa `fundoAviso` do projeto da criança** (8, 8,
   464 × 28, `#143d35`, texto branco à esquerda), com as MESMAS frases (`AVISOS_DO_FAROL`, espelho de
-  `docs/aulas-interativas/qa/desafio-farol-projeto.ts`). Na porta, o aviso depois da tentativa é o
+  `docs/aulas-interativas-tecnico/qa/desafio-farol-projeto.ts`). Na porta, o aviso depois da tentativa é o
   do ramo escolhido ("Você acendeu o farol!…" / "A porta não abriu. Falta a chave.").
   ⚠️ O texto leva `data-sem-halo`: o halo claro do `scene.css` borrava o branco sobre o verde-escuro.
 - **`RegraDoJogo` mora na BANCADA**: a regra que a cena executa, montada como os blocos do Estúdio

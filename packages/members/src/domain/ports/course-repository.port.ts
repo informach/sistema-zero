@@ -20,15 +20,19 @@ export interface CourseRepository {
   findLesson(lessonId: string): Promise<Lesson | null>
   /** A aula de um bloco ATIVO (o rascunho da fase chega só com o id do bloco). */
   findBlockLessonId(blockId: string): Promise<string | null>
-  /** Cursos ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos". */
+  /**
+   * Cursos GRAVADOS ACESSÍVEIS (published ou archived) por slugs — para montar "meus cursos".
+   * Curso AO VIVO nunca volta: ele não se libera por matrícula, só pela vaga na turma.
+   */
   findAccessibleCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por slugs, QUALQUER status (admin: progresso/detalhe inclui draft/archived). */
   findCoursesBySlugs(slugs: string[]): Promise<Course[]>
   /** Cursos por IDS, qualquer status (ficha admin: resolve os cursos com atividade). */
   findCoursesByIds(ids: string[]): Promise<Course[]>
   /**
-   * TODOS os cursos `published` da AUDIÊNCIA (catálogo/descoberta), ordenados por
-   * título. O param é obrigatório: cada vitrine (community/community-kids) decide.
+   * TODOS os cursos GRAVADOS `published` da AUDIÊNCIA (catálogo/descoberta e chave-mestra),
+   * ordenados por título. O param é obrigatório: cada vitrine (community/community-kids)
+   * decide. Curso AO VIVO fica de fora: ele só aparece em Oficinas.
    */
   listPublishedCourses(audience: CourseAudience): Promise<Course[]>
   /**
@@ -55,13 +59,16 @@ export interface CourseRepository {
     opts?: { publishedOnly?: boolean },
   ): Promise<Map<string, ModuleWithLessons[]>>
   /**
-   * Aula com o conteúdo completo (blocos ordenados + anexos). `includeAttachments`
+   * Aula com blocos ordenados e anexos. Por padrão, o Estúdio já é projetado na
+   * origem sem exemplos privados da autoria. Só autoria, publicação e restauração
+   * pedem `includePrivateStudioAuthoring: true` explicitamente.
+   * `includeAttachments`
    * (default `true`) pode ser `false` p/ leituras que só usam os blocos (ex.: os
    * GETs lazy do Studio) — evita 1 query de anexos descartada; `attachments` volta `[]`.
    */
   findLessonWithContent(
     lessonId: string,
-    opts?: { includeAttachments?: boolean },
+    opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null>
   /** Total de aulas do curso, qualquer status (visão de AUTORIA no admin). */
   countLessons(courseId: string): Promise<number>
@@ -83,6 +90,8 @@ export interface CourseRepository {
     lessonId: string,
     chain: string,
     kind: 'studio' | 'pinta',
+    /** Studio continuity uses this learner's already-bound chain before current authoring. */
+    owner?: { userId: string; accountId: string },
   ): Promise<{ blockId: string; lessonId: string } | null>
   /** Total de aulas por curso, em lote (admin). courseId → total. */
   countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>>

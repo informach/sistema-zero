@@ -1,59 +1,129 @@
-import { useId, useState } from 'react'
+import type { CSSProperties } from 'react'
 import { COPY } from '../../../core/copy'
 import { SCENE_SHELL_COPY } from '../../../core/sceneShellCopy'
+import type { SceneBooleanOperation } from '../../../scene/booleanSolids'
 import {
-  renameSceneNode,
-  reparentSceneNodes,
+  deleteSceneNodes,
   resizeScenePrimitive,
-  setSceneNodeFlag,
   setScenePrimitiveDetail,
 } from '../../../scene/commands'
 import { editScenePath } from '../../../scene/pathCommands'
+import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { primitiveDetail } from '../../../scene/primitiveDetail'
 import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
-import { Button } from '../../ui/Button'
+import { Copy, Trash2 } from '../../ui/icons'
+import { focusWorkshopStage } from './focusStage'
 import { SceneAdjustmentForm } from './SceneAdjustmentForm'
+import { SceneArrangeTools } from './SceneArrangeTools'
+import { SceneBooleanPanel, type SceneBooleanPreview } from './SceneBooleanPanel'
 import { SceneCurveDetails } from './SceneCurveDetails'
+import { SceneFlipControls } from './SceneFlipControls'
 import { SceneMirrors } from './SceneMirrors'
+import { ScenePivotChoices } from './SceneModelGuideControls'
 import { ScenePathProperties } from './ScenePathProperties'
-import { SceneSkinTools } from './SceneSkinTools'
+import { ScenePieceCoordinates } from './ScenePieceCoordinates'
+import { SceneSurfaceStrip } from './SceneSurfaceStrip'
+import { SceneTransformCoordinates } from './SceneTransformCoordinates'
+import { SceneTransformSteps } from './SceneTransformSteps'
 import { SceneVectorForm } from './SceneVectorForm'
-import { adjustScene, type SceneAdjustment } from './sceneAdjustment'
+import { adjustScene } from './sceneAdjustment'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
-/** O `<details>` do painel: cartão claro, o resumo em negrito com 44px de alvo. */
-const DISCLOSURE = 'rounded-xl bg-mld-bg p-2'
-const SUMMARY = 'flex min-h-11 cursor-pointer items-center px-1 text-sm font-bold text-mld-text'
+/** O `<details>` do painel: uma linha com a seta (`.mld-disclosure`), o resumo com 44px de alvo. */
+const DISCLOSURE = 'mld-disclosure'
 
 /**
- * O painel da peça escolhida, no desenho da tela-modelo (11/09/2026): à vista o que se usa todo
- * dia (o ajuste de mover, girar, mudar tamanho e o ponto de giro, com X, Y e Z lado a lado), e
- * recolhido o resto. A cor e o acabamento SAÍRAM daqui para a faixa de baixo do Modelar; o nome,
- * mostrar, travar e o grupo moram em "Mais sobre a peça".
+ * Cartão contextual da peça: apenas o ajuste da ferramenta ativa, seguido da aparência.
+ * A organização das peças fica na árvore; operações avançadas respeitam seus acessos.
  */
 export function SceneNodeProperties({
   workshop,
+  booleanTools,
 }: {
   workshop: ReturnType<typeof useSceneWorkshop>
+  booleanTools?: {
+    preview: SceneBooleanPreview | null
+    busy: boolean
+    prepare(operation: SceneBooleanOperation): void
+    confirm(): void
+    cancel(): void
+  }
 }) {
   const copy = COPY.scene
-  const nameId = useId()
-  const [chosenMode, setMode] = useState<SceneAdjustment>('move')
+  const chosenMode = workshop.tool
   // O portão: mover, girar e mudar tamanho são `model.pieces`; o ponto de giro e as medidas,
   // `model.precise`. Trancado não aparece.
   const { can } = useMoldaToolAccess()
   const modes = (['move', 'rotate', 'scale', 'pivot'] as const).filter((name) =>
-    can(name === 'pivot' ? 'model.precise' : 'model.pieces'),
+    can(name === 'pivot' ? 'model.pivot' : 'model.pieces'),
   )
-  const mode = modes.includes(chosenMode) ? chosenMode : modes[0]
+  const mode = modes.find((mode) => mode === chosenMode)
   const precise = can('model.precise')
-  const { primary, selected, run, document, index, covered } = workshop
-  const groups = document.nodes.filter((node) => node.kind === 'group' && !covered.has(node.id))
+  const { primary, selected, run, document, index } = workshop
   const geometry = primary?.kind === 'mesh' ? index.geometries.get(primary.geometryId) : undefined
-  if (!selected.length) return <p className="p-2 text-sm text-mld-muted">{copy.choose}</p>
+  if (!selected.length)
+    return (
+      <p className="rounded-xl border border-dashed border-mld-border p-3 text-center text-sm text-mld-muted">
+        {copy.choose}
+      </p>
+    )
+  // O selo do tipo ao lado do nome ("Caixa", "Grupo"), na cor da forma, como nos prints.
+  const kind =
+    geometry && geometry.kind in COPY.shapes
+      ? (geometry.kind as keyof typeof COPY.shapes)
+      : undefined
+  const kindLabel = kind ? COPY.shapes[kind] : primary ? copy.nodeKind[primary.kind] : null
+  const kindInk =
+    kind && kind !== 'mesh'
+      ? `var(--mld-shape-${kind})`
+      : primary?.kind === 'group'
+        ? 'var(--mld-shape-cylinder)'
+        : 'var(--mld-shape-special)'
   return (
     <div className="space-y-4 border-t border-mld-border pt-3">
-      <p className="text-sm font-bold text-mld-text">{copy.selection(selected.length)}</p>
+      <div className="mld-piece-heading">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <p className="mld-display min-w-0 truncate text-[1.0625rem] text-mld-text">
+            {primary?.name ?? copy.selection(selected.length)}
+          </p>
+          {kindLabel && (
+            <span className="mld-kind-chip" style={{ '--mld-chip': kindInk } as CSSProperties}>
+              {kindLabel}
+            </span>
+          )}
+        </div>
+        <RequiresTool family="model.pieces">
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              className="mld-chip-btn"
+              aria-label={copy.duplicate}
+              title={SCENE_SHELL_COPY.duplicateHint}
+              onClick={() =>
+                run((source) => duplicateSceneNodesNearby(source, selected), 'created')
+              }
+            >
+              <Copy aria-hidden="true" />
+              {copy.duplicate}
+            </button>
+            <button
+              type="button"
+              className="mld-chip-btn"
+              data-danger=""
+              aria-label={copy.remove}
+              title={`${copy.remove} (Delete)`}
+              onClick={(event) => {
+                const from = event.currentTarget
+                if (run((source) => deleteSceneNodes(source, selected), 'clear'))
+                  focusWorkshopStage(from)
+              }}
+            >
+              <Trash2 aria-hidden="true" />
+              {SCENE_SHELL_COPY.removeShort}
+            </button>
+          </div>
+        </RequiresTool>
+      </div>
       {geometry?.kind === 'mesh' && (
         <p className="text-sm text-mld-muted">
           {copy.meshCounts(
@@ -62,33 +132,80 @@ export function SceneNodeProperties({
           )}
         </p>
       )}
-      {mode && (
+      {primary && mode !== 'pivot' && (can('model.coordinates') || can('model.pivot')) && (
+        <ScenePieceCoordinates workshop={workshop} />
+      )}
+      {primary && mode === 'pivot' && <ScenePivotChoices workshop={workshop} />}
+      {primary && mode !== 'pivot' && can('model.pieces') && (
+        <details className={DISCLOSURE}>
+          <summary>Ajustar por cliques</summary>
+          <SceneTransformSteps workshop={workshop} />
+        </details>
+      )}
+      <RequiresTool family="model.pieces">
+        <SceneFlipControls workshop={workshop} />
+      </RequiresTool>
+      {mode && !primary && (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-1 rounded-2xl bg-mld-bg p-1">
-            {modes.map((name) => (
-              <button
-                key={name}
-                type="button"
-                className="min-h-11 rounded-xl px-2 text-sm font-bold text-mld-muted transition hover:text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent disabled:cursor-not-allowed disabled:opacity-50 aria-pressed:bg-mld-accent aria-pressed:text-mld-accent-fg"
-                aria-pressed={mode === name}
-                disabled={name === 'pivot' && selected.length !== 1}
-                onClick={() => setMode(name)}
-              >
-                {copy[name]}
-              </button>
-            ))}
-          </div>
-          <SceneAdjustmentForm
-            key={`${mode}-${selected.join(',')}-${document.updatedAt}`}
-            mode={mode}
-            disabled={mode === 'pivot' && selected.length !== 1}
-            onApply={(values) => run((source) => adjustScene(source, selected, mode, values))}
-          />
+          <h3 className="mld-kicker">
+            {mode === 'pivot' ? 'Pivô — onde gira' : mode === 'scale' ? 'Tamanho' : copy[mode]}
+          </h3>
+          {mode === 'pivot' ? (
+            <>
+              <ScenePivotChoices workshop={workshop} />
+              <details className={DISCLOSURE}>
+                <summary>Valores do pivô</summary>
+                <SceneAdjustmentForm
+                  mode="pivot"
+                  disabled={selected.length !== 1}
+                  onApply={(values) =>
+                    run((source) => adjustScene(source, selected, 'pivot', values))
+                  }
+                />
+              </details>
+            </>
+          ) : (
+            <>
+              <SceneTransformSteps workshop={workshop} />
+              {precise && (
+                <details className={DISCLOSURE}>
+                  <summary>Medidas e valores</summary>
+                  <SceneTransformCoordinates workshop={workshop} />
+                </details>
+              )}
+            </>
+          )}
         </div>
       )}
+      <SceneSurfaceStrip workshop={workshop} />
+      {selected.length === 1 &&
+        !workshop.components.selection &&
+        can('model.mesh') &&
+        booleanTools &&
+        primary?.kind === 'mesh' && (
+          <section
+            aria-label="Combinar volumes"
+            className="rounded-xl border border-mld-border bg-mld-surface p-3"
+          >
+            <h3 className="mld-kicker">Combinar volumes</h3>
+            <p className="mt-2 text-sm text-mld-muted">
+              Selecione mais uma peça com Shift para usar União, Interseção ou Diferença.
+            </p>
+          </section>
+        )}
+      {selected.length === 2 &&
+        !workshop.components.selection &&
+        can('model.mesh') &&
+        booleanTools && (
+          <SceneBooleanPanel
+            names={selected.map((id) => index.scene.nodes.get(id)?.name ?? id) as [string, string]}
+            {...booleanTools}
+          />
+        )}
+      {precise && selected.length > 1 && <SceneArrangeTools workshop={workshop} />}
       {precise && primary && geometry && geometry.kind !== 'mesh' && geometry.kind !== 'path' && (
         <details className={DISCLOSURE}>
-          <summary className={SUMMARY}>{copy.dimensions}</summary>
+          <summary>{copy.dimensions}</summary>
           <SceneVectorForm
             key={`${primary.id}-${document.updatedAt}-dimensions`}
             label={copy.dimensions}
@@ -98,16 +215,15 @@ export function SceneNodeProperties({
               geometry.to[1] - geometry.from[1],
               geometry.to[2] - geometry.from[2],
             ]}
-            min={Number.MIN_VALUE}
+            min={workshop.measurementStep}
+            step={workshop.measurementStep}
             onApply={(values) => run((source) => resizeScenePrimitive(source, primary.id, values))}
           />
         </details>
       )}
       {precise && primary && (geometry?.kind === 'cylinder' || geometry?.kind === 'sphere') && (
         <details className={DISCLOSURE}>
-          <summary className="min-h-11 cursor-pointer px-1 py-3 text-sm font-bold text-mld-text">
-            {copy.curveDetail}
-          </summary>
+          <summary>{copy.curveDetail}</summary>
           <SceneCurveDetails
             key={`${primary.id}-${geometry.id}-${JSON.stringify(primitiveDetail(geometry))}`}
             geometry={geometry}
@@ -128,98 +244,6 @@ export function SceneNodeProperties({
         />
       )}
       <SceneMirrors workshop={workshop} />
-      {primary?.kind === 'mesh' && geometry?.kind === 'mesh' && (
-        <SceneSkinTools key={`skin:${document.id}:${primary.id}`} workshop={workshop} />
-      )}
-      {/* Com várias escolhidas sobra o grupo: colocar todas de uma vez num grupo continua aqui. */}
-      <details className={DISCLOSURE}>
-        <summary className={SUMMARY}>{SCENE_SHELL_COPY.moreAboutPiece}</summary>
-        <div className="space-y-3 px-1 pb-1">
-          {primary && (
-            <>
-              <form
-                key={`${primary.id}-${primary.name}`}
-                className="space-y-2"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  const name = new FormData(event.currentTarget).get('name')
-                  if (typeof name === 'string')
-                    run((source) => renameSceneNode(source, primary.id, name))
-                }}
-              >
-                <label htmlFor={nameId} className="text-sm font-bold text-mld-text">
-                  {copy.nodeName}
-                </label>
-                <input
-                  id={nameId}
-                  name="name"
-                  required
-                  maxLength={48}
-                  defaultValue={primary.name}
-                  className="min-h-11 w-full rounded-lg border border-mld-border bg-mld-surface px-3 text-sm text-mld-text focus-visible:outline-2 focus-visible:outline-mld-accent"
-                />
-                <Button type="submit" className="w-full text-sm">
-                  {copy.rename}
-                </Button>
-              </form>
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-mld-text">
-                <input
-                  type="checkbox"
-                  name="visible"
-                  checked={!primary.hidden}
-                  className="size-5 accent-mld-accent"
-                  onChange={(event) =>
-                    run((source) =>
-                      setSceneNodeFlag(source, [primary.id], 'hidden', !event.target.checked),
-                    )
-                  }
-                />
-                {copy.visible}
-              </label>
-              <label className="flex min-h-11 cursor-pointer items-center gap-3 text-sm text-mld-text">
-                <input
-                  type="checkbox"
-                  name="locked"
-                  checked={primary.locked}
-                  className="size-5 accent-mld-accent"
-                  onChange={(event) =>
-                    run((source) =>
-                      setSceneNodeFlag(source, [primary.id], 'locked', event.target.checked),
-                    )
-                  }
-                />
-                {copy.locked}
-              </label>
-            </>
-          )}
-          <RequiresTool family="model.pieces">
-            <details className="rounded-xl bg-mld-surface p-2">
-              <summary className={SUMMARY}>{copy.organize}</summary>
-              <div className="space-y-1">
-                <Button
-                  className="w-full text-sm"
-                  disabled={selected.every((id) => index.scene.nodes.get(id)?.parentId === null)}
-                  onClick={() => run((source) => reparentSceneNodes(source, selected, null))}
-                >
-                  {copy.root}
-                </Button>
-                {groups.map((group) => (
-                  <Button
-                    key={group.id}
-                    className="w-full justify-start text-sm"
-                    onClick={() => run((source) => reparentSceneNodes(source, selected, group.id))}
-                  >
-                    {group.name}
-                  </Button>
-                ))}
-                {groups.length === 0 && (
-                  <p className="p-2 text-sm text-mld-muted">{copy.noGroups}</p>
-                )}
-              </div>
-            </details>
-          </RequiresTool>
-        </div>
-      </details>
     </div>
   )
 }

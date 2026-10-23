@@ -194,7 +194,7 @@ test('o perfil mudou na outra aba: recusa sem nova tentativa, mesmo batendo com 
   expect(error).toBeInstanceOf(LessonDraftSaveError)
   expect(error.viewerChanged).toBe(true)
   expect(error.code).toBe('VIEWER_CHANGED')
-  expect(error.message).toBe('O perfil mudou. Abra a fase de novo.')
+  expect(error.message).toBe('O perfil mudou. Abra a aula de novo.')
 })
 
 test('um salvamento travado vence o prazo: só a parte com envio em dia recusa', async () => {

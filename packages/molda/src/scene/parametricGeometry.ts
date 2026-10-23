@@ -1,4 +1,4 @@
-import type { ScenePathGeometry, ScenePrimitiveGeometry } from './document'
+import type { SceneGeometry, ScenePathGeometry, ScenePrimitiveGeometry } from './document'
 import { pathMesh } from './pathMesh'
 import { pathTriangleCount } from './pathParameters'
 import { primitiveTriangleCount } from './primitiveDetail'
@@ -30,3 +30,7 @@ export const parametricTriangleCount = (source: ParametricGeometry) =>
   source.kind === 'path'
     ? pathTriangleCount(source.points.length, source)
     : primitiveTriangleCount(source)
+
+/** Read-only authorial topology for selection; conversion is committed only by an edit. */
+export const sceneGeometryMesh = (geometry: SceneGeometry) =>
+  geometry.kind === 'mesh' ? geometry : cachedParametricMesh(geometry).mesh

@@ -8,13 +8,14 @@ const PREVIEW = [
 ] as const
 
 /**
- * Tela do Mural dos Criadores BLOQUEADO (sem o produto): o item aparece no menu, mas a
- * criança ainda não tem acesso. Wrapper fino do `KidsLockedProduct` (prévia + CTA da
- * Comunidade dos Criadores, a assinatura que libera o Mural).
+ * Tela do Mural dos Criadores BLOQUEADO (a conta não tem o produto): o item aparece no menu,
+ * mas a criança ainda não tem acesso. Wrapper fino do `KidsLockedProduct` (prévia + cartão
+ * da Comunidade dos Criadores, onde o Mural abre com a assinatura).
  */
 export function KidsLockedMural() {
   return (
     <KidsLockedProduct
+      product="mural"
       title="Mural dos Criadores"
       intro="O Mural dos Criadores é a vitrine onde a galera mostra os jogos que criou! 🎨✨"
       preview={PREVIEW}

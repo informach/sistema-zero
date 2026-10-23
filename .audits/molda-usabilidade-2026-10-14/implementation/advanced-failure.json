@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "visible camera drag and wheel navigation preserve authoring and return to the selected tool",
+    "pivot preview and cancel preserve source; apply and undo are atomic",
+    "division preview, cancellation and undo preserve source and keep both sides"
+  ],
+  "errors": [
+    "Rendered more hooks than during the previous render."
+  ],
+  "error": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Pular', exact: true })\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" class=\"inline-flex min-h-11 items-center justify-center gap-2 px-4 text-base font-bold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mld-accent disabled:cursor-not-allowed disabled:opacity-50 rounded-xl border-2 border-mld-border bg-mld-surface text-mld-text hover:border-mld-accent aria-pressed:border-mld-accent aria-pressed:bg-mld-accent/15 aria-pressed:ring-2 aria-pressed:ring-mld-accent\">Pular</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m    - element is visible, enabled and stable\u001b[22m\n\u001b[2m    - scrolling into view if needed\u001b[22m\n\u001b[2m    - done scrolling\u001b[22m\n\u001b[2m    - element is not visible\u001b[22m\n\u001b[2m  - retrying click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n"
+}

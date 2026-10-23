@@ -1,5 +1,6 @@
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import { isPrivilegedRole } from '@sistemazero/member-shell/lib/studio-tier'
-import { isStudioZappyAllowed } from '@sistemazero/member-shell/server/zappy-access'
+import { canShowPythonCreation } from '@sistemazero/member-shell/server/studio-unlocks'
 import {
   KidsJourneyLockedStudio,
   KidsStudioWithoutTools,
@@ -8,16 +9,15 @@ import { KidsLockedStudio } from '@/components/kids/kids-locked-studio'
 import { KidsStudioUnavailable } from '@/components/kids/kids-studio-unavailable'
 import { StudioFullClient } from '@/components/kids/studio-full-client'
 import { ToolRouteRecado } from '@/components/kids/tool-route-recado'
+import { toolEarnedInJourney, toolOpensAtLevel } from '@/lib/tool-opens-at'
 import {
-  checkChallengeAccessReadonly,
   checkCreativeToolsAccessReadonly,
-  getAiCreditsReadonly,
-  getChallengeReadonly,
   getGamificationReadonly,
   getStudioUnlocksReadonly,
 } from '@/server/members'
 import { getSession } from '@/server/session'
 import { studioGate } from '@/server/studio-gate'
+import { prepareStudioServices } from '@/server/studio-services'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,30 +35,18 @@ export const dynamic = 'force-dynamic'
 export default async function EstudioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tarefa?: string; projeto?: string }>
+  searchParams: Promise<{ missao?: string; projeto?: string }>
 }) {
-  const { tarefa, projeto } = await searchParams
-  // `session.id` = o PERFIL ativo (kids) → isola os projetos do Estúdio por criança no
-  // IndexedDB (irmãos no mesmo navegador não compartilham a lista). Resolve junto do gate.
-  // A posse do DESAFIO (Clube+Estúdio, best-effort) liga o checkbox do Compartilhar.
-  // O desafio e o saldo de IA eram `await` CONDICIONAIS depois deste bloco —
-  // duas idas em SÉRIE que só começavam depois de tudo aqui, e é a soma disso
-  // que a criança vê como tela de carregando. Agora DISPARAM junto com o resto
-  // (são leituras memoizadas, sem efeito colateral e sem consumo de crédito),
-  // mas ficam FORA do `Promise.all`: quem não tem o produto sai nos gates
-  // abaixo sem esperar por duas respostas que nunca vai usar. O `.catch` já
-  // está aqui, então largar a promessa pendente não vira rejeição solta.
-  const desafioPendente = getChallengeReadonly().catch(() => null)
-  const creditosPendentes = getAiCreditsReadonly().catch(() => null)
-  const [res, session, challengeAccess, gam, unlocksRes] = await Promise.all([
+  const { missao, projeto } = await searchParams
+  const readServices = prepareStudioServices()
+  const [res, session, gam, unlocksRes] = await Promise.all([
     // ⚠️ Pede refs `estudio-completo,pinta,molda` numa ida SÓ: o gate segue sendo o
     // `estudio-completo`; a posse do PINTA liga o "Trazer do Pinta" e a do MOLDA o
     // "Trazer do Molda" no editor (produtos vendidos à parte — cross-app só com posse
     // dos dois lados).
     checkCreativeToolsAccessReadonly(),
     getSession(),
-    checkChallengeAccessReadonly().catch(() => null),
-    // Rank do aluno → modos+perfil do editor. `withRanking:true` casa a chave do
+    // Política/earned do perfil → capacidades do editor. `withRanking:true` casa a chave do
     // React.cache com a da (app)/layout (dedup, sem ida extra). Best-effort.
     getGamificationReadonly({ withRanking: true }).catch(() => null),
     // Paleta pelo CURRÍCULO: bônus concluídos + cursos da jornada concluídos e publicados.
@@ -68,17 +56,23 @@ export default async function EstudioPage({
   // Os recados rolam na própria caixa: a rota trava a altura na janela (ver `ToolRouteRecado`).
   if (res.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
   const hasAccess = res.body?.access?.['estudio-completo'] === true
-  if (!hasAccess) return <ToolRouteRecado screen={KidsLockedStudio} />
+  if (!hasAccess) {
+    const lockedJourney = gam?.status === 200 ? kidsJourneyAccess(gam.body) : null
+    const opensAt = toolOpensAtLevel('estudio-completo', lockedJourney)
+    const earned = toolEarnedInJourney('estudio-completo', lockedJourney)
+    return <ToolRouteRecado screen={<KidsLockedStudio opensAt={opensAt} earned={earned} />} />
+  }
   const pintaOwned = res.body?.access?.pinta === true
   const moldaOwned = res.body?.access?.molda === true
   // Falha ao consultar o rank não pode virar Faísca: isso esconderia ferramentas de
   // uma criança que já as conquistou. Mantemos o mesmo estado honesto de indisponibilidade.
   if (gam?.status !== 200) return <ToolRouteRecado screen={KidsStudioUnavailable} />
-  const levelSlug = gam.body?.level?.slug ?? 'noob'
-  // A paleta vem do CURRÍCULO: o nível decide o MODO (livre/Ponte/Pro) e os cursos
+  const journey = kidsJourneyAccess(gam.body)
+  if (!journey) return <ToolRouteRecado screen={KidsStudioUnavailable} />
+  // A política decide livre/Ponte/Pro; a paleta vem do CURRÍCULO e os cursos
   // conquistados decidem os BLOCOS. O produto pode estar comprado pela conta, mas a criação
   // livre só começa com algum bloco conquistado. Dentro das aulas o Estúdio segue disponível.
-  const gate = studioGate(levelSlug, session?.role, unlocksRes)
+  const gate = studioGate(journey, unlocksRes)
   if (gate.kind === 'unavailable') return <ToolRouteRecado screen={KidsStudioUnavailable} />
   if (gate.kind === 'journey-locked') {
     return (
@@ -88,39 +82,23 @@ export default async function EstudioPage({
     )
   }
   const { tier } = gate
-  const challengeEligible =
-    challengeAccess?.status === 200 &&
-    challengeAccess.body?.access?.['clube-dos-criadores'] === true &&
-    challengeAccess.body?.access?.['estudio-completo'] === true
-  // A posse é que decide se o Desafio aparece, então só ESPERA quem vai usar: a
-  // leitura já está a caminho desde o topo, e `await` numa promessa que não
-  // interessa é a mesma espera à toa que os gates acima evitam.
-  const challengeRes = challengeEligible ? await desafioPendente : null
-  const challenge =
-    challengeRes?.status === 200 && challengeRes.body
-      ? { key: challengeRes.body.challenge.key, title: challengeRes.body.challenge.title }
-      : null
+  const services = await readServices(session, journey)
   // Exemplos prontos (vitrine + "Exemplos clássicos") aparecem SÓ p/ a EQUIPE
   // interna (superadmin/admin/staff), enquanto a usuária valida o catálogo — o
   // cliente segue sem eles. Deriva do PAPEL da conta, não do rank: uma criança
   // que chegou a Lenda (rank `god`) NÃO é equipe e continua sem exemplos.
   const showExamples = isPrivilegedRole(session?.role)
-  // Saldo da ajuda de IA (medidor do Zappy) — mesma régua do Desafio acima: a
-  // leitura já está a caminho, mas quem não tem o tutor não espera por ela.
-  // Falhou → `null` = "não sei" e o medidor some, nunca "0 restantes".
-  const zappyEnabled = isStudioZappyAllowed(session, levelSlug)
-  const creditsRes = zappyEnabled ? await creditosPendentes : null
   return (
     <StudioFullClient
       viewerId={session?.id ?? null}
-      challenge={challenge}
+      {...services}
       tier={tier}
       showExamples={showExamples}
-      // O tutor abre por MÉRITO: equipe sempre, aluno a partir do degrau mínimo
-      // da jornada (Inventor). O rank já veio na gamificação acima.
-      zappyEnabled={zappyEnabled}
-      aiCredits={creditsRes?.status === 200 ? (creditsRes.body ?? null) : null}
-      taskId={tarefa ?? null}
+      showPythonCreation={canShowPythonCreation(
+        session?.role,
+        unlocksRes?.status === 200 && unlocksRes.body ? unlocksRes.body.blocks : [],
+      )}
+      taskId={missao ?? null}
       initialProjectId={projeto ?? null}
       pintaOwned={pintaOwned}
       moldaOwned={moldaOwned}

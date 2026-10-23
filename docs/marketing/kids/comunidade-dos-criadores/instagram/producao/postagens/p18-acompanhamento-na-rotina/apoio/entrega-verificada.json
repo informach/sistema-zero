@@ -1,0 +1,411 @@
+{
+  "id": "P18",
+  "checkedAt": "2026-10-14T20:47:03.547Z",
+  "errors": [],
+  "files": [
+    {
+      "file": "01-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 936364,
+      "sha256": "aa9244064e599cbfa990117ae91b5fd96f4099f51d08983d212623e142cd02eb"
+    },
+    {
+      "file": "02-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 965471,
+      "sha256": "e908b5302617fd612ae6c577298a21ab9d3a797c9a8378ac223abc88cc1609e8"
+    },
+    {
+      "file": "03-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 807711,
+      "sha256": "08085f3a88cf41b1b3dbda3067bc1432915b7eb34f77ec17b7d6e63d4de5d3b9"
+    },
+    {
+      "file": "04-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 911747,
+      "sha256": "03796411eda665d70353af982edf78407c80252033e0ea28b9ef879fb4e173d6"
+    },
+    {
+      "file": "05-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 154781,
+      "sha256": "a2c746aae2a493f532c509413dfd78c6e93cd876fb8da639d017309aa6bc279d"
+    },
+    {
+      "file": "06-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 134777,
+      "sha256": "08214b3b3a2e484815adb5ea130e588fd12570e39e375a24819fe03e25f381b8"
+    },
+    {
+      "file": "07-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 852965,
+      "sha256": "49434f79d77487e10281214c210bd3b0a35e96d34fc680981737d3dddc0feb73"
+    },
+    {
+      "file": "08-p18.png",
+      "width": 1080,
+      "height": 1350,
+      "bytes": 951673,
+      "sha256": "70c417517559e225ce2f7eb51795c6cdcb9bf93e028ce0112ecc7d0394c0258c"
+    }
+  ],
+  "links": [
+    {
+      "from": "index.html",
+      "to": "legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "montagem.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "apoio/fontes-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "01-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "02-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "03-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "04-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "05-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "06-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "07-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p18.png",
+      "exists": true
+    },
+    {
+      "from": "index.html",
+      "to": "08-p18.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/01-agenda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/02-folheto.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-duvida.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/03-aula-duvida.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-conhecer-aula.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/04-aula-ajuda.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-falta-preparar-tela.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/05-falta-preparar-tela.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-video-pausado.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/06-video-pausado.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-acompanhar.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/07-aula-acompanhada.png",
+      "exists": true
+    },
+    {
+      "from": "montagem.html",
+      "to": "apoio/08-anotar.png",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/02-p11-a-p20.md#p18",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../../../../postagens/05-direcao-visual-e-producao.md",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "copy.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../legenda.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "verificacao.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "prompts.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "imagens-geradas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "LICENSE-Nunito",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "Caveat-OFL.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../publicacao.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "interface-origem.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "capturas-verificadas.json",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "checagem-executada.jsonl",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../index.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../montagem.html",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "../texto-alternativo.txt",
+      "exists": true
+    },
+    {
+      "from": "apoio/fontes-e-producao.md",
+      "to": "entrega-verificada.json",
+      "exists": true
+    }
+  ],
+  "copyLinter": {
+    "slides": "Sete slides sem achados. Slide 3: pergunta citada em orientação interna, não é gancho da capa; falso positivo da regra 3.",
+    "caption": "Sem achados mecânicos."
+  },
+  "visualReview": "Oito slides conferidos individualmente. Seis cenas distintas da mesma família fictícia. Vídeo original e interface nativa em demonstração local. Recortes do objetivo pendente e vídeo pausado legíveis. Textos e legenda preservados.",
+  "demo": {
+    "local": true,
+    "videoPausedAt": 24,
+    "missingBlocksVerified": true,
+    "completeBlocksVerified": true,
+    "helpFormOpened": true
+  },
+  "carouselCount": 23,
+  "pngCount": 169,
+  "textBounds": [
+    {
+      "text": "A aula é para seu filho.",
+      "within": true
+    },
+    {
+      "text": "Antes de contratar, descubra quanto do seu tempo ela vai pedir.",
+      "within": true
+    },
+    {
+      "text": "Além do horário da aula, pode haver material para separar, tarefas para acompanhar e dúvidas para resolver.",
+      "within": true
+    },
+    {
+      "text": "Pergunte sobre essa rotina antes de escolher.",
+      "within": true
+    },
+    {
+      "text": "Num curso online, uma pergunta ajuda muito:",
+      "within": true
+    },
+    {
+      "text": "“O que meu filho pode fazer quando tem uma dúvida?”",
+      "within": true
+    },
+    {
+      "text": "Peça para conhecer uma aula.",
+      "within": true
+    },
+    {
+      "text": "Veja se ele consegue rever a explicação, conferir uma tentativa e encontrar onde pedir ajuda.",
+      "within": true
+    },
+    {
+      "text": "Nas etapas que têm “Verificar esta parte”, a criança pode conferir os blocos pedidos na atividade.",
+      "within": true
+    },
+    {
+      "text": "O resultado ajuda a perceber o que falta ajustar.",
+      "within": true
+    },
+    {
+      "text": "A explicação gravada também fica disponível para rever um passo.",
+      "within": true
+    },
+    {
+      "text": "Ele pausa o vídeo, monta essa parte do jogo e volta quando precisar.",
+      "within": true
+    },
+    {
+      "text": "Ainda pode haver momentos em que ele precise de você.",
+      "within": true
+    },
+    {
+      "text": "Uma primeira aula acompanhada ajuda a descobrir qual apoio faz diferença.",
+      "within": true
+    },
+    {
+      "text": "Escolha sabendo como serão as dúvidas e o acompanhamento.",
+      "within": true
+    },
+    {
+      "text": "Siga @criecomhelenaejulio para entender o que observar numa atividade de criação de jogos.",
+      "within": true
+    }
+  ],
+  "nativeInserts": 4,
+  "mobileNoOverflow": true,
+  "browserImageDecode": true,
+  "sourceSectionHash": "2017bac76ffd9283701aa6e998508afe92237b022d0174e1f6a5639195e18c2d",
+  "copyEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "nextCarousel": "P21",
+  "published": false
+}

@@ -47,11 +47,16 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
   const pollStartedAt = useRef(0)
   const generation = useRef(0)
   const currentUpload = useRef<tus.Upload | null>(null)
+  const statusAttempt = useRef<AbortController | null>(null)
+  const statusVideoId = useRef<string | null>(null)
+  const statusPending = useRef(false)
   const onReadyRef = useRef(onReady)
   onReadyRef.current = onReady
 
   const stopPolling = useCallback(() => {
     generation.current++
+    statusAttempt.current?.abort(new DOMException('Consulta de vídeo suspensa.', 'AbortError'))
+    statusAttempt.current = null
     if (pollTimer.current) clearTimeout(pollTimer.current)
     pollTimer.current = null
   }, [])
@@ -65,10 +70,16 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
   )
 
   const poll = useCallback(async (id: string, version: number) => {
+    if (version !== generation.current) return
+    const attempt = new AbortController()
+    statusAttempt.current = attempt
     try {
-      const status = await apiGet<VideoStatusResponse>(`/api/media/videos/${id}/status`)
+      const status = await apiGet<VideoStatusResponse>(`/api/media/videos/${id}/status`, {
+        signal: attempt.signal,
+      })
       if (version !== generation.current) return
       if (status.status === 'ready') {
+        statusPending.current = false
         setPhase('ready')
         setEmbedUrl(status.embedUrl)
         onReadyRef.current({
@@ -80,12 +91,15 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
         return
       }
       if (status.status === 'failed') {
+        statusPending.current = false
         setPhase('error')
         setError('O Vimeo não conseguiu processar o vídeo. Tente reenviar.')
         return
       }
     } catch {
       // Falha transitória de rede/status — continua tentando até o cap.
+    } finally {
+      if (statusAttempt.current === attempt) statusAttempt.current = null
     }
     if (version !== generation.current) return
     if (Date.now() - pollStartedAt.current < POLL_MAX_MS) {
@@ -101,6 +115,8 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
       setError(null)
       setVideoId(id)
       setPhase('processing')
+      statusVideoId.current = id
+      statusPending.current = true
       pollStartedAt.current = Date.now()
       void poll(id, generation.current)
     },
@@ -112,6 +128,7 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
       stopPolling()
       void currentUpload.current?.abort()
       const version = generation.current
+      statusPending.current = false
       setError(null)
       setProgress(0)
       if (!ALLOWED_TYPES.has(file.type)) {
@@ -171,6 +188,8 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
       if (version !== generation.current) return
       currentUpload.current = null
       setProgress(1)
+      statusVideoId.current = ticket.vimeoVideoId
+      statusPending.current = true
       // Já propaga o `src` (embedUrl do ticket) ASSIM QUE o upload termina — antes de
       // o transcode acabar. Sem isto, salvar o bloco durante "processando" gravava sem
       // vídeo (o `src` só era preenchido no `onReady` do status `ready`). Duração/
@@ -182,6 +201,9 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
         durationSeconds: null,
         captions: [],
       })
+      // Delivery may synchronously capture the producer. Do not begin a new query after
+      // its fence; the explicit resume can query this already hosted video later.
+      if (version !== generation.current) return
       checkStatus(ticket.vimeoVideoId)
     },
     [checkStatus, stopPolling],
@@ -189,6 +211,8 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
 
   const reset = useCallback(() => {
     stopPolling()
+    statusVideoId.current = null
+    statusPending.current = false
     void currentUpload.current?.abort()
     currentUpload.current = null
     setPhase('idle')
@@ -198,5 +222,20 @@ export function useVideoUpload(onReady: (video: ReadyVideo) => void) {
     setEmbedUrl(null)
   }, [stopPolling])
 
-  return { phase, progress, error, videoId, embedUrl, upload, checkStatus, reset }
+  const resumeStatus = useCallback(() => {
+    if (statusPending.current && statusVideoId.current) checkStatus(statusVideoId.current)
+  }, [checkStatus])
+
+  return {
+    phase,
+    progress,
+    error,
+    videoId,
+    embedUrl,
+    upload,
+    checkStatus,
+    reset,
+    suspendStatus: stopPolling,
+    resumeStatus,
+  }
 }

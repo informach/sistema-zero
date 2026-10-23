@@ -1,6 +1,15 @@
 'use client'
 
-import { isLearningManifest, type LessonSection } from '@sistemazero/core/learning'
+import {
+  cursoEditorialComum,
+  hasLegacyStudioManifestSolution,
+  isLearningManifest,
+  LEARNING_IMPORT_BODY_MAX_BYTES,
+  LEARNING_MANIFEST_SOURCE_MAX_BYTES,
+  type LessonSection,
+  learningImportBodyBytes,
+  manifestoParaDestino,
+} from '@sistemazero/core/learning'
 import { Button } from '@sistemazero/ui/button'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useId, useRef, useState } from 'react'
@@ -17,12 +26,40 @@ interface Preview {
     action: 'create' | 'update' | 'preserve' | 'retire' | 'remove'
   }>
   removedSections: Array<{ id: string; title: string }>
+  removedExamples?: Array<{
+    blockId: string
+    sectionId: string
+    sectionTitle: string
+    role: 'entryExampleId' | 'solutionExampleId'
+    exampleId: string
+    exampleName: string
+  }>
 }
 type ImportMode = 'preserve' | 'replace'
+
+/** Quantos blocos `plannedVideo` o texto do manifesto traz (0 quando ainda não é JSON). */
+export function plannedVideoCount(source: string): number {
+  try {
+    const value: unknown = JSON.parse(source)
+    if (hasLegacyStudioManifestSolution(value))
+      throw new Error(
+        'Este manifesto contém um gabarito global antigo. Converta o arquivo para exemplos por parte antes de importar.',
+      )
+    const blocks = (value as { blocks?: unknown } | null)?.blocks
+    return Array.isArray(blocks)
+      ? blocks.filter((block) => block && typeof block === 'object' && 'plannedVideo' in block)
+          .length
+      : 0
+  } catch {
+    return 0
+  }
+}
+
 export function LessonManifestImport({
   lessonId,
   lessonSlug,
   courseSlug,
+  live = false,
   disabled,
   onImported,
   beforeImport,
@@ -30,6 +67,11 @@ export function LessonManifestImport({
   lessonId: string
   lessonSlug: string
   courseSlug: string
+  /**
+   * Aula de curso AO VIVO. O servidor recusa `plannedVideo` (o vídeo é a transmissão) e o recado
+   * dele aparece no alerta; aqui só avisamos antes, quando o arquivo traz vídeo planejado.
+   */
+  live?: boolean
   disabled: boolean
   onImported: () => Promise<void>
   beforeImport: () => Promise<void>
@@ -60,6 +102,10 @@ export function LessonManifestImport({
     setNotice('')
   }
   const parse = () => {
+    if (new TextEncoder().encode(source).byteLength > LEARNING_MANIFEST_SOURCE_MAX_BYTES)
+      throw new Error(
+        'O texto do arquivo excede 16 MiB. Reduza a formatação ou os snapshots antes de ler.',
+      )
     const value: unknown = JSON.parse(source)
     if (!isLearningManifest(value))
       throw new Error('Confira o formato do manifesto, as atividades e as referências das seções.')
@@ -72,6 +118,10 @@ export function LessonManifestImport({
       await beforeImport()
       operationId.current = crypto.randomUUID()
       const document = parse()
+      if (learningImportBodyBytes(document, mode) > LEARNING_IMPORT_BODY_MAX_BYTES)
+        throw new Error(
+          'O corpo completo de importação excede 2 MiB. Reduza os snapshots antes de preparar a prévia.',
+        )
       setPreview(
         await apiSend<Preview>(`/api/members/lessons/${lessonId}/import-preview`, 'POST', {
           document,
@@ -89,8 +139,16 @@ export function LessonManifestImport({
     setBusy(true)
     setError('')
     try {
+      const document = parse()
+      if (
+        learningImportBodyBytes(document, mode, preview.fingerprint, operationId.current) >
+        LEARNING_IMPORT_BODY_MAX_BYTES
+      )
+        throw new Error(
+          'O corpo completo de importação excede 2 MiB, incluindo revisão e operação. Reduza os snapshots antes de aplicar.',
+        )
       await apiSend(`/api/members/lessons/${lessonId}/import-learning`, 'POST', {
-        document: parse(),
+        document,
         mode,
         expectedFingerprint: preview.fingerprint,
         operationId: operationId.current,
@@ -112,6 +170,7 @@ export function LessonManifestImport({
   }
   const leaving =
     preview?.blocks.filter((b) => b.action === 'retire' || b.action === 'remove') ?? []
+  const liveVideos = live ? plannedVideoCount(source) : 0
   return (
     <details className="rounded-2xl border border-border bg-card p-5">
       <summary className="cursor-pointer font-semibold">Importar roteiro com seções</summary>
@@ -172,8 +231,10 @@ export function LessonManifestImport({
             onChange={async (e) => {
               const file = e.target.files?.[0]
               if (!file) return
-              if (file.size > 1800000) {
-                setError('O manifesto deve ter até 1,8 MB.')
+              if (file.size > LEARNING_MANIFEST_SOURCE_MAX_BYTES) {
+                setError(
+                  'O arquivo deve ter até 16 MiB para abrir aqui. O conteúdo completo da importação será conferido antes de aplicar.',
+                )
                 return
               }
               change(await file.text())
@@ -191,13 +252,32 @@ export function LessonManifestImport({
           onChange={(e) => change(e.target.value)}
           className="font-mono text-xs"
         />
+        {liveVideos > 0 && (
+          <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+            Esta aula é de um curso ao vivo e o arquivo traz{' '}
+            {liveVideos === 1 ? 'um vídeo planejado' : `${liveVideos} vídeos planejados`}. Na aula
+            ao vivo o vídeo é a transmissão do encontro, por isso o servidor recusa vídeo planejado.
+            Tire esses blocos do arquivo antes de importar.
+          </p>
+        )}
         <div className="flex flex-wrap gap-3">
           <Button
             variant="outline"
             disabled={busy || !source.trim()}
             onClick={() => {
               try {
-                change(JSON.stringify({ ...parse(), courseSlug, lessonSlug }, null, 2))
+                const origem = parse()
+                const vinculado = cursoEditorialComum(origem.courseSlug)
+                  ? manifestoParaDestino(origem, { courseSlug, lessonSlug })
+                  : { ...origem, courseSlug, lessonSlug }
+                change(JSON.stringify(vinculado, null, 2))
+                setNotice(
+                  `Arquivo vinculado a ${courseSlug} / ${lessonSlug}. ${
+                    mode === 'replace'
+                      ? 'O modo selecionado substitui o rascunho inteiro, incluindo os blocos criados no Admin fora do manifesto.'
+                      : 'O modo selecionado atualiza pelo manifesto e mantém os blocos criados no Admin fora dele.'
+                  } Confira a prévia antes de aplicar. A versão publicada só muda quando você publicar.`,
+                )
               } catch (e) {
                 setError((e as Error).message)
               }
@@ -224,6 +304,22 @@ export function LessonManifestImport({
                 <ul className="mt-2 list-disc pl-5">
                   {preview.removedSections.map((section) => (
                     <li key={section.id}>{section.title}</li>
+                  ))}
+                </ul>
+              </details>
+            )}
+            {!!preview.removedExamples?.length && (
+              <details open className="text-sm">
+                <summary className="cursor-pointer font-medium">
+                  Exemplos que serão substituídos ou removidos
+                </summary>
+                <ul className="mt-2 list-disc pl-5">
+                  {preview.removedExamples.map((example) => (
+                    <li key={`${example.blockId}:${example.sectionId}:${example.role}`}>
+                      {example.sectionTitle}:{' '}
+                      {example.role === 'entryExampleId' ? 'entrada' : 'solução'} —{' '}
+                      {example.exampleName}
+                    </li>
                   ))}
                 </ul>
               </details>

@@ -1,6 +1,6 @@
 import { type JSX, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { PROJECT_ASSET_LIMITS, type Project, type ProjectAsset } from '#core'
+import { PROJECT_ASSET_LIMITS, type ProjectAsset } from '#core'
 import { Button, ConfirmDialog, Modal } from '#ui'
 import type { LibraryAsset } from '../../asset-library/catalog'
 import {
@@ -16,14 +16,23 @@ import {
   syncDrawingsIntoProjects,
   takeDrawingSyncFailures,
 } from '../../asset-library/personalSync'
+import { isPythonProject, type EditableStudioProject as Project } from '../../core/editableProject'
 import { captureAndStoreProjectThumb } from '../../cover/thumbCapture'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { retryProApplication } from '../../state/proRevision'
+import {
+  applyPreparedProWorkspaceOperation,
+  type ProWorkspaceOperation,
+  prepareProWorkspaceOperation,
+} from '../../state/proWorkspaceOperations'
+import { useStudioRuntimeCapture } from '../../state/studioStores'
 import type { AssetsTab } from '../../state/uiStore'
 import { useStudioEditCreation } from '../../studio/edit-creation'
 import { useStudioEditDrawing } from '../../studio/edit-drawing'
 import { useT } from '../../studio/i18n'
 import { useStudioMoldaLibrary } from '../../studio/molda-library'
 import { useStudioPintaLibrary } from '../../studio/pinta-library'
+import { useStudioTeamLibrary } from '../../studio/team-library'
 import { uniqueAssetName } from './assetNames'
 import {
   type CreationOrigin,
@@ -40,6 +49,8 @@ import {
 } from './imageProcessing'
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
+import { ProAssetPaths } from './ProAssetPaths'
+import { TeamImportDialog } from './TeamImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
 import { ImagesTab } from './tabs/ImagesTab'
@@ -86,7 +97,7 @@ export interface AssetsPanelProps {
 const EMPTY_ASSETS: ProjectAsset[] = []
 
 type PendingDeletion =
-  | { scope: 'project'; id: string; name: string }
+  | { scope: 'project'; id: string; name: string; operation?: ProWorkspaceOperation }
   | { scope: 'personal'; id: string; name: string }
 
 export function AssetsPanel({
@@ -95,9 +106,12 @@ export function AssetsPanel({
   allowUpload = true,
   tab = 'images',
   onTabChange = () => {},
-  captureThumb = captureAndStoreProjectThumb,
+  captureThumb,
 }: AssetsPanelProps): JSX.Element {
+  const runtimeCapture = useStudioRuntimeCapture()
   const t = useT()
+  const isPro = useProjectStore((s) => s.project?.kind === 'pro')
+  const isPython = useProjectStore((s) => !!s.project && isPythonProject(s.project))
   const { hasProject, assets, has3DExtension, has3DMaterials, coverAssetName } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
@@ -140,6 +154,11 @@ export function AssetsPanel({
   const [busy, setBusy] = useState(false)
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [materialNotice, setMaterialNotice] = useState('')
+  const [pendingMaterialSave, setPendingMaterialSave] = useState<{
+    projectId: string
+    id: string
+  } | null>(null)
   // Imagens (desenhos/sprites), sons (áudio importado) e binários 3D (modelo
   // .glb / céu .hdr) vivem na mesma lista de assets; separamos só para exibir
   // em seções distintas (um .glb na grade de imagens viraria <img> quebrado).
@@ -176,11 +195,16 @@ export function AssetsPanel({
   // "✏️ editar desenho" de "No projeto" sem esperar o próximo focus).
   const pintaLibrary = useStudioPintaLibrary()
   const [pintaOpen, setPintaOpen] = useState(false)
+  const [pintaTarget, setPintaTarget] = useState<ProjectAsset | undefined>()
   // "Trazer do Molda" (modelos .glb, texturas .png, céus .hdr): mesma mecânica, outra
   // galeria. O import também grava na biblioteca pessoal (com `kind`), então a
   // re-listagem abaixo serve aos dois.
   const moldaLibrary = useStudioMoldaLibrary()
   const [moldaOpen, setMoldaOpen] = useState(false)
+  // "Trazer da equipe" (Pensa em equipe): as artes que as colegas entregaram nas missões
+  // do plano. Sem o adapter (jogo fora do Pensa, plano solo, aula, admin) nem o botão existe.
+  const teamLibrary = useStudioTeamLibrary()
+  const [teamOpen, setTeamOpen] = useState(false)
   // "Editar a criação no Molda" (o gêmeo do `onEditDrawing`).
   const onEditCreation = useStudioEditCreation()
   const [personalTick, setPersonalTick] = useState(0)
@@ -195,11 +219,15 @@ export function AssetsPanel({
     // `personalTick` re-dispara a listagem após um import da modal do Pinta.
     void personalTick
     let cancelled = false
+    const syncLifetime = new AbortController()
     // Reconcilia ANTES de listar: abrir o painel é o momento em que a criança
     // olha para as duas listas lado a lado, então elas têm que concordar. O
     // portão da sincronia deixa isso barato quando nada mudou.
     const refresh = () => {
-      void syncDrawingsIntoProjects(storeApi)
+      void syncDrawingsIntoProjects(storeApi, {
+        pintaLibrary,
+        signal: syncLifetime.signal,
+      })
         .then(() => listPersonalAssets({ namespace: personalNamespace }))
         .then((assets) => {
           if (cancelled) return
@@ -228,9 +256,10 @@ export function AssetsPanel({
     window.addEventListener('focus', refresh)
     return () => {
       cancelled = true
+      syncLifetime.abort()
       window.removeEventListener('focus', refresh)
     }
-  }, [open, personalNamespace, storeApi, personalTick])
+  }, [open, personalNamespace, storeApi, personalTick, pintaLibrary])
 
   // Só as IMAGENS do PINTA na biblioteca pessoal são "desenhos" (a lista e o "editar no
   // Pinta"): um .glb/.hdr trazido do Molda vive lá com o `kind` dele e cairia no
@@ -359,6 +388,12 @@ export function AssetsPanel({
    */
   const repairPersonalRecord = async (asset: ProjectAsset, target: EditTarget) => {
     if (await getPersonalAsset(target.id, { namespace: personalNamespace })) return
+    // A selected PNG is not the canonical drawing/spritesheet. Recreating that record
+    // from this frame would send the derivative into JavaScript projects on the next sync.
+    if (asset.pintaImage) {
+      setError('A imagem foi mantida. Para atualizar, recupere o desenho original no Pinta.')
+      return
+    }
     const result = await savePersonalAsset(
       {
         id: target.id,
@@ -410,8 +445,30 @@ export function AssetsPanel({
   const confirmDeletion = async () => {
     if (!pendingDeletion || deleting) return
     if (pendingDeletion.scope === 'project') {
-      removeAsset(pendingDeletion.id)
-      setPendingDeletion(null)
+      setDeleting(true)
+      try {
+        if (pendingDeletion.operation) {
+          const receipt = await applyPreparedProWorkspaceOperation(
+            storeApi,
+            pendingDeletion.operation,
+          )
+          setMaterialNotice(
+            receipt.status === 'pending'
+              ? 'Material removido; falta guardar neste aparelho. A recuperação continua disponível nesta sessão.'
+              : 'Material removido. Use Ferramentas → Recuperar arquivos e materiais no editor para desfazer.',
+          )
+          setPendingMaterialSave(
+            receipt.status === 'pending'
+              ? { projectId: pendingDeletion.operation.projectId, id: receipt.operationId }
+              : null,
+          )
+        } else removeAsset(pendingDeletion.id)
+        setPendingDeletion(null)
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : 'Não foi possível remover o material.')
+      } finally {
+        setDeleting(false)
+      }
       return
     }
 
@@ -544,8 +601,27 @@ export function AssetsPanel({
     )
   }
 
-  const deleteFromProject = (asset: ProjectAsset) =>
-    setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+  const deleteFromProject = (asset: ProjectAsset) => {
+    const project = storeApi.getState().project
+    if (!project || deleting) return
+    if (project.kind !== 'pro') {
+      setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name })
+      return
+    }
+    setDeleting(true)
+    void prepareProWorkspaceOperation(storeApi, project.id, null, {
+      kind: 'material-delete',
+      id: asset.id,
+    })
+      .then((operation) => {
+        if (storeApi.getState().project === operation.context.project)
+          setPendingDeletion({ scope: 'project', id: asset.id, name: asset.name, operation })
+      })
+      .catch((cause: unknown) =>
+        setError(cause instanceof Error ? cause.message : 'Não foi possível conferir o material.'),
+      )
+      .finally(() => setDeleting(false))
+  }
 
   const handleRename = (asset: ProjectAsset, value: string) => {
     if (value === asset.name) return
@@ -568,7 +644,9 @@ export function AssetsPanel({
     setError(null)
     const project = storeApi.getState().project
     if (!project) return
-    void captureThumb(project).then((stored) => {
+    void (
+      captureThumb ? captureThumb(project) : captureAndStoreProjectThumb(project, runtimeCapture)
+    ).then((stored) => {
       if (stored || !asset) return
       // Só desfaz a escolha que ainda é a vigente (a criança pode ter escolhido outra no meio).
       const current = storeApi.getState().project
@@ -676,6 +754,38 @@ export function AssetsPanel({
             </span>
           </div>
 
+          {isPro && <ProAssetPaths assets={assets} />}
+          {isPro && materialNotice && (
+            <p role="status" className="text-sm">
+              {materialNotice}
+            </p>
+          )}
+          {isPro && pendingMaterialSave && (
+            <Button
+              size="sm"
+              disabled={deleting}
+              onClick={() => {
+                setDeleting(true)
+                void retryProApplication(
+                  storeApi,
+                  pendingMaterialSave.projectId,
+                  pendingMaterialSave.id,
+                )
+                  .then((receipt) => {
+                    if (receipt.status === 'saved') {
+                      setPendingMaterialSave(null)
+                      setMaterialNotice('Material removido e recuperação guardada neste aparelho.')
+                    } else setError(receipt.error ?? 'A gravação ainda está pendente.')
+                  })
+                  .catch((cause: unknown) =>
+                    setError(cause instanceof Error ? cause.message : 'A gravação falhou.'),
+                  )
+                  .finally(() => setDeleting(false))
+              }}
+            >
+              Tentar guardar de novo
+            </Button>
+          )}
           {error && (
             <p
               role="alert"
@@ -696,7 +806,23 @@ export function AssetsPanel({
                 allowUpload={allowUpload}
                 busy={busy}
                 onUpload={() => fileRef.current?.click()}
-                onOpenPinta={pintaLibrary ? () => setPintaOpen(true) : null}
+                onOpenPinta={
+                  pintaLibrary
+                    ? () => {
+                        setPintaTarget(undefined)
+                        setPintaOpen(true)
+                      }
+                    : null
+                }
+                onReviewPintaImage={
+                  pintaLibrary && isPython
+                    ? (asset) => {
+                        setPintaTarget(structuredClone(asset))
+                        setPintaOpen(true)
+                      }
+                    : undefined
+                }
+                onOpenTeam={teamLibrary ? () => setTeamOpen(true) : null}
                 onConfigureTiles={(asset, mode) => setTileConfig({ asset, mode })}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
@@ -732,6 +858,7 @@ export function AssetsPanel({
                 has3DExtension={has3DExtension}
                 onUpload={() => modelRef.current?.click()}
                 onOpenMolda={moldaLibrary ? () => setMoldaOpen(true) : null}
+                onOpenTeam={teamLibrary ? () => setTeamOpen(true) : null}
                 onRename={handleRename}
                 onDelete={deleteFromProject}
                 editTargetOf={editTargetOf}
@@ -750,6 +877,7 @@ export function AssetsPanel({
       ) : null}
       {pintaOpen && pintaLibrary ? (
         <PintaImportDialog
+          initialTarget={pintaTarget}
           onClose={() => setPintaOpen(false)}
           onImported={() => setPersonalTick((tick) => tick + 1)}
         />
@@ -757,6 +885,12 @@ export function AssetsPanel({
       {moldaOpen && moldaLibrary ? (
         <MoldaImportDialog
           onClose={() => setMoldaOpen(false)}
+          onImported={() => setPersonalTick((tick) => tick + 1)}
+        />
+      ) : null}
+      {teamOpen && teamLibrary ? (
+        <TeamImportDialog
+          onClose={() => setTeamOpen(false)}
           onImported={() => setPersonalTick((tick) => tick + 1)}
         />
       ) : null}
@@ -783,6 +917,17 @@ export function AssetsPanel({
           <p>
             O asset <strong>{pendingDeletion?.name}</strong> será removido deste projeto. Blocos ou
             código que usam esse nome podem deixar de funcionar.
+          </p>
+        )}
+        {pendingDeletion?.scope === 'project' &&
+          pendingDeletion.operation?.warnings.map((warning) => (
+            <p key={warning} className="mt-2 text-sm">
+              {warning}
+            </p>
+          ))}
+        {error && (
+          <p role="alert" className="mt-2 text-sz-error">
+            {error}
           </p>
         )}
       </ConfirmDialog>

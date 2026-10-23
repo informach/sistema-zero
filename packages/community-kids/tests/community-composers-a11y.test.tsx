@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { Profiler } from 'react'
 
 // Mantém o módulo completo: outros testes do mesmo processo usam exports adicionais.
 /**
@@ -173,6 +174,32 @@ const TETO_DO_CASO_MS = 45_000
 const ESPERA_EDITOR = { timeout: 30_000 } as const
 
 describe('nomes acessíveis dos compositores da comunidade', () => {
+  test(
+    'o primeiro clique não é desfeito pelo carregamento inicial do canal',
+    async () => {
+      let clicked = false
+      render(
+        <Profiler
+          id="initial-channel-composer"
+          onRender={() => {
+            const button = screen.queryByRole('button', { name: 'Começar conversa' })
+            if (!button || clicked) return
+            clicked = true
+            // Exercita o intervalo entre o botão entrar no DOM e os efeitos passivos
+            // da carga inicial: o reset atrasado não pode desfazer um clique novo.
+            button.click()
+          }}
+        >
+          <KidsSpaceViewClient slug="clube" viewerId="profile-1" />
+        </Profiler>,
+      )
+      const title = await screen.findByRole('textbox', { name: 'Título da conversa' }, ESPERA)
+      expect(clicked).toBe(true)
+      expect(document.activeElement).toBe(title)
+    },
+    TETO_DO_CASO_MS,
+  )
+
   test(
     'o campo de resposta dos recados tem label persistente',
     async () => {

@@ -1,0 +1,26 @@
+{
+  "kind": "read-only-CDP-diagnostic",
+  "parent": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-owned-r5\\plan.json",
+    "bytes": 20153,
+    "sha256": "49c9fc9bc9a9fad0088362d70260fe7fc9e7acffe1d4d7c5f588b080ebca06e0"
+  },
+  "profiler": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-webcontainer-profile-r1\\profile.mjs",
+    "bytes": 7388,
+    "sha256": "916ac8959738480978e4ac8fc0c4e1fcaf5d2508a60ea838a306fa58f16ac5e1"
+  },
+  "uiOnlyDelta": true,
+  "quotaUnchanged": 2048,
+  "performanceQualified": false,
+  "previousNegative": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\pro-legacy-staging-ui-functional-execution-r1\\native-owner\\receipt.json",
+    "bytes": 15170,
+    "sha256": "9a76b8910d3e9cbeee840cef251d2152ae3571cd8e485529183b3896379403f1"
+  },
+  "generator": {
+    "path": "C:\\Users\\tocha\\projects\\sistema-zero-python\\.cache\\studio-python-l0\\prepare-profiled-hosted-pro-r1.mjs",
+    "bytes": 4749,
+    "sha256": "6b0ecef9e4ddb3037cf7cbfa3787f2d5479da4b1d832c37146e52eaf0b08a00b"
+  }
+}

@@ -196,3 +196,19 @@ describe('proxy: renovação de sessão e hidratação da paleta', () => {
     }
   })
 })
+
+test('caminho público dentro de prefixo protegido passa sem sessão', async () => {
+  const proxy = createMemberProxy({
+    cookies: { accessCookie: 'm_access', refreshCookie: 'm_refresh' },
+    protectedPrefixes: ['/ajuda'],
+    isRootProtected: true,
+    publicPaths: ['/ajuda/entrar'],
+  })
+  const ajuda = await proxy(new NextRequest('http://localhost/ajuda'))
+  expect(new URL(ajuda.headers.get('location') ?? 'http://x/').pathname).toBe('/login')
+  const entrar = await proxy(new NextRequest('http://localhost/ajuda/entrar'))
+  expect(entrar.headers.get('location')).toBeNull()
+  // Só o caminho e as subrotas: `/ajuda/entrarx` continua protegido.
+  const vizinho = await proxy(new NextRequest('http://localhost/ajuda/entrarx'))
+  expect(new URL(vizinho.headers.get('location') ?? 'http://x/').pathname).toBe('/login')
+})

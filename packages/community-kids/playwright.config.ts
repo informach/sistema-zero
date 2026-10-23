@@ -39,7 +39,8 @@ export default defineConfig({
     },
     url: baseURL,
     reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
-    stdout: 'ignore',
+    // Next forwards TypeScript CLI diagnostics to stdout, including build failures.
+    stdout: 'pipe',
     stderr: 'pipe',
     // ⚠️ O comando inclui um `next build` COMPLETO do kids, não só subir o servidor.
     // 180s bastavam na máquina de desenvolvimento e estouravam no runner do GitHub

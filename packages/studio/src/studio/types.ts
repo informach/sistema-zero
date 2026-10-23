@@ -1,88 +1,46 @@
+import type { StudioCodeAnchor } from '@sistemazero/core/studio/code-anchor'
 import type { CSSProperties, Ref } from 'react'
-import type { AnyBlockLevel, IDEMode, Locale, Project } from '#core'
+import type { AnyBlockLevel, IDEMode, Locale } from '#core'
+import type { StudioPlayerOriginAdapter } from '../components/preview/playerOriginAdapter'
+import type { EditableStudioProject as Project } from '../core/editableProject'
 import type { StudioPersistence } from '../persistence/types'
 import type { StudioLimits } from '../state/projectStore'
-import type { ActivityRunResult, LessonActivity } from './activity'
 import type { StudioFeatures } from './config'
 import type { StudioMoldaLibraryAdapter } from './molda-library'
 import type { StudioPintaLibraryAdapter } from './pinta-library'
-import type { StudioProRuntimeAdapter } from './pro-runtime'
+import type { PrepareProDependencies, StudioProRuntimeAdapter } from './pro-runtime'
 import type { StudioShareAdapter } from './share'
+import type { StudioTeamLibraryAdapter } from './team-library'
 import type { StudioTheme } from './theme'
 import type { StudioTutorConfig } from './tutor'
 
 export type StudioLocale = Locale
 
-export interface StudioTaskGuideItem {
-  id: string
-  text: string
-  hint?: string
-  required: boolean
-}
-/** Guia de uma tarefa planejada no Pensa. É independente de LessonActivity. */
-export interface StudioTaskSession {
-  taskId: string
-  title: string
-  summary: string | null
-  project: { id: string; name: string }
-  cycle: { id: string; number: number; goal: string | null }
-  guide: { steps: StudioTaskGuideItem[]; criteria: StudioTaskGuideItem[] }
-  blocks: Array<{
-    id: string
-    label: string
-    category: string
-    subcategory: string
-    area: string
-    extension: string | null
-  }>
-  progress: {
-    status: 'planned' | 'in_progress' | 'completed'
-    completedStepIds: string[]
-    completedCriteriaIds: string[]
-    startedAt: string | null
-    completedAt: string | null
-    updatedAt: string | null
-    outputRef: { kind: 'studio_project'; projectId: string; saveRevision?: string } | null
-  }
-  onProgress(input: {
-    status?: 'in_progress' | 'completed'
-    completedStepIds?: string[]
-    completedCriteriaIds?: string[]
-    outputRef?: { kind: 'studio_project'; projectId: string; saveRevision?: string }
-  }): Promise<void>
-  /**
-   * O guia recolhido, e o aviso de que a criança mexeu na seta (18/09/2026).
-   *
-   * Quem LEMBRA é o host (uma chave por criança, valendo para as três oficinas); aqui isso
-   * chega como DADO, o mesmo idioma do `menu.hidden`/`onToggle` do chrome do host. Sem o par,
-   * o painel recolhe por conta própria e esquece ao sair — é o caso do playground e dos testes.
-   * ⚠ Recolhido sobra UMA linha, o título e a seta (19/09/2026, decisão dela). O que NÃO
-   * recolhe é PROBLEMA: aqui, o recado de uma marcação que não subiu.
-   * ⚠⚠ Os dois andam JUNTOS. Passar só o `collapsed` entrega um botão de 44px com
-   * `aria-expanded` que não faz NADA ao ser clicado (o estado local roda e o `??` o ignora), e
-   * passar só o `onCollapsedChange` faz o host ser avisado sem nunca mandar. São dois opcionais
-   * porque o par inteiro é opcional — não porque um sirva sem o outro.
-   */
-  collapsed?: boolean
-  onCollapsedChange?(collapsed: boolean): void
-}
+export type StudioTaskSession = import('@sistemazero/ui/pensa-mission-session').PensaMissionSession
 
 /** Acesso imperativo à instância (prop `ref` do Studio — React 19). */
 export interface StudioHandle {
   /** Snapshot atual do projeto (síncrono). */
   getProject(): Project | null
+  /** Invalidates host feedback when the project or its editing authority changes. */
+  onProjectChange?(listener: () => void): () => void
+  /** Code pointers are local to this editor instance; coordinates use the viewport. */
+  getCodeCursorAnchor(clientX: number, clientY: number): Promise<StudioCodeAnchor | null>
+  getCodeCursorPosition(anchor: StudioCodeAnchor): Promise<{ left: number; top: number } | null>
+  onCodeCursorChange(listener: () => void): () => void
   /** Força flush: persiste via adapter (se houver) e emite onChange/onSave. */
   save(): Promise<void>
   /** Substitui o projeto inteiro (ex.: host recarregou do servidor). Remonta os editores. */
   replaceProject(project: Project): void
+  /** Freeze mutations and execution, flush editor buffers and return a complete snapshot.
+   * The host must commit it durably before granting a different writer. */
+  prepareHandoff(): Promise<Project>
+  /** Apply a confirmed remote revision without autosave or automatic execution. */
+  applyObservedRevision(project: Project, revision: number): Promise<void>
+  /** Resume only after the host has confirmed this exact revision and writer epoch. */
+  resumeAuthorship(revision: number): void
   setMode(mode: IDEMode): void
   isDirty(): boolean
-  /**
-   * Último resultado da auto-correção da atividade (`null` se ainda não rodou ou
-   * não há atividade). O host (member-shell) anexa este resultado reportado no
-   * envio — o servidor recalcula só as checagens de estrutura (correção híbrida).
-   */
-  getActivityResult(): ActivityRunResult | null
 }
 
 /**
@@ -98,12 +56,25 @@ export interface StudioCommonProps {
    * use `handle.replaceProject()` ou troque a referência da prop.
    */
   initialProject: Project
+  editingAccess?: 'author' | 'observer'
+  /** Host-confirmed live-room writer generation; a change stops the preceding Python run. */
+  writerEpoch?: number | null
+  onRevisionApplied?: (revision: number) => void
+  /** Defaults to true for existing editors. Observers never auto-run. */
+  autoRun?: boolean
+  /** Required in a live room: a failed origin adapter never falls back to srcdoc. */
+  previewOriginAdapter?: StudioPlayerOriginAdapter
+  requireIsolatedPreview?: boolean
+  /** Project audio only; independent of the classroom microphone. */
+  projectMuted?: boolean
   /**
    * Onde persistir: 'local' (IndexedDB embutido, default), 'none' (o host
    * salva via onChange/onSave) ou um adapter custom. ESTÁTICO por instância:
    * trocar exige remount.
    */
   persistence?: StudioPersistence
+  /** Preferences are separate from project content; static per instance. Local persistence supplies a scoped default. */
+  workspacePreferences?: import('./workspace').StudioWorkspacePreferencesAdapter
   /**
    * Liga/desliga partes do editor. Defaults: preview/console/extensões ON;
    * terminal OFF (exige COOP/COEP no host — ver docs/embedding.md); IA OFF
@@ -152,6 +123,11 @@ export interface StudioCommonProps {
   onModeChange?: (mode: IDEMode) => void
   /** Editor montado e projeto hidratado. */
   onReady?: () => void
+  /** Terminal result for each prepared snapshot, including same-id replacements. */
+  onProjectOpeningSettled?: (result: {
+    projectId: string
+    status: 'ready' | 'blocked' | 'error'
+  }) => void
   /**
    * Tema visual. Sem a prop, segue o tema das configurações internas do
    * próprio Studio (Settings/toggle da Topbar). Aplicado como data-sz-theme no
@@ -176,6 +152,10 @@ export interface StudioCommonProps {
    * modo Pro usa o WebContainer local do Estúdio Completo.
    */
   proRuntime?: StudioProRuntimeAdapter
+  /** Canonical lock preparation for authenticated local WebContainer hosts. */
+  prepareProDependencies?: PrepareProDependencies
+  /** Approved language catalog and providers, shared by editor and public player. */
+  runtimeEnvironment?: import('../runtime/environment').StudioRuntimeEnvironment
   /**
    * Registra beforeunload enquanto houver mudanças não salvas (default true).
    * Hosts SPA com navegação própria podem desligar e usar handle.isDirty().
@@ -185,7 +165,7 @@ export interface StudioCommonProps {
    * Adapter de "Compartilhar" (publicar no Mural dos Criadores). Quando
    * presente, a Topbar mostra o botão Compartilhar ao lado do Salvar; o host
    * implementa `generateDescription` (servidor) + `publish`. Ausente (default)
-   * → sem botão. Estável por instância (latchado, igual à `activity`). Serve
+   * → sem botão. Estável por instância (latchado, igual ao `share`). Serve
    * ao estúdio de aula (hoje) e ao estúdio completo (produto futuro).
    */
   share?: StudioShareAdapter
@@ -227,7 +207,7 @@ export interface StudioCommonProps {
    * (busca + importar direto ao projeto), e a seção "Meus desenhos" some
    * (substituída pela modal). O host só o passa com posse do Pinta E do
    * Estúdio (produtos vendidos à parte). Ausente (default) → sem botão.
-   * Estável por instância (latchado, igual à `share`).
+   * Mudanças de perfil/posse substituem o adapter e cancelam importações antigas.
    */
   pintaLibrary?: StudioPintaLibraryAdapter
   /**
@@ -239,6 +219,15 @@ export interface StudioCommonProps {
    * (latchado, igual à `share`).
    */
   moldaLibrary?: StudioMoldaLibraryAdapter
+  /**
+   * Adapter OPCIONAL "Trazer da equipe" (Pensa em equipe, 14/10/2026): quando presente, a
+   * janela dos materiais ganha o botão "👥 Trazer da equipe", que lista as artes entregues
+   * pelas colegas nas missões do plano e as traz para o jogo pelo MESMO caminho do Pinta e
+   * do Molda. ⚠️ NÃO é latchado (diferente dos outros adapters): o host só descobre a
+   * equipe depois de abrir o jogo, então o botão aparece quando ele passa o adapter. O host
+   * mantém a referência ESTÁVEL. Ausente (default) → sem botão.
+   */
+  teamLibrary?: StudioTeamLibraryAdapter
   /**
    * Mostra os EXEMPLOS prontos (CORE_EXAMPLES + os `examples` das extensões) no
    * painel de Extensões. Default `false` — os exemplos são material de TESTE do
@@ -261,6 +250,8 @@ export interface StudioCommonProps {
  * avançado" ligado), em vez dos ~500 blocos de uma vez.
  */
 export interface StudioLearningProps {
+  /** Python has its own three levels; JavaScript keeps its existing level scale. */
+  pythonLevel?: import('../python/learning').PythonLearningLevel
   /**
    * Degrau de aprendizado: cura a paleta de blocos por dificuldade × eixo 2D/3D
    * (escada de 6). Default: 'avancado-3d' (mostra tudo). Aceita também a escala
@@ -270,6 +261,8 @@ export interface StudioLearningProps {
   level?: AnyBlockLevel
   /** Tipos de bloco sempre visíveis, independente do nível (allowlist da aula). */
   allowBlocks?: readonly string[]
+  /** Course-grant ceiling for offered JavaScript blocks; [] is explicitly empty. */
+  grantedBlockIds?: readonly string[]
   /** IDs de extensões que a jornada/aula permite oferecer para instalação. */
   allowExtensions?: readonly string[]
   /** Nomes de categoria sempre visíveis, independente do nível. */
@@ -282,16 +275,11 @@ export interface StudioLearningProps {
 }
 
 /**
- * Props do motor {@link StudioCore} — superconjunto: editor + aprendizado +
- * atividade. Os dois componentes públicos repassam um subconjunto destas.
+ * Props do motor {@link StudioCore} — superconjunto: editor + aprendizado. Os
+ * dois componentes públicos repassam um subconjunto destas.
  */
 export type StudioCoreProps = StudioCommonProps &
   StudioLearningProps & {
-    /**
-     * Atividade com auto-correção (fiada para a fase seguinte; ver
-     * `studio/activity.ts`). Ausente → o painel de atividade não renderiza nada.
-     */
-    activity?: LessonActivity | null
     /** Interno: somente StudioEditor encaminha este contrato. */
     tutor?: StudioTutorConfig
     /** Interno: somente StudioEditor encaminha este contrato. */
@@ -307,19 +295,15 @@ export type StudioEditorProps = StudioCommonProps &
   StudioLearningProps & {
     /** Tutor somente leitura do Estúdio Completo. Não existe no StudioLesson. */
     tutor?: StudioTutorConfig
-    /** Cartão de Criação restaurado pelo host via `?tarefa=`. */
+    /** Cartão de Criação restaurado pelo host via `?missao=`. */
     taskSession?: StudioTaskSession
   }
 
 /**
  * Props do <StudioLesson> — editor configurável de aula: editor + curadoria de
- * aprendizado + atividade (auto-correção).
+ * aprendizado. Os objetivos da parte são conferidos pelo servidor, fora do editor.
  */
-export type StudioLessonProps = StudioCommonProps &
-  StudioLearningProps & {
-    /** Atividade com auto-correção (fiada para a fase seguinte). */
-    activity?: LessonActivity | null
-  }
+export type StudioLessonProps = StudioCommonProps & StudioLearningProps
 
 /** @deprecated Use {@link StudioEditorProps} ou {@link StudioLessonProps}. Alias do {@link StudioCoreProps}. */
 export type StudioProps = StudioCoreProps

@@ -32,6 +32,7 @@ import { adminRoutes } from './routes/admin.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 import { metricsRoutes } from './routes/metrics.routes'
 import { sendRoutes } from './routes/send.routes'
+import { staffRoutes } from './routes/staff.routes'
 import { webhooksRoutes } from './routes/webhooks.routes'
 
 export interface HttpDeps {
@@ -146,6 +147,14 @@ export function createServer(deps: HttpDeps) {
 
   return app
     .use(healthRoutes(deps.readiness))
+    .use(
+      staffRoutes({
+        sendMessage: deps.sendMessage,
+        getMessage: deps.getMessage,
+        internalToken: deps.env.MESSAGING_INTERNAL_TOKEN,
+        authConsumerId: deps.env.AUTH_CONSUMER_ID,
+      }),
+    )
     .use(metricsRoutes(deps.metrics, deps.env.METRICS_TOKEN))
     .use(
       sendRoutes({

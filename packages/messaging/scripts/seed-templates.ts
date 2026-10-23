@@ -201,6 +201,13 @@ const DEVICE_ALREADY_READY =
 const PARENT_SIGN_IN_HELP =
   'Não lembra a senha? Na entrada dos responsáveis, receba um código no seu e-mail ou use “Esqueci minha senha”.'
 
+// ── Presente adulto (20/10/2026) ──────────────────────────────────────────────
+/** O que o presente adulto libera, com o prazo (`validade`, fuso de Brasília). */
+const ADULT_GIFT =
+  'o <strong>Cadê Todo Mundo</strong>, na versão adulta, e o <strong>Mural adulto</strong>, até <strong>{{validade}} (horário de Brasília)</strong>.'
+const adultGiftOrigin = (campaign: boolean) =>
+  campaign ? 'da campanha <strong>{{campanha}}</strong>' : 'de <strong>{{indicador}}</strong>'
+
 // ── Templates ─────────────────────────────────────────────────────────────────
 
 const seeds = [
@@ -728,6 +735,374 @@ const seeds = [
       footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
     }),
   },
+  // Desafio do Primeiro Jogo para ADULTOS (21/10/2026): a mesma régua do Kids, com as MESMAS
+  // variáveis de cada equivalente (contrato com o funil e o members; não renomear sem mudar os
+  // chamadores), falando com a própria pessoa. O funil envia `challenge-access-approved-adult`
+  // nos dois canais (sem `orientacao`: a orientação está no texto); o members envia os demais por
+  // e-mail. Light Copy: sem "!", travessão, pergunta de gancho ou emoji.
+  {
+    key: 'challenge-access-approved-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: acesso aprovado (e-mail)',
+    subject: '{{nome}}, o seu primeiro jogo pode começar',
+    variables: ['nome', 'link', 'expira_em', 'acao'],
+    body: emailLayout({
+      preheader: 'O acesso está liberado até {{expira_em}}.',
+      title: 'O seu primeiro jogo pode começar',
+      content: [
+        p(
+          'Olá, {{nome}}. O pagamento foi aprovado e o <strong>Desafio do Primeiro Jogo</strong> está liberado na sua conta. Você vai montar A Chave do Farol com blocos, em três fases, e publicar o jogo no Mural adulto.',
+        ),
+        p(
+          'O curso e o Mural completo ficam disponíveis até <strong>{{expira_em}}</strong>. Depois, o Mural continua aberto para ver e jogar. Não há renovação automática.',
+        ),
+        ctaButton('{{acao}}', '{{link}}'),
+        divider,
+        small(
+          'Abra a primeira aula num computador com mouse e teclado. Primeiro você joga a versão pronta e vê aonde vai chegar. Depois monta as regras, uma fase de cada vez, no seu ritmo dentro do prazo.',
+        ),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque comprou o Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-access-approved-adult',
+    channel: 'whatsapp' as const,
+    name: 'Desafio adulto: acesso aprovado (WhatsApp)',
+    variables: ['nome', 'link', 'expira_em', 'acao'],
+    body: [
+      'Olá, {{nome}}.',
+      '',
+      'O pagamento foi aprovado e o *Desafio do Primeiro Jogo* está liberado na sua conta. Você vai montar A Chave do Farol com blocos, em três fases.',
+      'Curso e Mural completo até *{{expira_em}}*. Depois, o Mural continua aberto para ver e jogar. Sem renovação automática.',
+      '',
+      '{{acao}}:',
+      '{{link}}',
+      '',
+      'Abra a primeira aula num computador com mouse e teclado. Primeiro você joga a versão pronta; depois monta as regras, uma fase de cada vez.',
+    ].join('\n'),
+  },
+  {
+    key: 'challenge-not-activated-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: conta ainda não ativada (e-mail)',
+    subject: '{{nome}}, falta criar a sua senha para começar o Desafio',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O seu acesso já está contando. Crie a senha para aproveitar o prazo.',
+      title: 'O seu Desafio está esperando por você',
+      content: [
+        p('Olá, {{nome}}. O acesso já foi liberado, mas a senha da conta ainda não foi criada.'),
+        p(
+          'Os 30 dias começaram na aprovação do pagamento, então vale resolver agora. Use o botão abaixo, informe o e-mail da compra e siga as instruções para criar a senha.',
+        ),
+        ctaButton('Criar senha e entrar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque comprou o Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-not-started-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: primeira aula ainda não aberta (e-mail)',
+    subject: '{{nome}}, a primeira aula do Desafio está esperando por você',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'A conta está pronta. Comece jogando a versão pronta da Chave do Farol.',
+      title: 'Hoje pode ser o começo do seu primeiro jogo',
+      content: [
+        p('Olá, {{nome}}. A conta está pronta, mas a primeira aula ainda não foi aberta.'),
+        p(
+          'Num computador com mouse e teclado, abra o curso e jogue a versão pronta da Chave do Farol. Depois vêm as três fases de montagem. Você pode pausar e continuar dentro do prazo, sem fazer tudo no mesmo dia.',
+        ),
+        ctaButton('Abrir a primeira aula', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque tem acesso ativo ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-day-one-complete-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: primeira fase concluída (e-mail)',
+    subject: 'A primeira fase do seu jogo está concluída',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Continue do ponto em que parou, uma fase de cada vez.',
+      title: 'Primeira fase concluída',
+      content: [
+        p('Olá, {{nome}}. A primeira fase do Desafio aparece como concluída na sua conta.'),
+        p('Quando quiser, retome do mesmo ponto. Uma fase de cada vez basta.'),
+        ctaButton('Continuar o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque há progresso no Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-expiry-7d-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: faltam 7 dias (e-mail)',
+    subject: 'Falta uma semana para o seu acesso ao Desafio terminar',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O acesso vai até {{data}}. Continue de onde parou.',
+      title: 'Ainda dá tempo de avançar com calma',
+      content: [
+        p(
+          'Olá, {{nome}}. O seu acesso ao Desafio do Primeiro Jogo termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Falta uma semana. Em <strong>Seu progresso</strong>, você vê em que fase parou e segue para a próxima, sem recomeçar.',
+        ),
+        ctaButton('Ver o meu progresso', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque tem acesso temporário ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-expiry-3d-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: faltam 3 dias (e-mail)',
+    subject: 'Últimos 3 dias do seu acesso ao Desafio do Primeiro Jogo',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O acesso termina em {{data}}. Conclua o próximo passo possível.',
+      title: 'Últimos dias para continuar o projeto',
+      content: [
+        p('Olá, {{nome}}. O seu acesso ao Desafio termina em <strong>{{data}}</strong>.'),
+        p(
+          'Se o jogo ainda não ficou pronto, retome agora e avance até a próxima fase possível. O projeto e o progresso continuam guardados na sua conta.',
+        ),
+        ctaButton('Continuar o Desafio', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque tem acesso temporário ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  {
+    key: 'challenge-completed-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: concluído (e-mail)',
+    subject: 'Você concluiu o Desafio do Primeiro Jogo',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O seu jogo está pronto. Veja o caminho que vem depois.',
+      title: 'O seu primeiro jogo está pronto',
+      content: [
+        p(
+          'Olá, {{nome}}. O Desafio do Primeiro Jogo aparece como concluído na sua conta. Se o jogo já está publicado no Mural, mande o link para alguém jogar. Se ainda não publicou e o acesso está ativo, a aula de publicação mostra como fazer.',
+        ),
+        p(
+          'Se quiser continuar, a Comunidade dos Criadores reúne os próximos cursos, o Estúdio e o Mural na mesma conta. É uma contratação separada e opcional, e a conclusão do curso não encerra antes do prazo o acesso que você já comprou.',
+        ),
+        ctaButton('Ver o caminho depois do primeiro jogo', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque concluiu o Desafio do Primeiro Jogo na sua conta.',
+    }),
+  },
+  {
+    key: 'challenge-expired-adult',
+    channel: 'email' as const,
+    name: 'Desafio adulto: acesso encerrado (e-mail)',
+    subject: 'O seu acesso ao Desafio terminou, {{nome}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Os projetos e o progresso continuam guardados na sua conta.',
+      title: 'O período do Desafio terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. O seu acesso ao Desafio do Primeiro Jogo terminou em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'O Mural adulto continua aberto para ver e jogar, sem novas publicações, comentários ou reações. O link do jogo que você publicou continua funcionando enquanto a publicação estiver no ar. Os projetos e o progresso ficam guardados na sua conta.',
+        ),
+        p(
+          'Continuar como visitante não gera cobrança. Para retomar o curso e seguir com os próximos, veja os planos da Comunidade dos Criadores.',
+        ),
+        ctaButton('Ver como continuar na Comunidade', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque teve acesso ao Desafio do Primeiro Jogo.',
+    }),
+  },
+  // Fim do acesso (20/10/2026), enviados pelo MEMBERS (consumer HMAC `members`, job do ciclo
+  // de vencimentos, `send-access-ended-messages`). CONTRATO de variáveis com o members: NÃO
+  // renomear sem mudar o chamador. `data` chega formatada (dd/mm/aaaa, calendário de São
+  // Paulo); `link` já vem com as UTMs. Presente de 7 dias (resgate `scholarship:`, um curso +
+  // o Mural por tempo limitado, NÃO a assinatura da Comunidade): dois dias antes e no dia em
+  // que termina. Assinatura da Comunidade: no dia em que o acesso venceu,
+  // Kids e adulta separadas. Light Copy: sem "!", sem travessão, sem pergunta de gancho.
+  {
+    key: 'gift-expiry-2d',
+    channel: 'email' as const,
+    name: 'Presente do curso: faltam 2 dias (e-mail)',
+    subject: '{{nome}}, o presente do curso termina em {{data}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'O perfil, os projetos e os jogos publicados continuam guardados na conta.',
+      title: 'O presente do curso termina em {{data}}',
+      content: [
+        p(
+          'Olá, {{nome}}. O acesso de presente ao curso e ao Mural termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'O perfil, os projetos e os jogos publicados continuam guardados na conta. Para seguir com os próximos cursos no mesmo perfil, use o mesmo e-mail na assinatura.',
+        ),
+        ctaButton('Ver como continuar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  {
+    key: 'gift-expired',
+    channel: 'email' as const,
+    name: 'Presente do curso: terminou (e-mail)',
+    subject: 'O presente do curso terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O perfil, os projetos e os jogos publicados no Mural continuam na conta.',
+      title: 'O presente do curso terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. O que foi feito continua na conta: o perfil da criança, os projetos e os jogos publicados no Mural.',
+        ),
+        p(
+          'Com a assinatura, a criança segue de onde parou, faz os próximos cursos e cria jogos cada vez maiores.',
+        ),
+        ctaButton('Ver como continuar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  // Fim do presente ADULTO (20/10/2026), enviados pelo MEMBERS no mesmo ciclo do Kids, com as
+  // MESMAS variáveis de `gift-expiry-2d` e `gift-expired` (contrato: não renomear sem mudar o
+  // chamador). O `link` é o da continuidade adulta, com as UTMs. Copy do Canvas aprovado
+  // ("Presente Kids e adulto", quadro E-mails). O Canvas prevê um segundo botão para Cursos no
+  // e-mail de 2 dias; sem variável para o app adulto, o e-mail leva só o `link` recebido.
+  {
+    key: 'gift-expiry-2d-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto: faltam 2 dias (e-mail)',
+    subject: '{{nome}}, o presente de 7 dias termina em {{data}}',
+    variables: ['nome', 'data', 'link'],
+    body: emailLayout({
+      preheader: 'Os seus projetos continuam guardados na conta depois do fim.',
+      title: 'O presente de 7 dias termina em {{data}}',
+      content: [
+        p(
+          'O acesso de presente ao <strong>Cadê Todo Mundo</strong> e ao <strong>Mural adulto</strong> termina em <strong>{{data}}</strong>.',
+        ),
+        p(
+          'Se ainda falta uma parte do jogo, estes dois dias servem para terminar e publicar. Depois do fim, os seus projetos continuam guardados na conta. Para seguir com os próximos cursos, a assinatura usa este mesmo e-mail.',
+        ),
+        ctaButton('Ver como continuar na Comunidade', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  {
+    key: 'gift-expired-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto: terminou (e-mail)',
+    subject: 'O presente de 7 dias terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Os projetos e o progresso no curso continuam na sua conta.',
+      title: 'O presente de 7 dias terminou',
+      content: [
+        p('O que você fez continua na conta: os projetos e o progresso no curso.'),
+        p(
+          'Com a assinatura da Comunidade dos Criadores, você segue de onde parou, com os próximos cursos, o Estúdio e o Mural. Cada curso ensina uma parte nova, e os seus jogos ficam maiores, até o jogo com a sua ideia. São 7 etapas, e cada uma libera blocos ou ferramentas novas no Estúdio.',
+        ),
+        ctaButton('Ver como continuar', '{{link}}'),
+        small('7 dias de garantia na assinatura. Cancele quando quiser.'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque recebeu um presente de 7 dias na sua conta.',
+    }),
+  },
+  {
+    key: 'subscription-ended-kids',
+    channel: 'email' as const,
+    name: 'Assinatura Kids encerrada (e-mail)',
+    subject: 'A assinatura da Comunidade terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'O perfil, a Jornada, os projetos e os jogos publicados continuam na conta.',
+      title: 'A assinatura da Comunidade terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. O perfil, o posto da Jornada, os projetos guardados, os certificados e os jogos publicados continuam na conta.',
+        ),
+        p(
+          'Quando quiser voltar, a assinatura nova começa no dia em que o pagamento é aprovado e a criança segue de onde parou.',
+        ),
+        ctaButton('Ver como voltar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque a assinatura da Comunidade dos Criadores terminou na sua conta.',
+    }),
+  },
+  {
+    key: 'subscription-ended-adult',
+    channel: 'email' as const,
+    name: 'Assinatura adulta encerrada (e-mail)',
+    subject: 'A sua assinatura da Comunidade terminou, {{nome}}',
+    variables: ['nome', 'link'],
+    body: emailLayout({
+      preheader: 'Os projetos, os certificados e o progresso continuam na sua conta.',
+      title: 'A sua assinatura da Comunidade terminou',
+      content: [
+        p(
+          'Olá, {{nome}}. Os projetos em Meus Jogos, os jogos publicados no Mural, os certificados e o progresso nos cursos continuam na sua conta. A etapa que você alcançou e os blocos que liberou também ficam.',
+        ),
+        p(
+          'Quando quiser voltar, a assinatura nova começa no dia em que o pagamento é aprovado e você segue de onde parou.',
+        ),
+        ctaButton('Ver como voltar', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este e-mail porque a sua assinatura da Comunidade dos Criadores terminou.',
+    }),
+  },
+  // Perfil Kids que fez 18 anos (20/10/2026), enviado pelo AUTH ao responsável. E-mail só.
+  // CONTRATO: `nome` (primeiro nome do responsável), `nome_perfil` e `link` (área adulta).
+  {
+    key: 'profile-turned-18',
+    channel: 'email' as const,
+    name: 'Perfil Kids fez 18 anos (e-mail)',
+    subject: '{{nome_perfil}} fez 18 anos',
+    variables: ['nome', 'nome_perfil', 'link'],
+    body: emailLayout({
+      preheader:
+        'O perfil Kids continua com a sua assinatura, e agora existe também a área adulta.',
+      title: '{{nome_perfil}} fez 18 anos',
+      content: [
+        p(
+          'Olá, {{nome}}. {{nome_perfil}} fez 18 anos, e o perfil Kids continua funcionando enquanto a sua assinatura estiver ativa.',
+        ),
+        p(
+          'Agora {{nome_perfil}} também pode ter uma conta própria na área adulta. Ela começa nova, usa o mesmo Estúdio, e os projetos continuam no perfil Kids.',
+        ),
+        ctaButton('Conhecer a área adulta', '{{link}}'),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: 'Você recebeu este e-mail porque é responsável por um perfil Kids na sua conta.',
+    }),
+  },
   // Lembrete de RENOVAÇÃO do plano anual à vista (assinaturas, 07/2026) — enviado
   // pelo MEMBERS (consumer HMAC `members` via gateway) ~7 dias antes da validade
   // da matrícula vencer. CONTRATO de variáveis com o members
@@ -846,25 +1221,27 @@ const seeds = [
     key: 'referrals-ambassador-link',
     channel: 'email' as const,
     name: 'Página do embaixador (e-mail)',
-    subject: 'Sua página de embaixador do Sistema Zero está pronta, {{nome}}!',
+    // Os DOIS presentes (20/10/2026): Kids, com o cadastro do responsável, e adulto, com o
+    // cadastro da própria pessoa. A página mostra um link para cada um.
+    subject: 'Sua página de embaixador do Sistema Zero está pronta, {{nome}}',
     variables: ['nome', 'link'],
     body: emailLayout({
-      preheader: 'Convide famílias para criar um jogo com o curso Cadê Todo Mundo?.',
-      title: 'Sua página de embaixador está pronta, {{nome}} 🎁',
+      preheader: 'Presenteie crianças e adultos que você conhece com 7 dias de curso e de Mural.',
+      title: 'Sua página de embaixador está pronta, {{nome}}',
       content: [
         p(
-          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode presentear crianças que você conhece com acesso ao curso <strong>Cadê Todo Mundo?</strong>, sem custo para a família indicada.',
+          'Você agora é embaixador(a) do <strong>Sistema Zero</strong> e pode dar dois presentes, sem custo para quem recebe: o curso <strong>Cadê Todo Mundo?</strong> para crianças, com o cadastro feito pelo responsável, e a versão adulta do curso para adultos, com o cadastro da própria pessoa.',
         ),
         p(
-          'Para novos resgates, a família tem 7 dias de acesso ao curso a partir do cadastro pelo link.',
+          'Cada presente vale 7 dias a partir do cadastro pelo link, com o curso e a participação no Mural.',
         ),
         p(
-          'Na sua página você encontra o seu link de bolsa para compartilhar e também pode enviar convites por e-mail. Tudo pronto, sem burocracia:',
+          'Na sua página você encontra um link para cada presente e também pode enviar convites por e-mail.',
         ),
         ctaButton('Abrir minha página', '{{link}}'),
         divider,
         small(
-          'Guarde este e-mail: o link acima é a sua chave de acesso à página (não precisa de senha). Se suspeitar que ele vazou, fale com a gente para gerar outro.',
+          'Guarde este e-mail: o link acima é a sua chave de acesso à página, sem senha. Se suspeitar que ele vazou, fale com a gente para gerar outro.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),
@@ -886,11 +1263,11 @@ const seeds = [
           '<strong>{{indicador}}</strong> pensou na sua família e convidou você para receber o curso <strong>Cadê Todo Mundo?</strong>, do Sistema Zero, sem custo.',
         ),
         p(
-          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 9 a 14 anos montam, passo a passo, um jogo de procurar personagens e concluem a jornada com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
+          'No Sistema Zero, crianças aprendem criando projetos. Neste curso, crianças de 9 a 14 anos montam, passo a passo, um jogo de procurar personagens e concluem o curso com um certificado. O convite libera este curso e a participação no Mural dos Criadores por sete dias. A assinatura da Comunidade dos Criadores é uma contratação separada.',
         ),
         p('O acesso ao curso dura 7 dias a partir do cadastro pelo link, não da primeira aula.'),
         p(
-          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e cópias de jogos não estão incluídas.',
+          'Durante os sete dias, seu filho também pode <strong>publicar o jogo do curso, comentar e reagir no Mural dos Criadores</strong>. Depois, vocês continuam podendo ver e jogar enquanto a conta existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível, para compartilhar com a família e os amigos. Ferramentas de criação livre e a opção de fazer a própria versão de um jogo do Mural não estão incluídas.',
         ),
         p(
           'Para receber o curso, confirme seus dados de responsável no link abaixo. Não pedimos cartão:',
@@ -910,7 +1287,7 @@ const seeds = [
     key: 'referrals-scholarship-welcome',
     channel: 'email' as const,
     name: 'Boas-vindas da bolsa (e-mail)',
-    subject: 'Seu acesso está pronto, {{nome}}! Crie sua senha',
+    subject: 'Seu acesso está pronto, {{nome}}. Crie sua senha',
     variables: ['nome', 'indicador', 'link'],
     body: emailLayout({
       preheader: 'O curso recebido por indicação já está na sua conta.',
@@ -922,7 +1299,7 @@ const seeds = [
         p('Primeiro, crie a sua senha pelo botão abaixo e entre na Área dos pais.'),
         p(DEVICE_SETUP.html),
         ctaButton('Criar senha da área dos pais', '{{link}}'),
-        p('Depois é só seu filho começar a aventura. Divirtam-se! 🚀'),
+        p('Depois, seu filho já pode abrir o curso no computador e começar.'),
         divider,
         small(
           'Por segurança, o link acima expira em <strong>14 dias</strong> e só pode ser usado uma vez. Se expirar, use a opção <strong>“Esqueci minha senha”</strong> na página de login para gerar outro.',
@@ -1001,7 +1378,7 @@ const seeds = [
           'O curso fica disponível por <strong>7 dias a partir do cadastro pelo link</strong>. Criar ou recuperar a senha depois não reinicia esse prazo.',
         ),
         p(
-          'Vocês também podem <strong>ver e jogar os jogos do Mural dos Criadores</strong> enquanto a conta existir, mesmo depois dos 7 dias. Este presente não libera publicar, comentar, reagir nem fazer cópias dos jogos. Uma assinatura ativa libera a participação completa.',
+          'Vocês também podem <strong>ver e jogar os jogos do Mural dos Criadores</strong> enquanto a conta existir, mesmo depois dos 7 dias. Este presente não libera publicar, comentar, reagir nem fazer a própria versão de jogos do Mural. Uma assinatura ativa libera a participação completa.',
         ),
         p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
@@ -1031,7 +1408,7 @@ const seeds = [
           'O curso fica disponível por <strong>7 dias a partir do cadastro pelo link</strong>. Recuperar a senha não reinicia esse prazo.',
         ),
         p(
-          'O acesso para <strong>ver e jogar os jogos do Mural dos Criadores</strong> continua enquanto sua conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente; uma assinatura ativa libera a participação completa.',
+          'O acesso para <strong>ver e jogar os jogos do Mural dos Criadores</strong> continua enquanto sua conta existir. Publicar, comentar, reagir e fazer a própria versão de jogos do Mural não fazem parte do presente; uma assinatura ativa libera a participação completa.',
         ),
         p(DEVICE_SETUP.html),
         p(DEVICE_ALREADY_READY),
@@ -1050,7 +1427,7 @@ const seeds = [
     variables: ['nome', 'campanha', 'validade', 'link'],
     body: emailLayout({
       preheader: 'Crie sua senha para começar o Cadê Todo Mundo? com seu filho.',
-      title: 'Vamos começar, {{nome}}?',
+      title: 'Seu presente está liberado, {{nome}}',
       content: [
         p(
           'Seu cadastro na campanha <strong>{{campanha}}</strong> liberou o curso <strong>Cadê Todo Mundo?</strong>. Seu filho vai acompanhar as aulas e programar um jogo de esconde-esconde, usando um projeto preparado para começar.',
@@ -1061,7 +1438,7 @@ const seeds = [
         p(DEVICE_SETUP.html),
         ctaButton('Criar minha senha e começar', '{{link}}'),
         p(
-          'Depois dos sete dias, vocês continuam podendo ver e jogar no Mural dos Criadores enquanto a conta existir. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
+          'Depois dos sete dias, vocês continuam podendo ver e jogar no Mural dos Criadores enquanto a conta existir. Publicar, comentar, reagir e fazer a própria versão de jogos do Mural não fazem parte do presente.',
         ),
         p(
           'O presente é gratuito. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
@@ -1095,7 +1472,7 @@ const seeds = [
         p(DEVICE_ALREADY_READY),
         ctaButton('Acessar meu presente', '{{link}}'),
         p(
-          'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir, mesmo depois do curso. Publicar, comentar, reagir e copiar jogos não fazem parte do presente.',
+          'Vocês também podem ver e jogar no Mural dos Criadores enquanto a conta existir, mesmo depois do curso. Publicar, comentar, reagir e fazer a própria versão de jogos do Mural não fazem parte do presente.',
         ),
         p(
           'Não há cobrança automática nem obrigação de assinar. Recuperar a senha não reinicia os sete dias, contados do cadastro.',
@@ -1144,7 +1521,7 @@ const seeds = [
           'Depois dos sete dias, o curso e as ações de publicar, comentar e reagir deixam de estar liberados por este convite. Sua conta continua podendo <strong>ver e jogar no Mural</strong> enquanto existir. O link do jogo publicado continua funcionando enquanto a publicação estiver disponível.',
         ),
         p(
-          'O presente não inclui outros cursos, ferramentas de criação livre ou cópias dos jogos. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
+          'O presente não inclui outros cursos, ferramentas de criação livre nem a opção de fazer a própria versão de um jogo do Mural. Não há cobrança automática nem obrigação de assinar a Comunidade dos Criadores.',
         ),
         divider,
         ...(newAccount
@@ -1161,26 +1538,106 @@ const seeds = [
         : 'Você recebeu este e-mail porque resgatou um presente por indicação.',
     }),
   })),
+  // ── Presente ADULTO (20/10/2026) — e-mail só, consumer `referrals` ─────────────
+  // Copy do Canvas aprovado ("Presente Kids e adulto", quadro E-mails). O adulto faz o próprio
+  // cadastro e vai para o app adulto; o presente é a versão adulta do Cadê Todo Mundo e o
+  // Mural adulto por 7 dias. CONTRATO: convite `nome`+`indicador`+`link` (link = /bolsa/<código
+  // adulto>); boas-vindas por indicação `nome`+`indicador`+`validade`+`link`; por campanha
+  // `nome`+`campanha`+`validade`+`link`. `validade` chega formatada (fuso de Brasília). Link:
+  // conta nova = `<app adulto>/redefinir-senha?token=`; conta existente = `<app adulto>/cursos`.
+  {
+    key: 'referrals-scholarship-invite-adult',
+    channel: 'email' as const,
+    name: 'Presente adulto: convite do embaixador (e-mail)',
+    subject: '{{indicador}} deu a você 7 dias para fazer o seu primeiro jogo',
+    variables: ['nome', 'indicador', 'link'],
+    body: emailLayout({
+      preheader: 'O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',
+      title: '{{indicador}} deu a você 7 dias para fazer o seu primeiro jogo',
+      content: [
+        p('Oi, {{nome}}.'),
+        p(
+          '<strong>{{indicador}}</strong> lembrou de você e deu 7 dias no Sistema Zero, sem custo. No <strong>Cadê Todo Mundo</strong>, o jardim e os personagens já estão prontos, e você monta as regras que fazem os esconderijos sumirem e o placar contar cada achado, no navegador do computador.',
+        ),
+        p(
+          'Nesses dias, você também publica o jogo no <strong>Mural adulto</strong> e manda o link para quem quiser. O presente não pede cartão e não cria assinatura. Os 7 dias começam no cadastro.',
+        ),
+        ctaButton('Ver o meu presente', '{{link}}'),
+        divider,
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote:
+        'Você recebeu este convite porque {{indicador}} indicou o seu e-mail. Ele não é reenviado.',
+    }),
+  },
+  ...[
+    { key: 'referrals-scholarship-welcome-adult', campaign: false, newAccount: true },
+    { key: 'referrals-scholarship-existing-adult', campaign: false, newAccount: false },
+    { key: 'referrals-campaign-welcome-adult', campaign: true, newAccount: true },
+    { key: 'referrals-campaign-existing-adult', campaign: true, newAccount: false },
+  ].map(({ key, campaign, newAccount }) => ({
+    key,
+    channel: 'email' as const,
+    name: `Presente adulto: boas-vindas (${campaign ? 'campanha' : 'indicação'}, conta ${newAccount ? 'nova' : 'existente'})`,
+    subject: newAccount
+      ? 'Seu curso e o Mural adulto estão liberados, {{nome}}'
+      : 'Um presente novo na sua conta, {{nome}}',
+    variables: campaign
+      ? ['nome', 'campanha', 'validade', 'link']
+      : ['nome', 'indicador', 'validade', 'link'],
+    body: emailLayout({
+      preheader: newAccount
+        ? 'Crie a sua senha e abra o curso no navegador do computador.'
+        : 'Entre com o e-mail e a senha que você já usa.',
+      title: newAccount
+        ? 'Seu curso e o Mural adulto estão liberados, {{nome}}'
+        : 'Um presente novo na sua conta, {{nome}}',
+      content: [
+        p(
+          newAccount
+            ? `O presente ${adultGiftOrigin(campaign)} está na sua conta: ${ADULT_GIFT}`
+            : `O presente ${adultGiftOrigin(campaign)} entrou na conta que você já tem: ${ADULT_GIFT}`,
+        ),
+        p(
+          newAccount
+            ? 'Para entrar pela primeira vez, crie a sua senha pelo botão abaixo. Depois, abra o curso no navegador do computador. Uma das aulas mostra como publicar o jogo no Mural.'
+            : 'Entre com o e-mail e a senha que você já usa e abra o curso no navegador do computador.',
+        ),
+        ctaButton(newAccount ? 'Criar minha senha' : 'Abrir meus cursos', '{{link}}'),
+        divider,
+        ...(newAccount
+          ? [
+              small(
+                'Se o botão não abrir, use Esqueci minha senha na tela de entrada, com este mesmo e-mail.',
+              ),
+            ]
+          : []),
+        fallbackLink('{{link}}'),
+      ].join('\n'),
+      footerNote: campaign
+        ? 'Você recebeu este e-mail porque se cadastrou nesta campanha.'
+        : 'Você recebeu este e-mail porque resgatou um presente por indicação.',
+    }),
+  })),
   {
     key: 'referrals-bonus-eligible',
     channel: 'email' as const,
     name: 'Bônus do embaixador liberado (e-mail)',
-    subject: 'Boa notícia, {{nome}}: seu bônus de embaixador liberou! 🎉',
+    // Vale para os dois presentes (Kids e adulto): quem assinou pode ser a família ou o adulto.
+    subject: 'Seu bônus de embaixador foi liberado, {{nome}}',
     variables: ['nome', 'valor', 'link'],
     body: emailLayout({
-      preheader: 'Uma família que você indicou assinou a Comunidade dos Criadores.',
-      title: 'Seu bônus liberou, {{nome}} 🎉',
+      preheader: 'Uma pessoa que recebeu o seu presente assinou a Comunidade dos Criadores.',
+      title: 'Seu bônus foi liberado, {{nome}}',
       content: [
         p(
-          'Uma família que ganhou a bolsa com o seu link deu o próximo passo e assinou a <strong>Comunidade dos Criadores</strong>. O período de garantia passou e o seu bônus de <strong>{{valor}}</strong> está liberado.',
+          'Uma pessoa que recebeu o presente pelo seu link assinou a <strong>Comunidade dos Criadores</strong>. O período de garantia passou e o seu bônus de <strong>{{valor}}</strong> está liberado.',
         ),
-        p(
-          'Para receber, é só cadastrar (ou conferir) a sua chave Pix na sua página de embaixador:',
-        ),
+        p('Para receber, cadastre ou confira a sua chave Pix na sua página de embaixador.'),
         ctaButton('Abrir minha página', '{{link}}'),
         divider,
         small(
-          'O bônus é um agradecimento único por indicação que virar assinatura. A gente paga por Pix, direto na chave que você cadastrar, normalmente em poucos dias. Não é salário nem renda garantida, e não cria vínculo com a plataforma.',
+          'O bônus é um agradecimento único por indicação que virar assinatura. O pagamento é por Pix, na chave que você cadastrar, normalmente em poucos dias. Ele não é salário nem renda garantida e não cria vínculo com a plataforma.',
         ),
         fallbackLink('{{link}}'),
       ].join('\n'),

@@ -1,0 +1,41 @@
+{
+  "measuredAt": "2026-10-16T10:30:51.588Z",
+  "destination": "C:\\Users\\tocha\\AppData\\Local\\Temp\\studio-canvas-export-YPymEL",
+  "commands": [
+    "npm ci --no-audit --no-fund",
+    "npm ls --all",
+    "npm run typecheck",
+    "npm run build",
+    "Chromium: dist em caminho aninhado"
+  ],
+  "sourceFiles": 31,
+  "assetFiles": 4,
+  "envelopeBytes": 161290,
+  "zipBytes": 59497,
+  "artifactBytes": 51969,
+  "artifactFiles": {
+    "assets/index-Bu2fMx90.css": 1298,
+    "assets/index-DB06FnCN.js": 39036,
+    "index.html": 453,
+    "studio-assets/000477c8bb8510a5f7f6a6f5ebaea93975dffcecfc9b0fd0dd5e324dc3e3e172.png": 2331,
+    "studio-assets/57f0e6cc631b29b1d35e2f61f384a037be8702b04fe8aa1457f090db708e1aaa.png": 1830,
+    "studio-assets/ef3ad9461e41b0de3a47b918f8e98c31bb44bb2e3796038786b7a43e443f9d47.png": 2434,
+    "studio-assets/manifest.json": 4587
+  },
+  "browserEvidence": {
+    "captureBytes": 52649,
+    "tick": 106,
+    "health": 5,
+    "nestedPath": true,
+    "errors": []
+  },
+  "artifactWithCaptureBytes": 104618,
+  "parsedDependencies": {
+    "dependencies": {},
+    "devDependencies": {
+      "typescript": "5.9.3",
+      "vite": "8.0.16"
+    }
+  },
+  "lockUnchanged": true
+}

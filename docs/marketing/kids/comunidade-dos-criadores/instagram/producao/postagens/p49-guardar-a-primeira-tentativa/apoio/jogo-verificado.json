@@ -1,0 +1,919 @@
+{
+  "method": "Dois projetos exportados, runtime oficial, mesmas teclas e posição inicial. Somente a versão depois tem o evento de pulo. Traço editorial segue posições medidas.",
+  "variants": [
+    {
+      "variant": "antes",
+      "capture": {
+        "frame": 23,
+        "state": {
+          "x": 156,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        }
+      },
+      "trace": [
+        {
+          "x": 68,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 72,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 76,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 80,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 84,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 88,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 92,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 96,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 100,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 104,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 108,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 112,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 116,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 120,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 124,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 128,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 132,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 136,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 140,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 144,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 148,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 152,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 156,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 160,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 164,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 166,
+          "y": 126,
+          "vx": 0,
+          "vy": 0,
+          "onGround": true
+        }
+      ],
+      "initial": {
+        "x": 64,
+        "y": 126
+      }
+    },
+    {
+      "variant": "depois",
+      "capture": {
+        "frame": 34,
+        "state": {
+          "x": 200,
+          "y": 47.599999999999966,
+          "vx": 4,
+          "vy": -0.40000000000000313,
+          "onGround": false
+        }
+      },
+      "trace": [
+        {
+          "x": 68,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 72,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 76,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 80,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 84,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 88,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 92,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 96,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 100,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 104,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 108,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 112,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 116,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 120,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 124,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 128,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 132,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 136,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 140,
+          "y": 116.6,
+          "vx": 4,
+          "vy": -9.4,
+          "onGround": false
+        },
+        {
+          "x": 144,
+          "y": 107.8,
+          "vx": 4,
+          "vy": -8.8,
+          "onGround": false
+        },
+        {
+          "x": 148,
+          "y": 99.6,
+          "vx": 4,
+          "vy": -8.200000000000001,
+          "onGround": false
+        },
+        {
+          "x": 152,
+          "y": 92,
+          "vx": 4,
+          "vy": -7.600000000000001,
+          "onGround": false
+        },
+        {
+          "x": 156,
+          "y": 85,
+          "vx": 4,
+          "vy": -7.000000000000002,
+          "onGround": false
+        },
+        {
+          "x": 160,
+          "y": 78.6,
+          "vx": 4,
+          "vy": -6.400000000000002,
+          "onGround": false
+        },
+        {
+          "x": 164,
+          "y": 72.8,
+          "vx": 4,
+          "vy": -5.8000000000000025,
+          "onGround": false
+        },
+        {
+          "x": 168,
+          "y": 67.6,
+          "vx": 4,
+          "vy": -5.200000000000003,
+          "onGround": false
+        },
+        {
+          "x": 172,
+          "y": 62.99999999999999,
+          "vx": 4,
+          "vy": -4.600000000000003,
+          "onGround": false
+        },
+        {
+          "x": 176,
+          "y": 58.999999999999986,
+          "vx": 4,
+          "vy": -4.0000000000000036,
+          "onGround": false
+        },
+        {
+          "x": 180,
+          "y": 55.59999999999998,
+          "vx": 4,
+          "vy": -3.4000000000000035,
+          "onGround": false
+        },
+        {
+          "x": 184,
+          "y": 52.799999999999976,
+          "vx": 4,
+          "vy": -2.8000000000000034,
+          "onGround": false
+        },
+        {
+          "x": 188,
+          "y": 50.59999999999997,
+          "vx": 4,
+          "vy": -2.2000000000000033,
+          "onGround": false
+        },
+        {
+          "x": 192,
+          "y": 48.99999999999997,
+          "vx": 4,
+          "vy": -1.6000000000000032,
+          "onGround": false
+        },
+        {
+          "x": 196,
+          "y": 47.99999999999997,
+          "vx": 4,
+          "vy": -1.000000000000003,
+          "onGround": false
+        },
+        {
+          "x": 200,
+          "y": 47.599999999999966,
+          "vx": 4,
+          "vy": -0.40000000000000313,
+          "onGround": false
+        },
+        {
+          "x": 204,
+          "y": 47.79999999999996,
+          "vx": 4,
+          "vy": 0.19999999999999685,
+          "onGround": false
+        },
+        {
+          "x": 208,
+          "y": 48.59999999999996,
+          "vx": 4,
+          "vy": 0.7999999999999968,
+          "onGround": false
+        },
+        {
+          "x": 212,
+          "y": 49.99999999999996,
+          "vx": 4,
+          "vy": 1.3999999999999968,
+          "onGround": false
+        },
+        {
+          "x": 216,
+          "y": 51.99999999999996,
+          "vx": 4,
+          "vy": 1.999999999999997,
+          "onGround": false
+        },
+        {
+          "x": 220,
+          "y": 54.59999999999995,
+          "vx": 4,
+          "vy": 2.599999999999997,
+          "onGround": false
+        },
+        {
+          "x": 224,
+          "y": 57.79999999999995,
+          "vx": 4,
+          "vy": 3.199999999999997,
+          "onGround": false
+        },
+        {
+          "x": 228,
+          "y": 61.599999999999945,
+          "vx": 4,
+          "vy": 3.799999999999997,
+          "onGround": false
+        },
+        {
+          "x": 232,
+          "y": 65.99999999999994,
+          "vx": 4,
+          "vy": 4.399999999999997,
+          "onGround": false
+        },
+        {
+          "x": 236,
+          "y": 70.99999999999994,
+          "vx": 4,
+          "vy": 4.9999999999999964,
+          "onGround": false
+        },
+        {
+          "x": 240,
+          "y": 76.59999999999994,
+          "vx": 4,
+          "vy": 5.599999999999996,
+          "onGround": false
+        },
+        {
+          "x": 244,
+          "y": 82.79999999999993,
+          "vx": 4,
+          "vy": 6.199999999999996,
+          "onGround": false
+        },
+        {
+          "x": 248,
+          "y": 89.59999999999992,
+          "vx": 4,
+          "vy": 6.799999999999995,
+          "onGround": false
+        },
+        {
+          "x": 252,
+          "y": 92,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 256,
+          "y": 92,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 260,
+          "y": 92,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        },
+        {
+          "x": 264,
+          "y": 92.6,
+          "vx": 4,
+          "vy": 0.6,
+          "onGround": false
+        },
+        {
+          "x": 268,
+          "y": 93.8,
+          "vx": 4,
+          "vy": 1.2,
+          "onGround": false
+        },
+        {
+          "x": 272,
+          "y": 95.6,
+          "vx": 4,
+          "vy": 1.7999999999999998,
+          "onGround": false
+        },
+        {
+          "x": 276,
+          "y": 98,
+          "vx": 4,
+          "vy": 2.4,
+          "onGround": false
+        },
+        {
+          "x": 280,
+          "y": 101,
+          "vx": 4,
+          "vy": 3,
+          "onGround": false
+        },
+        {
+          "x": 284,
+          "y": 104.6,
+          "vx": 4,
+          "vy": 3.6,
+          "onGround": false
+        },
+        {
+          "x": 288,
+          "y": 108.8,
+          "vx": 4,
+          "vy": 4.2,
+          "onGround": false
+        },
+        {
+          "x": 292,
+          "y": 113.6,
+          "vx": 4,
+          "vy": 4.8,
+          "onGround": false
+        },
+        {
+          "x": 296,
+          "y": 119,
+          "vx": 4,
+          "vy": 5.3999999999999995,
+          "onGround": false
+        },
+        {
+          "x": 300,
+          "y": 125,
+          "vx": 4,
+          "vy": 5.999999999999999,
+          "onGround": false
+        },
+        {
+          "x": 304,
+          "y": 126,
+          "vx": 4,
+          "vy": 0,
+          "onGround": true
+        }
+      ],
+      "initial": {
+        "x": 64,
+        "y": 126
+      }
+    }
+  ],
+  "errors": [],
+  "passed": true,
+  "addedRule": [
+    {
+      "type": "g2d:onKey",
+      "key": "ArrowUp",
+      "body": [
+        {
+          "type": "if",
+          "cond": {
+            "type": "memberGet",
+            "object": {
+              "type": "var",
+              "name": "heroi"
+            },
+            "name": "onGround"
+          },
+          "then": [
+            {
+              "type": "memberSet",
+              "object": {
+                "type": "var",
+                "name": "heroi"
+              },
+              "name": "vy",
+              "value": {
+                "type": "num",
+                "value": -10
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "onlyJumpAdded": true
+}

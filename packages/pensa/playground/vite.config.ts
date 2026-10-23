@@ -10,12 +10,22 @@ const r = (p: string) => resolve(here, p).replace(/\\/g, '/')
 
 export default defineConfig({
   root: here,
+  // As imagens do Zappy saem do MESMO caminho do host (`/zappy/*.webp`).
+  publicDir: r('../../community-kids/public'),
   plugins: [react()],
   resolve: {
     alias: {
       '@sistemazero/pensa/styles.css': r('../src/styles/pensa.css'),
       '@sistemazero/pensa': r('../src/index.ts'),
+      '@': r('../../community-kids/src'),
     },
   },
-  server: { port: 5201 },
+  server: {
+    port: 5201,
+    hmr: process.env.PENSA_NATIVE_E2E === '1' ? false : undefined,
+    proxy: {
+      '/api/pensa': 'http://127.0.0.1:5202',
+      '/fixture': 'http://127.0.0.1:5202',
+    },
+  },
 })

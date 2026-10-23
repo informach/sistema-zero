@@ -7,7 +7,11 @@ import { accountDeletionFences } from './schema'
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 
 /** Account → owner → block/lesson, in the same order as purge and broadcast delivery. */
-export async function lockLearningOwner(tx: Transaction, owner: LearningOwner): Promise<void> {
+export async function lockLearningOwner(
+  tx: Transaction,
+  owner: LearningOwner,
+  options: { allowDeleted?: boolean } = {},
+): Promise<void> {
   // Covers a profile created after the deletion job enumerated the account's children.
   await tx.execute(
     sql`select pg_advisory_xact_lock(hashtextextended(${`members-account:${owner.accountId}`}, 0))`,
@@ -15,6 +19,8 @@ export async function lockLearningOwner(tx: Transaction, owner: LearningOwner): 
   await tx.execute(
     sql`select pg_advisory_xact_lock(hashtextextended(${`creation-quota:${owner.userId}`}, 0))`,
   )
+  // Storage cleanup still has to retire pending copies after account deletion.
+  if (options.allowDeleted) return
   const [fence] = await tx
     .select({ accountId: accountDeletionFences.accountId })
     .from(accountDeletionFences)

@@ -1,0 +1,69 @@
+{
+  "id": "P38",
+  "format": "Imagem única",
+  "source": "docs/marketing/kids/comunidade-dos-criadores/instagram/postagens/09-p31-a-p40.md",
+  "sectionHash": "787a590ec359933d581e06ed618d78c4aba69a2c938b15330e61dd5bc356cea6",
+  "errors": [],
+  "checkedAt": "2026-10-15T00:51:44.519Z",
+  "copyEqual": true,
+  "labelsEqual": true,
+  "fonts": {
+    "normal": true,
+    "bold": true
+  },
+  "layout": {
+    "title": {
+      "left": 64,
+      "right": 1016,
+      "top": 183,
+      "bottom": 275.390625,
+      "height": 92.390625
+    },
+    "tail": {
+      "left": 64,
+      "right": 1016,
+      "top": 294,
+      "bottom": 416.9375,
+      "height": 122.9375
+    },
+    "photo": {
+      "left": 64,
+      "right": 1016,
+      "top": 462,
+      "bottom": 1176,
+      "height": 714
+    },
+    "labels": {
+      "left": 64,
+      "right": 1016,
+      "top": 1194,
+      "bottom": 1230,
+      "height": 36
+    },
+    "footer": {
+      "left": 64,
+      "right": 1016,
+      "top": 1286,
+      "bottom": 1316,
+      "height": 30
+    },
+    "images": [
+      {
+        "src": "apoio/01-pai-e-filho-comparando.png",
+        "width": 1448,
+        "height": 1086
+      },
+      {
+        "src": "apoio/salto-curto.png",
+        "width": 1280,
+        "height": 800
+      },
+      {
+        "src": "apoio/salto-alto.png",
+        "width": 1280,
+        "height": 800
+      }
+    ]
+  },
+  "mobileNoOverflow": true
+}

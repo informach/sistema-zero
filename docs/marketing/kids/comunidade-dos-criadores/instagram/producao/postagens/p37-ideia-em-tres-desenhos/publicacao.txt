@@ -1,0 +1,27 @@
+P37 · Uma ideia em três desenhos
+Produção: 14/10/2026
+Estado: produzido, disponível para revisão. Não publicado e não agendado.
+
+FORMATO
+Carrossel com 7 PNGs em 1080 × 1350, proporção 4:5.
+Selecionar 01-p37.png a 07-p37.png na ordem numérica.
+Usar a legenda integral de legenda.txt e os textos alternativos de texto-alternativo.txt.
+
+ARQUIVOS
+index.html: prévia das sete artes e acesso aos demais arquivos.
+previa.png: visão conjunta.
+montagem.html: montagem editável, com tipografia e composição.
+apoio: fotografias, capturas, fontes, prompts e verificações.
+
+ORIGEM DAS IMAGENS
+Fotografias geradas com uma menina fictícia. A identificação de mídia gerada deve seguir a orientação editorial vigente na publicação manual. Não inserir rodapés nas artes e não apresentar a menina como aluna real.
+O desenho no papel é uma ilustração da proposta, não o projeto dessa criança na plataforma.
+Slides 5 e 6 usam capturas do exemplo Mundo Pirata Profissional e dos blocos reais do Estúdio. A seta, o círculo e a área tracejada são destaques editoriais. A região fim é invisível no jogo.
+As adaptações de enquadramento e ativação da aparência existente estão detalhadas em apoio/fontes-e-producao.md.
+
+DESTINO
+Convite para seguir @criecomhelenaejulio, em slide separado.
+Não há palavra-chave, fluxo ManyChat ou oferta nesta peça.
+
+CALENDÁRIO
+Segunda publicação da semana 3, depois do P04. O próximo carrossel previsto é P20, na semana 4. Reels, imagens únicas e stories entre eles mantêm seus estados e sua posição.

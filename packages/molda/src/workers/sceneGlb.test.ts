@@ -5,7 +5,7 @@ import { SCENE_LIMITS } from '../scene/limits'
 import { createSceneSkin } from '../scene/skinCommands'
 import { readGlb } from '../testing/glbRead'
 import { expectValidGlb } from '../testing/gltfValidation'
-import { animatedScene } from '../testing/sceneAnimation'
+import { animatedScene, sceneRotationTrack } from '../testing/sceneAnimation'
 import { makeSceneSkinFixture } from '../testing/sceneSkin'
 import { prepareSceneGlbInWorker } from './sceneGlb'
 import {
@@ -40,6 +40,22 @@ test('real GLB worker returns identical bytes, stats and loss report without det
   expect(request.document.images[0]!.layers[0]!.pixels.byteLength > 0).toBe(true)
   expect(result.bytes.buffer instanceof ArrayBuffer).toBe(true)
 })
+test.each([
+  false,
+  true,
+])('real GLB worker preserves rotation pivots for animatedPaint=%s and matches the validated direct export', async (animatedPaint) => {
+  const request = { ...fixture(), animatedPaint },
+    rotation = sceneRotationTrack()
+  rotation.keys[1]!.incomingPivot = [1.25, -0.5, 2]
+  rotation.keys[1]!.incomingPivotInterpolation = 'smooth'
+  request.document.animations![0]!.tracks.push(rotation)
+  const before = structuredClone(request)
+  const result = await prepareSceneGlbInWorker(request)
+  expect(result).toEqual(encodeSceneGlb(request.document, { allowLosses: true, animatedPaint }))
+  await expectValidGlb(result.bytes)
+  expect(request).toEqual(before)
+})
+
 test('GLB request strictly reads and owns the native document; rejects unsupported, foreign and malformed requests', async () => {
   const request = fixture(),
     parsed = readSceneGlbRequest(request)

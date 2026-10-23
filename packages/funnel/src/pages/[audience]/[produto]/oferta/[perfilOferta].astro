@@ -1,24 +1,37 @@
 ---
 import OfertaPage from '../../../../components/funnel/OfertaPage.astro'
-import { isComunidadePage } from '../../../../funnels/comunidade-dos-criadores/oferta'
-import { isDesafioOffer } from '../../../../funnels/desafio-primeiro-jogo/offer'
+import { isComunidadeAdultoSubpagina } from '../../../../funnels/comunidade-adulto/oferta'
+import {
+  isComunidadeOfertaAntiga,
+  isComunidadeSubpagina,
+} from '../../../../funnels/comunidade-dos-criadores/oferta'
+import {
+  isDesafioOfertaAntiga,
+  isDesafioSubpagina,
+} from '../../../../funnels/desafio-primeiro-jogo/offer'
 import { resolveOfferPage } from '../../../../server/offer-page'
 
 export const prerender = false
 
 const profile = Astro.params.perfilOferta
-const desafio = Astro.params.produto === 'desafio-primeiro-jogo' && isDesafioOffer(profile)
-if (
-  Astro.params.audience !== 'kids' ||
-  (!desafio && (Astro.params.produto !== 'comunidade-dos-criadores' || !isComunidadePage(profile)))
-)
-  return new Response(null, { status: 404 })
+const kids = Astro.params.audience === 'kids'
+const desafioKids = kids && Astro.params.produto === 'desafio-primeiro-jogo'
+const desafio = desafioKids && isDesafioSubpagina(profile)
+const comunidade = kids && Astro.params.produto === 'comunidade-dos-criadores'
+const comunidadeAdulto =
+  Astro.params.audience === 'pro' &&
+  Astro.params.produto === 'comunidade-dos-criadores' &&
+  isComunidadeAdultoSubpagina(profile)
 
-if (!desafio && profile === 'tempo-de-tela') {
+// As cinco páginas de perfil da Comunidade (até 20/10/2026) viraram a página de 9 a 17: os links
+// antigos chegam lá com a mesma query (atribuição e cupom).
+if (comunidade && isComunidadeOfertaAntiga(profile))
   return Astro.redirect(`/kids/comunidade-dos-criadores/oferta${Astro.url.search}`, 301)
-}
-if (desafio && profile === 'primeiro-jogo')
+// As variantes por motivo do Desafio (até 21/10/2026) viraram a página de 9 a 17, com a mesma query.
+if (desafioKids && isDesafioOfertaAntiga(profile))
   return Astro.redirect(`/kids/desafio-primeiro-jogo/oferta${Astro.url.search}`, 301)
+if (!desafio && !(comunidade && isComunidadeSubpagina(profile)) && !comunidadeAdulto)
+  return new Response(null, { status: 404 })
 const page = await resolveOfferPage(Astro.params, Astro.url, Astro.site)
 if (page instanceof Response) return page
 Astro.response.headers.set(
@@ -27,4 +40,9 @@ Astro.response.headers.set(
 )
 ---
 
-<OfertaPage {...page} comunidadeProfile={!desafio && isComunidadePage(profile) ? profile : undefined} desafioProfile={desafio && isDesafioOffer(profile) ? profile : undefined}/>
+<OfertaPage
+  {...page}
+  comunidadePage={comunidade && isComunidadeSubpagina(profile) ? profile : undefined}
+  comunidadeAdultoPage={comunidadeAdulto ? profile : undefined}
+  desafioPage={desafio && isDesafioSubpagina(profile) ? profile : undefined}
+/>

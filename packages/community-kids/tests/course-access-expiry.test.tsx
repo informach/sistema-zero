@@ -11,6 +11,7 @@ afterEach(() => setSystemTime())
 
 function course(expiresAt: string | null): MyCourseView {
   return {
+    courseId: '00000000-0000-4000-8000-000000000001',
     courseSlug: 'desafio-primeiro-jogo',
     title: 'Desafio do Primeiro Jogo',
     subtitle: 'Crie seu primeiro jogo em quatro dias.',

@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test'
-import { act, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { SceneAnimationPose } from '../../../scene/sampleAnimation'
@@ -35,6 +35,8 @@ function setup(transform?: SceneTransformActions) {
     document: MoldaSceneDocument | null
     updates: number
     poses: Array<SceneAnimationPose | null>
+    spaces: Array<'world' | 'local'>
+    supports: boolean[]
     disposed: boolean
   }> = []
   let fail = false
@@ -44,6 +46,8 @@ function setup(transform?: SceneTransformActions) {
       document: null,
       updates: 0,
       poses: [],
+      spaces: [],
+      supports: [],
       disposed: false,
     }
     ports.push(state)
@@ -63,11 +67,12 @@ function setup(transform?: SceneTransformActions) {
       setView: () => {},
       frame: () => {},
       setTransformTool: () => {},
+      setTransformSpace: (space) => state.spaces.push(space),
       setAreaTool: () => {},
       setComponentSelection: () => {},
       setPaintTarget: () => {},
       setAnimationEditing: () => {},
-      setSupportGuides: () => {},
+      setSupportGuides: (enabled) => state.supports.push(enabled),
       setSkinWeightTarget: () => {},
       setSkinPaintEnabled: () => {},
       setSkinPaintPreview: () => {},
@@ -80,7 +85,7 @@ function setup(transform?: SceneTransformActions) {
     }
   }
   const source = animatedScene()
-  const content = (document: MoldaSceneDocument) => (
+  const content = (document: MoldaSceneDocument, mode: 'model' | 'animation' = 'model') => (
     <StrictMode>
       <SceneCanvas
         document={document}
@@ -91,6 +96,7 @@ function setup(transform?: SceneTransformActions) {
         animation={animation}
         flipbook={flipbook}
         transform={transform}
+        mode={mode}
       />
     </StrictMode>
   )
@@ -110,11 +116,51 @@ function setup(transform?: SceneTransformActions) {
       })
     },
     rerender: (document: MoldaSceneDocument) => view.rerender(content(document)),
+    setMode: (mode: 'model' | 'animation') => view.rerender(content(source, mode)),
     fail: (value: boolean) => {
       fail = value
     },
   }
 }
+
+test('animation starts on the piece axes and keeps its explicit choice separate from modeling', async () => {
+  const f = setup()
+  try {
+    await waitFor(() => expect(f.ports.at(-1)?.updates).toBe(1))
+    const spaces = () => f.ports.at(-1)!.spaces
+    expect(spaces().at(-1)).toBe('world')
+    f.setMode('animation')
+    expect(spaces().at(-1)).toBe('local')
+    fireEvent.change(f.view.getByLabelText('Eixos de Mover e Girar'), {
+      target: { value: 'world' },
+    })
+    expect(spaces().at(-1)).toBe('world')
+    f.setMode('model')
+    fireEvent.change(f.view.getByLabelText('Eixos de Mover e Girar'), {
+      target: { value: 'local' },
+    })
+    expect(spaces().at(-1)).toBe('local')
+    f.setMode('animation')
+    expect(spaces().at(-1)).toBe('world')
+    f.setMode('model')
+    expect(spaces().at(-1)).toBe('local')
+  } finally {
+    f.view.unmount()
+  }
+})
+
+test('bones become visible and selectable when entering animation', async () => {
+  const f = setup()
+  try {
+    await waitFor(() => expect(f.ports.at(-1)?.supports.at(-1)).toBe(false))
+    f.setMode('animation')
+    expect(f.ports.at(-1)?.supports.at(-1)).toBe(true)
+    f.setMode('model')
+    expect(f.ports.at(-1)?.supports.at(-1)).toBe(false)
+  } finally {
+    f.view.unmount()
+  }
+})
 
 test('disposing a viewport cancels its captured transform and ignores a late successful pointer end', async () => {
   const endings: boolean[] = []

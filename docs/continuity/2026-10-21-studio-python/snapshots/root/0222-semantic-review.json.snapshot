@@ -1,0 +1,134 @@
+{
+  "at": "2026-10-20T23:50:28.586Z",
+  "passed": true,
+  "cases": [
+    {
+      "scenario": "Q03",
+      "nativeReceiptSha256": "a8c2d6b384778e3f55696cc6edadc30711af1081a43b8d16b0fb19101871d126",
+      "supervisorSha256": "50a349502f3c1076644f8c91f19ba42f954cef29ca29b6b62cf0eb6a2b826f00",
+      "start": "2026-10-20T23:48:47.868Z",
+      "end": "2026-10-20T23:49:03.938Z",
+      "frames": 9,
+      "clears": 10,
+      "completeStep": 9,
+      "sounds": [
+        "explosion.wav",
+        "explosion.wav",
+        "explosion.wav",
+        "explosion.wav"
+      ],
+      "audioBackend": "WASAPI",
+      "elapsedMs": 15928.255699982401,
+      "kindCounts": {
+        "installed": 1,
+        "authored-binding-invocation": 1,
+        "declared-state-injection": 20,
+        "rendered-frame": 9,
+        "wall-clamp": 4,
+        "damage": 1,
+        "nonpositive-health-before-reset": 1,
+        "declared-near-defeat": 1,
+        "complete": 1
+      },
+      "clean": true
+    },
+    {
+      "scenario": "Q04",
+      "nativeReceiptSha256": "02a3d5b7541b664dcaf9207213574bf884120a4500540102801b0ac77ab2de8c",
+      "supervisorSha256": "f72c56b5540a5143c840ab94ba898a67d54e5074fb834e565d08fb860bd185fd",
+      "start": "2026-10-20T23:49:04.051Z",
+      "end": "2026-10-20T23:49:19.942Z",
+      "frames": 2,
+      "clears": 3,
+      "completeStep": 2,
+      "sounds": [
+        "explosion.wav"
+      ],
+      "audioBackend": "WASAPI",
+      "elapsedMs": 15759.60709998617,
+      "kindCounts": {
+        "installed": 1,
+        "authored-binding-invocation": 1,
+        "declared-state-injection": 6,
+        "rendered-frame": 2,
+        "missile-kill": 1,
+        "complete": 1
+      },
+      "clean": true
+    },
+    {
+      "scenario": "Q05",
+      "nativeReceiptSha256": "58fdeb3e161a94dbb1fe579683c7dec2745593fa9f0baf63e122c653b6219780",
+      "supervisorSha256": "7cfa1e47f635b9a572dd0e8e9471344e17b4522779979f0e334e8e2744d59235",
+      "start": "2026-10-20T23:49:20.088Z",
+      "end": "2026-10-20T23:49:36.037Z",
+      "frames": 2,
+      "clears": 3,
+      "completeStep": 2,
+      "sounds": [
+        "powerup.wav",
+        "explosion.wav",
+        "explosion.wav"
+      ],
+      "audioBackend": "WASAPI",
+      "elapsedMs": 15732.670400000643,
+      "kindCounts": {
+        "installed": 1,
+        "authored-binding-invocation": 1,
+        "declared-state-injection": 5,
+        "rendered-frame": 2,
+        "pickup-upgrade": 1,
+        "missile-powerup-penalty": 1,
+        "complete": 1
+      },
+      "clean": true
+    },
+    {
+      "scenario": "Q06",
+      "nativeReceiptSha256": "134bcb7e4d099c158f01cbed82eee3b28f1f4c0ad54c18c78d2a92fc13524d45",
+      "supervisorSha256": "925f280ab5cae385bed4f1ac11ecc2f0a6fee734cb889cecde942e05d30a000c",
+      "start": "2026-10-20T23:49:36.149Z",
+      "end": "2026-10-20T23:49:51.963Z",
+      "frames": 1,
+      "clears": 2,
+      "completeStep": 1,
+      "sounds": [],
+      "audioBackend": "WASAPI",
+      "elapsedMs": 15676.253199984785,
+      "kindCounts": {
+        "installed": 1,
+        "authored-binding-invocation": 3,
+        "declared-state-injection": 8,
+        "rendered-frame": 1,
+        "ai-camera": 1,
+        "complete": 1
+      },
+      "clean": true
+    },
+    {
+      "scenario": "Q07",
+      "nativeReceiptSha256": "1580b85d7782a0b868375a3d0bbacd0eea57c68e16393ef90b0a93e0a0a1519f",
+      "supervisorSha256": "6e5490d7a798c8dd5d76f5dda897e754ba3eba5e332d65ce14ed14301c618c36",
+      "start": "2026-10-20T23:49:52.065Z",
+      "end": "2026-10-20T23:50:08.468Z",
+      "frames": 20,
+      "clears": 21,
+      "completeStep": 20,
+      "sounds": [
+        "explosion.wav"
+      ],
+      "audioBackend": "WASAPI",
+      "elapsedMs": 16263.131399988197,
+      "kindCounts": {
+        "installed": 1,
+        "authored-binding-invocation": 1,
+        "declared-state-injection": 2,
+        "rendered-frame": 20,
+        "particle-lifetime": 20,
+        "complete": 1
+      },
+      "clean": true
+    }
+  ],
+  "limits": "Exact declared rule fixtures with actual official CPython/Tk/WASAPI. No fullgame/OS keyboard/acoustics/FPS/freshinstall/Mural/hosted approval."
+}

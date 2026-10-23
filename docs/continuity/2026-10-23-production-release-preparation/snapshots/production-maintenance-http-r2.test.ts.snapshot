@@ -1,0 +1,118 @@
+import { expect, test } from 'bun:test'
+import { readFile } from 'node:fs/promises'
+import { createHash } from 'node:crypto'
+import { join } from 'node:path'
+import { PINS, SERVICES } from './production-maintenance-reload-r2.mjs'
+import { argumentsFor, targetFromReceipt, remoteHttp, readRemote, validateContext, nativeEnvironment } from './production-maintenance-http-r2.mjs'
+
+const target = { project: PINS.project, environment: PINS.environment, service: 'kids', serviceId: SERVICES.kids.id,
+  deploymentId: '00000000-0000-4000-8000-000000000001', snapshotId: '00000000-0000-4000-8000-000000000002', instanceId: '00000000-0000-4000-8000-000000000003', commit: SERVICES.kids.commit, image: SERVICES.kids.image }
+function applied() { return { kind: 'production-maintenance-reload', version: 1, mode: 'apply', state: 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED', projectId: PINS.project, environmentId: PINS.environment, service: 'kids', remoteOutcomeUnknown: false, mutationAttempts: 1, acknowledged: true, imageVerified: true, oldRetired: true, snapshotVerified: true, variablesPreserved: true, candidate: { id: target.deploymentId, snapshotId: target.snapshotId, commit: target.commit, image: target.image, status: 'SUCCESS', stopped: false, instances: [{ id: target.instanceId, status: 'RUNNING' }] } } }
+async function runRemote(responses: Response[], drift = false) {
+  const oldFetch = globalThis.fetch, oldWrite = process.stdout.write, oldExit = process.exitCode
+  const keys = ['RAILWAY_PROJECT_ID', 'RAILWAY_ENVIRONMENT_ID', 'RAILWAY_SERVICE_ID', 'RAILWAY_DEPLOYMENT_ID', 'RAILWAY_GIT_COMMIT_SHA', 'PORT']
+  const previous = keys.map(k => [k, process.env[k]])
+  Object.assign(process.env, { RAILWAY_PROJECT_ID: target.project, RAILWAY_ENVIRONMENT_ID: drift ? 'wrong' : target.environment, RAILWAY_SERVICE_ID: target.serviceId, RAILWAY_DEPLOYMENT_ID: target.deploymentId, RAILWAY_GIT_COMMIT_SHA: target.commit, PORT: '3000' })
+  const calls: { url: string; options: RequestInit | undefined }[] = []; let output = ''
+  globalThis.fetch = Object.assign(async (input: string | URL | Request, options?: RequestInit) => { calls.push({ url: String(input), options }); const r = responses.shift(); if (!r) throw Error('Unexpected request'); return r }, { preconnect: oldFetch.preconnect })
+  process.stdout.write = ((chunk: any) => { output += String(chunk); return true }) as typeof process.stdout.write
+  try { await remoteHttp(target, 'synthetic-nonce'); return { output, calls, exitCode: process.exitCode } }
+  // Bun 1.3.11 ignores restoring undefined after a numeric exit code.
+  // Restore its effective initial status, while preserving an earlier failure.
+  finally { globalThis.fetch = oldFetch; process.stdout.write = oldWrite; process.exitCode = oldExit ?? 0; for (const [k, v] of previous) if (v === undefined) delete process.env[k!]; else process.env[k!] = v }
+}
+const headers = { 'content-type': 'application/json', 'x-release-maintenance': 'full', 'cache-control': 'no-store' }
+const ready = () => new Response('{"status":"maintenance"}', { status: 200, headers })
+const blocked = () => new Response('{"error":{"code":"RELEASE_MAINTENANCE","message":"inert"}}', { status: 503, headers })
+
+test('remote refusal cannot leak its exit status into the test runner; prior failures are preserved', async () => {
+  const original = process.exitCode
+  try {
+    const refused = await runRemote([], true)
+    expect(refused.exitCode).toBe(1)
+    expect(process.exitCode ?? 0).toBe(original ?? 0)
+    process.exitCode = 7
+    const another = await runRemote([], true)
+    expect(another.exitCode).toBe(1)
+    expect(process.exitCode).toBe(7)
+  } finally {
+    process.exitCode = original ?? 0
+  }
+})
+
+test('new identity is accepted only from acknowledged image+retirement receipt, never from discovery', () => {
+  expect(targetFromReceipt(applied())).toEqual(target)
+  for (const patch of [{ remoteOutcomeUnknown: true }, { state: 'ACK_UNKNOWN_NO_REPLAY' }, { oldRetired: false }, { mode: 'check' }]) expect(() => targetFromReceipt({ ...applied(), ...patch })).toThrow()
+  expect(() => argumentsFor(['production-maintenance-http-test', 'input', 'a'.repeat(64), '--url=http://other'])).toThrow()
+})
+test('fixed remote program only reads canonical local readyz and slash, with two independent full markers', async () => {
+  const r = await runRemote([ready(), blocked()])
+  expect(readRemote(r.output, 'synthetic-nonce')).toEqual({ identityVerified: true, ready: true, blocked: true })
+  expect(r.calls.map(c => c.url)).toEqual(['http://127.0.0.1:3000/readyz', 'http://127.0.0.1:3000/'])
+  expect(r.calls.every(c => c.options?.method === 'GET' && c.options.redirect === 'error')).toBe(true)
+})
+test('identity refusal performs zero GETs; health OK without full and non503 slash remain unqualified', async () => {
+  const wrong = await runRemote([], true); expect(wrong.calls).toHaveLength(0); expect(() => readRemote(wrong.output, 'synthetic-nonce')).toThrow()
+  for (const responses of [[new Response('{"status":"ok"}', { status: 200, headers })], [new Response('{"status":"maintenance"}', { status: 200, headers: { 'content-type': 'application/json' } })], [ready(), new Response('{"error":{"code":"RELEASE_MAINTENANCE"}}', { status: 200, headers })]]) { const r = await runRemote(responses); expect(() => readRemote(r.output, 'synthetic-nonce')).toThrow() }
+})
+test('oversize, bad UTF8 and unrelated stdout fail closed without dumping provider body', async () => {
+  for (const response of [new Response('x'.repeat(4097), { status: 200, headers }), new Response(new Uint8Array([255]), { status: 200, headers })]) {
+    const r = await runRemote([response]); expect(() => readRemote(r.output, 'synthetic-nonce')).toThrow(); expect(r.output.length).toBeLessThan(300)
+  }
+  expect(() => readRemote('{"relay":"starting"}', 'synthetic-nonce')).toThrow('REMOTE_PROOF_MISSING')
+})
+test('context validation denies drift, pending and extra replicas before or after the HTTP proof', () => {
+  const data = { serviceInstance: { serviceId: target.serviceId, environmentId: target.environment, activeDeployments: [{ id: target.deploymentId }], latestDeployment: { id: target.deploymentId } },
+    deployment: { id: target.deploymentId, serviceId: target.serviceId, projectId: target.project, environmentId: target.environment, status: 'SUCCESS', deploymentStopped: false, snapshotId: target.snapshotId, meta: { commitHash: target.commit, imageDigest: target.image }, instances: [{ id: target.instanceId, status: 'RUNNING' }] }, pending: { edges: [], pageInfo: { hasNextPage: false } } }
+  expect(() => validateContext(data, target)).not.toThrow()
+  for (const edit of [(d: any) => { d.pending.pageInfo.hasNextPage = true }, (d: any) => { d.deployment.meta.imageDigest = 'other' }, (d: any) => { d.deployment.instances.push({ id: target.instanceId, status: 'RUNNING' }) }]) { const bad = structuredClone(data); edit(bad); expect(() => validateContext(bad, target)).toThrow() }
+})
+test('operational HTTP source pin is actual file bytes; import is inert', async () => {
+  expect(createHash('sha256').update(await readFile(join(import.meta.dir, 'production-maintenance-http-r2.mjs'))).digest('hex')).toBe(PINS.httpSha256)
+})
+
+test('receipt selection uses the single RUNNING UUID despite a REMOVED row first, without dropping history', () => {
+  const r = applied()
+  r.candidate.instances.unshift({ id: '00000000-0000-4000-8000-000000000099', status: 'REMOVED' })
+  const before = structuredClone(r)
+  expect(targetFromReceipt(r)).toEqual(target)
+  expect(r).toEqual(before)
+  for (const edit of [
+    (r: any) => { r.candidate.instances[0].status = 'STARTING' },
+    (r: any) => { r.candidate.instances[0].status = 'RUNNING' },
+    (r: any) => { r.candidate.instances[1].status = 'REMOVED' },
+    (r: any) => { r.candidate.instances[0].id = 'not-a-uuid' },
+    (r: any) => { r.candidate.instances.push({ ...r.candidate.instances[0] }) },
+  ]) {
+    const bad = structuredClone(r); edit(bad)
+    expect(() => targetFromReceipt(bad)).toThrow('NEW_IDENTITY_UNCONFIRMED')
+  }
+})
+
+test('HTTP fresh context permits retired history but never switches the pinned RUNNING UUID', () => {
+  const data = { serviceInstance: { serviceId: target.serviceId, environmentId: target.environment, activeDeployments: [{ id: target.deploymentId }], latestDeployment: { id: target.deploymentId } },
+    deployment: { id: target.deploymentId, serviceId: target.serviceId, projectId: target.project, environmentId: target.environment, status: 'SUCCESS', deploymentStopped: false, snapshotId: target.snapshotId, meta: { commitHash: target.commit, imageDigest: target.image },
+      instances: [{ id: '00000000-0000-4000-8000-000000000099', status: 'REMOVED' }, { id: target.instanceId, status: 'RUNNING' }] }, pending: { edges: [], pageInfo: { hasNextPage: false } } }
+  const before = structuredClone(data)
+  expect(() => validateContext(data, target)).not.toThrow()
+  expect(data).toEqual(before)
+  for (const status of ['STARTING', 'DEPLOYING', 'STOPPED', 'FAILED', 'UNKNOWN', 'RUNNING']) {
+    const bad = structuredClone(data); bad.deployment.instances[0].status = status
+    expect(() => validateContext(bad, target)).toThrow('CANDIDATE_CHANGED')
+  }
+  for (const edit of [
+    (d: any) => { d.deployment.instances[1].id = '00000000-0000-4000-8000-000000000098' },
+    (d: any) => { d.deployment.instances[0].id = 'not-a-uuid' },
+    (d: any) => { d.deployment.instances.push({ ...d.deployment.instances[0] }) },
+    (d: any) => { d.deployment.instances[1].status = 'REMOVED' },
+  ]) { const bad = structuredClone(data); edit(bad); expect(() => validateContext(bad, target)).toThrow('CANDIDATE_CHANGED') }
+})
+
+test('SSH uses the exact proven normal-minus-four environment profile, never mutating its source', () => {
+  const source = { PATH: 'inert-path', USERNAME: 'inert-user', HOME: 'inert-home', COMSPEC: 'inert-shell', PATHEXT: '.EXE', SYSTEM_EXTRA: 'inert-extra', CI: 'false', NO_COLOR: '0',
+    RAILWAY_TOKEN: 'inert-one', RAILWAY_API_TOKEN: 'inert-two', RAILWAY_PROJECT_TOKEN: 'inert-three', RAILWAY_API: 'inert-four', RAILWAY_PROJECT_ID: 'inert-preserved' }
+  const before = structuredClone(source), expected: Record<string, string> = { ...source, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete expected[key]
+  expect(nativeEnvironment(source)).toEqual(expected)
+  expect(source).toEqual(before)
+})

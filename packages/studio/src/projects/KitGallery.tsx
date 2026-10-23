@@ -1,5 +1,5 @@
 import type { JSX } from 'react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { ulid } from 'ulid'
 import { type BuildWorkspaceStateOptions, buildWorkspaceStateFromIR } from '#blockly'
 import { t as defaultT, type ExampleExperience, type Translator } from '#core'
@@ -11,6 +11,7 @@ import {
 import { generateProjectFiles } from '#generators'
 import type { SZIRV2 } from '#ir'
 import { OFFICIAL_CATALOG } from '#official-extensions'
+import type { EditableStudioProject } from '../core/editableProject'
 import { createEmptyProject, type Project, type ProjectAsset } from '../core/project'
 import { normalizeSearchText } from '../core/searchText'
 import {
@@ -18,7 +19,12 @@ import {
   type CoreExampleSummary,
   loadCoreExample,
 } from '../examples/coreCatalog'
+import type { PythonExampleCreationPort, PythonExampleEntry } from '../examples/pythonCatalog'
 import { persistProject } from '../state/persistence'
+import {
+  captureProjectStorageScope,
+  type ProjectStorageScope,
+} from '../state/projectStorageRuntime'
 import { useT } from '../studio/i18n'
 
 /**
@@ -31,6 +37,7 @@ import { useT } from '../studio/i18n'
  * o StudioCore re-registra os blocos da extensão no load.
  */
 export interface KitEntry {
+  programmingLanguage?: 'javascript'
   key: string
   name: string
   description: string
@@ -53,13 +60,16 @@ export interface KitEntry {
   workspaceOptions?: BuildWorkspaceStateOptions
 }
 
-export interface KitGroup {
+type GalleryEntry = KitEntry | PythonExampleEntry
+
+export interface KitGroup<T = KitEntry> {
   extensionId: string
   label: string
-  entries: KitEntry[]
+  entries: T[]
 }
 
 export interface KitGalleryFilters {
+  programmingLanguage?: 'javascript' | 'python'
   query: string
   difficulty: 'all' | ExtensionExampleDifficulty
   experience: 'all' | ExampleExperience
@@ -77,13 +87,18 @@ const DIFFICULTY_BADGE_CLASS: Record<ExtensionExampleDifficulty, string> = {
   advanced: 'sz-kit-badge-advanced',
 }
 
-export function filterKitGroups(
-  groups: readonly KitGroup[],
+export function filterKitGroups<T extends GalleryEntry>(
+  groups: readonly KitGroup<T>[],
   filters: KitGalleryFilters,
-): KitGroup[] {
+): KitGroup<T>[] {
   const query = normalizeSearchText(filters.query.trim())
   return groups.flatMap((group) => {
     const entries = group.entries.filter((entry) => {
+      if (
+        (entry.programmingLanguage ?? 'javascript') !==
+        (filters.programmingLanguage ?? 'javascript')
+      )
+        return false
       if (filters.difficulty !== 'all' && entry.difficulty !== filters.difficulty) return false
       if (filters.experience !== 'all' && entry.experience !== filters.experience) return false
       if (!query) return true
@@ -368,10 +383,15 @@ export function buildProjectFromKitEntry(entry: KitEntry): Project {
 }
 
 /** Persiste um projeto montado pelo caminho único da galeria. */
-async function createProjectFromExample(entry: KitEntry): Promise<Project> {
+async function createProjectFromExample(
+  entry: KitEntry,
+  scope: ProjectStorageScope,
+  current: () => boolean,
+): Promise<Project> {
   const loaded = entry.ir ? entry : { ...entry, ...(await entry.load?.()) }
+  if (!current()) throw new Error('A criação foi cancelada.')
   const project = buildProjectFromKitEntry(loaded)
-  await persistProject(project)
+  await persistProject(project, {}, scope)
   return project
 }
 
@@ -380,17 +400,19 @@ function KitCard({
   creating,
   step,
   onPick,
+  unavailable = false,
 }: {
-  entry: KitEntry
+  entry: GalleryEntry
   creating: string | null
   step?: number
-  onPick: (entry: KitEntry) => void
+  onPick: (entry: GalleryEntry) => void
+  unavailable?: boolean
 }): JSX.Element {
   const t = useT()
   return (
     <button
       type="button"
-      disabled={creating !== null}
+      disabled={creating !== null || unavailable}
       onClick={() => onPick(entry)}
       className="flex h-full min-h-28 w-full flex-col items-start gap-1 rounded-lg border border-sz-border bg-sz-panel p-3 text-left transition-colors hover:border-sz-accent disabled:cursor-not-allowed disabled:opacity-60"
     >
@@ -406,6 +428,17 @@ function KitCard({
           </span>
         </span>
         <span className="flex flex-wrap justify-end gap-1">
+          {entry.programmingLanguage === 'python' ? (
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold">
+              Python ·{' '}
+              {entry.kind === 'pro'
+                ? 'Pro'
+                : t(entry.mode === 'blocks' ? 'mode.blocks' : 'mode.bridge')}
+              {entry.extensions.some((extension) => extension.id === 'python-turtle')
+                ? ' · Turtle'
+                : ''}
+            </span>
+          ) : null}
           {entry.difficulty ? (
             <span
               className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${DIFFICULTY_BADGE_CLASS[entry.difficulty]}`}
@@ -442,13 +475,64 @@ function KitCard({
 
 export function KitGallery({
   onOpenProject,
+  pythonCreation,
+  pythonDiscovery,
+  professional = false,
+  javascriptAvailable = true,
+  authorizeJavaScript,
 }: {
   onOpenProject: (projectId: string) => void
+  pythonCreation?: PythonExampleCreationPort
+  pythonDiscovery?: { loading: boolean; unavailable: boolean; error?: string; retry(): void }
+  professional?: boolean
+  javascriptAvailable?: boolean
+  authorizeJavaScript?: (kind: 'classic' | 'pro', signal?: AbortSignal) => Promise<void>
 }): JSX.Element {
   const t = useT()
   const [creating, setCreating] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [groups, setGroups] = useState<KitGroup[] | null>(null)
+  const [groups, setGroups] = useState<KitGroup<GalleryEntry>[] | null>(null)
+  const [selectedLanguage, setProgrammingLanguage] = useState<'javascript' | 'python'>('javascript')
+  // The host independently supplies each language's creation eligibility.
+  const pythonOffered = Boolean(pythonCreation || pythonDiscovery)
+  const programmingLanguage = !javascriptAvailable
+    ? 'python'
+    : pythonOffered
+      ? selectedLanguage
+      : 'javascript'
+  // Se a oferta voltar, a galeria recomeça em JavaScript, não na escolha antiga.
+  useEffect(() => {
+    if (!pythonOffered) setProgrammingLanguage('javascript')
+  }, [pythonOffered])
+  const attempt = useRef<AbortController | null>(null)
+  const lifetime = useMemo(
+    () => ({
+      programmingLanguage,
+      professional,
+      javascriptAvailable,
+      signal: pythonCreation?.signal,
+    }),
+    [programmingLanguage, professional, javascriptAvailable, pythonCreation?.signal],
+  )
+  const currentLifetime = useRef(lifetime)
+  const authority = useRef({
+    pythonCreation,
+    professional,
+    javascriptAvailable,
+    authorizeJavaScript,
+  })
+  useLayoutEffect(() => {
+    authority.current = { pythonCreation, professional, javascriptAvailable, authorizeJavaScript }
+  })
+  useLayoutEffect(() => {
+    currentLifetime.current = lifetime
+    setCreating(null)
+    setError(null)
+    return () => {
+      attempt.current?.abort()
+      attempt.current = null
+    }
+  }, [lifetime])
   const [catalogError, setCatalogError] = useState(false)
   const [loadAttempt, setLoadAttempt] = useState(0)
   const [query, setQuery] = useState('')
@@ -461,22 +545,42 @@ export function KitGallery({
     void loadAttempt
     let active = true
     setCatalogError(false)
-    void buildKitGroupsResult(t).then(({ groups: nextGroups, failedExtensionIds }) => {
-      if (!active) return
-      setGroups(nextGroups)
-      setCatalogError(failedExtensionIds.length > 0)
-    })
+    setGroups(null)
+    const pending =
+      programmingLanguage === 'python'
+        ? import('../examples/pythonCatalog').then(({ PYTHON_EXAMPLE_SUMMARIES }) => ({
+            groups: PYTHON_EXAMPLE_SUMMARIES.length
+              ? [{ extensionId: 'python', label: 'Python', entries: [...PYTHON_EXAMPLE_SUMMARIES] }]
+              : [],
+            failedExtensionIds: [],
+          }))
+        : buildKitGroupsResult(t)
+    void pending
+      .then(({ groups: nextGroups, failedExtensionIds }) => {
+        if (!active) return
+        setGroups(nextGroups)
+        setCatalogError(failedExtensionIds.length > 0)
+      })
+      .catch(() => {
+        if (active) {
+          setGroups([])
+          setCatalogError(true)
+        }
+      })
     return () => {
       active = false
     }
-  }, [loadAttempt, t])
+  }, [loadAttempt, t, programmingLanguage])
 
   const hasActiveFilters = query.trim() !== '' || difficulty !== 'all' || experience !== 'all'
   const featuredEntries = useMemo(
     () =>
       (groups ?? [])
         .find((group) => group.extensionId === 'game-2d')
-        ?.entries.filter((entry) => entry.featured)
+        ?.entries.filter(
+          (entry): entry is KitEntry =>
+            entry.programmingLanguage !== 'python' && Boolean(entry.featured),
+        )
         .sort(
           (left, right) =>
             (left.recommendedOrder ?? Number.MAX_SAFE_INTEGER) -
@@ -485,8 +589,8 @@ export function KitGallery({
     [groups],
   )
   const filteredGroups = useMemo(
-    () => filterKitGroups(groups ?? [], { query, difficulty, experience }),
-    [groups, query, difficulty, experience],
+    () => filterKitGroups(groups ?? [], { query, difficulty, experience, programmingLanguage }),
+    [groups, query, difficulty, experience, programmingLanguage],
   )
   const visibleGroups = useMemo(
     () =>
@@ -496,16 +600,52 @@ export function KitGallery({
     [filteredGroups, hasActiveFilters, showAllGameTwoD],
   )
 
-  async function handlePick(entry: KitEntry): Promise<void> {
-    if (creating) return
+  async function handlePick(entry: GalleryEntry): Promise<void> {
+    if (attempt.current) return
+    const scope = captureProjectStorageScope()
+    const controller = new AbortController()
+    attempt.current = controller
+    const current = () =>
+      attempt.current === controller &&
+      currentLifetime.current === lifetime &&
+      !controller.signal.aborted &&
+      (entry.programmingLanguage === 'python' || authority.current.javascriptAvailable) &&
+      captureProjectStorageScope() === scope &&
+      !scope.signal?.aborted
     setCreating(entry.key)
     setError(null)
     try {
-      const project = await createProjectFromExample(entry)
-      onOpenProject(project.id)
-    } catch {
-      setError(t('kits.error'))
-      setCreating(null)
+      let project: EditableStudioProject
+      if (entry.programmingLanguage === 'python') {
+        const port = authority.current.pythonCreation
+        if (!port || (entry.kind === 'pro' && !authority.current.professional))
+          throw new Error('Este ambiente Python está indisponível.')
+        const { createPythonExampleProject } = await import('./createPythonExampleProject')
+        if (!current()) return
+        project = await createPythonExampleProject(entry, port, {
+          signal: controller.signal,
+          isCurrent: () =>
+            current() &&
+            (entry.kind !== 'pro' || authority.current.professional) &&
+            Boolean(authority.current.pythonCreation),
+        })
+      } else {
+        await authority.current.authorizeJavaScript?.('classic', controller.signal)
+        if (!current()) return
+        project = await createProjectFromExample(entry, scope, current)
+      }
+      if (current()) onOpenProject(project.id)
+    } catch (cause) {
+      if (current()) {
+        setError(
+          entry.programmingLanguage === 'python' && cause instanceof Error
+            ? cause.message
+            : t('kits.error'),
+        )
+        setCreating(null)
+      }
+    } finally {
+      if (attempt.current === controller) attempt.current = null
     }
   }
 
@@ -515,6 +655,39 @@ export function KitGallery({
         <h3 className="text-base font-semibold text-sz-fg">{t('kits.title')}</h3>
         <p className="text-xs text-sz-fg-soft">{t('kits.subtitle')}</p>
       </div>
+      {pythonOffered ? (
+        <label className="flex flex-col gap-1 text-xs font-semibold text-sz-fg-soft">
+          {t('kits.filter.language')}
+          <select
+            name="kit-language"
+            value={programmingLanguage}
+            onChange={(event) =>
+              setProgrammingLanguage(
+                event.currentTarget.value === 'python' ? 'python' : 'javascript',
+              )
+            }
+            className="sz-touch-target h-9 rounded-md border border-sz-border bg-sz-bg px-2 text-sm"
+          >
+            {javascriptAvailable && <option value="javascript">JavaScript</option>}
+            <option value="python">Python</option>
+          </select>
+        </label>
+      ) : null}
+      {programmingLanguage === 'python' && !pythonCreation ? (
+        <div role={pythonDiscovery?.error ? 'alert' : 'status'} className="text-sm text-sz-fg-soft">
+          {pythonDiscovery?.error ??
+            t(pythonDiscovery?.loading ? 'kits.python.loading' : 'kits.python.unavailable')}
+          {pythonDiscovery?.error ? (
+            <button
+              type="button"
+              onClick={pythonDiscovery.retry}
+              className="sz-touch-target px-2 text-sz-accent"
+            >
+              {t('kits.retry')}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       {error ? (
         <p role="alert" className="text-sm text-sz-error">
           {error}
@@ -629,6 +802,20 @@ export function KitGallery({
                 key={entry.key}
                 entry={entry}
                 creating={creating}
+                unavailable={
+                  entry.programmingLanguage === 'python' &&
+                  (!pythonCreation ||
+                    (entry.kind === 'pro' && !professional) ||
+                    !pythonCreation.environments.some(
+                      ({ kind, context }) =>
+                        kind === entry.kind &&
+                        entry.extensions.every(
+                          ({ id }) =>
+                            context.grantedExtensionIds === undefined ||
+                            context.grantedExtensionIds.includes(id),
+                        ),
+                    ))
+                }
                 onPick={(picked) => void handlePick(picked)}
               />
             ))}

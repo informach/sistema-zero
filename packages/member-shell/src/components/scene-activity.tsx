@@ -3,8 +3,6 @@
 import {
   evaluateLearning,
   type InteractiveBlock,
-  type LearningAttemptView,
-  type LearningBlockProgress,
   learningHints,
   type PublicInteractiveBlock,
 } from '@sistemazero/core/learning'
@@ -59,7 +57,6 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react'
-import { apiSend } from '../lib/api'
 import {
   hasLessonMediaFocus,
   registerLessonMedia,
@@ -76,6 +73,7 @@ import { DialogueBlockView, type DialogueSpeech } from './dialogue-block'
 import { ExperienceComparison } from './experience-scene'
 import { ExplorationPieces } from './exploration-pieces'
 import { ExplorationStage, SceneButton } from './exploration-stage'
+import { useLearningExecution } from './learning-execution-context'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { tituloJaDito, useLessonSection } from './lesson-section-context'
@@ -136,6 +134,7 @@ export function SceneActivityView({
   previewContent?: InteractiveBlock
 }) {
   const player = useLessonPlayer()
+  const execution = useLearningExecution()
   /** Roteiros estáticos da projeção pública; fala dinâmica fica inteira no plano B do navegador. */
   const falasFixasDoZappy = useMemo(() => falasDaCena(content), [content])
   const rehearsal = useLessonPreview()
@@ -156,11 +155,11 @@ export function SceneActivityView({
     Boolean(alvosDoProfessor?.length) &&
     !mesmoConjunto(alvosDoProfessor ?? [], sceneDefaultGoalIds(activity.scene))
   const hints = missaoRestrita ? [''] : learningHints({ activity, hints: content.hints })
-  const saved = player?.learningProgress?.blocks.find(
+  const saved = execution?.progress.find(
     (p) => p.blockId === block.id && p.revision === block.blockRevision,
   )
-  const scope = player?.viewerId
-    ? `${player.viewerId}:${player.lessonId}:${block.id}:${block.blockRevision}`
+  const scope = execution?.viewerId
+    ? `${execution.viewerId}:${execution.scopeId}:${block.id}:${block.blockRevision}`
     : null
   const [tabId] = useState(() => {
     if (typeof window === 'undefined' || !scope) return crypto.randomUUID()
@@ -320,9 +319,6 @@ export function SceneActivityView({
   const flush = useRef<(escolha?: string) => Promise<void>>(async () => {})
   const action = useRef<(command: SceneCommand) => void>(() => {})
   const cacheKey = scope ? `${scope}:${tabId}` : null
-  const base = player
-    ? `/api/members/lessons/${encodeURIComponent(player.lessonId)}/blocks/${encodeURIComponent(block.id)}`
-    : null
   const lab = session as ExperimentSession
 
   const state = session.state
@@ -779,7 +775,7 @@ export function SceneActivityView({
       // Persist the retry identifier BEFORE the request. A lost response must not create a new command.
       const segment = controller.segment()
       if (cacheKey) await writeSceneDraft(cacheKey, controller.draft()).catch(() => {})
-      if (!base || !player) {
+      if (!execution) {
         // ⚠️ O registro da tentativa NÃO pode depender de haver comando novo. O `previewConfirm`
         // já consumiu os pendentes na primeira ida; se ela falhou, na segunda não sobra segmento
         // e o botão "Tentar salvar" virava um clique morto.
@@ -810,20 +806,14 @@ export function SceneActivityView({
         return
       }
       if (segment) {
-        const progress = await apiSend<LearningBlockProgress>(
-          `${base}/learning-progress`,
-          'POST',
-          {
-            revision: block.blockRevision,
-            answers: segment,
-            hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
-            positionSeconds: null,
-          },
-          { 'x-sz-viewer': player.viewerId ?? '' },
-          { keepalive: true },
-        )
+        const progress = await execution.saveProgress(block.id, {
+          revision: block.blockRevision!,
+          answers: segment,
+          hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
+          positionSeconds: null,
+        })
         controller.acknowledge(progress.answers)
-        player.onLearningProgress?.(progress)
+        execution.onProgress?.(progress)
       }
       // ⚠️⚠️ A assinatura leva também o ESTADO DA MONTAGEM (review do lote 2): em `layers` e
       // `jump-sound`, a resposta certa dada depois de "Recomeçar" subia com a cena desfeita e o
@@ -839,28 +829,20 @@ export function SceneActivityView({
         enviado.current !== assinatura &&
         (assentada || enviadoChave.current !== chave)
       ) {
-        const response = await apiSend<{
-          attempt: LearningAttemptView
-          progress: LearningBlockProgress
-        }>(
-          `${base}/learning-attempts`,
-          'POST',
-          {
-            id: attemptId.current,
-            revision: block.blockRevision,
-            answers: {
-              ...controller.answers(),
-              // A previsão viaja com a tentativa: o relatório do professor quer saber o que a
-              // turma achou que ia acontecer, e isso não cabe no checkpoint da cena.
-              ...(prediction ? { prediction } : {}),
-              // ⚠️ E a resposta da pergunta anexa, em chave PRÓPRIA (`checkpoint`): a sessão da
-              // cena mora em `sceneCheckpoint`, e é essa separação que permite as duas conviverem.
-              ...(escolhida ? { checkpoint: escolhida } : {}),
-            },
-            hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
+        const response = await execution.attempt(block.id, {
+          id: attemptId.current,
+          revision: block.blockRevision!,
+          answers: {
+            ...controller.answers(),
+            // A previsão viaja com a tentativa: o relatório do professor quer saber o que a
+            // turma achou que ia acontecer, e isso não cabe no checkpoint da cena.
+            ...(prediction ? { prediction } : {}),
+            // ⚠️ E a resposta da pergunta anexa, em chave PRÓPRIA (`checkpoint`): a sessão da
+            // cena mora em `sceneCheckpoint`, e é essa separação que permite as duas conviverem.
+            ...(escolhida ? { checkpoint: escolhida } : {}),
           },
-          { 'x-sz-viewer': player.viewerId ?? '' },
-        )
+          hintsUsed: Math.min(controller.getSnapshot().state.evidence.hints, hints.length),
+        })
         // ⚠️⚠️ O carimbo é gravado DEPOIS da resposta, nunca antes: carimbado antes do `await`, uma
         // falha de rede o deixava igual à assinatura para sempre, e a criança ficava presa sem
         // nenhuma nova tentativa de envio. O POST é idempotente pelo `attemptId`.
@@ -872,13 +854,13 @@ export function SceneActivityView({
         // subir e o servidor gravar `passed:false`. Com o id fixo, `findAttempt` devolveria essa
         // mesma tentativa para sempre: um id novo só DEPOIS da resposta.
         if (!response.attempt.result.passed) attemptId.current = crypto.randomUUID()
-        player.onLearningProgress?.(response.progress)
+        execution.onProgress?.(response.progress)
         // A página só precisa ser atualizada quando a tentativa PASSA (11/10/2026): é isso que fecha
         // a parte e libera a próxima. O progresso de agora já veio na resposta (acima), e cada
         // atualização a mais refazia a aula inteira no servidor a cada descoberta.
         if (response.attempt.result.passed && !atualizouAoPassar.current) {
           atualizouAoPassar.current = true
-          player.refreshAfterLearning?.()
+          execution.refresh?.()
         }
       }
       // ⚠️ Com `.catch()`: sem IndexedDB (aba privada) a cópia local derrubava o resto do bloco.
@@ -893,10 +875,10 @@ export function SceneActivityView({
         // ⚠️ "mudou ou" (full review final de dados e deploy, BAIXO-6): depois de um deploy o 409 é
         // quase sempre revisão nova do bloco (reimportação) ou regra nova, e não outra aba.
         setError('Esta experiência mudou ou está aberta em outro lugar.')
-      } else if (player && (status === 400 || status === 422)) {
+      } else if (execution && (status === 400 || status === 422)) {
         // ⚠️⚠️ Pedido mal formado ou grande demais: tentar de novo não resolve (MÉDIO-1).
         servidorRecusou()
-      } else if (!player) {
+      } else if (!execution) {
         // ⚠️ No ensaio de autoria não existe conexão a aguardar: a falha veio do próprio ensaio (o
         // professor pediu "falhar na próxima confirmação") ou do avaliador.
         setError(
@@ -1215,7 +1197,7 @@ export function SceneActivityView({
   /**
    * O MOMENTO da atividade, na placa do começo da faixa (console v2, 30/09/2026): "Seu palpite"
    * enquanto ela arrisca, "Sua vez" com a cena aberta, "Você descobriu" depois que a cena fecha.
-   * ⚠️ O nome da cena só volta à placa quando o `<h3>` está `sr-only` (o título da seção já o
+   * ⚠️ O nome da cena só volta à placa quando o `<h3>` está `sr-only` (o título da parte já o
    * disse): ali a placa é a única vez em que o nome aparece na tela.
    */
   // A faixa não é montada no palpite (desde 21/09), então o momento é só estes dois.
@@ -1323,7 +1305,7 @@ export function SceneActivityView({
             Experimente
           </p>
           {/* ⚠️ O título CONTINUA existindo (é o nome acessível da `<section>`); quando o
-              cabeçalho da seção já disse a mesma frase, ele vira `sr-only`. */}
+              cabeçalho da parte já disse a mesma frase, ele vira `sr-only`. */}
           <h3
             id={`${id}-title`}
             className={`sz-display text-xl font-bold sm:text-2xl${tituloJaDito(content.title, secao) ? ' sz-scene-title-repeated sr-only' : ''}`}

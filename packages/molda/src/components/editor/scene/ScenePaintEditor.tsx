@@ -8,18 +8,12 @@ import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneAppearanceTools } from './SceneAppearanceTools'
 import { SceneFlipbookPreview } from './SceneFlipbookPreview'
-import { ScenePaintCanvas } from './ScenePaintCanvas'
 import { ScenePaintStampTools } from './ScenePaintStampTools'
 import { SceneRgbaColorInput } from './SceneRgbaColorInput'
 import { SCENE_PAINT_ADVANCED_FAMILIES } from './sceneCommandAccess'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 
-/**
- * "Mais jeitos de pintar": o caminho avançado da aba Pintar, recolhido. Formas, área, degradê,
- * carimbo, transparência, a folha inteira e a pintura que se mexe, e "Materiais e camadas",
- * que saiu do Modelar. Lápis, Borracha, Balde, Conta-gotas, a largura e as cores ficam à vista
- * (`ScenePaintToolbox` e `ScenePaintPalette`). Sem nenhuma dessas famílias liberada, some.
- */
+/** Contextual brush options and layers; the sheet and materials occupy their named workspace. */
 export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof useSceneWorkshop> }) {
   const access = useMoldaToolAccess()
   const { paint, document, primary } = workshop
@@ -33,10 +27,8 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
   const copy = COPY.scene
   const rgba: ScenePaintRgba = typeof color === 'number' ? [0, 0, 0, 255] : color
   return (
-    <details className="rounded-xl border border-mld-border p-2">
-      <summary className="flex min-h-11 cursor-pointer items-center text-sm font-bold">
-        {SCENE_PAINT_COPY.more}
-      </summary>
+    <details className="mld-disclosure" open={!paint.surfaceMode}>
+      <summary>{SCENE_PAINT_COPY.more}</summary>
       <div className="space-y-3 pt-2">
         {!data && primary?.kind !== 'mesh' && (
           <p className="text-sm text-mld-muted">{SCENE_PAINT_COPY.moreChoose}</p>
@@ -163,21 +155,9 @@ export function ScenePaintEditor({ workshop }: { workshop: ReturnType<typeof use
                 </label>
               )}
             </fieldset>
-            <RequiresTool family="paint.sheet">
-              <ScenePaintCanvas
-                image={data.image}
-                palette={palette}
-                base={sceneMaterialImageBase(data.material, palette, data.imageKind)}
-                drawing={drawing}
-                actions={paint.actions}
-                twoPoint={shape !== null}
-                draft={paint.draft}
-                scope={scope}
-              />
-            </RequiresTool>
           </section>
         )}
-        {primary?.kind === 'mesh' && (
+        {primary?.kind === 'mesh' && !access.can('paint.material') && (
           <RequiresTool family="paint.layers">
             <SceneAppearanceTools
               key={`appearance:${primary.id}`}

@@ -1,0 +1,295 @@
+bun test v1.3.11 (af24e281)
+
+src\studio\pro-candidate-preview.test.tsx:
+(pass) candidate selection belongs to its instance and leaves the current project untouched [62.00ms]
+(pass) project/profile changes discard selection permanently and stale callbacks cannot reopen it [31.00ms]
+
+src\modes\pro\ProCandidatePreview.test.tsx:
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://runtime.test/v1/artifacts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/index.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+
+(pass) remote selection keeps one game document and never builds or replaces the current project [219.00ms]
+(pass) expired artifacts render recovery state and invoke the owner without any iframe [16.00ms]
+(pass) ephemeral stores copy snapshots, isolate instances, preserve literal keys and discard all progress
+
+src\modes\pro\RemoteProPreview.test.tsx:
+(pass) preview Pro remoto > compila no adapter e executa o HTML em iframe isolado [47.00ms]
+(pass) preview Pro remoto > não compila a cada tecla e usa a versão atual ao executar alterações [94.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://runtime.test/v1/artifacts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/index.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNodeIntoContainer (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13662:22)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13745:11)
+
+(pass) preview Pro remoto > keeps the last compiled artifact on build failure, without leaking it to another project [156.00ms]
+
+src\modes\pro\ProPreview.test.tsx:
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "https://runtime.test/v1/artifacts/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/index.html". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13696:11)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+
+(pass) ProPreview — install órfão no cancelamento > switches only the game document while retaining the local dev-server and mounted controller [156.00ms]
+(pass) ProPreview — install órfão no cancelamento > keeps a mount error visible until an explicit retry, without remounting in a loop [125.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake.webcontainer.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+
+(pass) ProPreview — install órfão no cancelamento > fase ready: cabeçalho com o nome do projeto + Atualizar que REMONTA o iframe [156.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-um.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+
+(pass) ProPreview — install órfão no cancelamento > espelha o console do app no Console da IDE — só da origem do dev-server [188.00ms]
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-um.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-um.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+      at commitReconciliationEffects (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:15139:11)
+      at commitMutationEffectsOnFiber (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:14822:11)
+
+328 |         const targetURL = BrowserFrameURL.getRelativeURL(browserFrame, this.src);
+329 |         if (this.#iframe && this.#iframe.window.location.href === targetURL.href) {
+330 |             return;
+331 |         }
+332 |         if (browserFrame.page.context.browser.settings.disableIframePageLoading) {
+333 |             const error = new window.DOMException(`Failed to load iframe page "${targetURL.href}". Iframe page loading is disabled.`, DOMExceptionNameEnum.notSupportedError);
+                                ^
+NotSupportedError: Failed to load iframe page "http://fake-dois.dev/". Iframe page loading is disabled.
+      at #loadPage (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:333:27)
+      at [connectedToDocument] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\html-iframe-element\HTMLIFrameElement.js:230:14)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:794:33)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [connectedToNode] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:786:42)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\node\Node.js:413:29)
+      at [appendChild] (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\happy-dom@20.10.2\node_modules\happy-dom\lib\nodes\element\Element.js:1028:50)
+      at insertOrAppendPlacementNode (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13688:63)
+      at commitPlacement (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:13735:11)
+      at runWithFiberInDEV (C:\Users\tocha\projects\sistema-zero\node_modules\.bun\react-dom@19.2.6+d86b59289c1a13ae\node_modules\react-dom\cjs\react-dom-client.development.js:874:13)
+
+(pass) ProPreview — install órfão no cancelamento > ⏻ Reiniciar: mata o dev atual e re-roda o ciclo até um novo server-ready [250.00ms]
+(pass) ProPreview — install órfão no cancelamento > mata o npm install se a instância desmontar antes da corrida resolver [62.00ms]
+
+src\modes\pro\proStorageHost.test.ts:
+(pass) only the current frame, origin, revision and instance receive a private storage port
+(pass) storage validates message bounds and preserves literal prototype keys without pollution
+(pass) writes serialize and rejected persistence never changes the readable snapshot or acknowledges success [16.00ms]
+
+src\components\layout\NarrowPanels.test.tsx:
+A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+A suspended resource finished loading inside a test, but the event was not wrapped in act(...).
+
+When testing, code that resolves suspended data should be wrapped into act(...):
+
+act(() => {
+  /* finish loading suspended data */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://react.dev/link/wrap-tests-with-act
+(pass) NarrowPanels > funde editor + preview + abas inferiores numa só tira (modo code) [47.00ms]
+(pass) NarrowPanels > no modo blocos o Console começa oculto e Terminal/IA não aparecem [47.00ms]
+(pass) NarrowPanels > troca a aba ativa ao clicar [31.00ms]
+(pass) NarrowPanels > uma escolha manual pode esconder o Console no modo Código [31.00ms]
+(pass) NarrowPanels > uma escolha manual pode mostrar o Console no modo Ponte [16.00ms]
+(pass) NarrowPanels > sem preview, não há aba de Pré-visualização [15.00ms]
+(pass) NarrowPanels > mantém os painéis MONTADOS (hidden), incluindo os inativos
+(pass) NarrowPanels > preview inativo fica VIVO (inert, sem display:none), console inativo usa hidden [16.00ms]
+(pass) NarrowPanels > gaveta de Arquivos: abre, e escolher um arquivo fecha + foca o editor [31.00ms]
+(pass) NarrowPanels > sem filesDrawer, não há botão "Arquivos" [16.00ms]
+(pass) NarrowPanels > an explicit preview request focuses the existing panel without remounting the editor or preview [47.00ms]
+
+ 28 pass
+ 0 fail
+ 149 expect() calls
+Ran 28 tests across 6 files. [6.58s]

@@ -61,8 +61,19 @@ const EnvSchema = z
       .default('cade-todo-mundo'),
     /** Base pública do funil (landings /bolsa/<code> e /embaixador/<token>). */
     FUNNEL_PUBLIC_URL: z.string().url().default('http://localhost:4321'),
-    /** Base do app kids (link de definir senha do bolsista — a bolsa v1 é kids). */
+    /** Base do app kids (link de definir senha do presente Kids). */
     KIDS_COMMUNITY_URL: z.string().url().default('http://localhost:3008'),
+    /** Curso do presente adulto (clone adulto do Cadê Todo Mundo, publicado no Admin). */
+    SCHOLARSHIP_ADULT_COURSE_SLUG: z
+      .string()
+      .regex(/^[a-z0-9-]{1,100}$/)
+      .default('cade-todo-mundo-adulto'),
+    /**
+     * Base do app adulto (links do presente adulto). SEM default de propósito: ausente, o
+     * presente adulto fica indisponível (fail-closed, `giftAvailable:false`/503) e o Kids
+     * segue normal — o serviço não cai por falta dela.
+     */
+    COMMUNITY_URL: z.string().url().optional(),
 
     // ── Regras ───────────────────────────────────────────────────────────────
     /** Teto diário de convites por embaixador (anti-abuso/anti-spam). */
@@ -85,7 +96,9 @@ const EnvSchema = z
     /** Ofertas que contam como "assinou a Comunidade" (csv de slugs). */
     CONVERSION_OFFER_SLUGS: z
       .string()
-      .default('comunidade-dos-criadores-mensal,comunidade-dos-criadores-anual')
+      .default(
+        'comunidade-dos-criadores-mensal,comunidade-dos-criadores-anual,comunidade-dos-criadores-adulto-mensal,comunidade-dos-criadores-adulto-anual',
+      )
       .transform((v) =>
         v
           .split(',')
@@ -163,6 +176,11 @@ const EnvSchema = z
   .refine((env) => env.NODE_ENV !== 'production' || !isLoopbackUrl(env.KIDS_COMMUNITY_URL), {
     message: 'KIDS_COMMUNITY_URL não pode apontar p/ localhost em produção/staging (vai em e-mail)',
   })
+  .refine(
+    (env) =>
+      env.NODE_ENV !== 'production' || !env.COMMUNITY_URL || !isLoopbackUrl(env.COMMUNITY_URL),
+    { message: 'COMMUNITY_URL não pode apontar p/ localhost em produção/staging (vai em e-mail)' },
+  )
   // Consumer LIGADO (secret presente) exige o resto do quarteto em deploy — um
   // consumer que verifica assinatura mas não alcança payments/catalog só
   // acumularia 502; melhor falhar alto no boot.

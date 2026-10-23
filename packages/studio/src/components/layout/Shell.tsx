@@ -2,22 +2,23 @@ import type { JSX } from 'react'
 import { lazy, Suspense, useId, useRef } from 'react'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import { useShallow } from 'zustand/react/shallow'
-import type { Project } from '#core'
 import { ErrorBoundary } from '#ui'
+import type { EditableStudioProject as Project } from '../../core/editableProject'
 import { useProjectStore } from '../../state/projectStore'
 import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
+import { LegacyAIEntryPoints } from '../../studio/legacy-ai'
 import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
 import { useAssetsPanelWiring } from '../assets/useAssetsPanel'
 import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
-import { ActivityPanel } from './ActivityPanel'
 import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
 import { ModeArea } from './ModeArea'
 import { NarrowLayout } from './NarrowLayout'
+import { ProTutorDockContext } from './proTutorDock'
 import { Topbar } from './Topbar'
 
 const ExtensionsPanel = lazy(() =>
@@ -44,11 +45,12 @@ export function Shell({
   canToggleTheme,
   onRenderError,
 }: ShellProps): JSX.Element {
-  const { hasProject, projectId, projectMode } = useProjectStore(
+  const { hasProject, projectId, projectMode, isPro } = useProjectStore(
     useShallow((s) => ({
       hasProject: Boolean(s.project),
       projectId: s.project?.id,
       projectMode: s.project?.mode ?? 'blocks',
+      isPro: s.project?.kind === 'pro',
     })),
   )
   const showExtensions = useUIStore((s) => s.showExtensions)
@@ -77,6 +79,7 @@ export function Shell({
 
   return (
     <StudioLayoutProvider value={layout}>
+      <LegacyAIEntryPoints />
       <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg text-sz-fg">
         {/* Só monta o layout DEPOIS de medir a largura. `width` começa em 0 (que
             cai no branch wide); pintar o wide e trocar para o narrow no frame
@@ -92,7 +95,22 @@ export function Shell({
               onPromoteToPro={onPromoteToPro}
               canToggleTheme={canToggleTheme}
             />
-            {layout.isNarrow ? (
+            {isPro ? (
+              <ProTutorDockContext.Provider
+                value={
+                  <ZappyPanelBoundary
+                    embedded
+                    onError={(error) => onRenderError?.('zappy', error)}
+                  />
+                }
+              >
+                <main className="flex min-h-0 flex-1 flex-col">
+                  <div key={projectId} className="h-full min-h-0 w-full">
+                    <ModeArea projectMode={projectMode} projectId={projectId} />
+                  </div>
+                </main>
+              </ProTutorDockContext.Provider>
+            ) : layout.isNarrow ? (
               <NarrowLayout projectMode={projectMode} projectId={projectId} />
             ) : (
               <main className="flex min-h-0 flex-1 flex-col">
@@ -111,17 +129,8 @@ export function Shell({
                     defaultSize={hasBottomPanel ? 70 : 100}
                     minSize={30}
                   >
-                    {/* ActivityPanel é self-gating (null sem atividade): no
-                        <StudioEditor> e nas aulas sem exercício não acrescenta
-                        DOM, então o split do editor fica idêntico ao de antes.
-                        Com atividade, a raiz do modo é `w-full`, então o ModeArea
-                        vai num wrapper `min-w-0 flex-1` para dividir a largura com
-                        o painel (`w-80 shrink-0`) sem estourar o split. */}
-                    <div key={projectId} className="flex h-full min-h-0 w-full">
-                      <ActivityPanel />
-                      <div className="h-full min-w-0 flex-1">
-                        <ModeArea projectMode={projectMode} projectId={projectId} />
-                      </div>
+                    <div key={projectId} className="h-full min-h-0 w-full">
+                      <ModeArea projectMode={projectMode} projectId={projectId} />
                     </div>
                   </Panel>
                   {hasBottomPanel && (
@@ -161,11 +170,11 @@ export function Shell({
                 </Suspense>
               </ErrorBoundary>
             )}
-            <ConvertLegacyPrompt />
+            <ConvertLegacyPrompt onPromoteToPro={onPromoteToPro} />
             <DrawingSyncWatcher />
             {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
                 derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}
-            <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />
+            {!isPro && <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />}
           </>
         )}
       </div>

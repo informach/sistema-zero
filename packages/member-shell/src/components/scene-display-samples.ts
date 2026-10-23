@@ -497,7 +497,7 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
   'copy-vs-original': {
     readouts: [
       {
-        label: 'jogo da fase',
+        label: 'jogo da aula',
         value: 'azul',
         tone: 'a',
       },
@@ -513,7 +513,7 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       },
     ],
     situations: [
-      'O jogo da fase está azul. Ainda não há arquivo. O Estúdio ainda não tem projeto.',
+      'O jogo da aula está azul. Ainda não há arquivo. O Estúdio ainda não tem projeto.',
     ],
   },
   'published-copy': {

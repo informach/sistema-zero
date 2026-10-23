@@ -1,0 +1,1077 @@
+[
+  {
+    "path": "packages/admin/.env.example",
+    "bytes": 4448,
+    "extension": ".example"
+  },
+  {
+    "path": "packages/admin/.gitignore",
+    "bytes": 653,
+    "extension": ".gitignore"
+  },
+  {
+    "path": "packages/admin/next.config.ts",
+    "bytes": 8301,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/package.json",
+    "bytes": 2304,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/admin/src/app/admin/oficinas/enrollment-picker.tsx",
+    "bytes": 6650,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/admin/oficinas/live-steps-editor.tsx",
+    "bytes": 8283,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/admin/oficinas/page.tsx",
+    "bytes": 322,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/admin/oficinas/workshops-admin.tsx",
+    "bytes": 27801,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/admin/professor/ao-vivo/[id]/page.tsx",
+    "bytes": 264,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/admin/professor/ao-vivo/page.tsx",
+    "bytes": 176,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/ao-vivo/demonstracao/[id]/demonstration-gate.tsx",
+    "bytes": 1249,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/ao-vivo/demonstracao/[id]/page.tsx",
+    "bytes": 562,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/admin/src/app/api/admin/live/[...path]/route.ts",
+    "bytes": 536,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/app/api/live/[...path]/route.ts",
+    "bytes": 536,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/app/api/live/camera-assets/[asset]/route.ts",
+    "bytes": 249,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/app/api/live/sessions/[id]/preview/route.ts",
+    "bytes": 848,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/app/api/media/live-materials/route.ts",
+    "bytes": 1353,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/components/admin/nav.ts",
+    "bytes": 8606,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/lib/env.ts",
+    "bytes": 5023,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/admin/src/server/r2.ts",
+    "bytes": 12115,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/api-gateway/gateway.config.ts",
+    "bytes": 176193,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/api-gateway/tests/unit/config.test.ts",
+    "bytes": 24896,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/auth/CLAUDE.md",
+    "bytes": 42620,
+    "extension": ".md"
+  },
+  {
+    "path": "packages/auth/src/interfaces/http/routes/internal.routes.ts",
+    "bytes": 8039,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/auth/tests/integration/http-server.test.ts",
+    "bytes": 109982,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/.gitignore",
+    "bytes": 618,
+    "extension": ".gitignore"
+  },
+  {
+    "path": "packages/community-kids/next.config.ts",
+    "bytes": 13624,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/package.json",
+    "bytes": 2775,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/community-kids/src/app/(app)/criar/oficinas/[workspaceId]/page.tsx",
+    "bytes": 304,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/(app)/criar/page.tsx",
+    "bytes": 8416,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/(app)/cursos/page.tsx",
+    "bytes": 9246,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/(app)/oficinas/aulas/[id]/page.tsx",
+    "bytes": 244,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/(app)/oficinas/page.tsx",
+    "bytes": 265,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/(app)/page.tsx",
+    "bytes": 11398,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/api/live/[...path]/route.ts",
+    "bytes": 151,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/app/api/live/camera-assets/[asset]/route.ts",
+    "bytes": 249,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/app/api/live/sessions/[id]/preview/route.ts",
+    "bytes": 847,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/app/api/parents/live/[...path]/route.ts",
+    "bytes": 254,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/app/pais/_components/parent-shell.tsx",
+    "bytes": 5453,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/pais/oficinas/page.tsx",
+    "bytes": 607,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/app/pais/parent-routes.ts",
+    "bytes": 2146,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/components/kids/live-workshop-shortcut.tsx",
+    "bytes": 866,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/src/components/kids/nav.ts",
+    "bytes": 7803,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/lib/focus-route.ts",
+    "bytes": 1866,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/src/proxy.ts",
+    "bytes": 3594,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/tests/live-learning.test.tsx",
+    "bytes": 5104,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/community-kids/tests/live-navigation.test.ts",
+    "bytes": 1149,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/community-kids/tests/nav-back.test.ts",
+    "bytes": 4240,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/core/package.json",
+    "bytes": 1434,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/core/src/live/contracts.ts",
+    "bytes": 5587,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/core/src/live/index.ts",
+    "bytes": 105,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/core/src/live/media.ts",
+    "bytes": 1023,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/core/src/live/policy.ts",
+    "bytes": 2989,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/core/src/live/workspace.ts",
+    "bytes": 949,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/core/tests/live.test.ts",
+    "bytes": 1334,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/CLAUDE.md",
+    "bytes": 53774,
+    "extension": ".md"
+  },
+  {
+    "path": "packages/hub/src/application/access/access-resolution.service.ts",
+    "bytes": 12862,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/src/application/showcase/showcase.service.ts",
+    "bytes": 26886,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/src/domain/ports/members-gateway.port.ts",
+    "bytes": 8603,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/src/infrastructure/gateways/members-http.gateway.ts",
+    "bytes": 12222,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/src/interfaces/http/dtos.ts",
+    "bytes": 15990,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/src/interfaces/http/routes/showcase.routes.ts",
+    "bytes": 4673,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/tests/fakes/in-memory.ts",
+    "bytes": 40026,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/tests/integration/access-read.test.ts",
+    "bytes": 15533,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/hub/tests/integration/showcase.test.ts",
+    "bytes": 40320,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/Dockerfile",
+    "bytes": 750,
+    "extension": ""
+  },
+  {
+    "path": "packages/live-recorder/package.json",
+    "bytes": 469,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/live-recorder/railway.json",
+    "bytes": 393,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/live-recorder/README.md",
+    "bytes": 12179,
+    "extension": ".md"
+  },
+  {
+    "path": "packages/live-recorder/scripts/check-camera-csp.ts",
+    "bytes": 2018,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/src/contracts.ts",
+    "bytes": 1451,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/src/receiver-page.ts",
+    "bytes": 8874,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/src/recording-job.ts",
+    "bytes": 13405,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/src/segment-store.ts",
+    "bytes": 9442,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/src/server.ts",
+    "bytes": 10089,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/tests/camera-csp-check.ts",
+    "bytes": 8223,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/tests/camera-effects-check.ts",
+    "bytes": 4602,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/tests/commands.test.ts",
+    "bytes": 5117,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/tests/receiver-check.ts",
+    "bytes": 5031,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/tests/receiver.test.ts",
+    "bytes": 2682,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-recorder/tsconfig.json",
+    "bytes": 155,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/live-supervisor/package.json",
+    "bytes": 273,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/live-supervisor/README.md",
+    "bytes": 4880,
+    "extension": ".md"
+  },
+  {
+    "path": "packages/live-supervisor/src/index.ts",
+    "bytes": 8806,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-supervisor/tests/supervisor.test.ts",
+    "bytes": 4034,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/live-supervisor/tsconfig.json",
+    "bytes": 144,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/live-supervisor/wrangler.jsonc",
+    "bytes": 472,
+    "extension": ".jsonc"
+  },
+  {
+    "path": "packages/member-shell/assets/live-camera/LICENSE-2.0.txt",
+    "bytes": 11358,
+    "extension": ".txt"
+  },
+  {
+    "path": "packages/member-shell/assets/live-camera/NOTICE.md",
+    "bytes": 1051,
+    "extension": ".md"
+  },
+  {
+    "path": "packages/member-shell/assets/live-camera/selfie_segmenter_landscape.tflite",
+    "bytes": 250177,
+    "extension": ".tflite"
+  },
+  {
+    "path": "packages/member-shell/package.json",
+    "bytes": 2515,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/member-shell/scripts/sync-live-camera-assets.mjs",
+    "bytes": 2077,
+    "extension": ".mjs"
+  },
+  {
+    "path": "packages/member-shell/src/components/learning-activity.tsx",
+    "bytes": 15965,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/learning-execution-context.tsx",
+    "bytes": 2788,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-catalog.tsx",
+    "bytes": 7805,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-classroom.tsx",
+    "bytes": 36163,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-continued-creation.tsx",
+    "bytes": 2337,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-creation-list.tsx",
+    "bytes": 3195,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-guidance.tsx",
+    "bytes": 4313,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-learning-activities.tsx",
+    "bytes": 8423,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-media-panel.tsx",
+    "bytes": 17385,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-parent-reservations.tsx",
+    "bytes": 3439,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-preflight.tsx",
+    "bytes": 4520,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-recording-review.tsx",
+    "bytes": 2492,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-recording-status.tsx",
+    "bytes": 3039,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-replacement.tsx",
+    "bytes": 2575,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-replay.tsx",
+    "bytes": 5296,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/live/live-workspace.tsx",
+    "bytes": 25912,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/project-play-activity.tsx",
+    "bytes": 9987,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/scene-activity.tsx",
+    "bytes": 80888,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/components/scene-workspace.tsx",
+    "bytes": 3346,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/member-shell/src/index.ts",
+    "bytes": 4538,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live-route-policy.ts",
+    "bytes": 2509,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/classroom-state.ts",
+    "bytes": 1415,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/client.ts",
+    "bytes": 1664,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/media-camera-effects.ts",
+    "bytes": 4870,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/media-camera-effects.worker.ts",
+    "bytes": 4576,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/media-devices.ts",
+    "bytes": 3277,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/media-transport.ts",
+    "bytes": 13264,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/live/preview.ts",
+    "bytes": 1269,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/lib/study-access.ts",
+    "bytes": 3032,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/routes/live-materials.ts",
+    "bytes": 5177,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/routes/live-preview.ts",
+    "bytes": 4506,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/routes/live.ts",
+    "bytes": 6106,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/routes/studio.ts",
+    "bytes": 23177,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/server/clients.ts",
+    "bytes": 69328,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/src/server/live-camera-assets.ts",
+    "bytes": 1346,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-classroom-state.test.ts",
+    "bytes": 2792,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-client.test.ts",
+    "bytes": 2072,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-materials.test.ts",
+    "bytes": 2250,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-media.test.ts",
+    "bytes": 4526,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-preview.test.ts",
+    "bytes": 4088,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-route-policy.test.ts",
+    "bytes": 2494,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/member-shell/tests/live-routes.test.ts",
+    "bytes": 4864,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/.env.example",
+    "bytes": 7333,
+    "extension": ".example"
+  },
+  {
+    "path": "packages/members/CLAUDE.md",
+    "bytes": 218577,
+    "extension": ".md"
+  },
+  {
+    "path": "packages/members/src/application/learning/learning.service.ts",
+    "bytes": 23024,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/application/live/live-learning.service.ts",
+    "bytes": 8435,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/application/live/live-materials.service.ts",
+    "bytes": 2327,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/application/live/live-publication.service.ts",
+    "bytes": 3146,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/application/live/live-workspace.service.ts",
+    "bytes": 19413,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/application/live/live.service.ts",
+    "bytes": 42924,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/application/profile-allowance/get-profile-allowance.service.ts",
+    "bytes": 2146,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/composition-root.ts",
+    "bytes": 50719,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/live/learning-plan.ts",
+    "bytes": 2743,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/live/live.errors.ts",
+    "bytes": 774,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/live/workspace-snapshot.ts",
+    "bytes": 3987,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/ports/live-benefits.port.ts",
+    "bytes": 177,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/ports/live-materials.port.ts",
+    "bytes": 366,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/ports/live-repository.port.ts",
+    "bytes": 2749,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/domain/ports/live-workspace-repository.port.ts",
+    "bytes": 1236,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/config/env.ts",
+    "bytes": 13807,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/gateways/live-profile-ownership.gateway.ts",
+    "bytes": 1613,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/cloudflare-sfu.client.ts",
+    "bytes": 3533,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/cloudflare-sfu.provider.ts",
+    "bytes": 24353,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/create-live-media.ts",
+    "bytes": 3253,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/drizzle-media-registry.ts",
+    "bytes": 3572,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/live-media.routes.ts",
+    "bytes": 4680,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/live-recording.routes.ts",
+    "bytes": 2892,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/live-supervisor.client.ts",
+    "bytes": 2232,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/media-registry.ts",
+    "bytes": 2849,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/live/own-recording.provider.ts",
+    "bytes": 14186,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/live-benefits.repository.ts",
+    "bytes": 1996,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/live-materials.repository.ts",
+    "bytes": 728,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/live-purge.ts",
+    "bytes": 3660,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/live-workspace.repository.ts",
+    "bytes": 7938,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/live.repository.ts",
+    "bytes": 11369,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0102_live_workshops.sql",
+    "bytes": 7636,
+    "extension": ".sql"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0103_live_recording_jobs.sql",
+    "bytes": 782,
+    "extension": ".sql"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0104_live_replay_positions.sql",
+    "bytes": 713,
+    "extension": ".sql"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0105_live_materials_recording_commands.sql",
+    "bytes": 522,
+    "extension": ".sql"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/0106_live_learning.sql",
+    "bytes": 1472,
+    "extension": ".sql"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json",
+    "bytes": 15815,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0102_snapshot.json",
+    "bytes": 212621,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0103_snapshot.json",
+    "bytes": 215448,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0104_snapshot.json",
+    "bytes": 217706,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0105_snapshot.json",
+    "bytes": 219770,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/migrations/meta/0106_snapshot.json",
+    "bytes": 224430,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/schema.ts",
+    "bytes": 96491,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts",
+    "bytes": 9208,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/error-handler.ts",
+    "bytes": 9179,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/routes/live-learning.routes.ts",
+    "bytes": 1967,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/routes/live-materials.routes.ts",
+    "bytes": 1315,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/routes/live-publication.routes.ts",
+    "bytes": 1754,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/routes/live-workspaces.routes.ts",
+    "bytes": 5203,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/routes/live.routes.ts",
+    "bytes": 11949,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/src/interfaces/http/server.ts",
+    "bytes": 10560,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/db/live-recording.test.ts",
+    "bytes": 6880,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/db/live-test-schema.ts",
+    "bytes": 1232,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/db/live-workspace.repository.test.ts",
+    "bytes": 7305,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/db/live.repository.test.ts",
+    "bytes": 15382,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/db/test-database.ts",
+    "bytes": 3335,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/fakes/live-in-memory.ts",
+    "bytes": 4573,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/integration/live-materials.test.ts",
+    "bytes": 2081,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/integration/live.test.ts",
+    "bytes": 7607,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/unit/live-learning.test.ts",
+    "bytes": 10843,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/unit/live-media.test.ts",
+    "bytes": 7889,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/unit/live-publication.test.ts",
+    "bytes": 3522,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/unit/live-workspace.test.ts",
+    "bytes": 14681,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/unit/live.service.test.ts",
+    "bytes": 16961,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/members/tests/unit/profile-allowance.test.ts",
+    "bytes": 3783,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/package.json",
+    "bytes": 4632,
+    "extension": ".json"
+  },
+  {
+    "path": "packages/studio/src/components/layout/ShareDialog.tsx",
+    "bytes": 18975,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/studio/src/components/layout/topbar/ModeSegment.tsx",
+    "bytes": 1623,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/studio/src/components/preview/PreviewIframe.tsx",
+    "bytes": 42225,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/studio/src/core/blankProject.ts",
+    "bytes": 1159,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/core/project.ts",
+    "bytes": 31104,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/cover/__tests__/coverCaptureIsolation.test.ts",
+    "bytes": 3717,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/cover/coverCapture.ts",
+    "bytes": 17139,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/persistence/service.ts",
+    "bytes": 28219,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/state/projectStore.ts",
+    "bytes": 53150,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/studio/observation.test.ts",
+    "bytes": 2067,
+    "extension": ".ts"
+  },
+  {
+    "path": "packages/studio/src/studio/observation.tsx",
+    "bytes": 666,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/studio/src/studio/StudioCore.tsx",
+    "bytes": 30141,
+    "extension": ".tsx"
+  },
+  {
+    "path": "packages/studio/src/studio/types.ts",
+    "bytes": 15753,
+    "extension": ".ts"
+  }
+]

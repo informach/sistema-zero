@@ -1,7 +1,9 @@
 import type { JSX } from 'react'
 import { useState } from 'react'
 import { ConfirmDialog } from '#ui'
-import { useProjectStore } from '../../state/projectStore'
+import type { EditableStudioProject as Project } from '../../core/editableProject'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useStudioPersistence } from '../../state/studioStores'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 
@@ -12,12 +14,17 @@ import { useT } from '../../studio/i18n'
  * básico com os extras preservados/ocultos (o ModeLimitationsNotice avisa) e o
  * aluno ainda pode graduar pela Topbar depois. Não decide nada sem o "ok".
  */
-export function ConvertLegacyPrompt(): JSX.Element | null {
+export function ConvertLegacyPrompt({
+  onPromoteToPro,
+}: {
+  onPromoteToPro?: (project: Project) => void | Promise<void>
+}): JSX.Element | null {
   const t = useT()
   const projectId = useProjectStore((s) => s.project?.id ?? null)
   const kind = useProjectStore((s) => s.project?.kind)
   const extrasCount = useProjectStore((s) => s.project?.extraFiles?.length ?? 0)
-  const convertToPro = useProjectStore((s) => s.convertToPro)
+  const persistence = useStudioPersistence()
+  const store = useProjectStoreApi()
   const proAvailable = useStudioConfig().professional
 
   const [dismissedId, setDismissedId] = useState<string | null>(null)
@@ -39,7 +46,9 @@ export function ConvertLegacyPrompt(): JSX.Element | null {
     setBusy(true)
     setError('')
     try {
-      await convertToPro()
+      await persistence.promoteToPro()
+      const project = store.getState().project
+      if (project?.kind === 'pro') await onPromoteToPro?.(project)
     } catch (e) {
       // Mantém o diálogo aberto e usável: mostra a causa e libera o botão.
       setError(e instanceof Error ? e.message : String(e))

@@ -1,5 +1,9 @@
 import { randomBytes, randomUUID } from 'node:crypto'
-import { type KidsSessionClaim, sha256Hex } from '@sistemazero/core/security'
+import {
+  type DesktopSessionClaim,
+  type KidsSessionClaim,
+  sha256Hex,
+} from '@sistemazero/core/security'
 import type { RefreshTokenRepository } from '../../domain/ports/refresh-token-repository.port'
 import type { ActClaim, ProfileClaim, TokenIssuer } from '../../domain/ports/token-issuer.port'
 import type { UserAggregate } from '../../domain/user/user.aggregate'
@@ -74,6 +78,14 @@ export class AuthTokenService {
   /** Rotação (/refresh): emite novos tokens REUSANDO a família do token anterior. */
   rotate(user: UserAggregate, familyId: string, ctx: IssueContext = {}): Promise<AuthTokens> {
     return this.issue(user, familyId, ctx)
+  }
+  /** The desktop uses one revocable opaque session, never a competing refresh chain. */
+  async issueDesktopAccess(
+    user: UserAggregate,
+    desktop: DesktopSessionClaim,
+  ): Promise<AuthAccessToken> {
+    const issued = await this.tokenIssuer.issueAccessToken(user, { desktop })
+    return { accessToken: issued.token, tokenType: 'Bearer', expiresIn: issued.expiresInSeconds }
   }
 
   /** Reemite somente o access token; não consome nem substitui o refresh atual. */

@@ -36,6 +36,8 @@ export interface EditorState<T extends EditableDocument = MoldaAsset> {
    * avançam esta revisão; ações adiadas usam-na para não reaplicar snapshots velhos.
    */
   contentRevision: number
+  /** Completed authoring operations only; live replacements and derived thumbnails do not advance it. */
+  committedRevision: number
   /** A última versão que chegou ao disco. */
   savedAsset: T
   saveState: SaveState
@@ -47,6 +49,10 @@ export interface EditorState<T extends EditableDocument = MoldaAsset> {
 export interface EditorActions<T extends EditableDocument = MoldaAsset> {
   commit(next: T): void
   replace(next: T): void
+  /** Prévia reversível: mantém o último conteúdo confirmado fora do autosave. */
+  stage(next: T): void
+  /** Conteúdo que pode ser salvo ou exportado, sem preparação temporária. */
+  saveSnapshot(): T
   commitGesture(before: T, after: T): void
   /** Restore the captured content and persist the restoration if disk already changed. */
   cancelGesture(before: T): void
@@ -112,6 +118,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
   })
   // Deltas apply to the last committed state, never to an interrupted live preview.
   let historyCurrent = historyAsset(options.asset)
+  let staged: { before: T; persist: T } | null = null
 
   let timer: ReturnType<typeof setTimeout> | null = null
   let inflight: Promise<void> | null = null
@@ -136,19 +143,23 @@ export function createDocumentEditorStore<T extends EditableDocument>(
     async function drain(): Promise<void> {
       for (;;) {
         const state = get()
-        if (state.asset === state.savedAsset) return
+        const saveable = state.saveSnapshot()
+        if (saveable === state.savedAsset) return
         // `replace` mantém o carimbo estável durante um gesto ao vivo. Se a saída do
         // editor interromper o gesto antes do `commitGesture`, o próprio limite de
         // persistência precisa transformar aquele snapshot sujo numa versão nova.
         // Sem isso, nuvem e Estúdio tratam conteúdo novo como cache já sincronizado.
         const snapshot =
-          state.asset.updatedAt > state.savedAsset.updatedAt
-            ? state.asset
+          saveable.updatedAt > state.savedAsset.updatedAt
+            ? saveable
             : {
-                ...state.asset,
+                ...saveable,
                 updatedAt: Math.max(now(), state.savedAsset.updatedAt + 1),
               }
-        if (snapshot !== state.asset) set({ asset: snapshot })
+        if (snapshot !== saveable) {
+          if (staged) staged.persist = snapshot
+          else set({ asset: snapshot })
+        }
         set({ saveState: 'saving' })
         try {
           await persistence.save(snapshot)
@@ -164,7 +175,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
         set({
           savedAsset: snapshot,
           saveError: null,
-          saveState: get().asset === snapshot ? 'saved' : 'dirty',
+          saveState: get().saveSnapshot() === snapshot ? 'saved' : 'dirty',
         })
         onSaved?.(snapshot)
       }
@@ -185,10 +196,12 @@ export function createDocumentEditorStore<T extends EditableDocument>(
     }
 
     function apply(next: T, contentChanged = true): void {
+      staged = null
       set((state) => ({
         asset: next,
         content: contentChanged ? next : state.content,
         contentRevision: state.contentRevision + (contentChanged ? 1 : 0),
+        committedRevision: state.committedRevision + (contentChanged ? 1 : 0),
         saveState: 'dirty',
         ...historyFlags(),
       }))
@@ -199,6 +212,7 @@ export function createDocumentEditorStore<T extends EditableDocument>(
       asset: options.asset,
       content: options.asset,
       contentRevision: 0,
+      committedRevision: 0,
       savedAsset: options.asset,
       saveState: 'saved',
       saveError: null,
@@ -217,12 +231,26 @@ export function createDocumentEditorStore<T extends EditableDocument>(
 
       replace(next) {
         if (next === get().asset) return
+        if (staged?.before === next) {
+          next = staged.persist
+          staged = null
+        }
         set((state) => ({
           asset: next,
           content: next,
           contentRevision: state.contentRevision + 1,
-          saveState: next === state.savedAsset ? 'saved' : 'dirty',
+          saveState: (staged?.persist ?? next) === state.savedAsset ? 'saved' : 'dirty',
         }))
+      },
+
+      stage(next) {
+        if (next === get().asset) return
+        staged ??= { before: get().asset, persist: get().asset }
+        get().replace(next)
+      },
+
+      saveSnapshot() {
+        return staged?.persist ?? get().asset
       },
 
       commitGesture(before, after) {
@@ -248,6 +276,8 @@ export function createDocumentEditorStore<T extends EditableDocument>(
       },
 
       setThumb(thumb) {
+        // A thumbnail of a temporary surface must not schedule that surface for saving.
+        if (staged) return
         const current = get().asset
         if (current.thumb === thumb) return
         const next = { ...current }

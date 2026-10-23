@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import {serviceContexts,validateBinding} from './contract.mjs';
+import {cliArgs,membersDeploymentId,validateCliResult} from './oauth-session.mjs';
+const at=Date.parse('2026-10-21T06:23:22.265Z'),hash='a'.repeat(64);
+const binding=()=>({attemptId:'00000000-0000-4000-8000-000000000001',serviceContexts:structuredClone(serviceContexts),browserChannel:'chrome',createExclusiveStaff:true,expiresAt:new Date(at+300000).toISOString(),observedAt:new Date(at).toISOString(),planSha256:hash,windowOwner:'Root'});
+for(const name of ['auth','members','community']){
+ test('binding rejects source drift independently for '+name,()=>{const value=binding();value.serviceContexts[name].commitSha='face8acef32f1e924f1461557e82716ea7acc3dc';assert.throws(()=>validateBinding(value,hash,at));});
+ test('binding rejects identity swap for '+name,()=>{const value=binding();value.serviceContexts[name].serviceId='00000000-0000-4000-8000-000000000002';assert.throws(()=>validateBinding(value,hash,at));});
+}
+test('binding rejects a global target fallback and extra service metadata',()=>{
+ const old=binding();delete old.serviceContexts;old.targetSha=serviceContexts.auth.commitSha;assert.throws(()=>validateBinding(old,hash,at));
+ const extra=binding();extra.serviceContexts.auth.token='synthetic-not-permitted';assert.throws(()=>validateBinding(extra,hash,at));
+});
+const result=()=>({closed:true,timedOut:false,overflow:false,error:false,code:0,signal:null,stdout:JSON.stringify([{id:membersDeploymentId,status:'SUCCESS',meta:{commitHash:serviceContexts.members.commitSha}}])});
+test('official readonly CLI selection and response bind exact new Members deployment/source',()=>{
+ assert.equal(cliArgs[0],'deployment');assert.equal(cliArgs[1],'list');assert.equal(cliArgs[cliArgs.indexOf('--service')+1],serviceContexts.members.serviceId);assert.equal(membersDeploymentId,serviceContexts.members.deploymentId);assert.doesNotThrow(()=>validateCliResult(result()));
+});
+for(const [name,change] of [
+ ['old FACE deployment',row=>row.id='d42609b8-3d83-482a-8636-f13b3ec4a8df'],
+ ['old FACE source',row=>row.meta.commitHash='face8acef32f1e924f1461557e82716ea7acc3dc'],
+ ['not successful',row=>row.status='BUILDING']
+])test('official readonly context refuses '+name,()=>{const value=result(),rows=JSON.parse(value.stdout);change(rows[0]);value.stdout=JSON.stringify(rows);assert.throws(()=>validateCliResult(value));});

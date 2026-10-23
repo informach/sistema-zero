@@ -61,24 +61,19 @@ describe('família de cada comando', () => {
     ])
   })
 
-  test('no nível de entrada saem malha, laço, caixa, ponto de apoio e arquivo de outro programa', () => {
+  test('a entrada mantém apoio e importação simples, com malha, laço e UV nos níveis seguintes', () => {
     expect(lockedFor(entry)).toEqual([
-      'app.import',
-      'add.locator',
       'tool.box',
       'tool.lasso',
       'node.convert-mesh',
       'mode.mesh',
       'mesh.extrude',
+      'mesh.create',
       'mesh.inset',
       'mesh.plane-cut',
       'mesh.uv',
     ])
-    expect(lockedFor(upTo('basic', 'intermediate'))).toEqual([
-      'app.import',
-      'mesh.plane-cut',
-      'mesh.uv',
-    ])
+    expect(lockedFor(upTo('basic', 'intermediate'))).toEqual(['mesh.plane-cut', 'mesh.uv'])
     expect(lockedFor(upTo('basic', 'intermediate', 'professional'))).toEqual([])
   })
 })
@@ -95,16 +90,24 @@ describe('o registro com o portão', () => {
 
   test('trancado some do trilho (nunca desligado), e o grupo que esvazia não vira legenda', () => {
     const rail = sceneRailGroups('model', {}, entry)
-    expect(rail.map((entry) => entry.group)).toEqual(['create', 'tools', 'piece', 'pinned'])
+    expect(rail.map((entry) => entry.group)).toEqual(['create', 'tools', 'pinned'])
+    // Organization stays available beside the tree at the entry tier, outside the rail.
+    expect(contextualSceneCommands('model', 'dock', {}, entry).map((c) => c.id)).toContain(
+      'node.group',
+    )
+    expect(contextualSceneCommands('model', 'dock', {}, nothing).map((c) => c.id)).not.toContain(
+      'node.group',
+    )
     const ids = rail.flatMap((entry) => entry.commands.map((command) => command.id))
     expect(ids).toContain('add.box')
     expect(ids).toContain('tool.move')
     expect(ids).not.toContain('tool.lasso')
-    expect(ids).not.toContain('add.locator')
+    expect(ids).toContain('add.locator')
     expect(ids).not.toContain('mode.mesh')
     expect(contextualSceneCommands('global', 'menu', {}, entry).map((c) => c.id)).toEqual([
       'app.save',
       'app.backup',
+      'app.import',
     ])
   })
 

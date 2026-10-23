@@ -1,0 +1,443 @@
+{
+  "kind": "studio-python-local-f3-performance-evidence",
+  "schemaVersion": 1,
+  "capturedAt": "2026-10-22T18:13:08.6923336Z",
+  "receipt": {
+    "kind": "studio-python-local-performance",
+    "mode": "F3",
+    "project": "edge",
+    "sourceCommit": "001ce078891cef0e03d5f9d3926653668e2b6c5f",
+    "startedAt": "2026-10-22T18:02:23.83486Z",
+    "elapsedMs": 610739,
+    "creatorPid": 9952,
+    "birthTicks": 639282889438370675,
+    "exitCode": 0,
+    "deadline": false,
+    "deadlineSeconds": 840,
+    "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+    "releaseSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+    "node": "24.22.0",
+    "bun": "1.4.3",
+    "windows": "Microsoft Windows 11 Pro",
+    "osVersion": "10.0.26200",
+    "totalMemoryMiB": 16176.90625,
+    "freeBeforeMiB": 3722.30859375,
+    "cpu": {
+      "Name": "AMD Ryzen 5 5600G with Radeon Graphics         ",
+      "NumberOfCores": 6,
+      "NumberOfLogicalProcessors": 12
+    },
+    "gpu": {
+      "Name": "NVIDIA GeForce RTX 3050",
+      "DriverVersion": "32.0.16.1088",
+      "CurrentHorizontalResolution": 1920,
+      "CurrentVerticalResolution": 1080,
+      "CurrentRefreshRate": 60
+    },
+    "serverPids": [
+      22560
+    ],
+    "browserPids": [
+      8160
+    ],
+    "remainingKnownPids": [],
+    "openPorts": [],
+    "cleanupConfirmed": true,
+    "nativeMemoryAttributionQualified": false,
+    "referencePcAcceptance": false,
+    "hostedAcceptance": false,
+    "audioAudibilityAccepted": false,
+    "supervisorSha256": "11f1787f08d248ae957b4271563c3d9a7d4c7cc698a28d1d8aa3392e6a258e37"
+  },
+  "playwrightStats": {
+    "startTime": "2026-10-22T18:02:24.56Z",
+    "duration": 609032.558,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "presentation": {
+    "playMs": 600000,
+    "measuredPlayMs": 600004.6292,
+    "qualification": "acceptance",
+    "witness": "QA6x6 RGB token after original pose effect, same Turtle update;20 turtles;read-only RAF observation plus one display opportunity,not GPU scanout",
+    "intervals": {
+      "count": 30230,
+      "median": 16.70000000001164,
+      "p95": 33.40000000000873,
+      "max": 50.100000000034925
+    },
+    "frameBuckets": {
+      "oneFrame": 24473,
+      "twoFrames": 5753,
+      "more": 4
+    },
+    "paintWork": {
+      "count": 30240,
+      "median": 0.09999999403953552,
+      "p95": 0.20000000298023224,
+      "max": 0.7000000029802322
+    },
+    "longPaints": 0,
+    "longTasks": 0,
+    "inputs": 30,
+    "causalInputToPresentation": {
+      "count": 30,
+      "median": 44.70000000298023,
+      "p95": 59.29999999701977,
+      "max": 63.29999999701977
+    },
+    "causalEvidence": {
+      "generation": "47b22755-c758-4540-aa24-1e675458fe4d",
+      "inputs": [
+        {
+          "id": 1,
+          "key": "Left",
+          "at": 2606.199999988079
+        },
+        {
+          "id": 2,
+          "key": "Up",
+          "at": 22622.19999998808
+        },
+        {
+          "id": 3,
+          "key": "click",
+          "at": 42637.89999999106
+        },
+        {
+          "id": 4,
+          "key": "Left",
+          "at": 62522.89999999106
+        },
+        {
+          "id": 5,
+          "key": "Up",
+          "at": 82534.69999998808
+        },
+        {
+          "id": 6,
+          "key": "click",
+          "at": 102556.69999998808
+        },
+        {
+          "id": 7,
+          "key": "Left",
+          "at": 122448.5
+        },
+        {
+          "id": 8,
+          "key": "Up",
+          "at": 142466.19999998808
+        },
+        {
+          "id": 9,
+          "key": "click",
+          "at": 162484.5
+        },
+        {
+          "id": 10,
+          "key": "Left",
+          "at": 182377.89999999106
+        },
+        {
+          "id": 11,
+          "key": "Up",
+          "at": 202401
+        },
+        {
+          "id": 12,
+          "key": "click",
+          "at": 222421.19999998808
+        },
+        {
+          "id": 13,
+          "key": "Left",
+          "at": 242315.79999999702
+        },
+        {
+          "id": 14,
+          "key": "Up",
+          "at": 262336.89999999106
+        },
+        {
+          "id": 15,
+          "key": "click",
+          "at": 282351.299999997
+        },
+        {
+          "id": 16,
+          "key": "Left",
+          "at": 302248.59999999404
+        },
+        {
+          "id": 17,
+          "key": "Up",
+          "at": 322273.89999999106
+        },
+        {
+          "id": 18,
+          "key": "click",
+          "at": 342281.5
+        },
+        {
+          "id": 19,
+          "key": "Left",
+          "at": 362177.6999999881
+        },
+        {
+          "id": 20,
+          "key": "Up",
+          "at": 382198.799999997
+        },
+        {
+          "id": 21,
+          "key": "click",
+          "at": 402219.1999999881
+        },
+        {
+          "id": 22,
+          "key": "Left",
+          "at": 422109.6999999881
+        },
+        {
+          "id": 23,
+          "key": "Up",
+          "at": 442124
+        },
+        {
+          "id": 24,
+          "key": "click",
+          "at": 462144.6999999881
+        },
+        {
+          "id": 25,
+          "key": "Left",
+          "at": 482042.59999999404
+        },
+        {
+          "id": 26,
+          "key": "Up",
+          "at": 502051.6999999881
+        },
+        {
+          "id": 27,
+          "key": "click",
+          "at": 522063.6999999881
+        },
+        {
+          "id": 28,
+          "key": "Left",
+          "at": 541955.099999994
+        },
+        {
+          "id": 29,
+          "key": "Up",
+          "at": 561972.299999997
+        },
+        {
+          "id": 30,
+          "key": "click",
+          "at": 581995.599999994
+        }
+      ],
+      "shown": [
+        {
+          "id": 1,
+          "key": "Left",
+          "observedAt": 2635.699999988079,
+          "at": 2652.3999999910593
+        },
+        {
+          "id": 2,
+          "key": "Up",
+          "observedAt": 22643.09999999404,
+          "at": 22659.79999999702
+        },
+        {
+          "id": 3,
+          "key": "click",
+          "observedAt": 42667.29999999702,
+          "at": 42684.09999999404
+        },
+        {
+          "id": 4,
+          "key": "Left",
+          "observedAt": 62541.09999999404,
+          "at": 62557.89999999106
+        },
+        {
+          "id": 5,
+          "key": "Up",
+          "observedAt": 82565.19999998808,
+          "at": 82581.79999999702
+        },
+        {
+          "id": 6,
+          "key": "click",
+          "observedAt": 102589.29999999702,
+          "at": 102606.09999999404
+        },
+        {
+          "id": 7,
+          "key": "Left",
+          "observedAt": 122480,
+          "at": 122496.59999999404
+        },
+        {
+          "id": 8,
+          "key": "Up",
+          "observedAt": 142487.39999999106,
+          "at": 142504.09999999404
+        },
+        {
+          "id": 9,
+          "key": "click",
+          "observedAt": 162511.5,
+          "at": 162528.19999998808
+        },
+        {
+          "id": 10,
+          "key": "Left",
+          "observedAt": 182402.09999999404,
+          "at": 182419
+        },
+        {
+          "id": 11,
+          "key": "Up",
+          "observedAt": 202427.09999999404,
+          "at": 202442.89999999106
+        },
+        {
+          "id": 12,
+          "key": "click",
+          "observedAt": 222450.39999999106,
+          "at": 222466.79999999702
+        },
+        {
+          "id": 13,
+          "key": "Left",
+          "observedAt": 242357.79999999702,
+          "at": 242375.09999999404
+        },
+        {
+          "id": 14,
+          "key": "Up",
+          "observedAt": 262365,
+          "at": 262381.59999999404
+        },
+        {
+          "id": 15,
+          "key": "click",
+          "observedAt": 282372.39999999106,
+          "at": 282389.09999999404
+        },
+        {
+          "id": 16,
+          "key": "Left",
+          "observedAt": 302279.799999997,
+          "at": 302296.5
+        },
+        {
+          "id": 17,
+          "key": "Up",
+          "observedAt": 322320.59999999404,
+          "at": 322337.1999999881
+        },
+        {
+          "id": 18,
+          "key": "click",
+          "observedAt": 342311.39999999106,
+          "at": 342328
+        },
+        {
+          "id": 19,
+          "key": "Left",
+          "observedAt": 362202.09999999404,
+          "at": 362218.59999999404
+        },
+        {
+          "id": 20,
+          "key": "Up",
+          "observedAt": 382226.09999999404,
+          "at": 382243.6999999881
+        },
+        {
+          "id": 21,
+          "key": "click",
+          "observedAt": 402250.1999999881,
+          "at": 402266.6999999881
+        },
+        {
+          "id": 22,
+          "key": "Left",
+          "observedAt": 422140.89999999106,
+          "at": 422157.39999999106
+        },
+        {
+          "id": 23,
+          "key": "Up",
+          "observedAt": 442148.299999997,
+          "at": 442164.89999999106
+        },
+        {
+          "id": 24,
+          "key": "click",
+          "observedAt": 462172.299999997,
+          "at": 462188.89999999106
+        },
+        {
+          "id": 25,
+          "key": "Left",
+          "observedAt": 482063,
+          "at": 482079.59999999404
+        },
+        {
+          "id": 26,
+          "key": "Up",
+          "observedAt": 502070.39999999106,
+          "at": 502087.09999999404
+        },
+        {
+          "id": 27,
+          "key": "click",
+          "observedAt": 522094.39999999106,
+          "at": 522111
+        },
+        {
+          "id": 28,
+          "key": "Left",
+          "observedAt": 541985.299999997,
+          "at": 542001.6999999881
+        },
+        {
+          "id": 29,
+          "key": "Up",
+          "observedAt": 561992.5,
+          "at": 562009.099999994
+        },
+        {
+          "id": 30,
+          "key": "click",
+          "observedAt": 582016.599999994,
+          "at": 582033.299999997
+        }
+      ],
+      "pending": false
+    }
+  },
+  "rawReportSha256": "c0d109d19ea084403ccd303701bd7ee23a6b7a415e71df7741f4cf8461f9bafd",
+  "rawReceiptSha256": "4d19fd8ce52d9c3259e33e8790cc3b0accc3af0d770f4291bc08bdec02e06194",
+  "supervisorSource": {
+    "snapshot": "current-476-local-f3-chrome-r1.json.snapshot",
+    "sha256": "11f1787f08d248ae957b4271563c3d9a7d4c7cc698a28d1d8aa3392e6a258e37",
+    "purpose": "Exact shared supervisor source, stored in the Chrome snapshot; this Edge run has its own receipt and raw hashes above."
+  },
+  "limits": [
+    "Local controlled browser fixture, not hosted user workflow",
+    "16 GB Windows test machine, not deferred 8 GB reference machine",
+    "RAF plus display opportunity witness, not physical GPU scanout",
+    "No audio audibility or native worker memory qualification"
+  ]
+}
