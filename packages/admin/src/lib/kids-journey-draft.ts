@@ -32,6 +32,8 @@ export function keepKidsJourneyDraft(
 ): boolean {
   if (!storage) return false
   try {
+    const previous = decodeDraft(storage.getItem(KIDS_JOURNEY_DRAFT_KEY))
+    if (previous && previous.version !== draft.version) return false
     storage.setItem(KIDS_JOURNEY_DRAFT_KEY, JSON.stringify(draft))
     return true
   } catch {
@@ -40,18 +42,24 @@ export function keepKidsJourneyDraft(
 }
 
 /**
- * Tira o rascunho guardado (lê e apaga, para voltar uma vez só). `null` quando não há nada ou
- * o que há não tem a forma de um rascunho.
+ * Consome só o rascunho da versão esperada. Uma base diferente permanece guardada até a
+ * pessoa escolher recuperar ou descartar; não pode sumir só porque a versão no ar mudou.
  */
-export function takeKidsJourneyDraft(storage: DraftStorage | null): KeptKidsJourneyDraft | null {
+export function takeKidsJourneyDraft(
+  storage: DraftStorage | null,
+  expectedVersion: number,
+): KeptKidsJourneyDraft | null {
   if (!storage) return null
-  let raw: string | null
   try {
-    raw = storage.getItem(KIDS_JOURNEY_DRAFT_KEY)
-    storage.removeItem(KIDS_JOURNEY_DRAFT_KEY)
+    const draft = decodeDraft(storage.getItem(KIDS_JOURNEY_DRAFT_KEY))
+    if (!draft || draft.version === expectedVersion) storage.removeItem(KIDS_JOURNEY_DRAFT_KEY)
+    return draft
   } catch {
     return null
   }
+}
+
+function decodeDraft(raw: string | null): KeptKidsJourneyDraft | null {
   if (!raw) return null
   try {
     const value: unknown = JSON.parse(raw)

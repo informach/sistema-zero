@@ -273,9 +273,9 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
         <Card role="alert" className="space-y-3 p-5">
           <h2 className="font-semibold">O rascunho da Jornada do Criador não foi guardado</h2>
           <p className="text-sm text-muted-foreground">
-            Este navegador não deixou guardar as mudanças desta aba. Volte para a lente Kids para
-            continuar o rascunho, ou abra a jornada da Comunidade Sistema Zero sabendo que ele não
-            vai voltar.
+            Não foi possível guardar as mudanças desta aba. Volte para a lente Kids para conferir o
+            rascunho salvo e continuar, ou abra a jornada da Comunidade Sistema Zero sabendo que as
+            mudanças atuais não vão voltar.
           </p>
           <Link
             href={journeyLensHref(
@@ -294,6 +294,29 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
       ) : (
         <>
           {record?.phase === 'published' && !record.permissions.canEdit && <ReadOnlyNotice />}
+          {editor.recoverableDraft && (
+            <Card role="alert" className="space-y-3 p-5">
+              <h2 className="font-semibold">Há um rascunho salvo para revisar</h2>
+              <p className="text-sm text-muted-foreground">
+                A versão no ar mudou enquanto você estava na outra comunidade. Seu rascunho continua
+                guardado nesta aba. Recuperar substitui o que está neste editor, para você revisar e
+                comparar. A versão publicada não muda.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" disabled={!editor.canEdit} onClick={editor.recoverDraft}>
+                  Recuperar rascunho salvo
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={!editor.canEdit}
+                  onClick={editor.discardSavedDraft}
+                >
+                  Descartar rascunho salvo
+                </Button>
+              </div>
+            </Card>
+          )}
           {editor.loading && (
             <p role="status" className="text-sm text-muted-foreground">
               Carregando a jornada…

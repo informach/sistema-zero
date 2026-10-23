@@ -149,6 +149,59 @@ const page = () => (
 )
 
 describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
+  test('paginação da primeira visita Kids não invade Kids depois de passar por Adultos', async () => {
+    setPlatform('kids')
+    server(() => ({ ...catalogOf([COURSE]), nextCursor: 'old-page' }))
+    const baseFetch = globalThis.fetch
+    const delayed = Promise.withResolvers<void>()
+    let signal: AbortSignal | null | undefined
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes('cursor=')) {
+        signal = init?.signal
+        await delayed.promise
+        return Response.json(catalogOf([], [{ ...COHORT, title: 'Turma obsoleta' }]))
+      }
+      return baseFetch(input, init)
+    }) as typeof fetch
+    const view = await mount(page())
+    await settle()
+    await act(async () => button(view, 'Carregar mais turmas e as mais antigas').click())
+    await act(async () => setPlatform('adult'))
+    await settle()
+    await act(async () => setPlatform('kids'))
+    await settle()
+    await act(async () => delayed.resolve())
+    await settle()
+    expect(view.textContent).not.toContain('Turma obsoleta')
+    expect(signal?.aborted).toBe(true)
+  })
+
+  test('dois cliques antes da renderização fazem uma única paginação', async () => {
+    setPlatform('kids')
+    server(() => ({ ...catalogOf([COURSE]), nextCursor: 'old-page' }))
+    const baseFetch = globalThis.fetch
+    const delayed = Promise.withResolvers<void>()
+    let reads = 0
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes('cursor=')) {
+        reads++
+        await delayed.promise
+        return Response.json(catalogOf([], [{ ...COHORT, title: 'Turma obsoleta' }]))
+      }
+      return baseFetch(input, init)
+    }) as typeof fetch
+    const view = await mount(page())
+    await settle()
+    const more = button(view, 'Carregar mais turmas e as mais antigas')
+    await act(async () => {
+      more.click()
+      more.click()
+    })
+    await act(async () => delayed.resolve())
+    await settle()
+    expect(reads).toBe(1)
+  })
+
   test('lista os cursos ao vivo da plataforma ativa e troca junto com o seletor', async () => {
     setPlatform('kids')
     const requests = server((audience) =>

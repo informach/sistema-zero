@@ -6,6 +6,7 @@ import {
   initialKidsJourneyPolicy,
   type KidsJourneyPolicy,
 } from '@sistemazero/core/journey'
+import { KIDS_JOURNEY_DRAFT_KEY, keepKidsJourneyDraft } from '../../src/lib/kids-journey-draft'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
@@ -478,6 +479,11 @@ test('rascunho guardado não volta por cima de outra versão, e a tela avisa', a
   expect(again.textContent).toContain(
     'A versão no ar mudou enquanto você estava na outra comunidade',
   )
+  await click(again, 'Recuperar rascunho salvo')
+  expect(progression(again)).toBe('paused')
+  expect(button(again, 'Preparar publicação').disabled).toBe(true)
+  expect(record.version).toBe(2)
+  expect(record.policy.mode).toBe('active')
   expect(writes()).toEqual([])
 })
 
@@ -486,4 +492,34 @@ test('sem mudança, trocar a lente não guarda nada', async () => {
   await act(async () => setPlatform('adult'))
   expect(replaced).toContain('/admin/professor/jornada-adulta')
   expect(window.sessionStorage.length).toBe(0)
+})
+
+test('descartar o rascunho salvo conserva a política publicada e não faz mutação', async () => {
+  record = { ...record, version: 2 }
+  keepKidsJourneyDraft(window.sessionStorage, {
+    version: 1,
+    policy: { ...record.policy, mode: 'paused' },
+    reason: 'Rascunho anterior',
+  })
+  const container = await mount()
+  await click(container, 'Descartar rascunho salvo')
+  expect(progression(container)).toBe('active')
+  expect(record.version).toBe(2)
+  expect(window.sessionStorage.getItem(KIDS_JOURNEY_DRAFT_KEY)).toBeNull()
+  expect(writes()).toEqual([])
+})
+
+test('a visualização só leitura não consome nem recupera o rascunho salvo', async () => {
+  record = { ...record, version: 2, permissions: { canEdit: false } }
+  keepKidsJourneyDraft(window.sessionStorage, {
+    version: 2,
+    policy: { ...record.policy, mode: 'paused' },
+    reason: 'Rascunho anterior',
+  })
+  const container = await mount()
+  expect(container.textContent).not.toContain('Recuperar rascunho salvo')
+  expect(container.textContent).not.toContain('Descartar rascunho salvo')
+  expect(window.sessionStorage.getItem(KIDS_JOURNEY_DRAFT_KEY)).not.toBeNull()
+  expect(progression(container)).toBe('active')
+  expect(writes()).toEqual([])
 })

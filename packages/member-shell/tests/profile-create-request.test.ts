@@ -15,7 +15,7 @@ const user: SessionUser = {
 }
 const values = {
   name: 'Criança de teste',
-  birthDate: null,
+  birthDate: '2018-05-10',
   publicProfileEnabled: false,
   voiceInputEnabled: false,
 }
@@ -53,6 +53,24 @@ describe('identidade do pedido atravessa o BFF e o client Auth', () => {
     const { calls, request } = setup()
     expect(
       (await request({ ...values, ...(id === undefined ? {} : { requestId: id }) })).status,
+    ).toBe(400)
+    expect(calls).toHaveLength(0)
+  })
+  test.each([
+    undefined,
+    null,
+    '',
+    '2018/05/10',
+  ])('recusa nascimento ausente ou malformado %s antes do Auth', async (birthDate) => {
+    const { calls, request } = setup()
+    expect((await request({ requestId, ...values, birthDate })).status).toBe(400)
+    expect(calls).toHaveLength(0)
+  })
+  test('a exceção do backfill não pode dispensar nascimento pela rota pública', async () => {
+    const { calls, request } = setup()
+    expect(
+      (await request({ requestId, ...values, birthDate: undefined, legacyDefaultProfile: true }))
+        .status,
     ).toBe(400)
     expect(calls).toHaveLength(0)
   })

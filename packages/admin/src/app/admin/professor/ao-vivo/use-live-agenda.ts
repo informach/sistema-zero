@@ -2,7 +2,7 @@
 
 import type { LiveCatalogView } from '@sistemazero/core/live'
 import { liveRequest } from '@sistemazero/member-shell/lib/live/client'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { type AgendaGroups, groupLiveAgenda } from '@/lib/live-agenda'
 
 const merge = <T extends { id: string }>(previous: T[], next: T[]) => [
@@ -18,6 +18,11 @@ export interface LiveAgendaState {
   loadMore: () => Promise<void>
 }
 
+interface AgendaReadScope {
+  controller: AbortController
+  nextCursor: string | null
+}
+
 /**
  * A agenda de quem conduz, lida UMA vez por tela: a página Encontros e o bloco "Encontros de
  * hoje" da Home usam esta mesma leitura (`/api/live/catalog`) e o mesmo agrupamento, para as
@@ -29,20 +34,38 @@ export function useLiveAgenda(): LiveAgendaState {
   const [loadingMore, setLoadingMore] = useState(false)
   const [reload, setReload] = useState(0)
   const [now, setNow] = useState(() => Date.now())
+  const scope = useRef<AgendaReadScope | null>(null)
+  const pagination = useRef<AbortController | null>(null)
   // biome-ignore lint/correctness/useExhaustiveDependencies: "Tentar de novo" invalida a agenda.
   useEffect(() => {
     const controller = new AbortController()
+    const owner: AgendaReadScope = { controller, nextCursor: null }
+    scope.current = owner
+    pagination.current?.abort()
+    pagination.current = null
+    setLoadingMore(false)
     setError(null)
     liveRequest<LiveCatalogView>('/api/live/catalog?limit=50', undefined, 'GET', controller.signal)
       .then((next) => {
-        setData(next)
+        if (controller.signal.aborted || scope.current !== owner) return
+        owner.nextCursor = next.nextCursor ?? null
+        setData((previous) =>
+          controller.signal.aborted || scope.current !== owner ? previous : next,
+        )
         setNow(Date.now())
       })
       .catch((cause) => {
         if (!controller.signal.aborted)
           setError(cause instanceof Error ? cause.message : 'Não conseguimos abrir a agenda.')
       })
-    return () => controller.abort()
+    return () => {
+      controller.abort()
+      if (scope.current === owner) {
+        scope.current = null
+        pagination.current?.abort()
+        pagination.current = null
+      }
+    }
   }, [reload])
   // Um encontro passa de "Próximos" para "Hoje" (e de "Hoje" para "Encerrados") sem recarregar.
   useEffect(() => {
@@ -50,14 +73,27 @@ export function useLiveAgenda(): LiveAgendaState {
     return () => clearInterval(timer)
   }, [])
   const loadMore = useCallback(async () => {
-    if (!data?.nextCursor || loadingMore) return
+    const owner = scope.current
+    const cursor = owner?.nextCursor
+    // O cursor pertence à leitura vigente, inclusive antes de o React pintar o resultado.
+    if (!owner || owner.controller.signal.aborted || !cursor || pagination.current) return
+    const controller = new AbortController()
+    pagination.current = controller
+    const cancel = () => controller.abort()
+    owner.controller.signal.addEventListener('abort', cancel, { once: true })
+    const current = () => scope.current === owner && !owner.controller.signal.aborted
     setLoadingMore(true)
     try {
       const next = await liveRequest<LiveCatalogView>(
-        `/api/live/catalog?limit=50&cursor=${encodeURIComponent(data.nextCursor)}`,
+        `/api/live/catalog?limit=50&cursor=${encodeURIComponent(cursor)}`,
+        undefined,
+        'GET',
+        controller.signal,
       )
+      if (!current() || controller.signal.aborted) return
+      owner.nextCursor = next.nextCursor ?? null
       setData((previous) =>
-        previous
+        current() && previous?.nextCursor === cursor
           ? {
               ...next,
               programs: merge(previous.programs, next.programs),
@@ -65,15 +101,25 @@ export function useLiveAgenda(): LiveAgendaState {
               sessions: merge(previous.sessions, next.sessions),
               enrollments: merge(previous.enrollments, next.enrollments),
             }
-          : next,
+          : previous,
       )
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Não conseguimos carregar mais encontros.')
+      if (current() && !controller.signal.aborted)
+        setError(
+          cause instanceof Error ? cause.message : 'Não conseguimos carregar mais encontros.',
+        )
     } finally {
-      setLoadingMore(false)
+      owner.controller.signal.removeEventListener('abort', cancel)
+      if (pagination.current === controller) {
+        pagination.current = null
+        if (current()) setLoadingMore(false)
+      }
     }
-  }, [data?.nextCursor, loadingMore])
-  const retry = useCallback(() => setReload((value) => value + 1), [])
+  }, [])
+  const retry = useCallback(() => {
+    scope.current?.controller.abort()
+    setReload((value) => value + 1)
+  }, [])
   const groups = data ? groupLiveAgenda(data.sessions, data.cohorts, now) : null
   return { data, groups, error, loadingMore, retry, loadMore }
 }

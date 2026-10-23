@@ -8,6 +8,7 @@ import { usePlatform } from '@/components/admin/platform-provider'
 import { apiGet, apiSend } from '@/lib/api'
 import {
   journeyDraftStorage,
+  type KeptKidsJourneyDraft,
   keepKidsJourneyDraft,
   takeKidsJourneyDraft,
 } from '@/lib/kids-journey-draft'
@@ -63,6 +64,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
   const [preview, setPreview] = useState<KidsPreview | null>(null)
   const [preparation, setPreparation] = useState<KidsPreparation | null>(null)
   const [reason, setReason] = useState('')
+  const [recoverableDraft, setRecoverableDraft] = useState<KeptKidsJourneyDraft | null>(null)
   const [history, setHistory] = useState<KidsHistory>([])
   const [moreHistory, setMoreHistory] = useState(false)
   const [historyError, setHistoryError] = useState<string | null>(null)
@@ -86,6 +88,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
       setPreview(null)
       setLoadError(null)
       setError(null)
+      setRecoverableDraft(null)
       let stopped = false
       const current = () => token === generation.current && !stopped
       try {
@@ -115,16 +118,14 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
         if (savedPreparation) setReason(savedPreparation.reason)
         // Rascunho guardado na troca de lente: volta se a versão no ar ainda é a mesma. Se mudou,
         // avisa em vez de sumir com ele calado (aplicar por cima desfaria a versão nova).
-        if (!savedPreparation && next.phase === 'published') {
-          const kept = takeKidsJourneyDraft(journeyDraftStorage())
+        if (!savedPreparation && next.phase === 'published' && next.permissions.canEdit) {
+          const kept = takeKidsJourneyDraft(journeyDraftStorage(), next.version)
           if (kept && kept.version === next.version) {
             setDraft(kept.policy)
             setReason(kept.reason)
             setSuccess('O rascunho que estava aberto antes da troca de comunidade voltou.')
           } else if (kept) {
-            setError(
-              `A versão no ar mudou enquanto você estava na outra comunidade. O rascunho que estava aberto era sobre a versão ${kept.version} e não voltou, para não desfazer a versão ${next.version}.`,
-            )
+            setRecoverableDraft(kept)
           }
         }
         const conflict = Boolean(
@@ -248,6 +249,28 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
       reason: state.reason,
     })
   }, [])
+
+  function resolveRecoverableDraft(recover: boolean) {
+    if (!canEdit || operation.current !== null || !recoverableDraft) return
+    const kept = takeKidsJourneyDraft(journeyDraftStorage(), recoverableDraft.version)
+    if (!kept || kept.version !== recoverableDraft.version) {
+      setError('O rascunho guardado mudou. Atualize a página antes de continuar.')
+      return
+    }
+    if (recover) {
+      setDraft(kept.policy)
+      setReason(kept.reason)
+      setPreview(null)
+      compared.current = null
+    }
+    setRecoverableDraft(null)
+    setError(null)
+    setSuccess(
+      recover
+        ? 'Rascunho recuperado. Revise e compare com a versão no ar antes de publicar.'
+        : 'Rascunho salvo descartado. A versão publicada não mudou.',
+    )
+  }
 
   async function run(
     name: string,
@@ -419,6 +442,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     preview,
     preparation,
     reason,
+    recoverableDraft,
     history,
     moreHistory,
     loading,
@@ -448,6 +472,8 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     earlierHistory,
     returnToDraft,
     keepDraftForLensChange,
+    recoverDraft: () => resolveRecoverableDraft(true),
+    discardSavedDraft: () => resolveRecoverableDraft(false),
     refresh: () => load({ keepDraft: true, resume: preparation?.id ?? null }),
   }
 }

@@ -97,7 +97,11 @@ export function LiveAdmin({
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [createdCourse, setCreatedCourse] = useState<CourseView | null>(null)
-  const [busy, setBusy] = useState(false)
+  const [mutating, setBusy] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const busy = mutating || loadingMore
+  const catalogScope = useRef<{ controller: AbortController; cursor: string | null } | null>(null)
+  const pagination = useRef<AbortController | null>(null)
   const [creatingFor, setCreatingFor] = useState<LiveCourseSummary | null>(null)
   const [settingsFor, setSettingsFor] = useState<LiveCohort | null>(null)
   const [enrollmentsFor, setEnrollmentsFor] = useState<LiveCohort | null>(null)
@@ -123,6 +127,11 @@ export function LiveAdmin({
   // biome-ignore lint/correctness/useExhaustiveDependencies: uma mutação invalida o catálogo.
   useEffect(() => {
     const controller = new AbortController()
+    const owner = { controller, cursor: null as string | null }
+    catalogScope.current = owner
+    pagination.current?.abort()
+    pagination.current = null
+    setLoadingMore(false)
     setError(null)
     liveRequest<LiveCatalogView>(
       `/api/admin/live/catalog?audience=${platform}`,
@@ -130,26 +139,53 @@ export function LiveAdmin({
       'GET',
       controller.signal,
     )
-      .then(setCatalog)
+      .then((next) => {
+        if (controller.signal.aborted || catalogScope.current !== owner) return
+        owner.cursor = next.nextCursor ?? null
+        setCatalog((previous) =>
+          controller.signal.aborted || catalogScope.current !== owner ? previous : next,
+        )
+      })
       .catch((cause) => {
         if (!controller.signal.aborted)
           setError(errorMessage(cause, 'Não conseguimos carregar as oficinas.'))
       })
-    return () => controller.abort()
+    return () => {
+      controller.abort()
+      if (catalogScope.current === owner) {
+        catalogScope.current = null
+        pagination.current?.abort()
+        pagination.current = null
+      }
+    }
   }, [revision, platform])
 
   async function loadMore() {
-    if (!catalog?.nextCursor || busy) return
-    setBusy(true)
+    const owner = catalogScope.current
+    const cursor = owner?.cursor
+    if (!owner || owner.controller.signal.aborted || !cursor || busy || pagination.current) return
+    const controller = new AbortController()
+    pagination.current = controller
+    const cancel = () => controller.abort()
+    owner.controller.signal.addEventListener('abort', cancel, { once: true })
+    setLoadingMore(true)
     const requested = platform
+    const current = () =>
+      catalogScope.current === owner &&
+      !owner.controller.signal.aborted &&
+      platformRef.current === requested
     try {
       const next = await liveRequest<LiveCatalogView>(
-        `/api/admin/live/catalog?audience=${requested}&cursor=${catalog.nextCursor}`,
+        `/api/admin/live/catalog?audience=${requested}&cursor=${encodeURIComponent(cursor)}`,
+        undefined,
+        'GET',
+        controller.signal,
       )
       // A página que chegou depois de trocar a plataforma é da OUTRA lista.
-      if (platformRef.current !== requested) return
+      if (!current() || controller.signal.aborted) return
+      owner.cursor = next.nextCursor ?? null
       setCatalog((previous) =>
-        previous
+        current() && previous?.nextCursor === cursor
           ? {
               ...next,
               courses: mergeById(previous.courses ?? [], next.courses ?? []),
@@ -157,12 +193,17 @@ export function LiveAdmin({
               sessions: mergeById(previous.sessions, next.sessions),
               enrollments: mergeById(previous.enrollments, next.enrollments),
             }
-          : next,
+          : previous,
       )
     } catch (cause) {
-      setError(errorMessage(cause, 'Não conseguimos carregar as turmas mais antigas.'))
+      if (current() && !controller.signal.aborted)
+        setError(errorMessage(cause, 'Não conseguimos carregar as turmas mais antigas.'))
     } finally {
-      setBusy(false)
+      owner.controller.signal.removeEventListener('abort', cancel)
+      if (pagination.current === controller) {
+        pagination.current = null
+        if (current()) setLoadingMore(false)
+      }
     }
   }
 
