@@ -1,6 +1,7 @@
 @import "tailwindcss";
 /* Tokens do chassi das ferramentas internas (fonte ÚNICA dos três consoles). */
 @import "@sistemazero/ui/console.css";
+@import "@sistemazero/ui/styles/console-scrollbars.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";
 @source "../../../marketing-workbench/src";
@@ -129,26 +130,6 @@ a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
 }
 .sz-modal {
   animation: sz-zoom-in 0.15s ease;
-}
-
-/* Scrollbar discreta */
-.scrollbar-subtle {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-.scrollbar-subtle:hover {
-  scrollbar-color: color-mix(in oklch, var(--foreground) 18%, transparent) transparent;
-}
-.scrollbar-subtle::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-.scrollbar-subtle::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 9999px;
-}
-.scrollbar-subtle:hover::-webkit-scrollbar-thumb {
-  background: color-mix(in oklch, var(--foreground) 18%, transparent);
 }
 
 /* Toast — contraste garantido em ambos os modos */

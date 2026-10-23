@@ -139,6 +139,12 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    COR), os quatro `--logo-zero-*` (o `BrandLogo` abaixo) e, nos `globals.css` dos três, a pílula
    chapada da comunidade + `@theme { --shadow-sm: 0 0 #0000 }`. O contrato cobra os quatro tokens
    da logo, a AUSÊNCIA dos três antigos e o desenho do botão nos três apps.
+   **Rolagem dos consoles:** `src/styles/console-scrollbars.css` é a receita compartilhada,
+   importada pelos três `globals.css`. Usa os tokens existentes; `console-menu-scrollbar`
+   adapta a tinta ao menu escuro do Admin. Não recolocar os blocos locais antigos de
+   `.scrollbar-subtle`: misturar propriedades padrão com pseudoelementos desativa o desenho
+   no Chromium. Firefox recebe as propriedades padrão via `@supports`; alto contraste
+   conserva as cores nativas. O CSS gerado dos tokens continua intocado.
 4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
    lucide-react. Nada de Next/`server-only` aqui.
 

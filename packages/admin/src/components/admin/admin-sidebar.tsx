@@ -184,7 +184,10 @@ function NavGroups({
   const active = activeHref(pathname)
 
   return (
-    <nav aria-label="Menu principal" className="flex-1 overflow-y-auto px-3 pt-2 pb-4">
+    <nav
+      aria-label="Menu principal"
+      className="console-menu-scrollbar flex-1 overflow-y-auto px-3 pt-2 pb-4"
+    >
       {groups.map((group) => (
         <div key={group.id} className="mb-4 last:mb-0">
           <p className="mb-1.5 px-2.5 pt-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-menu-icon">
