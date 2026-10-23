@@ -12,6 +12,8 @@ const badgeVariants = cva(
         muted: 'border-border bg-muted text-muted-foreground',
         destructive: 'border-transparent bg-destructive/15 text-destructive',
         outline: 'border-border text-foreground',
+        // Precisa de atenção (esperando alguém, perto do prazo): o amarelo escuro sobre o claro.
+        warning: 'border-transparent bg-[#fff3c4] text-[#7a4100]',
       },
     },
     defaultVariants: { variant: 'default' },

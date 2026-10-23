@@ -176,9 +176,9 @@ export const CATALOG_TABS = [
 ]
 
 export const PAYMENTS_TABS = [
-  { label: 'Transações', href: '/admin/pagamentos/transacoes' },
+  { label: 'Vendas', href: '/admin/pagamentos/transacoes' },
   { label: 'Assinaturas', href: '/admin/pagamentos/assinaturas' },
-  { label: 'Operações', href: '/admin/pagamentos/operacoes' },
+  { label: 'Saúde dos pagamentos', href: '/admin/pagamentos/operacoes' },
 ]
 
 /** Grupos visíveis p/ o papel (filtra grupo E itens; grupo sem item visível some). */
