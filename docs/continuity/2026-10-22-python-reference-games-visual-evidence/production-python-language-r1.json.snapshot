@@ -1,0 +1,86 @@
+{
+  "kind": "production-python-language-migration-execution-evidence",
+  "version": 1,
+  "recordedAt": "2026-10-22T23:51:41.526Z",
+  "sourceCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+  "environment": "production",
+  "state": "LANGUAGE_API_WORKER_BYTES_AND_EXTERNAL_CLEANUP_VERIFIED",
+  "workerVersion": "88b6e8d6-567d-4c53-a6bc-c1d3393f5b89",
+  "migrationTag": "language-sessions-initial",
+  "image": "registry.cloudflare.com/bcc0f2d44140e05b69152cba326132f8/sz-python-language-qa@sha256:b64cb8e24ac10eaeb2e0d298e9e3e7ec809b1aeea7778c145941e65cf0578320",
+  "pyrightVersion": "1.1.414",
+  "preservedSandboxNamespace": "0d42f167dd204762adfd1095632fff38",
+  "newSessionsNamespace": "0b970c7003204c6c82ac6a1cf60c3dce",
+  "deletedOwnerNamespace": "7f9c24b7d37b43f29a259ccdcc1888ee",
+  "verifiedEmptyOldOwnerTables": 5,
+  "globalExternalReferencesVerified": 0,
+  "modulePins": [
+    {
+      "name": "index.js",
+      "bytes": 1130928,
+      "sha256": "fd5940fe2db98bccedaae9fa2fde146bfc680a14563c6dc6c67001291a2cb81d"
+    }
+  ],
+  "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+  "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c",
+  "profileId": "python-browser",
+  "releaseId": "2026-10-22-visual-games-3",
+  "execution": {
+    "state": "API_PASSED",
+    "startedAt": "2026-10-22T23:42:47.396Z",
+    "completedAt": "2026-10-22T23:42:58.964Z",
+    "checks": 27,
+    "sessionCount": 2,
+    "allKnownSessionsClosedAndRetired": true,
+    "remoteOutcomeUnknown": false,
+    "queryCancellationQualified": true,
+    "sourceExecutionRequested": false
+  },
+  "externalPhysicalCleanup": {
+    "observedAt": "2026-10-22T23:45:03.264Z",
+    "completedAt": "2026-10-22T23:45:21.751Z",
+    "physicalInstances": 0,
+    "active": 0,
+    "assigned": 0,
+    "scheduling": 0,
+    "starting": 0
+  },
+  "scopeLimits": {
+    "membersCatalogActivated": false,
+    "hostedUIQualified": false,
+    "contextualAuthorizationQualified": false,
+    "busyNativeBootstrapCancellationQualified": false,
+    "performanceQualified": false,
+    "platformReleaseComplete": false
+  },
+  "evidence": [
+    {
+      "privateReceipt": "production-language-owner-count-r1/count-root-r1/receipt.json",
+      "sha256": "b121c4fb89a257fc14321da99b79510a88f78008eec88a96424047c572cf5246"
+    },
+    {
+      "privateReceipt": "production-language-external-bindings-readonly-r1/receipt.json",
+      "sha256": "ea5b89d7fc3289be27ba799825db86706c2d127749b167bf8e0174bc38fd8094"
+    },
+    {
+      "privateReceipt": "production-language-cutover-root-r1/intent.json",
+      "sha256": "8dd49948d68f2f1fd7f34b3851021b565b49023fca52434fdd971d71ea89a434"
+    },
+    {
+      "privateReceipt": "production-language-cutover-root-r1/root-cli-invocation-intent.json",
+      "sha256": "2b712e56d6e5fc1571402da2505e23f90f62ef460616cc7f762a650b9bb1b636"
+    },
+    {
+      "privateReceipt": "production-language-cutover-root-r1/worker-readback-r2-receipt.json",
+      "sha256": "881167b23a2506c1e00688bafa59bed7f88659f4e43292b16df7416d99a618bf"
+    },
+    {
+      "privateReceipt": "production-language-qualification-root-r1/proof/receipt.json",
+      "sha256": "d4d214bade9b12af86c4d18cd496ad84640e480cadaa796bc8cb8bbe89b947c8"
+    },
+    {
+      "privateReceipt": "production-cf-post-language-qualification-root-r1/receipt.json",
+      "sha256": "5b35f1f2dc6162b03b8c5f728a47b045be747d23d2d594144d54c41e36a75cbe"
+    }
+  ]
+}

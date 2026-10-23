@@ -10,10 +10,20 @@ roundtrip Blockly e edições reais, sem blocos opacos.
 
 O Estúdio Completo usa as conquistas do próprio perfil e público. Cursos
 JavaScript não concedem blocos Python equivalentes. O servidor reutiliza a união
-atual e congelada de `studioUnlockBlocks`, sem migração. Admin recebe todos os
-blocos e extensões homologados. A criação Python continua visível apenas para
-admins; a elegibilidade por curso é uma regra independente dessa apresentação.
-Aulas e salas mantêm sua curadoria contextual.
+atual e congelada de `studioUnlockBlocks`, sem migração. Para criar, importar ou
+remixar no Estúdio Completo, JavaScript e Python exigem ao menos um bloco conhecido
+conquistado na própria linguagem, tanto no Clássico quanto no Pro, além dos direitos
+de produto e modo. Pro também exige a capacidade Pro. Admin em prévia autorizada
+recebe todos os blocos e extensões homologados; não há apresentação Python restrita
+somente a admins. O catálogo aprovado e a paleta operável continuam necessários.
+Aulas e salas mantêm sua curadoria contextual; essa regra de criação não impede
+ler ou recuperar projetos JavaScript Clássico já existentes.
+
+A regra está nos [direitos por linguagem do servidor](../../packages/members/src/application/studio/free-studio-access.service.ts),
+na [oferta de criação](../../packages/member-shell/src/server/studio-unlocks.ts)
+e nas revalidações de criação/importação
+[JavaScript](../../packages/member-shell/src/lib/studio-javascript-creation.ts) e
+[Python](../../packages/member-shell/src/lib/studio-python-remix.ts).
 
 O Admin oferece recompensas por linguagem e salva auxiliares explicitamente.
 O servidor recusa IDs Python desconhecidos, duplicados ou conjuntos incompletos.
@@ -92,7 +102,7 @@ foi reproduzida três vezes, mantendo os mesmos 41 arquivos. O
 contém os comandos portáveis e os limites da implantação. Os resultados de
 desempenho remotos em `65c9bffd…` pertencem à candidata anterior.
 
-## Implantação e pendências
+## Implantação e pendências — checkpoint anterior
 
 Este checkpoint disponibiliza código revisado para integração entre sessões;
 não declara a homologação final do produto Python. CI/imagem, fluxos
@@ -107,3 +117,56 @@ linguagem; não haverá leitor de metadados Python antigos para acomodar a confi
 O Docker local voltou a responder e as imagens atuais passaram nas provas
 isoladas descritas no [plano de ativação](../superpowers/plans/2026-10-22-python-staging-activation.md).
 A rotação das chaves Railway pertence a outra sessão.
+
+## Atualização operacional — 22 de outubro, 21:01 BRT
+
+Os parágrafos anteriores registram o checkpoint anterior às operações remotas.
+O estado abaixo usa recibos de produção observados até **23 de outubro de 2026,
+00:01:36 UTC**; não converte as provas locais da interface em qualificação hospedada.
+
+O recorte Cloudflare Python de produção foi implantado e qualificado nas APIs:
+
+- A distribuição `476d32…`, manifesto `bc5710…`, está no bucket de produção, com
+  leitura independente dos 43 objetos e quatro regras de lifecycle verificadas,
+  preservando as duas regras existentes. A entrega HTTP conferiu metadados e 12
+  representações gzip.
+- O Runtime usa o Worker `1fb3fff1…`, imagem `7e881384…` e perfil `ae46e781…`.
+  A execução S2S passou 28 verificações e três casos: inspeção sem executar a
+  fonte de teste, recusa de compilação e playtest Turtle com entrada/captura PNG.
+  Os inputs e a prévia criada foram retirados. O namespace JavaScript foi preservado.
+  Detalhes: [recibo Runtime/entrega](2026-10-22-python-reference-games-visual-evidence/production-python-runtime-r1.json.snapshot).
+- O serviço de linguagem usa o Worker `88b6e8d6…`, imagem `b64cb8e2…` e Pyright
+  `1.1.414`. A migração substituiu o namespace Owner após conferir suas cinco
+  tabelas vazias e ausência de referências externas; preservou o namespace Sandbox.
+  A API passou 27 verificações, incluindo cancelamento de consulta, com as duas
+  sessões conhecidas fechadas e retiradas. Não houve execução de fonte Python
+  nessa qualificação. Detalhes: [recibo Language](2026-10-22-python-reference-games-visual-evidence/production-python-language-r1.json.snapshot).
+- A leitura externa final, de 23:45:03 a 23:45:21 UTC, confirmou zero instâncias
+  físicas e contadores `active`, `assigned`, `scheduling` e `starting` zerados nas
+  duas aplicações. Isso registra o estado observado, não uma garantia permanente
+  de ausência de recursos futuros.
+
+Depois dessas provas, uma única operação gravou no Members de produção
+`STUDIO_AUTHORING_POLICY_JSON` e `STUDIO_RUNTIME_HOSTS_JSON`, extraídos do plano
+canônico `7564f459…`. Houve ACK e leitura idêntica à configuração esperada, com
+`skipDeploys: true` e `replace: false`. O deployment `9d8368c2…`, commit `6f93dcbf…`,
+permaneceu ativo antes e depois, sem deployment pendente. **Configuração armazenada
+não significa configuração carregada pelo serviço:** não houve reload ou ativação
+contextual do Members. O [recibo de armazenamento](2026-10-22-python-reference-games-visual-evidence/production-members-python-storage-r1.json.snapshot)
+registra os hashes dos recibos de check/apply, a comparação anterior/posterior e
+os limites. A API de gravação não oferecia CAS; a operação exigiu exclusão de
+outros escritores, e o intent local permanente impede replay automático.
+
+O [recibo de preparação da plataforma](2026-10-22-python-reference-games-visual-evidence/production-platform-configuration-r1.json.snapshot)
+e os demais snapshots permanecem imutáveis. Seus campos de pendências descrevem
+os respectivos horários; os recibos posteriores comprovam a evolução específica
+de Workers, serviço de linguagem e armazenamento, sem declarar o rollout completo.
+
+Ainda faltam o rollout das aplicações com o código atual e a comprovação de que
+carregaram a configuração, seguidos dos fluxos autenticados hospedados
+Admin→aluno, aulas/salas, Mural, publicação/remix e jogo público. JavaScript Pro,
+áudio ouvido por pessoa e desempenho em máquina de referência também não são
+qualificados por esses recibos S2S. O cancelamento de consulta Pyright não prova
+cancelamento durante bootstrap nativo ocupado ou execução ocupada do Runtime.
+Crons, seeds e mídia live conservam seus gates próprios. O estado geral continua
+**rollout de produção não concluído**.

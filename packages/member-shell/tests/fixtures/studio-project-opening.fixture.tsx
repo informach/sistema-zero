@@ -12,11 +12,12 @@ import { documentFixture } from '../../../studio/src/state/fixtures/projectDocum
 import { pythonEnvironmentFixture } from '../../../studio/src/state/fixtures/pythonEnvironment'
 import { beginProjectOpening, isProjectOpening } from '../../../studio/src/state/projectOpening'
 import { refinePythonProjectDocument } from '../../../studio/src/state/pythonProjectValidation'
+import { disallowedProjectExtensions } from '../../../studio/src/studio/project-access'
 import type { StudioTier } from '../../src/lib/studio-tier'
 
 GlobalRegistrator.register({ settings: { disableIframePageLoading: true } })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
-const { act } = await import('react')
+const { act, useEffect, useState } = await import('react')
 const { createRoot } = await import('react-dom/client')
 const cleanups: Array<() => void> = []
 function render(node: React.ReactNode) {
@@ -53,6 +54,11 @@ async function waitFor(assertion: () => void) {
 let namespace = 'host-opening'
 let editorProps: StudioEditorProps | undefined
 let runtimeEnvironment: StudioRuntimeEnvironment | undefined
+let runtimeLoading = false
+let runtimeError: string | undefined
+let editorMounts = 0
+let editorUnmounts = 0
+const retryRuntime = mock(() => {})
 const loads: Array<{
   scope: string
   id: string
@@ -84,11 +90,31 @@ mock.module('@sistemazero/studio', () => ({
   canRunProMode: () => true,
   StudioEditor: (props: StudioEditorProps) => {
     editorProps = props
-    return <div data-testid="editor">{props.initialProject.name}</div>
+    const [buffer, setBuffer] = useState('original')
+    useEffect(() => {
+      editorMounts++
+      return () => {
+        editorUnmounts++
+      }
+    }, [])
+    return (
+      <div data-testid="editor">
+        {props.initialProject.name}
+        <button type="button" onClick={() => setBuffer('unsaved edit')}>
+          Edit probe buffer
+        </button>
+        <output>{buffer}</output>
+      </div>
+    )
   },
 }))
 mock.module('../../src/components/studio/use-free-runtime', () => ({
-  useFreeStudioRuntime: () => ({ loading: false, error: null, environment: runtimeEnvironment }),
+  useFreeStudioRuntime: () => ({
+    loading: runtimeLoading,
+    error: runtimeError,
+    environment: runtimeEnvironment,
+    retry: retryRuntime,
+  }),
 }))
 mock.module('../../src/components/creator/focus-mode', () => ({
   useFocusMode: () => ({ setWorkspaceActive: () => {} }),
@@ -162,10 +188,15 @@ async function project(kind: 'classic' | 'pro', language: 'javascript' | 'python
         proMeta: { templateId: 'blank', devScript: 'dev' },
       }
 }
-beforeEach(() => {
+beforeEach(async () => {
   namespace = 'host-opening'
   editorProps = undefined
-  runtimeEnvironment = undefined
+  runtimeEnvironment = (await pythonEnvironmentFixture('classic')).environment
+  runtimeLoading = false
+  runtimeError = undefined
+  editorMounts = 0
+  editorUnmounts = 0
+  retryRuntime.mockClear()
   delete tier.allowBlocks
   loads.length = 0
   acquired.length = 0
@@ -191,7 +222,7 @@ for (const kind of ['classic', 'pro'] as const)
       expect(isProjectOpening({ identity: namespace }, value.id)).toBe(true)
       expect(typeof editorProps?.persistence).toBe('object')
       if (kind === 'classic' && language === 'python') {
-        expect(editorProps?.allowExtensions).toEqual([])
+        expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
         expect(editorProps?.allowBlocks).toBeUndefined()
         expect(editorProps?.grantedBlockIds).toBeUndefined()
         const fixture = await pythonEnvironmentFixture('classic')
@@ -335,4 +366,121 @@ test('Full editor observes authority in the same environment without reopening i
   expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
   expect(editorProps?.initialProject).toBe(fixture.project)
   expect(loads).toHaveLength(1)
+})
+
+test('Python opening waits for authority and presents preparation errors without a false denial', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
+  runtimeEnvironment = undefined
+  runtimeLoading = true
+  const view = render(ui('classic', fixture.project.id))
+  await act(async () => loads[0]?.gate.resolve(fixture.project))
+  expect(document.querySelector('[role="status"]')?.textContent).toContain('Preparando Python')
+  expect(editorProps).toBeUndefined()
+  expect(editorMounts).toBe(0)
+  expect(isProjectOpening({ identity: namespace }, fixture.project.id)).toBe(true)
+
+  runtimeLoading = false
+  runtimeError = 'Não foi possível preparar Python.'
+  view.rerender(ui('classic', fixture.project.id))
+  expect(document.querySelector('[role="alert"]')?.textContent).toContain(runtimeError)
+  expect(editorProps).toBeUndefined()
+  const retry = [...document.querySelectorAll('button')].find(
+    (button) => button.textContent === 'Tentar novamente',
+  )
+  expect(retry).toBeTruthy()
+  act(() => retry?.click())
+  expect(retryRuntime).toHaveBeenCalledTimes(1)
+
+  runtimeError = undefined
+  runtimeLoading = true
+  view.rerender(ui('classic', fixture.project.id))
+  expect(editorMounts).toBe(0)
+  runtimeLoading = false
+  runtimeEnvironment = fixture.environment
+  view.rerender(ui('classic', fixture.project.id))
+  expect(editorMounts).toBe(1)
+  expect(editorProps?.initialProject).toBe(fixture.project)
+  expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+  expect(document.querySelector('[role="status"]')).toBeNull()
+  expect(loads).toHaveLength(1)
+})
+
+test('Python authority loss hides and disables the retained editor; an explicit empty grant stays denied', async () => {
+  const fixture = await pythonEnvironmentFixture('classic')
+  fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
+  runtimeEnvironment = fixture.environment
+  const view = render(ui('classic', fixture.project.id))
+  await act(async () => loads[0]?.gate.resolve(fixture.project))
+  const element = document.querySelector('[data-testid="editor"]')
+  expect(element).toBeTruthy()
+  act(() => element?.querySelector('button')?.click())
+  expect(element?.querySelector('output')?.textContent).toBe('unsaved edit')
+
+  const revoked = new AbortController()
+  runtimeEnvironment = { ...fixture.environment, signal: revoked.signal }
+  revoked.abort()
+  view.rerender(ui('classic', fixture.project.id))
+  expect(element?.closest('[hidden][inert]')).toBeTruthy()
+  expect(editorProps?.editingAccess).toBe('observer')
+  expect(editorProps?.runtimeEnvironment).toBeUndefined()
+  expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+
+  runtimeLoading = true
+  runtimeEnvironment = undefined
+  view.rerender(ui('classic', fixture.project.id))
+  expect(element?.closest('[hidden][inert]')).toBeTruthy()
+  expect(editorProps?.editingAccess).toBe('observer')
+  expect(editorProps?.runtimeEnvironment).toBeUndefined()
+  expect(disallowedProjectExtensions(fixture.project, editorProps?.allowExtensions)).toEqual([])
+  expect(editorUnmounts).toBe(0)
+  runtimeLoading = false
+  runtimeError = 'O acesso ao Estúdio mudou. Seu projeto continua preservado.'
+  view.rerender(ui('classic', fixture.project.id))
+  expect(document.querySelector('[role="alert"]')?.textContent).toContain(runtimeError)
+  expect(element?.closest('[hidden][inert]')).toBeTruthy()
+  expect(editorProps?.editingAccess).toBe('observer')
+  expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+
+  runtimeError = undefined
+  runtimeEnvironment = {
+    ...fixture.environment,
+    access: (project) => ({
+      ...fixture.environment.access(project),
+      grantedExtensionIds: [],
+    }),
+  }
+  view.rerender(ui('classic', fixture.project.id))
+  expect(element?.closest('[hidden]')).toBeNull()
+  expect(editorProps?.allowExtensions).toEqual([])
+  expect(disallowedProjectExtensions(fixture.project, editorProps?.allowExtensions)).toEqual([
+    'python-turtle',
+  ])
+  expect(editorProps?.editingAccess).toBeUndefined()
+  expect(document.querySelector('[role="status"]')).toBeNull()
+  runtimeEnvironment = fixture.environment
+  view.rerender(ui('classic', fixture.project.id))
+  expect(editorProps?.allowExtensions).toEqual(['python-turtle'])
+  expect(editorProps?.initialProject).toBe(fixture.project)
+  expect(element?.querySelector('output')?.textContent).toBe('unsaved edit')
+  expect(document.querySelector('[data-testid="editor"]')).toBe(element)
+  expect(editorMounts).toBe(1)
+  expect(editorUnmounts).toBe(0)
+  expect(loads).toHaveLength(1)
+})
+
+test('JavaScript opening does not inherit Python preparation or denial state', async () => {
+  runtimeEnvironment = undefined
+  runtimeLoading = true
+  runtimeError = 'Python indisponível'
+  const value = await project('classic', 'javascript')
+  render(ui('classic', value.id))
+  await act(async () => loads[0]?.gate.resolve(value))
+  const element = document.querySelector('[data-testid="editor"]')
+  expect(element).toBeTruthy()
+  expect(element?.closest('[hidden]')).toBeNull()
+  expect(editorProps?.allowExtensions).toEqual(tier.allowedExtensions)
+  expect(editorProps?.editingAccess).toBeUndefined()
+  expect(document.querySelector('[role="alert"]')).toBeNull()
+  expect(document.querySelector('[role="status"]')).toBeNull()
 })

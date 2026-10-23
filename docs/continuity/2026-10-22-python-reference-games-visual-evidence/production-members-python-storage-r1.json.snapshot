@@ -1,0 +1,157 @@
+{
+  "kind": "production-members-python-configuration-storage-evidence",
+  "version": 1,
+  "recordedAt": "2026-10-23T00:05:18.179Z",
+  "environment": "production",
+  "state": "CONFIGURATION_STORED_VERIFIED_NO_RELOAD",
+  "target": {
+    "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+    "environment": "19c212a5-85c0-493c-9630-a7a0569e8412",
+    "service": "aa282801-ffba-477c-af6d-394b2f4f9af9"
+  },
+  "configuration": {
+    "planSha256": "7564f45956986cd464570cd619606066c30e05d329bd9d6050d549405d139fd9",
+    "configurationSha256": "d5112a4525fa8d5674e9ad522dbb673360e4368ef91e5bc5000da6c9a5f9c38c",
+    "authoringCatalogSha256": "674e8be3ddea32fe9fd0ef070f4af86ecd3752596502313f6ea381b74806a334",
+    "runtimeHostCount": 1,
+    "manifestSha256": "bc5710a137facb82e4f1a24df6e370406217f5fc4707c64861adf381d10d3e80",
+    "distributionSha256": "476d32e78da6b528730b8b0535ad026f64fe4e61c03f20a195a7438bc56ace2c"
+  },
+  "variables": [
+    {
+      "name": "STUDIO_AUTHORING_POLICY_JSON",
+      "before": "absent",
+      "after": "canonical-readback-matched",
+      "canonicalSha256": "519116d364331755ccac354e767aca43e414cfbf9b1c4bdfce7c1e2cb04a838c",
+      "bytes": 16707
+    },
+    {
+      "name": "STUDIO_RUNTIME_HOSTS_JSON",
+      "before": "absent",
+      "after": "canonical-readback-matched",
+      "canonicalSha256": "79a326c2f97afa61c1a87e6bedd1595c97f13aedddbd0ba71b25703ba5308bda",
+      "bytes": 237
+    }
+  ],
+  "check": {
+    "state": "READ_ONLY_READY",
+    "startedAt": "2026-10-23T00:01:06.106Z",
+    "finishedAt": "2026-10-23T00:01:10.383Z",
+    "mutationAttempts": 0,
+    "receipt": {
+      "privateReceipt": "members-production-python-check-root-r1/receipt.json",
+      "sha256": "5fb5f5e0aaa79f261bb4900cbed186abb651d55122a5c3ed7aa575fb9441bdc1"
+    }
+  },
+  "apply": {
+    "state": "CONFIGURATION_STORED_VERIFIED_NO_RELOAD",
+    "startedAt": "2026-10-23T00:01:21.255Z",
+    "finishedAt": "2026-10-23T00:01:36.007Z",
+    "mutationAttempts": 1,
+    "acknowledged": true,
+    "readbackMatched": true,
+    "remoteOutcomeUnknown": false,
+    "skipDeploys": true,
+    "replace": false,
+    "deploymentRequested": false,
+    "reloadRequired": true,
+    "receipt": {
+      "privateReceipt": "members-production-python-apply-root-r1/receipt.json",
+      "sha256": "277ed3cd8b65e4cba234b3cc9b78d8fb9f171647f0cd663a11c014b51b6137c5"
+    }
+  },
+  "membersDeployment": {
+    "before": {
+      "id": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+      "sha": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+      "status": "SUCCESS",
+      "activeCount": 1,
+      "pendingCount": 0
+    },
+    "after": {
+      "id": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+      "sha": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+      "status": "SUCCESS",
+      "activeCount": 1,
+      "pendingCount": 0
+    },
+    "unchanged": true,
+    "runningConfigurationReloaded": false
+  },
+  "admission": {
+    "operatorArtifact": "members-production-python-storage-r2.ts",
+    "operatorSha256": "7fd9129b03fd5912458bdc6c096d2a16d461aa99094ccd5baaab099342b35ed6",
+    "sourceCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+    "railwaySourceTree": "539a8375ae0101608527676865451751526d229f",
+    "iacPlan": {
+      "artifact": "production-config-plan-native-off-r12.plan.json",
+      "sha256": "c2ea017b7789531b221c907af53de05b343446bba7cd6921943226ccf38c9e5c",
+      "changeCount": 0
+    },
+    "compareAndSwapAvailable": false,
+    "externalWriterFreezeRequired": true,
+    "automaticReplayPermitted": false
+  },
+  "priorPublicEvidence": [
+    {
+      "path": "production-platform-configuration-r1.json.snapshot",
+      "sha256": "002b051a9df4a2954beaa496d9ab0e60a4e65b16f32b9e317b00039ee5d7d326",
+      "recordedAt": "2026-10-22T22:51:25.206Z"
+    },
+    {
+      "path": "production-python-runtime-r1.json.snapshot",
+      "sha256": "c12d3fe364a476950b1206ec7843ac2d2385cbe3a933d0082b686baf55a27adc",
+      "recordedAt": "2026-10-22T23:32:08.757Z"
+    },
+    {
+      "path": "production-python-language-r1.json.snapshot",
+      "sha256": "c41638b6acd68c2ae433d86f0377a6253696fbc17edd3cc61bc13da3d3b32e0f",
+      "recordedAt": "2026-10-22T23:51:41.526Z"
+    }
+  ],
+  "qualificationEvidence": [
+    {
+      "role": "runtime",
+      "privateReceipt": "production-runtime-execution-root-r1/proof/receipt.json",
+      "sha256": "e57fc57c256391ec916129f3741eaa18c6de133f7b7dbb2e1eb3f118f5458d35"
+    },
+    {
+      "role": "delivery",
+      "privateReceipt": "production-delivery-root-r1/proof/receipt.json",
+      "sha256": "ade2cc8e9ba70d82c75c6c5c2a3bb766adf50d6231607b7beb4babcfec0fa746"
+    },
+    {
+      "role": "language",
+      "privateReceipt": "production-language-qualification-root-r1/proof/receipt.json",
+      "sha256": "d4d214bade9b12af86c4d18cd496ad84640e480cadaa796bc8cb8bbe89b947c8"
+    },
+    {
+      "role": "external",
+      "privateReceipt": "production-cf-post-language-qualification-root-r1/receipt.json",
+      "sha256": "5b35f1f2dc6162b03b8c5f728a47b045be747d23d2d594144d54c41e36a75cbe"
+    },
+    {
+      "role": "languageWorker",
+      "privateReceipt": "production-language-cutover-root-r1/worker-readback-r2-receipt.json",
+      "sha256": "881167b23a2506c1e00688bafa59bed7f88659f4e43292b16df7416d99a618bf"
+    }
+  ],
+  "scopeLimits": {
+    "configurationStoredOnly": true,
+    "runningMembersCatalogActivated": false,
+    "runtimeInvokedByStorageOperation": false,
+    "contextualAuthorizationQualified": false,
+    "hostedUiQualified": false,
+    "muralQualified": false,
+    "publicGameExecutionQualified": false,
+    "javascriptProQualified": false,
+    "performanceQualified": false,
+    "liveReady": false,
+    "platformReleaseComplete": false,
+    "secretValuesOrIndividualSecretHashesRecorded": false,
+    "rawVariablesRecorded": false,
+    "operatorOrUserSourceIncluded": false,
+    "sessionOwnersOrInputReferencesIncluded": false
+  },
+  "chronology": "Earlier public snapshots remain immutable observations at their recorded times. Runtime and Language qualification followed the platform-configuration snapshot; this later record proves only Members configuration storage and preserves the application rollout and hosted-product qualification limits."
+}
