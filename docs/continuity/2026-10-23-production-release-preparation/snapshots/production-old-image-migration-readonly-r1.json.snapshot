@@ -1,0 +1,214 @@
+{
+  "kind": "production-old-image-migration-readonly",
+  "version": 1,
+  "startedAt": "2026-10-23T01:53:19.022Z",
+  "projectId": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
+  "planSha256": "6f6ac9aab04dc4bf124839eec10a9c5cf6e2205535f693b8bceb8c61b1fd7330",
+  "sourceSha256": "42ecccbbcde6ef63a6ff0b79150b53c4a922cd20000c83369562df65d493bc86",
+  "sqlSha256": "868df7a10d69155bb3614a509936d483bf4a9354fdd19a10470ffebbbed56636",
+  "mutations": 0,
+  "migratorExecuted": false,
+  "appImported": false,
+  "maintenanceStarted": false,
+  "writerFenceQualified": false,
+  "personalDataQueried": false,
+  "secretValuesOrHashesRecorded": false,
+  "targets": [
+    {
+      "name": "members",
+      "state": "INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH",
+      "before": {
+        "deploymentId": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+        "snapshotId": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847",
+        "runningInstanceId": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "preDeploy": {
+          "command": "bun run --filter @sistemazero/members db:migrate",
+          "configured": {
+            "absent": false,
+            "exact": true
+          },
+          "deployed": {
+            "absent": false,
+            "exact": true
+          },
+          "file": {
+            "absent": true,
+            "exact": false
+          }
+        }
+      },
+      "remoteSourceSha256": "abb39b6eb543dfc0529273f43412fa5ff464300c7f56fac1dd8d8fb17e9ca0da",
+      "remote": {
+        "state": "INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "installed": {
+          "journalSha256": "9c071735d6bf89d5a4c8d43737563dc18d98d07b3ff9144bc1e578a05e3f14f6",
+          "entries": 102,
+          "last": {
+            "idx": 101,
+            "version": "7",
+            "when": 1791666505573,
+            "tag": "0101_content_fingerprints",
+            "breakpoints": true
+          },
+          "lastSqlSha256": "aeec373386062616efe036d4bc0da327cb05f9f7b6f8259bec32e8ac6a00fe91",
+          "packageSha256": "4e9d64e32693c331e8b9aeca6f12b1c3e97a16d62f53235d564eb0c003309f6a",
+          "configSha256": "e89da1ddfb1ff97640471c13df9896d04c26763e781b607d8837ab47376bd598",
+          "migrateCommand": "drizzle-kit migrate"
+        },
+        "database": {
+          "table": "drizzle.members_migrations",
+          "readOnly": true,
+          "isolation": "repeatable read",
+          "databaseNameMatchesConnection": true,
+          "rowCount": "102",
+          "last": {
+            "sha256": "aeec373386062616efe036d4bc0da327cb05f9f7b6f8259bec32e8ac6a00fe91",
+            "when": "1791666505573"
+          },
+          "statementTimeoutMs": 5000,
+          "lockTimeoutMs": 1500
+        },
+        "matchesInstalledLast": true
+      },
+      "after": {
+        "deploymentId": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+        "snapshotId": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847",
+        "runningInstanceId": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "preDeploy": {
+          "command": "bun run --filter @sistemazero/members db:migrate",
+          "configured": {
+            "absent": false,
+            "exact": true
+          },
+          "deployed": {
+            "absent": false,
+            "exact": true
+          },
+          "file": {
+            "absent": true,
+            "exact": false
+          }
+        }
+      }
+    },
+    {
+      "name": "hub",
+      "state": "INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH",
+      "before": {
+        "deploymentId": "ba08042b-d2bf-4063-87e7-97ea452cf030",
+        "snapshotId": "c8c099f8-3b7f-4695-9035-76fd13c59806",
+        "commit": "a270417ba4acffe97629793bb3fb62ac0e134519",
+        "imageDigest": "sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241",
+        "runningInstanceId": "c2051063-6c37-44b9-8a51-eb3ec5380632",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "preDeploy": {
+          "command": "bun run --filter @sistemazero/hub db:migrate",
+          "configured": {
+            "absent": false,
+            "exact": true
+          },
+          "deployed": {
+            "absent": false,
+            "exact": true
+          },
+          "file": {
+            "absent": true,
+            "exact": false
+          }
+        }
+      },
+      "remoteSourceSha256": "a124ce40e6625a75e814894b2b7c99d36328c87e9b01f07a51331b3162dc0856",
+      "remote": {
+        "state": "INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH",
+        "identityChecks": {
+          "project": true,
+          "environment": true,
+          "service": true,
+          "deployment": true,
+          "commit": true
+        },
+        "installed": {
+          "journalSha256": "aba8998be5b74b9433f7deffb4004d187afedc5c268c921d052df8121240daf3",
+          "entries": 14,
+          "last": {
+            "idx": 13,
+            "version": "7",
+            "when": 1789121671089,
+            "tag": "0013_mural_sort_indexes",
+            "breakpoints": true
+          },
+          "lastSqlSha256": "e2e7500e33be126202adb61a18f4ad7e583ece8dbffe7b6552060501cf4ef9bd",
+          "packageSha256": "7ac1851064a00bfa7d6923d9600d13c7cc3c75d98a5920c7b5876d2ffe66f239",
+          "configSha256": "0c3e9e6fa1f035b029bbc944f3e83fd04da3332c427e6df5846a05369de85f6f",
+          "migrateCommand": "drizzle-kit migrate"
+        },
+        "database": {
+          "table": "drizzle.hub_migrations",
+          "readOnly": true,
+          "isolation": "repeatable read",
+          "databaseNameMatchesConnection": true,
+          "rowCount": "14",
+          "last": {
+            "sha256": "e2e7500e33be126202adb61a18f4ad7e583ece8dbffe7b6552060501cf4ef9bd",
+            "when": "1789121671089"
+          },
+          "statementTimeoutMs": 5000,
+          "lockTimeoutMs": 1500
+        },
+        "matchesInstalledLast": true
+      },
+      "after": {
+        "deploymentId": "ba08042b-d2bf-4063-87e7-97ea452cf030",
+        "snapshotId": "c8c099f8-3b7f-4695-9035-76fd13c59806",
+        "commit": "a270417ba4acffe97629793bb3fb62ac0e134519",
+        "imageDigest": "sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241",
+        "runningInstanceId": "c2051063-6c37-44b9-8a51-eb3ec5380632",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "preDeploy": {
+          "command": "bun run --filter @sistemazero/hub db:migrate",
+          "configured": {
+            "absent": false,
+            "exact": true
+          },
+          "deployed": {
+            "absent": false,
+            "exact": true
+          },
+          "file": {
+            "absent": true,
+            "exact": false
+          }
+        }
+      }
+    }
+  ],
+  "state": "BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE",
+  "finishedAt": "2026-10-23T01:53:29.719Z",
+  "queryCount": 4,
+  "sshCount": 2,
+  "limits": [
+    "This read predates maintenance and is not a writer fence.",
+    "Equal latest hash/when means no later entry in the inspected old image journal; it does not promise zero SQL or bootstrap DDL when drizzle-kit migrate is rerun.",
+    "No migrator/app is imported. Only builtin filesystem/crypto and the installed postgres driver are loaded.",
+    "Database name is compared in RAM with the connection URL. Neither the name, URL, credentials nor a hash of credentials is persisted.",
+    "No claim is made about OCI argv, a future Railway redeploy implementation or its decision to execute preDeploy."
+  ]
+}

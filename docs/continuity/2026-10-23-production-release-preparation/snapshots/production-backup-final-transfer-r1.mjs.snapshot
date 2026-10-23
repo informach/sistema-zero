@@ -1,0 +1,137 @@
+/** Root-only final affected-writers copy. Import is inert; rehearsal operators remain unchanged. */
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, open, readFile, realpath, rename } from 'node:fs/promises'
+import { dirname, basename, isAbsolute, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { PINS as OLD, executionEnvironment, missingObject, catalogDisabled, downloadExclusive, invocation as readInvocation } from './production-backup-rehearsal-r2-transfer-r2.mjs'
+import { PINS as STORE, RECOVERED_FILE, assertAcl, validateBucket, writeOnce } from './production-backup-durable-store-r2.mjs'
+import { PINS as CF, boundedResponse } from './staging-reconcile-cron-activate-r2.mjs'
+import { readPinned, validateManifest, ORDER, SERVICES, PG } from './production-postgres-fenced-context-r1.mjs'
+import { verifyEncryptedDump } from './production-postgres-binary-stream-r1.mjs'
+import { requireVerifiedBytes } from './production-postgres-rehearsal-r1.mjs'
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+export const PINS = Object.freeze({ bucket: STORE.bucket, account: STORE.account, recoveredIdentity: join(STORE.identityDirectory, RECOVERED_FILE),
+  finalOperatorSha256: 'ef6a30d051f22e37120f601fbe69fdba7fa9c11edfbb5b04d6c90f610a349fba', maxCiphertextBytes: 300 * 1024 * 1024 })
+export const SOURCES = Object.freeze({
+  'production-backup-rehearsal-r2-transfer-r2.mjs': '8ce7db7f8a0d6459484f00922ff4914e038c20f8c815a7c99953a6faf6251324',
+  'production-backup-durable-store-r2.mjs': OLD.storeSha256,
+  'staging-reconcile-cron-activate-r2.mjs': STORE.helperSha,
+  'production-postgres-final-backup-r1.mjs': PINS.finalOperatorSha256,
+  'production-postgres-fenced-context-r1.mjs': '9138be7d02e811a3a2d385d343b035076223d9723ebed5f6650a698712640132',
+  'production-postgres-binary-stream-r1.mjs': '50307de586dd01b06d312cbfe78d382ef094eee6613be7e77e657f18cd8d0b08',
+  'production-postgres-rehearsal-r1.mjs': '4c959eb152fd8de791686dafe6e35fe648115f07d86255c23e70115e50219493' })
+const sha = bytes => createHash('sha256').update(bytes).digest('hex'), same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const hash = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+const keys = (value, expected) => value && typeof value === 'object' && !Array.isArray(value) && same(Object.keys(value).sort(), [...expected].sort())
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+const guard = (value, code) => { if (!value) throw new Refusal(code) }
+const clean = value => value.toString('utf8').replace(/\x1b\[[0-9;]*m/g, '').trim()
+export function argumentsFor(argv) {
+  const [run, path, sha256, ...extra] = argv
+  guard(/^production-backup-final-transfer-[a-z0-9-]{1,40}$/.test(run ?? '') && typeof path === 'string' && /^\.cache\/python-reference-games\/production-postgres-final-[a-z0-9-]+\/receipt\.json$/.test(path) && hash(sha256) && !extra.length, 'ARGUMENTS')
+  return { run, restoreReceipt: { path, sha256 } }
+}
+function closedTransport(value) {
+  return value?.ok === true && value.cleanup === 'OWNED_CHILD_HANDLES_CLOSED' && Array.isArray(value.processes) && value.processes.length > 0 && value.processes.every(p => p.closed === true && p.exitObserved === true && p.exitCode === 0 && p.signaled === false && p.spawnError === false && p.stderrBytes === 0)
+}
+export function validateFinal(value, manifest) {
+  validateManifest(manifest)
+  guard(value?.kind === 'production-postgres-final-affected-backup' && value.version === 1 && value.state === 'FINAL_AFFECTED_WRITERS_BACKUP_RESTORE_VERIFIED' && value.operatorSha256 === PINS.finalOperatorSha256 && value.phase === 'completed', 'FINAL_RECEIPT_REQUIRED')
+  guard(value.affectedWritersFenced === true && value.allProductionWritersFenced === false && value.fenceVerifiedAroundCapture === true && value.finalPreMigrationBackup === true && value.restoreQualified === true && value.finalCiphertextVerified === true && value.durableCopyQualified === false && value.clusterRollbackQualified === false && value.sourceRowsSnapshotComparison === false && value.migrationExecuted === false && value.providerMutations === 0 && value.dumpAttempts === 1 && value.backupScope === 'ONE_DATABASE_NO_CLUSTER_ROLES_OR_ACL_RESTORE_PROOF', 'FINAL_SCOPE_UNQUALIFIED')
+  const before = value.fenceBefore, after = value.fenceAfter
+  for (const proof of [before, after]) {
+    guard(proof?.kind === 'production-postgres-affected-fence-observation' && proof.affectedWritersFenced === true && proof.allProductionWritersFenced === false && proof.snapshotsMatchCurrent === true && proof.providerMutations === 0 && same(proof.manifest, value.manifest) && same(proof.verifyReceipts, manifest.verifyReceipts) && keys(proof.targets, ORDER) && keys(proof.context, ORDER) && keys(proof.httpReceipts, ORDER) && same(proof.postgres, PG), 'FINAL_CONTEXT_UNQUALIFIED')
+    for (const service of ORDER) {
+      const target = proof.targets[service], expected = SERVICES[service]
+      guard(target?.project === STORE.project && target.environment === STORE.environment && target.service === service && target.serviceId === expected.id && target.commit === expected.commit && target.image === expected.image, 'FINAL_TARGET_MISMATCH')
+    }
+  }
+  guard(['context', 'targets', 'postgres', 'metadata'].every(k => same(before[k], after[k])), 'FENCE_CHANGED_DURING_CAPTURE')
+  const times = [value.startedAt, before.startedAt, before.finishedAt, after.startedAt, after.finishedAt, value.finishedAt].map(Date.parse)
+  guard(times.every(Number.isFinite) && times.every((v, i) => i === 0 || v >= times[i - 1]), 'FINAL_TIMELINE')
+  const capture = value.capture
+  guard(capture?.state === 'ENCRYPTED_STREAM_CAPTURED_NOT_RESTORE_QUALIFIED' && capture.synced === true && capture.plaintext?.pgdmpPrefix === true && closedTransport(capture.transport), 'CAPTURE_UNQUALIFIED')
+  for (const part of ['plaintext', 'ciphertext']) guard(capture[part]?.streamEnded === true && hash(capture[part].sha256) && Number.isSafeInteger(capture[part].bytes) && capture[part].bytes >= 5 && capture[part].bytes <= (part === 'ciphertext' ? PINS.maxCiphertextBytes : 1073741824), 'CAPTURE_BYTES')
+  requireVerifiedBytes(value.verification, capture); guard(closedTransport(value.verification.transport), 'AUTHENTICATION_CLEANUP')
+  guard(value.clone?.state === 'ISOLATED_CLONE_PROOF_PASSED' && value.clone.cleanup === 'OWN_CID_REMOVED_VERIFIED' && value.restoreAttempt?.state === 'CONSUMED_AUTHENTICATED_ARCHIVE' && value.restoreAttempt.ciphertextSha256 === capture.ciphertext.sha256 && value.restoreAttempt.plaintextSha256 === capture.plaintext.sha256 && value.restoreAttempt.childExits?.length === 2 && value.restoreAttempt.childExits.every(p => p.exitCode === 0 && p.stderrBytes === 0), 'RESTORE_UNQUALIFIED')
+  guard(typeof value.ciphertextPath === 'string' && isAbsolute(value.ciphertextPath) && resolve(dirname(value.ciphertextPath)).toLowerCase() === resolve(STORE.identityDirectory).toLowerCase() && /^[a-z0-9-]+\.dump\.age$/.test(basename(value.ciphertextPath)) && !basename(value.ciphertextPath).includes('rehearsal') && resolve(value.ciphertextPath).toLowerCase() !== resolve(OLD.ciphertextPath).toLowerCase(), 'FINAL_CIPHERTEXT_PATH')
+  return { ciphertextPath: value.ciphertextPath, expected: capture }
+}
+export function destinations(args, backup) {
+  return { ...args, key: `final/${args.run}/${backup.expected.ciphertext.sha256}.dump.age`, download: join(STORE.identityDirectory, `${args.run}.download.dump.age`) }
+}
+export function invocation(mode, args, empty, backup) {
+  if (mode !== 'put') { guard(['auth', 'catalog', 'get'].includes(mode), 'OPERATION'); return readInvocation(mode, args, empty) }
+  return ['--no-warnings', join(ROOT, CF.cli), 'r2', 'object', 'put', `${PINS.bucket}/${args.key}`, '--remote', '--file', backup.ciphertextPath, '--content-type', 'application/octet-stream', '--cache-control', 'no-store', '--config', join(ROOT, STORE.config), '--env-file', empty]
+}
+export async function reserve(directory, value) {
+  const file = await open(join(directory, 'production-backup-final-r1-upload.intent.json'), 'wx', 0o600)
+  try { await file.writeFile(JSON.stringify(value) + '\n'); await file.sync() } finally { await file.close() }
+}
+export async function authenticateDownloaded(inputPath, expected, timeoutMs, verify = verifyEncryptedDump) {
+  guard(Number.isInteger(timeoutMs) && timeoutMs >= 50 && timeoutMs <= 300000, 'DEADLINE')
+  const result = await verify({ ageExe: join(STORE.ageDirectory, 'age.exe'), ageSha256: STORE.ageSha, identityPath: PINS.recoveredIdentity, inputPath, expected, timeoutMs, maxBytes: 1073741824 })
+  requireVerifiedBytes(result, expected); guard(closedTransport(result.transport), 'RECOVERED_IDENTITY_EOF_UNCONFIRMED')
+  return { authenticatedThroughEof: true, recoveredIdentityUsed: true, plaintextMatchesRestore: true, ciphertextMatchesRestore: true, ownedChildHandlesClosed: true }
+}
+const ACL_SCRIPT = `$ErrorActionPreference='Stop';$a=Get-Acl -LiteralPath $env:SZ_BACKUP_ACL_TARGET;$sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value;@{currentSid=$sid;ownerSid=$a.GetOwner([System.Security.Principal.SecurityIdentifier]).Value;protected=$a.AreAccessRulesProtected;rules=@($a.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier])|ForEach-Object{@{sid=$_.IdentityReference.Value;type=$_.AccessControlType.ToString();rights=[int]$_.FileSystemRights}})}|ConvertTo-Json -Depth 5 -Compress`
+export async function main(argv = process.argv.slice(2)) {
+  const parsed = argumentsFor(argv); guard(process.versions.node === CF.node && !process.versions.bun && process.platform === 'win32', 'NODE_RUNTIME')
+  const out = join(CACHE, parsed.run); await mkdir(out); const start = Date.now(), deadline = start + 300000
+  const receipt = { kind: 'production-final-affected-ciphertext-transfer', version: 1, state: 'RUNNING', startedAt: new Date(start).toISOString(), sourceSha256: sha(await readFile(FILE)), restoreReceipt: parsed.restoreReceipt,
+    bucket: PINS.bucket, projectId: STORE.project, environmentId: STORE.environment, mutationAttempts: 0, putInvocations: 0, operatorRetries: 0, remoteOutcomeUnknown: false, durableCopyQualified: false,
+    ciphertextReadbackVerified: false, recoveredIdentityEofVerified: false, affectedWriters: ORDER, affectedWritersFenced: false, allProductionWritersFenced: false, clusterRollbackQualified: false,
+    backupScope: 'ONE_DATABASE_NO_CLUSTER_ROLES_OR_ACL_RESTORE_PROOF', sql: 0, ssh: 0, keyRotations: 0, plaintextRecorded: false, rawCliOutputRecorded: false,
+    atomicCreateOnlyAvailable: false, externalConfigurationAndKeyExclusivityRequired: true, wranglerCatalogConflictRetryBranchPresent: true }
+  const save = async patch => { Object.assign(receipt, patch); const f = await open(join(out, 'receipt.pending'), 'w', 0o600); try { await f.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await f.sync() } finally { await f.close() }; await rename(join(out, 'receipt.pending'), join(out, 'receipt.json')) }
+  const env = executionEnvironment(process.env)
+  const remaining = () => { guard(Date.now() < deadline, 'DEADLINE'); return deadline - Date.now() }
+  const native = (executable, values, maxBuffer = 65536, childEnv = env) => new Promise(done => {
+    const child = execFile(executable, values, { cwd: out, env: childEnv, windowsHide: true, shell: false, encoding: 'buffer', maxBuffer, timeout: Math.min(90000, remaining()) }, (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr }))
+    child.stdin?.on('error', () => {}); child.stdin?.end()
+  })
+  let token
+  try {
+    await save({})
+    for (const [path, expected] of [...Object.entries(SOURCES).map(([name, digest]) => [join(CACHE, name), digest]), [join(ROOT, CF.cli), CF.cliSha], [join(ROOT, STORE.config), STORE.configSha], [STORE.aclPowerShell, STORE.aclPowerShellSha]]) guard(sha(await readFile(path)) === expected, 'SOURCE_PIN')
+    const final = await readPinned(parsed.restoreReceipt), manifest = await readPinned(final.manifest), backup = validateFinal(final, manifest), args = destinations(parsed, backup)
+    await save({ key: args.key, ciphertext: { bytes: backup.expected.ciphertext.bytes, sha256: backup.expected.ciphertext.sha256 }, affectedWritersFenced: true, finalPreMigrationBackup: true, restoreQualified: true })
+    const privatePath = async (path, directory) => {
+      const s = await lstat(path); guard((directory ? s.isDirectory() : s.isFile()) && !s.isSymbolicLink() && resolve(await realpath(path)).toLowerCase() === resolve(path).toLowerCase(), 'PRIVATE_PATH')
+      if (path === PINS.recoveredIdentity) guard(s.size > 0 && s.size <= 8192, 'RECOVERED_IDENTITY_SIZE')
+      const result = await native(STORE.aclPowerShell, ['-NoProfile', '-NonInteractive', '-Command', ACL_SCRIPT], 65536, { ...env, SZ_BACKUP_ACL_TARGET: path })
+      guard(result.code === 0 && result.stderr.length === 0, 'ACL_UNCONFIRMED'); assertAcl(JSON.parse(result.stdout.toString('utf8')), directory)
+    }
+    await privatePath(STORE.identityDirectory, true); await privatePath(PINS.recoveredIdentity, false)
+    const checkCiphertext = async () => { const stat = await lstat(backup.ciphertextPath); guard(stat.isFile() && !stat.isSymbolicLink() && stat.size === backup.expected.ciphertext.bytes && resolve(await realpath(backup.ciphertextPath)).toLowerCase() === resolve(backup.ciphertextPath).toLowerCase(), 'CIPHERTEXT_PATH'); guard(sha(await readFile(backup.ciphertextPath)) === backup.expected.ciphertext.sha256, 'CIPHERTEXT_HASH'); await readPinned(parsed.restoreReceipt); await readPinned(final.manifest) }
+    await checkCiphertext()
+    const empty = join(out, 'empty-public.env'), f = await open(empty, 'wx', 0o600); await f.sync(); await f.close()
+    const command = (mode, limit) => native(process.execPath, invocation(mode, args, empty, backup), limit)
+    const auth = await command('auth'); guard(auth.code === 0, 'AUTH_UNCONFIRMED'); const credentials = JSON.parse(auth.stdout.toString('utf8')); guard(typeof credentials.token === 'string' && credentials.token.length >= 16, 'AUTH_SHAPE'); token = credentials.token; delete credentials.token
+    const privateBucket = async () => {
+      const values = []
+      for (const suffix of ['', '/domains/managed', '/domains/custom', '/lifecycle']) {
+        const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${PINS.account}/r2/buckets/${PINS.bucket}${suffix}`, { redirect: 'error', headers: { Authorization: `Bearer ${token}` }, signal: AbortSignal.timeout(Math.min(15000, remaining())) })
+        if (response.status !== 200) { await response.body?.cancel(); throw new Refusal('BUCKET_READ_UNCONFIRMED') }
+        const v = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await boundedResponse(response, 1048576))); guard(v.success === true && Array.isArray(v.errors) && v.errors.length === 0, 'BUCKET_API_UNCONFIRMED'); values.push(v.result)
+      }
+      const result = validateBucket(...values); guard(catalogDisabled(await command('catalog')), 'CATALOG_DISABLED_UNCONFIRMED'); return result
+    }
+    const result = await writeOnce({
+      preflight: async () => { await save({ bucketState: await privateBucket() }); guard(missingObject(await command('get')), 'OBJECT_ABSENCE_UNCONFIRMED'); await checkCiphertext(); await save({ officialMissingObjectVerified: true, catalogDisabledBefore: true }) },
+      reserve: () => reserve(CACHE, { kind: 'one-final-affected-ciphertext-upload', key: args.key, bucket: PINS.bucket, restoreReceipt: parsed.restoreReceipt, ciphertextSha256: backup.expected.ciphertext.sha256, run: args.run, at: new Date().toISOString() }),
+      checkpoint: patch => save({ ...patch, putInvocations: patch.mutationAttempts ?? receipt.putInvocations }),
+      send: async () => { const answer = await command('put'); return answer.code === 0 && !/Data catalog is enabled|fallback value in non-interactive context/i.test(clean(answer.stdout)) },
+      readback: async () => {
+        const downloaded = await downloadExclusive(args.download, async () => { const answer = await command('get', backup.expected.ciphertext.bytes + 65536); guard(answer.code === 0 && answer.stderr.length === 0, 'DOWNLOAD_UNCONFIRMED'); return answer.stdout }, backup.expected.ciphertext)
+        await save({ downloaded, ciphertextReadbackVerified: true }); await privatePath(args.download, false); await privatePath(PINS.recoveredIdentity, false)
+        const authentication = await authenticateDownloaded(args.download, backup.expected, remaining())
+        await checkCiphertext(); await save({ bucketState: await privateBucket(), catalogDisabledAfter: true, authentication, recoveredIdentityEofVerified: true })
+      } })
+    if (result) await save({ state: 'FINAL_AFFECTED_BACKUP_DURABLE_COPY_VERIFIED', durableCopyQualified: true })
+    return result ? 0 : 1
+  } catch (error) { await save({ state: receipt.mutationAttempts ? 'UPLOAD_OR_READBACK_UNCONFIRMED_NO_RETRY' : 'REFUSED_BEFORE_UPLOAD', failureCode: error instanceof Refusal ? error.code : 'LOCAL_OR_PROVIDER_UNCONFIRMED' }); return 1 }
+  finally { token = undefined; await save({ finishedAt: new Date().toISOString(), durationMs: Date.now() - start }); console.log(JSON.stringify({ output: parsed.run, state: receipt.state, putInvocations: receipt.putInvocations, durableCopyQualified: receipt.durableCopyQualified, remoteOutcomeUnknown: receipt.remoteOutcomeUnknown })) }
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) main().then(code => { process.exitCode = code }, () => { console.error('LOCAL_FINAL_TRANSFER_UNCONFIRMED'); process.exitCode = 1 })

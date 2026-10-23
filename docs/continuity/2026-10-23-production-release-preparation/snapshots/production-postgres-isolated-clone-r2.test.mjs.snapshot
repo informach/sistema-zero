@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { checkpointThenCreate } from './production-postgres-isolated-clone-r2.mjs';
+test('failed durable owner checkpoint prevents any create dispatch', async () => {
+  const owner = { name: 'synthetic', nonce: 'a'.repeat(32), id: null }; let dispatched = 0;
+  await assert.rejects(checkpointThenCreate(owner, async () => { throw Error('FSYNC_FAILED'); }, () => { dispatched++; }));
+  assert.equal(dispatched, 0); assert.equal(owner.id, null);
+});
+test('create waits for awaited checkpoint and receives no invented CID', async () => {
+  const owner = { name: 'synthetic', nonce: 'a'.repeat(32), id: null }; let release, saved, calls = 0;
+  const gate = new Promise(resolve => { release = resolve; });
+  const work = checkpointThenCreate(owner, async value => { saved = value; await gate; }, () => { calls++; return 'ack'; });
+  await Promise.resolve(); assert.equal(calls, 0); assert.equal(saved.id, null); assert.notEqual(saved, owner);
+  release(); assert.equal(await work, 'ack'); assert.equal(calls, 1);
+});
+test('lost create ACK does not replay and the recorded owner remains available', async () => {
+  const owner = { name: 'synthetic', nonce: 'a'.repeat(32), id: null }; let saved, calls = 0;
+  await assert.rejects(checkpointThenCreate(owner, async value => { saved = value; }, async () => { calls++; throw Error('ACK_LOST'); }));
+  assert.equal(calls, 1); assert.deepEqual(saved, owner); assert.equal(owner.id, null);
+});

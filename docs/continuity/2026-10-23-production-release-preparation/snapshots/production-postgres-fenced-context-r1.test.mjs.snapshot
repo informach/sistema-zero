@@ -1,0 +1,58 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateManifest, validateTargetProof, validateFreshHttp, assertContext, validatePg, preserveObservation, SOURCES, SERVICES, ORDER, PINS, PG } from './production-postgres-fenced-context-r1.mjs';
+const now = Date.parse('2026-10-23T12:00:00Z');
+const uuid = i => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
+const ref = name => ({ path: `.cache/python-reference-games/synthetic-${name}/receipt.json`, sha256: 'a'.repeat(64) });
+function fixtures() {
+  const manifest = { kind: 'production-postgres-affected-fence-input', version: 1, projectId: PINS.project, environmentId: PINS.environment, verifyReceipts: {} }, proofs = {}, applies = {}, https = {}, context = {};
+  for (const [i, s] of ORDER.entries()) {
+    const t = SERVICES[s], candidate = { id: uuid(i + 1), snapshotId: uuid(i + 11), status: 'SUCCESS', stopped: false, image: t.image, commit: t.commit, instances: [{ id: uuid(i + 21), status: 'RUNNING' }], commandsVerified: true };
+    const appliedRef = ref(`${s}-apply`), httpRef = ref(`${s}-http`);
+    applies[s] = { kind: 'production-maintenance-reload', version: 1, mode: 'apply', service: s, operatorSha256: SOURCES['production-maintenance-reload-r2.mjs'], projectId: PINS.project, environmentId: PINS.environment,
+      state: 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED', candidate, remoteOutcomeUnknown: false, mutationAttempts: 1, acknowledged: true, imageVerified: true, oldRetired: true, snapshotVerified: true, variablesPreserved: true };
+    proofs[s] = { ...applies[s], mode: 'verify', state: 'OLD_IMAGE_FULL_MAINTENANCE_VERIFIED', qualified: true, fullHttpVerified: true, applyReceipt: appliedRef, httpReceipt: httpRef, finishedAt: new Date(now).toISOString() };
+    https[s] = { kind: 'production-maintenance-http', version: 1, state: 'LOCAL_FULL_HTTP_VERIFIED', operatorSha256: SOURCES['production-maintenance-http-r2.mjs'], remoteProgramSha256: PINS.remoteHttpSha256,
+      projectId: PINS.project, environmentId: PINS.environment, service: s, serviceId: t.id, candidate, identityVerified: true, ready: true, blocked: true, providerMutations: 0, observedAt: new Date(now).toISOString(), reloadReceipt: appliedRef };
+    context[s] = { latest: candidate, active: [candidate], pending: [], fileCommandsVerified: true, old: { id: t.deployment, status: 'REMOVED', stopped: true, instances: [{ id: t.instance, status: 'REMOVED' }] } };
+    manifest.verifyReceipts[s] = ref(`${s}-verify`);
+  }
+  return { manifest, proofs, applies, https, context };
+}
+test('five distinct real-receipt slots bind new targets; rehearsal or missing slots are refused', () => {
+  const f = fixtures(); assert.equal(validateManifest(f.manifest), f.manifest);
+  for (const s of ORDER) assert.equal(validateTargetProof(s, f.proofs[s], f.applies[s], f.https[s], now).deploymentId, f.proofs[s].candidate.id);
+  assert.throws(() => validateManifest({ kind: 'production-postgres-logical-rehearsal', restoreQualified: true }), /FENCE_MANIFEST_INVALID/);
+  delete f.manifest.verifyReceipts.hub; assert.throws(() => validateManifest(f.manifest), /FENCE_MANIFEST_INVALID/);
+});
+test('canonical-path aliases cannot impersonate a second service proof', () => {
+  const f = fixtures(); f.manifest.verifyReceipts.hub = { ...f.manifest.verifyReceipts.kids, path: '.cache/python-reference-games/sub/../synthetic-kids-verify/receipt.json' };
+  assert.throws(() => validateManifest(f.manifest), /FENCE_REFERENCE_ALIASED/);
+  const g = fixtures(); assert.throws(() => validateTargetProof('hub', g.proofs.kids, g.applies.kids, g.https.kids, now), /VERIFY_NOT_QUALIFIED/);
+});
+test('one drifted current target, third pending deploy or old live instance invalidates all-five fence', () => {
+  const f = fixtures(); assert.doesNotThrow(() => assertContext(f.context, f.proofs));
+  for (const change of [c => { c.hub.latest = { ...c.hub.latest, image: 'sha256:' + 'f'.repeat(64) }; },
+    c => { c.members.pending = [{ id: uuid(99) }]; }, c => { c.admin.old.instances[0].status = 'RUNNING'; }]) {
+    const c = structuredClone(f.context); change(c); assert.throws(() => assertContext(c, f.proofs));
+  }
+});
+test('HTTP must prove full blocking on the exact apply target, within five minutes', () => {
+  const f = fixtures(), s = 'members'; assert.doesNotThrow(() => validateFreshHttp(s, f.https[s], f.applies[s], f.proofs[s].applyReceipt, now));
+  for (const change of [h => { h.blocked = false; }, h => { h.candidate.snapshotId = uuid(98); },
+    h => { h.observedAt = new Date(now - 300001).toISOString(); }, h => { h.reloadReceipt = ref('other'); },
+    h => { h.operatorSha256 = 'b'.repeat(64); }]) {
+    const h = structuredClone(f.https[s]); change(h); assert.throws(() => validateFreshHttp(s, h, f.applies[s], f.proofs[s].applyReceipt, now));
+  }
+});
+test('PG remains independently pinned even when the new Members candidate is valid', () => {
+  const d = { id: PG.deploymentId, projectId: PINS.project, environmentId: PINS.environment, serviceId: PG.serviceId, snapshotId: PG.snapshotId, status: 'SUCCESS', deploymentStopped: false, meta: { imageDigest: PG.imageDigest }, instances: [{ id: PG.instanceId, status: 'RUNNING' }] };
+  const raw = { pg: { serviceId: PG.serviceId, environmentId: PINS.environment, activeDeployments: [d], latestDeployment: { id: PG.deploymentId } }, pgPending: { edges: [], pageInfo: { hasNextPage: false } } };
+  assert.equal(validatePg(raw), PG); d.snapshotId = uuid(90); assert.throws(() => validatePg(raw), /PG_PIN_CHANGED/);
+});
+test('cross-dump configuration changes refuse qualification without exposing values', () => {
+  const f = fixtures(), observation = { public: { context: f.context, postgres: PG, metadata: { serverVersionNum: 180006 } }, maps: Object.fromEntries(ORDER.map(s => [s, { declared: { RELEASE_MAINTENANCE_MODE: 'full', DATABASE_URL: 'synthetic' }, rendered: { RELEASE_MAINTENANCE_MODE: 'full', DATABASE_URL: 'synthetic' } }])), services: [], pgVars: { PGDATABASE: 'synthetic' } };
+  assert.doesNotThrow(() => preserveObservation(observation, structuredClone(observation)));
+  const changed = structuredClone(observation); changed.maps.members.rendered.DATABASE_URL = 'changed-private-value';
+  assert.throws(() => preserveObservation(observation, changed), error => !error.message.includes('changed-private-value'));
+});

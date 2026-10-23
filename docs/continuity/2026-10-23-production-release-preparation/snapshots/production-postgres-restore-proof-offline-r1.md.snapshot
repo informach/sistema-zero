@@ -1,0 +1,67 @@
+# Prova de restauração antes de Members 0126/0128 — preparação offline
+
+Estado: proposta, nenhuma operação executada. Esta investigação leu fontes locais, recibos sanitizados existentes e documentação pública primária. Não consultou conta Railway, credenciais, SQL ou dados; não abriu SSH, Docker, dump, restore, serviço ou deploy.
+
+## Decisão proposta
+
+O caminho mínimo demonstrável é um **dump lógico fresco do banco que contém Members, restaurado integralmente em PostgreSQL local isolado**, antes de liberar as migrações destrutivas. Isso qualifica esse dump e esse procedimento de recuperação. **Não qualifica a restauração do snapshot Railway `4e5a1562-0c78-4f10-93d9-9664f643b046`.**
+
+Não foi encontrado contrato suportado para restaurar esse snapshot nativo em outro serviço isolado. Não experimentar `volumeInstanceId` de destino arbitrário, `replicaServiceIds`, troca manual de mounts ou descarte de alteração staged como forma de clone.
+
+Se o requisito for provar especificamente a restauração do snapshot nativo, ainda falta uma forma isolada confirmada pelo Railway ou uma janela distinta de restauração do próprio serviço, com riscos e autorização próprios. Não usar produção como laboratório para remover esse gate.
+
+## Evidência do contrato Railway
+
+O schema já capturado em `railway-trigger-backup-contract-r1.json` expõe `volumeInstanceBackupRestore(volumeInstanceBackupId, volumeInstanceId, replicaServiceIds?, wipeServiceIds?) -> WorkflowId!`. O argumento volumeInstanceId é descrito como origem. As listas opcionais são réplicas HA e serviços cujos volumes seriam esvaziados; não são um destino de ensaio. Não há argumento de serviço/volume isolado nesse contrato.
+
+A documentação oficial descreve novo volume no mesmo caminho do serviço original, volume anterior desmontado e alteração staged que, aplicada, redeploya o serviço. A tabela oficial de opções identifica restauração nativa no mesmo serviço/projeto/ambiente. Isso não é um clone paralelo seguro. [Backups](https://docs.railway.com/volumes/backups), [Back up and restore Postgres](https://docs.railway.com/guides/postgres-backups-restores).
+
+PITR é um mecanismo diferente: cria serviço irmão e preserva o original, mas depende de base e WAL já arquivados. A janela só começa na primeira base após habilitação; não transforma o snapshot acima em PITR. Não há prova local consultada de que PITR esteja habilitado/saudável para este banco. Habilitá-lo agora introduziria bucket, variáveis e redeploy; não é a preparação mínima solicitada. O fork também recebe credencial de arquivo com escrita, um cuidado adicional de isolamento. [PITR](https://docs.railway.com/volumes/point-in-time-recovery).
+
+O SDK local `railway@3.16.0` exporta configuração de volume e backupSchedules; a busca nas declarações/bundles não encontrou método de restauração isolada. Ausência no SDK sozinha não provaria ausência de API; a conclusão usa também schema capturado e docs acima.
+
+## Identidade e limite do backup existente
+
+- Projeto: `415d5a1c-5f75-432c-8445-b395d0977ce3`; ambiente: `19c212a5-85c0-493c-9630-a7a0569e8412`.
+- Serviço PG: `6c5d1cb9-3756-443a-a352-06068d34ca30`; volume: `c16a61aa-1968-40c5-b5c9-6821f50427f6`; instância do volume: `576087a5-2f3d-4602-8630-9b2a5a07993a`.
+- Backup: `4e5a1562-0c78-4f10-93d9-9664f643b046`, listado com createdAt `2026-10-22T21:43:31.103Z`, expiresAt null e usedMB null.
+- Recibo de criação permanece `BACKUP_OUTCOME_REQUIRES_READ_ONLY_DIAGNOSIS`, uma mutationAttempt, restoreAttempted false e restoreDrillQualified false. ACK e presença na lista não comprovam conclusão/restauração.
+- Capacidade declarada de 50.000 MB não é tamanho dos dados/dump. Os 314/316 MB são tamanhos antigos de outros backups, não uma estimativa atual autorizada.
+
+Esse ponto de recuperação precede a futura barreira de escrita; não o chamar de backup fresco pós-freeze. Antes de migrações, decidir explicitamente RPO e obter backup atualizado do estado cuja preservação se pretende demonstrar.
+
+## Ensaio mínimo, a implementar e revisar antes de executar
+
+1. Confirmar publicamente os IDs/deployment únicos de PG e dos escritores, sem pending; comprovar manutenção efetiva, jobs drenados e migrations ainda não iniciadas. `RELEASE_MAINTENANCE_MODE=full` apenas armazenado não comprova quiescência. Fixar banco concreto, versão real do servidor/clientes, extensões necessárias, tamanho estimado, limite de bytes/tempo e destino local novo.
+2. Primeiro ensaiar o mesmo transporte com bytes sintéticos não secretos, incluindo NUL/bytes altos, erro remoto, truncamento e deadline. O supervisor deve usar spawn/streams binários, backpressure e contadores/hash; nunca PowerShell text pipeline, conversão UTF-8 do dump, buffer integral em execFile ou echo de DSN.
+3. Extrair uma vez por CLI nativa pinada 5.62.1, contexto explícito PG e chave já registrada, sem `--session`. O comando remoto fixo valida identidade antes de conectar e usa as credenciais já presentes apenas no processo remoto, sem imprimir ou transportá-las no argv. Forma lógica proposta: `pg_dump --format=custom --no-password --lock-wait-timeout=5s --dbname=<banco aprovado>`. Não é comando pronto: banco/versão/deployment e limite global ainda faltam. Não escrever dump em volume produtivo.
+4. Transportar para artefato **criptografado**, com criação exclusiva, ACL restrita, fora do checkout/Git/sync de nuvem. Guardar chave fora do recibo/arquivo e testar sua disponibilidade para recuperação. Registrar só SHA/bytes/tempos e códigos fechados. Se autorizado apenas RAM, é possível encadear stdout a stdin do restore e calcular SHA, mas isso prova um ensaio descartável, não deixa backup durável recuperável após 0126/0128.
+5. Restaurar os mesmos bytes autenticados/descriptografados em container próprio, imagem por digest e major compatível, sem rede externa, sem portas publicadas, sem credenciais produtivas, sem volumes existentes. Criar DB vazio via template0. `pg_restore --exit-on-error --single-transaction --no-owner --no-privileges --dbname=<DB local novo>`; sem `--clean`, sem jobs paralelos, sem apontar para a origem. O dump integral conserva metadados de origem; os dois últimos flags adaptam somente a restauração de ensaio e não qualificam grants/roles originais.
+6. Exigir dump e restore exit0, arquivo custom válido/cabeçalho PGDMP, hash/bytes completos e confirmação da transação; exit0 do SSH isolado é insuficiente. Comparar estrutura, índices/constraints, sequências e ledger de migrações; executar as mesmas consultas fechadas de contagem de 0126/0128 do operador já revisado, incluindo ligações/reservas/narrações. Contagens devem corresponder ao mesmo snapshot exportado do dump ou a uma quiescência de escrita comprovada; não usar n_live_tup aproximado nem contagens históricas para afirmar igualdade atual.
+7. Recibo inclui escopo do banco, versões, identidade local, hash, tempos/RPO, limites, igualdade dos oráculos e encerramento verificado de processos/container. Nunca rows, nomes pessoais, SQL com valores, dump, credenciais ou stderr bruto. Manter somente artefato criptografado pelo prazo aprovado; documentar descarte do destino. Não liberar migrações se extração, preservação, restore ou comparação estiverem incompletos.
+
+O PostgreSQL documenta dump consistente com uso concorrente e formato custom portátil; um dump cobre um banco, não todos os bancos/roles do cluster. pg_dump de major menor recusa servidor mais novo. Portanto **Docker16 só serve após confirmar compatibilidade**, não por suposição. Origem e destino precisam de extensões/versões adequadas. [pg_dump 16](https://www.postgresql.org/docs/16/app-pgdump.html).
+
+Restauração executa código definido pelo superusuário de origem, inclusive em dumps parciais. Isolamento sem rede/credenciais evita acesso aos serviços; não rodar aplicação, workers ou migrações no clone. A transação única evita sucesso parcial do restore. Contagens/estrutura não equivalem a rollback completo de ACLs, integrações ou bytes externos R2. [pg_restore 16](https://www.postgresql.org/docs/16/app-pgrestore.html).
+
+## Transporte e riscos concretos
+
+CLI 5.62.1, `src/commands/ssh/native.rs:351–402`, escolhe `-T` com stdio não TTY e herda streams; `mod.rs:86–114` permite identidade explícita sem registrar nova chave. O mesmo fonte alerta em native.rs:404–408 que relay pode emitir status JSON com exit0 antes de rotear: validar arquivo e restore, não só o exit code. `--session` instala/reusa tmux e reconecta, por isso fica excluído. [Fonte CLI5.62.1](https://github.com/railwayapp/cli/blob/v5.62.1/src/commands/ssh/native.rs), [seleção de alvo](https://github.com/railwayapp/cli/blob/v5.62.1/src/commands/ssh/mod.rs).
+
+Mesmo com Pensa vazio, dump integral do banco pode conter PII, hashes de senha, tokens e documentos de outros schemas. Compressão não é criptografia. Docker sem bind mount grava dados no disco/VHDX; tmpfs não prova sozinho ausência de swap. A proteção do armazenamento local e prazo de retenção precisam de aprovação concreta. Sem esse destino seguro, não iniciar a extração.
+
+Proposta não usa o exemplo oficial de restore em DB scratch no mesmo servidor: ele escreve na infraestrutura ativa. Tampouco copia arquivos do PGDATA vivo; isso não substitui pg_dump/backup físico consistente.
+
+Estimativa de planejamento, não medição: reservar 10–20 minutos para um banco pequeno após preflight e ensaio sintético; ajustar pelo tamanho real antes de execução. Não usar volume50GB ou backup antigo como previsão. Qualquer deadline deve interromper e produzir resultado incompleto, sem retries silenciosos.
+
+## Evidências locais consultadas (SHA-256)
+
+| Arquivo | SHA-256 |
+|---|---|
+| railway-trigger-backup-contract-r1.json | 1f50740a5c8302dd7badf97d67c029300b43f37b6c97a224148abfceb15e55ed |
+| production-postgres-backup-create-r1.json | 5dec682734978168e07447b45e1345ccf31fd2dc8ddaaee6077f3cd1d71ae965 |
+| production-postgres-backups-readonly-r1.json | d78e30ff45501bc17aa71319edc62bd0662d703f0454c34bc6732ce2c492543e |
+| railway@3.16.0/package.json local | fd14f275c24261eec51a0c8312994823150193b40cd01e2364860a680c99890f |
+| railway@3.16.0/dist/index.d.ts local | bd4918e38b124fcf5311ca16f64afff158e2ee28c99627bcd3c912ede9f63ab3 |
+
+Os três JSONs estão neste diretório privado; o pacote está em `packages/live-recorder/node_modules/railway`. Nenhum desses recibos foi alterado.

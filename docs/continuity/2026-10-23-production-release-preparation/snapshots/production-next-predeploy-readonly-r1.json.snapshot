@@ -1,0 +1,171 @@
+{
+  "kind": "production-next-predeploy-readonly",
+  "version": 1,
+  "startedAt": "2026-10-23T01:56:05.253Z",
+  "projectId": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
+  "priorReceipt": {
+    "path": "production-pensa-writer-images-readonly-r2-final.json",
+    "sha256": "309b0351b9853149947ce432fb615fdb01868054bc963c6fb61d0062fdbf86de"
+  },
+  "sourceSha256": "fc71cb9b629a8773f003c4f437c215f82c4adc4ec9cfda8a5be303b083a84618",
+  "providerMutations": 0,
+  "sshCalls": 0,
+  "sqlCalls": 0,
+  "variablesQueried": false,
+  "commandValuesOrHashesRecorded": false,
+  "rawMetadataPersisted": false,
+  "maintenanceStarted": false,
+  "targets": [
+    {
+      "name": "Admin",
+      "serviceId": "e00eca0b-5323-4424-9b58-fdb073cfce82",
+      "state": "ABSENCE_COHERENT_UNIQUE_SUCCESS",
+      "before": {
+        "deploymentId": "10c8d309-1f50-4b52-aa47-693543b010f1",
+        "snapshotId": "a6b45897-402d-414c-9e11-c676b347d96d",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "resolvedFileDeploymentMatches": true,
+        "resolvedFileCommitMatches": true,
+        "preDeploy": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        },
+        "startOverride": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        }
+      },
+      "after": {
+        "deploymentId": "10c8d309-1f50-4b52-aa47-693543b010f1",
+        "snapshotId": "a6b45897-402d-414c-9e11-c676b347d96d",
+        "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+        "imageDigest": "sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "resolvedFileDeploymentMatches": true,
+        "resolvedFileCommitMatches": true,
+        "preDeploy": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        },
+        "startOverride": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        }
+      },
+      "preDeployAbsent": true,
+      "startOverrideAbsent": true
+    },
+    {
+      "name": "Adult",
+      "serviceId": "9df1b493-4cea-4b36-bec8-7299f054c17d",
+      "state": "ABSENCE_COHERENT_UNIQUE_SUCCESS",
+      "before": {
+        "deploymentId": "9b8cf594-86f8-4534-bde9-000d433fd836",
+        "snapshotId": "f7db585d-8d27-4d37-ae7c-d04818e5fc6a",
+        "commit": "e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28",
+        "imageDigest": "sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "resolvedFileDeploymentMatches": true,
+        "resolvedFileCommitMatches": true,
+        "preDeploy": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        },
+        "startOverride": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        }
+      },
+      "after": {
+        "deploymentId": "9b8cf594-86f8-4534-bde9-000d433fd836",
+        "snapshotId": "f7db585d-8d27-4d37-ae7c-d04818e5fc6a",
+        "commit": "e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28",
+        "imageDigest": "sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "resolvedFileDeploymentMatches": true,
+        "resolvedFileCommitMatches": true,
+        "preDeploy": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        },
+        "startOverride": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        }
+      },
+      "preDeployAbsent": true,
+      "startOverrideAbsent": true
+    },
+    {
+      "name": "Kids",
+      "serviceId": "fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f",
+      "state": "ABSENCE_COHERENT_UNIQUE_SUCCESS",
+      "before": {
+        "deploymentId": "48c12111-5bb3-449a-90d4-525af1f51aa8",
+        "snapshotId": "9eea1241-4d0c-44ad-bb2b-07e4840bf165",
+        "commit": "91d3e99aae0b602e9ad5548efb2106355f9fe801",
+        "imageDigest": "sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "resolvedFileDeploymentMatches": true,
+        "resolvedFileCommitMatches": true,
+        "preDeploy": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        },
+        "startOverride": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        }
+      },
+      "after": {
+        "deploymentId": "48c12111-5bb3-449a-90d4-525af1f51aa8",
+        "snapshotId": "9eea1241-4d0c-44ad-bb2b-07e4840bf165",
+        "commit": "91d3e99aae0b602e9ad5548efb2106355f9fe801",
+        "imageDigest": "sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed",
+        "uniqueSuccess": true,
+        "noPending": true,
+        "resolvedFileDeploymentMatches": true,
+        "resolvedFileCommitMatches": true,
+        "preDeploy": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        },
+        "startOverride": {
+          "configuredAbsent": true,
+          "deploymentManifestAbsent": true,
+          "resolvedFileConfigAbsent": true
+        }
+      },
+      "preDeployAbsent": true,
+      "startOverrideAbsent": true
+    }
+  ],
+  "state": "THREE_NEXT_PREDEPLOY_AND_START_OVERRIDES_ABSENT",
+  "finishedAt": "2026-10-23T01:56:10.628Z",
+  "graphqlCalls": 6,
+  "maximumConcurrency": 1,
+  "limits": [
+    "Only current declared configuration and exact active deployment manifests were read. No process argv or OCI image config was inspected.",
+    "This is a fresh observation, not maintenance activation, process retirement or a writer fence.",
+    "Absent preDeploy/start overrides were required in service configuration, deployment manifest and resolved file configuration. Any unexpected command is projected only as a mismatch boolean."
+  ]
+}

@@ -1,0 +1,16 @@
+#!/bin/sh
+# Fixed PG service/instance caller only. Binary stdout contains only pg_dump output.
+set -eu
+[ "${RAILWAY_PROJECT_ID:-}" = '415d5a1c-5f75-432c-8445-b395d0977ce3' ] || exit 90
+[ "${RAILWAY_ENVIRONMENT_ID:-}" = '19c212a5-85c0-493c-9630-a7a0569e8412' ] || exit 90
+[ "${RAILWAY_SERVICE_ID:-}" = '6c5d1cb9-3756-443a-a352-06068d34ca30' ] || exit 90
+[ "${RAILWAY_DEPLOYMENT_ID:-}" = '03647ac9-88bd-449e-852d-4ce80137177c' ] || exit 90
+[ -n "${PGDATABASE:-}" ] && [ -n "${PGUSER:-}" ] && [ -n "${PGPASSWORD:-}" ] || exit 90
+[ "$(pg_dump --version 2>/dev/null)" = 'pg_dump (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)' ] || exit 91
+PGPORT=${PGPORT:-5432}
+[ "$PGPORT" = '5432' ] || exit 92
+export PGHOST=127.0.0.1 PGHOSTADDR=127.0.0.1 PGPORT PGCONNECT_TIMEOUT=5 PGPASSFILE=/dev/null
+export PGAPPNAME=sz-production-custom-dump-r1 PGCLIENTENCODING=UTF8
+unset PGSERVICE PGSERVICEFILE
+export PGOPTIONS='-c default_transaction_read_only=on -c statement_timeout=60000 -c lock_timeout=5000'
+exec pg_dump --format=custom --no-password --lock-wait-timeout=5s

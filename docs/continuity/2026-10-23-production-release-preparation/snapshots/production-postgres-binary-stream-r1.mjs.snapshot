@@ -1,0 +1,202 @@
+/** Offline-reviewed binary transport. Import does not contact providers or run processes.
+ * It does NOT authorize/select a production target, qualify PostgreSQL format/restore,
+ * generate recovery keys, or interpret pg_dump warnings. A separate reviewed caller must.
+ */
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import { lstat, open } from 'node:fs/promises';
+import { isAbsolute } from 'node:path';
+import { Transform, Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+
+const MAGIC = Buffer.from('PGDMP', 'ascii');
+const SHA = /^[a-f0-9]{64}$/;
+const MAX_BYTES = 1024 * 1024 * 1024;
+class Refusal extends Error { constructor(code) { super(code); this.code = code; } }
+function requireThat(ok, code) { if (!ok) throw new Refusal(code); }
+const closedCode = e => e instanceof Refusal ? e.code : 'STREAM_OR_LOCAL_IO_FAILED';
+
+/** No decoding: keeps five prefix bytes, a byte counter and an incremental hash only. */
+export function byteMeter({ maxBytes, pgdmp = false }) {
+  requireThat(Number.isSafeInteger(maxBytes) && maxBytes >= 5 && maxBytes <= MAX_BYTES * 2, 'BYTE_LIMIT_INVALID');
+  let bytes = 0, prefix = Buffer.alloc(0), complete = false;
+  const hash = createHash('sha256');
+  const stream = new Transform({
+    transform(chunk, _encoding, callback) {
+      try {
+        requireThat(Buffer.isBuffer(chunk), 'NON_BINARY_CHUNK');
+        bytes += chunk.length;
+        requireThat(bytes <= maxBytes, 'BYTE_LIMIT_EXCEEDED');
+        if (prefix.length < 5) prefix = Buffer.concat([prefix, chunk.subarray(0, 5 - prefix.length)]);
+        if (pgdmp && prefix.length === 5) requireThat(prefix.equals(MAGIC), 'PGDMP_PREFIX_MISSING');
+        hash.update(chunk);
+        callback(null, chunk);
+      } catch (error) { callback(error); }
+    },
+    flush(callback) {
+      try {
+        if (pgdmp) requireThat(prefix.equals(MAGIC), 'PGDMP_PREFIX_MISSING');
+        complete = true; callback();
+      } catch (error) { callback(error); }
+    },
+  });
+  return { stream, report: () => ({ bytes, sha256: hash.copy().digest('hex'),
+    streamEnded: complete, pgdmpPrefix: prefix.equals(MAGIC) }) };
+}
+
+function sink() { return new Writable({ write(_bytes, _encoding, callback) { callback(); } }); }
+async function fileHash(path, maxBytes) {
+  const meter = byteMeter({ maxBytes });
+  await pipeline(createReadStream(path), meter.stream, sink());
+  return meter.report();
+}
+async function checkedAge(ageExe, ageSha256) {
+  requireThat(isAbsolute(ageExe) && SHA.test(ageSha256), 'AGE_PIN_INVALID');
+  const stat = await lstat(ageExe);
+  requireThat(stat.isFile() && !stat.isSymbolicLink(), 'AGE_FILE_INVALID');
+  requireThat((await fileHash(ageExe, 32 * 1024 * 1024)).sha256 === ageSha256, 'AGE_PIN_CHANGED');
+}
+function parameters({ timeoutMs, maxBytes }) {
+  requireThat(Number.isInteger(timeoutMs) && timeoutMs >= 50 && timeoutMs <= 15 * 60_000, 'DEADLINE_INVALID');
+  requireThat(Number.isSafeInteger(maxBytes) && maxBytes >= 5 && maxBytes <= MAX_BYTES, 'BYTE_LIMIT_INVALID');
+}
+function ageEnvironment() {
+  // The native X25519 recipient needs no plugins, credentials or provider environment.
+  return Object.fromEntries(['SystemRoot', 'WINDIR', 'TEMP', 'TMP'].flatMap(key =>
+    typeof process.env[key] === 'string' ? [[key, process.env[key]]] : []));
+}
+
+/** One invocation/child, no shell/TTY/retry. Stderr is counted and discarded, never saved.
+ * Forced stop cannot prove descendants/remote SQL stopped: cleanup stays UNCONFIRMED.
+ * Never taskkill by PID; never kill a handle after its exit event was observed.
+ */
+async function supervise(timeoutMs, body) {
+  const controller = new AbortController(), owned = [];
+  let stopped = false, failure = null;
+  function stop(error) {
+    if (stopped) return;
+    stopped = true; failure = error; controller.abort();
+    for (const entry of owned) {
+      if (!entry.exitObserved) { try { entry.child.kill(); } catch {} }
+      for (const stream of [entry.child.stdin, entry.child.stdout, entry.child.stderr]) stream?.destroy();
+      entry.child.unref(); entry.finish();
+    }
+  }
+  function start(role, command, args, env) {
+    requireThat(isAbsolute(command) && Array.isArray(args) && args.every(a => typeof a === 'string'), 'CHILD_ARGUMENTS_INVALID');
+    const child = spawn(command, args, { env, shell: false, windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    let resolve;
+    const done = new Promise(r => { resolve = r; });
+    const entry = { role, child, done, exitObserved: false, closed: false,
+      exitCode: null, signal: null, stderrBytes: 0, spawnError: false, finish: () => resolve() };
+    owned.push(entry);
+    child.once('error', () => { entry.spawnError = true; stop(new Refusal('CHILD_SPAWN_FAILED')); });
+    child.once('exit', (code, signal) => { entry.exitObserved = true; entry.exitCode = code; entry.signal = signal; });
+    child.once('close', () => { entry.closed = true; entry.finish(); });
+    child.stderr.on('data', bytes => {
+      entry.stderrBytes += bytes.length;
+      if (entry.stderrBytes > 64 * 1024) stop(new Refusal('STDERR_LIMIT_EXCEEDED'));
+    });
+    return child;
+  }
+  const timer = setTimeout(() => stop(new Refusal('DEADLINE_EXCEEDED')), timeoutMs);
+  try {
+    await body(start, controller.signal);
+    await Promise.all(owned.map(entry => entry.done));
+    if (failure) throw failure;
+    requireThat(owned.every(e => e.closed && e.exitObserved && e.exitCode === 0 && !e.signal && !e.spawnError), 'CHILD_EXIT_UNCONFIRMED');
+  } catch (error) {
+    if (!failure) failure = error;
+    if (!owned.every(e => e.closed)) stop(failure);
+  } finally { clearTimeout(timer); }
+  return { ok: !failure, failure: failure ? closedCode(failure) : null,
+    cleanup: stopped ? 'UNCONFIRMED' : 'OWNED_CHILD_HANDLES_CLOSED',
+    processes: owned.map(({ role, exitObserved, closed, exitCode, signal, stderrBytes, spawnError }) =>
+      ({ role, exitObserved, closed, exitCode, signaled: signal !== null, stderrBytes, spawnError })) };
+}
+
+/** This captures transport, not a PostgreSQL-valid archive. A PGDMP prefix is insufficient. */
+export async function captureEncryptedDump({ producer, ageExe, ageSha256, recipient, outputPath,
+  timeoutMs = 10 * 60_000, maxBytes = MAX_BYTES }) {
+  const receipt = { schema: 'pg-binary-transport/1', state: 'UNQUALIFIED', formatVerified: false,
+    restoreQualified: false, outputCreated: false, synced: false, failure: null };
+  let file;
+  const plain = byteMeter({ maxBytes, pgdmp: true }), cipher = byteMeter({ maxBytes: maxBytes + 1024 * 1024 });
+  try {
+    parameters({ timeoutMs, maxBytes }); await checkedAge(ageExe, ageSha256);
+    requireThat(isAbsolute(outputPath) && outputPath.endsWith('.age'), 'OUTPUT_PATH_INVALID');
+    requireThat(typeof recipient === 'string' && /^age1[023456789acdefghjklmnpqrstuvwxyz]{58}$/.test(recipient), 'RECIPIENT_INVALID');
+    file = await open(outputPath, 'wx', 0o600); receipt.outputCreated = true;
+    const output = new Writable({ write(chunk, _encoding, callback) {
+      (async () => {
+        let offset = 0;
+        while (offset < chunk.length) {
+          const { bytesWritten } = await file.write(chunk, offset, chunk.length - offset);
+          requireThat(bytesWritten > 0, 'OUTPUT_WRITE_FAILED'); offset += bytesWritten;
+        }
+      })().then(() => callback(), callback);
+    } });
+    receipt.transport = await supervise(timeoutMs, async (start, signal) => {
+      const age = start('age-encrypt', ageExe, ['--encrypt', '--recipient', recipient], ageEnvironment());
+      const source = start('producer', producer.command, producer.args, producer.env ?? process.env);
+      source.stdin.end();
+      const results = await Promise.allSettled([
+        pipeline(source.stdout, plain.stream, age.stdin, { signal }),
+        pipeline(age.stdout, cipher.stream, output, { signal }),
+      ]);
+      const failed = results.find(result => result.status === 'rejected');
+      if (failed) throw failed.reason;
+    });
+    receipt.plaintext = plain.report(); receipt.ciphertext = cipher.report();
+    requireThat(receipt.transport.ok, receipt.transport.failure ?? 'STREAM_OR_LOCAL_IO_FAILED');
+    requireThat(receipt.plaintext.streamEnded && receipt.ciphertext.streamEnded, 'STREAM_NOT_ENDED');
+    await file.sync(); receipt.synced = true;
+    receipt.state = 'ENCRYPTED_STREAM_CAPTURED_NOT_RESTORE_QUALIFIED';
+  } catch (error) { receipt.failure = closedCode(error); }
+  finally {
+    if (file) {
+      try { await file.close(); }
+      catch { receipt.state = 'UNQUALIFIED'; receipt.failure = 'OUTPUT_CLOSE_FAILED'; }
+    }
+  }
+  return receipt;
+}
+
+/** Fully authenticate/decrypt to a hash sink; never writes plaintext or invokes a DB.
+ * Two hashes bind the precise cipher and plaintext. Recheck the cipher after use too.
+ */
+export async function verifyEncryptedDump({ ageExe, ageSha256, identityPath, inputPath, expected,
+  timeoutMs = 10 * 60_000, maxBytes = MAX_BYTES }) {
+  const receipt = { schema: 'pg-binary-verification/1', state: 'UNQUALIFIED', failure: null,
+    formatVerified: false, restoreQualified: false, authenticatedThroughEof: false };
+  const plain = byteMeter({ maxBytes, pgdmp: true }), cipher = byteMeter({ maxBytes: maxBytes + 1024 * 1024 });
+  try {
+    parameters({ timeoutMs, maxBytes }); await checkedAge(ageExe, ageSha256);
+    requireThat(isAbsolute(identityPath) && isAbsolute(inputPath), 'INPUT_PATH_INVALID');
+    requireThat(SHA.test(expected?.plaintext?.sha256) && SHA.test(expected?.ciphertext?.sha256) &&
+      Number.isSafeInteger(expected.plaintext.bytes) && Number.isSafeInteger(expected.ciphertext.bytes), 'EXPECTED_DIGEST_INVALID');
+    const stat = await lstat(inputPath);
+    requireThat(stat.isFile() && !stat.isSymbolicLink(), 'INPUT_FILE_INVALID');
+    receipt.transport = await supervise(timeoutMs, async (start, signal) => {
+      const age = start('age-decrypt', ageExe, ['--decrypt', '--identity', identityPath], ageEnvironment());
+      const results = await Promise.allSettled([
+        pipeline(createReadStream(inputPath), cipher.stream, age.stdin, { signal }),
+        pipeline(age.stdout, plain.stream, sink(), { signal }),
+      ]);
+      const failed = results.find(result => result.status === 'rejected');
+      if (failed) throw failed.reason;
+    });
+    receipt.plaintext = plain.report(); receipt.ciphertext = cipher.report();
+    requireThat(receipt.transport.ok, receipt.transport.failure ?? 'STREAM_OR_LOCAL_IO_FAILED');
+    requireThat(receipt.plaintext.streamEnded && receipt.ciphertext.streamEnded, 'STREAM_NOT_ENDED');
+    requireThat(receipt.ciphertext.bytes === expected.ciphertext.bytes && receipt.ciphertext.sha256 === expected.ciphertext.sha256,
+      'CIPHERTEXT_MISMATCH');
+    requireThat(receipt.plaintext.bytes === expected.plaintext.bytes && receipt.plaintext.sha256 === expected.plaintext.sha256,
+      'PLAINTEXT_MISMATCH');
+    const after = await fileHash(inputPath, maxBytes + 1024 * 1024);
+    requireThat(after.bytes === expected.ciphertext.bytes && after.sha256 === expected.ciphertext.sha256, 'CIPHERTEXT_CHANGED_DURING_READ');
+    receipt.authenticatedThroughEof = true; receipt.state = 'AUTHENTICATED_BYTES_VERIFIED_NOT_RESTORE_QUALIFIED';
+  } catch (error) { receipt.failure = closedCode(error); }
+  return receipt;
+}

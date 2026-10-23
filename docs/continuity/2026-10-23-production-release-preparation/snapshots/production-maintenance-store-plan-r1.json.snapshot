@@ -1,0 +1,27 @@
+{
+  "kind": "production-maintenance-store-plan",
+  "version": 1,
+  "projectId": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "environmentId": "19c212a5-85c0-493c-9630-a7a0569e8412",
+  "phase": "store-full-only",
+  "createdAt": "2026-10-23T01:56:10.628Z",
+  "expiresAt": "2026-10-23T02:08:56.488Z",
+  "maintenancePlan": {
+    "path": ".cache/python-reference-games/production-pensa-five-service-maintenance-plan-r1.md",
+    "sha256": "6f6ac9aab04dc4bf124839eec10a9c5cf6e2205535f693b8bceb8c61b1fd7330"
+  },
+  "proofs": {
+    "launchers": {
+      "path": ".cache/python-reference-games/production-pensa-writer-images-readonly-r2-final.json",
+      "sha256": "309b0351b9853149947ce432fb615fdb01868054bc963c6fb61d0062fdbf86de"
+    },
+    "journals": {
+      "path": ".cache/python-reference-games/production-old-image-migration-readonly-r1.json",
+      "sha256": "7d7909fcb6abe85ec2c9667908fbaff340df56ab084d288be98bd6e2aa7d3683"
+    },
+    "next": {
+      "path": ".cache/python-reference-games/production-next-predeploy-readonly-r1.json",
+      "sha256": "875aa66cf058f29045af88a12f0b589c380a9d029f49b57e69ce27e98b29249d"
+    }
+  }
+}

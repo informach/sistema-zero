@@ -1,0 +1,87 @@
+import { afterEach, expect, test } from 'bun:test'
+import { execFileSync } from 'node:child_process'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { PINS, KEY_FILE, RECOVERED_FILE, argumentsFor, identityFromFile, consumeExistingIdentity, assertAcl, validateBucket, validateContext, assertNoReferences, assertSharedReferences, assertUnchanged, mutationRequest, reserve, writeOnce } from './production-backup-durable-store-r2.mjs'
+const identity = 'AGE-SECRET-KEY-1' + 'A'.repeat(58) // Inert format sentinel; never a generated identity.
+const service = '11111111-1111-4111-8111-111111111111', deployment = '22222222-2222-4222-8222-222222222222'
+const raw = () => ({ data: { environment: { id: PINS.environment, projectId: PINS.project, name: 'production', serviceInstances: { edges: [{ node: { serviceId: service, environmentId: PINS.environment,
+  activeDeployments: [{ id: deployment, status: 'SUCCESS', projectId: PINS.project, environmentId: PINS.environment, serviceId: service }] } }], pageInfo: { hasNextPage: false } } }, deployments: { edges: [], pageInfo: { hasNextPage: false } } } })
+const snapshot = () => ({ context: validateContext(raw()), shared: { EXISTING: 'unchanged', SEALED: null }, maps: [{ serviceId: service, raw: { A: '${{shared.EXISTING}}' }, rendered: { A: 'unchanged' } }] })
+const dirs: string[] = []
+afterEach(async () => { for (const p of dirs.splice(0)) { if (!resolve(p).startsWith(resolve(tmpdir(), 'sz-backup-store-'))) throw Error('TEST_PATH'); await rm(p, { recursive: true }) } })
+test('closed modes consume only the preexisting fixed identity path and distinct recovery path', () => {
+  expect(argumentsFor(['read', 'production-backup-store-read-inert'])).toEqual({ mode: 'read', run: 'production-backup-store-read-inert', keyDirectory: resolve(PINS.identityDirectory) })
+  expect(KEY_FILE).toBe('backup-identity.agekey'); expect(RECOVERED_FILE).not.toBe(KEY_FILE)
+  for (const args of [[], ['identity', 'production-backup-store-read-inert'], ['delete', 'production-backup-store-delete-inert'], ['read', 'production-backup-store-read-inert', 'C:/private'], ['read', 'production-backup-store-read-inert', '--token=x']]) expect(() => argumentsFor(args)).toThrow()
+})
+test('existing identity is bounded UTF8, one X25519 identity, never another generated key', async () => {
+  const bytes = new TextEncoder().encode('# created: already by Root\r\n# public key: public\r\n' + identity + '\r\n'), calls: string[] = []
+  const deps = { verifyAcl: async () => { calls.push('acl') }, read: async () => { calls.push('read-existing'); return bytes }, recipient: async (value: string) => { expect(value).toBe(identity); calls.push('derive-public'); return PINS.publicRecipient + '\n' } }
+  expect(await consumeExistingIdentity(deps)).toBe(identity); expect(calls).toEqual(['acl', 'read-existing', 'derive-public'])
+  expect(identityFromFile(bytes)).toBe(identity)
+  for (const bad of [new Uint8Array(), new Uint8Array(8193), new Uint8Array([0xc3, 0x28]), new TextEncoder().encode(identity + '\n' + identity), new TextEncoder().encode(' ' + identity), new TextEncoder().encode('# no identity\n')]) expect(() => identityFromFile(bad)).toThrow()
+  await expect(consumeExistingIdentity({ ...deps, recipient: async () => 'age1other' })).rejects.toThrow('IDENTITY_RECIPIENT_MISMATCH')
+  calls.length = 0; await expect(consumeExistingIdentity({ ...deps, verifyAcl: async () => { throw Error('ACL') } })).rejects.toThrow('ACL'); expect(calls).toEqual([])
+})
+test('ACL only accepts owner current user and explicit protected directory with user/SYSTEM/Admin rights', () => {
+  const a = { currentSid: 'S-1-5-21-123', ownerSid: 'S-1-5-21-123', protected: true, rules: [{ sid: 'S-1-5-21-123', type: 'Allow', rights: 0x1f01ff }, { sid: 'S-1-5-18', type: 'Allow', rights: 0x1f01ff }] }
+  expect(() => assertAcl(a)).not.toThrow(); expect(() => assertAcl({ ...a, protected: false }, false)).not.toThrow()
+  for (const value of [{ ...a, protected: false }, { ...a, ownerSid: 'other' }, { ...a, rules: [...a.rules, { sid: 'S-1-1-0', type: 'Allow', rights: 0x1f01ff }] }, { ...a, rules: [] }]) expect(() => assertAcl(value)).toThrow()
+})
+test('private bucket requires both public surfaces closed and no enabled expiration', () => {
+  const args: any[] = [{ name: PINS.bucket }, { enabled: false }, { domains: [] }, { rules: [{ enabled: true, abortMultipartUploadsTransition: { condition: { type: 'Age', maxAge: 604800 } } }] }]
+  expect(validateBucket(...args).lifecycleNoObjectExpiry).toBe(true)
+  for (const changes of [[0, { name: 'other' }], [1, { enabled: true }], [1, {}], [2, { domains: [{ enabled: false }] }], [3, { rules: [{ enabled: true, deleteObjects: { condition: { maxAge: 86400 } } }] }]]) { const next = [...args]; next[changes[0] as number] = changes[1]; expect(() => validateBucket(...next)).toThrow() }
+})
+test('actual R2 deleteObjectsTransition expiry is refused, disabled expiry and multipart abort are permitted', () => {
+  const base = [{ name: PINS.bucket }, { enabled: false }, { domains: [] }]
+  const expiration = { id: 'expire', enabled: true, conditions: { prefix: '' }, deleteObjectsTransition: { condition: { type: 'Age', maxAge: 86400 } } }
+  expect(() => validateBucket(...base, { rules: [expiration] })).toThrow('BUCKET_EXPIRATION_PRESENT')
+  expect(validateBucket(...base, { rules: [{ ...expiration, enabled: false }] }).lifecycleNoObjectExpiry).toBe(true)
+  expect(validateBucket(...base, { rules: [{ id: 'multipart', enabled: true, conditions: { prefix: '' }, abortMultipartUploadsTransition: { condition: { type: 'Age', maxAge: 604800 } } }] }).lifecycleNoObjectExpiry).toBe(true)
+})
+test('inventory requires complete exact production, unique instances and no pending transitions', () => {
+  expect(validateContext(raw())).toEqual([{ serviceId: service, active: [deployment] }])
+  const wrong = raw(); wrong.data.environment.name = 'staging'; expect(() => validateContext(wrong)).toThrow()
+  const pending: any = raw(); pending.data.deployments.edges.push({ node: { id: deployment } }); expect(() => validateContext(pending)).toThrow()
+  const duplicate = raw(); duplicate.data.environment.serviceInstances.edges.push(duplicate.data.environment.serviceInstances.edges[0]); expect(() => validateContext(duplicate)).toThrow()
+  const partial = raw(); partial.data.environment.serviceInstances.pageInfo.hasNextPage = true; expect(() => validateContext(partial)).toThrow()
+  const dual = raw(); dual.data.environment.serviceInstances.edges[0].node.activeDeployments.push({ ...dual.data.environment.serviceInstances.edges[0].node.activeDeployments[0], id: service }); expect(() => validateContext(dual)).toThrow()
+})
+test('shared key is not propagated through direct, alias, rendered or indirect shared references', () => {
+  const before = snapshot(); expect(() => assertNoReferences(before.maps)).not.toThrow()
+  for (const value of [{ [PINS.key]: 'x' }, { ALIAS: '${{ shared.' + PINS.key + ' }}' }, { ALIAS: identity }]) expect(() => assertNoReferences([{ serviceId: service, raw: value, rendered: {} }], identity)).toThrow()
+  expect(() => assertSharedReferences({ INDIRECT: '${{shared.' + PINS.key + '}}' })).toThrow()
+  expect(() => assertSharedReferences({ [PINS.key]: identity }, identity)).not.toThrow()
+})
+test('unrelated maps, opaque-null values and deployment IDs remain equal across the single write', () => {
+  const before = snapshot(), after: any = snapshot(); after.shared[PINS.key] = identity
+  expect(() => assertUnchanged(before, after, identity)).not.toThrow()
+  for (const change of [(v: any) => { v.maps[0].raw.NEW = 'x' }, (v: any) => { v.shared.EXISTING = 'changed' }, (v: any) => { v.context[0].active = [] }, (v: any) => { v.maps[0].rendered.A = identity }]) { const v = structuredClone(after); change(v); expect(() => assertUnchanged(before, v, identity)).toThrow() }
+})
+test('mutation has one shared key, null service, no replacement/deploy, secret only in stdin', () => {
+  const request = mutationRequest(identity), input = JSON.parse(request.stdin).input
+  expect(input).toEqual({ projectId: PINS.project, environmentId: PINS.environment, serviceId: null, skipDeploys: true, replace: false, variables: { [PINS.key]: identity } })
+  expect(request.argv.at(-1)).toBe('@-'); expect(JSON.stringify(request.argv)).not.toContain(identity)
+  expect(() => mutationRequest('not a key')).toThrow(); expect(() => mutationRequest(identity + '\n')).toThrow()
+})
+test('lost ACK readback stays unknown, no replay across runnames; bucket and identity have separate fixed intents', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'sz-backup-store-')); dirs.push(dir); let sends = 0, reads = 0; const patches: any[] = []
+  const deps = { preflight: async () => {}, reserve: () => reserve(dir, 'identity', { run: String(sends) }), checkpoint: async (v: any) => { patches.push(v) }, send: async () => { sends++; throw Error('PRIVATE_SENTINEL') }, readback: async () => { reads++ } }
+  expect(await writeOnce(deps)).toBe(false); expect(patches.at(-1).state).toBe('ACK_UNKNOWN_READBACK_MATCHED'); expect(patches.at(-1).remoteOutcomeUnknown).toBe(true)
+  await expect(writeOnce(deps)).rejects.toThrow(); expect(sends).toBe(1); expect(reads).toBe(1); expect(JSON.stringify(patches)).not.toContain('PRIVATE_SENTINEL')
+  await reserve(dir, 'bucket', { operation: 'bucket' }); expect(JSON.parse(await readFile(join(dir, 'production-backup-store-bucket.intent.json'), 'utf8')).operation).toBe('bucket')
+})
+test('negative preflight/key preparation never sends; mutation intent precedes send and readback', async () => {
+  const order: string[] = [], deps = { preflight: async () => { order.push('pre') }, reserve: async () => { order.push('reserve') }, prepare: async () => { order.push('local-key') }, checkpoint: async () => { order.push('checkpoint') }, send: async () => { order.push('send'); return true }, readback: async () => { order.push('read') } }
+  expect(await writeOnce(deps)).toBe(true); expect(order.indexOf('checkpoint')).toBeLessThan(order.indexOf('send')); expect(order).toContain('read')
+  let sends = 0; await expect(writeOnce({ ...deps, prepare: async () => { throw Error('ACL') }, send: async () => { sends++; return true } })).rejects.toThrow('ACL'); expect(sends).toBe(0)
+  await expect(writeOnce({ ...deps, preflight: async () => { throw Error('wrong target') }, send: async () => { sends++; return true } })).rejects.toThrow(); expect(sends).toBe(0)
+})
+test('Node24 import and invalid args are inert with provider processes and network forbidden', () => {
+  const node = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'
+  const code = `import assert from'node:assert/strict';import cp from'node:child_process';import{syncBuiltinESMExports}from'node:module';cp.execFile=()=>{throw Error('NO_PROVIDER')};syncBuiltinESMExports();globalThis.fetch=()=>{throw Error('NO_NETWORK')};const m=await import('./.cache/python-reference-games/production-backup-durable-store-r2.mjs');await assert.rejects(m.main(['wrong']),/ARGUMENTS/);console.log('IMPORT_INERT');`
+  expect(execFileSync(node, ['--no-warnings', '--input-type=module', '-e', code], { cwd: resolve(import.meta.dir, '../..'), encoding: 'utf8', timeout: 5000, windowsHide: true }).trim()).toBe('IMPORT_INERT')
+})

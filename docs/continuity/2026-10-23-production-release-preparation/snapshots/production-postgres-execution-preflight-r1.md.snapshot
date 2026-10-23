@@ -1,0 +1,46 @@
+# Preflight PostgreSQL pinado — preparado, não executado
+
+Fonte: `production-postgres-execution-preflight-r1.sh`, SHA256 `4db9fd8a3c02527cedd17e0200083192668602086cfe76569706c26041c777dd`. Sintaxe do shell conferida localmente por Git Bash `--noprofile --norc -n`, exit 0; isso não executou SQL nem demonstra disponibilidade dos clientes remotos.
+
+Root executa **uma chamada SSH de leitura**, depois de conferir o contexto fresco abaixo. Sem dump/instalação/DDL/DML/container. O script valida quatro IDs Railway antes de qualquer cliente e precisa das variáveis `PGDATABASE`, `PGUSER` e `PGPASSWORD` já existentes no processo do serviço. Não assume fallback para `POSTGRES_*`, não cria senha, não imprime nomes do banco/usuário e não passa DSN ou senha em argv. Se alguma variável faltar, devolve somente `UNCONFIRMED`.
+
+## Contexto esperado e comando fechado
+
+- Project: `415d5a1c-5f75-432c-8445-b395d0977ce3`.
+- Environment production: `19c212a5-85c0-493c-9630-a7a0569e8412`.
+- Postgres service: `6c5d1cb9-3756-443a-a352-06068d34ca30`.
+- Deployment: `03647ac9-88bd-449e-852d-4ce80137177c`, snapshot `88686eeb-f927-4da7-ba10-374c9808b775`.
+- Instância RUNNING única: `31fd85c1-4bcc-44c6-a360-d7f487a7d229`.
+- Imagem: `sha256:fcc6686a3f4f1962fe4ed77a15884553b7bd611ae1cea3204687968c5c09d517`.
+- Antes/depois: deployment ativo único SUCCESS, sem pending e mesmos IDs/imagem/instância. Se houver mudança, parar sem retarget automático.
+
+CLI nativa existente **5.62.1**, chamada via Node24 com pipes; ambiente nativo já qualificado, removendo apenas `RAILWAY_TOKEN`, `RAILWAY_API_TOKEN`, `RAILWAY_PROJECT_TOKEN` e `RAILWAY_API`. Não usar environment allowlist reduzida (o diagnóstico anterior demonstrou falha de transporte com ela).
+
+```js
+// Argumentos fixos; existingIdentityPath é a chave SSH já cadastrada/qualificada.
+const argv = [
+  'ssh', '--project', '415d5a1c-5f75-432c-8445-b395d0977ce3',
+  '--environment', '19c212a5-85c0-493c-9630-a7a0569e8412',
+  '--service', '6c5d1cb9-3756-443a-a352-06068d34ca30',
+  '--deployment-instance', '31fd85c1-4bcc-44c6-a360-d7f487a7d229',
+  '--identity-file', existingIdentityPath, '--', 'sh', '-s',
+];
+// Conferir SHA da fonte antes; enviar seus bytes UTF-8 exatos ao stdin e fechar.
+// Sem shell local, sem TTY, sem --session, sem arquivo remoto.
+```
+
+Usar o executor Node revisado do Root: timeout total 35 s, saída limitada a 64 KiB, nenhuma impressão de erro bruto. Guardar apenas o JSON validado com prefixo `SZ_PG_EXECUTION_PREFLIGHT_V1 `, código de saída e os contextos sanitizados. Exit não-zero/timeout/JSON ausente ou duplicado significa inconclusivo, sem replay automático. Não executar o texto do resultado. O shell só aceita versões major18 com gramática ASCII fechada e em uma linha; JSON PostgreSQL é construído por `jsonb_build_object`, sem concatenar valores de ambiente na SQL.
+
+## Leitura e resultado esperado
+
+`pg_dump --version`, `pg_restore --version` e `psql --version` não conectam ao banco. Depois, uma sessão `psql -X -w` executa SQL fixo: `BEGIN ... REPEATABLE READ READ ONLY`, um SELECT dos catálogos técnicos e `ROLLBACK`. `PGOPTIONS` já solicita readonly no startup, statement 5 s/lock 1,5 s/idle 10 s, connect timeout 5 s. Sem `.psqlrc`, senha interativa, service file ou passfile. A conexão é forçada ao loopback deste container; mantém `PGPORT` numérico existente ou o default libpq 5432, sem host externo.
+
+O SELECT só retorna se banco/usuário corresponderem a `PGDATABASE`/`PGUSER` via `\getenv` e citação SQL de literais, servidor continuar `180006`, isolamento/readonly forem os esperados e endereço for loopback. Esses checks validam o alvo do processo PG; **a equivalência com o banco da URL Members continua sendo a comparação em RAM do Root**, não um novo claim deste script.
+
+Saída allowlist: versões dos três clientes; booleans de identidade/readonly/loopback; versão/porta do servidor; encoding; provider (`b` builtin, `c` libc, `i` ICU); LC_COLLATE/LC_CTYPE; locale/ICU rules; versões registrada/atual da collation; lista de nome/versão/schema das extensões. Não inclui objetos de negócio, usuários, senhas, URLs ou linhas de tabelas. Campo `state=READ_ONLY_EXECUTION_METADATA` só aparece após saída zero do psql e resultado não vazio/até32KiB.
+
+O inventário deve incluir `pg_trgm` se as migrations que o declararam estiverem aplicadas; não presumir sua existência ou versão. O resultado define a imagem/locale/extensões necessários no restore isolado. Campos de catálogo foram conferidos na [documentação PostgreSQL18](https://www.postgresql.org/docs/18/catalog-pg-database.html); uso de `\getenv` e `-X/-w/ON_ERROR_STOP` no [psql18](https://www.postgresql.org/docs/18/app-psql.html).
+
+## Destino durável da recuperação — decisão de planejamento mais recente
+
+A proposta Root substitui a exigência de um cofre externo preexistente: ciphertext age em bucket R2 privado dedicado `release-backups`, identidade age dedicada em variável compartilhada Railway **sem referência/injeção em qualquer app**, mais cópia local com ACL fora Git. Ainda não foram criados nesta frente. Para qualificar: provar ausência de referência/deploy da variável, recuperá-la em RAM, baixar o ciphertext do R2 e conferir SHA/tamanho, executar decrypt até EOF com a identidade recuperada e completar restore/oráculos. Confirmar bucket sem acesso público e guardar pins/recibo sanitizado. Separação de provedores não elimina acesso de administradores/tokens que tenham ambas as permissões. Nenhuma rotação de credenciais existentes é necessária.

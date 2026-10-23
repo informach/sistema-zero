@@ -1,0 +1,105 @@
+{
+  "kind": "production-postgres-metadata",
+  "version": 3,
+  "state": "METADATA_READ_VERIFIED",
+  "startedAt": "2026-10-23T03:41:06.084Z",
+  "transportEnvironmentProfile": "normal-without-four-railway-overrides",
+  "operatorSha256": "511639952415cfb94ebbc24e97063f2bc0b6f023de38104097dec3864e1d7616",
+  "providerReads": 2,
+  "sshAttempts": 1,
+  "providerMutations": 0,
+  "databaseWritesRequested": false,
+  "dumpAttempted": false,
+  "backupQualified": false,
+  "restoreQualified": false,
+  "pgDumpVersion": {
+    "state": "PENDING_PG_EXECUTION_CONTRACT",
+    "value": null
+  },
+  "before": {
+    "members": {
+      "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+      "environment": "19c212a5-85c0-493c-9630-a7a0569e8412",
+      "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "deploymentId": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+      "snapshotId": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+      "instanceId": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+      "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+      "image": "sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847",
+      "instances": [
+        {
+          "id": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+          "status": "RUNNING"
+        },
+        {
+          "id": "44957d2e-059e-45bc-9d80-6d456126bc9c",
+          "status": "REMOVED"
+        }
+      ]
+    },
+    "postgres": {
+      "serviceId": "6c5d1cb9-3756-443a-a352-06068d34ca30",
+      "deploymentId": "03647ac9-88bd-449e-852d-4ce80137177c",
+      "snapshotId": "88686eeb-f927-4da7-ba10-374c9808b775",
+      "instanceId": "31fd85c1-4bcc-44c6-a360-d7f487a7d229",
+      "imageDigest": "sha256:fcc6686a3f4f1962fe4ed77a15884553b7bd611ae1cea3204687968c5c09d517",
+      "instances": [
+        {
+          "id": "31fd85c1-4bcc-44c6-a360-d7f487a7d229",
+          "status": "RUNNING"
+        }
+      ]
+    },
+    "uniqueSuccess": true,
+    "noPending": true
+  },
+  "after": {
+    "members": {
+      "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+      "environment": "19c212a5-85c0-493c-9630-a7a0569e8412",
+      "serviceId": "aa282801-ffba-477c-af6d-394b2f4f9af9",
+      "deploymentId": "9d8368c2-d915-4dbf-898c-28c2b7978133",
+      "snapshotId": "da40af1e-d385-4d22-86a9-dd4186202fa0",
+      "instanceId": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+      "commit": "6f93dcbfe8f176017b7b1ace5114d480ad5853b1",
+      "image": "sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847",
+      "instances": [
+        {
+          "id": "22602b2c-be12-40d1-81d8-0240f6a0cbf1",
+          "status": "RUNNING"
+        },
+        {
+          "id": "44957d2e-059e-45bc-9d80-6d456126bc9c",
+          "status": "REMOVED"
+        }
+      ]
+    },
+    "postgres": {
+      "serviceId": "6c5d1cb9-3756-443a-a352-06068d34ca30",
+      "deploymentId": "03647ac9-88bd-449e-852d-4ce80137177c",
+      "snapshotId": "88686eeb-f927-4da7-ba10-374c9808b775",
+      "instanceId": "31fd85c1-4bcc-44c6-a360-d7f487a7d229",
+      "imageDigest": "sha256:fcc6686a3f4f1962fe4ed77a15884553b7bd611ae1cea3204687968c5c09d517",
+      "instances": [
+        {
+          "id": "31fd85c1-4bcc-44c6-a360-d7f487a7d229",
+          "status": "RUNNING"
+        }
+      ]
+    },
+    "uniqueSuccess": true,
+    "noPending": true
+  },
+  "metadata": {
+    "identityVerified": true,
+    "connectionClosed": true,
+    "serverVersionNum": 180006,
+    "databaseBytes": "34608831",
+    "databaseNameMatchesConnection": true,
+    "readOnly": true,
+    "isolation": "repeatable read"
+  },
+  "contextObservedAt": "2026-10-23T03:41:06.936Z",
+  "remoteScriptSha256": "bee1ecb22c6fb01fd407c62a8d5b6a8031c71d0362048b23fc365351b7ee857f",
+  "finishedAt": "2026-10-23T03:41:11.024Z"
+}

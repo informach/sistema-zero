@@ -1,0 +1,185 @@
+/** Private one-shot preparation target. Import is inert. Only Root executes after review. */
+import { execFile } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { lstat, mkdir, open, readFile, realpath, rename } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { PINS as CF, boundedResponse, environmentFor } from './staging-reconcile-cron-activate-r2.mjs'
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+export const PINS = Object.freeze({ project: '415d5a1c-5f75-432c-8445-b395d0977ce3', environment: '19c212a5-85c0-493c-9630-a7a0569e8412',
+  bucket: 'sistemazero-release-backups-production', key: 'RELEASE_POSTGRES_BACKUP_AGE_IDENTITY', account: CF.account,
+  config: 'packages/studio-runtime/wrangler.jsonc', configSha: 'e589395314dad1d1a04f14f88dacff4b057d6ca9b644d92b49fd540ae984a584',
+  helperSha: '781baaf485ba8e92400a1bbad49ababbb275a2a01a33c81120809859664f4191',
+  aclPowerShell: 'C:/Program Files/WindowsApps/Microsoft.PowerShell_7.6.7.0_x64__8wekyb3d8bbwe/pwsh.exe',
+  aclPowerShellSha: 'fa2c8bb1e35cdd62ad15cd06a1d8f2c5961e9725a9bfa1e7cfd2c322f49e9619',
+  identityDirectory: 'C:/Users/tocha/SistemaZeroRecovery/production/postgres/2026-10-23-root-r1',
+  publicRecipient: 'age1xt2j7nsgvkfl7qapdrdj66520g7cxcrahcgup9qm94cjhfmq0frs06wa92',
+  ageDirectory: 'C:/Users/tocha/AppData/Local/Microsoft/WinGet/Packages/FiloSottile.age_Microsoft.Winget.Source_8wekyb3d8bbwe/age',
+  ageSha: '2821a4ed191da07372acd302e5f6feae7a7985e285e1417765ebe74025af45f0', keygenSha: '1549c7049be32695594bedd09bbd352a94b6013a9d5c43364f3c6cd7a09ab61c' })
+export const KEY_FILE = 'backup-identity.agekey', RECOVERED_FILE = 'backup-identity-recovered.agekey'
+const object = v => v !== null && typeof v === 'object' && !Array.isArray(v), own = (v, key) => Object.hasOwn(v, key)
+const uuid = v => typeof v === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v)
+const sha = v => createHash('sha256').update(v).digest('hex')
+const stable = v => JSON.stringify(v, Object.keys(v).sort()), sameMap = (a, b) => stable(a) === stable(b)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function guard(v, code) { if (!v) throw new Refusal(code) }
+export function argumentsFor(argv) {
+  const [mode, run, ...extra] = argv
+  guard(['read', 'bucket', 'identity'].includes(mode) && new RegExp(`^production-backup-store-${mode}-[a-z0-9-]+$`).test(run ?? '') && !extra.length, 'ARGUMENTS')
+  return { mode, run, keyDirectory: resolve(PINS.identityDirectory) }
+}
+export function identityFromFile(bytes) {
+  guard(bytes instanceof Uint8Array && bytes.byteLength > 0 && bytes.byteLength <= 8192, 'IDENTITY_FILE_SIZE')
+  let text; try { text = new TextDecoder('utf-8', { fatal: true }).decode(bytes) } catch { throw new Refusal('IDENTITY_FILE_UTF8') }
+  const lines = text.split(/\r?\n/).filter(v => v.length > 0 && !v.startsWith('#'))
+  guard(lines.length === 1, 'IDENTITY_FILE_CONTENT'); mutationRequest(lines[0]); return lines[0]
+}
+export async function consumeExistingIdentity(deps) {
+  await deps.verifyAcl(); const identity = identityFromFile(await deps.read())
+  guard((await deps.recipient(identity)).trim() === PINS.publicRecipient, 'IDENTITY_RECIPIENT_MISMATCH')
+  return identity
+}
+export function assertAcl(value, directory = true) {
+  guard(object(value) && typeof value.currentSid === 'string' && value.ownerSid === value.currentSid && (!directory || value.protected === true) && Array.isArray(value.rules) && value.rules.length > 0, 'ACL_INVALID')
+  const allowed = new Set([value.currentSid, 'S-1-5-18', 'S-1-5-32-544'])
+  guard(value.rules.every(r => allowed.has(r.sid) && r.type === 'Allow') && value.rules.some(r => r.sid === value.currentSid && (r.rights & 0x1f01ff) === 0x1f01ff), 'ACL_NOT_PRIVATE')
+}
+export function validateBucket(metadata, managed, custom, lifecycle) {
+  guard(metadata?.name === PINS.bucket && managed?.enabled === false && Array.isArray(custom?.domains) && custom.domains.length === 0 && Array.isArray(lifecycle?.rules), 'BUCKET_NOT_PRIVATE')
+  guard(lifecycle.rules.every(r => object(r) && typeof r.enabled === 'boolean' && (!r.enabled || (!own(r, 'deleteObjectsTransition') && !own(r, 'deleteObjects')))), 'BUCKET_EXPIRATION_PRESENT')
+  return { exists: true, name: PINS.bucket, managedPublicAccess: false, customDomains: 0, lifecycleRules: lifecycle.rules.length, lifecycleNoObjectExpiry: true }
+}
+export function validateContext(reply) {
+  const e = reply?.data?.environment, pending = reply?.data?.deployments
+  guard(!reply?.errors && e?.id === PINS.environment && e.projectId === PINS.project && e.name === 'production' && e.serviceInstances?.pageInfo?.hasNextPage === false && Array.isArray(e.serviceInstances.edges) &&
+    Array.isArray(pending?.edges) && pending.edges.length === 0 && pending.pageInfo?.hasNextPage === false, 'PRODUCTION_CONTEXT_INVALID')
+  const rows = e.serviceInstances.edges.map(({ node: s }) => {
+    guard(uuid(s?.serviceId) && s.environmentId === PINS.environment && Array.isArray(s.activeDeployments), 'SERVICE_CONTEXT_INVALID')
+    const active = s.activeDeployments.map(d => { guard(uuid(d.id) && d.serviceId === s.serviceId && d.environmentId === PINS.environment && d.projectId === PINS.project && d.status === 'SUCCESS', 'ACTIVE_DEPLOYMENT_INVALID'); return d.id }).sort()
+    guard(new Set(active).size === active.length && active.length <= 1, 'ACTIVE_DEPLOYMENT_AMBIGUOUS'); return { serviceId: s.serviceId, active }
+  }).sort((a, b) => a.serviceId.localeCompare(b.serviceId))
+  guard(rows.length > 0 && rows.length <= 100 && new Set(rows.map(r => r.serviceId)).size === rows.length, 'SERVICE_INVENTORY_INVALID'); return rows
+}
+export function assertNoReferences(maps, identity) {
+  guard(Array.isArray(maps) && maps.length > 0, 'SERVICE_VARIABLES_MISSING')
+  for (const m of maps) for (const value of [m.raw, m.rendered]) {
+    guard(object(value) && Object.values(value).every(v => v === null || typeof v === 'string') && !own(value, PINS.key), 'IDENTITY_EXPOSED_TO_APPLICATION')
+    guard(Object.values(value).every(v => typeof v !== 'string' || (!v.includes(PINS.key) && (!identity || !v.includes(identity)))), 'IDENTITY_REFERENCE_PRESENT')
+  }
+}
+export function assertSharedReferences(shared, identity) {
+  guard(Object.entries(shared).every(([key, value]) => key === PINS.key || typeof value !== 'string' || (!value.includes(PINS.key) && (!identity || !value.includes(identity)))), 'SHARED_REFERENCE_PRESENT')
+}
+export function assertUnchanged(before, after, identity) {
+  guard(JSON.stringify(before.context) === JSON.stringify(after.context), 'DEPLOYMENTS_CHANGED')
+  assertNoReferences(after.maps, identity)
+  assertSharedReferences(after.shared, identity)
+  guard(before.maps.length === after.maps.length && before.maps.every((v, i) => v.serviceId === after.maps[i].serviceId && sameMap(v.raw, after.maps[i].raw) && sameMap(v.rendered, after.maps[i].rendered)), 'APPLICATION_VARIABLES_CHANGED')
+  guard(sameMap(identity ? { ...before.shared, [PINS.key]: identity } : before.shared, after.shared), 'SHARED_VARIABLES_CHANGED')
+}
+export function mutationRequest(identity) {
+  guard(typeof identity === 'string' && /^AGE-SECRET-KEY-1[0-9A-Z]{50,100}$/.test(identity), 'IDENTITY_FORMAT')
+  return { argv: ['api', '--compact', 'mutation StoreBackupIdentity($input:VariableCollectionUpsertInput!){variableCollectionUpsert(input:$input)}', '--variables', '@-'],
+    stdin: JSON.stringify({ input: { projectId: PINS.project, environmentId: PINS.environment, serviceId: null, replace: false, skipDeploys: true, variables: { [PINS.key]: identity } } }) }
+}
+export async function reserve(directory, mode, record) {
+  guard(['bucket', 'identity'].includes(mode), 'INTENT_OPERATION'); const h = await open(join(directory, `production-backup-store-${mode}.intent.json`), 'wx', 0o600)
+  try { await h.writeFile(JSON.stringify(record) + '\n'); await h.sync() } finally { await h.close() }
+}
+export async function writeOnce(deps) {
+  await deps.preflight(); await deps.reserve(); await deps.prepare?.(); await deps.checkpoint({ state: 'MUTATION_OUTCOME_UNKNOWN', mutationAttempts: 1, acknowledged: false, remoteOutcomeUnknown: true })
+  let acknowledged = false, readbackMatched = false
+  try { acknowledged = await deps.send() === true } catch { /* One send only; independent readback follows. */ }
+  await deps.checkpoint({ acknowledged, state: acknowledged ? 'ACK_READBACK_PENDING' : 'ACK_UNKNOWN_READBACK_PENDING' })
+  try { await deps.readback(); readbackMatched = true } catch { /* No replay or automatic repair. */ }
+  const result = { state: acknowledged ? readbackMatched ? 'STORED_VERIFIED' : 'ACK_READBACK_UNCONFIRMED' : readbackMatched ? 'ACK_UNKNOWN_READBACK_MATCHED' : 'ACK_UNKNOWN_READBACK_UNCONFIRMED',
+    acknowledged, readbackMatched, remoteOutcomeUnknown: !acknowledged }
+  await deps.checkpoint(result); return acknowledged && readbackMatched
+}
+const ACL_SCRIPT = `$ErrorActionPreference='Stop';$a=Get-Acl -LiteralPath $env:SZ_BACKUP_ACL_TARGET;$sid=[System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value;@{currentSid=$sid;ownerSid=$a.GetOwner([System.Security.Principal.SecurityIdentifier]).Value;protected=$a.AreAccessRulesProtected;rules=@($a.GetAccessRules($true,$true,[System.Security.Principal.SecurityIdentifier])|ForEach-Object{@{sid=$_.IdentityReference.Value;type=$_.AccessControlType.ToString();rights=[int]$_.FileSystemRights}})}|ConvertTo-Json -Depth 5 -Compress`
+export async function main(argv = process.argv.slice(2)) {
+  const args = argumentsFor(argv); guard(process.versions.node === CF.node && !process.versions.bun && process.platform === 'win32', 'RUNTIME')
+  const out = join(CACHE, args.run); await mkdir(out)
+  const started = Date.now(), deadline = started + 600_000
+  const receipt = { kind: 'production-backup-durable-storage', version: 1, mode: args.mode, state: 'RUNNING', startedAt: new Date(started).toISOString(), operatorSha256: sha(await readFile(FILE)), pins: PINS,
+    mutationAttempts: 0, bucketCreateAttempts: 0, sharedWriteAttempts: 0, objectUploads: 0, sql: 0, ssh: 0, deploys: 0, retries: 0, identityGenerated: false, recoveryVerified: false,
+    remoteOutcomeUnknown: false, secretValuesOrHashesRecorded: false, rawVariablesRecorded: false, backupQualified: false, restoreQualified: false, externalWriterFreezeRequired: true, compareAndSwapAvailable: false }
+  const save = async patch => { Object.assign(receipt, patch); const h = await open(join(out, 'receipt.pending'), 'w', 0o600); try { await h.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await h.sync() } finally { await h.close() }; await rename(join(out, 'receipt.pending'), join(out, 'receipt.json')) }
+  const env = { ...process.env, CI: 'true', NO_COLOR: '1' }; for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+  const native = (file, values, input = '', childEnv = env, maxBuffer = 8_388_608) => new Promise((accept, reject) => {
+    guard(Date.now() < deadline, 'DEADLINE'); const child = execFile(file, values, { cwd: out, env: childEnv, windowsHide: true, shell: false, timeout: Math.min(30_000, deadline - Date.now()), maxBuffer, encoding: 'utf8' },
+      (e, stdout) => e ? reject(new Refusal('NATIVE_UNCONFIRMED')) : accept(stdout)); child.stdin?.on('error', () => {}); child.stdin?.end(input)
+  })
+  const cli = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const api = async (query, variables = {}) => { const v = JSON.parse(await native(cli, ['api', '--compact', query, '--variables', '@-'], JSON.stringify(variables))); guard(!v.errors && object(v.data), 'RAILWAY_API_UNCONFIRMED'); return v }
+  const context = async () => validateContext(await api('query($e:String!,$p:String!,$input:DeploymentListInput!){environment(id:$e,projectId:$p){id name projectId serviceInstances(first:100){edges{node{serviceId environmentId activeDeployments{id status projectId environmentId serviceId}}}pageInfo{hasNextPage}}}deployments(first:1,input:$input){edges{node{id}}pageInfo{hasNextPage}}}',
+    { e: PINS.environment, p: PINS.project, input: { projectId: PINS.project, environmentId: PINS.environment, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } }))
+  const inspect = async () => {
+    const before = await context(), vars = { p: PINS.project, e: PINS.environment }, fields = ['shared:variables(projectId:$p,environmentId:$e,serviceId:null,unrendered:true)']
+    for (const [i, s] of before.entries()) { vars[`s${i}`] = s.serviceId; fields.push(`r${i}:variables(projectId:$p,environmentId:$e,serviceId:$s${i},unrendered:true)`, `v${i}:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:$s${i})`) }
+    const answer = (await api(`query($p:String!,$e:String!,${before.map((_, i) => `$s${i}:String!`).join(',')}){${fields.join(' ')}}`, vars)).data
+    guard(object(answer.shared) && Object.values(answer.shared).every(v => typeof v === 'string' || v === null), 'SHARED_SHAPE_INVALID')
+    const value = { context: before, shared: answer.shared, maps: before.map((s, i) => ({ serviceId: s.serviceId, raw: answer[`r${i}`], rendered: answer[`v${i}`] })) }
+    assertNoReferences(value.maps); assertSharedReferences(value.shared); guard(JSON.stringify(before) === JSON.stringify(await context()), 'CONTEXT_CHANGED_DURING_READ'); return value
+  }
+  const acl = async (path, directory) => { const stat = await lstat(path); guard((directory ? stat.isDirectory() : stat.isFile()) && !stat.isSymbolicLink() && (await realpath(path)).toLowerCase() === resolve(path).toLowerCase(), 'PRIVATE_PATH_INVALID'); assertAcl(JSON.parse(await native(PINS.aclPowerShell, ['-NoProfile', '-NonInteractive', '-Command', ACL_SCRIPT], '', { ...env, SZ_BACKUP_ACL_TARGET: path }, 65_536)), directory) }
+  const writeIdentity = async (path, value) => { await acl(args.keyDirectory, true); const h = await open(path, 'wx', 0o600); try { await h.writeFile(value + '\n'); await h.sync() } finally { await h.close() }; await acl(path, false) }
+  let cfToken, identity
+  try {
+    await save({}); guard(sha(await readFile(PINS.aclPowerShell)) === PINS.aclPowerShellSha, 'ACL_POWERSHELL_PIN'); await acl(args.keyDirectory, true)
+    for (const [path, hash] of [[join(ROOT, CF.cli), CF.cliSha], [join(ROOT, PINS.config), PINS.configSha], [join(CACHE, 'staging-reconcile-cron-activate-r2.mjs'), PINS.helperSha], [join(PINS.ageDirectory, 'age.exe'), PINS.ageSha], [join(PINS.ageDirectory, 'age-keygen.exe'), PINS.keygenSha]]) guard(sha(await readFile(path)) === hash, 'SOURCE_OR_BINARY_PIN')
+    guard((await native(cli, ['--version'])).trim() === 'railway 5.62.1', 'RAILWAY_VERSION')
+    const empty = join(out, 'empty-public.env'), h = await open(empty, 'wx', 0o600); await h.sync(); await h.close()
+    const cfEnv = environmentFor(process.env), cfArgs = ['--config', join(ROOT, PINS.config), '--env-file', empty]
+    const credentials = JSON.parse(await native(process.execPath, ['--no-warnings', join(ROOT, CF.cli), 'auth', 'token', '--json', ...cfArgs], '', cfEnv, 131_072))
+    guard(['oauth', 'api_token'].includes(credentials.type) && typeof credentials.token === 'string' && credentials.token.length >= 16, 'CF_AUTH'); cfToken = credentials.token; delete credentials.token
+    const get = async suffix => {
+      guard(Date.now() < deadline, 'DEADLINE'); const response = await fetch(`https://api.cloudflare.com/client/v4/accounts/${PINS.account}/r2/buckets${suffix}`, { redirect: 'error', headers: { Authorization: `Bearer ${cfToken}` }, signal: AbortSignal.timeout(Math.min(15_000, deadline - Date.now())) })
+      if (response.status !== 200) { await response.body?.cancel(); throw new Refusal('CF_READ_UNCONFIRMED') }; const value = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(await boundedResponse(response, 1_048_576))); guard(value.success === true && Array.isArray(value.errors) && value.errors.length === 0, 'CF_API_UNCONFIRMED'); return value
+    }
+    const bucket = async () => {
+      let cursor = '', found = false; const seen = new Set()
+      for (let page = 0; page < 10; page++) {
+        const v = await get(`?name_contains=${PINS.bucket}&per_page=100${cursor ? '&cursor=' + encodeURIComponent(cursor) : ''}`)
+        guard(Array.isArray(v.result?.buckets) && object(v.result_info), 'BUCKET_LIST_INVALID')
+        for (const b of v.result.buckets) if (b.name === PINS.bucket) { guard(!found, 'BUCKET_DUPLICATE'); found = true }
+        cursor = v.result_info?.cursor ?? ''; guard(typeof cursor === 'string' && !seen.has(cursor), 'BUCKET_PAGINATION_INVALID'); if (!cursor) break; seen.add(cursor); guard(page < 9, 'BUCKET_PAGINATION_LIMIT')
+      }
+      if (!found) return { exists: false, name: PINS.bucket }
+      const values = []; for (const suffix of ['', '/domains/managed', '/domains/custom', '/lifecycle']) values.push((await get('/' + PINS.bucket + suffix)).result)
+      return validateBucket(...values)
+    }
+    const currentBucket = await bucket(), before = await inspect(); guard(!own(before.shared, PINS.key) || args.mode !== 'identity', 'SHARED_IDENTITY_ALREADY_PRESENT')
+    await save({ bucket: currentBucket, servicesObserved: before.context.length, context: before.context, sharedIdentityPresent: own(before.shared, PINS.key), applicationReferenceCount: 0, aclVerified: true })
+    if (args.mode === 'read') { await save({ state: 'READ_COMPLETE' }); return 0 }
+    if (args.mode === 'bucket' && currentBucket.exists) { await save({ state: 'BUCKET_ALREADY_PRIVATE_NO_WRITE' }); return 0 }
+    if (args.mode === 'identity') guard(currentBucket.exists, 'PRIVATE_BUCKET_REQUIRED')
+    const keyPath = join(args.keyDirectory, KEY_FILE), recoveredPath = join(args.keyDirectory, RECOVERED_FILE), keygen = join(PINS.ageDirectory, 'age-keygen.exe')
+    const success = await writeOnce({ preflight: async () => { assertUnchanged(before, await inspect()); guard(JSON.stringify(currentBucket) === JSON.stringify(await bucket()), 'BUCKET_CHANGED') },
+      reserve: () => reserve(CACHE, args.mode, { operation: args.mode, project: PINS.project, environment: PINS.environment, bucket: PINS.bucket, key: PINS.key, run: args.run, createdAt: new Date().toISOString() }),
+      checkpoint: async value => save({ ...value, bucketCreateAttempts: args.mode === 'bucket' ? value.mutationAttempts ?? receipt.bucketCreateAttempts : 0, sharedWriteAttempts: args.mode === 'identity' ? value.mutationAttempts ?? receipt.sharedWriteAttempts : 0 }),
+      prepare: async () => {
+        if (args.mode !== 'identity') return
+        identity = await consumeExistingIdentity({ verifyAcl: async () => { await acl(keyPath, false); guard((await lstat(keyPath)).size <= 8192, 'IDENTITY_FILE_SIZE') }, read: () => readFile(keyPath), recipient: value => native(keygen, ['-y'], value + '\n') })
+        await save({ existingLocalIdentityConsumed: true, identityGenerated: false })
+        assertUnchanged(before, await inspect())
+      },
+      send: async () => {
+        if (args.mode === 'bucket') { await native(process.execPath, ['--no-warnings', join(ROOT, CF.cli), 'r2', 'bucket', 'create', PINS.bucket, ...cfArgs], '', cfEnv); return true }
+        const request = mutationRequest(identity), reply = JSON.parse(await native(cli, request.argv, request.stdin)); return !reply.errors && reply.data?.variableCollectionUpsert === true
+      },
+      readback: async () => {
+        const after = await inspect(); assertUnchanged(before, after, args.mode === 'identity' ? identity : undefined)
+        const observed = await bucket(); guard(observed.exists, 'BUCKET_NOT_CONFIRMED'); await save({ bucket: observed, deploymentsUnchanged: true, unrelatedReadableVariablesUnchanged: true, applicationReferenceCount: 0 })
+        if (args.mode === 'identity') {
+          guard(typeof identity === 'string' && after.shared[PINS.key] === identity, 'IDENTITY_NOT_CONFIRMED'); await writeIdentity(recoveredPath, after.shared[PINS.key])
+          const recipient = (await native(keygen, ['-y'], after.shared[PINS.key] + '\n')).trim(); guard(/^age1[0-9a-z]{40,100}$/.test(recipient), 'RECIPIENT_INVALID')
+          const probe = 'backup-key-recovery-' + randomBytes(32).toString('hex'), encrypted = await native(join(PINS.ageDirectory, 'age.exe'), ['-a', '-r', recipient], probe)
+          guard(await native(join(PINS.ageDirectory, 'age.exe'), ['-d', '-i', recoveredPath], encrypted) === probe, 'RECOVERY_PROBE_FAILED'); await save({ recoveryVerified: true, recoveredIdentityPersisted: true })
+        }
+      } })
+    return success ? 0 : 1
+  } catch (e) { await save({ state: receipt.mutationAttempts ? 'STOPPED_AFTER_INTENT_NO_RETRY' : 'REFUSED_BEFORE_MUTATION', failureCode: e instanceof Refusal ? e.code : 'LOCAL_OR_PROVIDER_UNCONFIRMED' }); return 1 }
+  finally { cfToken = undefined; identity = undefined; await save({ finishedAt: new Date().toISOString(), durationMs: Date.now() - started }); console.log(JSON.stringify({ output: args.run, state: receipt.state, bucketCreateAttempts: receipt.bucketCreateAttempts, sharedWriteAttempts: receipt.sharedWriteAttempts, recoveryVerified: receipt.recoveryVerified, remoteOutcomeUnknown: receipt.remoteOutcomeUnknown })) }
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) main().then(code => { process.exitCode = code }, () => { console.error('LOCAL_STORAGE_PREPARATION_UNCONFIRMED'); process.exitCode = 1 })

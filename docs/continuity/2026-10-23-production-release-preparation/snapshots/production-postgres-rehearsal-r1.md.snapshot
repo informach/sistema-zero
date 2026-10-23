@@ -1,0 +1,54 @@
+# PostgreSQL production: encrypted logical backup rehearsal
+
+Prepared for Root execution only. The preparation agent has not run this caller, a production dump, or a restore. The separate clone-r1 proof already passed under Root and remains immutable. Clone-r2 only adds the awaited durable ownership checkpoint before `docker create`; its Docker configuration is unchanged.
+
+## Root command
+
+Use Node 24.22.0 and the existing working tree. The recipient is public. The identity must already have been recovered from the approved durable key source and written to a restricted local file outside every checkout. The ciphertext parent directory must exist, also outside every checkout; its filename must be new and end in `.age`.
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' `
+  '.cache/python-reference-games/production-postgres-rehearsal-r1.mjs' `
+  'production-postgres-rehearsal-root-r1' `
+  $publicAgeRecipient $newCiphertextAbsolutePath $recoveredIdentityAbsolutePath
+```
+
+Do not place an AGE private key, connection URL, or database password in an argument. The caller takes only the identity file path. Local ACLs and durable identity/ciphertext storage are separate Root operations; this caller does not claim to have established them.
+
+## Fixed operation and receipt
+
+The caller checks source pins, runs the reviewed PostgreSQL execution preflight, and performs one fixed SSH `pg_dump` against the pinned production PG service/instance. Credentials remain in the remote PG environment. The script enforces the four Railway identities, PostgreSQL 18.6 client version, loopback:5432, read-only startup options, a 60-second statement timeout, and a 5-second lock timeout. It emits only custom-format archive bytes.
+
+Node streams buffers directly from SSH stdout to AGE, with incremental plaintext/ciphertext hashes and byte counts, a 1 GiB plaintext cap, PGDMP signature check, both process exit codes, exclusive ciphertext creation and fsync. PowerShell never carries archive bytes. Nonzero exits, stderr, truncation, failed authentication, or byte/hash disagreement prevent qualification. The receipt records no database URL, credentials, raw stderr, or row data. Failure preserves the attempt and any partial ciphertext; there is no automatic retry.
+
+A second execution preflight must preserve the pinned target context and technical metadata. The complete ciphertext is then decrypted into a hash sink, through authenticated EOF, before any restore starts. This is a full pass, not a header check.
+
+Before `docker create`, the caller fsyncs a receipt containing the proposed unique name and nonce and `id: null`. A failed checkpoint prevents create. A lost create ACK returns `CREATE_OUTCOME_UNCONFIRMED_NO_RETRY` with that owner record. No code searches for or deletes a container by name. Any explicit recovery would first need an independent inspected CID, matching nonce label and image.
+
+The new local clone uses image `sha256:5a5a84b19854a9ffaa54082c166ff4ec27473a361e496e5ea167f298f2da9722`, the fixed local Docker named pipe, no network or ports, no host mounts, a read-only root filesystem, tmpfs storage, user `postgres`, all capabilities dropped, no-new-privileges, 384 MiB memory/swap, one CPU and 64 PIDs. Only its acknowledged, inspected own CID is used or removed. PostgreSQL 18.6, UTF8, libc `en_US.utf8`, glibc collation version 2.41, and pg_trgm 1.6 availability are verified before the restore. A fresh `sz_restore` database comes from template0 with the same locale.
+
+The already authenticated archive is decrypted again and streamed to `pg_restore --exit-on-error --single-transaction --no-owner --no-privileges`. Both streaming processes must exit zero and reproduce both hashes and byte counts. There is no plaintext file and no early-exiting TOC/list consumer. The full restore is the custom-format proof. A five-minute consumer deadline cannot produce acceptance after forced termination.
+
+The restored database must pass the same locale/extensions projection, counts of tables/indexes/sequences, the canonical 14 Pensa technical-count projections, and the latest Members/Hub migration journal entries. These are read-only repeatable-read queries against the local clone. Unknown returned fields are stripped. The clone must be removed and its CID confirmed absent. A final full ciphertext authentication pass must succeed.
+
+Only then may the receipt state be `LOCAL_LOGICAL_RESTORE_REHEARSAL_VERIFIED_NOT_FINAL_BACKUP` with `restoreQualified: true`. Receipt location is the exclusive directory `.cache/python-reference-games/<run>/receipt.json`; the two preflight receipts have their own exclusive directories. No attempt overwrites an earlier run.
+
+## Limits
+
+- A normal pg_dump provides a consistent logical snapshot while writers may continue. This rehearsal does not compare live row counts with that snapshot and does not establish a writer fence.
+- `productionWritersFenced`, `sourceRowsSnapshotComparison`, `finalPreMigrationBackup`, and `durableCopyQualified` remain false. A fresh final backup is still required after the reviewed writer fence and before destructive migrations.
+- This proves one database's logical data/schema restoration with ownership and ACL restoration omitted. It is not a cluster-role, ACL, PITR, or full infrastructure recovery proof.
+- The restored technical counts and journal hashes are observations, not an assertion that they equal later production state. Absent old Pensa relations are reported explicitly.
+- The current preflight pins the current old Members deployment as well as PG. A later maintenance reload changes that deployment and requires an explicitly reviewed fresh pin; the caller never retargets automatically.
+- Exit/byte evidence establishes this actual capture only. Local synthetic transport tests and the separate blank-clone proof do not by themselves qualify the production archive.
+- Durable ciphertext upload/download, private bucket settings, identity provider readback, local ACL verification, and recovered-key proof remain the separate durable-storage operation. Neither a local successful restore nor this receipt claims those steps happened.
+
+## Local tests performed during preparation
+
+Node 24.22.0: 7/7 focused tests passed in 107.94 ms, with no Docker/provider calls. They cover failed/unsettled ownership checkpoints, lost create ACK without replay or invented CID, complete authentication requirements, preserved absence/allowlisted output, invalid counts/journals, and real psql conditional metacommands. The original transport's 13 real Node/AGE tests and Root's real isolated clone-r1 proof remain separate evidence; they were not rerun or overwritten here.
+
+```powershell
+& 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe' --test `
+  '.cache/python-reference-games/production-postgres-isolated-clone-r2.test.mjs' `
+  '.cache/python-reference-games/production-postgres-rehearsal-r1.test.mjs'
+```

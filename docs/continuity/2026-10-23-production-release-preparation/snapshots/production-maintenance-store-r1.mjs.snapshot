@@ -1,0 +1,257 @@
+/** Private phase 1 only. Import is inert. Root alone may execute apply. */
+import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { lstat, mkdir, open, readFile, rename } from 'node:fs/promises'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+export const KEY = 'RELEASE_MAINTENANCE_MODE'
+export const PINS = Object.freeze({ project: '415d5a1c-5f75-432c-8445-b395d0977ce3', environment: '19c212a5-85c0-493c-9630-a7a0569e8412', node: '24.22.0', railway: 'railway 5.62.1', phase: 'store-full-only',
+  maintenancePlanSha256: '6f6ac9aab04dc4bf124839eec10a9c5cf6e2205535f693b8bceb8c61b1fd7330', launcherSha256: '9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f' })
+export const LIMITS = Object.freeze({ proofMs: 30 * 60000, checkMs: 10 * 60000, operationMs: 300000, commandMs: 20000, bytes: 8388608 })
+export const SERVICES = Object.freeze({
+  members: { name: 'Members', id: 'aa282801-ffba-477c-af6d-394b2f4f9af9', deployment: '9d8368c2-d915-4dbf-898c-28c2b7978133', snapshot: 'da40af1e-d385-4d22-86a9-dd4186202fa0', instance: '22602b2c-be12-40d1-81d8-0240f6a0cbf1', commit: '6f93dcbfe8f176017b7b1ace5114d480ad5853b1', image: 'sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847', start: 'bun scripts/release/start.mjs packages/members/src/index.ts', preDeploy: 'bun run --filter @sistemazero/members db:migrate', entries: 102, lastWhen: '1791666505573', lastSql: 'aeec373386062616efe036d4bc0da327cb05f9f7b6f8259bec32e8ac6a00fe91' },
+  kids: { name: 'Kids', id: 'fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f', deployment: '48c12111-5bb3-449a-90d4-525af1f51aa8', snapshot: '9eea1241-4d0c-44ad-bb2b-07e4840bf165', instance: '9ce89396-deb2-4d34-b049-46ca526f2a3d', commit: '91d3e99aae0b602e9ad5548efb2106355f9fe801', image: 'sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed', start: null, preDeploy: null },
+  adult: { name: 'Adult', id: '9df1b493-4cea-4b36-bec8-7299f054c17d', deployment: '9b8cf594-86f8-4534-bde9-000d433fd836', snapshot: 'f7db585d-8d27-4d37-ae7c-d04818e5fc6a', instance: '88b17e4e-7e4c-4b2c-a36e-35e094534cd8', commit: 'e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28', image: 'sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74', start: null, preDeploy: null },
+  admin: { name: 'Admin', id: 'e00eca0b-5323-4424-9b58-fdb073cfce82', deployment: '10c8d309-1f50-4b52-aa47-693543b010f1', snapshot: 'a6b45897-402d-414c-9e11-c676b347d96d', instance: '1de2a327-ea3c-49f0-9e5f-865aed778964', commit: '6f93dcbfe8f176017b7b1ace5114d480ad5853b1', image: 'sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8', start: null, preDeploy: null },
+  hub: { name: 'Hub', id: '00b27b18-0587-460b-ba90-b6b24c423e45', deployment: 'ba08042b-d2bf-4063-87e7-97ea452cf030', snapshot: 'c8c099f8-3b7f-4695-9035-76fd13c59806', instance: 'c2051063-6c37-44b9-8a51-eb3ec5380632', commit: 'a270417ba4acffe97629793bb3fb62ac0e134519', image: 'sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241', start: 'bun scripts/release/start.mjs packages/hub/src/index.ts', preDeploy: 'bun run --filter @sistemazero/hub db:migrate', entries: 14, lastWhen: '1789121671089', lastSql: 'e2e7500e33be126202adb61a18f4ad7e583ece8dbffe7b6552060501cf4ef9bd' },
+})
+const names = Object.keys(SERVICES), sha = value => createHash('sha256').update(value).digest('hex')
+const object = value => value !== null && typeof value === 'object' && !Array.isArray(value)
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+const keys = (value, wanted) => object(value) && same(Object.keys(value).sort(), [...wanted].sort())
+const digest = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value)
+const absent = value => value === null || value === undefined || value === '' || (Array.isArray(value) && !value.length)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function check(condition, code) { if (!condition) throw new Refusal(code) }
+const safeError = error => error instanceof Refusal ? error.code : 'LOCAL_OR_PROVIDER_UNCONFIRMED'
+function fresh(value, maximum, now, code) { const age = now - Date.parse(value); check(Number.isFinite(age) && age >= 0 && age <= maximum, code) }
+function reference(value) { return keys(value, ['path', 'sha256']) && typeof value.path === 'string' && value.path.startsWith('.cache/python-reference-games/') && digest(value.sha256) }
+
+export function argumentsFor(args) {
+  const [mode, service, run, input, expected, ...extra] = args
+  check(['check', 'apply'].includes(mode) && names.includes(service) && typeof run === 'string' && new RegExp(`^production-maintenance-${mode}-${service}-[a-z0-9-]+$`).test(run) && typeof input === 'string' && digest(expected) && !extra.length, 'ARGUMENTS_INVALID')
+  return { mode, service, run, input, expected }
+}
+export function validatePlan(value, now = Date.now()) {
+  check(keys(value, ['kind', 'version', 'projectId', 'environmentId', 'phase', 'createdAt', 'expiresAt', 'maintenancePlan', 'proofs']) && value.kind === 'production-maintenance-store-plan' && value.version === 1 && value.projectId === PINS.project && value.environmentId === PINS.environment && value.phase === PINS.phase, 'PLAN_INVALID')
+  fresh(value.createdAt, LIMITS.proofMs, now, 'PLAN_STALE')
+  const expires = Date.parse(value.expiresAt), created = Date.parse(value.createdAt)
+  check(Number.isFinite(expires) && expires > now && expires > created && expires - created <= LIMITS.proofMs, 'PLAN_EXPIRED_OR_TOO_LONG')
+  check(reference(value.maintenancePlan) && value.maintenancePlan.sha256 === PINS.maintenancePlanSha256 && keys(value.proofs, ['launchers', 'journals', 'next']) && Object.values(value.proofs).every(reference), 'PLAN_REFERENCE_INVALID')
+  return value
+}
+function assertView(view, service) {
+  const target = SERVICES[service]
+  check(view?.deploymentId === target.deployment && view.snapshotId === target.snapshot && view.commit === target.commit && view.imageDigest === target.image, 'PROOF_TARGET_CHANGED')
+}
+export function validateEvidence(proofs, now = Date.now()) {
+  check(keys(proofs, ['launchers', 'journals', 'next']), 'EVIDENCE_SET_INVALID')
+  for (const proof of Object.values(proofs)) {
+    check(proof?.projectId === PINS.project && proof.environmentId === PINS.environment, 'PROOF_ENVIRONMENT_CHANGED')
+    fresh(proof.finishedAt, LIMITS.proofMs, now, 'OBSERVATIONAL_PROOF_STALE')
+  }
+  const launcher = proofs.launchers
+  check(launcher.kind === 'production-pensa-writer-images-readonly' && launcher.version === 2 && launcher.state === 'FIVE_ACTIVE_IMAGES_AND_INSTALLED_LAUNCHERS_VERIFIED' && launcher.mutations === 0 && launcher.sqlCalls === 0 && launcher.targets?.length === 5, 'LAUNCHER_PROOF_INVALID')
+  for (const service of names) {
+    const target = SERVICES[service], rows = launcher.targets.filter(row => row.name === target.name), row = rows[0]
+    check(rows.length === 1 && row.state === 'FRESH_IMAGE_AND_INSTALLED_LAUNCHER_VERIFIED' && row.serviceId === target.id, 'LAUNCHER_TARGET_INVALID')
+    assertView(row.before, service); assertView(row.after, service)
+    check(row.before.uniqueActive === true && row.after.uniqueActive === true && row.before.noPending === true && row.after.noPending === true && row.ssh?.selectedInstanceId === target.instance && row.ssh.state === 'INSTALLED_LAUNCHER_HASHED' && row.ssh.launcherSha256 === PINS.launcherSha256 && row.ssh.launcherBytes === 2726 && row.ssh.equalsGitRecipe === true && keys(row.ssh.identityChecks, ['project', 'environment', 'service', 'deployment', 'commit']) && Object.values(row.ssh.identityChecks).every(value => value === true), 'INSTALLED_LAUNCHER_UNCONFIRMED')
+  }
+  const journals = proofs.journals
+  check(journals.kind === 'production-old-image-migration-readonly' && journals.version === 1 && journals.state === 'BOTH_OLD_IMAGE_JOURNALS_MATCH_DATABASE' && journals.mutations === 0 && journals.migratorExecuted === false && journals.appImported === false && journals.targets?.length === 2, 'JOURNAL_PROOF_INVALID')
+  for (const service of ['members', 'hub']) {
+    const target = SERVICES[service], rows = journals.targets.filter(row => row.name === service), row = rows[0]
+    check(rows.length === 1 && row.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH', 'JOURNAL_TARGET_INVALID')
+    assertView(row.before, service); assertView(row.after, service)
+    const remote = row.remote, db = remote?.database
+    check(remote?.state === 'INSTALLED_AND_DATABASE_LAST_MIGRATION_MATCH' && keys(remote.identityChecks, ['project', 'environment', 'service', 'deployment', 'commit']) && Object.values(remote.identityChecks).every(value => value === true) && remote.matchesInstalledLast === true && remote.installed?.entries === target.entries && remote.installed.lastSqlSha256 === target.lastSql && String(remote.installed.last?.when) === target.lastWhen && db?.table === `drizzle.${service}_migrations` && db.readOnly === true && db.isolation === 'repeatable read' && db.databaseNameMatchesConnection === true && db.last?.sha256 === target.lastSql && db.last.when === target.lastWhen, 'INSTALLED_DATABASE_JOURNAL_MISMATCH')
+  }
+  const next = proofs.next
+  check(next.kind === 'production-next-predeploy-readonly' && next.version === 1 && next.state === 'THREE_NEXT_PREDEPLOY_AND_START_OVERRIDES_ABSENT' && next.providerMutations === 0 && next.sqlCalls === 0 && next.sshCalls === 0 && next.targets?.length === 3, 'NEXT_PROOF_INVALID')
+  for (const service of ['kids', 'adult', 'admin']) {
+    const rows = next.targets.filter(row => row.name === SERVICES[service].name), row = rows[0]
+    check(rows.length === 1 && row.state === 'ABSENCE_COHERENT_UNIQUE_SUCCESS' && row.preDeployAbsent === true && row.startOverrideAbsent === true, 'NEXT_COMMAND_PROOF_INVALID')
+    assertView(row.before, service); assertView(row.after, service)
+    for (const context of [row.before, row.after]) check(context.uniqueSuccess === true && context.noPending === true && Object.values(context.preDeploy ?? {}).length === 3 && Object.values(context.preDeploy).every(value => value === true) && Object.values(context.startOverride ?? {}).length === 3 && Object.values(context.startOverride).every(value => value === true), 'NEXT_COMMAND_PROOF_INVALID')
+  }
+}
+
+export function projectContext(raw) {
+  return names.map((service, index) => {
+    const target = SERVICES[service], instance = raw?.[`s${index}`], pending = raw?.[`p${index}`]
+    check(instance?.serviceId === target.id && instance.environmentId === PINS.environment, 'SERVICE_IDENTITY_CHANGED')
+    const validateDeployment = deployment => {
+      check(deployment?.id === target.deployment && deployment.projectId === PINS.project && deployment.environmentId === PINS.environment && deployment.serviceId === target.id && deployment.status === 'SUCCESS' && deployment.deploymentStopped === false && deployment.snapshotId === target.snapshot && deployment.meta?.commitHash === target.commit && deployment.meta.imageDigest === target.image, 'ACTIVE_DEPLOYMENT_CHANGED')
+    }
+    validateDeployment(instance.latestDeployment)
+    check(instance.activeDeployments?.length === 1 && pending?.edges?.length === 0 && pending.pageInfo?.hasNextPage === false, 'ACTIVE_OR_PENDING_CHANGED')
+    validateDeployment(instance.activeDeployments[0])
+    const deployment = instance.latestDeployment, manifest = deployment.meta?.serviceManifest?.deploy, resolved = instance.resolvedFileConfig
+    check(object(manifest) && Object.hasOwn(manifest, 'preDeployCommand') && Object.hasOwn(manifest, 'startCommand') && resolved?.deploymentId === target.deployment && resolved.commitHash === target.commit && object(resolved.fileManifest) && (resolved.fileManifest.deploy === undefined || object(resolved.fileManifest.deploy)), 'COMMAND_SOURCE_UNCONFIRMED')
+    const equivalent = (value, expected) => expected === null ? absent(value) : value === expected || (Array.isArray(value) && value.length === 1 && value[0] === expected)
+    check(equivalent(instance.preDeployCommand, target.preDeploy) && equivalent(manifest.preDeployCommand, target.preDeploy) && absent(resolved.fileManifest.deploy?.preDeployCommand) && equivalent(instance.startCommand, target.start) && equivalent(manifest.startCommand, target.start) && absent(resolved.fileManifest.deploy?.startCommand), 'PREDEPLOY_OR_START_CHANGED')
+    const running = deployment.instances?.filter(item => item.status === 'RUNNING')
+    check(Array.isArray(deployment.instances) && running?.length === 1 && running[0].id === target.instance && deployment.instances.every(item => /^[a-f0-9-]{36}$/.test(item.id) && ['RUNNING', 'REMOVED'].includes(item.status)), 'INSTANCE_SET_CHANGED')
+    const instances = deployment.instances.map(item => ({ id: item.id, status: item.status })).sort((a, b) => a.id.localeCompare(b.id))
+    return { service, serviceId: target.id, deploymentId: target.deployment, snapshotId: target.snapshot, commit: target.commit, imageDigest: target.image, uniqueSuccess: true, pendingCount: 0, commandsVerified: true, instances }
+  })
+}
+export function validateMaps(maps) {
+  check(keys(maps, names), 'VARIABLE_SERVICE_SET_INVALID')
+  for (const service of names) {
+    check(keys(maps[service], ['declared', 'rendered']), 'VARIABLE_MAP_SET_INVALID')
+    for (const values of Object.values(maps[service])) {
+      check(object(values) && Object.values(values).every(value => typeof value === 'string'), 'VARIABLE_MAP_INVALID')
+      for (const [key, expected] of [['RAILWAY_PROJECT_ID', PINS.project], ['RAILWAY_ENVIRONMENT_ID', PINS.environment], ['RAILWAY_SERVICE_ID', SERVICES[service].id]]) if (Object.hasOwn(values, key)) check(values[key] === expected, 'VARIABLE_IDENTITY_CHANGED')
+    }
+  }
+}
+export function maintenanceStates(maps, selected) {
+  validateMaps(maps)
+  const result = names.map(service => {
+    const { declared, rendered } = maps[service], has = Object.hasOwn(declared, KEY)
+    check(has === Object.hasOwn(rendered, KEY) && declared[KEY] === rendered[KEY], 'MAINTENANCE_REFERENCE_OR_INHERITANCE_REFUSED')
+    const state = !has ? 'absent' : declared[KEY] === 'off' ? 'off' : declared[KEY] === 'full' ? 'full' : 'unexpected'
+    check(state !== 'unexpected', 'MAINTENANCE_VALUE_UNEXPECTED')
+    if (service === selected) check(state !== 'full', 'SELECTED_ALREADY_FULL_RECONCILE_REQUIRED')
+    return { service, state }
+  })
+  return result
+}
+export function assertPreserved(before, after, selected, desired = false) {
+  validateMaps(before); validateMaps(after)
+  for (const service of names) for (const kind of ['declared', 'rendered']) {
+    const expected = desired && service === selected ? { ...before[service][kind], [KEY]: 'full' } : before[service][kind]
+    const actual = after[service][kind], wantedKeys = Object.keys(expected).sort(), actualKeys = Object.keys(actual).sort()
+    check(same(wantedKeys, actualKeys) && wantedKeys.every(key => expected[key] === actual[key]), 'VARIABLE_MAP_CHANGED')
+  }
+}
+export function intentName(service) { check(names.includes(service), 'SERVICE_INVALID'); return `production-maintenance-store-${service}.intent.json` }
+export async function reserveIntent(directory, service, record) {
+  let handle
+  try { handle = await open(join(directory, intentName(service)), 'wx', 0o600) } catch { throw new Refusal('PERMANENT_INTENT_EXISTS_OR_UNAVAILABLE') }
+  try { await handle.writeFile(JSON.stringify(record) + '\n'); await handle.sync() } finally { await handle.close() }
+}
+export function mutationRequest(service) {
+  check(names.includes(service), 'SERVICE_INVALID')
+  return { argv: ['variable', 'set', KEY, '--stdin', '--skip-deploys', '--project', PINS.project, '--environment', PINS.environment, '--service', SERVICES[service].id, '--json'], stdin: 'full' }
+}
+export async function storeOnce(service, baseline, deps) {
+  maintenanceStates(baseline.maps, service)
+  const freshInspection = await deps.inspect()
+  check(same(freshInspection.context, baseline.context), 'DEPLOYMENT_CHANGED')
+  assertPreserved(baseline.maps, freshInspection.maps, service)
+  await deps.preflight()
+  await deps.reserve()
+  await deps.checkpoint({ state: 'STORE_FULL_INTENT', mutationAttempts: 1, cliAcknowledged: false, remoteOutcomeUnknown: true })
+  let acknowledged = false, checkpointFailed = false, readbackVerified = false, contextUnchanged = false, failureCode
+  try { acknowledged = await deps.send(mutationRequest(service)) === true } catch { /* Unknown outcome, never replay. */ }
+  try { await deps.checkpoint({ state: acknowledged ? 'ACKNOWLEDGED_READBACK_PENDING' : 'ACK_UNKNOWN_READBACK_PENDING', cliAcknowledged: acknowledged }) } catch { checkpointFailed = true }
+  try {
+    const after = await deps.inspect()
+    contextUnchanged = same(after.context, baseline.context)
+    check(contextUnchanged, 'DEPLOYMENT_CHANGED')
+    assertPreserved(baseline.maps, after.maps, service, true)
+    readbackVerified = true
+  } catch (error) { failureCode = safeError(error) }
+  const qualified = acknowledged && readbackVerified && contextUnchanged && !checkpointFailed
+  const result = { state: qualified ? 'CONFIGURATION_STORED_NO_RELOAD' : !acknowledged ? readbackVerified ? 'ACK_UNKNOWN_READBACK_MATCHED_NO_REPLAY' : 'ACK_UNKNOWN_READBACK_UNCONFIRMED_NO_REPLAY' : 'ACKNOWLEDGED_READBACK_UNCONFIRMED',
+    mutationAttempts: 1, cliAcknowledged: acknowledged, remoteOutcomeUnknown: !acknowledged, readbackVerified, contextUnchanged, allOtherVariablesByteEqual: readbackVerified, configuredFull: readbackVerified, maintenanceActivatedByThisOperator: false,
+    ...(checkpointFailed ? { failureCode: 'POST_SEND_CHECKPOINT_FAILED' } : failureCode ? { failureCode } : {}) }
+  await deps.checkpoint(result)
+  return result
+}
+export function validateCheck(receipt, service, operatorSha, now = Date.now()) {
+  check(receipt?.kind === 'production-maintenance-store' && receipt.version === 1 && receipt.mode === 'check' && receipt.service === service && receipt.state === 'READ_ONLY_READY' && receipt.operatorSha256 === operatorSha && same(receipt.pins, PINS) && same(receipt.targets, SERVICES) && receipt.mutationAttempts === 0 && receipt.skipDeploys === true && receipt.maintenanceActivatedByThisOperator === false && receipt.mapsStable === true && reference(receipt.plan), 'CHECK_RECEIPT_INVALID')
+  fresh(receipt.finishedAt, LIMITS.checkMs, now, 'CHECK_RECEIPT_STALE')
+  return receipt.plan
+}
+
+async function readPinned(ref, maximum = 2097152) {
+  check(reference(ref), 'FILE_REFERENCE_INVALID')
+  const path = resolve(ROOT, ref.path), rel = relative(CACHE, path)
+  check(rel && !rel.startsWith('..') && !rel.includes(':'), 'REFERENCE_OUTSIDE_CACHE')
+  const stat = await lstat(path); check(stat.isFile() && !stat.isSymbolicLink() && stat.size <= maximum, 'PINNED_FILE_INVALID')
+  const bytes = await readFile(path); check(bytes.length <= maximum && sha(bytes) === ref.sha256, 'PINNED_FILE_CHANGED')
+  return bytes
+}
+export async function main(argv = process.argv.slice(2)) {
+  const args = argumentsFor(argv)
+  check(process.versions.node === PINS.node && !process.versions.bun, 'NODE_VERSION')
+  const out = join(CACHE, args.run); await mkdir(out)
+  const started = Date.now(), deadline = started + LIMITS.operationMs, path = join(out, 'receipt.json')
+  const operatorSha = sha(await readFile(FILE))
+  const receipt = { kind: 'production-maintenance-store', version: 1, mode: args.mode, service: args.service, state: 'PREPARING', startedAt: new Date(started).toISOString(), operatorSha256: operatorSha, pins: PINS, targets: SERVICES, mutationAttempts: 0, skipDeploys: true,
+    providerReloadsRequested: 0, providerDeploymentsRequested: 0, sqlCalls: 0, sshCalls: 0, generatedSecrets: false, variablesOrSecretHashesRecorded: false, maintenanceActivatedByThisOperator: false, compareAndSwapAvailable: false, externalWriterFreezeRequired: true, commandRetries: 0, cliInvocationsAreNotHttpAttemptCounts: true, temporaryIntentDeletionSupported: false }
+  const initial = await open(path, 'wx', 0o600); await initial.close()
+  const checkpoint = async patch => {
+    Object.assign(receipt, patch)
+    const temporary = path + '.pending', handle = await open(temporary, 'w', 0o600)
+    try { await handle.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await handle.sync() } finally { await handle.close() }
+    await rename(temporary, path)
+  }
+  const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe'), env = { ...process.env, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+  const native = (command, input = '') => new Promise((accept, reject) => {
+    check(Date.now() < deadline, 'OPERATION_DEADLINE')
+    const child = execFile(cli, command, { cwd: ROOT, env, encoding: 'utf8', windowsHide: true, timeout: Math.min(LIMITS.commandMs, deadline - Date.now()), maxBuffer: LIMITS.bytes }, (error, stdout) => error ? reject(new Refusal('NATIVE_OUTCOME_UNCONFIRMED')) : accept(stdout))
+    child.stdin?.on('error', () => {}); child.stdin?.end(input)
+  })
+  let reads = 0, baseline, plan, proofs, checked
+  const allMaps = []
+  const api = async (query, variables) => {
+    check(/^query\b/.test(query) && !/\bmutation\b/.test(query), 'READ_ONLY_QUERY_REQUIRED'); reads++
+    const raw = JSON.parse(await native(['api', '--compact', query, '--variables', '@-'], JSON.stringify(variables)))
+    check(raw.data && !raw.errors, 'GRAPHQL_READ_UNCONFIRMED'); return raw.data
+  }
+  const fields = 'id projectId environmentId serviceId status deploymentStopped snapshotId meta instances{id status}'
+  const contextQuery = `query($e:String!,${names.map((_, i) => `$i${i}:DeploymentListInput!`).join(',')}){${names.map((service, i) => `s${i}:serviceInstance(serviceId:"${SERVICES[service].id}",environmentId:$e){serviceId environmentId preDeployCommand startCommand resolvedFileConfig{deploymentId commitHash fileManifest}activeDeployments{${fields}}latestDeployment{${fields}}}p${i}:deployments(first:20,input:$i${i}){edges{node{id status}}pageInfo{hasNextPage}}`).join('\n')}}`
+  const contextVariables = { e: PINS.environment, ...Object.fromEntries(names.map((service, i) => [`i${i}`, { projectId: PINS.project, environmentId: PINS.environment, serviceId: SERVICES[service].id, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } }])) }
+  const readContext = async () => projectContext(await api(contextQuery, contextVariables))
+  const mapsQuery = `query($p:String!,$e:String!){${names.map((service, i) => `d${i}:variables(projectId:$p,environmentId:$e,serviceId:"${SERVICES[service].id}",unrendered:true)r${i}:variablesForServiceDeployment(projectId:$p,environmentId:$e,serviceId:"${SERVICES[service].id}")`).join('\n')}}`
+  const inspect = async () => {
+    const before = await readContext(), raw = await api(mapsQuery, { p: PINS.project, e: PINS.environment })
+    const maps = Object.fromEntries(names.map((service, i) => [service, { declared: raw[`d${i}`], rendered: raw[`r${i}`] }]))
+    allMaps.push(maps); validateMaps(maps)
+    const after = await readContext(); check(same(before, after), 'DEPLOYMENT_CHANGED_DURING_INSPECTION')
+    return { context: after, maps }
+  }
+  try {
+    await checkpoint({})
+    let intentExists = true
+    try { await lstat(join(CACHE, intentName(args.service))) } catch (error) { if (error?.code === 'ENOENT') intentExists = false; else throw new Refusal('INTENT_INSPECTION_UNCONFIRMED') }
+    check(!intentExists, 'PERMANENT_INTENT_ALREADY_EXISTS')
+    const inputRef = { path: args.input.replaceAll('\\', '/'), sha256: args.expected }, input = JSON.parse((await readPinned(inputRef)).toString('utf8'))
+    let planRef = inputRef
+    if (args.mode === 'apply') { checked = input; planRef = validateCheck(input, args.service, operatorSha); receipt.checkReceipt = inputRef }
+    plan = validatePlan(args.mode === 'check' ? input : JSON.parse((await readPinned(planRef)).toString('utf8')))
+    await readPinned(plan.maintenancePlan)
+    proofs = Object.fromEntries(await Promise.all(Object.entries(plan.proofs).map(async ([name, ref]) => [name, JSON.parse((await readPinned(ref)).toString('utf8'))])))
+    validateEvidence(proofs)
+    receipt.plan = planRef; receipt.proofs = plan.proofs
+    check((await native(['--version'])).trim() === PINS.railway, 'RAILWAY_VERSION')
+    baseline = await inspect(); receipt.beforeContext = baseline.context
+    receipt.maintenanceStates = maintenanceStates(baseline.maps, args.service)
+    if (checked) check(same(checked.beforeContext, baseline.context) && same(checked.maintenanceStates, receipt.maintenanceStates), 'CONTEXT_OR_MAINTENANCE_CHANGED_SINCE_CHECK')
+    const preflight = async () => { validatePlan(plan); validateEvidence(proofs); if (checked) validateCheck(checked, args.service, operatorSha) }
+    if (args.mode === 'check') {
+      const after = await inspect(); check(same(after.context, baseline.context), 'DEPLOYMENT_CHANGED'); assertPreserved(baseline.maps, after.maps, args.service); await preflight()
+      await checkpoint({ afterContext: after.context, mapsStable: true, state: 'READ_ONLY_READY' })
+    } else {
+      await storeOnce(args.service, baseline, { inspect, preflight,
+        reserve: () => reserveIntent(CACHE, args.service, { kind: 'production-maintenance-store-intent', phase: PINS.phase, projectId: PINS.project, environmentId: PINS.environment, service: args.service, serviceId: SERVICES[args.service].id, targetDeployment: SERVICES[args.service].deployment, operatorSha256: operatorSha, planSha256: planRef.sha256, checkReceiptSha256: args.expected, run: args.run, createdAt: new Date().toISOString() }),
+        checkpoint, send: async request => { await native(request.argv, request.stdin); return true } })
+    }
+  } catch (error) {
+    await checkpoint({ state: receipt.mutationAttempts ? 'STORE_ATTEMPT_UNCONFIRMED_NO_REPLAY' : 'PREFLIGHT_REFUSED', failureCode: safeError(error) })
+  } finally {
+    for (const maps of allMaps) for (const entry of Object.values(maps)) for (const values of Object.values(entry)) if (object(values)) for (const key of Object.keys(values)) delete values[key]
+    await checkpoint({ finishedAt: new Date().toISOString(), durationMs: Date.now() - started, graphqlReadCalls: reads })
+  }
+  console.log(JSON.stringify({ output: args.run, state: receipt.state, service: args.service, mutationAttempts: receipt.mutationAttempts, failureCode: receipt.failureCode ?? null, reloadsRequested: 0 }))
+  return ['READ_ONLY_READY', 'CONFIGURATION_STORED_NO_RELOAD'].includes(receipt.state) ? 0 : 1
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) main().then(code => { process.exitCode = code }, () => { console.error('LOCAL_INITIALIZATION_OR_RECEIPT_UNCONFIRMED'); process.exitCode = 1 })

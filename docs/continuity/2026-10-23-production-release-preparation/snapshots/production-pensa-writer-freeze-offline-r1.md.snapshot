@@ -1,0 +1,143 @@
+# Pensa: barreira de escrita antes da promoção de produção — revisão offline R1
+
+Preparado em 2026-10-23T00:58:28.829Z. Árvore local de referência: 582fba1163a42fd23f337822c3c0fe1ea69e6798.
+Estado: proposta e auditoria; NÃO é aceite de manutenção, de backup ou de migração.
+Operações desta revisão: leitura de arquivos/Git e criação deste arquivo privado. Zero chamadas de provider, SQL, deploy, restart ou teste de aplicação. Nenhuma manutenção deve começar antes do gate de staging e do plano final da raiz.
+
+## Conclusão
+
+Exclusividade de deploys/operadores não impede usuários e jobs de escrever. Há uma barreira de processo existente: RELEASE_MAINTENANCE_MODE=full no launcher scripts/release/start.mjs. Ela serve manutenção sem importar a aplicação. Não inventar flag Pensa nem presumir que RELEASE_SCHEMA_STAGE=hold influencia o preDeploy normal.
+
+Cercar somente Members, retirar TODOS os processos antigos e impedir operações diretas de banco é suficiente para impedir novas escritas dos writers conhecidos nas tabelas Pensa enquanto a barreira se mantiver. Essa é uma conclusão restrita ao banco e aos caminhos auditados. Não encerra IA já iniciada, exclusões R2 ou uploads assinados no Kids; não autoriza reabrir Members novo com o Kids antigo atendendo. Além disso, Members em manutenção já afeta cursos, matrículas, progresso e outros consumidores: não preserva a disponibilidade prometida para cursos/oficinas pelo plano Pensa seletivo.
+
+## Identidades reais: não são cinco imagens do mesmo SHA
+
+Inventário sanitizado já existente: .cache/python-reference-games/production-platform-config-readonly-r2.json, início 2026-10-22T21:36:15.684Z, conclusão 2026-10-22T21:36:37.896Z. Trata-se de observação histórica; repetir leitura antes de qualquer ação. Nenhuma leitura remota fresca nesta revisão.
+
+| Serviço | Service ID | Deployment observado | Commit da imagem | Digest observado |
+|---|---|---|---|---|
+| `admin` | `e00eca0b-5323-4424-9b58-fdb073cfce82` | `10c8d309-1f50-4b52-aa47-693543b010f1` | `6f93dcbfe8f176017b7b1ace5114d480ad5853b1` | `sha256:3e1fd717abfa951a42f8519c63e9cbf6a0dc00da41bad9a1a06940728f2381c8` |
+| `community` | `9df1b493-4cea-4b36-bec8-7299f054c17d` | `9b8cf594-86f8-4534-bde9-000d433fd836` | `e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28` | `sha256:5630cdaec0b329cb75b06517e3bdf70f65e2ecd250d5a598ca7f15b1fb923c74` |
+| `community-kids` | `fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f` | `48c12111-5bb3-449a-90d4-525af1f51aa8` | `91d3e99aae0b602e9ad5548efb2106355f9fe801` | `sha256:a521e9c80f5c4760e51ec15c991515e6e12d8a7050d82f46c21396cb52527bed` |
+| `hub` | `00b27b18-0587-460b-ba90-b6b24c423e45` | `ba08042b-d2bf-4063-87e7-97ea452cf030` | `a270417ba4acffe97629793bb3fb62ac0e134519` | `sha256:9a40a1894a3fac48411c65a216b0e8fce59e93f2c0cb064fda4fb138c2fc2241` |
+| `members` | `aa282801-ffba-477c-af6d-394b2f4f9af9` | `9d8368c2-d915-4dbf-898c-28c2b7978133` | `6f93dcbfe8f176017b7b1ace5114d480ad5853b1` | `sha256:de51a267455c1e4abfe2ee61a780150cee6c0f2f321afd9cb7811bec67e6c847` |
+
+Nos cinco commits exatos, o launcher tem o MESMO blob Git c4cfa508c3250e1692a7d45a9358f7d4ca1acb46, SHA-256 9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f. Todos os Dockerfiles correspondentes incluem esse arquivo (COPY explícito nos Next; COPY . . nos serviços Bun) e usam-no no CMD. Members e Hub também o declaram em startCommand no arquivo Railway da mesma revisão.
+
+Limite: isto comprova fonte + receita de build associadas aos SHAs reportados e os digests do inventário. Não extraí o filesystem das cinco imagens nem observei o startCommand remoto atual. Portanto NÃO é prova byte a byte do launcher dentro do container ativo. Antes de executar a manutenção, conferir snapshot/startCommand/entrypoint efetivos e, se necessária prova do conteúdo instalado, ler exclusivamente o hash de /app/scripts/release/start.mjs na imagem/deployment exato, sem carregar o app ou imprimir ambiente. A igualdade da receita não elimina override remoto.
+
+## Writers e efeitos que precisam ser distinguidos
+
+Referências antigas abaixo usam o commit de Members 6f93dcbfe8f176017b7b1ace5114d480ad5853b1 ou o commit real Kids 91d3e99aae0b602e9ad5548efb2106355f9fe801; hashes no apêndice.
+
+1. Members: interfaces/http/routes/pensa.routes.ts:177 registra /members/pensa; :193 cria projeto/ciclo, demais POST/PATCH/DELETE editam projetos, equipes, ciclos, conversas, artefatos, tarefas e progresso. infrastructure/persistence/drizzle/pensa.repository.ts concentra os INSERT/UPDATE/DELETE. Produto/ownership/autenticação não são uma barreira de manutenção.
+2. Purga fora da rota Pensa: user-data-purge.repository.ts:183–187 apaga projetos com cascata. Entradas admin.routes.ts:472 e internal.routes.ts:46 (/account-deletion/finalize) continuam possíveis enquanto Members antigo atende. Bloquear apenas /pensa no gateway não cobre isso.
+3. Kids Pensa: as rotas reais de packages/community-kids/src/app/api/pensa/** delegam ao member-shell. server/clients.ts:808–862 envia alterações a Members via gateway. Busca de imports/conexões postgres, drizzle-orm e DATABASE_URL nos fontes Kids + member-shell auditados não encontrou conexão direta ao banco. Não é um inventário global de todas as credenciais externas.
+4. IA Kids: routes/pensa-ai.ts:237–251 e :360–378 fazem leituras/quota em Members antes da chamada ao provedor. Uma nova solicitação normalmente falha antes da IA quando Members retorna manutenção; uma chamada que já passou por essas etapas pode continuar. Escritas em :313, :538 e :581 voltam ao Members e ficam recusadas durante a barreira. Em :662–669 o cancelamento do stream não cancela runGenerate: fechar aba/desconectar não comprova drenagem. IA antiga não foi observada em execução nesta revisão.
+5. R2 fora do banco: routes/creation-cleanup.ts:45–87 reclama job em Members, mas a exclusão dos prefixes ocorre diretamente no R2 antes do finalize/ack. Um job já reclamado pode excluir arquivos enquanto Members está em manutenção. routes/creations.ts:207–229 e :470 em diante também agenda exclusões após a resposta; suspender Members não cancela trabalho já enfileirado no processo Next.
+6. Uploads: routes/creations.ts:35 declara PUT_TTL_SECONDS=600; a reserva passa por Members (:321), mas PUT já assinado vai direto ao R2. A barreira impede novas reservas, não revoga URLs anteriores. Esperar 600 s desde a última emissão POSSÍVEL impede novas requisições com esses tickets quando a validade é efetivamente verificada; não prova o término de upload já iniciado nem a inexistência de outros emissores. Não usar TTL como prova geral de limpeza/retirada.
+7. Timers de Members 6f93: composition-root.ts:908–1027 inicia retenção, avisos, relatórios e lembretes. Não encontrei ali os workers Pensa de operações/voz/leases da versão nova. Não importar esse modelo novo para descrever a produção antiga.
+8. Adult e5ab: o pacote member-shell contém factories Pensa compartilhadas, porém a árvore de rotas do app Community nesse SHA não expõe /api/pensa nem a rota creation-cleanups observada no Kids. Não contar factory não exposta como worker em execução. Adult/Admin/Hub podem continuar escrevendo seus próprios dados enquanto só Members está cercado; isso importa para backup global/rollout, mesmo quando não escrevem diretamente as tabelas Pensa.
+
+## Apenas Members: o que resolve e o que não resolve
+
+- SIM, para um snapshot/contagem e migração SQL restritos, uma vez que todos os processos Members antigos terminaram e não há outros escritores diretos autorizados: BFFs não têm um caminho alternativo ao banco Pensa identificado nesta auditoria. Requisições em curso nas réplicas antigas devem ter terminado/abortado antes da contagem. Deployment SUCCESS sozinho não comprova aposentadoria de todos os processos anteriores.
+- NÃO, como congelamento completo de processamento, arquivos privados ou preservação da experiência. Kids pode manter geração e limpeza em voo; seus erros dependentes do Members substituiriam uma tela de manutenção coerente. Uma coleta de banco isolada também não certifica consistência global dos objetos R2.
+- Para encerrar processamento antigo de Pensa e a limpeza privada identificada, o recorte de processo mínimo identificado é Members + Kids, com retirada completa das réplicas antigas. O runbook de manutenção geral existente usa cinco serviços (Members, Kids, Adult, Admin, Hub), cobrindo o rollout mais amplo e uma apresentação uniforme. Não afirmar que os outros três são necessários para impedir INSERT Pensa em si.
+- Nenhuma dessas opções mantém cursos normalmente disponíveis: o Members já é dependência central. Se essa disponibilidade for requisito, falta um bloqueio seletivo implementado e qualificado; não há autorização implícita para inventá-lo nesta auditoria.
+
+## Members novo antes dos fronts
+
+A mudança Pensa é incompatível por contrato, independentemente de haver zero linhas. Kids antigo routes/pensa.ts:41 envia {name}; server/clients.ts:816 espera {project} com ciclos. O contrato novo packages/core/src/pensa/schemas.ts:476 exige {requestId,message}; metadata :488 exige requestId e expectedMetadataRevision. DELETE novo também exige requestId (Members pensa.routes.ts:143–150). Rotas antigas de ciclos/artefatos foram removidas. Não servir essa mistura como compatível: algumas chamadas serão recusadas e outras leituras terão contratos diferentes.
+
+Members novo pode ser implantado e permanecer em full enquanto os hosts compatíveis são implantados. Para inicialização/admissão e probes funcionais que exigem o app Members, a raiz precisa ordenar sua reabertura com os BFFs antigos já retirados/cercados. Só status=maintenance não satisfaz um teste funcional. Não concluo nesta auditoria que o controller da jornada pode completar integralmente sob manutenção; essa integração faz parte do plano final/ensaio staging.
+
+## PreDeploy, migrations e limites dos operadores existentes
+
+- .railway/services/members.json (antigo e atual) declara bun run --filter @sistemazero/members db:migrate. package.json resolve para drizzle-kit migrate. O preDeploy acontece antes de o launcher servir manutenção.
+- RELEASE_SCHEMA_STAGE=hold só é lido por packages/members/scripts/production-schema-a.ts; não é usado pelo preDeploy vigente. Defini-lo sem mudar a operação NÃO impede 0126/0128.
+- A instalação da barreira deve usar a imagem antiga exata. Seu migrator só conhece o journal dessa imagem; conferir que o banco está na fronteira esperada antes dessa operação, para não esconder migration pendente no passo preparatório.
+- O recibo de contagem 2026-10-22T20:12:25.212Z–20:12:31.493Z encontrou seis tabelas Pensa com zero linhas, vínculos pensa- de creations zero e várias tabelas ausentes. O journal final observado, 1791666505573, corresponde a 0101_content_fingerprints. Ausente não é vazio.
+- pensa-maintenance.ts preflight exige 0125 e consulta tabelas posteriores a 0101. Não é um comando imediatamente executável nesse baseline. O preDeploy novo normal aplicará a cadeia pendente, incluindo 0126 DELETE e 0128 DROP, sem solicitar confirmação própria do operador Pensa.
+- --workers-fenced e --no-child-data são declarações do operador; docs/pensa-planner.md:85 explica que a ferramenta não cerca serviços. Hash de preflight seguido de migrate também não é trava de todos os writers.
+- production-pensa-counts-r1.mjs fixa deployment 9d8368c2-d915-4dbf-898c-28c2b7978133. Após recarregar manutenção, precisa de nova revisão do alvo/provas, mantendo R1 intacto; não retirar seu guard ou rodar via target antigo já aposentado.
+- Backup prévio informado pela raiz é evidência separada. Esta revisão NÃO restaurou backup, não certifica recência/restore e não tratou recibo histórico de contagem como aceite destrutivo. Conferir backup final depois da barreira e conservar recuperação correspondente ao conjunto de migrations realmente aplicado.
+
+## Comandos e sequência para preparação da raiz, NÃO executados
+
+Identidade fixa: projeto 415d5a1c-5f75-432c-8445-b395d0977ce3, ambiente production/19c212a5-85c0-493c-9630-a7a0569e8412. Railway CLI oficial 5.62.1. Nenhum valor secreto é necessário para a variável de manutenção, mas usar o mesmo contrato stdin/skip-deploys.
+
+1. Antes da janela: staging qualificado, candidatas já construídas e revisadas, pin de todos os serviços/vars/startCommands/preDeploys, backup/restauração e rollback operacional definidos, CI/triggers/outros operadores coordenados. Ler contexto fresco; recusar drift. Não abrir janela dependendo de build futuro ou de um CI ainda negativo.
+2. Configuração: railway variable set RELEASE_MAINTENANCE_MODE --stdin --skip-deploys --project 415d5a1c-5f75-432c-8445-b395d0977ce3 --environment 19c212a5-85c0-493c-9630-a7a0569e8412 --service <service-ID-exato-da-tabela>. Entrada UTF-8: full. Isto só salva configuração; não fecha writers existentes.
+3. Carregar a configuração na imagem antiga: mutação oficial deploymentRedeploy(id: <deployment-antigo-fresco>, usePreviousImageTag: true), uma invocação por operação com intenção persistente e sem replay automático. Não usar deploymentRestart supondo que recarrega variáveis. Conferir digest/commit iguais, snapshot novo com só a mudança planejada, manutenção efetiva, candidato único e todas as réplicas anteriores retiradas. ACK perdido exige reconciliação somente leitura.
+4. Na janela: cercar ao menos os processos necessários para o escopo escolhido; no plano geral, usar os cinco serviços do runbook. Conferir via rotas públicas e internas que /readyz ou /api/healthz retornam maintenance/header correto; uma rota normal GET deve retornar 503 RELEASE_MAINTENANCE. Essas consultas são probes, não ações de usuário. Drenar/conferir trabalhos e uploads conforme o escopo, não apenas aguardar um timer.
+5. Contagem final: usar revisão fechada do operador Node24 production-pensa-counts com o deployment de manutenção novo e saída exclusiva; mesma lista SQL SELECT/read-only, mais prova da barreira e aposentadoria. Não há r2 pronto criado por esta tarefa. Backup final e sua validação são operação própria da raiz.
+6. Primeiro deployment do código NOVO: apenas com barreira mantida e contagem/backup aceitos. preDeploy normal aplica a cadeia. Registrar journal/contagens/sentinelas e qualquer negativa; não abrir aplicação incompatível nem declarar rollback por simples troca de imagem.
+7. Implantar hosts compatíveis, coordenar abertura de Members/dependências para admissão/inicialização/probes e depois interfaces. RELEASE_MAINTENANCE_MODE=off também exige carga no processo. Confirmar funcionamento real, filas e ausência de antigos antes de encerrar janela. Não reativar automaticamente triggers que o novo owner de CD exige desligados.
+
+Se a raiz escolher apenas Members para o primeiro trecho, manter Kids cercado antes da reabertura do backend novo para não receber o contrato antigo. O freeze exclusivo de operadores é complemento da barreira de processo, nunca substituto.
+
+## Estimativa de janela: não prometer poucos minutos
+
+Não há ensaio desta sequência de produção nem medida da cadeia 0102→HEAD e dos cinco reloads. Os dois pilotos de staging observados são referências limitadas, não percentis nem garantia de produção:
+
+- Hub: apply começou 00:20:14.243Z; recibo completo de reconciliação teve início 00:25:19.415Z. Intervalo até observação completa aproximadamente 5 min 05 s. A aplicação havia sido vista SUCCESS antes por outro diagnóstico; não confundir intervalo de observação com tempo exato de inicialização. A negativa original de polling permanece.
+- Members: apply começou 00:32:28.111Z; recibo completo de reconciliação começou 00:45:05.544Z. Aproximadamente 12 min 37 s até observação completa, sem causa confirmada para a demora; não atribuir ao CI/RAM. A negativa original de timeout permanece.
+
+Estimativa operacional deve ser T = carga da manutenção + retirada antiga + drenagem pertinente + backup/contagem + migrations/inicialização + carga/reabertura compatível + provas funcionais. Se os reloads forem seriais, não multiplicar só o melhor tempo; nenhum máximo foi provado. A validade de PUT de 600 s pode acrescentar um piso de espera de tickets no escopo de arquivos, sem provar encerramento de transferências.
+
+Para reservar agenda, proponho provisoriamente 60–90 min de indisponibilidade, com início somente após o ensaio staging e as imagens prontas; é margem de planejamento a revisar, NÃO duração medida/garantida nem limite de segurança que autoriza reabrir. Se o plano exigir sequência estritamente serial de vários reloads antigos+novos, a raiz deve reestimar antes de anunciar. Antes da etapa destrutiva, falha de barreira/backup/count cancela a promoção nova; depois da migração, qualquer falha mantém manutenção e usa a recuperação preparada. Não definir timer que reabra automaticamente.
+
+A decisão pendente é o horário/alcance dessa indisponibilidade e a suficiência das provas de recuperação e staging. A autorização de deploy completo não é prova de que cursos permanecerão disponíveis. Esta nota não inicia a janela nem solicita uma operação extra do usuário.
+
+## Pins das evidências locais
+
+SHA-256 dos bytes lidos. Arquivos privados permanecem privados; apenas recibos sanitizados foram lidos. Nenhum valor de credencial foi registrado.
+
+- .cache/python-reference-games/production-platform-config-readonly-r2.json — c1c56ba71891f05b3f501fae482c2fb8c930af2dc48ea280ce1b9a188a8c9952
+- .cache/python-reference-games/production-railway-readonly-r1.json — 624b02051f68e9a2be07622a5d7b66ade4bd17166ba9f91687ba6328e96d1a70
+- .cache/python-reference-games/production-pensa-counts-r1.mjs — 8ba889ad1545e3148320511916ba40bc15ab306db80a96b445d94941c8d07b16
+- .cache/python-reference-games/production-pensa-counts-result-r1/receipt.json — e061a3bbb54811eb8220de37ad50c07b6cd95d12b5d349f3ac4d8e9711e47643
+- docs/runbooks/2026-09-27-release-a.md — 0ca942829aefa7efb29fb3587cd4da9a74c07b092a61412db90c669a34dcf5cf
+- docs/pensa-planner.md — 0a685447a8479527a32c0cf3054163d2c0571e402fac7d91ef5cdd23d6b83255
+- docs/superpowers/plans/2026-10-22-platform-production-release.md — 45ccae010f34d039c5f52263b322407e20bf4ef6bdc5a92a3fde1088069a7d80
+- packages/members/scripts/pensa-maintenance.ts — 9beee108307c60113e3d513414f35feaa434da58d9ae669311bfacbb5db53d0a
+- packages/members/scripts/production-schema-a.ts — 557cb3d691df5c4f519fd3f7c35b26d5ebd6483e36cacc58c742bec1c3164fba
+- packages/members/src/infrastructure/persistence/drizzle/migrations/0126_pensa_functional_reset.sql — 5baaab9f3ef55fb7528db828e199408848dc3cb0855039e4d0f7bba0f2ba28f7
+- packages/members/src/infrastructure/persistence/drizzle/migrations/0128_pensa_remove_documentary_workflow.sql — a16dd38967349c810c532be4abccb1c302dd747f1179e1b725dba17c92531570
+- packages/members/src/infrastructure/persistence/drizzle/migrations/meta/_journal.json — 5a153702be5c4fb8601ccdba6e58f9e6d0ae31bc61632831e1a61a157a59b64d
+- packages/members/src/interfaces/http/routes/pensa.routes.ts — a46e8cae18c95c9645f5fcf0b9aa4009ee8cad7c6f19ea5457df31114375d6d3
+- packages/core/src/pensa/schemas.ts — 3e9ccdc80042f689231056c27d75522d9629737144301cfbd71bf3e09dadd9a8
+- .cache/python-reference-games/staging-hub-image-reload-r2/apply-root-r1/receipt.json — a782fe9bfe849af4e414beab5c6782d57af14e3394b346f01df18b780745724d
+- .cache/python-reference-games/staging-hub-reconcile-readonly-r1.json — 9a5ad86e3fa49d5e56dbd4187eaf1173ee04956083e7b3ff48231787bb8bcfba
+- .cache/python-reference-games/staging-members-image-reload-r1/apply-root-r1/receipt.json — cea7cb7046fea9d7bf2a7f7b25981b2ac418d041311b06f068e5fc65d58154f8
+- .cache/python-reference-games/staging-members-reconcile-readonly-r2.json — bed4ef6b0f4d33227adfa61184098466dee7e9e11ab8a6f9c0a58c0c039a968d
+
+## Pins das fontes históricas (bytes Git sem conversão de newline)
+
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:scripts/release/start.mjs — blob c4cfa508c3250e1692a7d45a9358f7d4ca1acb46; SHA-256 9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/admin/Dockerfile — blob b4dc260fe9ca3ee84c1eb2bc726c78c56477b9ff; SHA-256 6ed452d0b78059a26da10ed69093fc3fde8850734781acd12d11a360165b50b8
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:.railway/services/admin.json — blob 4d5c90075ecea0a1737f9c4f5a0e77d6258aa260; SHA-256 3e046a04ae6bc7c005545d747e17905c7119c74d9a391d4820d51366e853ee90
+- e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28:scripts/release/start.mjs — blob c4cfa508c3250e1692a7d45a9358f7d4ca1acb46; SHA-256 9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f
+- e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28:packages/community/Dockerfile — blob 049a8420554475b349216d8f528d83bc43c1a339; SHA-256 c9301a185285da7fc50ebb0621cd0f3a8e796818daf2f01c7860d19065937de1
+- e5ab5072a3ae76b71c62c1c33e55fb6b4c6e8d28:.railway/services/community.json — blob f660cbb41b9ba95e47c74feb63ebf130a2a8643c; SHA-256 82811f8e32b28e8fa6d65a4becbee8f7f81ac6646d0ad3fdafc794a00d7e28de
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:scripts/release/start.mjs — blob c4cfa508c3250e1692a7d45a9358f7d4ca1acb46; SHA-256 9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:packages/community-kids/Dockerfile — blob f7335bc8723a351a69dc1208b659306937c9ec38; SHA-256 9d7faf0c4a0db5a9da80b06cd0e63996c29f5c3ff760d99e9cacc4fc11eedf8c
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:.railway/services/community-kids.json — blob 6265e651cd55d0ca90342c2712350e5b271823e4; SHA-256 7c2f1b609c87eb65a5dee87a4f1d83f08cfee8bee1690e5682f5f3df6a2cccd9
+- a270417ba4acffe97629793bb3fb62ac0e134519:scripts/release/start.mjs — blob c4cfa508c3250e1692a7d45a9358f7d4ca1acb46; SHA-256 9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f
+- a270417ba4acffe97629793bb3fb62ac0e134519:packages/hub/Dockerfile — blob 6c1645c8d7eefc0df2c9a9b9830db44d93f59cb6; SHA-256 4ece6f780e153d2575bccb71b1c5104c0a9b4ebfaf70edb17e619cec43e7c452
+- a270417ba4acffe97629793bb3fb62ac0e134519:.railway/services/hub.json — blob 40f500dd8a85c66f1d972792155cdb1b76bec30f; SHA-256 b7de78aebc2e370a18010c2600875784fd0079ca6f93a981a4ebc3997c86154a
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:scripts/release/start.mjs — blob c4cfa508c3250e1692a7d45a9358f7d4ca1acb46; SHA-256 9671ac4f29708dc61127e05d1dc8231ae45b071c8528c1fee271e12c79d0ec4f
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/Dockerfile — blob 961e60d4969fb5ce1a818fbe9e29eedb46e514f2; SHA-256 e4c88c6658c869c4cb3401a352684706ae24ff833a6ea2f03c5ab83c614ae582
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:.railway/services/members.json — blob 5f2e453c62d1be588a7aa462476379d17aa9c0bf; SHA-256 db94d8dab31239e60b192fdc3d9117ba7fde21e7f2efd58b60b17ea6d7749240
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/src/interfaces/http/routes/pensa.routes.ts — blob 67f6766fa800840b6161944e6189ef6095608fd7; SHA-256 de8efbf7a784f8656c0fcc5dfa34fde5e0917acc7fba6d11865120954425e65d
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/src/infrastructure/persistence/drizzle/pensa.repository.ts — blob 663c25e676a51bd6b24e6f7f1972b93d4f98f385; SHA-256 1cf1d717079605f6e6caea2fb978c91e5f70c368c15552866bab7ae0cb12b9bc
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/src/infrastructure/persistence/drizzle/user-data-purge.repository.ts — blob f07310401eddbf12a65dfb4bc8570ee1697d7e8d; SHA-256 7257d025177fe50b7e89f6176b8deab3e9c582c5db683cf52353130c14dd5159
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/src/interfaces/http/routes/internal.routes.ts — blob 81f1318d9028dc77f28fc3f0cda531767cf2b235; SHA-256 dd39a4d733c502f58793909ff6ea029d59ab7bc7a1fde609187190624cd57532
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/src/interfaces/http/routes/admin.routes.ts — blob 39f2f72c1c2ec70461b329201d002c0b230fbf30; SHA-256 cf99fe3c4f4495d68b01bca1f532ef64af6d932185815d5094dfec8e16fd1e06
+- 6f93dcbfe8f176017b7b1ace5114d480ad5853b1:packages/members/src/composition-root.ts — blob 63676019b1ca91c9429e440546c2a98db95300b0; SHA-256 5a675be12ed229ae86cc523e3f6397de8ddd50edc17b61afbddd567725e74da3
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:packages/member-shell/src/routes/pensa.ts — blob 203c82b326ca09ec7f31e2b064ef258c4f540ce8; SHA-256 f27f59f50146905e9feafcd8e7ac3855f468a0fbbcd5653a37e1ceab62fffada
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:packages/member-shell/src/routes/pensa-ai.ts — blob 5008c92d331553f0ec3468685dd2349e9ae4d2a4; SHA-256 bf7e6d987ee4a386e561f1b1049c4efba080e158f66da95abea9c4fb71e4552f
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:packages/member-shell/src/routes/creations.ts — blob 4d83ef771b392b0915e612e8ed9c30229f264a8f; SHA-256 d7030bfe43ee5e24b2bdbb88ef7730316c732711e28ac6f21d071ab2f861aded
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:packages/member-shell/src/routes/creation-cleanup.ts — blob 58d19fcadbb874a0d6469a30617b9ad4c62bfb48; SHA-256 217664d91dba11dbfa7f7fffb266edecdcded5669b98f27f49a23a530f79604f
+- 91d3e99aae0b602e9ad5548efb2106355f9fe801:packages/member-shell/src/server/clients.ts — blob bb713acdb9fc01f57496ffe1deb93be18860766e; SHA-256 e66b09293e44173f772527b1dc6c8b5925637fd75d7f1beae8f1d186002b0d47

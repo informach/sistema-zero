@@ -1,0 +1,80 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { PG, pinnedContext, projectOutput, verifyDatabaseTarget } from './production-postgres-execution-preflight-r1.mjs';
+import { PINS, TARGET } from './production-postgres-metadata-r3.mjs';
+
+const maps = () => ({ members: { DATABASE_URL: 'postgresql://fixture%20user:fixture-password@postgres.railway.internal:5432/fixture%20db?sslmode=require' },
+  postgres: { PGDATABASE: 'fixture db', PGUSER: 'fixture user', PGPASSWORD: 'fixture-password',
+    PGHOST: 'postgres.railway.internal', RAILWAY_PRIVATE_DOMAIN: 'postgres.railway.internal', PGPORT: '5432' } });
+const remote = () => ({ state: 'READ_ONLY_EXECUTION_METADATA', pgDumpVersion: 'pg_dump (PostgreSQL) 18.6',
+  pgRestoreVersion: 'pg_restore (PostgreSQL) 18.6', psqlVersion: 'psql (PostgreSQL) 18.6 (Debian 18.6-1.pgdg13+2)',
+  inventory: { identityVerified: true, serverVersionNum: 180006, readOnly: true, isolation: 'repeatable read', loopbackConnection: true,
+    serverPort: 5432, encoding: 'UTF8', localeProvider: 'c', lcCollate: 'en_US.utf8', lcCtype: 'en_US.utf8', locale: null,
+    icuRules: null, collationVersionRecorded: '2.41', collationVersionActual: '2.41',
+    extensions: [{ name: 'plpgsql', version: '1.0', schema: 'pg_catalog' }, { name: 'pg_trgm', version: '1.6', schema: 'public' }] } });
+const output = value => 'SZ_PG_EXECUTION_PREFLIGHT_V1 ' + JSON.stringify(value) + '\n';
+
+test('RAM target comparison decodes names, preserves inputs and projects booleans only', () => {
+  const m = maps(), original = structuredClone(m), result = verifyDatabaseTarget(m.members, m.postgres);
+  assert.deepEqual(m, original); assert.ok(Object.values(result).every(v => typeof v === 'boolean'));
+  assert.ok(!JSON.stringify(result).includes('fixture')); assert.ok(result.databaseMatchesPgEnvironment);
+});
+test('wrong DB/user/private host/port/protocol and connection overrides fail closed', () => {
+  for (const change of [m => { m.postgres.PGDATABASE = 'another'; }, m => { m.postgres.PGUSER = 'another'; },
+    m => { m.postgres.RAILWAY_PRIVATE_DOMAIN = 'other.railway.internal'; }, m => { m.postgres.PGPORT = '6000'; },
+    m => { m.members.DATABASE_URL = m.members.DATABASE_URL.replace('postgresql:', 'https:'); },
+    m => { m.members.DATABASE_URL += '&host=other.railway.internal'; }, m => { delete m.postgres.PGPASSWORD; }]) {
+    const m = maps(); change(m); assert.throws(() => verifyDatabaseTarget(m.members, m.postgres));
+  }
+});
+test('explicit internal PGHOST can stand alone; conflicting host is never treated as an alias', () => {
+  const m = maps(); delete m.postgres.RAILWAY_PRIVATE_DOMAIN;
+  assert.equal(verifyDatabaseTarget(m.members, m.postgres).privateDomainProvided, false);
+  m.postgres.RAILWAY_PRIVATE_DOMAIN = 'postgres.railway.internal'; m.postgres.PGHOST = '127.0.0.1';
+  assert.throws(() => verifyDatabaseTarget(m.members, m.postgres), /PG_HOST_CONFLICT/);
+});
+test('remote allowlist retains technical metadata and discards unknown credential-bearing fields', () => {
+  const value = remote(); value.password = 'DO_NOT_PERSIST'; value.inventory.connection = 'DO_NOT_PERSIST';
+  value.inventory.extensions[0].owner = 'DO_NOT_PERSIST';
+  const result = projectOutput(output(value));
+  assert.equal(result.inventory.extensions[1].name, 'pg_trgm'); assert.equal(result.inventory.locale, null);
+  assert.ok(!JSON.stringify(result).includes('DO_NOT_PERSIST')); assert.equal(result.state, undefined);
+});
+test('readonly, isolation, server, loopback and client version mismatches reject the result', () => {
+  for (const change of [v => { v.inventory.readOnly = false; }, v => { v.inventory.identityVerified = false; },
+    v => { v.inventory.isolation = 'read committed'; }, v => { v.inventory.serverVersionNum = 170006; },
+    v => { v.inventory.loopbackConnection = false; }, v => { v.pgDumpVersion = 'pg_dump (PostgreSQL) 17.6'; },
+    v => { v.pgDumpVersion += '\nSECRET'; }, v => { v.inventory.localeProvider = 'unknown'; }]) {
+    const v = remote(); change(v); assert.throws(() => projectOutput(output(v)));
+  }
+});
+test('missing, duplicate, malformed, huge or rejected remote envelopes cannot qualify', () => {
+  const good = output(remote());
+  for (const value of ['', good + good, 'SZ_PG_EXECUTION_PREFLIGHT_V1 not-json', 'x'.repeat(65537), output({ state: 'UNCONFIRMED' })])
+    assert.throws(() => projectOutput(value));
+  const value = remote(); value.inventory.extensions.push(value.inventory.extensions[0]);
+  assert.throws(() => projectOutput(output(value)), /EXTENSIONS_UNCONFIRMED/);
+});
+function context() {
+  const pg = { id: PG.deploymentId, projectId: PINS.project, environmentId: PINS.environment, serviceId: PG.serviceId,
+    status: 'SUCCESS', deploymentStopped: false, snapshotId: PG.snapshotId, meta: { imageDigest: PG.imageDigest },
+    instances: [{ id: PG.instanceId, status: 'RUNNING' }] };
+  return { deployment: { id: TARGET.deploymentId, projectId: PINS.project, environmentId: PINS.environment, serviceId: TARGET.serviceId,
+    status: 'SUCCESS', deploymentStopped: false, snapshotId: TARGET.snapshotId, meta: { commitHash: TARGET.commit, imageDigest: TARGET.image },
+    instances: [{ id: TARGET.instanceId, status: 'RUNNING' }] },
+    serviceInstance: { serviceId: TARGET.serviceId, environmentId: PINS.environment, activeDeployments: [{ id: TARGET.deploymentId }], latestDeployment: { id: TARGET.deploymentId } },
+    pending: { edges: [], pageInfo: { hasNextPage: false } },
+    pg: { serviceId: PG.serviceId, environmentId: PINS.environment, activeDeployments: [pg], latestDeployment: { id: PG.deploymentId } },
+    pgPending: { edges: [], pageInfo: { hasNextPage: false } } };
+}
+test('context reuse additionally requires the exact PG deployment/snapshot/image/instance', () => {
+  const value = context(); assert.equal(pinnedContext(value).postgres.instanceId, PG.instanceId);
+  value.pg.activeDeployments[0].instances[0].id = '00000000-0000-4000-8000-000000000001';
+  assert.throws(() => pinnedContext(value), /PG_PIN_CHANGED/);
+});
+test('another pending deployment or active replica is still rejected by the canonical reader', () => {
+  const value = context(); value.pgPending.edges.push({ node: { id: '00000000-0000-4000-8000-000000000001' } });
+  assert.throws(() => pinnedContext(value));
+  const another = context(); another.pg.activeDeployments[0].instances.push({ id: '00000000-0000-4000-8000-000000000001', status: 'RUNNING' });
+  assert.throws(() => pinnedContext(another));
+});

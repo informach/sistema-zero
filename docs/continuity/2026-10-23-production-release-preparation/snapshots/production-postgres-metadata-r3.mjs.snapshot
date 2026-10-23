@@ -1,0 +1,189 @@
+/** PREPARED ONLY. One closed Members SSH read; no PG SSH, dump or provider mutation. */
+import { execFile } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { lstat, mkdir, open, readFile } from 'node:fs/promises'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { PINS as STORE, SERVICES } from './production-maintenance-store-r1.mjs'
+
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+export const PINS = Object.freeze({ project: STORE.project, environment: STORE.environment,
+  postgresService: '6c5d1cb9-3756-443a-a352-06068d34ca30', node: '24.22.0', railway: 'railway 5.62.1',
+  storeSha256: '86ed82e9cca0b47c1bdeec4f14ef5a8ac18e7c72055ecf512baab7bd60a28de4' })
+const m = SERVICES.members
+export const TARGET = Object.freeze({ project: PINS.project, environment: PINS.environment,
+  serviceId: m.id, deploymentId: m.deployment, snapshotId: m.snapshot, instanceId: m.instance, commit: m.commit, image: m.image })
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+const uuid = v => typeof v === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function guard(value, code) { if (!value) throw new Refusal(code) }
+const FAILURE_CODES = new Set(['ARGUMENTS_INVALID', 'NODE_VERSION', 'NONCE_INVALID', 'REMOTE_PROOF_MISSING',
+  'REMOTE_METADATA_UNCONFIRMED', 'MEMBERS_CONTEXT_UNCONFIRMED', 'MEMBERS_IDENTITY_CHANGED', 'MEMBERS_INSTANCES_UNCONFIRMED',
+  'PG_CONTEXT_UNCONFIRMED', 'PG_INSTANCES_UNCONFIRMED', 'PG_IMAGE_INVALID', 'DEADLINE', 'CLI_OR_SSH_UNCONFIRMED',
+  'API_UNCONFIRMED', 'IMPORT_PIN_CHANGED', 'SSH_IDENTITY_INVALID', 'CLI_VERSION', 'CONTEXT_EXPIRED', 'CONTEXT_CHANGED'])
+export function failureCode(error) {
+  return typeof error?.code === 'string' && FAILURE_CODES.has(error.code) ? error.code : 'LOCAL_OR_REMOTE_UNCONFIRMED'
+}
+export function argumentsFor(args) {
+  guard(args.length === 1 && /^production-postgres-metadata-[a-z0-9-]+$/.test(args[0]), 'ARGUMENTS_INVALID')
+  return args[0]
+}
+export function nativeEnvironment(source) {
+  const env = { ...source, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+  return env
+}
+
+/** Serialized verbatim. The connection and decoded DB name never leave this process. */
+export async function readMetadata(postgres, connection) {
+  const url = new URL(connection), expectedDatabase = decodeURIComponent(url.pathname.slice(1))
+  if (!['postgres:', 'postgresql:'].includes(url.protocol) || !expectedDatabase ||
+    url.searchParams.has('database') || url.searchParams.has('dbname')) throw Error('DATABASE_IDENTITY_UNCONFIRMED')
+  const client = postgres(connection, { max: 1, prepare: false, connect_timeout: 5, idle_timeout: 2,
+    max_lifetime: 30, debug: false, onnotice: () => {}, connection: {
+      application_name: 'sz-production-postgres-metadata-r2', default_transaction_read_only: true,
+      statement_timeout: 5000, lock_timeout: 1500, idle_in_transaction_session_timeout: 10000 } })
+  const deadline = Date.now() + 15000
+  let primary, result
+  try {
+    result = await client.begin('isolation level repeatable read read only', async tx => {
+      const select = async (text, parameters = []) => {
+        if (Date.now() >= deadline) throw Error('DATABASE_DEADLINE')
+        const rows = await tx.unsafe(text, parameters)
+        if (Date.now() >= deadline) throw Error('DATABASE_DEADLINE')
+        return rows
+      }
+      const policy = await select("SELECT current_setting('transaction_read_only') AS readonly, current_setting('transaction_isolation') AS isolation, current_database() = $1 AS database_matches", [expectedDatabase])
+      if (policy.length !== 1 || policy[0].readonly !== 'on' || policy[0].isolation !== 'repeatable read' || policy[0].database_matches !== true) throw Error('DATABASE_POLICY_OR_IDENTITY_MISMATCH')
+      const rows = await select("SELECT current_setting('server_version_num') AS version, pg_database_size(current_database())::text AS bytes")
+      if (rows.length !== 1 || typeof rows[0].version !== 'string' || !/^[1-9][0-9]{0,8}$/.test(rows[0].version) || typeof rows[0].bytes !== 'string' || !/^(0|[1-9][0-9]{0,18})$/.test(rows[0].bytes) || BigInt(rows[0].bytes) > 9223372036854775807n) throw Error('DATABASE_METADATA_INVALID')
+      return { serverVersionNum: Number(rows[0].version), databaseBytes: rows[0].bytes,
+        databaseNameMatchesConnection: true, readOnly: true, isolation: 'repeatable read' }
+    })
+  } catch (error) { primary = error }
+  try { await client.end({ timeout: 2 }) }
+  catch (error) { if (primary) throw new AggregateError([primary, error], 'DATABASE_READ_AND_CLOSE_FAILED'); throw Error('DATABASE_CLOSE_FAILED') }
+  if (primary) throw primary
+  return result
+}
+
+export async function remoteRead(target, nonce, readDatabase) {
+  const receipt = { nonce, state: 'UNCONFIRMED', identityVerified: false, database: null, connectionClosed: false }
+  const emit = () => process.stdout.write('SZ_PG_METADATA_V1 ' + JSON.stringify(receipt) + '\n')
+  const watchdog = setTimeout(() => { receipt.state = 'DEADLINE'; emit(); process.exit(124) }, 25000)
+  try {
+    const e = process.env
+    if (e.RAILWAY_PROJECT_ID !== target.project || e.RAILWAY_ENVIRONMENT_ID !== target.environment || e.RAILWAY_SERVICE_ID !== target.serviceId || e.RAILWAY_DEPLOYMENT_ID !== target.deploymentId || e.RAILWAY_GIT_COMMIT_SHA !== target.commit) throw Error('IDENTITY')
+    receipt.identityVerified = true
+    if (typeof Bun === 'undefined' || typeof e.DATABASE_URL !== 'string' || !e.DATABASE_URL) throw Error('CONFIG')
+    const path = Bun.resolveSync('postgres', '/app/packages/members')
+    if (!path.startsWith('/app/')) throw Error('DRIVER')
+    const postgres = (await import(path)).default
+    receipt.database = await readDatabase(postgres, e.DATABASE_URL)
+    receipt.connectionClosed = true
+    receipt.state = 'METADATA_READ'
+  } catch { receipt.state = 'UNCONFIRMED'; receipt.database = null }
+  finally { clearTimeout(watchdog); emit() }
+  if (receipt.state !== 'METADATA_READ') process.exitCode = 1
+}
+export function remoteProgram(nonce) {
+  guard(typeof nonce === 'string' && /^[a-f0-9]{32}$/.test(nonce), 'NONCE_INVALID')
+  return `await (${remoteRead.toString()})(${JSON.stringify(TARGET)},${JSON.stringify(nonce)},${readMetadata.toString()})`
+}
+export function projectRemote(stdout, nonce) {
+  const lines = stdout.split(/\r?\n/).filter(line => line.startsWith('SZ_PG_METADATA_V1 '))
+  guard(lines.length === 1 && Buffer.byteLength(lines[0]) <= 4096, 'REMOTE_PROOF_MISSING')
+  const value = JSON.parse(lines[0].slice('SZ_PG_METADATA_V1 '.length)), db = value.database
+  guard(value.nonce === nonce && value.state === 'METADATA_READ' && value.identityVerified === true && value.connectionClosed === true &&
+    Number.isSafeInteger(db?.serverVersionNum) && db.serverVersionNum > 0 && db.serverVersionNum <= 999999999 &&
+    typeof db.databaseBytes === 'string' && /^(0|[1-9][0-9]{0,18})$/.test(db.databaseBytes) && BigInt(db.databaseBytes) <= 9223372036854775807n &&
+    db.databaseNameMatchesConnection === true && db.readOnly === true && db.isolation === 'repeatable read', 'REMOTE_METADATA_UNCONFIRMED')
+  return { identityVerified: true, connectionClosed: true, serverVersionNum: db.serverVersionNum,
+    databaseBytes: db.databaseBytes, databaseNameMatchesConnection: true, readOnly: true, isolation: 'repeatable read' }
+}
+function projectInstances(instances, expectedRunning, code) {
+  guard(Array.isArray(instances) && instances.length > 0 &&
+    instances.every(item => uuid(item?.id) && ['RUNNING', 'REMOVED'].includes(item.status)) &&
+    new Set(instances.map(item => item.id)).size === instances.length, code)
+  const running = instances.filter(item => item.status === 'RUNNING')
+  guard(running.length === 1 && (expectedRunning === undefined || running[0].id === expectedRunning), code)
+  return { runningId: running[0].id,
+    history: instances.map(({ id, status }) => ({ id, status })).sort((a, b) => a.id.localeCompare(b.id)) }
+}
+export function projectContext(data) {
+  const member = data?.serviceInstance, d = data?.deployment
+  guard(member?.serviceId === TARGET.serviceId && member.environmentId === TARGET.environment &&
+    member.activeDeployments?.length === 1 && member.activeDeployments[0].id === TARGET.deploymentId &&
+    member.latestDeployment?.id === TARGET.deploymentId && data.pending?.edges?.length === 0 && data.pending.pageInfo?.hasNextPage === false,
+    'MEMBERS_CONTEXT_UNCONFIRMED')
+  guard(d?.id === TARGET.deploymentId && d.projectId === TARGET.project && d.environmentId === TARGET.environment &&
+    d.serviceId === TARGET.serviceId && d.status === 'SUCCESS' && d.deploymentStopped === false &&
+    d.snapshotId === TARGET.snapshotId && d.meta?.commitHash === TARGET.commit && d.meta?.imageDigest === TARGET.image,
+    'MEMBERS_IDENTITY_CHANGED')
+  const membersInstances = projectInstances(d.instances, TARGET.instanceId, 'MEMBERS_INSTANCES_UNCONFIRMED')
+  const s = data.pg, p = s?.activeDeployments?.[0]
+  guard(s?.serviceId === PINS.postgresService && s.environmentId === PINS.environment && s.activeDeployments?.length === 1 &&
+    uuid(p?.id) && s.latestDeployment?.id === p.id && p.projectId === PINS.project && p.environmentId === PINS.environment && p.serviceId === PINS.postgresService &&
+    p.status === 'SUCCESS' && p.deploymentStopped === false && uuid(p.snapshotId) &&
+    data.pgPending?.edges?.length === 0 && data.pgPending.pageInfo?.hasNextPage === false, 'PG_CONTEXT_UNCONFIRMED')
+  const digest = p.meta?.imageDigest
+  guard(digest === undefined || digest === null || /^sha256:[a-f0-9]{64}$/.test(digest), 'PG_IMAGE_INVALID')
+  const pgInstances = projectInstances(p.instances, undefined, 'PG_INSTANCES_UNCONFIRMED')
+  return { members: { ...TARGET, instances: membersInstances.history }, postgres: { serviceId: PINS.postgresService, deploymentId: p.id,
+    snapshotId: p.snapshotId, instanceId: pgInstances.runningId, imageDigest: digest ?? null, instances: pgInstances.history }, uniqueSuccess: true, noPending: true }
+}
+
+export async function main(args = process.argv.slice(2)) {
+  const run = argumentsFor(args)
+  guard(process.versions.node === PINS.node && !process.versions.bun, 'NODE_VERSION')
+  const out = join(CACHE, run); await mkdir(out)
+  const handle = await open(join(out, 'receipt.json'), 'wx', 0o600)
+  const start = Date.now(), deadline = start + 100000
+  const receipt = { kind: 'production-postgres-metadata', version: 3, state: 'RUNNING', startedAt: new Date(start).toISOString(),
+    transportEnvironmentProfile: 'normal-without-four-railway-overrides',
+    operatorSha256: sha(await readFile(FILE)), providerReads: 0, sshAttempts: 0, providerMutations: 0,
+    databaseWritesRequested: false, dumpAttempted: false, backupQualified: false, restoreQualified: false,
+    pgDumpVersion: { state: 'PENDING_PG_EXECUTION_CONTRACT', value: null }, before: null, after: null, metadata: null }
+  const save = async patch => { Object.assign(receipt, patch); await handle.truncate(0); await handle.write(JSON.stringify(receipt, null, 2) + '\n', 0, 'utf8'); await handle.sync() }
+  const cli = join(process.env.APPDATA ?? '', 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const identity = 'C:/Users/tocha/.ssh/id_ed25519'
+  const env = nativeEnvironment(process.env)
+  const native = (argv, stdin = '', timeout = 20000) => new Promise((yes, no) => {
+    guard(Date.now() < deadline, 'DEADLINE')
+    const child = execFile(cli, argv, { cwd: ROOT, env, windowsHide: true, encoding: 'utf8', timeout: Math.min(timeout, deadline - Date.now()), maxBuffer: 65536 },
+      (error, stdout) => error ? no(new Refusal('CLI_OR_SSH_UNCONFIRMED')) : yes(stdout))
+    child.stdin?.on('error', () => {}); child.stdin?.end(stdin)
+  })
+  const observe = async () => {
+    await save({ providerReads: receipt.providerReads + 1 })
+    const fields = 'id projectId environmentId serviceId status snapshotId deploymentStopped meta instances{id status}'
+    const q = `query($id:String!,$s:String!,$e:String!,$pg:String!,$input:DeploymentListInput!,$pgInput:DeploymentListInput!){deployment(id:$id){${fields}} serviceInstance(serviceId:$s,environmentId:$e){serviceId environmentId activeDeployments{id} latestDeployment{id}} pending:deployments(first:1,input:$input){edges{node{id}}pageInfo{hasNextPage}} pg:serviceInstance(serviceId:$pg,environmentId:$e){serviceId environmentId activeDeployments{${fields}}latestDeployment{id}} pgPending:deployments(first:1,input:$pgInput){edges{node{id}}pageInfo{hasNextPage}}}`
+    const input = serviceId => ({ projectId: PINS.project, environmentId: PINS.environment, serviceId, status: { notIn: ['SUCCESS','FAILED','CRASHED','REMOVED','SKIPPED'] } })
+    const variables = { id: TARGET.deploymentId, s: TARGET.serviceId, e: PINS.environment, pg: PINS.postgresService, input: input(TARGET.serviceId), pgInput: input(PINS.postgresService) }
+    const raw = JSON.parse(await native(['api', '--compact', q, '--variables', '@-'], JSON.stringify(variables)))
+    guard(raw.data && !raw.errors, 'API_UNCONFIRMED')
+    return projectContext(raw.data)
+  }
+  try {
+    await save({})
+    for (const [name, expected] of [['production-maintenance-store-r1.mjs', PINS.storeSha256]])
+      guard(sha(await readFile(join(CACHE, name))) === expected, 'IMPORT_PIN_CHANGED')
+    const identityStat = await lstat(identity)
+    guard(identityStat.isFile() && !identityStat.isSymbolicLink(), 'SSH_IDENTITY_INVALID')
+    guard((await native(['--version'])).trim() === PINS.railway, 'CLI_VERSION')
+    const before = await observe(), observed = Date.now(), nonce = randomBytes(16).toString('hex'), program = remoteProgram(nonce)
+    await save({ before, contextObservedAt: new Date(observed).toISOString(), remoteScriptSha256: sha(program), sshAttempts: 1, state: 'SSH_READ_INTENT' })
+    guard(Date.now() - observed <= 5000, 'CONTEXT_EXPIRED')
+    const stdout = await native(['ssh', '--project', PINS.project, '--environment', PINS.environment, '--service', TARGET.serviceId,
+      '--deployment-instance', TARGET.instanceId, '--identity-file', identity, '--', 'bun', '--no-env-file', '--cwd', '/app/packages/members', '-e', program], '', 35000)
+    const metadata = projectRemote(stdout, nonce), after = await observe()
+    await save({ after, metadata })
+    guard(JSON.stringify(before) === JSON.stringify(after), 'CONTEXT_CHANGED')
+    await save({ state: 'METADATA_READ_VERIFIED' })
+  } catch (error) { await save({ state: 'UNCONFIRMED', failureCode: failureCode(error) }) }
+  finally { try { await save({ finishedAt: new Date().toISOString() }) } finally { await handle.close() } }
+  console.log(JSON.stringify({ run, state: receipt.state, sshAttempts: receipt.sshAttempts }))
+  return receipt.state === 'METADATA_READ_VERIFIED' ? 0 : 1
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE)
+  main().then(code => { process.exitCode = code }, () => { console.error('LOCAL_INITIALIZATION_UNCONFIRMED'); process.exitCode = 1 })

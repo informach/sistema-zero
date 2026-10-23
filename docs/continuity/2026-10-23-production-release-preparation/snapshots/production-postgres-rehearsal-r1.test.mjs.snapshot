@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { requireVerifiedBytes, oracleSql, projectOracles } from './production-postgres-rehearsal-r1.mjs';
+import { TABLES } from './production-pensa-counts-r1.mjs';
+test('partial authenticated output or a changed cipher/plaintext cannot admit a restore', () => {
+  const capture = { plaintext: { bytes: 100, sha256: 'a'.repeat(64) }, ciphertext: { bytes: 300, sha256: 'b'.repeat(64) } };
+  const verified = { state: 'AUTHENTICATED_BYTES_VERIFIED_NOT_RESTORE_QUALIFIED', authenticatedThroughEof: true, transport: { ok: true },
+    plaintext: { ...capture.plaintext, streamEnded: true }, ciphertext: { ...capture.ciphertext, streamEnded: true } };
+  assert.doesNotThrow(() => requireVerifiedBytes(verified, capture));
+  for (const change of [v => { v.authenticatedThroughEof = false; }, v => { v.transport.ok = false; },
+    v => { v.plaintext.bytes--; }, v => { v.ciphertext.sha256 = 'c'.repeat(64); }, v => { v.plaintext.streamEnded = false; }]) {
+    const v = structuredClone(verified); change(v); assert.throws(() => requireVerifiedBytes(v, capture), /AUTHENTICATED_BYTES_REQUIRED/);
+  }
+});
+function oracles() {
+  return [{ kind: 'structure', tables: '120', indexes: '200', sequences: '12' },
+    ...TABLES.map(t => ({ kind: 'pensa', table: 'members.' + t.name, status: 'absent-or-missing-columns', counts: null })),
+    ...['drizzle.members_migrations','drizzle.hub_migrations'].map(name => ({ kind: 'journal', table: name, entries: '10',
+      latest: { sha256: 'a'.repeat(64), createdAt: '1791666505573' } }))];
+}
+const encode = rows => rows.map(row => JSON.stringify(row)).join('\n');
+test('oracles preserve absence, strip unknown data and never claim a live row comparison', () => {
+  const rows = oracles(); rows[0].userData = 'DO_NOT_PERSIST';
+  const result = projectOracles(encode(rows)); assert.equal(result.pensa.length, 14);
+  assert.equal(result.sourceRowsSnapshotComparison, false); assert.ok(!JSON.stringify(result).includes('DO_NOT_PERSIST'));
+  assert.equal(result.pensa[0].counts, null);
+});
+test('counted results require numeric strings and journals require entries/hash, not sample rows', () => {
+  const rows = oracles(); rows[1] = { kind: 'pensa', table: 'members.' + TABLES[0].name, status: 'counted', counts: { rows: '0' } };
+  assert.equal(projectOracles(encode(rows)).pensa[0].counts.rows, '0');
+  rows[1].counts.rows = 'USER_TEXT'; assert.throws(() => projectOracles(encode(rows)));
+  const missing = oracles(); missing.at(-1).entries = null; assert.throws(() => projectOracles(encode(missing)));
+});
+test('conditional SQL emits real psql metacommands so absent old tables are not queried', () => {
+  const sql = oracleSql(), slash = String.fromCharCode(92);
+  assert.equal(sql.split(slash + 'gset').length - 1, TABLES.length + 2);
+  assert.equal(sql.split(slash + 'if :supported').length - 1, TABLES.length + 2);
+  assert.equal(sql.split(slash + 'endif').length - 1, TABLES.length + 2);
+  assert.ok(sql.startsWith('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;'));
+  assert.ok(sql.endsWith('ROLLBACK;')); assert.ok(!/\b(DELETE|UPDATE|INSERT|DROP|CREATE|ALTER)\b/.test(sql));
+});

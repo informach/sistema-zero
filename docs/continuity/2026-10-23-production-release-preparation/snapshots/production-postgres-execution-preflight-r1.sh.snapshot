@@ -1,0 +1,73 @@
+#!/bin/sh
+# PREPARED ONLY. Root invokes on the exact pinned PostgreSQL RUNNING instance.
+# No dump, files, application import, DDL/DML, extension installation or mutation.
+set -eu
+export LC_ALL=C
+fail() { printf '%s\n' 'SZ_PG_EXECUTION_PREFLIGHT_V1 {"state":"UNCONFIRMED"}'; exit 1; }
+
+[ "${RAILWAY_PROJECT_ID:-}" = '415d5a1c-5f75-432c-8445-b395d0977ce3' ] || fail
+[ "${RAILWAY_ENVIRONMENT_ID:-}" = '19c212a5-85c0-493c-9630-a7a0569e8412' ] || fail
+[ "${RAILWAY_SERVICE_ID:-}" = '6c5d1cb9-3756-443a-a352-06068d34ca30' ] || fail
+[ "${RAILWAY_DEPLOYMENT_ID:-}" = '03647ac9-88bd-449e-852d-4ce80137177c' ] || fail
+[ -n "${PGDATABASE:-}" ] && [ -n "${PGUSER:-}" ] && [ -n "${PGPASSWORD:-}" ] || fail
+
+# Version stdout stays in RAM until its grammar has been checked. No raw stderr.
+dump_version=$(pg_dump --version 2>/dev/null) || fail
+restore_version=$(pg_restore --version 2>/dev/null) || fail
+psql_version=$(psql --version 2>/dev/null) || fail
+[ "${#dump_version}" -le 160 ] && [ "${#restore_version}" -le 160 ] && [ "${#psql_version}" -le 160 ] || fail
+newline='
+'
+case "$dump_version$restore_version$psql_version" in *"$newline"*) fail ;; esac
+printf '%s\n' "$dump_version" | LC_ALL=C grep -Eq '^pg_dump \(PostgreSQL\) 18\.[0-9]+( \([A-Za-z0-9.+:~ -]+\))?$' || fail
+printf '%s\n' "$restore_version" | LC_ALL=C grep -Eq '^pg_restore \(PostgreSQL\) 18\.[0-9]+( \([A-Za-z0-9.+:~ -]+\))?$' || fail
+printf '%s\n' "$psql_version" | LC_ALL=C grep -Eq '^psql \(PostgreSQL\) 18\.[0-9]+( \([A-Za-z0-9.+:~ -]+\))?$' || fail
+
+# Credentials stay inherited in RAM. Connect to this container, never a remote host.
+# Explicit PGPORT is retained; absent means libpq's normal 5432 default.
+PGPORT=${PGPORT:-5432}
+case "$PGPORT" in ''|*[!0-9]*) fail ;; esac
+[ "${#PGPORT}" -le 5 ] && [ "$PGPORT" -ge 1 ] && [ "$PGPORT" -le 65535 ] || fail
+export PGHOST=127.0.0.1 PGHOSTADDR=127.0.0.1 PGPORT
+export PGCONNECT_TIMEOUT=5 PGPASSFILE=/dev/null PGAPPNAME=sz-pg-execution-preflight-r1 PGCLIENTENCODING=UTF8
+unset PGSERVICE PGSERVICEFILE
+export PGOPTIONS='-c default_transaction_read_only=on -c statement_timeout=5000 -c lock_timeout=1500 -c idle_in_transaction_session_timeout=10000 -c client_min_messages=error'
+
+inventory=$(psql -X -w -A -t -q --set=ON_ERROR_STOP=1 --set=VERBOSITY=terse 2>/dev/null <<'SZ_READ_ONLY_SQL'
+\getenv expected_database PGDATABASE
+\getenv expected_user PGUSER
+BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY;
+SELECT jsonb_build_object(
+  'identityVerified', true,
+  'serverVersionNum', current_setting('server_version_num')::integer,
+  'readOnly', current_setting('transaction_read_only') = 'on',
+  'isolation', current_setting('transaction_isolation'),
+  'loopbackConnection', inet_server_addr() = '127.0.0.1'::inet,
+  'serverPort', inet_server_port(),
+  'encoding', pg_encoding_to_char(d.encoding),
+  'localeProvider', d.datlocprovider,
+  'lcCollate', d.datcollate,
+  'lcCtype', d.datctype,
+  'locale', d.datlocale,
+  'icuRules', d.daticurules,
+  'collationVersionRecorded', d.datcollversion,
+  'collationVersionActual', pg_database_collation_actual_version(d.oid),
+  'extensions', (
+    SELECT COALESCE(jsonb_agg(jsonb_build_object('name', e.extname, 'version', e.extversion,
+      'schema', n.nspname) ORDER BY e.extname), '[]'::jsonb)
+    FROM pg_extension AS e JOIN pg_namespace AS n ON n.oid = e.extnamespace
+  )
+)
+FROM pg_database AS d
+WHERE d.datname = current_database()
+  AND current_database() = :'expected_database'
+  AND session_user = :'expected_user'
+  AND current_setting('transaction_read_only') = 'on'
+  AND current_setting('transaction_isolation') = 'repeatable read'
+  AND current_setting('server_version_num') = '180006'
+  AND inet_server_addr() = '127.0.0.1'::inet;
+ROLLBACK;
+SZ_READ_ONLY_SQL
+) || fail
+[ -n "$inventory" ] && [ "${#inventory}" -le 32768 ] || fail
+printf 'SZ_PG_EXECUTION_PREFLIGHT_V1 {"state":"READ_ONLY_EXECUTION_METADATA","pgDumpVersion":"%s","pgRestoreVersion":"%s","psqlVersion":"%s","inventory":%s}\n' "$dump_version" "$restore_version" "$psql_version" "$inventory"

@@ -1,0 +1,99 @@
+import { afterEach, expect, test } from 'bun:test'
+import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
+import { PINS, SOURCES, argumentsFor, authenticateDownloaded, destinations, invocation, reserve, validateFinal } from './production-backup-final-transfer-r1.mjs'
+import { PINS as STORE, writeOnce } from './production-backup-durable-store-r2.mjs'
+import { validateRestore as rehearsalOnly, downloadExclusive } from './production-backup-rehearsal-r2-transfer-r2.mjs'
+import { ORDER, PG, SERVICES } from './production-postgres-fenced-context-r1.mjs'
+const digest = (v: Uint8Array) => createHash('sha256').update(v).digest('hex')
+const dirs: string[] = [], temp = async () => { const p = await mkdtemp(join(tmpdir(), 'sz-final-transfer-')); dirs.push(p); return p }
+afterEach(async () => { for (const path of dirs.splice(0)) { if (!resolve(path).startsWith(resolve(tmpdir(), 'sz-final-transfer-'))) throw Error('TEST_PATH'); await rm(path, { recursive: true }) } })
+const ref = (name: string) => ({ path: `.cache/python-reference-games/${name}/receipt.json`, sha256: 'a'.repeat(64) })
+const part = (text: string) => ({ bytes: Buffer.byteLength(text), sha256: digest(Buffer.from(text)), streamEnded: true, pgdmpPrefix: true })
+const closed = () => ({ ok: true, cleanup: 'OWNED_CHILD_HANDLES_CLOSED', processes: [{ closed: true, exitObserved: true, exitCode: 0, signaled: false, spawnError: false, stderrBytes: 0 }] })
+const goodVerification = (expected: any) => ({ state: 'AUTHENTICATED_BYTES_VERIFIED_NOT_RESTORE_QUALIFIED', authenticatedThroughEof: true, transport: closed(), plaintext: structuredClone(expected.plaintext), ciphertext: structuredClone(expected.ciphertext) })
+function fixture() {
+  // Explicitly inert metadata, not a produced backup, identity or provider receipt.
+  const manifest = { kind: 'production-postgres-affected-fence-input', version: 1, projectId: STORE.project, environmentId: STORE.environment, verifyReceipts: Object.fromEntries(ORDER.map(s => [s, ref(`INERT-${s}`)])) }
+  const manifestRef = ref('INERT-fence'), capture = { state: 'ENCRYPTED_STREAM_CAPTURED_NOT_RESTORE_QUALIFIED', synced: true, transport: closed(), plaintext: part('PGDMP-INERT-PLAINTEXT'), ciphertext: part('INERT-CIPHERTEXT') }
+  const observation = { kind: 'production-postgres-affected-fence-observation', affectedWritersFenced: true, allProductionWritersFenced: false, snapshotsMatchCurrent: true, providerMutations: 0,
+    manifest: manifestRef, verifyReceipts: manifest.verifyReceipts, httpReceipts: Object.fromEntries(ORDER.map(s => [s, ref(`INERT-http-${s}`)])),
+    targets: Object.fromEntries(ORDER.map(s => [s, { project: STORE.project, environment: STORE.environment, service: s, serviceId: SERVICES[s].id, commit: SERVICES[s].commit, image: SERVICES[s].image }])),
+    context: Object.fromEntries(ORDER.map(s => [s, { inert: true }])), postgres: PG, metadata: { inert: true } }
+  const value = { kind: 'production-postgres-final-affected-backup', version: 1, state: 'FINAL_AFFECTED_WRITERS_BACKUP_RESTORE_VERIFIED', operatorSha256: PINS.finalOperatorSha256, phase: 'completed',
+    affectedWritersFenced: true, allProductionWritersFenced: false, fenceVerifiedAroundCapture: true, finalPreMigrationBackup: true, restoreQualified: true, finalCiphertextVerified: true,
+    durableCopyQualified: false, clusterRollbackQualified: false, sourceRowsSnapshotComparison: false, migrationExecuted: false, providerMutations: 0, dumpAttempts: 1, backupScope: 'ONE_DATABASE_NO_CLUSTER_ROLES_OR_ACL_RESTORE_PROOF',
+    manifest: manifestRef, startedAt: '2026-10-23T00:00:00.000Z', finishedAt: '2026-10-23T00:00:05.000Z',
+    fenceBefore: { ...structuredClone(observation), startedAt: '2026-10-23T00:00:01.000Z', finishedAt: '2026-10-23T00:00:02.000Z' },
+    fenceAfter: { ...structuredClone(observation), startedAt: '2026-10-23T00:00:03.000Z', finishedAt: '2026-10-23T00:00:04.000Z' },
+    capture, verification: goodVerification(capture), clone: { state: 'ISOLATED_CLONE_PROOF_PASSED', cleanup: 'OWN_CID_REMOVED_VERIFIED' },
+    restoreAttempt: { state: 'CONSUMED_AUTHENTICATED_ARCHIVE', ciphertextSha256: capture.ciphertext.sha256, plaintextSha256: capture.plaintext.sha256, childExits: [{ exitCode: 0, stderrBytes: 0 }, { exitCode: 0, stderrBytes: 0 }] },
+    ciphertextPath: join(STORE.identityDirectory, 'database-final-inert.dump.age') }
+  return { manifest, value }
+}
+test('closed arguments require an explicit future final receipt SHA and isolated run', () => {
+  const args = ['production-backup-final-transfer-inert', '.cache/python-reference-games/production-postgres-final-inert/receipt.json', 'a'.repeat(64)]
+  expect(argumentsFor(args).restoreReceipt.sha256).toBe(args[2])
+  for (const invalid of [[], args.slice(0, 2), [...args, '--force'], ['production-backup-rehearsal-transfer-x', ...args.slice(1)], [args[0], '../receipt.json', args[2]], [args[0], args[1], 'x']]) expect(() => argumentsFor(invalid)).toThrow()
+})
+test('final and rehearsal admissions remain disjoint; five affected writers are not all production', () => {
+  const { manifest, value } = fixture(); expect(validateFinal(value, manifest).expected).toBe(value.capture)
+  expect(() => rehearsalOnly(value)).toThrow()
+  for (const mutation of [(v: any) => { v.kind = 'production-postgres-logical-rehearsal' }, (v: any) => { v.state = 'LOCAL_LOGICAL_RESTORE_REHEARSAL_VERIFIED_NOT_FINAL_BACKUP' }, (v: any) => { v.affectedWritersFenced = false }, (v: any) => { v.allProductionWritersFenced = true }, (v: any) => { v.finalPreMigrationBackup = false }, (v: any) => { v.clusterRollbackQualified = true }, (v: any) => { v.operatorSha256 = '0'.repeat(64) }, (v: any) => { v.migrationExecuted = true }]) { const v = structuredClone(value); mutation(v); expect(() => validateFinal(v, manifest)).toThrow() }
+})
+test('missing writer, changed production context, changed fence or aliased references fail before transport', () => {
+  const { manifest, value } = fixture()
+  for (const mutation of [(v: any) => { delete v.fenceBefore.targets.kids }, (v: any) => { v.fenceAfter.targets.members.environment = 'staging' }, (v: any) => { v.fenceBefore.targets.admin.serviceId = SERVICES.kids.id }, (v: any) => { v.fenceAfter.context.hub = {} }, (v: any) => { v.fenceAfter.postgres.instanceId = 'other' }, (v: any) => { v.fenceBefore.verifyReceipts = {} }, (v: any) => { v.fenceAfter.finishedAt = 'invalid' }, (v: any) => { v.fenceAfter.startedAt = v.startedAt }]) { const v = structuredClone(value); mutation(v); expect(() => validateFinal(v, manifest)).toThrow() }
+  const aliased = structuredClone(manifest); aliased.verifyReceipts.kids = aliased.verifyReceipts.members; expect(() => validateFinal(value, aliased)).toThrow()
+})
+test('incomplete, unauthenticated, oversized or failed restoration cannot become a final transfer', () => {
+  const { manifest, value } = fixture()
+  for (const mutation of [(v: any) => { v.capture.synced = false }, (v: any) => { v.capture.ciphertext.bytes = PINS.maxCiphertextBytes + 1 }, (v: any) => { v.capture.plaintext.pgdmpPrefix = false }, (v: any) => { v.verification.authenticatedThroughEof = false }, (v: any) => { v.verification.plaintext.sha256 = '0'.repeat(64) }, (v: any) => { v.capture.transport.processes[0].closed = false }, (v: any) => { v.clone.cleanup = 'UNCONFIRMED' }, (v: any) => { v.restoreAttempt.childExits[1].stderrBytes = 1 }, (v: any) => { v.ciphertextPath = join(STORE.identityDirectory, 'database-rehearsal-r1.dump.age') }]) { const v = structuredClone(value); mutation(v); expect(() => validateFinal(v, manifest)).toThrow() }
+})
+test('new final object and download never target rehearsal; official argv keeps the reviewed restrictions', () => {
+  const { manifest, value } = fixture(), backup = validateFinal(value, manifest), parsed = argumentsFor(['production-backup-final-transfer-inert', '.cache/python-reference-games/production-postgres-final-inert/receipt.json', 'a'.repeat(64)]), args = destinations(parsed, backup)
+  expect(args.key).toBe(`final/${parsed.run}/${value.capture.ciphertext.sha256}.dump.age`); expect(args.download).not.toBe(value.ciphertextPath)
+  const put = invocation('put', args, 'C:/INERT/empty.env', backup), get = invocation('get', args, 'C:/INERT/empty.env', backup)
+  expect(put).toContain(value.ciphertextPath); expect(put).toContain('--remote'); expect(put).not.toContain('--force'); expect(put).not.toContain('--expires')
+  expect(get).toContain('--pipe'); expect(get).not.toContain('--file'); expect(put).toContain(`${PINS.bucket}/${args.key}`); expect(() => invocation('delete', args, '', backup)).toThrow()
+})
+test('download authentication uses only the recovered identity, pinned age and exact restore digests', async () => {
+  const { value } = fixture(); let received: any
+  const result = await authenticateDownloaded('C:/INERT/download.age', value.capture, 1000, async (options: any) => { received = options; return goodVerification(options.expected) })
+  expect(received.identityPath).toBe(PINS.recoveredIdentity); expect(received.identityPath).toEndWith('backup-identity-recovered.agekey'); expect(received.ageSha256).toBe(STORE.ageSha)
+  expect(received.expected).toBe(value.capture); expect(received.timeoutMs).toBe(1000); expect(result.authenticatedThroughEof).toBe(true); expect(result.ownedChildHandlesClosed).toBe(true)
+  expect(JSON.stringify(result)).not.toContain(value.capture.plaintext.sha256); expect(JSON.stringify(result)).not.toContain('agekey')
+})
+test('matching downloaded SHA cannot replace EOF, decrypt success, plaintext match and closed child handles', async () => {
+  const { value } = fixture()
+  for (const mutation of [(v: any) => { v.authenticatedThroughEof = false }, (v: any) => { v.state = 'UNQUALIFIED' }, (v: any) => { v.plaintext.sha256 = '0'.repeat(64) }, (v: any) => { v.transport.ok = false }, (v: any) => { v.transport.cleanup = 'UNCONFIRMED' }, (v: any) => { v.transport.processes[0].closed = false }]) {
+    const v = goodVerification(value.capture); mutation(v); await expect(authenticateDownloaded('C:/INERT/download.age', value.capture, 1000, async () => v)).rejects.toThrow()
+  }
+  await expect(authenticateDownloaded('C:/INERT/download.age', value.capture, 0, async () => { throw Error('must not run') })).rejects.toThrow('DEADLINE')
+})
+test('ACKed copy with failed EOF stays unqualified and its permanent intent prevents another PUT', async () => {
+  const dir = await temp(), { value } = fixture(), patches: any[] = []; let sends = 0, reads = 0
+  const deps = { preflight: async () => {}, reserve: () => reserve(dir, { run: `changed-${sends}` }), checkpoint: async (v: any) => { patches.push(v) }, send: async () => { sends++; return true }, readback: async () => { reads++; await authenticateDownloaded('C:/INERT/download.age', value.capture, 1000, async () => ({ ...goodVerification(value.capture), authenticatedThroughEof: false })) } }
+  expect(await writeOnce(deps)).toBe(false); expect(patches.at(-1).state).toBe('ACK_READBACK_UNCONFIRMED'); await expect(writeOnce(deps)).rejects.toThrow(); expect(sends).toBe(1); expect(reads).toBe(1)
+})
+test('lost ACK can authenticate the independent readback but never qualifies or resends under a new run/SHA', async () => {
+  const dir = await temp(), { value } = fixture(), patches: any[] = []; let sends = 0, reads = 0
+  const deps = { preflight: async () => {}, reserve: () => reserve(dir, { run: `changed-${sends}`, receiptSha256: String(sends).repeat(64) }), checkpoint: async (v: any) => { patches.push(v) }, send: async () => { sends++; throw Error('PRIVATE_RAW_ERROR') }, readback: async () => { reads++; await authenticateDownloaded('C:/INERT/download.age', value.capture, 1000, async () => goodVerification(value.capture)) } }
+  expect(await writeOnce(deps)).toBe(false); expect(patches.at(-1).state).toBe('ACK_UNKNOWN_READBACK_MATCHED'); expect(patches.at(-1).remoteOutcomeUnknown).toBe(true)
+  await expect(writeOnce(deps)).rejects.toThrow(); expect(sends).toBe(1); expect(reads).toBe(1); expect(JSON.stringify(patches)).not.toContain('PRIVATE_RAW_ERROR')
+})
+test('exclusive download is checked before EOF; failed byte transport cannot invoke authentication', async () => {
+  const dir = await temp(), bytes = Buffer.from('INERT-CIPHERTEXT'); let verified = 0
+  const action = async () => { await downloadExclusive(join(dir, 'new.age'), async () => bytes.subarray(1), { bytes: bytes.length, sha256: digest(bytes) }); verified++ }
+  await expect(action()).rejects.toThrow('DOWNLOADED_CIPHERTEXT_MISMATCH'); expect(verified).toBe(0)
+})
+test('all reused sources are byte-pinned and their historical files remain unchanged', async () => {
+  for (const [name, expected] of Object.entries(SOURCES)) expect(digest(await readFile(join(import.meta.dir, name)))).toBe(expected)
+})
+test('Node24 import/invalid arguments do not start providers, age, SSH or fetch', () => {
+  const code = `import assert from'node:assert/strict';import cp from'node:child_process';import{syncBuiltinESMExports}from'node:module';cp.execFile=cp.spawn=()=>{throw Error('NO_CHILD')};syncBuiltinESMExports();globalThis.fetch=()=>{throw Error('NO_NETWORK')};const m=await import('./.cache/python-reference-games/production-backup-final-transfer-r1.mjs');await assert.rejects(m.main(['invalid']),/ARGUMENTS/);console.log('IMPORT_INERT');`
+  expect(execFileSync('C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe', ['--no-warnings', '--input-type=module', '-e', code], { cwd: resolve(import.meta.dir, '../..'), windowsHide: true, encoding: 'utf8', timeout: 5000 }).trim()).toBe('IMPORT_INERT')
+})

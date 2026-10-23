@@ -1,0 +1,119 @@
+/** OFFLINE PREPARATION. Separate Root-only SSH/GET proof; import performs no operation. */
+import { execFile } from 'node:child_process'
+import { createHash, randomBytes } from 'node:crypto'
+import { lstat, mkdir, open, readFile, rename } from 'node:fs/promises'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { PINS as STORE, SERVICES } from './production-maintenance-store-r1.mjs'
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..')
+export const STORE_SHA = '86ed82e9cca0b47c1bdeec4f14ef5a8ac18e7c72055ecf512baab7bd60a28de4'
+const sha = bytes => createHash('sha256').update(bytes).digest('hex')
+const id = v => typeof v === 'string' && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(v)
+const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+class Refusal extends Error { constructor(code) { super(code); this.code = code } }
+function guard(v, code) { if (!v) throw new Refusal(code) }
+export function argumentsFor(args) {
+  const [run, path, hash, ...extra] = args
+  guard(/^production-maintenance-http-[a-z0-9-]+$/.test(run ?? '') && typeof path === 'string' && /^[a-f0-9]{64}$/.test(hash ?? '') && !extra.length, 'ARGUMENTS_INVALID')
+  return { run, path, hash }
+}
+// Historical REMOVED rows are retained; only one distinct live UUID may be selected.
+function runningInstance(rows) {
+  if (!Array.isArray(rows) || !rows.every(x => id(x?.id) && ['RUNNING', 'REMOVED'].includes(x.status)) || new Set(rows.map(x => x.id)).size !== rows.length) return null
+  const live = rows.filter(x => x.status === 'RUNNING')
+  return live.length === 1 ? live[0].id : null
+}
+export function targetFromReceipt(r) {
+  guard(r?.kind === 'production-maintenance-reload' && r.version === 1 && r.mode === 'apply' && r.state === 'IMAGE_AND_RETIREMENT_VERIFIED_HTTP_REQUIRED' && r.projectId === STORE.project && r.environmentId === STORE.environment && r.remoteOutcomeUnknown === false && r.mutationAttempts === 1 && r.acknowledged === true && r.imageVerified === true && r.oldRetired === true && r.snapshotVerified === true && r.variablesPreserved === true, 'RELOAD_RECEIPT_UNQUALIFIED')
+  const t = SERVICES[r.service], c = r.candidate, instance = runningInstance(c?.instances)
+  guard(t && c && id(c.id) && c.id !== t.deployment && id(c.snapshotId) && c.snapshotId !== t.snapshot && c.commit === t.commit && c.image === t.image && c.status === 'SUCCESS' && c.stopped === false && id(instance), 'NEW_IDENTITY_UNCONFIRMED')
+  return { project: STORE.project, environment: STORE.environment, service: r.service, serviceId: t.id,
+    deploymentId: c.id, commit: t.commit, image: t.image, snapshotId: c.snapshotId, instanceId: instance }
+}
+// Fixed remote program. No target URL/SQL/env list is accepted. PORT is the launcher's own setting.
+export async function remoteHttp(target, nonce) {
+  const result = { nonce, state: 'UNCONFIRMED', identityVerified: false, ready: false, blocked: false }
+  try {
+    const e = process.env
+    if (e.RAILWAY_PROJECT_ID !== target.project || e.RAILWAY_ENVIRONMENT_ID !== target.environment || e.RAILWAY_SERVICE_ID !== target.serviceId || e.RAILWAY_DEPLOYMENT_ID !== target.deploymentId || e.RAILWAY_GIT_COMMIT_SHA !== target.commit) throw Error('IDENTITY')
+    const port = Number(e.PORT)
+    if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('PORT')
+    result.identityVerified = true
+    async function get(path, status) {
+      const response = await fetch(`http://127.0.0.1:${port}${path}`, { method: 'GET', redirect: 'error', headers: { accept: 'application/json' }, signal: AbortSignal.timeout(10000) })
+      if (response.status !== status || response.headers.get('x-release-maintenance') !== 'full' || response.headers.get('cache-control') !== 'no-store' || !/^application\/json(?:;|$)/i.test(response.headers.get('content-type') ?? '')) { await response.body?.cancel(); throw Error('HTTP') }
+      const reader = response.body?.getReader(); if (!reader) throw Error('BODY')
+      let size = 0; const parts = []
+      try { while (true) { const v = await reader.read(); if (v.done) break; size += v.value.byteLength; if (size > 4096) throw Error('LIMIT'); parts.push(v.value) } } finally { await reader.cancel().catch(() => {}); reader.releaseLock() }
+      const bytes = new Uint8Array(size); let offset = 0
+      for (const part of parts) { bytes.set(part, offset); offset += part.byteLength }
+      return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+    }
+    const ready = await get('/readyz', 200)
+    if (JSON.stringify(ready) !== '{"status":"maintenance"}') throw Error('READY')
+    result.ready = true
+    const blocked = await get('/', 503)
+    if (blocked?.error?.code !== 'RELEASE_MAINTENANCE' || typeof blocked.error.message !== 'string') throw Error('BLOCKED')
+    result.blocked = true; result.state = 'LOCAL_FULL_HTTP_VERIFIED'
+  } catch { result.state = 'LOCAL_FULL_HTTP_UNCONFIRMED' }
+  process.stdout.write('SZ_MAINTENANCE_HTTP_V1 ' + JSON.stringify(result) + '\n')
+  if (result.state !== 'LOCAL_FULL_HTTP_VERIFIED') process.exitCode = 1
+}
+export const REMOTE_SHA = sha(remoteHttp.toString())
+export function readRemote(stdout, nonce) {
+  const match = /^SZ_MAINTENANCE_HTTP_V1 (\{[^\r\n]+\})\r?\n?$/.exec(stdout)
+  guard(match, 'REMOTE_PROOF_MISSING')
+  const p = JSON.parse(match[1])
+  guard(same(Object.keys(p).sort(), ['nonce', 'state', 'identityVerified', 'ready', 'blocked'].sort()) && p.nonce === nonce && p.state === 'LOCAL_FULL_HTTP_VERIFIED' && p.identityVerified === true && p.ready === true && p.blocked === true, 'REMOTE_HTTP_UNCONFIRMED')
+  return { identityVerified: true, ready: true, blocked: true }
+}
+export function validateContext(raw, t) {
+  const s = raw?.serviceInstance, d = raw?.deployment
+  guard(s?.serviceId === t.serviceId && s.environmentId === t.environment && s.activeDeployments?.length === 1 && s.activeDeployments[0].id === t.deploymentId && s.latestDeployment?.id === t.deploymentId && raw.pending?.edges?.length === 0 && raw.pending.pageInfo?.hasNextPage === false, 'CONTEXT_NOT_UNIQUE')
+  guard(d?.id === t.deploymentId && d.projectId === t.project && d.environmentId === t.environment && d.serviceId === t.serviceId && d.status === 'SUCCESS' && d.deploymentStopped === false && d.snapshotId === t.snapshotId && d.meta?.commitHash === t.commit && d.meta?.imageDigest === t.image && id(t.instanceId) && runningInstance(d.instances) === t.instanceId, 'CANDIDATE_CHANGED')
+}
+export function nativeEnvironment(source) {
+  const env = { ...source, CI: 'true', NO_COLOR: '1' }
+  for (const key of ['RAILWAY_TOKEN', 'RAILWAY_API_TOKEN', 'RAILWAY_PROJECT_TOKEN', 'RAILWAY_API']) delete env[key]
+  return env
+}
+export async function main(args = process.argv.slice(2)) {
+  const a = argumentsFor(args)
+  guard(process.versions.node === '24.22.0' && !process.versions.bun, 'NODE_VERSION')
+  const out = join(CACHE, a.run); await mkdir(out)
+  const started = Date.now(), deadline = started + 120000
+  const receipt = { kind: 'production-maintenance-http', version: 1, state: 'PREPARING', startedAt: new Date(started).toISOString(), operatorSha256: sha(await readFile(FILE)), remoteProgramSha256: REMOTE_SHA, providerMutations: 0, sqlCalls: 0, appImported: false, sshCalls: 0, publicEdgeQualified: false }
+  const save = async patch => { Object.assign(receipt, patch); const h = await open(join(out, 'receipt.tmp'), 'w', 0o600); try { await h.writeFile(JSON.stringify(receipt, null, 2) + '\n'); await h.sync() } finally { await h.close() } await rename(join(out, 'receipt.tmp'), join(out, 'receipt.json')) }
+  const cli = join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe')
+  const env = nativeEnvironment(process.env)
+  const native = (argv, stdin = '', timeout = 20000) => new Promise((yes, no) => {
+    guard(Date.now() < deadline, 'DEADLINE')
+    const child = execFile(cli, argv, { cwd: ROOT, env, windowsHide: true, encoding: 'utf8', timeout: Math.min(timeout, deadline - Date.now()), maxBuffer: 65536 }, (e, stdout) => e ? no(new Refusal('CLI_UNCONFIRMED')) : yes(stdout)); child.stdin?.on('error', () => {}); child.stdin?.end(stdin)
+  })
+  try {
+    await save({})
+    guard(sha(await readFile(join(CACHE, 'production-maintenance-store-r1.mjs'))) === STORE_SHA, 'IMPORT_PIN_CHANGED')
+    const input = resolve(ROOT, a.path), rel = relative(CACHE, input), st = await lstat(input)
+    guard(rel && !rel.startsWith('..') && !rel.includes(':') && st.isFile() && !st.isSymbolicLink() && st.size <= 2097152, 'INPUT_PATH')
+    const bytes = await readFile(input); guard(bytes.length <= 2097152 && sha(bytes) === a.hash, 'INPUT_HASH')
+    const applied = JSON.parse(bytes.toString('utf8')), target = targetFromReceipt(applied)
+    guard(applied.operatorSha256 === sha(await readFile(join(CACHE, 'production-maintenance-reload-r2.mjs'))), 'RELOAD_OPERATOR_PIN')
+    guard((await native(['--version'])).trim() === 'railway 5.62.1', 'CLI_VERSION')
+    const context = async () => {
+      const q = 'query($id:String!,$s:String!,$e:String!,$input:DeploymentListInput!){deployment(id:$id){id projectId environmentId serviceId status snapshotId deploymentStopped meta instances{id status}}serviceInstance(serviceId:$s,environmentId:$e){serviceId environmentId activeDeployments{id}latestDeployment{id}}pending:deployments(first:20,input:$input){edges{node{id}}pageInfo{hasNextPage}}}'
+      const v = { id: target.deploymentId, s: target.serviceId, e: target.environment, input: { projectId: target.project, serviceId: target.serviceId, environmentId: target.environment, status: { notIn: ['SUCCESS', 'FAILED', 'CRASHED', 'REMOVED', 'SKIPPED'] } } }
+      const r = JSON.parse(await native(['api', '--compact', q, '--variables', '@-'], JSON.stringify(v))); guard(r.data && !r.errors, 'API_UNCONFIRMED'); validateContext(r.data, target)
+    }
+    await context()
+    await save({ state: 'SSH_HTTP_INTENT', projectId: target.project, environmentId: target.environment, service: target.service, serviceId: target.serviceId, candidate: applied.candidate, reloadReceipt: { path: a.path, sha256: a.hash }, sshCalls: 1 })
+    const nonce = randomBytes(16).toString('hex')
+    const program = `(${remoteHttp.toString()})(${JSON.stringify(target)},${JSON.stringify(nonce)})`
+    const result = readRemote(await native(['ssh', '--project', target.project, '--environment', target.environment, '--service', target.serviceId, '--deployment-instance', target.instanceId, '--identity-file', 'C:/Users/tocha/.ssh/id_ed25519', '--', 'bun', '-e', program], '', 35000), nonce)
+    await context()
+    await save({ ...result, state: 'LOCAL_FULL_HTTP_VERIFIED', observedAt: new Date().toISOString() })
+  } catch (e) { await save({ state: 'LOCAL_FULL_HTTP_UNCONFIRMED', failureCode: e instanceof Refusal ? e.code : 'LOCAL_OR_REMOTE_UNCONFIRMED' }) }
+  finally { await save({ finishedAt: new Date().toISOString() }) }
+  console.log(JSON.stringify({ output: a.run, state: receipt.state, sshCalls: receipt.sshCalls }))
+  return receipt.state === 'LOCAL_FULL_HTTP_VERIFIED' ? 0 : 1
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE) main().then(code => { process.exitCode = code }, () => { console.error('LOCAL_INITIALIZATION_UNCONFIRMED'); process.exitCode = 1 })

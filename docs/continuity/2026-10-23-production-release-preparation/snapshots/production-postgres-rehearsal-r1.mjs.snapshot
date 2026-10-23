@@ -1,0 +1,199 @@
+/** Root only. Consistent pg_dump rehearsal, NOT a fenced final migration backup. */
+import { spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import { lstat, mkdir, open, readFile, realpath } from 'node:fs/promises';
+import { dirname, join, resolve, relative, isAbsolute } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import { captureEncryptedDump, verifyEncryptedDump, byteMeter } from './production-postgres-binary-stream-r1.mjs';
+import { main as preflight, PG } from './production-postgres-execution-preflight-r1.mjs';
+import { PINS, nativeEnvironment } from './production-postgres-metadata-r3.mjs';
+import { withIsolatedClone, assertOwned, DOCKER, dockerPrefix, RESTORE_DB, queryClone, METADATA_SQL, projectMetadata } from './production-postgres-isolated-clone-r2.mjs';
+import { TABLES } from './production-pensa-counts-r1.mjs';
+
+const FILE = fileURLToPath(import.meta.url), CACHE = dirname(FILE), ROOT = resolve(CACHE, '../..'), PROJECTS = resolve(ROOT, '..');
+const AGE = 'C:/Users/tocha/AppData/Local/Microsoft/WinGet/Packages/FiloSottile.age_Microsoft.Winget.Source_8wekyb3d8bbwe/age/age.exe';
+const AGE_SHA = '2821a4ed191da07372acd302e5f6feae7a7985e285e1417765ebe74025af45f0';
+const BYTE_LIMIT = 1024 * 1024 * 1024;
+const DUMP_SHA = '8a0b0392ecc76e459c32ff471a304ca2882fba140d6dbeefe41856619ab1695e';
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+class Refusal extends Error { constructor(code) { super(code); this.code = code; } }
+const check = (ok, code) => { if (!ok) throw new Refusal(code); };
+const code = error => error instanceof Refusal ? error.code : 'REHEARSAL_UNCONFIRMED';
+const PINS_LOCAL = {
+  'production-postgres-binary-stream-r1.mjs': '50307de586dd01b06d312cbfe78d382ef094eee6613be7e77e657f18cd8d0b08',
+  'production-postgres-execution-preflight-r1.mjs': 'f0502c6ccea1598468df94a08bb825fdb551ac7b817cd67f324b9a856bd4bab7',
+  'production-postgres-isolated-clone-r2.mjs': 'a57d440d1c775f3ea6731746bdb78f3bd0fa2771d7c2cd47452f9cfa133124d0',
+  'production-pensa-counts-r1.mjs': '8ba889ad1545e3148320511916ba40bc15ab306db80a96b445d94941c8d07b16',
+};
+
+export function requireVerifiedBytes(verification, capture) {
+  check(verification?.state === 'AUTHENTICATED_BYTES_VERIFIED_NOT_RESTORE_QUALIFIED' && verification.authenticatedThroughEof === true &&
+    verification.transport?.ok === true && ['plaintext', 'ciphertext'].every(key => verification[key]?.streamEnded === true &&
+      verification[key].bytes === capture[key]?.bytes && verification[key].sha256 === capture[key]?.sha256), 'AUTHENTICATED_BYTES_REQUIRED');
+}
+
+/** A second authenticated binary pass goes only to an inspected local own CID.
+ * No plaintext file; the complete restore, not a prefix/TOC, proves custom format.
+ */
+export async function consumeArchive(owner, inputPath, identityPath, capture) {
+  await assertOwned(owner);
+  check(sha(await readFile(AGE)) === AGE_SHA, 'AGE_PIN_CHANGED');
+  const signal = new AbortController(), children = [], meters = {
+    cipher: byteMeter({ maxBytes: BYTE_LIMIT + 1024 * 1024 }), plain: byteMeter({ maxBytes: BYTE_LIMIT, pgdmp: true }) };
+  let failure = null, forced = false, outputBytes = 0;
+  function stop(error) {
+    if (forced) return; forced = true; failure ??= error; signal.abort();
+    for (const entry of children) {
+      if (!entry.exited) { try { entry.child.kill(); } catch {} }
+      for (const s of [entry.child.stdin, entry.child.stdout, entry.child.stderr]) s?.destroy();
+      entry.child.unref(); entry.finish();
+    }
+  }
+  function start(role, executable, args, env) {
+    const child = spawn(executable, args, { windowsHide: true, shell: false, stdio: ['pipe', 'pipe', 'pipe'], env });
+    let finish; const done = new Promise(resolve => { finish = resolve; });
+    const entry = { child, role, done, finish, exited: false, closed: false, exitCode: null, stderrBytes: 0 }; children.push(entry);
+    child.on('error', () => stop(new Refusal('CONSUMER_SPAWN_FAILED')));
+    child.once('exit', exitCode => { entry.exited = true; entry.exitCode = exitCode; });
+    child.once('close', () => { entry.closed = true; finish(); });
+    child.stderr.on('data', bytes => { entry.stderrBytes += bytes.length; if (entry.stderrBytes > 65536) stop(new Refusal('CONSUMER_STDERR_LIMIT')); });
+    return child;
+  }
+  const timer = setTimeout(() => stop(new Refusal('CONSUMER_DEADLINE')), 300000);
+  try {
+    const ageEnv = Object.fromEntries(['SystemRoot', 'WINDIR', 'TEMP', 'TMP'].flatMap(key => process.env[key] ? [[key, process.env[key]]] : []));
+    const age = start('age-decrypt', AGE, ['--decrypt', '--identity', identityPath], ageEnv);
+    const args = ['exec', '-i', owner.id, 'pg_restore', '--exit-on-error', '--single-transaction',
+      '--no-owner', '--no-privileges', '--dbname', RESTORE_DB];
+    const restore = start('local-pg-restore', DOCKER, [...dockerPrefix, ...args], process.env);
+    const sink = new Writable({ write(bytes, _encoding, done) {
+      outputBytes += bytes.length;
+      if (outputBytes > 65536) { done(new Refusal('CONSUMER_STDOUT_LIMIT')); return; }
+      done();
+    } });
+    const outcomes = await Promise.allSettled([
+      pipeline(createReadStream(inputPath), meters.cipher.stream, age.stdin, { signal: signal.signal }),
+      pipeline(age.stdout, meters.plain.stream, restore.stdin, { signal: signal.signal }),
+      pipeline(restore.stdout, sink, { signal: signal.signal }),
+    ]);
+    const rejected = outcomes.find(value => value.status === 'rejected'); if (rejected) throw rejected.reason;
+    await Promise.all(children.map(c => c.done));
+    if (failure) throw failure;
+    check(children.every(c => c.closed && c.exited && c.exitCode === 0 && c.stderrBytes === 0), 'CONSUMER_EXIT_OR_STDERR_UNCONFIRMED');
+    for (const [name, key] of [['cipher', 'ciphertext'], ['plain', 'plaintext']]) {
+      const m = meters[name].report(); check(m.streamEnded && m.bytes === capture[key].bytes && m.sha256 === capture[key].sha256, 'CONSUMED_BYTES_CHANGED');
+    }
+    await assertOwned(owner);
+    return { state: 'CONSUMED_AUTHENTICATED_ARCHIVE', mode: 'restore', outputBytes, plaintextSha256: capture.plaintext.sha256,
+      ciphertextSha256: capture.ciphertext.sha256, childExits: children.map(({ role, exitCode, stderrBytes }) => ({ role, exitCode, stderrBytes })) };
+  } catch (error) {
+    if (!children.every(c => c.closed)) stop(error);
+    return { state: 'UNQUALIFIED', failure: forced ? 'CONSUMER_CLEANUP_UNCONFIRMED' : code(error), forcedStop: forced,
+      plaintext: meters.plain.report(), ciphertext: meters.cipher.report(), outputBytes,
+      processes: children.map(({ role, exited, closed, exitCode, stderrBytes }) => ({ role, exited, closed, exitCode, stderrBytes })) };
+  }
+  finally { clearTimeout(timer); }
+}
+export function oracleSql() {
+  const relation = name => `to_regclass('${name}')`;
+  const meta = name => String.fromCharCode(92) + name;
+  const statements = ['BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;', "SET LOCAL statement_timeout='5000';",
+    `SELECT jsonb_build_object('kind','structure','tables',(SELECT count(*)::text FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%' AND c.relkind IN ('r','p')),
+     'indexes',(SELECT count(*)::text FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%' AND c.relkind='i'),
+     'sequences',(SELECT count(*)::text FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname NOT IN ('pg_catalog','information_schema') AND n.nspname NOT LIKE 'pg_toast%' AND c.relkind='S'));`];
+  for (const table of TABLES) {
+    const name = 'members.' + table.name;
+    const columns = table.columns.length ? `(SELECT count(*) FROM pg_attribute WHERE attrelid=${relation(name)} AND attnum>0 AND NOT attisdropped AND attname IN (${table.columns.map(c => `'${c}'`).join(',')}))=${table.columns.length}` : 'true';
+    statements.push(`SELECT ${relation(name)} IS NOT NULL AND ${columns} AS supported ${meta('gset')}`, meta('if :supported'),
+      `SELECT jsonb_build_object('kind','pensa','table','${name}','status','counted','counts',to_jsonb(q)) FROM (${table.sql}) q;`,
+      meta('else'), `SELECT jsonb_build_object('kind','pensa','table','${name}','status','absent-or-missing-columns','counts',NULL);`, meta('endif'));
+  }
+  for (const name of ['drizzle.members_migrations', 'drizzle.hub_migrations']) {
+    statements.push(`SELECT ${relation(name)} IS NOT NULL AS supported ${meta('gset')}`, meta('if :supported'),
+      `SELECT jsonb_build_object('kind','journal','table','${name}','entries',(SELECT count(*)::text FROM ${name}),'latest',(SELECT jsonb_build_object('sha256',hash,'createdAt',created_at::text) FROM ${name} ORDER BY created_at DESC,id DESC LIMIT 1));`,
+      meta('else'), `SELECT jsonb_build_object('kind','journal','table','${name}','entries',NULL,'latest',NULL);`, meta('endif'));
+  }
+  statements.push('ROLLBACK;'); return statements.join('\n');
+}
+export function projectOracles(stdout) {
+  const lines = stdout.trim().split(/\r?\n/).map(line => JSON.parse(line));
+  const digits = v => typeof v === 'string' && /^(0|[1-9][0-9]{0,19})$/.test(v);
+  check(lines.length === 1 + TABLES.length + 2 && lines[0].kind === 'structure' && ['tables','indexes','sequences'].every(k => digits(lines[0][k])) && BigInt(lines[0].tables) > 0n, 'RESTORE_STRUCTURE_UNCONFIRMED');
+  const counts = TABLES.map((table, index) => {
+    const value = lines[index + 1]; check(value.kind === 'pensa' && value.table === 'members.' + table.name && ['counted','absent-or-missing-columns'].includes(value.status), 'RESTORE_PENSA_UNCONFIRMED');
+    check(value.status === 'counted' ? table.fields.every(f => digits(value.counts?.[f])) : value.counts === null, 'RESTORE_PENSA_UNCONFIRMED');
+    return { table: value.table, status: value.status, counts: value.counts === null ? null : Object.fromEntries(table.fields.map(f => [f, value.counts[f]])) };
+  });
+  const journals = ['drizzle.members_migrations','drizzle.hub_migrations'].map((name, index) => {
+    const v = lines[1 + TABLES.length + index]; check(v.kind === 'journal' && v.table === name && digits(v.entries) && BigInt(v.entries) > 0n && /^[a-f0-9]{64}$/.test(v.latest?.sha256) && digits(v.latest?.createdAt), 'RESTORE_JOURNAL_UNCONFIRMED');
+    return { table: name, entries: v.entries, latest: { sha256: v.latest.sha256, createdAt: v.latest.createdAt } };
+  });
+  return { structure: Object.fromEntries(['tables','indexes','sequences'].map(k => [k, lines[0][k]])), pensa: counts, journals,
+    sourceRowsSnapshotComparison: false };
+}
+
+async function outsideProjects(path, existing) {
+  check(isAbsolute(path), 'ABSOLUTE_PATH_REQUIRED');
+  const actual = existing ? await realpath(path) : join(await realpath(dirname(path)), path.split(/[\\/]/).at(-1));
+  const rel = relative(PROJECTS, actual); check(rel.startsWith('..') || isAbsolute(rel), 'RECOVERY_PATH_INSIDE_CHECKOUT'); return actual;
+}
+async function main(args) {
+  check(process.versions.node === '24.22.0' && args.length === 4 && /^production-postgres-rehearsal-[a-z0-9-]{1,40}$/.test(args[0]), 'ARGUMENTS_OR_NODE_INVALID');
+  const [run, recipient, output, identity] = args;
+  const outputPath = await outsideProjects(output, false), identityPath = await outsideProjects(identity, true);
+  check(outputPath.endsWith('.age') && /^age1[023456789acdefghjklmnpqrstuvwxyz]{58}$/.test(recipient), 'RECOVERY_ARGUMENTS_INVALID');
+  const keyStat = await lstat(identityPath); check(keyStat.isFile() && !keyStat.isSymbolicLink() && keyStat.size <= 8192, 'IDENTITY_FILE_INVALID');
+  const out = join(CACHE, run); await mkdir(out); const file = await open(join(out, 'receipt.json'), 'wx', 0o600);
+  const receipt = { kind: 'production-postgres-logical-rehearsal', startedAt: new Date().toISOString(), sourceSha256: sha(await readFile(FILE)),
+    state: 'RUNNING', phase: 'preflight', ciphertextPath: outputPath, productionWritersFenced: false, sourceRowsSnapshotComparison: false,
+    finalPreMigrationBackup: false, durableCopyQualified: false, providerMutations: 0, dumpAttempts: 0, restoreQualified: false };
+  const save = async patch => { Object.assign(receipt, patch); await file.truncate(0); await file.write(JSON.stringify(receipt, null, 2) + '\n', 0, 'utf8'); await file.sync(); };
+  try {
+    await save({});
+    for (const [name, expected] of Object.entries(PINS_LOCAL)) check(sha(await readFile(join(CACHE, name))) === expected, 'SOURCE_PIN_CHANGED');
+    const dumpScript = await readFile(join(CACHE, 'production-postgres-custom-dump-r1.sh'));
+    check(sha(dumpScript) === DUMP_SHA, 'DUMP_SOURCE_PIN_CHANGED');
+    await save({ dumpScriptSha256: sha(dumpScript) });
+    const beforeName = `production-postgres-execution-${run.slice('production-postgres-'.length)}-before`;
+    check(await preflight([beforeName]) === 0, 'PREFLIGHT_UNCONFIRMED');
+    const before = JSON.parse(await readFile(join(CACHE, beforeName, 'receipt.json'), 'utf8'));
+    check(Date.now() - Date.parse(before.finishedAt) <= 10000, 'PREFLIGHT_EXPIRED');
+    await save({ phase: 'capture', preflightBefore: beforeName, dumpAttempts: 1 });
+    const capture = await captureEncryptedDump({ ageExe: AGE, ageSha256: AGE_SHA, recipient, outputPath, maxBytes: BYTE_LIMIT,
+      producer: { command: join(process.env.APPDATA, 'npm/node_modules/@railway/cli/bin/railway.exe'), env: nativeEnvironment(process.env),
+        args: ['ssh','--project',PINS.project,'--environment',PINS.environment,'--service',PG.serviceId,'--deployment-instance',PG.instanceId,
+          '--identity-file','C:/Users/tocha/.ssh/id_ed25519','--','sh','-c',dumpScript.toString('utf8')] } });
+    await save({ capture });
+    check(capture.state === 'ENCRYPTED_STREAM_CAPTURED_NOT_RESTORE_QUALIFIED' && capture.transport.processes.every(p => p.stderrBytes === 0), 'CAPTURE_UNCONFIRMED');
+    const afterName = `production-postgres-execution-${run.slice('production-postgres-'.length)}-after`;
+    check(await preflight([afterName]) === 0, 'POST_CAPTURE_PREFLIGHT_UNCONFIRMED');
+    const after = JSON.parse(await readFile(join(CACHE, afterName, 'receipt.json'), 'utf8'));
+    check(JSON.stringify(before.after) === JSON.stringify(after.before) && JSON.stringify(before.metadata) === JSON.stringify(after.metadata), 'CAPTURE_CONTEXT_CHANGED');
+    await save({ preflightAfter: afterName, phase: 'authenticate' });
+    const verification = await verifyEncryptedDump({ ageExe: AGE, ageSha256: AGE_SHA, identityPath, inputPath: outputPath, expected: capture });
+    await save({ verification }); requireVerifiedBytes(verification, capture);
+    await save({ phase: 'isolated-restore' });
+    const clone = await withIsolatedClone(run, async owner => {
+      const restored = await consumeArchive(owner, outputPath, identityPath, capture);
+      await save({ restoreAttempt: restored });
+      check(restored.state === 'CONSUMED_AUTHENTICATED_ARCHIVE', 'RESTORE_STREAM_UNCONFIRMED');
+      const metadata = projectMetadata(await queryClone(owner, RESTORE_DB, METADATA_SQL));
+      const oracles = projectOracles(await queryClone(owner, RESTORE_DB, oracleSql()));
+      return { restored, metadata, oracles };
+    }, async owner => { await save({ cloneCreateIntent: { owner, state: 'OWNER_RECORDED_BEFORE_CREATE' } }); });
+    await save({ clone });
+    check(clone.state === 'ISOLATED_CLONE_PROOF_PASSED' && clone.cleanup === 'OWN_CID_REMOVED_VERIFIED', 'RESTORE_OR_CLEANUP_UNCONFIRMED');
+    const finalVerify = await verifyEncryptedDump({ ageExe: AGE, ageSha256: AGE_SHA, identityPath, inputPath: outputPath, expected: capture });
+    requireVerifiedBytes(finalVerify, capture);
+    await save({ state: 'LOCAL_LOGICAL_RESTORE_REHEARSAL_VERIFIED_NOT_FINAL_BACKUP', phase: 'completed', restoreQualified: true,
+      finalCiphertextVerified: true, backupScope: 'ONE_DATABASE_NO_CLUSTER_ROLES_OR_ACL_RESTORE_PROOF' });
+  } catch (error) { await save({ state: 'UNQUALIFIED', failureCode: code(error) }); }
+  finally { try { await save({ finishedAt: new Date().toISOString() }); } finally { await file.close(); } }
+  console.log(JSON.stringify({ run, state: receipt.state, phase: receipt.phase, restoreQualified: receipt.restoreQualified }));
+  return receipt.restoreQualified ? 0 : 1;
+}
+if (process.argv[1] && resolve(process.argv[1]) === FILE)
+  main(process.argv.slice(2)).then(status => { process.exitCode = status; }, () => { console.error('LOCAL_REHEARSAL_INITIALIZATION_UNCONFIRMED'); process.exitCode = 1; });

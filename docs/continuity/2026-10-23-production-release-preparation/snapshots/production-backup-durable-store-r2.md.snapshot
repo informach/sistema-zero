@@ -1,0 +1,76 @@
+# Armazenamento privado da identidade de recuperação — preparação r2
+
+Operador privado para execução única por Root após revisão. Esta preparação não executou provedores, não leu a identidade real, não gerou chaves e não realizou dump, upload de objetos, SQL ou restauração.
+
+## Alvos fechados
+
+- Railway projeto `415d5a1c-5f75-432c-8445-b395d0977ce3`, ambiente production `19c212a5-85c0-493c-9630-a7a0569e8412`.
+- Variável compartilhada recuperável `RELEASE_POSTGRES_BACKUP_AGE_IDENTITY`: `serviceId:null`, `replace:false`, `skipDeploys:true`. Não é uma variável selada: uma identidade selada não poderia ser recuperada pela API para restaurar o backup.
+- R2 conta `bcc0f2d44140e05b69152cba326132f8`, bucket dedicado `sistemazero-release-backups-production`; domínio gerenciado desabilitado, nenhum domínio personalizado, nenhuma regra ativa de expiração de objetos.
+- Identidade existente criada por Root: `C:/Users/tocha/SistemaZeroRecovery/production/postgres/2026-10-23-root-r1/backup-identity.agekey`.
+- Recuperação nova exclusiva: `C:/Users/tocha/SistemaZeroRecovery/production/postgres/2026-10-23-root-r1/backup-identity-recovered.agekey`.
+
+O operador não aceita caminho alternativo. O original nunca é aberto para escrita. Confere diretório protegido, proprietário igual ao SID corrente e permissões somente do usuário, SYSTEM ou Administrators; valida também a ACL de cada arquivo, caminho real e ausência de symlink. A leitura da identidade tem teto de 8 KiB e UTF-8 estrito. `age-keygen -y` apenas deriva o destinatário público, que deve coincidir com o destinatário da identidade já criada. Não existe chamada de geração de chave.
+
+## Comandos para Root — não executados nesta preparação
+
+Na worktree `C:/Users/tocha/projects/sistema-zero-python-review-fixes`, com Node 24.22.0, Railway 5.62.1, Wrangler 4.120.1 e age 1.3.2 nos caminhos e hashes fixados no operador:
+
+```powershell
+$backupNode = 'C:/Users/tocha/projects/sistema-zero-python/.cache/studio-python-l0/node-v24.22.0/node-v24.22.0-win-x64/node.exe'
+$backupOperator = './.cache/python-reference-games/production-backup-durable-store-r2.mjs'
+& $backupNode $backupOperator read production-backup-store-read-root-r2
+```
+
+Revisar o recibo `READ_COMPLETE` e manter exclusividade de escritores de configuração durante cada operação. Se o bucket estiver ausente, Root pode executar uma vez:
+
+```powershell
+& $backupNode $backupOperator bucket production-backup-store-bucket-root-r2
+```
+
+O bucket já existente somente é aceito após conferir privacidade e ausência de expiração; nesse caso não ocorre escrita. A criação usa o comando oficial `wrangler r2 bucket create`, sem aplicar configuração pública ou lifecycle. Depois do bucket confirmado privado e com a variável compartilhada ainda ausente, Root pode executar uma vez:
+
+```powershell
+& $backupNode $backupOperator identity production-backup-store-identity-root-r2
+```
+
+Nenhum valor de chave é argumento de processo. O único mapa de mutação Railway segue por stdin (`api --variables @-`), exclusivamente com a nova variável compartilhada. Autenticação da CLI e respostas de variáveis permanecem em RAM. O operador não cria referências em aplicativos e não solicita deploy.
+
+## Provas e interrupções
+
+Antes e depois da operação, lê o inventário completo de serviços do ambiente, exige ausência de deployments pendentes e no máximo um deployment ativo SUCCESS por serviço. Confere mapas brutos e renderizados de todos os serviços, referências indiretas nas variáveis compartilhadas e igualdade das demais variáveis legíveis e dos IDs ativos. Nenhum mapa, valor privado ou hash de segredo vai ao recibo. Valores opacos já retornados como `null` são preservados como opacos; a API não permite comparar seus bytes secretos.
+
+Cada operação de escrita tem intenção global própria, permanente, criada com `wx` e `fsync` antes do primeiro envio:
+
+- `.cache/python-reference-games/production-backup-store-bucket.intent.json`
+- `.cache/python-reference-games/production-backup-store-identity.intent.json`
+
+Trocar o nome da execução não permite outro envio. Não apagar as intenções nem repetir automaticamente. ACK perdido permite apenas o readback independente já previsto; mesmo se esse readback coincidir, o recibo mantém `ACK_UNKNOWN_READBACK_MATCHED`, `remoteOutcomeUnknown:true` e exit code 1. Qualquer nova tentativa exige reconciliação explícita de Root. As saídas de cada execução são novas e exclusivas, com recibo RUNNING antes das consultas.
+
+No modo identity, o valor recuperado da API deve coincidir em RAM com o original. Só então cria o arquivo recuperado com `wx`, confirma sua ACL e usa esse arquivo para decifrar um nonce sintético cifrado para o destinatário público. O nonce e seu ciphertext ficam em RAM. `recoveryVerified:true` comprova essa recuperação da chave, não completude de dump ou restauração PostgreSQL. O arquivo original permanece intocado.
+
+Prazo total de 600 segundos; cada processo tem teto de 30 segundos e cada GET Cloudflare, 15 segundos. Não há retry. Respostas e saídas de processo são limitadas; erros públicos são códigos fechados. Não existe CAS de configuração: comparação imediata e posterior reduz a janela, mas exige exclusividade externa de alterações. Comparação de variáveis é dentro da mesma execução, não entre processos read e identity separados.
+
+O bucket não recebe objetos neste operador. `backupQualified` e `restoreQualified` permanecem false. Lifecycle sem expiração não é object lock nem prova de redundância. Não há rotação das chaves existentes, alteração de aplicativos, SQL, SSH, deploy ou chamada a modelos.
+
+## Verificação local
+
+```powershell
+bun --no-env-file test ./.cache/python-reference-games/production-backup-durable-store-r2.test.ts
+```
+
+Resultado desta preparação: 12 testes, 74 asserções, zero falhas, exit 0; inclui importação inerte no Node 24.22 com criação de processos de provedor e fetch proibidos. Os testes usam sentinelas, nunca a identidade real. Log: `production-backup-durable-store-r2-tests.log`.
+
+Referências canônicas: [variáveis compartilhadas Railway](https://docs.railway.com/variables), [API de variáveis Railway](https://docs.railway.com/integrations/api/manage-variables), [criação de buckets R2](https://developers.cloudflare.com/r2/buckets/create-buckets/), [controle de acesso público R2](https://developers.cloudflare.com/r2/buckets/public-buckets/). Os inputs GraphQL foram conferidos no SDK Railway 3.16 e as operações R2 no Wrangler 4.120.1; não há endpoint inventado ou protocolo alternativo.
+
+## Delta fechado r2 e diagnóstico local
+
+R1 e seu recibo negativo `production-backup-store-read-root-r1/receipt.json` foram preservados. A tentativa Root terminou antes de qualquer mutação, em 570 ms, com `NATIVE_UNCONFIRMED`. Não se repetiu READ ou qualquer consulta de provedor nesta investigação.
+
+A reprodução local Node 24 isolou o primeiro subprocesso de ACL: `powershell.exe` (Windows PowerShell 5.1) encontrou o módulo `Microsoft.PowerShell.Security` v7 no caminho herdado da shell PowerShell 7. A importação recusou tipos estendidos duplicados (`FormatXmlUpdateException`); `Get-Acl` falhou como `CouldNotAutoloadMatchingModule`, antes de consultar GetOwner. Não houve reinstalação ou alteração de módulos/ambiente global.
+
+R2 usa o executável real `C:/Program Files/WindowsApps/Microsoft.PowerShell_7.6.7.0_x64__8wekyb3d8bbwe/pwsh.exe`, conferindo SHA256 `fa2c8bb1e35cdd62ad15cd06a1d8f2c5961e9725a9bfa1e7cfd2c322f49e9619` antes do subprocesso. O ACL_SCRIPT e a política de permissões são byte-idênticos ao r1. A prova `production-backup-acl-local-proof-r2-final.json` registra old exit1 / new exit0, política real aceita, sem guardar SIDs, sem ler a chave e com zero operações de provedor.
+
+A segunda correção estreita recusa a expiração oficial R2 `deleteObjectsTransition` em regras habilitadas, mantendo a recusa conservadora de `deleteObjects`. Fonte oficial instalada Wrangler4.120.1 `cli.js:280673` e `:416152`. RED causal preservado em `production-backup-durable-store-r2-lifecycle-red.log`: o r2 ainda sem esse guard declarava incorretamente ausência de expiração. GREEN final: 12 testes / 74 asserções / exit0; expiração habilitada recusa, expiração desabilitada e abort de multipart não expiram objetos.
+
+Os nomes das intenções globais permanecem EXATAMENTE os mesmos do r1; mudar de revisão não permite repetição de escrita. Demais contextos, mutações, segredo por stdin, comparações, recuperação e limites permanecem iguais. Somente Root poderá realizar uma nova execução após revisar este delta; a prova local não atesta disponibilidade de CLI autenticada, bucket ou armazenamento Railway.

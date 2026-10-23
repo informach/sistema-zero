@@ -1,0 +1,55 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import childProcess from 'node:child_process';
+import { syncBuiltinESMExports } from 'node:module';
+import { open, readFile, unlink } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+const originalExecFile = childProcess.execFile; let processCalls = 0;
+childProcess.execFile = () => { processCalls++; throw Error('NO_PROCESS_ALLOWED_IN_THIS_TEST'); };
+syncBuiltinESMExports();
+const launcher = await import('./production-pensa-writer-images-readonly-r3.mjs');
+const journals = await import('./production-old-image-migration-readonly-r2.mjs');
+const next = await import('./production-next-predeploy-readonly-r2.mjs');
+const oldJournal = await import('./production-old-image-migration-readonly-r1.mjs');
+const sources = [launcher, journals, next];
+const prefixes = ['production-pensa-writer-images-readonly-r3-', 'production-old-image-migration-readonly-r2-', 'production-next-predeploy-readonly-r2-'];
+test.after(() => { childProcess.execFile = originalExecFile; syncBuiltinESMExports(); });
+test('imports perform no CLI, SSH, SQL or output operation', () => { assert.equal(processCalls, 0); });
+test('all three preserve normal native environment and remove exactly four Railway overrides', () => {
+  const input = { PATH: 'synthetic-path', SSH_AUTH_SOCK: 'synthetic-agent', NATIVE_REQUIRED_MARKER: 'synthetic-preserve',
+    RAILWAY_TOKEN: 'synthetic', RAILWAY_API_TOKEN: 'synthetic', RAILWAY_PROJECT_TOKEN: 'synthetic', RAILWAY_API: 'synthetic' };
+  for (const source of sources) {
+    const result = source.nativeEnvironment(input);
+    assert.deepEqual(result, { PATH: input.PATH, SSH_AUTH_SOCK: input.SSH_AUTH_SOCK, NATIVE_REQUIRED_MARKER: input.NATIVE_REQUIRED_MARKER, CI: 'true', NO_COLOR: '1' });
+    assert.equal(input.RAILWAY_TOKEN, 'synthetic');
+  }
+});
+test('new output namespaces refuse historical names, absolute paths and traversal', () => {
+  for (const [i, source] of sources.entries()) {
+    assert.ok(source.outputFile(`${prefixes[i]}window-r1.json`).endsWith(`${prefixes[i]}window-r1.json`));
+    for (const value of ['../old.json', 'C:/old.json', `${prefixes[i]}../old.json`, 'production-old-image-migration-readonly-r1.json'])
+      assert.throws(() => source.outputFile(value), /OUTPUT_NAME_INVALID/);
+  }
+});
+test('existing output refuses before any subprocess and never overwrites prior bytes', async () => {
+  for (const [i, source] of sources.entries()) {
+    const name = `${prefixes[i]}inert-${process.pid}.json`, path = source.outputFile(name), file = await open(path, 'wx', 0o600);
+    try {
+      await file.writeFile('SYNTHETIC_PRESERVE\n'); await file.close();
+      await assert.rejects(source.main(name), error => error.code === 'EEXIST');
+      assert.equal(await readFile(path, 'utf8'), 'SYNTHETIC_PRESERVE\n'); assert.equal(processCalls, 0);
+    } finally { await file.close().catch(() => {}); await unlink(path); }
+  }
+});
+test('journal SQL, remote program, projection and targets are exactly unchanged', () => {
+  assert.deepEqual(journals.TARGETS, oldJournal.TARGETS); assert.deepEqual(journals.QUERIES, oldJournal.QUERIES);
+  for (const name of ['readDatabaseJournal', 'remoteRead', 'projectRemote']) assert.equal(journals[name].toString(), oldJournal[name].toString());
+});
+test('historical sources are byte-identical to the reviewed pins', async () => {
+  const expected = {
+    'production-pensa-writer-images-readonly-r2-final.mjs': '3984a83081b71f16f264fe86311e32e1a915d69ed257992193ab849d39376fe9',
+    'production-old-image-migration-readonly-r1.mjs': '42ecccbbcde6ef63a6ff0b79150b53c4a922cd20000c83369562df65d493bc86',
+    'production-next-predeploy-readonly-r1.mjs': 'fc71cb9b629a8773f003c4f437c215f82c4adc4ec9cfda8a5be303b083a84618',
+  };
+  for (const [name, hash] of Object.entries(expected)) assert.equal(createHash('sha256').update(await readFile(new URL(name, import.meta.url))).digest('hex'), hash);
+});
