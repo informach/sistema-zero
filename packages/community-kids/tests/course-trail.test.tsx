@@ -110,14 +110,14 @@ describe('CourseTrail', () => {
     // Sem o recado, a criança veria o cabeçalho do curso e um vão mudo.
     render(<CourseTrail course={course([moduleOf('m1', []), moduleOf('m2', [])])} />)
     expect(screen.getByText(/As aulas estão sendo preparadas/)).toBeTruthy()
-    expect(screen.queryByText(/Mundo 1/)).toBeNull()
+    expect(screen.queryByText(/Módulo 1/)).toBeNull()
     // E o título do módulo em preparo não vaza junto com o recado.
     expect(screen.queryByText(/Modulo m1/)).toBeNull()
   })
 
   test('com aula publicada desenha a trilha e NÃO o recado', () => {
     render(<CourseTrail course={course([moduleOf('m1', [lesson('a')])])} />)
-    expect(screen.getByText(/Mundo 1/)).toBeTruthy()
+    expect(screen.getByText(/Módulo 1/)).toBeTruthy()
     expect(screen.getByText('Modulo m1')).toBeTruthy()
     expect(screen.queryByText(/As aulas estão sendo preparadas/)).toBeNull()
   })
@@ -139,9 +139,9 @@ describe('CourseTrail', () => {
         ])}
       />,
     )
-    expect(screen.getByText(/Mundo 1/)).toBeTruthy()
-    expect(screen.getByText(/Mundo 2/)).toBeTruthy()
-    expect(screen.queryByText(/Mundo 3/)).toBeNull()
+    expect(screen.getByText(/Módulo 1/)).toBeTruthy()
+    expect(screen.getByText(/Módulo 2/)).toBeTruthy()
+    expect(screen.queryByText(/Módulo 3/)).toBeNull()
     expect(screen.queryByText(/Modulo em-preparo/)).toBeNull()
   })
 

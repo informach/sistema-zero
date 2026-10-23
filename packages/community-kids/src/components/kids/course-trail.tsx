@@ -81,7 +81,7 @@ export function CourseTrail({ course }: { course: CourseDetailView }) {
               {/* Sem `opacity-*` no texto da faixa: a tinta a 80% caía para 4,04:1 no azul e
                   3,45:1 na laranja (medido na paleta do Pen, 11/09/2026). */}
               <p className="[font-family:var(--font-display)] font-bold text-xs uppercase tracking-widest">
-                Mundo {unitIndex + 1}
+                Módulo {unitIndex + 1}
               </p>
               <div className="flex items-end justify-between gap-3">
                 <h2 className="sz-display text-lg md:text-xl">{unit.module.title}</h2>

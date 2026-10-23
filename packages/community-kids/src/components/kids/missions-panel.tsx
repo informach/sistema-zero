@@ -76,7 +76,7 @@ function missionLabel(m: MissionView): string {
     case 'quiz_passed':
       return n === 1 ? 'Acerte 1 quiz' : `Acerte ${n} quizzes`
     case 'unit_complete':
-      return n === 1 ? 'Abra o baú de um Mundo' : `Abra ${n} baús`
+      return n === 1 ? 'Abra o baú de um módulo' : `Abra ${n} baús`
     case 'studio_submitted':
       return n === 1 ? 'Envie um projeto' : `Envie ${n} projetos`
     case 'studio_passed':
