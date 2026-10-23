@@ -57,6 +57,7 @@ async function setup() {
     project,
     scope,
     signal: controller.signal,
+    languageRequest: globalThis.fetch,
     clock: () => now,
     request: async (input: StudioLessonRuntimeRequest) => {
       calls.push(input)

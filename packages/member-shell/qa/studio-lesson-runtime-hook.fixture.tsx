@@ -1,6 +1,7 @@
 import { expect, spyOn, test } from 'bun:test'
 import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import { canonicalJson, sha256Hex } from '@sistemazero/core/creations'
+import { StudioPythonAnalysisAuthorizationSchema } from '@sistemazero/core/studio/python-language-authorization'
 import { StudioLessonRuntimeRequestSchema } from '@sistemazero/core/studio/runtime-authorization'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -8,7 +9,7 @@ import { createEmptyProject } from '../../studio/src/core/project'
 import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
 import { useLessonRuntime } from '../src/components/studio/use-lesson-runtime'
 
-if (typeof document === 'undefined') GlobalRegistrator.register()
+if (typeof document === 'undefined') GlobalRegistrator.register({ url: 'https://kids.test/' })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
 type Input = Parameters<typeof useLessonRuntime>[0]
@@ -223,5 +224,74 @@ test('a later contextual refusal removes the environment and an explicit retry c
   } finally {
     await view.close()
     fetch.mockRestore()
+  }
+})
+
+test('lesson analysis carries the document session through open, start, cancel and close', async () => {
+  const fixture = await pythonEnvironmentFixture('pro')
+  const meta = document.createElement('meta')
+  meta.name = 'sz-session'
+  meta.content = 'lesson-document-session'
+  document.head.append(meta)
+  const calls: { path: string; method?: string; session: string | null }[] = []
+  const fetch = intercept(async (url, init) => {
+    const path = String(url)
+    if (!path.startsWith('/api/studio/python-language'))
+      return response(fixture, JSON.parse(String(init?.body)))
+    const session = new Headers(init?.headers).get('x-sz-session')
+    calls.push({ path, method: init?.method, session })
+    if (session !== 'lesson-document-session')
+      return Response.json({ error: { code: 'SESSION_CHANGED' } }, { status: 409 })
+    if (init?.method === 'DELETE') return Response.json({ closed: true })
+    const body = JSON.parse(String(init?.body))
+    const authorization = StudioPythonAnalysisAuthorizationSchema.parse(body.authorization)
+    expect(authorization.context).toEqual({
+      kind: 'lesson',
+      lessonId: scope.lessonId,
+      blockId: scope.blockId,
+      baselineId: scope.baselineId,
+    })
+    expect(authorization.subject.id).toBe(fixture.project.id)
+    return Response.json({
+      transportVersion: 1,
+      status: 200,
+      body: path.endsWith('/start')
+        ? { ready: true }
+        : body.command
+          ? { version: 1, id: body.command.id }
+          : { version: 1, projectId: fixture.project.id, sessionId: 'a'.repeat(32) },
+    })
+  })
+  const view = mount()
+  try {
+    await view.render({ ...scope, project: fixture.project })
+    await settle(() => !!view.current().environment)
+    const environment = view.current().environment!
+    const provider = environment.createPythonLanguage?.(() => fixture.project)
+    if (!provider) throw new Error('Expected the real lesson analysis provider')
+    const outcome = await provider
+      .open({ projectId: fixture.project.id }, new AbortController().signal)
+      .then(
+        (connection) => ({ connection }),
+        (error) => ({ error }),
+      )
+    expect(calls[0]?.session).toBe('lesson-document-session')
+    if (!('connection' in outcome)) throw outcome.error
+    await outcome.connection.send(
+      { version: 1, id: 'cancel-query', kind: 'cancel', requestId: 'query' },
+      new AbortController().signal,
+    )
+    // A replaced page marker must not silently change the document's identity.
+    meta.content = 'other-session'
+    await view.close()
+    await settle(() => calls.some((call) => call.method === 'DELETE'))
+    outcome.connection.close()
+    expect(calls.map((call) => call.method)).toEqual(['POST', 'POST', 'POST', 'DELETE'])
+    expect(calls.every((call) => call.session === 'lesson-document-session')).toBe(true)
+    expect(environment.signal?.aborted).toBe(true)
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+    meta.remove()
   }
 })

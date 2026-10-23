@@ -40,6 +40,39 @@ Na revisão local do ajuste, a fixture real de abertura passou com 14 testes e
 24.22.0/TypeScript 5.9.3, `--noEmit --incremental false` e heap de 3072 MiB.
 A nova revisão ainda precisa do CI e da implantação antes da prova hospedada.
 
-Permanecem abertos os fluxos Python hospedados, a reconciliação agendada,
-a integração positiva de oficina/conquistas e os gates de produção. O resultado
-negativo anterior de desempenho F1 também permanece aberto.
+## Nova imagem `1f71cd1f4`
+
+O CI de push e o de PR passaram nos nove checks. O deploy de staging concluiu
+Admin, comunidade adulta e Kids; a leitura posterior confirmou SHA correto,
+ativo único, nenhum deployment pendente e predecessores retirados nos três.
+Após recarregar o documento inteiro, os três cabeçalhos públicos permitiram o
+frame Python configurado.
+
+| Fluxo na nova imagem | Resultado e limite | Recibo |
+| --- | --- | --- |
+| Pac-Man Python clássico | Blocos reconstruídos, código correspondente na Ponte e execução pelos dois modos. Labirinto, personagens, avanço do placar e pausa vistos. Stop encerrou a prévia. Isso não qualifica todas as regras nem áudio ouvido. | `hosted-staging-python-js-smoke-r1.json.snapshot` |
+| Pac-Man publicado | Publicação e capa pela interface, cartão no Mural e jogador público sem login. Placar avançou, pausa apareceu e reinício voltou a zero pontos/três vidas; nenhum erro de console. | `hosted-staging-python-public-r1.json.snapshot` |
+| Space Arena publicado | Exemplo em blocos aberto e publicado pela interface. Jogador público mostrou abertura, nave, arena, drones, radar, início com S, pausa com P e troca de câmera com C. Propulsão, tiro, áudio ouvido e todos os cenários continuam sem qualificação hospedada. | `hosted-staging-space-arena-public-r1.json.snapshot` |
+| Remix Python | O Mural criou uma cópia, que reabriu com blocos Python, Ponte e `main.py`. O recibo não qualifica uma partida completa do remix. | `hosted-staging-python-mural-remix-r1.json.snapshot` |
+| Pinta no Python Pro | Desenho próprio de 16 × 16 importado pela biblioteca e renderizado pelo Turtle. ZIP baixado pela interface contém fonte, PNG e instruções Python 3.14.2; o adaptador gráfico do navegador não acompanha o ZIP. Execução nativa desse ZIP ainda não observada. | `hosted-staging-python-pro-pinta-export-r1.json.snapshot` |
+| JavaScript com aluno real | Jogo existente abriu na imagem nova; Enter iniciou a partida e a nave, asteroides e placar foram vistos. Stop funcionou, sem edição intencional da fonte nem erros de console. | `hosted-staging-python-js-smoke-r1.json.snapshot` |
+
+As imagens de tela foram inspecionadas na ferramenta, sem arquivo raster
+versionado. O primeiro smoke do Space Arena conserva a captura incompleta no
+editor; a prova posterior do jogador público é separada. O suporte oficial a
+PNG em `register_shape` existe no [Python 3.14](https://docs.python.org/3.14/library/turtle.html#turtle.register_shape),
+versão exigida pelo pacote exportado. Python 3.12 local não qualifica esse alvo.
+
+A análise remota do Pro retornou `409 SESSION_CHANGED`: os hosts Kids não
+estavam fornecendo `sessionFetch` à porta de análise. O reparo e sua validação
+estão descritos em [sessão da análise Python](2026-10-23-python-analysis-session.md).
+O recebimento desse erro não foi contado como análise funcional.
+
+A rota direta de reconciliação passou em staging, mas a primeira observação
+agendada foi negativa. A nova observação diagnóstica também não qualificou o
+agendamento; os resultados e a limpeza são preservados separadamente. Não há
+qualificação global de ledger ou de reconciliação agendada.
+
+Continuam abertos a análise hospedada após o reparo, a integração positiva de
+oficina/conquistas e os gates de produção. O resultado negativo anterior de
+desempenho F1 também permanece aberto.

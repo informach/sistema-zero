@@ -1,0 +1,17 @@
+{
+  "kind": "hosted-staging-python-mural-remix",
+  "version": 1,
+  "observedAt": "2026-10-23T02:53:14.0261759+00:00",
+  "commit": "1f71cd1f4721e2828ea72a18d687e90882d7e223",
+  "threadId": "77aff804-25f6-4554-91c8-77b36091e3e2",
+  "muralCardVisible": true,
+  "playLinkMatched": true,
+  "publicPlayCountObserved": 1,
+  "remixCreatedByRealUi": true,
+  "remixTitle": "Remix de QA staging 2026-10-22 Pac-Man Python",
+  "remixReopened": true,
+  "pythonBlocksAndBridgeVisible": true,
+  "sourceMainPyVisible": true,
+  "allGameScenariosQualified": false,
+  "overallQualified": false
+}

@@ -3,6 +3,7 @@ import type {
   StudioLiveRuntimeContext,
   StudioRuntimeCandidate,
 } from '@sistemazero/core/studio/runtime-authorization'
+import { sessionFetch } from '../session-fetch'
 import { LiveRequestError, liveRequest } from './client'
 
 export interface LiveStudioAuthority {
@@ -40,6 +41,7 @@ export function liveStudioAnalysisContext(
   input: LiveStudioAuthority & { queue: { current: Promise<void> } },
 ) {
   return {
+    request: sessionFetch,
     context() {
       const current = assertLiveStudioAuthority(input, true)
       return { ...input.context, expectedWorkspaceRevision: current.revision }

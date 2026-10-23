@@ -4,6 +4,7 @@ import { studioProjectContinuityReference } from '@sistemazero/core/studio/proje
 import type { EditableStudioProject, StudioRuntimeEnvironment } from '@sistemazero/studio'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { apiSend } from '../../lib/api'
+import { sessionFetch } from '../../lib/session-fetch'
 
 /** Local saves do not change runtime ownership. Actor/project/environment changes do. */
 export function useFreeStudioRuntime(input: {
@@ -60,6 +61,7 @@ export function useFreeStudioRuntime(input: {
           project,
           scope: { userId: viewerId, context },
           signal: controller.signal,
+          language: { context: () => context, request: sessionFetch },
           request: (candidate, signal) =>
             apiSend('/api/studio/free-runtime', 'POST', { ...candidate, context }, undefined, {
               signal: AbortSignal.any([signal, AbortSignal.timeout(15_000)]),

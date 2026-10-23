@@ -1,0 +1,45 @@
+{
+  "kind": "hosted-staging-python-pro-pinta-and-export",
+  "version": 1,
+  "observedAt": "2026-10-23T03:12:31.5308849+00:00",
+  "commit": "1f71cd1f4721e2828ea72a18d687e90882d7e223",
+  "projectId": "01M5KB1Y55NBY5K05M6R8ANW89",
+  "projectName": "QA staging 2026-10-22 Python Pro Pinta",
+  "createdThroughRealStaffUi": true,
+  "languageSelected": "python",
+  "modeSelected": "pro",
+  "pintaImportThroughLibrary": true,
+  "ownPintaDrawing": "qa-staging-python-pinta",
+  "selectedFrame": 1,
+  "dimensions": {
+    "width": 16,
+    "height": 16
+  },
+  "assetId": "01M5KB74WQBRXXQMHT755MWS4N",
+  "assetPath": "assets/qa-staging-python-pinta.png",
+  "turtleInstalledThroughUi": true,
+  "pythonSourceEnteredThroughEditor": true,
+  "canvasTitle": "QA Pinta Python",
+  "redImageRenderedVisually": true,
+  "stopSucceeded": true,
+  "sourceZipDownloadedThroughUi": true,
+  "downloadFinalFilenameQualified": false,
+  "sourceZip": {
+    "bytes": 14462,
+    "requiresPython": ">=3.14.2,<3.15",
+    "browserTurtleAdapterIncluded": false,
+    "sha256": "086c7a0ef0bddda06c3642da0792b254575851b7696a47505df1cfbab352891e",
+    "sourceAndPngPreserved": true,
+    "entries": 16
+  },
+  "nativeExecutionQualified": false,
+  "reasonNativeNotExecuted": "Only Python3.12 is installed on this computer; ZIP targets3.14.2",
+  "analysisOpen": {
+    "qualified": false,
+    "rootCause": "host omitted sessionFetch transport",
+    "httpStatus": 409,
+    "code": "SESSION_CHANGED",
+    "fixPendingDeployment": true
+  },
+  "overallQualified": false
+}

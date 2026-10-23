@@ -177,3 +177,64 @@ test('A to B to A cancels old profile grants without resurfacing stale authority
     f.fetch.mockRestore()
   }
 })
+
+test('free Python analysis carries the document session through open, start and close', async () => {
+  const fixture = await pythonEnvironmentFixture('pro')
+  const viewerId = crypto.randomUUID()
+  const sessionId = crypto.randomUUID()
+  const originalURL = location.href
+  const browserWindow = window as unknown as { happyDOM: { setURL(url: string): void } }
+  browserWindow.happyDOM.setURL('https://kids.test/estudio')
+  const meta = document.createElement('meta')
+  meta.name = 'sz-session'
+  meta.content = sessionId
+  document.head.append(meta)
+  const calls: { url: string; method: string; session: string | null }[] = []
+  const originalFetch = globalThis.fetch
+  const fetch = spyOn(globalThis, 'fetch').mockImplementation(
+    Object.assign(
+      async (url: RequestInfo | URL, init?: RequestInit) => {
+        const path = url.toString()
+        if (path === '/api/studio/free-runtime')
+          return response(fixture, JSON.parse(String(init?.body)), viewerId)
+        const session = new Headers(init?.headers).get('x-sz-session')
+        calls.push({ url: path, method: init?.method ?? 'GET', session })
+        if (session !== sessionId)
+          return Response.json({ error: { code: 'SESSION_CHANGED' } }, { status: 409 })
+        if (path === '/api/studio/python-language')
+          return Response.json({
+            transportVersion: 1,
+            status: 201,
+            body: { version: 1, sessionId: 'a'.repeat(32), projectId: fixture.project.id },
+          })
+        if (path.endsWith('/start'))
+          return Response.json({ transportVersion: 1, status: 200, body: { ready: true } })
+        if (init?.method === 'DELETE') return new Response(null, { status: 204 })
+        throw new Error('Unexpected analysis request')
+      },
+      { preconnect: originalFetch.preconnect },
+    ),
+  )
+  const view = mount()
+  try {
+    await view.render({ project: fixture.project, viewerId })
+    await settle(() => !!view.current().environment)
+    const provider = view.current().environment!.createPythonLanguage!(() => fixture.project)
+    const connection = await provider.open(
+      { projectId: fixture.project.id },
+      new AbortController().signal,
+    )
+    expect(calls.map((call) => call.method)).toEqual(['POST', 'POST'])
+    meta.content = crypto.randomUUID()
+    connection.close()
+    await settle(() => calls.length === 3)
+    expect(calls.map((call) => call.method)).toEqual(['POST', 'POST', 'DELETE'])
+    expect(calls.every((call) => call.session === sessionId)).toBe(true)
+    expect(calls[2]!.url).toBe(`/api/studio/python-language/${'a'.repeat(32)}`)
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+    meta.remove()
+    browserWindow.happyDOM.setURL(originalURL)
+  }
+})

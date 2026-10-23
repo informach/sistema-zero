@@ -3,6 +3,7 @@
 import type { EditableStudioProject, StudioRuntimeEnvironment } from '@sistemazero/studio'
 import { useEffect, useState } from 'react'
 import { apiSend } from '../../lib/api'
+import { sessionFetch } from '../../lib/session-fetch'
 
 function message(error: unknown) {
   return error !== null &&
@@ -42,6 +43,7 @@ export function useLessonRuntime(input: {
           project,
           scope: { userId, lessonId, blockId, baselineId },
           signal: controller.signal,
+          languageRequest: sessionFetch,
           request: (input, signal) =>
             apiSend(
               `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/studio-runtime`,

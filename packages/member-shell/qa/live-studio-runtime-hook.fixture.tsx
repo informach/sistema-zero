@@ -12,7 +12,7 @@ import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/python
 import { useLiveStudioRuntime } from '../src/components/live/use-live-studio-runtime'
 import { liveStudioAnalysisContext, requestLiveStudioRuntime } from '../src/lib/live/studio-runtime'
 
-if (typeof document === 'undefined') GlobalRegistrator.register()
+if (typeof document === 'undefined') GlobalRegistrator.register({ url: 'https://kids.test/' })
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 type Input = Parameters<typeof useLiveStudioRuntime>[0]
 function intercept(handler: (...args: Parameters<typeof fetch>) => Promise<Response>) {
@@ -463,5 +463,89 @@ test('late response after writer handoff cannot restore authority and a non-JSON
   } finally {
     await view.close()
     fetch.mockRestore()
+  }
+})
+
+test.each([
+  'author',
+  'observer',
+] as const)('live %s analysis binds every request to the document session and closes after invalidation', async (access) => {
+  const f = await setup()
+  const meta = document.createElement('meta')
+  meta.name = 'sz-session'
+  meta.content = 'live-document-session'
+  document.head.append(meta)
+  if (access === 'observer')
+    f.update({ writerId: crypto.randomUUID(), leaseExpiresAt: null, readOnly: true })
+  const calls: { method?: string; session: string | null; revision?: number }[] = []
+  const fetch = intercept(async (url, init) => {
+    const path = String(url)
+    if (!path.startsWith('/api/studio/python-language')) {
+      const body = await (await f.response(JSON.parse(String(init?.body)))).json()
+      return Response.json({ ...body, ...(access === 'observer' ? { capabilities: [] } : {}) })
+    }
+    const session = new Headers(init?.headers).get('x-sz-session')
+    const call: (typeof calls)[number] = { method: init?.method, session }
+    calls.push(call)
+    if (session !== 'live-document-session')
+      return Response.json({ error: { code: 'SESSION_CHANGED' } }, { status: 409 })
+    if (init?.method === 'DELETE') return Response.json({ closed: true })
+    const body = JSON.parse(String(init?.body))
+    const authorization = StudioPythonAnalysisAuthorizationSchema.parse(body.authorization)
+    expect(authorization.context).toEqual({
+      ...f.input.context,
+      expectedWorkspaceRevision: f.input.current().revision,
+    })
+    if (authorization.context.kind !== 'live') throw new Error('Expected live context')
+    call.revision = authorization.context.expectedWorkspaceRevision
+    return Response.json({
+      transportVersion: 1,
+      status: 200,
+      body: path.endsWith('/start')
+        ? { ready: true }
+        : body.command
+          ? { version: 1, id: body.command.id }
+          : { version: 1, projectId: f.project.id, sessionId: 'a'.repeat(32) },
+    })
+  })
+  const view = mount()
+  try {
+    await view.render({ ...f.input, enabled: access === 'author', observe: access === 'observer' })
+    await settle(() => !!view.state().environment)
+    const environment = view.state().environment!
+    const provider = environment.createPythonLanguage?.(() => f.project)
+    if (!provider) throw new Error('Expected the real live analysis provider')
+    f.input.queue.current = f.input.queue.current.then(() => f.update({ revision: 1 }))
+    const outcome = await provider
+      .open({ projectId: f.project.id }, new AbortController().signal)
+      .then(
+        (connection) => ({ connection }),
+        (error) => ({ error }),
+      )
+    expect(calls[0]?.session).toBe('live-document-session')
+    if (!('connection' in outcome)) throw outcome.error
+    const commit = Promise.withResolvers<void>()
+    f.input.queue.current = commit.promise
+    try {
+      // Cancellation is not held behind the journal queue.
+      await outcome.connection.send(
+        { version: 1, id: 'cancel-query', kind: 'cancel', requestId: 'query' },
+        new AbortController().signal,
+      )
+      await act(async () => view.state().invalidate())
+      await settle(() => calls.some((call) => call.method === 'DELETE'))
+      outcome.connection.close()
+      expect(calls.map((call) => call.method)).toEqual(['POST', 'POST', 'POST', 'DELETE'])
+      expect(calls.slice(0, 3).map((call) => call.revision)).toEqual([1, 1, 1])
+      expect(calls.every((call) => call.session === 'live-document-session')).toBe(true)
+      expect(environment.signal?.aborted).toBe(true)
+      expect(view.state().environment).toBeUndefined()
+    } finally {
+      commit.resolve()
+    }
+  } finally {
+    await view.close()
+    fetch.mockRestore()
+    meta.remove()
   }
 })

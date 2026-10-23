@@ -1,0 +1,49 @@
+{
+  "kind": "hosted-staging-python-and-javascript-smoke",
+  "version": 1,
+  "commit": "1f71cd1f4721e2828ea72a18d687e90882d7e223",
+  "observedAt": "2026-10-23T02:51:08.6540292+00:00",
+  "csp": {
+    "adminRuntimeFrameAllowed": true,
+    "adultRuntimeFrameAllowed": true,
+    "kidsRuntimeFrameAllowed": true
+  },
+  "python": {
+    "runFromBlocks": true,
+    "spaceArena": {
+      "stopSucceeded": true,
+      "runtimeReportedRunning": true,
+      "exampleCreated": true,
+      "blocksHydrated": true,
+      "reason": "automation-screenshot-did-not-complete",
+      "visualAndControlsQualified": false
+    },
+    "runFromBridge": true,
+    "threadId": "77aff804-25f6-4554-91c8-77b36091e3e2",
+    "scoreAdvancedTo": 9,
+    "playId": "86ca7d6f-8672-463b-9363-58fd045ff44e",
+    "muralPublished": true,
+    "arrowDirectionEffectQualified": false,
+    "stopRemovedPreview": true,
+    "blocksHydrated": true,
+    "publicPlayerQualified": false,
+    "consoleWarning": "unused-zappy-preload",
+    "bridgeRenderedPythonSource": true,
+    "pauseLabelVisuallyConfirmed": true,
+    "labyrinthAndCharactersVisuallyConfirmed": true,
+    "project": "QA staging 2026-10-22 Pac-Man Python",
+    "consoleErrorsObserved": 0
+  },
+  "javascript": {
+    "shipAsteroidsAndScoreVisuallyConfirmed": true,
+    "stopSucceeded": true,
+    "existingProject": "Nave Contra Asteroides",
+    "consoleErrorsObserved": 0,
+    "opened": true,
+    "realStudent": true,
+    "sourceEdited": false,
+    "gameStartedWithEnter": true
+  },
+  "screenshotsViewedInlineOnly": true,
+  "overallQualified": false
+}
