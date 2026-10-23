@@ -37,8 +37,8 @@ export const SPLIT_HANDLE_WIDTH_PX = 24
  * que mal anda é pior que divisória nenhuma. Enquanto o limiar era a própria soma,
  * uma coluna de 1010px mostrava a alça com curso de arrasto quase zero — o que lê
  * como "às vezes funciona, às vezes não". Com 1080 ela nasce sempre com ~336px de
- * curso. Abaixo disso a aula empilha e oferece "Ver exemplo"/"Criar", que é a
- * resposta honesta para uma coluna estreita.
+ * curso. Abaixo disso a ferramenta fica depois da orientação, com o espaçamento
+ * entre blocos da aula, sem trocar de árvore ou esconder o diálogo.
  */
 export const SPLIT_COMFORT_WIDTH_PX = 1080
 
@@ -137,8 +137,6 @@ export type SecaoPartida = {
   toolIds: string[]
   /** Há o que dividir: conteúdo dos DOIS lados. */
   podeDividir: boolean
-  /** A direita tem um EDITOR (não só cena) — é o que decide as abas "Ver exemplo"/"Criar". */
-  temEditor: boolean
 }
 
 /**
@@ -161,7 +159,6 @@ export function partirSecao({
 }): SecaoPartida {
   const toolIds: string[] = []
   const contentIds: string[] = []
-  let temEditor = false
   for (const block of blocks) {
     if (ehPreviaDeLivro(block)) {
       contentIds.push(block.id)
@@ -173,12 +170,10 @@ export function partirSecao({
       continue
     }
     toolIds.push(block.id)
-    if (ehEditorDeSecao(block)) temEditor = true
   }
   return {
     contentIds,
     toolIds,
     podeDividir: toolIds.length > 0 && (contentIds.length > 0 || extraContent),
-    temEditor,
   }
 }

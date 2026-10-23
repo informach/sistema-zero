@@ -1047,7 +1047,7 @@ function LessonStudioBlockView({
         // Expandido: vira overlay em tela cheia por CSS (cobre a página; navbar = z-40).
         // O cabeçalho com "Reduzir" fica DENTRO do overlay → sempre clicável; menus/
         // diálogos portalados (z-50, depois no DOM) seguem por cima.
-        expanded && 'fixed inset-0 z-50 rounded-none',
+        expanded && 'fixed inset-0 z-50 overflow-y-auto rounded-none',
         // Modo guiada: o card cresce p/ preencher a coluna (pai = flex column com altura).
         fillHeight && !expanded && 'min-h-0 flex-1',
       )}
@@ -1158,7 +1158,9 @@ function LessonStudioBlockView({
           // um retângulo estreito e comprido (relato da dona, 09/2026). Quem precisa de
           // mais espaço usa o "Expandir", que é tela cheia. Fixo em `rem` de propósito:
           // `vh` dependia da altura da janela e mudava de notebook para notebook.
-          expanded || fillHeight ? 'min-h-0 flex-1' : 'h-[36rem] lg:h-[40rem]',
+          expanded || fillHeight
+            ? 'min-h-[min(24rem,50dvh)] flex-1'
+            : 'h-[36rem] shrink-0 lg:h-[40rem]',
         )}
       >
         {ready ? (

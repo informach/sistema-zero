@@ -86,15 +86,16 @@ async function harness(
       ),
     )
   await render()
-  const verify = () => act(async () => host.querySelector<HTMLButtonElement>('button')!.click())
+  const verify = () =>
+    act(async () => host.querySelector<HTMLButtonElement>('.sz-lesson-objectives-action')!.click())
   const edit = () =>
     act(async () => {
       project = { ...project, files: { ...project.files, 'script.js': 'let changed = true' } }
       for (const listener of listeners) listener()
     })
-  const reply = () =>
+  const reply = (passed = true) =>
     act(async () => {
-      response.resolve(Response.json({ passed: true, results: [{ id: 'loop', passed: true }] }))
+      response.resolve(Response.json({ passed, results: [{ id: 'loop', passed }] }))
       await new Promise((resolve) => setTimeout(resolve, 20))
     })
   return {
@@ -139,6 +140,42 @@ async function harness(
   }
 }
 
+test('objective details can collapse without hiding the verification action', async () => {
+  const h = await harness()
+  try {
+    const toggle = h.host.querySelector<HTMLButtonElement>('button[aria-expanded]')
+    expect(Boolean(toggle)).toBe(true)
+    expect(toggle?.getAttribute('aria-expanded')).toBe('false')
+    const details = document.getElementById(toggle!.getAttribute('aria-controls')!)
+    expect(details?.hidden).toBe(true)
+    expect(h.host.querySelector('.sz-lesson-objectives-action')?.closest('[hidden]')).toBeNull()
+    await act(async () => toggle!.click())
+    expect(toggle?.getAttribute('aria-expanded')).toBe('true')
+    expect(details?.hidden).toBe(false)
+    await act(async () => toggle!.click())
+    expect(details?.hidden).toBe(true)
+  } finally {
+    await h.close()
+  }
+})
+
+test('failed checks open the details and successful checks update the compact progress', async () => {
+  for (const passed of [false, true]) {
+    const h = await harness()
+    try {
+      await h.verify()
+      await h.entered.promise
+      await h.reply(passed)
+      const toggle = h.host.querySelector<HTMLButtonElement>('button[aria-expanded]')
+      expect(toggle?.getAttribute('aria-expanded')).toBe(passed ? 'false' : 'true')
+      expect(toggle?.textContent).toContain(passed ? '1 de 1 cumpridos' : '0 de 1 cumpridos')
+      expect(h.host.querySelector('.sz-lesson-objectives-action')?.closest('[hidden]')).toBeNull()
+    } finally {
+      await h.close()
+    }
+  }
+})
+
 test('editing cancels the request immediately and an old successful response cannot approve the new project', async () => {
   const h = await harness()
   try {
@@ -147,7 +184,9 @@ test('editing cancels the request immediately and an old successful response can
     expect(h.requests).toHaveLength(1)
     await h.edit()
     expect(h.requests[0]?.signal?.aborted).toBe(true)
-    expect(h.host.querySelector('button')?.disabled).toBe(false)
+    expect(h.host.querySelector<HTMLButtonElement>('.sz-lesson-objectives-action')?.disabled).toBe(
+      false,
+    )
     await h.reply()
     expect(h.refreshed()).toBe(0)
     expect(h.host.querySelector('[data-state="passed"]')).toBeNull()

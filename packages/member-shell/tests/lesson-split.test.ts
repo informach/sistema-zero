@@ -234,7 +234,6 @@ describe('a partição da parte', () => {
       contentIds: ['video'],
       toolIds: ['jogo'],
       podeDividir: true,
-      temEditor: false,
     })
   })
 
@@ -248,7 +247,6 @@ describe('a partição da parte', () => {
       contentIds: ['fala', 'caderno'],
       toolIds: ['caderno'],
       podeDividir: true,
-      temEditor: false,
     })
   })
 
@@ -288,7 +286,6 @@ describe('a partição da parte', () => {
     const r = partirSecao({ blocks: [pergunta, html, editor] })
     expect(r.contentIds).toEqual(['pergunta', 'html'])
     expect(r.toolIds).toEqual(['projeto'])
-    expect(r.temEditor).toBe(true)
   })
 
   test('a ferramenta SOZINHA na seção não divide — ela ocupa a largura toda', () => {

@@ -535,7 +535,6 @@ function LessonSectionsContent({
   // ⚠️ ANTES do return antecipado abaixo: hook chamado depois de um `return` roda
   // condicionalmente e desalinha a ordem dos hooks entre renders.
   const { container, width: contentWidth, handleWidth } = useLessonContentWidth()
-  const [toolMode, setToolMode] = useState<'example' | 'create'>('example')
   const registrouAbertura = useRef(false)
   // Abrir a aula REGISTRA a parte em que a criança entrou. A navegação só grava em
   // TRANSIÇÃO, então quem abre e fica na primeira seção nunca criava linha — e é o
@@ -593,7 +592,6 @@ function LessonSectionsContent({
         { keepalive: true },
       ).catch(() => {})
     setSelected(proxima.id)
-    setToolMode('example')
     setHelpOpen(false)
     setVisited(
       (old) =>
@@ -776,16 +774,11 @@ function LessonSectionsContent({
   const contentIds = semFerramenta ? [] : partida.contentIds
   const toolIds = semFerramenta ? partida.contentIds : partida.toolIds
   const podeDividir = hasStage ? toolIds.length > 0 : partida.podeDividir
-  const temEditor = partida.temEditor
   const { arrastavel, contentMinimum, toolMinimum } = resolveLessonSplit({
     contentWidth,
     handleWidth,
     hasWorkspace: podeDividir,
   })
-  // As abas são a saída honesta para uma coluna estreita com um EDITOR — "o exemplo" contra
-  // "a minha criação". Uma parte cuja direita é só cena não tem esse par: a cena É a aula, e
-  // numa coluna estreita ela simplesmente empilha.
-  const mostraAbas = podeDividir && !arrastavel && temEditor
   const editorIds = new Set(editores.map((b) => b.id))
   const cenasAtivas = toolIds.filter((id) => !editorIds.has(id))
   // "Assistir ao vídeo antes da atividade" (opção do curso, 03/10/2026). Sem player (prévia e
@@ -799,10 +792,9 @@ function LessonSectionsContent({
       lesson.completed ||
       state?.sections.some((s) => s.id === section.id && s.status === 'completed') === true,
   })
-  // "Ver o vídeo" do aviso: volta à aba do exemplo, leva o foco ao vídeo e tenta dar play (o
+  // "Ver o vídeo" do aviso: leva o foco ao vídeo e tenta dar play (o
   // navegador pode recusar; aí a criança aperta).
   const watchVideo = (videoBlockId: string) => {
-    setToolMode('example')
     setDestination(videoBlockId)
     videoControls.current.get(videoBlockId)?.play()
   }
@@ -839,7 +831,6 @@ function LessonSectionsContent({
         else await sendNavigation()
       }
       setSelected(next.id)
-      setToolMode('example')
       setHelpOpen(false)
       setHelp('')
       setHelpSpoken(false)
@@ -1385,37 +1376,6 @@ function LessonSectionsContent({
                   {avisoDaTurma ? LIVE_SECTION_COPY.turmaNaParte(avisoDaTurma.numero) : ''}
                 </p>
               ) : null}
-              {mostraAbas && (
-                <div className="flex gap-2" role="group" aria-label="Orientação e criação">
-                  <Button
-                    variant={toolMode === 'example' ? 'default' : 'outline'}
-                    aria-pressed={toolMode === 'example'}
-                    onClick={() => setToolMode('example')}
-                  >
-                    Ver exemplo
-                  </Button>
-                  <Button
-                    variant={toolMode === 'create' ? 'default' : 'outline'}
-                    aria-pressed={toolMode === 'create'}
-                    onClick={() => setToolMode('create')}
-                  >
-                    Criar
-                  </Button>
-                </div>
-              )}
-              {mostraAbas &&
-                toolMode === 'create' &&
-                section.blockIds
-                  .map((id) => dialogueText(blockById.get(id)?.content))
-                  .filter(Boolean)
-                  .slice(0, 1)
-                  .map((text) =>
-                    text ? (
-                      <div key={text} className="text-sm">
-                        {player?.renderInstruction?.(text) ?? text}
-                      </div>
-                    ) : null,
-                  )}
               <PanelGroup
                 direction="horizontal"
                 // Por PERFIL, não por aula: a criança ajusta a divisória uma vez e ela vale
@@ -1444,13 +1404,6 @@ function LessonSectionsContent({
                   maxSize={100 - toolMinimum}
                   className={cn(
                     'min-w-0 space-y-6 overflow-visible!',
-                    // ⚠️ Com o vídeo flutuando (ou na pílula) o painel do vídeo precisa existir: um
-                    // `fixed` dentro de `display: none` não aparece. A tela ampliada cobre o resto.
-                    !hasStage &&
-                      mostraAbas &&
-                      toolMode === 'create' &&
-                      floatMode === null &&
-                      'hidden!',
                     // ⭐ Com a transmissão: lado a lado, a coluna estica até a altura da linha para
                     // ela ficar fixa enquanto a criança rola a atividade; empilhado, o painel some
                     // da caixa (`contents`) e a transmissão gruda no alto da PARTE inteira, por
@@ -1512,17 +1465,10 @@ function LessonSectionsContent({
                       </>
                     )
                     // Sem a transmissão a árvore é a de sempre (os apps juntam cabeçalho e bloco
-                    // pelo seletor de irmão). Com ela, a orientação da parte vai num invólucro que
-                    // some na aba "Criar" sem levar a transmissão junto.
+                    // pelo seletor de irmão). Com ela, a orientação mantém o mesmo invólucro
+                    // para a transmissão continuar montada ao trocar a largura ou a parte.
                     return hasStage ? (
-                      <div
-                        className={cn(
-                          'sz-lesson-stage-content space-y-6',
-                          mostraAbas && toolMode === 'create' && 'hidden!',
-                        )}
-                      >
-                        {conteudo}
-                      </div>
+                      <div className="sz-lesson-stage-content space-y-6">{conteudo}</div>
                     ) : (
                       conteudo
                     )
@@ -1585,14 +1531,12 @@ function LessonSectionsContent({
                   minSize={toolMinimum}
                   maxSize={100 - contentMinimum}
                   className={cn(
-                    // Fora do flex (empilhado) o `gap-6` do grid antigo não existe mais.
                     'overflow-visible!',
+                    !arrastavel && podeDividir && 'mt-6!',
                     // ⚠️ `toolIds.length > 0` e não `podeDividir`: a parte cujo ÚNICO bloco é a
                     // ferramenta não divide, e nem por isso ela pode sumir — ela ocupa a largura
                     // toda (o `PanelGroup` vira `block!` quando não arrasta).
-                    toolIds.length > 0 && (arrastavel || !mostraAbas || toolMode === 'create')
-                      ? 'min-w-0 space-y-6'
-                      : 'hidden!',
+                    toolIds.length > 0 ? 'min-w-0 space-y-6' : 'hidden!',
                   )}
                 >
                   {/* ⚠️ O aviso "assista ao vídeo primeiro" embrulha SEMPRE o painel (desligado, só
