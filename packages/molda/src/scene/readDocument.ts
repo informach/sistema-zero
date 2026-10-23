@@ -70,6 +70,7 @@ function node(raw: unknown, path: string): ModelSceneNode {
     'hidden',
     'locked',
     'pivot',
+    'pivotAxis',
     ...(kind === 'mesh' ? ['geometryId', 'materialId'] : ['bendLimit']),
   ])
   const base = {
@@ -80,7 +81,16 @@ function node(raw: unknown, path: string): ModelSceneNode {
     hidden: v.boolean(row.hidden, `${path}.hidden`),
     locked: v.boolean(row.locked, `${path}.locked`),
     ...(row.pivot === undefined ? {} : { pivot: v.tuple(row.pivot, 3, `${path}.pivot`) as Vec3 }),
+    ...(row.pivotAxis === undefined
+      ? {}
+      : { pivotAxis: v.tuple(row.pivotAxis, 3, `${path}.pivotAxis`) as Vec3 }),
   }
+  if (base.pivotAxis)
+    v.requireScene(
+      Math.abs(Math.hypot(...base.pivotAxis) - 1) <= 1e-6,
+      `${path}.pivotAxis`,
+      'O eixo do pivô precisa ter tamanho 1.',
+    )
   return kind === 'mesh'
     ? {
         ...base,

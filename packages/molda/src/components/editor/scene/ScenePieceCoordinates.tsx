@@ -1,7 +1,11 @@
 import { useId, useMemo } from 'react'
 import type { Vec3 } from '../../../core/model'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
-import { snapSceneMeasurement } from '../../../scene/measurementStep'
+import {
+  formatSceneCoordinate,
+  SCENE_COORDINATE_STEP,
+  snapSceneMeasurement,
+} from '../../../scene/measurementStep'
 import {
   type SceneCoordinateField,
   scenePieceCoordinates,
@@ -82,22 +86,25 @@ export function ScenePieceCoordinates({
                   type="number"
                   name={`${field}-${axis}`}
                   step={
-                    field === 'position' || field === 'dimensions'
-                      ? workshop.measurementStep
-                      : 'any'
+                    field === 'position' || field === 'dimensions' ? SCENE_COORDINATE_STEP : 'any'
                   }
-                  min={field === 'dimensions' ? workshop.measurementStep : undefined}
+                  min={field === 'dimensions' ? SCENE_COORDINATE_STEP : undefined}
                   disabled={field === 'dimensions' && coordinates.bounds?.size[axis] === 0}
                   aria-label={`${label} ${['X', 'Y', 'Z'][axis]}`}
                   aria-describedby={hint}
-                  defaultValue={Number(coordinates[field][axis].toPrecision(12))}
+                  defaultValue={
+                    field === 'position' || field === 'dimensions'
+                      ? formatSceneCoordinate(coordinates[field][axis])
+                      : Number(coordinates[field][axis].toPrecision(12))
+                  }
                   onKeyDown={(event) => {
                     if (event.key === 'Escape') {
                       event.preventDefault()
                       event.stopPropagation()
-                      event.currentTarget.value = String(
-                        Number(coordinates[field][axis].toPrecision(12)),
-                      )
+                      event.currentTarget.value =
+                        field === 'position' || field === 'dimensions'
+                          ? formatSceneCoordinate(coordinates[field][axis])
+                          : String(Number(coordinates[field][axis].toPrecision(12)))
                       event.currentTarget.blur()
                     } else if (event.key === 'Enter') {
                       event.preventDefault()
@@ -107,31 +114,41 @@ export function ScenePieceCoordinates({
                   onBlur={(event) => {
                     if (!(field === 'pivot' ? pivotGate : coordinatesGate).canUse()) return
                     const fieldInput = event.currentTarget
-                    const displayValue = Number(coordinates[field][axis].toPrecision(12))
+                    const displayText =
+                      field === 'position' || field === 'dimensions'
+                        ? formatSceneCoordinate(coordinates[field][axis])
+                        : String(Number(coordinates[field][axis].toPrecision(12)))
+                    const displayValue = Number(displayText)
                     const raw = Number(fieldInput.value)
                     if (
                       !fieldInput.value.trim() ||
                       !Number.isFinite(raw) ||
                       (field === 'dimensions' && raw <= 0)
                     ) {
-                      fieldInput.value = String(displayValue)
+                      fieldInput.value = displayText
                       return
                     }
-                    if (raw === displayValue) return
+                    if (raw === displayValue) {
+                      fieldInput.value = displayText
+                      return
+                    }
                     const value =
                       field === 'position' || field === 'dimensions'
                         ? snapSceneMeasurement(
                             raw,
-                            workshop.measurementStep,
-                            field === 'dimensions' ? workshop.measurementStep : -Infinity,
+                            SCENE_COORDINATE_STEP,
+                            field === 'dimensions' ? SCENE_COORDINATE_STEP : -Infinity,
                           )
                         : raw
-                    fieldInput.value = String(value)
+                    fieldInput.value =
+                      field === 'position' || field === 'dimensions'
+                        ? formatSceneCoordinate(value)
+                        : String(value)
                     if (value === displayValue) return
                     const next: Vec3 = [...coordinates[field]]
                     next[axis] = value
                     if (!run((source) => setScenePieceCoordinates(source, primary.id, field, next)))
-                      fieldInput.value = String(displayValue)
+                      fieldInput.value = displayText
                   }}
                 />
                 {field === 'rotation' && <small aria-hidden="true">°</small>}

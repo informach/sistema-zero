@@ -8,11 +8,29 @@ import { migrateLegacyModel } from './migrateLegacy'
 import {
   addScenePaletteColor,
   dropLastScenePaletteColor,
+  setScenePalette,
   updateScenePaletteColor,
 } from './paletteCommands'
 import { readSceneDocument } from './readDocument'
 
 const base = () => migrateLegacyModel(makeModel({ parts: [] })).document
+
+test('trocar a paleta conserva extras e guarda as cores personalizadas no documento', () => {
+  const source = addScenePaletteColor(base(), '#123456')!.document
+  const custom = {
+    name: 'Floresta',
+    colors: [...resolvePaletteColors(source).slice(0, PALETTE_SIZE)],
+  }
+  custom.colors[1] = '#abcdef'
+  const applied = setScenePalette(source, { paletteId: 'custom', customPalette: custom })
+  expect(applied.extraColors).toEqual(['#123456'])
+  expect(resolvePaletteColors(applied)[1]).toBe('#abcdef')
+  expect(setScenePalette(applied, { paletteId: 'custom', customPalette: custom })).toBe(applied)
+  expect(readSceneDocument(sceneToJson(applied)).status).toBe('valid')
+  const preset = setScenePalette(applied, { paletteId: 'pastel' })
+  expect(preset.customPalette).toBeUndefined()
+  expect(preset.extraColors).toEqual(['#123456'])
+})
 
 test('cor que já existe reaproveita o índice; cor nova vira extra no fim, sem mexer nas outras', () => {
   const document = base()

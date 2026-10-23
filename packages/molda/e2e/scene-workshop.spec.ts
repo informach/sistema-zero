@@ -273,7 +273,9 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   await page.getByRole('button', { name: 'Mostrar grade', exact: true }).click()
   // O passo mora recolhido em "Mais ajustes do palco" desde o lote 7a: abrir faz parte do caminho.
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
-  await page.getByRole('checkbox', { name: 'Permitir números quebrados', exact: true }).check()
+  await page
+    .getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar', exact: true })
+    .check()
   await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
   await backToGallery(page)
   const backup = await downloaded(page, 'Baixar tudo')
@@ -290,7 +292,10 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   // A oficina reaberta nasce com "Mais ajustes do palco" recolhido de novo.
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
   await expect(
-    page.getByRole('checkbox', { name: 'Permitir números quebrados', exact: true }),
+    page.getByRole('checkbox', {
+      name: 'Passos de 0,01 ao mover e redimensionar',
+      exact: true,
+    }),
   ).not.toBeChecked()
   await page.getByRole('button', { name: 'Imagem de apoio', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Escolher imagem', exact: true })).toBeVisible()
@@ -397,7 +402,9 @@ for (const theme of ['claro', 'escuro']) {
     await expect(recovery).toHaveCount(0)
     await expect(page.locator('.mld-save-status')).toHaveAttribute('data-state', 'saved')
     await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
-    await expect(page.getByRole('spinbutton', { name: 'Posição X', exact: true })).toHaveValue('3')
+    await expect(page.getByRole('spinbutton', { name: 'Posição X', exact: true })).toHaveValue(
+      '3.00',
+    )
     const restored = await nativeProject(page)
     expect(restored.nodes).toEqual(backup.nodes)
     expect(restored.geometries).toEqual(backup.geometries)
@@ -444,6 +451,7 @@ test('a child can spin a resized cylinder wheel, record and export GLB to both d
   await page.getByRole('button', { name: 'Escolher roda', exact: true }).click()
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   await page.getByRole('button', { name: 'Girar', exact: true }).click()
+  await page.locator('summary').filter({ hasText: 'Marcação automática' }).click()
   await page.getByRole('checkbox', { name: 'Marcar sozinho', exact: true }).uncheck()
   await page.getByRole('button', { name: 'Girar no eixo Y', exact: true }).press('Shift+ArrowRight')
   await expect(
@@ -784,8 +792,16 @@ test('vinte aberturas liberam o contexto gráfico e mantêm a memória limitada'
         page.getByRole('button', { name: 'Modelo memoria-e2e', exact: true }),
       ).toBeVisible()
       await cdp.send('HeapProfiler.collectGarbage')
-      const heap = await cdp.send('Runtime.getHeapUsage'),
-        dom = await cdp.send('Memory.getDOMCounters')
+      let dom = await cdp.send('Memory.getDOMCounters')
+      if (samples.length)
+        await expect
+          .poll(async () => {
+            await cdp.send('HeapProfiler.collectGarbage')
+            dom = await cdp.send('Memory.getDOMCounters')
+            return dom.nodes
+          })
+          .toBeLessThan(samples[0]!.nodes + 100)
+      const heap = await cdp.send('Runtime.getHeapUsage')
       samples.push({ cycle, heap: heap.usedSize, nodes: dom.nodes })
     }
   }

@@ -21,7 +21,7 @@ async function prepare() {
   fireEvent.click(screen.getByRole('button', { name: copy.prepare }))
   await screen.findByText(copy.ready)
 }
-test('workshop lazy OBJ panel prepares a read-only review, requires consent, restores focus and undoes/redoes one replacement', async () => {
+test('workshop lazy OBJ panel prepares a read-only review, requires consent, restores focus and undoes/redoes one addition', async () => {
   const editor = editorStore(),
     before = editor.getState().asset,
     { factory, ports } = renderer(),
@@ -52,7 +52,11 @@ test('workshop lazy OBJ panel prepares a read-only review, requires consent, res
     await waitFor(() => expect(document.activeElement === trigger).toBe(true))
     const imported = editor.getState().asset
     expect(imported).toMatchObject({ id: before.id, name: before.name })
-    expect(imported.geometries).toHaveLength(1)
+    expect(imported.geometries).toHaveLength(before.geometries.length + 1)
+    expect(imported.nodes.slice(0, before.nodes.length)).toEqual(before.nodes)
+    expect(imported.nodes.some((node) => node.kind === 'group' && node.name === 'triangle')).toBe(
+      true,
+    )
     expect(editor.getState().contentRevision).toBe(1)
     expect(ports.filter((port) => port.disposed === 0)).toHaveLength(1)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
@@ -144,7 +148,12 @@ test('OBJ directory companions and all compatibility policies are selectable, ex
     fireEvent.click(screen.getByLabelText(copy.accept))
     fireEvent.click(screen.getByRole('button', { name: copy.confirm }))
     expect(imported).toBe(1)
-    expect(editor.getState().asset.materials.every((material) => material.doubleSided)).toBe(true)
+    expect(
+      editor
+        .getState()
+        .asset.materials.slice(before.materials.length)
+        .every((material) => material.doubleSided),
+    ).toBe(true)
     expect(editor.getState().asset.nodes.some((node) => node.name === 'Empty')).toBe(false)
   } finally {
     view.unmount()

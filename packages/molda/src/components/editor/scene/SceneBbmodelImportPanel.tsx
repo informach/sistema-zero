@@ -91,9 +91,7 @@ export function SceneBbmodelImportPanel({
               )}
             </p>
           </SceneImportReport>
-          <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">
-            {copy.replace}
-          </p>
+          <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">{copy.add}</p>
           <label className={importChoice}>
             <input
               name="bbmodelAccept"

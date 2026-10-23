@@ -3,7 +3,8 @@ import { act, cleanup, renderHook, waitFor } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { structuredBytes } from '../../../core/structuredBytes'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import { identityMatrix } from '../../../scene/matrix'
+import { composeTransform, identityMatrix } from '../../../scene/matrix'
+import { rigidEmptyAnimations } from '../../../scene/rigidEmptyAnimations'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { getMoldaStorageNamespace, setMoldaStorageNamespace } from '../../../state/persistence'
 import { SceneAnimationPlayer } from '../../../state/SceneAnimationPlayer'
@@ -18,7 +19,7 @@ afterEach(() => {
 })
 
 function setup(
-  source = animatedScene(),
+  source: MoldaSceneDocument = animatedScene(),
   save: (document: MoldaSceneDocument) => Promise<void> = async () => {},
 ) {
   const editor = createDocumentEditorStore({
@@ -99,6 +100,30 @@ test('reload restores completed pose across thumbnail stamps without saving the 
     act(() => expect(next.gesture.record()).toBe(true))
     await waitFor(() => expect(localStorage.getItem(next.key)).toBeNull())
     expect(next.editor.getState().canUndo).toBe(true)
+  } finally {
+    next.close()
+  }
+})
+
+test('reload keeps a draft when decomposable affine transforms open as rigid transforms', async () => {
+  const source = animatedScene()
+  const wing = source.nodes.find((node) => node.id === 'wing')!
+  wing.transform = { kind: 'affine', matrix: composeTransform(wing.transform) }
+  const first = setup(source)
+  draft(first)
+  await waitFor(() => expect(localStorage.getItem(first.key) !== null).toBe(true))
+  await act(() => first.editor.getState().flush())
+  const saved = first.editor.getState().savedAsset
+  const opened = rigidEmptyAnimations(saved)
+  expect(opened).not.toBe(saved)
+  expect(opened.nodes.find((node) => node.id === 'wing')?.transform.kind).toBe('trs')
+  expect(await scenePoseRecoveryRevision(saved)).toBe(await scenePoseRecoveryRevision(opened))
+  first.close()
+  const next = setup(opened)
+  try {
+    await waitFor(() => expect(next.hook.result.current.available !== null).toBe(true))
+    act(() => expect(next.hook.result.current.restore()).toBe(true))
+    expect(next.gesture.getSnapshot().pending).toBe(true)
   } finally {
     next.close()
   }

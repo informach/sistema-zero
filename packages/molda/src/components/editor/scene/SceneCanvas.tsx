@@ -108,6 +108,7 @@ interface Props {
   transform?: SceneTransformActions
   transformTools?: readonly Exclude<SceneTransformTool, 'select'>[]
   componentSelection?: SceneComponentSelection | null
+  faceExtruding?: boolean
   facePreviewOpen?: boolean
   onSelectComponent?(id: string | null, additive: boolean): void
   onSelectComponents?(ids: readonly string[], additive: boolean): void
@@ -178,6 +179,7 @@ function SceneCanvasAttempt({
   transform,
   transformTools = ['move', 'rotate', 'scale'],
   componentSelection = null,
+  faceExtruding = false,
   facePreviewOpen = false,
   onSelectComponent,
   onSelectComponents,
@@ -373,10 +375,30 @@ function SceneCanvasAttempt({
   const [localMovementStep, setLocalMovementStep] = useState<SceneMeasurementStep>(1)
   const movementStep = measurementStep === undefined ? localMovementStep : measurementStep
   const setMovementStep = onMeasurementStepChange ?? setLocalMovementStep
-  const [transformSpace, setTransformSpace] = useState<'world' | 'local'>('world')
-  const [animationTransformSpace, setAnimationTransformSpace] = useState<'world' | 'local'>('local')
+  const [transformSpace, setTransformSpace] = useState<'world' | 'local' | 'pivot'>('world')
+  const [animationTransformSpace, setAnimationTransformSpace] = useState<
+    'world' | 'local' | 'pivot'
+  >('local')
+  const selectedPivot =
+    selection.length === 1 ? document.nodes.find((node) => node.id === selection[0]) : null
+  const pivotSource = selectedPivot?.pivotAxis
+    ? `${selectedPivot.id}:${selectedPivot.pivotAxis.join(',')}`
+    : null
+  useEffect(() => {
+    if (!pivotSource) return
+    if (mode === 'animation') setAnimationTransformSpace('pivot')
+    else setTransformSpace('pivot')
+  }, [pivotSource, mode])
+  const pivotAvailable = !!pivotSource && !componentSelection
+  const chosenSpace = mode === 'animation' ? animationTransformSpace : transformSpace
   const preciseSpace =
-    mode === 'animation' ? animationTransformSpace : can('model.precise') ? transformSpace : 'world'
+    chosenSpace === 'pivot' && !pivotAvailable
+      ? mode === 'animation'
+        ? 'local'
+        : 'world'
+      : mode === 'animation' || can('model.precise') || chosenSpace === 'pivot'
+        ? chosenSpace
+        : 'world'
   const [camera, setCamera] = useState<CameraView>('free')
   useEffect(() => {
     view.viewport?.setPreviewGuide?.(previewGuide ?? null)
@@ -395,6 +417,9 @@ function SceneCanvasAttempt({
   useEffect(() => {
     view.viewport?.setTransformSpace?.(preciseSpace)
   }, [view.viewport, preciseSpace])
+  useEffect(() => {
+    view.viewport?.setFaceExtrusion?.(faceExtruding)
+  }, [view.viewport, faceExtruding])
 
   // ── as ferramentas ──────────────────────────────────────────────────────────────────────
   const showTools = mode !== 'paint' && !paintTarget
@@ -652,7 +677,7 @@ function SceneCanvasAttempt({
             )}
           </>
         )}
-        {can('model.precise') && mode !== 'paint' && (
+        {(can('model.precise') || pivotAvailable) && mode !== 'paint' && (
           <label className="flex min-h-11 items-center gap-2 px-1 text-sm">
             <span>Eixos de Mover e Girar</span>
             <select
@@ -660,7 +685,12 @@ function SceneCanvasAttempt({
               value={preciseSpace}
               disabled={!view.viewport?.setTransformSpace}
               onChange={(event) => {
-                const space = event.target.value === 'local' ? 'local' : 'world'
+                const space =
+                  event.target.value === 'pivot'
+                    ? 'pivot'
+                    : event.target.value === 'local'
+                      ? 'local'
+                      : 'world'
                 if (mode === 'animation') setAnimationTransformSpace(space)
                 else setTransformSpace(space)
               }}
@@ -668,6 +698,7 @@ function SceneCanvasAttempt({
             >
               <option value="world">Mundo</option>
               <option value="local">Locais da peça</option>
+              {pivotAvailable && <option value="pivot">Da face escolhida</option>}
             </select>
           </label>
         )}
@@ -688,9 +719,9 @@ function SceneCanvasAttempt({
             name="molda-fractional-measurements"
             className="size-5 accent-mld-accent"
             checked={movementStep !== 1}
-            onChange={(event) => setMovementStep(event.target.checked ? 0.1 : 1)}
+            onChange={(event) => setMovementStep(event.target.checked ? 0.01 : 1)}
           />
-          Permitir números quebrados
+          Passos de 0,01 ao mover e redimensionar
         </label>
         <p className="flex min-h-11 items-center gap-2 px-1 text-sm">
           {copy.movementStep}: {movementStep.toLocaleString('pt-BR')}

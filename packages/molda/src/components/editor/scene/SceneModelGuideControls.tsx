@@ -1,5 +1,10 @@
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
-import { sceneLocalBounds, sceneNodePivot, setScenePivotPreset } from '../../../scene/pivot'
+import {
+  clearScenePivotAxis,
+  sceneLocalBounds,
+  sceneNodePivot,
+  setScenePivotPreset,
+} from '../../../scene/pivot'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { ArrowDownToLine, CircleDot, MousePointer2 } from '../../ui/icons'
@@ -68,6 +73,21 @@ export function ScenePivotChoices({ workshop }: { workshop: Workshop }) {
             ? 'Para escolher um ponto, selecione uma peça do grupo.'
             : 'Arraste as alças para mudar o ponto de giro.'}
       </p>
+      {node?.pivotAxis && id && (
+        <div className="space-y-1">
+          <p className="text-xs text-mld-muted">
+            Eixo alinhado à face. Os próximos giros e poses usam essa direção.
+          </p>
+          <button
+            type="button"
+            className="mld-pivot-choice w-full"
+            disabled={disabled}
+            onClick={() => workshop.run((source) => clearScenePivotAxis(source, id))}
+          >
+            Voltar aos eixos da peça
+          </button>
+        </div>
+      )}
       {workshop.mode === 'animation' && (
         <p className="text-xs text-mld-muted">As poses já gravadas continuam iguais.</p>
       )}

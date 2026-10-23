@@ -12,7 +12,7 @@ import {
   Vector3,
   WebGLRenderer,
 } from 'three'
-import { createModelAsset } from '../core/model'
+import { createModelAsset, type Vec3 } from '../core/model'
 import { structuredBytes } from '../core/structuredBytes'
 import { setSceneAnimationKeys } from '../scene/animationKeyBatch'
 import {
@@ -35,6 +35,7 @@ import { prepareMeshRemoval } from '../scene/meshRemoval'
 import { meshEdgeKey } from '../scene/meshTopology'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { ensureScenePaintSurface } from '../scene/paintSurface'
+import { setScenePivotAxisFromFace } from '../scene/pivot'
 import { prepareSceneAnimation } from '../scene/sampleAnimation'
 import { createSceneSkin, setSceneSkinWeights } from '../scene/skinCommands'
 import { prepareSceneTwoBonePose } from '../scene/twoBonePose'
@@ -2102,6 +2103,141 @@ describe('scene viewport lifecycle and picking', () => {
     } finally {
       f.close()
       editor.getState().dispose()
+    }
+  })
+  test('Puxar orienta a seta Y pela normal da face inclinada e restaura os eixos ao sair', () => {
+    const deltas: AffineMatrix[] = []
+    const f = setup({
+      begin: () => true,
+      preview: (delta) => {
+        deltas.push(delta)
+        return true
+      },
+      end: () => {},
+    })
+    try {
+      const id = f.source.nodes[0]!.id
+      const mesh = convertSceneNodesToMesh(f.source, [id])
+      const tilted = editSceneMesh(mesh, id, (source) => {
+        const cap = source.faces.py!.corners.map((corner) => corner.vertexId)
+        const center: Vec3 = [0, 0, 0]
+        for (const vertexId of cap)
+          for (const axis of [0, 1, 2] as const)
+            center[axis] += source.vertices[vertexId]![axis] / cap.length
+        const vertices = { ...source.vertices }
+        for (const vertexId of cap) {
+          const point = source.vertices[vertexId]!
+          const x = point[0] - center[0]
+          const y = point[1] - center[1]
+          vertices[vertexId] = [
+            center[0] + x * Math.SQRT1_2 - y * Math.SQRT1_2,
+            center[1] + x * Math.SQRT1_2 + y * Math.SQRT1_2,
+            point[2],
+          ]
+        }
+        return { ...source, vertices }
+      })
+      f.viewport.setDocument(tilted)
+      f.viewport.setSelection([id])
+      f.viewport.setComponentSelection({ nodeId: id, mode: 'face', ids: ['py'] })
+      f.viewport.setTransformTool('move')
+      f.viewport.setFaceExtrusion(true)
+      f.tick()
+      const y = f.canvas.parentElement!.querySelector('[aria-label="Mover no eixo Y"]')
+      if (!y) throw new Error('Missing Y move handle')
+      y.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+      expect(deltas.at(-1)?.[12]).toBeCloseTo(-Math.SQRT1_2 * 0.1, 9)
+      expect(deltas.at(-1)?.[13]).toBeCloseTo(Math.SQRT1_2 * 0.1, 9)
+
+      f.viewport.setFaceExtrusion(false)
+      y.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+      expect(deltas.at(-1)?.[12]).toBeCloseTo(0, 9)
+      expect(deltas.at(-1)?.[13]).toBeCloseTo(0.1, 9)
+    } finally {
+      f.close()
+    }
+  })
+  test('o eixo de giro salvo na face orienta a alça Y em Pivô e pode voltar ao mundo', () => {
+    const deltas: AffineMatrix[] = []
+    const f = setup({
+      begin: () => true,
+      preview: (delta) => {
+        deltas.push(delta)
+        return true
+      },
+      end: () => {},
+    })
+    try {
+      const id = f.source.nodes[0]!.id
+      const mesh = convertSceneNodesToMesh(f.source, [id])
+      const tilted = editSceneMesh(mesh, id, (source) => {
+        const vertices = { ...source.vertices }
+        for (const { vertexId } of source.faces.py!.corners) {
+          const [x, y, z] = source.vertices[vertexId]!
+          vertices[vertexId] = [x, y + x, z]
+        }
+        return { ...source, vertices }
+      })
+      f.viewport.setDocument(setScenePivotAxisFromFace(tilted, id, 'py'))
+      f.viewport.setSelection([id])
+      f.viewport.setTransformTool('rotate')
+      f.viewport.setTransformSpace('pivot')
+      f.tick()
+      const pivot = f.count().scene!.children.find((object) => object instanceof AxesHelper)
+      if (!(pivot instanceof AxesHelper)) throw new Error('Missing pivot marker')
+      expect(pivot.matrix.elements[4]).toBeCloseTo(-Math.SQRT1_2, 9)
+      expect(pivot.matrix.elements[5]).toBeCloseTo(Math.SQRT1_2, 9)
+      const y = f.canvas.parentElement!.querySelector('[aria-label="Girar no eixo Y"]')
+      if (!y) throw new Error('Missing Y rotate handle')
+      y.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+      const tiltedDelta = deltas.at(-1)!
+      const sine = 2 * Math.sin(Math.PI / 180)
+      expect((tiltedDelta[6] - tiltedDelta[9]) / sine).toBeCloseTo(-Math.SQRT1_2, 9)
+      expect((tiltedDelta[8] - tiltedDelta[2]) / sine).toBeCloseTo(Math.SQRT1_2, 9)
+
+      f.viewport.setTransformSpace('world')
+      y.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+      const worldDelta = deltas.at(-1)!
+      expect((worldDelta[6] - worldDelta[9]) / sine).toBeCloseTo(0, 9)
+      expect((worldDelta[8] - worldDelta[2]) / sine).toBeCloseTo(1, 9)
+    } finally {
+      f.close()
+    }
+  })
+  test('a alça do pivô usa a direção da face salva ao ajustar o ponto de giro', () => {
+    const deltas: Vec3[] = []
+    let guide: SceneGuideInput | null = null
+    const f = setup(undefined, undefined, undefined, false, true, () => guide)
+    try {
+      const id = f.source.nodes[0]!.id
+      f.viewport.setDocument({
+        ...f.source,
+        nodes: f.source.nodes.map((node) =>
+          node.id === id ? { ...node, pivotAxis: [-Math.SQRT1_2, Math.SQRT1_2, 0] as Vec3 } : node,
+        ),
+      })
+      f.viewport.setSelection([id])
+      guide = {
+        pivot: {
+          nodeId: id,
+          vertical: true,
+          begin: () => true,
+          preview: (delta) => {
+            deltas.push(delta)
+            return true
+          },
+          end: () => {},
+        },
+      }
+      f.viewport.refreshGuideInput(guide)
+      f.tick()
+      const y = f.canvas.parentElement!.querySelector('[aria-label="Pivô no eixo Y"]')
+      if (!y) throw new Error('Missing pivot Y handle')
+      y.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowRight' }))
+      expect(deltas.at(-1)?.[0]).toBeCloseTo(-Math.SQRT1_2 * 0.1, 9)
+      expect(deltas.at(-1)?.[1]).toBeCloseTo(Math.SQRT1_2 * 0.1, 9)
+    } finally {
+      f.close()
     }
   })
   test('face mode routes point picking to authorial faces and shares area tools with object mode', () => {

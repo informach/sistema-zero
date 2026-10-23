@@ -1,4 +1,4 @@
-import { useId, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { ModelSceneNode } from '../../../scene/document'
 import type { SceneIndex } from '../../../scene/graph'
@@ -59,6 +59,7 @@ export function SceneHierarchy({
   index,
   selected,
   onSelect,
+  onSelectRange,
   shapeOf,
   onFlag,
   poseCounts,
@@ -68,6 +69,7 @@ export function SceneHierarchy({
   index: SceneIndex<ModelSceneNode>
   selected: readonly string[]
   onSelect(id: string, additive: boolean): void
+  onSelectRange(ids: readonly string[]): void
   /** A forma de cada peça, que só a oficina sabe (a geometria mora fora do grafo). */
   shapeOf?(node: ModelSceneNode): SceneHierarchyShape
   onFlag?(id: string, flag: 'hidden' | 'locked', value: boolean): void
@@ -76,9 +78,55 @@ export function SceneHierarchy({
   organization?: SceneHierarchyOrganization
 }) {
   const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => new Set())
+  const rangeAnchor = useRef<string | null>(null)
   const prefix = useId()
   const copy = COPY.scene
   const drag = useSceneHierarchyDrag(organization?.owner ?? index, selected, organization)
+  function visibleIds(): string[] {
+    const visible: string[] = []
+    function visit(ids: readonly string[]) {
+      for (const id of ids) {
+        if (!index.nodes.has(id)) continue
+        visible.push(id)
+        if (!collapsed.has(id)) visit(index.children.get(id) ?? [])
+      }
+    }
+    visit(index.roots)
+    return visible
+  }
+  function selectRow(id: string, shift: boolean, control: boolean) {
+    if (
+      rangeAnchor.current !== null &&
+      (selected.length !== 1 || selected[0] !== rangeAnchor.current)
+    )
+      rangeAnchor.current = null
+    if (shift) {
+      rangeAnchor.current = null
+      onSelect(id, true)
+      return
+    }
+    if (!control) {
+      rangeAnchor.current = null
+      onSelect(id, false)
+      return
+    }
+    const anchor = rangeAnchor.current
+    if (anchor === null) {
+      rangeAnchor.current = id
+      onSelectRange([id])
+      return
+    }
+    const visible = visibleIds()
+    const start = visible.indexOf(anchor)
+    const end = visible.indexOf(id)
+    if (start < 0 || end < 0) {
+      rangeAnchor.current = id
+      onSelectRange([id])
+      return
+    }
+    rangeAnchor.current = null
+    onSelectRange(visible.slice(Math.min(start, end), Math.max(start, end) + 1))
+  }
   function branch(ids: readonly string[], depth = 0) {
     return (
       <ul>
@@ -154,9 +202,7 @@ export function SceneHierarchy({
                   draggable={organization?.canDrag(id) ?? false}
                   onDragStart={(event) => drag.start(event, id)}
                   onDragEnd={drag.end}
-                  onClick={(event) =>
-                    onSelect(id, event.shiftKey || event.ctrlKey || event.metaKey)
-                  }
+                  onClick={(event) => selectRow(id, event.shiftKey, event.ctrlKey || event.metaKey)}
                 >
                   <Icon
                     aria-hidden="true"

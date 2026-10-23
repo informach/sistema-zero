@@ -56,7 +56,12 @@ export interface SceneFileImportAdapter<
     controls: SceneFileImportControls,
   ): Promise<Ready | { status: 'missing'; paths: string[] }>
   describeError(error: unknown): { path: string; message: string } | null
-  messages: SceneImportMessages & { pendingPose: string; failed: string; noEntry: string }
+  messages: SceneImportMessages & {
+    pendingPose: string
+    failed: string
+    noEntry: string
+    emptyScene: string
+  }
 }
 
 /** Stable format adapters share the same selection/review lifecycle; no conversion before Prepare. */

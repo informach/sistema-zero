@@ -166,12 +166,14 @@ test('o menu de ajustes do palco cabe inteiro e seus campos recebem clique', asy
   await page.setViewportSize(SIZES[0])
   await trigger.click()
   await menu.getByLabel('Eixos de Mover e Girar').selectOption('local')
-  await menu.getByRole('checkbox', { name: 'Permitir números quebrados' }).check()
+  await menu.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
   await trigger.click()
   await trigger.click()
   await expect(menu.getByLabel('Eixos de Mover e Girar')).toHaveValue('local')
-  await expect(menu.getByRole('checkbox', { name: 'Permitir números quebrados' })).toBeChecked()
-  await expect(menu.getByText('Passo das medidas: 0,1', { exact: true })).toBeVisible()
+  await expect(
+    menu.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }),
+  ).toBeChecked()
+  await expect(menu.getByText('Passo das medidas: 0,01', { exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('menu-ajustes-desktop.png') })
   await page.setViewportSize(SIZES[3])
   await page.screenshot({ path: testInfo.outputPath('menu-ajustes-mobile.png') })
@@ -263,6 +265,9 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
   await checkEverySize(page, 'Animar')
   for (const size of SIZES) {
     await page.setViewportSize(size)
+    if (size.width <= 1100) {
+      await page.getByRole('tab', { name: 'Movimentos', exact: true }).click()
+    }
     const create = await page
       .getByRole('button', { name: 'Criar movimento', exact: true })
       .boundingBox()
@@ -341,4 +346,6 @@ test('o painel direito mantém peças acima do conteúdo de cada modo', async ({
 
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   await expect(tabs).toHaveText(['Peças', 'Movimentos', 'Pose'])
+  await expect(page.getByRole('tabpanel', { name: 'Peças' })).toBeVisible()
+  await expect(page.getByRole('tabpanel', { name: 'Pose' })).toBeHidden()
 })

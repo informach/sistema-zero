@@ -74,7 +74,7 @@ for (const theme of ['light', 'dark']) {
       expect(changed.geometries).toEqual(sceneToJson(source).geometries)
       expect(changed.materials).toEqual(sceneToJson(source).materials)
       await expect(page.getByRole('spinbutton', { name: 'Tamanho X', exact: true })).toHaveValue(
-        '2',
+        '2.00',
       )
       await expect(page.getByRole('spinbutton', { name: 'Posição X', exact: true })).toBeVisible()
       await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
@@ -88,7 +88,9 @@ for (const theme of ['light', 'dark']) {
     expect((await snapshot(page)).nodes).toEqual(
       sceneToJson(flipSceneNodes(source, [id], 'x', true)).nodes,
     )
-    await expect(page.getByRole('spinbutton', { name: 'Posição X', exact: true })).toHaveValue('4')
+    await expect(page.getByRole('spinbutton', { name: 'Posição X', exact: true })).toHaveValue(
+      '4.00',
+    )
     await page.screenshot({ path: `.cache/virar-peca-${theme}.png` })
     await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
     await page

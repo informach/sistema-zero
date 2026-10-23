@@ -5,14 +5,65 @@ import type { SceneAnimationTrack } from './animation'
 import { groupSceneNodes, reparentSceneNodes, ungroupSceneNodes } from './commands'
 import type { MoldaSceneDocument } from './document'
 import { indexSceneNodes } from './graph'
-import { composeTransform, type Quaternion } from './matrix'
+import { composeTransform, type Quaternion, quaternionFromEulerXYZ } from './matrix'
 import {
   prepareSceneAnimation,
   sampleSceneAnimationTrack,
+  sampleSceneAnimationTransform,
   sceneAnimationTime,
 } from './sampleAnimation'
 
 describe('derived animation sampling', () => {
+  test('a looping smooth track returns from its last pose to its first before wrapping', () => {
+    const source = animatedScene()
+    source.animations[0]!.tracks = [
+      {
+        nodeId: 'body',
+        channel: 'translation',
+        keys: [
+          { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+          { time: 1, value: [4, 0, 0], interpolation: 'smooth' },
+        ],
+      },
+    ]
+    const sampler = prepareSceneAnimation(source, 'clip')
+    const x = (time: number, loop = true) =>
+      sampler.sample(time, loop).worldMatrices.get('body')![12]
+    expect(x(1.5)).toBeCloseTo(2)
+    expect(x(1.99)).toBeLessThan(0.01)
+    expect(x(2)).toBeCloseTo(x(0))
+    expect(x(1.99, false)).toBe(4)
+  })
+
+  test('a looping rotation returns through the short arc with its pivot compensation', () => {
+    const source = animatedScene()
+    const track: SceneAnimationTrack = {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: [0, 0, 0, 1], interpolation: 'smooth' },
+        {
+          time: 1,
+          value: quaternionFromEulerXYZ([0, 0, 90]),
+          interpolation: 'smooth',
+          incomingPivot: [1, 0, 0],
+        },
+      ],
+    }
+    source.animations[0]!.tracks = [track]
+    const node = source.nodes.find((entry) => entry.id === 'body')!
+    const halfway = sampleSceneAnimationTransform(node, 'local-delta', [track], 1.5, 2)
+    expect(halfway.rotation[2]).toBeCloseTo(Math.sin(Math.PI / 8))
+    expect(halfway.translation[0]).toBeCloseTo(0.5 - Math.SQRT1_2)
+    expect(halfway.translation[1]).toBeCloseTo(0.5 - Math.SQRT1_2)
+    const sampler = prepareSceneAnimation(source, 'clip')
+    const before = sampler.sample(2 - 1e-5).worldMatrices.get('body')!
+    const after = sampler.sample(2 + 1e-5).worldMatrices.get('body')!
+    before.forEach((value, axis) => {
+      expect(value).toBeCloseTo(after[axis]!, 3)
+    })
+  })
+
   test('clock clamps/seeks exact ends and loops without erasing tiny positive Double times', () => {
     const clip = sceneAnimationClip()
     expect(sceneAnimationTime(clip, 2)).toBe(0)

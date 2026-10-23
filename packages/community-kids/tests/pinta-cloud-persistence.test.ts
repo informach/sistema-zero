@@ -718,6 +718,30 @@ const paletteSummaryOf = (library: PaletteLibrary, revision = 1): CloudCreationS
 })
 
 describe('biblioteca "Minhas paletas" no espelho da nuvem', () => {
+  test('sincroniza apenas a biblioteca ao abrir o Molda, sem baixar desenhos do Pinta', async () => {
+    const library = libraryOf([{ id: 'ceu', name: 'Céu', updatedAt: 100, hex: '#87f2ff' }])
+    const drawing = sprite('desenho remoto', 200)
+    const remote = remoteOf([drawing])
+    remote.set(PALETTE_LIBRARY_ITEM_ID, {
+      json: JSON.stringify(library),
+      summary: paletteSummaryOf(library, 3),
+    })
+    const local = fakeLocal()
+    const { cloud, lists } = fakeCloud(remote)
+    const mirrored = createCloudMirroredPintaPersistence({
+      local,
+      cloud,
+      viewerId: 'p1',
+      marks: createMemorySyncedMarks(),
+    })
+
+    await mirrored.syncPaletteLibrary?.()
+
+    expect(lists.count).toBe(1)
+    expect(local.library.current?.palettes.map((palette) => palette.id)).toEqual(['ceu'])
+    expect(local.rows.size).toBe(0)
+  })
+
   test('salvar a biblioteca enfileira o item ESPECIAL (kind próprio); o commit avança a marca', async () => {
     const local = fakeLocal()
     const { cloud, uploads } = fakeCloud(new Map())

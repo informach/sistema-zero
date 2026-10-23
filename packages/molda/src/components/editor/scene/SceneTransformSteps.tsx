@@ -11,6 +11,7 @@ import {
   transformPoint,
 } from '../../../scene/matrix'
 import { sceneMeasurementStepDelta } from '../../../scene/measurementTransform'
+import { sceneNodePivot, scenePivotAxisRotation } from '../../../scene/pivot'
 import { placeSceneNodesOnGround } from '../../../scene/placement'
 import { Button } from '../../ui/Button'
 import { ArrowDownToLine, ArrowUpFromLine, Minus, Plus } from '../../ui/icons'
@@ -62,7 +63,15 @@ export function SceneTransformSteps({
       forward[12 + axis] = center[axis]
       backward[12 + axis] = -center[axis]
     }
-    delta = affineMultiply(forward, affineMultiply(delta, backward))
+    const pivotNode = selected.length === 1 ? workshop.index.scene.nodes.get(selected[0]!) : null
+    const pivotWorld = pivotNode
+      ? (pose?.worldMatrices.get(pivotNode.id) ??
+        workshop.index.scene.worldMatrices.get(pivotNode.id))
+      : null
+    delta =
+      pivotNode?.pivotAxis && pivotWorld
+        ? scenePivotAxisRotation(pivotWorld, sceneNodePivot(pivotNode), pivotNode.pivotAxis, values)
+        : affineMultiply(forward, affineMultiply(delta, backward))
     const actions = workshop.animationPose.transformActions(selected)
     if (actions.begin()) {
       const accepted = actions.preview(delta)

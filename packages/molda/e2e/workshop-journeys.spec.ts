@@ -49,9 +49,9 @@ test('criação rápida, montagem, pose de várias peças e telas menores', asyn
       'true',
     )
     await page.getByRole('button', { name: 'Mover', exact: true }).click()
-    await page.locator('summary').filter({ hasText: 'Valores e organização do movimento' }).click()
     await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).fill('0.5')
     await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).blur()
+    await page.locator('summary').filter({ hasText: 'Ajustar por cliques' }).click()
     await page.getByRole('button', { name: 'Mover Altura · Y mais', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Marcar pose', exact: true })).toBeEnabled()
     await page.getByRole('button', { name: /^Escolher caixa$/i }).click()
@@ -200,7 +200,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).fill('0.5')
     await page.getByRole('spinbutton', { name: 'Ir para o tempo (segundos)' }).blur()
     await page.getByRole('button', { name: 'Mover', exact: true }).click()
-    await page.locator('summary').filter({ hasText: 'Valores e organização do movimento' }).click()
+    await page.locator('summary').filter({ hasText: 'Ajustar por cliques' }).click()
     await page.getByRole('button', { name: 'Mover Altura · Y mais', exact: true }).click()
     await expect(page.getByRole('button', { name: 'Marcar pose', exact: true })).toBeEnabled()
     await expect

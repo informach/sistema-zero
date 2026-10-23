@@ -63,3 +63,32 @@ test('advanced size form uses tenths, refuses zero and negative sizes and keeps 
     view.unmount()
   }
 })
+
+test('two-decimal form preserves unedited source values while applying hundredth edits', () => {
+  let applied: Vec3 | undefined
+  const view = render(
+    <SceneVectorForm
+      label="Posição"
+      hint="Mundo"
+      values={[1.2345, 2.3456, 3]}
+      step={0.01}
+      twoDecimals
+      onApply={(value) => {
+        applied = value
+      }}
+    />,
+  )
+  try {
+    const x = screen.getByRole('spinbutton', { name: 'Posição X' }) as HTMLInputElement
+    const y = screen.getByRole('spinbutton', { name: 'Posição Y' }) as HTMLInputElement
+    expect(x.value).toBe('1.23')
+    expect(y.value).toBe('2.35')
+    expect(x.step).toBe('0.01')
+    fireEvent.change(x, { target: { value: '1.27' } })
+    fireEvent.blur(x)
+    fireEvent.submit(x.closest('form')!)
+    expect(applied).toEqual([1.27, 2.3456, 3])
+  } finally {
+    view.unmount()
+  }
+})

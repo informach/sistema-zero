@@ -13,7 +13,11 @@ import {
   quaternionFromEulerXYZ,
   transformPoint,
 } from '../../../scene/matrix'
-import { sceneNodePivot, setSceneAuthoringPivot } from '../../../scene/pivot'
+import {
+  sceneNodePivot,
+  scenePivotAxisRotation,
+  setSceneAuthoringPivot,
+} from '../../../scene/pivot'
 import { requireScene } from '../../../scene/validation'
 
 export type SceneAdjustment = 'move' | 'rotate' | 'scale' | 'pivot'
@@ -54,6 +58,13 @@ export function adjustScene(
     includeMirrors: false,
   })
   const singleWorld = ids.length === 1 ? index.scene.worldMatrices.get(ids[0] ?? '') : undefined
+  const singleNode = ids.length === 1 ? index.scene.nodes.get(ids[0] ?? '') : undefined
+  if (mode === 'rotate' && singleWorld && singleNode?.pivotAxis)
+    return transformSceneNodes(
+      document,
+      ids,
+      scenePivotAxisRotation(singleWorld, sceneNodePivot(singleNode), singleNode.pivotAxis, values),
+    )
   const center: Vec3 = singleWorld
     ? transformPoint(singleWorld, sceneNodePivot(index.scene.nodes.get(ids[0]!)!))
     : bounds

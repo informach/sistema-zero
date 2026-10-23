@@ -112,11 +112,20 @@ export function SceneHierarchyPanel({
           )}
         </fieldset>
       )}
+      {mode !== 'paint' && document.nodes.length > 1 && (
+        <p className="px-1 pb-1 text-xs text-mld-muted">
+          Shift + clique: escolher várias. Ctrl + clique no começo e no fim: escolher um intervalo.
+        </p>
+      )}
       {!document.nodes.length && <p className="px-1 text-sm text-mld-muted">{copy.empty}</p>}
       <SceneHierarchy
         index={workshop.index.scene}
         selected={selected}
         onSelect={workshop.select}
+        onSelectRange={(ids) => {
+          if (mode === 'paint') workshop.select(ids.at(-1) ?? null, false)
+          else workshop.selectMany(ids, 'replace')
+        }}
         shapeOf={shapeOf}
         organization={organize ? organization : undefined}
         poseCounts={mode === 'animation' ? workshop.poseCounts : undefined}

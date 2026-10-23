@@ -3096,7 +3096,10 @@
   height: 30px;
   min-height: 30px;
   margin-left: var(--mld-timeline-label-width);
-  margin-right: 24px;
+  margin-right: calc(24px + var(--mld-timeline-scrollbar-width, 0px));
+}
+[data-molda-theme] .mld-timeline > .mld-scroll-y {
+  scrollbar-gutter: stable;
 }
 [data-molda-theme] .mld-timeline-ruler input {
   margin: 0;
@@ -3180,22 +3183,21 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 205px;
 }
 @media (min-width: 1101px) {
+  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-properties {
+    flex: 1 1 55%;
+    min-height: 160px;
+  }
   [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-overview {
-    flex: 0 1 244px;
-    max-height: 35%;
+    flex: 0 1 25%;
+    max-height: 25%;
     min-height: 96px;
   }
   [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-pieces {
-    flex: 0 1 240px;
-    max-height: 28%;
+    flex: 0 1 20%;
+    max-height: 20%;
     min-height: 84px;
-  }
-  [data-molda-theme] .mld-inspector-sections[data-activity="animation"] .mld-inspector-properties {
-    flex: 1 1 205px;
-    min-height: 120px;
   }
 }
 [data-molda-theme] .mld-ruler-tick {
@@ -3222,7 +3224,7 @@
   top: 60px;
   bottom: 0;
   left: var(--mld-timeline-label-width);
-  right: 24px;
+  right: calc(24px + var(--mld-timeline-scrollbar-width, 0px));
   overflow: hidden;
 }
 [data-molda-theme] .mld-timeline-playhead {
