@@ -1,0 +1,538 @@
+{
+  "kind": "console-scrollbar-reviewed-release",
+  "source": {
+    "pr": 209,
+    "main": "f1f68b72896726c625c6f0f5c1618b4e307c277f",
+    "approvedHead": "67797f7508cf4a44373940c5580903fc0542ba05",
+    "tree": "f0400e3dbf7a94f8fb1d51a2b5796540dc3e86df",
+    "prCi": {
+      "run": 39988277919,
+      "attempt": 1,
+      "passedJobs": 10
+    },
+    "stagingCi": {
+      "run": 39988223416,
+      "attempt": 1,
+      "passedJobsIncludingDeploy": 11
+    },
+    "configurationPlan": {
+      "run": 39988278306,
+      "artifact": 12516093076,
+      "changes": 0
+    },
+    "mainConfigurationRun": 39998436747,
+    "syncStagingRun": 39998436316
+  },
+  "staging": {
+    "observedAt": "2026-10-23T17:50:14.396Z",
+    "healthyServices": 18,
+    "pending": 0,
+    "deployments": [
+      {
+        "service": "api-gateway",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "auth",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "catalog",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "payments",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "members",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "messaging",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "funnel",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "admin",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "community",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "community-kids",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "hub",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "fiscal",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "marketing",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "marketing-app",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "referrals",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "helpdesk",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "helpdesk-app",
+        "commit": "67797f7508cf4a44373940c5580903fc0542ba05"
+      },
+      {
+        "service": "live-recorder",
+        "commit": "b9f0124ea76273574ff84f7a50d140d9c3e93f5c"
+      }
+    ],
+    "publicOrigins": [
+      {
+        "service": "admin",
+        "key": "KIDS_COMMUNITY_URL",
+        "destination": "community-kids",
+        "matchesStagingOwnedOrigin": true
+      },
+      {
+        "service": "admin",
+        "key": "COMMUNITY_URL",
+        "destination": "community",
+        "matchesStagingOwnedOrigin": true
+      },
+      {
+        "service": "community-kids",
+        "key": "APP_PUBLIC_URL",
+        "destination": "community-kids",
+        "matchesStagingOwnedOrigin": true
+      },
+      {
+        "service": "community",
+        "key": "APP_PUBLIC_URL",
+        "destination": "community",
+        "matchesStagingOwnedOrigin": true
+      },
+      {
+        "service": "community-kids",
+        "key": "FUNNEL_URL",
+        "destination": "funnel",
+        "matchesStagingOwnedOrigin": true
+      },
+      {
+        "service": "community",
+        "key": "FUNNEL_URL",
+        "destination": "funnel",
+        "matchesStagingOwnedOrigin": true
+      }
+    ]
+  },
+  "production": {
+    "observedAt": "2026-10-23T18:11:53.284Z",
+    "healthyServices": 18,
+    "pending": 0,
+    "updatedConsumers": [
+      "admin",
+      "marketing-app",
+      "helpdesk-app"
+    ],
+    "deployments": [
+      {
+        "service": "api-gateway",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "auth",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "catalog",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "payments",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "members",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "messaging",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "funnel",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "admin",
+        "commit": "f1f68b72896726c625c6f0f5c1618b4e307c277f"
+      },
+      {
+        "service": "community",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "community-kids",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "hub",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "fiscal",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "marketing",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "marketing-app",
+        "commit": "f1f68b72896726c625c6f0f5c1618b4e307c277f"
+      },
+      {
+        "service": "referrals",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "helpdesk",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "helpdesk-app",
+        "commit": "f1f68b72896726c625c6f0f5c1618b4e307c277f"
+      },
+      {
+        "service": "live-recorder",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      }
+    ],
+    "waveStartedAt": "2026-10-23T17:52:08.759Z",
+    "waveFinishedAt": "2026-10-23T18:11:30.208Z",
+    "maintenanceActivated": false,
+    "writersFenced": false
+  },
+  "configuration": {
+    "state": "ALL18_SNAPSHOT_CONFIGURATION_VERIFIED",
+    "observedAt": "2026-10-23T18:11:53.342Z",
+    "finishedAt": "2026-10-23T18:12:10.126Z",
+    "relations": [
+      {
+        "key": "STUDIO_PRO_RUNTIME_TOKEN",
+        "services": [
+          "members",
+          "auth",
+          "admin",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "STUDIO_PYTHON_RUNTIME_TOKEN",
+        "services": [
+          "members",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "STUDIO_PYTHON_LANGUAGE_TOKEN",
+        "services": [
+          "admin",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "STUDIO_BUILDER_EXECUTOR_SECRET",
+        "services": [
+          "members",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "GATEWAY_HMAC_SECRET",
+        "services": [
+          "api-gateway",
+          "members",
+          "hub",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "MEMBERS_PROFILE_ADMISSION_TOKEN",
+        "services": [
+          "auth",
+          "members"
+        ],
+        "matches": true
+      },
+      {
+        "key": "LIVE_RECORDER_TOKEN",
+        "services": [
+          "members",
+          "live-recorder"
+        ],
+        "matches": true
+      }
+    ],
+    "publicOrigins": [
+      {
+        "service": "admin",
+        "key": "KIDS_COMMUNITY_URL",
+        "matches": true
+      },
+      {
+        "service": "admin",
+        "key": "COMMUNITY_URL",
+        "matches": true
+      },
+      {
+        "service": "community-kids",
+        "key": "APP_PUBLIC_URL",
+        "matches": true
+      },
+      {
+        "service": "community-kids",
+        "key": "FUNNEL_URL",
+        "matches": true
+      },
+      {
+        "service": "community",
+        "key": "APP_PUBLIC_URL",
+        "matches": true
+      },
+      {
+        "service": "community",
+        "key": "FUNNEL_URL",
+        "matches": true
+      }
+    ],
+    "issues": [],
+    "liveMediaMarkedReady": false
+  },
+  "browser": {
+    "staging": {
+      "kind": "published-staging-console-scrollbar-browser-check",
+      "source": "67797f7508cf4a44373940c5580903fc0542ba05",
+      "browser": "connected Chrome",
+      "viewport": 958,
+      "adminAuthenticatedPageLoaded": true,
+      "menuClass": "console-menu-scrollbar",
+      "menuScrollbarWidth": "14px",
+      "menuThumbColor": "oklab(0.869186 -0.00183058 -0.0292613 / 0.6)",
+      "menuInkToken": "#cbd4e8",
+      "standardScrollbarWidth": "auto",
+      "contentScrollbarWidth": "14px",
+      "contentThumbColor": "oklab(0.222583 -0.00477381 -0.0512403 / 0.6)",
+      "themesDifferAsExpected": true,
+      "dataOrPermissionMutations": 0,
+      "rasterEvidence": "Separate local Chromium fixture inspected; published-page check uses actual computed CSS.",
+      "recordedAt": "2026-10-23T17:48:44.267Z",
+      "observationWindowUtc": [
+        "2026-10-23T17:46:36.851Z",
+        "2026-10-23T17:48:04.2304370Z"
+      ]
+    },
+    "production": {
+      "kind": "published-production-console-scrollbar-browser-check",
+      "recordedAt": "2026-10-23T18:12:49.260Z",
+      "source": "f1f68b72896726c625c6f0f5c1618b4e307c277f",
+      "browser": "connected Chrome",
+      "viewport": 958,
+      "adminAuthenticatedPageLoaded": true,
+      "menuClass": "console-menu-scrollbar",
+      "menuScrollbarWidth": "14px",
+      "menuThumbColor": "oklab(0.869186 -0.00183058 -0.0292613 / 0.6)",
+      "menuInkToken": "#cbd4e8",
+      "standardScrollbarWidth": "auto",
+      "contentScrollbarWidth": "14px",
+      "contentThumbColor": "oklab(0.222583 -0.00477381 -0.0512403 / 0.6)",
+      "themesDifferAsExpected": true,
+      "consoleWarningsOrErrorsObserved": 0,
+      "dataOrPermissionMutations": 0,
+      "rasterEvidence": "Separate local Chromium fixture inspected; published-page check uses actual computed CSS."
+    }
+  },
+  "engineQualification": {
+    "kind": "console-scrollbar-engine-qualification",
+    "observedAt": "2026-10-23T16:35:07.014Z",
+    "cssSha256": "e9ebb69656e27a782f4fa5b6db7c5552776ce6a5f7b130b0b7738f3446e68b29",
+    "results": [
+      {
+        "engine": "chromium",
+        "passed": true,
+        "styles": [
+          {
+            "id": "light",
+            "nativeWidth": "auto",
+            "nativeColor": "auto",
+            "width": "14px",
+            "color": "oklab(0.222583 -0.00477381 -0.0512403 / 0.6)"
+          },
+          {
+            "id": "menu",
+            "nativeWidth": "auto",
+            "nativeColor": "auto",
+            "width": "14px",
+            "color": "oklab(0.869186 -0.00183058 -0.0292613 / 0.6)"
+          }
+        ],
+        "keyboardScroll": true,
+        "wheelScroll": true,
+        "keyboardFocusVisible": true,
+        "highContrastNative": true
+      },
+      {
+        "engine": "firefox",
+        "passed": true,
+        "styles": [
+          {
+            "id": "light",
+            "nativeWidth": "none",
+            "nativeColor": "oklab(0.222587 -0.00478297 -0.0512454 / 0.6) rgba(0, 0, 0, 0)",
+            "width": "",
+            "color": ""
+          },
+          {
+            "id": "menu",
+            "nativeWidth": "none",
+            "nativeColor": "oklab(0.869193 -0.00186983 -0.0292795 / 0.6) rgba(0, 0, 0, 0)",
+            "width": "",
+            "color": ""
+          }
+        ],
+        "keyboardScroll": true,
+        "wheelScroll": true,
+        "keyboardFocusVisible": true,
+        "highContrastNative": true
+      }
+    ],
+    "firefoxWidthLimit": "Headless native baseline computes none even for auto; width not visually qualified. Applied colors/keyboard/wheel are qualified."
+  },
+  "adminStylesheetBuild": {
+    "kind": "actual-admin-postcss-pipeline",
+    "source": "67797f7508cf4a44373940c5580903fc0542ba05",
+    "observedAt": "2026-10-23T16:47:27.327Z",
+    "compiledBytes": 245757,
+    "sharedScrollbarCompiled": true,
+    "warnings": []
+  },
+  "reviewDecision": {
+    "source": "67797f7508cf4a44373940c5580903fc0542ba05",
+    "pr": 209,
+    "finding": "CodeRabbit minor: universal forced-colors scrollbar-color reset loses specificity to scrollbar-subtle; suggest important",
+    "decision": "No source change: reported failure did not reproduce and specification requires computed auto independently of author specificity.",
+    "specification": "https://www.w3.org/TR/css-color-adjust-1/#forced-colors-properties",
+    "specificationReason": "In forced colors mode scrollbar-color computes to auto when forced-color-adjust is auto. No forced-color-adjust opt-out exists in these console/UI source trees.",
+    "freshExperiment": {
+      "chromium": {
+        "forcedColorsActive": true,
+        "subtleIdleColor": "auto",
+        "subtleFocusedColor": "auto"
+      },
+      "firefox": {
+        "forcedColorsActive": true,
+        "subtleIdleColor": "auto",
+        "subtleFocusedColor": "auto"
+      }
+    },
+    "implementationChangesAfterReview": 0,
+    "externalCommentsSent": 0
+  },
+  "additionalProSmoke": {
+    "kind": "production-python-pro-browser-smoke",
+    "observedAt": "2026-10-23T17:11:45Z",
+    "releaseSha": "a2ff0fe49815922047e9d3bd98232eafe1e05592",
+    "browser": "connected Chrome",
+    "availability": {
+      "narrowViewport": 958,
+      "proExampleDisabledAtNarrowViewport": true,
+      "desktopViewport": 1280,
+      "proExampleEnabledAtDesktopViewport": true,
+      "implementedDesktopThreshold": 1024,
+      "permissionOrEntitlementMutations": 0
+    },
+    "example": "Cobrinha (Código)",
+    "editorAndFileTreeLoaded": true,
+    "mainPythonSourceContainsOfficialImportTurtle": true,
+    "accountSaveObservedBeforeReopen": true,
+    "commitRequest": 2452,
+    "commitStatus": 200,
+    "runtimeStatus": "Executando",
+    "turtleCanvasAccessibilityTitle": "Cobrinha • Sistema Zero",
+    "stopUsed": true,
+    "savedProjectReopenedInPro": true,
+    "reopenedSourcePreserved": true,
+    "reopenedHeader": "Salvo",
+    "deleteRequest": 2751,
+    "deleteStatus": 200,
+    "finalGalleryEmpty": true,
+    "viewportOverrideCleared": true,
+    "expectedProtocolNegative": {
+      "request": 2442,
+      "status": 409,
+      "code": "CREATION_PARTS_NEED_BYTES",
+      "reason": "Documented missing-bytes negotiation in creation upload; client supplied requested parts and commit completed with 200. Not an ignored unexplained console failure."
+    },
+    "limits": [
+      "Core Pro editor/authoring/runtime smoke only; not full Pro terminal, package installation, formatter/LSP, export or performance qualification.",
+      "No course publication, enrollment, social publication, payment or permission change.",
+      "Session headers, child identity, own project identifier and runtime capability fragments omitted."
+    ]
+  },
+  "credentialValuesOrHashesRecorded": false,
+  "artifacts": [
+    {
+      "name": "production-platform-scrollbar-final-r1.json",
+      "sha256": "9a613527bde38360351cac55052457919edf8e87156c32671e52ded000f5ea68"
+    },
+    {
+      "name": "staging-platform-scrollbar-final-r1.json",
+      "sha256": "97a7bf30751eb84ab60fd691323f43d3c4da538d864038a921cd94d204e2107e"
+    },
+    {
+      "name": "production-loaded-config-scrollbar-final-r1.json",
+      "sha256": "77f1ba795a90a9c1f40e9ddecce2c53375d4516eef2fa356b7d6d0adc0036419"
+    },
+    {
+      "name": "production-online-wave-scrollbar-r1/receipt.json",
+      "sha256": "fa4f9f7dd924ce6adf6a6e4ac86d365e0700da63cb17f616f432f5b26089f7d7"
+    },
+    {
+      "name": "production-python-pro-smoke-r1.json",
+      "sha256": "ad22e4a7b60dd79b24fd0f585bffe809002403536fb695c5c5b0cc253490b97e"
+    },
+    {
+      "name": "production-scrollbar-browser-r1.json",
+      "sha256": "0e898727ca87e4bf794381d2177ed360a8570dbdd2cc3e8f9548c1bb31482ebe"
+    },
+    {
+      "name": "staging-scrollbar-browser-r1.json",
+      "sha256": "bb6813781ffe7885d61e6a7194112aa555c153e66973951b62d60d6a6aaac5ae"
+    }
+  ]
+}

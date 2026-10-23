@@ -4,6 +4,9 @@ Registro de 23/10/2026. Complementa a [revisão da integração](2026-10-23-admi
 com o resultado da liberação. As [evidências resumidas](evidence/2026-10-23-admin-workshops-release.json)
 não contêm credenciais, identificadores de crianças nem URLs de execução com capacidade.
 
+Atualização posterior: o [complemento das barras de rolagem e a conferência do Pro](2026-10-23-console-scrollbar-release.md)
+também foram concluídos. Os snapshots abaixo preservam a fonte e o momento desta primeira liberação.
+
 ## Fonte liberada
 
 - PR [208](https://github.com/informach/sistema-zero/pull/208), merge normal em
