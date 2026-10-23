@@ -125,3 +125,17 @@ A observação agendada posterior do Worker também passou, com contagens
 canônicas zero e limpeza local/remota confirmada, conforme o documento do
 cron. Esses positivos posteriores não alteram os recibos negativos anteriores.
 Oficina/conquistas e promoção em produção continuam sem qualificação final.
+
+### Conclusão posterior da rodada
+
+Às 04:41:27 UTC, Admin, comunidade adulta e Kids tinham imagem ativa única
+`bf33cbef6`, sem deployments pendentes e com os predecessores retirados.
+A análise da aula gravada própria no Admin respondeu 200 em criação, início
+e `projectDiagnostics`; essa fronteira usa a sessão administrativa e não exige
+o cabeçalho Kids. Formatar, executar Turtle e Stop funcionaram; retorno ao
+percurso deixou zero iframes. O desenho da aula não recebeu qualificação raster.
+
+A prova de [conclusão de oficina e conquistas Python](2026-10-23-workshop-python-earned-blocks.md)
+passou posteriormente com aluno real. Ela substitui a pendência de concessão
+real acima, sem transformar a rodada em qualificação de transmissão ao vivo.
+Os gates de promoção em produção permanecem separados.

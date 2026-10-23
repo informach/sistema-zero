@@ -35,6 +35,8 @@ provedor externo é iniciado.
 
 Os controles cobrem identidade original do documento após mudança do marcador,
 encerramento por invalidação, baseline/revisão e cancelamento fora da fila live.
-A tipagem completa, o CI, a implantação e a repetição da análise no navegador
-continuam pendentes nesta revisão. Nenhuma homologação hospedada é herdada dos
-testes inertes.
+A tipagem completa, o CI e a prova hospedada ainda estavam pendentes ao fechar
+essa revisão local. Posteriormente, `bf33cbef6` passou no CI, foi implantado e
+a repetição real confirmou a análise no Kids e no Admin, como registrado na
+[validação hospedada](2026-10-22-hosted-staging-validation.md).
+Esses positivos são observações separadas dos testes inertes.
