@@ -40,8 +40,12 @@ gql() { printf '{}'; }
 jq() {
   case "$1" in
     -nc) printf '{}' ;;
-    -e) if [ "$SIMULATION" = invalid-json ]; then return 1; fi; return 0 ;;
+    -e)
+      while IFS= read -r ignored; do :; done
+      if [ "$SIMULATION" = invalid-json ]; then return 1; fi
+      return 0 ;;
     -r)
+      while IFS= read -r ignored; do :; done
       case "$SIMULATION" in
         success) printf 'SUCCESS\\n' ;;
         failed) printf 'FAILED\\n' ;;

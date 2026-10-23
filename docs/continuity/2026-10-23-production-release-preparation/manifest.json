@@ -5,11 +5,7 @@
   "destination": "docs/continuity/2026-10-23-production-release-preparation",
   "fileCount": 57,
   "totalSnapshotBytes": 741634,
-  "extraProposedFiles": [
-    "README.md",
-    "manifest.json",
-    ".gitattributes"
-  ],
+  "extraProposedFiles": ["README.md", "manifest.json", ".gitattributes"],
   "gitAttributes": "snapshots/** -text whitespace=cr-at-eol\nsnapshots/*.diff.snapshot whitespace=-blank-at-eol,cr-at-eol\n",
   "files": [
     {
