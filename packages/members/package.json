@@ -37,6 +37,7 @@
     "@sistemazero/core": "workspace:*",
     "@sistemazero/studio": "workspace:*",
     "@sistemazero/pinta": "workspace:*",
+    "drizzle-kit": "^0.31.5",
     "drizzle-orm": "^0.44.5",
     "elysia": "^1.4.9",
     "postgres": "^3.4.7",
@@ -44,8 +45,7 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "24.19.0",
-    "drizzle-kit": "^0.31.5"
+    "@types/node": "24.19.0"
   },
   "peerDependencies": {
     "typescript": "^5"

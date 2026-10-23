@@ -557,9 +557,27 @@ jobs:
           path: packages/studio/.cache/playwright-results
           retention-days: 7
 
+  members-image:
+    name: members-image
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Construir a imagem final do Members
+        run: docker build --progress=plain -f packages/members/Dockerfile -t sz-members-qa:closure .
+
+      - name: Verificar dependências, migrador e manutenção sem banco ou rede
+        run: |
+          docker run --rm --network none --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m --memory 1536m --cpus 1 --pids-limit 128 \
+            --cap-drop ALL --security-opt no-new-privileges \
+            --mount "type=bind,source=$PWD/packages/members/qa,target=/qa,readonly" \
+            sz-members-qa:closure timeout 90s bun --no-env-file /qa/image-smoke.mjs
+
   deploy-staging:
     name: deploy-staging
-    needs: [ci, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit]
+    needs: [ci, desktop-windows, studio-storage-macos, community-kids-e2e, studio-e2e-chromium, studio-e2e-firefox, studio-e2e-webkit, members-image]
     # Só push na staging (ou dispatch manual) — PR para a main NUNCA deploya.
     if: github.ref == 'refs/heads/staging' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push')
     runs-on: ubuntu-latest
