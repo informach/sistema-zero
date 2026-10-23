@@ -161,8 +161,11 @@ export function ProfileForm({
         <h1 className="sz-display text-[clamp(1.75rem,3vw,2.25rem)]">
           {isEdit ? `Editar o perfil de ${profile?.name}` : 'Adicionar criança'}
         </h1>
+        {/* `noValidate`: sem ele, o aviso do próprio navegador ("Preencha este campo.") barra o
+            envio antes do `onSubmit` e a mensagem da plataforma nunca aparece. */}
         <form
           className="flex flex-col gap-6"
+          noValidate
           onSubmit={(event) => {
             event.preventDefault()
             setTriedSave(true)
@@ -212,6 +215,7 @@ export function ProfileForm({
               autoComplete="off"
               required
               aria-required="true"
+              aria-invalid={ageRestricted || (triedSave && birthDateMissing) ? true : undefined}
               value={birthDate}
               max={today}
               onChange={(e) => setBirthDate(e.target.value)}

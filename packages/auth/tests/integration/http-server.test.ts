@@ -2326,6 +2326,38 @@ describe('Auth — perfis (estilo Netflix)', () => {
     expect(list.profiles.map((p) => p.name)).toEqual(['Sofia', 'Théo'])
   })
 
+  test('data de nascimento obrigatória: criar sem ela e apagá-la dão 400', async () => {
+    const { app, allowance, profilesRepo } = buildProfilesApp()
+    allowance.maxProfiles = 2
+    for (const birthDate of [undefined, null, '']) {
+      const res = await app.handle(
+        req('POST', '/auth/profiles', gw(), { birthDate, requestId: randomUUID(), name: 'Sofia' }),
+      )
+      expect(res.status).toBe(400)
+    }
+    expect(profilesRepo.byId.size).toBe(0)
+
+    const created = (await (
+      await app.handle(
+        req('POST', '/auth/profiles', gw(), {
+          birthDate: '2016-05-10',
+          requestId: randomUUID(),
+          name: 'Sofia',
+        }),
+      )
+    ).json()) as { profile: Profile }
+    for (const birthDate of [null, '']) {
+      const res = await app.handle(
+        req('PATCH', `/auth/profiles/${created.profile.id}`, gw(), { birthDate }),
+      )
+      expect(res.status).toBe(400)
+    }
+    const list = (await (await app.handle(req('GET', '/auth/profiles', gw()))).json()) as {
+      profiles: Profile[]
+    }
+    expect(list.profiles.map((p) => p.birthDate)).toEqual(['2016-05-10'])
+  })
+
   test('editar e arquivar: arquivar libera um slot do teto', async () => {
     const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 1

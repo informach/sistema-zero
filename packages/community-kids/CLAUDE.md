@@ -304,8 +304,7 @@ bar/tab bar no mobile (`app-sidebar.tsx`/`mobile-nav.tsx`).
 adulta, em par com o "Criar" (o caminho guiado × a criação livre); a página `/cursos` é "Cursos da
 Jornada do Criador" e todo o "sua jornada" de dentro fica. Histórico: "Aprender" desde 03/10 e
 "Explorar" de 06/10 a 21/10/2026, junto com o vocabulário da aventura. Trava: `tests/copy-jornada.test.ts`
-(a lista exata dos rótulos do menu e o título da página). O comentário de `nav.ts` e o cabeçalho
-desse teste ainda citam "Explorar" ou datam "Cursos" de 06/10; vale o código. Os tutoriais do "Como
+(a lista exata dos rótulos do menu e o título da página). Os tutoriais do "Como
 fazer" e os prints acompanham (a lista de 06/10 está em `docs/como-fazer/PRINTS-A-REFAZER-2026-10-06.md`,
 a de 20/10 em `docs/como-fazer/PRINTS-2026-10-20.md`).
 `NAV_ITEMS` tem Início, Cursos, Oficinas (só no computador, `desktopOnly`), Criar, Comunidade e Meu

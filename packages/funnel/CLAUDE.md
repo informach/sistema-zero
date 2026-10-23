@@ -693,8 +693,8 @@ seguem no motor de seções, sem página que os use).
   "AULA 1 DE 3": somem com os vídeos novos.
   ⚠️ Essas telas são de antes da unificação de 21/10/2026: o menu agora diz **Cursos** (não
   Explorar), a aula é **aula** (não fase), a ampliação volta por **Voltar à aula**, e o grupo de
-  aulas passa a se chamar **módulo** (decisão de 23/10/2026; a trilha e o baú do Kids ainda mostram
-  "Mundo N" até a troca entrar no código). Nenhuma recaptura depois de 21/10 está registrada aqui:
+  aulas passa a se chamar **módulo** (decisão de 23/10/2026; a trilha e o baú do Kids já dizem
+  "Módulo N", então telas com "Mundo N" são antigas). Nenhuma recaptura depois de 21/10 está registrada aqui:
   antes de usar uma dessas telas numa oferta, confira os rótulos nas Diretrizes Pedagógicas, seção 6.
 - **Recaptura de 01/10/2026 à tarde (pedidos da dona):** (1) **os desenhos BONITOS**: o boneco
   `heroi` foi apagado por ela ("muito simples"); o Pinta mostra o cavaleiro `base-3-2`, o animado

@@ -156,10 +156,14 @@ describe('formulário do primeiro perfil', () => {
     fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
     const form = container.querySelector('form')
     if (!form) throw new Error('form semântico não renderizado')
+    // Sem `noValidate`, o navegador barraria o envio com o aviso dele e a mensagem abaixo nunca
+    // apareceria para quem usa a plataforma.
+    expect(form.noValidate).toBe(true)
     fireEvent.submit(form)
 
     expect(onSave).not.toHaveBeenCalled()
     expect(screen.getByText('Informe a data de nascimento da criança.')).toBeTruthy()
+    expect(birthDate.getAttribute('aria-invalid')).toBe('true')
     expect(container.textContent).not.toContain('opcional')
   })
 
