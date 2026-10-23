@@ -62,4 +62,21 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New",
     monospace;
   --radius: 1.25rem;
+  --room-ground: #eef2fb;
+  --primary-step: #1343b8;
+  --menu: #121a30;
+  --menu-2: #1b2540;
+  --menu-text: #cbd4e8;
+  --menu-icon: #8e9bba;
+  --lens-kids: #ffc02e;
+  --lens-kids-ink: #0f1a33;
+  --lens-adult: #2ba3ac;
+  --lens-adult-ink: #06272a;
+  --lens-adult-tint: #d7eef0;
+  --sun: #ffc02e;
+  --warning: #7a4100;
+  --warning-tint: #fff3c4;
+  --font-display:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
 }
