@@ -82,7 +82,7 @@ export function LiveRecordingStage({
           }}
         >
           <PlayCircle className="size-5" aria-hidden />
-          Ver este trecho
+          Ver o trecho desta parte
         </Button>
       ) : null}
     </div>

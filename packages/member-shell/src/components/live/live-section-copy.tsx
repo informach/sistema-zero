@@ -7,8 +7,11 @@
 export const LIVE_SECTION_COPY = {
   /** O aviso de quando a professora abre outra parte e a tela da criança vai junto. */
   turmaNaParte: (numero: number) => `A turma está na parte ${numero}`,
-  /** Ao lado do "Próxima parte" travado: a professora ainda não abriu a seguinte. */
-  esperaAProfessora: 'A professora abre já já',
+  /**
+   * Ao lado do "Próxima parte" travado: quem conduz ainda não abriu a seguinte. Sem "a professora"
+   * (pode ser um professor) e sem nome, porque o `LessonSections` não recebe quem conduz.
+   */
+  esperaAProfessora: 'A próxima parte abre já já',
   /** O interruptor da atividade ampliada que mostra e esconde a transmissão. */
   transmissao: 'Transmissão',
   /**

@@ -436,7 +436,7 @@ export function useLiveMedia({
               (kind !== 'camera' || !currentSelf.cameraLocked)))
         if (!currentAllowed)
           throw new Error(
-            'A professora mudou a organização da sala. Ligue o aparelho de novo quando estiver liberado.',
+            'A organização da sala mudou. Ligue o aparelho de novo quando estiver liberado.',
           )
         const track =
           kind === 'microphone' ? stream.getAudioTracks()[0] : stream.getVideoTracks()[0]
@@ -530,8 +530,10 @@ export function useLiveMedia({
     (publication: LiveMediaPublication) =>
       publication.role === 'teacher'
         ? publication.kind === 'demo'
-          ? 'Demonstração da professora'
-          : 'Professora'
+          ? publication.displayName
+            ? `Demonstração de ${publication.displayName}`
+            : 'Demonstração ao vivo'
+          : (publication.displayName ?? 'Quem conduz a turma')
         : `${
             publication.displayName ??
             roomRef.current.occurrence?.participants.find(

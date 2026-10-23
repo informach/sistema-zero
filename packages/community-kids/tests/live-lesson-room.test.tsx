@@ -13,6 +13,7 @@ import {
   useLiveLesson,
 } from '@sistemazero/member-shell/components/live/use-live-lesson'
 import { useReportActivityExpanded } from '@sistemazero/member-shell/lib/lesson-activity-expansion'
+import { followLiveSection } from '@sistemazero/member-shell/lib/live/journey'
 import type { LiveLessonSlotProps } from '@sistemazero/member-shell/lib/live/lesson-slot'
 import type { LessonDetailView } from '@sistemazero/member-shell/lib/types'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
@@ -124,7 +125,7 @@ describe('a aula na sala ao vivo', () => {
     expect(container.querySelector('.sz-lesson-stage-content') === null).toBe(true)
     expect(container.querySelector('.sz-lesson-live-notice') === null).toBe(true)
     expect(screen.getByRole('button', { name: 'Preciso de ajuda' })).toBeDefined()
-    expect(screen.queryByText('A professora abre já já') === null).toBe(true)
+    expect(screen.queryByText('A próxima parte abre já já') === null).toBe(true)
   })
 
   test('a transmissão fica no alto da coluna e a criança só anda entre as partes abertas', async () => {
@@ -138,7 +139,7 @@ describe('a aula na sala ao vivo', () => {
     // A próxima ainda não foi aberta: travada, e dizendo por quê.
     const proxima = screen.getByRole('button', { name: /Próxima parte/ })
     expect((proxima as HTMLButtonElement).disabled).toBe(true)
-    expect(screen.getByText('A professora abre já já')).toBeDefined()
+    expect(screen.getByText('A próxima parte abre já já')).toBeDefined()
     expect(proxima.getAttribute('aria-describedby')).toBeTruthy()
     // O pedido de ajuda da sala é o da barra da chamada.
     expect(screen.queryByRole('button', { name: 'Preciso de ajuda' }) === null).toBe(true)
@@ -166,6 +167,21 @@ describe('a aula na sala ao vivo', () => {
     expect(screen.getByText('A turma está na parte 3')).toBeDefined()
   })
 
+  test('"Ir junto" leva quem voltou para rever à parte da turma, só se ela estiver aberta', async () => {
+    const { rerender } = render(<Sala control={{ openedIds: ['a'], currentId: 'a' }} />)
+    rerender(<Sala control={{ openedIds: ['a', 'b'], currentId: 'b' }} />)
+    fireEvent.click(screen.getByRole('button', { name: /Anterior/ }))
+    await screen.findByText('Bloco texto-1')
+    // Uma parte ainda fechada não abre por pedido da sala.
+    await act(async () => followLiveSection('c'))
+    expect(screen.getByText('Bloco texto-1')).toBeDefined()
+    navigations = []
+    await act(async () => followLiveSection('b'))
+    expect(screen.getByText('Bloco texto-2')).toBeDefined()
+    // A navegação registrada vai junto, como na troca feita por quem conduz.
+    expect(navigations).toContain('b')
+  })
+
   test('na recepção a tela mostra a primeira parte e espera; fora do encontro tudo abre', () => {
     const { rerender } = render(<Sala control={{ openedIds: [], currentId: null }} />)
     expect(screen.getByText('Bloco texto-1')).toBeDefined()
@@ -176,7 +192,7 @@ describe('a aula na sala ao vivo', () => {
     expect(
       (screen.getByRole('button', { name: /Próxima parte/ }) as HTMLButtonElement).disabled,
     ).toBe(false)
-    expect(screen.queryByText('A professora abre já já') === null).toBe(true)
+    expect(screen.queryByText('A próxima parte abre já já') === null).toBe(true)
   })
 
   test('com uma atividade ampliada, a TRANSMISSÃO vira o flutuante e o interruptor a esconde', () => {

@@ -448,6 +448,15 @@ Preparação recomenda extensões oficiais; cursos e tutor ensinam a implementa�
 - pensa:maintenance prepara manifesto/backup e dry-run. Publicação e migrations remotas
   exigem janela coordenada; os scripts não cercam serviços externos automaticamente.
 
+## Sala da criança: quantos colegas chegaram (23/10/2026)
+
+`LiveRoomView.presentCount` (opcional no core): só na visão da criança e só com a sala aberta para
+ela, quantos OUTROS participantes estão na sala (não removidos, vistos nos últimos 15 s,
+`classmatesPresent` em `domain/live/presence.ts`). Contado ANTES de os participantes virarem só a
+linha dela: o número vai, quem são nunca. A professora não recebe o campo. ⚠️ O próximo encontro NÃO
+entra na sala: o `findRoom` carrega só o próprio encontro (a sala não cresce com a turma), e o front o
+busca na agenda. Testes no fim de `tests/unit/live.service.test.ts`.
+
 ## Oficinas ao vivo (14/10/2026)
 
 `application/live` mantém oficinas reutilizáveis, snapshots das aulas por turma, matrículas

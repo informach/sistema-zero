@@ -3,6 +3,7 @@
 import { Button } from '@sistemazero/ui'
 import { Camera, Mic, Square } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { recordDevicePassed } from '../../lib/live/device-check'
 import { canShareLiveTab, friendlyDeviceError } from '../../lib/live/device-errors'
 
 /**
@@ -14,6 +15,7 @@ export function LivePreflight({ open = false }: { open?: boolean }) {
   const stream = useRef<MediaStream | null>(null)
   const generation = useRef(0)
   const meter = useRef<{ context: AudioContext; frame: number } | null>(null)
+  const heard = useRef(false)
   const [status, setStatus] = useState('A câmera e o microfone começam desligados.')
   const [preview, setPreview] = useState(false)
   const [level, setLevel] = useState<number | null>(null)
@@ -49,6 +51,11 @@ export function LivePreflight({ open = false }: { open?: boolean }) {
         let peak = 0
         for (const value of data) peak = Math.max(peak, Math.abs(value - 128))
         setLevel(Math.min(1, peak / 64))
+        // O microfone só "funcionou" quando ouviu algum som: abrir sem captar nada não conta.
+        if (peak / 64 > 0.15 && !heard.current) {
+          heard.current = true
+          recordDevicePassed('microphone')
+        }
         if (meter.current) meter.current.frame = requestAnimationFrame(tick)
       }
       meter.current = { context, frame: requestAnimationFrame(tick) }
@@ -73,6 +80,8 @@ export function LivePreflight({ open = false }: { open?: boolean }) {
       }
       stream.current = next
       setPreview(kind === 'video')
+      // A imagem abriu: a câmera fica lembrada neste aparelho (lib/live/device-check).
+      if (kind === 'video') recordDevicePassed('camera')
       if (video.current) video.current.srcObject = next
       if (kind === 'audio') listen(next)
       setStatus(
@@ -91,8 +100,8 @@ export function LivePreflight({ open = false }: { open?: boolean }) {
     <div className={open ? 'space-y-3' : 'mt-4 space-y-3'}>
       {tabSharing === false ? (
         <p className="rounded-xl border bg-muted/30 p-3 font-medium text-sm">
-          Neste navegador a professora não consegue ver sua tela enquanto você cria. No computador,
-          com o Chrome ou o Edge, dá. Você participa do mesmo jeito.
+          Neste navegador não dá para mostrar sua tela enquanto você cria. No computador, com o
+          Chrome ou o Edge, dá. Você participa do mesmo jeito.
         </p>
       ) : null}
       <p role="status" className="font-medium text-muted-foreground text-sm">

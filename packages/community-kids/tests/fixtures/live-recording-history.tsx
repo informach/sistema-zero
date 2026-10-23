@@ -150,12 +150,12 @@ test('reposição preserva seleção da gravação original e dos seus capítulo
       renderLesson: (slot: any) => slot.stage,
     }),
   )
-  fireEvent.change(screen.getByLabelText('Encontro e gravações'), { target: { value: 'original' } })
+  fireEvent.change(screen.getByLabelText('Assistir'), { target: { value: 'original' } })
   await waitFor(() => expect(replay?.occurrenceId).toBe('original'))
   expect(replay.version).toBe(7)
   expect(replay.chapters).toEqual([{ sectionId: 'a', seconds: 42 }])
   expect(Boolean(screen.queryByTestId('recording'))).toBe(true)
-  fireEvent.change(screen.getByLabelText('Encontro e gravações'), { target: { value: 'current' } })
+  fireEvent.change(screen.getByLabelText('Assistir'), { target: { value: 'current' } })
   expect(Boolean(screen.queryByTestId('recording'))).toBe(false)
   view.unmount()
 })

@@ -30,7 +30,7 @@ import {
   LiveUnavailableError,
 } from '../../domain/live/live.errors'
 import { LIVE_SECTIONS_MAX, liveVimeoRecording } from '../../domain/live/live-course-rules'
-import { presenceStale, sameActivity } from '../../domain/live/presence'
+import { classmatesPresent, presenceStale, sameActivity } from '../../domain/live/presence'
 import {
   type LiveRecordingSegmentTime,
   recordingChapters,
@@ -774,6 +774,11 @@ export class LiveService {
     const participant = occurrence.participants.find((item) => item.learnerId === actor.id)
     const admitted = role === 'teacher' || participant?.admission === 'admitted'
     occurrence.recording.storageKey = null
+    // Counted before the participants are reduced to her own row: the number goes, never who.
+    const presentCount =
+      role === 'learner' && (canOpen || early)
+        ? classmatesPresent(context.occurrence.participants, actor.id, now)
+        : undefined
     if (
       occurrence.guidance &&
       (validDate(occurrence.guidance.expiresAt) <= now.getTime() ||
@@ -848,6 +853,7 @@ export class LiveService {
       supervision,
       serverTime: now.toISOString(),
       mediaReady: this.options.mediaReady === true,
+      ...(presentCount === undefined ? {} : { presentCount }),
     }
   }
 
