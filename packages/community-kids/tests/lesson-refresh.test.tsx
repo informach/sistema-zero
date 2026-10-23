@@ -120,7 +120,7 @@ describe('"Verificar esta parte"', () => {
     }
     render(comPlayer(refresh, <SectionProjectCheck blockId="projeto" handleRef={handleRef} />))
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte', exact: true }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
     })
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
     return refresh
