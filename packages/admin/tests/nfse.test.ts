@@ -10,7 +10,10 @@ import {
   formatDocument,
   formatDps,
   INVOICE_FAILURE_STATUSES,
+  invoiceEventLabel,
+  invoiceEventReason,
   invoiceMainDate,
+  invoiceProblemSummary,
   invoiceStatusLabel,
   invoiceStatusVariant,
   isValidCancelReason,
@@ -240,5 +243,60 @@ describe('summarizeEventDetail', () => {
     const summary = summarizeEventDetail({ message: 'x'.repeat(300) }, 50)
     expect(summary?.length).toBe(50)
     expect(summary?.endsWith('…')).toBe(true)
+  })
+})
+
+describe('invoiceProblemSummary: quem só lê não recebe ordem de apertar botão', () => {
+  test('Admin: a frase diz o que fazer com os botões', () => {
+    expect(invoiceProblemSummary({ status: 'FAILED', lastError: null, attempts: 3 }, true)).toBe(
+      'A nota não saiu depois de 3 tentativas. Confira os dados de quem comprou e use "Tentar de novo".',
+    )
+    expect(
+      invoiceProblemSummary({ status: 'CANCEL_FAILED', lastError: null, attempts: 1 }, true),
+    ).toContain('peça o cancelamento de novo')
+  })
+
+  test('só leitura: diz quem pode agir, sem citar botão', () => {
+    for (const status of ['FAILED', 'CANCEL_FAILED']) {
+      const text = invoiceProblemSummary({ status, lastError: null, attempts: 1 }, false)
+      expect(text).toContain('Quem é Admin pode tentar de novo.')
+      expect(text).not.toContain('"Tentar de novo"')
+      expect(text).not.toContain('peça o cancelamento')
+    }
+    expect(invoiceProblemSummary({ status: 'EMITTED', lastError: null, attempts: 1 }, false)).toBe(
+      null,
+    )
+  })
+})
+
+describe('invoiceEventLabel: os códigos da nota em palavras', () => {
+  test('os códigos do fiscal que faltavam ganham nome', () => {
+    for (const code of [
+      'CANCEL_REQUESTED_OUT_OF_WINDOW',
+      'SUBSTITUTE_IN_PROGRESS',
+      'SUBSTITUTED_ORIGINAL_WITHOUT_KEY',
+      'SUBSTITUTE_REFUND',
+      'PDF_NOT_FOUND',
+    ]) {
+      const label = invoiceEventLabel(code)
+      expect(label).not.toBe(code)
+      expect(label).not.toMatch(/[A-Z]{2,}_/)
+    }
+  })
+
+  test('código desconhecido vira frase genérica, sem o código cru', () => {
+    expect(invoiceEventLabel('ALGO_NOVO_DO_FISCAL')).toBe('Outra mudança registrada na nota')
+    expect(invoiceEventLabel('toString')).toBe('Outra mudança registrada na nota')
+  })
+
+  test('o motivo de um evento sai do código conhecido no detalhe', () => {
+    expect(invoiceEventReason({ reason: 'SUBSTITUTED_ORIGINAL_WITHOUT_KEY' })).toBe(
+      invoiceEventLabel('SUBSTITUTED_ORIGINAL_WITHOUT_KEY'),
+    )
+    expect(invoiceEventReason({ racedFrom: 'SUBSTITUTE_REFUND' })).toBe(
+      invoiceEventLabel('SUBSTITUTE_REFUND'),
+    )
+    expect(invoiceEventReason({ reason: 'texto livre' })).toBe(null)
+    expect(invoiceEventReason(null)).toBe(null)
   })
 })

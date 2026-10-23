@@ -1,11 +1,10 @@
 'use client'
 
 import { Badge } from '@sistemazero/ui/badge'
-import { Button } from '@sistemazero/ui/button'
+import { Button, buttonVariants } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
-import { Field } from '@sistemazero/ui/label'
 import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
@@ -17,17 +16,29 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
-import { Banknote, CreditCard, RotateCcw, Search, ShieldCheck, Undo2 } from 'lucide-react'
+import {
+  Banknote,
+  Copy,
+  CreditCard,
+  FilePlus2,
+  RotateCcw,
+  Search,
+  ShieldCheck,
+  Undo2,
+} from 'lucide-react'
+import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { OverviewCard } from '@/components/admin/overview-card'
 import { PaymentsTabs } from '@/components/admin/payments-tabs'
-import { StatusBadge } from '@/components/admin/status-badge'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
+  type InvoiceList,
   PAYMENT_METHOD_LABELS,
   PAYMENT_METHODS,
   PAYMENT_STATUSES,
@@ -35,8 +46,28 @@ import {
   type PaymentRow,
   type PaymentStats,
 } from '@/lib/types'
+import { copyToClipboard } from '../../notas-fiscais/copy-to-clipboard'
+import { InvoiceStatusBadge } from '../../notas-fiscais/invoice-status-badge'
+import {
+  INVOICE_LOOKUP_LOADING,
+  type InvoiceLookup,
+  type InvoiceLookupEntry,
+  invoiceFooterAction,
+  invoiceLookupFor,
+  invoiceLookupFrom,
+} from './invoice-lookup'
 
 const LIMIT = 20
+
+/** Lê e limpa `?busca=` (o detalhe da nota fiscal abre Vendas já filtrado pela venda). */
+function takeSearchParam(name: string): string {
+  const url = new URL(window.location.href)
+  const value = url.searchParams.get(name)
+  if (value === null) return ''
+  url.searchParams.delete(name)
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+  return value.trim()
+}
 
 function methodLabel(method: string): string {
   return PAYMENT_METHOD_LABELS[method] ?? method
@@ -55,16 +86,16 @@ function shortDate(iso: string): string {
 /** Badge do estado da garantia (apoia a decisão de estorno). */
 function GuaranteeBadge({ payment: p }: { payment: PaymentRow }) {
   if (!p.guarantee) {
-    return p.paidAt ? <Badge variant="muted">Sem garantia definida</Badge> : <span>—</span>
+    return p.paidAt ? <Badge variant="muted">Sem garantia na oferta</Badge> : <span>—</span>
   }
   if (p.guarantee.expired) {
-    return <Badge variant="muted">Garantia expirada em {shortDate(p.guarantee.until)}</Badge>
+    return <Badge variant="muted">Garantia acabou em {shortDate(p.guarantee.until)}</Badge>
   }
   return (
     <Badge variant="success">
-      <ShieldCheck className="size-3" />
-      Em garantia até {shortDate(p.guarantee.until)} ({p.guarantee.daysLeft}{' '}
-      {p.guarantee.daysLeft === 1 ? 'dia restante' : 'dias restantes'})
+      <ShieldCheck className="size-3" aria-hidden />
+      Em garantia até {shortDate(p.guarantee.until)}, faltam {p.guarantee.daysLeft}{' '}
+      {p.guarantee.daysLeft === 1 ? 'dia' : 'dias'}
     </Badge>
   )
 }
@@ -85,6 +116,42 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
   const [selected, setSelected] = useState<PaymentRow | null>(null)
   const [confirmingRefund, setConfirmingRefund] = useState(false)
   const [refunding, setRefunding] = useState(false)
+  const [invoiceEntry, setInvoiceEntry] = useState<InvoiceLookupEntry>({
+    paymentId: null,
+    lookup: INVOICE_LOOKUP_LOADING,
+  })
+
+  // Chegando do detalhe de uma nota: `?busca=<código da venda>` já filtra a lista.
+  useEffect(() => {
+    const busca = takeSearchParam('busca')
+    if (busca) setQ(busca)
+  }, [])
+
+  // A nota fiscal da venda aberta (best-effort: a busca livre das notas casa o código da venda).
+  // O resultado guarda a venda a que se refere: trocar de venda volta a "procurando" já no
+  // primeiro render, sem mostrar o selo ou o link da venda anterior.
+  const selectedId = selected?.id ?? null
+  const invoice = invoiceLookupFor(invoiceEntry, selectedId)
+  const invoiceAction = invoiceFooterAction(invoice)
+  useEffect(() => {
+    if (!selectedId) return
+    let alive = true
+    setInvoiceEntry({ paymentId: selectedId, lookup: INVOICE_LOOKUP_LOADING })
+    apiGet<InvoiceList>(`/api/nfse/invoices?limit=10&q=${encodeURIComponent(selectedId)}`)
+      .then((page) => {
+        if (!alive) return
+        setInvoiceEntry({
+          paymentId: selectedId,
+          lookup: invoiceLookupFrom(page.items, selectedId),
+        })
+      })
+      .catch(() => {
+        if (alive) setInvoiceEntry({ paymentId: selectedId, lookup: { state: 'error' } })
+      })
+    return () => {
+      alive = false
+    }
+  }, [selectedId])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -99,7 +166,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar transações.')
+      toast.error((err as ApiError).message ?? 'As vendas não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
@@ -138,13 +205,13 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
         `/api/payments/transactions/${selected.id}/refund`,
         'POST',
       )
-      toast.success('Estorno solicitado.')
+      toast.success('Pedimos o estorno. O valor volta pela mesma forma de pagamento.')
       // A rota de refund devolve a view crua (sem `guarantee`) — preserva a resolvida.
       setSelected({ ...updated, guarantee: updated.guarantee ?? selected.guarantee })
       setConfirmingRefund(false)
       await Promise.all([load(), loadStats()])
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível estornar.')
+      toast.error((err as ApiError).message ?? 'O estorno não saiu. Tente de novo.')
     } finally {
       setRefunding(false)
     }
@@ -153,46 +220,51 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Pagamentos"
+        title="Vendas"
         description={
           canWrite
-            ? 'Transações de Pix, boleto e cartão — listar, filtrar e estornar.'
-            : 'Transações de Pix, boleto e cartão — listar e filtrar.'
+            ? 'Pix, boleto e cartão. Clique numa venda para ver os detalhes, estornar ou abrir a nota.'
+            : 'Pix, boleto e cartão. Clique numa venda para ver os detalhes ou abrir a nota.'
         }
       />
       <PaymentsTabs />
+      {canWrite ? null : <ReadOnlyNotice />}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <OverviewCard
-          title="Receita (paga)"
+          title="Recebido"
           value={stats ? formatCentsStr(stats.paidAmountInCents) : '—'}
           icon={Banknote}
-          description="Soma dos pagamentos pagos"
+          description="Soma das vendas pagas"
         />
         <OverviewCard
-          title="Pagos"
+          title="Vendas pagas"
           value={stats ? String(stats.paidCount) : '—'}
           icon={CreditCard}
-          description="Transações confirmadas"
+          description="Pagamentos confirmados"
         />
         <OverviewCard
-          title="Total"
+          title="Cobranças"
           value={stats ? String(stats.totalCount) : '—'}
-          description="Transações no período"
+          description="Todas as cobranças do período"
         />
         <OverviewCard
           title="Estornado"
           value={stats ? formatCentsStr(stats.refundedAmountInCents) : '—'}
           icon={Undo2}
-          description="Soma dos estornos"
+          description="Soma do que voltou para quem comprou"
         />
       </div>
 
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:flex-wrap">
         <div className="relative flex-1 lg:min-w-[16rem]">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <Input
-            placeholder="Buscar por id, txid ou e-mail…"
+            placeholder="E-mail ou código da venda"
+            aria-label="Buscar vendas"
             value={q}
             onChange={(e) => {
               setOffset(0)
@@ -202,6 +274,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
           />
         </div>
         <Select
+          aria-label="Situação"
           value={status}
           onChange={(e) => {
             setOffset(0)
@@ -209,14 +282,15 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
           }}
           className="lg:w-40"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {PAYMENT_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {statusLabel(s)}
             </option>
           ))}
         </Select>
         <Select
+          aria-label="Forma de pagamento"
           value={method}
           onChange={(e) => {
             setOffset(0)
@@ -224,7 +298,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
           }}
           className="lg:w-36"
         >
-          <option value="">Todos os métodos</option>
+          <option value="">Todas as formas</option>
           {PAYMENT_METHODS.map((m) => (
             <option key={m} value={m}>
               {methodLabel(m)}
@@ -233,7 +307,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
         </Select>
         <Input
           type="date"
-          aria-label="De"
+          aria-label="Desde o dia"
           value={from}
           onChange={(e) => {
             setOffset(0)
@@ -243,7 +317,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
         />
         <Input
           type="date"
-          aria-label="Até"
+          aria-label="Até o dia"
           value={to}
           onChange={(e) => {
             setOffset(0)
@@ -257,11 +331,11 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Cliente</TableHead>
-              <TableHead>Método</TableHead>
+              <TableHead>Quem comprou</TableHead>
+              <TableHead>Forma</TableHead>
               <TableHead className="text-right">Valor</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Criado</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead>Quando</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -270,7 +344,7 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  Nenhuma transação encontrada.
+                  Nenhuma venda com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -278,7 +352,9 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
                 <TableRow key={p.id} onClick={() => openDetail(p)} className="cursor-pointer">
                   <TableCell>
                     <div className="font-medium">{p.customer?.name ?? '—'}</div>
-                    <div className="text-xs text-muted-foreground">{p.customer?.email ?? p.id}</div>
+                    {p.customer?.email ? (
+                      <div className="text-xs text-muted-foreground">{p.customer.email}</div>
+                    ) : null}
                   </TableCell>
                   <TableCell className="text-muted-foreground">{methodLabel(p.method)}</TableCell>
                   <TableCell className="text-right font-medium">
@@ -310,43 +386,76 @@ export function TransactionsClient({ currentRole }: { currentRole: string }) {
       <Dialog
         open={selected !== null}
         onClose={() => setSelected(null)}
-        title="Detalhe da transação"
-        description={selected ? methodLabel(selected.method) : undefined}
+        title="Venda"
+        description={
+          selected
+            ? `${selected.customer?.name ?? 'Quem comprou não informado'}, ${formatDate(selected.createdAt)}`
+            : undefined
+        }
         footer={
-          selected && canWrite && canRefund(selected) ? (
+          selected &&
+          canWrite &&
+          selected.status === 'PAID' &&
+          (invoiceAction !== null || canRefund(selected)) ? (
             <div className="flex w-full flex-col gap-2">
-              {selected.guarantee?.expired ? (
-                <p className="text-right text-xs text-destructive">
-                  Estorno fora do período de garantia (encerrou em{' '}
-                  {formatDate(selected.guarantee.until)}).
-                </p>
+              {canWrite && canRefund(selected) && confirmingRefund ? (
+                <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm">
+                  <p className="font-semibold text-destructive">
+                    Estornar {formatCentsStr(selected.amountInCents, selected.currency)} para{' '}
+                    {selected.customer?.name ?? 'quem comprou'}?
+                  </p>
+                  <p className="mt-1 text-muted-foreground">
+                    O valor volta pela mesma forma de pagamento. Não dá para desfazer.
+                  </p>
+                  {selected.guarantee?.expired ? (
+                    <p className="mt-1 text-destructive">
+                      Atenção: a garantia desta compra acabou em{' '}
+                      {formatDate(selected.guarantee.until)}.
+                    </p>
+                  ) : null}
+                </div>
               ) : null}
-              <div className="flex justify-end gap-2">
-                {confirmingRefund ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => setConfirmingRefund(false)}
-                      disabled={refunding}
-                    >
-                      Não
+              <div className="flex flex-wrap justify-end gap-2">
+                {canWrite && selected.status === 'PAID' && invoiceAction === 'emit' ? (
+                  <Link
+                    href={`/admin/notas-fiscais?emitir=${encodeURIComponent(selected.id)}`}
+                    className={buttonVariants({ variant: 'outline' })}
+                  >
+                    <FilePlus2 className="size-4" aria-hidden /> Emitir nota desta venda
+                  </Link>
+                ) : null}
+                {canWrite && selected.status === 'PAID' && invoiceAction === 'error' ? (
+                  <p role="status" className="mr-auto self-center text-sm text-muted-foreground">
+                    Não conseguimos conferir a nota desta venda.
+                  </p>
+                ) : null}
+                {canWrite && canRefund(selected) ? (
+                  confirmingRefund ? (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={() => setConfirmingRefund(false)}
+                        disabled={refunding}
+                      >
+                        Não estornar
+                      </Button>
+                      <Button variant="destructive" onClick={doRefund} disabled={refunding}>
+                        {refunding ? <Spinner /> : <RotateCcw className="size-4" aria-hidden />}
+                        Sim, estornar
+                      </Button>
+                    </>
+                  ) : (
+                    <Button variant="destructive" onClick={() => setConfirmingRefund(true)}>
+                      <Undo2 className="size-4" aria-hidden /> Estornar
                     </Button>
-                    <Button variant="destructive" onClick={doRefund} disabled={refunding}>
-                      {refunding ? <Spinner /> : <RotateCcw className="size-4" />}
-                      Confirmar estorno
-                    </Button>
-                  </>
-                ) : (
-                  <Button variant="destructive" onClick={() => setConfirmingRefund(true)}>
-                    <Undo2 className="size-4" /> Estornar
-                  </Button>
-                )}
+                  )
+                ) : null}
               </div>
             </div>
           ) : null
         }
       >
-        {selected ? <PaymentDetail payment={selected} /> : null}
+        {selected ? <PaymentDetail payment={selected} invoice={invoice} /> : null}
       </Dialog>
     </div>
   )
@@ -361,52 +470,114 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   )
 }
 
-function PaymentDetail({ payment: p }: { payment: PaymentRow }) {
+/** Código técnico com botão de copiar (fica nos detalhes técnicos da venda). */
+function CopyCode({ value, label }: { value: string; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={() => copyToClipboard(value, label)}
+      className="inline-flex items-center gap-1.5 rounded-md px-1 py-0.5 text-left font-mono text-xs transition-colors hover:bg-muted"
+      title={`Copiar ${label.toLowerCase()}`}
+      aria-label={`Copiar ${label.toLowerCase()}`}
+    >
+      <span className="break-all">{value}</span>
+      <Copy className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+    </button>
+  )
+}
+
+/** A nota fiscal da venda, procurada pelo código da venda na lista de notas (best-effort). */
+function InvoiceFact({ lookup }: { lookup: InvoiceLookup }) {
+  if (lookup.state === 'loading') return <span className="text-muted-foreground">Procurando…</span>
+  if (lookup.state === 'error') return <span className="text-muted-foreground">não carregou</span>
+  if (lookup.state === 'none') return <span className="text-muted-foreground">Ainda sem nota</span>
+  return (
+    <span className="inline-flex flex-wrap items-center justify-end gap-2">
+      <InvoiceStatusBadge status={lookup.invoice.status} />
+      <Link
+        href={`/admin/notas-fiscais?nota=${encodeURIComponent(lookup.invoice.id)}`}
+        className="text-xs text-primary hover:underline"
+      >
+        Abrir a nota
+      </Link>
+    </span>
+  )
+}
+
+function PaymentDetail({ payment: p, invoice }: { payment: PaymentRow; invoice: InvoiceLookup }) {
   return (
     <div className="flex flex-col gap-4 text-sm">
-      <div>
-        <Field label="Identificador">
-          <code className="block break-all rounded bg-muted px-2 py-1 text-xs">{p.id}</code>
-        </Field>
-      </div>
-      <div className="rounded-lg border border-border p-3">
-        <Row label="Status" value={<StatusBadge status={p.status} />} />
-        <Row label="Valor" value={formatCentsStr(p.amountInCents, p.currency)} />
-        <Row label="Método" value={PAYMENT_METHOD_LABELS[p.method] ?? p.method} />
-        {p.card ? (
-          <Row
-            label="Cartão"
-            value={`${p.card.brand} ···· ${p.card.last4} (${p.card.installments}x)`}
-          />
-        ) : null}
-        {p.txid ? <Row label="txid" value={<code className="text-xs">{p.txid}</code>} /> : null}
-        {p.providerPaymentId ? (
-          <Row label="ID provedor" value={<code className="text-xs">{p.providerPaymentId}</code>} />
-        ) : null}
-      </div>
-      <div className="rounded-lg border border-border p-3">
-        <Row label="Cliente" value={p.customer?.name ?? '—'} />
-        <Row label="E-mail" value={p.customer?.email ?? '—'} />
-        <Row label="Documento" value={p.customer?.document ?? '—'} />
-        {p.customer?.phone ? <Row label="Telefone" value={p.customer.phone} /> : null}
-      </div>
-      <div className="rounded-lg border border-border p-3">
-        <Row label="Criado" value={formatDate(p.createdAt)} />
-        <Row label="Pago" value={formatDate(p.paidAt)} />
-        {p.paidAt ? <Row label="Garantia" value={<GuaranteeBadge payment={p} />} /> : null}
-        <Row label="Expira" value={formatDate(p.expiresAt)} />
-        <Row label="Atualizado" value={formatDate(p.updatedAt)} />
-        {p.refundedAt ? <Row label="Estornado" value={formatDate(p.refundedAt)} /> : null}
-        <Row label="Consumidor" value={<code className="text-xs">{p.consumerId}</code>} />
-        {p.subscriptionId ? (
-          <Row label="Assinatura" value={<code className="text-xs">{p.subscriptionId}</code>} />
-        ) : null}
-      </div>
       {p.failureReason ? (
-        <p className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-xs text-destructive">
+        <p
+          role="alert"
+          className="rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-destructive"
+        >
+          <span className="font-semibold">O pagamento não deu certo.</span> Motivo:{' '}
           {p.failureReason}
         </p>
       ) : null}
+      <div className="rounded-lg border border-border p-3">
+        <Row label="Valor" value={formatCentsStr(p.amountInCents, p.currency)} />
+        <Row label="Situação" value={<StatusBadge status={p.status} />} />
+        <Row
+          label="Forma"
+          value={
+            p.card
+              ? `${methodLabel(p.method)} ${p.card.brand} final ${p.card.last4}, ${p.card.installments}x`
+              : methodLabel(p.method)
+          }
+        />
+        <Row label="Pago em" value={formatDate(p.paidAt)} />
+        {p.paidAt ? <Row label="Garantia" value={<GuaranteeBadge payment={p} />} /> : null}
+        {p.status === 'PAID' || p.status === 'REFUNDED' ? (
+          <Row label="Nota fiscal" value={<InvoiceFact lookup={invoice} />} />
+        ) : null}
+        {p.refundedAt ? <Row label="Estornado em" value={formatDate(p.refundedAt)} /> : null}
+      </div>
+      <div className="rounded-lg border border-border p-3">
+        <Row label="Quem comprou" value={p.customer?.name ?? '—'} />
+        <Row label="E-mail" value={p.customer?.email ?? '—'} />
+        <Row label="CPF ou CNPJ" value={p.customer?.document ?? '—'} />
+        {p.customer?.phone ? <Row label="Telefone" value={p.customer.phone} /> : null}
+      </div>
+      <div className="rounded-lg border border-border p-3">
+        <Row label="Criada em" value={formatDate(p.createdAt)} />
+        <Row label="Vence em" value={formatDate(p.expiresAt)} />
+        {p.subscriptionId ? <Row label="Origem" value="Assinatura no cartão" /> : null}
+      </div>
+      <details className="rounded-lg border border-border p-3">
+        <summary className="cursor-pointer font-medium">Detalhes técnicos</summary>
+        <div className="mt-2">
+          <Row label="Código da venda" value={<CopyCode value={p.id} label="Código da venda" />} />
+          {p.txid ? (
+            <Row label="txid do Pix" value={<CopyCode value={p.txid} label="txid" />} />
+          ) : null}
+          {p.providerPaymentId ? (
+            <Row
+              label="Código no provedor"
+              value={<CopyCode value={p.providerPaymentId} label="Código no provedor" />}
+            />
+          ) : null}
+          {p.providerRefundId ? (
+            <Row
+              label="Código do estorno"
+              value={<CopyCode value={p.providerRefundId} label="Código do estorno" />}
+            />
+          ) : null}
+          <Row
+            label="Código de quem comprou"
+            value={<CopyCode value={p.consumerId} label="Código de quem comprou" />}
+          />
+          {p.subscriptionId ? (
+            <Row
+              label="Código da assinatura"
+              value={<CopyCode value={p.subscriptionId} label="Código da assinatura" />}
+            />
+          ) : null}
+          <Row label="Provedor" value={p.provider} />
+          <Row label="Atualizada em" value={formatDate(p.updatedAt)} />
+        </div>
+      </details>
     </div>
   )
 }

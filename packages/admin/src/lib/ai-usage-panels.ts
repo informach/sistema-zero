@@ -102,7 +102,7 @@ export async function runZappyBackfillBatches(input: {
       break
     }
     if (!batch.nextCursor || seen.has(batch.nextCursor)) {
-      throw new Error('Cursor inválido no backfill do Zappy')
+      throw new Error('A atualização da base do Zappy se perdeu no meio do caminho. Tente de novo.')
     }
     cursor = batch.nextCursor
     seen.add(cursor)
@@ -123,10 +123,10 @@ export function zappyBackfillNotice(
   message: string
 } {
   return result.failed === 0
-    ? { kind: 'success', message: 'Base do Zappy sincronizada.' }
+    ? { kind: 'success', message: 'Base do Zappy atualizada.' }
     : {
         kind: 'warning',
-        message: `Base sincronizada parcialmente: ${result.failed} ${result.failed === 1 ? 'fonte precisa' : 'fontes precisam'} de correção.`,
+        message: `Base do Zappy atualizada em parte: ${result.failed} ${result.failed === 1 ? 'fonte precisa' : 'fontes precisam'} de correção.`,
       }
 }
 

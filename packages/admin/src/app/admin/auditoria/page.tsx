@@ -11,10 +11,10 @@ export default async function AuditoriaPage() {
   if (!user || !AUDIT_ROLES.has(user.role)) {
     return (
       <div className="flex min-h-[45vh] flex-col items-center justify-center gap-3 text-center">
-        <ShieldAlert className="size-10 text-destructive" />
+        <ShieldAlert className="size-10 text-destructive" aria-hidden />
         <div className="space-y-1">
           <h1 className="text-xl font-semibold">Acesso negado</h1>
-          <p className="text-muted-foreground text-sm">Auditoria é restrita a administradores.</p>
+          <p className="text-muted-foreground text-sm">Só Admin vê a auditoria.</p>
         </div>
       </div>
     )

@@ -17,11 +17,11 @@ const DAY_MS = 24 * 60 * 60 * 1000
 
 /** Presets de validade (cortesia/teste). `''` = vitalício; `'custom'` = data específica. */
 const VALIDITY_PRESETS = [
-  { value: '', label: 'Vitalício' },
+  { value: '', label: 'Para sempre' },
   { value: '7', label: '7 dias' },
   { value: '30', label: '30 dias' },
   { value: '90', label: '90 dias' },
-  { value: 'custom', label: 'Data específica…' },
+  { value: 'custom', label: 'Até uma data' },
 ] as const
 
 interface GrantForm {
@@ -96,7 +96,7 @@ export function GrantAccessDialog({
       if (offersPage) setOffers(offersPage.items)
       if (coursesPage) setCourses(coursesPage.items)
       if (!offersPage && !coursesPage) {
-        toast.error('Não foi possível carregar ofertas/cursos.')
+        toast.error('As ofertas e os cursos não carregaram. Feche e abra de novo.')
       }
       setOptionsLoaded(true)
     })
@@ -112,20 +112,20 @@ export function GrantAccessDialog({
 
   async function grant() {
     if (form.mode === 'offer' && !form.offerId) {
-      toast.error('Selecione a oferta.')
+      toast.error('Escolha a oferta.')
       return
     }
     if (form.mode === 'course' && !form.courseRef) {
-      toast.error('Selecione o curso.')
+      toast.error('Escolha o curso.')
       return
     }
     const expiresAt = resolveExpiresAt(form)
     if (expiresAt === undefined) {
-      toast.error('Informe uma data de validade válida.')
+      toast.error('Escolha até quando vale o acesso.')
       return
     }
     if (targets.length === 0) {
-      toast.error('Nenhum usuário selecionado.')
+      toast.error('Nenhuma conta selecionada.')
       return
     }
     const bodyFor = (uid: string) =>
@@ -148,8 +148,8 @@ export function GrantAccessDialog({
           const e = err as ApiError
           toast.error(
             e.status === 409
-              ? 'Já existe uma matrícula revogada/expirada deste conteúdo — use "Estender".'
-              : (e.message ?? 'Não foi possível conceder o acesso.'),
+              ? 'Esta pessoa já teve este acesso, que foi tirado ou venceu. Use "Estender" na página dela.'
+              : (e.message ?? 'O acesso não foi concedido. Tente de novo.'),
           )
           return
         }
@@ -166,11 +166,11 @@ export function GrantAccessDialog({
         const ok = results.filter((r) => r === 'ok').length
         const conflict = results.filter((r) => r === 'conflict').length
         const failed = results.filter((r) => r === 'error').length
-        const parts = [`${ok} concedido(s)`]
-        if (conflict > 0) parts.push(`${conflict} já tinha(m)/revogada(s)`)
-        if (failed > 0) parts.push(`${failed} falhou(aram)`)
-        if (failed > 0) toast.warning(`Concessão em lote: ${parts.join(' · ')}`)
-        else toast.success(`Concessão em lote: ${parts.join(' · ')}`)
+        const parts = [`${ok} com acesso novo`]
+        if (conflict > 0) parts.push(`${conflict} já tinham ou tiveram esse acesso`)
+        if (failed > 0) parts.push(`${failed} não deram certo`)
+        if (failed > 0) toast.warning(`Acesso em lote: ${parts.join(', ')}.`)
+        else toast.success(`Acesso em lote: ${parts.join(', ')}.`)
       }
       setForm(EMPTY_FORM)
       onGranted?.()
@@ -184,11 +184,11 @@ export function GrantAccessDialog({
     <Dialog
       open={open}
       onClose={close}
-      title={bulk ? `Conceder acesso a ${targets.length} usuários` : 'Conceder acesso manual'}
+      title={bulk ? `Conceder acesso a ${targets.length} contas` : 'Conceder acesso'}
       description={
         bulk
-          ? 'Lote: a mesma concessão é aplicada a cada usuário selecionado (idempotente).'
-          : 'Cortesia/promoção/teste. Por oferta (resolve no catálogo) ou direto por curso.'
+          ? 'O mesmo acesso vai para cada conta selecionada. Quem já tem fica como está.'
+          : 'Para cortesia, promoção ou teste. Escolha um curso, uma oferta do catálogo ou todos os cursos de uma comunidade.'
       }
       footer={
         <>
@@ -203,37 +203,45 @@ export function GrantAccessDialog({
       }
     >
       <div className="flex flex-col gap-4">
-        <Field label="Modo" htmlFor="grant-mode">
+        <Field label="O que liberar" htmlFor="grant-mode">
           <Select
             id="grant-mode"
             value={form.mode}
             onChange={(e) => setForm((f) => ({ ...f, mode: e.target.value as GrantForm['mode'] }))}
           >
-            <option value="course">Por curso</option>
-            <option value="offer">Por oferta do catálogo</option>
-            <option value="all_courses">Todos os cursos adultos (chave-mestra)</option>
-            <option value="all_kids_courses">Todos os cursos kids (chave-mestra)</option>
+            <option value="course">Um curso</option>
+            <option value="offer">Uma oferta do catálogo</option>
+            <option value="all_courses">Todos os cursos da Comunidade Sistema Zero</option>
+            <option value="all_kids_courses">Todos os cursos da Comunidade dos Criadores</option>
           </Select>
         </Field>
 
         {form.mode === 'all_courses' || form.mode === 'all_kids_courses' ? (
           <p className="text-muted-foreground text-sm">
-            Concede acesso a TODOS os cursos {form.mode === 'all_kids_courses' ? 'KIDS' : 'ADULTOS'}{' '}
-            publicados — inclusive os lançados depois. A outra vitrine fica fora (conceda por curso
-            ou use a chave-mestra dela). Uma única matrícula, revogável/extensível como qualquer
-            outra.
+            Libera todos os cursos publicados da{' '}
+            {form.mode === 'all_kids_courses'
+              ? 'Comunidade dos Criadores'
+              : 'Comunidade Sistema Zero'}
+            , inclusive os que forem lançados depois. A outra comunidade fica de fora. É um acesso
+            só, que dá para tirar ou estender como qualquer outro.
           </p>
         ) : form.mode === 'course' ? (
-          <Field label="Curso" htmlFor="grant-course">
+          <Field
+            label="Curso"
+            htmlFor="grant-course"
+            hint={form.courseRef ? `Endereço do curso: /${form.courseRef}` : undefined}
+          >
             <Select
               id="grant-course"
               value={form.courseRef}
               onChange={(e) => setForm((f) => ({ ...f, courseRef: e.target.value }))}
             >
-              <option value="">{optionsLoaded ? 'Selecione…' : 'Carregando…'}</option>
+              <option value="">{optionsLoaded ? 'Escolha o curso' : 'Carregando…'}</option>
+              {/* O endereço vai junto: dois cursos com o mesmo título ficam diferentes. */}
               {courses.map((c) => (
                 <option key={c.id} value={c.slug}>
-                  {c.title} ({c.slug}){c.audience === 'kids' ? ' [Kids]' : ''}
+                  {c.title}
+                  {c.audience === 'kids' ? ' (Comunidade dos Criadores)' : ''} · /{c.slug}
                 </option>
               ))}
             </Select>
@@ -242,14 +250,14 @@ export function GrantAccessDialog({
           <Field
             label="Oferta"
             htmlFor="grant-offer"
-            hint="Concede tudo que a oferta dá direito (combos/bônus inclusos)."
+            hint="Libera tudo o que a oferta dá, com combos e bônus."
           >
             <Select
               id="grant-offer"
               value={form.offerId}
               onChange={(e) => setForm((f) => ({ ...f, offerId: e.target.value }))}
             >
-              <option value="">{optionsLoaded ? 'Selecione…' : 'Carregando…'}</option>
+              <option value="">{optionsLoaded ? 'Escolha a oferta' : 'Carregando…'}</option>
               {offers.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.name} ({o.code})
@@ -260,7 +268,7 @@ export function GrantAccessDialog({
         )}
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Validade" htmlFor="grant-preset">
+          <Field label="Por quanto tempo" htmlFor="grant-preset">
             <Select
               id="grant-preset"
               value={form.preset}

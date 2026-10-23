@@ -77,8 +77,8 @@ test('o painel mostra os números e leva ao atendimento já no filtro certo', as
   const { container, root } = await montar(React.createElement(AtendimentoClient, { appUrl: APP }))
 
   const text = container.textContent ?? ''
-  expect(text).toContain('SLA estourado')
-  expect(text).toContain('Aguardando cliente')
+  expect(text).toContain('Prazo estourado')
+  expect(text).toContain('Esperando a família')
   expect(text).toContain('Estourado há 30 min')
 
   const hrefs = [...container.querySelectorAll('a')].map((a) => a.getAttribute('href'))
@@ -126,7 +126,7 @@ test('sem a URL do app, o painel funciona e os atalhos somem', async () => {
   })
   const { container, root } = await montar(React.createElement(AtendimentoClient, { appUrl: null }))
   expect(container.querySelectorAll('a').length).toBe(0)
-  expect(container.textContent).toContain('HELPDESK_APP_URL')
+  expect(container.textContent).toContain('O link do atendimento ainda não foi configurado.')
   expect(container.textContent).toContain('Não consigo entrar')
   await act(async () => root.unmount())
 })

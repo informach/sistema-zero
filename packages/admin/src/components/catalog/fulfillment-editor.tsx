@@ -6,16 +6,19 @@ import { Select } from '@sistemazero/ui/select'
 import type { AccessType, FulfillmentSpec, ReleaseMode } from '@/lib/types'
 
 const ACCESS_TYPES: { value: AccessType; label: string }[] = [
-  { value: 'course', label: 'Um curso específico' },
-  { value: 'all_courses', label: 'Todos os cursos adultos (atuais e futuros)' },
-  { value: 'all_kids_courses', label: 'Todos os cursos kids (atuais e futuros)' },
-  { value: 'community', label: 'Acesso à comunidade' },
+  { value: 'course', label: 'Um curso' },
+  { value: 'all_courses', label: 'Todos os cursos da Comunidade Sistema Zero, hoje e depois' },
+  {
+    value: 'all_kids_courses',
+    label: 'Todos os cursos da Comunidade dos Criadores, hoje e depois',
+  },
+  { value: 'community', label: 'Um espaço da comunidade' },
 ]
 
 const RELEASE_MODES: { value: ReleaseMode; label: string }[] = [
-  { value: 'immediate', label: 'Imediata (na compra)' },
-  { value: 'days_after_purchase', label: 'X dias após a compra' },
-  { value: 'fixed_date', label: 'Data fixa' },
+  { value: 'immediate', label: 'Na hora da compra' },
+  { value: 'days_after_purchase', label: 'Alguns dias depois da compra' },
+  { value: 'fixed_date', label: 'Numa data marcada' },
 ]
 
 export interface CourseOption {
@@ -75,7 +78,7 @@ export function FulfillmentEditor({
       <Field
         label="O que esta compra libera"
         htmlFor="accessType"
-        tooltip="A entrega é sempre pela área de membros: um curso específico ou TODOS os cursos (chave-mestra — inclui cursos lançados depois da compra)."
+        tooltip="Tudo chega pela área de membros: um curso, ou todos os cursos de uma comunidade, inclusive os que forem lançados depois da compra."
       >
         <Select
           id="accessType"
@@ -92,9 +95,9 @@ export function FulfillmentEditor({
 
       {spec.accessType === 'course' ? (
         <Field
-          label="Curso vinculado"
+          label="Qual curso"
           htmlFor="courseRef"
-          tooltip="Curso da área de membros liberado nesta compra. A matrícula usa o slug do curso."
+          tooltip="O curso da área de membros que esta compra libera. A matrícula usa o endereço do curso."
         >
           <Select
             id="courseRef"
@@ -102,19 +105,19 @@ export function FulfillmentEditor({
             onChange={(e) => update({ courseRef: e.target.value || undefined })}
             disabled={coursesLoading}
           >
-            <option value="">{coursesLoading ? 'Carregando cursos…' : 'Selecione um curso'}</option>
+            <option value="">{coursesLoading ? 'Carregando cursos…' : 'Escolha um curso'}</option>
             {courses.map((c) => (
               <option key={c.slug} value={c.slug}>
-                {c.title} ({c.slug})
+                {c.title}
               </option>
             ))}
           </Select>
         </Field>
       ) : spec.accessType === 'community' ? (
         <Field
-          label="Chave da comunidade"
+          label="Chave do espaço"
           htmlFor="communityRef"
-          tooltip="Identificador do acesso de comunidade que esta compra libera. Use a MESMA chave nos espaços do hub (campo 'Chaves de comunidade' do servidor). Ex.: comunidade-vip."
+          tooltip="O nome curto do espaço da comunidade que esta compra libera. Use a mesma chave nos espaços do Clube e da Comunidade, no campo 'Chaves de comunidade'. Ex.: comunidade-vip."
         >
           <Input
             id="communityRef"
@@ -125,17 +128,19 @@ export function FulfillmentEditor({
         </Field>
       ) : (
         <p className="text-muted-foreground text-sm">
-          O comprador ganha acesso a todos os cursos{' '}
-          {spec.accessType === 'all_kids_courses' ? 'kids' : 'adultos'} publicados — inclusive os
-          lançados depois da compra. Nenhuma configuração extra.
+          Quem compra ganha todos os cursos publicados da{' '}
+          {spec.accessType === 'all_kids_courses'
+            ? 'Comunidade dos Criadores'
+            : 'Comunidade Sistema Zero'}
+          , inclusive os lançados depois da compra. Não precisa configurar mais nada.
         </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Field
-          label="Liberação"
+          label="Quando libera"
           htmlFor="releaseMode"
-          tooltip="Quando o acesso é liberado: na hora da compra, X dias depois (drip) ou numa data fixa."
+          tooltip="Na hora da compra, alguns dias depois (um pouco de cada vez) ou numa data marcada."
         >
           <Select
             id="releaseMode"
@@ -150,7 +155,7 @@ export function FulfillmentEditor({
           </Select>
         </Field>
         {release.mode === 'days_after_purchase' ? (
-          <Field label="Dias após a compra" htmlFor="releaseDays">
+          <Field label="Quantos dias depois da compra" htmlFor="releaseDays">
             <Input
               id="releaseDays"
               inputMode="numeric"
@@ -168,7 +173,7 @@ export function FulfillmentEditor({
           </Field>
         ) : null}
         {release.mode === 'fixed_date' ? (
-          <Field label="Data de liberação" htmlFor="releaseDate">
+          <Field label="Libera no dia" htmlFor="releaseDate">
             <Input
               id="releaseDate"
               type="date"

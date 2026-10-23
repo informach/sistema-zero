@@ -79,7 +79,7 @@ test('a lista mostra o público, e campanha antiga sem o campo é Kids', async (
     () => Response.json({}),
   )
   const headers = [...container.querySelectorAll('th')].map((th) => th.textContent)
-  expect(headers.slice(0, 3)).toEqual(['Campanha', 'Público', 'Estado'])
+  expect(headers.slice(0, 3)).toEqual(['Campanha', 'Público', 'Situação'])
   const rows = [...container.querySelectorAll('tbody tr')]
   expect(rows[0]!.children[1]!.textContent).toBe('Adulto')
   expect(rows[1]!.children[1]!.textContent).toBe('Kids')

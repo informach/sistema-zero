@@ -55,14 +55,14 @@ export function OfferItemsEditor({
     <div className="flex flex-col gap-2">
       {value.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
-          Nenhum item extra. Adicione produtos entregues como bônus desta oferta.
+          Nenhum bônus ainda. Coloque aqui produtos que vêm de presente com esta oferta.
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
           {value.map((c, i) => (
             <li key={c.productId} className="flex items-center gap-2">
               <Select
-                aria-label="Produto do item extra"
+                aria-label="Produto do bônus"
                 className="flex-1"
                 value={c.productId}
                 onChange={(e) => setProduct(i, e.target.value)}
@@ -98,7 +98,7 @@ export function OfferItemsEditor({
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Remover item"
+                aria-label="Tirar o bônus"
                 onClick={() => remove(i)}
               >
                 <X className="size-4" />
@@ -115,7 +115,7 @@ export function OfferItemsEditor({
         disabled={available.length === 0}
         className="self-start"
       >
-        <Plus className="size-4" /> Adicionar item extra
+        <Plus className="size-4" aria-hidden /> Colocar bônus
       </Button>
     </div>
   )

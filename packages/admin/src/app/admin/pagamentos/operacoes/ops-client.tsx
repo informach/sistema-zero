@@ -11,6 +11,15 @@ import { PaymentsTabs } from '@/components/admin/payments-tabs'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { PaymentOps } from '@/lib/types'
 
+/**
+ * Saúde dos pagamentos: as filas do serviço de pagamentos em palavras simples. Os nomes
+ * técnicos de cada cartão (outbox, webhook, dead-letter, reconciliação) ficam aqui no código:
+ * outboxPending/outboxDead = eventos de domínio a publicar / que esgotaram as tentativas;
+ * paymentsAwaitingCharge = pagamentos sem cobrança criada (modo assíncrono);
+ * webhookDeliveries* = avisos que os pagamentos ENTREGAM aos outros serviços (webhooks de saída),
+ *   na fila / que esgotaram as tentativas (não são avisos que chegam do banco);
+ * reconcilePending = PENDING com cobrança aguardando a confirmação do provedor.
+ */
 export function OpsClient() {
   const [ops, setOps] = useState<PaymentOps | null>(null)
   const [loading, setLoading] = useState(true)
@@ -20,7 +29,7 @@ export function OpsClient() {
     try {
       setOps(await apiGet<PaymentOps>('/api/payments/ops'))
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar operações.')
+      toast.error((err as ApiError).message ?? 'Os números dos pagamentos não carregaram.')
     } finally {
       setLoading(false)
     }
@@ -36,55 +45,58 @@ export function OpsClient() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Pagamentos"
-        description="Saúde das filas: eventos (outbox), entregas de webhook e reconciliação."
+        title="Vendas"
+        description="Se os pagamentos estão chegando e os avisos saindo como deveriam."
         action={
           <Button variant="outline" onClick={load} disabled={loading}>
-            {loading ? <Spinner /> : <RefreshCw className="size-4" />} Atualizar
+            {loading ? <Spinner /> : <RefreshCw className="size-4" aria-hidden />} Atualizar
           </Button>
         }
       />
       <PaymentsTabs />
 
       {hasDead ? (
-        <div className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">
-          <AlertTriangle className="size-4 shrink-0" />
-          Há itens em dead-letter (esgotaram as tentativas) — requer investigação.
+        <div
+          role="alert"
+          className="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive"
+        >
+          <AlertTriangle className="size-4 shrink-0" aria-hidden />
+          Alguns avisos não saíram depois de todas as tentativas. Vale olhar com a equipe técnica.
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <OverviewCard
-          title="Outbox pendente"
+          title="Avisos esperando para sair"
           value={fmt(ops?.outboxPending)}
-          description="Eventos de domínio a publicar"
+          description="O sistema avisa os outros serviços de cada venda. Estes ainda vão sair."
         />
         <OverviewCard
-          title="Outbox dead-letter"
+          title="Avisos que não saíram"
           value={fmt(ops?.outboxDead)}
           icon={ops && ops.outboxDead > 0 ? AlertTriangle : undefined}
-          description="Eventos que esgotaram as tentativas"
+          description="Tentamos todas as vezes e não deu. O normal é zero."
         />
         <OverviewCard
-          title="Aguardando cobrança"
+          title="Cobranças aguardando o banco"
           value={fmt(ops?.paymentsAwaitingCharge)}
-          description="Pagamentos sem cobrança criada (modo assíncrono)"
+          description="Vendas em que o Pix, o boleto ou o cartão ainda não foi gerado."
         />
         <OverviewCard
-          title="Webhooks pendentes"
+          title="Avisos para os outros sistemas na fila"
           value={fmt(ops?.webhookDeliveriesPending)}
-          description="Entregas de saída na fila"
+          description="Avisos dos pagamentos para os outros sistemas, esperando a vez de serem entregues."
         />
         <OverviewCard
-          title="Webhooks dead-letter"
+          title="Avisos para os outros sistemas com problema"
           value={fmt(ops?.webhookDeliveriesDead)}
           icon={ops && ops.webhookDeliveriesDead > 0 ? AlertTriangle : undefined}
-          description="Entregas que esgotaram as tentativas"
+          description="Avisos dos pagamentos que os outros sistemas não receberam depois de todas as tentativas. O normal é zero."
         />
         <OverviewCard
-          title="Reconciliação"
+          title="Em conferência"
           value={fmt(ops?.reconcilePending)}
-          description="PENDING com cobrança aguardando confirmação"
+          description="Cobranças criadas esperando o banco confirmar se foram pagas."
         />
       </div>
     </div>

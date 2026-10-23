@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       {
         error: {
           code: 'INVALID_PAYMENT_ID',
-          message: 'Informe o Payment ID no formato UUID.',
+          message: 'Informe o código da venda. Ele fica nos detalhes técnicos da venda, em Vendas.',
         },
       },
       { status: 400 },

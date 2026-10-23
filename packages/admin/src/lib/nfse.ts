@@ -7,11 +7,11 @@ import type { InvoiceView } from './types'
 
 /** Rótulos PT-BR dos status da nota (espelha o enum do @sistemazero/fiscal). */
 export const INVOICE_STATUS_LABELS: Record<string, string> = {
-  SCHEDULED: 'Agendada',
+  SCHEDULED: 'Esperando a garantia',
   EMITTED: 'Emitida',
   SKIPPED: 'Dispensada',
-  FAILED: 'Falhou',
-  CANCEL_PENDING: 'Cancelamento pendente',
+  FAILED: 'Não saiu',
+  CANCEL_PENDING: 'Cancelando',
   CANCEL_FAILED: 'Cancelamento recusado',
   CANCELLED: 'Cancelada',
   SUBSTITUTED: 'Substituída',
@@ -41,6 +41,103 @@ export function invoiceStatusLabel(status: string): string {
 
 export function invoiceStatusVariant(status: string): InvoiceBadgeVariant {
   return INVOICE_STATUS_VARIANTS[status] ?? 'muted'
+}
+
+/**
+ * O que aconteceu em cada evento da linha do tempo, escrito para gente (os tipos espelham os
+ * eventos gravados pelo @sistemazero/fiscal). Também nomeia os códigos que aparecem como motivo
+ * de um evento (`reason`, `racedFrom`) ou como erro das rotas da nota. Tipo desconhecido vira
+ * uma frase genérica (`invoiceEventLabel`); o código cru fica nos detalhes técnicos.
+ */
+export const INVOICE_EVENT_LABELS: Record<string, string> = {
+  SCHEDULED: 'Nota agendada para depois da garantia',
+  EMIT_ATTEMPT: 'Tentativa de emitir',
+  EMITTED: 'Nota emitida',
+  EMIT_FAILED: 'A emissão não deu certo',
+  EMIT_NOW_REQUESTED: 'Pedido para emitir agora',
+  RETRIED_BY_ADMIN: 'A equipe pediu para tentar de novo',
+  SKIPPED: 'Nota dispensada',
+  PDF_STORED: 'PDF guardado',
+  EMAIL_QUEUED: 'E-mail da nota a caminho',
+  CANCEL_REQUESTED: 'Pedido de cancelamento',
+  CANCELLED: 'Nota cancelada',
+  CANCEL_FAILED: 'Cancelamento recusado',
+  EMITTED_THEN_CANCEL_PENDING: 'Emitida e já em cancelamento (a venda foi estornada)',
+  SUBSTITUTION_REQUESTED: 'Pedido de substituição',
+  SUBSTITUTION_CREATED: 'Nota substituta criada',
+  SUBSTITUTED: 'Nota substituída',
+  SUBSTITUTE_ORIGINAL_NOT_EMITTED: 'A nota original ainda não tinha sido emitida',
+  // A venda foi estornada depois do prazo técnico de cancelamento: o fiscal só registra, e o
+  // cancelamento fica para a equipe fazer à mão.
+  CANCEL_REQUESTED_OUT_OF_WINDOW:
+    'Venda estornada depois do prazo para cancelar a nota: o cancelamento precisa ser feito à mão',
+  // A rota de substituição recusa uma segunda substituta para a mesma nota.
+  SUBSTITUTE_IN_PROGRESS: 'Já existe uma nota substituta a caminho para esta nota',
+  // Motivo de EMIT_FAILED: a substituta precisa da chave de acesso da original.
+  SUBSTITUTED_ORIGINAL_WITHOUT_KEY:
+    'A nota original não tem chave de acesso, então não dá para substituí-la',
+  // `racedFrom` de EMITTED_THEN_CANCEL_PENDING: o estorno chegou enquanto a substituta saía.
+  SUBSTITUTE_REFUND: 'A venda foi estornada enquanto a nota substituta era emitida',
+  // A rota do PDF: a nota não tem PDF guardado.
+  PDF_NOT_FOUND: 'O PDF desta nota não está disponível',
+}
+
+/** Frase para um evento que este painel ainda não conhece (o código vai nos detalhes técnicos). */
+export const UNKNOWN_INVOICE_EVENT_LABEL = 'Outra mudança registrada na nota'
+
+export function isKnownInvoiceEvent(type: string): boolean {
+  return Object.hasOwn(INVOICE_EVENT_LABELS, type)
+}
+
+export function invoiceEventLabel(type: string): string {
+  return isKnownInvoiceEvent(type)
+    ? (INVOICE_EVENT_LABELS[type] as string)
+    : UNKNOWN_INVOICE_EVENT_LABEL
+}
+
+/**
+ * O motivo de um evento em palavras, quando o detalhe traz um código conhecido (`reason` de
+ * EMIT_FAILED, `racedFrom` de EMITTED_THEN_CANCEL_PENDING). `null` quando não há motivo legível.
+ */
+export function invoiceEventReason(
+  detail: Record<string, unknown> | null | undefined,
+): string | null {
+  if (!detail) return null
+  for (const key of ['reason', 'racedFrom']) {
+    const value = detail[key]
+    if (typeof value === 'string' && isKnownInvoiceEvent(value)) {
+      return INVOICE_EVENT_LABELS[value] as string
+    }
+  }
+  return null
+}
+
+/**
+ * A frase do topo do detalhe quando a nota precisa de atenção: o que aconteceu, em palavras
+ * simples, e o que fazer. `null` quando a nota está bem. A resposta crua do emissor fica nos
+ * detalhes técnicos. `canAct` diz se quem olha tem os botões (Admin): para quem só lê, a frase
+ * não manda apertar o que não aparece e diz quem pode agir.
+ */
+export function invoiceProblemSummary(
+  inv: Pick<InvoiceView, 'status' | 'lastError' | 'attempts'>,
+  canAct: boolean,
+): string | null {
+  if (inv.status === 'FAILED') {
+    const what =
+      inv.attempts > 1
+        ? `A nota não saiu depois de ${inv.attempts} tentativas.`
+        : 'A nota não saiu.'
+    return canAct
+      ? `${what} Confira os dados de quem comprou e use "Tentar de novo".`
+      : `${what} Quem é Admin pode tentar de novo.`
+  }
+  if (inv.status === 'CANCEL_FAILED') {
+    const what = 'A prefeitura recusou o cancelamento. A nota continua valendo.'
+    return canAct
+      ? `${what} Confira o motivo e peça o cancelamento de novo.`
+      : `${what} Quem é Admin pode tentar de novo.`
+  }
+  return null
 }
 
 /**
@@ -141,7 +238,7 @@ export function isValidCancelReason(reason: string): boolean {
 const UUID_PART = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 const UUID_RE = new RegExp(`^${UUID_PART}$`, 'i')
 
-/** UUID canônico (8-4-4-4-12 hex) — formato do Payment ID da emissão manual. */
+/** UUID canônico (8-4-4-4-12 hex): formato do código da venda na emissão manual. */
 export function isValidUuid(value: string): boolean {
   return UUID_RE.test(value)
 }

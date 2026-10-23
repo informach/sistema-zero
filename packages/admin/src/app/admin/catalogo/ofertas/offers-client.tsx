@@ -22,7 +22,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
-import { StatusBadge } from '@/components/admin/status-badge'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type OfferItemDraft, OfferItemsEditor } from '@/components/catalog/offer-items-editor'
@@ -43,13 +43,13 @@ const LIMIT = 20
 const OFFER_STATUSES = ['draft', 'active', 'paused', 'archived']
 const PRICING_MODES = ['one_time', 'subscription'] as const
 const PRICING_MODE_LABELS: Record<string, string> = {
-  one_time: 'À vista (pagamento único)',
-  subscription: 'Assinatura (recorrente)',
+  one_time: 'À vista (paga uma vez)',
+  subscription: 'Assinatura (cobra todo período)',
 }
 
 const BILLING_INTERVALS = [
   { value: '1', label: 'Mensal (cobra todo mês)' },
-  { value: '12', label: 'Anual (cobra 1x ao ano)' },
+  { value: '12', label: 'Anual (cobra uma vez por ano)' },
 ] as const
 
 const ACCESS_MODE_LABELS: Record<AccessMode, string> = {
@@ -164,8 +164,8 @@ export function validateOfferAccessPolicyForm(input: AccessPolicyFormInput): {
   if (rawValue && !unit) errors.accessDurationUnit = 'Escolha dias ou meses.'
   if (!rawValue && unit) errors.accessDurationValue = 'Informe a duração do acesso.'
   if (input.status === 'active') {
-    if (!rawValue) errors.accessDurationValue = 'Oferta ativa exige a duração do acesso.'
-    if (!unit) errors.accessDurationUnit = 'Oferta ativa exige dias ou meses.'
+    if (!rawValue) errors.accessDurationValue = 'Para publicar, informe a duração do acesso.'
+    if (!unit) errors.accessDurationUnit = 'Para publicar, escolha dias ou meses.'
   }
   if (Object.keys(errors).length > 0) return { payload: null, errors }
 
@@ -221,6 +221,16 @@ function mergeOfferContent(
   return Object.keys(merged).length > 0 ? merged : null
 }
 
+/** Um grupo do formulário da oferta, com título (o formulário tem uns vinte campos). */
+function FormSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <fieldset className="flex min-w-0 flex-col gap-4 rounded-2xl border border-border p-4">
+      <legend className="px-1 font-display text-base font-bold">{title}</legend>
+      {children}
+    </fieldset>
+  )
+}
+
 export function OffersClient() {
   const [items, setItems] = useState<OfferListItem[]>([])
   const [total, setTotal] = useState(0)
@@ -267,7 +277,7 @@ export function OffersClient() {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar ofertas.')
+      toast.error((err as ApiError).message ?? 'As ofertas não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
@@ -361,7 +371,7 @@ export function OffersClient() {
     }
     confirm({
       title: 'Tornar o acesso vitalício?',
-      message: 'O prazo fixo preenchido será removido desta oferta.',
+      message: 'O prazo que você preencheu sai desta oferta.',
       confirmText: 'Tornar vitalício',
       onConfirm: () => applyAccessMode('lifetime'),
     })
@@ -394,11 +404,11 @@ export function OffersClient() {
   async function save() {
     const priceCents = reaisToCents(form.price)
     if (!form.name.trim() || Number.isNaN(priceCents)) {
-      toast.error('Informe nome e preço válidos.')
+      toast.error('Preencha o nome e um preço válido.')
       return
     }
     if (!editing && (!form.productId || !form.code.trim() || !form.slug.trim())) {
-      toast.error('Selecione produto e informe code/slug.')
+      toast.error('Escolha o produto e preencha o endereço e o código.')
       return
     }
     const compareAtCents = form.compareAt.trim() ? reaisToCents(form.compareAt) : null
@@ -406,20 +416,20 @@ export function OffersClient() {
     const accessPolicy = validateOfferAccessPolicyForm(form)
     if (!accessPolicy.payload) {
       setAccessErrors(accessPolicy.errors)
-      toast.error('Revise a política de acesso da oferta.')
+      toast.error('Confira o acesso da oferta, em Acesso e garantia.')
       return
     }
     setAccessErrors({})
     // Assinatura exige a periodicidade (o payments monta o plano Efí a partir dela).
     const billingIntervalMonths = isSubscription ? optInt(form.billingInterval) : null
     if (isSubscription && billingIntervalMonths == null) {
-      toast.error('Assinatura exige o intervalo de cobrança (mensal ou anual).')
+      toast.error('Na assinatura, escolha se cobra todo mês ou todo ano.')
       return
     }
     // Oferta irmã do alternador mensal↔anual (só faz sentido em assinatura).
     const altSlug = form.altOfferSlug.trim().toLowerCase()
     if (altSlug && !ALT_OFFER_SLUG_RE.test(altSlug)) {
-      toast.error('Slug da oferta alternativa inválido (use letras minúsculas, números e hífens).')
+      toast.error('O endereço da outra oferta só pode ter letras minúsculas, números e hífens.')
       return
     }
     const altLabel = form.altOfferLabel.trim()
@@ -473,7 +483,7 @@ export function OffersClient() {
       setOpen(false)
       await load()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível salvar.')
+      toast.error((err as ApiError).message ?? 'Não deu para salvar. Tente de novo.')
     } finally {
       setSaving(false)
     }
@@ -483,20 +493,35 @@ export function OffersClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Catálogo"
-        description="Produtos, ofertas e cupons da plataforma."
+        description="O produto é o que a pessoa ganha. A oferta é como ele é vendido: preço, forma e prazo. O cupom dá desconto em ofertas."
         action={
-          <Button onClick={openCreate} disabled={products.length === 0}>
-            <Plus className="size-4" /> Nova oferta
-          </Button>
+          <div className="flex flex-col items-end gap-1">
+            <Button
+              onClick={openCreate}
+              disabled={products.length === 0}
+              aria-describedby={products.length === 0 ? 'nova-oferta-motivo' : undefined}
+            >
+              <Plus className="size-4" aria-hidden /> Nova oferta
+            </Button>
+            {products.length === 0 ? (
+              <p id="nova-oferta-motivo" className="text-xs text-muted-foreground">
+                Crie um produto antes de criar uma oferta.
+              </p>
+            ) : null}
+          </div>
         }
       />
       <CatalogTabs />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <Input
-            placeholder="Buscar por nome, slug ou code…"
+            placeholder="Nome, endereço ou código"
+            aria-label="Buscar ofertas"
             value={q}
             onChange={(e) => {
               setOffset(0)
@@ -506,6 +531,7 @@ export function OffersClient() {
           />
         </div>
         <Select
+          aria-label="Situação"
           value={status}
           onChange={(e) => {
             setOffset(0)
@@ -513,10 +539,10 @@ export function OffersClient() {
           }}
           className="sm:w-44"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {OFFER_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {statusLabel(s, 'catalog')}
             </option>
           ))}
         </Select>
@@ -529,8 +555,8 @@ export function OffersClient() {
               <TableHead>Oferta</TableHead>
               <TableHead>Produto</TableHead>
               <TableHead>Preço</TableHead>
-              <TableHead>Disponível</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>À venda agora</TableHead>
+              <TableHead>Situação</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -540,7 +566,7 @@ export function OffersClient() {
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Nenhuma oferta encontrada.
+                  Nenhuma oferta com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -574,11 +600,16 @@ export function OffersClient() {
                     )}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={o.status} />
+                    <StatusBadge status={o.status} kind="catalog" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(o)}>
-                      <Pencil className="size-4" /> Editar
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEdit(o)}
+                      aria-label={`Editar ${o.name}`}
+                    >
+                      <Pencil className="size-4" aria-hidden /> Editar
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -594,7 +625,7 @@ export function OffersClient() {
         open={open}
         onClose={() => setOpen(false)}
         title={editing ? 'Editar oferta' : 'Nova oferta'}
-        description={editing ? editing.name : 'Cadastre uma oferta (preço) de um produto.'}
+        description={editing ? editing.name : 'Diga por quanto e como um produto é vendido.'}
         footer={
           <>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
@@ -607,121 +638,76 @@ export function OffersClient() {
           </>
         }
       >
-        <div className="flex flex-col gap-4">
-          {!editing ? (
-            <Field
-              label="Produto"
-              htmlFor="productId"
-              tooltip="O produto que esta oferta vende. Slug e code são gerados a partir dele + preço + modo."
-            >
-              <Select
-                id="productId"
-                value={form.productId}
-                onChange={(e) =>
-                  setForm((f) => withSuggestions({ ...f, productId: e.target.value }))
-                }
+        <div className="flex flex-col gap-6">
+          <FormSection title="O que está à venda">
+            {!editing ? (
+              <Field
+                label="Produto"
+                htmlFor="productId"
+                tooltip="O produto que esta oferta vende. O endereço e o código saem do produto, do preço e da forma de cobrança."
               >
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.sku})
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          ) : null}
-          <Field
-            label="Nome"
-            htmlFor="oname"
-            tooltip="Título da oferta exibido no painel e no funil (ex.: 'Oferta de lançamento')."
-          >
-            <Input
-              id="oname"
-              value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
+                <Select
+                  id="productId"
+                  value={form.productId}
+                  onChange={(e) =>
+                    setForm((f) => withSuggestions({ ...f, productId: e.target.value }))
+                  }
+                >
+                  {products.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            ) : null}
             <Field
-              label="Preço (R$)"
-              htmlFor="price"
-              tooltip="Preço cobrado no checkout. É o valor autoritativo desta oferta."
+              label="Nome"
+              htmlFor="oname"
+              tooltip="O título da oferta no painel e na página de vendas (ex.: 'Oferta de lançamento')."
             >
               <Input
-                id="price"
-                inputMode="decimal"
-                placeholder="37,00"
-                value={form.price}
-                onChange={(e) => setForm((f) => withSuggestions({ ...f, price: e.target.value }))}
+                id="oname"
+                value={form.name}
+                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
               />
             </Field>
+            {!editing ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Endereço"
+                  htmlFor="oslug"
+                  tooltip="A parte final do link de pagamento (ex.: /ofertas/no-comando-da-ia-97-a-vista). Sai do produto, do preço e da forma de cobrança, e dá para trocar antes de salvar. Depois de criada, não muda."
+                >
+                  <Input
+                    id="oslug"
+                    value={form.slug}
+                    onChange={(e) => {
+                      setSlugDirty(true)
+                      setForm((f) => ({ ...f, slug: e.target.value }))
+                    }}
+                  />
+                </Field>
+                <Field
+                  label="Código"
+                  htmlFor="code"
+                  tooltip="Um código interno da oferta, usado em relatórios e integrações. Quem compra não vê. Sai sozinho e não muda depois de criada."
+                >
+                  <Input
+                    id="code"
+                    value={form.code}
+                    onChange={(e) => {
+                      setCodeDirty(true)
+                      setForm((f) => ({ ...f, code: e.target.value }))
+                    }}
+                  />
+                </Field>
+              </div>
+            ) : null}
             <Field
-              label='Preço "de" (R$, opcional)'
-              htmlFor="compareAt"
-              tooltip="Preço cheio exibido riscado ao lado do preço real, para mostrar o desconto."
-            >
-              <Input
-                id="compareAt"
-                inputMode="decimal"
-                placeholder="97,00"
-                value={form.compareAt}
-                onChange={(e) => setForm((f) => ({ ...f, compareAt: e.target.value }))}
-              />
-            </Field>
-          </div>
-          {!editing ? (
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field
-                label="Slug"
-                htmlFor="oslug"
-                tooltip="Parte do link público de checkout (ex.: /ofertas/no-comando-da-ia-97-a-vista). Gerado de produto + preço + modo; edite antes de salvar se quiser outro. Não muda depois de criado."
-              >
-                <Input
-                  id="oslug"
-                  value={form.slug}
-                  onChange={(e) => {
-                    setSlugDirty(true)
-                    setForm((f) => ({ ...f, slug: e.target.value }))
-                  }}
-                />
-              </Field>
-              <Field
-                label="Code"
-                htmlFor="code"
-                tooltip="Identificador interno e estável da oferta (relatórios/integrações) — não aparece para o cliente. Gerado automaticamente; não muda depois de criado."
-              >
-                <Input
-                  id="code"
-                  value={form.code}
-                  onChange={(e) => {
-                    setCodeDirty(true)
-                    setForm((f) => ({ ...f, code: e.target.value }))
-                  }}
-                />
-              </Field>
-            </div>
-          ) : null}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Modo"
-              htmlFor="pricingMode"
-              tooltip="À vista: pagamento único. Assinatura: cobrança recorrente no cartão."
-            >
-              <Select
-                id="pricingMode"
-                value={form.pricingMode}
-                onChange={(e) => changePricingMode(e.target.value as PricingMode)}
-              >
-                {PRICING_MODES.map((m) => (
-                  <option key={m} value={m}>
-                    {PRICING_MODE_LABELS[m] ?? m}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field
-              label="Status"
+              label="Situação"
               htmlFor="ostatus"
-              tooltip="draft: não vende ainda. active: à venda. paused: venda suspensa. archived: encerrada (sem volta)."
+              tooltip="Rascunho: ainda não vende. Publicado: à venda. Pausado: a venda para por um tempo. Arquivado: encerrada de vez."
             >
               <Select
                 id="ostatus"
@@ -730,115 +716,100 @@ export function OffersClient() {
               >
                 {OFFER_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {statusLabel(s, 'catalog')}
                   </option>
                 ))}
               </Select>
             </Field>
-          </div>
-          {form.pricingMode === 'subscription' ? (
-            <Field
-              label="Acesso"
-              htmlFor="accessMode"
-              hint="Assinaturas mantêm o acesso enquanto os ciclos pagos estiverem ativos."
-            >
-              <Input id="accessMode" value={ACCESS_MODE_LABELS.billing_cycle} disabled readOnly />
-            </Field>
-          ) : (
-            <Field
-              label="Acesso"
-              htmlFor="accessMode"
-              error={accessErrors.accessMode}
-              tooltip="Vitalício não vence. Prazo fixo começa na aprovação do pagamento e pode ser definido em dias ou meses."
-            >
-              <Select
-                id="accessMode"
-                value={form.accessMode}
-                onChange={(e) => changeAccessMode(e.target.value as AccessMode | '')}
-              >
-                <option value="">Escolha…</option>
-                <option value="lifetime">Vitalício</option>
-                <option value="fixed">Prazo fixo</option>
-              </Select>
-            </Field>
-          )}
-          {form.pricingMode === 'one_time' && form.accessMode === 'fixed' ? (
+          </FormSection>
+
+          <FormSection title="Preço e cobrança">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
-                label="Duração do acesso"
-                htmlFor="accessDurationValue"
-                error={accessErrors.accessDurationValue}
-                hint={
-                  form.status === 'active'
-                    ? 'Obrigatória para uma oferta ativa.'
-                    : 'Pode ficar vazia enquanto a oferta estiver em rascunho ou pausada.'
-                }
+                label="Preço (R$)"
+                htmlFor="price"
+                tooltip="O valor cobrado no pagamento. É este preço que vale."
               >
                 <Input
-                  id="accessDurationValue"
-                  type="number"
-                  min={1}
-                  step={1}
-                  inputMode="numeric"
-                  placeholder="Ex.: 30"
-                  value={form.accessDurationValue}
-                  onChange={(e) => {
-                    setAccessErrors((errors) => ({ ...errors, accessDurationValue: undefined }))
-                    setForm((current) => ({
-                      ...current,
-                      accessDurationValue: e.target.value,
-                    }))
-                  }}
+                  id="price"
+                  inputMode="decimal"
+                  placeholder="37,00"
+                  value={form.price}
+                  onChange={(e) => setForm((f) => withSuggestions({ ...f, price: e.target.value }))}
                 />
               </Field>
               <Field
-                label="Unidade"
-                htmlFor="accessDurationUnit"
-                error={accessErrors.accessDurationUnit}
+                label='Preço "de" (R$, opcional)'
+                htmlFor="compareAt"
+                tooltip="O preço cheio, que aparece riscado ao lado do preço de verdade para mostrar o desconto."
               >
-                <Select
-                  id="accessDurationUnit"
-                  value={form.accessDurationUnit}
-                  onChange={(e) => {
-                    setAccessErrors((errors) => ({ ...errors, accessDurationUnit: undefined }))
-                    setForm((current) => ({
-                      ...current,
-                      accessDurationUnit: e.target.value as AccessDurationUnit,
-                    }))
-                  }}
-                >
-                  <option value="">Escolha…</option>
-                  <option value="days">Dias</option>
-                  <option value="months">Meses</option>
-                </Select>
+                <Input
+                  id="compareAt"
+                  inputMode="decimal"
+                  placeholder="97,00"
+                  value={form.compareAt}
+                  onChange={(e) => setForm((f) => ({ ...f, compareAt: e.target.value }))}
+                />
               </Field>
             </div>
-          ) : null}
-          {form.pricingMode === 'subscription' ? (
-            <>
+            <div className="grid gap-4 sm:grid-cols-2">
               <Field
-                label="Intervalo de cobrança"
-                htmlFor="billingInterval"
-                tooltip="Periodicidade da assinatura: mensal cobra todo mês, anual cobra 1x ao ano. Obrigatório para vender assinatura."
+                label="Forma de cobrança"
+                htmlFor="pricingMode"
+                tooltip="À vista: paga uma vez. Assinatura: cobra de novo no cartão a cada período."
               >
                 <Select
-                  id="billingInterval"
-                  value={form.billingInterval}
-                  onChange={(e) => setForm((f) => ({ ...f, billingInterval: e.target.value }))}
+                  id="pricingMode"
+                  value={form.pricingMode}
+                  onChange={(e) => changePricingMode(e.target.value as PricingMode)}
                 >
-                  <option value="">Selecione…</option>
-                  {BILLING_INTERVALS.map((i) => (
-                    <option key={i.value} value={i.value}>
-                      {i.label}
+                  {PRICING_MODES.map((m) => (
+                    <option key={m} value={m}>
+                      {PRICING_MODE_LABELS[m] ?? m}
                     </option>
                   ))}
                 </Select>
               </Field>
+              {form.pricingMode === 'subscription' ? (
+                <Field
+                  label="De quanto em quanto tempo cobra"
+                  htmlFor="billingInterval"
+                  tooltip="Mensal cobra todo mês, anual cobra uma vez por ano. Precisa escolher para vender assinatura."
+                >
+                  <Select
+                    id="billingInterval"
+                    value={form.billingInterval}
+                    onChange={(e) => setForm((f) => ({ ...f, billingInterval: e.target.value }))}
+                  >
+                    <option value="">Escolha</option>
+                    {BILLING_INTERVALS.map((i) => (
+                      <option key={i.value} value={i.value}>
+                        {i.label}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+              ) : (
+                <Field
+                  label="Até quantas parcelas (opcional)"
+                  htmlFor="installments"
+                  tooltip="O máximo de parcelas no cartão. Vazio usa o padrão da página de pagamento."
+                >
+                  <Input
+                    id="installments"
+                    inputMode="numeric"
+                    value={form.installmentsMax}
+                    onChange={(e) => setForm((f) => ({ ...f, installmentsMax: e.target.value }))}
+                  />
+                </Field>
+              )}
+            </div>
+            {form.pricingMode === 'subscription' ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
-                  label="Oferta alternativa (slug, opcional)"
+                  label="Endereço da outra oferta (opcional)"
                   htmlFor="altOfferSlug"
-                  tooltip="Slug da oferta IRMÃ do alternador mensal↔anual no checkout (ex.: a mensal aponta a anual). Preencha nos DOIS sentidos, um em cada oferta."
+                  tooltip="O endereço da oferta par para a troca entre mensal e anual na página de pagamento (ex.: a mensal aponta para a anual). Preencha nas duas ofertas, uma apontando para a outra."
                 >
                   <Input
                     id="altOfferSlug"
@@ -848,9 +819,9 @@ export function OffersClient() {
                   />
                 </Field>
                 <Field
-                  label="Texto do alternador (opcional)"
+                  label="Texto da troca (opcional)"
                   htmlFor="altOfferLabel"
-                  tooltip="Texto exibido no alternador do checkout (ex.: 'Economize no anual'). Vazio = texto padrão."
+                  tooltip="O texto do botão de troca na página de pagamento (ex.: 'Economize no anual'). Vazio usa o texto padrão."
                 >
                   <Input
                     id="altOfferLabel"
@@ -860,27 +831,92 @@ export function OffersClient() {
                   />
                 </Field>
               </div>
-            </>
-          ) : null}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {form.pricingMode !== 'subscription' ? (
+            ) : null}
+          </FormSection>
+
+          <FormSection title="Acesso e garantia">
+            {form.pricingMode === 'subscription' ? (
               <Field
-                label="Máx. parcelas (opcional)"
-                htmlFor="installments"
-                tooltip="Máximo de parcelas no cartão. Vazio = padrão do checkout."
+                label="Acesso"
+                htmlFor="accessMode"
+                hint="Na assinatura, o acesso dura enquanto as cobranças estiverem em dia."
               >
-                <Input
-                  id="installments"
-                  inputMode="numeric"
-                  value={form.installmentsMax}
-                  onChange={(e) => setForm((f) => ({ ...f, installmentsMax: e.target.value }))}
-                />
+                <Input id="accessMode" value={ACCESS_MODE_LABELS.billing_cycle} disabled readOnly />
               </Field>
+            ) : (
+              <Field
+                label="Acesso"
+                htmlFor="accessMode"
+                error={accessErrors.accessMode}
+                tooltip="Vitalício não vence. O prazo fixo começa quando o pagamento é aprovado e pode ser em dias ou meses."
+              >
+                <Select
+                  id="accessMode"
+                  value={form.accessMode}
+                  onChange={(e) => changeAccessMode(e.target.value as AccessMode | '')}
+                >
+                  <option value="">Escolha</option>
+                  <option value="lifetime">Vitalício</option>
+                  <option value="fixed">Prazo fixo</option>
+                </Select>
+              </Field>
+            )}
+            {form.pricingMode === 'one_time' && form.accessMode === 'fixed' ? (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label="Duração do acesso"
+                  htmlFor="accessDurationValue"
+                  error={accessErrors.accessDurationValue}
+                  hint={
+                    form.status === 'active'
+                      ? 'Precisa preencher para publicar.'
+                      : 'Pode ficar vazia enquanto a oferta é rascunho ou está pausada.'
+                  }
+                >
+                  <Input
+                    id="accessDurationValue"
+                    type="number"
+                    min={1}
+                    step={1}
+                    inputMode="numeric"
+                    placeholder="Ex.: 30"
+                    value={form.accessDurationValue}
+                    onChange={(e) => {
+                      setAccessErrors((errors) => ({ ...errors, accessDurationValue: undefined }))
+                      setForm((current) => ({
+                        ...current,
+                        accessDurationValue: e.target.value,
+                      }))
+                    }}
+                  />
+                </Field>
+                <Field
+                  label="Em dias ou meses"
+                  htmlFor="accessDurationUnit"
+                  error={accessErrors.accessDurationUnit}
+                >
+                  <Select
+                    id="accessDurationUnit"
+                    value={form.accessDurationUnit}
+                    onChange={(e) => {
+                      setAccessErrors((errors) => ({ ...errors, accessDurationUnit: undefined }))
+                      setForm((current) => ({
+                        ...current,
+                        accessDurationUnit: e.target.value as AccessDurationUnit,
+                      }))
+                    }}
+                  >
+                    <option value="">Escolha</option>
+                    <option value="days">Dias</option>
+                    <option value="months">Meses</option>
+                  </Select>
+                </Field>
+              </div>
             ) : null}
             <Field
               label="Garantia (dias, opcional)"
               htmlFor="guarantee"
-              tooltip="Dias de garantia/reembolso prometidos na página de venda."
+              tooltip="Quantos dias de garantia a página de vendas promete. A nota fiscal sai quando a garantia acaba."
             >
               <Input
                 id="guarantee"
@@ -889,31 +925,34 @@ export function OffersClient() {
                 onChange={(e) => setForm((f) => ({ ...f, guaranteeDays: e.target.value }))}
               />
             </Field>
-          </div>
-          <Field
-            label="Quantidade de perfis (plataforma Kids)"
-            htmlFor="maxProfiles"
-            tooltip="Quantos perfis de criança (estilo Netflix) ESTA oferta libera. O responsável cria até esse número de perfis. Deixe VAZIO fora da plataforma Kids. Inteiro de 1 a 50."
-          >
-            <Input
-              id="maxProfiles"
-              inputMode="numeric"
-              placeholder="Ex.: 2 (vazio = sem limite de perfis)"
-              value={form.maxProfiles}
-              onChange={(e) => setForm((f) => ({ ...f, maxProfiles: e.target.value }))}
-            />
-          </Field>
-          <Field
-            label="Bônus / Itens extras"
-            tooltip="Produtos entregues junto com o principal, só nesta oferta (ex.: planilha bônus). Quem compra recebe acesso a tudo."
-          >
-            <OfferItemsEditor
-              products={products}
-              value={form.items}
-              onChange={(items) => setForm((f) => ({ ...f, items }))}
-              mainProductId={form.productId}
-            />
-          </Field>
+          </FormSection>
+
+          <FormSection title="Extras">
+            <Field
+              label="Perfis de criança (Comunidade dos Criadores)"
+              htmlFor="maxProfiles"
+              tooltip="Quantos perfis de criança esta oferta libera. O responsável cria até esse número. Deixe vazio fora da Comunidade dos Criadores. Um número de 1 a 50."
+            >
+              <Input
+                id="maxProfiles"
+                inputMode="numeric"
+                placeholder="Ex.: 2 (vazio: sem limite de perfis)"
+                value={form.maxProfiles}
+                onChange={(e) => setForm((f) => ({ ...f, maxProfiles: e.target.value }))}
+              />
+            </Field>
+            <Field
+              label="Bônus"
+              tooltip="Produtos que vêm junto com o principal, só nesta oferta (ex.: uma planilha de presente). Quem compra ganha tudo."
+            >
+              <OfferItemsEditor
+                products={products}
+                value={form.items}
+                onChange={(items) => setForm((f) => ({ ...f, items }))}
+                mainProductId={form.productId}
+              />
+            </Field>
+          </FormSection>
         </div>
       </Dialog>
       {confirmDialog}

@@ -42,7 +42,7 @@ export function PensaFunnelCard() {
       })
       .catch((cause) => {
         if (alive)
-          setError((cause as ApiError)?.message ?? 'Não foi possível carregar o funil do Pensa.')
+          setError((cause as ApiError)?.message ?? 'O funil do Pensa não carregou. Tente de novo.')
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -98,7 +98,7 @@ export function PensaFunnelCard() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Etapa</TableHead>
+                  <TableHead>Passo no Pensa</TableHead>
                   <TableHead className="text-right">Jogos</TableHead>
                   <TableHead className="text-right">Dos que começaram</TableHead>
                   <TableHead className="text-right">Pararam antes</TableHead>

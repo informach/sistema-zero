@@ -20,7 +20,7 @@ import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso, dateInputToSaoPauloStartOfDayIso } from '@/lib/dates'
 import { formatDate } from '@/lib/format'
-import type { AuditLogPage } from '@/lib/types'
+import { type AuditLogPage, roleLabel } from '@/lib/types'
 
 const LIMIT = 50
 const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
@@ -28,19 +28,43 @@ const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0
 /** Rótulos PT das ações auditadas (id da rota do gateway → texto). */
 const ACTION_LABELS: Record<string, string> = {
   'members-admin-grant': 'Concedeu acesso',
-  'members-admin-entitlement-manage': 'Gerenciou matrícula',
-  'members-admin-certificate-revoke': 'Revogou certificado',
-  'payments-admin-refund': 'Estornou pagamento',
-  'payments-admin-subscription-cancel': 'Cancelou assinatura',
-  'auth-admin-user-create': 'Criou usuário',
-  'auth-admin-user-update': 'Editou usuário',
-  'auth-admin-user-impersonate': 'Entrou como (suporte)',
+  'members-admin-entitlement-manage': 'Mudou um acesso',
+  'members-admin-certificate-revoke': 'Tirou um certificado',
+  'payments-admin-refund': 'Estornou uma venda',
+  'payments-admin-subscription-cancel': 'Cancelou uma assinatura',
+  'auth-admin-user-create': 'Criou uma conta',
+  'auth-admin-user-update': 'Editou uma conta',
+  'auth-admin-user-impersonate': 'Entrou como a pessoa (suporte)',
 }
 
 const ACTION_OPTIONS = Object.entries(ACTION_LABELS)
 
+/** A área de uma ação sem rótulo, pelo serviço no começo do id da rota do gateway. */
+const ACTION_AREAS: Record<string, string> = {
+  members: 'Alunos',
+  payments: 'Vendas',
+  auth: 'Contas',
+  catalog: 'Catálogo',
+  referrals: 'Campanhas',
+  fiscal: 'Notas fiscais',
+  nfse: 'Notas fiscais',
+  helpdesk: 'Atendimento',
+  hub: 'Clube e Comunidade',
+}
+
+/** O rótulo da ação; sem rótulo, diz ao menos a área (o id cru fica nos detalhes técnicos). */
 function actionLabel(action: string): string {
-  return ACTION_LABELS[action] ?? action
+  const known = ACTION_LABELS[action]
+  if (known) return known
+  const area = ACTION_AREAS[action.split('-')[0] ?? '']
+  return area ? `Outra ação em ${area}` : 'Outra ação da equipe'
+}
+
+/** O resultado em palavras: o código HTTP fica no `title` e nos detalhes técnicos. */
+function resultOf(status: number): { label: string; variant: 'success' | 'destructive' | 'muted' } {
+  if (status >= 200 && status < 300) return { label: 'Deu certo', variant: 'success' }
+  if (status >= 400) return { label: 'Recusado', variant: 'destructive' }
+  return { label: 'Sem resposta final', variant: 'muted' }
 }
 
 export function AuditoriaClient() {
@@ -71,13 +95,13 @@ export function AuditoriaClient() {
     try {
       setData(await apiGet<AuditLogPage>(`/api/admin/audit?${params.toString()}`))
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar a auditoria.')
+      toast.error((err as ApiError).message ?? 'A auditoria não carregou. Tente de novo.')
     } finally {
       setLoading(false)
     }
   }, [offset, action, actorId, targetId, from, to])
 
-  // Debounce: digitar nos filtros de texto (ator/alvo) não dispara um request por tecla.
+  // Debounce: digitar nos filtros de texto (quem fez/sobre quem) não dispara um request por tecla.
   useEffect(() => {
     const t = setTimeout(load, 250)
     return () => clearTimeout(t)
@@ -97,7 +121,7 @@ export function AuditoriaClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Auditoria"
-        description="Trilha de ações administrativas: quem fez o quê, quando e de onde."
+        description="Tudo o que a equipe fez no admin: quem, o quê, quando e de onde. Nada aqui pode ser editado."
       />
 
       <Card className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
@@ -113,31 +137,33 @@ export function AuditoriaClient() {
           </Select>
         </label>
         <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground text-xs">Ator (id)</span>
+          <span className="text-muted-foreground text-xs">Quem fez (ID da conta)</span>
           <Input
             value={actorId}
             onChange={(e) => resetTo(setActorId, e.target.value)}
-            placeholder="uuid do admin"
+            placeholder="Cole o ID da conta"
             aria-invalid={actorIdInvalid}
           />
           {actorIdInvalid ? (
-            <span className="text-destructive text-xs">Informe o UUID completo para filtrar.</span>
+            <span className="text-destructive text-xs">
+              Cole o ID inteiro da conta (36 letras e números com hífens) para filtrar.
+            </span>
           ) : null}
         </label>
         <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground text-xs">Alvo (id)</span>
+          <span className="text-muted-foreground text-xs">Sobre quem (ID)</span>
           <Input
             value={targetId}
             onChange={(e) => resetTo(setTargetId, e.target.value)}
-            placeholder="uuid afetado"
+            placeholder="Cole o ID da conta ou do item"
           />
         </label>
         <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground text-xs">De</span>
+          <span className="text-muted-foreground text-xs">Desde o dia</span>
           <Input type="date" value={from} onChange={(e) => resetTo(setFrom, e.target.value)} />
         </label>
         <label className="space-y-1 text-sm">
-          <span className="text-muted-foreground text-xs">Até</span>
+          <span className="text-muted-foreground text-xs">Até o dia</span>
           <Input type="date" value={to} onChange={(e) => resetTo(setTo, e.target.value)} />
         </label>
       </Card>
@@ -147,11 +173,11 @@ export function AuditoriaClient() {
           <TableHeader>
             <TableRow>
               <TableHead>Quando</TableHead>
-              <TableHead>Ator</TableHead>
-              <TableHead>Ação</TableHead>
-              <TableHead>Alvo</TableHead>
+              <TableHead>Quem fez</TableHead>
+              <TableHead>O quê</TableHead>
+              <TableHead>Sobre quem</TableHead>
               <TableHead>Resultado</TableHead>
-              <TableHead>IP</TableHead>
+              <TableHead>De onde (IP)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -160,7 +186,7 @@ export function AuditoriaClient() {
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Nenhum registro de auditoria.
+                  Nada registrado com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -172,30 +198,34 @@ export function AuditoriaClient() {
                   <TableCell>
                     <div className="font-medium">{it.actorEmail ?? it.actorId}</div>
                     {it.actorRole ? (
-                      <div className="text-muted-foreground text-xs capitalize">{it.actorRole}</div>
+                      <div className="text-muted-foreground text-xs">{roleLabel(it.actorRole)}</div>
                     ) : null}
                     {it.impersonatorId ? (
-                      <div className="font-mono text-amber-600 text-xs dark:text-amber-500">
-                        via suporte: {it.impersonatorId}
+                      <div className="text-warning text-xs">
+                        Entrou como a pessoa, pelo suporte de{' '}
+                        <span className="font-mono">{it.impersonatorId}</span>
                       </div>
                     ) : null}
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{actionLabel(it.action)}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {it.method} {it.path}
-                    </div>
+                    <details className="mt-0.5 text-muted-foreground text-xs">
+                      <summary className="cursor-pointer">Detalhes técnicos</summary>
+                      <div className="mt-1 space-y-0.5 font-mono">
+                        <div>
+                          {it.method} {it.path}
+                        </div>
+                        <div>{it.action}</div>
+                        <div>HTTP {it.status}</div>
+                      </div>
+                    </details>
                   </TableCell>
                   <TableCell className="font-mono text-muted-foreground text-xs">
                     {it.targetId ?? '—'}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        it.status >= 400 ? 'destructive' : it.status < 300 ? 'success' : 'muted'
-                      }
-                    >
-                      {it.status}
+                    <Badge variant={resultOf(it.status).variant} title={`Código ${it.status}`}>
+                      {resultOf(it.status).label}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground text-xs">{it.ip ?? '—'}</TableCell>

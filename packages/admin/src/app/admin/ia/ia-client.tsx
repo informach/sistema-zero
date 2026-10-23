@@ -16,6 +16,7 @@ import { RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState } from '@/components/admin/empty-state'
 import { OverviewCard } from '@/components/admin/overview-card'
 import {
   type AiUsagePanelLoaders,
@@ -32,13 +33,13 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { AiUsageStatsView } from '@/lib/types'
 import { PensaFunnelCard } from './pensa-funnel-card'
 
-/** Rótulos amigáveis dos recursos que consomem IA (feature desconhecida = cru). */
+/** Rótulos amigáveis dos recursos que gastam créditos (feature desconhecida = cru). */
 const FEATURE_LABELS: Record<string, string> = {
-  'pensa-planning': 'Pensa — planejamento do jogo',
-  'pensa-help': 'Pensa — ajuda com o projeto',
-  'studio-describe': 'Mural — descrição do jogo',
-  'studio-zappy': 'Zappy do Studio',
-  'studio-builder': 'Construção no Studio Pro',
+  'pensa-planning': 'Pensa: planejamento do jogo',
+  'pensa-help': 'Pensa: ajuda com o projeto',
+  'studio-describe': 'Mural: descrição do jogo',
+  'studio-zappy': 'Zappy do Estúdio',
+  'studio-builder': 'Construção no Estúdio Pro',
 }
 
 interface PanelErrors {
@@ -101,15 +102,14 @@ export function AiUsageClient() {
       if (sequence !== loadSequence.current) return
       const nextErrors: PanelErrors = {}
       if (result.usage.status === 'fulfilled') setStats(result.usage.value)
-      else nextErrors.usage = panelError(result.usage, 'Falha ao carregar o consumo de IA.')
+      else nextErrors.usage = panelError(result.usage, 'O uso do Zappy e do Pensa não carregou.')
       if (result.metrics.status === 'fulfilled') setZappyMetrics(result.metrics.value)
-      else
-        nextErrors.metrics = panelError(result.metrics, 'Falha ao carregar as métricas do Zappy.')
+      else nextErrors.metrics = panelError(result.metrics, 'Os números do Zappy não carregaram.')
       if (result.knowledge.status === 'fulfilled') setKnowledge(result.knowledge.value)
       else
         nextErrors.knowledge = panelError(
           result.knowledge,
-          'Falha ao carregar a saúde da base do Zappy.',
+          'A situação da base do Zappy não carregou.',
         )
       setErrors(nextErrors)
     } finally {
@@ -147,7 +147,9 @@ export function AiUsageClient() {
       else toast.warning(notice.message)
       await load(month)
     } catch (error) {
-      toast.error((error as ApiError).message ?? 'Falha ao sincronizar a base do Zappy.')
+      toast.error(
+        (error as ApiError).message ?? 'A base do Zappy não foi atualizada. Tente de novo.',
+      )
     } finally {
       setBackfilling(false)
     }
@@ -156,8 +158,8 @@ export function AiUsageClient() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Uso de IA"
-        description="Interações por família e custos registrados das chamadas de IA do Estúdio."
+        title="Zappy e Pensa"
+        description="Quanto o Zappy e o Pensa foram usados, quanto custaram e onde as respostas não ajudaram. As famílias veem esse uso como créditos."
         action={
           <div className="flex items-center gap-2">
             <input
@@ -168,7 +170,7 @@ export function AiUsageClient() {
               className="h-9 rounded-md border border-input bg-background px-3 text-sm"
             />
             <Button variant="outline" onClick={() => load(month)} disabled={loading}>
-              {loading ? <Spinner /> : <RefreshCw className="size-4" />} Atualizar
+              {loading ? <Spinner /> : <RefreshCw className="size-4" aria-hidden />} Atualizar
             </Button>
           </div>
         }
@@ -178,35 +180,35 @@ export function AiUsageClient() {
 
       <div className="grid gap-4 sm:grid-cols-3">
         <OverviewCard
-          title="Interações no mês"
+          title="Pedidos no mês"
           value={fmt(stats?.monthUsed)}
-          description="Interações da franquia incluída"
+          description="Pedidos dentro dos créditos incluídos"
         />
-        <OverviewCard title="Hoje" value={fmt(stats?.todayUsed)} description="Interações do dia" />
+        <OverviewCard title="Hoje" value={fmt(stats?.todayUsed)} description="Pedidos de hoje" />
         <OverviewCard
-          title="Contas ativas"
+          title="Contas que usaram"
           value={fmt(stats?.accounts)}
-          description="Contas distintas que usaram IA no mês"
+          description="Contas diferentes que usaram o Zappy ou o Pensa no mês"
         />
       </div>
 
       {stats?.studioCosts && (
         <Card>
           <CardHeader>
-            <CardTitle>Custo de IA do Estúdio</CardTitle>
+            <CardTitle>Quanto custou no Estúdio</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="mb-3 text-muted-foreground text-sm">
-              Inclui reparos internos. Valores não confirmados preservam a estimativa da chamada;
-              reservas são liberadas ao encerrar ou expirar a operação. Os demais produtos ainda
-              aparecem somente nos contadores de interações.
+              Inclui os consertos internos. O valor não confirmado é a estimativa do pedido. O
+              reservado volta quando o pedido termina ou vence. Os outros produtos ainda aparecem só
+              na contagem de pedidos.
             </p>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Fonte / modelo</TableHead>
+                  <TableHead>Quem paga e modelo</TableHead>
                   <TableHead>Uso</TableHead>
-                  <TableHead>Chamadas</TableHead>
+                  <TableHead>Pedidos</TableHead>
                   <TableHead>Confirmado (US$)</TableHead>
                   <TableHead>Não confirmado (US$)</TableHead>
                   <TableHead>Reservado (US$)</TableHead>
@@ -216,12 +218,14 @@ export function AiUsageClient() {
                 {stats.studioCosts.map((row) => (
                   <TableRow key={`${row.source}:${row.model}:${row.purpose}:${row.privileged}`}>
                     <TableCell>
-                      {row.source === 'platform' ? 'Sistema Zero' : 'OpenRouter do responsável'}
+                      {row.source === 'platform'
+                        ? 'Sistema Zero'
+                        : 'Chave do responsável (OpenRouter)'}
                       <br />
                       {row.model}
                     </TableCell>
                     <TableCell>
-                      {row.purpose === 'tutor' ? 'Tutor' : 'Construtor'}
+                      {row.purpose === 'tutor' ? 'Ajuda (Zappy)' : 'Construção'}
                       {row.privileged ? ' · equipe' : ''}
                     </TableCell>
                     <TableCell>{row.calls}</TableCell>
@@ -248,7 +252,7 @@ export function AiUsageClient() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Por recurso</CardTitle>
+            <CardTitle>Onde foi usado</CardTitle>
           </CardHeader>
           <CardContent>
             {stats && stats.byFeature.length === 0 ? (
@@ -257,8 +261,8 @@ export function AiUsageClient() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Recurso</TableHead>
-                    <TableHead className="text-right">Interações</TableHead>
+                    <TableHead>Onde</TableHead>
+                    <TableHead className="text-right">Pedidos</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -278,7 +282,7 @@ export function AiUsageClient() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Top contas do mês</CardTitle>
+            <CardTitle>Contas que mais usaram no mês</CardTitle>
           </CardHeader>
           <CardContent>
             {stats && stats.topAccounts.length === 0 ? (
@@ -288,7 +292,7 @@ export function AiUsageClient() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Conta</TableHead>
-                    <TableHead className="text-right">Interações</TableHead>
+                    <TableHead className="text-right">Pedidos</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -322,17 +326,17 @@ export function AiUsageClient() {
       <Card>
         <CardHeader className="flex-row items-center justify-between gap-4">
           <div>
-            <CardTitle>Zappy do Studio</CardTitle>
+            <CardTitle>Zappy do Estúdio</CardTitle>
             <p className="mt-1 text-muted-foreground text-sm">
-              Métricas agregadas; a lista abaixo mostra SÓ perguntas com falha, redigidas e sem
-              identificar a criança ou o projeto.
+              Os números do mês. A lista de baixo mostra só as perguntas que não deram certo, com os
+              dados pessoais tirados e sem dizer qual criança ou projeto.
             </p>
           </div>
           <Button variant="outline" onClick={() => void backfill()} disabled={backfilling}>
-            {backfilling ? <Spinner /> : <RefreshCw className="size-4" />}{' '}
+            {backfilling ? <Spinner /> : <RefreshCw className="size-4" aria-hidden />}{' '}
             {backfilling
-              ? `Sincronizando… ${backfillProcessed.toLocaleString('pt-BR')}`
-              : 'Sincronizar base'}
+              ? `Atualizando… ${backfillProcessed.toLocaleString('pt-BR')}`
+              : 'Atualizar a base do Zappy'}
           </Button>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -342,27 +346,27 @@ export function AiUsageClient() {
             <OverviewCard
               title="Úteis"
               value={fmt(zappyMetrics?.useful)}
-              description={`${fmt(zappyMetrics?.notUseful)} marcadas como não úteis`}
+              description={`Em ${fmt(zappyMetrics?.notUseful)} a pessoa marcou que não ajudou`}
             />
             <OverviewCard
-              title="Recusas / contexto"
-              value={`${fmt(zappyMetrics?.refusals)} / ${fmt(zappyMetrics?.needsContext)}`}
+              title="Recusas e pedidos de contexto"
+              value={`${fmt(zappyMetrics?.refusals)} e ${fmt(zappyMetrics?.needsContext)}`}
             />
             <OverviewCard
-              title="Latência média"
+              title="Tempo médio de resposta"
               value={
                 zappyMetrics ? `${zappyMetrics.averageLatencyMs.toLocaleString('pt-BR')} ms` : '—'
               }
-              description={`${fmt(zappyMetrics?.quota)} quota · ${fmt(zappyMetrics?.errors)} erros · ${fmt(zappyMetrics?.rejected)} reprovadas`}
+              description={`${fmt(zappyMetrics?.quota)} sem crédito · ${fmt(zappyMetrics?.errors)} erros · ${fmt(zappyMetrics?.rejected)} reprovadas`}
             />
           </div>
           <PanelError>{errors.knowledge}</PanelError>
           <div className="grid gap-4 md:grid-cols-3">
             <div className="rounded-lg border border-border p-4">
-              <p className="font-medium">Fontes prontas</p>
+              <p className="font-medium">Materiais prontos</p>
               <p className="mt-1 text-2xl font-bold">{fmt(knowledge?.readySources)}</p>
               <p className="text-muted-foreground text-xs">
-                {fmt(knowledge?.pendingSources)} pendentes · {fmt(knowledge?.errorSources)} com erro
+                {fmt(knowledge?.pendingSources)} esperando · {fmt(knowledge?.errorSources)} com erro
               </p>
             </div>
             <div className="rounded-lg border border-border p-4">
@@ -377,7 +381,7 @@ export function AiUsageClient() {
               </p>
             </div>
             <div className="rounded-lg border border-border p-4">
-              <p className="font-medium">Cursos sem caderno</p>
+              <p className="font-medium">Cursos sem Passo a passo do projeto</p>
               <p className="mt-1 text-2xl font-bold">
                 {fmt(knowledge?.coursesWithoutStudentNotebook.length)}
               </p>
@@ -390,7 +394,7 @@ export function AiUsageClient() {
           </div>
           {knowledge?.failedSources.length ? (
             <div className="rounded-lg border border-destructive/40 bg-destructive/5 p-4">
-              <p className="font-medium text-destructive">Fontes que precisam de correção</p>
+              <p className="font-medium text-destructive">Materiais que precisam de correção</p>
               <ul className="mt-2 space-y-2 text-sm">
                 {knowledge.failedSources.slice(0, 8).map((source) => (
                   <li key={`${source.sourceType}:${source.sourceRef}`}>
@@ -415,9 +419,9 @@ export function AiUsageClient() {
 
 const FAILURE_FILTER_LABELS: Record<ZappyFailureFilter, string> = {
   all: 'Todas as falhas',
-  rejected: 'Reprovadas pela validação',
+  rejected: 'Reprovadas na conferência',
   error: 'Erros técnicos',
-  'not-useful': 'Marcadas com 👎',
+  'not-useful': 'A pessoa marcou que não ajudou',
 }
 
 const OUTCOME_LABELS: Record<string, string> = {
@@ -425,11 +429,11 @@ const OUTCOME_LABELS: Record<string, string> = {
   error: 'Erro',
   'needs-context': 'Pediu contexto',
   refusal: 'Recusa',
-  quota: 'Quota',
+  quota: 'Sem crédito',
   normal: 'Respondida',
 }
 
-/** Perguntas que o Zappy não conseguiu responder — o dado que faltava para
+/** Perguntas que o Zappy não conseguiu responder: o dado que faltava para
  *  melhorar o tutor. Redigidas na gravação; SEM identificar criança/projeto. */
 function ZappyFailedQuestionsCard({ month }: { month: string }) {
   const [filter, setFilter] = useState<ZappyFailureFilter>('all')
@@ -451,7 +455,7 @@ function ZappyFailedQuestionsCard({ month }: { month: string }) {
             : result,
         )
       } catch (cause) {
-        setError((cause as ApiError)?.message ?? 'Não foi possível carregar as perguntas.')
+        setError((cause as ApiError)?.message ?? 'As perguntas não carregaram. Tente de novo.')
       } finally {
         setLoading(false)
       }
@@ -469,8 +473,8 @@ function ZappyFailedQuestionsCard({ month }: { month: string }) {
         <div>
           <CardTitle>Perguntas que falharam</CardTitle>
           <p className="mt-1 text-muted-foreground text-sm">
-            O que as crianças perguntaram e o Zappy não conseguiu responder bem —{' '}
-            {page ? `${page.total.toLocaleString('pt-BR')} no mês` : '—'}.
+            O que as crianças perguntaram e o Zappy não conseguiu responder bem
+            {page ? `: ${page.total.toLocaleString('pt-BR')} no mês.` : '.'}
           </p>
         </div>
         <select
@@ -490,7 +494,12 @@ function ZappyFailedQuestionsCard({ month }: { month: string }) {
         <PanelError>{error ?? undefined}</PanelError>
         {loading && !page ? <Spinner /> : null}
         {page && page.items.length === 0 ? (
-          <p className="text-muted-foreground text-sm">Nenhuma falha neste mês. 🎉</p>
+          <EmptyState
+            zappy="celebrating"
+            title={
+              filter === 'all' ? 'Nenhuma falha neste mês.' : 'Nenhuma falha desse tipo neste mês.'
+            }
+          />
         ) : null}
         {page && page.items.length > 0 ? (
           <Table>
@@ -518,7 +527,11 @@ function ZappyFailedQuestionsCard({ month }: { month: string }) {
                   </TableCell>
                   <TableCell className="align-top">
                     <Badge variant="outline">{OUTCOME_LABELS[item.outcome] ?? item.outcome}</Badge>
-                    {item.useful === false ? <span className="ml-1">👎</span> : null}
+                    {item.useful === false ? (
+                      <Badge variant="muted" className="ml-1">
+                        Não ajudou
+                      </Badge>
+                    ) : null}
                   </TableCell>
                   <TableCell className="whitespace-nowrap align-top text-muted-foreground text-sm">
                     {new Date(item.createdAt).toLocaleString('pt-BR', {

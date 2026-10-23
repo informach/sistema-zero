@@ -51,28 +51,32 @@ export function DashboardCards() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <OverviewCard
-        title="Usuários"
+        title="Contas"
         value={fmt(totals.users)}
         icon={Users}
-        description="Contas cadastradas"
+        description="Responsáveis, alunos e equipe"
+        href="/admin/usuarios"
       />
       <OverviewCard
         title="Produtos"
         value={fmt(totals.products)}
         icon={Package}
-        description="No catálogo"
+        description="O que a pessoa ganha"
+        href="/admin/catalogo/produtos"
       />
       <OverviewCard
         title="Ofertas"
         value={fmt(totals.offers)}
         icon={CreditCard}
-        description="Unidades de venda"
+        description="Como cada produto é vendido"
+        href="/admin/catalogo/ofertas"
       />
       <OverviewCard
         title="Cupons"
         value={fmt(totals.coupons)}
         icon={TicketPercent}
-        description="Descontos cadastrados"
+        description="Descontos nas ofertas"
+        href="/admin/catalogo/cupons"
       />
     </div>
   )

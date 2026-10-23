@@ -22,15 +22,16 @@ const PERIODS = [
 ] as const
 
 const TOOLTIPS = {
-  net: 'Valor recebido no período (pagamentos confirmados) menos os estornos no período. Um estorno desconta no dia em que aconteceu — por isso um dia pode ficar negativo.',
+  net: 'O que entrou no período em pagamentos confirmados, menos os estornos do período. O estorno desconta no dia em que aconteceu, então um dia pode ficar negativo.',
   transactions:
-    'Cobranças criadas no período, em qualquer situação (pendentes, pagas, falhas…). Mostra o volume de entrada do funil.',
+    'Cobranças criadas no período, em qualquer situação: aguardando, pagas ou que não deram certo. Mostra quantas pessoas chegaram a pagar.',
   cancellations:
-    'Estornos/reembolsos no período (dinheiro devolvido ao comprador). Boleto/Pix expirados não contam — nunca houve pagamento.',
-  mrr: 'Receita recorrente mensal: soma do valor mensalizado das assinaturas ATIVAS agora (a anual entra com 1/12 do valor). Não depende do período selecionado.',
-  activeSubs: 'Assinaturas ativas agora, por periodicidade. Não depende do período selecionado.',
+    'Estornos no período, isto é, dinheiro devolvido a quem comprou. Pix e boleto que expiraram não contam, porque o pagamento nunca aconteceu.',
+  mrr: 'Quanto as assinaturas em dia rendem por mês, somadas agora. A anual entra com um doze avos do valor. Não muda com o período escolhido.',
+  activeSubs:
+    'Assinaturas em dia agora, separadas em mensais e anuais. Não muda com o período escolhido.',
   subsFlow:
-    'Assinaturas criadas e canceladas no período selecionado. Churn = canceladas ÷ (ativas + canceladas).',
+    'Assinaturas que começaram e que foram canceladas no período escolhido. A taxa de cancelamento é canceladas dividido por (em dia mais canceladas).',
 }
 
 function MetricCard({ title, value, tooltip }: { title: string; value: string; tooltip: string }) {
@@ -47,13 +48,16 @@ function MetricCard({ title, value, tooltip }: { title: string; value: string; t
   )
 }
 
-/** Seção "Gestão de vendas" (estilo Hotmart): filtros + cards + gráfico diário. */
+/** Seção "Vendas" (estilo Hotmart): filtros + cards + gráfico diário. */
 export function SalesPanel() {
   const [products, setProducts] = useState<ProductView[]>([])
   const [productId, setProductId] = useState('')
   const [period, setPeriod] = useState('30')
   const [data, setData] = useState<DailyPaymentStats | null>(null)
   const [subs, setSubs] = useState<SubscriptionStatsView | null>(null)
+  // A falha dos cards de assinatura aparece (não some calada): "não carregou" + tentar de novo.
+  const [subsError, setSubsError] = useState(false)
+  const [subsAttempt, setSubsAttempt] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
   const [chartOpen, setChartOpen] = useState(true)
@@ -92,8 +96,19 @@ export function SalesPanel() {
       .finally(() => {
         if (alive) setLoading(false)
       })
-    // Recorrência: MRR/ativas são "agora"; novas/canceladas usam a MESMA janela
-    // do período (não filtra por produto — assinatura é do catálogo todo).
+    return () => {
+      alive = false
+    }
+  }, [productId, period])
+
+  // Recorrência: MRR/ativas são "agora"; novas/canceladas usam a MESMA janela
+  // do período (não filtra por produto: assinatura é do catálogo todo).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: subsAttempt refaz a busca no "Tentar de novo".
+  useEffect(() => {
+    let alive = true
+    setSubsError(false)
+    const to = new Date()
+    const from = new Date(to.getTime() - Number(period) * 24 * 60 * 60 * 1000)
     apiGet<SubscriptionStatsView>(
       `/api/payments/stats/subscriptions?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`,
     )
@@ -101,18 +116,21 @@ export function SalesPanel() {
         if (alive) setSubs(stats)
       })
       .catch(() => {
-        // Cards de recorrência somem em falha — o painel de vendas segue útil.
-        if (alive) setSubs(null)
+        // Em falha os cards dizem que não carregaram; o painel de vendas segue útil.
+        if (alive) {
+          setSubs(null)
+          setSubsError(true)
+        }
       })
     return () => {
       alive = false
     }
-  }, [productId, period])
+  }, [period, subsAttempt])
 
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">Gestão de vendas</h2>
+        <h2 className="font-display text-xl font-bold tracking-tight">Vendas</h2>
         <Badge variant="outline">BRL</Badge>
       </div>
 
@@ -147,44 +165,68 @@ export function SalesPanel() {
       {error ? (
         <Card>
           <CardContent className="py-8 text-center text-sm text-muted-foreground">
-            Não foi possível carregar os dados de vendas. Tente novamente.
+            Os números de vendas não carregaram. Troque o período ou tente de novo em instantes.
           </CardContent>
         </Card>
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-3">
             <MetricCard
-              title="Faturamento líquido"
+              title="Recebido, menos estornos"
               value={loading || !data ? '—' : formatCentsStr(data.totals.netAmountInCents)}
               tooltip={TOOLTIPS.net}
             />
             <MetricCard
-              title="Transações"
+              title="Cobranças criadas"
               value={loading || !data ? '—' : String(data.totals.transactions)}
               tooltip={TOOLTIPS.transactions}
             />
             <MetricCard
-              title="Cancelamentos"
+              title="Estornos"
               value={loading || !data ? '—' : String(data.totals.cancellations)}
               tooltip={TOOLTIPS.cancellations}
             />
           </div>
 
-          {subs ? (
+          {subsError ? (
+            <div className="grid gap-4 sm:grid-cols-3">
+              {['Receita das assinaturas por mês', 'Assinaturas em dia', 'Novas e canceladas'].map(
+                (title) => (
+                  <Card key={title}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <p className="text-[15px] text-muted-foreground">não carregou</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSubsAttempt((n) => n + 1)}
+                      >
+                        Tentar de novo
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ),
+              )}
+            </div>
+          ) : subs ? (
             <div className="grid gap-4 sm:grid-cols-3">
               <MetricCard
-                title="MRR (assinaturas)"
+                title="Receita das assinaturas por mês"
                 value={formatCentsStr(subs.mrrCents)}
                 tooltip={TOOLTIPS.mrr}
               />
               <MetricCard
-                title="Assinaturas ativas"
-                value={`${subs.active.total} (${subs.active.monthly} mensais · ${subs.active.annual} anuais)`}
+                title="Assinaturas em dia"
+                value={`${subs.active.total}: ${subs.active.monthly} mensais e ${subs.active.annual} anuais`}
                 tooltip={TOOLTIPS.activeSubs}
               />
               <MetricCard
-                title="Novas × canceladas"
-                value={`${subs.newInWindow} × ${subs.canceledInWindow} (churn ${(subs.churnRate * 100).toFixed(1)}%)`}
+                title="Novas e canceladas"
+                value={`${subs.newInWindow} novas, ${subs.canceledInWindow} canceladas (${(subs.churnRate * 100).toFixed(1)}% cancelaram)`}
                 tooltip={TOOLTIPS.subsFlow}
               />
             </div>
@@ -193,12 +235,12 @@ export function SalesPanel() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium">
-                <ChartLine className="size-4 text-muted-foreground" />
+                <ChartLine className="size-4 text-muted-foreground" aria-hidden />
                 {data?.granularity === 'month'
-                  ? 'Desempenho mensal de vendas'
+                  ? 'Vendas por mês'
                   : data?.granularity === 'week'
-                    ? 'Desempenho semanal de vendas'
-                    : 'Desempenho diário de vendas'}
+                    ? 'Vendas por semana'
+                    : 'Vendas por dia'}
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => setChartOpen((v) => !v)}>
                 {chartOpen ? (

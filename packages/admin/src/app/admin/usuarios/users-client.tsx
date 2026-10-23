@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@sistemazero/ui/badge'
-import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { ConfirmDialog } from '@sistemazero/ui/confirm-dialog'
 import { Dialog } from '@sistemazero/ui/dialog'
@@ -29,18 +29,19 @@ import {
   Search,
   Trash2,
 } from 'lucide-react'
-import Link from 'next/link'
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
-import { StatusBadge } from '@/components/admin/status-badge'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso, dateInputToSaoPauloStartOfDayIso } from '@/lib/dates'
 import { formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { mapPool } from '@/lib/pool'
 import {
   type Paginated,
@@ -50,6 +51,7 @@ import {
   USER_STATUSES,
   type UserView,
 } from '@/lib/types'
+import { type RowActionItem, RowActionsMenu } from './row-actions-menu'
 
 const LIMIT = 20
 /** Mínimo de senha (client hint; o auth valida de verdade — PASSWORD_MIN_LENGTH). */
@@ -58,55 +60,6 @@ const PASSWORD_MIN = 10
 function roleVariant(role: string): 'default' | 'outline' | 'muted' {
   if (PRIVILEGED_ROLES.includes(role)) return 'default'
   return role === 'staff' ? 'outline' : 'muted'
-}
-
-/**
- * Ação por linha da tabela: botão SÓ com ícone + rótulo no hover (a coluna de ações
- * ficava cortada com 6 rótulos, ainda mais no mobile). Usa o tooltip NATIVO (`title`)
- * — o navegador o posiciona sozinho, então NUNCA é cortado pelo `overflow-x-auto` da
- * tabela (um balão CSS acima clipa na 1ª linha) e funciona em qualquer viewport; o
- * `aria-label` cobre o leitor de tela. `href` → Link; senão Button. Compacto = responsivo.
- */
-function RowAction({
-  label,
-  icon,
-  onClick,
-  href,
-  disabled,
-  destructive,
-}: {
-  label: string
-  icon: ReactNode
-  onClick?: () => void
-  href?: string
-  disabled?: boolean
-  destructive?: boolean
-}) {
-  if (href) {
-    return (
-      <Link
-        href={href}
-        title={label}
-        aria-label={label}
-        className={buttonVariants({ variant: 'ghost', size: 'icon' })}
-      >
-        {icon}
-      </Link>
-    )
-  }
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      title={label}
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className={destructive ? 'text-destructive hover:text-destructive' : undefined}
-    >
-      {icon}
-    </Button>
-  )
 }
 
 interface FormState {
@@ -136,13 +89,27 @@ const EMPTY_CREATE: CreateFormState = {
   platform: 'main',
 }
 
-/** Origens de cadastro conhecidas (filtro). `signupSource` é texto livre no auth. */
+/**
+ * Origens de cadastro conhecidas (filtro). `signupSource` é texto livre no auth: `funnel` vem
+ * da compra na página de vendas, `admin` do convite feito aqui, `web`/`mobile` do cadastro
+ * direto no site ou no app do celular.
+ */
 const SOURCE_OPTIONS = [
-  { value: 'funnel', label: 'Funil' },
-  { value: 'admin', label: 'Convite (admin)' },
-  { value: 'web', label: 'Web' },
-  { value: 'mobile', label: 'Mobile' },
+  { value: 'funnel', label: 'Página de vendas' },
+  { value: 'admin', label: 'Convite da equipe' },
+  { value: 'web', label: 'Site' },
+  { value: 'mobile', label: 'Celular' },
 ]
+
+/** As duas comunidades, com o nome que as famílias leem. `main` é a adulta no auth. */
+const COMMUNITY_OPTIONS = [
+  { value: 'main', label: COMMUNITY_NAMES.adult },
+  { value: 'kids', label: COMMUNITY_NAMES.kids },
+]
+
+function fullName(u: { firstName: string; lastName: string }): string {
+  return `${u.firstName} ${u.lastName}`.trim()
+}
 
 export function UsersClient({ currentUser }: { currentUser: { id: string; role: string } }) {
   const [items, setItems] = useState<UserView[]>([])
@@ -213,14 +180,14 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     if (!deletingUser) return
     try {
       await apiSend(`/api/admin/users/${deletingUser.id}`, 'DELETE')
-      toast.success('Usuário excluído.')
+      toast.success('Conta excluída.')
       setDeletingUser(null)
       await load()
     } catch (err) {
       // Mantém o modal aberto p/ nova tentativa idempotente. A preparação pode já
       // ter bloqueado a conta e alguma purga pode ter concluído, mas nenhum passo
       // volta a liberar escrita nem impede o retry seguro.
-      toast.error((err as ApiError).message ?? 'Não foi possível excluir o usuário.')
+      toast.error((err as ApiError).message ?? 'A conta não foi excluída. Tente de novo.')
     }
   }
   // admin só pode atribuir staff/customer (não promove a admin/superadmin).
@@ -245,7 +212,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar usuários.')
+      toast.error((err as ApiError).message ?? 'A lista de contas não carregou. Tente de novo.')
     } finally {
       setLoading(false)
     }
@@ -290,17 +257,17 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         changes.status = form.status
       }
       await apiSend(`/api/admin/users/${editing.id}`, 'PATCH', changes)
-      toast.success('Usuário atualizado.')
+      toast.success('Conta atualizada.')
       setOpen(false)
       await load()
     } catch (err) {
       const e = err as ApiError
       if (e.status === 409) {
-        toast.error('Registro alterado por outra operação. Recarregando…')
+        toast.error('Outra pessoa mudou esta conta agora. A lista vai recarregar.')
         setOpen(false)
         await load()
       } else {
-        toast.error(e.message ?? 'Não foi possível salvar.')
+        toast.error(e.message ?? 'Não deu para salvar. Tente de novo.')
       }
     } finally {
       setSaving(false)
@@ -327,10 +294,10 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         },
       )
       if (res.inviteSent) {
-        toast.success('Usuário criado. Convite enviado por e-mail.')
+        toast.success('Convite enviado por e-mail.')
       } else {
         toast.warning(
-          'Usuário criado, mas o convite NÃO foi enviado — peça para usar "esqueci minha senha".',
+          'A conta foi criada, mas o e-mail do convite não saiu. Peça para a pessoa usar "esqueci minha senha".',
         )
       }
       setCreateOpen(false)
@@ -339,7 +306,9 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     } catch (err) {
       const e = err as ApiError
       toast.error(
-        e.status === 409 ? 'E-mail já cadastrado.' : (e.message ?? 'Não foi possível criar.'),
+        e.status === 409
+          ? 'Esse e-mail já tem conta.'
+          : (e.message ?? 'O convite não saiu. Tente de novo.'),
       )
     } finally {
       setCreating(false)
@@ -361,13 +330,13 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         {},
       )
       window.open(impersonationUrl(res.communityUrl, res.token), '_blank', 'noopener,noreferrer')
-      toast.success(`Sessão de suporte aberta como ${u.firstName} ${u.lastName}.`)
+      toast.success(`Abrimos uma aba como ${fullName(u)}.`)
     } catch (err) {
       const e = err as ApiError
       toast.error(
         e.status === 403
-          ? 'Sem permissão para entrar como este usuário.'
-          : (e.message ?? 'Não foi possível iniciar a sessão de suporte.'),
+          ? 'Você não tem permissão para entrar como esta pessoa.'
+          : (e.message ?? 'Não deu para entrar como esta pessoa. Tente de novo.'),
       )
     } finally {
       setImpersonatingId(null)
@@ -397,10 +366,12 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       if (res.sent) {
         toast.success('Link de acesso reenviado por e-mail.')
       } else {
-        toast.warning('Não foi possível enviar o e-mail (conta inativa ou envio indisponível).')
+        toast.warning(
+          'O e-mail não saiu. A conta pode estar parada ou o envio está fora do ar agora.',
+        )
       }
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível reenviar o link.')
+      toast.error((err as ApiError).message ?? 'O link não foi reenviado. Tente de novo.')
     } finally {
       setResending(false)
     }
@@ -417,11 +388,11 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       await apiSend(`/api/admin/users/${accessUser.id}/set-password`, 'POST', {
         password: accessPassword,
       })
-      toast.success('Senha definida. As sessões do cliente foram encerradas.')
+      toast.success('Senha criada. A pessoa precisa entrar de novo em todos os aparelhos.')
       setAccessUser(null)
-      await load() // reflete "acesso pendente" → definido na listagem.
+      await load() // reflete "convite sem resposta" → definido na listagem.
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível definir a senha.')
+      toast.error((err as ApiError).message ?? 'A senha não foi criada. Tente de novo.')
     } finally {
       setSettingPassword(false)
     }
@@ -460,13 +431,16 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     )
     const skipped = selected.size - editable.length
     if (editable.length === 0) {
-      toast.error('Nenhum usuário elegível na seleção (sem permissão ou é você).')
+      toast.error('Nenhuma conta da seleção pode mudar: falta permissão ou é a sua.')
       return
     }
     const verb = targetStatus === 'suspended' ? 'Suspender' : 'Ativar'
     confirm({
-      title: `${verb} usuários`,
-      message: `${verb} ${editable.length} usuário(s) selecionado(s)?`,
+      title: `${verb} contas`,
+      message:
+        editable.length === 1
+          ? `${verb} 1 conta selecionada?`
+          : `${verb} ${editable.length} contas selecionadas?`,
       confirmText: verb,
       confirmVariant: targetStatus === 'suspended' ? 'destructive' : 'default',
       onConfirm: async () => {
@@ -485,11 +459,11 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           })
           const ok = results.filter((r) => r === 'ok').length
           const failed = results.length - ok
-          const parts = [`${ok} ${targetStatus === 'suspended' ? 'suspenso(s)' : 'ativado(s)'}`]
-          if (failed > 0) parts.push(`${failed} falhou(aram)`)
-          if (skipped > 0) parts.push(`${skipped} ignorado(s)`)
-          if (failed > 0) toast.warning(parts.join(' · '))
-          else toast.success(parts.join(' · '))
+          const parts = [`${ok} ${targetStatus === 'suspended' ? 'suspensas' : 'ativadas'}`]
+          if (failed > 0) parts.push(`${failed} não mudaram`)
+          if (skipped > 0) parts.push(`${skipped} ficaram de fora`)
+          if (failed > 0) toast.warning(`Contas: ${parts.join(', ')}.`)
+          else toast.success(`Contas: ${parts.join(', ')}.`)
           await load()
         } finally {
           setBulkBusy(false)
@@ -498,14 +472,73 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
     })
   }
 
+  /** O menu "Ações" de uma linha: as mesmas permissões dos antigos botões de ícone. */
+  function rowActions(u: UserView): RowActionItem[] {
+    const actions: RowActionItem[] = [
+      {
+        key: 'aluno',
+        label: 'Ver a ficha do aluno',
+        icon: <GraduationCap className="size-4" aria-hidden />,
+        href: `/admin/membros/${u.id}`,
+      },
+    ]
+    if (canWrite) {
+      actions.push({
+        key: 'conceder',
+        label: 'Conceder acesso',
+        icon: <KeyRound className="size-4" aria-hidden />,
+        onSelect: () => setGrantUserId(u.id),
+      })
+    }
+    if (canEdit(u) && u.id !== currentUser.id) {
+      actions.push({
+        key: 'acesso',
+        label: 'Acesso e senha',
+        icon: <LockKeyhole className="size-4" aria-hidden />,
+        onSelect: () => openAccess(u),
+      })
+    }
+    if (canImpersonate(currentUser, u)) {
+      actions.push({
+        key: 'entrar',
+        label: `Entrar como ${u.firstName || fullName(u)}`,
+        icon: impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" aria-hidden />,
+        disabled: impersonatingId === u.id,
+        onSelect: () => {
+          setImpersonatePlatform('main')
+          setImpersonateUser(u)
+        },
+      })
+    }
+    if (canEdit(u)) {
+      actions.push({
+        key: 'editar',
+        label: 'Editar conta',
+        icon: <Pencil className="size-4" aria-hidden />,
+        onSelect: () => openEdit(u),
+      })
+    }
+    if (canDelete(u)) {
+      actions.push({
+        key: 'excluir',
+        label: 'Excluir conta e dados',
+        icon: <Trash2 className="size-4" aria-hidden />,
+        destructive: true,
+        separatorBefore: true,
+        onSelect: () => askDelete(u),
+      })
+    }
+    return actions
+  }
+
   return (
     <div className="space-y-6">
       {confirmDialog}
       <ConfirmDialog
         open={deletingUser !== null}
         onClose={() => setDeletingUser(null)}
-        title="Excluir usuário"
-        confirmText="Excluir definitivamente"
+        title="Excluir conta"
+        confirmText="Excluir conta e dados"
         confirmVariant="destructive"
         confirmDisabled={
           deleteConfirm.trim().toLowerCase() !== (deletingUser?.email ?? '').toLowerCase()
@@ -513,16 +546,19 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         onConfirm={confirmDelete}
         message={
           <>
-            Esta ação é <strong className="text-foreground">irreversível</strong>. Apaga a conta{' '}
-            <strong className="text-foreground">{deletingUser?.email}</strong>, todos os perfis,
-            progresso, gamificação, certificados e dados de comunidade. Pagamentos e notas fiscais
-            são preservados.
+            Você vai apagar a conta de{' '}
+            <strong className="text-foreground">
+              {deletingUser ? fullName(deletingUser) : ''}
+            </strong>{' '}
+            ({deletingUser?.email}), com todos os perfis, o progresso, as conquistas, os
+            certificados e o que ela escreveu na comunidade. Pagamentos e notas fiscais ficam
+            guardados. <strong className="text-foreground">Não dá para desfazer.</strong>
           </>
         }
       >
         <div className="space-y-1.5">
           <label htmlFor="delete-confirm-email" className="font-medium text-foreground text-xs">
-            Para confirmar, digite o e-mail do usuário:
+            Para confirmar, digite o e-mail da conta:
           </label>
           <Input
             id="delete-confirm-email"
@@ -534,22 +570,22 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         </div>
       </ConfirmDialog>
       <AdminHeader
-        title="Usuários"
-        description="Gerencie contas, papéis e status (suspender/bloquear) da base."
+        title="Contas"
+        description="Todas as contas da casa: responsáveis, alunos e equipe. Aqui muda papel, situação e acesso."
         action={
-          canWrite ? (
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="size-4" /> Novo usuário
-            </Button>
-          ) : undefined
+          <Button onClick={() => setCreateOpen(true)} disabled={!canWrite}>
+            <Plus className="size-4" aria-hidden /> Convidar pessoa
+          </Button>
         }
       />
+      {canWrite ? null : <ReadOnlyNotice />}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nome ou e-mail…"
+            placeholder="Buscar por nome ou e-mail"
+            aria-label="Buscar por nome ou e-mail"
             value={q}
             onChange={(e) => {
               setOffset(0)
@@ -559,6 +595,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           />
         </div>
         <Select
+          aria-label="Papel"
           value={role}
           onChange={(e) => {
             setOffset(0)
@@ -574,6 +611,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           ))}
         </Select>
         <Select
+          aria-label="Situação"
           value={status}
           onChange={(e) => {
             setOffset(0)
@@ -581,10 +619,10 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           }}
           className="sm:w-44"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {USER_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {statusLabel(s, 'account')}
             </option>
           ))}
         </Select>
@@ -635,11 +673,12 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       {canWrite && selected.size > 0 ? (
         <Card className="flex flex-wrap items-center gap-2 p-3">
           <span className="text-sm">
-            <strong>{selected.size}</strong> selecionado(s)
+            <strong>{selected.size}</strong>{' '}
+            {selected.size === 1 ? 'conta selecionada' : 'contas selecionadas'}
           </span>
           <div className="ml-auto flex flex-wrap gap-2">
             <Button size="sm" disabled={bulkBusy} onClick={() => setBulkGrantOpen(true)}>
-              <KeyRound className="size-4" /> Conceder acesso
+              <KeyRound className="size-4" aria-hidden /> Conceder acesso
             </Button>
             <Button
               variant="outline"
@@ -658,7 +697,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
               Ativar
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setSelected(new Set())}>
-              Limpar
+              Limpar seleção
             </Button>
           </div>
         </Card>
@@ -672,17 +711,17 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                 <TableHead className="w-8">
                   <input
                     type="checkbox"
-                    aria-label="Selecionar todos nesta página"
+                    aria-label="Selecionar todas as contas desta página"
                     checked={allOnPageSelected}
                     onChange={toggleAllOnPage}
                     className="size-4 align-middle accent-[color:var(--primary)]"
                   />
                 </TableHead>
               ) : null}
-              <TableHead>Usuário</TableHead>
+              <TableHead>Conta</TableHead>
               <TableHead>Papel</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Criado em</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead>Desde</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -695,7 +734,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                   colSpan={canWrite ? 6 : 5}
                   className="py-10 text-center text-muted-foreground"
                 >
-                  Nenhum usuário encontrado.
+                  Nenhuma conta com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -705,7 +744,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                     <TableCell>
                       <input
                         type="checkbox"
-                        aria-label={`Selecionar ${u.firstName} ${u.lastName}`}
+                        aria-label={`Selecionar ${fullName(u)}`}
                         checked={selected.has(u.id)}
                         onChange={() => toggle(u.id)}
                         className="size-4 align-middle accent-[color:var(--primary)]"
@@ -720,13 +759,14 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                       ) : null}
                     </div>
                     <div className="text-xs text-muted-foreground">{u.email}</div>
-                    {u.passwordSet ? null : (
+                    {/* Só numa conta ATIVA: a conta pendente já diz "Ativação pendente". */}
+                    {u.passwordSet || u.status !== 'active' ? null : (
                       <Badge
                         variant="outline"
                         className="mt-1 border-amber-500/50 text-amber-600 dark:text-amber-400"
-                        title="A conta ainda não definiu a senha — o login por código fica bloqueado até o 1º acesso."
+                        title="A pessoa ainda não criou a senha. O login por código fica bloqueado até o primeiro acesso."
                       >
-                        Acesso pendente
+                        Convite sem resposta
                       </Badge>
                     )}
                   </TableCell>
@@ -734,59 +774,11 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                     <Badge variant={roleVariant(u.role)}>{ROLE_LABELS[u.role] ?? u.role}</Badge>
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={u.status} />
+                    <StatusBadge status={u.status} kind="account" />
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(u.createdAt)}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-0.5">
-                      {canWrite ? (
-                        <RowAction
-                          label="Conceder acesso a conteúdo (cortesia/teste)"
-                          icon={<KeyRound className="size-4" />}
-                          onClick={() => setGrantUserId(u.id)}
-                        />
-                      ) : null}
-                      <RowAction
-                        label="Ver matrículas do usuário"
-                        icon={<GraduationCap className="size-4" />}
-                        href={`/admin/membros/${u.id}`}
-                      />
-                      {canImpersonate(currentUser, u) ? (
-                        <RowAction
-                          label="Entrar como este usuário (suporte)"
-                          icon={
-                            impersonatingId === u.id ? <Spinner /> : <LogIn className="size-4" />
-                          }
-                          disabled={impersonatingId === u.id}
-                          onClick={() => {
-                            setImpersonatePlatform('main')
-                            setImpersonateUser(u)
-                          }}
-                        />
-                      ) : null}
-                      {canEdit(u) && u.id !== currentUser.id ? (
-                        <RowAction
-                          label="Acesso: reenviar link ou definir a senha"
-                          icon={<LockKeyhole className="size-4" />}
-                          onClick={() => openAccess(u)}
-                        />
-                      ) : null}
-                      {canEdit(u) ? (
-                        <RowAction
-                          label="Editar usuário"
-                          icon={<Pencil className="size-4" />}
-                          onClick={() => openEdit(u)}
-                        />
-                      ) : null}
-                      {canDelete(u) ? (
-                        <RowAction
-                          label="Excluir o usuário e todos os seus dados (irreversível)"
-                          icon={<Trash2 className="size-4" />}
-                          destructive
-                          onClick={() => askDelete(u)}
-                        />
-                      ) : null}
-                    </div>
+                    <RowActionsMenu label={`Ações para ${fullName(u)}`} items={rowActions(u)} />
                   </TableCell>
                 </TableRow>
               ))
@@ -800,8 +792,8 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title="Editar usuário"
-        description={editing?.email}
+        title="Editar conta"
+        description={editing ? `${fullName(editing)}, ${editing.email}` : undefined}
         footer={
           <>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
@@ -842,7 +834,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
             <Field
               label="Papel"
               htmlFor="role"
-              hint={isSelf ? 'Você não pode alterar o próprio papel.' : undefined}
+              hint={isSelf ? 'Você não pode mudar o próprio papel.' : undefined}
             >
               <Select
                 id="role"
@@ -858,9 +850,9 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
               </Select>
             </Field>
             <Field
-              label="Status"
+              label="Situação"
               htmlFor="ustatus"
-              hint={isSelf ? 'Você não pode alterar o próprio status.' : undefined}
+              hint={isSelf ? 'Você não pode mudar a situação da própria conta.' : undefined}
             >
               <Select
                 id="ustatus"
@@ -870,7 +862,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
               >
                 {USER_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {statusLabel(s, 'account')}
                   </option>
                 ))}
               </Select>
@@ -878,7 +870,8 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
           </div>
           {!isSelf && (form.status === 'suspended' || form.status === 'blocked') ? (
             <p className="text-xs text-muted-foreground">
-              Suspender/bloquear encerra as sessões ativas do usuário (não poderá renovar o acesso).
+              Suspender ou bloquear tira a pessoa de todos os aparelhos. Ela não consegue entrar de
+              novo enquanto a conta estiver assim.
             </p>
           ) : null}
         </div>
@@ -887,8 +880,8 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       <Dialog
         open={createOpen}
         onClose={() => setCreateOpen(false)}
-        title="Novo usuário"
-        description="Convite por e-mail: a pessoa recebe um link para definir a própria senha."
+        title="Convidar pessoa"
+        description="A pessoa recebe um e-mail com um link para criar a própria senha."
         footer={
           <>
             <Button variant="outline" onClick={() => setCreateOpen(false)} disabled={creating}>
@@ -896,7 +889,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
             </Button>
             <Button onClick={create} disabled={creating}>
               {creating ? <Spinner /> : null}
-              Criar e enviar convite
+              Enviar convite
             </Button>
           </>
         }
@@ -918,7 +911,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
               />
             </Field>
           </div>
-          <Field label="E-mail" htmlFor="c-email" hint="Destino do convite de definição de senha.">
+          <Field label="E-mail" htmlFor="c-email" hint="O convite vai para este e-mail.">
             <Input
               id="c-email"
               type="email"
@@ -949,17 +942,20 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
             </Field>
           </div>
           <Field
-            label="Plataforma do convite"
+            label="Comunidade"
             htmlFor="c-platform"
-            tooltip="Para onde o link do e-mail de convite aponta: a comunidade principal ou a plataforma Kids. Não muda a conta — só o destino do primeiro acesso."
+            tooltip="Em qual comunidade o link do convite abre. A conta é a mesma, muda só onde a pessoa entra pela primeira vez."
           >
             <Select
               id="c-platform"
               value={createForm.platform}
               onChange={(e) => setCreateForm((f) => ({ ...f, platform: e.target.value }))}
             >
-              <option value="main">Principal (comunidade)</option>
-              <option value="kids">Kids</option>
+              {COMMUNITY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
             </Select>
           </Field>
         </div>
@@ -968,10 +964,8 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
       <Dialog
         open={impersonateUser !== null}
         onClose={() => setImpersonateUser(null)}
-        title="Entrar como este usuário"
-        description={
-          impersonateUser ? `${impersonateUser.firstName} ${impersonateUser.lastName}` : undefined
-        }
+        title={impersonateUser ? `Entrar como ${fullName(impersonateUser)}` : 'Entrar como'}
+        description={impersonateUser?.email}
         footer={
           <>
             <Button variant="outline" onClick={() => setImpersonateUser(null)}>
@@ -982,24 +976,27 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                 if (impersonateUser) void impersonate(impersonateUser, impersonatePlatform)
               }}
             >
-              <LogIn className="size-4" /> Entrar
+              <LogIn className="size-4" aria-hidden /> Entrar
             </Button>
           </>
         }
       >
         <div className="flex flex-col gap-3">
           <p className="text-muted-foreground text-xs">
-            Abre uma sessão de suporte em nova aba, já logada como o usuário. Escolha a plataforma —
-            o Kids abre na grade de perfis das crianças.
+            Abre uma aba nova já entrando como esta pessoa, para você ver o que ela vê. Escolha a
+            comunidade: a dos Criadores abre na tela de perfis das crianças.
           </p>
-          <Field label="Plataforma" htmlFor="impersonate-platform">
+          <Field label="Comunidade" htmlFor="impersonate-platform">
             <Select
               id="impersonate-platform"
               value={impersonatePlatform}
               onChange={(e) => setImpersonatePlatform(e.target.value)}
             >
-              <option value="main">Comunidade (adulto)</option>
-              <option value="kids">Community Kids</option>
+              {COMMUNITY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
             </Select>
           </Field>
         </div>
@@ -1009,7 +1006,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         open={accessUser !== null}
         onClose={() => setAccessUser(null)}
         title="Acesso e senha"
-        description={accessUser?.email}
+        description={accessUser ? `${fullName(accessUser)}, ${accessUser.email}` : undefined}
         footer={
           <Button variant="outline" onClick={() => setAccessUser(null)}>
             Fechar
@@ -1019,40 +1016,44 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
         <div className="flex flex-col gap-5">
           {accessUser && !accessUser.passwordSet ? (
             <p className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-amber-700 text-xs dark:text-amber-300">
-              Esta conta ainda <strong>não definiu a senha</strong> (convite/compra pendente). O
-              login por código fica bloqueado até o primeiro acesso.
+              Esta pessoa <strong>ainda não criou a senha</strong>: o convite ou a compra ficou sem
+              resposta. O login por código fica bloqueado até o primeiro acesso.
             </p>
           ) : (
-            <p className="text-muted-foreground text-xs">Esta conta já definiu a própria senha.</p>
+            <p className="text-muted-foreground text-xs">Esta pessoa já criou a própria senha.</p>
           )}
 
           <div className="flex flex-col gap-2">
             <div className="font-medium text-sm">Reenviar link de acesso</div>
             <p className="text-muted-foreground text-xs">
-              Gera um novo link de primeiro acesso (vale 14 dias) e reenvia por e-mail. O cliente
-              define a própria senha.
+              Manda por e-mail um link novo de primeiro acesso, que vale 14 dias. A pessoa cria a
+              própria senha.
             </p>
             <div className="flex items-end gap-2">
-              <Field label="Plataforma" htmlFor="access-platform" className="flex-1">
+              <Field label="Comunidade" htmlFor="access-platform" className="flex-1">
                 <Select
                   id="access-platform"
                   value={accessPlatform}
                   onChange={(e) => setAccessPlatform(e.target.value)}
                 >
-                  <option value="main">Principal (comunidade)</option>
-                  <option value="kids">Kids</option>
+                  {COMMUNITY_OPTIONS.map((c) => (
+                    <option key={c.value} value={c.value}>
+                      {c.label}
+                    </option>
+                  ))}
                 </Select>
               </Field>
               <Button variant="outline" onClick={resendAccess} disabled={resending}>
-                {resending ? <Spinner /> : <Mail className="size-4" />} Reenviar link
+                {resending ? <Spinner /> : <Mail className="size-4" aria-hidden />} Reenviar link
               </Button>
             </div>
           </div>
 
           <div className="flex flex-col gap-2 border-t pt-4">
-            <div className="font-medium text-sm">Definir senha manualmente</div>
+            <div className="font-medium text-sm">Criar a senha pela pessoa</div>
             <p className="text-muted-foreground text-xs">
-              Você cria a senha e informa o cliente. As sessões atuais dele serão encerradas.
+              Você cria a senha e conta para a pessoa. Ela sai de todos os aparelhos e entra de novo
+              com a senha nova.
             </p>
             <Field label="Nova senha" htmlFor="access-password">
               <Input
@@ -1060,7 +1061,7 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                 type="text"
                 autoComplete="off"
                 value={accessPassword}
-                placeholder={`mínimo ${PASSWORD_MIN} caracteres`}
+                placeholder={`Pelo menos ${PASSWORD_MIN} caracteres`}
                 onChange={(e) => setAccessPassword(e.target.value)}
               />
             </Field>
@@ -1069,7 +1070,8 @@ export function UsersClient({ currentUser }: { currentUser: { id: string; role: 
                 onClick={submitSetPassword}
                 disabled={settingPassword || accessPassword.trim().length < PASSWORD_MIN}
               >
-                {settingPassword ? <Spinner /> : <LockKeyhole className="size-4" />} Definir senha
+                {settingPassword ? <Spinner /> : <LockKeyhole className="size-4" aria-hidden />}{' '}
+                Criar senha
               </Button>
             </div>
           </div>
