@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test'
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { COPY } from '../../../core/copy'
 import { structuredBytes } from '../../../core/structuredBytes'
-import { groupSceneNodes, setSceneNodeFlag } from '../../../scene/commands'
+import { addScenePrimitive, groupSceneNodes, setSceneNodeFlag } from '../../../scene/commands'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { indexSceneDocument } from '../../../scene/documentIndex'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
@@ -39,6 +39,42 @@ test('hierarchy multiselect stays readable when authoring groups is unavailable'
     expect(
       screen.getByRole('button', { name: COPY.scene.select('corpo') }).getAttribute('draggable'),
     ).toBe('false')
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
+test('o intervalo por Ctrl+clique chega às ações de várias peças da oficina', () => {
+  const source = addScenePrimitive(addScenePrimitive(fixture(), 'box', 'meio'), 'box', 'ponta')
+  const editor = createDocumentEditorStore({
+    asset: source,
+    sizeOf: structuredBytes,
+    persistence: { save: async () => undefined },
+    autosaveMs: 60_000,
+  })
+  const view = render(
+    <SceneWorkshop editor={editor} viewportFactory={sceneViewportProbe().factory} />,
+  )
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.addSelection }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }), {
+      ctrlKey: true,
+    })
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('ponta') }), {
+      ctrlKey: true,
+    })
+    for (const name of ['corpo', 'asa', 'meio', 'ponta']) {
+      expect(
+        screen.getByRole('button', { name: COPY.scene.select(name) }).getAttribute('aria-pressed'),
+      ).toBe('true')
+    }
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.group }))
+    const group = editor.getState().content.nodes.find((node) => node.kind === 'group')
+    expect(group).toBeDefined()
+    expect(
+      editor.getState().content.nodes.filter((node) => node.parentId === group?.id),
+    ).toHaveLength(4)
   } finally {
     view.unmount()
     editor.getState().dispose()

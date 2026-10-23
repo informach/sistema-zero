@@ -99,8 +99,8 @@ test('bbmodel UI reviews editable paint layers, revokes acceptance on choice cha
     fireEvent.click(screen.getByLabelText(copy.accept))
     fireEvent.click(confirm)
     const imported = editor.getState().asset
-    expect(imported.images[0]!.layers).toHaveLength(3)
-    expect(imported.images[0]!.layers[2]!.visible).toBe(false)
+    expect(imported.images.at(-1)!.layers).toHaveLength(3)
+    expect(imported.images.at(-1)!.layers[2]!.visible).toBe(false)
     expect(adopted).toBe(1)
     act(() => editor.getState().undo())
     expect(editor.getState().asset.images).toEqual(before.images)
@@ -201,8 +201,8 @@ test('bbmodel UI imports animated clips with reasons, playback, complete downloa
     fireEvent.click(screen.getByLabelText(copy.accept))
     fireEvent.click(confirm)
     const imported = editor.getState().asset
-    expect(imported.animations?.[0]?.fps).toBe(12)
-    expect(imported.animations).toHaveLength(1)
+    expect(imported.animations?.at(-1)?.fps).toBe(12)
+    expect(imported.animations).toHaveLength((before.animations?.length ?? 0) + 1)
     expect(adopted).toBe(1)
     act(() => editor.getState().undo())
     const { updatedAt, ...undoneContent } = editor.getState().asset,
@@ -220,7 +220,7 @@ test('bbmodel UI imports animated clips with reasons, playback, complete downloa
     expect(ports.every((port) => port.disposed === 1)).toBe(true)
   }
 })
-test('workshop lazy bbmodel import reviews without editing, confirms once, restores focus and undoes/redoes replacement', async () => {
+test('workshop lazy bbmodel import reviews without editing, confirms once, restores focus and undoes/redoes addition', async () => {
   const editor = sceneImportEditor(),
     before = editor.getState().asset,
     { factory, ports } = sceneImportRenderer(),
@@ -251,7 +251,11 @@ test('workshop lazy bbmodel import reviews without editing, confirms once, resto
     await waitFor(() => expect(document.activeElement === trigger).toBe(true))
     const imported = editor.getState().asset
     expect(imported).toMatchObject({ id: before.id, name: before.name })
-    expect(imported.geometries).toHaveLength(1)
+    expect(imported.geometries).toHaveLength(before.geometries.length + 1)
+    expect(imported.nodes.slice(0, before.nodes.length)).toEqual(before.nodes)
+    expect(imported.nodes.some((node) => node.kind === 'group' && node.name === 'triangle')).toBe(
+      true,
+    )
     expect(editor.getState().contentRevision).toBe(1)
     expect(ports.filter((port) => port.disposed === 0)).toHaveLength(1)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))

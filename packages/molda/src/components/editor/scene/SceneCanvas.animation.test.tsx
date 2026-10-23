@@ -14,7 +14,7 @@ import type {
 } from '../../../viewport/sceneViewportTypes'
 import { SceneCanvas } from './SceneCanvas'
 
-function setup(transform?: SceneTransformActions) {
+function setup(transform?: SceneTransformActions, selected: readonly string[] = []) {
   let now = 0,
     nextId = 0
   const pending = new Map<number, () => void>()
@@ -35,7 +35,7 @@ function setup(transform?: SceneTransformActions) {
     document: MoldaSceneDocument | null
     updates: number
     poses: Array<SceneAnimationPose | null>
-    spaces: Array<'world' | 'local'>
+    spaces: Array<'world' | 'local' | 'pivot'>
     supports: boolean[]
     disposed: boolean
   }> = []
@@ -89,7 +89,7 @@ function setup(transform?: SceneTransformActions) {
     <StrictMode>
       <SceneCanvas
         document={document}
-        selection={[]}
+        selection={selected}
         isolation={null}
         onSelect={() => {}}
         factory={factory}
@@ -116,7 +116,8 @@ function setup(transform?: SceneTransformActions) {
       })
     },
     rerender: (document: MoldaSceneDocument) => view.rerender(content(document)),
-    setMode: (mode: 'model' | 'animation') => view.rerender(content(source, mode)),
+    setMode: (mode: 'model' | 'animation', document = source) =>
+      view.rerender(content(document, mode)),
     fail: (value: boolean) => {
       fail = value
     },
@@ -144,6 +145,32 @@ test('animation starts on the piece axes and keeps its explicit choice separate 
     expect(spaces().at(-1)).toBe('world')
     f.setMode('model')
     expect(spaces().at(-1)).toBe('local')
+  } finally {
+    f.view.unmount()
+  }
+})
+
+test('saved pivot face axis becomes the selected rotation space in modeling and animation', async () => {
+  const initial = animatedScene()
+  const id = initial.nodes[0]!.id
+  const f = setup(undefined, [id])
+  try {
+    const aligned = {
+      ...f.source,
+      nodes: f.source.nodes.map((node) =>
+        node.id === id
+          ? { ...node, pivotAxis: [Math.SQRT1_2, Math.SQRT1_2, 0] as [number, number, number] }
+          : node,
+      ),
+    }
+    f.rerender(aligned)
+    await waitFor(() => expect(f.ports.at(-1)?.spaces.at(-1)).toBe('pivot'))
+    const select = f.view.getByLabelText('Eixos de Mover e Girar')
+    expect((select as HTMLSelectElement).value).toBe('pivot')
+    fireEvent.change(select, { target: { value: 'world' } })
+    expect(f.ports.at(-1)?.spaces.at(-1)).toBe('world')
+    f.setMode('animation', aligned)
+    await waitFor(() => expect(f.ports.at(-1)?.spaces.at(-1)).toBe('pivot'))
   } finally {
     f.view.unmount()
   }

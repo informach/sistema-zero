@@ -1,7 +1,6 @@
 'use client'
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 import { useFreeStudioOptions } from '@sistemazero/member-shell/components/studio/use-free-options'
 // O CSS do Estúdio (tokens + @theme que GERA as utilitárias sz-*) é carregado pelo
 // `@import` em `app/globals.css`, DENTRO do pipeline Tailwind — um JS-import aqui só
@@ -14,7 +13,7 @@ import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
+import type { CreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
 import { editorExitPath, linkStudioMission } from '../../lib/pensa-mission-link'
@@ -33,6 +32,7 @@ import {
 } from '../../lib/pensa-studio-link'
 import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
+import { createStudioCloudTransport } from '../../lib/studio-cloud-transport'
 import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
@@ -275,11 +275,9 @@ export function StudioFullClient({
           // que a do Pinta. `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se
           // a sessão já trocou de perfil. A fila anterior é desligada pelo cleanup do
           // efeito `[cloudSync]` (nunca aqui dentro nem num updater).
-          const nextCloud = createCreationsCloud({
-            tool: 'studio',
+          const nextCloud = createStudioCloudTransport({
             viewerId,
             idleMs: 10_000,
-            maxFormatVersion: STUDIO_PROJECT_FORMAT_VERSION,
           })
           const sync = createStudioCloudSync({
             studio: m,

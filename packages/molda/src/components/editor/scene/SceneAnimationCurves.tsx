@@ -345,8 +345,8 @@ export function SceneAnimationCurves({
                 )
               }}
             >
-              <option value="smooth">Suave</option>
-              <option value="linear">Reto</option>
+              <option value="smooth">{channel === 'rotation' ? 'Suave (freia)' : 'Suave'}</option>
+              <option value="linear">Ritmo constante</option>
               <option value="step">De uma vez</option>
             </select>
           </label>

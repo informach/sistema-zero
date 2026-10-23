@@ -197,6 +197,12 @@ export interface ProfileWriteInput {
   voiceInputEnabled?: boolean
 }
 
+/** Identidade estável do pedido: novas tentativas não criam outra criança. */
+export interface ProfileCreateInput extends ProfileWriteInput {
+  requestId: string
+  name: string
+}
+
 /**
  * Client dos perfis (estilo Netflix) no auth. Gestão (list/create/update/archive)
  * exige sessão da CONTA — o auth recusa (403) sessão de perfil; `select`/`exit`
@@ -211,7 +217,7 @@ export function createProfilesClient(gw: GatewayModule) {
     listReadonly(): Promise<GatewayResponse<{ profiles: ProfileView[] }>> {
       return gw.gatewayFetchReadonly('/auth/profiles')
     },
-    create(body: ProfileWriteInput): Promise<GatewayResponse<{ profile: ProfileView }>> {
+    create(body: ProfileCreateInput): Promise<GatewayResponse<{ profile: ProfileView }>> {
       return gw.gatewayFetch('/auth/profiles', { method: 'POST', body })
     },
     update(

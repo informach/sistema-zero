@@ -10,6 +10,7 @@ import { Button } from '@sistemazero/ui'
 import {
   ArrowRight,
   CalendarDays,
+  CheckCircle2,
   Clock3,
   Headphones,
   Laptop,
@@ -18,6 +19,8 @@ import {
 } from 'lucide-react'
 import { createContext, type ReactNode, useContext, useEffect, useState } from 'react'
 import { liveDate, liveRequest } from '../../lib/live/client'
+import { devicesPassed } from '../../lib/live/device-check'
+import { isRescheduled, liveTimeline, reviewDeadlineLabel } from '../../lib/live/journey'
 import {
   countdown,
   durationLabel,
@@ -26,6 +29,12 @@ import {
   type LiveScheduleState,
   liveScheduleState,
 } from '../../lib/live/schedule'
+import {
+  AddToCalendarButton,
+  LiveTimeline,
+  ReviewDeadlineChip,
+  useDeviceCheck,
+} from './live-journey'
 import { LiveParentReservations } from './live-parent-reservations'
 
 /**
@@ -34,16 +43,23 @@ import { LiveParentReservations } from './live-parent-reservations'
  */
 const SKINS = {
   kids: {
+    adult: false,
     card: 'kids-carta',
     hero: 'kids-marca',
     heroAction: 'sz-btn-inverso',
+    // O botão secundário de um cartão (a agenda na área dos pais).
+    cardAction:
+      'kids-3d kids-3d--carta inline-flex min-h-11 items-center gap-2 self-start rounded-full border bg-card px-4 font-bold',
   },
   // A pele adulta segue a direção de arte de 18/10/2026: o cartão branco de borda fina, a próxima
   // oficina na âncora escura da barra do topo e o botão branco retangular.
   adult: {
+    adult: true,
     card: 'sz-card-sm',
     hero: 'bg-(--topo) text-(--sz-community-on-action)',
     heroAction: 'rounded-[0.6rem]! bg-card text-foreground hover:bg-muted',
+    cardAction:
+      'inline-flex min-h-12 items-center gap-2 self-start rounded-[0.6rem] border-2 border-foreground bg-card px-5 font-bold',
   },
 } as const
 const SkinContext = createContext<(typeof SKINS)[keyof typeof SKINS]>(SKINS.kids)
@@ -193,6 +209,7 @@ function Catalog({
     .filter((item) => item.cohorts.length > 0)
   const [next, ...upcoming] = ahead
   const parent = mode === 'parent'
+  const unassigned = data.enrollments.some((item) => item.status === 'active' && !item.learnerId)
   const card = (session: LiveSessionSummary, state: LiveScheduleState) => (
     <SessionCard
       key={session.id}
@@ -215,6 +232,14 @@ function Catalog({
         <p role="alert" className="rounded-2xl bg-destructive/10 p-4 font-semibold">
           {error}
         </p>
+      ) : null}
+      {parent && data.enrollments.some((item) => item.status === 'active') ? (
+        <ParentSteps
+          pending={
+            data.enrollments.filter((item) => item.status === 'active' && !item.learnerId).length
+          }
+          next={next ? { session: next.session, zone: zoneOf(next.session) } : null}
+        />
       ) : null}
       {parent ? (
         <LiveParentReservations catalog={data} onAssigned={() => setReload((value) => value + 1)} />
@@ -300,7 +325,9 @@ function Catalog({
           </div>
         </section>
       ) : null}
-      {!sessions.length && !(mode === 'learner' && explore.length)
+      {/* A família com vaga sem criança escolhida já vê o "Quem vai participar?": o recado de
+          vazio diria o contrário logo embaixo. */}
+      {!sessions.length && !(mode === 'learner' && explore.length) && !(parent && unassigned)
         ? (empty ?? (
             <p className={`${cardSkin} p-6 font-semibold`}>
               {parent
@@ -353,7 +380,7 @@ function CourseCard({
           <Users className="size-4 shrink-0 text-primary" aria-hidden />
           {sessions.length === 1 ? '1 encontro' : `${sessions.length} encontros`}
           {done ? ` · ${done} já aconteceu${done === 1 ? '' : 'ram'}` : ''}
-          {teacher ? ` · com a professora ${teacher}` : ''}
+          {teacher ? ` · com ${teacher}` : ''}
         </p>
         {next ? (
           <p className="flex items-center gap-2 font-semibold text-sm">
@@ -395,47 +422,90 @@ function NextHero({
   const teacher = teacherOf(cohort)
   const duration = durationLabel(start, session.occurrenceEndsAt ?? session.endsAt)
   const left = countdown(start, zone)
-  const now = state === 'live' || state === 'soon' || state === 'today'
-  const { hero, heroAction } = useContext(SkinContext)
+  // "Entrar" só quando a sala abre (15 min antes ou ao vivo): de manhã, num encontro da tarde,
+  // o botão prometia uma sala que ainda estava fechada.
+  const now = state === 'live' || state === 'soon'
+  const { adult, hero, heroAction } = useContext(SkinContext)
+  const steps = liveTimeline(
+    { start, accessEndsAt: session.accessEndsAt, recordingPublished: session.recordingPublished },
+    state,
+    zone,
+  )
+  const check = useDeviceCheck()
   return (
     <section
       aria-labelledby="live-next"
-      className={`${hero} flex flex-col gap-6 rounded-[1.75rem] p-7 md:flex-row md:items-end md:justify-between md:p-9`}
+      className={`${hero} flex flex-col gap-6 rounded-[1.75rem] p-7 md:p-9`}
     >
-      <div className="min-w-0 space-y-2">
-        <p className="inline-flex flex-wrap items-center gap-2 font-extrabold text-sm uppercase tracking-wide">
-          {state === 'live' ? (
-            <span className="inline-flex items-center gap-2 rounded-full bg-destructive px-3 py-1 text-white">
-              <span className="size-2 rounded-full bg-white" aria-hidden />
-              Ao vivo agora
-            </span>
-          ) : (
-            <span className="opacity-90">Sua próxima oficina</span>
-          )}
-          {state !== 'live' && left ? <span className="opacity-90">· {left}</span> : null}
-        </p>
-        <h2 id="live-next" className="sz-display text-[clamp(1.75rem,3vw,2.5rem)] leading-tight">
-          {session.title}
-        </h2>
-        <p className="font-semibold text-lg opacity-95">
-          {friendlyWhen(start, zone)}
-          {duration ? ` · ${duration}` : ''}
-        </p>
-        <p className="font-medium opacity-90">
-          {cohort?.title}
-          {teacher ? ` · com a professora ${teacher}` : ''}
-        </p>
+      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+        <div className="min-w-0 space-y-2">
+          <p className="inline-flex flex-wrap items-center gap-2 font-extrabold text-sm uppercase tracking-wide">
+            {state === 'live' ? (
+              <span className="inline-flex items-center gap-2 rounded-full bg-destructive px-3 py-1 text-white">
+                <span className="size-2 rounded-full bg-white" aria-hidden />
+                Ao vivo agora
+              </span>
+            ) : (
+              <span className="opacity-90">Sua próxima oficina</span>
+            )}
+            {state !== 'live' && left ? <span className="opacity-90">· {left}</span> : null}
+          </p>
+          <h2 id="live-next" className="sz-display text-[clamp(1.75rem,3vw,2.5rem)] leading-tight">
+            {session.title}
+          </h2>
+          <p className="font-semibold text-lg opacity-95">
+            {friendlyWhen(start, zone)}
+            {duration ? ` · ${duration}` : ''}
+          </p>
+          <p className="font-medium opacity-90">
+            {cohort?.title}
+            {teacher ? ` · com ${teacher}` : ''}
+          </p>
+        </div>
+        <div className="flex shrink-0 flex-col items-stretch gap-3 md:items-end">
+          {/* Navegação completa: a sala libera câmera e o jogo isolado pelos cabeçalhos DELA. */}
+          <a
+            href={roomHref(mode, session)}
+            className={`${heroAction} inline-flex min-h-12 shrink-0 rounded-full items-center justify-center gap-2 px-7 font-extrabold text-lg`}
+          >
+            {now ? 'Entrar na sala' : 'Ver o encontro'}
+            <ArrowRight className="size-5" aria-hidden />
+          </a>
+          {/* A agenda é de quem organiza o próprio tempo: o adulto (a família tem a dela). */}
+          {adult && mode === 'learner' && !now ? (
+            <AddToCalendarButton
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[0.6rem] px-6 font-bold text-lg shadow-[inset_0_0_0_2px_var(--sz-community-action-light)]"
+              event={calendarEvent(session, cohort, mode)}
+            />
+          ) : null}
+          {now && check && devicesPassed(check) ? (
+            <p className="inline-flex items-center gap-2 font-bold text-sm">
+              <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+              Seu computador já passou no teste
+            </p>
+          ) : null}
+        </div>
       </div>
-      {/* Navegação completa: a sala libera câmera e o jogo isolado pelos cabeçalhos DELA. */}
-      <a
-        href={roomHref(mode, session)}
-        className={`${heroAction} inline-flex min-h-12 shrink-0 rounded-full items-center justify-center gap-2 px-7 font-extrabold text-lg`}
-      >
-        {now ? 'Entrar na oficina' : 'Ver o encontro'}
-        <ArrowRight className="size-5" aria-hidden />
-      </a>
+      {steps ? <LiveTimeline steps={steps} onDark /> : null}
     </section>
   )
+}
+
+/** O lembrete do encontro na agenda de quem baixa: o horário atual (uma reposição muda a data). */
+function calendarEvent(
+  session: LiveSessionSummary,
+  cohort: LiveCohort | undefined,
+  mode: 'learner' | 'parent' | 'teacher',
+) {
+  const teacher = teacherOf(cohort)
+  return {
+    id: session.id,
+    title: session.title,
+    startsAt: session.occurrenceStartsAt ?? session.startsAt,
+    endsAt: session.occurrenceEndsAt ?? session.endsAt,
+    path: roomHref(mode, session),
+    description: `${cohort?.title ?? 'Oficina ao vivo'}${teacher ? `, com ${teacher}` : ''}. A sala abre 15 minutos antes.`,
+  }
 }
 
 function SessionCard({
@@ -456,20 +526,31 @@ function SessionCard({
   const teacher = teacherOf(cohort)
   const duration = durationLabel(start, session.occurrenceEndsAt ?? session.endsAt)
   const closed = state === 'expired' || state === 'cancelled'
-  const { card } = useContext(SkinContext)
+  const { card, cardAction } = useContext(SkinContext)
+  const deadline = state === 'ended' ? reviewDeadlineLabel(session.accessEndsAt, zone) : null
+  const rescheduled = !closed && state !== 'ended' && isRescheduled(session)
   const tone =
     state === 'live'
       ? 'bg-destructive text-white'
       : state === 'soon' || state === 'today'
-        ? 'bg-(--sz-kids-amarelo,#fde68a) text-(--sz-kids-tinta,#1f2937)'
+        ? 'bg-[var(--sz-kids-amarelo,var(--aviso-tint,#fde68a))] text-[var(--sz-kids-tinta,var(--aviso-texto,#1f2937))]'
         : closed
           ? 'bg-muted text-muted-foreground'
           : 'bg-primary/10 text-primary'
   const content = (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className={`rounded-full px-3 py-1 font-extrabold text-xs ${tone}`}>
-          {STATE_LABEL[state]}
+        <span className="flex flex-wrap items-center gap-1.5">
+          <span className={`rounded-full px-3 py-1 font-extrabold text-xs ${tone}`}>
+            {STATE_LABEL[state]}
+          </span>
+          {/* A reposição: a data do cartão já é a nova, e o selo diz que ela mudou. */}
+          {rescheduled ? (
+            <span className="rounded-full bg-[var(--sz-kids-menta-bg,var(--sucesso-tint,#dcf0e4))] px-3 py-1 font-extrabold text-foreground text-xs">
+              Data nova
+            </span>
+          ) : null}
+          {deadline ? <ReviewDeadlineChip label={deadline} /> : null}
         </span>
         <span className="font-bold text-primary text-sm">{cohort?.title}</span>
       </div>
@@ -479,9 +560,7 @@ function SessionCard({
         {friendlyWhen(start, zone)}
         {duration ? ` · ${duration}` : ''}
       </p>
-      {teacher ? (
-        <p className="font-medium text-muted-foreground text-sm">Com a professora {teacher}</p>
-      ) : null}
+      {teacher ? <p className="font-medium text-muted-foreground text-sm">Com {teacher}</p> : null}
       {mode === 'parent' && learnerNames.length ? (
         <p className="font-semibold text-sm">Participa: {learnerNames.join(', ')}</p>
       ) : null}
@@ -509,6 +588,12 @@ function SessionCard({
     return (
       <article className={`${card} flex flex-col gap-2.5 p-5 ${closed ? 'opacity-80' : ''}`}>
         {content}
+        {mode === 'parent' && ['upcoming', 'today', 'soon'].includes(state) ? (
+          <AddToCalendarButton
+            className={`${cardAction} mt-1`}
+            event={calendarEvent(session, cohort, mode)}
+          />
+        ) : null}
       </article>
     )
   // ⚠️ `<a>` e não `<Link>`: a sala libera câmera, microfone e o quadro isolado do jogo pelos
@@ -520,7 +605,11 @@ function SessionCard({
     >
       {content}
       <span className="mt-1 inline-flex items-center gap-1.5 font-extrabold text-primary">
-        {state === 'ended' ? 'Rever e continuar' : 'Ver o encontro'}
+        {state === 'ended'
+          ? 'Rever e continuar'
+          : state === 'live' || state === 'soon'
+            ? 'Entrar na sala'
+            : 'Ver o encontro'}
         <ArrowRight className="size-4" aria-hidden />
       </span>
     </a>
@@ -541,7 +630,7 @@ function ParentPreparation({ prepareHref }: { prepareHref?: string }) {
           </span>
           <p className="font-bold">Um computador com Chrome ou Edge</p>
           <p className="text-muted-foreground text-sm">
-            É onde a criança cria o jogo e acompanha a professora. No celular dá para assistir, mas
+            É onde a criança cria o jogo e acompanha o encontro. No celular dá para assistir, mas
             não para criar do mesmo jeito.
           </p>
         </li>
@@ -571,5 +660,70 @@ function ParentPreparation({ prepareHref }: { prepareHref?: string }) {
         </li>
       </ol>
     </section>
+  )
+}
+
+/**
+ * A vaga em três passos na área dos pais (proposta de 23/10/2026): escolher a criança, preparar
+ * o computador e o dia do encontro, com o passo em que a família está em destaque.
+ */
+function ParentSteps({
+  pending,
+  next,
+}: {
+  pending: number
+  next: { session: LiveSessionSummary; zone: string } | null
+}) {
+  const steps = [
+    {
+      title: 'Escolher a criança',
+      text: pending
+        ? pending === 1
+          ? '1 vaga esperando'
+          : `${pending} vagas esperando`
+        : 'Cada vaga já tem a sua criança',
+      done: pending === 0,
+    },
+    {
+      title: 'Preparar o computador',
+      text: 'O acesso da criança e o teste',
+      done: false,
+    },
+    {
+      title: 'No dia, ela entra sozinha',
+      text: next
+        ? friendlyWhen(next.session.occurrenceStartsAt ?? next.session.startsAt, next.zone)
+        : 'Os encontros aparecem aqui embaixo',
+      done: false,
+    },
+  ]
+  const current = steps.findIndex((step) => !step.done)
+  return (
+    <ol aria-label="O caminho da vaga" className="grid gap-3 md:grid-cols-3">
+      {steps.map((step, index) => {
+        const active = index === current
+        return (
+          <li
+            key={step.title}
+            aria-current={active ? 'step' : undefined}
+            className={`flex items-center gap-3 rounded-[1.25rem] p-4 ${active ? 'kids-marca' : 'bg-card'}`}
+          >
+            <span
+              className={`grid size-8 shrink-0 place-items-center rounded-full font-extrabold ${active ? 'bg-card text-primary' : step.done ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+            >
+              {step.done ? <CheckCircle2 className="size-4" aria-label="Feito" /> : index + 1}
+            </span>
+            <span className="min-w-0">
+              <span className="block font-extrabold">{step.title}</span>
+              <span
+                className={`block text-sm ${active ? 'kids-marca-suave' : 'text-muted-foreground'}`}
+              >
+                {step.text}
+              </span>
+            </span>
+          </li>
+        )
+      })}
+    </ol>
   )
 }

@@ -1,14 +1,13 @@
 'use client'
 
 import type { AiCreditsView } from '@sistemazero/core/ai-credits'
-import { STUDIO_PROJECT_FORMAT_VERSION } from '@sistemazero/core/studio'
 
 // O CSS do Estúdio é gerado pelo `@import` no globals.css (pipeline Tailwind) — ver
 // o comentário no `studio-full-client.tsx`. Aqui só orquestramos o editor PRO.
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
-import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
+import type { CreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
 import {
@@ -17,6 +16,7 @@ import {
   reconcilePensaOpen,
 } from '../../lib/pensa-restore-pending'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
+import { createStudioCloudTransport } from '../../lib/studio-cloud-transport'
 import { reportStudioError } from '../../lib/studio-error'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
@@ -189,11 +189,9 @@ function StudioProClientSession({
     if (!viewerId || !mod) return
     let active = true
     mod.setStudioStorageNamespace(localNamespace)
-    const created = createCreationsCloud({
-      tool: 'studio',
+    const created = createStudioCloudTransport({
       viewerId,
       idleMs: 10_000,
-      maxFormatVersion: STUDIO_PROJECT_FORMAT_VERSION,
     })
     const sync = createStudioCloudSync({
       studio: mod,

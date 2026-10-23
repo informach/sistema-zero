@@ -188,6 +188,41 @@ ferramentas de desenho.
   mutação em cópia (42 mutantes; sobra um equivalente: o `release` do `publish` é coberto também
   pelo `toggle`). Ensaio visual fora do git em `packages/admin/tmp/desenho-visual/`.
 
+## Oficinas ao vivo: a jornada do encontro (23/10/2026)
+
+Proposta aprovada no Canvas "Oficinas ao vivo · proposta" (propostas A a J). Só as peças das
+oficinas mudaram: menu, blocos de aula e rodapé da aula seguem como estavam.
+
+- **Quem conduz pode ser professora ou professor.** A tela usa o nome (`teacherNameOf`, os
+  `teacherNames` da turma) e, sem nome, uma frase sem gênero ("A sala abriu", "Seu microfone foi
+  fechado por enquanto", "A próxima parte abre já já"). Nunca "a professora" fixo em texto de tela.
+- **Réguas puras** em `lib/live/journey.ts`: `liveTimeline` (Marcado, sala abre 15 min antes, ao vivo,
+  gravação, rever até), `reviewDeadlineLabel` (só na última semana), `isRescheduled` (selo "Data
+  nova"), `pickLiveToday` e o evento `followLiveSection`. Testes: `tests/live-journey.test.ts`.
+- **`lib/live/device-check.ts`**: o teste do computador lembrado NESTE aparelho (`localStorage`, 30
+  dias, toda leitura em try/catch). O `LivePreflight` grava a câmera quando a imagem abre e o
+  microfone só quando ouve som. `useDeviceCheck` (`components/live/live-journey.tsx`) devolve `null`
+  até montar, para o texto não trocar na hidratação.
+- **`lib/live/calendar.ts`**: "Adicionar à minha agenda" monta o .ics no navegador (UTC, lembrete de
+  15 min). Aparece para o adulto e na área dos pais, nunca para a criança.
+- **"Ir junto"**: o `LessonSections` ouve `LIVE_FOLLOW_SECTION_EVENT` e abre a parte pedida SÓ se ela
+  estiver em `openedIds` (o mesmo `levarParaParte` da troca feita por quem conduz, sem o aviso).
+  Evento de janela de propósito: uma propriedade nova re-renderizaria a aula memorizada.
+- **Sala** (`live-learner-room.tsx`): marcador "A turma está na parte N de M" no cabeçalho, selo de
+  prazo, "Quem vai estar lá" e a lista de preparo com o que já está pronto, "Seu computador já passou
+  no teste" e "N colegas já chegaram" na porta (`room.presentCount`, só o número), retorno do pedido
+  de ajuda na barra, e o fim do encontro em três blocos (gravação, projeto, próximo encontro).
+  ⚠️ O próximo encontro vem da agenda (`/api/live/catalog`): a sala do Members carrega só o próprio
+  encontro, de propósito. "Este foi o último" só com a agenda inteira (sem `nextCursor`).
+- **Barra no celular**: no Kids uma linha só (`auto-fit`); no adulto 3 colunas com palavra legível
+  (`mid`), porque a comunidade adulta não usa letra abaixo de 17 px. No computador adulto os rótulos
+  dizem a ação ("Ligar microfone").
+- **Agenda** (`live-catalog.tsx`): linha do tempo no destaque, "Seu computador já passou no teste",
+  selos de prazo e de data nova, a agenda (adulto e pais) e os três passos da vaga na área dos pais
+  (`ParentSteps`). Teste de tela: `community-kids/tests/live-catalog-journey.test.tsx`.
+- **`server/live-today.ts`** (`loadLiveTodayReadonly`): o encontro de hoje para a Início do Kids, só
+  leitura e melhor esforço.
+
 ## Cursos ao vivo: a sala é o layout da aula (14/10/2026)
 
 Decisão dela (`docs/plans/2026-10-14-cursos-ao-vivo-design.md`, §§1, 5, 8 e 10): a oficina virou

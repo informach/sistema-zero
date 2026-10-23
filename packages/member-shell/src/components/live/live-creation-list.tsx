@@ -2,6 +2,7 @@
 import { ArrowRight, Blocks } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { liveRequest } from '../../lib/live/client'
+import { friendlyWhen } from '../../lib/live/schedule'
 
 type SavedCreation = {
   id: string
@@ -42,7 +43,13 @@ export function LiveCreationList({ membershipHref }: { membershipHref: string })
       <ul className="grid gap-3 sm:grid-cols-2">
         {creations.map((creation) => (
           <li key={creation.id} className="kids-carta space-y-3 p-5">
+            <span className="inline-flex rounded-full bg-[var(--sz-kids-menta-bg,#dcf0e4)] px-3 py-1 font-extrabold text-xs">
+              {creation.canEdit ? 'Guardado na sua conta' : 'Só para ver'}
+            </span>
             <h3 className="sz-display text-xl">{creation.title}</h3>
+            <p className="text-muted-foreground text-sm">
+              Você mexeu {lowerFirst(friendlyWhen(creation.updatedAt))}
+            </p>
             {creation.canEdit ? (
               // Navegação COMPLETA (`<a>`, não `<Link>`): a página do projeto libera o quadro
               // isolado do jogo pelos cabeçalhos DELA, e a navegação do Next manteria os da
@@ -56,16 +63,25 @@ export function LiveCreationList({ membershipHref }: { membershipHref: string })
               </a>
             ) : (
               <>
-                <p className="text-sm text-muted-foreground">
-                  Sua criação está guardada. Para continuar depois da oficina, conheça a Comunidade
-                  dos Criadores com seu responsável.
+                <p className="text-sm">
+                  Seu jogo está guardado do jeitinho que você deixou. Para continuar criando nele,
+                  peça para um adulto da sua casa conhecer a Comunidade dos Criadores.
                 </p>
-                <a
-                  href={membershipHref}
-                  className="inline-flex min-h-11 items-center gap-2 font-bold text-primary underline"
-                >
-                  Conhecer a Comunidade
-                </a>
+                <div className="flex flex-wrap gap-x-5 gap-y-1">
+                  {/* O projeto vencido abre só para ver e baixar uma cópia (o servidor decide). */}
+                  <a
+                    href={`/criar/oficinas/${creation.id}`}
+                    className="inline-flex min-h-11 items-center gap-2 font-bold text-primary"
+                  >
+                    Ver e baixar uma cópia
+                  </a>
+                  <a
+                    href={membershipHref}
+                    className="inline-flex min-h-11 items-center gap-2 font-bold text-primary underline"
+                  >
+                    Conhecer a Comunidade
+                  </a>
+                </div>
               </>
             )}
           </li>
@@ -73,4 +89,9 @@ export function LiveCreationList({ membershipHref }: { membershipHref: string })
       </ul>
     </section>
   )
+}
+
+/** "Hoje, às 16h31" vira "hoje, às 16h31" no meio da frase. */
+function lowerFirst(text: string) {
+  return text.charAt(0).toLowerCase() + text.slice(1)
 }

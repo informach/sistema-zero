@@ -1,4 +1,4 @@
-import type { LiveActivityReport } from '@sistemazero/core/live'
+import type { LiveActivityReport, LiveParticipation } from '@sistemazero/core/live'
 import type { LiveCohortAggregate } from '../ports/live-repository.port'
 
 /**
@@ -53,6 +53,26 @@ export function overlayPresence(aggregate: LiveCohortAggregate, rows: LivePresen
 /** Presence needs a write when it is missing or older than the refresh window. */
 export function presenceStale(at: string | undefined, now: Date) {
   return !at || now.getTime() - Date.parse(at) >= LIVE_PRESENCE_REFRESH_MS
+}
+
+/** A classmate counts as "in the room" while seen within the room's 15 s rule. */
+export const LIVE_PRESENT_WINDOW_MS = 15_000
+
+/**
+ * How many OTHER children are in the room now (waiting or admitted, seen recently). Only the
+ * number reaches a child's browser: who they are stays on the server.
+ */
+export function classmatesPresent(
+  participants: readonly LiveParticipation[],
+  actorId: string,
+  now: Date,
+): number {
+  return participants.filter(
+    (item) =>
+      item.learnerId !== actorId &&
+      item.admission !== 'removed' &&
+      now.getTime() - Date.parse(item.seenAt) < LIVE_PRESENT_WINDOW_MS,
+  ).length
 }
 
 /** The same activity (ignoring when it was reported): a heartbeat that repeats it is no change. */

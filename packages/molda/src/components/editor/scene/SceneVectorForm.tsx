@@ -1,7 +1,11 @@
 import { useId } from 'react'
 import { COPY } from '../../../core/copy'
 import type { Vec3 } from '../../../core/model'
-import { type SceneMeasurementStep, snapSceneMeasurement } from '../../../scene/measurementStep'
+import {
+  formatSceneCoordinate,
+  type SceneMeasurementStep,
+  snapSceneMeasurement,
+} from '../../../scene/measurementStep'
 import { Button } from '../../ui/Button'
 
 /** A labelled native three-axis form; callers own units and command semantics. */
@@ -12,6 +16,7 @@ export function SceneVectorForm({
   disabled = false,
   min,
   step,
+  twoDecimals = false,
   onApply,
 }: {
   label: string
@@ -20,9 +25,11 @@ export function SceneVectorForm({
   disabled?: boolean
   min?: number
   step?: SceneMeasurementStep
+  twoDecimals?: boolean
   onApply(values: Vec3): void
 }) {
   const prefix = useId()
+  const display = (value: number) => (twoDecimals ? formatSceneCoordinate(value) : String(value))
   return (
     <form
       className="space-y-3"
@@ -33,6 +40,7 @@ export function SceneVectorForm({
         const read = (axis: string, index: number) => {
           const value = data.get(axis)
           const raw = typeof value === 'string' && value.trim() ? Number(value) : NaN
+          if (raw === Number(display(values[index]!))) return values[index]!
           if (step !== undefined && min !== undefined && raw <= 0) return NaN
           return step !== undefined && raw !== values[index] && Number.isFinite(raw)
             ? snapSceneMeasurement(raw, step, min)
@@ -66,19 +74,22 @@ export function SceneVectorForm({
               required
               disabled={disabled}
               min={min}
-              defaultValue={values[i]}
+              defaultValue={display(values[i]!)}
               onBlur={(event) => {
                 const input = event.currentTarget
                 const raw = Number(input.value)
+                if (raw === Number(display(values[i]!))) {
+                  input.value = display(values[i]!)
+                  return
+                }
                 if (
                   step === undefined ||
                   !input.value.trim() ||
                   !Number.isFinite(raw) ||
-                  (min !== undefined && raw <= 0) ||
-                  raw === values[i]
+                  (min !== undefined && raw <= 0)
                 )
                   return
-                input.value = String(snapSceneMeasurement(raw, step, min))
+                input.value = display(snapSceneMeasurement(raw, step, min))
               }}
               className="min-h-10 w-full min-w-0 bg-transparent pr-2 text-right font-mono text-sm text-mld-text tabular-nums outline-none disabled:opacity-50"
             />

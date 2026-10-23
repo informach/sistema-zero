@@ -227,6 +227,8 @@ describe('criar a criança com a fala marcada e login antigo', () => {
 
     await waitFor(() => expect(destinos).toHaveLength(1))
     expect(corpos.map((c) => c.voiceInputEnabled)).toEqual([true, false])
+    expect(corpos[0]?.requestId).toMatch(/^[a-f0-9-]{36}$/)
+    expect(corpos[1]?.requestId).toBe(corpos[0]?.requestId)
     expect(corpos[1]?.name).toBe('Sofia')
     expect(destinos[0]).toBe('/pais/crianca/nova?aviso=fala-entrar')
   })

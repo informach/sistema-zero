@@ -1,18 +1,156 @@
 import { expect, test } from 'bun:test'
 import { makeModel } from '../testing/fixtures'
+import { animatedScene } from '../testing/sceneAnimation'
+import type { SceneAnimationTrack } from './animation'
 import {
   editSceneAnimationPoses,
   markSceneAnimationChannel,
   recordSceneAnimationInputs,
   retimeSceneAnimationPoses,
   sceneKeyArrival,
+  sceneRotationPaceNeedsChange,
   setScenePoseArrival,
+  setSceneRotationPace,
 } from './animationArrival'
 import { createSceneAnimation, setSceneAnimationKey } from './animationCommands'
 import { SCENE_LIMITS } from './limits'
+import { quaternionFromEulerXYZ } from './matrix'
 import { migrateLegacyModel } from './migrateLegacy'
 import { readSceneAnimationClip } from './readAnimation'
-import { prepareSceneAnimation } from './sampleAnimation'
+import { prepareSceneAnimation, sampleSceneAnimationTrack } from './sampleAnimation'
+
+test('constant rotation pace removes a smooth slowdown at each quarter turn without editing other channels', () => {
+  const source = animatedScene()
+  const rotation = {
+    nodeId: 'body',
+    channel: 'rotation' as const,
+    keys: [0, 90, 180, 270, 360].map((degrees, index) => ({
+      time: index * 0.5,
+      value: quaternionFromEulerXYZ([0, 0, degrees]),
+      interpolation: 'smooth' as const,
+    })),
+  }
+  source.animations[0]!.tracks.push(rotation)
+  const original = structuredClone(source)
+  const changed = setSceneRotationPace(source, 'clip', 'body')
+  const track = changed.animations![0]!.tracks.find((entry) => entry.channel === 'rotation')!
+  expect(track.keys.every((key) => key.interpolation === 'linear')).toBe(true)
+  expect(changed.animations![0]!.tracks[0]).toBe(source.animations[0]!.tracks[0])
+  expect(changed.nodes).toBe(source.nodes)
+  expect(source).toEqual(original)
+  expect(sampleSceneAnimationTrack(rotation, 0.125)[2]).toBeCloseTo(
+    Math.sin((14.0625 * Math.PI) / 360),
+  )
+  expect(sampleSceneAnimationTrack(track, 0.125)[2]).toBeCloseTo(Math.sin((22.5 * Math.PI) / 360))
+  const angle = (entry: SceneAnimationTrack, a: number, b: number) => {
+    const left = sampleSceneAnimationTrack(entry, a)
+    const right = sampleSceneAnimationTrack(entry, b)
+    const dot = left.reduce((sum, value, axis) => sum + value * right[axis]!, 0)
+    return 2 * Math.acos(Math.min(1, Math.abs(dot)))
+  }
+  expect(angle(rotation, 0.49, 0.51)).toBeLessThan(angle(rotation, 0.24, 0.26) / 10)
+  expect(angle(track, 0.49, 0.51)).toBeCloseTo(angle(track, 0.24, 0.26), 10)
+  expect(angle(track, 1.99, 0.01)).toBeCloseTo(angle(track, 0.24, 0.26), 10)
+  expect(setSceneRotationPace(changed, 'clip', 'body')).toBe(changed)
+})
+
+test('constant rotation pace closes the small overshoot in a one-second windmill loop', () => {
+  const source = animatedScene()
+  const clip = source.animations[0]!
+  clip.duration = 1
+  clip.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: [0, 0, 0, 1], interpolation: 'smooth' },
+        {
+          time: 0.25,
+          value: [0.7101639105223165, 0, 0, 0.7040363770371891],
+          interpolation: 'smooth',
+        },
+        {
+          time: 0.5,
+          value: [0.9999635491022615, 0, 0, -0.008538177019078271],
+          interpolation: 'smooth',
+        },
+        {
+          time: 0.75,
+          value: [0.6892790388990742, 0, 0, -0.7244959672312669],
+          interpolation: 'smooth',
+        },
+        {
+          time: 1,
+          value: [-0.01845055495854263, 0, 0, -0.999829774022419],
+          interpolation: 'linear',
+        },
+      ],
+    },
+  ]
+  const original = structuredClone(source)
+  const changed = setSceneRotationPace(source, 'clip', 'body')
+  const rotation = changed.animations![0]!.tracks[0]!
+  expect(sceneRotationPaceNeedsChange(clip, clip.tracks[0]!)).toBe(true)
+  expect(sceneRotationPaceNeedsChange(changed.animations![0]!, rotation)).toBe(false)
+  expect(rotation.keys.map((key) => key.time)).toEqual([0, 0.25, 0.5, 0.75, 1])
+  expect(rotation.keys.every((key) => key.interpolation === 'linear')).toBe(true)
+  expect(rotation.keys.at(-1)!.value).toEqual([0, 0, 0, -1])
+  const angularTravel = (a: number, b: number) => {
+    const left = sampleSceneAnimationTrack(rotation, a) as number[]
+    const right = sampleSceneAnimationTrack(rotation, b) as number[]
+    const dot = left.reduce((sum, value, axis) => sum + value * right[axis]!, 0)
+    return 2 * Math.acos(Math.min(1, Math.abs(dot)))
+  }
+  expect(angularTravel(0.99, 0.01)).toBeCloseTo(angularTravel(0.24, 0.26), 1)
+  expect(source).toEqual(original)
+  expect(setSceneRotationPace(changed, 'clip', 'body')).toBe(changed)
+})
+
+test('a two-pose wheel loop becomes a complete constant-speed turn on its authored axis', () => {
+  const wheelEnds = [
+    [3.0478488118155166e-18, 0.9248902496522317, 2.8133989032143236e-18, 0.38023417271233345],
+    [-9.1841592143412926e-18, -0.9208003419824723, -2.5433056285868177e-17, -0.3900342679880346],
+    [2.7836111415739452e-17, -0.6974119227052386, 5.4461957117751051e-18, -0.7166705031383547],
+    [-5.854905771697111e-18, 0.9999634425755534, 3.9466401868476827e-17, 0.008550643978558124],
+  ] as const
+  for (const end of wheelEnds) {
+    const source = animatedScene()
+    source.animations[0]!.duration = 1
+    const translation = {
+      nodeId: 'body',
+      channel: 'translation' as const,
+      keys: [
+        { time: 0, value: [0, 0, 0] as [number, number, number], interpolation: 'linear' as const },
+      ],
+    }
+    source.animations[0]!.tracks = [
+      translation,
+      {
+        nodeId: 'body',
+        channel: 'rotation',
+        keys: [
+          { time: 0, value: [0, 0, 0, 1], interpolation: 'smooth' },
+          { time: 1, value: [...end], interpolation: 'smooth' },
+        ],
+      },
+    ]
+    const original = structuredClone(source)
+    const changed = setSceneRotationPace(source, 'clip', 'body')
+    const track = changed.animations![0]!.tracks[1]!
+    expect(track.keys.map((key) => key.time)).toEqual([0, 0.25, 0.5, 0.75, 1])
+    expect(track.keys.every((key) => key.interpolation === 'linear')).toBe(true)
+    expect(track.keys.at(-1)!.value).toEqual([0, 0, 0, -1])
+    const angularTravel = (a: number, b: number) => {
+      const left = sampleSceneAnimationTrack(track, a)
+      const right = sampleSceneAnimationTrack(track, b)
+      const dot = left.reduce((sum, value, axis) => sum + value * right[axis]!, 0)
+      return 2 * Math.acos(Math.min(1, Math.abs(dot)))
+    }
+    expect(angularTravel(0.99, 0.01)).toBeCloseTo(angularTravel(0.24, 0.26), 9)
+    expect(changed.animations![0]!.tracks[0]).toBe(translation)
+    expect(source).toEqual(original)
+  }
+})
 
 function fixture() {
   let document = createSceneAnimation(migrateLegacyModel(makeModel()).document, 'Pular')

@@ -13,6 +13,10 @@ export const CONNECTION_ERROR = 'CONNECTION'
 
 const TOO_MANY_MESSAGE = 'Foram muitas tentativas. Aguarde 10 minutos e tente novamente.'
 const MESSAGES: Record<string, string> = {
+  INVALID_INPUT: 'Não conseguimos validar esses dados. Recarregue a página e tente de novo.',
+  VALIDATION_ERROR: 'Não conseguimos validar esses dados. Recarregue a página e tente de novo.',
+  PROFILE_CREATION_CONFLICT:
+    'Este cadastro já foi recebido com outros dados. Volte à família e confira os perfis antes de tentar novamente.',
   STUDY_ACCESS_REQUIRED:
     'Esse código não liberou o acesso. Confira as letras ou peça um novo código ao responsável.',
   DEVICE_NOT_READY:

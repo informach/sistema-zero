@@ -29,6 +29,8 @@ export type {
   PintaSendResult,
   PintaTaskSession,
 } from './core/types'
+/** A biblioteca do perfil também é usada pelo Molda através do host. */
+export { createPaletteLibraryStore, type PaletteLibraryStore } from './state/paletteLibraryStore'
 export {
   // "Guardado na sua conta" (18/08/2026): o host embrulha o armazenamento local num
   // espelho que sobe/desce cada desenho da nuvem — o mesmo `PintaPersistence` que

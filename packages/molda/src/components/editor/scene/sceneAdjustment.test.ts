@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { groupSceneNodes, moveScenePivot } from '../../../scene/commands'
 import { indexSceneDocument } from '../../../scene/documentIndex'
-import { transformPoint } from '../../../scene/matrix'
+import { affineInverse, affineMultiply, transformPoint } from '../../../scene/matrix'
 import { migrateLegacyModel } from '../../../scene/migrateLegacy'
 import { makeModel } from '../../../testing/fixtures'
 import { adjustScene } from './sceneAdjustment'
@@ -17,6 +17,21 @@ describe('workshop adjustments', () => {
     if (!matrix) throw new Error('Missing rotated body')
     const after = transformPoint(matrix, [0, 0, 0])
     for (let axis = 0; axis < 3; axis++) expect(after[axis]).toBeCloseTo(pivot[axis] ?? NaN, 9)
+  })
+  test('numeric rotation uses the saved face axis', () => {
+    const source = migrateLegacyModel(makeModel()).document
+    const aligned = {
+      ...source,
+      nodes: source.nodes.map((node) =>
+        node.id === 'body' ? { ...node, pivotAxis: [1, 0, 0] as [number, number, number] } : node,
+      ),
+    }
+    const before = indexSceneDocument(aligned).scene.worldMatrices.get('body')!
+    const result = adjustScene(aligned, ['body'], 'rotate', [0, 90, 0])
+    const after = indexSceneDocument(result).scene.worldMatrices.get('body')!
+    const delta = affineMultiply(after, affineInverse(before)!)
+    expect(delta[6]).toBeCloseTo(1, 9)
+    expect(delta[9]).toBeCloseTo(-1, 9)
   })
   test('nested multi-selection applies world movement once; invalid numbers do not mutate', () => {
     const source = groupSceneNodes(migrateLegacyModel(makeModel()).document, ['body'], {

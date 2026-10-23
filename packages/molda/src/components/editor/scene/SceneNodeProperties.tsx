@@ -7,6 +7,7 @@ import {
   resizeScenePrimitive,
   setScenePrimitiveDetail,
 } from '../../../scene/commands'
+import { SCENE_COORDINATE_STEP } from '../../../scene/measurementStep'
 import { editScenePath } from '../../../scene/pathCommands'
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { primitiveDetail } from '../../../scene/primitiveDetail'
@@ -215,8 +216,9 @@ export function SceneNodeProperties({
               geometry.to[1] - geometry.from[1],
               geometry.to[2] - geometry.from[2],
             ]}
-            min={workshop.measurementStep}
-            step={workshop.measurementStep}
+            min={SCENE_COORDINATE_STEP}
+            step={SCENE_COORDINATE_STEP}
+            twoDecimals
             onApply={(values) => run((source) => resizeScenePrimitive(source, primary.id, values))}
           />
         </details>

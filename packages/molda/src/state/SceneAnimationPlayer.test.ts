@@ -172,6 +172,24 @@ test('looping, exact final seek and subnormal seeks do not round to the fps grid
   f.player.pause()
 })
 
+test('playback follows the smooth return between the last key and the loop boundary', () => {
+  const f = setup()
+  f.source.animations[0]!.tracks[0]!.keys = [
+    { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+    { time: 1, value: [4, 0, 0], interpolation: 'smooth' },
+  ]
+  f.player.setClip(f.source, 'clip')
+  f.player.play()
+  f.tick(1500)
+  expect(f.player.getSnapshot().pose?.worldMatrices.get('body')?.[12]).toBeCloseTo(2)
+  f.tick(1990)
+  expect(f.player.getSnapshot().pose?.worldMatrices.get('body')?.[12]).toBeLessThan(0.01)
+  f.tick(2010)
+  expect(f.player.getSnapshot().pose?.worldMatrices.get('body')?.[12]).toBeLessThan(0.01)
+  f.player.seek(1.5)
+  expect(f.player.getSnapshot().pose?.worldMatrices.get('body')?.[12]).toBe(4)
+})
+
 test('old callbacks cannot cross seek, revision, clip change or cleanup; invalid explicit inputs leave the session intact', () => {
   const f = setup()
   f.player.setClip(f.source, 'clip')

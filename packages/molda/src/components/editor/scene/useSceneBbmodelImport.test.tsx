@@ -74,7 +74,7 @@ test('bbmodel visible defaults allow native appearance but no content omission',
   options.nodeMaterials.color[0] = 0
   expect(other.nodeMaterials.color).toEqual([1, 1, 1, 1])
 })
-test('bbmodel real worker prepares without mutation, requires current consent and commits one undoable replacement', async () => {
+test('bbmodel real worker prepares without mutation, requires current consent and commits one undoable addition', async () => {
   const { editor, asset, hook, close } = setup()
   try {
     await ready(hook)
@@ -91,7 +91,8 @@ test('bbmodel real worker prepares without mutation, requires current consent an
     const imported = editor.getState().asset
     expect(imported).toMatchObject({ id: asset.id, name: asset.name, createdAt: asset.createdAt })
     expect(imported.thumb).toBeUndefined()
-    expect(imported.images[0]!.flipbook?.frames).toEqual([0, 1, 1])
+    expect(imported.images.at(-1)!.flipbook?.frames).toEqual([0, 1, 1])
+    expect(imported.nodes.slice(0, asset.nodes.length)).toEqual(asset.nodes)
     expect(editor.getState().contentRevision).toBe(1)
     act(() => expect(hook.result.current.confirm()).toBe(false))
     act(() => editor.getState().undo())

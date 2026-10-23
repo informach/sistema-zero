@@ -30,7 +30,7 @@ import { createSceneSkin } from '../../../scene/skinCommands'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { controlInventory, frontControls, openEveryDisclosure } from '../../../testing/domContract'
 import { makeModel } from '../../../testing/fixtures'
-import { sceneAnimationClip } from '../../../testing/sceneAnimation'
+import { animatedScene, sceneAnimationClip } from '../../../testing/sceneAnimation'
 import { makeSceneSkinFixture } from '../../../testing/sceneSkin'
 import type {
   SceneTransformTool,
@@ -130,6 +130,36 @@ test('the basic pivot offers point picking and presets without the advanced mode
   }
 })
 
+test('the basic animation keeps duration and repeat available in the right panel', async () => {
+  const { editor, view } = mount(animatedScene())
+  try {
+    await openTab(copy.animationMode)
+    const settings = await screen.findByText(copy.animationSettings)
+    fireEvent.click(settings)
+    const duration = screen.getByRole('combobox', { name: 'Duração do movimento' })
+    fireEvent.change(duration, { target: { value: '3' } })
+    expect(editor.getState().content.animations![0]!.duration).toBe(3)
+    fireEvent.click(screen.getByRole('checkbox', { name: copy.animationLoop }))
+    expect(editor.getState().content.animations![0]!.loop).toBe(false)
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
+test('the animation pivot keeps its controls before the first movement', async () => {
+  const { editor, view } = mount({ ...withPiece(), animations: [] })
+  try {
+    choosePiece(view.container)
+    await openTab(copy.animationMode)
+    fireEvent.click(screen.getByRole('button', { name: /^Pivô$/ }))
+    expect(screen.getByRole('region', { name: 'Onde a peça gira' })).toBeTruthy()
+  } finally {
+    view.unmount()
+    editor.getState().dispose()
+  }
+})
+
 /** Escolher como a criança escolhe: pelo botão da peça na hierarquia. */
 function choosePiece(container: HTMLElement): void {
   const button = container.querySelector<HTMLButtonElement>('button.mld-piece')
@@ -216,9 +246,10 @@ describe('a oficina no nível de entrada', () => {
     // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
     // The requested Plano adds one visible creation button, within model.pieces.
     expect(vazio.view.getByRole('button', { name: COPY.scene.plane })).toBeDefined()
-    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(63)
+    // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
+    expect(montadosVazio.length, montadosVazio.join(' | ')).toBeLessThanOrEqual(64)
     // Cut, import, pivot and component selection are now explicit basic authoring actions.
-    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(46)
+    expect(encaradosVazio.length, encaradosVazio.join(' | ')).toBeLessThanOrEqual(47)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -227,8 +258,8 @@ describe('a oficina no nível de entrada', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // Position, size, pivot and rotation contribute 12 inputs in the approved basic inspector.
     // Flip contributes one disclosure, three axis actions and the in-place option.
-    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(112)
-    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(85)
+    expect(montadosPeca.length, montadosPeca.join(' | ')).toBeLessThanOrEqual(113)
+    expect(encaradosPeca.length, encaradosPeca.join(' | ')).toBeLessThanOrEqual(86)
   })
 
   test('nenhum controle de família trancada aparece, em nenhuma aba, nem abrindo tudo', async () => {

@@ -453,3 +453,30 @@ test('catalog filters before paginating and visits each visible cohort once', as
   expect(new Set(seen).size).toBe(4)
   expect(seen).toContain(f.cohort.id)
 })
+
+describe('Oficinas: quem chegou na sala', () => {
+  test('a criança vê quantos colegas estão na sala, nunca quem são', async () => {
+    const f = await fixture()
+    await f.service.enroll(teacher, f.cohort.id, {
+      accountId: other.accountId,
+      learnerId: other.id,
+      learnerName: 'Outro nome',
+    })
+    await f.start()
+    await f.service.join(other, f.session.id, { deviceId: randomUUID(), takeover: false })
+    const mine = await f.service.room(learner, f.session.id)
+    expect(mine.presentCount).toBe(1)
+    expect(mine.occurrence?.participants.map((item) => item.learnerId)).toEqual([learner.id])
+    // Quem não aparece há mais de 15 s não conta como presente.
+    f.setTime('2026-11-07T17:01:00Z')
+    expect((await f.service.room(learner, f.session.id)).presentCount).toBe(0)
+    // A professora vê a lista inteira: o número é só da criança.
+    expect((await f.service.room(teacher, f.session.id)).presentCount).toBeUndefined()
+  })
+
+  test('sem a sala aberta para ela, a criança não recebe a contagem', async () => {
+    const f = await fixture()
+    const future = await f.service.room(learner, f.sessions[1]!.id)
+    expect(future.presentCount).toBeUndefined()
+  })
+})

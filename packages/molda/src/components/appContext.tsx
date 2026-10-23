@@ -10,7 +10,25 @@ import type { GallerySceneSource } from '../state/gallerySceneSource'
 import type { GalleryActions, GalleryState, GalleryStore } from '../state/galleryStore'
 import type { MoldaPersistence } from '../state/persistence'
 
+/** Biblioteca de paletas do perfil fornecida pelo host (a mesma usada pelo Pinta). */
+export interface MoldaPaletteLibraryPort {
+  getState(): {
+    loaded: boolean
+    palettes: readonly { id: string; name: string; colors: readonly string[] }[]
+    load(): Promise<void>
+    savePalette(input: {
+      name: string
+      colors: readonly string[]
+    }): Promise<{ id: string; name: string; colors: readonly string[] } | null>
+    renamePalette(id: string, name: string): Promise<boolean>
+    removePalette(id: string): Promise<boolean>
+  }
+  subscribe(listener: () => void): () => void
+}
+
 export interface MoldaHostAdapter {
+  /** "Minhas paletas" compartilhada com o Pinta pelo mesmo perfil. */
+  paletteLibrary?: MoldaPaletteLibraryPort
   /** Tema do host; o root ganha `data-molda-theme`. Default `light`. */
   theme?: 'light' | 'dark'
   /** O perfil tem o Estúdio: a galeria mostra o atalho e a dica do "Trazer do Molda". */

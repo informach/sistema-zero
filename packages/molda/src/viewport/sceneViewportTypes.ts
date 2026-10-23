@@ -55,6 +55,7 @@ export interface SceneGuideInput {
  * arrastar fora dela gira a câmera. `look`: só olhar, a pintura desligada. `off`: fora da aba.
  */
 export type ScenePaintMode = 'off' | 'look' | 'paint'
+export type SceneTransformSpace = 'world' | 'local' | 'pivot'
 export interface ScenePaintSurfaceScope {
   mode: 'all' | 'selected'
   nodeId: string | null
@@ -74,7 +75,9 @@ export interface SceneViewportPort {
   setView(view: CameraView): void
   setGridVisible?(visible: boolean): void
   setMovementStep?(step: number | null): void
-  setTransformSpace?(space: 'world' | 'local'): void
+  setTransformSpace?(space: SceneTransformSpace): void
+  /** Durante Puxar faces, a alça Y acompanha a direção real da face escolhida. */
+  setFaceExtrusion?(active: boolean): void
   frame(selectionOnly?: boolean): void
   zoom?(factor: number): void
   ensureVisible?(ids: readonly string[]): void

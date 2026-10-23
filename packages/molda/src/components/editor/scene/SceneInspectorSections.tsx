@@ -20,9 +20,50 @@ export function SceneInspectorSections({
   const compact = useMediaQuery('(max-width: 1100px)')
   const id = useId()
   const [tab, setTab] = useState<'pieces' | 'details' | 'overview'>(
-    mode === 'model' ? 'details' : 'overview',
+    mode === 'paint' ? 'overview' : mode === 'animation' ? 'pieces' : 'details',
   )
-  useEffect(() => setTab(mode === 'model' ? 'details' : 'overview'), [mode])
+  useEffect(
+    () => setTab(mode === 'paint' ? 'overview' : mode === 'animation' ? 'pieces' : 'details'),
+    [mode],
+  )
+  const piecesSection = (
+    <section
+      id={`${id}-pieces`}
+      role={compact ? 'tabpanel' : 'region'}
+      aria-label={compact ? undefined : 'Lista de peças'}
+      aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
+      hidden={compact && tab !== 'pieces'}
+      className={`mld-inspector-pieces mld-scroll-y overflow-y-auto border-b border-mld-border px-1.5 pb-2 ${compact ? 'min-h-0 flex-1' : ''}`}
+    >
+      {pieces}
+    </section>
+  )
+  const overviewSection = overview && (
+    <section
+      id={`${id}-overview`}
+      role={compact ? 'tabpanel' : 'region'}
+      aria-label={
+        compact ? undefined : mode === 'animation' ? 'Movimentos e atalhos' : 'Cores disponíveis'
+      }
+      aria-labelledby={compact ? `${id}-tab-overview` : undefined}
+      hidden={compact && tab !== 'overview'}
+      className="mld-inspector-overview mld-scroll-y min-h-0 overflow-y-auto border-b border-mld-border px-1.5 pb-2"
+    >
+      {overview}
+    </section>
+  )
+  const detailsSection = (
+    <section
+      id={`${id}-details`}
+      role={compact ? 'tabpanel' : 'region'}
+      aria-label={compact ? undefined : 'Ajustes do contexto'}
+      aria-labelledby={compact ? `${id}-tab-details` : undefined}
+      hidden={compact && tab !== 'details'}
+      className="mld-inspector-properties mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto px-1.5"
+    >
+      {children}
+    </section>
+  )
   return (
     <div
       className="mld-inspector-sections flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-1.5 pt-3 pb-2"
@@ -92,44 +133,9 @@ export function SceneInspectorSections({
         </div>
       )}
       <div className="contents">
-        <section
-          id={`${id}-pieces`}
-          role={compact ? 'tabpanel' : 'region'}
-          aria-label={compact ? undefined : 'Lista de peças'}
-          aria-labelledby={compact ? `${id}-tab-pieces` : undefined}
-          hidden={compact && tab !== 'pieces'}
-          className={`mld-inspector-pieces mld-scroll-y overflow-y-auto border-b border-mld-border px-1.5 pb-2 ${compact ? 'min-h-0 flex-1' : ''}`}
-        >
-          {pieces}
-        </section>
-        {overview && (
-          <section
-            id={`${id}-overview`}
-            role={compact ? 'tabpanel' : 'region'}
-            aria-label={
-              compact
-                ? undefined
-                : mode === 'animation'
-                  ? 'Movimentos e atalhos'
-                  : 'Cores disponíveis'
-            }
-            aria-labelledby={compact ? `${id}-tab-overview` : undefined}
-            hidden={compact && tab !== 'overview'}
-            className="mld-inspector-overview mld-scroll-y min-h-0 overflow-y-auto border-b border-mld-border px-1.5 pb-2"
-          >
-            {overview}
-          </section>
-        )}
-        <section
-          id={`${id}-details`}
-          role={compact ? 'tabpanel' : 'region'}
-          aria-label={compact ? undefined : 'Ajustes do contexto'}
-          aria-labelledby={compact ? `${id}-tab-details` : undefined}
-          hidden={compact && tab !== 'details'}
-          className="mld-inspector-properties mld-scroll-y min-h-0 flex-1 space-y-2 overflow-y-auto px-1.5"
-        >
-          {children}
-        </section>
+        {piecesSection}
+        {overviewSection}
+        {detailsSection}
       </div>
     </div>
   )

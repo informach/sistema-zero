@@ -9,7 +9,8 @@ import {
 } from './commandContext'
 import type { MoldaSceneDocument } from './document'
 import { SCENE_LIMITS } from './limits'
-import { quaternionFromEulerXYZ } from './matrix'
+import { identityMatrix, type Quaternion, quaternionFromEulerXYZ } from './matrix'
+import { scenePivotAxisFrame } from './pivot'
 import { readSceneAnimationClip } from './readAnimation'
 import { rigidSceneAnimationClip } from './rigidEmptyAnimations'
 import * as v from './validation'
@@ -59,6 +60,8 @@ export function createSceneAnimationPreset(
     'Esse movimento ultrapassa o orçamento de animação da criação.',
   )
   const tracks = [...selected.roots].map((nodeId): SceneAnimationTrack => {
+    const pivotAxis = selected.index.scene.nodes.get(nodeId)?.pivotAxis
+    const pivotFrame = pivotAxis ? scenePivotAxisFrame(identityMatrix(), pivotAxis) : null
     const keys = Array.from({ length: steps + 1 }, (_, i) => {
       const value: Vec3 = [0, 0, 0]
       value[axis] =
@@ -80,7 +83,22 @@ export function createSceneAnimationPreset(
       : {
           nodeId,
           channel: 'rotation',
-          keys: keys.map((key) => ({ ...key, value: quaternionFromEulerXYZ(key.value) })),
+          keys: keys.map((key) => {
+            if (!pivotFrame) return { ...key, value: quaternionFromEulerXYZ(key.value) }
+            const radians = (key.value[axis]! * Math.PI) / 360
+            const direction: Vec3 = [
+              pivotFrame[axis * 4]!,
+              pivotFrame[axis * 4 + 1]!,
+              pivotFrame[axis * 4 + 2]!,
+            ]
+            const rotation: Quaternion = [
+              direction[0] * Math.sin(radians),
+              direction[1] * Math.sin(radians),
+              direction[2] * Math.sin(radians),
+              Math.cos(radians),
+            ]
+            return { ...key, value: rotation }
+          }),
         }
   })
   // "Pular" duas vezes vira "Pular" e "Pular 2": a lista de movimentos precisa distinguir.

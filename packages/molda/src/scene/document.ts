@@ -30,6 +30,8 @@ interface ModelNodeBase extends SceneNode {
   /** Authoring point in geometry-local coordinates. Absent retains the legacy node origin.
    * This is not another scene transform and never changes existing animation or skin binds. */
   pivot?: Vec3
+  /** Unit direction of the authoring pivot's Y axis in geometry-local coordinates. */
+  pivotAxis?: Vec3
 }
 
 export type ModelSceneNode = ModelNodeBase &

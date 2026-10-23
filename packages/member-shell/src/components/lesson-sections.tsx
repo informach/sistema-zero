@@ -45,6 +45,7 @@ import {
   SPLIT_HANDLE_WIDTH_PX,
   type SplitBlock,
 } from '../lib/lesson-split'
+import { LIVE_FOLLOW_SECTION_EVENT } from '../lib/live/journey'
 import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/types'
 import { isPlayableVideo, type LocalWatched, videoGateFor } from '../lib/video-gate'
@@ -574,11 +575,10 @@ function LessonSectionsContent({
   const parteDaTurma = controlled?.currentId ?? null
   const ultimaParteSeguida = useRef(parteDaTurma)
   const [avisoDaTurma, setAvisoDaTurma] = useState<{ numero: number; vez: number } | null>(null)
-  // biome-ignore lint/correctness/useExhaustiveDependencies: o gatilho é só a parte da turma mudar.
-  useEffect(() => {
-    if (!parteDaTurma || parteDaTurma === ultimaParteSeguida.current) return
-    ultimaParteSeguida.current = parteDaTurma
-    const alvo = sections.findIndex((s) => s.id === parteDaTurma)
+  // A tela vai para uma parte aberta: a navegação registrada vai em tentativa, a troca é local.
+  const levarParaParte = useRef((_alvoId: string, _comAviso: boolean) => {})
+  levarParaParte.current = (alvoId, comAviso) => {
+    const alvo = sections.findIndex((s) => s.id === alvoId)
     const proxima = sections[alvo]
     if (!proxima) return
     if (!preview)
@@ -601,8 +601,25 @@ function LessonSectionsContent({
         ]),
     )
     setDestination('heading')
-    setAvisoDaTurma((antes) => ({ numero: alvo + 1, vez: (antes?.vez ?? 0) + 1 }))
+    if (comAviso) setAvisoDaTurma((antes) => ({ numero: alvo + 1, vez: (antes?.vez ?? 0) + 1 }))
+  }
+  // O gatilho é só a parte da turma mudar (o resto mora no ref).
+  useEffect(() => {
+    if (!parteDaTurma || parteDaTurma === ultimaParteSeguida.current) return
+    ultimaParteSeguida.current = parteDaTurma
+    levarParaParte.current(parteDaTurma, true)
   }, [parteDaTurma])
+  // "Ir junto" (sala ao vivo, 23/10/2026): quem voltou para rever pede para seguir a turma. É o
+  // mesmo movimento da troca acima, sem o aviso (foi a própria criança quem pediu). Chega por um
+  // evento de janela para a aula memorizada não ganhar uma propriedade que mude a cada consulta.
+  useEffect(() => {
+    const seguir = (event: Event) => {
+      const alvo = (event as CustomEvent<{ sectionId?: string }>).detail?.sectionId
+      if (alvo && controlled?.openedIds.includes(alvo)) levarParaParte.current(alvo, false)
+    }
+    window.addEventListener(LIVE_FOLLOW_SECTION_EVENT, seguir)
+    return () => window.removeEventListener(LIVE_FOLLOW_SECTION_EVENT, seguir)
+  }, [controlled])
   useEffect(() => {
     if (!avisoDaTurma) return
     const timer = setTimeout(() => setAvisoDaTurma(null), 6000)

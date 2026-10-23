@@ -176,6 +176,7 @@ const ProfileWhatsapp = z.string().trim().max(20).nullable().optional()
 // Obrigatória na criação e impossível de apagar na edição desde 23/10/2026.
 const ProfileBirthDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const CreateProfileBody = z.object({
+  requestId: z.uuid(),
   name: ProfileName,
   whatsapp: ProfileWhatsapp,
   birthDate: ProfileBirthDate,

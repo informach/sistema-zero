@@ -1,4 +1,4 @@
-/** Format-independent language for staging, review, original files and explicit replacement. */
+/** Format-independent language for staging, review, original files and adding models. */
 export const NATIVE_IMPORT_COPY = {
   format: 'Formato do arquivo',
   formatHint:
@@ -22,6 +22,7 @@ export const NATIVE_IMPORT_COPY = {
   interrupted:
     'A preparação foi interrompida. Você pode tentar novamente ao voltar para a oficina.',
   failed: 'Não consegui preparar esse modelo. Você pode escolher os arquivos novamente.',
+  emptyScene: 'A cena escolhida não tem peças para adicionar. Escolha outra cena do arquivo.',
   missing: 'Estes arquivos também fazem parte do modelo:',
   options: 'Opções de compatibilidade',
   optionsHint:
@@ -36,11 +37,10 @@ export const NATIVE_IMPORT_COPY = {
   details: 'Detalhes técnicos do relatório',
   noChanges:
     'Nenhuma adaptação foi relatada para o conteúdo escolhido. A limitação de metadados acima ainda se aplica.',
-  replace:
-    'Ao confirmar, o conteúdo atual desta criação será substituído. Seu nome será mantido e você poderá desfazer.',
+  add: 'Ao confirmar, este modelo entrará na sua cena como um grupo. As peças atuais continuam, e você poderá desfazer.',
   accept: 'Revisei as adaptações e o aviso sobre os arquivos originais.',
-  confirm: 'Usar modelo nesta criação',
-  imported: 'Modelo trazido para a oficina. Você pode desfazer essa troca.',
+  confirm: 'Adicionar modelo à cena',
+  imported: 'Modelo adicionado à cena. Você pode desfazer.',
   cancel: 'Cancelar preparação',
   close: 'Voltar à oficina',
   pendingPose: 'Guarde ou cancele a pose em andamento antes de trazer outro modelo.',
