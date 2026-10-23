@@ -179,6 +179,7 @@ const ProfileBirthDate = z
   .nullable()
   .optional()
 const CreateProfileBody = z.object({
+  requestId: z.uuid(),
   name: ProfileName,
   whatsapp: ProfileWhatsapp,
   birthDate: ProfileBirthDate,

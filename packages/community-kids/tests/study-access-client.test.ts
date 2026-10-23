@@ -77,6 +77,20 @@ describe('as falhas de transporte nunca chegam cruas à tela', () => {
     )
   })
 
+  test.each([
+    'VALIDATION_ERROR',
+    'INVALID_INPUT',
+    'PROFILE_CREATION_CONFLICT',
+  ])('falha de cadastro %s orienta sem exibir mensagem crua do servidor', async (code) => {
+    install(() =>
+      Response.json({ error: { code, message: 'PRIVATE_INPUT_MARKER' } }, { status: 400 }),
+    )
+    const error = await failure(studyRequest('/api/profiles', {}))
+    expect(error.code).toBe(code)
+    expect(error.message).not.toContain('PRIVATE_INPUT_MARKER')
+    expect(error.message).not.toBe('Não foi possível continuar agora. Tente novamente.')
+  })
+
   test('a resposta válida continua passando', async () => {
     install(() => Response.json({ ok: true }))
     expect(await studyRequest<{ ok: boolean }>('/api/study/prepare', {})).toEqual({ ok: true })

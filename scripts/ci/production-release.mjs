@@ -79,7 +79,15 @@ export async function resolveProductionSource(sha, get) {
         candidate.path === '.github/workflows/ci.yml' &&
         candidate.event === 'pull_request' &&
         candidate.head_sha === pr.head.sha &&
-        candidate.pull_requests?.some((pull) => pull.number === pr.number),
+        (candidate.pull_requests?.some((pull) => pull.number === pr.number) ||
+          // GitHub can clear this association after merge. The exact internal
+          // branch/repository still bind this run to the already-proven PR head.
+          (Array.isArray(candidate.pull_requests) &&
+            candidate.pull_requests.length === 0 &&
+            typeof pr.head.ref === 'string' &&
+            pr.head.ref.length > 0 &&
+            candidate.head_branch === pr.head.ref &&
+            candidate.head_repository?.full_name === 'informach/sistema-zero')),
     )
     .sort((a, b) => b.id - a.id)[0]
   if (

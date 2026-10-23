@@ -31,6 +31,10 @@ function github(
     drift?: boolean
     differentTree?: boolean
     wrongPlan?: boolean
+    emptyPullRequests?: boolean
+    headRepository?: string | null
+    headBranch?: string | null
+    associatedPr?: number
   } = {},
 ) {
   const calls: string[] = []
@@ -47,7 +51,7 @@ function github(
           merged_at: '2026-10-22T00:00:00Z',
           merge_commit_sha: sha,
           base: { ref: 'main' },
-          head: { sha: headSha, repo: { full_name: 'informach/sistema-zero' } },
+          head: { sha: headSha, ref: 'staging', repo: { full_name: 'informach/sistema-zero' } },
         },
       ]
     if (path.startsWith('/actions/workflows/ci.yml/runs?'))
@@ -60,7 +64,14 @@ function github(
             path: '.github/workflows/ci.yml',
             event: 'pull_request',
             head_sha: headSha,
-            pull_requests: [{ number: 42 }],
+            pull_requests: options.emptyPullRequests
+              ? []
+              : [{ number: options.associatedPr ?? 42 }],
+            head_repository:
+              options.headRepository === null
+                ? null
+                : { full_name: options.headRepository ?? 'informach/sistema-zero' },
+            head_branch: options.headBranch === null ? null : (options.headBranch ?? 'staging'),
             status: 'completed',
             conclusion: options.failedLatest ? 'failure' : 'success',
           },
@@ -122,6 +133,23 @@ describe('approved promoted source, before provider access', () => {
     { failedLatest: true },
     { wrongPlan: true },
   ])('refuses source/CI/plan drift %j', async (options) => {
+    await expect(resolveProductionSource(sha, github(options).get)).rejects.toThrow()
+  })
+  test('qualifies a merged PR when GitHub clears the run association but preserves its exact internal head', async () => {
+    const result = await resolveProductionSource(sha, github({ emptyPullRequests: true }).get)
+    expect(result).toMatchObject({
+      sha,
+      approvedHead: headSha,
+      ci: { run: 10, attempt: 2, passedJobs: productionCiJobs.length },
+    })
+  })
+  test.each([
+    { emptyPullRequests: true, headRepository: 'foreign/repository' },
+    { emptyPullRequests: true, headRepository: null },
+    { emptyPullRequests: true, headBranch: 'another-branch' },
+    { emptyPullRequests: true, headBranch: null },
+    { associatedPr: 99 },
+  ])('refuses an unbound or conflicting CI association %j', async (options) => {
     await expect(resolveProductionSource(sha, github(options).get)).rejects.toThrow()
   })
   test('incomplete GitHub pagination cannot truncate a failed check out of the evidence', async () => {
