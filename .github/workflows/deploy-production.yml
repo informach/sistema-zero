@@ -1,57 +1,23 @@
-# Único dono explícito de deployments de produção; não espera trigger Wait for CI.
-name: Deploy produção
-
+name: Diagnóstico readonly de produção
 on:
   workflow_dispatch:
     inputs:
       services:
-        description: 'CSV explícito da onda (Members e Auth sempre juntos)'
-        required: true
-      expected_sha:
-        description: 'SHA completo de main com PR/CI/plano aprovados'
-        required: true
-      initialize_recorder:
-        description: 'Primeira implantação do gravador existente, sem deployment ativo'
-        type: boolean
-        default: false
         required: false
-
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
-
+      expected_sha:
+        required: false
 permissions:
   contents: read
-  actions: read
-  pull-requests: read
-
 jobs:
-  deploy-production:
-    name: deploy-production
-    if: github.ref == 'refs/heads/main'
+  diagnostic:
+    if: github.ref == 'refs/heads/ops/production-readonly-diagnostics'
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v5
-        with:
-          ref: main
-      - name: Qualificar main, tentativa CI e plano do PR antes de provedores
-        id: source
-        env:
-          GH_TOKEN: ${{ github.token }}
-          EXPECTED_SHA: ${{ github.event.inputs.expected_sha }}
-        run: node scripts/ci/production-release.mjs source "$EXPECTED_SHA"
-      - uses: actions/download-artifact@v4
-        with:
-          artifact-ids: ${{ steps.source.outputs.plan_id }}
-          run-id: ${{ steps.source.outputs.plan_run }}
-          github-token: ${{ github.token }}
-          path: ${{ runner.temp }}/production-plan
-          merge-multiple: true
       - uses: ./.github/actions/setup-railway
-      - name: Gate readonly de configuração e onda canônica antes dos aplicativos
+      - name: Conferir somente transporte, triggers e política publicada
         env:
-          GH_TOKEN: ${{ github.token }}
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_SSH_PRIVATE_KEY: ${{ secrets.RAILWAY_SSH_PRIVATE_KEY }}
@@ -61,15 +27,11 @@ jobs:
           HELPDESK_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_SERVICE_ID }}
           HELPDESK_APP_SERVICE_ID: ${{ vars.RAILWAY_HELPDESK_APP_SERVICE_ID }}
           LIVE_RECORDER_SERVICE_ID: ${{ vars.RAILWAY_LIVE_RECORDER_SERVICE_ID }}
-          EXPECTED_SHA: ${{ github.event.inputs.expected_sha }}
-          SELECTED_SERVICES: ${{ github.event.inputs.services }}
-          INITIALIZE_RECORDER: ${{ github.event.inputs.initialize_recorder }}
-        run: node scripts/ci/production-release.mjs deploy "$EXPECTED_SHA" "$SELECTED_SERVICES" "$RUNNER_TEMP/production-plan/railway-production-plan.json"
-      - name: Guardar checkpoints da onda, inclusive resultado desconhecido
+        run: node scripts/ci/production-readonly-diagnostic.mjs
+      - uses: actions/upload-artifact@v4
         if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: production-wave-${{ github.run_id }}
-          path: production-manifest.json
-          if-no-files-found: ignore
-          retention-days: 30
+          name: production-readonly-diagnostic-${{ github.run_id }}
+          path: production-readonly-diagnostic.json
+          if-no-files-found: error
+          retention-days: 7
