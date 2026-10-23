@@ -108,7 +108,7 @@ export function LessonManifestImport({
       )
     const value: unknown = JSON.parse(source)
     if (!isLearningManifest(value))
-      throw new Error('Confira o formato do manifesto, as atividades e as referências das seções.')
+      throw new Error('Confira o formato do manifesto, as atividades e as referências das partes.')
     return value
   }
   async function inspect() {
@@ -173,7 +173,7 @@ export function LessonManifestImport({
   const liveVideos = live ? plannedVideoCount(source) : 0
   return (
     <details className="rounded-2xl border border-border bg-card p-5">
-      <summary className="cursor-pointer font-semibold">Importar roteiro com seções</summary>
+      <summary className="cursor-pointer font-semibold">Importar roteiro com partes</summary>
       <fieldset disabled={busy || disabled} className="mt-4 space-y-4">
         {disabled && (
           <p className="text-sm">Resolva a sincronização do rascunho antes de importar.</p>
@@ -256,8 +256,8 @@ export function LessonManifestImport({
           <p className="rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
             Esta aula é de um curso ao vivo e o arquivo traz{' '}
             {liveVideos === 1 ? 'um vídeo planejado' : `${liveVideos} vídeos planejados`}. Na aula
-            ao vivo o vídeo é a transmissão do encontro, por isso o servidor recusa vídeo planejado.
-            Tire esses blocos do arquivo antes de importar.
+            ao vivo o vídeo é a transmissão do encontro, por isso a plataforma recusa vídeo
+            planejado. Tire esses blocos do arquivo antes de importar.
           </p>
         )}
         <div className="flex flex-wrap gap-3">
@@ -300,7 +300,7 @@ export function LessonManifestImport({
             </p>
             {preview.removedSections.length > 0 && (
               <details open className="text-sm">
-                <summary className="cursor-pointer font-medium">Seções que sairão</summary>
+                <summary className="cursor-pointer font-medium">Partes que sairão</summary>
                 <ul className="mt-2 list-disc pl-5">
                   {preview.removedSections.map((section) => (
                     <li key={section.id}>{section.title}</li>
@@ -317,7 +317,7 @@ export function LessonManifestImport({
                   {preview.removedExamples.map((example) => (
                     <li key={`${example.blockId}:${example.sectionId}:${example.role}`}>
                       {example.sectionTitle}:{' '}
-                      {example.role === 'entryExampleId' ? 'entrada' : 'solução'} —{' '}
+                      {example.role === 'entryExampleId' ? 'entrada' : 'solução'}:{' '}
                       {example.exampleName}
                     </li>
                   ))}

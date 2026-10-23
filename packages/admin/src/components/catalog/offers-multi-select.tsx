@@ -44,7 +44,7 @@ export function OffersMultiSelect({
       <div className="relative">
         <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Filtrar ofertas…"
+          placeholder="Filtrar ofertas"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
           className="pl-8"
@@ -57,7 +57,7 @@ export function OffersMultiSelect({
           </div>
         ) : visible.length === 0 ? (
           <p className="py-6 text-center text-xs text-muted-foreground">
-            {options.length === 0 ? 'Nenhuma oferta cadastrada.' : 'Nenhuma oferta encontrada.'}
+            {options.length === 0 ? 'Ainda não há ofertas.' : 'Nenhuma oferta com esse nome.'}
           </p>
         ) : (
           <ul className="divide-y divide-border">
@@ -80,7 +80,9 @@ export function OffersMultiSelect({
       <p className="text-xs text-muted-foreground">
         {value.length === 0
           ? 'Nenhuma oferta selecionada.'
-          : `${value.length} oferta(s) selecionada(s).`}
+          : value.length === 1
+            ? '1 oferta selecionada.'
+            : `${value.length} ofertas selecionadas.`}
       </p>
     </div>
   )

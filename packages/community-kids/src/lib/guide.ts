@@ -184,8 +184,8 @@ export function parentWelcomeSteps({
           ? 'Use o perfil que já existe: em "Suas crianças", clique em "Acesso nos aparelhos" no cartão dela. O progresso continua guardado.'
           : canCreateProfile
             ? voiceAvailable
-              ? 'Use "Adicionar criança" e coloque o nome dela. A data de nascimento é opcional. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
-              : 'Use "Adicionar criança" e coloque o nome dela. A data de nascimento é opcional.'
+              ? 'Use "Adicionar criança" e coloque o nome e a data de nascimento dela. Ali você também pode ligar "Falar em vez de escrever", que ajuda quem ainda escreve devagar a pedir ajuda.'
+              : 'Use "Adicionar criança" e coloque o nome e a data de nascimento dela.'
             : 'Confira o acesso da família antes de adicionar um perfil.',
     },
     {

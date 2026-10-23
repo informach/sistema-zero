@@ -34,7 +34,7 @@ export async function GET(req: Request) {
   if (status !== 200) return forwardUpstream({ status, body })
   if (!body || !Array.isArray(body.items)) {
     return NextResponse.json(
-      { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar as entregas.' } },
+      { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar os projetos.' } },
       { status: 502 },
     )
   }

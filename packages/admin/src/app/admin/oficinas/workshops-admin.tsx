@@ -9,11 +9,13 @@ import type {
 } from '@sistemazero/core/live'
 import { liveDate, liveRequest } from '@sistemazero/member-shell/lib/live/client'
 import { Badge, Button, Dialog, Input } from '@sistemazero/ui'
-import { CalendarDays, Plus, Radio, SquarePen } from 'lucide-react'
+import { Plus, Radio, SquarePen } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { roomHref } from '@/lib/live-agenda'
 import {
@@ -31,13 +33,13 @@ import {
   teacherDisplayName,
   teacherSelectionPayload,
 } from '@/lib/live-teachers'
+import { COMMUNITY_NAMES, type Platform } from '@/lib/platform'
 import type { CourseView } from '@/lib/types'
 import { CourseFormDialog } from '../membros/cursos/course-form-dialog'
 import { EnrollmentPicker } from './enrollment-picker'
 import { type StaffDirectory, TeacherPicker, useStaffUsers } from './teacher-picker'
 
 const field = 'flex flex-col gap-1.5 text-sm font-medium'
-const PLATFORM_NAME = { kids: 'Kids', adult: 'Adultos' } as const
 
 const errorMessage = (cause: unknown, fallback: string) =>
   cause instanceof Error && cause.message ? cause.message : fallback
@@ -45,10 +47,38 @@ const errorMessage = (cause: unknown, fallback: string) =>
 const courseEditorHref = (courseId: string) => `/admin/membros/cursos/${courseId}`
 
 /**
+ * Quem se inscreve, em cada lente: na Comunidade dos Criadores são as famílias, pela área dos
+ * pais; na Comunidade Sistema Zero, os próprios alunos, pela área do aluno.
+ */
+const SIGN_UP_WORDS: Record<
+  Platform,
+  { people: string; People: string; area: string; learners: string; account: string }
+> = {
+  kids: {
+    people: 'as famílias',
+    People: 'As famílias',
+    area: 'na área dos pais',
+    learners: 'crianças',
+    account: 'da família',
+  },
+  adult: {
+    people: 'os alunos',
+    People: 'Os alunos',
+    area: 'na área do aluno',
+    learners: 'alunos',
+    account: 'da conta',
+  },
+}
+
+/**
  * Oficinas ao vivo (14/10/2026): a gestão das TURMAS dos cursos ao vivo da plataforma ativa.
  * O conteúdo de cada encontro é uma aula do curso, montada no editor de cursos e aulas de sempre
  * (o roteiro próprio das oficinas saiu). Aqui: criar a turma (curso, datas por aula publicada,
- * professoras, vagas, prazo), editar, inscrições e abrir as inscrições.
+ * quem conduz, vagas, prazo), editar, inscrições e abrir as inscrições.
+ *
+ * Sala da equipe (23/10/2026): quem é Equipe vê tudo com os botões apagados e a faixa de só
+ * leitura; a turma nova sai do formulário já como rascunho OU com as inscrições abertas (o mesmo
+ * PATCH do "Abrir inscrições" de sempre, encadeado depois da criação).
  */
 export function LiveAdmin({
   teacherId,
@@ -60,6 +90,7 @@ export function LiveAdmin({
   canWrite: boolean
 }) {
   const platform = usePlatform()
+  const words = SIGN_UP_WORDS[platform]
   const platformRef = useRef(platform)
   platformRef.current = platform
   const [catalog, setCatalog] = useState<LiveCatalogView | null>(null)
@@ -101,7 +132,8 @@ export function LiveAdmin({
     )
       .then(setCatalog)
       .catch((cause) => {
-        if (!controller.signal.aborted) setError(errorMessage(cause, 'Não foi possível carregar.'))
+        if (!controller.signal.aborted)
+          setError(errorMessage(cause, 'Não conseguimos carregar as oficinas.'))
       })
     return () => controller.abort()
   }, [revision, platform])
@@ -128,7 +160,7 @@ export function LiveAdmin({
           : next,
       )
     } catch (cause) {
-      setError(errorMessage(cause, 'Não foi possível carregar o histórico.'))
+      setError(errorMessage(cause, 'Não conseguimos carregar as turmas mais antigas.'))
     } finally {
       setBusy(false)
     }
@@ -144,7 +176,7 @@ export function LiveAdmin({
       setNotice(success)
       setRevision((value) => value + 1)
     } catch (cause) {
-      setError(errorMessage(cause, 'Não foi possível salvar.'))
+      setError(errorMessage(cause, 'Não deu para salvar. Tente de novo.'))
     } finally {
       setBusy(false)
     }
@@ -173,17 +205,25 @@ export function LiveAdmin({
           <div className="space-y-1">
             <h3 className="flex flex-wrap items-center gap-2 font-medium">
               {item.title}
-              <Badge variant={item.status === 'open' ? 'success' : 'muted'}>
+              <Badge
+                variant={
+                  item.status === 'open' ? 'success' : item.status === 'draft' ? 'warning' : 'muted'
+                }
+              >
                 {COHORT_STATUS_LABEL[item.status]}
               </Badge>
             </h3>
             <p className="text-xs text-muted-foreground">
               Até {item.capacity} vagas · {item.accessDays} dias de acesso por encontro ·{' '}
-              {names ? `Professoras: ${names}` : `${item.teacherIds.length} professora(s)`}
+              {names
+                ? `Quem conduz: ${names}`
+                : item.teacherIds.length === 1
+                  ? '1 pessoa conduz a turma'
+                  : `${item.teacherIds.length} pessoas conduzem a turma`}
             </p>
             {item.status === 'draft' ? (
               <p className="text-xs text-muted-foreground">
-                Rascunho: as famílias só conseguem se inscrever depois de Abrir inscrições.
+                Rascunho: {words.people} só conseguem se inscrever depois de Abrir inscrições.
               </p>
             ) : null}
           </div>
@@ -191,21 +231,19 @@ export function LiveAdmin({
             <Button variant="outline" size="sm" onClick={() => setEnrollmentsFor(item)}>
               Inscrições
             </Button>
-            {canWrite ? (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busy || !canWrite}
+              onClick={() => setSettingsFor(item)}
+            >
+              Editar turma
+            </Button>
+            {item.status !== 'archived' ? (
               <Button
                 size="sm"
                 variant="outline"
-                disabled={busy}
-                onClick={() => setSettingsFor(item)}
-              >
-                Editar turma
-              </Button>
-            ) : null}
-            {canWrite && item.status !== 'archived' ? (
-              <Button
-                size="sm"
-                variant="outline"
-                disabled={busy}
+                disabled={busy || !canWrite}
                 onClick={() =>
                   void listAction(
                     () =>
@@ -216,7 +254,7 @@ export function LiveAdmin({
                       ),
                     item.status === 'open'
                       ? 'Inscrições encerradas.'
-                      : 'Inscrições abertas. As famílias já podem se inscrever.',
+                      : `Inscrições abertas. ${words.People} já podem se inscrever.`,
                   )
                 }
               >
@@ -256,27 +294,17 @@ export function LiveAdmin({
   return (
     <div className="space-y-8">
       <AdminHeader
-        title="Oficinas ao vivo"
-        description={`As turmas dos cursos ao vivo de ${PLATFORM_NAME[platform]}. Cada aula publicada do curso vira um encontro da turma; o conteúdo se monta no editor de cursos e aulas.`}
+        title="Oficinas"
+        description="As turmas dos cursos ao vivo. Cada aula publicada do curso vira um encontro da turma. O conteúdo das aulas se monta em Cursos."
         action={
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/admin/professor/ao-vivo"
-              className="inline-flex min-h-10 items-center gap-2 rounded-lg border px-4 text-sm font-medium"
-            >
-              <CalendarDays className="size-4" aria-hidden />
-              Agenda ao vivo
-            </Link>
-            {canWrite ? (
-              <Button onClick={() => setCourseFormOpen(true)}>
-                <Radio className="size-4" aria-hidden />
-                Criar curso ao vivo
-              </Button>
-            ) : null}
-          </div>
+          <Button onClick={() => setCourseFormOpen(true)} disabled={!canWrite}>
+            <Radio className="size-4" aria-hidden />
+            Criar curso ao vivo
+          </Button>
         }
       />
-      {error ? (
+      {canWrite ? null : <ReadOnlyNotice />}
+      {error && catalog ? (
         <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
           {error}
         </p>
@@ -296,23 +324,37 @@ export function LiveAdmin({
       ) : null}
       {catalog?.nextCursor && (
         <Button variant="outline" disabled={busy} onClick={() => void loadMore()}>
-          Carregar mais turmas e histórico
+          Carregar mais turmas e as mais antigas
         </Button>
       )}
       {!catalog ? (
-        error ? null : (
-          <p role="status">Carregando oficinas…</p>
+        error ? (
+          <div role="alert" className="rounded-xl border bg-card">
+            <LoadError what="as oficinas" onRetry={() => setRevision((value) => value + 1)} />
+            <p className="px-4 pb-6 text-center text-sm text-muted-foreground">{error}</p>
+          </div>
+        ) : (
+          <p role="status" className="text-sm text-muted-foreground">
+            Carregando as oficinas…
+          </p>
         )
       ) : (
         <section className="space-y-3" aria-label="Cursos ao vivo">
           {courses.length === 0 ? (
-            <div className="space-y-2 rounded-xl border p-5 text-sm text-muted-foreground">
-              <p>Ainda não há curso ao vivo em {PLATFORM_NAME[platform]}.</p>
-              <p>
-                Um curso ao vivo se monta como qualquer curso, no editor de cursos e aulas. Cada
-                aula publicada vira um encontro das turmas, e o curso só aparece para as famílias em
-                Oficinas.
-              </p>
+            <div className="rounded-xl border bg-card">
+              <EmptyState
+                zappy="happy"
+                title={`Ainda não há curso ao vivo na ${COMMUNITY_NAMES[platform]}`}
+                description={`Um curso ao vivo se monta como qualquer curso, em Cursos. Cada aula publicada vira um encontro das turmas, e o curso só aparece para ${words.people} em Oficinas.`}
+                action={
+                  canWrite ? (
+                    <Button onClick={() => setCourseFormOpen(true)}>
+                      <Radio className="size-4" aria-hidden />
+                      Criar curso ao vivo
+                    </Button>
+                  ) : undefined
+                }
+              />
             </div>
           ) : (
             courses.map((course) => (
@@ -336,16 +378,18 @@ export function LiveAdmin({
                       <SquarePen className="size-4" aria-hidden />
                       Editar aulas
                     </Link>
-                    {canWrite ? (
-                      <Button size="sm" disabled={busy} onClick={() => setCreatingFor(course)}>
-                        <Plus className="size-4" aria-hidden />
-                        Nova turma
-                      </Button>
-                    ) : null}
+                    <Button
+                      size="sm"
+                      disabled={busy || !canWrite}
+                      onClick={() => setCreatingFor(course)}
+                    >
+                      <Plus className="size-4" aria-hidden />
+                      Nova turma
+                    </Button>
                   </div>
                 </div>
                 {(byCourse.get(course.id) ?? []).length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Nenhuma turma deste curso ainda.</p>
+                  <p className="text-sm text-muted-foreground">Este curso ainda não tem turma.</p>
                 ) : (
                   (byCourse.get(course.id) ?? []).map(cohortCard)
                 )}
@@ -357,7 +401,8 @@ export function LiveAdmin({
               <div>
                 <h2 className="text-lg font-semibold">Outras turmas</h2>
                 <p className="text-sm text-muted-foreground">
-                  Turmas que não são de um curso ao vivo listado aqui (como as do roteiro antigo).
+                  Turmas que não são de um dos cursos ao vivo desta lista, como as do roteiro
+                  antigo.
                 </p>
               </div>
               {others.map(cohortCard)}
@@ -374,7 +419,7 @@ export function LiveAdmin({
           onSaved={(saved) => {
             setError(null)
             setNotice(
-              'Curso ao vivo criado. Monte as aulas no editor: cada aula publicada vira um encontro da turma.',
+              'Curso ao vivo criado. Monte as aulas em Cursos: cada aula publicada vira um encontro da turma.',
             )
             setCreatedCourse(saved ?? null)
             setRevision((value) => value + 1)
@@ -389,6 +434,12 @@ export function LiveAdmin({
           staff={staff}
           onClose={() => setCreatingFor(null)}
           onChanged={() => setRevision((value) => value + 1)}
+          onDone={(message) => {
+            setCreatingFor(null)
+            setError(null)
+            setNotice(message)
+            setCreatedCourse(null)
+          }}
         />
       ) : null}
       {settingsFor ? (
@@ -427,13 +478,17 @@ function CohortCreateDialog({
   staff,
   onClose,
   onChanged,
+  onDone,
 }: {
   course: LiveCourseSummary
   currentUser: { id: string; name: string }
   staff: StaffDirectory
   onClose(): void
   onChanged(): void
+  /** A turma saiu como o autor pediu: fecha o diálogo e mostra o recado na página. */
+  onDone(message: string): void
 }) {
+  const words = SIGN_UP_WORDS[usePlatform()]
   const [zones] = useState(() => timeZoneOptions(Intl.DateTimeFormat().resolvedOptions().timeZone))
   // O fuso do computador só vira o padrão quando é um do Brasil: a turma é de crianças daqui,
   // e um computador em outro fuso marcaria os encontros fora de hora sem ninguém perceber.
@@ -448,7 +503,8 @@ function CohortCreateDialog({
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [created, setCreated] = useState<LiveCohort | null>(null)
-  const [opened, setOpened] = useState(false)
+  // Qual dos dois botões do formulário mandou: o clique marca antes de o `submit` disparar.
+  const openAfterCreate = useRef(false)
 
   if (course.lessons.length === 0)
     return (
@@ -512,28 +568,39 @@ function CohortCreateDialog({
     }
     setBusy(true)
     setError(null)
+    let cohort: LiveCohort
     try {
       const result = await liveRequest<{ cohort: LiveCohort }>(
         `/api/admin/live/courses/${course.id}/cohorts`,
         body,
       )
-      setCreated(result.cohort)
+      cohort = result.cohort
       onChanged()
     } catch (cause) {
-      setError(errorMessage(cause, 'Não foi possível criar a turma.'))
-    } finally {
+      setError(errorMessage(cause, 'Não foi possível criar a turma. Tente de novo.'))
       setBusy(false)
+      return
     }
+    setBusy(false)
+    if (openAfterCreate.current) await openEnrollments(cohort)
+    else
+      onDone(
+        `Turma ${cohort.title} salva como rascunho. ${words.People} só se inscrevem depois de Abrir inscrições.`,
+      )
   }
-  async function openEnrollments() {
-    if (!created) return
+  /** O MESMO PATCH do "Abrir inscrições" da turma, encadeado depois da criação. */
+  async function openEnrollments(cohort: LiveCohort) {
     setBusy(true)
     setError(null)
     try {
-      await liveRequest(`/api/admin/live/cohorts/${created.id}`, { status: 'open' }, 'PATCH')
-      setOpened(true)
+      await liveRequest(`/api/admin/live/cohorts/${cohort.id}`, { status: 'open' }, 'PATCH')
       onChanged()
+      onDone(
+        `Inscrições abertas na turma ${cohort.title}. ${words.People} encontram a oficina ${words.area}.`,
+      )
     } catch (cause) {
+      // A turma JÁ existe: o diálogo passa a falar dela, com a chance de tentar abrir de novo.
+      setCreated(cohort)
       setError(errorMessage(cause, 'Não foi possível abrir as inscrições.'))
     } finally {
       setBusy(false)
@@ -544,46 +611,32 @@ function CohortCreateDialog({
       <Dialog
         open
         onClose={onClose}
-        title={opened ? 'Inscrições abertas' : 'Turma criada como rascunho'}
+        title="Turma salva como rascunho"
         className="max-w-lg"
         footer={
-          opened ? (
-            <Button onClick={onClose}>Fechar</Button>
-          ) : (
-            <>
-              <Button variant="outline" disabled={busy} onClick={onClose}>
-                Agora não
-              </Button>
-              <Button disabled={busy} onClick={() => void openEnrollments()}>
-                {busy ? 'Abrindo…' : 'Abrir inscrições'}
-              </Button>
-            </>
-          )
+          <>
+            <Button variant="outline" disabled={busy} onClick={onClose}>
+              Deixar como rascunho
+            </Button>
+            <Button disabled={busy} onClick={() => void openEnrollments(created)}>
+              {busy ? 'Abrindo…' : 'Tentar abrir as inscrições de novo'}
+            </Button>
+          </>
         }
       >
         <div className="space-y-3 text-sm">
-          {opened ? (
-            <p role="status">
-              A turma {created.title} já aceita inscrições. As famílias encontram a oficina na área
-              dos pais.
-            </p>
-          ) : (
-            <>
-              <p role="status">
-                A turma {created.title} foi criada com um encontro para cada aula publicada do curso
-                e ainda é um rascunho.
-              </p>
-              <p className="text-muted-foreground">
-                Enquanto for rascunho, as famílias não conseguem se inscrever. Abra as inscrições
-                agora ou, se preferir, depois pelo botão Abrir inscrições da turma.
-              </p>
-            </>
-          )}
+          <p role="status">
+            A turma {created.title} foi criada com um encontro para cada aula publicada do curso,
+            mas as inscrições não abriram e ela ficou como rascunho.
+          </p>
           {error ? (
             <p role="alert" className="text-destructive">
               {error}
             </p>
           ) : null}
+          <p className="text-muted-foreground">
+            Você pode tentar de novo agora ou depois, pelo botão Abrir inscrições da turma.
+          </p>
         </div>
       </Dialog>
     )
@@ -599,8 +652,26 @@ function CohortCreateDialog({
           <Button variant="outline" type="button" disabled={busy} onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="submit" form={formId} disabled={busy}>
-            {busy ? 'Criando…' : 'Criar turma'}
+          <Button
+            type="submit"
+            form={formId}
+            variant="outline"
+            disabled={busy}
+            onClick={() => {
+              openAfterCreate.current = false
+            }}
+          >
+            Salvar como rascunho
+          </Button>
+          <Button
+            type="submit"
+            form={formId}
+            disabled={busy}
+            onClick={() => {
+              openAfterCreate.current = true
+            }}
+          >
+            {busy ? 'Salvando…' : 'Salvar e abrir inscrições'}
           </Button>
         </>
       }
@@ -698,6 +769,7 @@ function CohortSettingsDialog({
   onClose(): void
   onSaved(message: string): void
 }) {
+  const words = SIGN_UP_WORDS[usePlatform()]
   const formId = useId()
   const [status, setStatus] = useState<LiveCohort['status']>(cohort.status)
   const [teacherIds, setTeacherIds] = useState<string[]>(() => [...cohort.teacherIds])
@@ -726,7 +798,7 @@ function CohortSettingsDialog({
         await liveRequest(`/api/admin/live/cohorts/${cohort.id}`, body, 'PATCH')
         onSaved('Turma atualizada.')
       } catch (cause) {
-        setError(errorMessage(cause, 'Não foi possível salvar a turma.'))
+        setError(errorMessage(cause, 'Não foi possível salvar a turma. Tente de novo.'))
       } finally {
         setBusy(false)
       }
@@ -783,7 +855,7 @@ function CohortSettingsDialog({
             disabled={archived || busy}
             onChange={(event) => setStatus(event.target.value as LiveCohort['status'])}
           >
-            <option value="draft">Rascunho (as famílias ainda não veem)</option>
+            <option value="draft">Rascunho ({words.people} ainda não veem)</option>
             <option value="open">Inscrições abertas</option>
             <option value="closed">Inscrições encerradas</option>
             <option value="archived">Histórico (arquivada)</option>
@@ -816,6 +888,7 @@ function EnrollmentDialog({
   canWrite: boolean
   onClose(): void
 }) {
+  const words = SIGN_UP_WORDS[usePlatform()]
   const [enrollments, setEnrollments] = useState<LiveEnrollment[]>([])
   const [families, setFamilies] = useState<Record<string, FamilyAccount>>({})
   const [error, setError] = useState<string | null>(null)
@@ -862,7 +935,7 @@ function EnrollmentDialog({
       setVersion((value) => value + 1)
       return true
     } catch (cause) {
-      setError(errorMessage(cause, 'Não foi possível salvar.'))
+      setError(errorMessage(cause, 'Não deu para salvar. Tente de novo.'))
       return false
     } finally {
       setBusy(false)
@@ -880,10 +953,11 @@ function EnrollmentDialog({
       <div className="space-y-4">
         {cohort.status === 'draft' ? (
           <p className="rounded-lg bg-muted/50 p-3 text-sm text-muted-foreground">
-            A turma ainda é um rascunho: as famílias só conseguem se inscrever depois de Abrir
-            inscrições. A equipe pode inscrever crianças por aqui desde já.
+            A turma ainda é um rascunho: {words.people} só conseguem se inscrever depois de Abrir
+            inscrições. A equipe pode inscrever {words.learners} por aqui desde já.
           </p>
         ) : null}
+        {canWrite ? null : <ReadOnlyNotice />}
         {error ? (
           <p role="alert" className="text-sm text-destructive">
             {error}
@@ -891,11 +965,11 @@ function EnrollmentDialog({
         ) : null}
         {!loaded && !error ? (
           <p role="status" className="text-sm text-muted-foreground">
-            Carregando inscrições…
+            Carregando as inscrições…
           </p>
         ) : null}
         {loaded && enrollments.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Nenhuma inscrição ainda.</p>
+          <p className="text-sm text-muted-foreground">Esta turma ainda não tem inscrição.</p>
         ) : null}
         <ul className="space-y-2">
           {enrollments.map((item) => {
@@ -911,7 +985,7 @@ function EnrollmentDialog({
                     <span className="font-normal text-muted-foreground">
                       ·{' '}
                       {item.status === 'revoked'
-                        ? 'Acesso revogado'
+                        ? 'Inscrição tirada'
                         : item.learnerId
                           ? 'Inscrição ativa'
                           : 'Vaga reservada'}
@@ -922,27 +996,30 @@ function EnrollmentDialog({
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {canWrite && item.status === 'active' && !item.learnerId ? (
+                  {item.status === 'active' && !item.learnerId ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={busy}
+                      disabled={busy || !canWrite}
                       onClick={() => setAssigning(item)}
                     >
                       Vincular criança
                     </Button>
                   ) : null}
-                  {canWrite && item.status === 'active' ? (
+                  {item.status === 'active' ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={busy}
+                      disabled={busy || !canWrite}
                       onClick={() =>
                         confirm({
-                          title: `Revogar a inscrição de ${item.learnerName || 'esta vaga'}?`,
-                          message:
-                            'Só esta inscrição perde o acesso à turma. Os outros acessos da família continuam.',
-                          confirmText: 'Revogar inscrição',
+                          title: item.learnerName
+                            ? `Tirar a inscrição de ${item.learnerName}?`
+                            : 'Tirar esta vaga reservada?',
+                          message: item.learnerName
+                            ? `${item.learnerName} perde o acesso a esta turma. Os outros acessos ${words.account} continuam.`
+                            : `A vaga reservada volta a ficar livre. Os outros acessos ${words.account} continuam.`,
+                          confirmText: 'Tirar a inscrição',
                           confirmVariant: 'destructive',
                           onConfirm: async () => {
                             await mutate(`/api/admin/live/enrollments/${item.id}/revoke`, {})
@@ -950,7 +1027,7 @@ function EnrollmentDialog({
                         })
                       }
                     >
-                      Revogar
+                      Tirar a inscrição
                     </Button>
                   ) : null}
                 </div>

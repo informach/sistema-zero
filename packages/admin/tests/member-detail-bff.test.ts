@@ -58,7 +58,9 @@ describe('composição da ficha do membro no BFF', () => {
 
     expect(result).toEqual({
       status: 502,
-      body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+      body: {
+        error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar a ficha do aluno.' },
+      },
     })
     expect(memberCalls).toBe(0)
   })
@@ -86,7 +88,9 @@ describe('composição da ficha do membro no BFF', () => {
 
       expect(result).toEqual({
         status: 502,
-        body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+        body: {
+          error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar a ficha do aluno.' },
+        },
       })
     }
   })
@@ -135,7 +139,9 @@ describe('composição da ficha do membro no BFF', () => {
 
     expect(result).toEqual({
       status: 502,
-      body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+      body: {
+        error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar a ficha do aluno.' },
+      },
     })
   })
 

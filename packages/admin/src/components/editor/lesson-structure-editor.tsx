@@ -259,7 +259,7 @@ export function LessonStructureEditor(
           <div>
             <h2 className="text-lg font-semibold">Percurso da aula</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Monte cada seção no seu ritmo. Explorações e trechos de criação podem se alternar
+              Monte cada parte no seu ritmo. Explorações e trechos de criação podem se alternar
               livremente.
             </p>
           </div>

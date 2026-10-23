@@ -6,9 +6,10 @@ if (typeof document === 'undefined') GlobalRegistrator.register()
 
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const { ensureProfessorCounts, useProfessorOverview } = await import(
+const { ensureProfessorCounts, useProfessorOverview, useProfessorOverviewFailed } = await import(
   '../src/components/admin/professor-counts-store'
 )
+const { getPlatform, setPlatform } = await import('../src/components/admin/platform-store')
 
 function CountsConsumer() {
   const overview = useProfessorOverview()
@@ -116,6 +117,58 @@ describe('contadores da Sala do Professor', () => {
       expect(requests).toBe(2)
     } finally {
       globalThis.fetch = originalFetch
+    }
+  })
+
+  test('trocar a lente larga os itens da outra comunidade: se a nova leitura falha, é erro', async () => {
+    const originalFetch = globalThis.fetch
+    const originalPlatform = getPlatform()
+    let failing = false
+    globalThis.fetch = Object.assign(
+      async (input: Parameters<typeof fetch>[0]) => {
+        if (failing) return Response.json({ message: 'fora do ar' }, { status: 503 })
+        const platform = new URL(String(input), 'http://admin.test').searchParams.get('platform')
+        return Response.json({
+          counts: {
+            pendingSubmissions: platform === 'kids' ? 7 : 3,
+            unreadThreads: 0,
+            moderationPending: 0,
+            openReports: 0,
+          },
+          recent: { submissions: [], threads: [] },
+        })
+      },
+      { preconnect: () => {} },
+    ) satisfies typeof fetch
+
+    function Consumer() {
+      const overview = useProfessorOverview()
+      const failed = useProfessorOverviewFailed()
+      return (
+        <div>
+          {failed ? 'erro' : 'ok'}:{overview?.counts.pendingSubmissions ?? 'nada'}
+        </div>
+      )
+    }
+    const container = document.createElement('div')
+    document.body.append(container)
+    const root = createRoot(container)
+    try {
+      setPlatform('kids')
+      await ensureProfessorCounts(true)
+      await act(async () => root.render(<Consumer />))
+      expect(container.textContent).toBe('ok:7')
+
+      failing = true
+      await act(async () => setPlatform('adult'))
+      await waitFor(() => container.textContent === 'erro:nada')
+      expect(container.textContent).toBe('erro:nada')
+    } finally {
+      await act(async () => setPlatform(originalPlatform))
+      await ensureProfessorCounts()
+      globalThis.fetch = originalFetch
+      await act(async () => root.unmount())
+      container.remove()
     }
   })
 })

@@ -61,14 +61,14 @@ export function ComponentsEditor({
     <div className="flex flex-col gap-2">
       {value.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border px-3 py-4 text-center text-xs text-muted-foreground">
-          Nenhum componente. Adicione os produtos que este combo entrega.
+          O combo ainda está vazio. Coloque os produtos que ele entrega.
         </p>
       ) : (
         <ul className="flex flex-col gap-2">
           {value.map((c, i) => (
             <li key={c.productId} className="flex items-center gap-2">
               <Select
-                aria-label="Produto do componente"
+                aria-label="Produto do combo"
                 className="flex-1"
                 value={c.productId}
                 onChange={(e) => setProduct(i, e.target.value)}
@@ -114,7 +114,7 @@ export function ComponentsEditor({
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Remover componente"
+                aria-label="Tirar do combo"
                 onClick={() => remove(i)}
               >
                 <X className="size-4" />
@@ -131,7 +131,7 @@ export function ComponentsEditor({
         disabled={available.length === 0}
         className="self-start"
       >
-        <Plus className="size-4" /> Adicionar componente
+        <Plus className="size-4" aria-hidden /> Colocar produto no combo
       </Button>
     </div>
   )

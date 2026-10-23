@@ -52,6 +52,11 @@ Cada regra `tierAccess` declara etapa, posto de entrada (`opensAt`), posto de re
 (`completedAt`) e primeira aventura (`foundation`: posição 1, marco e `whenMissing`). Não há
 mapeamento fixo de índice entre posto e etapa no funcionamento normal.
 
+> Nota de vocabulário (23/10/2026): "primeira aventura" é o nome técnico da regra `foundation`, o
+> curso da posição 1 da etapa, e é o rótulo que o Admin ainda mostra em Professor → Jornada Kids
+> ("Primeira aventura", "Acesso às aventuras"). Na tela da criança e na fala das aulas vale a
+> linguagem comum de 21/10/2026: é um curso. Trocar o termo neste documento só junto com o Admin.
+
 - Curso com posição: entrada na etapa + primeira aventura para as posições seguintes, ou direito
   de revisão/expansão já conquistado.
 - Recompensa (`reward`): revisão da etapa, direito de recompensa preservado ou a dispensa da base
@@ -68,6 +73,11 @@ A pausa retém a política vigente e congela novos postos/ferramentas. Concluir 
 aventura ainda pode expandir acesso pedagógico pela mesma regra retida; não abre todos os cursos.
 
 ## Interface da criança
+
+A criança lê a mesma estrutura da comunidade adulta: curso → módulo → aula → parte (Diretrizes
+Pedagógicas, seção 6; "módulo" decidido em 23/10/2026). Os postos, a "Trilha <posto>", a Jornada do
+Criador e os títulos de posto como "Explorador(a) de Mundos" continuam só do Kids. A trilha do curso
+e o baú mostram "Módulo N" desde 23/10/2026 (era "Mundo").
 
 Mapa/trilha e ferramentas leem a projeção da mesma versão persistida. Horizonte de conteúdo não
 reduz posto ou direitos já conquistados. Não há anúncio de ferramenta pelo nome fixo do posto:

@@ -16,7 +16,8 @@ export interface UpdateProfileDetailsCommand {
    * Data de nascimento (`YYYY-MM-DD`; `null` limpa). A AUTORIZAÇÃO (só os pais) é da
    * rota — quando chega aqui já está liberada. `undefined` = não mexe.
    */
-  birthDate?: string | null
+  /** Informar ou corrigir; apagar é recusado pelo agregado (obrigatória desde 23/10/2026). */
+  birthDate?: string
   /** Perfil público (opt-in). AUTORIZAÇÃO parent-only é da rota; `undefined` = não mexe. */
   publicProfileEnabled?: boolean
   /**

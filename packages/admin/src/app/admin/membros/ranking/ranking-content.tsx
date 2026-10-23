@@ -17,11 +17,13 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { RankingListResponse, RankingListRow } from '@/app/api/admin/ranking/route'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
+import { AlunosTabs } from '@/components/admin/section-tabs'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { relativeCivilDayLabel } from '@/lib/format'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
-import type { Platform } from '@/lib/platform'
+import { COMMUNITY_NAMES, type Platform } from '@/lib/platform'
 import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 
 const LIMIT = 20
@@ -34,6 +36,7 @@ export function RankingContent({ platform }: { platform: Platform }) {
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
   const [truncated, setTruncated] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
   const loadAuthority = useRef(createForegroundPriority()).current
 
   const load = useCallback(async () => {
@@ -55,9 +58,11 @@ export function RankingContent({ platform }: { platform: Platform }) {
           setTotal(page.total)
           setParticipants(page.totalParticipants)
           setTruncated(page.searchTruncated)
+          setLoadFailed(false)
         },
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao carregar o ranking.')
+          setLoadFailed(true)
+          toast.error((error as ApiError).message ?? 'Não conseguimos carregar o ranking.')
         },
         onSettled: () => setLoading(false),
       },
@@ -75,9 +80,10 @@ export function RankingContent({ platform }: { platform: Platform }) {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Ranking"
-        description={`Classificação geral por XP acumulado na plataforma ${platform === 'kids' ? 'Kids' : 'Adultos'}.`}
+        title="Alunos"
+        description={`Quem mais juntou XP na ${COMMUNITY_NAMES[platform]}, do primeiro lugar para baixo.`}
       />
+      <AlunosTabs />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -85,8 +91,8 @@ export function RankingContent({ platform }: { platform: Platform }) {
           <Input
             placeholder={
               platform === 'kids'
-                ? 'Buscar criança ou responsável…'
-                : 'Buscar aluno por nome ou e-mail…'
+                ? 'Buscar criança ou responsável'
+                : 'Buscar aluno por nome ou e-mail'
             }
             value={q}
             onChange={(event) => {
@@ -103,17 +109,16 @@ export function RankingContent({ platform }: { platform: Platform }) {
 
       {truncated ? (
         <p className="text-amber-700 text-sm dark:text-amber-300">
-          A busca encontrou mais de 100 identidades. Refine o nome ou e-mail para ver todos os
-          resultados.
+          Encontramos muita gente. Digite mais do nome ou o e-mail para ver todos.
         </p>
       ) : null}
 
-      <Card>
+      <Card className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead className="w-24">Posição</TableHead>
-              <TableHead>Aluno</TableHead>
+              <TableHead>{platform === 'kids' ? 'Criança' : 'Aluno'}</TableHead>
               <TableHead>Nível</TableHead>
               <TableHead>XP acumulado</TableHead>
               <TableHead>Última atividade</TableHead>
@@ -122,12 +127,27 @@ export function RankingContent({ platform }: { platform: Platform }) {
           <TableBody>
             {loading ? (
               <TableSkeletonRows columns={5} />
+            ) : loadFailed && items.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5}>
+                  <LoadError what="o ranking" onRetry={() => void load()} />
+                </TableCell>
+              </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
-                  {q.trim()
-                    ? 'Nenhum participante encontrado nesta busca.'
-                    : 'Ainda não há participantes com XP nesta plataforma.'}
+                <TableCell colSpan={5}>
+                  {q.trim() ? (
+                    <EmptyState
+                      title="Ninguém com esse nome no ranking."
+                      description="Tente outro nome ou o e-mail."
+                    />
+                  ) : (
+                    <EmptyState
+                      zappy="happy"
+                      title="Ninguém juntou XP ainda."
+                      description="O ranking começa quando alguém concluir a primeira aula."
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -158,10 +178,10 @@ function RankingRow({ item, kids }: { item: RankingListRow; kids: boolean }) {
         <Link href={item.href} className="flex items-center gap-3">
           <RankingAvatar name={item.name} photoUrl={item.photoUrl} />
           <span>
-            <span className="block font-medium">{item.name ?? 'Identidade indisponível'}</span>
+            <span className="block font-medium">{item.name ?? 'Nome não disponível'}</span>
             <span className="block text-muted-foreground text-xs">
               {kids && item.accountName ? `${item.accountName} · ` : ''}
-              {item.accountEmail ?? `ID ${item.learnerId.slice(0, 8)}`}
+              {item.accountEmail ?? 'Sem e-mail'}
             </span>
           </span>
         </Link>

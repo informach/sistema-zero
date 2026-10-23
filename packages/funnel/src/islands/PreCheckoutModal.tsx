@@ -277,7 +277,7 @@ export default function PreCheckoutModal({
                 ) : (
                   <>
                     <strong>Estes dados são do responsável</strong> (mãe, pai ou tutor). O perfil da
-                    criança (nome e, se quiser, a data de nascimento) você cria depois, já dentro da
+                    criança (nome e data de nascimento) você cria depois, já dentro da
                     plataforma.
                   </>
                 )}

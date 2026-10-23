@@ -1,8 +1,8 @@
 // Guarda de vocabulário (decisão de 2026-09-22): a **Carreira do Criador** virou
 // **Jornada do Criador**. O título de `/cursos` é **Cursos da Jornada do Criador** e o
-// `/perfil` diz **Minha jornada**. O item do MENU chama **Cursos** desde 06/10/2026 (era
-// **Aprender** desde 03/10), em par com o **Criar**: o menu diz o que a criança faz, a página
-// diz como aquilo se chama, e nenhum dos dois lembra a escola (o vocabulário do curso).
+// `/perfil` diz **Minha jornada**. O item do MENU chama **Cursos** desde a unificação da
+// linguagem de 21/10/2026 (foi **Aprender** desde 03/10 e **Explorar** de 06/10 a 21/10), em par
+// com o **Criar**: as duas comunidades chamam as coisas pelo que elas são.
 //
 // Esta guarda varre o `src/` inteiro — copy E comentário. É de propósito: o motivo da
 // troca foi o app falar duas línguas ao mesmo tempo ("Minha carreira" logo acima de

@@ -79,7 +79,7 @@ export const RESGATE_COPY: Record<GiftAudience, ResgateCopy> = {
     aviso: {
       destaque: 'Estes dados são do responsável',
       texto:
-        ' (mãe, pai ou tutor). O perfil da criança, com o nome e, se quiser, a data de nascimento, você cria depois, já dentro da plataforma.',
+        ' (mãe, pai ou tutor). O perfil da criança, com o nome e a data de nascimento, você cria depois, já dentro da plataforma.',
     },
     campos: {
       nome: {

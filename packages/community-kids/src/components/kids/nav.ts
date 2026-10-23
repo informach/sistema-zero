@@ -54,10 +54,9 @@ export interface NavItem {
 /** Stable destinations across desktop and mobile, regardless of earned tools. */
 export const NAV_ITEMS: NavItem[] = [
   { href: '/', label: 'Início', icon: Home, backLabel: 'Voltar ao início' },
-  // ⭐ "Explorar" (decisão da dona, 06/10/2026; era "Aprender" desde 03/10): o menu diz o que a
-  // criança FAZ ali, em par com o "Criar" logo abaixo (explorar o caminho das aventuras × criar
-  // livre), e sem o chapéu de formatura, que lembrava a escola. A página continua sendo o mapa da
-  // Jornada do Criador, e é assim que a trilha já chamava a volta.
+  // ⭐ "Cursos" desde a unificação da linguagem (21/10/2026): foi "Aprender" (03/10) e "Explorar"
+  // (06/10 a 21/10). O item diz o que a coisa é, em par com o "Criar" logo abaixo. A página continua
+  // sendo o mapa da Jornada do Criador.
   { href: '/cursos', label: 'Cursos', icon: Compass, backLabel: 'Voltar aos cursos' },
   {
     href: '/oficinas',

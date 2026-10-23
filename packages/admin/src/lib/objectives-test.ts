@@ -262,7 +262,7 @@ export function testResolvedSectionObjectives(
   ] as const)
     if (report?.kind === 'already-satisfied')
       notes.push(
-        `${label} já cumpre todos os objetivos obrigatórios do projeto. Confira se isso combina com a proposta da parte. Este aviso não avalia vídeo, quiz e entrega nem conclui a parte.`,
+        `${label} já cumpre todos os objetivos obrigatórios do projeto. Confira se isso combina com a proposta da parte. Este aviso não avalia vídeo, quiz e envio do projeto nem conclui a parte.`,
       )
   if (rows.some((row) => OBJECTIVE_PROJECT_ROLES.some((role) => row[role] === 'inconclusive')))
     notes.push(

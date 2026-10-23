@@ -23,7 +23,12 @@ function setup() {
   const clock = () => new Date(now)
   const admission = new ProfileAdmissionService(profiles, journey, clock, silentLogger)
   const create = new CreateProfileService(profiles, allowance, randomUUID, clock, admission)
-  const command = { requestId: randomUUID(), accountUserId: randomUUID(), name: 'Sofia' }
+  const command = {
+    requestId: randomUUID(),
+    accountUserId: randomUUID(),
+    name: 'Sofia',
+    birthDate: '2016-05-10',
+  }
   return {
     profiles,
     allowance,
@@ -47,7 +52,11 @@ test('pending creation owns its quota and retries the same ID after Members beco
     pending.id,
   ])
   await expect(
-    s.create.execute({ ...s.command, requestId: randomUUID(), name: 'Debora' }),
+    s.create.execute({
+      ...s.command,
+      requestId: randomUUID(),
+      name: 'Debora',
+    }),
   ).rejects.toBeInstanceOf(ProfileLimitReachedError)
   s.advance()
   s.journey.result = 'admitted'

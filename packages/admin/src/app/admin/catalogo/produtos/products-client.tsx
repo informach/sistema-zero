@@ -19,7 +19,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
-import { StatusBadge } from '@/components/admin/status-badge'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { Paginated, ProductView } from '@/lib/types'
@@ -29,7 +29,7 @@ const PRODUCT_STATUSES = ['draft', 'active', 'archived']
 
 /** Rótulos PT-BR dos tipos de produto. */
 const KIND_LABELS: Record<string, string> = {
-  ebook: 'Ebook',
+  ebook: 'E-book',
   course: 'Curso',
   template_kit: 'Kit de templates',
   community: 'Comunidade',
@@ -56,7 +56,7 @@ export function ProductsClient() {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar produtos.')
+      toast.error((err as ApiError).message ?? 'Os produtos não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
@@ -72,10 +72,10 @@ export function ProductsClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Catálogo"
-        description="Produtos, ofertas e cupons da plataforma."
+        description="O produto é o que a pessoa ganha. A oferta é como ele é vendido: preço, forma e prazo. O cupom dá desconto em ofertas."
         action={
           <Link href="/admin/catalogo/produtos/novo" className={buttonVariants()}>
-            <Plus className="size-4" /> Novo produto
+            <Plus className="size-4" aria-hidden /> Novo produto
           </Link>
         }
       />
@@ -83,9 +83,13 @@ export function ProductsClient() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <Input
-            placeholder="Buscar por nome, slug ou SKU…"
+            placeholder="Nome, endereço ou código interno"
+            aria-label="Buscar produtos"
             value={q}
             onChange={(e) => {
               setOffset(0)
@@ -95,6 +99,7 @@ export function ProductsClient() {
           />
         </div>
         <Select
+          aria-label="Situação"
           value={status}
           onChange={(e) => {
             setOffset(0)
@@ -102,10 +107,10 @@ export function ProductsClient() {
           }}
           className="sm:w-44"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {PRODUCT_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {statusLabel(s, 'catalog')}
             </option>
           ))}
         </Select>
@@ -115,10 +120,10 @@ export function ProductsClient() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Nome</TableHead>
-              <TableHead>SKU</TableHead>
+              <TableHead>Produto</TableHead>
+              <TableHead>Código interno</TableHead>
               <TableHead>Tipo</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Situação</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -128,7 +133,7 @@ export function ProductsClient() {
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  Nenhum produto encontrado.
+                  Nenhum produto com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -143,14 +148,15 @@ export function ProductsClient() {
                     {KIND_LABELS[p.kind] ?? p.kind}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={p.status} />
+                    <StatusBadge status={p.status} kind="catalog" />
                   </TableCell>
                   <TableCell className="text-right">
                     <Link
                       href={`/admin/catalogo/produtos/${p.id}`}
                       className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                      aria-label={`Editar ${p.name}`}
                     >
-                      <Pencil className="size-4" /> Editar
+                      <Pencil className="size-4" aria-hidden /> Editar
                     </Link>
                   </TableCell>
                 </TableRow>

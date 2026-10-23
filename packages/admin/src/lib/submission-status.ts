@@ -27,10 +27,14 @@ export function submissionStatus(s: SubmissionStatusInput): SubmissionStatus {
   return 'pending'
 }
 
+/**
+ * Os nomes que a equipe lê (a sala da equipe, 23/10/2026): o que espera alguém diz quem; "Já
+ * visto" é o mesmo nome que a criança lê no selo ("A equipe já viu o seu projeto").
+ */
 export const SUBMISSION_STATUS_LABEL: Record<SubmissionStatus, string> = {
-  pending: 'Pendente',
-  answered: 'Respondida',
-  reviewed: 'Conferida',
+  pending: 'Esperando a equipe',
+  answered: 'Respondido',
+  reviewed: 'Já visto',
 }
 
 /** Só o que ainda pede atenção fica em destaque na lista. */

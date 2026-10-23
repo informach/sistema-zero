@@ -18,6 +18,8 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
+import { AlunosTabs } from '@/components/admin/section-tabs'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatDate } from '@/lib/format'
@@ -27,9 +29,9 @@ const LIMIT = 20
 
 const STATUS_LABELS: Record<string, string> = {
   active: 'Com acesso ativo',
-  revoked: 'Com matrícula revogada',
-  expired: 'Com matrícula expirada',
-  pending: 'Com matrícula pendente',
+  revoked: 'Com acesso tirado',
+  expired: 'Com acesso encerrado',
+  pending: 'Com acesso aguardando',
 }
 
 export function MembersClient() {
@@ -54,7 +56,7 @@ export function MembersClient() {
       setError(false)
     } catch (err) {
       setError(true)
-      toast.error((err as ApiError).message ?? 'Falha ao carregar membros.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos carregar os alunos.')
     } finally {
       setLoading(false)
     }
@@ -74,14 +76,15 @@ export function MembersClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Alunos"
-        description="Alunos com matrícula. Veja o acesso de cada um, conceda e revogue manualmente."
+        description="Os alunos com acesso a algum curso. Abra a ficha para ver, liberar ou tirar um acesso."
       />
+      <AlunosTabs />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Filtrar por curso (slug)…"
+            placeholder="Filtrar pelo endereço do curso"
             value={courseRef}
             onChange={(e) => {
               setOffset(0)
@@ -98,7 +101,7 @@ export function MembersClient() {
           }}
           className="sm:w-60"
         >
-          <option value="">Todos os membros</option>
+          <option value="">Todos os alunos</option>
           {ENTITLEMENT_STATUSES.map((s) => (
             <option key={s} value={s}>
               {STATUS_LABELS[s] ?? s}
@@ -107,15 +110,17 @@ export function MembersClient() {
         </Select>
       </div>
 
-      <Card>
+      <Card className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Membro</TableHead>
-              <TableHead>Matrículas</TableHead>
+              <TableHead>Aluno</TableHead>
+              <TableHead>Acessos</TableHead>
               <TableHead>Cursos</TableHead>
-              <TableHead>Último acesso</TableHead>
-              <TableHead className="text-right">Ações</TableHead>
+              <TableHead>Último acesso liberado</TableHead>
+              <TableHead className="text-right">
+                <span className="sr-only">Abrir a ficha</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -123,14 +128,25 @@ export function MembersClient() {
               <TableSkeletonRows columns={5} />
             ) : error ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  Não foi possível carregar os membros. Tente novamente.
+                <TableCell colSpan={5}>
+                  <LoadError what="os alunos" onRetry={() => void load()} />
                 </TableCell>
               </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  Nenhum membro encontrado.
+                <TableCell colSpan={5}>
+                  {status || courseRef.trim() ? (
+                    <EmptyState
+                      title="Nenhum aluno com estes filtros."
+                      description="Tente outro curso ou outra situação de acesso."
+                    />
+                  ) : (
+                    <EmptyState
+                      zappy="happy"
+                      title="Nenhum aluno com acesso ainda."
+                      description="Quando alguém comprar ou receber um acesso, aparece aqui."
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -146,15 +162,24 @@ export function MembersClient() {
                       </>
                     ) : (
                       <>
-                        <div className="font-mono text-xs">{m.userId}</div>
-                        <div className="text-xs text-muted-foreground">identidade indisponível</div>
+                        <div className="font-medium">Nome não disponível</div>
+                        <details
+                          className="text-xs text-muted-foreground"
+                          onClick={(event) => event.stopPropagation()}
+                          onKeyDown={(event) => event.stopPropagation()}
+                        >
+                          <summary className="cursor-pointer">Detalhes técnicos</summary>
+                          <span className="font-mono">{m.userId}</span>
+                        </details>
                       </>
                     )}
                   </TableCell>
                   <TableCell>
                     <span className="font-medium">{m.activeCount}</span>
                     <span className="text-muted-foreground"> / {m.totalCount}</span>
-                    <span className="ml-1 text-xs text-muted-foreground">ativas</span>
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      {m.activeCount === 1 ? 'ativo' : 'ativos'}
+                    </span>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {m.courseRefs.length === 0 ? (

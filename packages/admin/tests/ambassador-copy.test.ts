@@ -4,7 +4,8 @@ test('gestão de embaixadores mostra o curso atual sem rebatizar resgates histó
   const source = await Bun.file(
     new URL('../src/app/admin/embaixadores/embaixadores-client.tsx', import.meta.url),
   ).text()
-  expect(source).toContain('Cadê Todo Mundo?')
+  // O nome do curso sem o "?", como nas campanhas (a copy do Canvas).
+  expect(source).toContain('indica o curso Cadê Todo Mundo sem custo')
   expect(source).not.toContain('Desafio do Primeiro Jogo')
   expect(source).toContain('Sem assinatura')
 })

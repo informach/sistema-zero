@@ -17,7 +17,10 @@ export function LiveRecordingStatus({
   const labels = {
     not_started: 'A gravação ainda não começou.',
     starting: 'Preparando a gravação…',
-    recording: 'Gravando a professora e a demonstração.',
+    recording:
+      room.role === 'teacher'
+        ? 'Gravando quem conduz e a demonstração.'
+        : 'Gravando a professora e a demonstração.',
     paused: 'Fora da gravação · A turma continua ouvindo.',
     processing: 'Preparando o vídeo para revisão.',
     review: 'Gravação em revisão.',
@@ -78,8 +81,8 @@ export function LiveRecordingStatus({
       {room.role === 'teacher' ? (
         <p className="text-xs text-muted-foreground">
           {conducting
-            ? 'Você é a professora responsável pela gravação.'
-            : 'A gravação é conduzida pela professora que começou o encontro.'}
+            ? 'Você conduz a gravação deste encontro.'
+            : 'A gravação fica com quem começou o encontro.'}
         </p>
       ) : null}
       {error ? (

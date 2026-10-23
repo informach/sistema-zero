@@ -529,9 +529,14 @@ export function useLiveMedia({
   const label = useCallback(
     (publication: LiveMediaPublication) =>
       publication.role === 'teacher'
-        ? publication.kind === 'demo'
-          ? 'Demonstração da professora'
-          : 'Professora'
+        ? // Quem conduz lê o nome neutro; a criança continua lendo o de sempre.
+          roomRef.current.role === 'teacher'
+          ? publication.kind === 'demo'
+            ? 'Demonstração de quem conduz'
+            : 'Quem conduz'
+          : publication.kind === 'demo'
+            ? 'Demonstração da professora'
+            : 'Professora'
         : `${
             publication.displayName ??
             roomRef.current.occurrence?.participants.find(

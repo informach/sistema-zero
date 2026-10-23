@@ -5,6 +5,7 @@ import { ProfileAggregate } from '../../src/domain/profile/profile.aggregate'
 const now = new Date('2026-10-18T12:00:00Z')
 function profile() {
   return ProfileAggregate.create({
+    birthDate: '2016-05-10',
     id: randomUUID(),
     accountUserId: randomUUID(),
     name: 'Sofia',

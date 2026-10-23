@@ -184,7 +184,7 @@ function ManageTemplatesDialog({
       return
     }
     if (templates.length >= MAX_TEMPLATES) {
-      toast.error(`Máximo de ${MAX_TEMPLATES} modelos — apague um antes.`)
+      toast.error(`O limite é de ${MAX_TEMPLATES} modelos. Apague um antes de criar outro.`)
       return
     }
     onSave([...templates, { id: crypto.randomUUID(), title: cleanTitle, body: cleanBody }])
@@ -197,7 +197,8 @@ function ManageTemplatesDialog({
     <Dialog open onClose={onClose} title="Modelos de resposta" className="max-w-lg">
       <div className="space-y-4">
         <p className="text-xs text-muted-foreground">
-          Modelos ficam neste navegador (não sincronizam entre professores/dispositivos).
+          Os modelos ficam só neste navegador. Não passam para outras pessoas da equipe nem para
+          outros aparelhos.
         </p>
 
         {templates.length > 0 ? (

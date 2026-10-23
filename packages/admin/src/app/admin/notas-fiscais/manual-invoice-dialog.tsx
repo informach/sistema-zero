@@ -12,18 +12,22 @@ import { type ApiError, apiSend } from '@/lib/api'
 import { extractExistingInvoiceId, isValidUuid } from '@/lib/nfse'
 
 /**
- * Emissão MANUAL por pagamento (backfill/antecipação): pede o Payment ID (UUID),
+ * Emissão MANUAL por pagamento (backfill/antecipação): pede o código da venda (UUID),
  * POST `/api/nfse/invoices` e abre o detalhe da nota criada. Erros do contrato
  * aparecem inline; `INVOICE_ALREADY_EXISTS` oferece abrir a nota existente
- * quando o id é extraível da mensagem.
+ * quando o id é extraível da mensagem. `initialPaymentId` chega preenchido pelo link
+ * "Emitir nota desta venda" (Vendas → `?emitir=`).
  */
 export function ManualInvoiceDialog({
   open,
+  initialPaymentId = '',
   onClose,
   onCreated,
   onOpenInvoice,
 }: {
   open: boolean
+  /** O código da venda já preenchido (vindo de Vendas). */
+  initialPaymentId?: string
   onClose: () => void
   /** Nota criada — o pai abre o detalhe e recarrega lista+stats. */
   onCreated: (id: string) => Promise<void>
@@ -36,10 +40,10 @@ export function ManualInvoiceDialog({
 
   useEffect(() => {
     if (open) {
-      setPaymentId('')
+      setPaymentId(initialPaymentId)
       setError(null)
     }
-  }, [open])
+  }, [open, initialPaymentId])
 
   const trimmed = paymentId.trim()
   const validId = isValidUuid(trimmed)
@@ -55,7 +59,7 @@ export function ManualInvoiceDialog({
       const created = await apiSend<{ id: string }>('/api/nfse/invoices', 'POST', {
         paymentId: trimmed,
       })
-      toast.success('Nota criada — emissão em andamento.')
+      toast.success('Nota criada. Ela sai em instantes.')
       onClose()
       await onCreated(created.id)
     } catch (err) {
@@ -69,15 +73,15 @@ export function ManualInvoiceDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title="Emitir nota manualmente"
-      description="Emissão por pagamento — backfill de vendas antigas ou antecipação."
+      title="Emitir nota à mão"
+      description="Para uma venda antiga sem nota, ou quando a nota precisa sair antes do fim da garantia."
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={submitting}>
             Voltar
           </Button>
           <Button onClick={doCreate} disabled={submitting || !validId}>
-            {submitting ? <Spinner /> : <FilePlus2 className="size-4" />}
+            {submitting ? <Spinner /> : <FilePlus2 className="size-4" aria-hidden />}
             Emitir nota
           </Button>
         </>
@@ -85,12 +89,12 @@ export function ManualInvoiceDialog({
     >
       <div className="flex flex-col gap-4">
         <p className="rounded-lg border border-border bg-muted p-3 text-xs text-muted-foreground">
-          Emite a nota <span className="font-semibold">AGORA, sem esperar a garantia</span> — use
-          para vendas antigas ou antecipação consciente. Um estorno posterior cancela a nota.
+          A nota sai <span className="font-semibold">agora, sem esperar a garantia</span>. Se a
+          venda for estornada depois, a nota é cancelada.
         </p>
         <Field
-          label="Payment ID"
-          hint="UUID da transação (copie no detalhe da transação em Pagamentos)."
+          label="Código da venda"
+          hint="Fica nos detalhes técnicos da venda, em Vendas."
           htmlFor="manual-payment-id"
         >
           <Input
@@ -106,7 +110,7 @@ export function ManualInvoiceDialog({
         </Field>
         {trimmed.length > 0 && !validId ? (
           <p className="text-xs text-muted-foreground">
-            O Payment ID precisa ser um UUID válido (8-4-4-4-12).
+            Esse código não parece o de uma venda. Copie de novo nos detalhes técnicos da venda.
           </p>
         ) : null}
         {error ? (

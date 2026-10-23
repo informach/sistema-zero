@@ -36,7 +36,9 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
 
   test('Light Copy nos textos novos: sem travessão e sem exclamação', () => {
     const docs = [PRIVACIDADE, ...funis.map((f) => f.legal.termos)].filter(
-      (d) => d.atualizadoEm === '20 de outubro de 2026',
+      // Os textos revistos a partir de 20/10/2026 (a Política voltou em 23/10, com a data de
+      // nascimento obrigatória).
+      (d) => ['20 de outubro de 2026', '23 de outubro de 2026'].includes(d.atualizadoEm),
     )
     expect(docs.length).toBeGreaterThanOrEqual(3)
     for (const doc of docs) {

@@ -183,7 +183,7 @@ export function ProjectPatternEditor({
           {Object.entries(pattern.inputBlocksAll ?? {}).map(([name, checks]) => (
             <fieldset key={`all:${name}`} className="ml-2 space-y-2 border-l pl-3">
               <legend className="text-sm">
-                {inputLabel(name)} — todas as peças no mesmo espaço
+                {inputLabel(name)}: todas as peças no mesmo espaço
               </legend>
               <p className="text-xs text-muted-foreground">
                 Cada critério deve aparecer nesta mesma sequência. Isso não exige ocorrências

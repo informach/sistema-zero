@@ -1609,7 +1609,7 @@ export function LiveDemonstration({ room }: { room: LiveRoomView }) {
     return () =>
       media?.setCaptureHandleConfig?.({ handle: '', exposeOrigin: false, permittedOrigins: [] })
   }, [room.session.id])
-  if (room.role !== 'teacher') return <p>A demonstração pertence à professora desta turma.</p>
+  if (room.role !== 'teacher') return <p>Esta demonstração é de quem conduz a turma.</p>
   return (
     <main className="flex h-dvh flex-col bg-background">
       <header className="border-b p-3">

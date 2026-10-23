@@ -197,12 +197,13 @@ export function ChildClient({
         </section>
       ) : null}
       {profile.birthDate ? null : (
-        // Opcional e discreto: só serve para a plataforma avisar dos 18 anos.
-        <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground text-sm">
+        // A data é obrigatória desde 23/10/2026; os perfis criados antes podem não ter. O aviso
+        // pede a data, sem bloquear a criança: o perfil continua funcionando até ela ser informada.
+        <p className="flex flex-wrap items-center gap-x-2 rounded-2xl bg-[#fff3c4] px-4 py-2 text-sm text-[#5c3200]">
           <CalendarDays className="size-4 shrink-0" aria-hidden="true" />
           <span>
-            Informe a data de nascimento para a plataforma avisar você quando {profile.name}{' '}
-            completar 18 anos.
+            Falta a data de nascimento de {profile.name}. Ela é obrigatória: mostra a idade para a
+            equipe e faz a plataforma avisar você quando {profile.name} completar 18 anos.
           </span>
           <Link
             href={childEditHref(profile.id)}

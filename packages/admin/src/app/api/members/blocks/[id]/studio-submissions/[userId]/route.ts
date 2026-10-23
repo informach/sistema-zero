@@ -13,7 +13,7 @@ export async function GET(_req: Request, { params }: Ctx) {
     const envelope = body as { error?: { code?: string; message?: string } } | null
     const normalized = envelope?.error?.message
       ? body
-      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível abrir a entrega.' } }
+      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível abrir o projeto.' } }
     return NextResponse.json(normalized, { status: status === 200 ? 502 : status })
   }
   return forwardUpstream({ status, body })

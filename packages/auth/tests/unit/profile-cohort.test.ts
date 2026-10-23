@@ -62,11 +62,13 @@ test('cohort requires a configured/correct internal token and rejects human iden
 test('cohort exports minimal pairs for archived and pending profiles without XP', async () => {
   const { app, profiles } = setup()
   const pending = ProfileAggregate.create({
+    birthDate: '2016-05-10',
     id: randomUUID(),
     accountUserId: randomUUID(),
     name: 'Pendente',
   })
   const archived = ProfileAggregate.create({
+    birthDate: '2016-05-10',
     id: randomUUID(),
     accountUserId: randomUUID(),
     name: 'Arquivado',
@@ -108,7 +110,12 @@ test('cohort continuation preserves existing hex-format profile IDs and normaliz
   const profileId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
     accountUserId = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
   profiles.seedReady(
-    ProfileAggregate.create({ id: profileId, accountUserId, name: 'Perfil existente' }),
+    ProfileAggregate.create({
+      birthDate: '2016-05-10',
+      id: profileId,
+      accountUserId,
+      name: 'Perfil existente',
+    }),
   )
   const response = await app.handle(
     request({ kind: 'continue', upperBound: profileId.toUpperCase(), cursor: null, limit: 1 }),

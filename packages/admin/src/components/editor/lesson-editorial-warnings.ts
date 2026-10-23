@@ -18,7 +18,7 @@ export function lessonEditorialWarnings(
   )
   if (!live && new Set(videos).size < videos.length)
     warnings.push(
-      'Há vídeos repetidos em blocos diferentes. Confira se cada repetição ajuda na ação daquela etapa.',
+      'Há vídeos repetidos em blocos diferentes. Confira se cada repetição ajuda na ação daquela parte.',
     )
   const missingMedia = live
     ? []
@@ -74,7 +74,7 @@ export function lessonEditorialWarnings(
     if (blocks.some((block) => block.content.kind === 'rich_text'))
       warnings.push(
         live
-          ? `${section.title}: no Kids, considere o Zappy para orientar em vez de texto corrido; a explicação fica com a professora no encontro.`
+          ? `${section.title}: no Kids, considere o Zappy para orientar em vez de texto corrido; a explicação fica com quem conduz o encontro.`
           : `${section.title}: no Kids, considere vídeo para explicar e Zappy para orientar em vez de texto corrido.`,
       )
     if (
@@ -82,7 +82,7 @@ export function lessonEditorialWarnings(
     )
       warnings.push(
         live
-          ? `${section.title}: a fala está longa. Divida a orientação em ações e deixe a explicação para a professora no encontro.`
+          ? `${section.title}: a fala está longa. Divida a orientação em ações e deixe a explicação para quem conduz o encontro.`
           : `${section.title}: a fala está longa. Divida a orientação em ações e deixe a explicação no vídeo.`,
       )
     if (blocks.filter((block) => block.content.kind === 'interactive').length > 1)
@@ -114,7 +114,7 @@ export function lessonEditorialWarnings(
   const closing = intents.lastIndexOf('closing')
   if (delivery >= 0 && closing >= 0 && closing < delivery)
     warnings.push(
-      'Confira o fechamento: a entrega deve anteceder o quiz final quando os dois fazem parte da aula.',
+      'Confira o fechamento: o envio do projeto deve vir antes do quiz final quando os dois fazem parte da aula.',
     )
   return warnings
 }

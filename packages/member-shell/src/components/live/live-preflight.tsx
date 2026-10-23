@@ -9,7 +9,14 @@ import { canShareLiveTab, friendlyDeviceError } from '../../lib/live/device-erro
  * Teste local: testar um aparelho nunca o envia à sala. `open` mostra o teste direto (encontro
  * marcado, porta da sala); sem ele, fica recolhido em "Preparar meu navegador".
  */
-export function LivePreflight({ open = false }: { open?: boolean }) {
+export function LivePreflight({
+  open = false,
+  teacher = false,
+}: {
+  open?: boolean
+  /** Quem conduz lê o aviso da aba do jeito dela: é a demonstração que não dá para mostrar. */
+  teacher?: boolean
+}) {
   const video = useRef<HTMLVideoElement>(null)
   const stream = useRef<MediaStream | null>(null)
   const generation = useRef(0)
@@ -91,8 +98,9 @@ export function LivePreflight({ open = false }: { open?: boolean }) {
     <div className={open ? 'space-y-3' : 'mt-4 space-y-3'}>
       {tabSharing === false ? (
         <p className="rounded-xl border bg-muted/30 p-3 font-medium text-sm">
-          Neste navegador a professora não consegue ver sua tela enquanto você cria. No computador,
-          com o Chrome ou o Edge, dá. Você participa do mesmo jeito.
+          {teacher
+            ? 'Neste navegador não dá para mostrar uma aba para a turma. Para transmitir a demonstração, use o computador com o Chrome ou o Edge.'
+            : 'Neste navegador a professora não consegue ver sua tela enquanto você cria. No computador, com o Chrome ou o Edge, dá. Você participa do mesmo jeito.'}
         </p>
       ) : null}
       <p role="status" className="font-medium text-muted-foreground text-sm">

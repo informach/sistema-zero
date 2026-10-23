@@ -42,6 +42,7 @@ function setup() {
     role: 'admin',
   })
   const profile = ProfileAggregate.create({
+    birthDate: '2016-05-10',
     id: randomUUID(),
     accountUserId: account.id,
     name: 'Rafa',

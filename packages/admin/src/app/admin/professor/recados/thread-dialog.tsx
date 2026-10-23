@@ -14,8 +14,10 @@ import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { LessonLearningPanel } from '@/components/professor/lesson-learning-panel'
 import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { threadSubject } from '@/lib/teacher-thread-subject'
 import type { TeacherThreadView } from '@/lib/types'
+import { CONTEXT_DETAIL, WORKFLOW_STATUSES, workflowLabel } from './recados-copy'
 
 /** Teto do corpo — espelha o DTO do members (`TeacherThreadReplyBody`). */
 const MAX_BODY = 8000
@@ -32,6 +34,8 @@ interface Props {
   threadId: string
   studentName: string
   onClose: () => void
+  /** A conversa carregou (quem abre pode tirar dela o que ainda não sabe, como o nome). */
+  onLoaded?: (thread: TeacherThreadView) => void
 }
 
 /**
@@ -39,7 +43,9 @@ interface Props {
  * viewer da Entrega, que abre por contexto userId+blockId). Abrir marca como
  * lida (watermark do professor); responder usa a rota por id.
  */
-export function ThreadDialog({ threadId, studentName, onClose }: Props) {
+export function ThreadDialog({ threadId, studentName, onClose, onLoaded }: Props) {
+  const onLoadedRef = useRef(onLoaded)
+  onLoadedRef.current = onLoaded
   const [thread, setThread] = useState<TeacherThreadView | null>(null)
   const [loading, setLoading] = useState(true)
   const [reply, setReply] = useState('')
@@ -48,6 +54,15 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
   const [loadError, setLoadError] = useState<string | null>(null)
   const cancelLoad = useRef<(() => void) | null>(null)
   const [viewingSubmission, setViewingSubmission] = useState(false)
+  /** O "Salvo" ao lado da situação, depois que o servidor confirma a troca. */
+  const [statusSaved, setStatusSaved] = useState(false)
+  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(
+    () => () => {
+      if (savedTimer.current) clearTimeout(savedTimer.current)
+    },
+    [],
+  )
 
   const loadThread = useCallback(() => {
     cancelLoad.current?.()
@@ -62,13 +77,15 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
       .then((t) => {
         if (active) {
           setThread(t)
+          onLoadedRef.current?.(t)
           void apiSend(`/api/members/teacher-threads/${threadId}/read`, 'POST', {})
             .then(() => refreshProfessorCounts())
             .catch(() => {})
         }
       })
       .catch((err) => {
-        if (active) setLoadError(err instanceof Error ? err.message : 'Falha ao abrir a conversa.')
+        if (active)
+          setLoadError(err instanceof Error ? err.message : 'Não conseguimos abrir o recado.')
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -86,7 +103,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
     const body = reply.trim()
     if (!body || sending) return
     if (body.length > MAX_BODY) {
-      toast.error(`O recado excede ${MAX_BODY} caracteres.`)
+      toast.error(`O recado passou de ${MAX_BODY} caracteres. Encurte um pouco e envie de novo.`)
       return
     }
     setSending(true)
@@ -99,7 +116,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
       setThread(updated)
       setReply('')
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao enviar o recado.')
+      toast.error((err as ApiError).message ?? 'O recado não foi enviado. Tente de novo.')
     } finally {
       setSending(false)
     }
@@ -116,7 +133,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
         current ? { ...older, messages: [...older.messages, ...current.messages] } : older,
       )
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar mensagens anteriores.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos carregar as mensagens anteriores.')
     } finally {
       setLoadingOlder(false)
     }
@@ -127,7 +144,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
       <Dialog
         open={!viewingSubmission}
         onClose={onClose}
-        title={`Conversa com ${studentName}`}
+        title={`Recados com ${studentName}`}
         className="max-w-2xl"
       >
         {loadError ? (
@@ -136,7 +153,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
               {loadError}
             </p>
             <Button variant="outline" onClick={loadThread}>
-              Tentar novamente
+              Tentar de novo
             </Button>
           </div>
         ) : loading || !thread ? (
@@ -148,54 +165,60 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
         ) : (
           <div className="space-y-3">
             {threadSubject(thread) ? (
-              <p className="text-xs text-muted-foreground">{threadSubject(thread)}</p>
+              <p className="text-sm text-muted-foreground">{threadSubject(thread)}</p>
             ) : null}
-            <label className="block text-sm">
-              Atendimento da equipe
+            <div className="flex flex-wrap items-center gap-2 text-[15px]">
+              <label htmlFor={`thread-status-${threadId}`} className="font-medium">
+                Situação
+              </label>
               <select
-                className="ml-2 rounded border p-2"
+                id={`thread-status-${threadId}`}
+                className="min-h-11 rounded-xl border border-border bg-card px-3"
                 value={thread.workflowStatus ?? 'waiting_student'}
                 onChange={(e) => {
+                  setStatusSaved(false)
                   void apiSend<TeacherThreadView>(
                     `/api/members/teacher-threads/${threadId}/status`,
                     'POST',
                     { status: e.target.value },
                   )
-                    .then(setThread)
-                    .catch(() => toast.error('Não foi possível salvar o atendimento.'))
+                    .then((updated) => {
+                      setThread(updated)
+                      setStatusSaved(true)
+                      if (savedTimer.current) clearTimeout(savedTimer.current)
+                      savedTimer.current = setTimeout(() => setStatusSaved(false), 2500)
+                    })
+                    .catch(() => toast.error('Não conseguimos salvar a situação. Tente de novo.'))
                 }}
               >
-                <option value="waiting_teacher">Aguardando professor</option>
-                <option value="waiting_student">Aguardando aluno</option>
-                <option value="resolved">Resolvido</option>
+                {WORKFLOW_STATUSES.map((value) => (
+                  <option key={value} value={value}>
+                    {workflowLabel(value, thread.audience)}
+                  </option>
+                ))}
               </select>
-            </label>
+              <span role="status" className="text-sm font-medium text-success-foreground">
+                {statusSaved ? 'Salvo' : ''}
+              </span>
+            </div>
             {thread.messages
               .filter((m) => m.helpContext)
               .slice(-1)
               .map((m) => (
                 <div key={m.id} className="rounded border p-3 text-sm">
-                  <strong>No momento da dúvida · {m.helpContext?.sectionTitle}</strong>
+                  <strong>Quando a dúvida chegou: {m.helpContext?.sectionTitle}</strong>
                   <p>
                     {m.helpContext?.pending.length
-                      ? m.helpContext.pending.join(' · ')
-                      : 'Nenhum critério pendente registrado.'}
+                      ? `Pendente: ${m.helpContext.pending.join(' · ')}`
+                      : 'Nada pendente ficou registrado nesta parte.'}
                   </p>
                 </div>
               ))}
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-3">
               <p className="text-sm">
-                <strong>
-                  {thread.audience === 'kids' ? 'Comunidade Kids' : 'Comunidade adulta'}
-                </strong>
-                <span className="block text-xs text-muted-foreground">
-                  {thread.contextType === 'studio_submission'
-                    ? 'Conversa sobre uma entrega'
-                    : thread.contextType === 'lesson_section'
-                      ? 'Dúvida em uma seção da aula'
-                      : thread.contextType === 'mural_publication'
-                        ? 'Conversa sobre uma publicação'
-                        : 'Acompanhamento do aluno'}
+                <strong>{COMMUNITY_NAMES[thread.audience]}</strong>
+                <span className="block text-muted-foreground">
+                  {CONTEXT_DETAIL[thread.contextType]}
                 </span>
               </p>
               {thread.contextType === 'studio_submission' &&
@@ -203,7 +226,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
               thread.courseId &&
               thread.lessonId ? (
                 <Button variant="outline" size="sm" onClick={() => setViewingSubmission(true)}>
-                  Abrir entrega desta conversa
+                  Abrir o projeto deste recado
                 </Button>
               ) : null}
             </div>
@@ -243,12 +266,12 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
                         {!teacher && m.spoken ? <SpokenChip /> : null}
                       </p>
                       {teacher ? (
-                        // Recado do PROFESSOR = markdown rico (autor confiável).
+                        // Recado da EQUIPE = markdown rico (autor confiável).
                         <div className="rich-text-content break-words text-sm [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 [&_img]:max-h-72 [&_img]:rounded">
                           {renderMarkdown(m.body)}
                         </div>
                       ) : (
-                        // Recado do ALUNO = texto simples (React escapa — conteúdo de criança).
+                        // Recado de quem estuda = texto simples (React escapa: conteúdo de criança).
                         <p className="whitespace-pre-wrap break-words">{m.body}</p>
                       )}
                     </div>
@@ -283,7 +306,7 @@ export function ThreadDialog({ threadId, studentName, onClose }: Props) {
           audience={thread.audience}
           courseId={thread.courseId}
           lessonId={thread.lessonId}
-          lessonTitle={thread.title ?? 'Entrega desta conversa'}
+          lessonTitle={thread.title ?? 'Projeto deste recado'}
         />
       ) : null}
     </>

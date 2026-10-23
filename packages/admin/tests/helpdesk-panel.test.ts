@@ -109,7 +109,7 @@ describe('attentionDeadlineLabel', () => {
       'Estourado há 1h 30min',
     )
     expect(attentionDeadlineLabel({ slaState: 'breached', remainingMinutes: 0 })).toBe(
-      'SLA estourado agora',
+      'Prazo estourado agora',
     )
     expect(attentionDeadlineLabel({ slaState: 'at_risk', remainingMinutes: 45 })).toBe(
       'Vence em 45 min',

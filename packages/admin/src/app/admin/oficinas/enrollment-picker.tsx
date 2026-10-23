@@ -128,7 +128,7 @@ export function EnrollmentPicker({
       }}
     >
       <h3 className="font-medium">
-        {audience === 'adult' ? 'Inscrever um participante' : 'Inscrever uma criança'}
+        {audience === 'adult' ? 'Inscrever um aluno' : 'Inscrever uma criança'}
       </h3>
       {audience === 'kids' ? (
         <label className="flex flex-col gap-1.5 text-sm font-medium">
@@ -146,9 +146,9 @@ export function EnrollmentPicker({
       ) : null}
       <label className="flex flex-col gap-1.5 text-sm font-medium">
         {mode === 'adult'
-          ? 'Busque o participante'
+          ? 'Busque o aluno'
           : mode === 'child'
-            ? 'Busque a criança ou seu responsável'
+            ? 'Busque a criança ou o responsável'
             : 'Busque o responsável'}
         <Input
           placeholder="Nome ou e-mail"
@@ -169,7 +169,7 @@ export function EnrollmentPicker({
       ) : null}
       {query.trim().length >= 2 && !loading && !choices.length && !error ? (
         <p className="text-sm text-muted-foreground">
-          Nenhum resultado. Confira o nome ou e-mail da família.
+          Ninguém encontrado. Confira o nome ou o e-mail da família.
         </p>
       ) : null}
       <ul className="max-h-64 space-y-2 overflow-y-auto">
@@ -203,7 +203,7 @@ export function EnrollmentPicker({
             maxLength={100}
           />
           <span className="text-xs text-muted-foreground">
-            A reserva já ocupa uma vaga. O perfil será vinculado antes do encontro.
+            A reserva já ocupa uma vaga. O perfil da criança entra antes do encontro.
           </span>
         </label>
       ) : null}

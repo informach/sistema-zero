@@ -72,11 +72,13 @@ describe('guia dos pais acompanha a autorização do aparelho', () => {
       '1. Adicione a criança',
     )
   })
-  it('criação continua com nascimento opcional e sem compartilhar senha', () => {
+  it('criação pede o nome e a data de nascimento, sem compartilhar senha', () => {
     const copy = parentWelcomeSteps({ profilesCount: 0, canCreateProfile: true })
       .map((step) => step.text)
       .join(' ')
-    expect(copy).toContain('opcional')
+    // A data é obrigatória desde 23/10/2026: o guia pede, nunca diz que é opcional.
+    expect(copy).toContain('o nome e a data de nascimento')
+    expect(copy).not.toContain('opcional')
     expect(copy).toContain('Eu sou criador(a)')
     expect(copy).not.toMatch(/[—–“”]/)
   })

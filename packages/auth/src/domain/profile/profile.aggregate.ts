@@ -58,7 +58,17 @@ export interface CreateProfileInput {
   name: string
   avatarUrl?: string | null
   whatsapp?: string | null
+  /**
+   * Data de nascimento (`YYYY-MM-DD`). OBRIGATÓRIA desde 23/10/2026 (decisão da dona): todo perfil
+   * novo nasce com ela. Perfis antigos sem data seguem válidos (o `restore` não valida) e a área
+   * dos pais pede a data.
+   */
   birthDate?: string | null
+  /**
+   * SÓ o backfill legado do perfil-padrão (`scripts/backfill-default-profiles.ts`) cria sem data:
+   * ele não tem como saber o nascimento. Nenhuma rota HTTP passa isto (o DTO exige a data).
+   */
+  allowMissingBirthDate?: boolean
   now?: Date
 }
 
@@ -82,6 +92,9 @@ export class ProfileAggregate {
     const avatarUrl = normalizeOptional(input.avatarUrl)
     assertAvatarUrl(avatarUrl)
     const birthDate = normalizeOptional(input.birthDate)
+    if (birthDate === null && !input.allowMissingBirthDate) {
+      throw new ValidationError(BIRTH_DATE_REQUIRED_MESSAGE)
+    }
     assertBirthDate(birthDate, now)
     return new ProfileAggregate({
       id: input.id,
@@ -181,15 +194,17 @@ export class ProfileAggregate {
   }
 
   /**
-   * Define a data de nascimento (`YYYY-MM-DD`; `null` limpa). Separado de
-   * `updateDetails` DE PROPÓSITO: a autorização é da rota (SÓ os pais editam — a
-   * sessão de perfil da criança é barrada antes de chegar aqui).
+   * Define a data de nascimento (`YYYY-MM-DD`). Separado de `updateDetails` DE PROPÓSITO: a
+   * autorização é da rota (SÓ os pais editam — a sessão de perfil da criança é barrada antes de
+   * chegar aqui). Desde 23/10/2026 a data é obrigatória: dá para informar ou corrigir, nunca
+   * apagar (`null`/vazio é recusado; o perfil antigo sem data que recebe `null` fica como está).
    */
   setBirthDate(value: string | null, now: Date = new Date()): void {
     const next = normalizeOptional(value)
     // Um perfil válido não perde acesso ao completar 18 anos. O formulário dos pais
     // reenvia a data atual em toda edição; data idêntica é preservação, não cadastro novo.
     if (next === this.props.birthDate) return
+    if (next === null) throw new ValidationError(BIRTH_DATE_REQUIRED_MESSAGE)
     assertBirthDate(next, now)
     this.props.birthDate = next
     this.props.updatedAt = now
@@ -267,10 +282,13 @@ function normalizeOptional(value: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
+/** A recusa de um perfil sem data de nascimento (criar sem ela ou apagá-la). */
+export const BIRTH_DATE_REQUIRED_MESSAGE = 'Informe a data de nascimento da criança'
+
 /**
- * Data de nascimento: `YYYY-MM-DD` real, não-futura e com menos de 18 anos.
- * `null` é permitido (campo opcional). A autorização "só os pais" é da rota;
- * aqui é só a sanidade do valor.
+ * Data de nascimento: `YYYY-MM-DD` real, não-futura e com menos de 18 anos. A obrigatoriedade
+ * (23/10/2026) é de quem chama (`create` e `setBirthDate`); `null` aqui só passa porque o perfil
+ * antigo sem data continua válido. A autorização "só os pais" é da rota; aqui é só a sanidade.
  */
 function assertBirthDate(value: string | null, now: Date): void {
   if (value === null) return

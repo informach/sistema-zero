@@ -3,39 +3,122 @@
 import { type KidsRequirement, kidsRequirementKey } from '@sistemazero/core/journey'
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
+import { Check } from 'lucide-react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { cn } from '@/lib/cn'
 import {
   KIDS_POST_LABELS,
   KIDS_TIER_LABELS,
   KIDS_TOOL_LABELS,
   type KidsPreview,
 } from '@/lib/kids-journey-editor'
+import { journeyLensHref } from '@/lib/platform-transition'
 import { KidsJourneyPolicyForm } from './journey-policy-form'
 import { useKidsJourneyEditor } from './use-journey-editor'
+
+/** O item "Jornada" do menu segue a lente: na lente Adultos, esta página leva à de lá. */
+const ADULT_JOURNEY_PATH = '/admin/professor/jornada-adulta'
 
 function milestone(value: 'complete' | 'showcase') {
   return value === 'complete' ? 'concluir' : 'concluir e publicar no Mural'
 }
-function requirement(value: KidsRequirement) {
-  return value.kind === 'course'
-    ? `Curso ${value.courseId}: ${milestone(value.milestone)}`
-    : `${KIDS_TIER_LABELS[value.tier]}, posição ${value.slot}: ${milestone(value.milestone)}`
+type CourseTitles = ReadonlyMap<string, string>
+function requirement(value: KidsRequirement, titles: CourseTitles): React.ReactNode {
+  if (value.kind !== 'course')
+    return `${KIDS_TIER_LABELS[value.tier]}, posição ${value.slot}: ${milestone(value.milestone)}`
+  const title = titles.get(value.courseId)
+  if (title) return `${title}: ${milestone(value.milestone)}`
+  // Curso fora da lista: o nome diz o que houve; o ID fica guardado para quem for procurar.
+  return (
+    <>
+      Curso que não está na lista: {milestone(value.milestone)}
+      <details className="mt-1 text-xs text-muted-foreground">
+        <summary className="cursor-pointer">Detalhes técnicos</summary>
+        <p className="mt-1 break-all font-mono">Curso {value.courseId}</p>
+      </details>
+    </>
+  )
 }
-function Comparison({ preview }: { preview: KidsPreview }) {
+
+/**
+ * Os passos da publicação, à vista (a sala da equipe, 23/10/2026). Só LÊ o estado que o editor
+ * já tem: nenhum passo dispara nada sozinho, e conferir os perfis continua um clique por grupo.
+ */
+const PUBLISH_STEPS = [
+  'Mudar no rascunho',
+  'Comparar com a versão no ar',
+  'Dizer o motivo',
+  'Conferir os perfis',
+  'Publicar',
+] as const
+function publishStepsDone(editor: ReturnType<typeof useKidsJourneyEditor>): boolean[] {
+  const { preparation, preview } = editor
+  const published = preparation?.status === 'published'
+  const prepared = Boolean(preparation)
+  return [
+    editor.changed || prepared,
+    Boolean(preview) || prepared,
+    Boolean(editor.reason.trim()) || prepared,
+    preparation?.status === 'ready' || published,
+    published,
+  ]
+}
+function PublishStepper({ done }: { done: boolean[] }) {
+  const current = done.indexOf(false)
+  return (
+    <ol aria-label="Passos para publicar" className="grid gap-2 sm:grid-cols-5">
+      {PUBLISH_STEPS.map((label, index) => {
+        const isDone = done[index] === true
+        const isCurrent = index === current
+        return (
+          <li
+            key={label}
+            aria-current={isCurrent ? 'step' : undefined}
+            className={cn(
+              'flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm',
+              isCurrent && 'border-primary bg-primary/5 font-semibold text-foreground',
+              isDone && 'text-muted-foreground',
+            )}
+          >
+            <span
+              className={cn(
+                'grid size-6 shrink-0 place-items-center rounded-full text-xs font-bold',
+                isDone ? 'bg-success/15 text-success-foreground' : 'bg-muted',
+              )}
+              aria-hidden
+            >
+              {isDone ? <Check className="size-3.5" /> : index + 1}
+            </span>
+            <span>
+              {label}
+              {isDone ? <span className="sr-only"> (feito)</span> : null}
+            </span>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+function Comparison({ preview, titles }: { preview: KidsPreview; titles: CourseTitles }) {
   const mode = { active: 'Ativa', paused: 'Pausada' }
   const impact = preview.newLearner
   return (
     <Card className="space-y-4 p-5" aria-labelledby="kids-comparison-title">
       <div className="space-y-1">
         <h2 id="kids-comparison-title" className="text-lg font-semibold">
-          Comparação com a versão {preview.baseVersion}
+          Comparação com a versão no ar ({preview.baseVersion})
         </h2>
         <p className="text-sm">
           {mode[impact.before.mode]} → {mode[impact.after.mode]}
         </p>
         <p className="text-sm text-muted-foreground">
-          Simulação de um novo aluno. Não é um levantamento de todos os perfis. A preparação
-          verifica os perfis e preserva suas conquistas antes de publicar.
+          Simulação de uma criança que está começando. Não é uma conta de todos os perfis: os perfis
+          são conferidos no passo seguinte, e o que cada criança já ganhou continua com ela.
         </p>
       </div>
       <div className="rounded-lg border bg-muted/20 p-3 text-sm">
@@ -61,17 +144,18 @@ function Comparison({ preview }: { preview: KidsPreview }) {
           <ul className="space-y-1 text-sm">
             {change.requirementsAdded.map((entry) => (
               <li key={`added-${kidsRequirementKey(entry)}`}>
-                Novo requisito: {requirement(entry)}
+                Novo requisito: {requirement(entry, titles)}
               </li>
             ))}
             {change.requirementsRemoved.map((entry) => (
               <li key={`removed-${kidsRequirementKey(entry)}`}>
-                Requisito retirado: {requirement(entry)}
+                Requisito retirado: {requirement(entry, titles)}
               </li>
             ))}
             {change.requirementsChanged.map((entry) => (
               <li key={`changed-${kidsRequirementKey(entry.before)}`}>
-                Marco alterado: {requirement(entry.before)} → {milestone(entry.after.milestone)}
+                Mudou o que a criança faz: {requirement(entry.before, titles)} →{' '}
+                {milestone(entry.after.milestone)}
               </li>
             ))}
             {change.capabilitiesAdded.map((tool) => (
@@ -79,8 +163,7 @@ function Comparison({ preview }: { preview: KidsPreview }) {
             ))}
             {change.capabilitiesRemoved.map((tool) => (
               <li key={`remove-${tool}`}>
-                Deixa de conquistar aqui: {KIDS_TOOL_LABELS[tool]}. Concessões anteriores são
-                preservadas.
+                Deixa de conquistar aqui: {KIDS_TOOL_LABELS[tool]}. Quem já ganhou continua com ela.
               </li>
             ))}
           </ul>
@@ -88,31 +171,33 @@ function Comparison({ preview }: { preview: KidsPreview }) {
       ))}
       {impact.tierAccessChanges.map(({ before, after }) => (
         <section key={after.tier} className="space-y-1 border-t pt-3 text-sm">
-          <h3 className="font-semibold">Acesso: {KIDS_TIER_LABELS[after.tier]}</h3>
+          <h3 className="font-semibold">Acesso à trilha {KIDS_TIER_LABELS[after.tier]}</h3>
           <p>
-            Entrada: {KIDS_POST_LABELS[before.opensAt]} → {KIDS_POST_LABELS[after.opensAt]}
+            Posto que abre a trilha: {KIDS_POST_LABELS[before.opensAt]} →{' '}
+            {KIDS_POST_LABELS[after.opensAt]}
           </p>
           <p>
-            Revisão da etapa: {KIDS_POST_LABELS[before.completedAt]} →{' '}
+            Posto que deixa rever a trilha inteira: {KIDS_POST_LABELS[before.completedAt]} →{' '}
             {KIDS_POST_LABELS[after.completedAt]}
           </p>
           <p>
-            Primeira aventura: {milestone(before.foundation.milestone)} →{' '}
+            Primeiro curso: {milestone(before.foundation.milestone)} →{' '}
             {milestone(after.foundation.milestone)}
           </p>
           <p>
-            Sem primeira aventura no catálogo conhecido:{' '}
+            Trilha ainda sem o primeiro curso:{' '}
             {before.foundation.whenMissing === 'open' ? 'dispensar requisito' : 'manter pendente'} →{' '}
             {after.foundation.whenMissing === 'open' ? 'dispensar requisito' : 'manter pendente'}
           </p>
         </section>
       ))}
-      <section className="space-y-2 border-t pt-3" aria-label="Condições do percurso">
-        <h3 className="text-sm font-semibold">Condições do percurso</h3>
+      <section className="space-y-2 border-t pt-3" aria-label="O que pode travar o caminho">
+        <h3 className="text-sm font-semibold">O que pode travar o caminho</h3>
         <p className="text-sm text-muted-foreground">
-          Alcance conferido:{' '}
+          Conferido até o posto:{' '}
           {preview.readiness.horizon ? KIDS_POST_LABELS[preview.readiness.horizon] : 'indisponível'}
-          . Aventuras futuras ausentes podem gerar avisos; bloqueios precisam ser corrigidos.
+          . Curso que ainda falta lá na frente gera aviso. Bloqueio precisa ser resolvido antes de
+          publicar.
         </p>
         {!preview.readiness.issues.length ? (
           <p className="text-sm">Nenhuma pendência encontrada.</p>
@@ -140,7 +225,7 @@ function Comparison({ preview }: { preview: KidsPreview }) {
 }
 const preparationLabels = {
   capturing: 'Preparação em andamento',
-  preparing: 'Preservando conquistas',
+  preparing: 'Conferindo os perfis',
   ready: 'Pronta para publicar',
   stale: 'Preparação desatualizada',
   published: 'Preparação já publicada',
@@ -149,11 +234,30 @@ const preparationLabels = {
 export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?: unknown }) {
   const editor = useKidsJourneyEditor(initialPreparation)
   const { record, preparation, preview } = editor
+  const router = useRouter()
+  const { keepDraftForLensChange } = editor
+  const [draftNotKept, setDraftNotKept] = useState(false)
+  // Trocar a lente para Adultos aqui leva à jornada de lá, em vez de um aviso sem saída. O
+  // endereço vai junto (`?preparacao=`): voltar para Kids retoma a preparação aberta. O
+  // rascunho com mudanças fica guardado na aba e volta com a lente Kids; se o navegador não
+  // deixar guardar, a página não sai sozinha: avisa e deixa a pessoa escolher.
+  useEffect(() => {
+    if (editor.platform === 'kids') {
+      setDraftNotKept(false)
+      return
+    }
+    if (!keepDraftForLensChange()) {
+      setDraftNotKept(true)
+      return
+    }
+    router.replace(journeyLensHref(ADULT_JOURNEY_PATH, window.location.search))
+  }, [editor.platform, keepDraftForLensChange, router])
+  const titles: CourseTitles = new Map(editor.courses.map((course) => [course.id, course.title]))
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Jornada Kids"
-        description="Planeje os avanços, confira o percurso e publique uma versão para a plataforma."
+        title="Jornada do Criador"
+        description="O que a criança precisa fazer para subir de posto e o que ela ganha em cada um. Você muda no rascunho e publica quando estiver tudo conferido."
         action={
           <Button
             type="button"
@@ -165,15 +269,34 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
           </Button>
         }
       />
-      {editor.platform !== 'kids' ? (
-        <Card className="p-5">
-          <p>Selecione a plataforma Kids para consultar esta jornada.</p>
+      {editor.platform !== 'kids' && draftNotKept ? (
+        <Card role="alert" className="space-y-3 p-5">
+          <h2 className="font-semibold">O rascunho da Jornada do Criador não foi guardado</h2>
+          <p className="text-sm text-muted-foreground">
+            Este navegador não deixou guardar as mudanças desta aba. Volte para a lente Kids para
+            continuar o rascunho, ou abra a jornada da Comunidade Sistema Zero sabendo que ele não
+            vai voltar.
+          </p>
+          <Link
+            href={journeyLensHref(
+              ADULT_JOURNEY_PATH,
+              typeof window === 'undefined' ? '' : window.location.search,
+            )}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-primary underline-offset-4 hover:underline"
+          >
+            Abrir a jornada da Comunidade Sistema Zero sem o rascunho
+          </Link>
         </Card>
+      ) : editor.platform !== 'kids' ? (
+        <p role="status" className="text-sm text-muted-foreground">
+          Abrindo a jornada da Comunidade Sistema Zero…
+        </p>
       ) : (
         <>
+          {record?.phase === 'published' && !record.permissions.canEdit && <ReadOnlyNotice />}
           {editor.loading && (
             <p role="status" className="text-sm text-muted-foreground">
-              Carregando jornada…
+              Carregando a jornada…
             </p>
           )}
           {editor.loadError && (
@@ -183,8 +306,8 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
             >
               <p>{editor.loadError}</p>
               <p>
-                Os dados já carregados são mantidos para consulta. Novas operações ficam bloqueadas
-                até a jornada responder.
+                O que já estava na tela continua aqui para consulta. Nada pode ser mudado até a
+                jornada responder.
               </p>
             </div>
           )}
@@ -205,9 +328,9 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
             <Card className="space-y-2 p-5">
               <h2 className="font-semibold">Jornada em preparação inicial</h2>
               <p className="text-sm text-muted-foreground">
-                A configuração inicial e as conquistas existentes estão sendo conferidas no
-                servidor. Aguarde a publicação inicial antes de editar. Esta tela não cria nem
-                substitui a política.
+                As regras iniciais e o que as crianças já ganharam estão sendo conferidos. Espere a
+                primeira versão ser publicada para mudar algo. Esta tela não cria nem troca as
+                regras.
               </p>
             </Card>
           )}
@@ -218,9 +341,9 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                 <span className="text-muted-foreground">
                   {record.policy.mode === 'paused' ? 'Progressão pausada' : 'Progressão ativa'}
                 </span>
-                {!record.permissions.canEdit && <span>Somente leitura · equipe</span>}
                 {editor.changed && <span className="text-primary">Rascunho com mudanças</span>}
               </div>
+              <PublishStepper done={publishStepsDone(editor)} />
               <KidsJourneyPolicyForm
                 value={editor.draft}
                 courses={editor.courses}
@@ -235,11 +358,11 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
               <Card className="space-y-4 p-5" aria-labelledby="kids-review-title">
                 <div className="space-y-1">
                   <h2 id="kids-review-title" className="text-lg font-semibold">
-                    Revisar e preparar
+                    Comparar, dizer o motivo e preparar
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    Compare o rascunho antes de preparar. Publicar preserva os postos, as
-                    ferramentas e os acessos já conquistados; não concede licença ou matrícula.
+                    Publicar mantém os postos, as ferramentas e os acessos que cada criança já
+                    ganhou. Não dá licença nem matrícula.
                   </p>
                 </div>
                 <Button
@@ -248,7 +371,7 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                   disabled={!editor.canCompare}
                   onClick={() => void editor.compare()}
                 >
-                  Comparar mudanças
+                  Comparar com a versão no ar
                 </Button>
                 <div className="space-y-2">
                   <label htmlFor="kids-change-reason" className="block text-sm font-medium">
@@ -264,7 +387,7 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                     onChange={(event) => editor.updateReason(event.target.value)}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Registrado no histórico. Até 500 caracteres; não inclua dados de crianças.
+                    Fica no histórico. Até 500 caracteres. Não escreva dados de nenhuma criança.
                   </p>
                 </div>
                 {!preparation && (
@@ -278,27 +401,28 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                 )}
                 {!preparation && (
                   <p className="text-xs text-muted-foreground">
-                    É preciso haver mudanças, comparação válida e motivo. A preparação não publica a
-                    versão.
+                    Para preparar, o rascunho precisa ter mudanças, a comparação precisa estar em
+                    dia e o motivo, escrito. Preparar ainda não publica.
                   </p>
                 )}
               </Card>
-              {preview && <Comparison preview={preview} />}
+              {preview && <Comparison preview={preview} titles={titles} />}
               {preparation && (
                 <Card className="space-y-4 p-5" aria-labelledby="kids-preparation-title">
                   <div className="space-y-1">
                     <h2 id="kids-preparation-title" className="text-lg font-semibold">
                       {preparationLabels[preparation.status]}
                     </h2>
-                    <p className="break-all font-mono text-xs text-muted-foreground">
-                      {preparation.id}
+                    <p className="text-sm">
+                      {preparation.processed === 1
+                        ? '1 perfil conferido'
+                        : `${preparation.processed} perfis conferidos`}
                     </p>
-                    <p className="text-sm">{preparation.processed} perfis verificados</p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    O candidato fica fixo durante esta preparação. Você pode sair e retomar pelo
-                    endereço desta página. Cada clique verifica um lote; não há publicação ou nova
-                    tentativa automática.
+                    O rascunho fica travado enquanto os perfis são conferidos. Você pode sair e
+                    voltar pelo endereço desta página. Cada clique confere um grupo de perfis, e
+                    nada é publicado nem tentado de novo sozinho.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {(preparation.status === 'capturing' || preparation.status === 'preparing') && (
@@ -314,7 +438,7 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                         }
                         onClick={() => void editor.advance()}
                       >
-                        Verificar próximo lote
+                        Conferir o próximo grupo de perfis
                       </Button>
                     )}
                     {preparation.status !== 'published' && preparation.status !== 'stale' && (
@@ -337,10 +461,14 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                   </div>
                   {preparation.status === 'stale' && (
                     <p className="text-sm text-destructive">
-                      O catálogo ou a configuração mudou. Volte ao rascunho, compare e prepare
-                      novamente. Nenhuma versão foi publicada por esta preparação.
+                      Os cursos ou as regras mudaram no meio do caminho. Volte ao rascunho, compare
+                      e prepare de novo. Nada foi publicado por esta preparação.
                     </p>
                   )}
+                  <details className="text-xs text-muted-foreground">
+                    <summary className="cursor-pointer">Detalhes técnicos</summary>
+                    <p className="mt-1 break-all font-mono">Preparação {preparation.id}</p>
+                  </details>
                 </Card>
               )}
             </>
@@ -357,7 +485,7 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                   Histórico de versões
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  Somente versões publicadas. Rascunhos e preparações não substituem a versão atual.
+                  Só as versões que foram ao ar. Rascunhos e preparações não aparecem aqui.
                 </p>
               </div>
               {editor.historyError && (
@@ -366,7 +494,7 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                 </p>
               )}
               {!editor.history.length && !editor.historyError && (
-                <p className="text-sm text-muted-foreground">Nenhuma versão listada.</p>
+                <p className="text-sm text-muted-foreground">Nenhuma versão ainda.</p>
               )}
               <ol className="divide-y">
                 {editor.history.map((revision) => (
@@ -378,11 +506,18 @@ export function KidsJourneyEditor({ initialPreparation }: { initialPreparation?:
                       </time>
                     </div>
                     <p className="whitespace-pre-wrap break-words">{revision.reason}</p>
-                    <p className="break-all text-xs text-muted-foreground">
-                      {revision.actorKind === 'system'
-                        ? 'Sistema · configuração inicial'
-                        : `Conta da equipe · ${revision.actorId}`}
-                    </p>
+                    {revision.actorKind === 'system' ? (
+                      <p className="text-xs text-muted-foreground">Sistema · regras iniciais</p>
+                    ) : (
+                      // O histórico só traz o ID de quem publicou (sem nome): a pessoa aparece
+                      // como "Alguém da equipe" e o ID fica nos detalhes.
+                      <details className="text-xs text-muted-foreground">
+                        <summary className="cursor-pointer">Alguém da equipe</summary>
+                        <p className="mt-1 break-all font-mono">
+                          Conta {revision.actorId ?? 'sem ID'}
+                        </p>
+                      </details>
+                    )}
                   </li>
                 ))}
               </ol>

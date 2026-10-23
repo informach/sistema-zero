@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { statusLabel } from '@/components/admin/status-badge'
 import { type ComponentDraft, ComponentsEditor } from '@/components/catalog/components-editor'
 import { type CourseOption, FulfillmentEditor } from '@/components/catalog/fulfillment-editor'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -25,7 +26,7 @@ import type { CourseView, FulfillmentSpec, Paginated, ProductView } from '@/lib/
 // default 'other'), e um produto legado com tipo fora da lista ganha uma opção
 // extra na edição (não some do select).
 const KINDS: { value: string; label: string }[] = [
-  { value: 'ebook', label: 'Ebook' },
+  { value: 'ebook', label: 'E-book' },
   { value: 'course', label: 'Curso' },
   { value: 'template_kit', label: 'Kit de templates' },
   { value: 'community', label: 'Comunidade' },
@@ -117,7 +118,10 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       .catch(() => {})
     apiGet<Paginated<CourseView>>('/api/members/courses?limit=100')
       .then((page) => {
-        if (alive) setCourses(page.items.map((c) => ({ slug: c.slug, title: c.title })))
+        if (alive)
+          setCourses(
+            page.items.map((c) => ({ slug: c.slug, title: c.title, audience: c.audience })),
+          )
       })
       .catch(() => {})
       .finally(() => {
@@ -155,7 +159,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       .catch((err) => {
         if (!alive) return
         if ((err as ApiError).status === 404) setNotFound(true)
-        else toast.error((err as ApiError).message ?? 'Falha ao carregar o produto.')
+        else toast.error((err as ApiError).message ?? 'O produto não carregou. Tente de novo.')
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -178,26 +182,26 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
 
   async function save() {
     if (!form.name.trim() || (!isEdit && (!form.sku.trim() || !form.slug.trim()))) {
-      toast.error('Preencha nome, SKU e slug.')
+      toast.error('Preencha o nome, o código interno e o endereço.')
       return
     }
     // Espelha o `assertCoherent` do catálogo: rascunho é livre; ATIVAR exige o
     // produto pronto para entregar.
     if (form.status === 'active') {
       if (isBundle && components.length === 0) {
-        toast.error('Combo ativo precisa de pelo menos um componente.')
+        toast.error('Para publicar um combo, coloque pelo menos um produto dentro dele.')
         return
       }
       if (!isBundle && !fulfillment) {
-        toast.error('Produto ativo precisa de entrega: escolha um curso ou "Todos os cursos".')
+        toast.error('Para publicar, diga o que a pessoa ganha: um curso ou "Todos os cursos".')
         return
       }
       if (!isBundle && fulfillment?.accessType === 'course' && !fulfillment.courseRef) {
-        toast.error('Selecione o curso vinculado (ou mude para "Todos os cursos").')
+        toast.error('Escolha o curso que a pessoa ganha, ou mude para "Todos os cursos".')
         return
       }
       if (!isBundle && fulfillment?.accessType === 'community' && !fulfillment.courseRef) {
-        toast.error('Informe a chave da comunidade.')
+        toast.error('Escolha a comunidade que a pessoa ganha.')
         return
       }
     }
@@ -238,7 +242,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
       }
       router.push('/admin/catalogo/produtos')
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível salvar.')
+      toast.error((err as ApiError).message ?? 'Não deu para salvar. Tente de novo.')
       setSaving(false)
     }
   }
@@ -254,9 +258,12 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
   if (notFound) {
     return (
       <div className="space-y-6">
-        <AdminHeader title="Produto não encontrado" />
+        <AdminHeader
+          title="Este produto não existe"
+          description="Ele pode ter sido apagado, ou o link está errado."
+        />
         <Link href="/admin/catalogo/produtos" className={buttonVariants({ variant: 'outline' })}>
-          <ArrowLeft className="size-4" /> Voltar aos produtos
+          <ArrowLeft className="size-4" aria-hidden /> Voltar aos produtos
         </Link>
       </div>
     )
@@ -268,12 +275,12 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
         title={isEdit ? `Editar produto: ${form.name}` : 'Novo produto'}
         description={
           isEdit
-            ? 'Dados, combo e entrega/acesso do produto.'
-            : 'Digite o nome — SKU e slug são preenchidos automaticamente.'
+            ? 'O que o produto é e o que a pessoa ganha ao comprar.'
+            : 'Comece pelo nome. O código interno e o endereço se preenchem sozinhos.'
         }
         action={
           <Link href="/admin/catalogo/produtos" className={buttonVariants({ variant: 'outline' })}>
-            <ArrowLeft className="size-4" /> Voltar
+            <ArrowLeft className="size-4" aria-hidden /> Voltar
           </Link>
         }
       />
@@ -286,7 +293,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
           <Field
             label="Nome"
             htmlFor="name"
-            tooltip="Nome do entregável. Na criação, SKU e slug são gerados a partir dele."
+            tooltip="O nome do que a pessoa ganha. Ao criar, o código interno e o endereço saem dele."
           >
             <Input
               id="name"
@@ -306,9 +313,9 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
             {!isEdit ? (
               <>
                 <Field
-                  label="SKU"
+                  label="Código interno"
                   htmlFor="sku"
-                  tooltip="Identificador único e estável do produto (minúsculas, números, hífens). Gerado do nome; edite antes de salvar se quiser outro. Não muda depois de criado."
+                  tooltip="Um código único que a equipe usa para achar o produto (letras minúsculas, números e hífens). Sai do nome, e dá para trocar antes de salvar. Depois de criado, não muda."
                 >
                   <Input
                     id="sku"
@@ -320,9 +327,9 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
                   />
                 </Field>
                 <Field
-                  label="Slug"
+                  label="Endereço"
                   htmlFor="slug"
-                  tooltip="Parte do endereço público do produto (ex.: /produtos/no-comando-da-ia). Gerado do nome; edite antes de salvar se quiser outro. Não muda depois de criado."
+                  tooltip="A parte final do link público do produto (ex.: /produtos/no-comando-da-ia). Sai do nome, e dá para trocar antes de salvar. Depois de criado, não muda."
                 >
                   <Input
                     id="slug"
@@ -337,10 +344,10 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
             ) : (
               <div className="col-span-2 grid gap-4 text-xs text-muted-foreground sm:grid-cols-2">
                 <div>
-                  SKU: <span className="font-mono">{form.sku}</span>
+                  Código interno: <span className="font-mono">{form.sku}</span>
                 </div>
                 <div>
-                  Slug: <span className="font-mono">{form.slug}</span>
+                  Endereço: <span className="font-mono">{form.slug}</span>
                 </div>
               </div>
             )}
@@ -349,12 +356,12 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
             <Field
               label="Tipo"
               htmlFor="kind"
-              tooltip="O que é este item. 'Combo' agrupa vários produtos numa só compra — quem compra recebe acesso a todos."
+              tooltip="O que é este produto. O combo junta vários produtos numa compra só, e quem compra ganha todos."
             >
               <Select id="kind" value={form.kind} onChange={(e) => onKindChange(e.target.value)}>
                 {(KINDS.some((k) => k.value === form.kind)
                   ? KINDS
-                  : [...KINDS, { value: form.kind, label: `${form.kind} (legado)` }]
+                  : [...KINDS, { value: form.kind, label: `${form.kind} (tipo antigo)` }]
                 ).map((k) => (
                   <option key={k.value} value={k.value}>
                     {k.label}
@@ -363,9 +370,9 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
               </Select>
             </Field>
             <Field
-              label="Status"
+              label="Situação"
               htmlFor="pstatus"
-              tooltip="draft: em preparação. active: publicado. archived: fora de uso."
+              tooltip="Rascunho: ainda em preparação. Publicado: à venda. Arquivado: guardado, fora de uso."
             >
               <Select
                 id="pstatus"
@@ -374,7 +381,7 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
               >
                 {PRODUCT_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {statusLabel(s, 'catalog')}
                   </option>
                 ))}
               </Select>
@@ -394,8 +401,8 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
               onChange={(e) => setForm((f) => ({ ...f, sellable: e.target.checked }))}
               className="size-4 accent-[color:var(--primary)]"
             />
-            Vendável (pode ser vendido sozinho)
-            <InfoTooltip text="Desmarque para itens entregues apenas dentro de um combo ou como bônus de uma oferta — nunca vendidos sozinhos." />
+            Pode ser vendido sozinho
+            <InfoTooltip text="Desmarque para o que só vem dentro de um combo ou como bônus de uma oferta, e nunca é vendido sozinho." />
           </label>
         </CardContent>
       </Card>
@@ -404,8 +411,8 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-base">
-              Componentes do combo
-              <InfoTooltip text="Um combo entrega vários produtos numa compra só. Adicione os produtos e marque o principal (destacado na venda)." />
+              O que vem no combo
+              <InfoTooltip text="O combo entrega vários produtos numa compra só. Coloque os produtos e marque o principal, que aparece em destaque na venda." />
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -423,8 +430,8 @@ export function ProductFormClient({ productId }: { productId: string | null }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-1.5 text-base">
-              Entrega / Acesso
-              <InfoTooltip text="O que a área de membros libera para o comprador: um curso específico ou todos os cursos (chave-mestra) — e quando libera. Combo não tem entrega própria (vem dos componentes)." />
+              O que a pessoa ganha
+              <InfoTooltip text="O que a área do aluno libera para quem comprou: um curso ou todos os cursos, e quando. O combo não tem isso próprio: vale o que vem nos produtos dele." />
             </CardTitle>
           </CardHeader>
           <CardContent>

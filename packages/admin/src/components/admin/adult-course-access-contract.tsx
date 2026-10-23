@@ -1,4 +1,6 @@
 import Link from 'next/link'
+
+/** Como um curso da Comunidade Sistema Zero chega ao aluno: quem recebe, por onde e o que libera. */
 export function AdultCourseAccessContract({
   slug,
   live,
@@ -10,49 +12,50 @@ export function AdultCourseAccessContract({
 }) {
   return (
     <section
-      className="rounded-xl border p-4 text-sm space-y-3"
-      aria-label="Contrato técnico adulto"
+      className="space-y-3 rounded-2xl border p-4 text-sm"
+      aria-label="Como este curso chega ao aluno"
     >
-      <h3 className="font-semibold">Contrato técnico adulto</h3>
+      <h3 className="font-semibold">Como este curso chega ao aluno</h3>
       <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
         <dt>Aluno</dt>
-        <dd>A própria conta; sem perfil familiar.</dd>
-        <dt>Entrega</dt>
+        <dd>A própria conta, sem perfil de família.</dd>
+        <dt>Como libera</dt>
         <dd>
           {live
-            ? 'Vaga ativa na turma e permissões dos encontros.'
-            : 'Matrícula do curso gravado pelo catálogo e pagamentos.'}
+            ? 'Uma vaga na turma, que dá entrada nos encontros.'
+            : 'A matrícula no curso gravado, pela compra no catálogo.'}
         </dd>
-        <dt>Referência</dt>
+        <dt>Endereço</dt>
         <dd>
-          <code>{slug || 'Defina o slug do curso'}</code>
+          <code>{slug || 'Escolha o endereço do curso'}</code>
         </dd>
         <dt>Ferramentas da aula</dt>
-        <dd>Autorizadas pela aula liberada. Não exigem produto livre adicional.</dd>
+        <dd>Liberadas pela própria aula. Não precisam de outro produto.</dd>
         <dt>Blocos conquistados</dt>
         <dd>
           {live
-            ? `${blocks} blocos configurados; concedidos ao concluir a oficina, sem exigir publicação no Mural.`
-            : `${blocks} blocos configurados; a conclusão preserva as ferramentas conquistadas.`}
+            ? `${blocks} blocos configurados. O aluno ganha ao concluir a oficina, sem precisar publicar no Mural.`
+            : `${blocks} blocos configurados. Concluir o curso mantém as ferramentas conquistadas.`}
         </dd>
       </dl>
       <p>
-        Os blocos conquistados ficam registrados mesmo sem licença do Estúdio Completo. O acesso ao
-        produto é verificado separadamente.
+        Os blocos conquistados ficam guardados mesmo sem a licença do Estúdio Completo. O acesso ao
+        produto é conferido à parte.
       </p>
       <p>
-        Estúdio, Pinta, Molda e Pensa livres dependem das licenças adultas e das liberações da
-        jornada. IA e voz exigem formação avançada; a voz depende também da preferência do aluno.
+        Estúdio, Pinta, Molda e Pensa livres dependem das licenças da Comunidade Sistema Zero e das
+        liberações da jornada. Os assistentes e a voz pedem a formação avançada, e a voz depende
+        também da escolha do aluno.
       </p>
       {live ? (
-        <p className="text-amber-700">
-          O fluxo atual de vagas é administrado pela equipe. A venda automática de vaga exige
-          integração específica de reserva, pagamento e estorno.
+        <p className="text-warning">
+          Hoje a equipe cuida das vagas à mão. Vender vaga sozinho precisa de uma integração própria
+          de reserva, pagamento e estorno.
         </p>
       ) : (
         <p>
-          Uma oferta deve entregar este curso pelo seu slug. Acesso total adulto usa{' '}
-          <code>all_courses</code>. Revise também o direito à Mostra.
+          Uma oferta precisa entregar este curso pelo endereço dele. Para liberar todos os cursos da
+          comunidade, a oferta usa "Todos os cursos". Confira também o direito à Mostra.
         </p>
       )}
       <Link href="/admin/professor/jornada-adulta" className="text-primary underline">

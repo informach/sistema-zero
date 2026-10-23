@@ -31,7 +31,7 @@ import { LivePreflight } from './live-preflight'
 import { LiveRecordingReview } from './live-recording-review'
 import { LiveRecordingStatus } from './live-recording-status'
 import { LiveReplacement } from './live-replacement'
-import { LiveTeacherControls } from './live-teacher-controls'
+import { LiveTeacherControls, LiveTeacherRoadmap } from './live-teacher-controls'
 
 export type { LiveLessonSlotProps } from '../../lib/live/lesson-slot'
 
@@ -381,6 +381,7 @@ export function LiveClassroom({
     [room, deviceId, stale, joined, admitted],
   )
   const back = teacher ? '/admin/professor/ao-vivo' : '/oficinas'
+  const backLabel = teacher ? 'Voltar aos encontros' : 'Voltar às oficinas'
   const displayedError = error ?? connectionError
   if (deviceInitializationFailed)
     return (
@@ -390,7 +391,7 @@ export function LiveClassroom({
           className="inline-flex min-h-10 items-center gap-2 font-bold text-primary"
         >
           <ArrowLeft className="size-4" />
-          Voltar às oficinas
+          {backLabel}
         </Link>
         <p role="alert">
           Não foi possível preparar este aparelho. Recarregue a página para tentar novamente.
@@ -425,7 +426,7 @@ export function LiveClassroom({
     <div className="space-y-5 p-4 md:p-6">
       <Link href={back} className="inline-flex min-h-10 items-center gap-2 font-bold text-primary">
         <ArrowLeft className="size-4" />
-        Voltar às oficinas
+        {backLabel}
       </Link>
       {displayedError ? (
         <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
@@ -471,9 +472,10 @@ export function LiveClassroom({
                     : 'Encontro marcado'}
             </span>
           </header>
+          {isTeacher && room.occurrence ? <LiveTeacherRoadmap room={room} joined={joined} /> : null}
           {!joined ? (
             <div className="space-y-4">
-              <LivePreflight />
+              <LivePreflight teacher={isTeacher} />
               {isTeacher && room.occurrence?.state === 'scheduled' ? (
                 <LiveTeacherControls
                   room={room}
@@ -491,11 +493,7 @@ export function LiveClassroom({
                       : 'Tudo pronto? Entre na sala com câmera e microfone desligados.'}
                   </p>
                   <Button disabled={busy || !deviceId || stale} onClick={() => void join()}>
-                    {takeover
-                      ? 'Continuar aqui'
-                      : isTeacher
-                        ? 'Entrar como professora'
-                        : 'Entrar na sala'}
+                    {takeover ? 'Continuar aqui' : 'Entrar na sala'}
                   </Button>
                 </div>
               ) : null}
@@ -504,13 +502,13 @@ export function LiveClassroom({
           {joined && !admitted ? (
             <p role="status" className="rounded-xl border bg-card p-5">
               {self?.admission === 'removed'
-                ? 'Sua participação foi encerrada pela professora.'
-                : 'Você está na recepção. A professora já vai chamar.'}
+                ? 'Sua participação foi encerrada por quem conduz o encontro.'
+                : 'Você está na recepção. Quem conduz o encontro já vai chamar.'}
             </p>
           ) : null}
           {joined && admitted && !supervised && !isTeacher ? (
             <p role="status" className="rounded-xl border bg-amber-50 p-4 text-amber-950">
-              A professora está reconectando. Conversa e aparelhos ficam pausados.
+              Quem conduz o encontro está reconectando. Conversa e aparelhos ficam pausados.
             </p>
           ) : null}
           {joined && isTeacher && room.occurrence ? (
@@ -556,7 +554,7 @@ export function LiveClassroom({
   )
 }
 
-/** O palco da professora: o painel de mídia de sempre e o estado da gravação. */
+/** O palco de quem conduz: o painel de mídia de sempre e o estado da gravação. */
 const TeacherStageContext = createContext<{
   room: LiveRoomView | null
   deviceId: string

@@ -23,6 +23,9 @@ export function ConsoleUserMenu({
   logoutPath,
   apps = [],
   dropdownSide = 'down',
+  dropdownAlign = 'right',
+  roleLabel,
+  triggerClassName,
 }: {
   user: ConsoleUserMenuUser
   fallbackInitial: string
@@ -30,6 +33,15 @@ export function ConsoleUserMenu({
   apps?: readonly ConsoleAppLink[]
   /** `up` p/ gatilhos rentes ao rodapé (footer da sidebar) — o menu abre acima. */
   dropdownSide?: 'down' | 'up'
+  /**
+   * Para que lado o menu cresce. `right` (padrão) alinha a borda direita com o gatilho, para o
+   * avatar no canto direito da barra; `left` serve ao avatar no canto esquerdo de uma coluna.
+   */
+  dropdownAlign?: 'left' | 'right'
+  /** O papel escrito para gente ("Equipe"); sem ele, o menu mostra o papel cru. */
+  roleLabel?: string
+  /** Troca o visual do gatilho (o avatar sobre um fundo escuro, por exemplo). */
+  triggerClassName?: string
 }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -63,7 +75,10 @@ export function ConsoleUserMenu({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex size-8 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-foreground transition-colors hover:bg-primary/25"
+        className={
+          triggerClassName ??
+          'flex size-8 items-center justify-center rounded-full bg-primary/15 text-sm font-semibold text-foreground transition-colors hover:bg-primary/25'
+        }
         aria-label="Conta"
         aria-expanded={open}
       >
@@ -71,14 +86,16 @@ export function ConsoleUserMenu({
       </button>
       {open ? (
         <div
-          className={`absolute right-0 z-50 w-56 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg ${
+          className={`absolute ${dropdownAlign === 'left' ? 'left-0' : 'right-0'} z-50 w-56 overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-lg ${
             dropdownSide === 'up' ? 'bottom-full mb-2' : 'mt-2'
           }`}
         >
           <div className="border-b border-border px-3 py-2.5">
             <p className="truncate text-sm font-medium">{name}</p>
             <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-            <p className="mt-1 text-xs capitalize text-muted-foreground">{user.role}</p>
+            <p className={`mt-1 text-xs text-muted-foreground ${roleLabel ? '' : 'capitalize'}`}>
+              {roleLabel ?? user.role}
+            </p>
           </div>
           {apps.length > 0 ? (
             <div className="border-b border-border py-1">

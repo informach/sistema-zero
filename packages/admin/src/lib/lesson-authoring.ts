@@ -46,21 +46,21 @@ export function lessonContentLabel(block: Block): string {
           ?.slice(0, 90) || 'Escrever o texto'
       )
     case 'video':
-      return c.src ? 'Vídeo da seção' : 'Vídeo aguardando envio'
+      return c.src ? 'Vídeo da parte' : 'Vídeo aguardando envio'
     case 'ebook':
-      return c.title || 'Caderno do curso'
+      return c.title || 'Passo a passo do projeto'
     case 'studio':
       return isGalleryBlock(c)
-        ? 'Entrega da galeria do Estúdio'
+        ? 'Projeto enviado pela galeria do Estúdio'
         : c.initialProject?.name || 'Projeto no Estúdio'
     case 'pinta':
-      return isGalleryBlock(c) ? 'Entrega da galeria do Pinta' : 'Desenho no Pinta'
+      return isGalleryBlock(c) ? 'Desenho enviado pela galeria do Pinta' : 'Desenho no Pinta'
     case 'quiz':
       return `${c.questions.length} pergunta${c.questions.length === 1 ? '' : 's'}`
     case 'image':
-      return c.caption || c.alt || 'Imagem da seção'
+      return c.caption || c.alt || 'Imagem da parte'
     case 'audio':
-      return 'Áudio da seção'
+      return 'Áudio da parte'
     case 'embed':
       return 'Conteúdo em HTML'
     case 'certificate':
@@ -84,8 +84,8 @@ export function completionBlockLabel(content: LessonBlockContent): string {
     case 'studio':
     case 'pinta':
       return isGalleryBlock(content)
-        ? 'Enviar a criação da galeria ao professor'
-        : 'Enviar a criação ao professor'
+        ? 'Enviar a criação da galeria à equipe'
+        : 'Enviar a criação à equipe'
     case 'quiz':
       return `Passar no quiz (${content.passingScore ?? 0}%)`
     case 'interactive':
@@ -191,7 +191,7 @@ export function sectionCompletionCandidates(document: Document, section: LessonS
         ...(files ? { files } : {}),
         issue:
           delivery && !isFinalProjectSection(document.sections, section.id)
-            ? 'Coloque a entrega antes do quiz final, sem etapas de criação depois dela.'
+            ? 'Coloque o envio do projeto antes do quiz final, sem partes de criação depois dele.'
             : files && files.length === 0
               ? 'Adicione ao menos um arquivo enviado ao bloco.'
               : issue,
@@ -215,7 +215,7 @@ export function suggestedCompletion(
 }
 
 export function newAuthoringSection(id = crypto.randomUUID()): LessonSection {
-  return { ...defaultLessonSection(id, 'Nova seção', []), completion: { version: 1, blockIds: [] } }
+  return { ...defaultLessonSection(id, 'Nova parte', []), completion: { version: 1, blockIds: [] } }
 }
 
 /** Only authoring identities are regenerated; media and project-internal connections survive. */
@@ -266,7 +266,7 @@ export function appendLessonSection(
     document.blocks.length + blocks.filter((b) => !existingIds.has(b.id)).length > 200
   )
     throw new Error(
-      'A aula permite até 60 seções e 200 conteúdos. Organize a aula antes de acrescentar esta seção.',
+      'A aula permite até 60 partes e 200 conteúdos. Organize a aula antes de acrescentar esta parte.',
     )
   const moved = new Set(blocks.filter((b) => existingIds.has(b.id)).map((b) => b.id))
   const sections = sourceSections.map((s) => ({
@@ -296,7 +296,7 @@ export function duplicateLessonSection(
   if (!section || document.sections.length >= 60) return []
   if (mode === 'shared' && section.workspaceBlockId && !canShareSectionProject(section))
     throw new Error(
-      'Esta seção contém o bloco do projeto. Faça uma cópia independente para preservar sua entrega.',
+      'Esta parte contém o bloco do projeto. Faça uma cópia independente para não perder o envio do projeto.',
     )
   const sectionCopyId = id()
   const sources = [...section.blockIds]

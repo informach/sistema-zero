@@ -200,7 +200,8 @@ export async function syncZappyKnowledgeForAttachment(attachment: AttachmentView
     await deleteZappyKnowledgeByRef(ref)
     return
   }
-  if (!isPdfAttachment(attachment)) throw new Error('O caderno do Zappy precisa ser um PDF.')
+  if (!isPdfAttachment(attachment))
+    throw new Error('O Passo a passo do projeto precisa ser um PDF.')
   await syncPending({
     courseId: '',
     lessonId: attachment.lessonId,

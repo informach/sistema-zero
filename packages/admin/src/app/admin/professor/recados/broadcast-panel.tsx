@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { ReplyTemplatesMenu } from '@/components/professor/reply-templates'
 import { apiGet, apiSend } from '@/lib/api'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import type { CourseView } from '@/lib/types'
 import { ThreadDialog } from './thread-dialog'
 
@@ -62,7 +63,7 @@ export function BroadcastPanel({
     initialProfileId
       ? {
           profileId: initialProfileId,
-          name: 'Aluno selecionado na ficha',
+          name: 'Criança escolhida na ficha',
           accountName: '',
           accountEmail: '',
         }
@@ -91,9 +92,7 @@ export function BroadcastPanel({
         })
         .catch(() => {
           if (active)
-            setSearchError(
-              'Não foi possível buscar os alunos. Altere a busca para tentar novamente.',
-            )
+            setSearchError('Não conseguimos buscar as crianças. Mude a busca para tentar de novo.')
         })
     }, 250)
     return () => {
@@ -111,7 +110,7 @@ export function BroadcastPanel({
           if (active) setSent(r)
         })
         .catch(() => {
-          if (active) toast.error('Falha ao atualizar os envios.')
+          if (active) toast.error('Não conseguimos atualizar os recados enviados.')
         })
     }
     refresh()
@@ -146,7 +145,7 @@ export function BroadcastPanel({
       } catch {
         if (active)
           setDetailError(
-            'Não foi possível atualizar os destinatários. Uma nova tentativa será feita automaticamente.',
+            'Não conseguimos atualizar quem recebeu. Vamos tentar de novo sozinhos em instantes.',
           )
       } finally {
         refreshing = false
@@ -183,7 +182,7 @@ export function BroadcastPanel({
       })
       setPreview(await apiGet<Broadcast>(`${base}/${result.id}`))
     } catch (error) {
-      toast.error(errorMessage(error, 'Não foi possível preparar o envio.'))
+      toast.error(errorMessage(error, 'Não conseguimos preparar o recado. Tente de novo.'))
     } finally {
       setBusy(false)
     }
@@ -200,9 +199,9 @@ export function BroadcastPanel({
       setBody('')
       request.current = null
       setSentOpen(true)
-      toast.success('Envio confirmado. Acompanhe as entregas em Enviados.')
+      toast.success('Recado enviado. Acompanhe quem já recebeu em Recados enviados.')
     } catch (error) {
-      toast.error(errorMessage(error, 'Falha ao confirmar. Tente novamente.'))
+      toast.error(errorMessage(error, 'O recado não foi enviado. Tente de novo.'))
     } finally {
       setBusy(false)
     }
@@ -215,7 +214,7 @@ export function BroadcastPanel({
       )
       update({ ...next, items: [...(target.items ?? []), ...(next.items ?? [])] })
     } catch {
-      toast.error('Não foi possível carregar os destinatários.')
+      toast.error('Não conseguimos carregar mais crianças da lista.')
     }
   }
 
@@ -231,11 +230,11 @@ export function BroadcastPanel({
                 <span className="block">
                   {r.status === 'delivered'
                     ? r.read
-                      ? 'Lido'
-                      : 'Entregue'
+                      ? 'Leu'
+                      : 'Recebeu'
                     : r.status === 'failed'
-                      ? 'Falhou'
-                      : 'Em processamento'}
+                      ? 'Não chegou'
+                      : 'Enviando'}
                 </span>
               )}
               {target.sentAt && r.status === 'delivered' && r.threadId && (
@@ -248,7 +247,7 @@ export function BroadcastPanel({
                     }
                   }}
                 >
-                  Abrir conversa
+                  Abrir o recado
                 </Button>
               )}
             </li>
@@ -262,7 +261,7 @@ export function BroadcastPanel({
               live ? setDetailPages((pages) => pages + 1) : void more(target, update)
             }
           >
-            Ver mais destinatários
+            Ver mais crianças
           </Button>
         )}
       </div>
@@ -272,9 +271,11 @@ export function BroadcastPanel({
   return (
     <>
       <div className="flex gap-2">
-        <Button onClick={() => setCompose(true)}>Novo recado</Button>
-        <Button variant="outline" onClick={() => setSentOpen(true)}>
-          Enviados
+        <Button className="min-h-11 px-4" onClick={() => setCompose(true)}>
+          Novo recado
+        </Button>
+        <Button variant="outline" className="min-h-11 px-4" onClick={() => setSentOpen(true)}>
+          Recados enviados
         </Button>
       </div>
       <Dialog
@@ -282,7 +283,7 @@ export function BroadcastPanel({
         onClose={() => {
           if (!busy) setCompose(false)
         }}
-        title={preview ? 'Revisar recado' : 'Novo recado para o Kids'}
+        title={preview ? 'Conferir antes de enviar' : `Novo recado para a ${COMMUNITY_NAMES.kids}`}
         className="max-w-2xl"
       >
         {preview ? (
@@ -292,13 +293,15 @@ export function BroadcastPanel({
             </p>
             <div className="prose prose-sm max-w-none">{renderMarkdown(preview.body)}</div>
             <p>
-              {preview.recipients} criança(s) receberão este recado em conversas privadas. O público
-              foi fixado nesta prévia, válida por 30 minutos.
+              {preview.recipients === 1
+                ? '1 criança vai receber este recado em Recados da equipe.'
+                : `${preview.recipients} crianças vão receber este recado em Recados da equipe, cada uma só o seu.`}{' '}
+              A lista ficou fixa agora e vale por 30 minutos.
             </p>
             {recipientList(preview, setPreview)}
             <div className="flex gap-2">
               <Button disabled={busy} onClick={() => void confirm()}>
-                {busy ? 'Confirmando…' : `Enviar para ${preview.recipients}`}
+                {busy ? 'Enviando…' : `Enviar para ${preview.recipients}`}
               </Button>
               <Button
                 variant="outline"
@@ -308,7 +311,7 @@ export function BroadcastPanel({
                   setPreview(null)
                 }}
               >
-                Editar
+                Voltar e editar
               </Button>
             </div>
           </div>
@@ -317,9 +320,9 @@ export function BroadcastPanel({
             <label className="block space-y-1">
               Público
               <Select value={kind} onChange={(e) => setKind(e.target.value)}>
-                <option value="student">Um aluno</option>
-                <option value="course">Alunos de um curso</option>
-                <option value="kids">Todos do Kids</option>
+                <option value="student">Uma criança</option>
+                <option value="course">Crianças de um curso</option>
+                <option value="kids">Toda a {COMMUNITY_NAMES.kids}</option>
               </Select>
             </label>
             {kind === 'course' && (
@@ -343,7 +346,7 @@ export function BroadcastPanel({
                   <p>
                     {student.name} · {student.accountName}{' '}
                     <Button variant="ghost" onClick={() => setStudent(null)}>
-                      Trocar aluno
+                      Trocar criança
                     </Button>
                   </p>
                 ) : (
@@ -372,8 +375,8 @@ export function BroadcastPanel({
                       ))}
                     </ul>
                     <p className="text-xs text-muted-foreground">
-                      Refine a busca para localizar a criança. O acesso vigente será conferido na
-                      revisão.
+                      Digite mais do nome para achar a criança. O acesso dela é conferido antes do
+                      envio.
                     </p>
                   </>
                 )}
@@ -389,7 +392,7 @@ export function BroadcastPanel({
               <ReplyTemplatesMenu value={body} onChange={setBody} />
             </div>
             <p className="text-xs text-muted-foreground">
-              Inclui perfis infantis ativos com acesso vigente ao público escolhido.
+              Só recebem as crianças com acesso em dia ao público escolhido.
             </p>
             <Button
               disabled={
@@ -401,7 +404,7 @@ export function BroadcastPanel({
               }
               onClick={() => void prepare()}
             >
-              {busy ? 'Conferindo destinatários…' : 'Revisar mensagem e destinatários'}
+              {busy ? 'Conferindo quem vai receber…' : 'Conferir antes de enviar'}
             </Button>
           </div>
         )}
@@ -425,10 +428,10 @@ export function BroadcastPanel({
                 setDetail(null)
               }}
             >
-              Voltar aos envios
+              Voltar aos recados enviados
             </Button>
             {detailError && <p role="alert">{detailError}</p>}
-            {detailBusy && <p role="status">Atualizando destinatários…</p>}
+            {detailBusy && <p role="status">Atualizando quem recebeu…</p>}
             {detail && (
               <>
                 <p>
@@ -444,9 +447,9 @@ export function BroadcastPanel({
               <li key={item.id} className="space-y-2 rounded border p-3">
                 <strong>{item.title}</strong>
                 <p className="text-sm">
-                  {item.delivered}/{item.recipients} entregues · {item.read} lidos · {item.failed}{' '}
-                  falharam
-                  {item.delivered + item.failed < item.recipients ? ' · Em processamento' : ''}
+                  {item.delivered} de {item.recipients} receberam · {item.read} leram
+                  {item.failed > 0 ? ` · ${item.failed} não chegaram` : ''}
+                  {item.delivered + item.failed < item.recipients ? ' · Ainda enviando' : ''}
                 </p>
                 <Button
                   variant="outline"
@@ -457,23 +460,23 @@ export function BroadcastPanel({
                     setDetailId(item.id)
                   }}
                 >
-                  Destinatários
+                  Ver quem recebeu
                 </Button>
                 {item.failed > 0 && (
                   <Button
                     variant="outline"
                     onClick={() =>
                       void apiSend(`${base}/${item.id}/retry`, 'POST', {})
-                        .then(() => toast.success('Nova tentativa agendada.'))
-                        .catch(() => toast.error('Falha ao agendar tentativa.'))
+                        .then(() => toast.success('Vamos tentar de novo onde não chegou.'))
+                        .catch(() => toast.error('Não conseguimos tentar de novo agora.'))
                     }
                   >
-                    Tentar entregas que falharam
+                    Tentar de novo onde não chegou
                   </Button>
                 )}
               </li>
             ))}
-            {sent.length === 0 && <li>Nenhum envio confirmado.</li>}
+            {sent.length === 0 && <li>Nenhum recado enviado ainda.</li>}
           </ul>
         )}
       </Dialog>

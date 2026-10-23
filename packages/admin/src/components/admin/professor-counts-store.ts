@@ -39,16 +39,26 @@ interface StoreState {
   fetchedAt: number
   /** Plataforma do snapshot — mudou o seletor global → o snapshot é STALE. */
   platform: Platform | null
+  /**
+   * A última leitura falhou. A Home usa para dizer "não carregou" em vez de ficar no esqueleto
+   * para sempre (a sidebar segue mostrando o badge velho).
+   */
+  failed: boolean
 }
 
-let state: StoreState = { overview: null, fetchedAt: 0, platform: null }
+let state: StoreState = { overview: null, fetchedAt: 0, platform: null, failed: false }
 let inflight: Promise<void> | null = null
 let queuedRefresh: Promise<void> | null = null
 const listeners = new Set<() => void>()
 
 // Trocar de plataforma re-busca NA HORA (o badge da sidebar conta a plataforma
-// ativa — Entregas, Recados e Moderação usam a mesma audiência no BFF).
+// ativa — Entregas, Recados e Moderação usam a mesma audiência no BFF). Antes, larga
+// o snapshot da OUTRA comunidade: enquanto a leitura nova não chega, a Home espera
+// (esqueleto) e, se ela falhar, diz que não carregou, nunca mostra os itens de lá.
 subscribePlatform(() => {
+  if (state.platform !== null && state.platform !== getPlatform()) {
+    setState({ overview: null, fetchedAt: 0, platform: null, failed: false })
+  }
   void ensureProfessorCounts(true)
 })
 
@@ -65,6 +75,14 @@ function getServerSnapshot(): ProfessorOverview | null {
   return null
 }
 
+function getFailedSnapshot(): boolean {
+  return state.failed
+}
+
+function getFailedServerSnapshot(): boolean {
+  return false
+}
+
 function setState(next: StoreState): void {
   state = next
   for (const listener of listeners) listener()
@@ -79,11 +97,12 @@ async function fetchOverview(): Promise<void> {
     // A plataforma mudou durante o await: o refresh enfileirado publicará o
     // snapshot correto; o antigo nunca pisca na sidebar.
     if (platform !== getPlatform()) return
-    setState({ overview, fetchedAt: Date.now(), platform })
+    setState({ overview, fetchedAt: Date.now(), platform, failed: false })
   } catch {
     // Best-effort: mantém o snapshot anterior (badge velho > badge sumindo);
     // carimba o fetchedAt p/ não re-tentar em loop a cada navegação.
-    if (platform === getPlatform()) setState({ ...state, fetchedAt: Date.now(), platform })
+    if (platform === getPlatform())
+      setState({ ...state, fetchedAt: Date.now(), platform, failed: true })
   }
 }
 
@@ -137,4 +156,12 @@ export function useProfessorOverview(): ProfessorOverview | null {
     }
   }, [revalidate])
   return overview
+}
+
+/**
+ * A última leitura dos contadores falhou (o snapshot, se houver, é velho). Não dispara fetch:
+ * quem o usa também chama `useProfessorOverview`, que cuida da revalidação.
+ */
+export function useProfessorOverviewFailed(): boolean {
+  return useSyncExternalStore(subscribe, getFailedSnapshot, getFailedServerSnapshot)
 }

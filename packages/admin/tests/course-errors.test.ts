@@ -10,7 +10,7 @@ describe('courseSaveError — mensagens específicas dos 409 do salvar curso', (
     // Mensagens não vazam o fallback (são as amigáveis).
     expect(courseSaveError('CAREER_SLOT_CONFLICT', 'x').message).toContain('posição')
     expect(courseSaveError('CONCURRENCY_CONFLICT', 'x').message).toContain('outra aba')
-    expect(courseSaveError('NO_SHOWCASE_BLOCK', 'x').message).toContain('vitrine')
+    expect(courseSaveError('NO_SHOWCASE_BLOCK', 'x').message).toContain('Mural')
   })
 
   test('código desconhecido → mensagem do servidor, sem hint', () => {

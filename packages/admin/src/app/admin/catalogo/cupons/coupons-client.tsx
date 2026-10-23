@@ -22,7 +22,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { CatalogTabs } from '@/components/admin/catalog-tabs'
-import { StatusBadge } from '@/components/admin/status-badge'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type OfferOption, OffersMultiSelect } from '@/components/catalog/offers-multi-select'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -93,12 +93,12 @@ export function CouponsClient() {
       setOfferOptions(
         page.items.map((o) => ({
           id: o.id,
-          label: o.productName ? `${o.name} — ${o.productName}` : o.name,
+          label: o.productName ? `${o.name} (${o.productName})` : o.name,
         })),
       )
     } catch {
       setOfferOptions([])
-      toast.error('Não foi possível carregar as ofertas.')
+      toast.error('As ofertas não carregaram. Feche e abra de novo.')
     } finally {
       setOffersLoading(false)
     }
@@ -114,7 +114,7 @@ export function CouponsClient() {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar cupons.')
+      toast.error((err as ApiError).message ?? 'Os cupons não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
@@ -152,17 +152,17 @@ export function CouponsClient() {
 
   async function save() {
     if (!form.appliesToAll && form.offerIds.length === 0) {
-      toast.error('Escolha ao menos uma oferta (ou marque "vale para todas").')
+      toast.error('Escolha pelo menos uma oferta, ou marque "Vale para todas as ofertas".')
       return
     }
     const validFrom = form.validFrom ? dateInputToSaoPauloStartOfDayIso(form.validFrom) : null
     const validUntil = form.validUntil ? dateInputToSaoPauloEndOfDayIso(form.validUntil) : null
     if ((form.validFrom && !validFrom) || (form.validUntil && !validUntil)) {
-      toast.error('Informe datas de validade válidas.')
+      toast.error('Confira as datas de início e de fim.')
       return
     }
     if (validFrom && validUntil && validFrom >= validUntil) {
-      toast.error('A data final deve ser posterior à data inicial.')
+      toast.error('O fim precisa vir depois do início.')
       return
     }
     setSaving(true)
@@ -180,7 +180,7 @@ export function CouponsClient() {
         toast.success('Cupom atualizado.')
       } else {
         if (!form.code.trim()) {
-          toast.error('Informe o código do cupom.')
+          toast.error('Escreva o código do cupom.')
           setSaving(false)
           return
         }
@@ -197,7 +197,7 @@ export function CouponsClient() {
         if (form.type === 'percent') {
           const percentOff = optInt(form.percentOff)
           if (!percentOff || percentOff > 100) {
-            toast.error('Percentual deve ser entre 1 e 100.')
+            toast.error('A porcentagem vai de 1 a 100.')
             setSaving(false)
             return
           }
@@ -205,7 +205,7 @@ export function CouponsClient() {
         } else {
           const amountOffCents = reaisToCents(form.amount)
           if (!Number.isFinite(amountOffCents) || amountOffCents <= 0) {
-            toast.error('Informe um valor de desconto válido.')
+            toast.error('Escreva quanto o cupom desconta, em reais.')
             setSaving(false)
             return
           }
@@ -216,7 +216,7 @@ export function CouponsClient() {
       setOpen(false)
       await load()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível salvar.')
+      toast.error((err as ApiError).message ?? 'Não deu para salvar. Tente de novo.')
     } finally {
       setSaving(false)
     }
@@ -231,10 +231,10 @@ export function CouponsClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Catálogo"
-        description="Produtos, ofertas e cupons da plataforma."
+        description="O produto é o que a pessoa ganha. A oferta é como ele é vendido: preço, forma e prazo. O cupom dá desconto em ofertas."
         action={
           <Button onClick={openCreate}>
-            <Plus className="size-4" /> Novo cupom
+            <Plus className="size-4" aria-hidden /> Novo cupom
           </Button>
         }
       />
@@ -242,9 +242,13 @@ export function CouponsClient() {
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <Input
-            placeholder="Buscar por código…"
+            placeholder="Código do cupom"
+            aria-label="Buscar cupons"
             value={q}
             onChange={(e) => {
               setOffset(0)
@@ -254,6 +258,7 @@ export function CouponsClient() {
           />
         </div>
         <Select
+          aria-label="Situação"
           value={status}
           onChange={(e) => {
             setOffset(0)
@@ -261,10 +266,10 @@ export function CouponsClient() {
           }}
           className="sm:w-44"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {COUPON_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {statusLabel(s, 'catalog')}
             </option>
           ))}
         </Select>
@@ -276,9 +281,9 @@ export function CouponsClient() {
             <TableRow>
               <TableHead>Código</TableHead>
               <TableHead>Desconto</TableHead>
-              <TableHead>Escopo</TableHead>
-              <TableHead>Usos</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Vale em</TableHead>
+              <TableHead>Vezes usado</TableHead>
+              <TableHead>Situação</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -288,7 +293,7 @@ export function CouponsClient() {
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Nenhum cupom encontrado.
+                  Nenhum cupom com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -297,18 +302,27 @@ export function CouponsClient() {
                   <TableCell className="font-mono font-medium">{c.code}</TableCell>
                   <TableCell>{discountLabel(c)}</TableCell>
                   <TableCell className="text-muted-foreground">
-                    {c.appliesToAll ? 'Todas as ofertas' : `${c.offerIds.length} oferta(s)`}
+                    {c.appliesToAll
+                      ? 'Todas as ofertas'
+                      : c.offerIds.length === 1
+                        ? '1 oferta'
+                        : `${c.offerIds.length} ofertas`}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {c.timesRedeemed}
-                    {c.maxRedemptions != null ? ` / ${c.maxRedemptions}` : ''}
+                    {c.maxRedemptions != null ? ` de ${c.maxRedemptions}` : ''}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={c.status} />
+                    <StatusBadge status={c.status} kind="catalog" />
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(c)}>
-                      <Pencil className="size-4" /> Editar
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openEdit(c)}
+                      aria-label={`Editar o cupom ${c.code}`}
+                    >
+                      <Pencil className="size-4" aria-hidden /> Editar
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -324,7 +338,7 @@ export function CouponsClient() {
         open={open}
         onClose={() => setOpen(false)}
         title={editing ? 'Editar cupom' : 'Novo cupom'}
-        description={editing ? editing.code : 'Cadastre um cupom de desconto.'}
+        description={editing ? editing.code : 'Um código que dá desconto em ofertas.'}
         footer={
           <>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>
@@ -340,15 +354,15 @@ export function CouponsClient() {
         <div className="flex flex-col gap-4">
           {editing ? (
             <p className="text-xs text-muted-foreground">
-              Código <span className="font-mono">{editing.code}</span> · desconto{' '}
-              {discountLabel(editing)} (tipo/valor não são editáveis).
+              Código <span className="font-mono">{editing.code}</span>, desconto de{' '}
+              {discountLabel(editing)}. O tipo e o valor não mudam depois de criado.
             </p>
           ) : (
             <>
               <Field
                 label="Código"
                 htmlFor="code"
-                tooltip="O que o cliente digita no checkout para ganhar o desconto (ex.: PROMO10). Não muda depois de criado."
+                tooltip="O que a pessoa digita na página de pagamento para ganhar o desconto (ex.: PROMO10). Não muda depois de criado."
               >
                 <Input
                   id="code"
@@ -361,7 +375,7 @@ export function CouponsClient() {
                 <Field
                   label="Tipo"
                   htmlFor="type"
-                  tooltip="Percentual desconta uma fração do preço; valor fixo desconta um montante em reais. Não muda depois de criado."
+                  tooltip="Porcentagem tira uma parte do preço. Valor fixo tira uma quantia em reais. Não muda depois de criado."
                 >
                   <Select
                     id="type"
@@ -370,12 +384,12 @@ export function CouponsClient() {
                       setForm((f) => ({ ...f, type: e.target.value as 'percent' | 'fixed' }))
                     }
                   >
-                    <option value="percent">Percentual (%)</option>
+                    <option value="percent">Porcentagem (%)</option>
                     <option value="fixed">Valor fixo (R$)</option>
                   </Select>
                 </Field>
                 {form.type === 'percent' ? (
-                  <Field label="Percentual (1–100)" htmlFor="percentOff">
+                  <Field label="Porcentagem (de 1 a 100)" htmlFor="percentOff">
                     <Input
                       id="percentOff"
                       inputMode="numeric"
@@ -384,7 +398,7 @@ export function CouponsClient() {
                     />
                   </Field>
                 ) : (
-                  <Field label="Valor (R$)" htmlFor="amount">
+                  <Field label="Desconto (R$)" htmlFor="amount">
                     <Input
                       id="amount"
                       inputMode="decimal"
@@ -398,9 +412,9 @@ export function CouponsClient() {
           )}
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Máx. usos (opcional)"
+              label="Pode ser usado quantas vezes (opcional)"
               htmlFor="maxRedemptions"
-              tooltip="Limite total de resgates do cupom. Vazio = ilimitado."
+              tooltip="Quantas vezes o cupom pode ser usado no total. Vazio: sem limite."
             >
               <Input
                 id="maxRedemptions"
@@ -409,7 +423,7 @@ export function CouponsClient() {
                 onChange={(e) => setForm((f) => ({ ...f, maxRedemptions: e.target.value }))}
               />
             </Field>
-            <Field label="Status" htmlFor="cstatus">
+            <Field label="Situação" htmlFor="cstatus">
               <Select
                 id="cstatus"
                 value={form.status}
@@ -417,7 +431,7 @@ export function CouponsClient() {
               >
                 {COUPON_STATUSES.map((s) => (
                   <option key={s} value={s}>
-                    {s}
+                    {statusLabel(s, 'catalog')}
                   </option>
                 ))}
               </Select>
@@ -425,7 +439,7 @@ export function CouponsClient() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field
-              label="Início da validade (opcional)"
+              label="Vale a partir de (opcional)"
               htmlFor="validFrom"
               tooltip="O cupom passa a valer no início deste dia, no horário de São Paulo."
             >
@@ -437,7 +451,7 @@ export function CouponsClient() {
               />
             </Field>
             <Field
-              label="Fim da validade (opcional)"
+              label="Vale até (opcional)"
               htmlFor="validUntil"
               tooltip="O cupom vale até o fim deste dia, no horário de São Paulo."
             >
@@ -457,13 +471,13 @@ export function CouponsClient() {
               onChange={(e) => setForm((f) => ({ ...f, appliesToAll: e.target.checked }))}
               className="size-4 accent-[color:var(--primary)]"
             />
-            Vale para todas as ofertas ativas
-            <InfoTooltip text="Marcado: o cupom funciona em qualquer oferta ativa. Desmarcado: escolha abaixo em quais ofertas ele vale." />
+            Vale para todas as ofertas à venda
+            <InfoTooltip text="Marcado, o cupom funciona em qualquer oferta à venda. Desmarcado, escolha abaixo em quais ofertas ele vale." />
           </label>
           {!form.appliesToAll ? (
             <Field
               label="Ofertas em que o cupom vale"
-              tooltip="O cupom só será aceito no checkout destas ofertas."
+              tooltip="O cupom só funciona na página de pagamento destas ofertas."
             >
               <OffersMultiSelect
                 options={offerOptions ?? []}

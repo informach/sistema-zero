@@ -26,8 +26,16 @@ export interface CreateProfileCommand {
   name: string
   avatarUrl?: string | null
   whatsapp?: string | null
-  /** Data de nascimento (`YYYY-MM-DD`) — controle de idade; só os pais informam. */
+  /**
+   * Data de nascimento (`YYYY-MM-DD`): obrigatória desde 23/10/2026; só os pais informam. O
+   * agregado recusa a falta dela, exceto com `legacyDefaultProfile`.
+   */
   birthDate?: string | null
+  /**
+   * SÓ o backfill legado do perfil-padrão (`scripts/backfill-default-profiles.ts`): cria sem data
+   * de nascimento, que a migração não tem como saber. A rota HTTP nunca passa isto.
+   */
+  legacyDefaultProfile?: boolean
   /**
    * Opt-in do perfil público já na CRIAÇÃO (08/2026). A rota de criar recusa
    * sessão de perfil, então "só os pais" vale por construção. Ausente → OFF
@@ -88,6 +96,7 @@ export class CreateProfileService {
       avatarUrl: cmd.avatarUrl,
       whatsapp: cmd.whatsapp,
       birthDate: cmd.birthDate,
+      allowMissingBirthDate: cmd.legacyDefaultProfile === true,
       now: this.clock(),
     })
     // O agregado nasce com o perfil público OFF (default seguro); o opt-in dos

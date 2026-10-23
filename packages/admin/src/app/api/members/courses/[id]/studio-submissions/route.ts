@@ -27,7 +27,7 @@ export async function GET(_req: Request, { params }: Ctx) {
       {
         error: {
           code: 'UPSTREAM_ERROR',
-          message: 'Não foi possível carregar as entregas do curso.',
+          message: 'Não foi possível carregar os projetos do curso.',
         },
       },
       { status: 502 },

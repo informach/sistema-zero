@@ -66,9 +66,9 @@ test('professor revisa um aviso coletivo e confirma o público antes de acompanh
     await act(async () => button('Novo recado').click())
     const audience = container.querySelector('select')!
     expect([...audience.options].map((option) => option.text)).toEqual([
-      'Um aluno',
-      'Alunos de um curso',
-      'Todos do Kids',
+      'Uma criança',
+      'Crianças de um curso',
+      'Toda a Comunidade dos Criadores',
     ])
     await act(async () => {
       audience.value = 'kids'
@@ -84,8 +84,8 @@ test('professor revisa um aviso coletivo e confirma o público antes de acompanh
     })
     await act(async () => button('Modelos').click())
     await act(async () => button('Aviso de oficina').click())
-    expect(button('Revisar mensagem e destinatários').disabled).toBe(false)
-    await act(async () => button('Revisar mensagem e destinatários').click())
+    expect(button('Conferir antes de enviar').disabled).toBe(false)
+    await act(async () => button('Conferir antes de enviar').click())
     expect(container.textContent).toContain('Ana Souza')
     expect(container.textContent).toContain('Bia Silva')
     expect(container.textContent).toContain('Prepare seu jogo!')
@@ -99,7 +99,7 @@ test('professor revisa um aviso coletivo e confirma o público antes de acompanh
     await act(async () => button('Enviar para 2').click())
     expect(calls.filter((call) => call.path.endsWith('/confirm'))).toHaveLength(1)
     expect(container.querySelector('[aria-label="Recados enviados"]')).not.toBeNull()
-    expect(container.textContent).toContain('0/2 entregues')
+    expect(container.textContent).toContain('0 de 2 receberam')
   } finally {
     await act(async () => root.unmount())
     globalThis.fetch = originalFetch

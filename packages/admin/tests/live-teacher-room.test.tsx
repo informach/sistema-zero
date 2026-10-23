@@ -6,9 +6,8 @@ if (typeof document === 'undefined') GlobalRegistrator.register()
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const { LiveTeacherControls, lowerHandsCommand } = await import(
-  '@sistemazero/member-shell/components/live/live-teacher-controls'
-)
+const { LiveTeacherControls, LiveTeacherRoadmap, lowerHandsCommand, teacherRoadmapStep } =
+  await import('@sistemazero/member-shell/components/live/live-teacher-controls')
 const { LiveParticipants, participantPrimaryAction, participantSignals } = await import(
   '@sistemazero/member-shell/components/live/live-participants'
 )
@@ -407,5 +406,53 @@ describe('reposição', () => {
       replacementError('2026-10-20T10:00', '2026-10-20T11:00', '2026-10-20T10:30', now),
     ).toContain('novo fim de acesso')
     expect(replacementError('2026-10-20T10:00', '2026-10-20T11:00', '', now)).toBeNull()
+  })
+})
+
+describe('roteiro do encontro (só leitura)', () => {
+  test('o passo segue o estado da sala, sem mandar comando nenhum', () => {
+    // Antes de entrar, o passo é preparar o navegador, mesmo com a recepção aberta ou ao vivo.
+    expect(teacherRoadmapStep('scheduled', false)).toBe(0)
+    expect(teacherRoadmapStep('lobby', false)).toBe(0)
+    expect(teacherRoadmapStep('live', false)).toBe(0)
+    expect(teacherRoadmapStep('scheduled', true)).toBe(1)
+    expect(teacherRoadmapStep('lobby', true)).toBe(2)
+    expect(teacherRoadmapStep('live', true)).toBe(3)
+    // Encerrado com gravação para revisar: revisar. Sem gravação, ou já publicada: tudo feito.
+    expect(teacherRoadmapStep('ended', true, { state: 'review', published: false })).toBe(4)
+    expect(teacherRoadmapStep('ended', false, { state: 'processing', published: false })).toBe(4)
+    expect(teacherRoadmapStep('ended', false, { state: 'ready', published: true })).toBe(5)
+    expect(teacherRoadmapStep('ended', false, { state: 'empty', published: false })).toBe(5)
+    expect(teacherRoadmapStep('ended', false, { state: 'not_started', published: false })).toBe(5)
+    expect(teacherRoadmapStep('ended', false)).toBe(5)
+    expect(teacherRoadmapStep('cancelled', false)).toBeNull()
+  })
+
+  test('antes de entrar, o passo atual é preparar o navegador', async () => {
+    const view = await mount(<LiveTeacherRoadmap room={room('lobby', [])} joined={false} />)
+    expect(view.querySelector('[aria-current="step"]')?.textContent).toContain(
+      'Preparar o navegador',
+    )
+  })
+
+  test('encerrado sem gravação: tudo feito, sem passo atual', async () => {
+    const view = await mount(<LiveTeacherRoadmap room={room('ended', [])} joined />)
+    expect(view.querySelector('[aria-current="step"]')).toBeNull()
+    expect(view.textContent).toContain(', feito')
+  })
+
+  test('encerrado com gravação para revisar: o passo atual é revisar', async () => {
+    const view = await mount(
+      <LiveTeacherRoadmap room={room('ended', [], { state: 'review' })} joined />,
+    )
+    expect(view.querySelector('[aria-current="step"]')?.textContent).toContain('Revisar a gravação')
+  })
+
+  test('marca o passo atual e não tem botão', async () => {
+    const view = await mount(<LiveTeacherRoadmap room={room('lobby', [])} joined />)
+    expect(view.querySelector('[aria-current="step"]')?.textContent).toContain(
+      'Receber a turma e começar',
+    )
+    expect(view.querySelectorAll('button')).toHaveLength(0)
   })
 })

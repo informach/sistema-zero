@@ -1,13 +1,10 @@
 'use client'
 
-import { BrandLogo } from '@sistemazero/ui/brand-logo'
 import { Button } from '@sistemazero/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { useState } from 'react'
-import { toast } from 'sonner'
 import { z } from 'zod'
 import { safeNextPath } from '@/lib/paths'
 
@@ -16,13 +13,44 @@ const Schema = z.object({
   password: z.string().min(1, 'Informe a senha'),
 })
 
-const ERROR_MESSAGES: Record<string, string> = {
-  INVALID_CREDENTIALS: 'E-mail ou senha incorretos.',
-  FORBIDDEN: 'Esta conta não tem acesso ao painel.',
-  INACTIVE: 'Conta inativa. Procure um administrador.',
-  INVALID_INPUT: 'Dados inválidos.',
-  TOO_MANY_ATTEMPTS: 'Muitas tentativas. Aguarde um instante e tente de novo.',
-  SERVICE_UNAVAILABLE: 'Serviço indisponível no momento. Tente novamente em instantes.',
+interface LoginError {
+  title: string
+  detail?: string
+}
+
+/**
+ * O erro fica no formulário até a pessoa tentar de novo (era um aviso que sumia sozinho): diz o
+ * que houve e o que fazer.
+ */
+const ERROR_MESSAGES: Record<string, LoginError> = {
+  INVALID_CREDENTIALS: {
+    title: 'E-mail ou senha não conferem.',
+    detail: 'Confira e tente de novo.',
+  },
+  FORBIDDEN: {
+    title: 'Este e-mail não tem acesso ao admin.',
+    detail:
+      'O admin é só para a equipe. Se você é responsável por uma criança, entre pela Comunidade dos Criadores.',
+  },
+  INACTIVE: {
+    title: 'Esta conta está inativa.',
+    detail: 'Fale com alguém da equipe que seja Admin.',
+  },
+  INVALID_INPUT: { title: 'Confira o e-mail e a senha.' },
+  TOO_MANY_ATTEMPTS: {
+    title: 'Foram muitas tentativas seguidas.',
+    detail: 'Espere um instante e tente de novo.',
+  },
+  SERVICE_UNAVAILABLE: {
+    title: 'O admin não respondeu agora.',
+    detail: 'Tente de novo em instantes.',
+  },
+}
+
+const GENERIC_ERROR: LoginError = { title: 'Não foi possível entrar.', detail: 'Tente de novo.' }
+const NETWORK_ERROR: LoginError = {
+  title: 'Não conseguimos conectar agora.',
+  detail: 'Confira a internet e tente de novo.',
 }
 
 export function LoginForm() {
@@ -30,6 +58,7 @@ export function LoginForm() {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
   const [loading, setLoading] = useState(false)
+  const [formError, setFormError] = useState<LoginError | null>(null)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,6 +73,7 @@ export function LoginForm() {
       return
     }
     setErrors({})
+    setFormError(null)
     setLoading(true)
     try {
       const res = await fetch('/api/admin/login', {
@@ -60,62 +90,62 @@ export function LoginForm() {
         // + router.refresh` corre um contra o outro (vercel/next.js#54766 — o
         // refresh re-renderiza /login, que agora redireciona, e o operador ficava
         // preso no /login até um F5; bug visto no community, mesmo padrão aqui).
-        window.location.replace(next ?? '/admin')
+        window.location.replace(next ?? '/admin/professor')
         return
       }
       const data = (await res.json().catch(() => null)) as { error?: { code?: string } } | null
-      toast.error(ERROR_MESSAGES[data?.error?.code ?? ''] ?? 'Não foi possível entrar.')
+      setFormError(ERROR_MESSAGES[data?.error?.code ?? ''] ?? GENERIC_ERROR)
     } catch {
-      toast.error('Falha de rede. Tente novamente.')
+      setFormError(NETWORK_ERROR)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <Card className="w-full max-w-sm">
-      <CardHeader>
-        {/* A logo oficial: SVG embutido, o ZERO lendo `--logo-zero-*` do chassi console. */}
-        <div className="flex justify-center pb-1">
-          <BrandLogo
-            fundo="claro"
-            label="Sistema Zero — painel administrativo"
-            className="block h-auto w-[220px] max-w-full"
+    <div className="flex w-full max-w-[420px] flex-col gap-5 rounded-3xl border border-border bg-card p-8 md:p-9">
+      <div className="space-y-1.5">
+        <h1 className="font-display text-[28px] font-bold leading-tight">Entrar</h1>
+        <p className="text-[15px] text-muted-foreground">
+          Que bom ter você aqui. Entre com o e-mail da equipe.
+        </p>
+      </div>
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+        <Field label="E-mail" htmlFor="email" error={errors.email}>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-invalid={Boolean(errors.email)}
+            className="h-11"
           />
+        </Field>
+        <Field label="Senha" htmlFor="password" error={errors.password}>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            aria-invalid={Boolean(errors.password)}
+            className="h-11"
+          />
+        </Field>
+        <Button type="submit" disabled={loading} className="mt-1 h-11 text-[15px]">
+          {loading ? <Spinner /> : null}
+          Entrar
+        </Button>
+        <div aria-live="polite">
+          {formError ? (
+            <div className="rounded-2xl bg-destructive/10 px-4 py-3 text-[15px] text-[#7e1f19]">
+              <p className="font-bold">{formError.title}</p>
+              {formError.detail ? <p className="mt-0.5">{formError.detail}</p> : null}
+            </div>
+          ) : null}
         </div>
-        <CardTitle className="sr-only">Admin | Sistema Zero</CardTitle>
-        <CardDescription className="text-center">
-          Entre com sua conta de administrador.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
-          <Field label="E-mail" htmlFor="email" error={errors.email}>
-            <Input
-              id="email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              aria-invalid={Boolean(errors.email)}
-            />
-          </Field>
-          <Field label="Senha" htmlFor="password" error={errors.password}>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              aria-invalid={Boolean(errors.password)}
-            />
-          </Field>
-          <Button type="submit" disabled={loading} className="mt-2">
-            {loading ? <Spinner /> : null}
-            Entrar
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+      </form>
+    </div>
   )
 }

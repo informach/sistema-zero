@@ -24,7 +24,10 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { RichTextEditor } from '@/components/editor/rich-text-editor'
 import { ImageUploader } from '@/components/media/image-uploader'
@@ -103,7 +106,9 @@ function HelpEditorForPlatform({
   const [reviewOpen, setReviewOpen] = useState(false)
   const [keywordsText, setKeywordsText] = useState('')
   const [videoUrl, setVideoUrl] = useState('')
+  const [loadFailed, setLoadFailed] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
+  const learner = platform === 'kids' ? 'a criança' : 'o aluno'
   // O que está na tela AGORA, para o save saber se alguém digitou durante o request.
   const draftRef = useRef(draft)
   const metaRef = useRef(meta)
@@ -111,6 +116,7 @@ function HelpEditorForPlatform({
   metaRef.current = meta
 
   const load = useCallback(async () => {
+    setLoadFailed(false)
     try {
       const [t, c] = await Promise.all([
         apiGet<HelpTutorialAdminView>(helpPath(`/api/members/help/tutorials/${tutorialId}`)),
@@ -124,6 +130,7 @@ function HelpEditorForPlatform({
       setCollections(c.collections)
       setDirty(false)
     } catch (err) {
+      setLoadFailed(true)
       toast.error((err as ApiError).message ?? 'Não consegui carregar o tutorial.')
     }
   }, [tutorialId, helpPath])
@@ -172,7 +179,7 @@ function HelpEditorForPlatform({
       toast.error(
         e.code === 'HELP_SLUG_LOCKED'
           ? (e.message ?? 'O endereço de um tutorial publicado não muda.')
-          : 'Outra pessoa salvou este tutorial. Recarregue a página para continuar.',
+          : 'Outra pessoa salvou este tutorial enquanto você editava. Recarregue a página para continuar.',
       )
     } else {
       toast.error(e.message ?? fallback)
@@ -232,14 +239,14 @@ function HelpEditorForPlatform({
       setRecord(next)
       toast.success(
         action === 'publish'
-          ? 'Publicado! A criança já vê este tutorial.'
+          ? `Publicado. ${learner === 'a criança' ? 'A criança' : 'O aluno'} já vê este tutorial.`
           : action === 'unpublish'
-            ? 'Despublicado. Some do Como fazer da criança.'
+            ? `Saiu do ar. O tutorial some do Como fazer que ${learner} vê.`
             : 'Arquivado.',
       )
       return true
     } catch (err) {
-      avisarErro(err, 'Não consegui.')
+      avisarErro(err, 'Não deu certo. Tente de novo em instantes.')
       return false
     } finally {
       setBusy(false)
@@ -247,6 +254,7 @@ function HelpEditorForPlatform({
   }
 
   if (!record || !draft || !meta) {
+    if (loadFailed) return <LoadError what="o tutorial" onRetry={() => void load()} />
     return (
       <div className="flex justify-center py-12">
         <Spinner />
@@ -261,29 +269,17 @@ function HelpEditorForPlatform({
     <div className="space-y-6">
       <AdminHeader
         title={draft.title || 'Tutorial sem título'}
-        description={`/como-fazer/${meta.slug} · ${collection?.title ?? 'sem coleção'} · revisão ${record.revision}`}
+        description={`Endereço /como-fazer/${meta.slug} · ${collection?.title ?? 'Sem coleção'}`}
         acoesAbaixo
         action={
           <div className="flex flex-wrap items-center gap-2">
             <Link href="/admin/como-fazer" className="text-sm underline">
               Voltar à lista
             </Link>
-            <Badge
-              variant={
-                record.status === 'published'
-                  ? 'success'
-                  : record.status === 'archived'
-                    ? 'destructive'
-                    : 'muted'
-              }
-            >
-              {record.status === 'published'
-                ? 'Publicado'
-                : record.status === 'archived'
-                  ? 'Arquivado'
-                  : 'Rascunho'}
-            </Badge>
-            {record.hasUnpublishedChanges && <Badge variant="outline">Rascunho mais novo</Badge>}
+            <StatusBadge status={record.status} kind="catalog" />
+            {record.hasUnpublishedChanges && (
+              <Badge variant="outline">Rascunho mais novo que o publicado</Badge>
+            )}
             <Button variant="outline" onClick={() => setPreview((p) => !p)}>
               <Eye className="size-4" />
               {preview ? 'Voltar a editar' : 'Pré-visualizar'}
@@ -306,36 +302,39 @@ function HelpEditorForPlatform({
               <Download className="size-4" />
               Exportar este
             </Button>
-            {!readOnly && (
+            {record.status !== 'archived' && (
               <>
-                <Button variant="outline" disabled={busy || !dirty} onClick={() => void save()}>
+                <Button
+                  variant="outline"
+                  disabled={readOnly || busy || !dirty}
+                  onClick={() => void save()}
+                >
                   {busy && <Spinner />}Salvar rascunho
                 </Button>
-                <Button disabled={busy} onClick={() => setReviewOpen(true)}>
+                <Button disabled={readOnly || busy} onClick={() => setReviewOpen(true)}>
                   Revisar e publicar
                 </Button>
                 {record.status === 'published' && (
                   <Button
                     variant="ghost"
-                    disabled={busy}
+                    disabled={readOnly || busy}
                     onClick={() =>
                       confirm({
-                        title: 'Despublicar este tutorial?',
-                        message:
-                          'Ele some do Como fazer da criança e da base do Zappy até publicar de novo.',
-                        confirmText: 'Despublicar',
+                        title: 'Tirar este tutorial do ar?',
+                        message: `Ele some do Como fazer que ${learner} vê e da base do Zappy até ser publicado de novo.`,
+                        confirmText: 'Tirar do ar',
                         onConfirm: async () => {
                           await act('unpublish')
                         },
                       })
                     }
                   >
-                    Despublicar
+                    Tirar do ar
                   </Button>
                 )}
                 <Button
                   variant="ghost"
-                  disabled={busy}
+                  disabled={readOnly || busy}
                   onClick={() =>
                     confirm({
                       title: 'Arquivar este tutorial?',
@@ -357,12 +356,20 @@ function HelpEditorForPlatform({
         }
       />
 
+      {!canWrite ? <ReadOnlyNotice /> : null}
+      {canWrite && record.status === 'archived' ? (
+        <p role="note" className="rounded-2xl bg-muted px-4 py-3 text-[15px] text-muted-foreground">
+          Este tutorial está arquivado: dá para ler e exportar, mas não dá mais para editar nem
+          publicar.
+        </p>
+      ) : null}
+
       {preview ? (
         <Card>
           <CardContent className="pt-6">
             <p className="mb-4 text-muted-foreground text-sm">
-              É o rascunho, como a criança vai ler (o mesmo componente e a mesma pele da página
-              dela). Sem marca d'água aqui, e os links de "Veja também" saem como endereço.
+              É o rascunho, como {learner} vai ler (o mesmo componente e a mesma aparência da
+              página). Aqui não há marca d'água, e os links de "Veja também" aparecem como endereço.
             </p>
             <h2 className="mb-3 font-semibold text-2xl">{draft.title}</h2>
             <HelpTutorialView
@@ -380,7 +387,7 @@ function HelpEditorForPlatform({
           <div className="space-y-6">
             <Card>
               <CardContent className="space-y-4 pt-6">
-                <Field label="Título (a tarefa, como a criança diria)" htmlFor="t-title">
+                <Field label={`Título (a tarefa, como ${learner} diria)`} htmlFor="t-title">
                   <Input
                     id="t-title"
                     value={draft.title}
@@ -388,7 +395,7 @@ function HelpEditorForPlatform({
                     onChange={(e) => update({ title: e.target.value })}
                   />
                 </Field>
-                <Field label="Resumo (o que ela consegue fazer depois de ler)" htmlFor="t-summary">
+                <Field label="Resumo (o que dá para fazer depois de ler)" htmlFor="t-summary">
                   <Textarea
                     id="t-summary"
                     rows={2}
@@ -398,7 +405,7 @@ function HelpEditorForPlatform({
                   />
                 </Field>
                 <Field
-                  label="Palavras alternativas (separe por vírgula: as palavras que a criança usaria)"
+                  label={`Palavras alternativas (separe por vírgula: as palavras que ${learner} usaria)`}
                   htmlFor="t-keywords"
                   hint="Ex.: prévia, ver o jogo, olhinho"
                 >
@@ -489,7 +496,7 @@ function HelpEditorForPlatform({
                         onChange={(e) => updateStep(step.id, { title: e.target.value })}
                       />
                     </Field>
-                    <Field label="O que a criança faz, e onde (use os nomes REAIS dos botões)">
+                    <Field label={`O que ${learner} faz, e onde (use os nomes REAIS dos botões)`}>
                       <RichTextEditor
                         content={step.body}
                         onChange={(markdown) => updateStep(step.id, { body: markdown })}
@@ -536,7 +543,7 @@ function HelpEditorForPlatform({
                   htmlFor="t-slug"
                   hint={
                     record.status === 'published'
-                      ? '/como-fazer/… Publicado: o endereço está travado (as aulas e o Zappy apontam para ele). Despublique para trocar.'
+                      ? '/como-fazer/… Publicado: o endereço está travado, porque as aulas e o Zappy apontam para ele. Tire do ar para trocar.'
                       : record.publishedAt
                         ? '/como-fazer/… Já foi publicado uma vez: trocar quebra os links das aulas que apontam para o endereço antigo.'
                         : '/como-fazer/… Estável: os links das aulas apontam para ele.'
@@ -700,7 +707,7 @@ function HelpEditorForPlatform({
           <p className="text-sm">
             {issues.length
               ? `${issues.length} pendência(s) impedem a publicação.`
-              : 'Sem pendências. Ao publicar, a criança vê este tutorial na hora e o Zappy passa a citá-lo.'}
+              : `Sem pendências. Ao publicar, ${learner} vê este tutorial na hora e o Zappy passa a citá-lo.`}
           </p>
           {issues.map((issue) => (
             <div

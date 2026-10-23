@@ -20,7 +20,6 @@ import { Copy, Eye, Gift, Mail, Plus, Search } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
-import { AdminHeader } from '@/components/admin/admin-header'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -95,7 +94,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         'POST',
       )
       if (res.sent) toast.success(`E-mail do link reenviado para ${row.email}.`)
-      else toast.warning('Não foi possível enviar o e-mail agora. Copie o link no detalhe.')
+      else toast.warning('O e-mail não saiu agora. Copie o link nos detalhes e mande por fora.')
       void load()
     } catch (err) {
       toast.error((err as ApiError).message)
@@ -107,7 +106,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
     confirm({
       title: disabling ? 'Desativar embaixador?' : 'Reativar embaixador?',
       message: disabling
-        ? `A página e o link de bolsa de ${row.name} param de funcionar (as bolsas já resgatadas continuam valendo).`
+        ? `A página e o link de bolsa de ${row.name} param de funcionar. As bolsas já resgatadas continuam valendo.`
         : `A página e o link de bolsa de ${row.name} voltam a funcionar.`,
       confirmText: disabling ? 'Desativar' : 'Reativar',
       confirmVariant: disabling ? 'destructive' : 'default',
@@ -127,17 +126,20 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
 
   return (
     <div className="space-y-6">
-      <AdminHeader
-        title="Embaixadores"
-        description="Quem indica o curso Cadê Todo Mundo? sem custo para a família convidada, com ou sem conta na plataforma."
-        action={
-          canWrite ? (
-            <Button onClick={() => setCreateOpen(true)}>
-              <Plus className="size-4" /> Novo embaixador
-            </Button>
-          ) : undefined
-        }
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="font-display text-xl font-bold">Embaixadores</h2>
+          <p className="mt-1 max-w-2xl text-[15px] text-muted-foreground">
+            Quem indica o curso Cadê Todo Mundo sem custo para a família convidada, com ou sem conta
+            na plataforma.
+          </p>
+        </div>
+        {canWrite ? (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="size-4" aria-hidden /> Novo embaixador
+          </Button>
+        ) : null}
+      </div>
 
       <form
         className="flex items-center gap-2"
@@ -148,11 +150,14 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         }}
       >
         <div className="relative w-full max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden
+          />
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar por nome ou e-mail"
+            placeholder="Nome ou e-mail"
             className="pl-9"
             aria-label="Buscar embaixadores"
           />
@@ -162,16 +167,16 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
         </Button>
       </form>
 
-      <Card className="overflow-x-auto p-0">
+      <Card className="overflow-hidden rounded-2xl p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Embaixador(a)</TableHead>
+              <TableHead>Quem indica</TableHead>
               <TableHead>Código</TableHead>
               <TableHead className="text-right">Bolsas resgatadas</TableHead>
               <TableHead className="text-right">Convites</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Criado em</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead>Desde</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
@@ -181,7 +186,7 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
             ) : items.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
-                  <Gift className="mx-auto mb-2 size-6" />
+                  <Gift className="mx-auto mb-2 size-6" aria-hidden />
                   Nenhum embaixador ainda. Crie o primeiro e envie o link da página dele.
                 </TableCell>
               </TableRow>
@@ -213,19 +218,21 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
                         variant="ghost"
                         size="icon"
                         title="Detalhes e resgates"
+                        aria-label={`Detalhes e resgates de ${row.name}`}
                         onClick={() => void openDetail(row.id)}
                       >
-                        <Eye className="size-4" />
+                        <Eye className="size-4" aria-hidden />
                       </Button>
                       {canWrite && (
                         <>
                           <Button
                             variant="ghost"
                             size="icon"
-                            title="Reenviar e-mail do link da página"
+                            title="Reenviar o e-mail com o link da página"
+                            aria-label={`Reenviar o e-mail com o link da página de ${row.name}`}
                             onClick={() => void resendLink(row)}
                           >
-                            <Mail className="size-4" />
+                            <Mail className="size-4" aria-hidden />
                           </Button>
                           <Button
                             variant="ghost"
@@ -264,10 +271,10 @@ export function EmbaixadoresClient({ currentRole }: { currentRole: string }) {
           onCreated={(view, emailSent) => {
             setCreateOpen(false)
             if (emailSent)
-              toast.success(`Embaixador criado! O link foi enviado para ${view.email}.`)
+              toast.success(`Embaixador criado. O link foi enviado para ${view.email}.`)
             else
               toast.warning(
-                'Embaixador criado, mas o e-mail falhou. Copie o link e envie por fora.',
+                'Embaixador criado, mas o e-mail não saiu. Copie o link e mande por fora.',
               )
             void load()
             if (view.pageUrl) void openDetail(view.id)
@@ -315,7 +322,7 @@ const CONVERSION_STATUS_BADGE: Record<
     title: (c) =>
       [
         c.paidMarkedAt
-          ? `Pago em ${formatDate(c.paidMarkedAt)} por ${c.paidMarkedBy ?? 'admin'}`
+          ? `Pago em ${formatDate(c.paidMarkedAt)} por ${c.paidMarkedBy ?? 'Admin'}`
           : '',
         c.note ? `Nota: ${c.note}` : '',
       ]
@@ -413,7 +420,7 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
       title: 'Antecipar a garantia?',
       // Nomeia o EMBAIXADOR (é quem recebe), com o bolsista como referência —
       // numa confirmação sobre dinheiro, o nome errado é o que se confere.
-      message: `O bônus de ${row.ambassadorName ?? 'este embaixador'}, pela assinatura de ${row.redemptionName}, fica liberado AGORA, antes dos 7 dias de garantia. Se a família pedir estorno depois, o acerto vira ajuste manual. Use para testes ou exceções conscientes.`,
+      message: `O bônus de ${row.ambassadorName ?? 'este embaixador'}, pela assinatura de ${row.redemptionName}, fica liberado agora, antes dos 7 dias de garantia. Se a família pedir estorno depois, o acerto é feito à mão. Use só para testes ou exceções que você decidiu fazer.`,
       confirmText: 'Antecipar',
       confirmVariant: 'destructive',
       onConfirm: async () => {
@@ -437,7 +444,7 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
     <section className="space-y-3 pt-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold">Bônus de indicação</h2>
+          <h2 className="font-display text-xl font-bold">Bônus de indicação</h2>
           <p className="text-sm text-muted-foreground">
             Bolsistas que assinaram a Comunidade dos Criadores. Depois da garantia de 7 dias, o
             bônus fica aguardando o seu Pix manual.
@@ -450,7 +457,7 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
               setOffset(0)
               setStatus(e.target.value as '' | ConversionStatus)
             }}
-            aria-label="Filtrar bônus por status"
+            aria-label="Filtrar bônus por situação"
           >
             <option value="">Todos</option>
             {(Object.keys(CONVERSION_STATUS_LABEL) as ConversionStatus[]).map((s) => (
@@ -462,16 +469,16 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
         </div>
       </div>
 
-      <Card className="overflow-x-auto p-0">
+      <Card className="overflow-hidden rounded-2xl p-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Embaixador(a)</TableHead>
+              <TableHead>Quem indicou</TableHead>
               <TableHead>Bolsista que assinou</TableHead>
               <TableHead>Assinou em</TableHead>
               <TableHead className="text-right">Bônus</TableHead>
               <TableHead>Chave Pix</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Situação</TableHead>
               {canWrite && <TableHead className="text-right">Ações</TableHead>}
             </TableRow>
           </TableHeader>
@@ -496,7 +503,7 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
                   className="py-8 text-center text-muted-foreground"
                 >
                   {status
-                    ? 'Nenhum bônus com esse status agora. Tente "Todos" para ver a lista inteira.'
+                    ? 'Nenhum bônus nessa situação agora. Escolha "Todos" para ver a lista inteira.'
                     : 'Nenhum bônus por aqui ainda. Quando um bolsista assinar a Comunidade, ele aparece nesta lista.'}
                 </TableCell>
               </TableRow>
@@ -530,11 +537,12 @@ function BonusSection({ canWrite }: { canWrite: boolean }) {
                           variant="ghost"
                           size="icon"
                           title="Copiar a chave Pix"
+                          aria-label="Copiar a chave Pix"
                           onClick={() =>
                             void copyToClipboard(row.ambassadorPixKey ?? '', 'Chave Pix')
                           }
                         >
-                          <Copy className="size-4" />
+                          <Copy className="size-4" aria-hidden />
                         </Button>
                       </div>
                     ) : (
@@ -718,7 +726,7 @@ function AmbassadorDetailDialog({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Responsável</TableHead>
-                    <TableHead>Status</TableHead>
+                    <TableHead>Situação</TableHead>
                     <TableHead>Etapa</TableHead>
                     <TableHead>Quando</TableHead>
                   </TableRow>
@@ -735,7 +743,7 @@ function AmbassadorDetailDialog({
                           <Badge className="bg-success/15 text-success-foreground">Concluído</Badge>
                         ) : r.status === 'failed' ? (
                           <Badge variant="destructive" title={r.lastError ?? undefined}>
-                            Falhou{r.failedReason ? ` (${r.failedReason})` : ''}
+                            Não deu certo{r.failedReason ? ` (${r.failedReason})` : ''}
                           </Badge>
                         ) : (
                           <Badge variant="muted">Pendente</Badge>
@@ -746,7 +754,9 @@ function AmbassadorDetailDialog({
                             title={r.lastError}
                           >
                             {r.lastError}
-                            {r.attemptCount ? ` · ${r.attemptCount} tentativa(s)` : ''}
+                            {r.attemptCount
+                              ? ` · ${r.attemptCount} ${r.attemptCount === 1 ? 'tentativa' : 'tentativas'}`
+                              : ''}
                           </div>
                         )}
                       </TableCell>
@@ -825,9 +835,10 @@ function LinkRow({
           variant="ghost"
           size="icon"
           title="Copiar"
+          aria-label={`Copiar: ${label}`}
           onClick={() => void onCopy(value, label)}
         >
-          <Copy className="size-4" />
+          <Copy className="size-4" aria-hidden />
         </Button>
       </div>
     </div>
