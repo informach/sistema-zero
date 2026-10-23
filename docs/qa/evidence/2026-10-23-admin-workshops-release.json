@@ -1,0 +1,424 @@
+{
+  "kind": "reviewed-admin-workshops-release",
+  "source": {
+    "main": "a2ff0fe49815922047e9d3bd98232eafe1e05592",
+    "approvedHead": "f5e22613ffe56207a8260ebeb2177a30ae368da0",
+    "tree": "0e47c8209e6e98e109708bcd2144acaa1324464a",
+    "pr": 208,
+    "ciRun": 39963724638,
+    "ciAttempt": 2,
+    "allTenJobsPassed": true,
+    "configurationPlanRun": 39963724616,
+    "configurationPlanArtifact": 12506051686,
+    "configurationChanges": 0
+  },
+  "staging": {
+    "observedAt": "2026-10-23T15:35:46.129Z",
+    "healthyServices": 18,
+    "pending": 0,
+    "deployments": [
+      {
+        "service": "api-gateway",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "auth",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "catalog",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "payments",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "members",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "messaging",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "funnel",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "admin",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "community",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "community-kids",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "hub",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "fiscal",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "marketing",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "marketing-app",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "referrals",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "helpdesk",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "helpdesk-app",
+        "commit": "f5e22613ffe56207a8260ebeb2177a30ae368da0"
+      },
+      {
+        "service": "live-recorder",
+        "commit": "b9f0124ea76273574ff84f7a50d140d9c3e93f5c"
+      }
+    ]
+  },
+  "production": {
+    "observedAt": "2026-10-23T16:39:25.562Z",
+    "healthyServices": 18,
+    "pending": 0,
+    "deployments": [
+      {
+        "service": "api-gateway",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "auth",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "catalog",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "payments",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "members",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "messaging",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "funnel",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "admin",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "community",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "community-kids",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "hub",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "fiscal",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "marketing",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "marketing-app",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "referrals",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "helpdesk",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      },
+      {
+        "service": "helpdesk-app",
+        "commit": "a2ff0fe49815922047e9d3bd98232eafe1e05592"
+      },
+      {
+        "service": "live-recorder",
+        "commit": "e8c58460805990f68ea7d4e3cdfbd9cbd6a86aa8"
+      }
+    ]
+  },
+  "configuration": {
+    "state": "ALL18_SNAPSHOT_CONFIGURATION_VERIFIED",
+    "observedAt": "2026-10-23T16:39:25.624Z",
+    "finishedAt": "2026-10-23T16:39:43.001Z",
+    "relations": [
+      {
+        "key": "STUDIO_PRO_RUNTIME_TOKEN",
+        "services": [
+          "members",
+          "auth",
+          "admin",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "STUDIO_PYTHON_RUNTIME_TOKEN",
+        "services": [
+          "members",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "STUDIO_PYTHON_LANGUAGE_TOKEN",
+        "services": [
+          "admin",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "STUDIO_BUILDER_EXECUTOR_SECRET",
+        "services": [
+          "members",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "GATEWAY_HMAC_SECRET",
+        "services": [
+          "api-gateway",
+          "members",
+          "hub",
+          "community-kids",
+          "community"
+        ],
+        "matches": true
+      },
+      {
+        "key": "MEMBERS_PROFILE_ADMISSION_TOKEN",
+        "services": [
+          "auth",
+          "members"
+        ],
+        "matches": true
+      },
+      {
+        "key": "LIVE_RECORDER_TOKEN",
+        "services": [
+          "members",
+          "live-recorder"
+        ],
+        "matches": true
+      }
+    ],
+    "publicOrigins": [
+      {
+        "service": "admin",
+        "key": "KIDS_COMMUNITY_URL",
+        "matches": true
+      },
+      {
+        "service": "admin",
+        "key": "COMMUNITY_URL",
+        "matches": true
+      },
+      {
+        "service": "community-kids",
+        "key": "APP_PUBLIC_URL",
+        "matches": true
+      },
+      {
+        "service": "community-kids",
+        "key": "FUNNEL_URL",
+        "matches": true
+      },
+      {
+        "service": "community",
+        "key": "APP_PUBLIC_URL",
+        "matches": true
+      },
+      {
+        "service": "community",
+        "key": "FUNNEL_URL",
+        "matches": true
+      }
+    ],
+    "issues": [],
+    "liveMediaMarkedReady": false
+  },
+  "adminBrowser": {
+    "kind": "authenticated-admin-workshops-browser-smoke",
+    "observedAt": "2026-10-23T16:39:53Z",
+    "productionSource": "a2ff0fe49815922047e9d3bd98232eafe1e05592",
+    "stagingSource": "f5e22613ffe56207a8260ebeb2177a30ae368da0",
+    "sourceTreesIdentical": true,
+    "browser": "connected Chrome",
+    "production": {
+      "homeAndThreeNavigationAreas": true,
+      "workshopsKidsAdultsKidsLens": true,
+      "newWorkshopCourseDefaultsToLive": true,
+      "courseCommunityFollowsActiveLens": true,
+      "pythonToolLanguageShowsTurtleBlockCatalog": true,
+      "courseDialogCancelledWithoutSave": true,
+      "kidsJourneyRanksAndComparisonLoaded": true,
+      "journeyPrepareDisabledWithoutChangeComparisonReason": true,
+      "liveAgendaLoaded": true,
+      "existingCourseStructureLoaded": true,
+      "initialKidsLensRestored": true,
+      "consoleWarningsOrErrorsObserved": 0,
+      "viewport": {
+        "width": 958,
+        "height": 936,
+        "horizontalOverflowOnCourseStructure": false
+      }
+    },
+    "staging": {
+      "userProvidedLoginRecognized": true,
+      "existingQaPythonWorkshopAndGroupLoaded": true,
+      "kidsAdultsKidsListsScoped": true,
+      "groupEditDialogLoadedThenCancelled": true,
+      "enrollmentDialogLoadedWithChildProfileChoice": true,
+      "enrollmentDialogClosedWithoutMutation": true,
+      "initialKidsLensRestored": true,
+      "consoleWarningsOrErrorsObserved": 0
+    },
+    "courseOrPolicyPublications": 0,
+    "courseOrGroupOrEnrollmentMutations": 0,
+    "chargesCreated": 0,
+    "limits": [
+      "Readonly/authenticated smoke plus unsaved dialog selection; not a real broadcast or recording test.",
+      "Live media remains disabled pending separate qualification.",
+      "Native scrollbar defect discovered by user is handled by separate PR 209; not part of this deployed source.",
+      "A screenshot connector request stalled and was cancelled; subsequent snapshots and actions recovered. No screenshot claim for those pages."
+    ]
+  },
+  "studioBrowser": {
+    "kind": "production-real-browser-studio-smoke",
+    "observedAt": "2026-10-23T16:14:35Z",
+    "releaseSha": "a2ff0fe49815922047e9d3bd98232eafe1e05592",
+    "browser": "connected Chrome",
+    "viewport": {
+      "width": 958,
+      "height": 936
+    },
+    "authentication": "existing user-provided parent/admin browser session; no credential extraction",
+    "initialOwnProjectCount": 0,
+    "javascript": {
+      "example": "Pegue a moeda",
+      "blocksRendered": true,
+      "savedInAccount": true,
+      "enterStartedGame": true,
+      "canvasVisuallyInspected": true,
+      "stopUsed": true,
+      "bridgeRenderedHtmlAndGeneratedJavaScript": true,
+      "generatedSourceUsesSZGame2D": true,
+      "reopenedSavedProject": true,
+      "commitRequests": [
+        1849,
+        1898,
+        1915
+      ],
+      "commitStatuses": [
+        200,
+        200,
+        200
+      ],
+      "deleteRequest": 1936,
+      "deleteStatus": 200
+    },
+    "python": {
+      "example": "Cobrinha (Blocos)",
+      "blocksAndTurtlePaletteRendered": true,
+      "savedInAccount": true,
+      "executionStatus": "Executando",
+      "turtleCanvasVisuallyInspected": true,
+      "gameLoopAdvancedToGameOver": true,
+      "stopUsed": true,
+      "bridgeSourceContainsOfficialImportTurtle": true,
+      "reopenedSavedProject": true,
+      "commitRequests": [
+        1986,
+        2044,
+        2065
+      ],
+      "commitStatuses": [
+        200,
+        200,
+        200
+      ],
+      "deleteRequest": 2077,
+      "deleteStatus": 200
+    },
+    "finalOwnProjectCount": 0,
+    "socialPublicationsCreated": 0,
+    "coursesOrPoliciesChanged": 0,
+    "paymentsCreated": 0,
+    "limits": [
+      "Smoke of Classic blocks/bridge and the browser runtime; no Pro entitlement bypass.",
+      "No claim of full gameplay, performance, real mobile hardware, live audio/video or workshop-recording qualification.",
+      "Raw session headers, child identity and runtime capability fragments are intentionally absent."
+    ]
+  },
+  "negativeEvidencePreserved": [
+    "PR attempt1 WebKit startup timeout before tests; attempt2 all ten jobs passed",
+    "Staging automatic deploy SSH auth probe failure before mutations; canonical manual recovery completed",
+    "First Kids production controller OAuth expiry after acknowledged deploy; same deployment reconciled readonly, never duplicated"
+  ],
+  "qualificationLimits": [
+    "No actual audio/video/recording acceptance; LIVE_MEDIA_READY=false",
+    "No full-game performance, endurance, real-phone or full Pro acceptance",
+    "Scrollbar correction PR209 is a separate source and pending release at the time of this evidence"
+  ],
+  "artifacts": [
+    {
+      "name": "production-loaded-config-final-r1.json",
+      "sha256": "609460a93aaf8cbdf8e187d0eb0f7d8c985cdab110ecf8a3ea322c0d87822e67"
+    },
+    {
+      "name": "production-platform-final-r1.json",
+      "sha256": "3cdba5ffe94fd33d54abdbe24dbf807cbbf949e38dfa5ab117221ac7f74a4107"
+    },
+    {
+      "name": "staging-platform-final-r1.json",
+      "sha256": "fc2d2d1bcc75dabc561128c08f00e8682ea83485b1478fc77628f25460a79f3c"
+    },
+    {
+      "name": "admin-browser-smoke-r1.json",
+      "sha256": "2eaf0be393a90b6843509118433179c84553fd58bd64955b4eb8d694eb2db272"
+    },
+    {
+      "name": "production-studio-smoke-r1.json",
+      "sha256": "07d66d7d0a3b4544b956e7c48ab16ae8b1aecd93a3704db2e826e7c0b4cbe0a9"
+    }
+  ]
+}
