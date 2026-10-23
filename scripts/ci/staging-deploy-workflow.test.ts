@@ -9,6 +9,12 @@ import {
 } from './kids-journey-rollout.mjs'
 
 const workflow = readFileSync('.github/workflows/ci.yml', 'utf8')
+const { jobs } = Bun.YAML.parse(workflow) as {
+  jobs: Record<
+    string,
+    { 'timeout-minutes': number; steps: Array<{ name: string; 'timeout-minutes'?: number }> }
+  >
+}
 const deploy = workflow.slice(workflow.indexOf('\n  deploy-staging:'))
 const resolver = resolve('scripts/ci/staging-deploy-baseline.mjs')
 
@@ -23,17 +29,26 @@ test('only the deployment job receives the larger wall-clock budget', () => {
   expect(deploy).toContain(`--connect-timeout 5 --max-time "\${2:-15}"`)
   expect(deploy).not.toContain('seq 1 60')
   expect(
-    workflow.slice(0, workflow.indexOf('\n  deploy-staging:')).match(/timeout-minutes: \d+/g),
-  ).toEqual([
-    'timeout-minutes: 45',
-    'timeout-minutes: 2',
-    'timeout-minutes: 15',
-    'timeout-minutes: 20',
-    'timeout-minutes: 20',
-    'timeout-minutes: 30',
-    'timeout-minutes: 20',
-    'timeout-minutes: 20',
-  ])
+    Object.fromEntries(
+      Object.entries(jobs)
+        .filter(([name]) => name !== 'deploy-staging')
+        .map(([name, job]) => [name, job['timeout-minutes']]),
+    ),
+  ).toEqual({
+    ci: 45,
+    'studio-storage-macos': 15,
+    'desktop-windows': 20,
+    'community-kids-e2e': 20,
+    'studio-e2e-chromium': 30,
+    'studio-e2e-firefox': 20,
+    'studio-e2e-webkit': 20,
+    'members-image': 25,
+  })
+  expect(
+    jobs.ci!.steps.find(
+      (step) => step.name === 'Verificar cancelamento Python por RPC no runtime real',
+    )?.['timeout-minutes'],
+  ).toBe(2)
 })
 
 test('workflow resolves before installation, public/provider access, SSH and apply', () => {
