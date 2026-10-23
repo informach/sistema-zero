@@ -370,7 +370,7 @@ test('Full editor observes authority in the same environment without reopening i
 
 test('Python opening waits for authority and presents preparation errors without a false denial', async () => {
   const fixture = await pythonEnvironmentFixture('classic')
-  fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
+  fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0', installedAt: 1 }]
   runtimeEnvironment = undefined
   runtimeLoading = true
   const view = render(ui('classic', fixture.project.id))
@@ -408,7 +408,7 @@ test('Python opening waits for authority and presents preparation errors without
 
 test('Python authority loss hides and disables the retained editor; an explicit empty grant stays denied', async () => {
   const fixture = await pythonEnvironmentFixture('classic')
-  fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
+  fixture.project.installedExtensions = [{ id: 'python-turtle', version: '1.0.0', installedAt: 1 }]
   runtimeEnvironment = fixture.environment
   const view = render(ui('classic', fixture.project.id))
   await act(async () => loads[0]?.gate.resolve(fixture.project))

@@ -1,0 +1,31 @@
+{
+  "kind": "hosted-staging-adult-quiz-offer-smoke",
+  "version": 1,
+  "observedThrough": "2026-10-23T01:04:58.7932369Z",
+  "environment": "staging",
+  "origin": "https://funnel-staging-c4a5.up.railway.app",
+  "homeAudienceLinksObserved": true,
+  "adultQuizOpened": true,
+  "questionsAnswered": 10,
+  "conditionalExtraQuestionAnswered": true,
+  "resultOpened": true,
+  "resultReflectedTestAnswers": true,
+  "offerOpenedFromResult": true,
+  "monthlyAndAnnualPlansVisible": true,
+  "monthlyPrecheckoutDialogOpened": true,
+  "precheckoutDialogCancelled": true,
+  "nameEmailPhoneEntered": false,
+  "paymentRequested": false,
+  "checkoutFulfillmentQualified": false,
+  "anonymousLeadCreatedByApplication": true,
+  "anonymousLeadCreationStatus": 201,
+  "answerPatchStatusesObserved": [
+    200
+  ],
+  "consoleErrorsBeforeQuestion3": 0,
+  "waitForTextTimeoutObserved": true,
+  "waitForTextTimeoutExplanation": "The next question was present on subsequent snapshot; no request failure observed in that transition.",
+  "adultCommunityAuthenticatedQualified": false,
+  "productionQualified": false,
+  "overallQualified": false
+}

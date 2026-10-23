@@ -1,0 +1,30 @@
+{
+  "kind": "staging-hub-approved-seed-application",
+  "version": 1,
+  "observedThrough": "2026-10-23T01:19:50.3413491Z",
+  "project": "415d5a1c-5f75-432c-8445-b395d0977ce3",
+  "environment": "f634cff6-aafb-4804-8b69-172fad4e946e",
+  "service": "00b27b18-0587-460b-ba90-b6b24c423e45",
+  "deployment": "af0dd8b7-e88a-482e-aa42-577435bfa75c",
+  "commit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+  "state": "DEFINED_MURAL_SCOPE_CREATED_AND_READ_BACK",
+  "planSha256": "5372c04274356e8def91701d8c7b5b9ece7b71c2843ad3bbebdd4bfade644b10",
+  "applySha256": "0e2bd5438b176af5f3a718d69726e727f8179aa608ee617e2a62d70fee30e683",
+  "statusSha256": "5f534d24e1633fb342583537a379ae04da2aa9390a8bdb9059c8619eac18bf18",
+  "applyCalls": 1,
+  "retries": 0,
+  "created": [
+    "mural-dos-criadores-adulto",
+    "mural-dos-criadores-adulto/parede"
+  ],
+  "adultMuralId": "d4802c2e-f9cb-444a-9f11-0012486a951f",
+  "adultCommunityAccessKey": "adult-mural-dos-criadores",
+  "kidsConfigurationsUnchanged": true,
+  "kidsConfigurationsCompared": 2,
+  "existingAdminDriftPreserved": true,
+  "adultClubDefinitionPending": true,
+  "adultUiQualified": false,
+  "otherSeedsApplied": false,
+  "productionMutation": false,
+  "overallQualified": false
+}

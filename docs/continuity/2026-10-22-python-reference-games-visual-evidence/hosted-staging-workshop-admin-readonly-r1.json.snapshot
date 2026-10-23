@@ -1,0 +1,23 @@
+{
+  "kind": "hosted-staging-workshop-admin-readonly-smoke",
+  "version": 1,
+  "observedThrough": "2026-10-23T00:50:45.5385007Z",
+  "environment": "staging",
+  "applicationCommit": "bc2f154d45509a4745cccc5d05bb2226ff9f2977",
+  "workshopListOpened": true,
+  "liveCourseCreationDialogOpened": true,
+  "defaultLanguage": "JavaScript",
+  "pythonToolsSelectedInUnsavedDialog": true,
+  "pythonToolsLoaded": true,
+  "pythonFunctionsClassesCollectionsTurtleLabelsObserved": true,
+  "dependencyExplanationObserved": true,
+  "completionGrantsExplanationObserved": true,
+  "productAccessStillRequiredExplanationObserved": true,
+  "dialogCancelled": true,
+  "courseCreated": false,
+  "curriculumChanged": false,
+  "consoleErrorsObserved": 0,
+  "liveExecutionQualified": false,
+  "studentGrantQualified": false,
+  "overallQualified": false
+}
