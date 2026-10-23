@@ -53,3 +53,11 @@ Na pasta `packages/community-kids`, executar `bun run e2e:lesson-layout`.
 Resultados e capturas ficam em `.cache/lesson-layout-results`.
 
 O lote ainda depende de integração e deploy para aparecer na plataforma publicada.
+
+## Complemento após o CI
+
+O job de navegador passou, mas dois casos de atualização da aula usavam a busca
+genérica por um único botão no cartão. O novo controle de detalhes tornou essa
+busca ambígua. A reprodução local confirmou 13 testes passando e dois falhando;
+o seletor passou a usar o nome “Verificar esta parte”, com asserção de que a
+requisição realmente aconteceu. As regras de atualização da aula foram mantidas.
