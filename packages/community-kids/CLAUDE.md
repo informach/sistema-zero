@@ -51,6 +51,15 @@ oficinas não se divulgam fora delas). `tests/room-trophy-models.test.ts` reprov
 modelo próprio (a caixa neutra), além do `badge-conformance` e do `catalog-conformance` do
 members.
 
+## Início: "Seu encontro é hoje" (23/10/2026)
+
+No celular "Oficinas" é `desktopOnly` na barra de abas, e a criança com encontro não tinha caminho até
+a sala. A Início lê no servidor o encontro de hoje (`loadLiveTodayReadonly` do member-shell, no mesmo
+`Promise.all`) e mostra o `LiveTodayCard` (`components/kids/live-today-card.tsx`) logo depois da
+saudação, SÓ para quem tem encontro hoje (sem ele, a Início fica como era). Entrada por `<a>`
+(navegação completa: a sala libera a câmera pelos cabeçalhos dela); no celular o cartão avisa que
+criar junto é pelo computador. A barra de abas não mudou.
+
 ## A sala da oficina ao vivo é a fase com a transmissão (cursos ao vivo, 14/10/2026)
 
 A oficina virou um CURSO ao vivo e a sala é o layout da fase gravada (o desenho e as regras estão

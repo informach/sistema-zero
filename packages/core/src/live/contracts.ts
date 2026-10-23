@@ -290,6 +290,11 @@ export interface LiveRoomView {
   supervision: LiveSupervisionStatus
   serverTime: string
   mediaReady: boolean
+  /**
+   * Só na sala da criança, com a sala aberta: quantos colegas estão nela agora. O número, nunca
+   * quem (os outros participantes não chegam ao navegador da criança).
+   */
+  presentCount?: number
 }
 export type LiveControl =
   /** Professora, só com o encontro `live`: abre a parte e a torna atual (marca o capítulo). */

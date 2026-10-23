@@ -46,16 +46,16 @@ test('teacher opens reception, enters and starts a scheduled room through the UI
   }) as typeof fetch
   render(createElement(LiveClassroom, { sessionId: f.session.id, teacher: true }))
   await waitFor(() => expect(screen.getByRole('button', { name: 'Abrir recepção' })).toBeTruthy())
-  expect(screen.queryByRole('button', { name: 'Entrar como professora' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Entrar para conduzir' })).toBeNull()
   await expect(
     f.live.join(f.child, f.session.id, { deviceId: f.deviceId, takeover: false }),
   ).rejects.toThrow()
   fireEvent.click(screen.getByRole('button', { name: 'Abrir recepção' }))
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Entrar como professora' })).toBeTruthy(),
+    expect(screen.getByRole('button', { name: 'Entrar para conduzir' })).toBeTruthy(),
   )
   expect((await f.live.room(f.teacher, f.session.id)).occurrence!.state).toBe('lobby')
-  fireEvent.click(screen.getByRole('button', { name: 'Entrar como professora' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Entrar para conduzir' }))
   await waitFor(() => expect(screen.getByRole('button', { name: 'Começar encontro' })).toBeTruthy())
   fireEvent.click(screen.getByRole('button', { name: 'Começar encontro' }))
   await waitFor(() =>

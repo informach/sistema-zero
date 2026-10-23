@@ -1,5 +1,6 @@
 import { courseJourneyState, kidsCreativeToolAvailability } from '@sistemazero/core/journey'
 import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
+import { loadLiveTodayReadonly } from '@sistemazero/member-shell/server/live-today'
 import { ArrowRight, BookOpen, Map as MapIcon, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 import { ChallengeCard } from '@/components/kids/challenge-card'
@@ -15,6 +16,7 @@ import { FocusRefresh } from '@/components/kids/focus-refresh'
 import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
+import { LiveTodayCard } from '@/components/kids/live-today-card'
 import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
 import { MissionsPanel } from '@/components/kids/missions-panel'
 import {
@@ -40,7 +42,7 @@ export default async function HomePage() {
   // layout (clients.ts memoiza por esse booleano) — uma ÚNICA ida ao gateway por
   // render nesta rota, a mais acessada. Missões antes vinham de um fetch client
   // pós-hidratação (waterfall); agora entram no Promise.all do servidor.
-  const [{ status, body }, gam, missions, avatarRes, showcaseRes, challengeAccess] =
+  const [{ status, body }, gam, missions, avatarRes, showcaseRes, challengeAccess, liveToday] =
     await Promise.all([
       listMyCourses(),
       getGamificationReadonly({ withRanking: true }),
@@ -52,6 +54,8 @@ export default async function HomePage() {
       shell.hub.myShowcaseStatsReadonly().catch(() => null),
       // Desafio do mês: card SÓ com posse de Clube+Estúdio (produtos à parte).
       checkChallengeAccessReadonly().catch(() => null),
+      // O encontro de HOJE de quem tem vaga (o cartão do alto). Melhor esforço: sem ele, nada muda.
+      loadLiveTodayReadonly(shell.gateway),
     ])
   if (status !== 200) throw new Error('Falha ao carregar os cursos')
   const courses = body?.courses ?? []
@@ -143,11 +147,13 @@ export default async function HomePage() {
             startAvailable={startAvailable}
             header={saudacao}
           >
+            {liveToday ? <LiveTodayCard live={liveToday} /> : null}
             <ContinueHero courses={courses} />
           </ChildGuide>
         ) : (
           <>
             <div className="mb-6 md:mb-7">{saudacao}</div>
+            {liveToday ? <LiveTodayCard live={liveToday} /> : null}
             <ContinueHero courses={courses} />
           </>
         )}

@@ -179,7 +179,7 @@ test('a criança recebe a aula pelo slot, com as partes conduzidas, e relata a p
   expect(slot.audience).toBe('kids')
   expect(slot.liveWorkspace?.role).toBe('learner')
   // Antes de entrar, a porta da sala mora no lugar da transmissão (entrar não faz a aula pular).
-  expect(screen.getByRole('heading', { name: 'A professora Ana já está na sala!' })).toBeDefined()
+  expect(screen.getByRole('heading', { name: 'Ana já está na sala!' })).toBeDefined()
   // O roteiro antigo saiu da sala.
   expect(screen.queryByText('Vamos criar')).toBeNull()
   fireEvent.click(screen.getByRole('button', { name: 'relatar' }))
@@ -194,7 +194,7 @@ test('a criança recebe a aula pelo slot, com as partes conduzidas, e relata a p
   await waitFor(() =>
     expect(screen.getByRole('navigation', { name: 'Controles da sala' })).toBeDefined(),
   )
-  expect(screen.getByRole('region', { name: 'Professora Ana ao vivo' })).toBeDefined()
+  expect(screen.getByRole('region', { name: 'Ana ao vivo' })).toBeDefined()
   expect(screen.getByRole('button', { name: /Ampliar a transmissão/ })).toBeDefined()
 })
 
@@ -362,7 +362,7 @@ for (const teacher of [false, true]) {
     expect(screen.getByText('Preparando seu projeto…')).toBeDefined()
     await act(async () => device.reject(new Error('Device initialization failed')))
     await screen.findByText(
-      'Não foi possível preparar este aparelho. Recarregue a página para tentar novamente.',
+      'Não conseguimos preparar este computador para a sala. Recarregue a página para tentar de novo.',
     )
     expect(screen.queryByText('Preparando seu projeto…')).toBeNull()
     expect(screen.queryByText('Aula aberta')).toBeNull()
