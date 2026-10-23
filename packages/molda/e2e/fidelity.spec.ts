@@ -38,10 +38,10 @@ for (const theme of ['default', 'pink', 'dark'] as const) {
     // A reproducible camera framing, retaining the real proportions of the source geometry.
     for (let i = 0; i < 3; i++)
       await page.getByRole('button', { name: 'Afastar', exact: true }).click()
-    await expect(page.getByLabel('Tamanho X', { exact: true })).toHaveValue('6')
-    await expect(page.getByLabel('Tamanho Y', { exact: true })).toHaveValue('2')
-    await expect(page.getByLabel('Tamanho Z', { exact: true })).toHaveValue('8')
-    await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('-5')
+    await expect(page.getByLabel('Tamanho X', { exact: true })).toHaveValue('6.00')
+    await expect(page.getByLabel('Tamanho Y', { exact: true })).toHaveValue('2.00')
+    await expect(page.getByLabel('Tamanho Z', { exact: true })).toHaveValue('8.00')
+    await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('-5.00')
     await expect(page.getByText(COPY.gallery.imported(1), { exact: true })).toHaveCount(0, {
       timeout: 15000,
     })

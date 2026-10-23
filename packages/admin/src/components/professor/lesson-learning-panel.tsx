@@ -173,7 +173,7 @@ function answerLines(
         activity.pilha,
         activity.setup?.goalCopy,
       ).feedback,
-      'A cena registra o que ela fez ali. A transferência se observa no projeto e nos critérios da seção.',
+      'A cena registra o que ela fez ali. A transferência se observa no projeto e nos critérios da parte.',
     ].filter(Boolean)
   }
 
@@ -254,8 +254,8 @@ export function LessonLearningPanel({
             <>
               <h3 className="font-semibold">{report.lessonTitle}</h3>
               <p className="text-sm text-muted-foreground">
-                Os registros mostram interações e respostas, sem classificar a capacidade do aluno.
-                Pistas fazem parte do aprendizado.
+                Os registros mostram interações e respostas, sem classificar a capacidade de
+                ninguém. Pistas fazem parte do aprendizado.
               </p>
               {report.sections.map((section) => {
                 const blocks = report.blocks.filter((block) =>
@@ -303,11 +303,11 @@ export function LessonLearningPanel({
                         </p>
                       ))}
                     {report.sectionId === section.id ? (
-                      <p className="text-xs">Última seção aberta</p>
+                      <p className="text-xs">Última parte aberta</p>
                     ) : null}
                     {!blocks.length ? (
                       <p className="text-sm text-muted-foreground">
-                        Sem interação registrada nesta seção.
+                        Sem interação registrada nesta parte.
                       </p>
                     ) : null}
                     {blocks

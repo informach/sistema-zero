@@ -37,6 +37,6 @@ export function moduleSubmissionCount(
 export function submissionCountWarning(count: number): string | null {
   if (count <= 0) return null
   return count === 1
-    ? 'Existe 1 entrega de aluno aqui, e ela será apagada junto.'
-    : `Existem ${count} entregas de alunos aqui, e elas serão apagadas junto.`
+    ? 'Existe 1 projeto enviado aqui, e ele será apagado junto.'
+    : `Existem ${count} projetos enviados aqui, e eles serão apagados junto.`
 }

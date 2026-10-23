@@ -16,8 +16,7 @@ export function DemonstrationGate({ sessionId }: { sessionId: string }) {
       controller.signal,
     )
       .then((next) => {
-        if (next.role !== 'teacher')
-          throw new Error('Esta demonstração é da professora responsável.')
+        if (next.role !== 'teacher') throw new Error('Esta demonstração é de quem conduz a turma.')
         setRoom(next)
       })
       .catch((cause) => {

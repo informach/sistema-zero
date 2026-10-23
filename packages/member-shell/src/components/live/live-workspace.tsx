@@ -1456,8 +1456,8 @@ function WorkspaceEditor({
       <Dialog
         open={Boolean(asking)}
         onClose={() => {}}
-        title={`${assistance?.teacherName ? `A professora ${assistance.teacherName}` : 'A professora'} quer ajudar no seu projeto`}
-        description="Enquanto ela mexe, você acompanha aqui. Você pode parar a ajuda quando quiser."
+        title={`${assistance?.teacherName ?? 'Quem conduz a turma'} quer ajudar no seu projeto`}
+        description={`Enquanto ${assistance?.teacherName ?? 'quem conduz'} mexe, você acompanha tudo aqui. Você pode parar a ajuda quando quiser.`}
       >
         <div className="flex flex-wrap justify-end gap-2">
           <Button
@@ -1609,7 +1609,7 @@ export function LiveDemonstration({ room }: { room: LiveRoomView }) {
     return () =>
       media?.setCaptureHandleConfig?.({ handle: '', exposeOrigin: false, permittedOrigins: [] })
   }, [room.session.id])
-  if (room.role !== 'teacher') return <p>A demonstração pertence à professora desta turma.</p>
+  if (room.role !== 'teacher') return <p>Só quem conduz esta turma abre a demonstração.</p>
   return (
     <main className="flex h-dvh flex-col bg-background">
       <header className="border-b p-3">

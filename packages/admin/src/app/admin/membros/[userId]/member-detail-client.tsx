@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, buttonVariants } from '@sistemazero/ui/button'
+import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
@@ -16,18 +16,32 @@ import {
   TableRow,
 } from '@sistemazero/ui/table'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { ArrowLeft, CreditCard, Inbox, LogIn, Mail, MailOpen, Pencil, Plus } from 'lucide-react'
+import {
+  ArrowLeft,
+  Copy,
+  CreditCard,
+  Inbox,
+  LogIn,
+  Mail,
+  MailOpen,
+  Megaphone,
+  Pencil,
+  Plus,
+} from 'lucide-react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { GrantAccessDialog } from '@/components/admin/grant-access-dialog'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { SpokenChip } from '@/components/admin/spoken-chip'
 import { StatusBadge } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { CourseProgressCard, ToolUsageGrid } from '@/components/members/usage-cards'
+import { MoreMenu, type MoreMenuItem } from '@/components/professor/more-menu'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { dateInputToSaoPauloEndOfDayIso } from '@/lib/dates'
 import { entitlementBadge } from '@/lib/entitlement-status'
@@ -35,6 +49,7 @@ import { formatCentsStr, formatDate } from '@/lib/format'
 import { canImpersonate, impersonationUrl } from '@/lib/impersonation'
 import { createLatestAppendGuard } from '@/lib/latest-wins'
 import { type LearnerSelection, resolveLearnerId } from '@/lib/learner-selection'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 import { type MemberToolUsageView, ownedToolCards } from '@/lib/tool-usage'
 import type {
@@ -48,7 +63,7 @@ import type {
   Paginated,
   PaymentRow,
 } from '@/lib/types'
-import { PAYMENT_METHOD_LABELS, PRODUCT_KIND_LABELS } from '@/lib/types'
+import { PAYMENT_METHOD_LABELS, PRODUCT_KIND_LABELS, roleLabel } from '@/lib/types'
 
 const SOURCE_LABELS: Record<string, string> = {
   payment: 'Pagamento',
@@ -56,10 +71,13 @@ const SOURCE_LABELS: Record<string, string> = {
   manual: 'Manual',
 }
 
+/** Por que os botões de acesso estão apagados para quem só lê. */
+const READ_ONLY_ACCESS = 'Só Admin muda os acessos.'
+
 const ACCESS_LABELS: Record<string, string> = {
   course: 'Curso',
-  all_courses: 'Todos os cursos (chave-mestra)',
-  all_kids_courses: 'Todos os cursos kids (chave-mestra)',
+  all_courses: 'Todos os cursos',
+  all_kids_courses: `Todos os cursos da ${COMMUNITY_NAMES.kids}`,
   community: 'Comunidade',
 }
 
@@ -74,10 +92,10 @@ type Tab = 'overview' | 'gamification' | 'activity' | 'certificates' | 'ratings'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'overview', label: 'Visão geral' },
-  { id: 'gamification', label: 'Gamificação' },
+  { id: 'gamification', label: 'Jornada e conquistas' },
   { id: 'activity', label: 'Atividade' },
   { id: 'certificates', label: 'Certificados' },
-  { id: 'ratings', label: 'Classificações' },
+  { id: 'ratings', label: 'Avaliações' },
   { id: 'payments', label: 'Pagamentos' },
 ]
 
@@ -134,7 +152,7 @@ export function MemberDetailClient({
     try {
       setDetail(await apiGet<MemberDetail>(`/api/members/${userId}`))
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar o membro.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos abrir a ficha.')
     } finally {
       setLoading(false)
     }
@@ -153,19 +171,19 @@ export function MemberDetailClient({
       })
       toast.success(
         action === 'revoke'
-          ? 'Matrícula revogada.'
+          ? 'Acesso tirado.'
           : action === 'expire'
-            ? 'Matrícula expirada.'
+            ? 'Acesso encerrado.'
             : 'Validade atualizada.',
       )
       await load()
     } catch (err) {
       const e = err as ApiError
       if (e.status === 409) {
-        toast.error('Registro alterado por outra operação. Recarregando…')
+        toast.error('Alguém mudou este acesso agora há pouco. Atualizando a ficha…')
         await load()
       } else {
-        toast.error(e.message ?? 'Não foi possível atualizar a matrícula.')
+        toast.error(e.message ?? 'Não conseguimos mudar o acesso. Tente de novo.')
       }
     } finally {
       setBusyId(null)
@@ -173,28 +191,33 @@ export function MemberDetailClient({
   }
 
   function confirmRevoke(e: AdminEntitlementView) {
+    const course = accessName(e)
     confirm({
-      title: 'Revogar acesso',
+      title: `Tirar o acesso de ${title}?`,
       message: (
         <>
-          Revogar o acesso <strong className="text-foreground">{e.name}</strong>? O aluno perde o
-          acesso imediatamente.
+          <strong className="text-foreground">{title}</strong> perde o acesso a{' '}
+          <strong className="text-foreground">{course}</strong> agora. O acesso fica marcado como
+          tirado e não volta sozinho.
         </>
       ),
-      confirmText: 'Revogar',
+      confirmText: 'Tirar acesso',
       confirmVariant: 'destructive',
       onConfirm: () => manage(e.id, 'revoke'),
     })
   }
   function confirmExpire(e: AdminEntitlementView) {
+    const course = accessName(e)
     confirm({
-      title: 'Expirar acesso',
+      title: `Encerrar agora o acesso de ${title}?`,
       message: (
         <>
-          Expirar o acesso <strong className="text-foreground">{e.name}</strong>?
+          O acesso de <strong className="text-foreground">{title}</strong> a{' '}
+          <strong className="text-foreground">{course}</strong> termina hoje, como se a validade
+          tivesse chegado. Dá para estender de novo depois.
         </>
       ),
-      confirmText: 'Expirar',
+      confirmText: 'Encerrar agora',
       confirmVariant: 'destructive',
       onConfirm: () => manage(e.id, 'expire'),
     })
@@ -208,7 +231,7 @@ export function MemberDetailClient({
     if (!extendTarget) return
     const iso = dateInputToSaoPauloEndOfDayIso(extendDate)
     if (!iso) {
-      toast.error('Informe uma data de validade válida.')
+      toast.error('Escolha uma data válida.')
       return
     }
     setExtendOpen(false)
@@ -234,7 +257,7 @@ export function MemberDetailClient({
       setRecadoTitle('')
       setRecadoBody('')
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível enviar o recado.')
+      toast.error((err as ApiError).message ?? 'O recado não foi enviado. Tente de novo.')
     } finally {
       setSendingRecado(false)
     }
@@ -256,14 +279,14 @@ export function MemberDetailClient({
       window.open(impersonationUrl(res.communityUrl, res.token), '_blank', 'noopener,noreferrer')
       toast.success('Sessão de suporte aberta.')
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível entrar como o aluno.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos abrir a sessão de suporte.')
     } finally {
       setImpersonating(false)
     }
   }
 
   const user = detail?.user ?? null
-  const title = user ? `${user.firstName} ${user.lastName}` : 'Membro'
+  const title = user ? `${user.firstName} ${user.lastName}`.trim() || 'Aluno' : 'Aluno'
   const email = user?.email ?? userId
 
   // Aprendizes: a conta + cada perfil de criança (kids).
@@ -289,70 +312,105 @@ export function MemberDetailClient({
     user != null &&
     canImpersonate(currentUser, { id: user.id, role: user.role, status: user.status })
 
+  // O "Mais" do cabeçalho: as ações de segunda linha, com as MESMAS regras de antes
+  // (conceder = quem escreve; entrar como = `canImpersonate`). Quem só lê vê o "Conceder
+  // acesso" apagado, com o motivo, e a faixa de só leitura explica.
+  const groupRecadoFor = platform === 'kids' && learner?.audience === 'kids' ? learner : null
+  const moreItems: MoreMenuItem[] = [
+    {
+      label: 'Ver recados',
+      icon: <MailOpen className="size-4" aria-hidden />,
+      href: `/admin/professor/recados?userId=${encodeURIComponent(learner?.id ?? userId)}`,
+    },
+    // Criança escolhida na ficha: abre o recado em grupo (Recados lê `compose=1`) já com ela.
+    ...(groupRecadoFor
+      ? [
+          {
+            label: 'Mandar recado em grupo',
+            icon: <Megaphone className="size-4" aria-hidden />,
+            href: `/admin/professor/recados?userId=${encodeURIComponent(groupRecadoFor.id)}&compose=1`,
+            disabled: !canMessage,
+            disabledReason: 'Seu papel não manda recados.',
+          },
+        ]
+      : []),
+    {
+      label: 'Conceder acesso',
+      icon: <Plus className="size-4" aria-hidden />,
+      onSelect: () => setGrantOpen(true),
+      disabled: !canWrite,
+      disabledReason: 'Só Admin concede acesso.',
+    },
+    {
+      label: 'Editar conta',
+      icon: <Pencil className="size-4" aria-hidden />,
+      href: '/admin/usuarios',
+    },
+    ...(canImpersonateUser
+      ? [
+          {
+            label: `Entrar como ${user?.firstName?.trim() || title}`,
+            icon: impersonating ? <Spinner /> : <LogIn className="size-4" aria-hidden />,
+            disabled: impersonating,
+            onSelect: () => {
+              setImpersonatePlatform('main')
+              setImpersonateOpen(true)
+            },
+          },
+        ]
+      : []),
+  ]
+
   return (
     <div className="space-y-6">
       {confirmDialog}
       <Link
         href="/admin/membros"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        className="inline-flex min-h-11 items-center gap-1 text-[15px] font-bold text-muted-foreground hover:text-foreground"
       >
-        <ArrowLeft className="size-4" /> Membros
+        <ArrowLeft className="size-4" /> Voltar aos alunos
       </Link>
 
+      {/* A conta pode ter a criança na Comunidade dos Criadores e o responsável na outra: o selo
+          da lente diria só uma das duas, então a ficha não mostra selo. */}
       <AdminHeader
         title={title}
         description={email}
+        community={false}
         action={
-          <div className="flex flex-wrap gap-2">
-            {canImpersonateUser ? (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setImpersonatePlatform('main')
-                  setImpersonateOpen(true)
-                }}
-                disabled={impersonating}
-              >
-                {impersonating ? <Spinner /> : <LogIn className="size-4" />} Entrar como
-              </Button>
-            ) : null}
-            <Link href="/admin/usuarios" className={buttonVariants({ variant: 'outline' })}>
-              <Pencil className="size-4" /> Editar
-            </Link>
+          <div className="flex flex-wrap items-center gap-2">
             {canMessage ? (
-              <Button variant="outline" onClick={() => setRecadoOpen(true)}>
-                <Mail className="size-4" /> Enviar recado
+              <Button className="min-h-11 px-4" onClick={() => setRecadoOpen(true)}>
+                <Mail className="size-4" /> Mandar recado
               </Button>
             ) : null}
-            {/* Filas do professor JÁ filtradas por este aprendiz (conta = família toda;
+            {/* Filas da Turma JÁ filtradas por esta pessoa (conta = família toda;
                 perfil selecionado = só a criança). */}
             <Link
               href={`/admin/professor/entregas?userId=${encodeURIComponent(learner?.id ?? userId)}`}
-              className={buttonVariants({ variant: 'outline' })}
+              className="inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-card px-4 text-sm font-bold hover:bg-muted"
             >
-              <Inbox className="size-4" /> Entregas do aluno
+              <Inbox className="size-4" /> Ver projetos
             </Link>
-            <Link
-              href={`/admin/professor/recados?userId=${encodeURIComponent(learner?.id ?? userId)}${learner ? '&compose=1' : ''}`}
-              className={buttonVariants({ variant: 'outline' })}
-            >
-              <MailOpen className="size-4" /> {learner ? 'Enviar recado' : 'Recados do aluno'}
-            </Link>
-            {canWrite ? (
-              <Button onClick={() => setGrantOpen(true)}>
-                <Plus className="size-4" /> Conceder acesso
-              </Button>
-            ) : null}
+            <MoreMenu items={moreItems} />
           </div>
         }
       />
+
+      {canWrite ? null : (
+        <ReadOnlyNotice>
+          Mandar recado e ver os projetos continuam liberados para você.
+        </ReadOnlyNotice>
+      )}
 
       {loading ? (
         <Card className="py-10 text-center text-muted-foreground">
           <Spinner className="mx-auto" />
         </Card>
       ) : !detail ? (
-        <Card className="py-10 text-center text-muted-foreground">Membro não encontrado.</Card>
+        <Card className="py-10 text-center text-muted-foreground">
+          Não encontramos esta conta. Ela pode ter sido apagada.
+        </Card>
       ) : (
         <>
           <IdentityCard detail={detail} />
@@ -377,7 +435,7 @@ export function MemberDetailClient({
 
           {showLearnerSwitcher ? (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-muted-foreground text-xs">Aprendiz:</span>
+              <span className="text-muted-foreground text-sm">Ver a ficha de:</span>
               {learners.map((l) => (
                 <button
                   key={l.id}
@@ -429,8 +487,8 @@ export function MemberDetailClient({
       <Dialog
         open={recadoOpen}
         onClose={() => setRecadoOpen(false)}
-        title="Enviar recado"
-        description="Abre uma nova conversa privada com o aluno selecionado."
+        title="Mandar recado"
+        description="Abre um recado novo, que só a equipe e quem você escolher vão ver."
         footer={
           <>
             <Button variant="outline" onClick={() => setRecadoOpen(false)}>
@@ -446,7 +504,7 @@ export function MemberDetailClient({
         }
       >
         <div className="space-y-4">
-          <Field label="Destinatário" htmlFor="recado-target">
+          <Field label="Para quem" htmlFor="recado-target">
             <Select
               id="recado-target"
               value={recadoTargetId}
@@ -454,12 +512,12 @@ export function MemberDetailClient({
             >
               {learners.map((item) => (
                 <option key={item.id} value={item.id}>
-                  {item.label} ({item.audience === 'kids' ? 'Kids' : 'Adulto'})
+                  {item.label} · {COMMUNITY_NAMES[item.audience]}
                 </option>
               ))}
             </Select>
           </Field>
-          <Field label="Assunto (opcional)" htmlFor="recado-title">
+          <Field label="Assunto, se quiser" htmlFor="recado-title">
             <Input
               id="recado-title"
               value={recadoTitle}
@@ -482,8 +540,7 @@ export function MemberDetailClient({
       <Dialog
         open={impersonateOpen}
         onClose={() => setImpersonateOpen(false)}
-        title="Entrar como este usuário"
-        description={title}
+        title={`Entrar como ${title}`}
         footer={
           <>
             <Button variant="outline" onClick={() => setImpersonateOpen(false)}>
@@ -496,18 +553,18 @@ export function MemberDetailClient({
         }
       >
         <div className="flex flex-col gap-3">
-          <p className="text-muted-foreground text-xs">
-            Abre uma sessão de suporte em nova aba, já logada como o usuário. Escolha a plataforma —
-            o Kids abre na grade de perfis das crianças.
+          <p className="text-muted-foreground text-sm">
+            Abre uma sessão de suporte em outra aba, já entrando como esta pessoa. Na{' '}
+            {COMMUNITY_NAMES.kids}, a sessão abre na escolha de perfis das crianças.
           </p>
-          <Field label="Plataforma" htmlFor="impersonate-platform">
+          <Field label="Comunidade" htmlFor="impersonate-platform">
             <Select
               id="impersonate-platform"
               value={impersonatePlatform}
               onChange={(e) => setImpersonatePlatform(e.target.value)}
             >
-              <option value="main">Comunidade (adulto)</option>
-              <option value="kids">Community Kids</option>
+              <option value="main">{COMMUNITY_NAMES.adult}</option>
+              <option value="kids">{COMMUNITY_NAMES.kids}</option>
             </Select>
           </Field>
         </div>
@@ -516,8 +573,8 @@ export function MemberDetailClient({
       <Dialog
         open={extendOpen}
         onClose={() => setExtendOpen(false)}
-        title="Estender validade"
-        description={extendTarget?.name}
+        title="Estender a validade"
+        description={extendTarget ? `${accessName(extendTarget)} de ${title}` : undefined}
         footer={
           <>
             <Button variant="outline" onClick={() => setExtendOpen(false)}>
@@ -530,7 +587,7 @@ export function MemberDetailClient({
         <Field
           label="Nova validade"
           htmlFor="extdate"
-          hint="A validade só avança (reativa se expirada)."
+          hint="A validade só pode ir para a frente. Um acesso encerrado volta a valer."
         >
           <Input
             id="extdate"
@@ -544,29 +601,52 @@ export function MemberDetailClient({
   )
 }
 
-/** Cartão de identidade (status/papel/telefone/cadastro). */
+/** O nome de um acesso: o do produto, ou o endereço do curso quando não há nome. */
+function accessName(e: AdminEntitlementView): string {
+  return e.name || e.courseRef || e.productId
+}
+
+/** Cartão de identidade (situação/papel/telefone/cadastro). */
 function IdentityCard({ detail }: { detail: MemberDetail }) {
   const u = detail.user
   if (!u) return null
   return (
     <Card className="flex flex-wrap items-center gap-x-8 gap-y-3 p-4">
-      <Info label="Status">
-        <StatusBadge status={u.status} />
+      <Info label="Situação da conta">
+        <StatusBadge status={u.status} kind="account" />
       </Info>
       <Info label="Papel">
-        <span className="text-sm capitalize">{u.role}</span>
+        <span className="text-sm">{roleLabel(u.role)}</span>
       </Info>
       <Info label="Telefone">
         <span className="text-sm">{u.phone || '—'}</span>
       </Info>
-      <Info label="Cadastro">
+      <Info label="Conta criada em">
         <span className="text-sm">{formatDate(u.createdAt)}</span>
       </Info>
       {detail.profiles && detail.profiles.length > 0 ? (
-        <Info label="Perfis">
+        <Info label="Perfis de criança">
           <span className="text-sm">{detail.profiles.length}</span>
         </Info>
       ) : null}
+      {/* O ID da conta é o que a Moderação pede para silenciar alguém: fica aqui, fechado. */}
+      <details className="basis-full text-muted-foreground text-xs">
+        <summary className="inline-flex min-h-11 cursor-pointer items-center">
+          Detalhes técnicos
+        </summary>
+        <div className="flex flex-wrap items-center gap-2">
+          <span>ID da conta</span>
+          <code className="break-all font-mono text-foreground">{u.id}</code>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => void copyToClipboard(u.id, 'ID da conta')}
+          >
+            <Copy className="size-4" aria-hidden /> Copiar o ID
+          </Button>
+        </div>
+      </details>
     </Card>
   )
 }
@@ -631,9 +711,7 @@ function OverviewTab({
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground text-xs">
-            Nenhum curso começado nem matrícula específica ainda.
-          </p>
+          <p className="text-muted-foreground text-xs">Nenhum curso começado ainda.</p>
         )}
       </section>
 
@@ -655,28 +733,25 @@ function OverviewTab({
           <TableHeader>
             <TableRow>
               <TableHead>Acesso</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Situação</TableHead>
               <TableHead>Origem</TableHead>
-              <TableHead>Concedido</TableHead>
+              <TableHead>Liberado em</TableHead>
               <TableHead>Validade</TableHead>
-              {canWrite ? <TableHead className="text-right">Ações</TableHead> : null}
+              <TableHead className="text-right">Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {detail.entitlements.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={canWrite ? 6 : 5}
-                  className="py-10 text-center text-muted-foreground"
-                >
-                  Nenhuma matrícula.
+                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  Nenhum acesso ainda.
                 </TableCell>
               </TableRow>
             ) : (
               detail.entitlements.map((e) => (
                 <TableRow key={e.id}>
                   <TableCell>
-                    <div className="font-medium">{e.name || e.courseRef || e.productId}</div>
+                    <div className="font-medium">{accessName(e)}</div>
                     <div className="text-muted-foreground text-xs">
                       {/* Entrega `community` cobre ferramenta E comunidade — o TIPO
                           (kind do catálogo) é o rótulo honesto; o resto preserva as
@@ -698,29 +773,45 @@ function OverviewTab({
                   <TableCell className="text-muted-foreground">
                     {e.expiresAt ? formatDate(e.expiresAt) : 'Vitalícia'}
                   </TableCell>
-                  {canWrite ? (
-                    <TableCell className="text-right">
-                      {busyId === e.id ? (
-                        <Spinner className="ml-auto" />
-                      ) : e.status === 'revoked' ? (
-                        <span className="text-muted-foreground text-xs">—</span>
-                      ) : (
-                        <div className="flex justify-end gap-1">
-                          <Button variant="ghost" size="sm" onClick={() => onExtend(e)}>
-                            Estender
+                  <TableCell className="text-right">
+                    {busyId === e.id ? (
+                      <Spinner className="ml-auto" />
+                    ) : e.status === 'revoked' ? (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    ) : (
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canWrite}
+                          title={canWrite ? undefined : READ_ONLY_ACCESS}
+                          onClick={() => onExtend(e)}
+                        >
+                          Estender
+                        </Button>
+                        {e.status === 'active' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={!canWrite}
+                            title={canWrite ? undefined : READ_ONLY_ACCESS}
+                            onClick={() => onExpire(e)}
+                          >
+                            Encerrar agora
                           </Button>
-                          {e.status === 'active' ? (
-                            <Button variant="ghost" size="sm" onClick={() => onExpire(e)}>
-                              Expirar
-                            </Button>
-                          ) : null}
-                          <Button variant="ghost" size="sm" onClick={() => onRevoke(e)}>
-                            Revogar
-                          </Button>
-                        </div>
-                      )}
-                    </TableCell>
-                  ) : null}
+                        ) : null}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canWrite}
+                          title={canWrite ? undefined : READ_ONLY_ACCESS}
+                          onClick={() => onRevoke(e)}
+                        >
+                          Tirar acesso
+                        </Button>
+                      </div>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -752,7 +843,7 @@ function useSection<T>(path: string | null): {
     setError(null)
     apiGet<T>(path)
       .then((d) => alive && setData(d))
-      .catch((e) => alive && setError((e as ApiError).message ?? 'Falha ao carregar.'))
+      .catch((e) => alive && setError((e as ApiError).message ?? 'Não conseguimos carregar.'))
       .finally(() => alive && setLoading(false))
     return () => {
       alive = false
@@ -800,11 +891,11 @@ function GamificationTab({
         />
         <Stat label="XP" value={String(data.xp)} />
         <Stat
-          label="Ofensiva"
-          value={`${data.streak.current} dias`}
-          hint={`Recorde ${data.streak.best}`}
+          label="Sequência de dias"
+          value={`${data.streak.current} ${data.streak.current === 1 ? 'dia' : 'dias'}`}
+          hint={`Recorde: ${data.streak.best} ${data.streak.best === 1 ? 'dia' : 'dias'}`}
         />
-        <Stat label="Zappy Coins" value={String(data.coins.balance)} />
+        <Stat label="Moedas Zappy" value={String(data.coins.balance)} />
       </div>
       <Card className="space-y-2 p-4">
         <div className="font-medium text-sm">
@@ -883,8 +974,8 @@ const ACTIVITY_LABELS: Record<MemberActivityItemView['kind'], string> = {
   lesson_accessed: 'Acessou a aula',
   lesson_completed: 'Concluiu a aula',
   quiz_attempt: 'Respondeu o quiz',
-  studio_submission: 'Entregou no Estúdio',
-  pinta_submission: 'Entregou um desenho no Pinta',
+  studio_submission: 'Enviou um projeto do Estúdio',
+  pinta_submission: 'Enviou um desenho do Pinta',
 }
 
 function ActivityTab({ learnerId }: { learnerId: string }) {
@@ -912,7 +1003,7 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
         setItems(d.items)
         setHasMore(d.hasMore)
       })
-      .catch((e) => alive && setError((e as ApiError).message ?? 'Falha ao carregar.'))
+      .catch((e) => alive && setError((e as ApiError).message ?? 'Não conseguimos carregar.'))
       .finally(() => alive && setLoading(false))
     return () => {
       alive = false
@@ -936,7 +1027,7 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
       }
     } catch (e) {
       if (appendGuard.canPublish(ticket)) {
-        toast.error((e as ApiError).message ?? 'Falha ao carregar mais.')
+        toast.error((e as ApiError).message ?? 'Não conseguimos carregar mais.')
       }
     } finally {
       if (appendGuard.canPublish(ticket)) setLoadingMore(false)
@@ -946,7 +1037,11 @@ function ActivityTab({ learnerId }: { learnerId: string }) {
 
   if (loading || error) return <SectionState loading={loading} error={error} />
   if (items.length === 0)
-    return <Card className="py-8 text-center text-muted-foreground text-sm">Sem atividade.</Card>
+    return (
+      <Card className="py-8 text-center text-muted-foreground text-sm">
+        Nenhuma atividade ainda.
+      </Card>
+    )
 
   return (
     <Card className="divide-y divide-border p-0">
@@ -994,23 +1089,23 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
 
   function revoke(c: MemberCertificateView) {
     confirm({
-      title: 'Revogar certificado',
+      title: 'Invalidar o certificado?',
       message: (
         <>
-          Revogar o certificado <strong className="text-foreground">{c.serial}</strong>? A validação
-          pública passa a inválido.
+          O certificado de <strong className="text-foreground">{c.courseTitle}</strong> ({c.serial})
+          deixa de valer. Quem conferir o código vai ver que ele foi invalidado.
         </>
       ),
-      confirmText: 'Revogar',
+      confirmText: 'Invalidar',
       confirmVariant: 'destructive',
       onConfirm: async () => {
         setBusyId(c.id)
         try {
           await apiSend(`/api/members/certificates/${c.id}/revoke`, 'POST', {})
-          toast.success('Certificado revogado.')
+          toast.success('Certificado invalidado.')
           reload()
         } catch (e) {
-          toast.error((e as ApiError).message ?? 'Não foi possível revogar.')
+          toast.error((e as ApiError).message ?? 'Não conseguimos invalidar o certificado.')
         } finally {
           setBusyId(null)
         }
@@ -1037,7 +1132,7 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
             <TableHead>Série</TableHead>
             <TableHead>Emitido</TableHead>
             <TableHead>Status</TableHead>
-            {canWrite ? <TableHead className="text-right">Ações</TableHead> : null}
+            <TableHead className="text-right">Ações</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -1049,19 +1144,23 @@ function CertificatesTab({ learnerId, canWrite }: { learnerId: string; canWrite:
               <TableCell>
                 <StatusBadge status={c.revokedAt ? 'revoked' : 'active'} />
               </TableCell>
-              {canWrite ? (
-                <TableCell className="text-right">
-                  {c.revokedAt ? (
-                    <span className="text-muted-foreground text-xs">—</span>
-                  ) : busyId === c.id ? (
-                    <Spinner className="ml-auto" />
-                  ) : (
-                    <Button variant="ghost" size="sm" onClick={() => revoke(c)}>
-                      Revogar
-                    </Button>
-                  )}
-                </TableCell>
-              ) : null}
+              <TableCell className="text-right">
+                {c.revokedAt ? (
+                  <span className="text-muted-foreground text-xs">—</span>
+                ) : busyId === c.id ? (
+                  <Spinner className="ml-auto" />
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={!canWrite}
+                    title={canWrite ? undefined : 'Só Admin invalida certificados.'}
+                    onClick={() => revoke(c)}
+                  >
+                    Invalidar
+                  </Button>
+                )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -1079,7 +1178,7 @@ function RatingsTab({ learnerId }: { learnerId: string }) {
   if (ratings.length === 0)
     return (
       <Card className="py-8 text-center text-muted-foreground text-sm">
-        Nenhuma classificação dada.
+        Nenhuma avaliação de curso ainda.
       </Card>
     )
   return (
@@ -1105,18 +1204,22 @@ function PaymentsTab({ email }: { email: string | null }) {
   if (!email)
     return (
       <Card className="py-8 text-center text-muted-foreground text-sm">
-        E-mail do aluno indisponível.
+        Esta conta não tem e-mail, então não dá para achar os pagamentos.
       </Card>
     )
   if (loading || error) return <SectionState loading={loading} error={error} />
   const items = data?.items ?? []
   if (items.length === 0)
-    return <Card className="py-8 text-center text-muted-foreground text-sm">Sem pagamentos.</Card>
+    return (
+      <Card className="py-8 text-center text-muted-foreground text-sm">
+        Nenhum pagamento com este e-mail.
+      </Card>
+    )
   return (
     <Card>
       <div className="flex items-center justify-between gap-2 border-border border-b p-3">
         <span className="flex items-center gap-1.5 text-muted-foreground text-xs">
-          <CreditCard className="size-4" /> Pagamentos do aluno (por e-mail)
+          <CreditCard className="size-4" /> Pagamentos com este e-mail
         </span>
         <Link
           href={`/admin/pagamentos/transacoes?q=${encodeURIComponent(email)}`}

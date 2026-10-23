@@ -23,16 +23,20 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { HubAccessFields, PUBLIC_ACCESS } from '@/components/admin/hub-access-fields'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import type { HubAccessConfig, HubAudience, HubSpaceView } from '@/lib/hub-types'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { slugify } from '@/lib/slug'
 import type { Paginated } from '@/lib/types'
 
-const AUDIENCES: { value: HubAudience; label: string }[] = [
-  { value: 'adult', label: 'Adultos' },
-  { value: 'kids', label: 'Crianças' },
+/** Os grupos da tela, com o nome de cada comunidade (a dos Criadores primeiro). */
+const AUDIENCES: { value: HubAudience; label: string; who: string }[] = [
+  { value: 'kids', label: COMMUNITY_NAMES.kids, who: 'crianças' },
+  { value: 'adult', label: COMMUNITY_NAMES.adult, who: 'alunos' },
 ]
 
 interface SpaceForm {
@@ -64,6 +68,7 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
 
   const [spaces, setSpaces] = useState<HubSpaceView[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [busy, setBusy] = useState(false)
 
   const [open, setOpen] = useState(false)
@@ -74,11 +79,13 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
 
   const load = useCallback(async () => {
     setLoading(true)
+    setLoadFailed(false)
     try {
       const page = await apiGet<Paginated<HubSpaceView>>('/api/hub/admin/spaces?limit=100')
       setSpaces(page.items)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar os servidores.')
+      setLoadFailed(true)
+      toast.error((err as ApiError).message ?? 'Não consegui carregar os espaços.')
     } finally {
       setLoading(false)
     }
@@ -90,7 +97,7 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
 
   async function createSpace() {
     if (!form.name.trim() || !form.slug.trim()) {
-      toast.error('Informe nome e identificador (slug).')
+      toast.error('Preencha o nome e o endereço.')
       return
     }
     setBusy(true)
@@ -106,14 +113,18 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
         teaserWhenLocked: form.teaserWhenLocked,
         status: form.status,
       })
-      toast.success('Servidor criado.')
+      toast.success('Espaço criado.')
       setOpen(false)
       setForm(emptyForm())
       setSlugDirty(false)
       await load()
     } catch (err) {
       const e = err as ApiError
-      toast.error(e.code === 'DUPLICATE_SLUG' ? 'Já existe um servidor com esse slug.' : e.message)
+      toast.error(
+        e.code === 'DUPLICATE_SLUG'
+          ? 'Já existe um espaço com esse endereço. Escolha outro.'
+          : e.message,
+      )
     } finally {
       setBusy(false)
     }
@@ -134,7 +145,9 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
         orderedIds: renumbered.map((s) => s.id),
       })
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
+      toast.error(
+        (err as ApiError).message ?? 'Não consegui mudar a ordem. A lista voltou como estava.',
+      )
       await load()
     }
   }
@@ -142,32 +155,45 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Comunidade"
-        description="Servidores e canais de fórum dos alunos (adultos e crianças)."
+        title="Clube e Comunidade"
+        description="Os espaços onde as crianças e os alunos conversam, como o Clube dos Criadores, e os canais de cada um."
         action={
-          canWrite ? (
-            <Button onClick={() => setOpen(true)}>
-              <Plus className="size-4" /> Novo servidor
-            </Button>
-          ) : null
+          <Button onClick={() => setOpen(true)} disabled={!canWrite}>
+            <Plus className="size-4" /> Novo espaço
+          </Button>
         }
       />
 
+      {!canWrite ? <ReadOnlyNotice /> : null}
+
       {loading ? (
-        <p className="text-sm text-muted-foreground">Carregando…</p>
+        <EmptyState title="Carregando os espaços…" />
+      ) : loadFailed && spaces.length === 0 ? (
+        <LoadError what="os espaços" onRetry={() => void load()} />
       ) : spaces.length === 0 ? (
-        <Card className="p-8 text-center text-sm text-muted-foreground">
-          Nenhum servidor ainda. Crie o primeiro (ex.: um por curso + um “Geral”).
-        </Card>
+        <EmptyState
+          zappy="happy"
+          title="Nenhum espaço ainda"
+          description="Crie o primeiro: um por curso e um geral costuma funcionar bem."
+          action={
+            canWrite ? (
+              <Button onClick={() => setOpen(true)}>
+                <Plus className="size-4" /> Novo espaço
+              </Button>
+            ) : null
+          }
+        />
       ) : (
-        AUDIENCES.map(({ value, label }) => {
+        AUDIENCES.map(({ value, label, who }) => {
           const group = spaces
             .filter((s) => s.audience === value)
             .sort((a, b) => a.sortOrder - b.sortOrder)
-          if (group.length === 0) return null
           return (
             <section key={value} className="space-y-2">
-              <h2 className="text-sm font-semibold text-muted-foreground">{label}</h2>
+              <h2 className="font-display text-xl font-bold">{label}</h2>
+              {group.length === 0 ? (
+                <p className="text-sm text-muted-foreground">Nenhum espaço para {who} ainda.</p>
+              ) : null}
               <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}
@@ -199,8 +225,8 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
       <Dialog
         open={open}
         onClose={() => !busy && setOpen(false)}
-        title="Novo servidor"
-        description="Um espaço da comunidade (ex.: um curso ou um geral)."
+        title="Novo espaço"
+        description="Um lugar para conversar, como um curso ou um espaço geral."
         footer={
           <>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
@@ -213,33 +239,33 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
         }
       >
         <div className="flex flex-col gap-4">
-          {/* Explicador do modelo de acesso — "fechadura × chave" + independência por servidor. */}
+          {/* Explicador do modelo de acesso: "fechadura e chave", e cada espaço é independente. */}
           <div className="rounded-lg border border-border bg-muted/40 p-3 text-muted-foreground text-xs leading-relaxed">
             <p className="font-medium text-foreground">Como o acesso funciona</p>
             <p className="mt-1">
-              Cada servidor é uma porta com UMA fechadura — o campo <strong>"Quem vê"</strong>. É só
-              ele que decide quem entra:
+              Cada espaço é uma porta com UMA fechadura: o campo <strong>"Quem vê"</strong>. Só ele
+              decide quem entra.
             </p>
             <ul className="mt-1.5 list-disc space-y-0.5 pl-4">
               <li>
-                <strong>Público</strong>: qualquer aluno logado.
+                <strong>Público</strong>: qualquer pessoa com conta ativa.
               </li>
               <li>
                 <strong>Por comunidade</strong>: só quem tem a "chave". Você cria um produto no
-                catálogo que entrega essa mesma chave — comprar o produto = ganhar a chave. É assim
-                que um servidor vira "vendido" (ex.: Clube dos Criadores).
+                catálogo que entrega essa mesma chave, e quem compra o produto ganha a chave. É
+                assim que um espaço passa a ser vendido, como o Clube dos Criadores.
               </li>
               <li>
-                <strong>Por curso</strong> / <strong>Por cargo</strong>: quem tem matrícula no curso
-                / o cargo da equipe.
+                <strong>Por curso</strong>: quem tem matrícula no curso. <strong>Por papel</strong>:
+                quem tem aquele papel na plataforma.
               </li>
             </ul>
             <p className="mt-1.5">
-              Cada servidor é <strong>independente</strong> (pode ter regra diferente). Os{' '}
-              <strong>canais herdam</strong> a fechadura do servidor — só configure um canal se
-              quiser ele MAIS restrito. <strong>Exigir aprovação</strong> = moderação (não mexe no
-              acesso); <strong>Aparecer bloqueado no menu</strong> = só a aparência para quem não
-              tem acesso.
+              Cada espaço é <strong>independente</strong> e pode ter a sua regra. Os{' '}
+              <strong>canais herdam</strong> a fechadura do espaço: só mude a de um canal se quiser
+              que ele seja MAIS fechado. <strong>Aprovar antes de publicar</strong> é moderação e
+              não mexe no acesso. <strong>Mostrar trancado</strong> muda só o que aparece para quem
+              não tem acesso.
             </p>
           </div>
           <Field label="Nome" htmlFor="sp-name">
@@ -252,7 +278,11 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
               }}
             />
           </Field>
-          <Field label="Identificador (slug)" htmlFor="sp-slug">
+          <Field
+            label="Endereço"
+            htmlFor="sp-slug"
+            hint="Aparece no fim do link do espaço. Use letras minúsculas, números e traços."
+          >
             <Input
               id="sp-slug"
               value={form.slug}
@@ -262,13 +292,13 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
               }}
             />
           </Field>
-          <Field label="Audiência" htmlFor="sp-aud">
+          <Field label="Comunidade" htmlFor="sp-aud">
             <Select
               id="sp-aud"
               value={form.audience}
               onChange={(e) => {
                 const audience = e.target.value as HubAudience
-                // Crianças nascem com pré-moderação ligada por padrão.
+                // Espaço de crianças nasce com "Aprovar antes de publicar" ligado.
                 setForm((f) => ({ ...f, audience, requiresApproval: audience === 'kids' }))
               }}
             >
@@ -292,9 +322,9 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
           />
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>
-              Exigir aprovação (pré-moderação)
+              Aprovar antes de publicar
               <span className="block text-xs text-muted-foreground">
-                Postagens passam por um staff antes de aparecer.
+                Alguém da equipe confere cada postagem antes de ela aparecer.
               </span>
             </span>
             <Switch
@@ -304,9 +334,9 @@ export function ServersClient({ currentRole }: { currentRole: string }) {
           </label>
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>
-              Aparecer bloqueado no menu (vitrine)
+              Mostrar trancado para quem não tem acesso
               <span className="block text-xs text-muted-foreground">
-                Sem acesso, o servidor aparece com cadeado e um recado — em vez de sumir.
+                Quem não tem acesso vê o espaço com um cadeado e um recado, em vez de ele sumir.
               </span>
             </span>
             <Switch
@@ -330,19 +360,25 @@ function SpaceRow({ space, canWrite }: { space: HubSpaceView; canWrite: boolean 
           className="cursor-grab text-muted-foreground"
           {...attributes}
           {...listeners}
-          aria-label="Reordenar"
+          aria-label={`Mudar a ordem de ${space.name}`}
         >
           <GripVertical className="size-4" />
         </button>
       ) : null}
+      <span
+        aria-hidden
+        className="grid size-10 shrink-0 place-items-center rounded-full bg-muted font-bold text-muted-foreground"
+      >
+        {space.name.trim().charAt(0).toUpperCase() || '?'}
+      </span>
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-medium">{space.name}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate font-bold">{space.name}</span>
           {space.status === 'archived' ? <Badge variant="muted">Arquivado</Badge> : null}
-          {space.requiresApproval ? <Badge variant="muted">Pré-moderado</Badge> : null}
+          {space.requiresApproval ? <Badge variant="warning">Aprova antes</Badge> : null}
         </div>
         <p className="truncate text-xs text-muted-foreground">
-          /{space.slug} · {accessLabel(space.accessConfig.visibility)}
+          Endereço /{space.slug} · {accessLabel(space.accessConfig.visibility)}
         </p>
       </div>
       <Link
@@ -359,5 +395,5 @@ function accessLabel(v: string): string {
   if (v === 'public') return 'Público'
   if (v === 'course_gated') return 'Por curso'
   if (v === 'community_gated') return 'Por comunidade'
-  return 'Por cargo'
+  return 'Por papel'
 }

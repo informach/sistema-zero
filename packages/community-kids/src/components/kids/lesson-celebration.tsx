@@ -172,7 +172,7 @@ function GamificationDeltaPanel({ gamification }: { gamification: GamificationDe
       {unitCompleted ? (
         <p className="inline-flex items-center gap-1.5 font-semibold text-sm">
           <Gift className="size-4 text-(--kids-ouro-texto)" />
-          Você terminou o Mundo! Tem um baú te esperando na trilha.
+          Você terminou o módulo! Tem um baú te esperando na trilha.
         </p>
       ) : null}
 

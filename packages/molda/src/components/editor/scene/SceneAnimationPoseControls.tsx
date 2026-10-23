@@ -4,18 +4,18 @@ import type { SceneAnimationPoseGesture } from '../../../state/SceneAnimationPos
 import { useMoldaToolAccess } from '../../toolAccess'
 import { DiamondPlus, X } from '../../ui/icons'
 
-/** The transport and standalone canvas share the same pose owner and auto-key setting. */
+/** The inspector and standalone canvas share the same pose owner and auto-key setting. */
 export function SceneAnimationPoseControls({
   gesture,
   enabled,
-  compact = false,
+  panel = false,
   onRecord,
   onAutoKey,
   canMark = false,
 }: {
   gesture: SceneAnimationPoseGesture
   enabled: boolean
-  compact?: boolean
+  panel?: boolean
   onRecord?(): void
   onAutoKey?(enabled: boolean): void
   canMark?: boolean
@@ -24,37 +24,36 @@ export function SceneAnimationPoseControls({
   const copy = COPY.scene
   // Gravar pose é criar movimento (`animate.create`); sem ele, as alças de pose nem aparecem.
   if (!useMoldaToolAccess().can('animate.create')) return null
+  const autoKeyControl = (
+    <label className="mld-auto-key" data-enabled={snapshot.autoKey}>
+      <span aria-hidden="true" className="mld-record-dot" />
+      <span>{copy.animationPoseAutoKey}</span>
+      <input
+        name="animationPoseAutoKey"
+        type="checkbox"
+        className="sr-only"
+        checked={snapshot.autoKey}
+        disabled={!enabled || snapshot.dragging || (!onAutoKey && snapshot.pending)}
+        onChange={(event) =>
+          onAutoKey ? onAutoKey(event.target.checked) : gesture.setAutoKey(event.target.checked)
+        }
+      />
+      <span aria-hidden="true" className="mld-auto-switch" />
+    </label>
+  )
   return (
     <section
       aria-label={copy.animationPoseAdjust}
-      className={compact ? 'contents' : 'mld-stage-card pointer-events-auto space-y-2 px-4 py-3'}
-    >
-      {
-        <label className="mld-auto-key" data-enabled={snapshot.autoKey}>
-          <span aria-hidden="true" className="mld-record-dot" />
-          <span>{copy.animationPoseAutoKey}</span>
-          <input
-            name="animationPoseAutoKey"
-            type="checkbox"
-            className="sr-only"
-            checked={snapshot.autoKey}
-            disabled={!enabled || snapshot.dragging || (!onAutoKey && snapshot.pending)}
-            onChange={(event) =>
-              onAutoKey ? onAutoKey(event.target.checked) : gesture.setAutoKey(event.target.checked)
-            }
-          />
-          <span aria-hidden="true" className="mld-auto-switch" />
-        </label>
+      className={
+        panel
+          ? 'space-y-2 rounded-xl border border-mld-border bg-mld-surface p-3'
+          : 'mld-stage-card pointer-events-auto space-y-2 px-4 py-3'
       }
-      <div
-        className={
-          compact ? 'flex shrink-0 items-center gap-1' : 'flex flex-wrap items-center gap-2'
-        }
-      >
-        {/* Na linha do tempo, Marcar pose é o amarelo dos prints: a ação que a aba existe para fazer. */}
+    >
+      <div className={panel ? 'grid gap-2' : 'flex flex-wrap items-center gap-2'}>
         <button
           type="button"
-          className={`sz-tool-pill ${compact ? 'mld-pill-sun' : 'sz-tool-pill--primary'} text-sm disabled:cursor-not-allowed disabled:opacity-50`}
+          className={`sz-tool-pill ${panel ? 'mld-pill-sun w-full justify-center' : 'sz-tool-pill--primary'} text-sm disabled:cursor-not-allowed disabled:opacity-50`}
           disabled={
             !enabled || (!snapshot.pending && !canMark) || snapshot.dragging || !!snapshot.error
           }
@@ -63,7 +62,7 @@ export function SceneAnimationPoseControls({
           <DiamondPlus aria-hidden="true" />
           {copy.animationPoseRecord}
         </button>
-        {(!compact || snapshot.pending) && (
+        {(!panel || snapshot.pending || snapshot.error) && (
           <button
             type="button"
             className="sz-tool-pill sz-tool-pill--outline text-sm disabled:cursor-not-allowed disabled:opacity-50"
@@ -71,12 +70,25 @@ export function SceneAnimationPoseControls({
             onClick={gesture.cancel}
           >
             <X aria-hidden="true" />
-            <span className={compact ? 'sr-only' : undefined}>{copy.animationPoseCancel}</span>
+            {copy.animationPoseCancel}
           </button>
         )}
       </div>
-      {!compact && <p className="text-xs text-mld-muted">{copy.animationPoseAutoKeyHint}</p>}
-      {!compact && snapshot.pending && (
+      {panel ? (
+        <details className="mld-disclosure">
+          <summary>Marcação automática{snapshot.autoKey ? ' ligada' : ''}</summary>
+          <div className="space-y-2 pt-2">
+            {autoKeyControl}
+            <p className="text-xs text-mld-muted">{copy.animationPoseAutoKeyHint}</p>
+          </div>
+        </details>
+      ) : (
+        <>
+          {autoKeyControl}
+          <p className="text-xs text-mld-muted">{copy.animationPoseAutoKeyHint}</p>
+        </>
+      )}
+      {!onRecord && snapshot.pending && (
         <p role="status" className="text-sm text-mld-warn">
           {copy.animationPosePending}
         </p>

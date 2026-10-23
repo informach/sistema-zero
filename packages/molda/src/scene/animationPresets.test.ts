@@ -84,6 +84,46 @@ test.each([
   }
 })
 
+test('new spin presets use the face-aligned pivot axis saved on the piece', () => {
+  const source = animatedScene()
+  const aligned = {
+    ...source,
+    nodes: source.nodes.map((node) =>
+      node.id === 'body'
+        ? {
+            ...node,
+            pivotAxis: [Math.SQRT1_2, Math.SQRT1_2, 0] as [number, number, number],
+            transform: {
+              kind: 'trs' as const,
+              translation: [0, 1, 0] as [number, number, number],
+              rotation: [0, 0, 0, 1] as [number, number, number, number],
+              scale: [1, 3, 1] as [number, number, number],
+            },
+          }
+        : node,
+    ),
+  }
+  const next = createSceneAnimationPreset(
+    aligned,
+    ['body'],
+    { kind: 'spin', name: 'Galho', axis: 'y', duration: 2, amount: 1 },
+    () => 'face-spin',
+  )
+  const quarterTurn = next.animations!.at(-1)!.tracks[0]!.keys[1]!.value
+  expect(quarterTurn[0]).toBeCloseTo(0.5, 9)
+  expect(quarterTurn[1]).toBeCloseTo(0.5, 9)
+  expect(quarterTurn[2]).toBeCloseTo(0, 9)
+  expect(quarterTurn[3]).toBeCloseTo(Math.SQRT1_2, 9)
+  expect(next.animations![0]).toBe(source.animations![0])
+  const matrix = prepareSceneAnimation(next, 'face-spin')
+    .sample(0.25, false)
+    .worldMatrices.get('body')!
+  expect(matrix[0]! * matrix[4]! + matrix[1]! * matrix[5]! + matrix[2]! * matrix[6]!).toBeCloseTo(
+    0,
+    10,
+  )
+})
+
 test('presets reject locks, invalid settings, precision collisions and exhausted budgets before allocating IDs', () => {
   const source = animatedScene(),
     before = structuredClone(source)

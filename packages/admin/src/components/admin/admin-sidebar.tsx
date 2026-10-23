@@ -8,8 +8,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/cn'
-import type { SessionUser } from '@/lib/types'
-import { activeHref, visibleGroups } from './nav'
+import { roleLabel, type SessionUser } from '@/lib/types'
+import { activeHref, hrefForPlatform, visibleGroups } from './nav'
+import { usePlatform } from './platform-provider'
 import { PlatformSwitcher } from './platform-switcher'
 import {
   ensureProfessorCounts,
@@ -31,10 +32,10 @@ function badgeCount(counts: ProfessorCounts | undefined, key: string): number | 
 }
 
 /**
- * Navegação do painel em SIDEBAR com grupos (Sala do Professor · Gestão ·
- * Configuração — ver `nav.ts`). Desktop (≥md): coluna fixa à esquerda. Mobile:
- * topbar fina (logo + hambúrguer) + drawer lateral com o mesmo conteúdo, que
- * fecha ao navegar. Substituiu a topbar plana (07/2026).
+ * O menu da sala da equipe (23/10/2026): a coluna na noite da Comunidade dos Criadores, a lente
+ * das comunidades no topo e as três áreas (Turma, Conteúdo e Negócio, ver `nav.ts`). Desktop
+ * (≥md): coluna fixa à esquerda. Mobile: barra fina (logo + hambúrguer) + gaveta lateral com o
+ * mesmo conteúdo, que fecha ao navegar.
  */
 export function AdminSidebar({
   user,
@@ -45,7 +46,7 @@ export function AdminSidebar({
 }) {
   const pathname = usePathname()
   const [drawerOpen, setDrawerOpen] = useState(false)
-  // UM store p/ as duas renderizações de NavGroups (desktop + drawer) — single-flight
+  // UM store p/ as duas renderizações de NavGroups (desktop + gaveta): single-flight
   // + TTL no módulo; navegação revalida (no-op dentro do TTL).
   const overview = useProfessorOverview()
   const drawerRef = useModalA11y<HTMLDivElement>({
@@ -53,7 +54,7 @@ export function AdminSidebar({
     onClose: () => setDrawerOpen(false),
   })
 
-  // Navegou → fecha o drawer (link do menu ou voltar do navegador) e revalida os
+  // Navegou → fecha a gaveta (link do menu ou voltar do navegador) e revalida os
   // contadores (no-op dentro do TTL do store).
   // biome-ignore lint/correctness/useExhaustiveDependencies: pathname é o gatilho
   useEffect(() => {
@@ -64,36 +65,41 @@ export function AdminSidebar({
   return (
     <>
       {/* Desktop: coluna fixa */}
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r border-border bg-background md:flex">
-        <div className="flex h-14 shrink-0 items-center border-b border-border px-4">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col bg-menu text-menu-text md:flex">
+        <div className="flex h-16 shrink-0 items-center px-5">
           <Logo />
         </div>
         <PlatformSwitcher />
         <NavGroups pathname={pathname} role={user.role} counts={overview?.counts} />
-        <div className="flex shrink-0 items-center justify-between border-t border-border px-4 py-3">
-          <UserMenu user={user} apps={apps} dropdownSide="up" />
-        </div>
+        <AccountFooter user={user} apps={apps} />
       </aside>
 
-      {/* Mobile: topbar fina */}
-      <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur md:hidden">
+      {/* Mobile: barra fina */}
+      <header className="sticky top-0 z-40 flex h-14 items-center gap-3 bg-menu px-4 text-menu-text md:hidden">
         <button
+          type="button"
           onClick={() => setDrawerOpen(true)}
-          className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="flex size-10 items-center justify-center rounded-xl bg-menu-2 text-menu-text transition-colors hover:text-white"
           aria-label="Abrir menu"
         >
           <Menu className="size-5" />
         </button>
         <Logo />
         <div className="ml-auto flex items-center gap-1">
-          <UserMenu user={user} apps={apps} />
+          <UserMenu
+            user={user}
+            apps={apps}
+            roleLabel={roleLabel(user.role)}
+            triggerClassName={AVATAR_CLASS}
+          />
         </div>
       </header>
 
-      {/* Mobile: drawer lateral */}
+      {/* Mobile: gaveta lateral */}
       {drawerOpen ? (
         <div className="fixed inset-0 z-50 md:hidden">
           <button
+            type="button"
             className="absolute inset-0 bg-black/50"
             aria-label="Fechar menu"
             onClick={() => setDrawerOpen(false)}
@@ -104,13 +110,14 @@ export function AdminSidebar({
             aria-modal="true"
             aria-label="Menu de navegação"
             tabIndex={-1}
-            className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col border-r border-border bg-background shadow-xl outline-none"
+            className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col bg-menu text-menu-text shadow-xl outline-none"
           >
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-border px-4">
+            <div className="flex h-14 shrink-0 items-center justify-between px-4">
               <Logo />
               <button
+                type="button"
                 onClick={() => setDrawerOpen(false)}
-                className="flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex size-10 items-center justify-center rounded-xl bg-menu-2 text-menu-text transition-colors hover:text-white"
                 aria-label="Fechar menu"
               >
                 <X className="size-5" />
@@ -125,15 +132,39 @@ export function AdminSidebar({
   )
 }
 
+/** O avatar sobre o menu escuro: o amarelo do Zappy, a mesma marca da lente Kids. */
+const AVATAR_CLASS =
+  'flex size-9 items-center justify-center rounded-full bg-sun text-sm font-bold text-lens-kids-ink transition-transform hover:scale-105'
+
+function AccountFooter({ user, apps }: { user: SessionUser; apps?: readonly ConsoleAppLink[] }) {
+  const name = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email
+  return (
+    <div className="flex shrink-0 items-center gap-3 border-t border-menu-2 px-4 py-3">
+      <UserMenu
+        user={user}
+        apps={apps}
+        dropdownSide="up"
+        dropdownAlign="left"
+        roleLabel={roleLabel(user.role)}
+        triggerClassName={AVATAR_CLASS}
+      />
+      <div className="min-w-0">
+        <p className="truncate text-sm font-bold text-white">{name}</p>
+        <p className="truncate text-xs text-menu-icon">{roleLabel(user.role)}</p>
+      </div>
+    </div>
+  )
+}
+
 function Logo() {
   return (
-    <Link href="/admin" className="flex shrink-0 items-center gap-2">
-      {/* A logo oficial (a MESMA da comunidade): SVG embutido, com o ZERO lendo `--logo-zero-*`
-          do chassi console. Era `<img>` dos SVGs de `public/`, com o verde-lima cravado. */}
+    <Link href="/admin/professor" className="flex shrink-0 items-center gap-2">
+      {/* A logo oficial (a MESMA da comunidade), na versão para fundo escuro: o menu é a noite
+          da Comunidade dos Criadores. O ZERO lê `--logo-zero-escuro-*` do chassi console. */}
       <BrandLogo
-        fundo="claro"
-        label="Sistema Zero — painel administrativo"
-        className="block h-auto w-[120px]"
+        fundo="escuro"
+        label="Sistema Zero, ir para Hoje"
+        className="block h-auto w-[140px]"
       />
     </Link>
   )
@@ -148,55 +179,58 @@ function NavGroups({
   role: string
   counts?: ProfessorCounts
 }) {
+  const platform = usePlatform()
   const groups = visibleGroups(role)
   const active = activeHref(pathname)
 
   return (
-    <nav className="flex-1 overflow-y-auto px-3 py-4">
+    <nav aria-label="Menu principal" className="flex-1 overflow-y-auto px-3 pt-2 pb-4">
       {groups.map((group) => (
-        <div key={group.id} className="mb-5 last:mb-0">
-          <p className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        <div key={group.id} className="mb-4 last:mb-0">
+          <p className="mb-1.5 px-2.5 pt-2 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-menu-icon">
             {group.label}
           </p>
           <ul className="space-y-0.5">
             {group.items.map((item) => {
               const Icon = item.icon
               const isActive = active === item.href
+              const count = item.badgeKey ? badgeCount(counts, item.badgeKey) : null
               return (
                 <li key={item.href}>
                   <Link
-                    href={item.href}
+                    href={hrefForPlatform(item, platform)}
                     aria-current={isActive ? 'page' : undefined}
                     className={cn(
-                      'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors',
+                      'flex min-h-10 items-center gap-2.5 rounded-xl px-2.5 text-[15px] font-semibold transition-colors',
                       isActive
-                        ? 'bg-muted font-semibold text-foreground'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                        ? 'bg-primary text-white shadow-[0_3px_0_#0a2a7a]'
+                        : 'text-menu-text hover:bg-menu-2 hover:text-white',
                     )}
                   >
-                    <Icon className="size-4 shrink-0" />
+                    <Icon
+                      className={cn(
+                        'size-[18px] shrink-0',
+                        isActive ? 'text-white' : 'text-menu-icon',
+                      )}
+                      aria-hidden
+                    />
                     {item.label}
                     {item.soon ? (
-                      <span className="rounded bg-muted px-1 text-[10px] uppercase text-muted-foreground">
+                      <span className="rounded bg-menu-2 px-1 text-[10px] uppercase text-menu-text">
                         em breve
                       </span>
                     ) : null}
-                    {(() => {
-                      const count = item.badgeKey ? badgeCount(counts, item.badgeKey) : null
-                      return count ? (
-                        <>
-                          <span
-                            aria-hidden="true"
-                            className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold leading-none text-primary-foreground"
-                          >
-                            {count > 99 ? '99+' : count}
-                          </span>
-                          <span className="sr-only">
-                            , {count} pendente{count === 1 ? '' : 's'}
-                          </span>
-                        </>
-                      ) : null
-                    })()}
+                    {count ? (
+                      <>
+                        <span
+                          aria-hidden="true"
+                          className="ml-auto rounded-full bg-sun px-1.5 py-0.5 font-mono text-[11px] font-bold leading-none text-lens-kids-ink"
+                        >
+                          {count > 99 ? '99+' : count}
+                        </span>
+                        <span className="sr-only">, {count} esperando a equipe</span>
+                      </>
+                    ) : null}
                   </Link>
                 </li>
               )

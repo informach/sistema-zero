@@ -11,7 +11,7 @@ export async function GET(
   const { id, userId, itemId } = await params
   const query = new URL(request.url).searchParams
   if (!z.uuid().safeParse(id).success || !z.uuid().safeParse(userId).success)
-    return NextResponse.json({ error: { message: 'Entrega inválida.' } }, { status: 400 })
+    return NextResponse.json({ error: { message: 'Projeto inválido.' } }, { status: 400 })
   const result =
     query.get('version') === 'previous'
       ? await getStudioSubmissionPrevious(id, userId)
@@ -20,7 +20,7 @@ export async function GET(
   const project = result.body.project
   if (!isGallerySubmission(project) || project.requestId !== query.get('requestId'))
     return NextResponse.json(
-      { error: { message: 'A entrega mudou. Abra novamente para ver a versão atual.' } },
+      { error: { message: 'O projeto mudou. Abra de novo para ver a versão atual.' } },
       { status: 409 },
     )
   const item = project.items.find((entry) => entry.itemId === itemId)

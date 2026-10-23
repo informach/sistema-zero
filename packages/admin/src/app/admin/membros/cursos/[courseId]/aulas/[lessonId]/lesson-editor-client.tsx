@@ -68,6 +68,7 @@ import { LessonContentCatalog } from '@/components/editor/lesson-content-catalog
 import { lessonEditorialWarnings } from '@/components/editor/lesson-editorial-warnings'
 import { LessonManifestExport } from '@/components/editor/lesson-manifest-export'
 import { LessonManifestImport } from '@/components/editor/lesson-manifest-import'
+import { LessonMoreMenu } from '@/components/editor/lesson-more-menu'
 import { LessonPublishedCompare } from '@/components/editor/lesson-published-compare'
 import { LessonStructureEditor } from '@/components/editor/lesson-structure-editor'
 import { LiveBroadcastCard } from '@/components/editor/live-broadcast-card'
@@ -225,6 +226,8 @@ function LessonEditorSession({
   const [area, setArea] = useState<'sections' | 'materials' | 'data'>('sections')
   const [catalogOpen, setCatalogOpen] = useState(false)
   const [compareOpen, setCompareOpen] = useState(false)
+  /** O menu "Mais" pediu o roteiro: a área Dados abre e o painel pedido já vem aberto. */
+  const [roteiroPedido, setRoteiroPedido] = useState<'import' | 'export' | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [focusRequest, setFocusRequest] = useState<{
     sectionId: string
@@ -283,7 +286,7 @@ function LessonEditorSession({
           if (item.kind === 'file') add(item.attachmentId, 'Material para baixar')
     }
     for (const attachment of draft?.document.attachments ?? [])
-      if (attachment.zappyStudentNotebook) add(attachment.id, 'Caderno do Zappy')
+      if (attachment.zappyStudentNotebook) add(attachment.id, 'Passo a passo do projeto (Zappy)')
     return uses
   }, [draft])
   /** Slug/audience/status do curso + publicação DESTA aula (p/ o "Ver como aluno"). */
@@ -416,7 +419,7 @@ function LessonEditorSession({
   // Handle do Estúdio embutido na autoria — lido no saveBlock (snapshot do projeto inicial).
   const studioHandleRef = useRef<StudioHandle | null>(null)
   const galleryStudioSeed = useMemo(
-    () => createEmptyProject(blockId ?? 'gallery', 'Entrega da galeria'),
+    () => createEmptyProject(blockId ?? 'gallery', 'Projeto da galeria'),
     [blockId],
   )
   // Handle do Pinta embutido — lido no saveBlock (snapshot do desenho inicial).
@@ -702,7 +705,7 @@ function LessonEditorSession({
                   )
                 : [
                     ...current.document.plannedVideos,
-                    { blockId, instructions: 'Vídeo desta seção', videoId },
+                    { blockId, instructions: 'Vídeo desta parte', videoId },
                   ],
             },
             immediate,
@@ -743,6 +746,38 @@ function LessonEditorSession({
     void blockForm
     captureBlock()
   }, [captureBlock, editorVersion, blockForm])
+
+  /**
+   * "Importar roteiro" e "Exportar roteiro" do menu Mais: os painéis continuam em Dados da aula.
+   * Troca de área do mesmo jeito que as abas (guardando os editores antes) e pede o painel.
+   */
+  function abrirRoteiro(qual: 'import' | 'export') {
+    void captureEditors()
+      .then(() => {
+        setArea('data')
+        setPreview(false)
+        setRoteiroPedido(qual)
+      })
+      .catch((error) => toast.error(error.message))
+  }
+
+  // O painel pedido pelo menu só existe depois que a área Dados aparece: abre e leva o foco até ele.
+  // Se ele não estiver na tela (um bloco aberto, a aula ainda carregando), o pedido é descartado:
+  // senão ficaria guardado e rolaria a tela sozinho mais tarde, sem ninguém ter pedido.
+  useEffect(() => {
+    if (!roteiroPedido || area !== 'data') return
+    const painel = window.document.querySelector<HTMLDetailsElement>(
+      `#lesson-roteiro-${roteiroPedido} details`,
+    )
+    if (!painel) {
+      setRoteiroPedido(null)
+      return
+    }
+    painel.open = true
+    painel.scrollIntoView?.({ block: 'start', behavior: 'smooth' })
+    painel.querySelector<HTMLElement>('summary')?.focus()
+    setRoteiroPedido(null)
+  }, [roteiroPedido, area])
 
   async function captureEditors() {
     const captureExample = exampleCapture.current
@@ -793,7 +828,7 @@ function LessonEditorSession({
           await captureEditors()
           const block = session.getSnapshot().draft?.document.blocks.find((b) => b.id === blockId)
           if (!block || (block.content.kind !== 'studio' && block.content.kind !== 'pinta'))
-            throw new Error('Aguarde o projeto carregar antes de mudar o tipo de entrega.')
+            throw new Error('Aguarde o projeto carregar antes de mudar onde o projeto é enviado.')
           // Keep the latest embedded seed while the gallery fields are open, including new blocks.
           setEditingBlock({
             ...block,
@@ -809,7 +844,11 @@ function LessonEditorSession({
           toolPurpose: galleryEnabled ? 'submission' : form.toolPurpose,
         }))
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'Não foi possível preparar a entrega.')
+        toast.error(
+          error instanceof Error
+            ? error.message
+            : 'Não foi possível preparar o envio pela galeria.',
+        )
       } finally {
         setBusy(false)
       }
@@ -822,8 +861,8 @@ function LessonEditorSession({
         ) ?? []
     if (galleryEnabled && shared.length)
       confirm({
-        title: 'Trocar projeto compartilhado por entrega da galeria',
-        message: `Este projeto é usado por ${shared.length} outra(s) seção(ões). A galeria não é um editor incorporado: os vínculos serão retirados e os objetivos deverão ser associados a outro projeto. O projeto inicial será preservado.`,
+        title: 'Trocar o projeto compartilhado pelo envio da galeria',
+        message: `Este projeto é usado por ${shared.length} outra(s) parte(s). A galeria não é um editor incorporado: os vínculos serão retirados e os objetivos deverão ser associados a outro projeto. O projeto inicial será preservado.`,
         confirmText: 'Trocar e revisar vínculos',
         onConfirm: apply,
       })
@@ -868,7 +907,7 @@ function LessonEditorSession({
     setReviewResult(null)
   }
   // ⚠️ `busy` trava o resto do cabeçalho enquanto a restauração está em voo: sem ele, um
-  // "Revisar para publicar" no meio do caminho validaria um documento que já mudou.
+  // "Revisar e publicar" no meio do caminho validaria um documento que já mudou.
   async function restaurarDoPublicado(ids?: string[]) {
     setBusy(true)
     try {
@@ -1030,7 +1069,7 @@ function LessonEditorSession({
       for (const change of appendLessonSection(current.document, section, created, sections))
         session.enqueue(change, true)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Não foi possível criar a seção.')
+      toast.error(error instanceof Error ? error.message : 'Não foi possível criar a parte.')
       return
     }
     const next = session.getSnapshot().draft?.document
@@ -1251,79 +1290,46 @@ function LessonEditorSession({
           <ArrowLeft className="size-4" /> Conteúdo do curso
         </Link>
 
+        {/* O título da aula na linha principal; o endereço é secundário e o ID não aparece. */}
         <AdminHeader
-          title={lesson?.title ?? 'Aula'}
-          description={lesson ? lesson.slug : lessonId}
+          title={lesson?.title || (loading ? 'Carregando a aula…' : 'Aula')}
+          description={lesson ? `Endereço /${lesson.slug}` : undefined}
           acoesAbaixo
           action={
             <div className="flex flex-wrap gap-2">
+              {canWrite ? (
+                <Button
+                  onClick={() => void reviewLesson()}
+                  disabled={busy || loading || draftState.status === 'conflict'}
+                >
+                  {busy ? <Spinner /> : null}Revisar e publicar
+                </Button>
+              ) : null}
               {(() => {
-                // "Ver como aluno": abre a aula no app do aluno (pela audience) com a
-                // PRÓPRIA conta de equipe (passe livre). Rascunho → 404 na visão do
-                // aluno (o filtro roda antes do bypass), por isso só habilita publicado.
+                // "Ver como a criança vê" / "Ver como o aluno vê": abre a aula no app de quem
+                // estuda (pela audience) com a PRÓPRIA conta de equipe (passe livre). Rascunho →
+                // 404 nessa visão (o filtro roda antes do bypass), por isso só habilita publicado.
                 // ⚠️ Curso ao vivo não tem essa porta: a aula abre pela sala do encontro.
                 const link = studentLessonLink(courseInfo, studentAppUrls, lessonId)
                 if (!link) return null
                 const { url, enabled: publishedBoth } = link
+                const kids = courseInfo?.audience === 'kids'
                 return (
                   <Button
                     variant="outline"
                     disabled={!publishedBoth}
                     title={
                       publishedBoth
-                        ? 'Você verá com o passe da equipe — travas e gamificação de um aluno real não são simuladas.'
-                        : 'Publique a aula (e o curso) para vê-la como aluno — rascunho dá 404 na visão do aluno.'
+                        ? `Abre com o passe da equipe. As travas e a gamificação ${kids ? 'de uma criança' : 'de um aluno'} de verdade não são simuladas.`
+                        : `Publique a aula e o curso para ver. O rascunho não abre na área ${kids ? 'da criança' : 'do aluno'}.`
                     }
                     onClick={() => window.open(url, '_blank', 'noopener')}
                   >
-                    <ExternalLink className="size-4" /> Ver aula publicada
+                    <ExternalLink className="size-4" />{' '}
+                    {kids ? 'Ver como a criança vê' : 'Ver como o aluno vê'}
                   </Button>
                 )
               })()}
-              <Button
-                variant="outline"
-                disabled={busy || loading || !draft}
-                onClick={() => setCompareOpen(true)}
-                title="O que está publicado continua inteiro, mesmo o que você apagou no rascunho."
-              >
-                Comparar com a versão publicada
-              </Button>
-              {canWrite && draft?.canUndoRestore ? (
-                <Button
-                  variant="outline"
-                  disabled={busy || loading}
-                  onClick={() => void desfazerRestauracao()}
-                >
-                  Desfazer a restauração
-                </Button>
-              ) : null}
-              {canWrite && draft?.isPublished && (
-                <Button
-                  variant="outline"
-                  disabled={busy}
-                  onClick={() =>
-                    confirm({
-                      title: 'Despublicar aula',
-                      message:
-                        'A aula deixará de aparecer para os alunos. O conteúdo e o histórico serão preservados.',
-                      confirmText: 'Despublicar',
-                      onConfirm: async () => {
-                        await beforePublish()
-                        const current = session.getSnapshot().draft
-                        if (!current) return
-                        await apiSend(`/api/members/lessons/${lessonId}/draft/unpublish`, 'POST', {
-                          expectedRevision: current.revision,
-                          operationId: crypto.randomUUID(),
-                          readyVideoIds: [],
-                        })
-                        await load()
-                      },
-                    })
-                  }
-                >
-                  Despublicar aula
-                </Button>
-              )}
               {canWrite ? (
                 <VozZappyButton
                   blocos={draft?.document.blocks ?? []}
@@ -1331,14 +1337,82 @@ function LessonEditorSession({
                   onVozes={aplicarVozes}
                 />
               ) : null}
-              {canWrite ? (
-                <Button
-                  onClick={() => void reviewLesson()}
-                  disabled={busy || loading || draftState.status === 'conflict'}
-                >
-                  {busy ? <Spinner /> : null}Revisar para publicar
-                </Button>
-              ) : null}
+              <LessonMoreMenu
+                items={[
+                  {
+                    id: 'compare',
+                    label: 'Comparar com a versão publicada',
+                    title:
+                      'O que está publicado continua inteiro, mesmo o que você apagou no rascunho.',
+                    disabled: busy || loading || !draft,
+                    onSelect: () => setCompareOpen(true),
+                  },
+                  ...(canWrite && draft?.canUndoRestore
+                    ? [
+                        {
+                          id: 'undo-restore',
+                          label: 'Desfazer a restauração',
+                          disabled: busy || loading,
+                          onSelect: () => void desfazerRestauracao(),
+                        },
+                      ]
+                    : []),
+                  ...(canWrite && courseInfo
+                    ? [
+                        {
+                          id: 'import-script',
+                          label: 'Importar roteiro',
+                          title: 'Abre a importação do roteiro em Dados da aula.',
+                          disabled: loading || !lesson || blockOpen,
+                          onSelect: () => abrirRoteiro('import'),
+                        },
+                      ]
+                    : []),
+                  // Exportar é LEITURA: quem só pode ver a aula também leva o roteiro embora.
+                  ...(courseInfo && draft
+                    ? [
+                        {
+                          id: 'export-script',
+                          label: 'Exportar roteiro',
+                          title: 'Abre a exportação do roteiro em Dados da aula.',
+                          disabled: loading || !lesson || blockOpen,
+                          onSelect: () => abrirRoteiro('export'),
+                        },
+                      ]
+                    : []),
+                  ...(canWrite && draft?.isPublished
+                    ? [
+                        {
+                          id: 'unpublish',
+                          label: 'Tirar a aula do ar',
+                          destructive: true,
+                          disabled: busy,
+                          onSelect: () =>
+                            confirm({
+                              title: 'Tirar a aula do ar',
+                              message: `A aula deixa de aparecer para ${courseInfo?.audience === 'kids' ? 'as crianças' : 'os alunos'}. O conteúdo e o histórico continuam guardados.`,
+                              confirmText: 'Tirar do ar',
+                              onConfirm: async () => {
+                                await beforePublish()
+                                const current = session.getSnapshot().draft
+                                if (!current) return
+                                await apiSend(
+                                  `/api/members/lessons/${lessonId}/draft/unpublish`,
+                                  'POST',
+                                  {
+                                    expectedRevision: current.revision,
+                                    operationId: crypto.randomUUID(),
+                                    readyVideoIds: [],
+                                  },
+                                )
+                                await load()
+                              },
+                            }),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
             </div>
           }
         />
@@ -1351,7 +1425,7 @@ function LessonEditorSession({
                 : draftState.status === 'saving'
                   ? 'Salvando…'
                   : draftState.status === 'loading'
-                    ? 'Carregando rascunho…'
+                    ? 'Abrindo o rascunho…'
                     : draftState.error}
             </p>
             {draft ? (
@@ -1379,7 +1453,10 @@ function LessonEditorSession({
             role="alert"
             className="space-y-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4"
           >
-            <p>Há uma versão diferente no servidor. Sua edição local foi preservada.</p>
+            <p>
+              Alguém salvou outra versão desta aula enquanto você editava. O que você fez aqui
+              continua guardado neste navegador.
+            </p>
             <div className="flex flex-wrap gap-2">
               <Button
                 variant="outline"
@@ -1395,7 +1472,7 @@ function LessonEditorSession({
                   URL.revokeObjectURL(url)
                 }}
               >
-                Baixar minha cópia local
+                Baixar a minha cópia
               </Button>
               <Button
                 variant="outline"
@@ -1405,11 +1482,11 @@ function LessonEditorSession({
                   void session.restoreServerVersion().catch((error) => toast.error(error.message))
                 }}
               >
-                Abrir versão do servidor e arquivar cópia local
+                Abrir a versão salva e guardar a minha cópia
               </Button>
             </div>
             <details>
-              <summary className="cursor-pointer text-sm">Comparar minha cópia local</summary>
+              <summary className="cursor-pointer text-sm">Detalhes técnicos: a minha cópia</summary>
               <pre className="mt-3 max-h-72 overflow-auto whitespace-pre-wrap text-xs">
                 {JSON.stringify(draftState.recovery?.document, null, 2)}
               </pre>
@@ -1427,7 +1504,7 @@ function LessonEditorSession({
           >
             {(
               [
-                { id: 'sections', label: 'Seções' },
+                { id: 'sections', label: 'Partes da aula' },
                 { id: 'materials', label: 'Arquivos da aula' },
                 { id: 'data', label: 'Dados da aula' },
               ] as const
@@ -1474,7 +1551,10 @@ function LessonEditorSession({
                   }
                 />
               </Field>
-              <Field label="Slug">
+              <Field
+                label="Endereço"
+                hint="Nome curto da aula, usado no roteiro e nos arquivos exportados."
+              >
                 <Input
                   value={draft.document.slug}
                   maxLength={200}
@@ -1523,19 +1603,23 @@ function LessonEditorSession({
         ) : (
           <>
             {canWrite && courseInfo && area === 'data' && !blockOpen && (
-              <LessonManifestImport
-                lessonId={lessonId}
-                lessonSlug={lesson.slug}
-                courseSlug={courseInfo.slug}
-                live={live}
-                disabled={busy || draftState.status === 'conflict'}
-                beforeImport={beforePublish}
-                onImported={load}
-              />
+              <div id="lesson-roteiro-import">
+                <LessonManifestImport
+                  lessonId={lessonId}
+                  lessonSlug={lesson.slug}
+                  courseSlug={courseInfo.slug}
+                  live={live}
+                  disabled={busy || draftState.status === 'conflict'}
+                  beforeImport={beforePublish}
+                  onImported={load}
+                />
+              </div>
             )}
             {/* Exportar é LEITURA: quem só pode ver a aula também pode levar o roteiro embora. */}
             {courseInfo && draft && area === 'data' && !blockOpen && (
-              <LessonManifestExport document={draft.document} courseSlug={courseInfo.slug} />
+              <div id="lesson-roteiro-export">
+                <LessonManifestExport document={draft.document} courseSlug={courseInfo.slug} />
+              </div>
             )}
             {draft && (
               <div hidden={area === 'data' || blockOpen}>
@@ -1697,13 +1781,13 @@ function LessonEditorSession({
                     >
                       <option value="embedded">Dentro da aula</option>
                       <option value="gallery">
-                        Na ferramenta completa, com entrega pela galeria
+                        Na ferramenta completa, com envio pela galeria
                       </option>
                     </Select>
                     {blockForm.galleryEnabled && (
                       <p className="text-sm text-muted-foreground">
-                        A seção avança depois de enviar ao professor. Selecione este bloco no
-                        critério de conclusão da seção.
+                        A parte avança depois de enviar à equipe. Selecione este bloco no critério
+                        de conclusão da parte.
                       </p>
                     )}
                   </Field>
@@ -1766,8 +1850,8 @@ function LessonEditorSession({
                           }))
                         }
                       >
-                        <option value="submission">Criação com entrega ao professor</option>
-                        <option value="experiment">Experimento independente, sem entrega</option>
+                        <option value="submission">Criação com projeto enviado à equipe</option>
+                        <option value="experiment">Experimento livre, sem envio</option>
                       </Select>
                     </Field>
                   )}
@@ -1873,7 +1957,7 @@ function LessonEditorSession({
                 {blockForm.kind === 'rich_text' ? (
                   <Field
                     label="Conteúdo"
-                    hint="Salvo como markdown — renderiza igual na área do aluno."
+                    hint="Salvo como markdown. Aparece igual na área do aluno."
                   >
                     <RichTextEditor
                       content={blockForm.markdown}
@@ -1911,8 +1995,8 @@ function LessonEditorSession({
                 {blockForm.kind === 'materials' ? (
                   <>
                     <p className="rounded-lg border border-border bg-muted/40 p-3 text-sm">
-                      Este bloco aparece <strong>no ponto em que você o colocar</strong> na seção,
-                      na ordem que você montar — inclusive embaixo do vídeo, na coluna do conteúdo.
+                      Este bloco aparece <strong>no ponto em que você o colocar</strong> na parte,
+                      na ordem que você montar, inclusive embaixo do vídeo, na coluna do conteúdo.
                       Arquivos só são obrigatórios se você marcar o download em Configurar avanço.
                       Imagens, recados, links e vídeos incorporados continuam opcionais neste bloco.
                     </p>
@@ -2141,7 +2225,7 @@ function LessonEditorSession({
                 {blockForm.kind === 'embed' ? (
                   <Field
                     label="HTML"
-                    hint="Roda em iframe sandbox na área do aluno — largura total, proporção 16:9."
+                    hint="Roda isolado na área do aluno, com largura total e proporção 16:9."
                   >
                     <HtmlCodeEditor
                       value={blockForm.html}
@@ -2197,11 +2281,7 @@ function LessonEditorSession({
                       Para usar o texto deste PDF nas respostas do Zappy, marque “Passo a passo do
                       projeto para o Zappy” em Arquivos da aula.
                     </p>
-                    <Field
-                      label="Título"
-                      htmlFor="btitle"
-                      hint="Opcional — aparece junto ao livro."
-                    >
+                    <Field label="Título" htmlFor="btitle" hint="Opcional. Aparece junto ao livro.">
                       <Input
                         id="btitle"
                         value={blockForm.title}
@@ -2251,7 +2331,7 @@ function LessonEditorSession({
                         </Field>
                         <Field
                           label="Tamanho da tela"
-                          hint="Telas maiores viram desenhos mais pesados de enviar — por isso a lista para em 256."
+                          hint="Telas maiores viram desenhos mais pesados de enviar, por isso a lista para em 256."
                         >
                           <Select
                             value={String(blockForm.pintaSize)}
@@ -2274,7 +2354,7 @@ function LessonEditorSession({
                     )}
                     <Field
                       label="Desenho inicial"
-                      hint="Desenhe o ponto de partida da criança. Pode deixar em branco — ela começa do zero na tela que você escolheu."
+                      hint="Desenhe o ponto de partida da criança. Pode deixar em branco: ela começa do zero na tela que você escolheu."
                     >
                       {pintaSeed ? (
                         <PintaEmbed
@@ -2288,8 +2368,8 @@ function LessonEditorSession({
                         />
                       ) : (
                         <p className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
-                          Este bloco guardou um desenho que não consigo abrir. Crie um bloco novo —
-                          o conteúdo antigo não é recuperável por aqui.
+                          Este bloco guardou um desenho que não consigo abrir. Crie um bloco novo, o
+                          conteúdo antigo não é recuperável por aqui.
                         </p>
                       )}
                     </Field>
@@ -2315,7 +2395,7 @@ function LessonEditorSession({
                     </Field>
                     <Field
                       label="Desenho contínuo (nome)"
-                      hint="Dê o MESMO nome nas aulas que constroem um único desenho — a criança abre cada aula com o que enviou na anterior. Vazio = aula independente. ⚠️ Todas as aulas da cadeia precisam ser do MESMO tipo de desenho (o salvamento recusa e diz qual aula já usa o nome): quando a criança traz o desenho da aula anterior, é ele que abre, e o tipo e o tamanho vêm dele, não daqui."
+                      hint="Dê o MESMO nome nas aulas que constroem um único desenho: a criança abre cada aula com o que enviou na anterior. Vazio = aula independente. Atenção: todas as aulas da cadeia precisam ser do MESMO tipo de desenho (o salvamento recusa e diz qual aula já usa o nome): quando a criança traz o desenho da aula anterior, é ele que abre, e o tipo e o tamanho vêm dele, não daqui."
                     >
                       <Input
                         value={blockForm.pintaChain}
@@ -2361,7 +2441,7 @@ function LessonEditorSession({
                     </Field>
                     <Field
                       label="Projeto inicial"
-                      hint="Monte o código de partida, instale as extensões e dê o nome do projeto — é o que o aluno abre na aula."
+                      hint="Monte o código de partida, instale as extensões e dê o nome do projeto. É com ele que a aula começa."
                     >
                       <StudioEmbed
                         key={editingBlock?.id ?? 'new-studio'}
@@ -2443,13 +2523,13 @@ function LessonEditorSession({
                             setBlockForm((f) => ({ ...f, studioShowcaseEnabled: e.target.checked }))
                           }
                         />
-                        Última aula do projeto — libera o "Compartilhar" no Mural
+                        Última aula do projeto: libera o "Compartilhar" no Mural
                       </label>
                       <p className="text-xs text-muted-foreground">
                         Ligue SÓ no bloco da última aula: aí a criança ganha o botão "Compartilhar"
                         pra publicar o jogo no Mural (+ link público de jogar). O texto do post
-                        (título/ resumo/capa) fica em Configurações avançadas — em branco, a IA
-                        escreve.
+                        (título, resumo e capa) fica em Configurações avançadas. Em branco, o texto
+                        é escrito automaticamente.
                       </p>
                     </div>
 
@@ -2630,14 +2710,14 @@ function LessonEditorSession({
                           ) : null}
                           <fieldset className="rounded-lg border border-border p-3">
                             <legend className="px-1 text-xs text-muted-foreground">
-                              Vitrine do Mural — texto do post
+                              Vitrine do Mural: texto do post
                             </legend>
                             {blockForm.studioShowcaseEnabled ? (
                               <div className="flex flex-col gap-3">
                                 <p className="text-xs text-muted-foreground">
-                                  Texto INICIAL do post (a criança ajusta ao publicar) — em branco,
-                                  a IA escreve a descrição. A capa padrão é a reserva quando o print
-                                  falha.
+                                  Texto INICIAL do post (a criança ajusta ao publicar). Em branco, a
+                                  descrição é escrita automaticamente. A capa padrão é a reserva
+                                  quando o print falha.
                                 </p>
                                 <Field label="Título do post" htmlFor="bk-showcase-title">
                                   <Input
@@ -2655,7 +2735,7 @@ function LessonEditorSession({
                                 </Field>
                                 <Field
                                   label="Resumo do projeto"
-                                  hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco → a IA gera a descrição."
+                                  hint="Texto inicial do post (a criança pode ajustar ao publicar). Em branco, a descrição é escrita automaticamente."
                                 >
                                   <Textarea
                                     value={blockForm.studioShowcaseSummary}
@@ -2699,18 +2779,18 @@ function LessonEditorSession({
                 {blockForm.kind === 'certificate' ? (
                   <div className="flex flex-col gap-4">
                     <p className="rounded-lg border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-                      Pode ficar em <strong>qualquer aula</strong> — o aluno libera o botão de
-                      emitir quando <strong>todas as aulas antes dela</strong> estão concluídas
-                      (aulas depois não contam), então precisa existir{' '}
+                      Pode ficar em <strong>qualquer aula</strong>: o aluno libera o botão de emitir
+                      quando <strong>todas as aulas antes dela</strong> estão concluídas (aulas
+                      depois não contam), então precisa existir{' '}
                       <strong>ao menos uma aula antes</strong>: na 1ª aula do curso ele nunca
-                      libera. Sai um PDF com número de série e QR de validação pública. ⚠️ A aula do
-                      certificado pode ter conteúdo livre (vídeo/texto de parabéns), mas{' '}
+                      libera. Sai um PDF com número de série e QR de validação pública. Atenção: a
+                      aula do certificado pode ter conteúdo livre (vídeo/texto de parabéns), mas{' '}
                       <strong>não</strong> pode ter quiz com nota de corte nem Estúdio (travam a
                       conclusão e seriam pulados na emissão).
                     </p>
                     <Field
                       label="Imagem base do certificado"
-                      hint="Fundo A4 paisagem do curso (logo, título e decoração já desenhados). O conteúdo abaixo é escrito POR CIMA dela — deixe o miolo central livre."
+                      hint="Fundo A4 paisagem do curso (logo, título e decoração já desenhados). O conteúdo abaixo é escrito POR CIMA dela: deixe o miolo central livre."
                     >
                       <ImageUploader
                         scope="block"
@@ -2738,12 +2818,12 @@ function LessonEditorSession({
                     <p className="text-xs text-muted-foreground">
                       O <strong>nome do aluno</strong> entra sozinho na emissão (perfil da criança
                       no Kids, conta no adulto). Logo abaixo dele vai a <strong>mensagem</strong>{' '}
-                      (frase e/ou parágrafo) — <strong>obrigatória</strong>.
+                      (frase e/ou parágrafo), <strong>obrigatória</strong>.
                     </p>
                     <Field
                       label="Frase do curso"
                       htmlFor="cert-phrase"
-                      hint="Logo abaixo do nome — o que o aluno concluiu (ex.: 'concluiu o Desafio do Primeiro Jogo em 5 dias')."
+                      hint="Logo abaixo do nome: o que o aluno concluiu (ex.: 'concluiu o Desafio do Primeiro Jogo em 5 dias')."
                     >
                       <Input
                         id="cert-phrase"
@@ -2757,7 +2837,7 @@ function LessonEditorSession({
                     </Field>
                     <Field
                       label="Parágrafo"
-                      hint="Abaixo da frase — explica o que o aluno fez (até ~4 linhas no PDF)."
+                      hint="Abaixo da frase: explica o que o aluno fez (até ~4 linhas no PDF)."
                     >
                       <Textarea
                         value={blockForm.certBodyText}
@@ -2823,7 +2903,7 @@ function LessonEditorSession({
         <Dialog
           open={reviewOpen}
           onClose={() => setReviewOpen(false)}
-          title="Revisar para publicar"
+          title="Revisar e publicar"
           className="max-w-3xl"
           footer={
             <Button

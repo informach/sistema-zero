@@ -3,7 +3,6 @@
 import type { LiveActivityReport, LiveControl, LiveRoomView } from '@sistemazero/core/live'
 import { Button } from '@sistemazero/ui'
 import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 import {
   createContext,
   type ReactNode,
@@ -31,7 +30,7 @@ import { LivePreflight } from './live-preflight'
 import { LiveRecordingReview } from './live-recording-review'
 import { LiveRecordingStatus } from './live-recording-status'
 import { LiveReplacement } from './live-replacement'
-import { LiveTeacherControls } from './live-teacher-controls'
+import { LiveTeacherControls, LiveTeacherRoadmap } from './live-teacher-controls'
 
 export type { LiveLessonSlotProps } from '../../lib/live/lesson-slot'
 
@@ -381,20 +380,29 @@ export function LiveClassroom({
     [room, deviceId, stale, joined, admitted],
   )
   const back = teacher ? '/admin/professor/ao-vivo' : '/oficinas'
+  const backLabel = teacher ? 'Voltar aos encontros' : 'Voltar às oficinas'
   const displayedError = error ?? connectionError
   if (deviceInitializationFailed)
     return (
-      <div className="space-y-5 p-4 md:p-6">
-        <Link
+      <div className="mx-auto max-w-3xl space-y-4 p-4 md:p-8">
+        {/* `<a>` e não `<Link>`: sair da sala é navegação COMPLETA, senão a aba seguinte herdaria
+            a câmera e o microfone liberados pelos cabeçalhos desta rota. */}
+        <a
           href={back}
-          className="inline-flex min-h-10 items-center gap-2 font-bold text-primary"
+          className="inline-flex min-h-11 items-center gap-2 font-bold text-primary focus-visible:outline-2 focus-visible:outline-ring"
         >
-          <ArrowLeft className="size-4" />
-          Voltar às oficinas
-        </Link>
-        <p role="alert">
-          Não foi possível preparar este aparelho. Recarregue a página para tentar novamente.
-        </p>
+          <ArrowLeft className="size-5" aria-hidden />
+          {backLabel}
+        </a>
+        <div role="alert" className="space-y-3 rounded-2xl border bg-card p-6">
+          <p className="font-semibold">
+            Não conseguimos preparar este computador para a sala. Recarregue a página para tentar de
+            novo.
+          </p>
+          <Button className="min-h-11" onClick={() => window.location.reload()}>
+            Recarregar a página
+          </Button>
+        </div>
       </div>
     )
   if (!teacher && (!room || room.role === 'learner'))
@@ -423,10 +431,10 @@ export function LiveClassroom({
     )
   return (
     <div className="space-y-5 p-4 md:p-6">
-      <Link href={back} className="inline-flex min-h-10 items-center gap-2 font-bold text-primary">
-        <ArrowLeft className="size-4" />
-        Voltar às oficinas
-      </Link>
+      <a href={back} className="inline-flex min-h-11 items-center gap-2 font-bold text-primary">
+        <ArrowLeft className="size-4" aria-hidden />
+        {backLabel}
+      </a>
       {displayedError ? (
         <div role="alert" className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
           <p>{displayedError}</p>
@@ -471,9 +479,10 @@ export function LiveClassroom({
                     : 'Encontro marcado'}
             </span>
           </header>
+          {isTeacher && room.occurrence ? <LiveTeacherRoadmap room={room} joined={joined} /> : null}
           {!joined ? (
             <div className="space-y-4">
-              <LivePreflight />
+              <LivePreflight teacher={isTeacher} />
               {isTeacher && room.occurrence?.state === 'scheduled' ? (
                 <LiveTeacherControls
                   room={room}
@@ -494,7 +503,7 @@ export function LiveClassroom({
                     {takeover
                       ? 'Continuar aqui'
                       : isTeacher
-                        ? 'Entrar como professora'
+                        ? 'Entrar para conduzir'
                         : 'Entrar na sala'}
                   </Button>
                 </div>
@@ -504,13 +513,13 @@ export function LiveClassroom({
           {joined && !admitted ? (
             <p role="status" className="rounded-xl border bg-card p-5">
               {self?.admission === 'removed'
-                ? 'Sua participação foi encerrada pela professora.'
-                : 'Você está na recepção. A professora já vai chamar.'}
+                ? 'Sua participação foi encerrada.'
+                : 'Você está na recepção. Já já chamam você para entrar.'}
             </p>
           ) : null}
           {joined && admitted && !supervised && !isTeacher ? (
             <p role="status" className="rounded-xl border bg-amber-50 p-4 text-amber-950">
-              A professora está reconectando. Conversa e aparelhos ficam pausados.
+              Quem conduz o encontro está reconectando. Conversa e aparelhos ficam pausados.
             </p>
           ) : null}
           {joined && isTeacher && room.occurrence ? (
@@ -556,7 +565,7 @@ export function LiveClassroom({
   )
 }
 
-/** O palco da professora: o painel de mídia de sempre e o estado da gravação. */
+/** O palco de quem conduz: o painel de mídia de sempre e o estado da gravação. */
 const TeacherStageContext = createContext<{
   room: LiveRoomView | null
   deviceId: string

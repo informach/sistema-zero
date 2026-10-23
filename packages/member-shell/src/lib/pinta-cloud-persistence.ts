@@ -69,6 +69,8 @@ export interface PintaPersistenceLike {
   /** Biblioteca "Minhas paletas" (registro único; ver o pacote). O wrapper a espelha na nuvem. */
   loadPaletteLibrary?(): Promise<PaletteLibrary | null>
   savePaletteLibrary?(library: PaletteLibrary): Promise<PaletteLibrary>
+  /** Reconcilia apenas o item de paletas, sem baixar a galeria inteira. */
+  syncPaletteLibrary?(): Promise<void>
   /** Desliga o que o wrapper escuta por fora (abrir/fechar do editor). O host chama ao trocar. */
   dispose?(): void
 }
@@ -503,6 +505,26 @@ export function createCloudMirroredPintaPersistence(options: {
     return local.listAllAssets()
   }
 
+  async function reconcilePaletteSummary(
+    paletteSummary: CloudCreationSummary | null,
+  ): Promise<void> {
+    if (paletteSummary) {
+      if (marks.revision(PALETTE_LIBRARY_ITEM_ID) !== paletteSummary.revision) {
+        try {
+          await resolvePaletteConflict()
+        } catch {
+          // A falha da biblioteca não bloqueia a galeria.
+        }
+      }
+    } else if (loadLibrary) {
+      void loadLibrary()
+        .then((library) => {
+          if (library && library.palettes.length > 0) enqueuePaletteUpload()
+        })
+        .catch(() => {})
+    }
+  }
+
   /** Um passe da reconciliação; devolve quantos itens ficaram de fora por tempo. */
   async function reconcilePass(localAssets: PintaAsset[]): Promise<number> {
     const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
@@ -514,23 +536,7 @@ export function createCloudMirroredPintaPersistence(options: {
     const assetSummaries = paletteSummary
       ? remote.filter((s) => s.itemId !== PALETTE_LIBRARY_ITEM_ID)
       : remote
-    if (paletteSummary) {
-      // Revisão que esta marca não conhece → desce e funde (best-effort).
-      if (marks.revision(PALETTE_LIBRARY_ITEM_ID) !== paletteSummary.revision) {
-        try {
-          await resolvePaletteConflict()
-        } catch {
-          // Best-effort: falha da biblioteca não bloqueia a galeria de desenhos.
-        }
-      }
-    } else if (loadLibrary) {
-      // Nuvem ainda sem a biblioteca: se há uma local com conteúdo, sobe.
-      void loadLibrary()
-        .then((library) => {
-          if (library && library.palettes.length > 0) enqueuePaletteUpload()
-        })
-        .catch(() => {})
-    }
+    await reconcilePaletteSummary(paletteSummary)
     const takenNames = new Set(localAssets.map((a) => a.name))
     const nameOwner = new Map(localAssets.map((a) => [a.name, a.id]))
     const report = await reconcileCreations<PintaAsset, PintaAsset>({
@@ -683,6 +689,14 @@ export function createCloudMirroredPintaPersistence(options: {
       return () => {
         listeners.delete(listener)
       }
+    },
+    async syncPaletteLibrary() {
+      if (!cloud.supported) return
+      const remote = await withTimeout(cloud.list(), LIST_TIMEOUT_MS)
+      if (!remote) return
+      await reconcilePaletteSummary(
+        remote.find((item) => item.itemId === PALETTE_LIBRARY_ITEM_ID) ?? null,
+      )
     },
     // A biblioteca "Minhas paletas": leitura direta; salvar TAMBÉM enfileira a
     // subida do item especial. Os métodos só existem quando o local os tem

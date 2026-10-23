@@ -44,14 +44,14 @@ describe('zappyBackfillNotice', () => {
   test('só comunica sucesso quando nenhuma fonte falhou', () => {
     expect(zappyBackfillNotice({ indexed: 2, deleted: 1, extracted: 3, failed: 0 })).toEqual({
       kind: 'success',
-      message: 'Base do Zappy sincronizada.',
+      message: 'Base do Zappy atualizada.',
     })
   })
 
   test('com falhas comunica resultado parcial e quantidade', () => {
     expect(zappyBackfillNotice({ indexed: 2, deleted: 1, extracted: 1, failed: 4 })).toEqual({
       kind: 'warning',
-      message: 'Base sincronizada parcialmente: 4 fontes precisam de correção.',
+      message: 'Base do Zappy atualizada em parte: 4 fontes precisam de correção.',
     })
   })
 })

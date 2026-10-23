@@ -31,6 +31,23 @@ export function isAdminRole(role: string): role is AdminRole {
   return (ADMIN_ROLES as readonly string[]).includes(role)
 }
 
+/** Os papéis escritos para gente (o menu da conta, a lista de contas, os avisos de só leitura). */
+export const ROLE_LABELS: Record<string, string> = {
+  superadmin: 'Superadmin',
+  admin: 'Admin',
+  staff: 'Equipe',
+  customer: 'Cliente',
+}
+
+export function roleLabel(role: string): string {
+  return ROLE_LABELS[role] ?? role
+}
+
+/** Quem pode MUDAR as telas de configuração (o gateway reautoriza cada escrita). */
+export function canWriteRole(role: string): boolean {
+  return role === 'superadmin' || role === 'admin'
+}
+
 export interface Paginated<T> {
   items: T[]
   total: number

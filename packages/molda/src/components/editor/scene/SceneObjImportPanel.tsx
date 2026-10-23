@@ -70,9 +70,7 @@ export function SceneObjImportPanel({
               </p>
             )}
           </SceneImportReport>
-          <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">
-            {copy.replace}
-          </p>
+          <p className="rounded-xl border border-mld-border p-3 text-sm font-bold">{copy.add}</p>
           <label className={choice}>
             <input
               name="objAccept"

@@ -47,7 +47,7 @@ describe('escolha das professoras da turma', () => {
   test('recusa turma sem professora e acima de quatro, sem repetir ids', () => {
     expect(teacherSelectionPayload([], [ana])).toEqual({
       ok: false,
-      error: 'Escolha pelo menos uma professora.',
+      error: 'Escolha pelo menos uma pessoa para conduzir a turma.',
     })
     expect(teacherSelectionPayload(['a', 'b', 'c', 'd', 'e'], []).ok).toBe(false)
     const repeated = teacherSelectionPayload(['ana', 'ana'], [ana])
@@ -67,6 +67,8 @@ describe('escolha das professoras da turma', () => {
     const merged = mergeStaffPages([[bia, ana], [ana], [caio]])
     expect(merged.map((item) => item.id)).toEqual(['ana', 'bia', 'caio'])
     expect(teacherShortName(caio)).toBe('caio')
+    // Sem nome nem e-mail útil: "Equipe", nunca um gênero presumido.
+    expect(teacherShortName({ firstName: '', email: '@sem-nome' })).toBe('Equipe')
   })
 
   test('o PATCH da turma leva só o que mudou', () => {

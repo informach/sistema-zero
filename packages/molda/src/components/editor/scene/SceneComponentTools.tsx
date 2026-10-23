@@ -77,6 +77,7 @@ export type SceneComponentToolsProps = Pick<
   onOpenWeights?(): void
   onKnife(): void
   onMove(): void
+  onAlignPivot(): void
 }
 
 type Page =
@@ -529,6 +530,16 @@ export function SceneComponentTools(props: SceneComponentToolsProps) {
                     onClick={() => go('cut')}
                   >
                     Cortar
+                  </ComponentButton>
+                )}
+                {can('model.pivot') && (
+                  <ComponentButton
+                    icon={RotateCw}
+                    disabled={blocked || count !== 1}
+                    title={count !== 1 ? 'Escolha uma face para definir o eixo.' : undefined}
+                    onClick={props.onAlignPivot}
+                  >
+                    Usar ângulo no pivô
                   </ComponentButton>
                 )}
                 {pro && (

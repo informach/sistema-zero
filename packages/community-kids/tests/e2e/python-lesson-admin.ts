@@ -294,10 +294,10 @@ export async function runPythonLessonAdmin() {
     })
     await page.goto(lessonUrl)
     await page.getByRole('button', { name: 'Abrir todas', exact: true }).click()
-    // Server may start with one default section; add only when none exists.
-    if ((await page.getByLabel('Título da seção 1', { exact: true }).count()) === 0)
-      await page.getByRole('button', { name: 'Adicionar seção', exact: true }).click()
-    await page.getByLabel('Título da seção 1', { exact: true }).fill('Meu projeto Python')
+    // Server may start with one default part; add only when none exists.
+    if ((await page.getByLabel('Título da parte 1', { exact: true }).count()) === 0)
+      await page.getByRole('button', { name: 'Adicionar parte', exact: true }).click()
+    await page.getByLabel('Título da parte 1', { exact: true }).fill('Meu projeto Python')
     await page.getByRole('button', { name: 'Adicionar conteúdo', exact: true }).first().click()
     await page
       .getByRole('dialog', { name: 'Adicionar conteúdo', exact: true })
@@ -347,14 +347,14 @@ export async function runPythonLessonAdmin() {
     receipt.checks.push(`ui-python-${config.kind}-turtle-install-keyboard-edit-real-frame-stop`)
     await page.getByRole('button', { name: 'Voltar ao percurso', exact: true }).click()
     await expect(page.getByText('Rascunho salvo', { exact: true })).toBeVisible()
-    await page.getByRole('button', { name: 'Revisar para publicar', exact: true }).click()
+    await page.getByRole('button', { name: 'Revisar e publicar', exact: true }).click()
     await page
-      .getByRole('dialog', { name: 'Revisar para publicar', exact: true })
+      .getByRole('dialog', { name: 'Revisar e publicar', exact: true })
       .getByRole('button', { name: 'Publicar aula', exact: true })
       .click()
-    await expect(
-      page.getByRole('dialog', { name: 'Revisar para publicar', exact: true }),
-    ).toHaveCount(0)
+    await expect(page.getByRole('dialog', { name: 'Revisar e publicar', exact: true })).toHaveCount(
+      0,
+    )
     const response = await context.request.get(
       `${origin}/api/members/lessons/${fixture.lessonId}/draft/published`,
       { maxRedirects: 0, maxRetries: 0 },

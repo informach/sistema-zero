@@ -300,7 +300,7 @@ export function SectionCompletionEditor({
       <legend className="px-2 font-medium">Para liberar a próxima parte</legend>
       <p className="font-medium">O que o aluno precisa demonstrar para continuar?</p>
       <p className="text-sm text-muted-foreground">
-        Marque exatamente o que precisa acontecer nesta seção. Se escolher vídeo e arquivos, o aluno
+        Marque exatamente o que precisa acontecer nesta parte. Se escolher vídeo e arquivos, o aluno
         terá de assistir ao vídeo e baixar os arquivos selecionados para avançar.
       </p>
       <label className="block space-y-2 text-sm">
@@ -317,7 +317,7 @@ export function SectionCompletionEditor({
             }
           }}
         >
-          <option value="">Usar atividades desta seção</option>
+          <option value="">Usar atividades desta parte</option>
           {PLATFORM_ACTIONS.map((action) => (
             <option
               key={action}
@@ -330,14 +330,14 @@ export function SectionCompletionEditor({
         </Select>
         {!allowPlatformAction && !value.platformAction && (
           <span className="block text-xs text-muted-foreground">
-            Ações de perfil precisam de uma seção sem ferramenta associada e fora de Material do
+            Ações de perfil precisam de uma parte sem ferramenta associada e fora de Material do
             curso.
           </span>
         )}
         {value.platformAction && (
           <span className="block text-muted-foreground">
             O botão “Verificar minha ação” consulta o que o perfil salvou. Uma personalização
-            anterior também vale. Abrir a tela ou salvar o padrão não conclui a etapa.
+            anterior também vale. Abrir a tela ou salvar o padrão não conclui a parte.
           </span>
         )}
       </label>
@@ -638,8 +638,8 @@ export function SectionCompletionEditor({
             <span className="font-medium">Exigir envio em dia</span>
             <span className="block text-muted-foreground">
               O aluno só avança se o último envio for igual ao projeto de agora. Mudou depois de
-              enviar? Ele precisa enviar de novo. Vale quando o projeto já foi entregue numa seção
-              de entrega anterior.
+              enviar? Ele precisa enviar de novo. Vale quando o projeto já foi enviado numa parte
+              anterior.
             </span>
           </span>
         </label>

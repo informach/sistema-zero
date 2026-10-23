@@ -1,6 +1,12 @@
 import type { Vec3 } from '../core/model'
 
-export type SceneMeasurementStep = 1 | 0.1
+export type SceneMeasurementStep = 1 | 0.1 | 0.01
+
+export const SCENE_COORDINATE_STEP = 0.01
+
+export function formatSceneCoordinate(value: number) {
+  return value.toFixed(2)
+}
 
 /** Editing precision is a UI choice; existing authorial values are never sanitized on load. */
 export function snapSceneMeasurement(value: number, step: number | null, minimum = -Infinity) {

@@ -173,11 +173,8 @@ const ProfileName = z.string().trim().min(1).max(60)
 const ProfileWhatsapp = z.string().trim().max(20).nullable().optional()
 // Data de nascimento (AAAA-MM-DD; sanidade/faixa de idade são do auth). A
 // autorização "só os pais" é da rota do auth — aqui é só pass-through validado.
-const ProfileBirthDate = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/)
-  .nullable()
-  .optional()
+// Obrigatória na criação e impossível de apagar na edição desde 23/10/2026.
+const ProfileBirthDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
 const CreateProfileBody = z.object({
   requestId: z.uuid(),
   name: ProfileName,
@@ -194,7 +191,7 @@ const UpdateProfileBody = z
   .object({
     name: ProfileName.optional(),
     whatsapp: ProfileWhatsapp,
-    birthDate: ProfileBirthDate,
+    birthDate: ProfileBirthDate.optional(),
     publicProfileEnabled: z.boolean().optional(),
     voiceInputEnabled: z.boolean().optional(),
   })

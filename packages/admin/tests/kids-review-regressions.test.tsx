@@ -122,12 +122,12 @@ test('a closed recipient request cannot replace another broadcast opened later',
   })
   try {
     await act(async () => f.root.render(createElement(BroadcastPanel, { courses: [] })))
-    await act(async () => f.button('Enviados').click())
-    await act(async () => f.button('Destinatários').click())
-    await act(async () => f.button('Voltar aos envios').click())
+    await act(async () => f.button('Recados enviados').click())
+    await act(async () => f.button('Ver quem recebeu').click())
+    await act(async () => f.button('Voltar aos recados enviados').click())
     await act(async () =>
       [...f.container.querySelectorAll('button')]
-        .filter((button) => button.textContent === 'Destinatários')[1]!
+        .filter((button) => button.textContent === 'Ver quem recebeu')[1]!
         .click(),
     )
     await act(async () => finishOld(Response.json(summary('antigo'))))
@@ -182,17 +182,17 @@ test('detalhe dos destinatários atualiza a entrega e o acesso à conversa duran
   })
   try {
     await act(async () => f.root.render(createElement(BroadcastPanel, { courses: [] })))
-    await act(async () => f.button('Enviados').click())
-    await act(async () => f.button('Destinatários').click())
-    expect(f.container.textContent).toContain('Em processamento')
+    await act(async () => f.button('Recados enviados').click())
+    await act(async () => f.button('Ver quem recebeu').click())
+    expect(f.container.textContent).toContain('Enviando')
     delivered = true
     await act(async () => {
       for (const tick of ticks) tick()
     })
     expect(listReads).toBe(2)
     expect(detailReads).toBe(2)
-    expect(f.container.textContent).toContain('Entregue')
-    expect(f.container.textContent).toContain('Abrir conversa')
+    expect(f.container.textContent).toContain('Recebeu')
+    expect(f.container.textContent).toContain('Abrir o recado')
   } finally {
     await f.close()
     globalThis.fetch = originalFetch
@@ -419,9 +419,9 @@ test('polling refreshes all recipient pages already opened, including read recei
   })
   try {
     await act(async () => f.root.render(createElement(BroadcastPanel, { courses: [] })))
-    await act(async () => f.button('Enviados').click())
-    await act(async () => f.button('Destinatários').click())
-    await act(async () => f.button('Ver mais destinatários').click())
+    await act(async () => f.button('Recados enviados').click())
+    await act(async () => f.button('Ver quem recebeu').click())
+    await act(async () => f.button('Ver mais crianças').click())
     expect(f.container.textContent).toContain('Aluno 50')
     delivered = true
     offsets.length = 0
@@ -431,11 +431,11 @@ test('polling refreshes all recipient pages already opened, including read recei
     expect(offsets.sort((a, b) => a - b)).toEqual([0, 50])
     expect(
       [...f.container.querySelectorAll('button')].filter(
-        (button) => button.textContent === 'Abrir conversa',
+        (button) => button.textContent === 'Abrir o recado',
       ),
     ).toHaveLength(51)
-    expect(f.container.textContent).toContain('Lido')
-    expect(f.container.textContent).not.toContain('Em processamento')
+    expect(f.container.textContent).toContain('Leu')
+    expect(f.container.textContent).not.toContain('Enviando')
   } finally {
     await f.close()
     globalThis.fetch = originalFetch

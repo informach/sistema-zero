@@ -5,7 +5,7 @@ import { COPY } from '../../../core/copy'
 import { structuredBytes } from '../../../core/structuredBytes'
 import { setSceneAnimationKey } from '../../../scene/animationCommands'
 import type { MoldaSceneDocument } from '../../../scene/document'
-import { identityMatrix } from '../../../scene/matrix'
+import { identityMatrix, quaternionFromEulerXYZ } from '../../../scene/matrix'
 import { createDocumentEditorStore } from '../../../state/editorStore'
 import { moldaPreferenceKey } from '../../../state/interfacePreferences'
 import { animatedScene } from '../../../testing/sceneAnimation'
@@ -71,6 +71,177 @@ test('New creates an empty two-second movement without selection, grouping, or i
     act(() => f.editor.getState().undo())
     expect(f.editor.getState().content.animations).toEqual([])
     expect(f.editor.getState().canUndo).toBe(false)
+  } finally {
+    f.close()
+  }
+})
+
+test('the loop repair action keeps the last pose and gives it time to return', async () => {
+  const source = animatedScene()
+  source.animations[0]!.tracks[0]!.keys = [
+    { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+    { time: 2, value: [4, 0, 0], interpolation: 'smooth' },
+  ]
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const repair = await screen.findByRole('button', { name: 'Fazer a volta ao começo' })
+    fireEvent.click(repair)
+    expect(
+      f.editor.getState().content.animations![0]!.tracks[0]!.keys.map((key) => key.time),
+    ).toEqual([0, 1, 2])
+    expect(screen.queryByRole('button', { name: 'Fazer a volta ao começo' })).toBeNull()
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations![0]!.tracks[0]!.keys).toEqual(
+      source.animations[0]!.tracks[0]!.keys,
+    )
+  } finally {
+    f.close()
+  }
+})
+
+test('a spinning piece can switch every turn segment to constant pace in one action', async () => {
+  const source = animatedScene()
+  source.animations[0]!.tracks.push({
+    nodeId: 'body',
+    channel: 'rotation',
+    keys: [0, 90, 180, 270, 360].map((degrees, index) => ({
+      time: index * 0.5,
+      value: quaternionFromEulerXYZ([0, 0, degrees]),
+      interpolation: 'smooth',
+    })),
+  })
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Canais de corpo' }))
+    const strip = screen.getByRole('button', {
+      name: COPY.scene.animationStrip(COPY.scene.animationChannels.rotation, 5),
+    })
+    fireEvent.keyDown(strip, { key: 'Home' })
+    fireEvent.keyDown(strip, { key: 'ArrowRight' })
+    const pose = within(screen.getByRole('region', { name: 'Pose escolhida' }))
+    expect(pose.getByText(/Suave faz o giro frear/)).toBeTruthy()
+    expect(pose.getByRole('button', { name: 'Suave (freia)' })).toBeTruthy()
+    expect(pose.getByRole('button', { name: 'Ritmo constante' })).toBeTruthy()
+    fireEvent.click(pose.getByRole('button', { name: 'Girar sem frear' }))
+    const track = f.editor
+      .getState()
+      .content.animations![0]!.tracks.find((entry) => entry.channel === 'rotation')!
+    expect(track.keys.every((key) => key.interpolation === 'linear')).toBe(true)
+    expect(f.editor.getState().content.animations![0]!.tracks[0]).toBe(
+      source.animations[0]!.tracks[0],
+    )
+    expect(pose.queryByRole('button', { name: 'Girar sem frear' })).toBeNull()
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations![0]!.tracks[1]!.keys).toEqual(
+      source.animations[0]!.tracks[1]!.keys,
+    )
+  } finally {
+    f.close()
+  }
+})
+
+test('a two-pose spinning wheel can complete its loop from the pose card', async () => {
+  const source = animatedScene()
+  source.animations[0]!.duration = 1
+  source.animations[0]!.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: [0, 0, 0, 1], interpolation: 'smooth' },
+        { time: 1, value: quaternionFromEulerXYZ([0, 90, 0]), interpolation: 'smooth' },
+      ],
+    },
+  ]
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Canais de corpo' }))
+    const strip = screen.getByRole('button', {
+      name: COPY.scene.animationStrip(COPY.scene.animationChannels.rotation, 2),
+    })
+    fireEvent.keyDown(strip, { key: 'Home' })
+    fireEvent.keyDown(strip, { key: 'ArrowRight' })
+    const pose = within(screen.getByRole('region', { name: 'Pose escolhida' }))
+    expect(pose.getByText(/termina antes de completar uma volta/)).toBeTruthy()
+    fireEvent.click(pose.getByRole('button', { name: 'Girar sem frear' }))
+    expect(
+      f.editor.getState().content.animations![0]!.tracks[0]!.keys.map((key) => key.time),
+    ).toEqual([0, 0.25, 0.5, 0.75, 1])
+    act(() => f.editor.getState().undo())
+    expect(f.editor.getState().content.animations![0]!.tracks[0]!.keys).toEqual(
+      source.animations[0]!.tracks[0]!.keys,
+    )
+  } finally {
+    f.close()
+  }
+})
+
+test('pose controls stay together in the right inspector before and after choosing a key', async () => {
+  const f = setup()
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    const inspector = within(await screen.findByRole('region', { name: 'Ajustes do contexto' }))
+    const pose = within(inspector.getByRole('region', { name: COPY.scene.animationMode }))
+    const timeline = within(screen.getByRole('region', { name: COPY.scene.animationTimeline }))
+    expect(pose.getByRole('button', { name: 'Marcar pose' })).toBeTruthy()
+    expect(pose.queryByRole('button', { name: 'Descartar ajustes' })).toBeNull()
+    expect(pose.queryByRole('region', { name: 'Pose escolhida' })).toBeNull()
+    expect(pose.getByText(/Marcação automática/).closest('details')?.open).toBe(false)
+    expect(pose.getByText('Ajustar com números').closest('details')?.open).toBe(false)
+    expect(pose.getByRole('checkbox', { name: 'Marcar sozinho' })).toBeTruthy()
+    expect(pose.getByLabelText(COPY.scene.animationAxes.translation[0]!)).toBeTruthy()
+    expect(pose.getByText('Mais ferramentas de pose')).toBeTruthy()
+    expect(timeline.queryByRole('button', { name: 'Marcar pose' })).toBeNull()
+    expect(timeline.queryByRole('checkbox', { name: 'Marcar sozinho' })).toBeNull()
+    fireEvent.click(timeline.getByRole('button', { name: 'Canais de corpo' }))
+    fireEvent.keyDown(
+      timeline.getByRole('button', {
+        name: COPY.scene.animationStrip(COPY.scene.animationChannels.translation, 3),
+      }),
+      { key: 'ArrowRight' },
+    )
+    expect(pose.getByRole('region', { name: 'Pose escolhida' })).toBeTruthy()
+    expect(pose.getByRole('button', { name: 'Suave' })).toBeTruthy()
+    expect(pose.getByRole('button', { name: 'Ritmo constante' })).toBeTruthy()
+    expect(pose.getByRole('button', { name: 'De uma vez' })).toBeTruthy()
+    expect(pose.getByText('Mudar tempo da pose').closest('details')?.open).toBe(false)
+    expect(pose.getByRole('button', { name: 'Marcar pose' })).toBeTruthy()
+  } finally {
+    f.close()
+  }
+})
+
+test('nearby poses show different times without rounding both to the same label', async () => {
+  let source: MoldaSceneDocument = animatedScene()
+  for (const time of [1.121, 1.124])
+    source = setSceneAnimationKey(source, 'clip', {
+      nodeId: 'body',
+      channel: 'translation',
+      key: { time, value: [0, time, 0], interpolation: 'smooth' },
+    })
+  const f = setup(source)
+  try {
+    fireEvent.click(screen.getByRole('button', { name: COPY.scene.animationMode }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Canais de corpo' }))
+    const strip = screen.getByRole('button', {
+      name: COPY.scene.animationStrip(COPY.scene.animationChannels.translation, 5),
+    })
+    fireEvent.keyDown(strip, { key: 'Home' })
+    fireEvent.keyDown(strip, { key: 'ArrowRight' })
+    const first = screen
+      .getByRole('region', { name: 'Pose escolhida' })
+      .querySelector('h3')?.textContent
+    fireEvent.keyDown(strip, { key: 'ArrowRight' })
+    const second = screen
+      .getByRole('region', { name: 'Pose escolhida' })
+      .querySelector('h3')?.textContent
+    expect(first).not.toBe(second)
   } finally {
     f.close()
   }

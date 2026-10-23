@@ -186,8 +186,11 @@ export interface ProfileWriteInput {
   name?: string
   avatarUrl?: string | null
   whatsapp?: string | null
-  /** Data de nascimento (`YYYY-MM-DD`) — o auth recusa edição em sessão de perfil. */
-  birthDate?: string | null
+  /**
+   * Data de nascimento (`YYYY-MM-DD`): obrigatória ao criar e impossível de apagar (23/10/2026);
+   * o auth recusa edição em sessão de perfil.
+   */
+  birthDate?: string
   /** Perfil público entre crianças — o auth recusa edição em sessão de perfil. */
   publicProfileEnabled?: boolean
   /** Falar em vez de escrever para a equipe — só os pais; ligar pede login recente no auth. */

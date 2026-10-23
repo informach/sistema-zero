@@ -95,9 +95,7 @@ describe('formulário do primeiro perfil', () => {
       />,
     )
 
-    const birthDate = screen.getByLabelText(
-      'Data de nascimento da criança (opcional)',
-    ) as HTMLInputElement
+    const birthDate = screen.getByLabelText('Data de nascimento da criança') as HTMLInputElement
     expect(birthDate.max).toBe('2026-08-15')
 
     fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
@@ -125,14 +123,48 @@ describe('formulário do primeiro perfil', () => {
     )
 
     fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
+      target: { value: '2016-05-10' },
+    })
     const form = container.querySelector('form')
     expect(form).not.toBeNull()
     if (!form) throw new Error('form semântico não renderizado')
     fireEvent.submit(form)
     expect(onSave).toHaveBeenCalledWith(
-      { name: 'Sofia', birthDate: null, publicProfileEnabled: false },
+      { name: 'Sofia', birthDate: '2016-05-10', publicProfileEnabled: false },
       undefined,
     )
+  })
+
+  it('a data de nascimento é obrigatória: sem ela o perfil não é salvo e o campo pede a data', () => {
+    const onSave = mock(() => {})
+    const { container } = render(
+      <ProfileForm
+        editing={{ mode: 'create' }}
+        busy={false}
+        onCancel={() => {}}
+        onSave={onSave}
+        onArchive={() => {}}
+      />,
+    )
+
+    const birthDate = screen.getByLabelText('Data de nascimento da criança') as HTMLInputElement
+    expect(birthDate.required).toBe(true)
+    // O formulário não abre já com erro.
+    expect(screen.queryByText('Informe a data de nascimento da criança.')).toBeNull()
+
+    fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    const form = container.querySelector('form')
+    if (!form) throw new Error('form semântico não renderizado')
+    // Sem `noValidate`, o navegador barraria o envio com o aviso dele e a mensagem abaixo nunca
+    // apareceria para quem usa a plataforma.
+    expect(form.noValidate).toBe(true)
+    fireEvent.submit(form)
+
+    expect(onSave).not.toHaveBeenCalled()
+    expect(screen.getByText('Informe a data de nascimento da criança.')).toBeTruthy()
+    expect(birthDate.getAttribute('aria-invalid')).toBe('true')
+    expect(container.textContent).not.toContain('opcional')
   })
 
   it('explica a faixa etária e não envia um novo perfil adulto', () => {
@@ -150,7 +182,7 @@ describe('formulário do primeiro perfil', () => {
     fireEvent.change(screen.getByLabelText('Nome do perfil'), {
       target: { value: 'Pessoa adulta' },
     })
-    fireEvent.change(screen.getByLabelText('Data de nascimento da criança (opcional)'), {
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
       target: { value: '2000-01-01' },
     })
     const form = container.querySelector('form')
@@ -189,7 +221,7 @@ describe('formulário do primeiro perfil', () => {
         onArchive={() => {}}
       />,
     )
-    fireEvent.change(screen.getByLabelText('Data de nascimento da criança (opcional)'), {
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
       target: { value: '2000-01-01' },
     })
     const form = container.querySelector('form')

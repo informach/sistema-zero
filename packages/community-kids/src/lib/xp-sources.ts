@@ -54,8 +54,8 @@ export function xpSources({ canPublish }: { canPublish: boolean }): XpSource[] {
     {
       id: 'bau',
       xp: v.bau,
-      label: 'Abrir o baú de um Mundo',
-      detail: 'Ele abre quando você termina todas as aulas do Mundo.',
+      label: 'Abrir o baú de um módulo',
+      detail: 'Ele abre quando você termina todas as aulas do módulo.',
     },
   ]
 }

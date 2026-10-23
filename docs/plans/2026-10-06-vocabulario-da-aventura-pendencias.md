@@ -1,5 +1,14 @@
 # Vocabulário da aventura: o que falta (06/10/2026)
 
+> **Superado em 21/10/2026.** A unificação das aulas e da linguagem das comunidades desfez este
+> vocabulário: as duas comunidades dizem curso → aula → parte, com Próxima parte, Concluir aula,
+> Passo a passo do projeto e a equipe, e o menu da criança diz Cursos. Em 23/10/2026 o grupo de
+> aulas ganhou o nome de módulo (curso → módulo → aula → parte). Este documento fica como registro
+> histórico; não use as pendências abaixo como tarefa. A regra vigente está nas
+> [Diretrizes Pedagógicas, seção 6](../aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md) ("Mesmos
+> nomes nas duas comunidades") e o desenho em
+> [2026-10-21-unificacao-aulas-plataforma-design.md](2026-10-21-unificacao-aulas-plataforma-design.md).
+
 O commit desta data subiu a troca de vocabulário da área da criança: curso → aventura, aula → fase,
 seção → parte, unidade → Mundo, caderno → Mapa da Aventura, professor → guia (à noite, → equipe;
 ver "A equipe no lugar do guia", abaixo). O menu "Aprender"

@@ -36,10 +36,10 @@ export async function proxy(req: NextRequest) {
     const url = req.nextUrl.clone()
     url.pathname = '/login'
     url.search = ''
-    // Preserva o destino p/ voltar após o login (`/admin` é o default do form —
-    // só vale parametrizar destinos mais profundos; o login valida o valor).
+    // Preserva o destino p/ voltar após o login (`/admin/professor`, a tela Hoje, é o
+    // default do form; só vale parametrizar os outros destinos; o login valida o valor).
     const dest = pathname + req.nextUrl.search
-    if (dest !== '/admin') url.searchParams.set('next', dest)
+    if (dest !== '/admin/professor') url.searchParams.set('next', dest)
     return NextResponse.redirect(url)
   }
 

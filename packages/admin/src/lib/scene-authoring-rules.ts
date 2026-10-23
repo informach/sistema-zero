@@ -239,7 +239,7 @@ export function trocarCena(
   const caso = casoAoTrocarCena(a.setup ?? memoria.setup, scene)
   const avisoDoCaso =
     caso.descartado === 'tudo'
-      ? 'O caso que você montou é de outra cena e não vale nesta. A atividade voltou a começar do mundo de fábrica — o seu continua guardado enquanto este editor estiver aberto, e volta se você escolher a cena de onde ele saiu.'
+      ? 'O caso que você montou é de outra cena e não vale nesta. A atividade voltou a começar do mundo de fábrica. O seu continua guardado enquanto este editor estiver aberto, e volta se você escolher a cena de onde ele saiu.'
       : caso.descartado === 'missao'
         ? 'As descobertas que você tinha marcado são do modelo da cena anterior e saíram. O caso de partida ficou; escolha de novo o que esta atividade cobra.'
         : ''

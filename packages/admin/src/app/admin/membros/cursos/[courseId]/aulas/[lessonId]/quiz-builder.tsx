@@ -154,7 +154,7 @@ export function QuizBuilder({
                   </p>
                   <p className="text-muted-foreground">
                     {quiz.passingScore === undefined
-                      ? 'Quiz de fixação — não trava a conclusão da aula.'
+                      ? 'Quiz de fixação: não trava a conclusão da aula.'
                       : `Nota de corte: ${quiz.passingScore}%`}
                   </p>
                 </div>
@@ -258,7 +258,7 @@ export function QuizBuilder({
                   </Button>
                 </div>
 
-                <Field label="Explicação" hint="Opcional — o aluno vê após responder.">
+                <Field label="Explicação" hint="Opcional. O aluno vê depois de responder.">
                   <RichTextEditor
                     compact
                     content={q.explanation ?? ''}

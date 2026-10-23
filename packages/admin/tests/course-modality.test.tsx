@@ -286,7 +286,7 @@ describe('regras puras da modalidade', () => {
     expect(modalityFilterParam(null)).toBeUndefined()
   })
 
-  test('"Ver aula publicada" some na aula de curso ao vivo', () => {
+  test('"Ver como a criança vê" some na aula de curso ao vivo', () => {
     const course = {
       slug: 'farol',
       audience: 'kids' as const,

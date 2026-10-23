@@ -240,7 +240,7 @@ test('invalid Python section criteria entered during draft save are preserved an
     // Unlike the removed block activity JSON form, unfinished section rules are
     // valid drafts. A pending older PATCH cannot erase them or validate stale data.
     await fill(h.nameField(), '')
-    await h.click('Revisar para publicar')
+    await h.click('Revisar e publicar')
     expect(h.state.validations).toEqual([])
     await act(async () => {
       gate.resolve()
@@ -334,7 +334,7 @@ test('validation messages disappear when their draft is corrected', async () => 
   const h = await harness()
   try {
     await h.render()
-    await h.click('Revisar para publicar')
+    await h.click('Revisar e publicar')
     await h.click('Revisar este item')
     const select = [...h.container.querySelectorAll('select')].find((s) =>
       s.textContent?.includes('Personalizar o avatar'),
@@ -344,7 +344,7 @@ test('validation messages disappear when their draft is corrected', async () => 
       select.dispatchEvent(new Event('change', { bubbles: true }))
     })
     expect(h.container.textContent).not.toContain(
-      'Esta seção precisa de uma checagem ou objetivo verificável.',
+      'Esta parte precisa de uma checagem ou objetivo verificável.',
     )
   } finally {
     await h.cleanup()
@@ -372,8 +372,8 @@ test('restoring the server version dismisses stale block fields before saving ag
     await h.click('Abrir todas')
     await h.click('Editar Fala a')
     h.state.conflict = true
-    await h.click('Revisar para publicar')
-    await h.click('Abrir versão do servidor e arquivar cópia local')
+    await h.click('Revisar e publicar')
+    await h.click('Abrir a versão salva e guardar a minha cópia')
     expect(h.container.querySelector('#dialogue-text') === null).toBe(true)
   } finally {
     await h.cleanup()
@@ -389,8 +389,8 @@ test('a certificate added to a new lesson can explicitly use its own completion 
     await h.click('Usar conclusão própria do certificado')
     await h.click('Usar fluxo do certificado')
     expect(sectionCompletionIssues(h.docs.a!.sections, h.docs.a!.blocks)).toEqual([])
-    await h.click('Adicionar seção')
-    await h.click('Revisar para publicar')
+    await h.click('Adicionar parte')
+    await h.click('Revisar e publicar')
     expect(sectionCompletionIssues(h.docs.a!.sections, h.docs.a!.blocks)).toEqual([])
   } finally {
     await h.cleanup()
@@ -516,7 +516,7 @@ test('review waits for the open part solution to flush even while the authoring 
       entered = true
       await gate.promise
     }
-    await h.click('Revisar para publicar')
+    await h.click('Revisar e publicar')
     expect(entered).toBe(true)
     expect(h.state.validations).toHaveLength(0)
     await act(async () => gate.resolve())
@@ -563,14 +563,14 @@ test('accepting the server version retires an open private example and its late 
     await settle(() => Boolean(h.button('Alterar projeto de teste')))
     h.state.conflict = true
     await h.click('Alterar projeto de teste')
-    await settle(() => Boolean(h.button('Abrir versão do servidor e arquivar cópia local')))
+    await settle(() => Boolean(h.button('Abrir a versão salva e guardar a minha cópia')))
     const lateChange = latestStudioChange!
     const lateProject = { ...latestStudioProject!, name: 'A tardio sobre servidor B' }
     h.docs.a!.blocks[0] = {
       id: 'workspace',
       content: { kind: 'studio', initialProject: project, projectExamples: registry('Servidor B') },
     }
-    await h.click('Abrir versão do servidor e arquivar cópia local')
+    await h.click('Abrir a versão salva e guardar a minha cópia')
     await act(async () => lateChange(lateProject))
     const content = h.docs.a!.blocks[0]!.content
     if (content.kind !== 'studio') throw new Error('Expected Studio')
@@ -630,7 +630,7 @@ test('publishing adopts the canonical revision without remounting an open privat
     const editor = h.button('Alterar projeto de teste')!
     await h.click('Alterar projeto de teste')
     const workingId = latestStudioProject!.id
-    await h.click('Revisar para publicar')
+    await h.click('Revisar e publicar')
     await settle(() => Boolean(h.button('Publicar aula')))
     expect(h.button('Publicar aula').disabled, h.container.textContent ?? '').toBe(false)
     await h.click('Publicar aula')

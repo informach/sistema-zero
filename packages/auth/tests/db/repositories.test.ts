@@ -184,6 +184,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     expect(new Set(prepared?.profileIds)).toEqual(new Set([activeId, archivedId]))
     expect((await users.findById(user.id))?.status).toBe('blocked')
     const candidate = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: user.id,
       name: 'Novo perfil',
@@ -232,6 +233,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
 
     // Criar já ligada (régua de autorização é do serviço) persiste os dois campos no insert.
     const created = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: user.id,
       name: 'Novo',
@@ -270,6 +272,7 @@ describe.skipIf(!testDatabaseUrl)('Adapters Drizzle no Postgres real (schema aut
     // Criação já ligada: a 1ª linha entra na mesma transação do insert do perfil.
     const createdAt = new Date('2026-10-14T15:00:00.000Z')
     const created = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: user.id,
       name: 'Bia',

@@ -95,8 +95,9 @@ export function KidsJourneyPolicyForm({
           </Select>
         </Field>
         <p className="text-sm text-muted-foreground">
-          A pausa mantém a política e as conquistas. Não concede novos postos ou ferramentas;
-          concluir o primeiro curso ainda pode abrir outras aulas da mesma etapa.
+          Pausar mantém as regras e o que cada criança já ganhou. Ninguém sobe de posto nem ganha
+          ferramenta enquanto estiver pausado, mas terminar o primeiro curso de uma trilha ainda
+          abre os outros cursos dela.
         </p>
       </Card>
       <section aria-labelledby="kids-posts-title" className="space-y-4">
@@ -105,7 +106,8 @@ export function KidsJourneyPolicyForm({
             Postos e ferramentas
           </h2>
           <p className="text-sm text-muted-foreground">
-            Os nomes e a ordem permanecem. Cada avanço exige todos os requisitos configurados.
+            Os nomes e a ordem dos postos não mudam. Para subir, a criança cumpre todos os
+            requisitos do posto.
           </p>
         </div>
         <nav aria-label="Postos" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -125,13 +127,13 @@ export function KidsJourneyPolicyForm({
           <h3 className="font-semibold">{KIDS_POST_LABELS[post]}</h3>
           {!step ? (
             <p className="text-sm text-muted-foreground">
-              Faísca começa criando dentro das aulas. O primeiro avanço está no posto Construtor(a);
-              ferramentas globais são conquistadas nos avanços abaixo.
+              A Faísca começa criando dentro das aulas. A primeira subida é para Construtor(a), e as
+              ferramentas que valem fora das aulas vêm nos postos seguintes.
             </p>
           ) : (
             <>
               <div className="space-y-3">
-                <h4 className="text-sm font-medium">Aventuras necessárias</h4>
+                <h4 className="text-sm font-medium">Cursos para chegar aqui</h4>
                 {step.requirements.map((requirement, index) => (
                   <div
                     // biome-ignore lint/suspicious/noArrayIndexKey: ordered controlled fields have no row-local state; duplicate draft requirements must stay editable until validation.
@@ -157,7 +159,7 @@ export function KidsJourneyPolicyForm({
                       </Button>
                     </div>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <Field title="Identificação da aventura">
+                      <Field title="Qual curso">
                         <Select
                           aria-label={`Tipo do requisito ${index + 1}`}
                           disabled={disabled}
@@ -180,16 +182,16 @@ export function KidsJourneyPolicyForm({
                               })
                           }}
                         >
-                          <option value="slot">Posição na etapa</option>
+                          <option value="slot">Uma posição da trilha</option>
                           <option
                             value="course"
                             disabled={!eligibleCourses.length && requirement.kind !== 'course'}
                           >
-                            Curso específico
+                            Um curso escolhido
                           </option>
                         </Select>
                       </Field>
-                      <Field title="Marco necessário">
+                      <Field title="O que a criança faz">
                         <Select
                           aria-label={`Marco do requisito ${index + 1}`}
                           disabled={disabled}
@@ -237,9 +239,9 @@ export function KidsJourneyPolicyForm({
                         </div>
                       ) : (
                         <>
-                          <Field title="Etapa">
+                          <Field title="Trilha">
                             <Select
-                              aria-label={`Etapa do requisito ${index + 1}`}
+                              aria-label={`Trilha do requisito ${index + 1}`}
                               disabled={disabled}
                               value={requirement.tier}
                               onChange={(event) => {
@@ -335,9 +337,9 @@ export function KidsJourneyPolicyForm({
                 </div>
               </fieldset>
               <p className="text-xs text-muted-foreground">
-                São liberações pedagógicas globais. Licença, matrícula, blocos adquiridos nos cursos
-                e contexto da aula continuam sendo conferidos separadamente. Dependências entre
-                ferramentas serão validadas antes da comparação.
+                Valem também fora das aulas. Licença, matrícula, os blocos de cada curso e o que a
+                aula pede continuam sendo conferidos à parte. Se uma ferramenta depende de outra,
+                isso é conferido na comparação.
               </p>
             </>
           )}
@@ -346,13 +348,13 @@ export function KidsJourneyPolicyForm({
       <section aria-labelledby="kids-access-title" className="space-y-4">
         <div>
           <h2 id="kids-access-title" className="text-lg font-semibold">
-            Acesso às aventuras
+            Acesso às trilhas
           </h2>
           <p className="text-sm text-muted-foreground">
-            Cada etapa tem suas próprias regras. Alterar o posto acima não muda este mapeamento.
+            Cada trilha tem as próprias regras. Mudar um posto acima não muda nada aqui.
           </p>
         </div>
-        <nav aria-label="Etapas" className="flex flex-wrap gap-2">
+        <nav aria-label="Trilhas" className="flex flex-wrap gap-2">
           {JOURNEY_COURSE_TIERS.map((entry) => (
             <button
               key={entry}
@@ -369,7 +371,7 @@ export function KidsJourneyPolicyForm({
           <Card className="space-y-4 p-5">
             <h3 className="font-semibold">{KIDS_TIER_LABELS[tier]}</h3>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field title="Posto para entrar na etapa">
+              <Field title="Posto que abre a trilha">
                 <Select
                   aria-label="Posto de entrada"
                   disabled={disabled}
@@ -386,7 +388,7 @@ export function KidsJourneyPolicyForm({
                   ))}
                 </Select>
               </Field>
-              <Field title="Posto que permite revisar toda a etapa">
+              <Field title="Posto que deixa rever a trilha inteira">
                 <Select
                   aria-label="Posto de revisão"
                   disabled={disabled}
@@ -403,9 +405,9 @@ export function KidsJourneyPolicyForm({
                   ))}
                 </Select>
               </Field>
-              <Field title="Primeira aventura: abre as demais e recompensas">
+              <Field title="Primeiro curso: abre os outros cursos e os prêmios">
                 <Select
-                  aria-label="Marco da primeira aventura"
+                  aria-label="Marco do primeiro curso"
                   disabled={disabled}
                   value={access.foundation.milestone}
                   onChange={(event) =>
@@ -421,9 +423,9 @@ export function KidsJourneyPolicyForm({
                   <option value="showcase">Concluir e publicar no Mural</option>
                 </Select>
               </Field>
-              <Field title="Quando o catálogo conhecido não tem a primeira aventura">
+              <Field title="Quando a trilha ainda não tem o primeiro curso">
                 <Select
-                  aria-label="Ausência da primeira aventura"
+                  aria-label="Ausência do primeiro curso"
                   disabled={disabled}
                   value={access.foundation.whenMissing}
                   onChange={(event) =>
@@ -441,9 +443,9 @@ export function KidsJourneyPolicyForm({
               </Field>
             </div>
             <p className="text-xs text-muted-foreground">
-              Dispensar a primeira aventura não dispensa o posto de entrada para cursos com posição.
-              Recompensas têm direito próprio e não concedem entrada. Catálogo indisponível nunca
-              conta como aventura ausente. Matrícula e acesso ao produto continuam obrigatórios.
+              Dispensar o primeiro curso não dispensa o posto que abre a trilha. Os prêmios têm
+              regra própria e não abrem a trilha. Se a lista de cursos não carregar, isso nunca
+              conta como curso que falta. Matrícula e acesso ao produto continuam valendo.
             </p>
           </Card>
         )}

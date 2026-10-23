@@ -29,7 +29,7 @@ async function prepare(scene = '0') {
   await screen.findByText(copy.ready)
 }
 
-test('workshop imports through its lazy dialog, requires review, restores focus and undoes/redoes one replacement', async () => {
+test('workshop imports through its lazy dialog, requires review, restores focus and undoes/redoes one addition', async () => {
   const editor = editorStore(),
     before = editor.getState().asset,
     { factory, ports } = renderer(),
@@ -60,7 +60,9 @@ test('workshop imports through its lazy dialog, requires review, restores focus 
     const imported = editor.getState().asset
     expect(imported.name).toBe(before.name)
     expect(imported.id).toBe(before.id)
-    expect(imported.images.length).toBe(1)
+    expect(imported.images.length).toBe(before.images.length + 1)
+    expect(imported.nodes.slice(0, before.nodes.length)).toEqual(before.nodes)
+    expect(imported.nodes.some((node) => node.kind === 'group' && node.name === 'fox')).toBe(true)
     expect(editor.getState().contentRevision).toBe(1)
     expect(ports.filter((port) => port.disposed === 0).length).toBe(1)
     fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
@@ -127,9 +129,11 @@ test('folder paths and missing companions remain explicit; selecting an empty sc
     expect((screen.getByLabelText(copy.accept) as HTMLInputElement).checked).toBe(false)
     fireEvent.click(screen.getByLabelText(copy.accept))
     fireEvent.click(screen.getByRole('button', { name: copy.confirm }))
-    expect(imported).toBe(1)
-    expect(editor.getState().asset.nodes).toEqual([])
-    expect(editor.getState().asset.images).toEqual([])
+    expect(imported).toBe(0)
+    expect(screen.getByRole('alert').textContent).toContain(copy.emptyScene)
+    expect(editor.getState().asset).toBe(before)
+    expect(editor.getState().asset.nodes).toEqual(before.nodes)
+    expect(editor.getState().asset.images).toEqual(before.images)
   } finally {
     view.unmount()
     editor.getState().dispose()

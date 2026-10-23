@@ -224,3 +224,21 @@ test('tutorial arquivado abre só para leitura', async () => {
   )
   await f.close()
 })
+
+test('quem é da equipe vê a faixa de só leitura e os botões apagados, sem salvar nada', async () => {
+  const f = fixture()
+  await act(async () => {
+    f.root.render(
+      <PlatformProvider initialPlatform="kids">
+        <HelpEditorClient tutorialId={ID} currentRole="staff" />
+      </PlatformProvider>,
+    )
+  })
+  await act(async () => {})
+  expect(document.body.textContent).toContain('Só leitura.')
+  expect((f.button('Revisar e publicar') as HTMLButtonElement).disabled).toBe(true)
+  expect((f.button('Salvar rascunho') as HTMLButtonElement).disabled).toBe(true)
+  expect((document.querySelector('#t-title') as HTMLInputElement).disabled).toBe(true)
+  expect(calls.every((c) => c.method === 'GET')).toBe(true)
+  await f.close()
+})

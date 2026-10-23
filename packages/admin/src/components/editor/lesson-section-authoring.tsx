@@ -119,7 +119,7 @@ function SortableSection({
         <button
           {...attributes}
           {...listeners}
-          aria-label={`Arrastar seção ${title}`}
+          aria-label={`Arrastar parte ${title}`}
           type="button"
           className="absolute left-1 top-5 z-10 cursor-grab touch-none rounded p-1 text-muted-foreground focus-visible:outline-2 focus-visible:outline-ring"
         >
@@ -281,7 +281,7 @@ export function LessonSectionAuthoring({
       confirm({
         title: 'Mover projeto compartilhado',
         message:
-          'Este projeto é usado por outras seções. Seus vínculos e objetivos serão mantidos; revise as pendências de posição depois de mover.',
+          'Este projeto é usado por outras partes. Seus vínculos e objetivos serão mantidos; revise as pendências de posição depois de mover.',
         confirmText: 'Mover mantendo vínculos',
         onConfirm: move,
       })
@@ -316,7 +316,7 @@ export function LessonSectionAuthoring({
       confirm({
         title: 'Duplicar como projeto independente',
         message:
-          'A cópia mantém o projeto inicial e as configurações, com identidade própria e sem a cadeia entre aulas. Para continuar o mesmo trabalho, use “Onde a criança cria” na seção.',
+          'A cópia mantém o projeto inicial e as configurações, com identidade própria e sem a cadeia entre aulas. Para continuar o mesmo trabalho, use “Onde a criança cria” na parte.',
         confirmText: 'Criar cópia independente',
         onConfirm: duplicate,
       })
@@ -453,9 +453,9 @@ export function LessonSectionAuthoring({
       {certificateLesson && (
         <div className="space-y-3 rounded-xl border border-primary/25 bg-primary/5 p-4">
           <p className="text-sm">
-            O certificado fica liberado após as aulas anteriores. Se for critério de uma seção, a
-            emissão conclui apenas essa seção; as demais continuam obrigatórias. Sem critérios por
-            seção, a emissão conclui a aula inteira.
+            O certificado fica liberado após as aulas anteriores. Se for critério de uma parte, a
+            emissão conclui apenas essa parte; as demais continuam obrigatórias. Sem critérios por
+            parte, a emissão conclui a aula inteira.
           </p>
           {doc.sections.some((s) => s.completion !== undefined) && (
             <Button
@@ -465,7 +465,7 @@ export function LessonSectionAuthoring({
                 confirm({
                   title: 'Usar o fluxo do certificado',
                   message:
-                    'Os critérios de todas as seções desta aula serão removidos. Os conteúdos e o histórico dos alunos serão mantidos. Revise também quizzes e entregas obrigatórias, que não podem fazer parte da aula de certificado.',
+                    'Os critérios de todas as partes desta aula serão removidos. Os conteúdos e o histórico dos alunos serão mantidos. Revise também quizzes e envios de projeto obrigatórios, que não podem fazer parte da aula de certificado.',
                   confirmText: 'Usar fluxo do certificado',
                   onConfirm: () =>
                     structure(
@@ -496,7 +496,7 @@ export function LessonSectionAuthoring({
             >
               {activeEditor.target === 'completion'
                 ? 'Para avançar'
-                : 'Orientações e projeto da seção'}
+                : 'Orientações e projeto da parte'}
             </h2>
           </div>
           {activeEditor.target === 'completion' &&
@@ -601,7 +601,7 @@ export function LessonSectionAuthoring({
             ) : (
               <>
                 <label className="block space-y-2 text-sm">
-                  Título da seção
+                  Título da parte
                   <Input
                     value={editing.title}
                     maxLength={200}
@@ -654,7 +654,7 @@ export function LessonSectionAuthoring({
                       )
                     }}
                   >
-                    <option value="">Somente os conteúdos desta seção</option>
+                    <option value="">Somente os conteúdos desta parte</option>
                     <optgroup label="Continuar um projeto da aula">
                       {tools.map((b) => (
                         <option key={b.id} value={b.id}>
@@ -671,7 +671,7 @@ export function LessonSectionAuthoring({
                 </label>
                 <p className="text-sm text-muted-foreground">
                   Para começar outro projeto, adicione um conteúdo Estúdio ou Pinta. Para continuar
-                  o trabalho, selecione o projeto pelo nome e pela seção de origem.
+                  o trabalho, selecione o projeto pelo nome e pela parte de origem.
                 </p>
                 <Button
                   variant="outline"
@@ -701,7 +701,7 @@ export function LessonSectionAuthoring({
           <div className="space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm text-muted-foreground">
-                {doc.sections.length} seções · organize na ordem da sua aula
+                {doc.sections.length} partes · organize na ordem da sua aula
               </p>
               <div className="flex gap-1">
                 <Button variant="ghost" size="sm" onClick={() => openSections([])}>
@@ -752,7 +752,7 @@ export function LessonSectionAuthoring({
                             type="button"
                             aria-expanded={isOpen}
                             aria-controls={`section-content-${section.id}`}
-                            aria-label={`${isOpen ? 'Recolher' : 'Abrir'} seção ${index + 1}: ${section.title}`}
+                            aria-label={`${isOpen ? 'Recolher' : 'Abrir'} parte ${index + 1}: ${section.title}`}
                             onClick={() =>
                               openSections(
                                 isOpen
@@ -771,7 +771,7 @@ export function LessonSectionAuthoring({
                           </button>
                           <div className="min-w-0 flex-1 space-y-2">
                             <Input
-                              aria-label={`Título da seção ${index + 1}`}
+                              aria-label={`Título da parte ${index + 1}`}
                               value={section.title}
                               maxLength={200}
                               disabled={!canWrite}
@@ -829,7 +829,7 @@ export function LessonSectionAuthoring({
                                 onClick={() => editSection(section.id, 'settings')}
                                 className="block max-w-full truncate text-left text-xs text-primary underline-offset-4 hover:underline"
                               >
-                                Anotações da professora: {section.teacherNotes.trim()}
+                                Anotações desta parte: {section.teacherNotes.trim()}
                               </button>
                             ) : null}
                             {section.blockIds
@@ -842,7 +842,7 @@ export function LessonSectionAuthoring({
                           </div>
                           <details className="relative">
                             <summary
-                              aria-label={`Ações da seção ${index + 1}`}
+                              aria-label={`Ações da parte ${index + 1}`}
                               className="cursor-pointer list-none rounded-md p-2 text-muted-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
                             >
                               <MoreHorizontal className="size-4" />
@@ -873,7 +873,7 @@ export function LessonSectionAuthoring({
                                   ) : (
                                     <ArrowDown className="size-4" />
                                   )}
-                                  {direction < 0 ? 'Subir seção' : 'Descer seção'}
+                                  {direction < 0 ? 'Subir parte' : 'Descer parte'}
                                 </Button>
                               ))}
                               <Button
@@ -886,7 +886,7 @@ export function LessonSectionAuthoring({
                                 }}
                               >
                                 <Copy className="size-4" />
-                                Duplicar seção
+                                Duplicar parte
                               </Button>
                               <Button
                                 variant="ghost"
@@ -895,10 +895,10 @@ export function LessonSectionAuthoring({
                                 disabled={doc.sections.length < 2}
                                 onClick={() =>
                                   confirm({
-                                    title: 'Remover seção e manter conteúdos',
+                                    title: 'Remover parte e manter conteúdos',
                                     message:
-                                      'Os conteúdos irão para a seção vizinha. Os critérios desta seção serão removidos e o avanço da seção de destino precisará ser revisado. O histórico dos alunos permanece preservado.',
-                                    confirmText: 'Remover seção',
+                                      'Os conteúdos irão para a parte vizinha. Os critérios desta parte serão removidos e o avanço da parte de destino precisará ser revisado. O histórico dos alunos permanece preservado.',
+                                    confirmText: 'Remover parte',
                                     confirmVariant: 'destructive',
                                     onConfirm: () => {
                                       const rest = doc.sections.filter((s) => s.id !== section.id)
@@ -917,7 +917,7 @@ export function LessonSectionAuthoring({
                                   })
                                 }
                               >
-                                Remover seção
+                                Remover parte
                               </Button>
                             </fieldset>
                           </details>
@@ -928,7 +928,7 @@ export function LessonSectionAuthoring({
                           className="space-y-5 border-t border-border p-4 sm:p-5"
                         >
                           <div className="space-y-3">
-                            <h3 className="text-sm font-semibold">Conteúdos da seção</h3>
+                            <h3 className="text-sm font-semibold">Conteúdos da parte</h3>
                             {contentList(section.blockIds, section.id)}
                             <Button
                               variant="outline"
@@ -947,7 +947,7 @@ export function LessonSectionAuthoring({
                                   ? lessonContentLabel(workspace)
                                   : section.externalTool
                                     ? `${section.externalTool === 'estudio' ? 'Estúdio' : 'Pinta'} completo, fora da aula`
-                                    : 'Somente os conteúdos desta seção'}
+                                    : 'Somente os conteúdos desta parte'}
                               </p>
                             </div>
                             <Button
@@ -1002,7 +1002,7 @@ export function LessonSectionAuthoring({
                             size="sm"
                             onClick={() => editSection(section.id, 'settings')}
                           >
-                            Orientações do professor · {SECTION_INTENT_LABELS[section.intent]}
+                            Orientações da parte · {SECTION_INTENT_LABELS[section.intent]}
                           </Button>
                         </div>
                       </SortableSection>
@@ -1023,14 +1023,14 @@ export function LessonSectionAuthoring({
                   requestAnimationFrame(() =>
                     window.document
                       .querySelector<HTMLInputElement>(
-                        `[aria-label="Título da seção ${doc.sections.length + 1}"]`,
+                        `[aria-label="Título da parte ${doc.sections.length + 1}"]`,
                       )
                       ?.focus(),
                   )
                 }}
               >
                 <Plus className="size-4" />
-                Adicionar seção
+                Adicionar parte
               </Button>
               <Button
                 variant="ghost"
@@ -1152,8 +1152,8 @@ export function LessonSectionAuthoring({
             )}
             {starterIntent === 'delivery' && starterOptions.project === 'existing' && (
               <p className="text-xs text-muted-foreground">
-                O bloco de entrega será colocado na nova seção. As outras seções continuam usando o
-                mesmo projeto; revise seus critérios de avanço.
+                O bloco de envio do projeto será colocado na nova parte. As outras partes continuam
+                usando o mesmo projeto; revise seus critérios de avanço.
               </p>
             )}
             <Button
@@ -1174,7 +1174,7 @@ export function LessonSectionAuthoring({
       <Dialog
         open={Boolean(copying)}
         onClose={() => setDuplicateId(null)}
-        title="Duplicar seção"
+        title="Duplicar parte"
         footer={
           <Button
             disabled={!canWrite}
@@ -1185,7 +1185,7 @@ export function LessonSectionAuthoring({
                 changes = duplicateLessonSection(doc, copying.id, copyMode)
               } catch (error) {
                 toast.error(
-                  error instanceof Error ? error.message : 'Não foi possível duplicar a seção.',
+                  error instanceof Error ? error.message : 'Não foi possível duplicar a parte.',
                 )
                 return
               }
@@ -1211,7 +1211,7 @@ export function LessonSectionAuthoring({
         </p>
         {copying?.workspaceBlockId && (
           <label className="block space-y-2 text-sm">
-            Projeto da nova seção
+            Projeto da nova parte
             <Select
               value={copyMode}
               onChange={(e) => setCopyMode(e.target.value as ProjectCopyMode)}

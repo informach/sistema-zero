@@ -29,8 +29,10 @@ import Link from 'next/link'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
-import { StatusBadge } from '@/components/admin/status-badge'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -42,6 +44,7 @@ import {
   runLatestForeground,
 } from '@/lib/latest-wins'
 import { loadAllPages } from '@/lib/load-all-pages'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { offsetForPlatform, pageForPlatform } from '@/lib/platform-pagination'
 import { courseCreationPrefill } from '@/lib/platform-transition'
 import { slugify } from '@/lib/slug'
@@ -112,7 +115,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           setTotal(result.total)
         },
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao carregar cursos.')
+          toast.error((error as ApiError).message ?? 'Não conseguimos carregar os cursos.')
         },
         onSettled: () => setLoading(false),
       },
@@ -143,7 +146,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       {
         onSuccess: (courses) => setJourneyItems(courses.filter((course) => !isLiveCourse(course))),
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao conferir a Jornada do Criador.')
+          toast.error(
+            (error as ApiError).message ?? 'Não conseguimos conferir a Jornada do Criador.',
+          )
         },
         onSettled: () => setJourneyLoading(false),
       },
@@ -191,8 +196,8 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
       title: 'Excluir curso',
       message: (
         <>
-          Excluir o curso <strong className="text-foreground">{c.title}</strong>? Módulos, aulas e
-          progresso serão removidos. Esta ação não pode ser desfeita.
+          Excluir o curso <strong className="text-foreground">{c.title}</strong>? Os módulos e as
+          aulas dele somem, e não dá para desfazer.
           {warning ? (
             <>
               {' '}
@@ -209,7 +214,9 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           toast.success('Curso excluído.')
           if (mutationScope.isCurrent(scope)) await Promise.all([load(), loadJourney()])
         } catch (err) {
-          toast.error((err as ApiError).message ?? 'Não foi possível excluir.')
+          toast.error(
+            (err as ApiError).message ?? 'Não foi possível excluir o curso. Tente de novo.',
+          )
         }
       },
     })
@@ -219,16 +226,15 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     <div className="space-y-6">
       {confirmDialog}
       <AdminHeader
-        title="Membros"
-        description="Cursos da área de membros — autoria de conteúdo (módulos, aulas, blocos)."
+        title="Cursos"
+        description="Os cursos gravados e ao vivo da comunidade. Aqui você monta os módulos, as aulas e as partes de cada aula."
         action={
-          canWrite ? (
-            <Button onClick={openCreate}>
-              <Plus className="size-4" /> Novo curso
-            </Button>
-          ) : undefined
+          <Button onClick={openCreate} disabled={!canWrite}>
+            <Plus className="size-4" /> Novo curso
+          </Button>
         }
       />
+      {canWrite ? null : <ReadOnlyNotice />}
 
       {/* Jornada do Criador é conceito KIDS — no modo Adultos o painel some. */}
       {platform === 'kids' ? (
@@ -246,7 +252,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por título ou slug…"
+            placeholder="Buscar pelo título ou pelo endereço…"
             value={q}
             onChange={(e) => {
               setPage({ platform, offset: 0 })
@@ -261,12 +267,13 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
             setPage({ platform, offset: 0 })
             setStatus(e.target.value)
           }}
+          aria-label="Situação"
           className="sm:w-44"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {COURSE_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {statusLabel(s, 'catalog')}
             </option>
           ))}
         </Select>
@@ -290,7 +297,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
           <TableHeader>
             <TableRow>
               <TableHead>Curso</TableHead>
-              <TableHead>Status</TableHead>
+              <TableHead>Situação</TableHead>
               <TableHead>Atualizado</TableHead>
               <TableHead className="text-right">Ações</TableHead>
             </TableRow>
@@ -300,8 +307,26 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
               <TableSkeletonRows columns={4} />
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
-                  Nenhum curso encontrado.
+                <TableCell colSpan={4}>
+                  {q.trim() || status || modality ? (
+                    <EmptyState
+                      title="Nenhum curso com esse filtro"
+                      description="Tente outra busca ou tire um dos filtros."
+                    />
+                  ) : (
+                    <EmptyState
+                      zappy="happy"
+                      title="Nenhum curso nesta comunidade ainda"
+                      description="Comece criando o primeiro curso. Ele nasce como rascunho."
+                      action={
+                        canWrite ? (
+                          <Button onClick={openCreate}>
+                            <Plus className="size-4" /> Novo curso
+                          </Button>
+                        ) : undefined
+                      }
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -322,13 +347,13 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                       ) : null}
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>{c.slug}</span>
+                      <span>/{c.slug}</span>
                       {c.clonedFrom ? (
                         <span
                           className="rounded-full bg-muted px-1.5 py-0.5 font-medium text-[11px]"
-                          title={`Clonado do curso ${c.clonedFrom} — edições não sincronizam`}
+                          title={`Copiado do curso ${c.clonedFrom}. O que muda num não muda no outro.`}
                         >
-                          Clone de {c.clonedFrom}
+                          Cópia de {c.clonedFrom}
                         </span>
                       ) : null}
                     </div>
@@ -336,26 +361,26 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                       <div className="mt-1 text-xs text-muted-foreground">
                         Curso ao vivo: fora da trilha e da Jornada. As turmas ficam em{' '}
                         <Link href="/admin/oficinas" className="underline underline-offset-2">
-                          Oficinas ao vivo
+                          Oficinas
                         </Link>
                         .
                       </div>
                     ) : c.audience === 'kids' ? (
                       <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         {c.level === 'lenda' ? (
-                          '👑 Lenda — curso bônus da formatura (aparece na trilha da Lenda; fora da jornada)'
+                          'Lenda: curso bônus da formatura. Aparece na Trilha Lenda, fora da Jornada.'
                         ) : c.journeyRole === 'extra' ? (
-                          `Extra — curso sem posição em ${
+                          `Extra: curso sem posição em ${
                             COURSE_TIER_OPTIONS.find(
                               (option) => option.level === c.level && option.track === c.track,
                             )?.label ?? `${c.level} ${c.track}`
-                          }; abre para quem tem matrícula, sem depender da etapa`
+                          }. Abre para quem tem matrícula, sem depender do posto.`
                         ) : c.careerSlot == null ? (
-                          `Bônus — recompensa da etapa ${
+                          `Bônus: prêmio de ${
                             COURSE_TIER_OPTIONS.find(
                               (option) => option.level === c.level && option.track === c.track,
                             )?.label ?? `${c.level} ${c.track}`
-                          } (abre quando ela completa); não conta para subir de nível`
+                          }. Abre quando a criança completa a trilha e não conta para subir de posto.`
                         ) : (
                           <>
                             <span>
@@ -367,7 +392,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                             </span>
                             {c.careerSlot === 1 ? (
                               <span className="rounded-full bg-primary/15 px-1.5 py-0.5 font-medium text-[11px] text-primary">
-                                Curso-base
+                                Curso de entrada
                               </span>
                             ) : null}
                           </>
@@ -376,7 +401,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                     ) : null}
                   </TableCell>
                   <TableCell>
-                    <StatusBadge status={c.status} />
+                    <StatusBadge status={c.status} kind="catalog" />
                   </TableCell>
                   <TableCell className="text-muted-foreground">{formatDate(c.updatedAt)}</TableCell>
                   <TableCell className="text-right">
@@ -385,21 +410,33 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                         href={`/admin/membros/cursos/${c.id}`}
                         className={buttonVariants({ variant: 'ghost', size: 'sm' })}
                       >
-                        <SquarePen className="size-4" /> Conteúdo
+                        <SquarePen className="size-4" /> Abrir
                       </Link>
-                      {canWrite ? (
-                        <>
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(c)}>
-                            <Pencil className="size-4" /> Editar
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => setCloning(c)}>
-                            <Copy className="size-4" /> Clonar
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => void remove(c)}>
-                            Excluir
-                          </Button>
-                        </>
-                      ) : null}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => openEdit(c)}
+                        disabled={!canWrite}
+                      >
+                        <Pencil className="size-4" /> Editar dados
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCloning(c)}
+                        disabled={!canWrite}
+                      >
+                        <Copy className="size-4" /> Copiar para a{' '}
+                        {COMMUNITY_NAMES[c.audience === 'kids' ? 'adult' : 'kids']}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void remove(c)}
+                        disabled={!canWrite}
+                      >
+                        Excluir
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -495,10 +532,10 @@ function JourneyReadiness({
         <div>
           <h2 className="font-semibold text-base">Jornada do Criador</h2>
           <p className="mt-1 text-muted-foreground text-sm">
-            Confira se todos os cursos obrigatórios estão posicionados e publicados antes do
-            lançamento. A <strong className="text-foreground">posição 1</strong> é o curso-base da
-            etapa: o aluno precisa concluí-lo e publicar no Mural para liberar as demais.
-            {canWrite ? ' Clique numa posição para cadastrar ou editar o curso dela.' : ''}
+            Cada trilha pede um curso publicado em cada posição. A{' '}
+            <strong className="text-foreground">posição 1</strong> é o curso de entrada da trilha: a
+            criança termina esse curso e publica no Mural dos Criadores para abrir os outros.
+            {canWrite ? ' Clique numa posição para criar ou editar o curso dela.' : ''}
           </p>
         </div>
         <div
@@ -508,7 +545,7 @@ function JourneyReadiness({
               : 'bg-amber-500/15 text-amber-700 dark:text-amber-300'
           }`}
         >
-          {loading ? 'Conferindo…' : `${readyCount} de ${requiredCount} prontos`}
+          {loading ? 'Conferindo…' : `${readyCount} de ${requiredCount} posições prontas`}
         </div>
       </div>
 
@@ -519,11 +556,11 @@ function JourneyReadiness({
               <span className="font-medium text-sm">{tier.label}</span>
               {tier.ready ? (
                 <span className="inline-flex items-center gap-1 text-success-foreground text-xs">
-                  <CheckCircle2 className="size-3.5" /> Pronto
+                  <CheckCircle2 className="size-3.5" /> Pronta
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
-                  <CircleDashed className="size-3.5" /> Incompleto
+                  <CircleDashed className="size-3.5" /> Falta completar
                 </span>
               )}
             </div>
@@ -540,18 +577,18 @@ function JourneyReadiness({
                     </span>
                     <span className="min-w-0 flex-1 truncate text-left text-foreground">
                       {course?.title ??
-                        (slot === 1 ? 'Curso-base ainda vazio' : 'Posição ainda vazia')}
+                        (slot === 1 ? 'Curso de entrada sem curso' : 'Posição sem curso')}
                     </span>
                     {course ? (
                       missingShowcase ? (
                         <span
                           className="inline-flex items-center gap-1 text-destructive"
-                          title="Nenhuma aula publicada tem bloco de Estúdio com vitrine (Publicar no Mural). Sem isso este curso não qualifica para a jornada."
+                          title="Nenhuma aula publicada tem um Estúdio que deixa publicar no Mural dos Criadores. Sem isso, o curso não conta para a Jornada."
                         >
-                          <TriangleAlert className="size-3.5" /> Sem vitrine
+                          <TriangleAlert className="size-3.5" /> Falta o Mural
                         </span>
                       ) : unknownShowcase ? (
-                        <span className="text-muted-foreground">Verificação pendente</span>
+                        <span className="text-muted-foreground">Ainda conferindo</span>
                       ) : (
                         <span
                           className={
@@ -564,7 +601,7 @@ function JourneyReadiness({
                         </span>
                       )
                     ) : (
-                      <span className="text-destructive">Falta curso</span>
+                      <span className="text-destructive">Posição sem curso</span>
                     )}
                   </>
                 )
@@ -576,7 +613,7 @@ function JourneyReadiness({
                     type="button"
                     onClick={() => onPickSlot(tier.level, tier.track, slot, course)}
                     className={`${className} text-left transition-colors hover:bg-muted`}
-                    title={course ? `Editar ${course.title}` : 'Cadastrar curso nesta posição'}
+                    title={course ? `Editar ${course.title}` : 'Criar um curso nesta posição'}
                   >
                     {inner}
                   </button>
@@ -610,7 +647,7 @@ function CloneCourseDialog({
   onCloned: () => Promise<void>
 }) {
   const targetAudience = course?.audience === 'kids' ? 'adult' : 'kids'
-  const targetLabel = targetAudience === 'kids' ? 'Kids' : 'Adulto'
+  const targetLabel = COMMUNITY_NAMES[targetAudience]
   const live = isLiveCourse(course)
   const [slug, setSlug] = useState('')
   const [title, setTitle] = useState('')
@@ -635,12 +672,12 @@ function CloneCourseDialog({
         slug: slugify(slug) || undefined,
         title: title.trim() || undefined,
       })
-      toast.success(`Curso clonado para a plataforma ${targetLabel} (rascunho).`)
+      toast.success(`Curso copiado para a ${targetLabel}. A cópia nasce como rascunho.`)
       onClose()
       await onCloned()
       window.location.assign(`/admin/membros/cursos/${view.id}`)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível clonar o curso.')
+      toast.error((err as ApiError).message ?? 'Não foi possível copiar o curso. Tente de novo.')
     } finally {
       setBusy(false)
     }
@@ -650,11 +687,11 @@ function CloneCourseDialog({
     <Dialog
       open={course !== null}
       onClose={onClose}
-      title={`Clonar para a plataforma ${targetLabel}`}
+      title={`Copiar para a ${targetLabel}`}
       description={
         live
-          ? 'O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone também é um curso ao vivo e nasce como rascunho, sem turmas. Edições depois do clone NÃO sincronizam entre os dois cursos.'
-          : 'O conteúdo inteiro (módulos, aulas, blocos e anexos) é copiado. O clone nasce como rascunho, fora da Jornada do Criador — e edições depois do clone NÃO sincronizam entre os dois cursos.'
+          ? 'O curso inteiro é copiado: módulos, aulas, partes e anexos. A cópia também é ao vivo e nasce como rascunho, sem turmas. Depois de copiar, o que muda num curso não muda no outro.'
+          : 'O curso inteiro é copiado: módulos, aulas, partes e anexos. A cópia nasce como rascunho, fora da Jornada do Criador. Depois de copiar, o que muda num curso não muda no outro.'
       }
       footer={
         <>
@@ -662,19 +699,19 @@ function CloneCourseDialog({
             Cancelar
           </Button>
           <Button onClick={() => void run()} disabled={busy || !slug.trim() || !title.trim()}>
-            <Copy className="size-4" /> {busy ? 'Clonando…' : 'Clonar curso'}
+            <Copy className="size-4" /> {busy ? 'Copiando…' : 'Copiar curso'}
           </Button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="Título do clone" htmlFor="clone-title">
+        <Field label="Título da cópia" htmlFor="clone-title">
           <Input id="clone-title" value={title} onChange={(e) => setTitle(e.target.value)} />
         </Field>
         <Field
-          label="Slug do clone"
+          label="Endereço da cópia"
           htmlFor="clone-slug"
-          hint="Precisa ser único — o sugerido ganha o sufixo da plataforma."
+          hint="Fica no endereço do curso e não pode repetir. A sugestão já vem com o nome da comunidade no fim."
         >
           <Input id="clone-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
         </Field>

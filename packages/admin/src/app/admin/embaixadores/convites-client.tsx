@@ -13,17 +13,33 @@ import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Pagination } from '@sistemazero/ui/pagination'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@sistemazero/ui/table'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { copyToClipboard } from '@/app/admin/notas-fiscais/copy-to-clipboard'
+import { AdminHeader } from '@/components/admin/admin-header'
 import { apiGet, apiSend } from '@/lib/api'
 import { campaignIsoDate, campaignLocalDate } from '@/lib/campaign-dates'
+import { cn } from '@/lib/cn'
 import { EmbaixadoresClient } from './embaixadores-client'
 
+const PAGE_SIZE = 25
+/**
+ * A situação da campanha com o mesmo nome no formulário e na lista: "Ativa" (o formulário dizia
+ * "Ativa (respeita as datas)" e a lista dizia "Aberta").
+ */
 const labels: Record<CampaignState, string> = {
   draft: 'Rascunho',
   scheduled: 'Agendada',
-  active: 'Aberta',
+  active: 'Ativa',
   paused: 'Pausada',
   ended: 'Encerrada',
 }
@@ -111,7 +127,7 @@ const message = (err: unknown) =>
     ? AUDIENCE_LOCKED_MESSAGE
     : err && typeof err === 'object' && 'message' in err
       ? String(err.message)
-      : 'Não foi possível concluir. Tente novamente.'
+      : 'Não deu certo. Tente de novo.'
 type Editing = {
   value: CampaignInput
   id?: string
@@ -131,26 +147,65 @@ const empty = (): CampaignInput => ({
   endsAt: new Date(Date.now() + 7 * 86_400_000).toISOString(),
 })
 
+const TABS = [
+  { value: 'campaigns', label: 'Campanhas de presente' },
+  { value: 'people', label: 'Embaixadores' },
+] as const
+
 export function ConvitesClient({ currentRole }: { currentRole: string }) {
   const [tab, setTab] = useState<'campaigns' | 'people'>('campaigns')
+  const id = useId()
   return (
     <div className="space-y-6">
-      <nav aria-label="Convites e campanhas" className="flex flex-wrap gap-2">
-        <Button
-          variant={tab === 'campaigns' ? 'default' : 'outline'}
-          onClick={() => setTab('campaigns')}
-        >
-          Campanhas
-        </Button>
-        <Button variant={tab === 'people' ? 'default' : 'outline'} onClick={() => setTab('people')}>
-          Embaixadores e bônus
-        </Button>
-      </nav>
-      {tab === 'campaigns' ? (
-        <Campaigns canWrite={['admin', 'superadmin'].includes(currentRole)} />
-      ) : (
-        <EmbaixadoresClient currentRole={currentRole} />
-      )}
+      <AdminHeader
+        title="Campanhas"
+        description="Os links de presente para anúncios e eventos, e quem indica o curso pelo programa de embaixadores."
+      />
+      {/* Abas com o mesmo desenho das abas de área (SectionTabs), mas trocando o painel aqui
+          mesmo: as duas listas moram na mesma rota. */}
+      <div
+        role="tablist"
+        aria-label="Campanhas e embaixadores"
+        className="flex flex-wrap items-center gap-1 border-b border-border"
+      >
+        {TABS.map((t) => {
+          const active = tab === t.value
+          return (
+            <button
+              key={t.value}
+              type="button"
+              role="tab"
+              id={`${id}-tab-${t.value}`}
+              aria-selected={active}
+              aria-controls={`${id}-panel`}
+              tabIndex={active ? 0 : -1}
+              onClick={() => setTab(t.value)}
+              onKeyDown={(event) => {
+                if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return
+                event.preventDefault()
+                const next = tab === 'campaigns' ? 'people' : 'campaigns'
+                setTab(next)
+                document.getElementById(`${id}-tab-${next}`)?.focus()
+              }}
+              className={cn(
+                '-mb-px border-b-[3px] px-3.5 py-2.5 text-[15px] font-bold transition-colors',
+                active
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {t.label}
+            </button>
+          )
+        })}
+      </div>
+      <div role="tabpanel" id={`${id}-panel`} aria-labelledby={`${id}-tab-${tab}`}>
+        {tab === 'campaigns' ? (
+          <Campaigns canWrite={['admin', 'superadmin'].includes(currentRole)} />
+        ) : (
+          <EmbaixadoresClient currentRole={currentRole} />
+        )}
+      </div>
     </div>
   )
 }
@@ -173,7 +228,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
     setError('')
     try {
       const result = await apiGet<{ items: CampaignView[]; total: number }>(
-        `/api/admin/referrals/campaigns?${new URLSearchParams({ q: search, limit: '25', offset: String(offset) })}`,
+        `/api/admin/referrals/campaigns?${new URLSearchParams({ q: search, limit: String(PAGE_SIZE), offset: String(offset) })}`,
       )
       if (sequence !== loadSequence.current) return
       setItems(result.items)
@@ -208,8 +263,8 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold">Campanhas de presente</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          <h2 className="font-display text-xl font-bold">Campanhas de presente</h2>
+          <p className="mt-1 max-w-2xl text-[15px] text-muted-foreground">
             Anúncios, palestras e outras ações do Sistema Zero. Cada campanha tem seu link, seu
             público e seu prazo para novos cadastros. Quem se cadastra recebe 7 dias de curso e de
             Mural, contados do cadastro.
@@ -243,59 +298,63 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
         <p role="alert" className="text-destructive">
           {error}{' '}
           <button type="button" className="underline" onClick={() => void load()}>
-            Tentar novamente
+            Tentar de novo
           </button>
         </p>
       )}
-      <Card className="overflow-x-auto p-0">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b">
-            <tr>
-              {[
-                'Campanha',
-                'Público',
-                'Estado',
-                'Inscrições até (Brasília)',
-                'Resgates',
-                'Conversões',
-                'Ações',
-              ].map((label) => (
-                <th key={label} className="p-4 font-semibold">
-                  {label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
+      <Card className="overflow-hidden rounded-2xl p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Campanha</TableHead>
+              <TableHead>Público</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead>Inscrições até (Brasília)</TableHead>
+              <TableHead className="text-right">Resgates</TableHead>
+              <TableHead className="text-right">Conversões</TableHead>
+              <TableHead className="text-right">Ações</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {loading ? (
-              <tr>
-                <td colSpan={7} className="p-6" role="status">
+              <TableRow>
+                <TableCell colSpan={7} className="py-6 text-muted-foreground" role="status">
                   Carregando campanhas…
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               items.map((item) => (
-                <tr key={item.id} className="border-b">
-                  <td className="p-4">
-                    <strong>{item.name}</strong>
-                    <p className="mt-1 text-xs text-muted-foreground">{item.code}</p>
-                  </td>
-                  <td className="p-4">
+                <TableRow key={item.id}>
+                  <TableCell>
+                    <div className="font-medium">{item.name}</div>
+                    <div className="text-xs text-muted-foreground">{item.code}</div>
+                  </TableCell>
+                  <TableCell>
                     <AudienceBadge audience={audienceOf(item)} />
-                  </td>
-                  <td className="p-4">{labels[item.state]}</td>
-                  <td className="p-4">{dateLabel(item.endsAt)}</td>
-                  <td className="p-4">{item.stats.redemptions}</td>
-                  <td className="p-4">{item.stats.conversions}</td>
-                  <td className="p-4">
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => void open(item.id)}>
+                  </TableCell>
+                  <TableCell>{labels[item.state]}</TableCell>
+                  <TableCell className="text-muted-foreground">{dateLabel(item.endsAt)}</TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {item.stats.redemptions}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {item.stats.conversions}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => void open(item.id)}
+                        aria-label={`Detalhes da campanha ${item.name}`}
+                      >
                         Detalhes
                       </Button>
                       {canWrite && (
                         <Button
                           variant="outline"
                           size="sm"
+                          aria-label={`Editar a campanha ${item.name}`}
                           onClick={() =>
                             setEditing({
                               value: item,
@@ -308,38 +367,22 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                         </Button>
                       )}
                     </div>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))
             )}
             {!loading && !error && items.length === 0 && (
-              <tr>
-                <td colSpan={7} className="p-6">
-                  Nenhuma campanha encontrada. Crie uma campanha para divulgar o presente com um
+              <TableRow>
+                <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
+                  Ainda não há campanhas com essa busca. Crie uma para divulgar o presente com um
                   link próprio.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </Card>
-      <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          disabled={offset === 0 || loading}
-          onClick={() => setOffset(Math.max(0, offset - 25))}
-        >
-          Anterior
-        </Button>
-        <p className="text-sm">{total} campanhas</p>
-        <Button
-          variant="outline"
-          disabled={offset + 25 >= total || loading}
-          onClick={() => setOffset(offset + 25)}
-        >
-          Próxima
-        </Button>
-      </div>
+      <Pagination total={total} limit={PAGE_SIZE} offset={offset} onChange={setOffset} />
       <p className="text-xs text-muted-foreground">
         Resgates são cadastros com os acessos concedidos. Conversões são as primeiras compras
         elegíveis da Comunidade após o presente, excluindo estornos. Campanhas não geram bônus Pix.
@@ -515,7 +558,7 @@ function Campaigns({ canWrite }: { canWrite: boolean }) {
                             {
                               completed: 'Concluído',
                               pending: 'Em andamento',
-                              failed: 'Falhou',
+                              failed: 'Não deu certo',
                             } as Record<string, string>
                           )[row.status] ?? row.status}
                           {row.lastError && (
@@ -633,7 +676,7 @@ function CampaignEditor({
         endsAt: campaignIsoDate(end),
       }
       if (body.endsAt <= body.startsAt)
-        throw new Error('O encerramento deve ser posterior ao início.')
+        throw new Error('O encerramento precisa vir depois do início.')
       const suffix = editing.id ? `/${editing.id}${editing.duplicate ? '/duplicate' : ''}` : ''
       const result = await apiSend<{ campaign: CampaignView }>(
         `/api/admin/referrals/campaigns${suffix}`,
@@ -700,10 +743,7 @@ function CampaignEditor({
               {AUDIENCE_HELP}
             </p>
             {adultCourse === 'unpublished' ? (
-              <p
-                role="status"
-                className="rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
-              >
+              <p role="status" className="rounded-md bg-warning-tint p-3 text-sm text-warning">
                 {ADULT_COURSE_UNPUBLISHED_MESSAGE}
               </p>
             ) : null}
@@ -762,7 +802,7 @@ function CampaignEditor({
               </select>
             </label>
             <label className="space-y-1 text-sm font-semibold">
-              <span>Estado</span>
+              <span>Situação</span>
               <select
                 className="w-full rounded-md border bg-background p-2"
                 value={value.status}
@@ -770,11 +810,16 @@ function CampaignEditor({
                   change('status', event.target.value as CampaignInput['status'])
                 }
               >
-                <option value="draft">Rascunho</option>
-                <option value="active">Ativa (respeita as datas)</option>
-                <option value="paused">Pausada</option>
-                <option value="ended">Encerrada</option>
+                <option value="draft">{labels.draft}</option>
+                <option value="active">{labels.active}</option>
+                <option value="paused">{labels.paused}</option>
+                <option value="ended">{labels.ended}</option>
               </select>
+              {value.status === 'active' ? (
+                <span className="block text-xs font-normal text-muted-foreground">
+                  Respeita as datas de início e de encerramento
+                </span>
+              ) : null}
             </label>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

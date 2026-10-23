@@ -7,6 +7,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { apiGet, apiSend } from '@/lib/api'
 import {
+  journeyDraftStorage,
+  type KeptKidsJourneyDraft,
+  keepKidsJourneyDraft,
+  takeKidsJourneyDraft,
+} from '@/lib/kids-journey-draft'
+import {
   KidsAdvanceSchema,
   type KidsHistory,
   KidsHistorySchema,
@@ -33,7 +39,7 @@ async function coursesForEditor(current: () => boolean): Promise<CourseView[]> {
     )
     if (!current()) return []
     if (!Array.isArray(page.items) || !Number.isSafeInteger(page.total) || page.total < 0)
-      throw new Error('Não foi possível conferir a lista de aventuras.')
+      throw new Error('Não foi possível conferir a lista de cursos.')
     courses.push(
       ...page.items.filter((course) => course.audience === 'kids' && course.modality !== 'live'),
     )
@@ -58,6 +64,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
   const [preview, setPreview] = useState<KidsPreview | null>(null)
   const [preparation, setPreparation] = useState<KidsPreparation | null>(null)
   const [reason, setReason] = useState('')
+  const [recoverableDraft, setRecoverableDraft] = useState<KeptKidsJourneyDraft | null>(null)
   const [history, setHistory] = useState<KidsHistory>([])
   const [moreHistory, setMoreHistory] = useState(false)
   const [historyError, setHistoryError] = useState<string | null>(null)
@@ -81,6 +88,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
       setPreview(null)
       setLoadError(null)
       setError(null)
+      setRecoverableDraft(null)
       let stopped = false
       const current = () => token === generation.current && !stopped
       try {
@@ -108,6 +116,18 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
             (options.keepDraft && previous ? previous : next.policy),
         )
         if (savedPreparation) setReason(savedPreparation.reason)
+        // Rascunho guardado na troca de lente: volta se a versão no ar ainda é a mesma. Se mudou,
+        // avisa em vez de sumir com ele calado (aplicar por cima desfaria a versão nova).
+        if (!savedPreparation && next.phase === 'published' && next.permissions.canEdit) {
+          const kept = takeKidsJourneyDraft(journeyDraftStorage(), next.version)
+          if (kept && kept.version === next.version) {
+            setDraft(kept.policy)
+            setReason(kept.reason)
+            setSuccess('O rascunho que estava aberto antes da troca de comunidade voltou.')
+          } else if (kept) {
+            setRecoverableDraft(kept)
+          }
+        }
         const conflict = Boolean(
           savedPreparation &&
             savedPreparation.status !== 'published' &&
@@ -212,6 +232,46 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
       compared.current === draftKey,
   )
 
+  // O estado de agora, para guardar o rascunho na troca de lente sem recriar a função.
+  const latest = useRef({ record, draft, reason, changed, preparation })
+  latest.current = { record, draft, reason, changed, preparation }
+  /**
+   * Antes de a lente Adultos levar a outra página: guarda o rascunho com mudanças (ou com motivo
+   * escrito) na aba. Devolve `false` só quando havia o que guardar e não deu.
+   */
+  const keepDraftForLensChange = useCallback((): boolean => {
+    const state = latest.current
+    if (state.record?.phase !== 'published' || !state.draft || state.preparation) return true
+    if (!state.changed && !state.reason.trim()) return true
+    return keepKidsJourneyDraft(journeyDraftStorage(), {
+      version: state.record.version,
+      policy: state.draft,
+      reason: state.reason,
+    })
+  }, [])
+
+  function resolveRecoverableDraft(recover: boolean) {
+    if (!canEdit || operation.current !== null || !recoverableDraft) return
+    const kept = takeKidsJourneyDraft(journeyDraftStorage(), recoverableDraft.version)
+    if (!kept || kept.version !== recoverableDraft.version) {
+      setError('O rascunho guardado mudou. Atualize a página antes de continuar.')
+      return
+    }
+    if (recover) {
+      setDraft(kept.policy)
+      setReason(kept.reason)
+      setPreview(null)
+      compared.current = null
+    }
+    setRecoverableDraft(null)
+    setError(null)
+    setSuccess(
+      recover
+        ? 'Rascunho recuperado. Revise e compare com a versão no ar antes de publicar.'
+        : 'Rascunho salvo descartado. A versão publicada não mudou.',
+    )
+  }
+
   async function run(
     name: string,
     work: (current: () => boolean) => Promise<void>,
@@ -302,7 +362,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     )
       return
     const id = preparation.id
-    await run('Verificando perfis', async (current) => {
+    await run('Conferindo os perfis', async (current) => {
       const result = KidsAdvanceSchema.parse(
         await apiSend(`${base}/preparations/${id}/advance`, 'POST'),
       )
@@ -382,6 +442,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     preview,
     preparation,
     reason,
+    recoverableDraft,
     history,
     moreHistory,
     loading,
@@ -410,6 +471,9 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     publish,
     earlierHistory,
     returnToDraft,
+    keepDraftForLensChange,
+    recoverDraft: () => resolveRecoverableDraft(true),
+    discardSavedDraft: () => resolveRecoverableDraft(false),
     refresh: () => load({ keepDraft: true, resume: preparation?.id ?? null }),
   }
 }

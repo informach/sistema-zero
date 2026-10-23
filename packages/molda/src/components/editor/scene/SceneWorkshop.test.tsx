@@ -35,6 +35,7 @@ import {
   setSceneSkinWeights,
 } from '../../../scene/skinCommands'
 import { createDocumentEditorStore } from '../../../state/editorStore'
+import { moldaPreferenceKey } from '../../../state/interfacePreferences'
 import { setMoldaGenerationStoreFactory } from '../../../state/persistence'
 import { createSceneEditorStore, type SceneEditorStore } from '../../../state/sceneEditorStore'
 import { createScenePersistence } from '../../../state/scenePersistence'
@@ -128,6 +129,7 @@ function setup(
     selected: readonly string[]
     isolated: readonly string[] | null
     faces: SceneComponentSelection | null
+    faceExtrusion: boolean[]
     documentUpdates: number
     supports: boolean
     weightTarget: { nodeId: string; jointId: string } | null
@@ -141,6 +143,7 @@ function setup(
       selected: [] as readonly string[],
       isolated: null as readonly string[] | null,
       faces: null as SceneComponentSelection | null,
+      faceExtrusion: [] as boolean[],
       documentUpdates: 0,
       supports: false,
       weightTarget: null as { nodeId: string; jointId: string } | null,
@@ -161,6 +164,7 @@ function setup(
       },
       setView: () => {},
       setTransformTool: () => {},
+      setFaceExtrusion: (active) => state.faceExtrusion.push(active),
       setAreaTool: () => {},
       setComponentSelection: (selection) => {
         state.faces = selection
@@ -217,6 +221,35 @@ function swatch(
 }
 
 describe('scene workshop integration', () => {
+  test('trocar a paleta no Pintar é um passo de desfazer', async () => {
+    const paletteKey = moldaPreferenceKey('scene.palettes')
+    localStorage.removeItem(paletteKey)
+    const { editor, view, ports } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      expect(screen.getByText('Paletas: Arcade', { selector: 'summary' })).toBeTruthy()
+      fireEvent.click(screen.getByRole('button', { name: SCENE_PAINT_COPY.tab }))
+      fireEvent.click(screen.getByText('Paletas: Arcade', { selector: 'summary' }))
+      const selector = await screen.findByRole('combobox', { name: 'Escolher paleta' })
+      const before = editor.getState().asset
+      fireEvent.change(selector, { target: { value: 'pastel' } })
+      await waitFor(() => expect(editor.getState().asset.paletteId).toBe('pastel'))
+      expect(editor.getState().canUndo).toBe(true)
+      act(() => editor.getState().undo())
+      expect(editor.getState().asset.paletteId).toBe(before.paletteId)
+      fireEvent.click(screen.getByRole('button', { name: '+ Criar paleta' }))
+      fireEvent.change(screen.getByRole('textbox', { name: 'Nome da paleta' }), {
+        target: { value: 'Minha cena' },
+      })
+      fireEvent.click(screen.getByRole('button', { name: 'Criar paleta' }))
+      await waitFor(() => expect(editor.getState().asset.paletteId).toBe('custom'))
+      expect(editor.getState().asset.customPalette?.name).toBe('Minha cena')
+    } finally {
+      view.unmount()
+      localStorage.removeItem(paletteKey)
+    }
+  })
+
   test('salvar na oficina reenvia a criação ao Estúdio; abrir não reenvia nada', async () => {
     const db = await nativeDatabase()
     setMoldaGenerationStoreFactory(() => db.store)
@@ -1887,6 +1920,8 @@ describe('scene workshop integration', () => {
       const ajustado = editor.getState().content.animations!.at(-1)!
       expect(ajustado.space).toBe('local')
       expect(ajustado.tracks[0]!.keys[1]!.value[1]).toBe(1 + -6.4)
+      const bounceKeys = ajustado.tracks[0]!.keys
+      expect(bounceKeys[1]!.value[1] - bounceKeys[0]!.value[1]).toBe(-6.4)
       fireEvent.change(presets.getByLabelText(copy.animationPresetKind), {
         target: { value: 'sway' },
       })
@@ -2454,6 +2489,9 @@ describe('scene workshop integration', () => {
       record.focus()
       fireEvent.click(record)
       expect(document.activeElement).toBe(record)
+      expect(screen.getByRole('region', { name: 'Pose escolhida' }).textContent).toContain(
+        'Pose em 1,12 s',
+      )
       expect(screen.queryByRole('alert')?.textContent ?? null).toBeNull()
       expect(editor.getState().asset.animations?.[0]?.tracks[0]?.keys).toEqual([
         { time: 0, value: [0, 1, 0], interpolation: 'smooth' },
@@ -2559,6 +2597,11 @@ describe('scene workshop integration', () => {
       fireEvent.change(screen.getByLabelText(COPY.scene.animationFps), { target: { value: '60' } })
       fireEvent.submit(duration.closest('form')!)
       expect(editor.getState().asset).toBe(before)
+      expect(
+        within(screen.getByRole('region', { name: 'Prévia dos ajustes do movimento' })).getByRole(
+          'status',
+        ).textContent,
+      ).toContain('Confira os ajustes do movimento')
       fireEvent.click(
         within(screen.getByRole('region', { name: 'Prévia dos ajustes do movimento' })).getByRole(
           'button',
@@ -4916,6 +4959,42 @@ describe('scene workshop integration', () => {
       editor.getState().dispose()
     }
   })
+  test('uma face escolhida define o eixo do pivô com desfazer e retorno aos eixos da peça', async () => {
+    const { editor, ports, view, openInspector } = setup()
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.select('corpo') }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.convertMesh }))
+      fireEvent.click(screen.getByRole('button', { name: COPY.scene.editFaces }))
+      const align = screen.getByRole('button', { name: 'Usar ângulo no pivô' })
+      expect(align.hasAttribute('disabled')).toBe(true)
+      act(() => ports.at(-1)!.callbacks.selectComponent?.('py', false))
+      expect(align.hasAttribute('disabled')).toBe(false)
+      const source = editor.getState().asset
+      fireEvent.click(align)
+      expect(editor.getState().asset.nodes[0]!.pivotAxis).toEqual([0, 1, 0])
+      expect(editor.getState().asset.geometries).toBe(source.geometries)
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.nodes[0]!.pivotAxis).toBeUndefined()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+      const finish = screen.queryByRole('button', { name: COPY.scene.finishFaces })
+      if (finish) fireEvent.click(finish)
+      fireEvent.click(screen.getByRole('button', { name: 'Pivô' }))
+      fireEvent.click(screen.getByText('Ajuste fino', { selector: 'summary' }))
+      expect(
+        (screen.getByLabelText('Mover para cima e para baixo') as HTMLInputElement).checked,
+      ).toBe(true)
+      expect(
+        screen.getByText('Eixo alinhado à face. Os próximos giros e poses usam essa direção.'),
+      ).toBeTruthy()
+      fireEvent.click(screen.getByRole('button', { name: 'Voltar aos eixos da peça' }))
+      expect(editor.getState().asset.nodes[0]!.pivotAxis).toBeUndefined()
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
   test('surface previews support confirm/undo and cancel on Escape, blur, context loss and returning to pieces', async () => {
     const { editor, ports, view, openInspector } = setup()
     try {
@@ -4935,6 +5014,7 @@ describe('scene workshop integration', () => {
         expect(editor.getState().asset.geometries).not.toEqual(source.geometries)
       }
       start('1')
+      expect(ports.at(-1)!.faceExtrusion.at(-1)).toBe(true)
       const first = editor.getState().asset
       fireEvent.change(screen.getByRole('spinbutton', { name: COPY.scene.extrudeAmount }), {
         target: { value: '2' },
@@ -4943,6 +5023,7 @@ describe('scene workshop integration', () => {
       fireEvent.keyDown(screen.getByRole('spinbutton', { name: COPY.scene.extrudeAmount }), {
         key: 'Escape',
       })
+      expect(ports.at(-1)!.faceExtrusion.at(-1)).toBe(false)
       expect(editor.getState().asset.geometries).toEqual(source.geometries)
       expect(document.activeElement).toBe(
         screen.getByRole('button', { name: COPY.scene.facePreview.extrude }),

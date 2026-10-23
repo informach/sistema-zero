@@ -153,7 +153,7 @@ describe('anotações da professora por parte', () => {
     // O bloco de vídeo antigo é sinalizado na aula ao vivo.
     expect(view.container.textContent).toContain('Bloco de vídeo antigo')
     await act(async () => button(view.container, 'Orientações e projeto').click())
-    expect(view.container.textContent).toContain('Anotações da professora')
+    expect(view.container.textContent).toContain('Anotações desta parte (só quem conduz vê)')
     expect(view.container.textContent).toContain('As crianças nunca veem.')
     await act(async () => typeInto(field()!, 'Desenhar a seta no sprite'))
     expect(data.sections[0]?.teacherNotes).toBe('Desenhar a seta no sprite')

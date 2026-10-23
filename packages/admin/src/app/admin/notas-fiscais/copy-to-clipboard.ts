@@ -6,8 +6,8 @@ import { toast } from 'sonner'
 export async function copyToClipboard(value: string, label: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(value)
-    toast.success(`${label} copiado.`)
+    toast.success(`Copiado: ${label}.`)
   } catch {
-    toast.error('Não foi possível copiar.')
+    toast.error('Não deu para copiar. Selecione o texto e copie à mão.')
   }
 }

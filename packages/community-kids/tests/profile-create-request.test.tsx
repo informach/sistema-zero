@@ -23,6 +23,9 @@ function setup() {
   fireEvent.change(screen.getByLabelText('Nome do perfil'), {
     target: { value: 'Criança de teste' },
   })
+  fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
+    target: { value: '2018-05-10' },
+  })
   const form = container.querySelector('form')!
   return { calls, destinations, save: () => fireEvent.submit(form) }
 }
@@ -38,6 +41,7 @@ describe('criação preserva identidade após resultado inconclusivo', () => {
       expect(screen.getByRole('button', { name: 'Salvar' }).hasAttribute('disabled')).toBe(false),
     )
     expect(calls).toHaveLength(1)
+    expect(calls[0]?.body.birthDate).toBe('2018-05-10')
     expect(calls[0]?.body.requestId).toMatch(
       /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/,
     )

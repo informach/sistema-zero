@@ -1,8 +1,9 @@
 import type { Vec3 } from '../core/model'
-import type { SceneAnimationKey, SceneAnimationTrack } from './animation'
+import type { SceneAnimationClip, SceneAnimationKey, SceneAnimationTrack } from './animation'
 import { replaceSceneAnimation, sceneAnimationContext } from './animationCommandContext'
 import type { SceneAnimationKeyInput, SceneAnimationKeyRef } from './animationCommands'
 import { setSceneAnimationKeys } from './animationKeyBatch'
+import { fullLoopRotationKeys, nearLoopRotationEnd, type SceneRotationTrack } from './animationLoop'
 import { captureSceneAnimationLocalPoses } from './animationPose'
 import type { MoldaSceneDocument } from './document'
 import { SCENE_LIMITS } from './limits'
@@ -67,6 +68,54 @@ export function setScenePoseArrival(
   return replaceSceneAnimation(document, {
     ...clip,
     tracks: clip.tracks.map((entry) => (entry === track ? outgoing(track, entries) : entry)),
+  })
+}
+
+function isRotationTrack(track: SceneAnimationTrack): track is SceneRotationTrack {
+  return track.channel === 'rotation'
+}
+
+export function sceneRotationPaceNeedsChange(clip: SceneAnimationClip, track: SceneAnimationTrack) {
+  return (
+    isRotationTrack(track) &&
+    (track.keys.some((key) => key.interpolation !== 'linear') ||
+      nearLoopRotationEnd(clip, track) !== null ||
+      fullLoopRotationKeys(clip, track) !== null)
+  )
+}
+
+/** A turn should keep the same pace between its marked poses and close a tiny loop overshoot. */
+export function setSceneRotationPace(document: MoldaSceneDocument, clipId: string, nodeId: string) {
+  const { clip, editable, index } = sceneAnimationContext(document, clipId)
+  const track = clip.tracks.find((entry) => entry.nodeId === nodeId && isRotationTrack(entry))
+  requireScene(
+    track && isRotationTrack(track),
+    'pose',
+    'Essa peça não tem poses de giro neste movimento.',
+  )
+  if (!sceneRotationPaceNeedsChange(clip, track)) return document
+  const completed = fullLoopRotationKeys(clip, track)
+  requireScene(
+    !completed || index.animationKeyCount + 3 <= SCENE_LIMITS.animationKeys,
+    'poses',
+    'Não há espaço para as poses que completam essa volta.',
+  )
+  editable([nodeId])
+  return replaceSceneAnimation(document, {
+    ...clip,
+    tracks: clip.tracks.map((entry) => {
+      if (entry.nodeId !== nodeId || !isRotationTrack(entry)) return entry
+      if (completed) return { ...entry, keys: completed }
+      const closed = nearLoopRotationEnd(clip, entry)
+      return {
+        ...entry,
+        keys: entry.keys.map((key, index) => ({
+          ...key,
+          interpolation: 'linear' as const,
+          ...(index === entry.keys.length - 1 && closed ? { value: closed } : {}),
+        })),
+      }
+    }),
   })
 }
 

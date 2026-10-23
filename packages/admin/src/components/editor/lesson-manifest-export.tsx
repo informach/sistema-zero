@@ -51,14 +51,14 @@ export function LessonManifestExport({
       className="rounded-2xl border border-border bg-card p-5"
       onToggle={(e) => setAberto(e.currentTarget.open)}
     >
-      <summary className="cursor-pointer font-semibold">Exportar roteiro com seções</summary>
+      <summary className="cursor-pointer font-semibold">Exportar roteiro com partes</summary>
       <div className="mt-4 space-y-4">
         <p className="text-sm text-muted-foreground">
           Origem:{' '}
           <strong>
             {courseSlug} / {document.slug}
           </strong>
-          . O arquivo leva a organização das seções e os blocos configurados aqui. No destino, abra
+          . O arquivo leva a organização das partes e os blocos configurados aqui. No destino, abra
           a aula, use <strong>Vincular ao destino aberto</strong> e confira a importação.
         </p>
         {resultado === null ? null : 'erro' in resultado ? (
@@ -70,7 +70,7 @@ export function LessonManifestExport({
             <p className="text-sm">
               {contagem(resultado.ok.levados, 'bloco viaja', 'blocos viajam')} com o conteúdo ·{' '}
               {contagem(resultado.ok.videos, 'vídeo viaja', 'vídeos viajam')} só como orientação ·{' '}
-              {contagem(resultado.ok.manifest.sections.length, 'seção', 'seções')}
+              {contagem(resultado.ok.manifest.sections.length, 'parte', 'partes')}
             </p>
             {resultado.ok.avisos.map((aviso) => (
               <p key={aviso} className="text-sm text-muted-foreground">

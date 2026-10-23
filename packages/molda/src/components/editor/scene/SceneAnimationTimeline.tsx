@@ -1,8 +1,6 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
-import { useStore } from 'zustand'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import { COPY } from '../../../core/copy'
 import { editSceneAnimationPoses } from '../../../scene/animationArrival'
-import { configureSceneAnimation } from '../../../scene/animationCommands'
 import { sceneAnimationKeySelection } from '../../../scene/animationKeySelection'
 import { evaluateSceneNodeFlags } from '../../../scene/evaluate'
 import { useMoldaToolAccess } from '../../toolAccess'
@@ -17,8 +15,6 @@ import {
 } from '../../ui/icons'
 import { SceneAnimationCurves } from './SceneAnimationCurves'
 import { SceneAnimationKeyStrip } from './SceneAnimationKeyStrip'
-import { SceneAnimationKeyTools } from './SceneAnimationKeyTools'
-import { SceneAnimationPoseControls } from './SceneAnimationPoseControls'
 import { SceneAnimationRuler } from './SceneAnimationRuler'
 import type { useSceneWorkshop } from './useSceneWorkshop'
 import { useTimelineHeight } from './useTimelineHeight'
@@ -29,25 +25,33 @@ export function SceneAnimationTimeline({
   workshop: ReturnType<typeof useSceneWorkshop>
 }) {
   const { animation: player, selected, document, selectedPose } = workshop
-  const revision = useStore(workshop.editor, (state) => state.contentRevision)
   const snapshot = useSyncExternalStore(player.subscribe, player.getSnapshot, player.getSnapshot)
-  const editing = useSyncExternalStore(
-    workshop.animationEdit.subscribe,
-    workshop.animationEdit.getSnapshot,
-    workshop.animationEdit.getSnapshot,
-  )
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
+  const tracksViewport = useRef<HTMLDivElement>(null)
   const layout = useTimelineHeight(),
     clip = snapshot.source?.clip,
     copy = COPY.scene,
     { can } = useMoldaToolAccess()
-  const authoringClip = document.animations?.find((entry) => entry.id === clip?.id)
   const curves = workshop.area === 'curves' && can('animate.pro')
   const height = curves ? Math.max(layout.height, Math.min(layout.maximum, 440)) : layout.height
-  const selection = useMemo(
-    () => (authoringClip ? sceneAnimationKeySelection(authoringClip, selected) : null),
-    [authoringClip, selected],
-  )
+  const tracksVisible = !!clip && !curves && !layout.collapsed
+  useLayoutEffect(() => {
+    if (!tracksVisible) return
+    const viewport = tracksViewport.current
+    const timeline = viewport?.closest<HTMLElement>('.mld-timeline')
+    if (!viewport || !timeline) return
+    const alignRuler = () => {
+      // Canvas tracks use the viewport's content width, excluding its scrollbar gutter.
+      timeline.style.setProperty(
+        '--mld-timeline-scrollbar-width',
+        `${viewport.offsetWidth - viewport.clientWidth}px`,
+      )
+    }
+    alignRuler()
+    const observer = new ResizeObserver(alignRuler)
+    observer.observe(viewport)
+    return () => observer.disconnect()
+  }, [tracksVisible])
   const rows = useMemo(() => {
     if (!clip) return []
     const flags = evaluateSceneNodeFlags(workshop.index.scene)
@@ -167,27 +171,6 @@ export function SceneAnimationTimeline({
             >
               <SkipForward aria-hidden="true" />
             </button>
-            <label className="flex shrink-0 items-center gap-1 text-xs">
-              <input
-                type="checkbox"
-                name="animationLoop"
-                checked={clip.loop}
-                disabled={!editable}
-                onChange={(event) => {
-                  const loop = event.target.checked
-                  workshop.requestTransition(() =>
-                    workshop.run((source) =>
-                      configureSceneAnimation(source, clip.id, {
-                        duration: clip.duration,
-                        fps: clip.fps,
-                        loop,
-                      }),
-                    ),
-                  )
-                }}
-              />
-              Repetir
-            </label>
             <label className="flex shrink-0 items-center gap-1 px-1 text-xs tabular-nums">
               <span className="sr-only">{copy.animationTime}</span>
               <span className="mld-time-readout">
@@ -220,20 +203,6 @@ export function SceneAnimationTimeline({
                 de {clip.duration.toLocaleString('pt-BR')} s
               </span>
             </label>
-            <div className="ml-auto flex shrink-0 items-center gap-1">
-              <SceneAnimationPoseControls
-                compact
-                gesture={workshop.animationPose}
-                enabled={editable}
-                canMark={
-                  selected.length === 1 && ['move', 'rotate', 'scale'].includes(workshop.tool)
-                }
-                onRecord={workshop.recordAnimationPose}
-                onAutoKey={(enabled) =>
-                  workshop.requestTransition(() => workshop.animationPose.setAutoKey(enabled))
-                }
-              />
-            </div>
           </div>
           {curves ? (
             <SceneAnimationCurves key={`${clip.id}:${workshop.primary?.id}`} workshop={workshop} />
@@ -241,41 +210,6 @@ export function SceneAnimationTimeline({
             !layout.collapsed && (
               <>
                 <div className="contents">
-                  <label className="mld-duration-label">
-                    <span>Duração</span>
-                    <select
-                      aria-label="Duração do movimento"
-                      name="animationDuration"
-                      value={clip.duration}
-                      disabled={!editable}
-                      className="mld-duration-select"
-                      onChange={(event) => {
-                        const duration = Number(event.target.value)
-                        workshop.requestTransition(() =>
-                          workshop.run((source) =>
-                            configureSceneAnimation(source, clip.id, {
-                              duration,
-                              fps: clip.fps,
-                              loop: clip.loop,
-                            }),
-                          ),
-                        )
-                      }}
-                    >
-                      {[...new Set([1, 1.5, 2, 3, 5, clip.duration])]
-                        .sort((a, b) => a - b)
-                        .map((duration) => (
-                          <option
-                            key={duration}
-                            value={duration}
-                            disabled={duration < (times.at(-1) ?? 0)}
-                          >
-                            {duration.toLocaleString('pt-BR')} s
-                            {duration < (times.at(-1) ?? 0) ? ' · há poses depois' : ''}
-                          </option>
-                        ))}
-                    </select>
-                  </label>
                   <SceneAnimationRuler
                     duration={clip.duration}
                     time={snapshot.time}
@@ -283,7 +217,7 @@ export function SceneAnimationTimeline({
                     onSeek={seek}
                   />
                 </div>
-                <div className="mld-scroll-y min-h-0 flex-1 overflow-y-auto">
+                <div ref={tracksViewport} className="mld-scroll-y min-h-0 flex-1 overflow-y-auto">
                   {visibleRows.map((row) => (
                     <div key={row.id}>
                       <SceneAnimationKeyStrip
@@ -388,13 +322,6 @@ export function SceneAnimationTimeline({
                         ))}
                     </div>
                   ))}
-                  {can('animate.batch') && (editable || editing.pending) && selection && (
-                    <SceneAnimationKeyTools
-                      key={JSON.stringify([revision, clip.id, selected])}
-                      workshop={workshop}
-                      selection={selection}
-                    />
-                  )}
                   {(snapshot.error || layout.unavailable) && (
                     <p role="status" className="px-3 text-xs text-mld-muted">
                       {snapshot.error ??

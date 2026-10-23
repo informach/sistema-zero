@@ -83,10 +83,10 @@ export function TeacherPicker({
   const full = value.length >= MAX_TEACHERS
   return (
     <fieldset className="space-y-2" aria-describedby={hintId} disabled={disabled}>
-      <legend className="text-sm font-medium">Professoras da turma</legend>
+      <legend className="text-sm font-medium">Quem conduz a turma</legend>
       <p id={hintId} className="text-xs text-muted-foreground">
-        Escolha de 1 a {MAX_TEACHERS}. Só elas abrem a sala, conduzem os encontros e revisam a
-        gravação.
+        Escolha de 1 a {MAX_TEACHERS} pessoas da equipe. Só elas abrem a sala, conduzem os encontros
+        e revisam a gravação.
       </p>
       {staff.users.length > 8 ? (
         <div className="flex flex-col gap-1.5">
@@ -121,7 +121,7 @@ export function TeacherPicker({
                 checked
                 onChange={(event) => onChange(toggleTeacher(value, id, event.target.checked))}
               />
-              {id === currentUserId ? 'Você' : 'Professora fora da lista da equipe ativa'}
+              {id === currentUserId ? 'Você' : 'Alguém que não está mais na equipe ativa'}
             </label>
           </li>
         ))}
@@ -155,8 +155,8 @@ export function TeacherPicker({
         ) : null}
       </ul>
       <p className="text-xs text-muted-foreground" aria-live="polite">
-        {value.length} de {MAX_TEACHERS} escolhidas.
-        {full ? ' Para trocar, desmarque uma professora antes.' : ''}
+        {value.length} de {MAX_TEACHERS} pessoas escolhidas.
+        {full ? ' Para trocar, desmarque alguém antes.' : ''}
       </p>
     </fieldset>
   )

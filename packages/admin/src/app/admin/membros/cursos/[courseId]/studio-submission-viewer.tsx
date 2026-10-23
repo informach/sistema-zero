@@ -36,11 +36,11 @@ import { preparePintaDownload } from '@/lib/pinta-download'
 import type { StudioSubmissionDetailView, StudioSubmissionPreviousView } from '@/lib/types'
 import { TeacherThreadPanel } from './teacher-thread-panel'
 
-/** Baixa o desenho como `.pinta.json` — o mesmo envelope que a galeria do Pinta restaura. */
+/** Baixa o desenho como `.pinta.json`, o mesmo envelope que a galeria do Pinta restaura. */
 function downloadPintaJson(asset: unknown): void {
   const download = preparePintaDownload(asset)
   if (!download) {
-    toast.error('Esta entrega não contém um desenho Pinta válido para baixar.')
+    toast.error('Este envio não tem um desenho do Pinta que dê para baixar.')
     return
   }
   const blob = new Blob([download.content], { type: 'application/json' })
@@ -83,8 +83,8 @@ interface Props {
   lessonId: string
   lessonTitle: string
   /**
-   * "Próxima pendente" (fila global): troca a entrega SEM fechar o dialog — o
-   * professor corrige a fila em sequência. Opcional (a aba por-curso não passa).
+   * "Próximo esperando" (fila global): troca o projeto SEM fechar o dialog, e a
+   * equipe confere a fila em sequência. Opcional (a aba por curso não passa).
    */
   onNext?: () => void
   nextLabel?: string
@@ -146,7 +146,7 @@ export function StudioSubmissionViewer({
         setReviewed(res.reviewed)
       })
       .catch((err) => {
-        if (active) toast.error((err as ApiError).message ?? 'Falha ao abrir a entrega.')
+        if (active) toast.error((err as ApiError).message ?? 'Não conseguimos abrir o projeto.')
       })
       .finally(() => {
         if (active) setLoading(false)
@@ -176,11 +176,11 @@ export function StudioSubmissionViewer({
         reviewed: next,
       })
       setReviewed(next)
-      toast.success(next ? 'Entrega marcada como conferida.' : 'Marcação removida.')
+      toast.success(next ? 'Marcado como visto.' : 'O visto foi tirado.')
       // Sem isto o número de pendentes da barra lateral mente por até 60s.
       refreshProfessorCounts()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível marcar a entrega.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos salvar o visto. Tente de novo.')
     } finally {
       setReviewing(false)
     }
@@ -196,7 +196,7 @@ export function StudioSubmissionViewer({
       else if (isPintaAssetLike(prev.project)) downloadPintaJson(prev.project)
       else downloadProjectJson(prev.project)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não foi possível baixar a versão anterior.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos abrir a versão anterior.')
     }
   }
 
@@ -211,9 +211,9 @@ export function StudioSubmissionViewer({
       title: 'Restaurar a versão anterior?',
       message: (
         <>
-          A entrega atual troca de lugar com a versão anterior (dá para desfazer restaurando de
-          novo). A correção automática desta entrega será zerada; a aprovação da criança e o carimbo
-          de conferida ficam como estão.
+          O envio atual de {studentName} troca de lugar com a versão anterior. Para desfazer, é só
+          restaurar de novo. A correção automática deste envio volta a zero; a aprovação e o visto
+          da equipe ficam como estão.
         </>
       ),
       confirmText: 'Restaurar',
@@ -229,7 +229,7 @@ export function StudioSubmissionViewer({
           refreshProfessorCounts()
           load()
         } catch (err) {
-          toast.error((err as ApiError).message ?? 'Não foi possível restaurar.')
+          toast.error((err as ApiError).message ?? 'Não conseguimos restaurar a versão anterior.')
         } finally {
           setRestoring(false)
         }
@@ -241,7 +241,7 @@ export function StudioSubmissionViewer({
     <Dialog
       open={open}
       onClose={onClose}
-      title={`Entrega de ${studentName}`}
+      title={`Projeto de ${studentName}`}
       // Maximizado: quase tela cheia (mais espaço p/ o Estúdio); normal: modal largo.
       className={maximized ? 'h-[96dvh] max-h-[96dvh] w-[98vw] max-w-none' : 'max-w-7xl'}
     >
@@ -252,11 +252,11 @@ export function StudioSubmissionViewer({
       ) : (
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               <p>Enviado em {new Date(detail.submittedAt).toLocaleString('pt-BR')}</p>
               {responsible ? <p>Responsável: {responsible}</p> : null}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {/* Conferir + próxima é o laço da correção em sequência. */}
               <Button
                 variant={reviewed ? 'outline' : 'default'}
@@ -265,11 +265,11 @@ export function StudioSubmissionViewer({
                 disabled={reviewing}
               >
                 {reviewing ? <Spinner className="size-4" /> : <CheckCheck className="size-4" />}
-                {reviewed ? 'Desmarcar' : 'Marcar como conferida'}
+                {reviewed ? 'Tirar o visto' : 'Marcar como visto'}
               </Button>
               {onNext ? (
                 <Button size="sm" onClick={onNext}>
-                  {nextLabel ?? 'Próxima pendente'} <ArrowRight className="size-4" />
+                  {nextLabel ?? 'Próximo esperando'} <ArrowRight className="size-4" />
                 </Button>
               ) : null}
               <Button variant="outline" size="sm" onClick={() => setMaximized((v) => !v)}>
@@ -282,7 +282,7 @@ export function StudioSubmissionViewer({
                   size="sm"
                   onClick={() => downloadPintaJson(detail.project)}
                 >
-                  <Download className="size-4" /> Baixar .pinta.json
+                  <Download className="size-4" /> Baixar o arquivo do desenho
                 </Button>
               ) : (
                 <Button
@@ -290,7 +290,7 @@ export function StudioSubmissionViewer({
                   size="sm"
                   onClick={() => downloadProjectJson(detail.project)}
                 >
-                  <Download className="size-4" /> Baixar .szproject.json
+                  <Download className="size-4" /> Baixar o arquivo do projeto
                 </Button>
               )}
             </div>
@@ -333,18 +333,18 @@ export function StudioSubmissionViewer({
               previous
             />
           )}
-          {/* Recado opcional que o aluno escreveu ao enviar o projeto. */}
+          {/* Recado opcional que quem enviou escreveu junto com o projeto. */}
           {detail.message ? (
             <Card className="space-y-1 p-3">
               <div className="flex items-center gap-1.5 font-medium text-sm">
-                <MessageSquare className="size-4" /> Recado do aluno
+                <MessageSquare className="size-4" /> Recado de {studentName}
                 {detail.messageSpoken ? <SpokenChip /> : null}
               </div>
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">{detail.message}</p>
             </Card>
           ) : null}
 
-          {/* Canal de RETORNO: responder ao aluno (erro/correção/"resolvido"). */}
+          {/* Canal de RETORNO: os recados com quem enviou (erro, correção, "resolvido"). */}
           <TeacherThreadPanel
             userId={userId}
             blockId={blockId}
@@ -356,7 +356,7 @@ export function StudioSubmissionViewer({
           />
 
           {/* key por aluno+bloco+VERSÃO: remonta o editor (re-semeia) ao trocar de entrega —
-              inclusive via "Próxima pendente" (mesmo aluno, bloco diferente) e após o
+              inclusive via "Próximo esperando" (mesmo aluno, bloco diferente) e após o
               swap atual↔anterior (mesmo aluno/bloco, `submittedAt` diferente). Sem a versão,
               o embed preserva o seed do primeiro mount e continuaria mostrando o projeto velho.
               ⚠️ O professor PODE mexer no desenho/projeto aberto aqui, e isso é inócuo de

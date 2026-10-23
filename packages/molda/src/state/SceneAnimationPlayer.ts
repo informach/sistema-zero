@@ -32,6 +32,7 @@ export class SceneAnimationPlayer {
     error: null,
   }
   private sampler: ReturnType<typeof prepareSceneAnimation> | null = null
+  private poseLoop = false
   private readonly listeners = new Set<() => void>()
   private pending: number | null = null
   private generation = 0
@@ -87,7 +88,10 @@ export class SceneAnimationPlayer {
     try {
       const time = sceneAnimationTime({ duration: source.clip.duration, loop }, seconds)
       pose =
-        this.snapshot.pose?.time === time ? this.snapshot.pose : this.sampler.sample(time, false)
+        this.snapshot.pose?.time === time && this.poseLoop === loop
+          ? this.snapshot.pose
+          : this.sampler.sample(seconds, loop)
+      this.poseLoop = loop
     } catch (error) {
       this.reportError(error)
       return
@@ -175,6 +179,7 @@ export class SceneAnimationPlayer {
     const pose = sampler?.sample(time, false) ?? null
     this.cancel()
     this.sampler = sampler
+    this.poseLoop = false
     this.startTime = time
     this.previewReturn = preview ?? null
     this.publish({

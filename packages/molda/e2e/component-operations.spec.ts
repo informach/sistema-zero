@@ -113,7 +113,7 @@ test('the stage opens edge picking directly and selects a knife loop through tri
   await page.screenshot({ path: '.cache/loop-faca-isometrico.png' })
   const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await settings.click()
-  await page.getByRole('checkbox', { name: 'Permitir números quebrados' }).check()
+  await page.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
   await settings.click()
   await page
     .getByRole('button', { name: 'Mover', exact: true })
@@ -127,7 +127,7 @@ test('the stage opens edge picking directly and selects a knife loop through tri
     const oldPoint = transformPoint(world, before)
     const nextPoint = transformPoint(world, shape(changed).vertices[id]!)
     expect(nextPoint[0]).toBeCloseTo(oldPoint[0], 10)
-    expect(nextPoint[1]).toBeCloseTo(oldPoint[1] + (selected.has(id) ? 0.1 : 0), 10)
+    expect(nextPoint[1]).toBeCloseTo(oldPoint[1] + (selected.has(id) ? 0.01 : 0), 10)
     expect(nextPoint[2]).toBeCloseTo(oldPoint[2], 10)
   }
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
@@ -243,7 +243,7 @@ test('the panel selects the whole loop from an existing segment and subsequent s
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await settings.click()
-  await page.getByRole('checkbox', { name: 'Permitir números quebrados' }).check()
+  await page.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
   await settings.click()
   await page.getByRole('button', { name: 'Mover no eixo Y', exact: true }).press('ArrowUp')
   const changed = await snapshot(page)
@@ -251,7 +251,7 @@ test('the panel selects the whole loop from an existing segment and subsequent s
   for (const [id, point] of Object.entries(mesh.vertices)) {
     const after = shape(changed).vertices[id]!
     expect(after[0]).toBeCloseTo(point[0], 12)
-    expect(after[1]).toBeCloseTo(point[1] + (selected.has(id) ? 0.1 : 0), 12)
+    expect(after[1]).toBeCloseTo(point[1] + (selected.has(id) ? 0.01 : 0), 12)
     expect(after[2]).toBeCloseTo(point[2], 12)
   }
   expect(changed.nodes).toEqual(sceneToJson(source).nodes)
@@ -334,7 +334,7 @@ test('Move handles extrude a face on a large mesh through the surface worker', a
   const panel = page.locator('.mld-component-root')
   await expect(panel.getByText('1 face escolhida', { exact: true })).toBeVisible()
   await panel.getByRole('button', { name: COPY.scene.facePreview.extrude, exact: true }).click()
-  await page.getByRole('button', { name: 'Mover no eixo Z', exact: true }).press('ArrowUp')
+  await page.getByRole('button', { name: 'Mover no eixo Y', exact: true }).press('ArrowUp')
   await expect(
     panel.getByRole('spinbutton', { name: COPY.scene.extrudeAmount, exact: true }),
   ).toHaveValue('1')
@@ -475,13 +475,13 @@ for (const mode of ['edge', 'vertex'] as const) {
     if (mode === 'vertex') {
       const settings = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
       await settings.click()
-      await page.getByRole('checkbox', { name: 'Permitir números quebrados' }).check()
+      await page.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
       await settings.click()
     }
     await panel.getByRole('button', { name: label, exact: true }).click()
     await expect(panel.getByRole('spinbutton', { name: 'Puxar Z', exact: true })).toHaveAttribute(
       'step',
-      mode === 'vertex' ? '0.1' : '1',
+      mode === 'vertex' ? '0.01' : '1',
     )
     await panel
       .getByRole('spinbutton', { name: 'Puxar Z', exact: true })

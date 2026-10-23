@@ -29,7 +29,7 @@ import { apiGet } from '@/lib/api'
 type PublishedDocument = LessonDraftDocument<{ kind: string } & Record<string, unknown>>
 
 /**
- * A sala da PROFESSORA (cursos ao vivo, 14/10/2026). O Admin não tem as rotas de aula do aluno,
+ * A sala de QUEM CONDUZ (cursos ao vivo, 14/10/2026). O Admin não tem as rotas de aula do aluno,
  * então a aula do encontro é montada a partir do documento PUBLICADO
  * (`GET /members/admin/lessons/:id/draft/published`), em modo prévia (como o ensaio da autoria),
  * com a transmissão no alto da coluna da esquerda e as anotações dela na parte que está na tela.
@@ -66,7 +66,7 @@ function TeacherLessonPreview({ slot }: { slot: LiveLessonSlotProps }) {
             error:
               cause instanceof Error && cause.message
                 ? cause.message
-                : 'Não foi possível abrir a aula publicada deste encontro.',
+                : 'Não conseguimos abrir a aula publicada deste encontro.',
           })
       })
     return () => {
@@ -132,7 +132,7 @@ function TeacherLesson({
             key={block.id}
             workspace={slot.liveWorkspace}
             blockId={block.id}
-            title="Projeto da criança"
+            title={kids ? 'Projeto da criança' : 'Projeto do aluno'}
             curation={{
               level: content.level,
               allowBlocks: content.allowBlocks,

@@ -15,7 +15,9 @@ import { TrendingDown } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { AlunosTabs } from '@/components/admin/section-tabs'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
@@ -31,6 +33,8 @@ export function AnalisesClient() {
   // a view já traz `audience`; o funil abre por curso, então nada muda no server).
   const platform = usePlatform()
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
+  const [funnelFailed, setFunnelFailed] = useState(false)
   const [selected, setSelected] = useState<CourseAnalyticsView | null>(null)
   const [funnel, setFunnel] = useState<CourseFunnelView | null>(null)
   const [funnelLoading, setFunnelLoading] = useState(false)
@@ -49,8 +53,10 @@ export function AnalisesClient() {
     try {
       const res = await apiGet<{ courses: CourseAnalyticsView[] }>('/api/members/analytics/courses')
       setCourses(res.courses)
+      setLoadFailed(false)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar as análises.')
+      setLoadFailed(true)
+      toast.error((err as ApiError).message ?? 'Não conseguimos carregar as análises.')
     } finally {
       setLoading(false)
     }
@@ -63,6 +69,7 @@ export function AnalisesClient() {
   async function openFunnel(c: CourseAnalyticsView) {
     setSelected(c)
     setFunnel(null)
+    setFunnelFailed(false)
     setFunnelLoading(true)
     await runLatestForeground(
       funnelAuthority,
@@ -70,7 +77,8 @@ export function AnalisesClient() {
       {
         onSuccess: setFunnel,
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao carregar o funil.')
+          setFunnelFailed(true)
+          toast.error((error as ApiError).message ?? 'Não conseguimos carregar o funil.')
         },
         onSettled: () => setFunnelLoading(false),
       },
@@ -82,91 +90,109 @@ export function AnalisesClient() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Análises"
-        description="Análises de aprendizado: conclusão por curso e onde os alunos travam."
+        title="Alunos"
+        description="Quantos começaram e quantos terminaram cada curso, e em que aula a turma mais para."
       />
+      <AlunosTabs />
 
-      <Card>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Curso</TableHead>
-              <TableHead>Aulas</TableHead>
-              <TableHead>Engajaram</TableHead>
-              <TableHead>Concluíram</TableHead>
-              <TableHead className="w-48">Taxa de conclusão</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableSkeletonRows columns={5} />
-            ) : visibleCourses.length === 0 ? (
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_400px]">
+        <Card className="overflow-x-auto">
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
-                  Nenhum curso publicado.
-                </TableCell>
+                <TableHead>Curso</TableHead>
+                <TableHead>Aulas</TableHead>
+                <TableHead>Engajaram</TableHead>
+                <TableHead>Concluíram</TableHead>
+                <TableHead className="w-48">Taxa de conclusão</TableHead>
               </TableRow>
-            ) : (
-              visibleCourses.map((c) => (
-                <TableRow
-                  key={c.courseId}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => openFunnel(c)}
-                >
-                  <TableCell>
-                    <div className="font-medium">{c.title}</div>
-                    <div className="text-muted-foreground text-xs">
-                      {c.courseRef}
-                      {c.audience === 'kids' ? ' · Kids' : ''}
-                      {c.status === 'archived' ? ' · arquivado' : ''}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{c.publishedLessons}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.started}</TableCell>
-                  <TableCell className="text-muted-foreground">{c.completed}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className="h-2 rounded-full bg-[color:var(--primary)]"
-                          style={{ width: `${clampPct(c.completionRate)}%` }}
-                        />
-                      </div>
-                      <span className="w-10 text-right text-muted-foreground text-xs">
-                        {c.completionRate}%
-                      </span>
-                    </div>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableSkeletonRows columns={5} />
+              ) : loadFailed ? (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <LoadError what="as análises" onRetry={() => void load()} />
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </Card>
-
-      {selected ? (
-        <Card className="space-y-4 p-4">
-          <div className="flex items-center justify-between gap-2">
-            <div>
-              <h2 className="font-semibold">Funil de aulas · {selected.title}</h2>
-              <p className="text-muted-foreground text-sm">
-                {funnel ? `${funnel.started} engajaram · ${funnel.completed} concluíram` : '—'}
-              </p>
-            </div>
-          </div>
-          {funnelLoading ? (
-            <Spinner className="mx-auto" />
-          ) : !funnel || funnel.lessons.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Sem aulas publicadas.</p>
-          ) : (
-            <Funnel funnel={funnel} />
-          )}
+              ) : visibleCourses.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5}>
+                    <EmptyState
+                      zappy="happy"
+                      title="Nenhum curso publicado ainda."
+                      description="Quando um curso for publicado, a conclusão dele aparece aqui."
+                    />
+                  </TableCell>
+                </TableRow>
+              ) : (
+                visibleCourses.map((c) => (
+                  <TableRow
+                    key={c.courseId}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => openFunnel(c)}
+                  >
+                    <TableCell>
+                      <div className="font-medium">{c.title}</div>
+                      <div className="text-muted-foreground text-xs">
+                        {c.courseRef}
+                        {c.status === 'archived' ? ' · Arquivado' : ''}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{c.publishedLessons}</TableCell>
+                    <TableCell className="text-muted-foreground">{c.started}</TableCell>
+                    <TableCell className="text-muted-foreground">{c.completed}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                          <div
+                            className="h-2 rounded-full bg-[color:var(--primary)]"
+                            style={{ width: `${clampPct(c.completionRate)}%` }}
+                          />
+                        </div>
+                        <span className="w-10 text-right text-muted-foreground text-xs">
+                          {c.completionRate}%
+                        </span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </Card>
-      ) : (
-        <p className="text-muted-foreground text-sm">
-          Clique num curso para ver o funil de conclusão por aula.
-        </p>
-      )}
+
+        {selected ? (
+          <Card className="space-y-4 p-5 xl:sticky xl:top-4">
+            <div className="flex items-center justify-between gap-2">
+              <div>
+                <h2 className="font-semibold">Funil de aulas · {selected.title}</h2>
+                {funnel ? (
+                  <p className="text-muted-foreground text-sm">
+                    {funnel.started} engajaram · {funnel.completed} concluíram
+                  </p>
+                ) : null}
+              </div>
+            </div>
+            {funnelLoading ? (
+              <Spinner className="mx-auto" />
+            ) : funnelFailed ? (
+              <LoadError what="o funil" onRetry={() => void openFunnel(selected)} />
+            ) : !funnel || funnel.lessons.length === 0 ? (
+              <p className="text-muted-foreground text-sm">
+                Este curso ainda não tem aulas publicadas.
+              </p>
+            ) : (
+              <Funnel funnel={funnel} />
+            )}
+          </Card>
+        ) : (
+          <Card className="p-5 text-muted-foreground text-sm">
+            Escolha um curso na tabela para ver em que aula a turma mais para.
+          </Card>
+        )}
+      </div>
     </div>
   )
 }

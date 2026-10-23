@@ -81,7 +81,7 @@ export function LessonRehearsal({
   const [failNext, setFailNext] = useState(false)
   const failRef = useRef(false)
   const [status, setStatus] = useState(
-    'Comece pela primeira seção. As seguintes respeitam seus critérios.',
+    'Comece pela primeira parte. As seguintes respeitam seus critérios.',
   )
   const section = document.sections.find((s) => s.id === sectionId)
   const context = useMemo(
@@ -160,8 +160,8 @@ export function LessonRehearsal({
         <p className="font-semibold">Ensaio como aluno de teste · somente neste navegador</p>
         <p className="text-sm text-muted-foreground">
           Experimente as cenas e o projeto. O quiz e a checagem estrutural usam os mesmos
-          avaliadores. Entrega, vídeo, material e ações externas usam os exemplos de confirmação
-          abaixo.
+          avaliadores. Envio do projeto, vídeo, material e ações externas usam os exemplos de
+          confirmação abaixo.
         </p>
         <div className="flex flex-wrap gap-2">
           <Button
@@ -283,7 +283,7 @@ export function LessonRehearsal({
               section.workspaceBlockId !== blockId ||
               !section.completion?.projectChecks?.length
             )
-              return 'Esta seção não tem um objetivo estrutural para conferir.'
+              return 'Esta parte não tem um objetivo estrutural para conferir.'
             const criteria = section.completion.projectChecks
             let checks: { checkId: string; label: string; passed: boolean }[]
             if (criteria.some((criterion) => criterion.programmingLanguage === 'python')) {

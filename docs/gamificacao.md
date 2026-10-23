@@ -91,6 +91,12 @@ Núcleo PURO em `packages/members/src/domain/gamification/gamification.ts`.
 | Clube: tópico aprovado pela equipe | **+5** | `XP_VALUES.CLUBE_THREAD` |
 | Clube: comentário aprovado pela equipe | **+3** | `XP_VALUES.CLUBE_COMMENT` |
 
+**Nome na tela (23/10/2026):** o grupo de aulas de um curso se chama **módulo** nas duas comunidades
+e no Admin (curso → módulo → aula → parte; Diretrizes Pedagógicas, seção 6). "Unidade" (`unit`,
+`UNIT_COMPLETE`, `unit_complete`) fica só como nome técnico. Desde 23/10/2026 o Kids escreve "Baú do
+Módulo N", "Você terminou o Módulo N" e "Abra o baú de um módulo" (era "Mundo"); nas falas e nos
+textos novos, também é módulo.
+
 **Pensa (07/2026):** o award roda DENTRO do `advance-stage` do Pensa (fail-open, delta na
 resposta como o complete). Moedas: 5 por etapa / 15 por ciclo (`COIN_VALUES`, contam no teto
 diário). Idempotência: `xp_events.source_id` é uuid, então cada ETAPA usa um uuid

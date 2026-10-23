@@ -70,9 +70,15 @@ function tooltipLabel(point: ChartPoint | undefined, label: string, g: SalesGran
 }
 
 const SERIES_LABELS: Record<string, string> = {
-  net: 'Faturamento líquido',
-  cancellations: 'Cancelamentos',
-  transactions: 'Transações',
+  net: 'Recebido, menos estornos',
+  cancellations: 'Estornos',
+  transactions: 'Cobranças criadas',
+}
+
+/** No tooltip, o nome diz o que a conta inclui: TODA cobrança criada, paga ou não. */
+const TOOLTIP_LABELS: Record<string, string> = {
+  ...SERIES_LABELS,
+  transactions: 'Cobranças criadas, pagas ou não',
 }
 
 function ChartTooltip({
@@ -107,7 +113,7 @@ function ChartTooltip({
               className="inline-block size-2 rounded-full"
               style={{ backgroundColor: entry.color }}
             />
-            {SERIES_LABELS[key] ?? key}: <span className="font-medium">{value}</span>
+            {TOOLTIP_LABELS[key] ?? key}: <span className="font-medium">{value}</span>
           </p>
         )
       })}

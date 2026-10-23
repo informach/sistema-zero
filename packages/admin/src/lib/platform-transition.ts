@@ -10,6 +10,15 @@ export function platformTransition(platform: Platform) {
   }
 }
 
+/**
+ * A Jornada da outra comunidade levando junto o endereço atual (`?preparacao=<id>`): trocar a
+ * lente e voltar retoma a preparação que estava aberta, em vez de começar do zero.
+ */
+export function journeyLensHref(path: string, search: string): string {
+  const query = search.startsWith('?') ? search.slice(1) : search
+  return query ? `${path}?${query}` : path
+}
+
 /** Contexto inicial do dialog de curso novo; edição continua usando a entidade real. */
 export function courseCreationPrefill(platform: Platform): { audience: Platform } {
   return { audience: platform }

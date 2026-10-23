@@ -14,7 +14,13 @@ import { sceneToJson } from '../../../scene/documentJson'
 import { sceneMaterialImageBase } from '../../../scene/materialImages'
 import { transformPoint } from '../../../scene/matrix'
 import { hasScenePaintableInteriorGap } from '../../../scene/paintableInterior'
-import { sceneNodePivot, scenePivotRotation, setSceneAuthoringPivot } from '../../../scene/pivot'
+import { setScenePalette } from '../../../scene/paletteCommands'
+import {
+  sceneNodePivot,
+  scenePivotRotation,
+  setSceneAuthoringPivot,
+  setScenePivotAxisFromFace,
+} from '../../../scene/pivot'
 import { duplicateSceneNodesNearby } from '../../../scene/placement'
 import { SCENE_RIG_NORMALS } from '../../../scene/rigBuilder'
 import { SceneValidationError } from '../../../scene/validation'
@@ -23,7 +29,7 @@ import type { EditorStore } from '../../../state/editorStore'
 import type { SceneRecoveryController } from '../../../state/sceneRecoveryController'
 import type { SceneStorageObserver } from '../../../state/sceneStorageObserver'
 import type { SceneViewportFactory, SceneViewportPort } from '../../../viewport/sceneViewportTypes'
-import { useMoldaToolAccess } from '../../toolAccess'
+import { RequiresTool, useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { Dialog, isMoldaDialogOpen } from '../../ui/Dialog'
 import { Crosshair, Focus, Ghost } from '../../ui/icons'
@@ -48,6 +54,7 @@ import { SceneNodeProperties } from './SceneNodeProperties'
 import { ScenePaintCloseUp } from './ScenePaintCloseUp'
 import { ScenePaintColumn } from './ScenePaintKid'
 import { ScenePaintPalette } from './ScenePaintPalette'
+import { ScenePaletteLibrary } from './ScenePaletteLibrary'
 import { SceneRigPanel } from './SceneRigPanel'
 import { SceneSaveProtection } from './SceneSaveProtection'
 import { SceneSelectionModes } from './SceneSelectionModes'
@@ -211,7 +218,7 @@ export function SceneWorkshop({
               opacity: 0.55,
               depthTest: false,
               label: 'Assim ela vai girar',
-              worldDelta: scenePivotRotation(world, sceneNodePivot(node)),
+              worldDelta: scenePivotRotation(world, sceneNodePivot(node), 30, node.pivotAxis),
             },
       }
     } catch {
@@ -936,6 +943,7 @@ export function SceneWorkshop({
                       ? null
                       : (workshop.components.operation.selection ?? workshop.components.selection)
                   }
+                  faceExtruding={workshop.components.preview.tool === 'extrude'}
                   facePreviewOpen={
                     !!activeBoolean ||
                     !!workshop.rigDraft ||
@@ -1051,6 +1059,13 @@ export function SceneWorkshop({
                 close={closeFaces}
                 onKnife={() => workshop.setTool('knife')}
                 onMove={() => workshop.setTool('move')}
+                onAlignPivot={() => {
+                  const selection = workshop.components.selection
+                  if (selection?.mode !== 'face' || selection.ids.length !== 1) return
+                  workshop.run((source) =>
+                    setScenePivotAxisFromFace(source, selection.nodeId, selection.ids[0]!),
+                  )
+                }}
                 visualCut={<SceneDivisionChoices workshop={workshop} />}
               />
             ) : (
@@ -1068,6 +1083,9 @@ export function SceneWorkshop({
                     <ScenePaintPalette
                       paint={workshop.paint}
                       palette={document}
+                      applyPalette={(next) =>
+                        workshop.run((source) => setScenePalette(source, next))
+                      }
                       mapping={
                         !sheetOpen && workshop.primary?.kind === 'mesh'
                           ? {
@@ -1136,7 +1154,18 @@ export function SceneWorkshop({
                     </p>
                   </div>
                 ) : (
-                  <SceneNodeProperties workshop={workshop} booleanTools={booleanTools} />
+                  <>
+                    <RequiresTool family="model.finish">
+                      <div className="mx-1 mb-3 rounded-xl border border-mld-border bg-mld-surface p-3">
+                        <ScenePaletteLibrary
+                          palette={document}
+                          busy={workshop.paint.drawing || workshop.paint.busy}
+                          apply={(next) => workshop.run((source) => setScenePalette(source, next))}
+                        />
+                      </div>
+                    </RequiresTool>
+                    <SceneNodeProperties workshop={workshop} booleanTools={booleanTools} />
+                  </>
                 )}
               </SceneInspectorSections>
             )}

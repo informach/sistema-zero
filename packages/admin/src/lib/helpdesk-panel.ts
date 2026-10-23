@@ -92,8 +92,8 @@ function formatDuration(minutes: number): string {
 export function attentionDeadlineLabel(
   item: Pick<HelpdeskAttentionItem, 'slaState' | 'remainingMinutes'>,
 ): string {
-  if (item.slaState === 'breached' && item.remainingMinutes >= 0) return 'SLA estourado agora'
+  if (item.slaState === 'breached' && item.remainingMinutes >= 0) return 'Prazo estourado agora'
   if (item.remainingMinutes < 0) return `Estourado há ${formatDuration(item.remainingMinutes)}`
-  if (item.remainingMinutes === 0) return 'No limite do SLA'
+  if (item.remainingMinutes === 0) return 'No limite do prazo'
   return `Vence em ${formatDuration(item.remainingMinutes)}`
 }

@@ -13,18 +13,17 @@ import {
   TableHeader,
   TableRow,
 } from '@sistemazero/ui/table'
+import type { LucideIcon } from 'lucide-react'
 import { Ban, CalendarClock, Copy, FilePlus2, Receipt, Search, TriangleAlert } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
-import { OverviewCard } from '@/components/admin/overview-card'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { type ApiError, apiGet } from '@/lib/api'
 import { formatCentsStr, formatDate } from '@/lib/format'
 import {
   formatDocument,
-  formatDps,
-  INVOICE_FAILURE_STATUSES,
   invoiceMainDate,
   invoiceStatusLabel,
   sumStatusCounts,
@@ -38,6 +37,53 @@ import { ManualInvoiceDialog } from './manual-invoice-dialog'
 
 const LIMIT = 20
 
+/**
+ * Um cartão de número que também é filtro: clicar mostra só as notas daquela situação (e
+ * clicar de novo volta para todas). Cada cartão conta exatamente o status que filtra.
+ */
+function FilterCard({
+  title,
+  value,
+  description,
+  icon,
+  active,
+  onClick,
+}: {
+  title: string
+  value: string | number
+  description: string
+  icon: LucideIcon
+  active: boolean
+  onClick: () => void
+}) {
+  const Icon = icon
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`flex h-full flex-col rounded-xl border bg-card p-5 text-left text-card-foreground shadow-sm transition-colors hover:border-primary focus-visible:outline-2 ${active ? 'border-primary ring-2 ring-primary/30' : 'border-border'}`}
+    >
+      <span className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium text-muted-foreground">{title}</span>
+        <Icon className="size-4 text-muted-foreground" aria-hidden />
+      </span>
+      <span className="mt-2 font-mono text-3xl font-bold tracking-tight">{value}</span>
+      <span className="mt-1 text-xs text-muted-foreground">{description}</span>
+    </button>
+  )
+}
+
+/** Lê e limpa um parâmetro da URL (o link "Emitir nota desta venda" chega com `?emitir=`). */
+function takeSearchParam(name: string): string | null {
+  const url = new URL(window.location.href)
+  const value = url.searchParams.get(name)
+  if (value === null) return null
+  url.searchParams.delete(name)
+  window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+  return value.trim() || null
+}
+
 export function InvoicesClient({ currentRole }: { currentRole: string }) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [items, setItems] = useState<InvoiceView[]>([])
@@ -50,6 +96,24 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
   const [stats, setStats] = useState<FiscalStats | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [manualOpen, setManualOpen] = useState(false)
+  const [manualPaymentId, setManualPaymentId] = useState('')
+
+  // Chegando de Vendas: `?emitir=<paymentId>` abre a emissão à mão já preenchida; `?nota=<id>`
+  // abre o detalhe da nota. Os parâmetros saem da URL para não reabrir ao recarregar.
+  useEffect(() => {
+    const emitir = takeSearchParam('emitir')
+    const nota = takeSearchParam('nota')
+    if (nota) setSelectedId(nota)
+    if (emitir && canWrite) {
+      setManualPaymentId(emitir)
+      setManualOpen(true)
+    }
+  }, [canWrite])
+
+  function filterBy(next: string) {
+    setOffset(0)
+    setStatus((current) => (current === next ? '' : next))
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -61,7 +125,7 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
       setItems(page.items)
       setTotal(page.total)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar notas fiscais.')
+      toast.error((err as ApiError).message ?? 'As notas fiscais não carregaram. Tente de novo.')
     } finally {
       setLoading(false)
     }
@@ -89,53 +153,70 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
   }, [load, loadStats])
 
   const byStatus = stats?.byStatus
+  const count = (statuses: string[]) => (byStatus ? sumStatusCounts(byStatus, statuses) : null)
+  const cancelFailed = count(['CANCEL_FAILED']) ?? 0
+  const cancelPending = count(['CANCEL_PENDING']) ?? 0
+  const substituted = count(['SUBSTITUTED']) ?? 0
 
   return (
     <div className="space-y-6">
       <AdminHeader
         title="Notas fiscais"
-        description={
-          canWrite
-            ? 'NFS-e emitidas automaticamente após a garantia — acompanhar, baixar, cancelar e substituir.'
-            : 'NFS-e emitidas automaticamente após a garantia — acompanhar e baixar.'
-        }
+        description="As notas saem sozinhas quando a garantia da compra acaba. Aqui você acompanha, baixa, cancela e substitui."
         action={
-          canWrite ? (
-            <Button onClick={() => setManualOpen(true)}>
-              <FilePlus2 className="size-4" /> Emitir manualmente
-            </Button>
-          ) : null
+          <Button
+            disabled={!canWrite}
+            onClick={() => {
+              setManualPaymentId('')
+              setManualOpen(true)
+            }}
+          >
+            <FilePlus2 className="size-4" aria-hidden /> Emitir nota à mão
+          </Button>
         }
       />
+      {canWrite ? null : <ReadOnlyNotice />}
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <OverviewCard
+        <FilterCard
           title="Emitidas"
-          value={byStatus ? sumStatusCounts(byStatus, ['EMITTED']) : '—'}
+          value={count(['EMITTED']) ?? '—'}
           icon={Receipt}
-          description="Notas emitidas com sucesso"
+          description="Notas que saíram certinho"
+          active={status === 'EMITTED'}
+          onClick={() => filterBy('EMITTED')}
         />
-        <OverviewCard
-          title="Agendadas"
-          value={byStatus ? sumStatusCounts(byStatus, ['SCHEDULED']) : '—'}
+        <FilterCard
+          title="Esperando a garantia"
+          value={count(['SCHEDULED']) ?? '—'}
           icon={CalendarClock}
-          description="Aguardando o fim da garantia"
+          description="Saem sozinhas quando a garantia acabar"
+          active={status === 'SCHEDULED'}
+          onClick={() => filterBy('SCHEDULED')}
         />
-        <OverviewCard
-          title="Falhas"
-          value={byStatus ? sumStatusCounts(byStatus, INVOICE_FAILURE_STATUSES) : '—'}
+        <FilterCard
+          title="Não saíram"
+          value={count(['FAILED']) ?? '—'}
           icon={TriangleAlert}
-          description="Emissões ou cancelamentos que precisam de atenção"
-        />
-        <OverviewCard
-          title="Canceladas"
-          value={
-            byStatus
-              ? sumStatusCounts(byStatus, ['CANCEL_PENDING', 'CANCELLED', 'SUBSTITUTED'])
-              : '—'
+          description={
+            cancelFailed > 0
+              ? `Precisam de atenção. Mais ${cancelFailed} com cancelamento recusado.`
+              : 'Precisam de atenção'
           }
+          active={status === 'FAILED'}
+          onClick={() => filterBy('FAILED')}
+        />
+        <FilterCard
+          title="Canceladas"
+          value={count(['CANCELLED']) ?? '—'}
           icon={Ban}
-          description="Incl. pendentes e substituídas"
+          description={
+            cancelPending + substituted > 0
+              ? `Mais ${cancelPending} cancelando e ${substituted} substituídas`
+              : 'Canceladas na prefeitura'
+          }
+          active={status === 'CANCELLED'}
+          onClick={() => filterBy('CANCELLED')}
         />
       </div>
 
@@ -143,7 +224,8 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Buscar por nome, e-mail, CPF ou chave…"
+            placeholder="Nome, e-mail, CPF, chave ou código da venda"
+            aria-label="Buscar notas"
             value={q}
             onChange={(e) => {
               setOffset(0)
@@ -153,6 +235,7 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
           />
         </div>
         <Select
+          aria-label="Situação"
           value={status}
           onChange={(e) => {
             setOffset(0)
@@ -160,7 +243,7 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
           }}
           className="sm:w-56"
         >
-          <option value="">Todos os status</option>
+          <option value="">Todas as situações</option>
           {INVOICE_STATUSES.map((s) => (
             <option key={s} value={s}>
               {invoiceStatusLabel(s)}
@@ -173,21 +256,20 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Cliente</TableHead>
+              <TableHead>Quem comprou</TableHead>
               <TableHead className="text-right">Valor</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Emissão</TableHead>
-              <TableHead>DPS</TableHead>
+              <TableHead>Situação</TableHead>
+              <TableHead>Quando</TableHead>
               <TableHead>Chave de acesso</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableSkeletonRows columns={6} />
+              <TableSkeletonRows columns={5} />
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  Nenhuma nota fiscal encontrada.
+                <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                  Nenhuma nota com esses filtros.
                 </TableCell>
               </TableRow>
             ) : (
@@ -218,9 +300,6 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
                       </div>
                       <div className="text-xs">{formatDate(mainDate.iso)}</div>
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {formatDps(inv.dpsSeries, inv.dpsNumber)}
-                    </TableCell>
                     <TableCell>
                       {accessKey ? (
                         <button
@@ -231,9 +310,10 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
                           }}
                           className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 font-mono text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                           title="Copiar a chave de acesso completa"
+                          aria-label="Copiar a chave de acesso completa"
                         >
                           {truncateAccessKey(accessKey)}
-                          <Copy className="size-3" />
+                          <Copy className="size-3" aria-hidden />
                         </button>
                       ) : (
                         <span className="text-muted-foreground">—</span>
@@ -260,6 +340,7 @@ export function InvoicesClient({ currentRole }: { currentRole: string }) {
       {canWrite ? (
         <ManualInvoiceDialog
           open={manualOpen}
+          initialPaymentId={manualPaymentId}
           onClose={() => setManualOpen(false)}
           onCreated={async (id) => {
             setSelectedId(id)

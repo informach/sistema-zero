@@ -7,6 +7,7 @@ import { Spinner } from '@sistemazero/ui/spinner'
 import { ArrowLeft, MessageSquare } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { SpokenChip } from '@/components/admin/spoken-chip'
 import { type ApiError, apiGet } from '@/lib/api'
 import type { StudioSubmissionCourseRow } from '@/lib/types'
@@ -14,8 +15,14 @@ import { StudioSubmissionViewer } from './studio-submission-viewer'
 
 // Mostra a CRIANÇA (perfil) quando a entrega veio de um perfil; senão a conta.
 // Espelha o studio-submissions-dialog por-bloco (nunca expõe o uuid cru).
-const studentName = (r: StudioSubmissionCourseRow) =>
-  r.childName ?? r.accountName ?? r.accountEmail ?? 'Aluno sem identificação'
+const knownName = (r: StudioSubmissionCourseRow) =>
+  r.childName ?? r.accountName ?? r.accountEmail ?? null
+/** O nome na lista (sozinho na linha). */
+const listName = (r: StudioSubmissionCourseRow, audience: 'adult' | 'kids') =>
+  knownName(r) ?? (audience === 'kids' ? 'Criança sem nome' : 'Aluno sem nome')
+/** O nome dentro das frases do projeto aberto ("Projeto de…", "Recado de…"). */
+const sentenceName = (r: StudioSubmissionCourseRow, audience: 'adult' | 'kids') =>
+  knownName(r) ?? (audience === 'kids' ? 'uma criança' : 'um aluno')
 const responsibleLabel = (r: StudioSubmissionCourseRow) =>
   [r.accountName, r.accountEmail].filter(Boolean).join(' · ') || '—'
 
@@ -40,19 +47,22 @@ export function CourseSubmissionsPanel({
   audience: 'adult' | 'kids'
 }) {
   const [loading, setLoading] = useState(true)
+  const [failed, setFailed] = useState(false)
   const [rows, setRows] = useState<StudioSubmissionCourseRow[]>([])
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<StudioSubmissionCourseRow | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
+    setFailed(false)
     try {
       const res = await apiGet<{ submissions: StudioSubmissionCourseRow[] }>(
         `/api/members/courses/${courseId}/studio-submissions`,
       )
       setRows(res.submissions)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar as entregas.')
+      setFailed(true)
+      toast.error((err as ApiError).message ?? 'Não conseguimos carregar os projetos.')
     } finally {
       setLoading(false)
     }
@@ -69,7 +79,7 @@ export function CourseSubmissionsPanel({
     const filtered = q
       ? rows.filter(
           (r) =>
-            studentName(r).toLowerCase().includes(q) ||
+            (knownName(r) ?? '').toLowerCase().includes(q) ||
             r.lessonTitle.toLowerCase().includes(q) ||
             r.moduleTitle.toLowerCase().includes(q),
         )
@@ -93,14 +103,16 @@ export function CourseSubmissionsPanel({
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          {rows.length} {rows.length === 1 ? 'entrega' : 'entregas'} de todas as aulas deste curso.
+          {loading || failed
+            ? 'Os projetos do Estúdio enviados em todas as aulas deste curso.'
+            : `${rows.length} ${rows.length === 1 ? 'projeto enviado' : 'projetos enviados'} em todas as aulas deste curso.`}
         </p>
         <Input
-          aria-label="Filtrar por aluno ou aula"
-          placeholder="Filtrar por aluno ou aula…"
+          aria-label="Filtrar por nome ou aula"
+          placeholder="Filtrar por nome ou aula…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-72"
+          className="w-full sm:w-72"
         />
       </div>
 
@@ -108,13 +120,24 @@ export function CourseSubmissionsPanel({
         <Card className="py-10 text-center text-muted-foreground">
           <Spinner className="mx-auto" />
         </Card>
+      ) : failed ? (
+        <Card>
+          <LoadError what="os projetos" onRetry={() => void load()} />
+        </Card>
       ) : rows.length === 0 ? (
-        <Card className="py-10 text-center text-sm text-muted-foreground">
-          Nenhum aluno enviou projeto do Estúdio neste curso ainda.
+        <Card>
+          <EmptyState
+            zappy="happy"
+            title="Ninguém enviou projeto do Estúdio neste curso ainda."
+            description="Quando alguém enviar, o projeto aparece aqui, junto com a aula de onde veio."
+          />
         </Card>
       ) : groups.length === 0 ? (
-        <Card className="py-10 text-center text-sm text-muted-foreground">
-          Nenhuma entrega para "{search}".
+        <Card>
+          <EmptyState
+            title={`Nenhum projeto para "${search}"`}
+            description="Confira o nome ou a aula e tente de novo."
+          />
         </Card>
       ) : (
         <div className="space-y-6">
@@ -134,7 +157,9 @@ export function CourseSubmissionsPanel({
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="truncate text-sm font-medium">{studentName(r)}</span>
+                        <span className="truncate text-sm font-medium">
+                          {listName(r, audience)}
+                        </span>
                       </div>
                       {r.childName ? (
                         <div className="truncate text-xs text-muted-foreground">
@@ -152,7 +177,7 @@ export function CourseSubmissionsPanel({
                       ) : null}
                     </div>
                     <Button variant="outline" size="sm" onClick={() => setSelected(r)}>
-                      <ArrowLeft className="size-4 rotate-180" /> Abrir no estúdio
+                      <ArrowLeft className="size-4 rotate-180" /> Abrir o projeto
                     </Button>
                   </Card>
                 ))}
@@ -168,7 +193,7 @@ export function CourseSubmissionsPanel({
           onClose={() => setSelected(null)}
           blockId={selected.blockId}
           userId={selected.userId}
-          studentName={studentName(selected)}
+          studentName={sentenceName(selected, audience)}
           responsible={selected.childName ? responsibleLabel(selected) : null}
           audience={audience}
           courseId={courseId}

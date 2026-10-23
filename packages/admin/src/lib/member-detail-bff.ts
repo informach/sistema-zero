@@ -8,7 +8,9 @@ interface UpstreamResult<T = unknown> {
 function invalidUpstream(): UpstreamResult {
   return {
     status: 502,
-    body: { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar o membro.' } },
+    body: {
+      error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar a ficha do aluno.' },
+    },
   }
 }
 

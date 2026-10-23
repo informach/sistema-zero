@@ -1,16 +1,25 @@
 'use client'
 
-import type { LiveRecordingChapter, LiveRecordingVimeo, LiveRoomView } from '@sistemazero/core/live'
+import type {
+  LiveCatalogView,
+  LiveRecordingChapter,
+  LiveRecordingVimeo,
+  LiveRoomView,
+  LiveSessionSummary,
+} from '@sistemazero/core/live'
 import { Button, Dialog } from '@sistemazero/ui'
 import {
   ArrowLeft,
   CalendarDays,
   Camera,
   CameraOff,
+  Check,
+  CheckCircle2,
   Download,
   Expand,
   Hand,
   Headphones,
+  Laptop,
   LifeBuoy,
   MessageCircle,
   Mic,
@@ -18,8 +27,9 @@ import {
   Minimize2,
   MonitorUp,
   Paperclip,
+  PlayCircle,
   Send,
-  Sparkles,
+  Users,
   X,
 } from 'lucide-react'
 import dynamic from 'next/dynamic'
@@ -34,7 +44,10 @@ import {
   useRef,
   useState,
 } from 'react'
+import { liveRequest } from '../../lib/live/client'
+import { devicesPassed, recordHeadphones } from '../../lib/live/device-check'
 import { canShareLiveTab } from '../../lib/live/device-errors'
+import { followLiveSection, reviewDeadlineLabel } from '../../lib/live/journey'
 import type {
   LiveLessonOutline,
   LiveLessonSlotProps,
@@ -52,9 +65,11 @@ import {
 import { learnerSectionControl } from '../../lib/live/sections'
 import { sessionFetch } from '../../lib/session-fetch'
 import { LiveGuidancePointer } from './live-guidance'
+import { AddToCalendarButton, ReviewDeadlineChip, useDeviceCheck } from './live-journey'
 import { LegacyCohortNotice } from './live-legacy-notice'
 import { type LiveMedia, Stream, useLiveMedia } from './live-media-panel'
 import { LivePreflight } from './live-preflight'
+import { LiveLessonSkeleton } from './use-live-lesson'
 
 export function teacherNameOf(room: LiveRoomView): string | null {
   const names = room.cohort.teacherNames ?? {}
@@ -71,10 +86,22 @@ function skin(room: LiveRoomView | null) {
   const adult = room?.cohort.course?.audience === 'adult'
   return {
     adult,
-    card: adult ? 'rounded-2xl border bg-card' : 'kids-carta',
-    hero: adult ? 'rounded-[1.75rem] bg-primary text-primary-foreground' : 'kids-marca',
+    // A pele adulta é a mesma da agenda (`LiveCatalog skin="adult"`): o cartão de borda fina e o
+    // destaque na âncora escura da barra do topo. O `bg-primary` destoava da agenda ao entrar.
+    card: adult ? 'sz-card-sm' : 'kids-carta',
+    hero: adult ? 'bg-(--topo) text-(--sz-community-on-action,#fff)' : 'kids-marca',
+    material: adult ? 'sz-card-sm' : 'kids-3d kids-3d--carta rounded-2xl border bg-card',
   }
 }
+
+/**
+ * Os tons que só o Kids define (`--sz-kids-amarelo`, `--band-menta`, `--menu`): na comunidade
+ * adulta eles não existem, e sem a reserva a pílula "Reconectando…", o "É a sua vez de falar!" e a
+ * fala da professora no chat saíam sem fundo.
+ */
+const WARN_TONE =
+  'bg-[var(--sz-kids-amarelo,var(--aviso-tint,#fde68a))] text-[var(--sz-kids-tinta,var(--aviso-texto,#1f2937))]'
+const STAGE_BG = 'bg-[var(--menu,var(--topo,#1e293b))]'
 
 /**
  * A sala da criança. Desde 14/10/2026 (cursos ao vivo) é o LAYOUT DA AULA GRAVADA: a aula do
@@ -160,7 +187,13 @@ export function LiveLearnerRoom({
         serverTime={room.serverTime}
       />
       <BackLink />
-      <RoomHeader room={room} teacherName={teacherName} stale={stale} />
+      <RoomHeader
+        room={room}
+        teacherName={teacherName}
+        stale={stale}
+        outline={outline}
+        currentSection={currentSection}
+      />
       {showError ? (
         <div
           role="alert"
@@ -214,6 +247,7 @@ export function LiveLearnerRoom({
               ...doorCopy(room, teacherName, takeover, false),
               busy: busy || stale || !deviceId,
               takeover,
+              present: presentLabel(room.presentCount, skin(room).adult),
               onJoin,
             }}
             renderLesson={renderLesson}
@@ -250,7 +284,7 @@ function StatusPill({ tone, children }: { tone: 'live' | 'calm' | 'warn'; childr
   const styles = {
     live: 'bg-destructive text-white',
     calm: 'border bg-card text-foreground',
-    warn: 'bg-(--sz-kids-amarelo) text-(--sz-kids-tinta)',
+    warn: WARN_TONE,
   }
   return (
     <span
@@ -272,15 +306,21 @@ function RoomHeader({
   room,
   teacherName,
   stale,
+  outline,
+  currentSection,
 }: {
   room: LiveRoomView
   teacherName: string | null
   stale: boolean
+  outline: LiveLessonOutline | null
+  currentSection: string | null
 }) {
   const zone = room.cohort.timeZone
   const start = room.occurrence?.startsAt ?? room.session.startsAt
   const duration = durationLabel(start, room.occurrence?.endsAt ?? room.session.endsAt)
   const state = room.occurrence?.state
+  const deadline =
+    state === 'ended' && room.access.canOpen ? reviewDeadlineLabel(room.access.endsAt, zone) : null
   return (
     <header className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
@@ -293,10 +333,14 @@ function RoomHeader({
         <p className="mt-1 font-medium text-muted-foreground">
           {friendlyWhen(start, zone)}
           {duration ? ` · ${duration}` : ''}
-          {teacherName ? ` · com a professora ${teacherName}` : ''}
+          {teacherName ? ` · com ${teacherName}` : ''}
         </p>
       </div>
-      <div className="shrink-0">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
+        {state === 'live' ? (
+          <ClassPartMarker room={room} outline={outline} currentSection={currentSection} />
+        ) : null}
+        {deadline ? <ReviewDeadlineChip label={deadline} /> : null}
         {stale ? (
           <StatusPill tone="warn">Reconectando…</StatusPill>
         ) : state === 'live' ? (
@@ -315,57 +359,237 @@ function RoomHeader({
   )
 }
 
-/** Antes do dia: expectativa, contagem e o que preparar. Nada do conteúdo é antecipado. */
-function FutureMeeting({ room, teacherName }: { room: LiveRoomView; teacherName: string | null }) {
-  const { card, hero } = skin(room)
-  const zone = room.cohort.timeZone
-  const start = room.occurrence?.startsAt ?? room.session.startsAt
-  const left = countdown(start, zone)
+/**
+ * "A turma está na parte 2 de 5", fixo no cabeçalho durante o encontro (o aviso do player some
+ * em 6 s). Quem voltou para rever uma parte anterior ganha o "Ir junto", que leva à parte da
+ * turma sem esperar quem conduz abrir a próxima.
+ */
+function ClassPartMarker({
+  room,
+  outline,
+  currentSection,
+}: {
+  room: LiveRoomView
+  outline: LiveLessonOutline | null
+  currentSection: string | null
+}) {
+  const control = learnerSectionControl(room)
+  const sections = outline?.sections ?? []
+  const at = sections.findIndex((section) => section.id === control?.currentId)
+  if (!control?.currentId || at < 0) return null
+  const behind = currentSection !== null && currentSection !== control.currentId
+  const { card } = skin(room)
   return (
-    <div className="grid gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-      <section
-        className={`${hero} flex flex-col justify-between gap-6 rounded-[1.75rem] p-7 md:p-9`}
-      >
-        <div>
-          <p className="inline-flex items-center gap-2 font-extrabold text-sm uppercase tracking-wide opacity-90">
-            <CalendarDays className="size-4" aria-hidden />
-            {left ?? 'Falta pouco'}
-          </p>
-          <p className="sz-display mt-3 text-[clamp(1.75rem,3vw,2.6rem)] leading-tight">
-            {friendlyWhen(start, zone)}
-          </p>
-        </div>
-        <p className="max-w-md font-medium text-lg">
-          {teacherName ? `A professora ${teacherName} e a turma` : 'A professora e a turma'} vão
-          criar juntas em “{room.session.title}”. A sala abre 15 minutos antes.
-        </p>
-      </section>
-      <section className={`${card} space-y-4 p-6`}>
-        <h2 className="sz-display text-2xl">Para o dia chegar tranquilo</h2>
-        <ol className="space-y-3">
-          <ChecklistItem icon={<Sparkles className="size-5" aria-hidden />}>
-            Use um computador com o Chrome ou o Edge.
-          </ChecklistItem>
-          <ChecklistItem icon={<Headphones className="size-5" aria-hidden />}>
-            Separe um fone de ouvido: assim o som da turma não volta pelo microfone.
-          </ChecklistItem>
-          <ChecklistItem icon={<Mic className="size-5" aria-hidden />}>
-            Teste a câmera e o microfone aqui embaixo. Nada é enviado para ninguém.
-          </ChecklistItem>
-        </ol>
-        <LivePreflight open />
-      </section>
+    <div className={`${card} flex items-center gap-3 px-4 py-2 font-extrabold text-sm`}>
+      {/* Só o texto é anunciado: o botão dentro da região seria relido a cada troca de parte. */}
+      <span role="status">
+        A turma está na parte {at + 1} de {sections.length}
+      </span>
+      <span aria-hidden className="hidden gap-1 sm:flex">
+        {sections.map((section, index) => (
+          <span
+            key={section.id}
+            className={`h-2 w-4 rounded-full ${index < at ? 'bg-[var(--pen-sucesso,#0b7a54)]' : index === at ? 'bg-primary' : 'bg-border'}`}
+          />
+        ))}
+      </span>
+      {behind ? (
+        <button
+          type="button"
+          onClick={() => followLiveSection(control.currentId!)}
+          className="inline-flex min-h-9 items-center rounded-full bg-primary px-3 font-extrabold text-primary-foreground"
+        >
+          Ir junto
+        </button>
+      ) : null}
     </div>
   )
 }
 
-function ChecklistItem({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+/** "3 colegas já chegaram": só o número, que o servidor manda (nunca quem são). */
+function presentLabel(count: number | undefined, adult: boolean): string | null {
+  if (!count) return null
+  const noun = adult ? (count === 1 ? 'pessoa' : 'pessoas') : count === 1 ? 'colega' : 'colegas'
+  return `${count} ${noun} já ${count === 1 ? 'chegou' : 'chegaram'}`
+}
+
+/** Quem chama para entrar: o nome de quem conduz, ou uma frase sem gênero. */
+function calledBy(teacherName: string | null): string {
+  return teacherName ? `${teacherName} já vai chamar você.` : 'Já já chamam você para entrar.'
+}
+
+/** Antes do dia: expectativa, contagem e o que preparar. Nada do conteúdo é antecipado. */
+function FutureMeeting({ room, teacherName }: { room: LiveRoomView; teacherName: string | null }) {
+  const { adult, card, hero } = skin(room)
+  const zone = room.cohort.timeZone
+  const start = room.occurrence?.startsAt ?? room.session.startsAt
+  const left = countdown(start, zone)
+  return (
+    <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+      <div className="flex flex-col gap-5">
+        <section
+          className={`${hero} flex flex-col justify-between gap-6 rounded-[1.75rem] p-7 md:p-9`}
+        >
+          <div>
+            <p className="inline-flex items-center gap-2 font-extrabold text-sm uppercase tracking-wide opacity-90">
+              <CalendarDays className="size-4" aria-hidden />
+              {left ?? 'Falta pouco'}
+            </p>
+            <p className="sz-display mt-3 text-[clamp(1.75rem,3vw,2.6rem)] leading-tight">
+              {friendlyWhen(start, zone)}
+            </p>
+          </div>
+          <p className="max-w-md font-medium text-lg">
+            {teacherName
+              ? `Você cria junto com ${teacherName} e a turma em “${room.session.title}”.`
+              : `Você cria junto com a turma em “${room.session.title}”.`}{' '}
+            A sala abre 15 minutos antes.
+          </p>
+          {adult ? (
+            <AddToCalendarButton
+              className="inline-flex min-h-12 items-center justify-center gap-2 self-start rounded-[0.6rem] px-6 font-bold text-lg shadow-[inset_0_0_0_2px_var(--sz-community-action-light)]"
+              event={{
+                id: room.session.id,
+                title: room.session.title,
+                startsAt: start,
+                endsAt: room.occurrence?.endsAt ?? room.session.endsAt,
+                path: `/oficinas/aulas/${room.session.id}`,
+                description: `${room.cohort.title}${teacherName ? `, com ${teacherName}` : ''}. A sala abre 15 minutos antes.`,
+              }}
+            />
+          ) : null}
+        </section>
+        <section className={`${card} flex items-start gap-4 p-6`} aria-labelledby="live-who">
+          <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Users className="size-5" aria-hidden />
+          </span>
+          <div className="space-y-1">
+            <h2 id="live-who" className="sz-display text-xl">
+              Quem vai estar lá
+            </h2>
+            <p className="font-medium text-muted-foreground">
+              {teacherName
+                ? `${teacherName} conduz o encontro com uma turma de até ${room.cohort.capacity} ${adult ? 'pessoas' : 'crianças'}. Cada um cria no próprio projeto, e ${teacherName} acompanha o de cada um.`
+                : `A turma tem até ${room.cohort.capacity} ${adult ? 'pessoas' : 'crianças'}. Cada um cria no próprio projeto, com alguém da equipe acompanhando.`}
+            </p>
+          </div>
+        </section>
+      </div>
+      <DeviceChecklist room={room} />
+    </div>
+  )
+}
+
+/**
+ * "Para o dia chegar tranquilo": o computador, o fone e a câmera e o microfone, com o que já está
+ * pronto NESTE aparelho (o teste fica lembrado, `lib/live/device-check.ts`) e o que falta.
+ */
+function DeviceChecklist({ room }: { room: LiveRoomView }) {
+  const { card } = skin(room)
+  const check = useDeviceCheck()
+  // Decidido depois de montar: o servidor não sabe qual navegador abriu a página. A régua é a da
+  // sala (`canShareLiveTab`, só o Chrome e o Edge no computador): celular e Safari abrem a câmera,
+  // mas não mostram a tela nem criam do mesmo jeito.
+  const [browserReady, setBrowserReady] = useState<boolean | null>(null)
+  useEffect(
+    () => setBrowserReady(Boolean(navigator.mediaDevices?.getUserMedia) && canShareLiveTab()),
+    [],
+  )
+  const tested = check ? devicesPassed(check) : false
+  const missing = [
+    tested ? null : 'testar a câmera e o microfone',
+    check?.headphones ? null : 'separar o fone',
+  ].filter(Boolean)
+  return (
+    <section className={`${card} space-y-4 p-6`} aria-labelledby="live-prepare-title">
+      <div>
+        <h2 id="live-prepare-title" className="sz-display text-2xl">
+          Para o dia chegar tranquilo
+        </h2>
+        <p className="mt-1 font-medium text-muted-foreground">
+          Dá para deixar tudo pronto hoje. Nada do teste vai para a turma.
+        </p>
+      </div>
+      <ol className="space-y-4">
+        <ChecklistItem
+          icon={<Laptop className="size-5" aria-hidden />}
+          title="Computador com Chrome ou Edge"
+          done={browserReady === true}
+        >
+          {browserReady === null
+            ? null
+            : browserReady
+              ? 'Este navegador está pronto.'
+              : 'Para criar junto com a turma, entre por um computador com o Chrome ou o Edge.'}
+        </ChecklistItem>
+        <ChecklistItem
+          icon={<Headphones className="size-5" aria-hidden />}
+          title="Um fone de ouvido"
+          done={check?.headphones === true}
+        >
+          Assim o som da turma não volta pelo seu microfone.
+          <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-3 font-bold text-foreground">
+            <input
+              type="checkbox"
+              className="size-5 accent-(--primary)"
+              checked={check?.headphones === true}
+              disabled={check === null}
+              onChange={(event) => recordHeadphones(event.target.checked)}
+            />
+            Já separei o meu
+          </label>
+        </ChecklistItem>
+        <ChecklistItem
+          icon={<Mic className="size-5" aria-hidden />}
+          title="Câmera e microfone"
+          done={tested}
+        >
+          {tested
+            ? 'A câmera e o microfone funcionaram neste computador.'
+            : 'Teste os dois aqui embaixo. Só você vê e ouve.'}
+        </ChecklistItem>
+      </ol>
+      <LivePreflight open />
+      {check ? (
+        <p
+          role="status"
+          className={`flex items-center gap-2 rounded-2xl p-3 font-extrabold ${missing.length ? 'bg-muted' : 'bg-[var(--sz-kids-menta-bg,var(--sucesso-tint,#dcf0e4))]'}`}
+        >
+          <CheckCircle2 className="size-5 shrink-0" aria-hidden />
+          {missing.length
+            ? `Quase tudo pronto. Só falta ${missing.join(' e ')}.`
+            : 'Tudo pronto. No dia, é só entrar.'}
+        </p>
+      ) : null}
+    </section>
+  )
+}
+
+function ChecklistItem({
+  icon,
+  title,
+  done,
+  children,
+}: {
+  icon: ReactNode
+  title: string
+  done: boolean
+  children?: ReactNode
+}) {
   return (
     <li className="flex items-start gap-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-        {icon}
+      <span
+        className={`grid size-9 shrink-0 place-items-center rounded-xl ${done ? 'bg-[var(--sz-kids-menta-bg,var(--sucesso-tint,#dcf0e4))] text-[var(--pen-sucesso,#0b7a54)]' : 'bg-primary/10 text-primary'}`}
+      >
+        {done ? <Check className="size-5" aria-hidden /> : icon}
       </span>
-      <span className="pt-1.5 font-medium">{children}</span>
+      <div className="min-w-0 pt-1">
+        <p className="font-bold">
+          {title}
+          {done ? <span className="sr-only"> (pronto)</span> : null}
+        </p>
+        {children ? <div className="font-medium text-muted-foreground">{children}</div> : null}
+      </div>
     </li>
   )
 }
@@ -410,16 +634,22 @@ function doorCopy(
   const open = state === 'lobby' || state === 'live'
   const start = room.occurrence?.startsAt ?? room.session.startsAt
   const hour = liveHour(new Date(start), room.cohort.timeZone)
-  const professora = teacherName ? `A professora ${teacherName}` : 'A professora'
+  // Quem conduz pode ser professora ou professor: vai o nome e, sem ele, uma frase sem gênero.
   return {
     title: takeover
       ? 'Esta oficina está aberta em outro computador'
       : open
         ? state === 'live'
-          ? `${professora} já está na sala!`
-          : `${professora} abriu a sala`
+          ? teacherName
+            ? `${teacherName} já está na sala!`
+            : 'O encontro já começou!'
+          : teacherName
+            ? `${teacherName} abriu a sala`
+            : 'A sala abriu'
         : early || Date.now() >= Date.parse(start)
-          ? `${professora} ainda vai abrir a sala`
+          ? teacherName
+            ? `${teacherName} ainda vai abrir a sala`
+            : 'A sala ainda vai abrir'
           : `A sala abre às ${hour}`,
     text: takeover
       ? 'Se continuar aqui, a outra janela sai da sala. Seu projeto continua o mesmo.'
@@ -428,7 +658,7 @@ function doorCopy(
           ? `Você entra com a câmera e o microfone desligados. O encontro começa às ${hour}.`
           : 'Você entra com a câmera e o microfone desligados.'
         : early
-          ? `O encontro começa às ${hour}. Quando ela abrir a sala, o botão para entrar aparece aqui.`
+          ? `O encontro começa às ${hour}. Quando a sala abrir, o botão para entrar aparece aqui.`
           : 'Enquanto isso, você já pode ver a primeira parte aqui do lado.',
     canJoin: open || takeover,
   }
@@ -451,9 +681,12 @@ function Door({
   early?: boolean
 }) {
   const [testing, setTesting] = useState(false)
-  const { card } = skin(room)
+  const { adult, card } = skin(room)
   const copy = doorCopy(room, teacherName, takeover, early)
   const open = copy.canJoin
+  const check = useDeviceCheck()
+  const passed = check !== null && devicesPassed(check)
+  const present = presentLabel(room.presentCount, adult)
   return (
     <section
       aria-labelledby="live-door-title"
@@ -464,6 +697,7 @@ function Door({
           {copy.title}
         </h2>
         <p className="font-medium text-muted-foreground">{copy.text}</p>
+        <DoorNotes passed={passed} present={present} />
         {testing ? <LivePreflight open /> : null}
       </div>
       <div className="flex shrink-0 flex-col gap-2 sm:flex-row md:flex-col lg:flex-row">
@@ -479,11 +713,42 @@ function Door({
         ) : null}
         {!testing ? (
           <Button variant="outline" className="min-h-12" onClick={() => setTesting(true)}>
-            Testar meu computador
+            {passed ? 'Testar de novo' : 'Testar meu computador'}
           </Button>
         ) : null}
       </div>
     </section>
+  )
+}
+
+/** "Seu computador já passou no teste" e "3 colegas já chegaram", embaixo do texto da porta. */
+function DoorNotes({
+  passed,
+  present,
+  onDark = false,
+}: {
+  passed: boolean
+  present: string | null
+  onDark?: boolean
+}) {
+  if (!passed && !present) return null
+  return (
+    <p
+      className={`flex flex-wrap items-center gap-x-4 gap-y-1 font-bold text-sm ${onDark ? 'justify-center text-white/90' : ''}`}
+    >
+      {passed ? (
+        <span className="inline-flex items-center gap-1.5">
+          <CheckCircle2 className="size-4 shrink-0" aria-hidden />
+          Seu computador já passou no teste
+        </span>
+      ) : null}
+      {present ? (
+        <span className="inline-flex items-center gap-1.5">
+          <Users className="size-4 shrink-0" aria-hidden />
+          {present}
+        </span>
+      ) : null}
+    </p>
   )
 }
 
@@ -492,50 +757,210 @@ function EarlyReception({ room, admitted }: { room: LiveRoomView; admitted: bool
   const self = room.occurrence?.participants.find((item) => item.learnerId === room.actorId)
   const start = room.occurrence?.startsAt ?? room.session.startsAt
   const hour = liveHour(new Date(start), room.cohort.timeZone)
-  const { card } = skin(room)
+  const { adult, card } = skin(room)
+  const present = presentLabel(room.presentCount, adult)
   return (
     <section role="status" className={`${card} space-y-2 p-6 md:p-7`}>
       <h2 className="sz-display text-2xl md:text-[1.75rem]">
         {self?.admission === 'removed'
-          ? 'A professora encerrou sua participação'
+          ? 'Sua participação foi encerrada'
           : admitted
             ? 'Você já está na sala!'
             : 'Você está na recepção'}
       </h2>
       <p className="font-medium text-muted-foreground">
         {self?.admission === 'removed'
-          ? 'Ela precisa permitir para você voltar.'
+          ? 'Para voltar, quem conduz a turma precisa liberar sua entrada.'
           : admitted
-            ? `O encontro começa às ${hour}. A professora e a turma aparecem aqui.`
-            : `A professora já vai chamar você. O encontro começa às ${hour}.`}
+            ? `O encontro começa às ${hour}. A turma aparece aqui.`
+            : `${calledBy(teacherNameOf(room))} O encontro começa às ${hour}.`}
       </p>
+      {self?.admission === 'removed' ? null : <DoorNotes passed={false} present={present} />}
     </section>
   )
 }
 
 function MeetingEnd({ room }: { room: LiveRoomView }) {
   const cancelled = room.occurrence?.state === 'cancelled'
-  const recording = room.occurrence?.recording.state
-  const { card } = skin(room)
+  const { adult, card } = skin(room)
+  const until = friendlyDay(room.access.endsAt, room.cohort.timeZone)
   return (
-    <section className={`${card} space-y-2 p-6 md:p-7`} aria-labelledby="live-end-title">
-      <h2 id="live-end-title" className="sz-display text-2xl md:text-[1.75rem]">
-        {cancelled ? 'Este encontro foi cancelado' : 'O encontro terminou. Que criação!'}
-      </h2>
-      <p className="font-medium text-muted-foreground">
-        {cancelled
-          ? 'A equipe vai combinar uma nova data com a sua família. Seu projeto continua guardado.'
-          : `Seu projeto ficou guardado. Agora cada um segue no próprio ritmo, até ${friendlyDay(room.access.endsAt, room.cohort.timeZone)}.`}
-      </p>
-      {cancelled || room.access.canWatchRecording ? null : (
-        <p className="font-medium">
-          {recording === 'failed' || recording === 'empty'
-            ? 'A gravação da explicação deste encontro não ficou pronta.'
-            : 'A gravação da explicação fica pronta em breve e aparece no lugar da transmissão.'}
+    <section className={`${card} space-y-4 p-6 md:p-7`} aria-labelledby="live-end-title">
+      <div className="space-y-2">
+        <h2 id="live-end-title" className="sz-display text-2xl md:text-[1.75rem]">
+          {cancelled
+            ? 'Este encontro foi cancelado'
+            : adult
+              ? 'O encontro terminou'
+              : 'O encontro terminou. Que criação!'}
+        </h2>
+        <p className="font-medium text-muted-foreground">
+          {/* A comunidade adulta não tem "família": a nova data é combinada com a própria pessoa. */}
+          {cancelled
+            ? adult
+              ? 'Vamos avisar você da nova data. Seu projeto continua guardado.'
+              : 'A equipe vai combinar uma nova data com a sua família. Seu projeto continua guardado.'
+            : adult
+              ? `Seu projeto ficou guardado. Dá para rever a aula e seguir no seu ritmo até ${until}.`
+              : `Seu projeto ficou guardado. Agora cada um segue no próprio ritmo, até ${until}.`}
         </p>
-      )}
+      </div>
+      {cancelled ? null : <MeetingEndTiles room={room} until={until} />}
     </section>
   )
+}
+
+/**
+ * O fim do encontro num cartão só (proposta de 23/10/2026): a gravação, o projeto e o próximo
+ * encontro, cada um com a sua ação. O próximo encontro vem da agenda (a sala carrega só este
+ * encontro, de propósito); enquanto ela chega, o lugar já está reservado.
+ */
+function MeetingEndTiles({ room, until }: { room: LiveRoomView; until: string }) {
+  const { adult } = skin(room)
+  const recording = room.occurrence?.recording.state
+  const next = useNextSession(room)
+  const tile = adult ? 'sz-card-sm' : 'rounded-[1.25rem] bg-(--band-creme,var(--muted))'
+  const action = adult
+    ? 'inline-flex min-h-12 items-center gap-2 self-start rounded-[0.6rem] border-2 border-foreground bg-card px-5 font-bold'
+    : 'kids-3d kids-3d--carta inline-flex min-h-11 items-center gap-2 self-start rounded-full border bg-card px-4 font-bold'
+  const scrollTo = (selector: string) =>
+    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  const failed = recording === 'failed' || recording === 'empty'
+  const nextStart =
+    next.status === 'found' ? (next.session.occurrenceStartsAt ?? next.session.startsAt) : ''
+  return (
+    <div className="grid gap-3 md:grid-cols-3">
+      <div className={`${tile} flex flex-col gap-2 p-4`}>
+        <p className="flex items-center gap-2 font-extrabold text-primary text-sm">
+          <PlayCircle className="size-4" aria-hidden />
+          Gravação
+        </p>
+        <p className="sz-display text-lg">
+          {room.access.canWatchRecording
+            ? 'Pronta para rever'
+            : failed
+              ? 'Não ficou pronta'
+              : 'Fica pronta em breve'}
+        </p>
+        <p className="font-medium text-muted-foreground text-sm">
+          {room.access.canWatchRecording
+            ? 'Cada parte tem o trecho dela.'
+            : failed
+              ? 'A aula continua aberta para você rever cada parte.'
+              : 'Ela aparece no lugar da transmissão.'}
+        </p>
+        {room.access.canWatchRecording ? (
+          <button type="button" className={action} onClick={() => scrollTo('.sz-lesson-stage')}>
+            Assistir
+          </button>
+        ) : null}
+      </div>
+      <div className={`${tile} flex flex-col gap-2 p-4`}>
+        <p className="flex items-center gap-2 font-extrabold text-primary text-sm">
+          <Check className="size-4" aria-hidden />
+          Seu projeto
+        </p>
+        <p className="sz-display text-lg">Guardado na sua conta</p>
+        <p className="font-medium text-muted-foreground text-sm">Dá para continuar até {until}.</p>
+        <button
+          type="button"
+          className={action}
+          onClick={() => scrollTo('.sz-lesson-section-head')}
+        >
+          Continuar criando
+        </button>
+      </div>
+      <div
+        className={`${tile} flex min-h-36 flex-col gap-2 p-4`}
+        aria-busy={next.status === 'loading'}
+      >
+        <p className="flex items-center gap-2 font-extrabold text-primary text-sm">
+          <CalendarDays className="size-4" aria-hidden />
+          Próximo encontro
+        </p>
+        {next.status === 'found' ? (
+          <>
+            <p className="sz-display text-lg">{friendlyWhen(nextStart, room.cohort.timeZone)}</p>
+            <p className="font-medium text-muted-foreground text-sm">{next.session.title}</p>
+            {adult ? (
+              <AddToCalendarButton
+                className={action}
+                event={{
+                  id: next.session.id,
+                  title: next.session.title,
+                  startsAt: nextStart,
+                  endsAt: next.session.occurrenceEndsAt ?? next.session.endsAt,
+                  path: `/oficinas/aulas/${next.session.id}`,
+                  description: `${room.cohort.title}. A sala abre 15 minutos antes.`,
+                }}
+              />
+            ) : (
+              <a href={`/oficinas/aulas/${next.session.id}`} className={action}>
+                Ver o encontro
+              </a>
+            )}
+          </>
+        ) : next.status === 'last' ? (
+          <>
+            <p className="sz-display text-lg">Este foi o último</p>
+            <p className="font-medium text-muted-foreground text-sm">
+              O que você criou continua guardado.
+            </p>
+          </>
+        ) : next.status === 'loading' ? (
+          <p className="sr-only" role="status">
+            Buscando o próximo encontro…
+          </p>
+        ) : (
+          <p className="font-medium text-muted-foreground text-sm">
+            A data aparece em Oficinas, na sua agenda.
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+type NextSession =
+  | { status: 'loading' | 'last' | 'unknown' }
+  | { status: 'found'; session: LiveSessionSummary }
+
+/**
+ * O encontro seguinte da MESMA turma, pela agenda. "Último" só quando a agenda veio inteira (sem
+ * próxima página): uma agenda cortada nunca afirma que acabou.
+ */
+function useNextSession(room: LiveRoomView): NextSession {
+  const [next, setNext] = useState<NextSession>({ status: 'loading' })
+  const cohortId = room.cohort.id
+  const after = Date.parse(room.occurrence?.startsAt ?? room.session.startsAt)
+  useEffect(() => {
+    const controller = new AbortController()
+    liveRequest<LiveCatalogView>('/api/live/catalog', undefined, 'GET', controller.signal)
+      .then((view) => {
+        const following = view.sessions
+          .filter(
+            (item) =>
+              item.cohortId === cohortId &&
+              item.occurrenceState !== 'cancelled' &&
+              Date.parse(item.occurrenceStartsAt ?? item.startsAt) > after,
+          )
+          .sort(
+            (a, b) =>
+              Date.parse(a.occurrenceStartsAt ?? a.startsAt) -
+              Date.parse(b.occurrenceStartsAt ?? b.startsAt),
+          )[0]
+        setNext(
+          following
+            ? { status: 'found', session: following }
+            : { status: view.nextCursor ? 'unknown' : 'last' },
+        )
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) setNext({ status: 'unknown' })
+      })
+    return () => controller.abort()
+  }, [cohortId, after])
+  return next
 }
 
 /**
@@ -551,6 +976,8 @@ interface StageDoor {
   canJoin: boolean
   busy: boolean
   takeover: boolean
+  /** "3 colegas já chegaram" (só o número, do servidor). */
+  present: string | null
 }
 interface StageModel {
   recordingVersion: number
@@ -589,7 +1016,7 @@ export function StageBox({ label, children }: { label: string; children?: ReactN
   return (
     <section
       aria-label={label}
-      className="grid aspect-video w-full place-items-center overflow-hidden rounded-[1.5rem] bg-(--menu,#1e293b) p-6 text-center text-white shadow-lg"
+      className={`grid aspect-video w-full place-items-center overflow-hidden rounded-[1.5rem] ${STAGE_BG} p-6 text-center text-white shadow-lg`}
     >
       {children}
     </section>
@@ -711,14 +1138,29 @@ function LessonRoom({
   const removed = media.self?.admission === 'removed'
   // Só a gravação usa a parte (os capítulos): na chamada, trocar de parte não toca o palco.
   const stageSection = mode === 'recording' ? currentSection : null
-  const { title: doorTitle, text: doorText, canJoin, busy: doorBusy, takeover } = door
+  const {
+    title: doorTitle,
+    text: doorText,
+    canJoin,
+    busy: doorBusy,
+    takeover,
+    present: doorPresent,
+  } = door
   const stageModel = useMemo<StageModel>(
     () => ({
       recordingVersion: recording?.version ?? 0,
       mode,
       door:
         mode === 'door'
-          ? { title: doorTitle, text: doorText, canJoin, busy: doorBusy, takeover, onJoin: join }
+          ? {
+              title: doorTitle,
+              text: doorText,
+              canJoin,
+              busy: doorBusy,
+              takeover,
+              present: doorPresent,
+              onJoin: join,
+            }
           : null,
       admitted,
       removed,
@@ -744,6 +1186,7 @@ function LessonRoom({
       canJoin,
       doorBusy,
       takeover,
+      doorPresent,
       join,
       admitted,
       removed,
@@ -775,7 +1218,9 @@ function LessonRoom({
   const lessonElement = useMemo(() => {
     if (!renderLesson || !courseId || !courseSlug || !lessonId) return null
     // Keep the lesson closed until its live authority exists; absence means recorded elsewhere.
-    if (!liveWorkspace) return <p role="status">Preparando seu projeto…</p>
+    // O mesmo formato da aula (transmissão em 16:9 e cartão), para nada pular quando ela chega.
+    if (!liveWorkspace)
+      return <LiveLessonSkeleton stage={STAGE_ELEMENT} label="Preparando seu projeto…" />
     const [opened = '', current = ''] = controlKey ? controlKey.split('|') : []
     return renderLesson({
       lesson: { courseId, courseSlug, lessonId },
@@ -803,20 +1248,20 @@ function LessonRoom({
   return (
     <>
       {!inCall && recordings.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-2 px-4 py-2">
-          <label htmlFor={replayLabelId} className="text-sm font-semibold">
-            Encontro e gravações
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor={replayLabelId} className="font-bold text-sm">
+            Assistir
           </label>
           <select
             id={replayLabelId}
-            className="min-h-11 max-w-full rounded-xl border bg-background px-3"
+            className="min-h-11 max-w-full rounded-xl border bg-card px-3 font-semibold"
             value={selected?.occurrenceId ?? 'current'}
             onChange={(event) => setSelectedReplay(event.target.value)}
           >
-            <option value="current">Encontro atual</option>
+            <option value="current">Encontro mais recente</option>
             {recordings.map((item) => (
               <option key={item.occurrenceId} value={item.occurrenceId}>
-                Gravação · {friendlyWhen(item.startsAt, room.cohort.timeZone)}
+                Gravação de {friendlyWhen(item.startsAt, room.cohort.timeZone).toLowerCase()}
               </option>
             ))}
           </select>
@@ -856,6 +1301,8 @@ function LessonRoom({
 /** A porta da sala no lugar da transmissão: entrar troca o que está no palco, nada pula. */
 function DoorStage({ door }: { door: StageDoor & { onJoin(): void } }) {
   const [testing, setTesting] = useState(false)
+  const check = useDeviceCheck()
+  const passed = check !== null && devicesPassed(check)
   return (
     <StageBox label="Transmissão">
       <div className="flex max-w-lg flex-col items-center gap-2 md:gap-3">
@@ -879,9 +1326,10 @@ function DoorStage({ door }: { door: StageDoor & { onJoin(): void } }) {
             className="min-h-12 bg-white/10 text-white hover:bg-white/20"
             onClick={() => setTesting(true)}
           >
-            Testar meu computador
+            {passed ? 'Testar de novo' : 'Testar meu computador'}
           </Button>
         </div>
+        <DoorNotes passed={passed} present={door.present} onDark />
       </div>
       <Dialog
         open={testing}
@@ -909,7 +1357,7 @@ function StagePlaceholder({ model }: { model: StageModel }) {
             ? recording === 'failed' || recording === 'empty'
               ? 'A gravação deste encontro não ficou pronta.'
               : 'A gravação aparece aqui quando ficar pronta.'
-            : 'Entre na sala para ver e ouvir a professora.'}
+            : 'Entre na sala para ver e ouvir o encontro.'}
         </p>
       </div>
     </StageBox>
@@ -939,7 +1387,7 @@ function LiveStage({ model }: { model: StageModel }) {
   const main = demo ?? teacherCam
   const pip = demo && teacherCam ? teacherCam : null
   const recording = model.recordingState === 'recording'
-  const name = teacherName ? `Professora ${teacherName}` : 'Professora'
+  const name = teacherName ?? 'Transmissão'
   const frame = useRef<HTMLElement>(null)
   // `native`: a tela cheia do navegador; `overlay`: sem ela (iPhone), a transmissão cobre a página.
   const [enlarged, setEnlarged] = useState<'native' | 'overlay' | null>(null)
@@ -980,29 +1428,35 @@ function LiveStage({ model }: { model: StageModel }) {
   }
   const message = !admitted
     ? model.removed
-      ? 'A professora encerrou sua participação neste encontro. Seu projeto continua aqui.'
-      : 'Você está na recepção. A professora já vai chamar você.'
+      ? 'Sua participação neste encontro foi encerrada. Seu projeto continua aqui.'
+      : `Você está na recepção. ${calledBy(teacherName)}`
     : !model.supervised
-      ? 'A professora está reconectando. Você pode continuar criando.'
+      ? `${teacherName ?? 'Quem conduz a turma'} está reconectando. Você pode continuar criando.`
       : model.reconnecting
-        ? 'A internet oscilou. Reconectando o som da professora…'
+        ? 'A internet oscilou. Reconectando o som da aula…'
         : !model.sessionReady
           ? 'Conectando o som e a imagem…'
           : !main
-            ? 'A professora está com a câmera desligada. Você ouve a voz dela.'
+            ? `${teacherName ?? 'Quem conduz a turma'} está com a câmera desligada. Dá para ouvir normalmente.`
             : null
   return (
     <section
       ref={frame}
       aria-label={`${name} ao vivo`}
-      className={`sz-live-stage overflow-hidden bg-(--menu,#1e293b) shadow-lg ${enlarged === 'overlay' ? 'fixed inset-0 z-[95] flex flex-col justify-center rounded-none' : enlarged === 'native' ? 'flex flex-col justify-center' : 'rounded-[1.5rem]'}`}
+      className={`sz-live-stage overflow-hidden ${STAGE_BG} shadow-lg ${enlarged === 'overlay' ? 'fixed inset-0 z-[95] flex flex-col justify-center rounded-none' : enlarged === 'native' ? 'flex flex-col justify-center' : 'rounded-[1.5rem]'}`}
     >
       <div className={`relative w-full ${enlarged ? 'max-h-dvh flex-1' : 'aspect-video'}`}>
         {main ? (
           <Stream
             bare
             stream={main.stream}
-            title={demo ? `Demonstração da ${name.toLowerCase()}` : name}
+            title={
+              demo
+                ? teacherName
+                  ? `Demonstração de ${teacherName}`
+                  : 'Demonstração ao vivo'
+                : name
+            }
             className="size-full bg-black object-contain"
           />
         ) : (
@@ -1108,11 +1562,11 @@ function LiveStage({ model }: { model: StageModel }) {
 function microphoneHint(room: LiveRoomView, media: LiveMedia): string | null {
   const self = media.self
   if (!media.sessionReady || !self) return null
-  if (self.microphoneLocked) return 'A professora fechou seu microfone por enquanto.'
+  if (self.microphoneLocked) return 'Seu microfone foi fechado por enquanto.'
   const mode = room.occurrence?.speakingMode
   if (mode === 'listen') return 'Hora de ouvir. Levante a mão se quiser falar.'
   if (mode === 'turns')
-    return self.turnGranted ? 'É a sua vez de falar!' : 'A professora vai chamar sua vez.'
+    return self.turnGranted ? 'É a sua vez de falar!' : 'Sua vez de falar já vai chegar.'
   return null
 }
 
@@ -1144,6 +1598,12 @@ function ControlBar({
   const [shareSupported, setShareSupported] = useState(false)
   useEffect(() => setShareSupported(canShareLiveTab()), [])
   const turn = hint === 'É a sua vez de falar!'
+  const { adult } = skin(room)
+  const who = teacherNameOf(room)
+  // O pedido de ajuda tem retorno: enquanto ele está aceso, a barra diz que ele chegou.
+  const helpNote = self?.helpAt
+    ? `Seu pedido de ajuda chegou para ${who ?? 'quem conduz a turma'}.`
+    : null
   // ⚠️ A barra mora ACIMA do rodapé da aula (que publica a altura em `--sz-lesson-nav-height`) e
   // publica a dela em `--sz-live-bar-height`, para a página reservar as duas embaixo do conteúdo.
   const bar = useRef<HTMLDivElement>(null)
@@ -1170,92 +1630,109 @@ function ControlBar({
       className="sz-live-controls fixed inset-x-3 bottom-[calc(var(--sz-lesson-nav-height,0px)+0.5rem)] z-30 mx-auto max-w-5xl"
       data-live-controls
     >
-      {hint || media.local.screen ? (
+      {hint || media.local.screen || helpNote ? (
         <p
           role="status"
           aria-live="polite"
-          className={`mx-auto mb-2 w-fit rounded-full px-4 py-1.5 text-center font-bold text-sm shadow ${turn ? 'bg-(--sz-kids-amarelo) text-(--sz-kids-tinta)' : 'bg-card text-foreground'}`}
+          className={`mx-auto mb-2 w-fit rounded-full px-4 py-1.5 text-center font-bold text-sm shadow ${turn ? WARN_TONE : 'bg-card text-foreground'}`}
         >
-          {media.local.screen ? 'A professora está vendo esta aba. ' : ''}
+          {media.local.screen ? `${who ?? 'Quem conduz a turma'} está vendo esta aba. ` : ''}
+          {helpNote ? `${helpNote} ` : ''}
           {hint ?? ''}
         </p>
       ) : null}
       <nav
         aria-label="Controles da sala"
-        className="grid grid-cols-4 items-center gap-1 rounded-[1.25rem] border bg-card/95 p-1.5 shadow-xl backdrop-blur sm:flex sm:flex-wrap sm:justify-center sm:gap-2 sm:p-2.5"
+        className={`grid ${adult ? 'grid-cols-3' : 'grid-cols-[repeat(auto-fit,minmax(3.25rem,1fr))]'} items-center gap-1 rounded-[1.25rem] border bg-card/95 p-1.5 shadow-xl backdrop-blur sm:flex sm:flex-wrap sm:justify-center sm:gap-2 sm:p-2.5`}
       >
-        <BarButton
-          active={Boolean(media.local.microphone)}
-          disabled={busy || media.busy || !media.microphoneAllowed}
-          onClick={() => void media.toggle('microphone')}
-          icon={media.local.microphone ? <Mic className="size-5" /> : <MicOff className="size-5" />}
-          label="Microfone"
-          name={media.local.microphone ? 'Desligar o microfone' : 'Ligar o microfone'}
-        />
-        <BarButton
-          active={Boolean(media.local.camera)}
-          disabled={busy || media.busy || (!media.local.camera && !media.cameraAllowed)}
-          onClick={() => (media.local.camera ? media.stop('camera') : setCameraOpen(true))}
-          icon={
-            media.local.camera ? <Camera className="size-5" /> : <CameraOff className="size-5" />
-          }
-          label="Câmera"
-          name={media.local.camera ? 'Desligar a câmera' : 'Ligar a câmera'}
-        />
-        <BarButton
-          target="room-hand"
-          active={Boolean(self?.handAt)}
-          disabled={!canInteract || busy}
-          onClick={() =>
-            void perform('requests', { deviceId, kind: 'hand', raised: !self?.handAt })
-          }
-          icon={<Hand className="size-5" />}
-          label={self?.handAt ? 'Baixar a mão' : 'Quero falar'}
-          short={self?.handAt ? 'Baixar' : 'Falar'}
-        />
-        <BarButton
-          target="room-help"
-          active={Boolean(self?.helpAt)}
-          disabled={!canInteract || busy}
-          onClick={() =>
-            void perform('requests', { deviceId, kind: 'help', raised: !self?.helpAt })
-          }
-          icon={<LifeBuoy className="size-5" />}
-          label={self?.helpAt ? 'Já consegui' : 'Pedir ajuda'}
-          short={self?.helpAt ? 'Consegui' : 'Ajuda'}
-        />
-        {shareSupported ? (
+        <BarSkin.Provider value={adult}>
           <BarButton
-            active={Boolean(media.local.screen)}
-            disabled={busy || media.busy || !media.available}
-            onClick={() => void media.toggle('screen')}
-            icon={<MonitorUp className="size-5" />}
-            label={media.local.screen ? 'Parar de mostrar' : 'Mostrar tela'}
-            short="Tela"
-            name={
-              media.local.screen
-                ? 'Parar de mostrar a tela à professora'
-                : 'Mostrar tela à professora'
+            active={Boolean(media.local.microphone)}
+            disabled={busy || media.busy || !media.microphoneAllowed}
+            onClick={() => void media.toggle('microphone')}
+            icon={
+              media.local.microphone ? <Mic className="size-5" /> : <MicOff className="size-5" />
             }
+            label={
+              adult
+                ? media.local.microphone
+                  ? 'Desligar microfone'
+                  : 'Ligar microfone'
+                : 'Microfone'
+            }
+            mid="Microfone"
+            name={media.local.microphone ? 'Desligar o microfone' : 'Ligar o microfone'}
           />
-        ) : null}
-        <span className="mx-0.5 hidden h-8 w-px bg-border sm:block" aria-hidden />
-        <BarButton
-          active={panel === 'chat'}
-          onClick={() => onPanel(panel === 'chat' ? null : 'chat')}
-          icon={<MessageCircle className="size-5" />}
-          label="Conversa"
-          short="Chat"
-          name="Conversa da turma"
-          badge={unread}
-        />
-        <BarButton
-          active={panel === 'materials'}
-          onClick={() => onPanel(panel === 'materials' ? null : 'materials')}
-          icon={<Paperclip className="size-5" />}
-          label="Materiais"
-          short="Arquivos"
-        />
+          <BarButton
+            active={Boolean(media.local.camera)}
+            disabled={busy || media.busy || (!media.local.camera && !media.cameraAllowed)}
+            onClick={() => (media.local.camera ? media.stop('camera') : setCameraOpen(true))}
+            icon={
+              media.local.camera ? <Camera className="size-5" /> : <CameraOff className="size-5" />
+            }
+            label={adult ? (media.local.camera ? 'Desligar câmera' : 'Ligar câmera') : 'Câmera'}
+            mid="Câmera"
+            name={media.local.camera ? 'Desligar a câmera' : 'Ligar a câmera'}
+          />
+          <BarButton
+            target="room-hand"
+            active={Boolean(self?.handAt)}
+            disabled={!canInteract || busy}
+            onClick={() =>
+              void perform('requests', { deviceId, kind: 'hand', raised: !self?.handAt })
+            }
+            icon={<Hand className="size-5" />}
+            label={self?.handAt ? 'Baixar a mão' : 'Quero falar'}
+            short={self?.handAt ? 'Baixar' : 'Falar'}
+          />
+          <BarButton
+            target="room-help"
+            active={Boolean(self?.helpAt)}
+            disabled={!canInteract || busy}
+            onClick={() =>
+              void perform('requests', { deviceId, kind: 'help', raised: !self?.helpAt })
+            }
+            icon={<LifeBuoy className="size-5" />}
+            label={self?.helpAt ? 'Já consegui' : 'Pedir ajuda'}
+            short={self?.helpAt ? 'Consegui' : 'Ajuda'}
+            mid={self?.helpAt ? 'Já consegui' : 'Ajuda'}
+          />
+          {shareSupported ? (
+            <BarButton
+              active={Boolean(media.local.screen)}
+              disabled={busy || media.busy || !media.available}
+              onClick={() => void media.toggle('screen')}
+              icon={<MonitorUp className="size-5" />}
+              label={media.local.screen ? 'Parar de mostrar' : 'Mostrar tela'}
+              short="Tela"
+              mid="Tela"
+              name={
+                media.local.screen
+                  ? 'Parar de mostrar minha tela'
+                  : 'Mostrar minha tela a quem conduz a turma'
+              }
+            />
+          ) : null}
+          <span className="mx-0.5 hidden h-8 w-px bg-border sm:block" aria-hidden />
+          <BarButton
+            active={panel === 'chat'}
+            onClick={() => onPanel(panel === 'chat' ? null : 'chat')}
+            icon={<MessageCircle className="size-5" />}
+            label="Conversa"
+            short="Chat"
+            mid="Conversa"
+            name="Conversa da turma"
+            badge={unread}
+          />
+          <BarButton
+            active={panel === 'materials'}
+            onClick={() => onPanel(panel === 'materials' ? null : 'materials')}
+            icon={<Paperclip className="size-5" />}
+            label="Materiais"
+            short="Arquivos"
+            mid="Materiais"
+          />
+        </BarSkin.Provider>
       </nav>
       <CameraPreview open={cameraOpen} onClose={() => setCameraOpen(false)} media={media} />
     </div>
@@ -1270,6 +1747,7 @@ function BarButton({
   icon,
   label,
   short,
+  mid,
   name,
   onClick,
   active = false,
@@ -1279,8 +1757,10 @@ function BarButton({
 }: {
   icon: ReactNode
   label: string
-  /** A palavra do celular (sem ela, o próprio rótulo). */
+  /** A palavra do celular no Kids (sem ela, o próprio rótulo). */
   short?: string
+  /** O rótulo do celular na comunidade adulta, em letra legível (sem ele, o rótulo inteiro). */
+  mid?: string
   /** O nome para o leitor de tela, quando o rótulo visível é curto demais para dizer o estado. */
   name?: string
   onClick(): void
@@ -1289,6 +1769,7 @@ function BarButton({
   badge?: number
   target?: string
 }) {
+  const adult = useContext(BarSkin)
   return (
     <Button
       variant={active ? 'default' : 'outline'}
@@ -1300,7 +1781,10 @@ function BarButton({
       className="relative h-auto min-h-12 min-w-12 flex-1 flex-col gap-0.5 px-1.5 py-1.5 sm:flex-none sm:flex-row sm:gap-2 sm:px-3.5"
     >
       {icon}
-      <span className="text-[0.6875rem] leading-tight sm:hidden">{short ?? label}</span>
+      {/* A comunidade adulta não usa letra menor que 17 px: no celular vai uma palavra legível. */}
+      <span className={`leading-tight sm:hidden ${adult ? 'text-base' : 'text-[0.6875rem]'}`}>
+        {adult ? (mid ?? label) : (short ?? label)}
+      </span>
       <span className="hidden sm:inline">{label}</span>
       {badge > 0 ? (
         <span className="absolute -top-1.5 -right-1.5 grid min-w-6 place-items-center rounded-full bg-destructive px-1.5 font-extrabold text-white text-xs">
@@ -1311,6 +1795,9 @@ function BarButton({
     </Button>
   )
 }
+
+/** A barra sabe a pele pela turma: a comunidade adulta tem rótulos de ação e letra maior. */
+const BarSkin = createContext(false)
 
 /** "Só você está vendo": o fundo é escolhido antes de a turma ver a câmera. */
 function CameraPreview({
@@ -1523,6 +2010,15 @@ function Chat({
   const end = useRef<HTMLLIElement>(null)
   const messages = (room.occurrence?.messages ?? []).filter((item) => !item.removed)
   const pinned = messages.filter((item) => item.pinned)
+  const paused = room.occurrence?.chatEnabled === false
+  // A caixa apagada sempre diz por quê (antes, fora do encontro ela só aparecia desligada).
+  const closedReason = paused
+    ? 'A conversa está pausada por enquanto.'
+    : !canSend
+      ? room.occurrence?.state === 'live'
+        ? 'A conversa volta em instantes, assim que a sala reconectar.'
+        : 'A conversa abre quando o encontro começar.'
+      : null
   // biome-ignore lint/correctness/useExhaustiveDependencies: rola até o fim quando chega mensagem nova.
   useEffect(() => {
     end.current?.scrollIntoView({ block: 'end' })
@@ -1530,13 +2026,13 @@ function Chat({
   if (!admitted)
     return (
       <p className="font-medium text-muted-foreground">
-        A conversa aparece quando a professora receber você na sala.
+        A conversa aparece quando você entrar na sala.
       </p>
     )
   return (
     <div className="flex h-full flex-col gap-3">
       {pinned.length ? (
-        <div className="space-y-2 rounded-2xl bg-(--band-creme) p-3">
+        <div className="space-y-2 rounded-2xl bg-(--band-creme,var(--muted)) p-3">
           <p className="font-extrabold text-xs uppercase tracking-wide">Recado fixado</p>
           {pinned.map((item) => (
             <p key={item.id} className="whitespace-pre-wrap break-words font-semibold">
@@ -1554,13 +2050,13 @@ function Chat({
           return (
             <li
               key={item.id}
-              className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${mine ? 'ml-auto bg-primary text-primary-foreground' : item.role === 'teacher' ? 'bg-(--band-menta)' : 'bg-muted'}`}
+              className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 ${mine ? 'ml-auto bg-primary text-primary-foreground' : item.role === 'teacher' ? 'bg-(--band-menta,var(--muted))' : 'bg-muted'}`}
             >
               <p className="font-extrabold text-xs">
                 {mine
                   ? 'Você'
                   : item.role === 'teacher'
-                    ? `Professora ${item.authorName}`
+                    ? `${item.authorName} · conduz a turma`
                     : item.authorName}
               </p>
               <p className="whitespace-pre-wrap break-words">{item.text}</p>
@@ -1580,24 +2076,26 @@ function Chat({
         <label htmlFor="live-message" className="sr-only">
           Mensagem para a turma
         </label>
+        {closedReason ? (
+          <p id="live-message-closed" className="font-medium text-muted-foreground text-sm">
+            {closedReason}
+          </p>
+        ) : null}
         <textarea
           id="live-message"
           maxLength={500}
           rows={2}
-          placeholder={
-            room.occurrence?.chatEnabled === false
-              ? 'A conversa está pausada pela professora.'
-              : 'Escreva para a turma…'
-          }
+          placeholder="Escreva para a turma…"
+          aria-describedby={closedReason ? 'live-message-closed' : undefined}
           className="w-full rounded-xl border bg-background p-3 font-medium"
           value={message}
           onChange={(event) => setMessage(event.target.value)}
-          disabled={!canSend || busy || room.occurrence?.chatEnabled === false}
+          disabled={Boolean(closedReason) || busy}
         />
         <Button
           type="submit"
           className="min-h-11 w-full"
-          disabled={!canSend || busy || !message.trim() || room.occurrence?.chatEnabled === false}
+          disabled={Boolean(closedReason) || busy || !message.trim()}
         >
           <Send className="size-4" />
           Enviar
@@ -1615,11 +2113,14 @@ function Chat({
 function Materials({ room, outline }: { room: LiveRoomView; outline: LiveLessonOutline | null }) {
   const [problem, setProblem] = useState<string | null>(null)
   const [pending, setPending] = useState<string | null>(null)
+  const { material: materialSkin } = skin(room)
   const lesson = room.lesson
   const materials = lesson ? (outline?.attachments ?? []) : []
   if (!materials.length || !lesson)
     return (
-      <p className="font-medium text-muted-foreground">Tudo o que você precisa está na sala.</p>
+      <p className="font-medium text-muted-foreground">
+        Este encontro não tem arquivos para baixar. Tudo o que você vai usar já está na aula.
+      </p>
     )
   async function download(id: string, title: string) {
     if (!lesson) return
@@ -1664,7 +2165,7 @@ function Materials({ room, outline }: { room: LiveRoomView; outline: LiveLessonO
               type="button"
               disabled={pending !== null}
               onClick={() => void download(material.id, material.label)}
-              className="kids-3d kids-3d--carta flex min-h-12 w-full items-center gap-3 rounded-2xl border bg-card p-3 text-left font-bold disabled:opacity-60"
+              className={`${materialSkin} flex min-h-12 w-full items-center gap-3 p-3 text-left font-bold disabled:opacity-60`}
             >
               <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                 <Download className="size-4" aria-hidden />

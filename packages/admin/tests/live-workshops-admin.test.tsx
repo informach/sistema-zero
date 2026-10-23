@@ -3,6 +3,12 @@ import { GlobalRegistrator } from '@happy-dom/global-registrator'
 import type { LiveCatalogView, LiveCohort, LiveCourseSummary } from '@sistemazero/core/live'
 
 if (typeof document === 'undefined') GlobalRegistrator.register()
+// O Zappy dos estados vazios é um `next/image`, que em dev resolve o endereço contra a página:
+// com `about:blank` (o registro de fábrica, talvez de outro arquivo da suíte) ele lança.
+if (window.location.href === 'about:blank')
+  (window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM.setURL(
+    'http://localhost/',
+  )
 ;(globalThis as Record<string, unknown>).IS_REACT_ACT_ENVIRONMENT = true
 
 // `mock.module` vale para o processo inteiro: preserve o contrato de `next/navigation` e troque
@@ -143,6 +149,59 @@ const page = () => (
 )
 
 describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
+  test('paginação da primeira visita Kids não invade Kids depois de passar por Adultos', async () => {
+    setPlatform('kids')
+    server(() => ({ ...catalogOf([COURSE]), nextCursor: 'old-page' }))
+    const baseFetch = globalThis.fetch
+    const delayed = Promise.withResolvers<void>()
+    let signal: AbortSignal | null | undefined
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes('cursor=')) {
+        signal = init?.signal
+        await delayed.promise
+        return Response.json(catalogOf([], [{ ...COHORT, title: 'Turma obsoleta' }]))
+      }
+      return baseFetch(input, init)
+    }) as typeof fetch
+    const view = await mount(page())
+    await settle()
+    await act(async () => button(view, 'Carregar mais turmas e as mais antigas').click())
+    await act(async () => setPlatform('adult'))
+    await settle()
+    await act(async () => setPlatform('kids'))
+    await settle()
+    await act(async () => delayed.resolve())
+    await settle()
+    expect(view.textContent).not.toContain('Turma obsoleta')
+    expect(signal?.aborted).toBe(true)
+  })
+
+  test('dois cliques antes da renderização fazem uma única paginação', async () => {
+    setPlatform('kids')
+    server(() => ({ ...catalogOf([COURSE]), nextCursor: 'old-page' }))
+    const baseFetch = globalThis.fetch
+    const delayed = Promise.withResolvers<void>()
+    let reads = 0
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).includes('cursor=')) {
+        reads++
+        await delayed.promise
+        return Response.json(catalogOf([], [{ ...COHORT, title: 'Turma obsoleta' }]))
+      }
+      return baseFetch(input, init)
+    }) as typeof fetch
+    const view = await mount(page())
+    await settle()
+    const more = button(view, 'Carregar mais turmas e as mais antigas')
+    await act(async () => {
+      more.click()
+      more.click()
+    })
+    await act(async () => delayed.resolve())
+    await settle()
+    expect(reads).toBe(1)
+  })
+
   test('lista os cursos ao vivo da plataforma ativa e troca junto com o seletor', async () => {
     setPlatform('kids')
     const requests = server((audience) =>
@@ -153,7 +212,10 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
     expect(view.textContent).toContain('Farol ao vivo')
     expect(view.textContent).toContain('2 aulas publicadas: 2 encontros por turma')
     expect(view.textContent).toContain('Turma de sábado')
-    expect(view.textContent).toContain('Professoras: Bia')
+    expect(view.textContent).toContain('Quem conduz: Bia')
+    expect(view.textContent).not.toContain('Professora')
+    // O atalho do cabeçalho para a agenda saiu: a agenda tem o próprio item no menu.
+    expect(view.querySelector('a[href="/admin/professor/ao-vivo"]') !== null).toBe(false)
     // O editor de roteiro antigo saiu: nada de encontros com instruções ou projeto inicial aqui.
     expect(view.textContent).not.toContain('Projeto inicial')
     expect(view.textContent).not.toContain('Salvar roteiro')
@@ -164,10 +226,10 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
     await settle()
     expect(requests.some((r) => r.path === '/api/admin/live/catalog?audience=adult')).toBe(true)
     expect(view.textContent).not.toContain('Farol ao vivo')
-    expect(view.textContent).toContain('Ainda não há curso ao vivo em Adultos')
+    expect(view.textContent).toContain('Ainda não há curso ao vivo na Comunidade Sistema Zero')
   })
 
-  test('nova turma: uma data por AULA PUBLICADA, no fuso escolhido, pela rota do curso', async () => {
+  test('nova turma: uma data por AULA PUBLICADA, no fuso escolhido, e já com as inscrições abertas', async () => {
     setPlatform('kids')
     const requests = server(() => catalogOf([COURSE]))
     const view = await mount(page())
@@ -193,7 +255,7 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
     await act(async () => type(input('end-0'), '2026-10-17T16:30'))
     await act(async () => type(input('start-1'), '2026-10-24T15:00'))
     await act(async () => type(input('end-1'), '2026-10-24T16:30'))
-    await act(async () => button(document.body, 'Criar turma').click())
+    await act(async () => button(document.body, 'Salvar e abrir inscrições').click())
     await settle()
     const created = requests.find((r) => r.path === '/api/admin/live/courses/c1/cohorts')
     expect(created?.method).toBe('POST')
@@ -210,14 +272,57 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
         { startsAt: '2026-10-24T19:00:00.000Z', endsAt: '2026-10-24T20:30:00.000Z' },
       ],
     })
-    const next = document.querySelector<HTMLElement>('[role="dialog"]')!
-    expect(next.getAttribute('aria-label')).toBe('Turma criada como rascunho')
-    await act(async () => button(next, 'Abrir inscrições').click())
-    await settle()
+    // O MESMO PATCH do "Abrir inscrições", encadeado depois da criação, sem um segundo diálogo.
     expect(requests.find((r) => r.path === '/api/admin/live/cohorts/k9')).toMatchObject({
       method: 'PATCH',
       body: { status: 'open' },
     })
+    expect(document.querySelector('[role="dialog"]') !== null).toBe(false)
+    expect(view.querySelector('[role="status"]')?.textContent).toContain(
+      'Inscrições abertas na turma Turma nova',
+    )
+  })
+
+  test('nova turma salva como rascunho não abre as inscrições', async () => {
+    setPlatform('kids')
+    const requests = server(() => catalogOf([COURSE]))
+    const view = await mount(page())
+    await settle()
+    await act(async () => button(view, 'Nova turma').click())
+    await settle()
+    const dialog = document.querySelector<HTMLElement>('[role="dialog"]')!
+    const input = (name: string) => dialog.querySelector<HTMLInputElement>(`input[name="${name}"]`)!
+    await act(async () => type(input('title'), 'Turma nova'))
+    await act(async () => type(input('start-0'), '2026-10-17T15:00'))
+    await act(async () => type(input('end-0'), '2026-10-17T16:30'))
+    await act(async () => type(input('start-1'), '2026-10-24T15:00'))
+    await act(async () => type(input('end-1'), '2026-10-24T16:30'))
+    await act(async () => button(document.body, 'Salvar como rascunho').click())
+    await settle()
+    expect(
+      requests.some((r) => r.path === '/api/admin/live/courses/c1/cohorts' && r.method === 'POST'),
+    ).toBe(true)
+    expect(requests.some((r) => r.path === '/api/admin/live/cohorts/k9')).toBe(false)
+    expect(document.querySelector('[role="dialog"]') !== null).toBe(false)
+    expect(view.querySelector('[role="status"]')?.textContent).toContain(
+      'Turma Turma nova salva como rascunho',
+    )
+  })
+
+  test('quem é da equipe vê a faixa de só leitura e os botões apagados', async () => {
+    setPlatform('kids')
+    server(() => catalogOf([COURSE], [COHORT]))
+    const view = await mount(
+      <PlatformProvider initialPlatform="kids">
+        <LiveAdmin teacherId="t2" teacherName="Bia" canWrite={false} />
+      </PlatformProvider>,
+    )
+    await settle()
+    expect(view.querySelector('[role="note"]')?.textContent).toContain('Só leitura')
+    expect(button(view, 'Nova turma').disabled).toBe(true)
+    expect(button(view, 'Criar curso ao vivo').disabled).toBe(true)
+    expect(button(view, 'Editar turma').disabled).toBe(true)
+    expect(button(view, 'Inscrições').disabled).toBe(false)
   })
 
   test('datas fora de ordem não vão ao servidor, e o recado diz o encontro', async () => {
@@ -234,7 +339,7 @@ describe('Oficinas ao vivo: as turmas dos cursos ao vivo da plataforma', () => {
     await act(async () => type(input('end-0'), '2026-10-24T16:30'))
     await act(async () => type(input('start-1'), '2026-10-17T15:00'))
     await act(async () => type(input('end-1'), '2026-10-17T16:30'))
-    await act(async () => button(document.body, 'Criar turma').click())
+    await act(async () => button(document.body, 'Salvar como rascunho').click())
     await settle()
     expect(dialog.querySelector('[role="alert"]')?.textContent).toContain(
       'O encontro 2 começa antes do fim do encontro 1',
@@ -299,7 +404,7 @@ test('inscrição adulta busca a conta e envia a mesma identidade como participa
       }}
     />,
   )
-  expect(view.textContent).toContain('Inscrever um participante')
+  expect(view.textContent).toContain('Inscrever um aluno')
   expect(view.querySelector('select')).toBeNull()
   await act(async () => type(view.querySelector('input')!, 'Ana'))
   await act(async () => new Promise((resolve) => setTimeout(resolve, 350)))

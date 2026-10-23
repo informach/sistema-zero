@@ -18,11 +18,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import type { ChildListRow } from '@/app/api/admin/children/route'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
+import { AlunosTabs } from '@/components/admin/section-tabs'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { ageFrom } from '@/lib/age'
 import { type ApiError, apiGet } from '@/lib/api'
 import { relativeCivilDayLabel } from '@/lib/format'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { STUDENT_RANK_LABELS } from '@/lib/student-rank'
 
 const LIMIT = 20
@@ -30,8 +33,8 @@ const LIMIT = 20
 /**
  * Listagem de CRIANÇAS (modo Kids): a criança é a entidade de primeira classe —
  * busca pelo NOME dela (ou do responsável), idade em vez de e-mail, nível/XP,
- * ofensiva, última atividade e pendências de entrega. A linha abre a ficha da
- * família FOCADA na criança (`?learner=`).
+ * sequência de dias, última atividade e projetos esperando a equipe. A linha abre
+ * a ficha da família FOCADA na criança (`?learner=`).
  */
 export function ChildrenClient() {
   const [items, setItems] = useState<ChildListRow[]>([])
@@ -39,6 +42,7 @@ export function ChildrenClient() {
   const [offset, setOffset] = useState(0)
   const [q, setQ] = useState('')
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const loadAuthority = useRef(createForegroundPriority()).current
 
   const load = useCallback(async () => {
@@ -54,9 +58,11 @@ export function ChildrenClient() {
         onSuccess: (page) => {
           setItems(page.items)
           setTotal(page.total)
+          setLoadFailed(false)
         },
         onError: (error) => {
-          toast.error((error as ApiError).message ?? 'Falha ao carregar as crianças.')
+          setLoadFailed(true)
+          toast.error((error as ApiError).message ?? 'Não conseguimos carregar as crianças.')
         },
         onSettled: () => setLoading(false),
       },
@@ -75,13 +81,14 @@ export function ChildrenClient() {
     <div className="space-y-6">
       <AdminHeader
         title="Alunos"
-        description="As crianças da plataforma Kids — busque pelo nome da criança ou do responsável."
+        description={`As crianças da ${COMMUNITY_NAMES.kids}. Busque pelo nome da criança ou de quem responde pela conta.`}
       />
+      <AlunosTabs />
 
       <div className="relative">
         <Search className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-2.5 size-4 text-muted-foreground" />
         <Input
-          placeholder="Nome da criança ou responsável…"
+          placeholder="Nome da criança ou do responsável"
           value={q}
           onChange={(e) => {
             setOffset(0)
@@ -91,25 +98,42 @@ export function ChildrenClient() {
         />
       </div>
 
-      <Card>
+      <Card className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Criança</TableHead>
               <TableHead>Responsável</TableHead>
               <TableHead>Nível</TableHead>
-              <TableHead>Ofensiva</TableHead>
+              <TableHead>Sequência de dias</TableHead>
               <TableHead>Última atividade</TableHead>
-              <TableHead>Pendências</TableHead>
+              <TableHead>Esperando a equipe</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableSkeletonRows columns={6} />
+            ) : loadFailed && items.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6}>
+                  <LoadError what="as crianças" onRetry={() => void load()} />
+                </TableCell>
+              </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
-                  {q.trim() ? 'Nenhuma criança encontrada.' : 'Nenhum perfil de criança ainda.'}
+                <TableCell colSpan={6}>
+                  {q.trim() ? (
+                    <EmptyState
+                      title="Nenhuma criança com esse nome."
+                      description="Tente o nome de quem responde pela conta ou o e-mail."
+                    />
+                  ) : (
+                    <EmptyState
+                      zappy="happy"
+                      title="Nenhuma criança ainda."
+                      description="Quando uma família criar o perfil de uma criança, ele aparece aqui."
+                    />
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
@@ -172,9 +196,10 @@ export function ChildrenClient() {
                       {pending > 0 ? (
                         <Link
                           href={`/admin/professor/entregas?userId=${encodeURIComponent(child.profileId)}`}
+                          aria-label={`${pending} ${pending === 1 ? 'projeto' : 'projetos'} de ${child.name} esperando a equipe`}
                         >
-                          <Badge variant="destructive">
-                            {pending} {pending === 1 ? 'entrega' : 'entregas'}
+                          <Badge variant="warning">
+                            {pending} {pending === 1 ? 'projeto' : 'projetos'}
                           </Badge>
                         </Link>
                       ) : (

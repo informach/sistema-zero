@@ -406,7 +406,7 @@ test.each([
       expect(document.querySelector('#cvideobeforeactivity')).toBeNull()
       if (audience === 'adult') {
         expect(document.body.textContent).toContain(
-          'conquistados ficam registrados mesmo sem licença do Estúdio Completo',
+          'conquistados ficam guardados mesmo sem a licença do Estúdio Completo',
         )
         expect(document.body.textContent).not.toContain('A oficina não concede a paleta')
       }

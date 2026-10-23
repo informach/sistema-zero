@@ -103,7 +103,7 @@ describe('Testar agora: referências canônicas da parte', () => {
     )
     expect(report.problems).toEqual([])
     expect(report.notes.join(' ')).toContain('já cumpre todos os objetivos obrigatórios do projeto')
-    expect(report.notes.join(' ')).toContain('vídeo, quiz e entrega')
+    expect(report.notes.join(' ')).toContain('vídeo, quiz e envio do projeto')
   })
 
   test('registro inválido é erro de autoria e nunca ausência ou fallback global', () => {

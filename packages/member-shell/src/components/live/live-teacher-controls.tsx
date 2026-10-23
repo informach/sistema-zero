@@ -4,6 +4,7 @@ import type {
   LiveControl,
   LiveGuidance,
   LiveOccurrenceState,
+  LiveRecordingState,
   LiveRoomView,
   LiveSpeakingMode,
 } from '@sistemazero/core/live'
@@ -81,7 +82,7 @@ const STATE_TEXT: Record<LiveOccurrenceState, { label: string; detail: string }>
   },
 }
 
-/** O que a professora vê no instante da foto da sala: quem espera e quantas mãos estão no ar. */
+/** O que quem conduz vê no instante da foto da sala: quem espera e quantas mãos estão no ar. */
 export function teacherRoomSummary(room: LiveRoomView) {
   const participants = room.occurrence?.participants ?? []
   return {
@@ -92,11 +93,106 @@ export function teacherRoomSummary(room: LiveRoomView) {
 }
 
 /**
- * Abaixa só as mãos que a professora VIU: as que subiram até o horário desta foto da sala.
+ * Abaixa só as mãos que quem conduz VIU: as que subiram até o horário desta foto da sala.
  * Uma mão levantada depois do clique continua no ar.
  */
 export function lowerHandsCommand(room: LiveRoomView): LiveControl {
   return { kind: 'lower-hands', learnerId: null, before: room.serverTime }
+}
+
+/** Os passos do encontro, na ordem em que quem conduz passa por eles. */
+export const TEACHER_ROADMAP = [
+  'Preparar o navegador',
+  'Abrir a recepção',
+  'Receber a turma e começar',
+  'Encerrar o encontro',
+  'Revisar a gravação',
+] as const
+
+/** Estados em que o encontro não deixou gravação nenhuma para revisar. */
+const NO_RECORDING: ReadonlySet<LiveRecordingState> = new Set([
+  'not_started',
+  'empty',
+  'failed',
+  'unavailable',
+])
+
+/** Sobrou uma gravação que ainda espera a revisão de quem conduz (existe e não foi publicada). */
+function recordingToReview(
+  recording: { state: LiveRecordingState; published: boolean } | null | undefined,
+): boolean {
+  return Boolean(recording && !recording.published && !NO_RECORDING.has(recording.state))
+}
+
+/**
+ * Em que passo do roteiro o encontro está, só pelo que a sala já diz (nada aqui muda a sala).
+ * Antes de entrar, o passo é preparar o navegador (seja qual for o estado da sala); dentro,
+ * segue a sala: marcado → abrir a recepção, recepção → receber e começar, ao vivo → encerrar.
+ * Encerrado com gravação para revisar → revisar; encerrado sem gravação (ou já publicada) →
+ * `TEACHER_ROADMAP.length`, tudo feito, sem passo atual. `null` = encontro cancelado.
+ */
+export function teacherRoadmapStep(
+  state: LiveOccurrenceState | null | undefined,
+  joined: boolean,
+  recording?: { state: LiveRecordingState; published: boolean } | null,
+): number | null {
+  if (state === 'cancelled') return null
+  if (state === 'ended') return recordingToReview(recording) ? 4 : TEACHER_ROADMAP.length
+  if (!joined) return 0
+  if (state === 'lobby') return 2
+  if (state === 'live') return 3
+  return 1
+}
+
+/**
+ * O roteiro do encontro (a sala da equipe, 23/10/2026): uma linha de passos SÓ DE LEITURA que
+ * mostra onde o encontro está. Os botões de verdade continuam em "Organização da sala".
+ */
+export function LiveTeacherRoadmap({ room, joined }: { room: LiveRoomView; joined: boolean }) {
+  const headingId = useId()
+  const step = teacherRoadmapStep(room.occurrence?.state, joined, room.occurrence?.recording)
+  if (step === null) return null
+  return (
+    <section aria-labelledby={headingId} className="rounded-xl border bg-card p-4">
+      <h2 id={headingId} className="mb-3 text-sm font-semibold">
+        Roteiro do encontro
+      </h2>
+      <ol className="flex flex-wrap gap-2">
+        {TEACHER_ROADMAP.map((label, index) => {
+          const done = index < step
+          const current = index === step
+          return (
+            <li
+              key={label}
+              aria-current={current ? 'step' : undefined}
+              className={`inline-flex min-h-9 items-center gap-2 rounded-full border px-3 text-sm ${
+                current
+                  ? 'border-primary bg-primary/10 font-bold'
+                  : done
+                    ? 'border-transparent bg-muted text-muted-foreground'
+                    : 'border-border text-muted-foreground'
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`grid size-5 place-items-center rounded-full text-xs font-bold ${
+                  done
+                    ? 'bg-success/20'
+                    : current
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted'
+                }`}
+              >
+                {done ? <Check className="size-3" /> : index + 1}
+              </span>
+              {label}
+              <span className="sr-only">{done ? ', feito' : current ? ', agora' : ''}</span>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
+  )
 }
 
 export function LiveTeacherControls({
@@ -111,7 +207,7 @@ export function LiveTeacherControls({
   stale: boolean
   onControl(command: LiveControl): Promise<boolean>
   /**
-   * As partes da aula do encontro (curso ao vivo, 14/10/2026). Com o encontro ao vivo a professora
+   * As partes da aula do encontro (curso ao vivo, 14/10/2026). Com o encontro ao vivo quem conduz
    * abre as partes: "Próxima parte" ou qualquer uma da lista (`open-section`). A tela da turma vai
    * junto e as crianças navegam só entre as abertas.
    */

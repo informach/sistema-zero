@@ -944,7 +944,7 @@ export const COPY = {
     },
     extrudeAmount: 'Quanto puxar',
     extrudeHandlesHint:
-      'Arraste as alças de Mover no modelo para puxar a face, ou ajuste o valor abaixo.',
+      'A seta verde acompanha a inclinação da face. Arraste para puxar, ou ajuste o valor abaixo.',
     createFaceEdge: {
       label: 'Criar face ou linha',
       description: 'Ligue os pontos ou crie uma face entre as linhas escolhidas.',

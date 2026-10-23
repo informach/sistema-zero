@@ -355,10 +355,10 @@ function JourneyNode({
           </span>
         ) : locked && completion && completion.total > 0 ? (
           // O posto travado também diz o tamanho da trilha dele (telas-modelo): quantas
-          // aventuras existem lá, todas por fazer. Conta só o que o catálogo TEM.
+          // cursos existem lá, todos por fazer. Conta só o que o catálogo TEM.
           <span className="flex flex-col items-center gap-1 font-semibold text-[11px] text-muted-foreground">
             <ProgressDots done={0} total={completion.total} color={info.colorVar} />
-            {completion.total} {completion.total === 1 ? 'aventura' : 'aventuras'}
+            {completion.total} {completion.total === 1 ? 'curso' : 'cursos'}
           </span>
         ) : null}
       </span>

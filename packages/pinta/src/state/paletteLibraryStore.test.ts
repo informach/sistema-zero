@@ -83,6 +83,37 @@ describe('paletteLibraryStore', () => {
     ).toBeNull()
   })
 
+  it('falha de gravação não confirma criação, renomeação ou exclusão', async () => {
+    const base = createPintaPersistence()
+    let fail = false
+    const persistence = {
+      ...base,
+      savePaletteLibrary: async (
+        library: Parameters<NonNullable<typeof base.savePaletteLibrary>>[0],
+      ) => {
+        if (fail) throw new Error('disco indisponível')
+        return base.savePaletteLibrary!(library)
+      },
+    }
+    const store = createPaletteLibraryStore(persistence)
+    await store.getState().load()
+    const saved = await store
+      .getState()
+      .savePalette({ name: 'Original', colors: colorsOf('#111111') })
+    expect(saved).not.toBeNull()
+
+    fail = true
+    expect(
+      await store.getState().savePalette({ name: 'Nova', colors: colorsOf('#222222') }),
+    ).toBeNull()
+    expect(await store.getState().renamePalette(saved!.id, 'Renomeada')).toBe(false)
+    expect(await store.getState().removePalette(saved!.id)).toBe(false)
+    expect(store.getState().palettes.map((item) => item.name)).toEqual(['Original'])
+    expect((await base.loadPaletteLibrary?.())?.palettes.map((item) => item.name)).toEqual([
+      'Original',
+    ])
+  })
+
   it('serializa saves concorrentes e usa timestamps monotônicos', async () => {
     const store = createPaletteLibraryStore(createPintaPersistence(), { now: () => 100 })
     await store.getState().load()
