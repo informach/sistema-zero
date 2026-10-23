@@ -26,3 +26,15 @@ Os recibos negativos anteriores permanecem negativos. A captura que mostrou
 `unconfirmed/transport` teve DELETE do tail confirmado, mas não recebeu o ACK
 de fechamento do socket dentro do prazo; não concede qualificação global de
 limpeza ou reconciliação.
+
+Após o hotfix da fonte `532f409c5`, staging recebeu a versão
+`90ac68b2-3590-4b7a-8dbe-eb91da7655a2`. A observação única, entre
+04:30:33 e 04:31:29 UTC de 23/10, capturou uma execução agendada real
+com `reconciled`, `confirmed: 0`, `pending: 0` e `expiredBuilderJobs: 0`.
+O contexto remoto permaneceu igual antes e depois. O DELETE do tail foi
+confirmado; após o prazo do fechamento gracioso, a API pública `terminate()`
+do cliente pertencente ao teste produziu o evento close observado.
+
+Esse resultado qualifica a reconciliação agendada dessa versão em staging.
+Não qualifica a interface, a publicação dos jogos nem a implantação em produção.
+Os negativos e o timeout gracioso continuam registrados nos recibos históricos.

@@ -106,3 +106,22 @@ o negativo original continua preservado.
 A causa da falha agendada e a correção do transporte estão em
 [runtime do cron](2026-10-23-cron-native-runtime.md). A repetição hospedada
 após implantação continua necessária.
+
+### Nova leitura e repetição no Kids
+
+Às 04:34 UTC, o Kids já tinha ativo único `bf33cbef6`, digest
+`sha256:99d51efd88ac3e8b954918e481d17f11d681ad970b38a7a0703ededea221afe5`,
+sem pendências e com o predecessor retirado. Admin e comunidade adulta ainda
+estavam em build; essa leitura não conclui o rollout completo.
+
+Após recarregar o documento e reabrir o projeto próprio Python Pro/Pinta,
+criação, início e chamadas de análise responderam 200 com `x-sz-session`
+presente, sem `SESSION_CHANGED`. `projectDiagnostics` respondeu 200 antes
+e depois da ação Formatar documento. A execução apresentou o canvas Turtle
+com título próprio; Stop retirou o iframe. Fonte formatada e estado salvo
+foram vistos. Nenhum cookie, valor do cabeçalho ou handshake foi versionado.
+
+A observação agendada posterior do Worker também passou, com contagens
+canônicas zero e limpeza local/remota confirmada, conforme o documento do
+cron. Esses positivos posteriores não alteram os recibos negativos anteriores.
+Oficina/conquistas e promoção em produção continuam sem qualificação final.
