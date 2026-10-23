@@ -47,7 +47,7 @@ export function agendaState(session: LiveSessionSummary, now: number): AgendaSta
   return 'scheduled'
 }
 
-/** "2026-10-14" no fuso de quem olha: é o "hoje" da professora, não o do servidor. */
+/** "2026-10-14" no fuso de quem olha: é o "hoje" de quem conduz, não o do servidor. */
 export function agendaDayKey(value: string | number, timeZone: string): string {
   return new Intl.DateTimeFormat('en-CA', {
     timeZone,
@@ -93,16 +93,39 @@ export function groupLiveAgenda(
   return groups
 }
 
-/** O texto do botão diz o que a professora vai fazer lá dentro. */
+/**
+ * O texto do botão diz o que quem conduz vai fazer lá dentro, um rótulo por situação (a sala da
+ * equipe, 23/10/2026): recepção aberta ou ao vivo, "Entrar na sala"; hoje e antes da hora,
+ * "Preparar sala"; o resto, "Ver encontro". ⚠️ "Revisar gravação" não entra aqui: o resumo do
+ * encontro não diz se há gravação esperando revisão (ver `recordingPublished`).
+ */
 export function agendaActionLabel(item: AgendaItem, group: keyof AgendaGroups): string {
   if (item.state === 'live' || item.state === 'lobby') return 'Entrar na sala'
   if (group === 'today') return 'Preparar sala'
-  if (group === 'upcoming') return 'Preparar encontro'
   return 'Ver encontro'
 }
 
+/** "15:00", no fuso da turma: o horário grande do cartão de Hoje. */
+export function agendaTime(startsAt: string, timeZone: string): string {
+  return new Intl.DateTimeFormat('pt-BR', { timeZone, hour: '2-digit', minute: '2-digit' }).format(
+    new Date(startsAt),
+  )
+}
+
 /**
- * ⚠️ A sala da professora precisa de navegação COMPLETA (`<a href>`): câmera, microfone e o
+ * O aviso de fuso, em palavras: só aparece quando a turma está num fuso diferente do de quem
+ * olha. `null` quando os dois batem (o horário mostrado já é o de quem olha).
+ */
+export function agendaZoneNote(
+  cohortTimeZone: string | undefined,
+  local: string = Intl.DateTimeFormat().resolvedOptions().timeZone,
+): string | null {
+  if (!cohortTimeZone || cohortTimeZone === local) return null
+  return `Horário da turma (${cohortTimeZone.replace(/_/g, ' ')}), que é diferente do seu.`
+}
+
+/**
+ * ⚠️ A sala de quem conduz precisa de navegação COMPLETA (`<a href>`): câmera, microfone e o
  * frame da prévia são liberados por cabeçalho da rota, e a navegação do Next mantém os
  * cabeçalhos do primeiro documento carregado.
  */

@@ -2,61 +2,70 @@
 
 import { Badge } from '@sistemazero/ui/badge'
 import { Button } from '@sistemazero/ui/button'
-import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Skeleton } from '@sistemazero/ui/skeleton'
 import { Switch } from '@sistemazero/ui/switch'
-import { Mail, MailCheck, X } from 'lucide-react'
-import { useSearchParams } from 'next/navigation'
+import { MailCheck, X } from 'lucide-react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import {
+  type CommunityScope,
+  CommunityScopeSelect,
+} from '@/components/admin/community-scope-select'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { refreshProfessorCounts } from '@/components/admin/professor-counts-store'
 import { useConfirm } from '@/components/admin/use-confirm'
+import { MoreMenu } from '@/components/professor/more-menu'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { formatDate } from '@/lib/format'
 import { createForegroundPriority, runLatestForeground } from '@/lib/latest-wins'
+import { COMMUNITY_NAMES, PLATFORM_LABELS, type Platform } from '@/lib/platform'
 import { platformTransition } from '@/lib/platform-transition'
 import { threadSubject } from '@/lib/teacher-thread-subject'
-import type { CourseView, Paginated, TeacherThreadContext, TeacherThreadRow } from '@/lib/types'
+import type { CourseView, Paginated, TeacherThreadRow, TeacherThreadView } from '@/lib/types'
 import { BroadcastPanel } from './broadcast-panel'
+import { CONTEXT_LABELS, CONTEXTS, WORKFLOW_STATUSES, workflowLabel } from './recados-copy'
 import { ThreadDialog } from './thread-dialog'
 
 const PAGE = 30
 
-const CONTEXT_LABELS: Record<TeacherThreadContext, string> = {
-  lesson_section: 'Dúvida na aula',
-  studio_submission: 'Entrega',
-  mural_publication: 'Mural',
-  general: 'Recado',
+/** Nome de exibição: a criança (perfil) no Kids; o titular no Adultos. */
+export function studentNameOf(t: TeacherThreadRow): string {
+  return t.childName || t.accountName || (t.audience === 'kids' ? 'Criança' : 'Aluno')
 }
 
-/** Nome de exibição do aluno: a criança (perfil) no kids; o titular no adulto. */
-export function studentNameOf(t: TeacherThreadRow): string {
-  return t.childName || t.accountName || 'Aluno'
+const DESCRIPTION: Record<Platform, string> = {
+  kids: 'Recados com as crianças e os responsáveis. Os que você ainda não leu vêm primeiro.',
+  adult: 'Recados com os alunos. Os que você ainda não leu vêm primeiro.',
 }
+const DESCRIPTION_BOTH = 'Recados das duas comunidades. Os que você ainda não leu vêm primeiro.'
 
 /**
- * Caixa de entrada do professor (Sala do Professor → Recados): TODAS as conversas
- * com alunos — entregas do Estúdio, moderação do Mural e recados gerais — sem
- * precisar navegar até o curso. Não-lidas vêm primeiro; abrir a conversa marca
- * como lida e permite responder.
+ * Recados (Turma → Recados): TODOS os recados com a comunidade da lente (projetos, dúvidas na
+ * aula, Mural e recados gerais) sem precisar navegar até o curso. Os não lidos vêm primeiro;
+ * abrir marca como lido e permite responder. `?abrir=<id>` abre um direto (o link da Home).
  */
 export function RecadosClient() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const pathname = usePathname()
   const [threads, setThreads] = useState<TeacherThreadRow[]>([])
   const [loading, setLoading] = useState(true)
+  /** A última leitura falhou: a lista diz que não carregou, em vez de parecer vazia. */
+  const [loadFailed, setLoadFailed] = useState(false)
   const [hasMore, setHasMore] = useState(false)
   const [offset, setOffset] = useState(0)
   const [context, setContext] = useState('')
   const [workflowStatus, setWorkflowStatus] = useState('')
-  // Filtro "Plataforma" nasce na plataforma ATIVA do seletor global e re-sincroniza
-  // quando ele muda; o Select local segue como override pontual ("Todas"/a outra).
+  // A lista nasce na LENTE (Kids/Adultos) do cabeçalho; o filtro "Comunidade" junta as duas
+  // ('' = sem filtro de audiência) e volta para a lente quando ela muda.
   const platform = usePlatform()
-  const [audience, setAudience] = useState<string>(platform)
+  const [audience, setAudience] = useState<CommunityScope>(platform)
   const loadAuthority = useRef(createForegroundPriority()).current
   const [courseId, setCourseId] = useState('')
   useEffect(() => {
@@ -69,10 +78,11 @@ export function RecadosClient() {
   }, [platform, loadAuthority])
   const [unreadOnly, setUnreadOnly] = useState(false)
   const [courses, setCourses] = useState<CourseView[]>([])
-  const [open, setOpen] = useState<TeacherThreadRow | null>(null)
+  /** O recado aberto; `name` null enquanto quem mandou ainda não é conhecido. */
+  const [open, setOpen] = useState<{ id: string; name: string | null } | null>(null)
   const [markingAll, setMarkingAll] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
-  /** Filtro por aluno vindo da FICHA (`?userId=`) — chip removível. */
+  /** Filtro por pessoa vindo da FICHA (`?userId=`), num chip removível. */
   const [studentFilter, setStudentFilter] = useState<string | null>(
     () => searchParams.get('userId') || null,
   )
@@ -108,10 +118,16 @@ export function RecadosClient() {
             setThreads((previous) => (append ? [...previous, ...result.threads] : result.threads))
             setHasMore(result.threads.length === PAGE)
             setOffset(nextOffset)
-            setHint(result.hint === 'refine' ? 'Muitos resultados no auth — refine a busca.' : null)
+            setLoadFailed(false)
+            setHint(
+              result.hint === 'refine'
+                ? 'Encontramos muita gente. Digite mais do nome ou o e-mail.'
+                : null,
+            )
           },
           onError: (error) => {
-            toast.error((error as ApiError).message ?? 'Falha ao carregar os recados.')
+            if (!append) setLoadFailed(true)
+            toast.error((error as ApiError).message ?? 'Não conseguimos carregar os recados.')
           },
           onSettled: () => setLoading(false),
         },
@@ -141,15 +157,66 @@ export function RecadosClient() {
       .catch(() => {})
   }, [])
 
-  /** "Marcar todas como lidas" respeitando os filtros ativos (contexto/plataforma/curso). */
+  // `?abrir=<id>` (o item da Home): abre ESTE recado. O nome da criança ou do aluno nunca vem
+  // no endereço: sai da lista quando o recado está nela e, se não, dos recados de quem mandou,
+  // procurados quando a conversa carrega (`resolveOpenName`). Depois tira o parâmetro do
+  // endereço, para fechar não reabrir (e um `?nome=` de link antigo some junto).
+  const openParam = searchParams.get('abrir')
+  const handledOpen = useRef<string | null>(null)
+  useEffect(() => {
+    if (!openParam || handledOpen.current === openParam) return
+    const row = threads.find((t) => t.id === openParam)
+    if (!row && loading) return
+    handledOpen.current = openParam
+    setOpen({ id: openParam, name: row ? studentNameOf(row) : null })
+    const next = new URLSearchParams(searchParams.toString())
+    next.delete('abrir')
+    next.delete('nome')
+    const query = next.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }, [openParam, threads, loading, pathname, router, searchParams])
+
+  /** Recado aberto fora da lista carregada: o nome vem dos recados de quem mandou. */
+  const resolveOpenName = useCallback(
+    (thread: TeacherThreadView) => {
+      if (!open || open.id !== thread.id || open.name !== null) return
+      const listed = threads.find((t) => t.id === thread.id)
+      if (listed) {
+        setOpen((current) =>
+          current?.id === thread.id ? { ...current, name: studentNameOf(listed) } : current,
+        )
+        return
+      }
+      const params = new URLSearchParams({
+        userId: thread.userId,
+        audience: thread.audience,
+        limit: String(PAGE),
+        offset: '0',
+      })
+      apiGet<{ threads: TeacherThreadRow[] }>(`/api/members/teacher-threads?${params}`)
+        .then((res) => {
+          const row = res.threads.find((t) => t.id === thread.id)
+          if (!row) return
+          setOpen((current) =>
+            current?.id === thread.id && current.name === null
+              ? { ...current, name: studentNameOf(row) }
+              : current,
+          )
+        })
+        .catch(() => {})
+    },
+    [open, threads],
+  )
+
+  /** "Marcar todos como lidos" respeitando os filtros ativos (assunto/situação/curso/busca). */
   function markAllRead() {
-    const scoped = Boolean(context || audience || courseId || studentFilter || qDebounced)
+    const scoped = Boolean(context || workflowStatus || courseId || studentFilter || qDebounced)
     confirm({
-      title: 'Marcar todas como lidas?',
+      title: 'Marcar todos como lidos?',
       message: scoped
-        ? 'Todas as conversas não-lidas DOS FILTROS ATUAIS serão marcadas como lidas para você.'
-        : 'Todas as conversas não-lidas serão marcadas como lidas para você (só a sua leitura — outros professores não são afetados).',
-      confirmText: 'Marcar como lidas',
+        ? 'Os recados não lidos que aparecem com estes filtros vão ficar como lidos para você. Só a sua leitura muda: o resto da equipe continua vendo como antes.'
+        : `Todos os recados não lidos ${audience ? `da ${COMMUNITY_NAMES[audience]}` : 'das duas comunidades'} vão ficar como lidos para você. Só a sua leitura muda: o resto da equipe continua vendo como antes.`,
+      confirmText: 'Marcar como lidos',
       onConfirm: async () => {
         setMarkingAll(true)
         try {
@@ -167,13 +234,13 @@ export function RecadosClient() {
           )
           toast.success(
             res.updated === 0
-              ? 'Nada a marcar — tudo lido por aqui.'
-              : `${res.updated} conversa${res.updated === 1 ? '' : 's'} marcada${res.updated === 1 ? '' : 's'} como lida.`,
+              ? 'Nada para marcar: tudo já estava lido.'
+              : `${res.updated} ${res.updated === 1 ? 'recado marcado como lido' : 'recados marcados como lidos'}.`,
           )
           load(0, false)
           refreshProfessorCounts()
         } catch (err) {
-          toast.error((err as ApiError).message ?? 'Não consegui marcar as conversas.')
+          toast.error((err as ApiError).message ?? 'Não conseguimos marcar os recados como lidos.')
         } finally {
           setMarkingAll(false)
         }
@@ -181,174 +248,245 @@ export function RecadosClient() {
     })
   }
 
+  const kids = platform === 'kids'
+  const visibleCourses = audience ? courses.filter((c) => c.audience === audience) : courses
+  /** Trocar o recorte não deixa um curso da outra comunidade escolhido (a lista ficaria vazia). */
+  const changeScope = (scope: CommunityScope) => {
+    setAudience(scope)
+    if (scope && courses.some((c) => c.id === courseId && c.audience !== scope)) setCourseId('')
+  }
+  const filtered = Boolean(
+    context || workflowStatus || courseId || unreadOnly || studentFilter || qDebounced,
+  )
+
   return (
     <div className="space-y-6">
       <AdminHeader
         title="Recados"
-        description="Conversas com os alunos — entregas, Mural e recados gerais. Não-lidas primeiro."
+        description={audience ? DESCRIPTION[platform] : DESCRIPTION_BOTH}
+        action={
+          <div className="flex flex-wrap items-center gap-2">
+            {kids ? (
+              <BroadcastPanel
+                courses={courses}
+                initialProfileId={
+                  searchParams.get('compose') === '1'
+                    ? (searchParams.get('userId') ?? undefined)
+                    : undefined
+                }
+              />
+            ) : null}
+            <MoreMenu
+              items={[
+                {
+                  label: 'Marcar todos como lidos',
+                  icon: <MailCheck className="size-4" aria-hidden />,
+                  onSelect: markAllRead,
+                  disabled: markingAll || loading,
+                },
+              ]}
+            />
+          </div>
+        }
       />
 
       {studentFilter ? (
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium">
-            Filtrando por aluno{threads[0] ? `: ${studentNameOf(threads[0])}` : ''}
+          <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-border bg-muted px-3 py-1 text-sm font-medium">
+            {threads[0]
+              ? `Mostrando só os recados de ${studentNameOf(threads[0])}`
+              : kids
+                ? 'Mostrando só os recados desta criança'
+                : 'Mostrando só os recados deste aluno'}
             <button
               type="button"
-              aria-label="Remover o filtro por aluno"
+              aria-label="Mostrar os recados de todo mundo"
               onClick={() => setStudentFilter(null)}
               className="text-muted-foreground hover:text-foreground"
             >
-              <X className="size-3.5" />
+              <X className="size-4" />
             </button>
           </span>
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <Field label="Atendimento" htmlFor="rec-status">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+        <Field label="Situação" htmlFor="rec-status">
           <Select
             id="rec-status"
             value={workflowStatus}
             onChange={(e) => setWorkflowStatus(e.target.value)}
           >
-            <option value="">Todos</option>
-            <option value="waiting_teacher">Aguardando professor</option>
-            <option value="waiting_student">Aguardando aluno</option>
-            <option value="resolved">Resolvido</option>
+            <option value="">Todas</option>
+            {WORKFLOW_STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {workflowLabel(value, platform)}
+              </option>
+            ))}
           </Select>
         </Field>
-        {!studentFilter ? (
-          <Field label="Aluno" htmlFor="rec-q" hint="Busque pelo responsável (nome ou e-mail).">
-            <Input
-              id="rec-q"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Nome ou e-mail…"
-            />
-          </Field>
-        ) : null}
-        <Field label="Contexto" htmlFor="rec-context">
+        <Field label="Assunto" htmlFor="rec-context">
           <Select id="rec-context" value={context} onChange={(e) => setContext(e.target.value)}>
             <option value="">Todos</option>
-            <option value="lesson_section">Dúvida na aula</option>
-            <option value="studio_submission">Entrega</option>
-            <option value="mural_publication">Mural</option>
-            <option value="general">Recado geral</option>
+            {CONTEXTS.map((value) => (
+              <option key={value} value={value}>
+                {CONTEXT_LABELS[value]}
+              </option>
+            ))}
           </Select>
         </Field>
-        <Field label="Plataforma" htmlFor="rec-audience">
-          <Select id="rec-audience" value={audience} onChange={(e) => setAudience(e.target.value)}>
-            <option value="">Todas</option>
-            <option value="kids">Kids</option>
-            <option value="adult">Adultos</option>
-          </Select>
-        </Field>
+        <CommunityScopeSelect
+          id="rec-community"
+          platform={platform}
+          value={audience}
+          onChange={changeScope}
+        />
         <Field label="Curso" htmlFor="rec-course">
           <Select id="rec-course" value={courseId} onChange={(e) => setCourseId(e.target.value)}>
             <option value="">Todos</option>
-            {courses.map((c) => (
+            {visibleCourses.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.title}
               </option>
             ))}
           </Select>
         </Field>
-        <label className="flex items-center gap-2 pb-2 text-sm">
+        {!studentFilter ? (
+          <Field
+            label={kids ? 'Responsável' : 'Aluno'}
+            htmlFor="rec-q"
+            hint={
+              kids
+                ? 'Busque pelo nome ou e-mail de quem responde pela conta.'
+                : 'Busque pelo nome ou e-mail.'
+            }
+          >
+            <Input
+              id="rec-q"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Nome ou e-mail"
+            />
+          </Field>
+        ) : null}
+        <label className="flex min-h-11 items-center gap-2 pb-1 text-[15px]">
           <Switch checked={unreadOnly} onCheckedChange={setUnreadOnly} />
-          Só não-lidas
+          Só os não lidos
         </label>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mb-1.5 sm:ml-auto"
-          disabled={markingAll || loading}
-          onClick={markAllRead}
-        >
-          <MailCheck className="size-4" /> Marcar todas como lidas
-        </Button>
       </div>
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      {hint ? <p className="text-sm text-muted-foreground">{hint}</p> : null}
       {confirmDialog}
-      {platform === 'kids' && (
-        <BroadcastPanel
-          courses={courses}
-          initialProfileId={
-            searchParams.get('compose') === '1'
-              ? (searchParams.get('userId') ?? undefined)
-              : undefined
-          }
-        />
-      )}
 
       {loading && threads.length === 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-2" role="status" aria-label="Carregando os recados">
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
           <Skeleton className="h-16 w-full" />
         </div>
+      ) : loadFailed && threads.length === 0 ? (
+        <div className="rounded-[18px] border border-border bg-card">
+          <LoadError what="os recados" onRetry={() => void load(0, false)} />
+        </div>
       ) : threads.length === 0 ? (
-        <Card className="p-8 text-center text-sm text-muted-foreground">
-          <Mail className="mx-auto mb-2 size-6" />
-          Nenhuma conversa por aqui{unreadOnly ? ' (sem não-lidas)' : ''}.
-        </Card>
+        <div className="rounded-[18px] border border-border bg-card">
+          {unreadOnly &&
+          !context &&
+          !workflowStatus &&
+          !courseId &&
+          !studentFilter &&
+          !qDebounced ? (
+            <EmptyState
+              zappy="celebrating"
+              title="Nenhum recado por ler."
+              description="Você leu tudo o que chegou. Quando chegar um recado novo, ele aparece aqui."
+            />
+          ) : filtered ? (
+            <EmptyState
+              title="Nenhum recado com estes filtros."
+              description="Tente outra situação, outro assunto ou outro curso."
+            />
+          ) : (
+            <EmptyState
+              zappy="happy"
+              title="Nenhum recado ainda."
+              description={
+                kids
+                  ? 'Quando uma criança mandar uma dúvida ou um projeto com recado, ele aparece aqui.'
+                  : 'Quando um aluno mandar uma dúvida ou um projeto com recado, ele aparece aqui.'
+              }
+            />
+          )}
+        </div>
       ) : (
-        <ul className="space-y-2">
-          {threads.map((t) => (
-            <li key={t.id}>
-              <button
-                onClick={() => setOpen(t)}
-                className="w-full rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <div className="flex items-center gap-2">
-                  {t.unread ? (
-                    <span
-                      className="size-2 shrink-0 rounded-full bg-primary"
-                      role="status"
-                      aria-label="Não lida"
-                    />
-                  ) : null}
+        <ul className="divide-y divide-border overflow-hidden rounded-[18px] border border-border bg-card">
+          {threads.map((t) => {
+            const name = studentNameOf(t)
+            const subject = threadSubject(t)
+            return (
+              <li key={t.id}>
+                <button
+                  type="button"
+                  onClick={() => setOpen({ id: t.id, name })}
+                  className="flex min-h-16 w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
+                >
                   <span
-                    className={`truncate text-sm ${t.unread ? 'font-semibold' : 'font-medium'}`}
+                    aria-hidden
+                    className={`grid size-10 shrink-0 place-items-center rounded-full font-bold ${t.unread ? 'bg-primary/15 text-foreground' : 'bg-muted text-muted-foreground'}`}
                   >
-                    {studentNameOf(t)}
+                    {name.trim().charAt(0).toUpperCase() || '?'}
                   </span>
-                  {t.childName && t.accountName ? (
-                    <span className="hidden truncate text-xs text-muted-foreground sm:inline">
-                      resp.: {t.accountName}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex min-w-0 items-center gap-2">
+                      {t.unread ? (
+                        <span
+                          className="size-2 shrink-0 rounded-full bg-primary"
+                          role="status"
+                          aria-label="Não lido"
+                        />
+                      ) : null}
+                      <span className={`truncate ${t.unread ? 'font-bold' : 'font-medium'}`}>
+                        {name}
+                      </span>
+                      {t.childName && t.accountName ? (
+                        <span className="hidden truncate text-sm text-muted-foreground sm:inline">
+                          Responsável: {t.accountName}
+                        </span>
+                      ) : null}
                     </span>
-                  ) : null}
-                  <Badge variant="outline">{CONTEXT_LABELS[t.contextType]}</Badge>
-                  {t.workflowStatus && (
-                    <Badge variant="outline">
-                      {t.workflowStatus === 'waiting_teacher'
-                        ? 'Aguardando professor'
-                        : t.workflowStatus === 'waiting_student'
-                          ? 'Aguardando aluno'
-                          : 'Resolvido'}
-                    </Badge>
-                  )}
-                  <Badge variant="outline">{t.audience === 'kids' ? 'Kids' : 'Adulto'}</Badge>
-                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                    {formatDate(t.lastMessageAt)}
-                  </span>
-                </div>
-                <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                  {threadSubject(t) ? (
-                    <span className="truncate font-medium">{threadSubject(t)}</span>
-                  ) : null}
-                  {t.lastMessagePreview ? (
-                    <span className="truncate">
-                      {t.lastMessageRole === 'teacher' ? 'Você: ' : ''}
-                      {t.lastMessagePreview}
+                    <span className="block truncate text-sm text-muted-foreground">
+                      {subject ? <span className="font-medium">{subject}</span> : null}
+                      {subject && t.lastMessagePreview ? ': ' : null}
+                      {t.lastMessagePreview ? (
+                        <>
+                          {t.lastMessageRole === 'teacher' ? 'Você: ' : ''}
+                          {t.lastMessagePreview}
+                        </>
+                      ) : null}
                     </span>
-                  ) : null}
-                  <span className="ml-auto shrink-0">
-                    {t.messageCount} {t.messageCount === 1 ? 'mensagem' : 'mensagens'}
                   </span>
-                </div>
-              </button>
-            </li>
-          ))}
+                  <span className="flex shrink-0 flex-col items-end gap-1">
+                    <span className="flex flex-wrap items-center justify-end gap-1.5">
+                      {!audience ? (
+                        <Badge variant="muted">{PLATFORM_LABELS[t.audience]}</Badge>
+                      ) : null}
+                      <Badge variant="outline">{CONTEXT_LABELS[t.contextType]}</Badge>
+                      {t.workflowStatus ? (
+                        <Badge
+                          variant={t.workflowStatus === 'waiting_teacher' ? 'warning' : 'muted'}
+                        >
+                          {workflowLabel(t.workflowStatus, t.audience)}
+                        </Badge>
+                      ) : null}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(t.lastMessageAt)} · {t.messageCount}{' '}
+                      {t.messageCount === 1 ? 'mensagem' : 'mensagens'}
+                    </span>
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
 
@@ -363,10 +501,11 @@ export function RecadosClient() {
       {open ? (
         <ThreadDialog
           threadId={open.id}
-          studentName={studentNameOf(open)}
+          studentName={open.name ?? (kids ? 'esta criança' : 'este aluno')}
+          onLoaded={resolveOpenName}
           onClose={() => {
             setOpen(null)
-            // Recarrega a página corrente — o read/resposta mudou unread/preview.
+            // Recarrega a página corrente: a leitura/resposta mudou o não lido e a prévia.
             load(0, false)
           }}
         />

@@ -7,7 +7,7 @@ async function handle(request: Request, context: { params: Promise<{ id: string 
   const user = await getSession()
   if (user?.status !== 'active' || !isAdminRole(user.role))
     return Response.json(
-      { error: { message: 'Entre com a sessão da professora.' } },
+      { error: { message: 'Entre com a conta de quem conduz a turma.' } },
       { status: user ? 403 : 401 },
     )
   try {

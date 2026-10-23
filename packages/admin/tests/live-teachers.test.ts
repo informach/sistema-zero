@@ -47,7 +47,7 @@ describe('escolha das professoras da turma', () => {
   test('recusa turma sem professora e acima de quatro, sem repetir ids', () => {
     expect(teacherSelectionPayload([], [ana])).toEqual({
       ok: false,
-      error: 'Escolha pelo menos uma professora.',
+      error: 'Escolha pelo menos uma pessoa para conduzir a turma.',
     })
     expect(teacherSelectionPayload(['a', 'b', 'c', 'd', 'e'], []).ok).toBe(false)
     const repeated = teacherSelectionPayload(['ana', 'ana'], [ana])

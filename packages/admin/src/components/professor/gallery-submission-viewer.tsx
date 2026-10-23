@@ -85,8 +85,8 @@ export function GallerySubmissionViewer({
   return (
     <div className="space-y-3 rounded-xl border p-3">
       <p className="text-sm text-muted-foreground">
-        {previous ? 'Versão anterior. ' : ''}Cópias recebidas na entrega. A galeria pessoal do aluno
-        permanece independente.
+        {previous ? 'Versão anterior. ' : ''}Cópias que chegaram neste envio. A galeria pessoal de
+        quem enviou continua separada.
       </p>
       <div className="flex flex-wrap gap-2">
         {snapshot.items.map((item) => (

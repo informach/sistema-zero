@@ -27,8 +27,8 @@ describe('estado da entrega na fila do professor', () => {
   })
 
   test('todo estado tem rótulo em português', () => {
-    expect(SUBMISSION_STATUS_LABEL.pending).toBe('Pendente')
-    expect(SUBMISSION_STATUS_LABEL.answered).toBe('Respondida')
-    expect(SUBMISSION_STATUS_LABEL.reviewed).toBe('Conferida')
+    expect(SUBMISSION_STATUS_LABEL.pending).toBe('Esperando a equipe')
+    expect(SUBMISSION_STATUS_LABEL.answered).toBe('Respondido')
+    expect(SUBMISSION_STATUS_LABEL.reviewed).toBe('Já visto')
   })
 })

@@ -21,10 +21,10 @@ describe('avisos de entregas em exclusões', () => {
     expect(submissionCountWarning(0)).toBeNull()
     expect(submissionCountWarning(-1)).toBeNull()
     expect(submissionCountWarning(1)).toBe(
-      'Existe 1 entrega de aluno aqui, e ela será apagada junto.',
+      'Existe 1 projeto enviado aqui, e ele será apagado junto.',
     )
     expect(submissionCountWarning(2)).toBe(
-      'Existem 2 entregas de alunos aqui, e elas serão apagadas junto.',
+      'Existem 2 projetos enviados aqui, e eles serão apagados junto.',
     )
   })
 

@@ -4,7 +4,9 @@ import {
   agendaActionLabel,
   agendaDayKey,
   agendaState,
+  agendaTime,
   agendaWhen,
+  agendaZoneNote,
   groupLiveAgenda,
   roomHref,
 } from '../src/lib/live-agenda'
@@ -45,7 +47,7 @@ function session(
   }
 }
 
-describe('agenda da professora', () => {
+describe('agenda de quem conduz', () => {
   test('separa Hoje, Próximos e Encerrados e ordena por horário', () => {
     const groups = groupLiveAgenda(
       [
@@ -118,7 +120,7 @@ describe('agenda da professora', () => {
     expect(agendaActionLabel(ended(true), 'past')).toBe('Ver encontro')
   })
 
-  test('o botão diz o que a professora vai fazer', () => {
+  test('o botão diz o que quem conduz vai fazer', () => {
     const groups = groupLiveAgenda(
       [
         session('aberta', '2026-10-14T17:50:00Z', { occurrenceState: 'lobby' }),
@@ -133,7 +135,7 @@ describe('agenda da professora', () => {
       'Entrar na sala',
       'Preparar sala',
     ])
-    expect(agendaActionLabel(groups.upcoming[0]!, 'upcoming')).toBe('Preparar encontro')
+    expect(agendaActionLabel(groups.upcoming[0]!, 'upcoming')).toBe('Ver encontro')
   })
 
   test('o endereço da sala e a data amigável no fuso da turma', () => {
@@ -142,6 +144,15 @@ describe('agenda da professora', () => {
     )
     expect(agendaWhen('2026-10-17T18:00:00Z', '2026-10-17T19:30:00Z', TZ)).toBe(
       'sáb., 17 de out. · 15:00 às 16:30',
+    )
+  })
+
+  test('o horário grande do cartão e o aviso de fuso em palavras', () => {
+    expect(agendaTime('2026-10-17T18:00:00Z', TZ)).toBe('15:00')
+    expect(agendaZoneNote(TZ, TZ)).toBeNull()
+    expect(agendaZoneNote(undefined, TZ)).toBeNull()
+    expect(agendaZoneNote('America/Manaus', TZ)).toBe(
+      'Horário da turma (America/Manaus), que é diferente do seu.',
     )
   })
 })

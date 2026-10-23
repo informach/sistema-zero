@@ -56,9 +56,10 @@ export function teacherSelectionPayload(
   known: Record<string, string> = {},
 ): TeacherSelection {
   const teacherIds = [...new Set(selected)]
-  if (!teacherIds.length) return { ok: false, error: 'Escolha pelo menos uma professora.' }
+  if (!teacherIds.length)
+    return { ok: false, error: 'Escolha pelo menos uma pessoa para conduzir a turma.' }
   if (teacherIds.length > MAX_TEACHERS)
-    return { ok: false, error: `Escolha até ${MAX_TEACHERS} professoras.` }
+    return { ok: false, error: `Escolha até ${MAX_TEACHERS} pessoas para conduzir a turma.` }
   const teacherNames: Record<string, string> = {}
   for (const id of teacherIds) {
     const user = users.find((item) => item.id === id)

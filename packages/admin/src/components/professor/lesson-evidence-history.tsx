@@ -46,7 +46,7 @@ export function LessonEvidenceHistory({
         }))
     } catch {
       if (active.current)
-        setError('Não foi possível carregar os registros anteriores. Tente novamente.')
+        setError('Não conseguimos carregar os registros anteriores. Tente de novo.')
     } finally {
       loading.current = false
       if (active.current) setBusy(false)
@@ -77,13 +77,13 @@ export function LessonEvidenceHistory({
                   ? 'Verificação do projeto'
                   : evidence.kind === 'quiz'
                     ? 'Tentativa de quiz'
-                    : 'Entrega'}
+                    : 'Envio'}
               {title ? ` · ${title}` : ''} · {new Date(evidence.createdAt).toLocaleString('pt-BR')}
             </summary>
             <p className="text-xs text-muted-foreground">
               Origem:{' '}
               {evidence.sectionId
-                ? `seção ${evidence.sectionId}`
+                ? `parte ${evidence.sectionId}`
                 : `bloco ${evidence.blockId ?? 'não identificado'}`}{' '}
               · Revisão avaliada: {evidence.revision}
             </p>

@@ -29,7 +29,7 @@ export async function GET(req: Request) {
     const envelope = body as { error?: { code?: string; message?: string } } | null
     const normalized = envelope?.error?.message
       ? normalizeUpstreamError(body)
-      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar os membros.' } }
+      : { error: { code: 'UPSTREAM_ERROR', message: 'Não foi possível carregar os alunos.' } }
     return NextResponse.json(normalized, { status: status === 200 ? 502 : status })
   }
 
