@@ -1,29 +1,16 @@
 import { describe, expect, test } from 'bun:test'
-import { DEFAULT_FUNNEL, isQuizComplete } from '../../src/funnels/registry'
+import { DEFAULT_FUNNEL, type FunnelQuiz, isQuizComplete } from '../../src/funnels/registry'
 
-const quiz = DEFAULT_FUNNEL.content.quiz
+const quiz: FunnelQuiz = {
+  steps: DEFAULT_FUNNEL.content.quiz!.steps.slice(0, 2),
+  total: 2,
+  valueSchema: {},
+}
 
 describe('isQuizComplete', () => {
-  test('exige todas as respostas, incluindo o valor derivado da calculadora', () => {
-    if (!quiz) throw new Error('funil default deve ter quiz')
-
-    expect(isQuizComplete(quiz, { segmento: 'A' })).toBe(false)
-
-    const answers = {
-      segmento: 'A',
-      tipo_criar: 'B',
-      relacao_ia: 'C',
-      ja_quebrou: 'D',
-      trava_principal: 'A',
-      custo_principal: 'B',
-      horas_retrabalho: 10,
-      valor_hora: 5000,
-      mudanca_desejada: 'C',
-      proximo_passo: 'D',
-      sintese: 'A',
-    }
-    expect(isQuizComplete(quiz, answers)).toBe(false)
-
-    expect(isQuizComplete(quiz, { ...answers, custo_mensal: 200000 })).toBe(true)
+  test('a regra compartilhada exige respostas para todas as perguntas declaradas', () => {
+    expect(isQuizComplete(quiz, {})).toBe(false)
+    expect(isQuizComplete(quiz, { tempo_jogo: 'menos_3' })).toBe(false)
+    expect(isQuizComplete(quiz, { tempo_jogo: 'menos_3', computador: 'meu' })).toBe(true)
   })
 })

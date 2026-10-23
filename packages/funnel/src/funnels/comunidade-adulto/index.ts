@@ -1,12 +1,11 @@
 // Funil adulto "Comunidade dos Criadores" (`pro/comunidade-dos-criadores`, 20/10/2026): a
 // assinatura da área adulta, com quiz opcional e resultado em conversa. A oferta tem layout PRÓPRIO
-// (ComunidadeAdultoOfertaBody, tema arcade) → `content.sales` ausente de propósito; a /oferta
+// (ComunidadeAdultoOfertaBody, tema arcade); a /oferta
 // despacha pelo body deste funil via `f.key`.
 //
 // Oferta no catálogo: env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES` aponta a oferta MENSAL
 // (`comunidade-dos-criadores-adulto-mensal`, criada pelo seed do catálogo); a ANUAL é a irmã
-// ligada por `altOffer` (alternador do checkout). Registrado DEPOIS do NCI: a landing `/pro`
-// continua indo para o No Comando da IA.
+// ligada por `altOffer` (alternador do checkout). A landing `/pro` abre esta Comunidade.
 
 import { TERMOS_COMUNIDADE_ADULTO } from '../../content/legal/termos-comunidade-adulto'
 import type { FunnelDef } from '../registry'

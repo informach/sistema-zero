@@ -1,13 +1,13 @@
 // Funil adulto "Desafio do Primeiro Jogo" (`pro/desafio-primeiro-jogo`, 21/10/2026): a versão adulta
 // do mesmo curso (A Chave do Farol), com a mesma oferta do Kids (decisão da dona: mesmo preço,
-// mesmas condições). Página de oferta própria (DesafioAdultoBody, tema arcade) → `content.sales`
-// ausente de propósito; a /oferta despacha pelo `f.key`. Quiz adulto v1 em conversa (`quiz/`) com
+// mesmas condições). A /oferta escolhe o body próprio (DesafioAdultoBody, tema arcade)
+// pelo `f.key`. Quiz adulto v1 em conversa (`quiz/`) com
 // resultado em carta, desde 21/10/2026.
 //
 // Oferta no catálogo: env `FUNNEL_OFFER_PRO_DESAFIO_PRIMEIRO_JOGO` aponta
 // `desafio-primeiro-jogo-adulto-30-dias` (criada pelo seed do catálogo, curso
 // `desafio-primeiro-jogo-adulto`). Registrado DEPOIS da Comunidade adulta: a landing `/pro`
-// continua indo para o No Comando da IA.
+// abre a Comunidade dos Criadores adulta.
 
 import { TERMOS_DESAFIO_ADULTO } from '../../content/legal/termos-desafio-adulto'
 import type { FunnelDef } from '../registry'

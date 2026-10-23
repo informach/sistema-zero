@@ -1,7 +1,7 @@
 // Funil "Comunidade dos Criadores" (kids, /kids/comunidade-dos-criadores) — a
 // ASSINATURA da plataforma inteira, com quiz opcional de orientação familiar.
 // As ofertas têm layout PRÓPRIO (Comunidade917Body, ComunidadeMenor9Body e
-// ComunidadeContinuarBody) → `content.sales` ausente de propósito; a /oferta despacha pelo body
+// ComunidadeContinuarBody) com body próprio; a /oferta despacha pelo body
 // deste funil via `f.key`.
 //
 // Oferta no catálogo: env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES` aponta a

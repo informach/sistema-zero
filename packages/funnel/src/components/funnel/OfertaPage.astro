@@ -15,7 +15,6 @@ import ComunidadeMenor9Body from './oferta/ComunidadeMenor9Body.astro'
 import Desafio917Body from './oferta/Desafio917Body.astro'
 import DesafioAdultoBody from './oferta/DesafioAdultoBody.astro'
 import DesafioMenor9Body from './oferta/DesafioMenor9Body.astro'
-import NoComandoOfertaBody from './oferta/NoComandoOfertaBody.astro'
 
 // Cada funil tem o seu corpo de oferta, escolhido pela CHAVE do funil (nunca por exclusão: um funil
 // novo sem corpo declarado falha alto em vez de cair na página de outro produto).
@@ -35,9 +34,8 @@ const {
   desafioPage = '9a17',
 } = Astro.props
 const { f } = bodyProps
-const corpo = f.content.sales
-  ? 'sales'
-  : f.key === COMUNIDADE_DOS_CRIADORES.key
+const corpo =
+  f.key === COMUNIDADE_DOS_CRIADORES.key
     ? 'comunidade'
     : f.key === COMUNIDADE_ADULTO.key
       ? 'comunidade-adulto'
@@ -50,9 +48,7 @@ if (!corpo) throw new Error(`Funil sem corpo de oferta declarado: ${f.key}`)
 ---
 
 {
-  corpo === 'sales' ? (
-    <NoComandoOfertaBody {...bodyProps} />
-  ) : corpo === 'comunidade' ? (
+  corpo === 'comunidade' ? (
     comunidadePage === 'criar-junto' ? (
       <ComunidadeMenor9Body {...bodyProps} plans={plans} />
     ) : comunidadePage === 'continuar' ? (

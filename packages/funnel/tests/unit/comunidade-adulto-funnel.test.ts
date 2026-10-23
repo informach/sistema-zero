@@ -52,11 +52,11 @@ describe('registro do funil adulto', () => {
     expect(isFunnelKey('pro/comunidade-dos-criadores')).toBe(true)
   })
 
-  test('a landing /pro segue no NCI e a /kids no Desafio (primeiro funil de cada público)', () => {
+  test('a landing /pro abre a Comunidade adulta e a /kids no Desafio (primeiro funil de cada público)', () => {
     const funis = Object.values(FUNNELS)
-    expect(funis.find((f) => f.audience === 'pro')?.key).toBe('pro/no-comando-da-ia')
+    expect(funis.find((f) => f.audience === 'pro')?.key).toBe('pro/comunidade-dos-criadores')
     expect(funis.find((f) => f.audience === 'kids')?.key).toBe('kids/desafio-primeiro-jogo')
-    expect(DEFAULT_FUNNEL.key).toBe('pro/no-comando-da-ia')
+    expect(DEFAULT_FUNNEL.key).toBe('pro/comunidade-dos-criadores')
   })
 
   test('def coerente: pro, assinatura, tema arcade, quiz e body próprios', () => {
@@ -68,7 +68,6 @@ describe('registro do funil adulto', () => {
     expect(f.steps).toEqual({ quiz: true, resultado: true, upsell: false, downsell: false })
     expect(f.content.quiz?.presentation).toBe('comunidade-adulto')
     expect(f.content.quiz?.conversa).toBeDefined()
-    expect(f.content.sales).toBeUndefined()
     expect(existsSync(join(ROOT, 'public', f.imagesBase, f.checkoutImage ?? ''))).toBe(true)
     expect(f.seoTitle).toBe(PAGINA_ADULTO.seoTitle)
     expect(f.seoTitle).toContain(' | Sistema Zero')

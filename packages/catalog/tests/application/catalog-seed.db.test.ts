@@ -39,7 +39,7 @@ describe.skipIf(!url)('Catalog seed PostgreSQL adapter', () => {
   afterAll(async () => {
     await connection?.close()
   })
-  test('real repositories plan without writes, create 19/12 once and preserve existing commercial changes', async () => {
+  test('real repositories plan without writes, create 18/11 once and preserve existing commercial changes', async () => {
     if (!connection) throw new Error('Missing test connection')
     const db = connection.db
     const products = new DrizzleProductRepository(db)
@@ -71,9 +71,9 @@ describe.skipIf(!url)('Catalog seed PostgreSQL adapter', () => {
     expect(await db.select().from(offerRows)).toHaveLength(0)
     const applied = await runCatalogSeed('apply', ports)
     expect(applied.outcome).toBe('complete')
-    expect(applied.created).toHaveLength(31)
-    expect(await db.select().from(productRows)).toHaveLength(19)
-    expect(await db.select().from(offerRows)).toHaveLength(12)
+    expect(applied.created).toHaveLength(29)
+    expect(await db.select().from(productRows)).toHaveLength(18)
+    expect(await db.select().from(offerRows)).toHaveLength(11)
     expect((await runCatalogSeed('apply', ports)).created).toEqual([])
     const studio = await products.findBySku('estudio-completo')
     const offer = await offers.findBySlug('estudio-completo')

@@ -9,9 +9,9 @@ type Errors = Partial<Record<'nome' | 'email' | 'telefone', string>>
 
 /** Navegação + origem do funil, injetadas pela página (a ilha não lê a rota). */
 export interface PreCheckoutModalProps {
-  /** Prefixo do funil (`/pro/no-comando-da-ia`) p/ montar o destino do checkout. */
+  /** Prefixo do funil (`/pro/comunidade-dos-criadores`) p/ montar o destino do checkout. */
   basePath: string
-  /** Chave do funil (`pro/no-comando-da-ia`) — gravada na criação do lead. */
+  /** Chave do funil (`pro/comunidade-dos-criadores`) — gravada na criação do lead. */
   funnel: string
   /** Código recebido na oferta; o checkout volta a validá-lo no servidor. */
   couponCode?: string | null

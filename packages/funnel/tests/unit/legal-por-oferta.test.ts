@@ -19,16 +19,15 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
     expect(termsVersionForFunnel('kids/comunidade-dos-criadores')).toBe(
       'comunidade-kids-2026-10-20b',
     )
-    // O Termo do NCI não mudou: a versão de junho continua valendo, também para lead sem funil.
-    expect(termsVersionForFunnel('pro/no-comando-da-ia')).toBe('pro-2026-06-04')
-    expect(termsVersionForFunnel(null)).toBe('pro-2026-06-04')
+    // Novos fluxos sem funil usam o default ativo; compras guardam sua versão no snapshot.
+    expect(termsVersionForFunnel('pro/no-comando-da-ia')).toBe('comunidade-adulto-2026-10-20')
+    expect(termsVersionForFunnel(null)).toBe('comunidade-adulto-2026-10-20')
   })
 
   test('os Termos apontam para a Política única, que tem os capítulos dos dois públicos', () => {
     const texto = (doc: { secoes: { paragrafos: string[]; bullets?: string[] }[] }) =>
       doc.secoes.flatMap((s) => [...s.paragrafos, ...(s.bullets ?? [])]).join(' ')
-    for (const f of funis.filter((f) => f.key !== 'pro/no-comando-da-ia'))
-      expect(texto(f.legal.termos)).toContain('/privacidade')
+    for (const f of funis) expect(texto(f.legal.termos)).toContain('/privacidade')
     const titulos = PRIVACIDADE.secoes.map((s) => s.titulo).join(' | ')
     expect(titulos).toContain('Crianças e adolescentes')
     expect(titulos).toContain('Adultos')

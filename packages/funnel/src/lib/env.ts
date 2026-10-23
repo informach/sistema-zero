@@ -4,7 +4,7 @@ import { FUNNEL_KEYS } from '../funnels/registry'
 /**
  * Nome DETERMINÍSTICO da env que carrega a oferta de um funil: `FUNNEL_OFFER_<KEY>`,
  * com a chave em maiúsculas e tudo que não é A–Z/0–9 virando `_`. Ex.:
- * `pro/no-comando-da-ia` → `FUNNEL_OFFER_PRO_NO_COMANDO_DA_IA`;
+ * `pro/comunidade-dos-criadores` → `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`;
  * `kids/desafio-primeiro-jogo` → `FUNNEL_OFFER_KIDS_DESAFIO_PRIMEIRO_JOGO`.
  */
 export function offerEnvKey(funnelKey: string): string {
@@ -85,8 +85,6 @@ const EnvSchema = z
     // são cotados AO VIVO no catálogo por esse slug. PRODUCT_PRICE_CENTS = só rótulo de fallback
     // de PREÇO quando a oferta não é encontrada na cotação.
     PRODUCT_PRICE_CENTS: z.coerce.number().int().positive().default(3700),
-    PRODUCT_SKU: z.string().default('no-comando-da-ia'),
-    PRODUCT_NAME: z.string().default('No Comando da IA'),
     // Admin: a sessão agora é o JWT do auth (IdP) guardado em cookie HttpOnly e
     // validado via gateway `/auth/me` — o funil não guarda credencial/segredo de admin.
     // Crie o usuário admin no auth: `bun run --filter @sistemazero/auth db:seed

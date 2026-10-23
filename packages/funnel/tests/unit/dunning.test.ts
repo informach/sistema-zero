@@ -41,7 +41,7 @@ describe('makeSendChargeFailed (dunning): link da assinatura por app', () => {
 
   test('lead do funil adulto → /compras do app adulto', async () => {
     const gw = createFakeGateway()
-    const lead = await paidLead('pro/no-comando-da-ia')
+    const lead = await paidLead('pro/comunidade-dos-criadores')
     await makeSendChargeFailed({
       gateway: gw.gateway,
       communityUrl: COMMUNITY_URL,

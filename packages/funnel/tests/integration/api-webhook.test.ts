@@ -7,7 +7,7 @@ import { createFakeRepo } from '../fakes/fake-db'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 const TOKEN = 'token-interno-do-gateway'
-const OFFER = 'no-comando-da-ia'
+const OFFER = 'curso-qa'
 const COMMUNITY_URL = 'http://localhost:3007'
 
 function req(

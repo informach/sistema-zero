@@ -1,7 +1,7 @@
 {
   "name": "@sistemazero/funnel",
   "version": "0.1.0",
-  "description": "Funil de vendas (landing + quiz + checkout Pix) do produto No Comando da IA — Astro 6 + ilhas React no Bun. BFF de pagamentos é o api-gateway.",
+  "description": "Funis de vendas Kids e adultos com quizzes, ofertas e checkout — Astro 6 + ilhas React no Bun.",
   "type": "module",
   "private": true,
   "scripts": {

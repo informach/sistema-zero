@@ -49,8 +49,8 @@ describe('explicit, non-destructive Catalog seed', () => {
     for (const mode of ['plan', 'status'] as const) {
       const report = await runCatalogSeed(mode, ports)
       expect(report.created).toEqual([])
-      expect(report.before.products).toHaveLength(19)
-      expect(report.before.offers).toHaveLength(12)
+      expect(report.before.products).toHaveLength(18)
+      expect(report.before.offers).toHaveLength(11)
       expect(report.before.offers.every((o) => o.state === 'missing')).toBe(true)
       expect(report.before.courseContentVerified).toBe(false)
     }
@@ -81,7 +81,7 @@ describe('explicit, non-destructive Catalog seed', () => {
     const ports = fixture()
     const first = await runCatalogSeed('apply', ports)
     expect(first.outcome).toBe('complete')
-    expect(first.created).toHaveLength(31)
+    expect(first.created).toHaveLength(29)
     expect(first.after.products.every((p) => p.state === 'present')).toBe(true)
     expect(first.after.offers.every((o) => o.state === 'present')).toBe(true)
     const annual = await ports.offers.findBySlug('comunidade-dos-criadores-adulto-anual')
@@ -175,7 +175,7 @@ describe('explicit, non-destructive Catalog seed', () => {
     expect(JSON.stringify(result)).not.toContain('secret')
     ports.createProduct.execute = execute
     const resumed = await runCatalogSeed('apply', ports)
-    expect(resumed.created).toHaveLength(30)
+    expect(resumed.created).toHaveLength(28)
     expect(resumed.outcome).toBe('complete')
   })
 })

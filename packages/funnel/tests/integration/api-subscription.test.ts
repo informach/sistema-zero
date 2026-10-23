@@ -374,7 +374,7 @@ describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irm�
   const CDC_ANUAL = 'comunidade-dos-criadores-anual'
   const cdcEnv = {
     offerByFunnel: {
-      'pro/no-comando-da-ia': 'oferta-nci',
+      'pro/comunidade-dos-criadores': 'oferta-comunidade-adulta',
       'kids/comunidade-dos-criadores': CDC_MENSAL,
     },
   } as unknown as Env

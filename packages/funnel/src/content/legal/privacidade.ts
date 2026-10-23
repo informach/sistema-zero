@@ -1,8 +1,7 @@
 // Política de Privacidade ÚNICA do Sistema Zero (decisão da dona, 19 e 20/10/2026): uma parte
 // geral, válida para todos os produtos, um capítulo para crianças e adolescentes (Desafio do
 // Primeiro Jogo e Comunidade dos Criadores Kids) e um capítulo para adultos na Comunidade dos
-// Criadores. A redação reaproveita `legal-kids.ts` (PRIVACIDADE_KIDS) e `legal.ts` (PRIVACIDADE
-// do No Comando da IA). Fundamentos:
+// Criadores. Fundamentos:
 //   • LGPD (Lei nº 13.709/2018): art. 14 (crianças e adolescentes), art. 18 (direitos do
 //     titular) e art. 33 (transferência internacional);
 //   • ECA (Lei nº 8.069/1990) e ECA Digital (Lei nº 15.211/2025): privacidade desde a concepção
@@ -33,13 +32,12 @@ export const PRIVACIDADE: LegalDoc = {
         `Esta Política descreve como a ${EMPRESA.razaoSocial}, inscrita no CNPJ sob o nº ${EMPRESA.cnpj} ("Empresa", "nós"), coleta, utiliza, armazena e protege os dados pessoais de quem acessa os sites do Sistema Zero, responde aos nossos diagnósticos e contrata ou utiliza os nossos produtos digitais ("Produtos"):`,
       ],
       bullets: [
-        `${EMPRESA.produto}: ebook e kit prático para adultos, com pagamento único;`,
         `${DESAFIO}: trilha guiada para crianças e adolescentes, contratada por um adulto responsável, com pagamento único e 30 (trinta) dias de acesso;`,
         `${COMUNIDADE} Kids: assinatura mensal ou anual da área infantil da plataforma, contratada por um adulto responsável para até 2 (dois) perfis de crianças ou adolescentes;`,
         `${COMUNIDADE} (área adulta): assinatura mensal ou anual da área adulta da plataforma, contratada por uma pessoa maior de 18 anos para uso próprio.`,
       ],
       posBullets: [
-        `Os Produtos infantis são vendidos a um adulto responsável (pai, mãe ou responsável legal), que é quem contrata, cria a conta e acompanha o uso. A criança ou o adolescente é a pessoa que aprende e cria dentro da plataforma. O ${EMPRESA.produto} e a área adulta da ${COMUNIDADE} são destinados a maiores de 18 anos.`,
+        `Os Produtos infantis são vendidos a um adulto responsável (pai, mãe ou responsável legal), que é quem contrata, cria a conta e acompanha o uso. A criança ou o adolescente é a pessoa que aprende e cria dentro da plataforma. A área adulta da ${COMUNIDADE} é destinada a maiores de 18 anos.`,
         `As seções 1 a 12 valem para todos os Produtos. O capítulo "Crianças e adolescentes" (seções 13 a 17) trata da proteção reforçada aplicável aos Produtos infantis, e o capítulo "Adultos na ${COMUNIDADE}" (seções 18 a 21) trata do uso da área adulta.`,
         'Ao acessar os sites e fornecer dados, você declara ter lido e compreendido esta Política, que é regida pela Lei Geral de Proteção de Dados Pessoais (LGPD, Lei nº 13.709/2018), pelo Estatuto da Criança e do Adolescente (Lei nº 8.069/1990), pela Lei nº 15.211/2025 (ECA Digital), pelo Marco Civil da Internet (Lei nº 12.965/2014) e pelas demais normas aplicáveis.',
       ],

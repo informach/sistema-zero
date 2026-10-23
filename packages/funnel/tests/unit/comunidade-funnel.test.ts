@@ -29,7 +29,6 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(f.content.hero).toBeUndefined()
     expect(f.content.result).toBeDefined()
     // Sem `sales`: a /oferta despacha os corpos da Comunidade pela chave.
-    expect(f.content.sales).toBeUndefined()
     // Capa dedicada do checkout/og.
     expect(f.checkoutImage).toBe('checkout-capa.webp')
     expect(f.imagesBase).toBe('/img/comunidade-dos-criadores')
@@ -86,7 +85,7 @@ describe('registro do funil Comunidade dos Criadores', () => {
     expect(publicRenewalCopy).not.toContain('—')
   })
 
-  test('fallback de preço próprio da página (o da rota é o do NCI)', () => {
+  test('fallback de preço próprio da página (independente do fallback global)', () => {
     expect(COMUNIDADE_PRECO_FALLBACK.mensalCents).toBe(9_700)
     expect(COMUNIDADE_PRECO_FALLBACK.anualCents).toBe(79_700)
   })

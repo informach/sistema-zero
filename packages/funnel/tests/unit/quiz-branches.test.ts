@@ -4,7 +4,6 @@ import type { SelecaoStep } from '../../src/content/quiz-config'
 import { COMUNIDADE_DOS_CRIADORES } from '../../src/funnels/comunidade-dos-criadores'
 import { DESAFIO_ADULTO } from '../../src/funnels/desafio-adulto'
 import { DESAFIO_PRIMEIRO_JOGO } from '../../src/funnels/desafio-primeiro-jogo'
-import { NO_COMANDO_DA_IA } from '../../src/funnels/no-comando-da-ia'
 import {
   adminFunnelList,
   branchEventName,
@@ -54,14 +53,11 @@ const RAMIFICADO: FunnelDef = {
 }
 
 describe('quiz com ramos', () => {
-  test('as definições do NCI e do Desafio não mudam com a infraestrutura de ramos', () => {
+  test('as definições dos quizzes do Desafio não mudam com a infraestrutura de ramos', () => {
     // Fixadas em 20/10/2026: uma mudança aqui abriria uma versão nova do quiz para quem está
     // respondendo agora (o 409 "O quiz mudou"). A do Desafio mudou DE PROPÓSITO em 21/10/2026, duas
     // vezes: a `desafio-farol-v4` (faixa de 9 a 17) e, no mesmo dia, a `desafio-farol-v5` em
     // conversa, com ramos; o Desafio adulto ganhou o quiz `desafio-adulto-v1`.
-    expect(quizDefinition(NO_COMANDO_DA_IA)?.id).toBe(
-      '641511fefceeb108ac29ae2c4eee0ccf599671ff6d977cf4c728cea7651add81',
-    )
     expect(quizDefinition(DESAFIO_PRIMEIRO_JOGO)?.id).toBe(
       'e54f34c626e16bf74eb64f63c446a9d768522d819676d422f34dbe747e023cff',
     )
@@ -167,7 +163,7 @@ describe('quiz com ramos', () => {
     expect(quizHeadlineId(quiz, 'tela')).toBe('tela')
     expect(quizHeadlineId(quiz, '<script>')).toBe(quiz?.defaultHeadline)
     expect(quizHeadlineId(quiz, null)).toBe(quiz?.defaultHeadline)
-    expect(quizHeadlineId(NO_COMANDO_DA_IA.content.quiz, 'tela')).toBeUndefined()
+    expect(quizHeadlineId(undefined, 'tela')).toBeUndefined()
     expect(quizHeadlineId(DESAFIO_PRIMEIRO_JOGO.content.quiz, 'tela')).toBe('tela')
     expect(quizPathWithHeadline('/kids/x', quiz, 'tela')).toBe('/kids/x/quiz?manchete=tela')
     expect(quizPathWithHeadline('/kids/x', quiz, quiz?.defaultHeadline)).toBe('/kids/x/quiz')

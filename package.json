@@ -46,7 +46,6 @@
     "test:members": "bun run --filter @sistemazero/members test",
     "db:members:generate": "bun run --filter @sistemazero/members db:generate",
     "db:members:migrate": "bun run --filter @sistemazero/members db:migrate",
-    "db:members:seed": "bun run --filter @sistemazero/members db:seed",
     "dev:admin": "bun run --filter @sistemazero/admin dev",
     "build:admin": "cd packages/admin && bun run build",
     "start:admin": "bun run --filter @sistemazero/admin start",

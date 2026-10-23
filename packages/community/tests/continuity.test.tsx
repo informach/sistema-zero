@@ -1,74 +1,14 @@
 import { describe, expect, test } from 'bun:test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { CatalogCourseCard } from '../src/components/community/catalog-course-card'
-import { NciContinuityCard } from '../src/components/community/courses/continuity-card'
-import {
-  ADULT_CLUB_ACCESS_KEY,
-  comebackSubscriptionId,
-  lockedCourseLink,
-  NCI_ACCESS_KEY,
-  showNciContinuityCard,
-} from '../src/lib/continuity'
+import { comebackSubscriptionId, lockedCourseLink } from '../src/lib/continuity'
 import type { CatalogCourseView } from '../src/lib/types'
 
 /**
- * As entradas do app para a oferta de continuidade adulta (20/10/2026): o cartão de Cursos para
- * quem só tem o No Comando da IA, o curso bloqueado sem página própria e o retorno em Compras.
+ * Entradas para a continuidade adulta: curso bloqueado sem página própria e retorno em Compras.
  */
 
 const OFERTA = 'https://sistemazero.com.br/pro/comunidade-dos-criadores/oferta/continuar'
-
-describe('cartão do No Comando da IA em Cursos', () => {
-  const ok = (access: Record<string, boolean>) => ({ status: 200, body: { access } })
-
-  test('as chaves são o NCI e o Clube adulto', () => {
-    expect(NCI_ACCESS_KEY).toBe('no-comando-da-ia')
-    expect(ADULT_CLUB_ACCESS_KEY).toBe('adult-clube-dos-criadores')
-  })
-
-  test('NCI sim e Clube não: cartão', () => {
-    expect(
-      showNciContinuityCard(ok({ [NCI_ACCESS_KEY]: true, [ADULT_CLUB_ACCESS_KEY]: false })),
-    ).toBe(true)
-  })
-
-  test('qualquer outra combinação: sem cartão', () => {
-    expect(
-      showNciContinuityCard(ok({ [NCI_ACCESS_KEY]: true, [ADULT_CLUB_ACCESS_KEY]: true })),
-    ).toBe(false)
-    expect(
-      showNciContinuityCard(ok({ [NCI_ACCESS_KEY]: false, [ADULT_CLUB_ACCESS_KEY]: false })),
-    ).toBe(false)
-    expect(
-      showNciContinuityCard(ok({ [NCI_ACCESS_KEY]: false, [ADULT_CLUB_ACCESS_KEY]: true })),
-    ).toBe(false)
-    // Chave do Clube ausente não conta como "não tem".
-    expect(showNciContinuityCard(ok({ [NCI_ACCESS_KEY]: true }))).toBe(false)
-  })
-
-  test('erro fecha: sem cartão', () => {
-    expect(showNciContinuityCard(null)).toBe(false)
-    expect(showNciContinuityCard(undefined)).toBe(false)
-    expect(
-      showNciContinuityCard({
-        status: 502,
-        body: { access: { [NCI_ACCESS_KEY]: true, [ADULT_CLUB_ACCESS_KEY]: false } },
-      }),
-    ).toBe(false)
-    expect(showNciContinuityCard({ status: 200, body: null })).toBe(false)
-  })
-
-  test('o cartão tem o texto e o botão com a origem cursos-nci', () => {
-    const html = renderToStaticMarkup(<NciContinuityCard />)
-    expect(html).toContain(
-      'Você já tem o No Comando da IA. Com a Comunidade, os cursos adultos abrem nesta mesma conta, e as ferramentas do Estúdio abrem conforme você avança nas etapas.',
-    )
-    expect(html).toContain('Ver como continuar')
-    expect(html).toContain(
-      `href="${OFERTA}?utm_source=plataforma&amp;utm_medium=app&amp;utm_content=cursos-nci"`,
-    )
-  })
-})
 
 describe('curso bloqueado sem página de vendas', () => {
   test('usa a página do curso quando existe e a oferta da Comunidade quando não', () => {

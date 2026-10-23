@@ -21,7 +21,7 @@ export const COMUNIDADE_LANDING: FunnelLanding = {
 }
 
 // Preços de FALLBACK da página de vendas quando o catálogo está fora do ar.
-// ⚠️ O fallback da rota (`env.PRODUCT_PRICE_CENTS`) é o do NCI (R$ 37) — errado
+// ⚠️ O fallback da rota (`env.PRODUCT_PRICE_CENTS`) é global — errado
 // aqui; o body usa ESTES valores. Exibição apenas: a cobrança sempre cota ao
 // vivo no catálogo (quote autoritativa).
 export const COMUNIDADE_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_700 } as const

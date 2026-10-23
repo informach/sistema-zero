@@ -13,23 +13,6 @@ export type CatalogSeedOffer = Omit<CreateOfferCommand, 'productId' | 'items'> &
 
 export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
   {
-    sku: 'no-comando-da-ia',
-    slug: 'no-comando-da-ia',
-    name: 'No Comando da IA',
-    kind: 'ebook',
-    status: 'active',
-    sellable: true,
-    description:
-      'Guia direto para tirar uma ideia do papel usando IA sem virar refém dela (método Z.E.R.O.).',
-    fulfillment: {
-      accessType: 'course',
-      courseRef: 'no-comando-da-ia',
-      release: {
-        mode: 'immediate',
-      },
-    },
-  },
-  {
     sku: 'estudio-completo',
     slug: 'estudio-completo',
     name: 'Estúdio Completo',
@@ -380,22 +363,6 @@ export const CATALOG_SEED_PRODUCTS: readonly CatalogSeedProduct[] = [
 ]
 
 export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
-  {
-    code: 'ncia-padrao',
-    slug: 'no-comando-da-ia',
-    name: 'No Comando da IA — Oferta padrão',
-    priceCents: 3700,
-    currency: 'BRL',
-    pricingMode: 'one_time',
-    installmentsMax: 12,
-    guaranteeDays: 7,
-    status: 'active',
-    content: {
-      badge: 'Ebook + kit prático',
-      ctaLabel: 'Quero meu acesso',
-    },
-    productSku: 'no-comando-da-ia',
-  },
   {
     code: 'estudio-padrao',
     slug: 'estudio-completo',
