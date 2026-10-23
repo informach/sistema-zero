@@ -16,21 +16,21 @@ export function courseSaveError(code: string, fallbackMessage: string): CourseSa
     case 'CAREER_SLOT_CONFLICT':
       return {
         message:
-          'Esta posição da jornada acabou de ser ocupada por outro curso. A ocupação foi recarregada — escolha outra posição.',
+          'Outro curso acabou de ocupar esta posição da Jornada. A lista de posições já foi atualizada: escolha outra.',
         hint: 'occupancy',
       }
     case 'CONCURRENCY_CONFLICT':
       return {
         message:
-          'Este curso foi alterado em outra aba ou por outra pessoa. Feche e reabra o formulário para editar sobre a versão mais recente.',
+          'Este curso mudou em outra aba ou com outra pessoa. Feche e abra o formulário de novo para editar a versão mais nova.',
         hint: 'reload',
       }
     case 'DUPLICATE_SLUG':
-      return { message: 'Este slug já está em uso por outro curso — escolha outro.', hint: 'slug' }
+      return { message: 'Outro curso já usa este endereço. Escolha outro.', hint: 'slug' }
     case 'NO_SHOWCASE_BLOCK':
       return {
         message:
-          'O curso-base precisa de uma aula publicada com bloco de Estúdio com vitrine (Publicar no Mural) antes de ser publicado — sem ela o aluno nunca destrava a etapa.',
+          'Para publicar o curso de entrada, uma aula publicada precisa ter um Estúdio que deixa publicar no Mural dos Criadores. Sem isso, a criança não abre o resto da trilha.',
         hint: 'showcase',
       }
     default:

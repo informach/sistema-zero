@@ -72,7 +72,7 @@ export function TeacherThreadPanel({
     const body = reply.trim()
     if (!body || sending) return
     if (body.length > MAX_BODY) {
-      toast.error(`O recado excede ${MAX_BODY} caracteres.`)
+      toast.error(`O recado passou de ${MAX_BODY} caracteres. Encurte um pouco e envie de novo.`)
       return
     }
     setSending(true)
@@ -92,7 +92,7 @@ export function TeacherThreadPanel({
       // Responder muda a pendência da entrega → badge da sidebar re-busca já.
       refreshProfessorCounts()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao enviar o recado.')
+      toast.error((err as ApiError).message ?? 'O recado não foi enviado. Tente de novo.')
     } finally {
       setSending(false)
     }
@@ -113,7 +113,7 @@ export function TeacherThreadPanel({
           : olderThread,
       )
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar mensagens anteriores.')
+      toast.error((err as ApiError).message ?? 'Não conseguimos carregar os recados anteriores.')
     } finally {
       setLoadingOlder(false)
     }
@@ -122,17 +122,17 @@ export function TeacherThreadPanel({
   return (
     <Card className="space-y-3 p-3">
       <div className="flex items-center gap-1.5 font-medium text-sm">
-        <MessagesSquare className="size-4" /> Conversa com {studentName}
+        <MessagesSquare className="size-4" /> Recados com {studentName}
       </div>
 
       {loading ? (
-        <p className="text-muted-foreground text-xs">Carregando conversa…</p>
+        <p className="text-muted-foreground text-xs">Carregando os recados…</p>
       ) : thread && thread.messages.length > 0 ? (
         <ul className="flex max-h-64 flex-col gap-2 overflow-y-auto">
           {thread.nextCursor ? (
             <li className="self-center">
               <Button variant="outline" size="sm" disabled={loadingOlder} onClick={loadOlder}>
-                {loadingOlder ? 'Carregando…' : 'Carregar mensagens anteriores'}
+                {loadingOlder ? 'Carregando…' : 'Ver recados anteriores'}
               </Button>
             </li>
           ) : null}
@@ -164,8 +164,8 @@ export function TeacherThreadPanel({
         </ul>
       ) : (
         <p className="text-muted-foreground text-xs">
-          Ainda não há conversa. Escreva um recado para {studentName} — explique o que ajustar ou
-          avise que já está resolvido.
+          Ainda não há recados. Escreva um para {studentName}: explique o que ajustar ou avise que
+          já está resolvido.
         </p>
       )}
 

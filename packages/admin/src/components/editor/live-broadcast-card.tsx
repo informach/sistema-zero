@@ -17,16 +17,16 @@ export function LiveBroadcastCard() {
           Transmissão do encontro
         </h2>
         <p>
-          Nesta aula, o vídeo é a transmissão do encontro: a professora conduz a turma ao vivo e a
-          imagem dela fica no alto da tela de cada criança.
+          Nesta aula, o vídeo é a transmissão do encontro: quem conduz a turma aparece ao vivo no
+          alto da tela de cada criança.
         </p>
         <p>
           Quando o encontro termina, a transmissão vira a gravação da turma no Vimeo, que as
-          crianças podem rever durante o prazo de acesso. Cada parte que a professora abre vira um
-          capítulo da gravação.
+          crianças podem rever durante o prazo de acesso. Cada parte aberta durante o encontro vira
+          um capítulo da gravação.
         </p>
         <p className="text-muted-foreground">
-          Por isso esta aula não usa bloco de vídeo. Em cada parte, as anotações da professora ficam
+          Por isso esta aula não usa bloco de vídeo. Em cada parte, as anotações da parte ficam
           visíveis só para quem conduz o encontro.
         </p>
       </div>

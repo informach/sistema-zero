@@ -30,12 +30,16 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { statusLabel } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { ModuleRiveUploader } from '@/components/media/module-rive-uploader'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { cn } from '@/lib/cn'
 import { isLiveCourse } from '@/lib/course-modality'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { slugify } from '@/lib/slug'
 import {
   fetchSubmissionCountsSafe,
@@ -46,7 +50,7 @@ import type { CourseTreeView, LessonView, ModuleView } from '@/lib/types'
 import { CourseFormDialog } from '../course-form-dialog'
 import { CourseSubmissionsPanel } from './course-submissions-client'
 
-type CourseTab = 'estrutura' | 'entregas'
+type CourseTab = 'estrutura' | 'projetos'
 
 type Tree = CourseTreeView
 type TreeModule = Tree['modules'][number]
@@ -67,6 +71,8 @@ export function CourseEditorClient({
 
   const [tree, setTree] = useState<Tree | null>(null)
   const [loading, setLoading] = useState(true)
+  /** O curso não existe (excluído ou endereço errado): a tela diz isso, não "não carregou". */
+  const [notFound, setNotFound] = useState(false)
   const [busy, setBusy] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
   // Módulos COLAPSADOS (default = tudo expandido).
@@ -97,8 +103,14 @@ export function CourseEditorClient({
     setLoading(true)
     try {
       setTree(await apiGet<Tree>(`/api/members/courses/${courseId}`))
+      setNotFound(false)
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar o curso.')
+      if ((err as ApiError).status === 404) {
+        setTree(null)
+        setNotFound(true)
+      } else {
+        toast.error((err as ApiError).message ?? 'Não conseguimos carregar o curso.')
+      }
     } finally {
       setLoading(false)
     }
@@ -115,7 +127,7 @@ export function CourseEditorClient({
       if (okMsg) toast.success(okMsg)
       await load()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Operação falhou.')
+      toast.error((err as ApiError).message ?? 'Não deu certo. Tente de novo.')
     } finally {
       setBusy(false)
     }
@@ -135,7 +147,9 @@ export function CourseEditorClient({
     try {
       await apiSend(url, 'POST', { orderedIds })
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
+      toast.error(
+        (err as ApiError).message ?? 'Não conseguimos salvar a nova ordem. Tente de novo.',
+      )
       await load()
     }
   }
@@ -184,7 +198,7 @@ export function CourseEditorClient({
   }
   async function saveModule() {
     if (!moduleForm.title.trim()) {
-      toast.error('Informe o título do módulo.')
+      toast.error('Escreva o título do módulo.')
       return
     }
     const payload = {
@@ -208,8 +222,8 @@ export function CourseEditorClient({
       title: 'Excluir módulo',
       message: (
         <>
-          Excluir o módulo <strong className="text-foreground">{m.title}</strong> e todas as suas
-          aulas? Esta ação não pode ser desfeita.
+          Excluir o módulo <strong className="text-foreground">{m.title}</strong>? As aulas dele
+          somem junto, e não dá para desfazer.
           {warning ? (
             <>
               {' '}
@@ -235,7 +249,7 @@ export function CourseEditorClient({
   }
   async function saveLesson() {
     if (!lessonForm.title.trim() || !lessonForm.slug.trim()) {
-      toast.error('Informe slug e título da aula.')
+      toast.error('Preencha o título e o endereço da aula.')
       return
     }
     await submitLesson()
@@ -261,8 +275,8 @@ export function CourseEditorClient({
       title: 'Excluir aula',
       message: (
         <>
-          Excluir a aula <strong className="text-foreground">{l.title}</strong>? Esta ação não pode
-          ser desfeita.
+          Excluir a aula <strong className="text-foreground">{l.title}</strong>? As partes dela
+          somem junto, e não dá para desfazer.
           {warning ? (
             <>
               {' '}
@@ -290,66 +304,110 @@ export function CourseEditorClient({
 
       <AdminHeader
         title={tree?.title ?? 'Curso'}
+        // A descrição já diz a comunidade do PRÓPRIO curso: o selo da lente mentiria quando
+        // o curso é da outra comunidade (link direto).
+        community={false}
         description={
           tree
-            ? `${tree.slug} · ${tree.status} · ${tree.audience === 'kids' ? 'Kids' : 'Adulto'}${
+            ? `Endereço /${tree.slug} · ${statusLabel(tree.status, 'catalog')} · ${
+                COMMUNITY_NAMES[tree.audience === 'kids' ? 'kids' : 'adult']
+              }${
                 isLiveCourse(tree)
-                  ? ' · Ao vivo: cada aula publicada é um encontro das turmas em Oficinas ao vivo'
+                  ? ' · Ao vivo: cada aula publicada vira um encontro das turmas em Oficinas'
                   : ''
               }`
-            : courseId
+            : undefined
         }
         action={
-          canWrite ? (
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setCourseEditOpen(true)} disabled={!tree}>
-                <Pencil className="size-4" /> Editar curso
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setCourseEditOpen(true)}
+              disabled={!tree || !canWrite}
+            >
+              <Pencil className="size-4" /> Editar dados do curso
+            </Button>
+            {tab === 'estrutura' ? (
+              <Button onClick={openCreateModule} disabled={!canWrite}>
+                <Plus className="size-4" /> Novo módulo
               </Button>
-              {tab === 'estrutura' ? (
-                <Button onClick={openCreateModule}>
-                  <Plus className="size-4" /> Novo módulo
-                </Button>
-              ) : null}
-            </div>
-          ) : undefined
+            ) : null}
+          </div>
         }
       />
+      {canWrite ? null : <ReadOnlyNotice />}
 
-      {/* Abas do curso: Estrutura (árvore) × Entregas (Estúdio, todas as aulas). */}
-      <div className="flex items-center gap-1 border-b border-border">
-        {(
-          [
-            ['estrutura', 'Estrutura'],
-            ['entregas', 'Entregas'],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={cn(
-              '-mb-px border-b-2 px-3 py-2 text-sm transition-colors',
-              tab === key
-                ? 'border-primary font-semibold text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground',
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {notFound ? (
+        <Card>
+          <EmptyState
+            zappy="thinking"
+            title="Curso não encontrado"
+            description="Ele pode ter sido excluído, ou o endereço está errado."
+            action={
+              <Link href="/admin/membros/cursos" className={buttonVariants({ variant: 'outline' })}>
+                <ArrowLeft className="size-4" aria-hidden /> Voltar aos cursos
+              </Link>
+            }
+          />
+        </Card>
+      ) : null}
 
-      {tab === 'entregas' ? (
+      {/* O que mostrar do curso: Estrutura (árvore) × Projetos (Estúdio, todas as aulas). São
+          botões de alternar (`aria-pressed`), não abas: o conteúdo troca logo abaixo. */}
+      {notFound ? null : (
+        <div
+          role="group"
+          aria-label="O que mostrar do curso"
+          className="flex items-center gap-1 border-b border-border"
+        >
+          {(
+            [
+              ['estrutura', 'Estrutura'],
+              ['projetos', 'Projetos'],
+            ] as const
+          ).map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={tab === key}
+              onClick={() => setTab(key)}
+              className={cn(
+                '-mb-px border-b-2 px-3 py-2 text-sm transition-colors',
+                tab === key
+                  ? 'border-primary font-semibold text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {notFound ? null : tab === 'projetos' ? (
         <CourseSubmissionsPanel courseId={courseId} audience={tree?.audience ?? 'kids'} />
       ) : loading ? (
         <Card className="py-10 text-center text-muted-foreground">
           <Spinner className="mx-auto" />
         </Card>
       ) : !tree ? (
-        <Card className="py-10 text-center text-muted-foreground">Curso não encontrado.</Card>
+        <Card>
+          <LoadError what="o curso" onRetry={() => void load()} />
+        </Card>
       ) : tree.modules.length === 0 ? (
-        <Card className="py-10 text-center text-muted-foreground">
-          Nenhum módulo ainda. Crie o primeiro módulo para começar.
+        <Card>
+          <EmptyState
+            zappy="happy"
+            title="Este curso ainda não tem módulos"
+            description="O módulo junta as aulas. Crie o primeiro e depois as aulas dele."
+            action={
+              canWrite ? (
+                <Button onClick={openCreateModule}>
+                  <Plus className="size-4" /> Novo módulo
+                </Button>
+              ) : undefined
+            }
+          />
         </Card>
       ) : (
         <DndContext
@@ -462,7 +520,11 @@ export function CourseEditorClient({
       >
         <div className="flex flex-col gap-4">
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Slug" htmlFor="lslug" hint="único no curso">
+            <Field
+              label="Endereço"
+              htmlFor="lslug"
+              hint="Nome curto da aula, usado no roteiro e nos arquivos exportados. Não pode repetir dentro do curso."
+            >
               <Input
                 id="lslug"
                 value={lessonForm.slug}
@@ -472,7 +534,7 @@ export function CourseEditorClient({
                 }}
               />
             </Field>
-            <Field label="Duração (min)" htmlFor="lmin" hint="Opcional.">
+            <Field label="Duração em minutos" htmlFor="lmin" hint="Opcional.">
               <Input
                 id="lmin"
                 type="number"
@@ -498,7 +560,7 @@ export function CourseEditorClient({
             />
           </Field>
           <p className="text-sm text-muted-foreground">
-            A aula será criada em rascunho. Organize seu conteúdo e publique pelo editor da aula.
+            A aula nasce como rascunho. Monte as partes dela e publique pelo editor da aula.
           </p>
         </div>
       </Dialog>
@@ -567,7 +629,7 @@ function SortableModuleItem({
               <div className="text-sm text-muted-foreground">{mod.summary}</div>
             ) : null}
             {mod.riveUrl ? (
-              <div className="text-xs text-muted-foreground">Animação enviada</div>
+              <div className="text-xs text-muted-foreground">Com animação da trilha</div>
             ) : null}
             <div className="mt-0.5 text-xs text-muted-foreground">
               {published} de {mod.lessons.length}{' '}
@@ -576,23 +638,23 @@ function SortableModuleItem({
             </div>
           </div>
         </div>
-        {canWrite ? (
-          <div className="flex shrink-0 items-center gap-1">
-            <Button variant="ghost" size="sm" onClick={onEditModule}>
-              <Pencil className="size-4" /> Editar
-            </Button>
-            <Button variant="ghost" size="sm" onClick={onDeleteModule}>
-              Excluir
-            </Button>
-          </div>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-1">
+          <Button variant="ghost" size="sm" onClick={onEditModule} disabled={!canWrite}>
+            <Pencil className="size-4" /> Editar
+          </Button>
+          <Button variant="ghost" size="sm" onClick={onDeleteModule} disabled={!canWrite}>
+            Excluir
+          </Button>
+        </div>
       </div>
 
       {expanded ? (
         <>
           <div className="mt-3 divide-y divide-border border-t border-border">
             {mod.lessons.length === 0 ? (
-              <div className="py-3 text-sm text-muted-foreground">Nenhuma aula.</div>
+              <div className="py-3 text-sm text-muted-foreground">
+                Este módulo ainda não tem aulas.
+              </div>
             ) : (
               <DndContext
                 sensors={lessonSensors}
@@ -617,13 +679,11 @@ function SortableModuleItem({
             )}
           </div>
 
-          {canWrite ? (
-            <div className="mt-2">
-              <Button variant="outline" size="sm" onClick={onCreateLesson}>
-                <Plus className="size-4" /> Nova aula
-              </Button>
-            </div>
-          ) : null}
+          <div className="mt-2">
+            <Button variant="outline" size="sm" onClick={onCreateLesson} disabled={!canWrite}>
+              <Plus className="size-4" /> Nova aula
+            </Button>
+          </div>
         </>
       ) : null}
     </Card>
@@ -670,7 +730,7 @@ function SortableLessonItem({
             </Badge>
           </div>
           <div className="truncate text-xs text-muted-foreground">
-            {lesson.slug}
+            /{lesson.slug}
             {lesson.estimatedMinutes != null ? ` · ${lesson.estimatedMinutes} min` : ''}
           </div>
         </div>
@@ -680,13 +740,11 @@ function SortableLessonItem({
           href={`/admin/membros/cursos/${courseId}/aulas/${lesson.id}`}
           className={buttonVariants({ variant: 'ghost', size: 'sm' })}
         >
-          <SquarePen className="size-4" /> Conteúdo
+          <SquarePen className="size-4" /> Abrir aula
         </Link>
-        {canWrite ? (
-          <Button variant="ghost" size="sm" onClick={onDelete}>
-            Excluir
-          </Button>
-        ) : null}
+        <Button variant="ghost" size="sm" onClick={onDelete} disabled={!canWrite}>
+          Excluir
+        </Button>
       </div>
     </div>
   )

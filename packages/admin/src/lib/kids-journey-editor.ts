@@ -33,7 +33,7 @@ export const KIDS_TIER_LABELS = {
 export const KIDS_TOOL_LABELS = {
   studio: 'Estúdio livre',
   pinta: 'Pinta',
-  ai: 'Recursos de IA',
+  ai: 'Zappy',
   pensa: 'Pensa',
   molda: 'Molda',
   'molda-intermediate': 'Molda intermediário',

@@ -81,7 +81,7 @@ test('tierAccess separado conserva mapeamento editável sem vincular índice da 
   const f = await mount(seed)
   await act(async () => button(f.container, 'Iniciante 3D').click())
   await select(f.container, 'Posto de entrada', 'noob')
-  await select(f.container, 'Marco da primeira aventura', 'complete')
+  await select(f.container, 'Marco do primeiro curso', 'complete')
   const rule = f.policy().tierAccess.find((entry) => entry.tier === 'iniciante-3d')
   expect(rule?.opensAt).toBe('noob')
   expect(rule?.foundation.milestone).toBe('complete')

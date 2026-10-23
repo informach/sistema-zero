@@ -197,17 +197,22 @@ test('política persistida e pausa: comparação de modo sem changes não vira a
   expect(container.textContent).toContain('Versão 1')
   expect(container.querySelectorAll('nav[aria-label="Postos"] button').length).toBe(8)
   await pause(container)
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   expect(container.textContent).toContain('Ativa → Pausada')
-  expect(container.textContent).toContain('Simulação de um novo aluno')
+  expect(container.textContent).toContain('Simulação de uma criança que está começando')
   expect(button(container, 'Preparar publicação').disabled).toBe(true)
+  // Os passos à vista leem o estado: mudou e comparou, falta dizer o motivo.
+  expect(
+    container.querySelector('ol[aria-label="Passos para publicar"] [aria-current="step"]')
+      ?.textContent,
+  ).toContain('Dizer o motivo')
   expect(writes()).toEqual([])
 })
 
 test('publicação é manual e usa a versão e os três hashes da mesma preparação, sem ator do cliente', async () => {
   const container = await mount()
   await pause(container)
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   await reason(container)
   await click(container, 'Preparar publicação')
   expect(writes()).toHaveLength(1)
@@ -218,9 +223,15 @@ test('publicação é manual e usa a versão e os três hashes da mesma prepara�
   })
   expect(replaced.at(-1)).toBe(`/admin/professor/jornada-kids?preparacao=${id}`)
   expect(button(container, 'Publicar versão 2').disabled).toBe(true)
-  await click(container, 'Verificar próximo lote')
+  await click(container, 'Conferir o próximo grupo de perfis')
   expect(writes()).toHaveLength(2)
-  expect(container.textContent).toContain('12 perfis verificados')
+  expect(container.textContent).toContain('12 perfis conferidos')
+  expect(
+    container.querySelector('ol[aria-label="Passos para publicar"] [aria-current="step"]')
+      ?.textContent,
+  ).toContain('Publicar')
+  // O ID da preparação fica nos detalhes técnicos, fora da linha principal.
+  expect(container.querySelector('details')?.textContent).toContain(id)
   await click(container, 'Publicar versão 2')
   expect(writes()[2]?.body).toEqual({
     expectedVersion: 1,
@@ -244,7 +255,7 @@ test('retomar preparação carrega candidato e motivo, só compara e espera o bo
   ).toBe(true)
   expect(calls.filter((call) => call.path.endsWith('/preview'))).toHaveLength(1)
   expect(writes()).toEqual([])
-  await click(container, 'Verificar próximo lote')
+  await click(container, 'Conferir o próximo grupo de perfis')
   expect(writes()).toHaveLength(1)
 })
 
@@ -263,11 +274,11 @@ test('inicializando ou falha não fornece rascunho editável nem publica seed pe
 test('equipe somente leitura examina e compara; não recebe botão de concessão nem escrita', async () => {
   record.permissions.canEdit = false
   const container = await mount()
-  expect(container.textContent).toContain('Somente leitura')
+  expect(container.textContent).toContain('Só leitura')
   expect(
     (container.querySelector('select[aria-label="Progressão"]') as HTMLSelectElement).disabled,
   ).toBe(true)
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   expect(button(container, 'Preparar publicação').disabled).toBe(true)
   expect(writes()).toEqual([])
 })
@@ -276,11 +287,11 @@ test('catálogo indisponível bloqueia preparação; conflito preserva candidato
   const container = await mount()
   await pause(container)
   rejectReadiness = true
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   await reason(container)
   expect(button(container, 'Preparar publicação').disabled).toBe(true)
   rejectReadiness = false
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   failure = { suffix: '/preparations', status: 409, message: 'A versão publicada mudou.' }
   await click(container, 'Preparar publicação')
   expect(container.textContent).toContain('A versão publicada mudou.')
@@ -322,15 +333,30 @@ test('resposta antiga da plataforma não repovoa a tela adulta', async () => {
   const container = await mount()
   await act(async () => setPlatform('adult'))
   await act(async () => resolve(Response.json(record)))
-  expect(container.textContent).toContain('Selecione a plataforma Kids')
+  // A lente Adultos leva à jornada de lá: a resposta atrasada não repovoa nada no caminho.
+  expect(replaced).toContain('/admin/professor/jornada-adulta')
+  expect(container.textContent).toContain('Abrindo a jornada da Comunidade Sistema Zero')
   expect(container.querySelector('nav[aria-label="Postos"]')).toBeNull()
   expect(writes()).toEqual([])
+})
+
+test('trocar a lente leva a preparação aberta junto, para voltar e retomar', async () => {
+  const happyDOM = (window as unknown as { happyDOM: { setURL(url: string): void } }).happyDOM
+  const before = window.location.href
+  happyDOM.setURL(`http://localhost/admin/professor/jornada-kids?preparacao=${id}`)
+  try {
+    await mount(id)
+    await act(async () => setPlatform('adult'))
+    expect(replaced).toContain(`/admin/professor/jornada-adulta?preparacao=${id}`)
+  } finally {
+    happyDOM.setURL(before)
+  }
 })
 
 test('refetch malformado mantém a consulta anterior mas bloqueia qualquer nova preparação', async () => {
   const container = await mount()
   await pause(container)
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   await reason(container)
   expect(button(container, 'Preparar publicação').disabled).toBe(false)
   malformedPolicy = true
@@ -339,7 +365,7 @@ test('refetch malformado mantém a consulta anterior mas bloqueia qualquer nova 
   expect(
     (container.querySelector('select[aria-label="Progressão"]') as HTMLSelectElement).value,
   ).toBe('paused')
-  expect(button(container, 'Comparar mudanças').disabled).toBe(true)
+  expect(button(container, 'Comparar com a versão no ar').disabled).toBe(true)
   expect(button(container, 'Preparar publicação').disabled).toBe(true)
   expect(writes()).toEqual([])
 })
@@ -347,7 +373,7 @@ test('refetch malformado mantém a consulta anterior mas bloqueia qualquer nova 
 test('nova edição invalida a comparação e resposta de outra versão nunca prepara publicação', async () => {
   const container = await mount()
   await pause(container)
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   await reason(container)
   expect(button(container, 'Preparar publicação').disabled).toBe(false)
   const select = container.querySelector('select[aria-label="Progressão"]') as HTMLSelectElement
@@ -358,7 +384,7 @@ test('nova edição invalida a comparação e resposta de outra versão nunca pr
   expect(button(container, 'Preparar publicação').disabled).toBe(true)
   await pause(container)
   invalidPreview = true
-  await click(container, 'Comparar mudanças')
+  await click(container, 'Comparar com a versão no ar')
   expect(container.textContent).toContain('A comparação pertence a outra versão')
   expect(button(container, 'Preparar publicação').disabled).toBe(true)
   expect(writes()).toEqual([])
@@ -394,6 +420,9 @@ test('falha ao paginar histórico fica local, preserva edição e não bloqueia 
   }))
   const container = await mount()
   expect(container.textContent).toContain('Motivo 2')
+  // Sem nome no histórico: "Alguém da equipe", e o ID só nos detalhes.
+  expect(container.textContent).toContain('Alguém da equipe')
+  expect(container.textContent).not.toContain('Conta da equipe')
   failure = {
     suffix: '/history?beforeVersion=2&limit=25',
     status: 503,
@@ -405,5 +434,5 @@ test('falha ao paginar histórico fica local, preserva edição e não bloqueia 
   expect(
     (container.querySelector('select[aria-label="Progressão"]') as HTMLSelectElement).disabled,
   ).toBe(false)
-  expect(button(container, 'Comparar mudanças').disabled).toBe(false)
+  expect(button(container, 'Comparar com a versão no ar').disabled).toBe(false)
 })

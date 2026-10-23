@@ -9,13 +9,15 @@ import { Field } from '@sistemazero/ui/label'
 import { Select } from '@sistemazero/ui/select'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { Plus, RotateCcw, Trophy } from 'lucide-react'
+import { Plus, Trophy } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { LoadError } from '@/components/admin/empty-state'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { cn } from '@/lib/cn'
 import { monthLabelPt } from '@/lib/dates'
 import type {
   ChallengeMonthAdminView,
@@ -25,10 +27,12 @@ import type {
 } from '@/lib/types'
 
 /**
- * Desafio do mês (game jam kids): o professor vê o tema valendo em cada mês
- * (definido por ele ou SORTEADO como fallback — todo mês sempre tem tema),
- * altera um mês, volta ao sorteio e mantém a biblioteca de temas. Trocar o
- * tema NÃO afeta participação/XP das crianças: a tag do desafio é o MÊS.
+ * Desafio do mês (game jam): a equipe vê o tema valendo em cada mês (escolhido por ela ou
+ * SORTEADO como reserva: todo mês sempre tem tema), troca um mês, volta ao sorteio e mantém a
+ * biblioteca de temas. Trocar o tema NÃO afeta participação/XP: a tag do desafio é o MÊS.
+ *
+ * Os meses são uma grade de cartões (a sala da equipe, 23/10/2026): o mês no ar é o cartão
+ * escuro, e a biblioteca fica numa coluna ao lado em telas largas.
  */
 export function DesafioClient() {
   const platform = usePlatform()
@@ -37,11 +41,13 @@ export function DesafioClient() {
 function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
   const [months, setMonths] = useState<ChallengeMonthAdminView[] | null>(null)
   const [themes, setThemes] = useState<ChallengeThemesAdminView | null>(null)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [editingMonth, setEditingMonth] = useState<ChallengeMonthAdminView | null>(null)
   const [themeForm, setThemeForm] = useState<ChallengeThemeAdminView | 'new' | null>(null)
   const { confirm, confirmDialog } = useConfirm()
 
   const reload = useCallback(async () => {
+    setLoadFailed(false)
     try {
       const [m, t] = await Promise.all([
         apiGet<{ months: ChallengeMonthAdminView[] }>(
@@ -52,6 +58,8 @@ function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
       setMonths(m.months)
       setThemes(t)
     } catch (err) {
+      // Sem dados ainda, a tela mostra o LoadError; com dados, eles ficam e o toast avisa.
+      setLoadFailed(true)
       toast.error((err as ApiError).message ?? 'Não consegui carregar o desafio.')
     }
   }, [platform])
@@ -64,8 +72,10 @@ function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
     confirm({
       title: 'Voltar ao sorteio?',
       message: m.current
-        ? `O mês no ar (${monthLabelPt(m.month)}) voltará ao tema sorteado. As crianças já podem ter começado com o tema atual; a participação delas não é afetada.`
-        : `${monthLabelPt(m.month)} voltará ao tema sorteado automaticamente.`,
+        ? `O mês no ar (${monthLabelPt(m.month)}) volta ao tema sorteado. ${
+            platform === 'kids' ? 'As crianças' : 'Os alunos'
+          } já podem ter começado com o tema atual, e a participação não muda.`
+        : `${monthLabelPt(m.month)} volta ao tema sorteado.`,
       confirmText: 'Voltar ao sorteio',
       onConfirm: async () => {
         try {
@@ -79,92 +89,135 @@ function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
     })
   }
 
-  const loading = !months || !themes
+  function toggleArchive(t: ChallengeThemeAdminView) {
+    confirm({
+      title: t.archived ? 'Reativar o tema?' : 'Arquivar o tema?',
+      message: t.archived
+        ? `"${t.title}" volta a aparecer na escolha de temas.`
+        : `"${t.title}" sai da lista de escolha. Um mês que já usa esse tema continua com ele.`,
+      confirmText: t.archived ? 'Reativar' : 'Arquivar',
+      onConfirm: async () => {
+        try {
+          await apiSend(`/api/members/challenge/themes/${t.id}?audience=${platform}`, 'PATCH', {
+            archived: !t.archived,
+          })
+          toast.success(t.archived ? 'Tema reativado.' : 'Tema arquivado.')
+          await reload()
+        } catch (err) {
+          toast.error((err as ApiError).message ?? 'Não consegui salvar.')
+        }
+      },
+    })
+  }
 
   return (
     <div className="space-y-8">
       <AdminHeader
         title="Desafio do mês"
-        description="Cada mês sempre tem um tema: o sorteio automático garante isso. Defina um tema quando quiser dirigir a game jam."
+        description="Todo mês tem um tema. Se ninguém escolher, o sorteio escolhe sozinho. Escolha quando quiser dirigir a game jam."
       />
 
-      {platform === 'adult' ? (
-        <Card className="border-dashed p-4 text-muted-foreground text-sm">
-          Você está configurando o desafio adulto. Os temas e meses Kids permanecem separados.
-        </Card>
-      ) : null}
-
-      {loading ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" />
-        </div>
+      {!months || !themes ? (
+        loadFailed ? (
+          <LoadError what="o desafio do mês" onRetry={() => void reload()} />
+        ) : (
+          <div className="flex justify-center py-16">
+            <Spinner className="size-6" />
+          </div>
+        )
       ) : (
-        <>
-          <Card>
-            <CardContent className="divide-y divide-border p-0">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_24rem]">
+          <section className="min-w-0 space-y-3" aria-labelledby="desafio-meses">
+            <h2 id="desafio-meses" className="font-display text-xl font-bold">
+              Os meses
+            </h2>
+            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {months.map((m) => (
-                <div
+                <li
                   key={m.monthKey}
-                  className={`flex flex-col gap-3 p-4 sm:flex-row sm:items-center ${
-                    m.current ? 'bg-primary/5' : ''
-                  }`}
+                  aria-current={m.current ? 'date' : undefined}
+                  className={cn(
+                    'flex flex-col gap-4 rounded-[18px] border p-5',
+                    m.current
+                      ? 'border-transparent bg-menu text-menu-text'
+                      : 'border-border bg-card',
+                  )}
                 >
-                  <div className="w-44 shrink-0">
-                    <p className="font-semibold capitalize">{monthLabelPt(m.month)}</p>
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <p
+                      className={cn(
+                        'font-display text-lg font-bold capitalize',
+                        m.current && 'text-white',
+                      )}
+                    >
+                      {monthLabelPt(m.month)}
+                    </p>
                     {m.current ? (
-                      <Badge className="mt-1">
-                        <Trophy className="mr-1 size-3" /> No ar agora
-                      </Badge>
+                      <span className="inline-flex h-7 shrink-0 items-center gap-1 rounded-full bg-lens-kids px-3 text-[13px] font-bold text-lens-kids-ink">
+                        <Trophy className="size-3.5" aria-hidden /> No ar agora
+                      </span>
                     ) : null}
                   </div>
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span aria-hidden className="text-2xl">
+                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                    <span aria-hidden className="text-3xl leading-none">
                       {m.theme.emoji}
                     </span>
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{m.theme.title}</p>
-                      <p className="truncate text-muted-foreground text-xs">
+                      <p className={cn('font-bold', m.current && 'text-white')}>{m.theme.title}</p>
+                      <p
+                        className={cn(
+                          'text-sm',
+                          m.current ? 'text-menu-text' : 'text-muted-foreground',
+                        )}
+                      >
                         {m.theme.description}
                       </p>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-2">
+                  <div>
                     <Badge variant={m.source === 'definido' ? 'default' : 'muted'}>
-                      {m.source === 'definido' ? 'Definido' : 'Sorteado'}
+                      {m.source === 'definido' ? 'Escolhido pela equipe' : 'Sorteado'}
                     </Badge>
-                    <Button size="sm" variant="outline" onClick={() => setEditingMonth(m)}>
-                      Alterar
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant={m.current ? 'secondary' : 'outline'}
+                      className="h-11 px-4"
+                      onClick={() => setEditingMonth(m)}
+                    >
+                      Escolher o tema
                     </Button>
                     {m.source === 'definido' ? (
                       <Button
-                        size="sm"
-                        variant="ghost"
+                        variant={m.current ? 'secondary' : 'ghost'}
+                        className="h-11 px-4"
                         onClick={() => clearMonth(m)}
-                        title="Voltar ao sorteio"
                       >
-                        <RotateCcw className="size-4" />
+                        Voltar ao sorteio
                       </Button>
                     ) : null}
                   </div>
-                </div>
+                </li>
               ))}
-            </CardContent>
-          </Card>
+            </ul>
+          </section>
 
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="font-semibold text-lg">Biblioteca de temas</h2>
-                <p className="text-muted-foreground text-sm">
-                  Os 12 temas fixos participam do sorteio. Os seus temas só entram quando você
-                  define um mês com eles.
-                </p>
+          <section className="min-w-0 space-y-3" aria-labelledby="desafio-biblioteca">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="desafio-biblioteca" className="font-display text-xl font-bold">
+                  Biblioteca de temas
+                </h2>
+                <Button onClick={() => setThemeForm('new')}>
+                  <Plus className="size-4" /> Novo tema
+                </Button>
               </div>
-              <Button onClick={() => setThemeForm('new')}>
-                <Plus className="mr-1 size-4" /> Novo tema
-              </Button>
+              <p className="text-muted-foreground text-sm">
+                Os 12 temas fixos entram no sorteio. Os temas da equipe só valem no mês em que
+                alguém escolhe um deles.
+              </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
               {themes.custom.map((t) => (
                 <ThemeCard
                   key={t.id}
@@ -175,34 +228,7 @@ function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
                       <Button size="sm" variant="outline" onClick={() => setThemeForm(t)}>
                         Editar
                       </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() =>
-                          confirm({
-                            title: t.archived ? 'Reativar tema?' : 'Arquivar tema?',
-                            message: t.archived
-                              ? `"${t.title}" volta a aparecer na escolha de temas.`
-                              : `"${t.title}" sai da lista de escolha. Um mês já definido com ele continua valendo.`,
-                            confirmText: t.archived ? 'Reativar' : 'Arquivar',
-                            onConfirm: async () => {
-                              try {
-                                await apiSend(
-                                  `/api/members/challenge/themes/${t.id}?audience=${platform}`,
-                                  'PATCH',
-                                  {
-                                    archived: !t.archived,
-                                  },
-                                )
-                                toast.success(t.archived ? 'Tema reativado.' : 'Tema arquivado.')
-                                await reload()
-                              } catch (err) {
-                                toast.error((err as ApiError).message ?? 'Não consegui salvar.')
-                              }
-                            },
-                          })
-                        }
-                      >
+                      <Button size="sm" variant="ghost" onClick={() => toggleArchive(t)}>
                         {t.archived ? 'Reativar' : 'Arquivar'}
                       </Button>
                     </div>
@@ -214,7 +240,7 @@ function DesafioForPlatform({ platform }: { platform: 'kids' | 'adult' }) {
               ))}
             </div>
           </section>
-        </>
+        </div>
       )}
 
       {editingMonth && themes ? (
@@ -326,10 +352,10 @@ function ChangeMonthDialog({
         'PUT',
         body,
       )
-      toast.success(`Tema de ${monthLabelPt(month.month)} definido.`)
+      toast.success(`Tema de ${monthLabelPt(month.month)} escolhido.`)
       await onSaved()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Não consegui definir o tema.')
+      toast.error((err as ApiError).message ?? 'Não consegui escolher o tema.')
     } finally {
       setSaving(false)
     }
@@ -352,7 +378,7 @@ function ChangeMonthDialog({
           </Button>
           <Button onClick={save} disabled={saving || !choice}>
             {saving ? <Spinner className="mr-2 size-4" /> : null}
-            {month.current ? 'Trocar o tema no ar' : 'Definir tema'}
+            {month.current ? 'Trocar o tema no ar' : 'Escolher este tema'}
           </Button>
         </div>
       }
@@ -360,8 +386,9 @@ function ChangeMonthDialog({
       <div className="space-y-4">
         {month.current ? (
           <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
-            Este é o mês no ar: as crianças já podem ter começado com o tema atual. A participação
-            delas não é afetada (a tag do desafio é o mês, não o tema).
+            Este é o mês no ar: {platform === 'kids' ? 'as crianças' : 'os alunos'} já podem ter
+            começado com o tema atual. A participação não muda, porque ela conta pelo mês, e não
+            pelo tema.
           </p>
         ) : null}
         <Field label="Tema">
@@ -370,7 +397,7 @@ function ChangeMonthDialog({
               Escolha um tema…
             </option>
             {activeCustom.length > 0 ? (
-              <optgroup label="Meus temas">
+              <optgroup label="Temas da equipe">
                 {activeCustom.map((t) => (
                   <option key={t.id} value={`custom:${t.id}`}>
                     {t.emoji} {t.title}
@@ -400,7 +427,7 @@ function ChangeMonthDialog({
   )
 }
 
-/** Criar/editar tema custom (emoji, título e descrição — o que o card kids mostra). */
+/** Criar/editar tema custom (emoji, título e descrição: o que o card do desafio mostra). */
 function ThemeFormDialog({
   platform,
   theme,
@@ -438,7 +465,7 @@ function ThemeFormDialog({
         toast.success('Tema atualizado.')
       } else {
         await apiSend(`/api/members/challenge/themes?audience=${platform}`, 'POST', body)
-        toast.success('Tema criado. Defina um mês com ele quando quiser.')
+        toast.success('Tema criado. Escolha um mês para ele quando quiser.')
       }
       await onSaved()
     } catch (err) {
@@ -453,7 +480,7 @@ function ThemeFormDialog({
       open
       onClose={onClose}
       title={theme ? 'Editar tema' : 'Novo tema'}
-      description="A criança vê emoji, título e descrição no card do desafio."
+      description={`${platform === 'kids' ? 'A criança' : 'O aluno'} vê o emoji, o título e a descrição no cartão do desafio.`}
       footer={
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose} disabled={saving}>
@@ -469,7 +496,7 @@ function ThemeFormDialog({
       <div className="space-y-4">
         <div className="grid grid-cols-[6rem_1fr] gap-3">
           <Field label="Emoji" hint="Um só">
-            <Input value={emoji} onChange={(e) => setEmoji(e.target.value)} placeholder="🎄" />
+            <Input value={emoji} onChange={(e) => setEmoji(e.target.value)} aria-label="Emoji" />
           </Field>
           <Field label="Título">
             <Input
@@ -480,7 +507,10 @@ function ThemeFormDialog({
             />
           </Field>
         </div>
-        <Field label="Descrição" hint="Um convite curto, direto para a criança">
+        <Field
+          label="Descrição"
+          hint={`Um convite curto, direto para ${platform === 'kids' ? 'a criança' : 'o aluno'}`}
+        >
           <Textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}

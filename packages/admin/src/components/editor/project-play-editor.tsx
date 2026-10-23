@@ -237,7 +237,7 @@ export function ProjectPlayEditor({
         </Field>
         <p className="text-sm text-muted-foreground">
           {value.completion === 'participation'
-            ? 'Um toque, clique ou comando de teclado dentro do jogo registra a participação. Abrir, ampliar ou reiniciar não conta. O vídeo continua sendo um critério separado da seção.'
+            ? 'Um toque, clique ou comando de teclado dentro do jogo registra a participação. Abrir, ampliar ou reiniciar não conta. O vídeo continua sendo um critério separado da parte.'
             : 'Para jogos Jogo 2D com evento de clique/toque em grupo. Cada evento deve acontecer dentro de um dos retângulos abaixo. Isto não detecta vitória automaticamente em qualquer jogo.'}
         </p>
         {(value.completion !== 'participation' || value.targets.length > 0) && (

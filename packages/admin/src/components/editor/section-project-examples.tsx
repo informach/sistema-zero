@@ -194,7 +194,7 @@ export function SectionProjectExamples({
     <fieldset className="space-y-3 rounded-lg border border-border p-3">
       <legend className="px-1 font-medium">Exemplos privados desta parte</legend>
       <p className="text-sm text-muted-foreground">
-        O projeto inicial continua sendo o da criança. A entrada serve para ensaiar esta etapa; a
+        O projeto inicial continua sendo o da criança. A entrada serve para ensaiar esta parte; a
         solução é uma possibilidade, com cores e detalhes livres.
       </p>
       {error && (

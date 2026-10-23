@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { AdultCourseAccessContract } from '@/components/admin/adult-course-access-contract'
+import { statusLabel } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { ImageUploader } from '@/components/media/image-uploader'
 import { StudioCourseBlocksPicker } from '@/components/studio/studio-course-blocks-picker'
@@ -21,9 +22,9 @@ import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { courseSaveError } from '@/lib/course-errors'
 import { LIVE_MODALITY_HINT, modalityChangeWarning } from '@/lib/course-modality'
 import { loadAllPages } from '@/lib/load-all-pages'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { slugify } from '@/lib/slug'
 import {
-  AUDIENCE_LABELS,
   COURSE_AUDIENCES,
   COURSE_MODALITY_LABELS,
   COURSE_STATUSES,
@@ -249,14 +250,14 @@ export function CourseFormDialog({
     const publishing = form.status === 'published' && editing?.status !== 'published'
     if (publishing) {
       if (!form.coverImageUrl.trim())
-        warnings.push('Curso sem imagem de capa — o card do catálogo fica sem arte.')
-      if (!form.description.trim()) warnings.push('Curso sem descrição.')
+        warnings.push('O curso está sem imagem de capa: o cartão dele no catálogo fica sem arte.')
+      if (!form.description.trim()) warnings.push('O curso está sem descrição.')
       // Pré-aviso amigável do 409 NO_SHOWCASE_BLOCK (só quando dá pra saber: o campo
       // `hasShowcaseBlock` vem na listagem — aberto pelo editor ele é undefined e o
       // server cobre com o 409).
       if (!isLive && form.careerSlot === '1' && editing?.hasShowcaseBlock === false) {
         warnings.push(
-          'Curso-base sem aula publicada com vitrine (Publicar no Mural) — o server vai recusar a publicação.',
+          'O curso de entrada ainda não tem aula publicada com um Estúdio que deixa publicar no Mural dos Criadores. A publicação vai ser recusada.',
         )
       }
     }
@@ -274,12 +275,15 @@ export function CourseFormDialog({
           `/api/members?courseRef=${encodeURIComponent(editing.slug)}&status=active&limit=1`,
         )
         if (res.total === 0) return warnings // sem matrícula → troca sem fricção
-        suffix = ` ${res.total} conta(s) com matrícula ativa mantêm o acesso, mas`
+        suffix =
+          res.total === 1
+            ? ' A conta que tem matrícula continua com acesso, mas'
+            : ` As ${res.total} contas que têm matrícula continuam com acesso, mas`
       } catch {
-        suffix = ' Alunos matriculados mantêm o acesso, mas'
+        suffix = ' Quem tem matrícula continua com acesso, mas'
       }
       warnings.push(
-        `Trocar a audiência move o curso para a outra plataforma.${suffix} o curso sai da vitrine atual — e curso Kids fica fora da chave-mestra "todos os cursos".`,
+        `Trocar a comunidade leva o curso para a outra.${suffix} ele sai do catálogo de agora. Curso da Comunidade dos Criadores fica fora do acesso a "todos os cursos".`,
       )
     }
     return warnings
@@ -292,11 +296,11 @@ export function CourseFormDialog({
       return
     }
     if (!form.title.trim() || !form.slug.trim()) {
-      toast.error('Preencha slug e título.')
+      toast.error('Preencha o título e o endereço do curso.')
       return
     }
     if (form.salesPageUrl.trim() && !/^https?:\/\//i.test(form.salesPageUrl.trim())) {
-      toast.error('A página de vendas precisa ser uma URL completa (começando com https://).')
+      toast.error('A página de vendas precisa ser um endereço completo, começando com https://.')
       return
     }
     if (
@@ -305,7 +309,7 @@ export function CourseFormDialog({
       form.journeyRole === 'positioned' &&
       !form.careerSlot
     ) {
-      toast.error('Escolha a posição do curso na jornada.')
+      toast.error('Escolha a posição do curso na Jornada do Criador.')
       return
     }
     setSaving(true)
@@ -381,12 +385,15 @@ export function CourseFormDialog({
       await onSaved(saved && typeof saved === 'object' && 'id' in saved ? saved : undefined)
     } catch (err) {
       const apiErr = err as ApiError
-      const mapped = courseSaveError(apiErr.code, apiErr.message ?? 'Não foi possível salvar.')
+      const mapped = courseSaveError(
+        apiErr.code,
+        apiErr.message ?? 'Não foi possível salvar o curso. Tente de novo.',
+      )
       if (mapped.hint === 'showcase' && editing) {
         // A correção acontece no editor de AULA — CTA leva ao conteúdo do curso.
         toast.error(mapped.message, {
           action: {
-            label: 'Abrir conteúdo do curso',
+            label: 'Abrir o curso',
             onClick: () => router.push(`/admin/membros/cursos/${editing.id}`),
           },
           duration: 10000,
@@ -405,8 +412,10 @@ export function CourseFormDialog({
     <Dialog
       open={open}
       onClose={onClose}
-      title={editing ? 'Editar curso' : 'Novo curso'}
-      description={editing ? editing.title : 'Cadastre um curso na área de membros.'}
+      title={editing ? 'Editar dados do curso' : 'Novo curso'}
+      description={
+        editing ? editing.title : 'O curso nasce como rascunho. Os módulos e as aulas vêm depois.'
+      }
       footer={
         <>
           <Button variant="outline" onClick={onClose} disabled={saving}>
@@ -421,7 +430,7 @@ export function CourseFormDialog({
     >
       <div className="flex flex-col gap-4">
         {confirmDialog}
-        <Field label="Título" htmlFor="title" hint="O slug é gerado automaticamente a partir dele.">
+        <Field label="Título" htmlFor="title" hint="O endereço sai do título sozinho.">
           <Input
             id="title"
             value={form.title}
@@ -437,9 +446,9 @@ export function CourseFormDialog({
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field
-            label="Slug"
+            label="Endereço"
             htmlFor="slug"
-            tooltip="Identificador do curso na URL e nas matrículas (minúsculas-com-hifens). Preenchido sozinho a partir do título; edite antes de salvar se quiser outro."
+            hint="Aparece no link do curso (/cursos/endereço) e nas matrículas. Só letras minúsculas, números e hífens."
           >
             <Input
               id="slug"
@@ -450,7 +459,7 @@ export function CourseFormDialog({
               }}
             />
           </Field>
-          <Field label="Status" htmlFor="cstatus">
+          <Field label="Situação" htmlFor="cstatus">
             <Select
               id="cstatus"
               value={form.status}
@@ -458,16 +467,16 @@ export function CourseFormDialog({
             >
               {COURSE_STATUSES.map((s) => (
                 <option key={s} value={s}>
-                  {s}
+                  {statusLabel(s, 'catalog')}
                 </option>
               ))}
             </Select>
           </Field>
         </div>
         <Field
-          label="Audiência"
+          label="Comunidade"
           htmlFor="caudience"
-          tooltip="Em qual plataforma o curso aparece: Adulto (comunidade principal) ou Kids (plataforma infanto-juvenil). Cursos Kids ficam FORA da chave-mestra 'todos os cursos' — acesso é sempre por matrícula específica."
+          hint="Onde o curso aparece. Curso da Comunidade dos Criadores fica fora do acesso a todos os cursos: cada criança entra pela matrícula dele."
         >
           <Select
             id="caudience"
@@ -484,7 +493,7 @@ export function CourseFormDialog({
           >
             {COURSE_AUDIENCES.map((a) => (
               <option key={a} value={a}>
-                {AUDIENCE_LABELS[a]}
+                {COMMUNITY_NAMES[a]}
               </option>
             ))}
           </Select>
@@ -519,7 +528,7 @@ export function CourseFormDialog({
         <Field
           label="Nível do curso"
           htmlFor="clevel"
-          tooltip="Degrau do curso: dificuldade (Iniciante/Intermediário/Avançado) × eixo (2D/3D). Conta para a JORNADA do aluno: concluir e publicar no Mural cursos de cada degrau, na ordem da escada (2D antes do 3D em cada dificuldade), faz o aluno subir de Faísca até Lenda."
+          tooltip="A dificuldade (Iniciante, Intermediário, Avançado) e o tipo de jogo (2D ou 3D). Na Comunidade dos Criadores, terminar e publicar no Mural os cursos de cada nível, na ordem (2D antes do 3D), faz a criança subir de posto, da Faísca até a Lenda."
         >
           {/* UM select de 6 opções que escreve os DOIS campos (level + track). */}
           <Select
@@ -551,24 +560,23 @@ export function CourseFormDialog({
             ))}
             {/* Lenda = categoria FORA da jornada (não é degrau; não entra em
                 COURSE_TIER_OPTIONS): cursos bônus que aparecem só na trilha da Lenda. */}
-            <option value="lenda:2d">👑 Lenda (curso bônus da formatura)</option>
+            <option value="lenda:2d">Lenda (curso bônus da formatura)</option>
           </Select>
         </Field>
         {isLive ? null : form.level === 'lenda' ? (
           <p className="rounded-lg bg-muted/50 px-3 py-2 text-muted-foreground text-xs">
-            👑 Curso bônus da <strong>Lenda</strong> (formatura): FORA da jornada — sem posição, não
-            conta pontos e não trava. Aparece só na trilha da Lenda em <code>/cursos</code>, para
-            quem já chegou ao topo.
+            Curso bônus da <strong>Lenda</strong> (formatura): fica fora da Jornada, sem posição,
+            não conta pontos e não tranca nada. Aparece só na Trilha Lenda, para quem já chegou ao
+            topo.
           </p>
         ) : (
           <Field
             label="Posição na Jornada do Criador"
             htmlFor="journey-slot"
-            tooltip="Curso extra abre para quem tem matrícula, sem depender da etapa. Bônus é recompensa após completar a etapa. Cursos com posição seguem a ordem dos slots; a posição 1 é o curso-base."
             hint={
               isKids
-                ? 'Extra abre por matrícula; bônus abre ao completar a etapa; posições seguem a jornada.'
-                : 'Disponível apenas para cursos Kids.'
+                ? 'Extra abre para quem tem matrícula. Bônus abre quando a criança completa a trilha. Com posição, o curso segue a ordem da trilha, e a posição 1 é o curso de entrada.'
+                : 'Só para cursos da Comunidade dos Criadores.'
             }
           >
             <Select
@@ -583,19 +591,19 @@ export function CourseFormDialog({
                 )
               }
             >
-              <option value="reward">Nenhuma — bônus (recompensa da etapa)</option>
+              <option value="reward">Sem posição: bônus (prêmio da trilha)</option>
               {isKids && form.level !== 'lenda' ? (
-                <option value="extra">Nenhuma — curso extra (abre com matrícula)</option>
+                <option value="extra">Sem posição: curso extra (abre com a matrícula)</option>
               ) : null}
               {Array.from({ length: maxSlot }, (_, i) => i + 1).map((slot) => {
                 const occ = occupantBySlot.get(slot)
                 const takenByOther = !!occ && occ.id !== editing?.id
                 const base =
-                  slot === 1 ? '1 — Curso-base da etapa (destrava os outros)' : String(slot)
+                  slot === 1 ? 'Posição 1: curso de entrada (abre os outros)' : `Posição ${slot}`
                 const suffix = occ
                   ? occ.id === editing?.id
-                    ? ' — este curso'
-                    : ` — ocupado: ${occ.title}`
+                    ? ' (este curso)'
+                    : ` (já tem: ${occ.title})`
                   : ''
                 return (
                   <option key={slot} value={String(slot)} disabled={takenByOther}>
@@ -610,9 +618,9 @@ export function CourseFormDialog({
             (editing.status === 'published' || form.status === 'published') ? (
               <p className="mt-1.5 flex items-start gap-1.5 text-destructive text-xs" role="alert">
                 <TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-                Este curso-base ainda não tem aula publicada com bloco de Estúdio com vitrine
-                (Publicar no Mural). Sem isso o aluno nunca qualifica a posição 1 e a etapa não
-                destrava.
+                Este curso de entrada ainda não tem aula publicada com um Estúdio que deixa publicar
+                no Mural dos Criadores. Sem isso, a criança não completa a posição 1 e o resto da
+                trilha não abre.
               </p>
             ) : null}
           </Field>
@@ -664,9 +672,9 @@ export function CourseFormDialog({
         {isLive ? null : (
           <>
             <Field
-              label="Trava sequencial das aulas"
+              label="Aulas em ordem"
               htmlFor="csequentiallock"
-              tooltip="Estilo Duolingo: o aluno só abre a próxima aula depois de concluir a anterior, na ordem. Desligado = navegação livre (pode pular entre as aulas)."
+              hint="Cada aula abre quando a anterior termina. Desligado, dá para pular entre as aulas."
             >
               <label
                 htmlFor="csequentiallock"
@@ -679,13 +687,13 @@ export function CourseFormDialog({
                   onChange={(e) => setForm((f) => ({ ...f, sequentialLock: e.target.checked }))}
                   className="size-4"
                 />
-                Liberar uma aula de cada vez (concluir a anterior destrava a próxima)
+                Abrir uma aula de cada vez
               </label>
             </Field>
             <Field
-              label="Assistir ao vídeo antes da atividade"
+              label="Ver o vídeo antes de fazer a parte"
               htmlFor="cvideobeforeactivity"
-              hint="Para cursos de quem está começando. Em cada seção com vídeo e um jogo pronto ou uma experiência, a atividade abre depois que o aluno assiste ao vídeo uma vez até o fim (90%). Seções só com Estúdio ou Pinta não travam: o aluno monta junto com o vídeo. Vale para Kids e Adultos. A equipe e a prévia do admin veem tudo liberado."
+              hint="Bom para quem está começando. Na parte que tem vídeo e um jogo pronto ou uma experiência, a atividade abre depois que o vídeo é visto até o fim uma vez. Parte só com Estúdio ou Pinta não tranca: dá para montar junto com o vídeo. A equipe e a prévia veem tudo aberto."
             >
               <label
                 htmlFor="cvideobeforeactivity"
@@ -700,7 +708,7 @@ export function CourseFormDialog({
                   }
                   className="size-4"
                 />
-                Trancar a atividade até o vídeo ser visto uma vez
+                Trancar a atividade até o vídeo ser visto
               </label>
             </Field>
           </>
@@ -722,7 +730,7 @@ export function CourseFormDialog({
         <Field
           label="Imagem de capa"
           htmlFor="cover"
-          hint="Opcional. Envie um arquivo ou cole uma URL."
+          hint="Opcional. Envie um arquivo ou cole o link de uma imagem."
         >
           <ImageUploader
             inputId="cover"
@@ -732,9 +740,9 @@ export function CourseFormDialog({
           />
         </Field>
         <Field
-          label="Página de vendas (URL)"
+          label="Página de vendas"
           htmlFor="salesPageUrl"
-          tooltip='Para onde o aluno SEM acesso é levado ao clicar no curso com cadeado em "Todos os cursos" (abre em nova aba). Vazio → usa a página padrão do funil.'
+          hint='Para onde vai quem ainda não tem acesso e clica no curso trancado em "Todos os cursos". Em branco, vai para a página de vendas de sempre.'
         >
           <Input
             id="salesPageUrl"

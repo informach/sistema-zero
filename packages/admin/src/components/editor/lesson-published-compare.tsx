@@ -105,7 +105,7 @@ export function LessonPublishedCompare({
       open
       onClose={onClose}
       title="Comparar com a versão publicada"
-      description="O que está no ar continua inteiro — mesmo o que você apagou aqui no rascunho."
+      description="O que está no ar continua inteiro, mesmo o que você apagou aqui no rascunho."
       className="max-w-3xl"
       footer={
         <div className="flex w-full flex-wrap items-center justify-between gap-3">
@@ -145,7 +145,7 @@ export function LessonPublishedCompare({
       ) : null}
       {comparacao?.semPublicado ? (
         <p className="text-sm text-muted-foreground">
-          Esta aula ainda não foi publicada — não há versão no ar para trazer de volta.
+          Esta aula ainda não foi publicada. Não há versão no ar para trazer de volta.
         </p>
       ) : null}
       {comparacao && !comparacao.semPublicado ? (
@@ -220,9 +220,9 @@ function Grupo({
               <div className="min-w-0">
                 <p className="truncate text-sm">{peca.titulo}</p>
                 <p className="text-xs text-muted-foreground">
-                  {peca.tipo === 'material' ? 'Material da aula' : (peca.origem ?? 'Sem seção')}
+                  {peca.tipo === 'material' ? 'Material da aula' : (peca.origem ?? 'Sem parte')}
                   {peca.origemSumiu
-                    ? ' · a seção não existe mais: volta para os materiais de apoio'
+                    ? ' · a parte não existe mais: volta para os materiais de apoio'
                     : ''}
                 </p>
               </div>

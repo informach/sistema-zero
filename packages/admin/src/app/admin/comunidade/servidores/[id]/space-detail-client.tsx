@@ -22,7 +22,11 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { HubAccessFields, PUBLIC_ACCESS } from '@/components/admin/hub-access-fields'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { statusLabel } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
@@ -32,6 +36,7 @@ import type {
   HubPostingPolicy,
   HubSpaceTreeView,
 } from '@/lib/hub-types'
+import { COMMUNITY_NAMES } from '@/lib/platform'
 import { slugify } from '@/lib/slug'
 
 type ApprovalChoice = 'inherit' | 'yes' | 'no'
@@ -73,6 +78,7 @@ export function SpaceDetailClient({
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   const [tree, setTree] = useState<HubSpaceTreeView | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadFailed, setLoadFailed] = useState(false)
   const [busy, setBusy] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
 
@@ -84,10 +90,12 @@ export function SpaceDetailClient({
 
   const load = useCallback(async () => {
     setLoading(true)
+    setLoadFailed(false)
     try {
       setTree(await apiGet<HubSpaceTreeView>(`/api/hub/admin/spaces/${spaceId}`))
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao carregar o servidor.')
+      setLoadFailed(true)
+      toast.error((err as ApiError).message ?? 'Não consegui carregar o espaço.')
     } finally {
       setLoading(false)
     }
@@ -104,7 +112,7 @@ export function SpaceDetailClient({
       if (okMsg) toast.success(okMsg)
       await load()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Operação falhou.')
+      toast.error((err as ApiError).message ?? 'Não deu certo. Tente de novo em instantes.')
     } finally {
       setBusy(false)
     }
@@ -135,7 +143,7 @@ export function SpaceDetailClient({
 
   async function saveChannel() {
     if (!chForm.name.trim() || !chForm.slug.trim()) {
-      toast.error('Informe nome e identificador (slug).')
+      toast.error('Preencha o nome e o endereço.')
       return
     }
     const body = {
@@ -149,7 +157,9 @@ export function SpaceDetailClient({
     }
     await run(async () => {
       if (chForm.id) {
-        if (chForm.version === null) throw new Error('Versão do canal ausente.')
+        if (chForm.version === null) {
+          throw new Error('Não deu para salvar este canal. Recarregue a página e tente de novo.')
+        }
         await apiSend(`/api/hub/admin/channels/${chForm.id}`, 'PATCH', {
           ...body,
           version: chForm.version,
@@ -171,54 +181,74 @@ export function SpaceDetailClient({
         orderedIds: renumbered.map((c) => c.id),
       })
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao reordenar.')
+      toast.error(
+        (err as ApiError).message ?? 'Não consegui mudar a ordem. A lista voltou como estava.',
+      )
       await load()
     }
   }
 
-  if (loading) return <p className="p-2 text-sm text-muted-foreground">Carregando…</p>
-  if (!tree) return <p className="p-2 text-sm text-muted-foreground">Servidor não encontrado.</p>
+  const back = (
+    <Link
+      href="/admin/comunidade/servidores"
+      className="inline-flex min-h-11 items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="size-4" /> Clube e Comunidade
+    </Link>
+  )
+  if (loading && !tree) return <EmptyState title="Carregando o espaço…" />
+  if (!tree) {
+    return (
+      <div className="space-y-6">
+        {back}
+        {loadFailed ? (
+          <LoadError what="o espaço" onRetry={() => void load()} />
+        ) : (
+          <EmptyState
+            title="Este espaço não existe mais"
+            description="Volte para a lista e escolha outro."
+          />
+        )}
+      </div>
+    )
+  }
 
   const channels = [...tree.channels].sort((a, b) => a.sortOrder - b.sortOrder)
 
   return (
     <div className="space-y-6">
       {confirmDialog}
-      <Link
-        href="/admin/comunidade/servidores"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="size-4" /> Servidores
-      </Link>
+      {back}
 
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{tree.name}</h1>
-          <p className="text-sm text-muted-foreground">
-            /{tree.slug} · {tree.audience === 'kids' ? 'Crianças' : 'Adultos'} ·{' '}
-            {tree.requiresApproval ? 'Pré-moderado' : 'Sem pré-moderação'}
-          </p>
-        </div>
-        {/* key={tree.version}: remonta o botão/form ao recarregar a árvore — o
-            estado do form é semeado de `tree` UMA vez, então sem isso reabriria
-            com valores velhos e re-PATCHearia stale (achado do review). */}
-        <SpaceEditButton key={tree.version} tree={tree} canWrite={canWrite} onSaved={load} />
-      </div>
+      <AdminHeader
+        title={tree.name}
+        description={`Endereço /${tree.slug} · ${COMMUNITY_NAMES[tree.audience]} · ${
+          tree.requiresApproval ? 'Aprova antes de publicar' : 'Publica direto'
+        }`}
+        action={
+          // key={tree.version}: remonta o botão/form ao recarregar a árvore: o estado do form é
+          // semeado de `tree` UMA vez, então sem isso reabriria com valores velhos e
+          // re-PATCHearia stale (achado do review).
+          <SpaceEditButton key={tree.version} tree={tree} canWrite={canWrite} onSaved={load} />
+        }
+      />
+
+      {!canWrite ? <ReadOnlyNotice /> : null}
 
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-muted-foreground">Canais</h2>
-          {canWrite ? (
-            <Button size="sm" onClick={openCreateChannel}>
-              <Plus className="size-4" /> Novo canal
-            </Button>
-          ) : null}
+          <h2 className="font-display text-xl font-bold">Canais</h2>
+          <Button size="sm" onClick={openCreateChannel} disabled={!canWrite}>
+            <Plus className="size-4" /> Novo canal
+          </Button>
         </div>
 
         {channels.length === 0 ? (
-          <Card className="p-6 text-center text-sm text-muted-foreground">
-            Nenhum canal. Crie os fóruns deste servidor (ex.: “Dúvidas”, “Avisos”).
-          </Card>
+          <EmptyState
+            zappy="happy"
+            title="Nenhum canal ainda"
+            description="Crie os canais deste espaço, como Dúvidas e Avisos."
+          />
         ) : (
           <DndContext
             sensors={sensors}
@@ -245,13 +275,14 @@ export function SpaceDetailClient({
                     onEdit={() => openEditChannel(c)}
                     onDelete={() =>
                       confirm({
-                        title: 'Excluir canal',
+                        title: `Excluir o canal ${c.name}?`,
                         message: (
                           <>
-                            Excluir o canal <strong className="text-foreground">{c.name}</strong>?
+                            O canal <strong className="text-foreground">{c.name}</strong> e as
+                            conversas dele somem, e não dá para desfazer.
                           </>
                         ),
-                        confirmText: 'Excluir',
+                        confirmText: 'Excluir o canal',
                         confirmVariant: 'destructive',
                         onConfirm: () =>
                           run(
@@ -294,7 +325,11 @@ export function SpaceDetailClient({
               }}
             />
           </Field>
-          <Field label="Identificador (slug)" htmlFor="ch-slug">
+          <Field
+            label="Endereço"
+            htmlFor="ch-slug"
+            hint="Aparece no fim do link do canal. Use letras minúsculas, números e traços."
+          >
             <Input
               id="ch-slug"
               value={chForm.slug}
@@ -304,7 +339,7 @@ export function SpaceDetailClient({
               }}
             />
           </Field>
-          <Field label="Descrição / tópico" htmlFor="ch-topic">
+          <Field label="Do que se fala aqui" htmlFor="ch-topic">
             <Textarea
               id="ch-topic"
               value={chForm.topic}
@@ -319,11 +354,11 @@ export function SpaceDetailClient({
                 setChForm((f) => ({ ...f, postingPolicy: e.target.value as HubPostingPolicy }))
               }
             >
-              <option value="members">Membros (qualquer um com acesso)</option>
-              <option value="staff_only">Somente equipe (canal de avisos)</option>
+              <option value="members">Todos que têm acesso</option>
+              <option value="staff_only">Só a equipe (canal de avisos)</option>
             </Select>
           </Field>
-          <Field label="Pré-moderação" htmlFor="ch-approval">
+          <Field label="Aprovar antes de publicar" htmlFor="ch-approval">
             <Select
               id="ch-approval"
               value={chForm.approval}
@@ -331,9 +366,9 @@ export function SpaceDetailClient({
                 setChForm((f) => ({ ...f, approval: e.target.value as ApprovalChoice }))
               }
             >
-              <option value="inherit">Herdar do servidor</option>
-              <option value="yes">Exigir aprovação</option>
-              <option value="no">Não exigir</option>
+              <option value="inherit">Igual ao espaço</option>
+              <option value="yes">Sim, a equipe confere antes</option>
+              <option value="no">Não, publica direto</option>
             </Select>
           </Field>
           <label className="flex items-center gap-2 text-sm">
@@ -342,7 +377,7 @@ export function SpaceDetailClient({
               checked={chForm.inheritAccess}
               onChange={(e) => setChForm((f) => ({ ...f, inheritAccess: e.target.checked }))}
             />
-            Herdar o acesso do servidor
+            Usar o mesmo acesso do espaço
           </label>
           {!chForm.inheritAccess ? (
             <HubAccessFields
@@ -360,26 +395,30 @@ export function SpaceDetailClient({
             disabled={busy}
             onClick={() =>
               confirm({
-                title: 'Excluir servidor',
-                message:
-                  'Excluir este servidor e TODOS os seus canais e tópicos? Esta ação não pode ser desfeita.',
-                confirmText: 'Excluir servidor',
+                title: `Excluir o espaço ${tree.name}?`,
+                message: (
+                  <>
+                    O espaço <strong className="text-foreground">{tree.name}</strong>, com todos os
+                    canais e as conversas dele, some de vez. Não dá para desfazer.
+                  </>
+                ),
+                confirmText: 'Excluir espaço',
                 confirmVariant: 'destructive',
                 onConfirm: async () => {
                   setBusy(true)
                   try {
                     await apiSend(`/api/hub/admin/spaces/${spaceId}`, 'DELETE')
-                    toast.success('Servidor excluído.')
+                    toast.success('Espaço excluído.')
                     router.push('/admin/comunidade/servidores')
                   } catch (err) {
-                    toast.error((err as ApiError).message ?? 'Falha ao excluir.')
+                    toast.error((err as ApiError).message ?? 'Não consegui excluir o espaço.')
                     setBusy(false)
                   }
                 },
               })
             }
           >
-            <Trash2 className="size-4" /> Excluir servidor
+            <Trash2 className="size-4" /> Excluir espaço
           </Button>
         </section>
       ) : null}
@@ -407,37 +446,35 @@ function ChannelRow({
           className="cursor-grab text-muted-foreground"
           {...attributes}
           {...listeners}
-          aria-label="Reordenar"
+          aria-label={`Mudar a ordem de ${channel.name}`}
         >
           <GripVertical className="size-4" />
         </button>
       ) : null}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate font-medium">{channel.name}</span>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="truncate font-bold">{channel.name}</span>
           {channel.postingPolicy === 'staff_only' ? <Badge variant="muted">Avisos</Badge> : null}
           {channel.status === 'archived' ? <Badge variant="muted">Arquivado</Badge> : null}
         </div>
         <p className="truncate text-xs text-muted-foreground">
-          /{channel.slug}
-          {channel.accessConfig ? ' · acesso próprio' : ' · herda acesso'}
+          Endereço /{channel.slug}
+          {channel.accessConfig ? ' · acesso próprio' : ' · mesmo acesso do espaço'}
         </p>
       </div>
-      {canWrite ? (
-        <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" onClick={onEdit}>
-            <Pencil className="size-4" />
-          </Button>
-          <Button size="sm" variant="ghost" onClick={onDelete}>
-            <Trash2 className="size-4" />
-          </Button>
-        </div>
-      ) : null}
+      <div className="flex flex-wrap items-center gap-1">
+        <Button size="sm" variant="outline" onClick={onEdit} disabled={!canWrite}>
+          Editar
+        </Button>
+        <Button size="sm" variant="ghost" onClick={onDelete} disabled={!canWrite}>
+          Excluir
+        </Button>
+      </div>
     </Card>
   )
 }
 
-/** Botão + dialog de edição do servidor (reusa os campos do form de criação). */
+/** Botão + dialog de edição do espaço (reusa os campos do form de criação). */
 function SpaceEditButton({
   tree,
   canWrite,
@@ -459,8 +496,6 @@ function SpaceEditButton({
     status: tree.status,
   })
 
-  if (!canWrite) return null
-
   async function save() {
     setBusy(true)
     try {
@@ -476,11 +511,11 @@ function SpaceEditButton({
         teaserWhenLocked: form.teaserWhenLocked,
         status: form.status,
       })
-      toast.success('Servidor atualizado.')
+      toast.success('Espaço atualizado.')
       setOpen(false)
       await onSaved()
     } catch (err) {
-      toast.error((err as ApiError).message ?? 'Falha ao salvar.')
+      toast.error((err as ApiError).message ?? 'Não consegui salvar o espaço.')
     } finally {
       setBusy(false)
     }
@@ -488,13 +523,13 @@ function SpaceEditButton({
 
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}>
-        <Pencil className="size-4" /> Editar servidor
+      <Button variant="outline" onClick={() => setOpen(true)} disabled={!canWrite}>
+        <Pencil className="size-4" /> Editar espaço
       </Button>
       <Dialog
-        open={open}
+        open={open && canWrite}
         onClose={() => !busy && setOpen(false)}
-        title="Editar servidor"
+        title="Editar espaço"
         footer={
           <>
             <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
@@ -525,7 +560,7 @@ function SpaceEditButton({
             value={form.accessConfig}
             onChange={(accessConfig) => setForm((f) => ({ ...f, accessConfig }))}
           />
-          <Field label="Status" htmlFor="sp-edit-status">
+          <Field label="Situação" htmlFor="sp-edit-status">
             <Select
               id="sp-edit-status"
               value={form.status}
@@ -533,8 +568,8 @@ function SpaceEditButton({
                 setForm((f) => ({ ...f, status: e.target.value as 'active' | 'archived' }))
               }
             >
-              <option value="active">Ativo</option>
-              <option value="archived">Arquivado</option>
+              <option value="active">{statusLabel('active')}</option>
+              <option value="archived">{statusLabel('archived')}</option>
             </Select>
           </Field>
           <label className="flex items-center gap-2 text-sm">
@@ -543,7 +578,12 @@ function SpaceEditButton({
               checked={form.requiresApproval}
               onChange={(e) => setForm((f) => ({ ...f, requiresApproval: e.target.checked }))}
             />
-            Exigir aprovação (pré-moderação)
+            <span>
+              Aprovar antes de publicar
+              <span className="block text-xs text-muted-foreground">
+                Alguém da equipe confere cada postagem antes de ela aparecer.
+              </span>
+            </span>
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input
@@ -551,7 +591,7 @@ function SpaceEditButton({
               checked={form.teaserWhenLocked}
               onChange={(e) => setForm((f) => ({ ...f, teaserWhenLocked: e.target.checked }))}
             />
-            Aparecer bloqueado no menu sem acesso (vitrine)
+            Mostrar trancado para quem não tem acesso
           </label>
         </div>
       </Dialog>

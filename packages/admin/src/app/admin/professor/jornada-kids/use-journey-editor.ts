@@ -33,7 +33,7 @@ async function coursesForEditor(current: () => boolean): Promise<CourseView[]> {
     )
     if (!current()) return []
     if (!Array.isArray(page.items) || !Number.isSafeInteger(page.total) || page.total < 0)
-      throw new Error('Não foi possível conferir a lista de aventuras.')
+      throw new Error('Não foi possível conferir a lista de cursos.')
     courses.push(
       ...page.items.filter((course) => course.audience === 'kids' && course.modality !== 'live'),
     )
@@ -302,7 +302,7 @@ export function useKidsJourneyEditor(initialPreparation: unknown) {
     )
       return
     const id = preparation.id
-    await run('Verificando perfis', async (current) => {
+    await run('Conferindo os perfis', async (current) => {
       const result = KidsAdvanceSchema.parse(
         await apiSend(`${base}/preparations/${id}/advance`, 'POST'),
       )

@@ -49,7 +49,7 @@ interface HandoffState<T extends { kind: string }> {
 const messageOf = (error: unknown) =>
   error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
     ? error.message
-    : 'Não foi possível salvar — tente novamente.'
+    : 'Não foi possível salvar. Tente de novo.'
 
 /** Serializes requests and keeps the latest local edits separate from acknowledgements. */
 export class LessonDraftSession<T extends { kind: string }> {

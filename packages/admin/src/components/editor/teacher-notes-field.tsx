@@ -20,7 +20,7 @@ export function TeacherNotesField({
   return (
     <div className="space-y-2 rounded-xl border border-primary/25 bg-primary/5 p-3 text-sm">
       <label htmlFor={id} className="block font-medium">
-        Anotações da professora
+        Anotações desta parte (só quem conduz vê)
       </label>
       <p id={`${id}-hint`} className="text-xs text-muted-foreground">
         Só quem conduz o encontro vê, na sala, junto desta parte. As crianças nunca veem.

@@ -571,7 +571,7 @@ export function LearningBuilder({
       )}
       {sectionCriteria && (
         <p className="text-sm text-muted-foreground">
-          A obrigatoriedade é escolhida nos critérios da seção, no percurso da aula.
+          A obrigatoriedade é escolhida nos critérios da parte, no percurso da aula.
         </p>
       )}
       {cena && (
@@ -773,7 +773,7 @@ export function LearningBuilder({
       {!checkpoint && semPergunta && (
         <p className="text-sm text-muted-foreground">
           A cena termina em “✓ Você descobriu!”, sem pergunta. A descoberta é que conclui o bloco e
-          a seção. Desmarque a caixa para usar a pergunta da cena, ou marque a de cima para escrever
+          a parte. Desmarque a caixa para usar a pergunta da cena, ou marque a de cima para escrever
           a sua.
         </p>
       )}

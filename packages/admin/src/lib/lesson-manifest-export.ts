@@ -66,13 +66,13 @@ export function buildLessonManifest(
     )
   if (document.sections.length > TETO.secoes)
     throw new ManifestExportError(
-      `Esta aula tem ${document.sections.length} seções e o manifesto aceita ${TETO.secoes}. Junte duas seções antes de exportar.`,
+      `Esta aula tem ${document.sections.length} partes e o manifesto aceita ${TETO.secoes}. Junte duas partes antes de exportar.`,
     )
 
   const withoutCompletion = document.sections.find((s) => !s.completion)
   if (withoutCompletion)
     throw new ManifestExportError(
-      `A seção "${withoutCompletion.title}" precisa de critérios de conclusão antes de exportar.`,
+      `A parte "${withoutCompletion.title}" precisa de critérios de conclusão antes de exportar.`,
     )
 
   const nomeDoBloco = (kind: LessonBlockKind, posicao: number) => {
@@ -111,7 +111,7 @@ export function buildLessonManifest(
         const { passingScore, questions } = block.content
         // ⚠️ `passingScore` 0 é salvável no editor (o campo tem `min={0}`) e o manifesto exige
         // MAIOR que zero. Sem esta guarda o quiz ia como conteúdo e só o validador final
-        // reclamava, com a frase genérica — e "Revisar para publicar" não acusa nada, porque 0
+        // reclamava, com a frase genérica — e "Revisar e publicar" não acusa nada, porque 0
         // publica.
         if (typeof passingScore !== 'number' || passingScore <= 0)
           throw new ManifestExportError(
@@ -156,11 +156,11 @@ export function buildLessonManifest(
   for (const section of document.sections) {
     if (section.title.length > TETO.titulo || section.objective.length > TETO.objetivo)
       throw new ManifestExportError(
-        `O título ou o objetivo da seção "${section.title.slice(0, 40)}" passa do que o manifesto aceita (${TETO.titulo} e ${TETO.objetivo} caracteres).`,
+        `O título ou o objetivo da parte "${section.title.slice(0, 40)}" passa do que o manifesto aceita (${TETO.titulo} e ${TETO.objetivo} caracteres).`,
       )
     if (section.teacherNotes?.trim() && section.teacherNotes.length > TEACHER_NOTES_MAX)
       throw new ManifestExportError(
-        `As anotações da professora da seção "${section.title.slice(0, 40)}" passam de ${TEACHER_NOTES_MAX} caracteres. Encurte antes de exportar.`,
+        `As anotações da parte "${section.title.slice(0, 40)}" passam de ${TEACHER_NOTES_MAX} caracteres. Encurte antes de exportar.`,
       )
   }
   let projection: ReturnType<typeof projectLessonManifestDraft>
@@ -183,7 +183,7 @@ export function buildLessonManifest(
   // ⚠️ O export não conhece o destino, então nunca emite `retireBlockKeys`: um bloco apagado na
   // origem não é apagado lá. O serviço o preserva e o empilha no fim da seção de fechamento.
   avisar(
-    'Apagar um bloco aqui não o apaga no destino: ele continua lá, no fim da última seção. Confira a prévia da importação e tire o que sobrou à mão.',
+    'Apagar um bloco aqui não o apaga no destino: ele continua lá, no fim da última parte. Confira a prévia da importação e tire o que sobrou à mão.',
   )
   if (
     document.blocks.some(
@@ -205,7 +205,7 @@ export function buildLessonManifest(
   // foram conferidos acima, um a um, com o nome do bloco — esta mensagem é para o que sobrar.
   if (!isLearningManifest(manifest))
     throw new ManifestExportError(
-      'Não consegui montar um manifesto válido para esta aula. Confira as seções e as atividades no "Revisar para publicar".',
+      'Não consegui montar um manifesto válido para esta aula. Confira as partes e as atividades no "Revisar e publicar".',
     )
   if (learningImportBodyBytes(manifest) > LEARNING_IMPORT_BODY_MAX_BYTES)
     throw new ManifestExportError(

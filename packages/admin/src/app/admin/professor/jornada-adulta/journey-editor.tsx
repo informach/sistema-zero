@@ -8,12 +8,14 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { Card } from '@sistemazero/ui/card'
 import { Input } from '@sistemazero/ui/input'
+import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { usePlatform } from '@/components/admin/platform-provider'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
-import type { CourseView, Paginated } from '@/lib/types'
+import { journeyLensHref } from '@/lib/platform-transition'
+import { type CourseView, courseTierLabel, type Paginated } from '@/lib/types'
 import type { AdultJourneyPolicyRecord } from '@/server/adult-journey'
 
 const labels: Record<AdultCreatorCapability, string> = {
@@ -22,7 +24,7 @@ const labels: Record<AdultCreatorCapability, string> = {
   molda: 'Molda',
   bridge: 'Ponte: blocos e código',
   pro: 'Modo Pro',
-  ai: 'Recursos de IA',
+  ai: 'Zappy',
   pensa: 'Pensa',
 }
 type Stage = AdultJourneyPolicy['stages'][number]
@@ -42,8 +44,19 @@ async function listAdultCourses() {
   }
 }
 
+/** A página da Jornada do Criador: o item "Jornada" do menu segue a lente (23/10/2026). */
+const KIDS_JOURNEY_PATH = '/admin/professor/jornada-kids'
+
 export function AdultJourneyEditor() {
   const platform = usePlatform()
+  const router = useRouter()
+  // Trocar a lente para Kids aqui leva à jornada de lá, em vez de um aviso sem saída. O
+  // endereço vai junto: o `?preparacao=` que veio da Jornada Kids volta com ela e a retoma.
+  useEffect(() => {
+    if (platform === 'kids') {
+      router.replace(journeyLensHref(KIDS_JOURNEY_PATH, window.location.search))
+    }
+  }, [platform, router])
   const [record, setRecord] = useState<AdultJourneyPolicyRecord | null>(null)
   const [draft, setDraft] = useState<AdultJourneyPolicy | null>(null)
   const [courses, setCourses] = useState<CourseView[]>([])
@@ -109,7 +122,7 @@ export function AdultJourneyEditor() {
     if (!record || !draft) return
     const parsed = AdultJourneyPolicySchema.safeParse(draft)
     if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Configuração inválida.')
+      setError(parsed.error.issues[0]?.message ?? 'Confira as etapas: algum campo não está certo.')
       return
     }
     setSaving(true)
@@ -121,11 +134,11 @@ export function AdultJourneyEditor() {
       setRecord(result)
       setDraft(result.policy)
       setError(null)
-      toast.success('Jornada adulta atualizada.')
+      toast.success('Jornada salva.')
     } catch (cause) {
       setError(
         (cause as ApiError).message ||
-          'Não foi possível salvar. Suas alterações foram preservadas.',
+          'Não foi possível salvar. O que você mudou continua aqui: tente de novo.',
       )
     } finally {
       setSaving(false)
@@ -135,23 +148,23 @@ export function AdultJourneyEditor() {
   return (
     <div className="space-y-6">
       <AdminHeader
-        title="Jornada adulta"
-        description="Configure cursos, marcos e capacidades da comunidade adulta. A jornada Kids mantém suas próprias regras."
+        title="Jornada"
+        description="As etapas da Comunidade Sistema Zero: os cursos que cada etapa pede e o que ela libera."
       />
       {platform !== 'adult' ? (
-        <Card className="p-6">
-          Selecione Adultos no painel para consultar e configurar esta jornada.
-        </Card>
+        <p role="status" className="text-sm text-muted-foreground">
+          Abrindo a Jornada do Criador…
+        </p>
       ) : (
         <>
           <Card className="space-y-2 p-5 text-sm">
             <p>
-              Cada etapa exige as anteriores. A licença da ferramenta e a paleta dos cursos
-              continuam sendo verificadas separadamente.
+              Cada etapa pede as anteriores. A licença da ferramenta e os blocos de cada curso
+              continuam sendo conferidos à parte.
             </p>
             <p>
-              IA e Pensa exigem um curso avançado concluído nesta etapa ou numa anterior.
-              Capacidades já conquistadas são preservadas quando a configuração muda.
+              O Zappy e o Pensa pedem um curso avançado terminado nesta etapa ou numa anterior. O
+              que o aluno já ganhou continua com ele quando a jornada muda.
             </p>
           </Card>
           {error ? (
@@ -160,12 +173,12 @@ export function AdultJourneyEditor() {
             </p>
           ) : null}
           {loading ? (
-            <p role="status">Carregando configuração...</p>
+            <p role="status">Carregando a jornada…</p>
           ) : draft ? (
             <>
               {!courses.length ? (
                 <Card className="p-5">
-                  Cadastre um curso adulto gravado para começar a configurar as etapas.
+                  Crie um curso gravado na Comunidade Sistema Zero para começar a montar as etapas.
                 </Card>
               ) : null}
               {draft.stages.map((stage, index) => (
@@ -219,7 +232,7 @@ export function AdultJourneyEditor() {
                     />
                   </label>
                   <fieldset className="space-y-3">
-                    <legend className="mb-2 font-medium">Cursos e marcos exigidos</legend>
+                    <legend className="mb-2 font-medium">Cursos que esta etapa pede</legend>
                     {stage.requirements.map((requirement, requirementIndex) => (
                       <div key={requirement.courseId} className="flex flex-wrap items-center gap-2">
                         <label className="grid min-w-48 flex-1 gap-1 text-sm">
@@ -250,13 +263,13 @@ export function AdultJourneyEditor() {
                                   (entry) => entry !== requirement && entry.courseId === course.id,
                                 )}
                               >
-                                {course.title} ({course.level})
+                                {course.title} ({courseTierLabel(course.level ?? '', course.track)})
                               </option>
                             ))}
                           </select>
                         </label>
                         <label className="grid gap-1 text-sm">
-                          Marco
+                          O que o aluno faz
                           <select
                             value={requirement.milestone}
                             disabled={saving}
@@ -324,7 +337,7 @@ export function AdultJourneyEditor() {
                     </Button>
                   </fieldset>
                   <fieldset>
-                    <legend className="mb-3 font-medium">Capacidades liberadas</legend>
+                    <legend className="mb-3 font-medium">O que esta etapa libera</legend>
                     <div className="flex flex-wrap gap-4">
                       {ADULT_CREATOR_CAPABILITIES.map((capability) => (
                         <label key={capability} className="flex items-center gap-2 text-sm">
@@ -376,17 +389,17 @@ export function AdultJourneyEditor() {
                   Adicionar etapa
                 </Button>
                 <Button disabled={saving || !dirty} onClick={() => void save()}>
-                  {saving ? 'Salvando...' : 'Salvar jornada adulta'}
+                  {saving ? 'Salvando…' : 'Salvar a jornada'}
                 </Button>
               </div>
             </>
           ) : null}
           <Button variant="outline" disabled={saving || loading} onClick={() => void load()}>
-            Recarregar configuração
+            Recarregar a jornada
           </Button>
           {dirty ? (
             <p className="text-sm text-muted-foreground">
-              Recarregar descarta as alterações não salvas.
+              Recarregar descarta o que você mudou e ainda não salvou.
             </p>
           ) : null}
         </>

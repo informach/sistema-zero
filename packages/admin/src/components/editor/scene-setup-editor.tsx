@@ -326,7 +326,7 @@ export function SceneSetupEditor({
           <p className="text-xs text-muted-foreground">
             Sem nenhuma marcada, a atividade cobra as {metasAutomaticas.length} descobertas{' '}
             {metasDoPreset ? 'do caso preparado' : 'do modelo'}. Marcando, ela fecha só com as
-            escolhidas — é assim que a mesma cena vira duas missões.
+            escolhidas. É assim que a mesma cena vira duas missões.
           </p>
           {modelo.goals.map((meta) => (
             <label

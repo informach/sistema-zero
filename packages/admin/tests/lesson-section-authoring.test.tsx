@@ -74,7 +74,7 @@ test('teacher creates a section from scratch, collapses it and resumes without c
   try {
     await act(async () => render())
     expect(container.querySelector('[aria-expanded="true"]')).toBeNull()
-    await act(async () => button('Adicionar seção').click())
+    await act(async () => button('Adicionar parte').click())
     expect(data.sections).toHaveLength(2)
     const added = data.sections[1]!
     expect(container.querySelector(`#section-content-${added.id}`)?.hasAttribute('hidden')).toBe(

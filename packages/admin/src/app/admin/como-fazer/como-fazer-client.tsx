@@ -25,8 +25,11 @@ import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
+import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { JsonImportPanel } from '@/components/admin/json-import-panel'
 import { usePlatform } from '@/components/admin/platform-provider'
+import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
+import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { downloadJson } from '@/lib/download-json'
@@ -38,15 +41,7 @@ import type {
   HelpTutorialAdminSummaryView,
 } from '@/lib/types'
 
-const STATUS_LABEL: Record<HelpTutorialAdminSummaryView['status'], string> = {
-  draft: 'Rascunho',
-  published: 'Publicado',
-  archived: 'Arquivado',
-}
-const STATUS_VARIANT: Record<
-  HelpTutorialAdminSummaryView['status'],
-  'muted' | 'success' | 'destructive'
-> = { draft: 'muted', published: 'success', archived: 'destructive' }
+const STATUSES: HelpTutorialAdminSummaryView['status'][] = ['draft', 'published', 'archived']
 
 const ICON_LABEL: Record<(typeof HELP_COLLECTION_ICONS)[number], string> = {
   compass: 'Bússola (plataforma)',
@@ -236,9 +231,12 @@ function ComoFazerForPlatform({
     (HelpCollectionDocument & { id?: string; slugTouched?: boolean }) | null
   >(null)
   const [busy, setBusy] = useState(false)
+  const [loadFailed, setLoadFailed] = useState(false)
   const { confirm, confirmDialog } = useConfirm()
+  const learner = platform === 'kids' ? 'a criança' : 'o aluno'
 
   const reload = useCallback(async () => {
+    setLoadFailed(false)
     try {
       const [c, t] = await Promise.all([
         apiGet<{ collections: HelpCollectionView[] }>(helpPath('/api/members/help/collections')),
@@ -249,6 +247,7 @@ function ComoFazerForPlatform({
       setCollections(c.collections)
       setTutorials(t.tutorials)
     } catch (err) {
+      setLoadFailed(true)
       toast.error((err as ApiError).message ?? 'Não consegui carregar o Como fazer.')
     }
   }, [helpPath])
@@ -347,13 +346,13 @@ function ComoFazerForPlatform({
     if (c.publishedCount > 0) {
       // O members recusa com 409; abrir o confirm só para falhar era um botão que mentia.
       toast.error(
-        `"${c.title}" ainda tem ${c.publishedCount} tutorial(is) publicado(s). Despublique-os antes de arquivar.`,
+        `"${c.title}" ainda tem ${c.publishedCount} tutorial(is) no ar. Tire os tutoriais do ar antes de arquivar a coleção.`,
       )
       return
     }
     confirm({
       title: `Arquivar "${c.title}"?`,
-      message: 'A coleção some do Como fazer da criança. Os tutoriais dela continuam guardados.',
+      message: `A coleção some do Como fazer que ${learner} vê. Os tutoriais dela continuam guardados.`,
       confirmText: 'Arquivar',
       confirmVariant: 'destructive',
       onConfirm: async () => {
@@ -441,29 +440,29 @@ function ComoFazerForPlatform({
         title="Como fazer"
         description={
           platform === 'adult'
-            ? 'Tutoriais técnicos da comunidade adulta. O aluno vê somente o conteúdo publicado.'
-            : 'A biblioteca de ajuda do Kids: tutoriais curtos por tarefa, separados dos cursos. A criança só vê o que está publicado.'
+            ? 'Os tutoriais curtos da Comunidade Sistema Zero, um por tarefa. O aluno só vê o que está publicado.'
+            : 'A ajuda da Comunidade dos Criadores: tutoriais curtos, um por tarefa, separados dos cursos. A criança só vê o que está publicado.'
         }
         action={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" onClick={() => void exportAll()}>
               <Download className="size-4" />
-              Exportar JSON
+              Exportar tudo
             </Button>
-            {canWrite && (
-              <Button
-                onClick={() =>
-                  setNovo({ title: '', slug: '', collectionId: activeCollections[0]?.id ?? '' })
-                }
-                disabled={activeCollections.length === 0}
-              >
-                <Plus className="size-4" />
-                Novo tutorial
-              </Button>
-            )}
+            <Button
+              onClick={() =>
+                setNovo({ title: '', slug: '', collectionId: activeCollections[0]?.id ?? '' })
+              }
+              disabled={!canWrite || activeCollections.length === 0}
+            >
+              <Plus className="size-4" />
+              Novo tutorial
+            </Button>
           </div>
         }
       />
+
+      {!canWrite && tab !== 'importar' ? <ReadOnlyNotice /> : null}
 
       <Tabs
         value={tab}
@@ -476,9 +475,13 @@ function ComoFazerForPlatform({
       />
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Spinner />
-        </div>
+        loadFailed ? (
+          <LoadError what="o Como fazer" onRetry={() => void reload()} />
+        ) : (
+          <div className="flex justify-center py-12">
+            <Spinner />
+          </div>
+        )
       ) : tab === 'tutoriais' ? (
         <Card>
           <CardContent className="space-y-4 pt-6">
@@ -495,9 +498,11 @@ function ComoFazerForPlatform({
                 aria-label="Filtrar por situação"
               >
                 <option value="">Todas as situações</option>
-                <option value="draft">Rascunho</option>
-                <option value="published">Publicado</option>
-                <option value="archived">Arquivado</option>
+                {STATUSES.map((value) => (
+                  <option key={value} value={value}>
+                    {statusLabel(value, 'catalog')}
+                  </option>
+                ))}
               </Select>
               <Select
                 value={filterCollection}
@@ -513,11 +518,18 @@ function ComoFazerForPlatform({
               </Select>
             </div>
             {visiveis.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground text-sm">
-                {tutorials?.length
-                  ? 'Nenhum tutorial com esses filtros.'
-                  : 'Ainda não há tutoriais. Crie o primeiro ou importe o lote de docs/como-fazer.'}
-              </p>
+              tutorials?.length ? (
+                <EmptyState
+                  title="Nenhum tutorial com esses filtros"
+                  description="Tire um filtro ou procure por outra palavra."
+                />
+              ) : (
+                <EmptyState
+                  zappy="happy"
+                  title="Ainda não há tutoriais"
+                  description="Crie o primeiro ou importe o lote de docs/como-fazer na aba Importar."
+                />
+              )
             ) : (
               <ul className="divide-y">
                 {visiveis.map((t) => (
@@ -534,8 +546,10 @@ function ComoFazerForPlatform({
                         {t.slug}
                       </p>
                     </div>
-                    {t.hasUnpublishedChanges && <Badge variant="outline">Rascunho mais novo</Badge>}
-                    <Badge variant={STATUS_VARIANT[t.status]}>{STATUS_LABEL[t.status]}</Badge>
+                    {t.hasUnpublishedChanges && (
+                      <Badge variant="outline">Rascunho mais novo que o publicado</Badge>
+                    )}
+                    <StatusBadge status={t.status} kind="catalog" />
                   </li>
                 ))}
               </ul>
@@ -545,17 +559,16 @@ function ComoFazerForPlatform({
       ) : tab === 'colecoes' ? (
         <Card>
           <CardContent className="space-y-4 pt-6">
-            {canWrite && (
-              <Button
-                variant="outline"
-                onClick={() =>
-                  setColForm({ slug: '', title: '', description: '', icon: 'book', tone: 'marca' })
-                }
-              >
-                <Plus className="size-4" />
-                Nova coleção
-              </Button>
-            )}
+            <Button
+              variant="outline"
+              disabled={!canWrite}
+              onClick={() =>
+                setColForm({ slug: '', title: '', description: '', icon: 'book', tone: 'marca' })
+              }
+            >
+              <Plus className="size-4" />
+              Nova coleção
+            </Button>
             <ul className="divide-y">
               {(collections ?? []).map((c) => {
                 // As setas andam na lista das ATIVAS: o índice da lista completa (com
@@ -577,7 +590,7 @@ function ComoFazerForPlatform({
                     </div>
                     {c.status === 'archived' ? (
                       <>
-                        <Badge variant="destructive">Arquivada</Badge>
+                        <Badge variant="muted">Arquivada</Badge>
                         {canWrite && (
                           <Button
                             size="sm"
@@ -624,6 +637,10 @@ function ComoFazerForPlatform({
             </ul>
           </CardContent>
         </Card>
+      ) : !canWrite ? (
+        <ReadOnlyNotice>
+          Importar grava tutoriais no servidor, então esta aba é só de Admin.
+        </ReadOnlyNotice>
       ) : (
         <JsonImportPanel<HelpImportFile>
           parse={parseImport}
@@ -641,8 +658,8 @@ function ComoFazerForPlatform({
                 {pendencias.length > 0 && (
                   <details>
                     <summary className="cursor-pointer font-medium">
-                      {pendencias.length} tutorial(is) ainda não passariam em "Revisar e publicar"
-                      (entram como rascunho mesmo assim)
+                      {pendencias.length} tutorial(is) ainda não passariam em "Revisar e publicar".
+                      Eles entram como rascunho mesmo assim.
                     </summary>
                     <ul className="mt-2 list-disc space-y-1 pl-5 text-muted-foreground">
                       {pendencias.map((p) => (
@@ -660,15 +677,15 @@ function ComoFazerForPlatform({
           confirmMessage={(filename) => (
             <span>
               A importação de <strong>{filename}</strong> grava no servidor agora: cria ou atualiza
-              o RASCUNHO de cada tutorial pelo endereço (slug). O que está publicado não muda até
-              você publicar de novo.
+              o RASCUNHO de cada tutorial pelo endereço. O que está publicado não muda até você
+              publicar de novo.
             </span>
           )}
           hasExistingContent={(tutorials?.length ?? 0) > 0}
           guide={
             <p className="text-sm">
-              O arquivo é o mesmo que "Exportar JSON" gera (e o de <code>docs/como-fazer/</code>). O
-              import cria ou atualiza pelo endereço (slug) e só mexe no RASCUNHO: nada é publicado
+              O arquivo é o mesmo que "Exportar tudo" gera (e o de <code>docs/como-fazer/</code>). A
+              importação cria ou atualiza pelo endereço e só mexe no RASCUNHO: nada é publicado
               sozinho. Ferramenta, vídeo e imagens vão dentro de cada tutorial.
             </p>
           }
@@ -695,7 +712,7 @@ function ComoFazerForPlatform({
       >
         {novo && (
           <div className="space-y-4">
-            <Field label="Título (a tarefa, como a criança diria)" htmlFor="novo-title">
+            <Field label={`Título (a tarefa, como ${learner} diria)`} htmlFor="novo-title">
               <Input
                 id="novo-title"
                 value={novo.title}

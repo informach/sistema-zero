@@ -19,7 +19,7 @@ describe('ações de edição e publicação da aula', () => {
     const course = source('app/admin/membros/cursos/[courseId]/course-editor-client.tsx')
     const lessonRow = course.slice(course.indexOf('function SortableLessonItem('))
 
-    expect(lessonRow).toContain('> Conteúdo')
+    expect(lessonRow).toContain('> Abrir aula')
     expect(lessonRow).not.toContain('onClick={onEdit}')
   })
 })

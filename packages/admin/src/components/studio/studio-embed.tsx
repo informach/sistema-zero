@@ -132,7 +132,7 @@ export function StudioEmbed({
   const currentChoice = choices.find((choice) => choice.key === environmentKey)
   const templates =
     currentChoice?.language === 'python'
-      ? [{ id: 'python-blank', name: 'Python — projeto vazio' }]
+      ? [{ id: 'python-blank', name: 'Python: projeto vazio' }]
       : (studioModule?.listProTemplates() ?? []).filter(
           (template) =>
             !currentChoice?.policy || currentChoice.policy.proTemplateIds.includes(template.id),
@@ -316,7 +316,7 @@ export function StudioEmbed({
             >
               {!currentChoice ? (
                 <option value={environmentKey} disabled>
-                  Ambiente salvo — indisponível para novos projetos
+                  Ambiente salvo, indisponível para novos projetos
                 </option>
               ) : null}
               {choices.map((choice) => (
@@ -336,7 +336,7 @@ export function StudioEmbed({
               >
                 {!templates.some((template) => template.id === templateId) ? (
                   <option value={templateId} disabled>
-                    Modelo salvo — indisponível
+                    Modelo salvo, indisponível
                   </option>
                 ) : null}
                 {templates.map((template) => (
