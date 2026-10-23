@@ -1,12 +1,17 @@
 import { afterEach, expect, mock, test } from 'bun:test'
 import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
-import type { EditableStudioProject, StudioEditorProps } from '@sistemazero/studio'
+import type {
+  EditableStudioProject,
+  StudioEditorProps,
+  StudioRuntimeEnvironment,
+} from '@sistemazero/studio'
 import { prepareEditableStudioProject } from '@sistemazero/studio/editable-project-validation'
 import { createEmptyProject } from '@sistemazero/studio/project'
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import { pensaStudioProjectId } from '../../member-shell/src/lib/pensa-studio-link'
 import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
 import { documentFixture } from '../../studio/src/state/fixtures/projectDocuments'
+import { pythonEnvironmentFixture } from '../../studio/src/state/fixtures/pythonEnvironment'
 
 const actualNavigation = await import('next/navigation')
 const actualLoader = await import('../../member-shell/src/components/studio/studio-pro-loader')
@@ -23,7 +28,18 @@ mock.module('next/navigation', () => ({
 }))
 let current: EditableStudioProject = createEmptyProject('initial', 'Inicial')
 let mounted: StudioEditorProps | undefined
+let runtimeEnvironment: StudioRuntimeEnvironment | undefined
 const saves = mock(async () => {})
+// This fixture isolates host/Pensa routing. Supply an approved runtime explicitly;
+// runtime acquisition and authorization have their own HTTP/hook test suites.
+mock.module('../../member-shell/src/components/studio/use-free-runtime', () => ({
+  useFreeStudioRuntime: (input: { viewerId: string | null }) => ({
+    environment: input.viewerId ? runtimeEnvironment : undefined,
+    loading: false,
+    error: undefined,
+    retry: () => {},
+  }),
+}))
 mock.module('@sistemazero/studio', () => ({
   ...actualStudio,
   createLocalPersistenceAdapter: () => ({ load: async () => current, save: saves }),
@@ -97,6 +113,7 @@ const pensaId = pensaStudioProjectId('00000000-0000-4000-8000-000000000001')
 afterEach(() => {
   cleanup()
   mounted = undefined
+  runtimeEnvironment = undefined
   saves.mockClear()
   globalThis.fetch = originalFetch
 })
@@ -116,7 +133,7 @@ function open(project: EditableStudioProject) {
     <StudioFullEditor
       mod={studio}
       projectId={project.id}
-      viewerId={null}
+      viewerId={PROFILE_ID}
       onExit={() => {}}
       share={{
         publish: async () => {
@@ -212,10 +229,18 @@ for (const kind of ['classic', 'pro'] as const) {
     expect(JSON.stringify(project)).toBe(before)
   })
   test(`free Python ${kind} still opens in the same host`, async () => {
-    const project = await pythonProject(kind)
+    const fixture = await pythonEnvironmentFixture(kind)
+    const { project } = fixture
+    runtimeEnvironment = fixture.environment
     open(project)
     await waitFor(() => expect(mounted?.initialProject).toBe(project))
     expect(screen.getByTestId('sdk-editor')).toBeDefined()
+    if (kind === 'classic') {
+      expect(mounted?.runtimeEnvironment).toBe(fixture.environment)
+      expect(mounted?.allowExtensions).toEqual(
+        fixture.environment.access(project).grantedExtensionIds,
+      )
+    }
     expect(saves).not.toHaveBeenCalled()
   })
   test(`Pensa legacy JavaScript ${kind} remains available`, async () => {
