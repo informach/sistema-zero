@@ -3,6 +3,8 @@ import { makeModel } from '../testing/fixtures'
 import { createSceneAnimation, setSceneAnimationKey } from './animationCommands'
 import {
   addScenePrimitive,
+  convertSceneNodesToMesh,
+  editSceneMesh,
   groupSceneNodes,
   setSceneNodeFlag,
   transformSceneNodes,
@@ -16,6 +18,7 @@ import {
   sceneLocalBounds,
   sceneNodePivot,
   setSceneAuthoringPivot,
+  setScenePivotAxisFromFace,
   setScenePivotPreset,
 } from './pivot'
 import { readSceneDocument } from './readDocument'
@@ -126,6 +129,9 @@ test('legacy origins, locks, invalid pivot data and shear are preserved or rejec
   const invalid = structuredClone(source)
   invalid.nodes[0]!.pivot = [Infinity, 0, 0]
   expect(readSceneDocument(invalid).status).toBe('invalid')
+  invalid.nodes[0]!.pivot = [0, 0, 0]
+  invalid.nodes[0]!.pivotAxis = [0, 2, 0]
+  expect(readSceneDocument(invalid).status).toBe('invalid')
   const shear = composeTransform(source.nodes[0]!.transform)
   shear[4] += 0.3
   const sheared = {
@@ -138,4 +144,32 @@ test('legacy origins, locks, invalid pivot data and shear are preserved or rejec
   expect(setSceneAuthoringPivot(sheared, id, [1, 2, 3]).nodes[0]!.transform).toEqual(
     sheared.nodes[0]!.transform,
   )
+})
+
+test('aligning the pivot axis to a tilted face saves its direction without changing geometry or old animation', () => {
+  let source = box()
+  const id = source.nodes[0]!.id
+  source = convertSceneNodesToMesh(source, [id])
+  source = editSceneMesh(source, id, (mesh) => {
+    const vertices = { ...mesh.vertices }
+    for (const { vertexId } of mesh.faces.py!.corners) {
+      const [x, y, z] = mesh.vertices[vertexId]!
+      vertices[vertexId] = [x, y + x, z]
+    }
+    return { ...mesh, vertices }
+  })
+  source = createSceneAnimation(source, 'Girar')
+  const before = prepareSceneAnimation(source, source.animations![0]!.id).sample(0, false)
+  const next = setScenePivotAxisFromFace(source, id, 'py')
+  expect(next.nodes[0]!.pivotAxis?.[0]).toBeCloseTo(-Math.SQRT1_2)
+  expect(next.nodes[0]!.pivotAxis?.[1]).toBeCloseTo(Math.SQRT1_2)
+  expect(next.geometries).toBe(source.geometries)
+  expect(next.animations).toBe(source.animations)
+  expect(
+    prepareSceneAnimation(next, next.animations![0]!.id).sample(0, false).worldMatrices,
+  ).toEqual(before.worldMatrices)
+  const read = readSceneDocument(sceneToJson(next))
+  expect(read.status).toBe('valid')
+  if (read.status === 'valid')
+    expect(read.document.nodes[0]!.pivotAxis).toEqual(next.nodes[0]!.pivotAxis)
 })

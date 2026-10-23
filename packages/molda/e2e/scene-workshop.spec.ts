@@ -444,6 +444,7 @@ test('a child can spin a resized cylinder wheel, record and export GLB to both d
   await page.getByRole('button', { name: 'Escolher roda', exact: true }).click()
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   await page.getByRole('button', { name: 'Girar', exact: true }).click()
+  await page.locator('summary').filter({ hasText: 'Marcação automática' }).click()
   await page.getByRole('checkbox', { name: 'Marcar sozinho', exact: true }).uncheck()
   await page.getByRole('button', { name: 'Girar no eixo Y', exact: true }).press('Shift+ArrowRight')
   await expect(
@@ -784,8 +785,16 @@ test('vinte aberturas liberam o contexto gráfico e mantêm a memória limitada'
         page.getByRole('button', { name: 'Modelo memoria-e2e', exact: true }),
       ).toBeVisible()
       await cdp.send('HeapProfiler.collectGarbage')
-      const heap = await cdp.send('Runtime.getHeapUsage'),
-        dom = await cdp.send('Memory.getDOMCounters')
+      let dom = await cdp.send('Memory.getDOMCounters')
+      if (samples.length)
+        await expect
+          .poll(async () => {
+            await cdp.send('HeapProfiler.collectGarbage')
+            dom = await cdp.send('Memory.getDOMCounters')
+            return dom.nodes
+          })
+          .toBeLessThan(samples[0]!.nodes + 100)
+      const heap = await cdp.send('Runtime.getHeapUsage')
       samples.push({ cycle, heap: heap.usedSize, nodes: dom.nodes })
     }
   }

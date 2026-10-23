@@ -94,9 +94,7 @@ export function createPaletteLibraryStore(
           libraryUpdatedAt: saved.updatedAt,
         })
       } catch {
-        // Best-effort: a falha de disco não pode derrubar o editor — o estado
-        // em memória segue valendo para a sessão.
-        set({ palettes, removed, libraryUpdatedAt })
+        // Uma escrita que falhou não pode ser apresentada como paleta guardada.
         return false
       }
       return true
@@ -146,8 +144,7 @@ export function createPaletteLibraryStore(
           name: input.name,
           colors: [...input.colors],
         }
-        await write([...palettes, palette], removed, palette.updatedAt)
-        return palette
+        return (await write([...palettes, palette], removed, palette.updatedAt)) ? palette : null
       },
       async renamePalette(id, name) {
         // Mesmo portão do savePalette: numa store desabilitada (aula) nada
@@ -157,12 +154,11 @@ export function createPaletteLibraryStore(
         const target = palettes.find((p) => p.id === id)
         if (!target || !name.trim()) return false
         const updatedAt = nextTimestamp()
-        await write(
+        return write(
           palettes.map((p) => (p.id === id ? { ...p, name: name.trim(), updatedAt } : p)),
           removed,
           updatedAt,
         )
-        return true
       },
       async removePalette(id) {
         if (!enabled) return false
@@ -172,12 +168,11 @@ export function createPaletteLibraryStore(
         // nuvem mata a cópia de lá; uma edição posterior à lápide ressuscita).
         const removedAt = nextTimestamp()
         const mark: RemovedPaletteMark = { id, removedAt }
-        await write(
+        return write(
           palettes.filter((p) => p.id !== id),
           [...removed.filter((m) => m.id !== id), mark],
           removedAt,
         )
-        return true
       },
     }
   })

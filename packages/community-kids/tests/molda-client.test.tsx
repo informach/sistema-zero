@@ -2,21 +2,27 @@ import { afterAll, afterEach, expect, mock, test } from 'bun:test'
 import type { MoldaHostAdapter } from '@sistemazero/molda'
 import { createModelAsset, type MoldaAsset } from '@sistemazero/molda/assets'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { IDBFactory } from 'fake-indexeddb'
 import { type ReactNode, useState } from 'react'
 import { handoffFixture, PROFILE_ID } from '../../pensa/src/components/pensa.fixture'
 import { missionSessionFixture } from '../../ui/tests/mission-fixture'
 
 const actualNavigation = await import('next/navigation')
 const actualMolda = await import('@sistemazero/molda')
+const actualPinta = await import('@sistemazero/pinta')
+const originalCreatePaletteLibraryStore = actualPinta.createPaletteLibraryStore
 const actualPersonal = await import('@sistemazero/studio/personal-assets')
 const namespaces: string[] = []
 const originalFetch = globalThis.fetch
 let query = new URLSearchParams()
 let localAssets: MoldaAsset[] = []
+let failMoldaPersistence = false
+let paletteBridgeDetaches = 0
 afterEach(() => {
   globalThis.fetch = originalFetch
   query = new URLSearchParams()
   localAssets = []
+  failMoldaPersistence = false
 })
 /** O adapter que o host entregou ao último `<MoldaApp>` montado. */
 let lastAdapter: MoldaHostAdapter | undefined
@@ -98,9 +104,33 @@ mock.module('@sistemazero/molda', () => ({
   MoldaApp: ObservedMoldaApp,
   setMoldaStorageNamespace: (namespace: string) => namespaces.push(namespace),
   createMoldaPersistence: ({ namespace = '' }: { namespace?: string } = {}) =>
-    localPersistence(namespace),
+    failMoldaPersistence
+      ? (() => {
+          throw new Error('falha de carga')
+        })()
+      : localPersistence(namespace),
   isMoldaAssetOpen: () => false,
   subscribeMoldaAssetOpenState: () => () => {},
+}))
+
+mock.module('@sistemazero/pinta', () => ({
+  ...actualPinta,
+  createPaletteLibraryStore: (
+    ...args: Parameters<typeof actualPinta.createPaletteLibraryStore>
+  ) => {
+    const store = originalCreatePaletteLibraryStore(...args)
+    const attach = store.getState().attachPersistence
+    store.setState({
+      attachPersistence: () => {
+        const detach = attach()
+        return () => {
+          paletteBridgeDetaches += 1
+          detach()
+        }
+      },
+    })
+    return store
+  },
 }))
 
 mock.module('@sistemazero/studio/personal-assets', () => ({
@@ -149,9 +179,60 @@ test('o Molda comunica a abertura do modelo ao menu do shell', async () => {
   expect(screen.getByTestId('nav-collapsed').textContent).toBe('false')
 })
 
+test('a biblioteca do Molda grava na mesma lista de paletas do Pinta', async () => {
+  const originalIdb = globalThis.indexedDB
+  globalThis.indexedDB = new IDBFactory()
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} />)
+  let detachPalettes: (() => void) | null = null
+  try {
+    await waitFor(() => expect(lastAdapter?.paletteLibrary).toBeDefined())
+    const bridge = lastAdapter?.paletteLibrary
+    if (!bridge) throw new Error('sem biblioteca compartilhada')
+    const colors = ['', ...Array.from({ length: 15 }, () => '#123456')]
+    const pinta = actualPinta.createPintaPersistence({ namespace: '' })
+    const pintaStore = actualPinta.createPaletteLibraryStore(pinta)
+    detachPalettes = pintaStore.getState().attachPersistence()
+    await pintaStore.getState().load()
+    const saved = await bridge.getState().savePalette({ name: 'Paleta das duas oficinas', colors })
+    expect(saved).not.toBeNull()
+    expect(
+      (await pinta.loadPaletteLibrary?.())?.palettes.some((entry) => entry.id === saved?.id),
+    ).toBe(true)
+    await waitFor(() =>
+      expect(pintaStore.getState().palettes.some((entry) => entry.id === saved?.id)).toBe(true),
+    )
+    const fromPinta = await pintaStore.getState().savePalette({ name: 'Vinda do Pinta', colors })
+    await waitFor(() =>
+      expect(bridge.getState().palettes.some((entry) => entry.id === fromPinta?.id)).toBe(true),
+    )
+    if (saved) await bridge.getState().removePalette(saved.id)
+    if (fromPinta) await bridge.getState().removePalette(fromPinta.id)
+  } finally {
+    detachPalettes?.()
+    view.unmount()
+    globalThis.indexedDB = originalIdb
+  }
+})
+
+test('falha após ligar a biblioteca solta a ponte antes de tentar novamente', async () => {
+  failMoldaPersistence = true
+  const before = paletteBridgeDetaches
+  const view = render(<MoldaClient viewerId={null} studioAvailable={false} />)
+  try {
+    await screen.findByText('Não consegui carregar o Molda.')
+    expect(paletteBridgeDetaches).toBe(before + 1)
+    failMoldaPersistence = false
+    fireEvent.click(screen.getByRole('button', { name: 'Tentar de novo' }))
+    await screen.findByTestId('molda-opened')
+  } finally {
+    view.unmount()
+  }
+})
+
 afterAll(() => {
   mock.module('next/navigation', () => actualNavigation)
   mock.module('@sistemazero/molda', () => actualMolda)
+  mock.module('@sistemazero/pinta', () => actualPinta)
   mock.module('@sistemazero/studio/personal-assets', () => actualPersonal)
 })
 

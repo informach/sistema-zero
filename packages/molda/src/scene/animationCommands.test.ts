@@ -4,6 +4,7 @@ import { createDocumentEditorStore } from '../state/editorStore'
 import { animatedScene, sceneAnimationClip, sceneRotationTrack } from '../testing/sceneAnimation'
 import type { SceneAnimationTrack } from './animation'
 import {
+  closeSceneAnimationLoop,
   configureSceneAnimation,
   createSceneAnimation,
   deleteSceneAnimation,
@@ -13,15 +14,116 @@ import {
   retimeSceneAnimation,
   reverseSceneAnimation,
   type SceneAnimationKeyInput,
+  sceneAnimationLoopNeedsClosure,
   setSceneAnimationKey,
 } from './animationCommands'
 import { groupSceneNodes, setSceneNodeFlag, transformSceneNodes } from './commands'
 import type { MoldaSceneDocument } from './document'
 import { sceneToJson } from './documentJson'
 import { SCENE_LIMITS } from './limits'
-import { composeTransform } from './matrix'
+import { composeTransform, quaternionFromEulerXYZ } from './matrix'
 import { readSceneDocument } from './readDocument'
 import { prepareSceneAnimation, sampleSceneAnimationTrack } from './sampleAnimation'
+
+test('closing a loop keeps the last authored pose and adds a smooth return to the first', () => {
+  const source = animatedScene()
+  source.animations[0]!.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'translation',
+      keys: [
+        { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+        { time: 2, value: [4, 0, 0], interpolation: 'smooth' },
+      ],
+    },
+  ]
+  expect(sceneAnimationLoopNeedsClosure(source.animations[0]!)).toBe(true)
+  const closed = closeSceneAnimationLoop(source, 'clip')
+  expect(source.animations[0]!.tracks[0]!.keys).toHaveLength(2)
+  expect(closed.animations![0]!.tracks[0]!.keys).toEqual([
+    { time: 0, value: [0, 0, 0], interpolation: 'smooth' },
+    { time: 1, value: [4, 0, 0], interpolation: 'smooth' },
+    { time: 2, value: [0, 0, 0], interpolation: 'smooth' },
+  ])
+  expect(sceneAnimationLoopNeedsClosure(closed.animations![0]!)).toBe(false)
+  expect(closeSceneAnimationLoop(closed, 'clip')).toBe(closed)
+  const sampler = prepareSceneAnimation(closed, 'clip')
+  expect(sampler.sample(1).worldMatrices.get('body')![12]).toBe(4)
+  expect(sampler.sample(1.99).worldMatrices.get('body')![12]).toBeLessThan(0.01)
+  expect(sampler.sample(2).worldMatrices.get('body')![12]).toBe(0)
+})
+
+test('closing a near-full turn keeps a constant pace through its final angle', () => {
+  const source = animatedScene()
+  source.animations[0]!.duration = 1
+  source.animations[0]!.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: quaternionFromEulerXYZ([0, 0, 0]), interpolation: 'linear' },
+        { time: 0.75, value: quaternionFromEulerXYZ([0, 0, 270]), interpolation: 'linear' },
+        { time: 1, value: quaternionFromEulerXYZ([0, 0, 350]), interpolation: 'linear' },
+      ],
+    },
+  ]
+  const closed = closeSceneAnimationLoop(source, 'clip')
+  const keys = closed.animations![0]!.tracks[0]!.keys
+  expect(keys[2]!.time).toBeCloseTo(0.75 + 0.25 * (80 / 90), 12)
+  expect(keys[2]!.interpolation).toBe('linear')
+  expect(keys[3]!.time).toBe(1)
+  expect(keys[3]!.interpolation).toBe('linear')
+  expect(sceneAnimationLoopNeedsClosure(closed.animations![0]!)).toBe(false)
+})
+
+test('closing a nearly finished windmill turn snaps its last pose without adding a reverse flick', () => {
+  const source = animatedScene()
+  source.animations[0]!.duration = 1
+  source.animations[0]!.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: quaternionFromEulerXYZ([0, 0, 0]), interpolation: 'linear' },
+        { time: 0.75, value: quaternionFromEulerXYZ([0, 0, 270]), interpolation: 'linear' },
+        { time: 1, value: quaternionFromEulerXYZ([0, 0, 362]), interpolation: 'linear' },
+      ],
+    },
+  ]
+  const closed = closeSceneAnimationLoop(source, 'clip')
+  const keys = closed.animations![0]!.tracks[0]!.keys
+  expect(keys.map((key) => key.time)).toEqual([0, 0.75, 1])
+  expect(keys[2]!.value).toEqual([0, 0, 0, -1])
+  expect(sceneAnimationLoopNeedsClosure(closed.animations![0]!)).toBe(false)
+})
+
+test('rounding noise and equivalent quaternion signs do not request a loop repair', () => {
+  const source = animatedScene()
+  source.animations[0]!.tracks = [
+    {
+      nodeId: 'body',
+      channel: 'scale',
+      keys: [
+        { time: 0, value: [0.5, 1.5, 0.5], interpolation: 'smooth' },
+        {
+          time: 2,
+          value: [0.5, 1.5000000000000004, 0.49999999999999994],
+          interpolation: 'linear',
+        },
+      ],
+    },
+    {
+      nodeId: 'body',
+      channel: 'rotation',
+      keys: [
+        { time: 0, value: [0, 0, 0, 1], interpolation: 'linear' },
+        { time: 2, value: [0, 0, 0, -1], interpolation: 'linear' },
+      ],
+    },
+  ]
+  expect(sceneAnimationLoopNeedsClosure(source.animations[0]!)).toBe(false)
+  expect(closeSceneAnimationLoop(source, 'clip')).toBe(source)
+})
 
 test('a new movement rotates a tall box without shearing its sides', () => {
   const source = transformSceneNodes(

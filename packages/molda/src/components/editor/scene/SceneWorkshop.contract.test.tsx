@@ -206,11 +206,12 @@ describe('inventário da oficina: o que a criança alcança', () => {
     // Group, ungroup and multiselect move into the tree; the destination selector adds one control.
     // The requested Plano adds one visible creation button.
     expect(vazio.view.getByRole('button', { name: copy.plane })).toBeDefined()
-    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(68)
+    // A biblioteca de paletas acrescenta um único gatilho recolhido no Modelar.
+    expect(controlInventory(vazio.view.container).length).toBeLessThanOrEqual(69)
     expect(
       encaradosVazio.length,
       `encarados na abertura: ${encaradosVazio.join(' | ')}`,
-    ).toBeLessThanOrEqual(48)
+    ).toBeLessThanOrEqual(49)
     cleanup()
 
     const comPeca = mount(withPiece())
@@ -218,11 +219,11 @@ describe('inventário da oficina: o que a criança alcança', () => {
     const encaradosPeca = frontControls(comPeca.view.container)
     // 12 coordinate inputs are now available directly, with pivot and component tools.
     // Flip adds its disclosure, three axes and the in-place option, behind the disclosure.
-    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(126)
+    expect(controlInventory(comPeca.view.container).length).toBeLessThanOrEqual(127)
     expect(
       encaradosPeca.length,
       `encarados com uma peça escolhida: ${encaradosPeca.join(' | ')}`,
-    ).toBeLessThanOrEqual(88)
+    ).toBeLessThanOrEqual(89)
   })
 
   /**
@@ -249,8 +250,9 @@ describe('inventário da oficina: o que a criança alcança', () => {
     expect(montados.length, montados.join(' | ')).toBeLessThanOrEqual(84)
     // Scope (2), UV grid and hue/hex replace the native picker; saved swatches stay bounded.
     // Named UV/material/sheet areas and the visible contextual brush section add four controls.
-    // Ready colors stay in front; HSV, favorites, UV/materials and layers are now closed.
-    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(56)
+    // Ready colors stay in front; the new palette library has one collapsed entry.
+    // HSV, favorites, UV/materials and layers are now closed.
+    expect(encarados.length, encarados.join(' | ')).toBeLessThanOrEqual(57)
   })
 
   test('todo controle tem nome: sem nome, a criança não acha e o leitor de tela não fala', () => {

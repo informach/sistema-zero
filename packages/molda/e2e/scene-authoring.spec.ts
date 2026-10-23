@@ -18,6 +18,7 @@ test('basic rings and scale preserve undo, and visible edge points cut two close
   page.on('pageerror', (error) => errors.push(error.message))
   await page.setViewportSize({ width: 1440, height: 900 })
   const source = { ...animatedScene(), name: 'Girar e cortar' }
+  source.animations![0]!.tracks = []
   await page.goto('/?nivel=explorer')
   await page.locator('input[name="molda-backup"]').setInputFiles({
     name: 'cortar.molda.json',
@@ -381,6 +382,13 @@ test('basic authoring keeps the reference layout and exact imported key times', 
   await expect(page.getByLabel(COPY.scene.animationSeconds, { exact: true })).toHaveValue(
     '1.123456789123',
   )
+  const poseTime = page.getByLabel('Tempo da pose escolhida', { exact: true })
+  for (const effect of ['Suave', 'Reto', 'De uma vez'])
+    await expect(page.getByRole('button', { name: effect, exact: true })).toBeVisible()
+  await expect(poseTime).toBeHidden()
+  await page.locator('summary').filter({ hasText: 'Mudar tempo da pose' }).click()
+  await expect(poseTime).toBeVisible()
+  await page.locator('summary').filter({ hasText: 'Mudar tempo da pose' }).click()
   await expect(page.getByRole('separator', { name: 'Altura da linha do tempo' })).toHaveAttribute(
     'aria-valuenow',
     '306',
@@ -396,6 +404,19 @@ test('basic authoring keeps the reference layout and exact imported key times', 
   expect(playheadBounds.y).toBe(timeline!.y + 61)
   const ruler = (await page.locator('.mld-timeline-ruler').boundingBox())!
   const timeX = (time: number) => ruler.x + 14 + (time / 2) * (ruler.width - 28)
+  const selectedStrip = (await page.getByRole('button', { name: /^Mover: 3 poses/ }).boundingBox())!
+  const selectedPoseX = selectedStrip.x + 14 + (1.123456789123 / 2) * (selectedStrip.width - 28)
+  expect(playheadBounds.x + playheadBounds.width / 2).toBeCloseTo(selectedPoseX, 0)
+  await page.locator('.mld-timeline > .mld-scroll-y').evaluate((element) => {
+    element.setAttribute('style', 'flex: none; height: 70px')
+  })
+  const scrolledStrip = (await page.getByRole('button', { name: /^Mover: 3 poses/ }).boundingBox())!
+  const scrolledPlayhead = (await playhead.boundingBox())!
+  const scrolledPoseX = scrolledStrip.x + 14 + (1.123456789123 / 2) * (scrolledStrip.width - 28)
+  expect(scrolledPlayhead.x + scrolledPlayhead.width / 2).toBeCloseTo(scrolledPoseX, 0)
+  await page.locator('.mld-timeline > .mld-scroll-y').evaluate((element) => {
+    element.removeAttribute('style')
+  })
   const seconds = page.getByLabel(COPY.scene.animationSeconds, { exact: true })
   await page.mouse.move(timeX(1.123456789123), ruler.y + 8)
   await page.mouse.down()
@@ -437,7 +458,14 @@ test('basic authoring keeps the reference layout and exact imported key times', 
   await expect(page.getByRole('button', { name: COPY.editor.undo, exact: true })).toBeDisabled()
   for (const width of [1024, 768, 390]) {
     await page.setViewportSize({ width, height: 900 })
-    await expect(page.getByRole('button', { name: 'Marcar pose', exact: true })).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Linha do tempo' })).toBeVisible()
+    const responsiveStrip = (await page
+      .getByRole('button', { name: /^Mover: 3 poses/ })
+      .boundingBox())!
+    const responsivePlayhead = (await playhead.boundingBox())!
+    const responsivePoseX =
+      responsiveStrip.x + 14 + (1.123456789123 / 2) * (responsiveStrip.width - 28)
+    expect(responsivePlayhead.x + responsivePlayhead.width / 2).toBeCloseTo(responsivePoseX, 0)
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth - innerWidth),
     ).toBeLessThanOrEqual(1)
@@ -453,6 +481,7 @@ test('move and pivot handles commit one drag, cancel interruptions and work whil
   page.on('pageerror', (error) => errors.push(error.message))
   await page.setViewportSize({ width: 1440, height: 900 })
   const source = { ...animatedScene(), name: 'Pivô real' }
+  source.animations![0]!.tracks = []
   await page.goto('/?nivel=explorer')
   await page.locator('input[name="molda-backup"]').setInputFiles({
     name: 'pivo.molda.json',
@@ -487,15 +516,15 @@ test('move and pivot handles commit one drag, cancel interruptions and work whil
     const circle = page
       .getByRole('button', { name: 'Pivô no eixo X', exact: true })
       .locator('circle')
+    await circle.hover()
     const rect = (await circle.boundingBox())!
     const x = rect.x + rect.width / 2,
       y = rect.y + rect.height / 2
-    await page.mouse.move(x, y)
     await page.mouse.down()
     await page.mouse.move(x + 15, y + 8, { steps: 3 })
     const first = await pivotX.inputValue()
     await page.mouse.move(x + 30, y + 16, { steps: 3 })
-    expect(await pivotX.inputValue()).not.toBe(first)
+    await expect.poll(() => pivotX.inputValue()).not.toBe(first)
     if (cancel) await page.keyboard.press('Escape')
     await page.mouse.up()
   }
@@ -530,6 +559,11 @@ test('intermediate batch edits preview, cancel, confirm and undo without changin
   await page.getByRole('button', { name: 'Escolher corpo', exact: true }).click()
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   const prepareCopy = async () => {
+    const morePoses = page.locator('details').filter({
+      has: page.locator('summary', { hasText: 'Mais ferramentas de pose' }),
+    })
+    if ((await morePoses.getAttribute('open')) === null)
+      await morePoses.locator('summary').first().click()
     const details = page
       .locator('details')
       .filter({ has: page.locator('summary', { hasText: COPY.scene.animationKeyTools }) })

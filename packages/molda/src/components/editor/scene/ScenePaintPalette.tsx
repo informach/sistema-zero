@@ -9,6 +9,7 @@ import { Button } from '../../ui/Button'
 import { Grid3x3, Layers, Plus } from '../../ui/icons'
 import { swatchClass } from '../../ui/interaction'
 import { SceneColorPicker } from './SceneColorPicker'
+import { ScenePaletteLibrary } from './ScenePaletteLibrary'
 import type { useScenePaint } from './useScenePaint'
 
 export function scenePaletteSwatches(palette: MoldaPaletteFields) {
@@ -37,12 +38,14 @@ const NAMES: Readonly<Record<string, string>> = {
 export function ScenePaintPalette({
   paint,
   palette,
+  applyPalette,
   preparation,
   mapping,
   interior,
 }: {
   paint: ReturnType<typeof useScenePaint>
   palette: MoldaPaletteFields
+  applyPalette: React.ComponentProps<typeof ScenePaletteLibrary>['apply']
   preparation?: { faces: readonly string[]; apply(): void } | null
   mapping?: { apply(): void; disabled: boolean } | null
   interior?: { apply(): void; disabled: boolean } | null
@@ -97,6 +100,7 @@ export function ScenePaintPalette({
           </div>
         )}
         <div className="space-y-3 rounded-xl border border-mld-border bg-mld-surface p-3">
+          <ScenePaletteLibrary palette={palette} busy={busy} apply={applyPalette} />
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"

@@ -29,6 +29,7 @@ interface BodySample {
 }
 
 import type { Vec3 } from '../core/model'
+import { cross, normalize } from '../model/vec'
 import type { MoldaSceneDocument } from '../scene/document'
 import { sameSceneContent } from '../scene/documentContent'
 import { indexSceneDocument } from '../scene/documentIndex'
@@ -41,6 +42,7 @@ import {
   affineMultiply,
   composeTransform,
   identityMatrix,
+  transformDirection,
   transformPoint,
 } from '../scene/matrix'
 import { sceneMeasurementReference } from '../scene/measurementReference'
@@ -49,10 +51,11 @@ import {
   meshComponentVertices,
   type SceneComponentSelection,
 } from '../scene/meshComponents'
+import { meshFaceFrame } from '../scene/meshFaceFrame'
 import { meshVertexCenter } from '../scene/meshVertices'
 import { sampleSceneInk } from '../scene/paintInk'
 import { sceneGeometryMesh } from '../scene/parametricGeometry'
-import { sceneLocalBounds, sceneNodePivot } from '../scene/pivot'
+import { sceneLocalBounds, sceneNodePivot, scenePivotAxisFrame } from '../scene/pivot'
 import type { SceneAnimationPose } from '../scene/sampleAnimation'
 import type { SceneSkinPaintSample } from '../scene/skinPaint'
 import { sceneTransformFrame } from '../scene/transformFrame'
@@ -146,6 +149,8 @@ export class SceneViewport implements SceneViewportPort {
   private bodyMoving = false
   private bodySelection: { id: string; additive: boolean; faceId?: string } | null = null
   private transformTool: SceneTransformTool = 'select'
+  private transformSpace: 'world' | 'local' | 'pivot' = 'world'
+  private faceExtrusion = false
   private movementStep: number | null = null
   private measurementOrigin: Vec3 | null = null
   /** `null` = quem chama não conhece a aba Pintar: a pintura é deduzida do alvo, como antes. */
@@ -833,7 +838,9 @@ export class SceneViewport implements SceneViewportPort {
       ? sceneNodePivot(selectedNode)
       : ([0, 0, 0] as [number, number, number])
     if (world) {
-      this.pivot.matrix.fromArray(world)
+      this.pivot.matrix.fromArray(
+        selectedNode?.pivotAxis ? scenePivotAxisFrame(world, selectedNode.pivotAxis) : world,
+      )
       this.pivot.matrix.setPosition(new Vector3(...transformPoint(world, authoringPivot)))
     }
     const faceNode = this.componentSelection
@@ -878,6 +885,37 @@ export class SceneViewport implements SceneViewportPort {
             world,
           )
         : null
+    let extrusionFrame = null
+    if (
+      this.faceExtrusion &&
+      this.componentSelection?.mode === 'face' &&
+      this.componentSelection.ids.length === 1 &&
+      faceMesh?.kind === 'mesh' &&
+      selectedNode?.id === this.componentSelection.nodeId &&
+      world
+    ) {
+      try {
+        // Puxar desloca a malha pela normal LOCAL da face. A alça segue esse mesmo vetor
+        // depois da transformação da peça, inclusive com escala não uniforme.
+        const localNormal = meshFaceFrame(faceMesh, this.componentSelection.ids[0]!).normal
+        const travel = transformDirection(world, localNormal)
+        const magnitude = Math.hypot(...travel)
+        if (Number.isFinite(magnitude) && magnitude > 1e-12) {
+          const up = normalize(travel)
+          const reference: Vec3 = Math.abs(up[2]) < 0.9 ? [0, 0, 1] : [1, 0, 0]
+          const right = normalize(cross(up, reference))
+          const forward = cross(right, up)
+          extrusionFrame = identityMatrix()
+          for (const axis of [0, 1, 2] as const) {
+            extrusionFrame[axis] = right[axis]
+            extrusionFrame[4 + axis] = up[axis]
+            extrusionFrame[8 + axis] = forward[axis]
+          }
+        }
+      } catch {
+        // A seleção pode mudar antes da geometria do quadro seguinte; usa os eixos comuns.
+      }
+    }
     let dimensions: Vec3 | null = null
     this.measurementOrigin = null
     if (selectedNode && localBounds && world) {
@@ -955,7 +993,12 @@ export class SceneViewport implements SceneViewportPort {
                   bounds.min[2] / 2 + bounds.max[2] / 2,
                 ]
           : null,
-      world ? sceneTransformFrame(world, frameCoordinates) : undefined,
+      extrusionFrame ??
+        (world
+          ? this.transformSpace === 'pivot' && selectedNode?.pivotAxis
+            ? scenePivotAxisFrame(world, selectedNode.pivotAxis)
+            : sceneTransformFrame(world, frameCoordinates)
+          : undefined),
       dimensions,
       this.componentSelection ? null : this.measurementOrigin,
     )
@@ -1045,13 +1088,15 @@ export class SceneViewport implements SceneViewportPort {
       if (current.locked || current.hidden) editable = false
       current = current.parentId ? this.index?.scene.nodes.get(current.parentId) : undefined
     }
+    const pivotFrame = node?.pivotAxis && world ? scenePivotAxisFrame(world, node.pivotAxis) : null
+    const basis = pivotFrame ?? world
     this.pivotHandles?.setTarget(
       node && world ? transformPoint(world, sceneNodePivot(node)) : null,
-      world
+      basis
         ? [
-            [world[0], world[1], world[2]],
-            [world[4], world[5], world[6]],
-            [world[8], world[9], world[10]],
+            [basis[0], basis[1], basis[2]],
+            [basis[4], basis[5], basis[6]],
+            [basis[8], basis[9], basis[10]],
           ]
         : undefined,
     )
@@ -1128,10 +1173,18 @@ export class SceneViewport implements SceneViewportPort {
   private readonly request = () => {
     if (!this.disposed) this.loop?.request()
   }
-  setTransformSpace(space: 'world' | 'local'): void {
+  setTransformSpace(space: 'world' | 'local' | 'pivot'): void {
     if (this.disposed) return
+    this.transformSpace = space
     this.cancelGesture()
-    this.gizmo?.setSpace(space)
+    this.gizmo?.setSpace(this.faceExtrusion || space !== 'world' ? 'local' : 'world')
+    this.updateVisibility()
+  }
+  setFaceExtrusion(active: boolean): void {
+    if (this.disposed || this.faceExtrusion === active) return
+    this.cancelGesture()
+    this.faceExtrusion = active
+    this.gizmo?.setSpace(active || this.transformSpace !== 'world' ? 'local' : 'world')
     this.updateVisibility()
   }
   setTransformTool(tool: SceneTransformTool): void {

@@ -62,7 +62,7 @@ async function ready(hook: ReturnType<typeof setup>['hook']) {
   })
   expect(hook.result.current.view.stage.kind).toBe('ready')
 }
-test('OBJ selection waits for Prepare, real worker review waits for current consent, replacement is one undoable commit', async () => {
+test('OBJ selection waits for Prepare, real worker review waits for current consent, addition is one undoable commit', async () => {
   const { asset, editor, hook, saves, close } = setup()
   try {
     await ready(hook)
@@ -81,6 +81,7 @@ test('OBJ selection waits for Prepare, real worker review waits for current cons
     expect(imported).toMatchObject({ id: asset.id, name: asset.name, createdAt: asset.createdAt })
     expect(imported.thumb).toBeUndefined()
     expect(imported.images.length).toBeGreaterThan(0)
+    expect(imported.nodes.slice(0, asset.nodes.length)).toEqual(asset.nodes)
     expect(editor.getState().contentRevision).toBe(1)
     act(() => expect(hook.result.current.confirm()).toBe(false))
     act(() => editor.getState().undo())

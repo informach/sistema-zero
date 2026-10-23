@@ -9,10 +9,34 @@
  */
 import { normalizeHex } from '../core/color'
 import { MOLDA_LIMITS } from '../core/limits'
+import type { MoldaCustomPalette } from '../core/model'
+import type { PaletteId } from '../core/palette'
 import { PALETTE_SIZE } from '../core/palette'
 import { resolvePaletteColors } from '../core/sanitize'
 import type { MoldaSceneDocument } from './document'
 import { requireScene } from './validation'
+
+export type ScenePaletteChoice =
+  | { paletteId: PaletteId; customPalette?: never }
+  | { paletteId: 'custom'; customPalette: MoldaCustomPalette }
+
+/** Trocar a base da paleta mantém os índices da tinta e todas as cores extras. */
+export function setScenePalette(
+  document: MoldaSceneDocument,
+  choice: ScenePaletteChoice,
+): MoldaSceneDocument {
+  if (
+    document.paletteId === choice.paletteId &&
+    (choice.paletteId !== 'custom' ||
+      (document.customPalette?.name === choice.customPalette.name &&
+        document.customPalette.colors.every(
+          (color, index) => color === choice.customPalette.colors[index],
+        )))
+  )
+    return document
+  const { customPalette: _previous, ...rest } = document
+  return { ...rest, ...choice }
+}
 
 function readHex(hex: string) {
   const normalized = normalizeHex(hex)

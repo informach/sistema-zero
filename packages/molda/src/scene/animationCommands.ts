@@ -6,6 +6,7 @@ import {
   replaceSceneAnimation as replace,
 } from './animationCommandContext'
 import { setSceneAnimationKeys } from './animationKeyBatch'
+import { nearLoopRotationEnd } from './animationLoop'
 import { allocateSceneId, finishSceneCommand } from './commandContext'
 import type { MoldaSceneDocument } from './document'
 import { SCENE_LIMITS } from './limits'
@@ -98,6 +99,106 @@ export function configureSceneAnimation(
       'Há chaves depois desse final. Ajuste a duração junto com as chaves ou remova essas chaves primeiro.',
     )
   return replace(document, next)
+}
+
+function openLoopEnds(clip: SceneAnimationClip) {
+  return clip.tracks.filter((track) => {
+    const first = track.keys[0]
+    const last = track.keys.at(-1)
+    if (!first || !last || first === last || first.time !== 0 || last.time !== clip.duration)
+      return false
+    if (track.channel !== 'rotation')
+      return first.value.some(
+        (value, axis) =>
+          Math.abs(value - last.value[axis]!) >
+          1e-8 * Math.max(1, Math.abs(value), Math.abs(last.value[axis]!)),
+      )
+    const dot = first.value.reduce((sum, value, axis) => sum + value * last.value[axis]!, 0)
+    return 1 - Math.abs(dot / (Math.hypot(...first.value) * Math.hypot(...last.value))) > 1e-10
+  })
+}
+
+export function sceneAnimationLoopNeedsClosure(clip: SceneAnimationClip) {
+  return clip.loop && openLoopEnds(clip).length > 0
+}
+
+function closeTrackKeys<T extends Vec3 | Quaternion>(
+  source: SceneAnimationKey<T>[],
+  duration: number,
+  channel: SceneAnimationTrack['channel'],
+): SceneAnimationKey<T>[] {
+  const keys = source.slice()
+  const first = keys[0]!
+  const last = keys[keys.length - 1]!
+  const previous = keys[keys.length - 2]!
+  const distance = (left: T, right: T) => {
+    if (channel !== 'rotation')
+      return Math.hypot(...left.map((value, axis) => value - right[axis]!))
+    const dot = left.reduce((sum, value, axis) => sum + value * right[axis]!, 0)
+    return 2 * Math.acos(Math.min(1, Math.abs(dot / (Math.hypot(...left) * Math.hypot(...right)))))
+  }
+  const travel = distance(previous.value, last.value)
+  const home = distance(last.value, first.value)
+  const portion = travel / Math.max(travel, home)
+  const returnPortion = home / Math.max(travel, home)
+  const candidate =
+    previous.time + (duration - previous.time) * (portion / (portion + returnPortion))
+  const returnStart =
+    candidate > previous.time && candidate < duration
+      ? candidate
+      : previous.time + (duration - previous.time) / 2
+  v.requireScene(
+    returnStart > previous.time && returnStart < duration,
+    'animation.loop',
+    'Essas poses estão próximas demais do fim para criar a volta.',
+  )
+  const interpolation = previous.interpolation === 'linear' ? 'linear' : 'smooth'
+  keys[keys.length - 1] = { ...last, time: returnStart, interpolation }
+  keys.push({
+    time: duration,
+    value: structuredClone(first.value),
+    interpolation,
+    ...(last.incomingPivot
+      ? {
+          incomingPivot: [
+            last.incomingPivot[0],
+            last.incomingPivot[1],
+            last.incomingPivot[2],
+          ] satisfies Vec3,
+        }
+      : {}),
+  })
+  return keys
+}
+
+/** Preserve the last authored pose, make room for its return, and close the loop at its original duration. */
+export function closeSceneAnimationLoop(document: MoldaSceneDocument, clipId: string) {
+  const { clip, editable } = context(document, clipId)
+  if (!clip.loop) return document
+  const open = openLoopEnds(clip)
+  if (!open.length) return document
+  editable(open.map((track) => track.nodeId))
+  const closing = new Set(open)
+  return replace(document, {
+    ...clip,
+    tracks: clip.tracks.map((track) => {
+      if (!closing.has(track)) return track
+      if (track.channel === 'rotation') {
+        const end = nearLoopRotationEnd(clip, track)
+        if (end) {
+          return {
+            ...track,
+            keys: track.keys.map((key, index) =>
+              index === track.keys.length - 1 ? { ...key, value: end } : key,
+            ),
+          }
+        }
+      }
+      return track.channel === 'rotation'
+        ? { ...track, keys: closeTrackKeys(track.keys, clip.duration, track.channel) }
+        : { ...track, keys: closeTrackKeys(track.keys, clip.duration, track.channel) }
+    }),
+  })
 }
 
 export function duplicateSceneAnimation(

@@ -8,6 +8,7 @@ import {
   composeTransform,
   quaternionFromEulerXYZ,
 } from '../../../scene/matrix'
+import { SCENE_COORDINATE_STEP } from '../../../scene/measurementStep'
 import { sceneLocalBounds } from '../../../scene/pivot'
 import { sceneTransformTrs } from '../../../scene/transformTrs'
 import { requireScene } from '../../../scene/validation'
@@ -54,10 +55,12 @@ export function SceneTransformCoordinates({
       }
       hint="Referência: mundo. Estes são os valores atuais da peça."
       values={values}
-      min={tool === 'scale' ? workshop.measurementStep : undefined}
-      step={tool === 'move' || tool === 'scale' ? workshop.measurementStep : undefined}
+      min={tool === 'scale' ? SCENE_COORDINATE_STEP : undefined}
+      step={tool === 'move' || tool === 'scale' ? SCENE_COORDINATE_STEP : undefined}
+      twoDecimals={tool === 'move' || tool === 'scale'}
       disabled={tool === 'scale' && localSize.some((size) => size <= 0)}
-      onApply={(value) =>
+      onApply={(value) => {
+        if (value.every((component, axis) => component === values[axis])) return
         run((source) => {
           const inverse = affineInverse(matrix)
           requireScene(inverse, 'transform', 'Os eixos desta peça não permitem esse ajuste.')
@@ -79,7 +82,7 @@ export function SceneTransformCoordinates({
             affineMultiply(composeTransform({ kind: 'trs', ...next }), inverse),
           )
         })
-      }
+      }}
     />
   )
 }

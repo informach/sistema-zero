@@ -117,8 +117,9 @@ test('real import requires a scene and fresh consent; one commit preserves ident
     act(() => editor.getState().setThumb('data:image/png;base64,thumb'))
     act(() => expect(hook.result.current.confirm()).toBe(true))
     const imported = editor.getState().asset
-    expect(imported.nodes).toEqual(stage.result.document.nodes)
-    expect(imported.images).toEqual(stage.result.document.images)
+    expect(imported.nodes.slice(0, asset.nodes.length)).toEqual(asset.nodes)
+    expect(imported.nodes.length).toBe(asset.nodes.length + stage.result.document.nodes.length + 1)
+    expect(imported.images.length).toBe(asset.images.length + stage.result.document.images.length)
     expect(imported).toMatchObject({ id: asset.id, name: asset.name, createdAt: asset.createdAt })
     expect(imported.thumb).toBeUndefined()
     expect(editor.getState().contentRevision).toBe(1)

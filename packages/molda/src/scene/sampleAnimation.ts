@@ -67,6 +67,7 @@ function rotation(a: Quaternion, b: Quaternion, weight: number): Quaternion {
 export function sampleSceneAnimationTrack(
   track: SceneAnimationTrack,
   time: number,
+  loopDuration?: number,
 ): Vec3 | Quaternion {
   number(time, 'time')
   let low = 0
@@ -77,12 +78,29 @@ export function sampleSceneAnimationTrack(
     else high = middle
   }
   const index = Math.max(0, low - 1)
-  const a = track.keys[index]
+  let a = track.keys[index]
   requireScene(a, 'track', 'A trilha precisa de pelo menos uma chave.')
-  const b = track.keys[index + 1]
-  if (!b || time <= a.time || a.interpolation === 'step')
+  let b = track.keys[index + 1]
+  let start = a.time
+  let end = b?.time
+  if (loopDuration !== undefined && track.keys.length > 1 && (low === 0 || !b)) {
+    const first = track.keys[0]!
+    const last = track.keys.at(-1)!
+    if (last.time - first.time < loopDuration) {
+      a = last
+      b = first
+      if (low === 0) {
+        start = last.time - loopDuration
+        end = first.time
+      } else {
+        start = last.time
+        end = first.time + loopDuration
+      }
+    }
+  }
+  if (!b || end === undefined || time <= start || a.interpolation === 'step')
     return track.channel === 'rotation' ? unit(a.value) : [...a.value]
-  let weight = (time - a.time) / (b.time - a.time)
+  let weight = (time - start) / (end - start)
   if (a.interpolation === 'smooth') weight = weight * weight * (3 - 2 * weight)
   if (track.channel === 'rotation')
     return rotation(a.value as Quaternion, b.value as Quaternion, weight)
@@ -165,6 +183,7 @@ export function sampleSceneAnimationTransform(
   space: SceneAnimationClip['space'],
   tracks: readonly SceneAnimationTrack[],
   time: number,
+  loopDuration?: number,
 ) {
   const rest = space === 'local' && node.transform.kind === 'trs' ? node.transform : null,
     transform = {
@@ -174,11 +193,11 @@ export function sampleSceneAnimationTransform(
       scale: rest?.scale ?? ([1, 1, 1] as Vec3),
     }
   for (const track of tracks) {
-    const value = sampleSceneAnimationTrack(track, time)
+    const value = sampleSceneAnimationTrack(track, time, loopDuration)
     if (track.channel === 'rotation') transform.rotation = value as Quaternion
     else transform[track.channel] = value as Vec3
   }
-  const correction = sceneAnimationPivotOffset(node, space, tracks, time, transform)
+  const correction = sceneAnimationPivotOffset(node, space, tracks, time, transform, loopDuration)
   transform.translation = transform.translation.map((n, axis) => n + correction[axis]!) as Vec3
   return transform
 }
@@ -193,6 +212,7 @@ export function sceneAnimationPivotOffset(
   tracks: readonly SceneAnimationTrack[],
   time: number,
   current?: { rotation: Quaternion; scale: Vec3 },
+  loopDuration?: number,
 ): Vec3 {
   const rotationTrack = tracks.find((track) => track.channel === 'rotation')
   if (!rotationTrack) return [0, 0, 0]
@@ -203,29 +223,45 @@ export function sceneAnimationPivotOffset(
     if (rotationTrack.keys[middle]!.time <= time) low = middle + 1
     else high = middle
   }
-  const a = rotationTrack.keys[low - 1],
+  let a = rotationTrack.keys[low - 1],
     b = rotationTrack.keys[low]
-  if (!a || !b?.incomingPivot || time === a.time) return [0, 0, 0]
+  let startTime = a?.time,
+    endTime = b?.time,
+    pivot = b?.incomingPivot
+  if (loopDuration !== undefined && (!a || !b) && rotationTrack.keys.length > 1) {
+    const first = rotationTrack.keys[0]!
+    const last = rotationTrack.keys.at(-1)!
+    if (last.time - first.time < loopDuration) {
+      a = last
+      b = first
+      startTime = low === 0 ? last.time - loopDuration : last.time
+      endTime = low === 0 ? first.time : first.time + loopDuration
+      pivot = first.incomingPivot ?? last.incomingPivot
+    }
+  }
+  if (!a || !b || startTime === undefined || endTime === undefined || !pivot || time === startTime)
+    return [0, 0, 0]
   const scaleTrack = tracks.find((track) => track.channel === 'scale')
   const restScale =
     space === 'local' && node.transform.kind === 'trs'
       ? node.transform.scale
       : ([1, 1, 1] satisfies Vec3)
   const scaledAt = (at: number): Vec3 =>
-    scaleTrack ? (sampleSceneAnimationTrack(scaleTrack, at) as Vec3) : restScale
+    scaleTrack ? (sampleSceneAnimationTrack(scaleTrack, at, loopDuration) as Vec3) : restScale
   const point = (rotation: Quaternion, scale: Vec3) =>
     transformDirection(
       composeTransform({ kind: 'trs', translation: [0, 0, 0], rotation, scale }),
-      b.incomingPivot!,
+      pivot,
     )
   const start = point(a.value, scaledAt(a.time)),
     end = point(b.value, scaledAt(b.time))
   const now = point(
-    current?.rotation ?? (sampleSceneAnimationTrack(rotationTrack, time) as Quaternion),
+    current?.rotation ??
+      (sampleSceneAnimationTrack(rotationTrack, time, loopDuration) as Quaternion),
     current?.scale ?? scaledAt(time),
   )
   const referenceInterpolation = b.incomingPivotInterpolation ?? a.interpolation
-  let weight = referenceInterpolation === 'step' ? 0 : (time - a.time) / (b.time - a.time)
+  let weight = referenceInterpolation === 'step' ? 0 : (time - startTime) / (endTime - startTime)
   if (referenceInterpolation === 'smooth') weight = weight * weight * (3 - 2 * weight)
   return start.map((n, axis) => (1 - weight) * n + weight * end[axis]! - now[axis]!) as Vec3
 }
@@ -297,7 +333,13 @@ function compileSceneAnimation(
         if (rotation || (!fixedLocals && tracks)) {
           const transform =
               fixedTransforms.get(id) ??
-              sampleSceneAnimationTransform(node, clip.space, tracks ?? [], time),
+              sampleSceneAnimationTransform(
+                node,
+                clip.space,
+                tracks ?? [],
+                time,
+                loop ? clip.duration : undefined,
+              ),
             animated = composeTransform(rotation ? { ...transform, rotation } : transform)
           local = clip.space === 'local' ? animated : affineMultiply(base, animated)
         }

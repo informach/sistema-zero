@@ -263,6 +263,9 @@ test('na aba Animar, os movimentos, a vista e a pose cabem sem cobrir nada', asy
   await checkEverySize(page, 'Animar')
   for (const size of SIZES) {
     await page.setViewportSize(size)
+    if (size.width <= 1100) {
+      await page.getByRole('tab', { name: 'Movimentos', exact: true }).click()
+    }
     const create = await page
       .getByRole('button', { name: 'Criar movimento', exact: true })
       .boundingBox()
@@ -341,4 +344,6 @@ test('o painel direito mantém peças acima do conteúdo de cada modo', async ({
 
   await page.getByRole('button', { name: 'Animar', exact: true }).click()
   await expect(tabs).toHaveText(['Peças', 'Movimentos', 'Pose'])
+  await expect(page.getByRole('tabpanel', { name: 'Peças' })).toBeVisible()
+  await expect(page.getByRole('tabpanel', { name: 'Pose' })).toBeHidden()
 })

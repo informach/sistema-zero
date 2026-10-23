@@ -3,6 +3,7 @@ import type { SceneAnimationClip } from '../../../scene/animation'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { sameSceneContent } from '../../../scene/documentContent'
 import { sceneToJson } from '../../../scene/documentJson'
+import { rigidEmptyAnimations } from '../../../scene/rigidEmptyAnimations'
 import type { EditorStore } from '../../../state/editorStore'
 import { getMoldaStorageNamespace } from '../../../state/persistence'
 import type { SceneAnimationPoseGesture } from '../../../state/SceneAnimationPoseGesture'
@@ -18,7 +19,9 @@ export function scenePoseRecoveryRevision(source: MoldaSceneDocument) {
   let hash = hashes.get(source)
   if (!hash) {
     hash = (async () => {
-      const document = sceneToJson(source)
+      // Opening a saved scene upgrades decomposable affine transforms and legacy clips.
+      // Hash that same canonical form so a draft still belongs to its saved base on reload.
+      const document = sceneToJson(rigidEmptyAnimations(source))
       delete document.thumb
       // Thumbnails and persistence stamps are derived, not authoring revisions.
       const { updatedAt: _updatedAt, ...content } = document

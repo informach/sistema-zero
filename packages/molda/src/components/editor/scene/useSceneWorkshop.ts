@@ -87,6 +87,12 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const [placing, setPlacing] = useState(false)
   const [pivotVertical, setPivotVertical] = useState(false)
   const [pivotSnap, setPivotSnap] = useState(false)
+  const alignedPivot =
+    chosen.length === 1 ? document.nodes.find((node) => node.id === chosen[0])?.pivotAxis : null
+  const alignedPivotKey = alignedPivot ? `${chosen[0]}:${alignedPivot.join(',')}` : null
+  useEffect(() => {
+    if (alignedPivotKey) setPivotVertical(true)
+  }, [alignedPivotKey])
   const [reveal, setReveal] = useState<readonly string[]>([])
   const [animationTarget, setAnimationTarget] = useState<SceneAnimationTarget>('piece')
   const [animationPreviewDocument, setAnimationPreviewDocument] =
@@ -509,7 +515,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
     ],
   )
   const selectMany = useCallback(
-    (ids: readonly string[], add: boolean) => {
+    (ids: readonly string[], add: boolean | 'replace') => {
       if (mode === 'paint') return
       skinPaint.cancel()
       animationPose.retainAssisted()
@@ -520,7 +526,11 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       const alive = new Set(editor.getState().asset.nodes.map((node) => node.id))
       const next = ids.filter((id) => alive.has(id))
       setChosen((before) => [
-        ...new Set(add || additive ? [...before.filter((id) => alive.has(id)), ...next] : next),
+        ...new Set(
+          add !== 'replace' && (add || additive)
+            ? [...before.filter((id) => alive.has(id)), ...next]
+            : next,
+        ),
       ])
     },
     [editor, additive, gesture, closePaint, animation, animationPose, skinPaint, mode, setChosen],
@@ -1221,7 +1231,7 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
       }
       if (!queueContext(choose)) choose()
     },
-    selectMany: (ids: readonly string[], additive: boolean) => {
+    selectMany: (ids: readonly string[], additive: boolean | 'replace') => {
       const choose = () => {
         flipbook.setImage(null)
         components.close()

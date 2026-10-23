@@ -9,13 +9,14 @@ import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { PensaMissionLayout } from '@sistemazero/ui/pensa-mission-panel'
 import { RefreshCw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { type CreationsCloud, createCreationsCloud } from '../../lib/creations-cloud'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
 import {
   createCloudMirroredMoldaPersistence,
   type MoldaPersistenceLike,
 } from '../../lib/molda-cloud-persistence'
+import { createCloudMirroredPintaPersistence } from '../../lib/pinta-cloud-persistence'
 import { EMBEDDED_APP_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
 import { useFocusMode } from './focus-mode'
 import { type MoldaGuidePersistence, MoldaMissionGuide } from './molda-mission-guide'
@@ -69,6 +70,11 @@ export function MoldaClient({
   // A DESCIDA está em andamento (o wrapper avisa `sync-start`/`sync-end`): selo "buscando…".
   const [syncing, setSyncing] = useState(false)
   const [persistence, setPersistence] = useState<MoldaPersistenceLike | null>(null)
+  const [paletteLibrary, setPaletteLibrary] = useState<MoldaHostAdapter['paletteLibrary'] | null>(
+    null,
+  )
+  const paletteBridgeCleanup = useRef<(() => void) | null>(null)
+  const loadRevision = useRef(0)
   const router = useRouter()
   const { setWorkspaceActive } = useFocusMode()
   // O Molda SEGUE a plataforma (hoje só claro) — sem toggle próprio.
@@ -121,66 +127,97 @@ export function MoldaClient({
     [accessKey],
   )
 
-  const loadMolda = useCallback(
-    async (isCurrent?: () => boolean) => {
-      setMod(null)
-      setLoadError(false)
-      setCloud(null)
-      setPersistence(null)
-      setSyncing(false)
-      try {
-        const m = await import('@sistemazero/molda')
-        if (isCurrent && !isCurrent()) return
-        // Namespace por PERFIL ANTES de montar (mesmo contrato do /estudio e do
-        // /pinta): irmãos no mesmo navegador não compartilham a galeria.
-        m.setMoldaStorageNamespace(localNamespace)
-        const local = m.createMoldaPersistence({ namespace: localNamespace })
-        // Só com PERFIL: sem sessão de perfil não há dono na nuvem, e o Molda abre
-        // como sempre (só local).
-        if (viewerId) {
-          // `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se a sessão já
-          // trocou de perfil (irmão que entrou no meio de um upload em voo).
-          const nextCloud = createCreationsCloud({
-            tool: 'molda',
-            maxFormatVersion: MOLDA_MAX_READ_VERSION,
-            viewerId,
-            idleMs: MOLDA_CLOUD_IDLE_MS,
+  const loadMolda = useCallback(async () => {
+    const revision = ++loadRevision.current
+    paletteBridgeCleanup.current?.()
+    paletteBridgeCleanup.current = null
+    setMod(null)
+    setLoadError(false)
+    setCloud(null)
+    setPersistence(null)
+    setPaletteLibrary(null)
+    setSyncing(false)
+    try {
+      const [m, p] = await Promise.all([import('@sistemazero/molda'), import('@sistemazero/pinta')])
+      if (revision !== loadRevision.current) return
+      // Namespace por PERFIL ANTES de montar (mesmo contrato do /estudio e do
+      // /pinta): irmãos no mesmo navegador não compartilham a galeria.
+      m.setMoldaStorageNamespace(localNamespace)
+      // A lista "Minhas paletas" pertence ao perfil do Pinta. O Molda usa a MESMA store
+      // e o mesmo espelho de nuvem, inclusive quando o Pinta não está montado nesta rota.
+      const pintaLocal = p.createPintaPersistence({ namespace: localNamespace })
+      const pintaCloud = viewerId ? createCreationsCloud({ tool: 'pinta', viewerId }) : null
+      const mirroredPinta = pintaCloud
+        ? createCloudMirroredPintaPersistence({
+            local: pintaLocal,
+            cloud: pintaCloud,
+            viewerId: viewerId!,
+            localNamespace,
+            isAssetOpen: p.isPintaAssetOpen,
+            subscribeAssetOpenState: p.subscribePintaAssetOpenState,
           })
-          // O desligar da fila ANTERIOR é o cleanup do efeito `[cloud]` (nunca dentro do
-          // updater: efeito colateral em updater roda duas vezes no StrictMode).
-          setCloud(nextCloud)
-          setPersistence(
-            createCloudMirroredMoldaPersistence({
-              local,
-              // A geração seguinte entra no MESMO espelho. Sem ela, uma criação promovida
-              // sairia do inventário v1 e a reconciliação a leria como ausente.
-              sceneSource: m.createMoldaSceneCloudSource(),
-              cloud: nextCloud,
-              viewerId,
-              localNamespace,
-              // A descida não grava por baixo de uma criação ABERTA no editor — e, ao fechar
-              // uma que ficou pulada, traz a versão da nuvem na hora.
-              isAssetOpen: m.isMoldaAssetOpen,
-              subscribeAssetOpenState: m.subscribeMoldaAssetOpenState,
-            }),
-          )
-        } else {
-          setPersistence(local)
-        }
-        setMod(m)
-      } catch {
-        if (isCurrent && !isCurrent()) return
-        setLoadError(true)
+        : null
+      const pintaPersistence = mirroredPinta ?? pintaLocal
+      const sharedPalettes = p.createPaletteLibraryStore(pintaPersistence)
+      const detachPalettes = sharedPalettes.getState().attachPersistence()
+      void sharedPalettes.getState().load()
+      // Busca só a biblioteca do perfil; abrir o Molda não baixa desenhos do Pinta.
+      if (mirroredPinta) void mirroredPinta.syncPaletteLibrary?.().catch(() => {})
+      paletteBridgeCleanup.current = () => {
+        detachPalettes()
+        mirroredPinta?.dispose?.()
+        if (pintaCloud)
+          void pintaCloud.flush({ timeoutMs: 5000 }).finally(() => pintaCloud.dispose())
       }
-    },
-    [viewerId, localNamespace],
-  )
+      setPaletteLibrary(sharedPalettes)
+      const local = m.createMoldaPersistence({ namespace: localNamespace })
+      // Só com PERFIL: sem sessão de perfil não há dono na nuvem, e o Molda abre
+      // como sempre (só local).
+      if (viewerId) {
+        // `viewerId` vai em toda chamada (`x-sz-viewer`): o BFF recusa se a sessão já
+        // trocou de perfil (irmão que entrou no meio de um upload em voo).
+        const nextCloud = createCreationsCloud({
+          tool: 'molda',
+          maxFormatVersion: MOLDA_MAX_READ_VERSION,
+          viewerId,
+          idleMs: MOLDA_CLOUD_IDLE_MS,
+        })
+        // O desligar da fila ANTERIOR é o cleanup do efeito `[cloud]` (nunca dentro do
+        // updater: efeito colateral em updater roda duas vezes no StrictMode).
+        setCloud(nextCloud)
+        setPersistence(
+          createCloudMirroredMoldaPersistence({
+            local,
+            // A geração seguinte entra no MESMO espelho. Sem ela, uma criação promovida
+            // sairia do inventário v1 e a reconciliação a leria como ausente.
+            sceneSource: m.createMoldaSceneCloudSource(),
+            cloud: nextCloud,
+            viewerId,
+            localNamespace,
+            // A descida não grava por baixo de uma criação ABERTA no editor — e, ao fechar
+            // uma que ficou pulada, traz a versão da nuvem na hora.
+            isAssetOpen: m.isMoldaAssetOpen,
+            subscribeAssetOpenState: m.subscribeMoldaAssetOpenState,
+          }),
+        )
+      } else {
+        setPersistence(local)
+      }
+      setMod(m)
+    } catch {
+      if (revision !== loadRevision.current) return
+      paletteBridgeCleanup.current?.()
+      paletteBridgeCleanup.current = null
+      setLoadError(true)
+    }
+  }, [viewerId, localNamespace])
 
   useEffect(() => {
-    let active = true
-    void loadMolda(() => active)
+    void loadMolda()
     return () => {
-      active = false
+      loadRevision.current += 1
+      paletteBridgeCleanup.current?.()
+      paletteBridgeCleanup.current = null
     }
   }, [loadMolda])
 
@@ -214,6 +251,7 @@ export function MoldaClient({
   const adapter = useMemo<MoldaHostAdapter>(
     () => ({
       theme,
+      ...(paletteLibrary ? { paletteLibrary } : {}),
       studioOwned: studioAvailable,
       onOpenStudio: () => router.push('/estudio'),
       ...(initialAssetId ? { initialAssetId } : {}),
@@ -260,7 +298,7 @@ export function MoldaClient({
     }),
     // ⚠️ `theme` saiu do dep array: ele virou constante quando o tema escuro deixou de existir
     // nesta plataforma (o hook que o calculava era código morto).
-    [studioAvailable, router, initialAssetId, stableAccess, localNamespace],
+    [studioAvailable, router, initialAssetId, stableAccess, localNamespace, paletteLibrary],
   )
 
   // O selo "Guardado na sua conta", a seta da galeria e o sinal da conta ficam na
