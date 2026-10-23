@@ -2,7 +2,7 @@
 
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { ProfileForm, type ProfileFormValues } from '@/components/kids/profile-management'
 import { trackOnboardingEvent } from '@/lib/onboarding-telemetry'
@@ -37,6 +37,7 @@ export function ProfileEditor({
   /** A fala está ligada no servidor: o formulário oferece "Falar em vez de escrever". */
   voiceAvailable?: boolean
 }) {
+  const creationRequestId = useRef<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [removing, setRemoving] = useState(false)
   const back = profile ? childHref(profile.id) : '/pais'
@@ -55,12 +56,21 @@ export function ProfileEditor({
   function save(values: ProfileFormValues, existing?: ProfileView) {
     void run(async () => {
       try {
-        const salvar = (corpo: ProfileFormValues) =>
-          studyRequest<{ profile: ProfileView }>(
-            existing ? `/api/profiles/${existing.id}` : '/api/profiles',
-            corpo,
-            existing ? 'PATCH' : 'POST',
+        const salvar = (corpo: ProfileFormValues) => {
+          if (existing)
+            return studyRequest<{ profile: ProfileView }>(
+              `/api/profiles/${existing.id}`,
+              corpo,
+              'PATCH',
+            )
+          // Repetir o envio, inclusive após falha de rede, continua o mesmo cadastro.
+          if (!creationRequestId.current) creationRequestId.current = crypto.randomUUID()
+          return studyRequest<{ profile: ProfileView }>(
+            '/api/profiles',
+            { ...corpo, requestId: creationRequestId.current },
+            'POST',
           )
+        }
         let result: { profile: ProfileView }
         try {
           result = await salvar(values)
