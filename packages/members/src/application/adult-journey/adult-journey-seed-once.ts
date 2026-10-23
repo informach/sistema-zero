@@ -11,19 +11,15 @@ import {
  * Members, uma vez só, e nunca sobrescreve.
  *
  * - Já existe política (do Admin ou de um seed anterior): não faz nada, para sempre.
- * - Sem curso adulto publicado no primeiro nível (ou plano recusado pela validação do Admin): só
- *   registra o motivo e tenta de novo no próximo boot.
- * - Plano parcial (faltam níveis): GRAVA o que tem. Uma etapa sem curso não existe (a política
- *   exige ao menos um curso por etapa e o seed para antes do primeiro nível vazio), então as
- *   ferramentas das etapas que faltam continuam fechadas; nada abre antes da hora. A equipe
- *   completa as etapas depois, no Admin. E o piso da posição (`adult_journey_reached`) segura quem
- *   já terminou as etapas existentes quando as novas chegarem.
+ * - Sem cursos ou com níveis faltando: grava todas as etapas. Etapas vazias ficam planejadas,
+ *   bloqueiam novos avanços e não concedem ferramentas. A equipe vincula os cursos no Admin.
+ * - Plano recusado pela validação: registra o motivo e tenta de novo no próximo boot.
  *
  * Nunca lança: qualquer falha vira log e o boot segue.
  */
 export type AdultJourneySeedOnceOutcome =
-  | { status: 'applied'; version: number; stages: number; partial: boolean }
-  | { status: 'skipped'; reason: 'already-configured' | 'no-courses' | 'invalid' | 'error' }
+  | { status: 'applied'; version: number; stages: number; pendingStages: number }
+  | { status: 'skipped'; reason: 'already-configured' | 'invalid' | 'error' }
 
 export interface AdultJourneySeedOnceDeps {
   service: Pick<AdultJourneyService, 'policy' | 'seedIfAbsent'>
@@ -51,15 +47,6 @@ export async function runAdultJourneySeedOnce(
       await deps.listShowcaseCourseIds(courses.map((course) => course.id)),
     )
     const plan = buildAdultJourneySeed(courses, { showcaseCourseIds })
-    if (plan.stages.length === 0) {
-      logger.warn('adult_journey_seed.skipped', {
-        reason: 'no-courses',
-        detail:
-          'nenhum curso adulto publicado no primeiro nível (primeiros-passos-2d); tenta de novo no próximo boot',
-        excluded: plan.excluded.map((course) => course.slug),
-      })
-      return { status: 'skipped', reason: 'no-courses' }
-    }
     let saved: Awaited<ReturnType<AdultJourneySeedOnceDeps['service']['seedIfAbsent']>>
     try {
       saved = await deps.service.seedIfAbsent(plan.policy)
@@ -82,7 +69,7 @@ export async function runAdultJourneySeedOnce(
       status: 'applied',
       version: saved.version,
       stages: plan.stages.length,
-      partial: plan.stoppedAt !== null,
+      pendingStages: plan.pendingStages.length,
     }
   } catch (error) {
     logger.warn('adult_journey_seed.skipped', {
@@ -97,7 +84,7 @@ function summary(plan: AdultJourneySeedPlan, version: number) {
   return {
     version,
     stages: plan.stages.map((stage) => `${stage.title} (${stage.courses.length})`),
-    stoppedAt: plan.stoppedAt?.tier ?? null,
+    pendingStages: plan.pendingStages.map((stage) => stage.tier),
     excluded: plan.excluded.map((course) => course.slug),
   }
 }

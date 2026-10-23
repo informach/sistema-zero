@@ -67,7 +67,7 @@ test('o modelo segue a ordem dos níveis e libera IA só junto de um curso avan�
 
 test('uma etapa por nível, com todos os cursos publicados dele; o catálogo completo dá 8 posições', () => {
   const plan = buildAdultJourneySeed(fullCatalog)
-  expect(plan.stoppedAt).toBeNull()
+  expect(plan.pendingStages).toEqual([])
   expect(plan.policy.stages.map((stage) => stage.title)).toEqual(
     ADULT_JOURNEY_TEMPLATE.map((stage) => stage.title),
   )
@@ -82,7 +82,7 @@ test('uma etapa por nível, com todos os cursos publicados dele; o catálogo com
   expect(adultJourneyPosition(projectAdultJourney(plan.policy, 1, []))?.total).toBe(8)
 })
 
-test('rascunho, curso ao vivo, Kids e Lenda ficam de fora; para na primeira etapa sem curso', () => {
+test('rascunho, curso ao vivo, Kids e Lenda ficam de fora; etapas sem cursos continuam planejadas', () => {
   const plan = buildAdultJourneySeed([
     course('primeiros-passos', '2d'),
     course('iniciante', '2d'),
@@ -92,8 +92,16 @@ test('rascunho, curso ao vivo, Kids e Lenda ficam de fora; para na primeira etap
     course('lenda', '2d'),
     course('intermediario', '2d'),
   ])
-  expect(plan.policy.stages.map((stage) => stage.id)).toEqual(['aprendiz', 'construtor'])
-  expect(plan.stoppedAt).toEqual({ title: 'Inventor(a)', tier: 'iniciante-3d' })
+  expect(plan.policy.stages).toHaveLength(7)
+  expect(plan.policy.stages.map((stage) => stage.requirements.length)).toEqual([
+    1, 1, 0, 1, 0, 0, 0,
+  ])
+  expect(plan.pendingStages.map((stage) => stage.tier)).toEqual([
+    'iniciante-3d',
+    'intermediario-3d',
+    'avancado-2d',
+    'avancado-3d',
+  ])
 })
 
 test('como no Kids: terminar e publicar no Mural no curso que tem a atividade de publicar', () => {
@@ -138,6 +146,18 @@ test('a validação do Admin aceita o plano montado (IA na etapa avançada)', as
   expect((await service.policy()).policy.stages).toHaveLength(7)
 })
 
+test('etapa de IA pode aguardar cursos, mas um vínculo novo continua exigindo curso avançado', async () => {
+  const h = seedOnceHarness(fullCatalog)
+  const plan = buildAdultJourneySeed([])
+  await h.service.configure(plan.policy, 0)
+  plan.policy.stages[5]!.requirements = [{ courseId: at(0).id, milestone: 'complete' }]
+  await expect(h.service.configure(plan.policy, 1)).rejects.toThrow('curso adulto avançado')
+  expect((await h.service.policy()).version).toBe(1)
+  plan.policy.stages[5]!.requirements = [{ courseId: at(6).id, milestone: 'complete' }]
+  expect((await h.service.configure(plan.policy, 1)).version).toBe(2)
+  expect((await h.service.get(randomUUID())).capabilities).toEqual([])
+})
+
 test('produto avulso (No Comando da IA) nunca vira requisito de etapa, mesmo com nível e trilha', () => {
   expect(ADULT_JOURNEY_STANDALONE_COURSE_SLUGS).toContain('no-comando-da-ia')
   const standalone = course('iniciante', '2d', {
@@ -149,9 +169,10 @@ test('produto avulso (No Comando da IA) nunca vira requisito de etapa, mesmo com
   expect(required).not.toContain(standalone.id)
   expect(plan.policy.stages[1]?.requirements).toHaveLength(2)
   expect(plan.excluded).toEqual([{ slug: 'no-comando-da-ia', title: 'No Comando da IA' }])
-  // Sozinho no nível, não segura a etapa: o plano para antes dela.
+  // O produto retirado não vira requisito; a etapa aguarda um curso da jornada.
   const onlyStandalone = buildAdultJourneySeed([course('primeiros-passos', '2d'), standalone])
-  expect(onlyStandalone.stoppedAt?.tier).toBe('iniciante-2d')
+  expect(onlyStandalone.policy.stages).toHaveLength(7)
+  expect(onlyStandalone.policy.stages[1]?.requirements).toEqual([])
   expect(buildAdultJourneySeed(fullCatalog).excluded).toEqual([])
 })
 
@@ -182,7 +203,7 @@ function seedOnceHarness(catalog: readonly SeedCourse[]) {
 test('seed automático: grava quando não há política e vira no-op depois', async () => {
   const standalone = course('iniciante', '2d', { slug: 'no-comando-da-ia' })
   const h = seedOnceHarness([...fullCatalog, standalone])
-  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 7, partial: false })
+  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 7, pendingStages: 0 })
   expect(h.repository.record?.policy.stages).toHaveLength(7)
   expect(JSON.stringify(h.repository.record)).not.toContain(standalone.id)
   expect(h.logs.at(-1)?.event).toBe('adult_journey_seed.applied')
@@ -211,22 +232,22 @@ test('seed automático: política do Admin fica byte a byte igual', async () => 
   expect(JSON.stringify(h.repository.record)).toBe(before)
 })
 
-test('seed automático: sem curso no primeiro nível, só registra e tenta no próximo boot', async () => {
-  const h = seedOnceHarness(fullCatalog.slice(1))
-  expect(await h.run()).toEqual({ status: 'skipped', reason: 'no-courses' })
-  expect(h.repository.record).toBeNull()
-  expect(h.logs.at(-1)?.level).toBe('warn')
-  // Publicado o curso do primeiro nível, o próximo boot grava.
-  const later = seedOnceHarness(fullCatalog)
-  expect((await later.run()).status).toBe('applied')
+test('seed automático: sem cursos cadastra as sete etapas, todas bloqueadas', async () => {
+  const h = seedOnceHarness([])
+  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 7, pendingStages: 7 })
+  const view = await h.service.get(randomUUID())
+  expect(view.stages).toHaveLength(7)
+  expect(view.stages.every((stage) => !stage.completed && !stage.available)).toBe(true)
+  expect(view.capabilities).toEqual([])
+  expect(await h.run()).toEqual({ status: 'skipped', reason: 'already-configured' })
 })
 
-test('seed automático: plano parcial grava só as etapas com curso e não abre ferramenta das que faltam', async () => {
+test('seed automático: conserva as sete etapas e só concede ferramentas das etapas realmente concluídas', async () => {
   const h = seedOnceHarness([course('primeiros-passos', '2d'), course('iniciante', '2d')])
-  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 2, partial: true })
+  expect(await h.run()).toEqual({ status: 'applied', version: 1, stages: 7, pendingStages: 5 })
   const policy = h.repository.record?.policy
-  expect(policy?.stages.map((stage) => stage.id)).toEqual(['aprendiz', 'construtor'])
-  expect(policy?.stages.every((stage) => stage.requirements.length > 0)).toBe(true)
+  expect(policy?.stages).toHaveLength(7)
+  expect(policy?.stages.filter((stage) => stage.requirements.length === 0)).toHaveLength(5)
   // Sem nada concluído, nenhuma ferramenta; mesmo concluindo tudo, só as das etapas gravadas.
   expect(projectAdultJourney(policy!, 1, []).capabilities).toEqual([])
   const all = policy!.stages.flatMap((stage) =>

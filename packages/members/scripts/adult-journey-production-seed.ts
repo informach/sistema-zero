@@ -32,14 +32,14 @@ export async function runAdultProductionSeed(
   const showcaseCourseIds = await ports.listShowcaseCourseIds(courses.map((c) => c.id))
   const proposed = buildAdultJourneySeed(courses, { showcaseCourseIds: new Set(showcaseCourseIds) })
   const configured = current.version > 0
-  const partial = proposed.stoppedAt !== null
+  const partial = proposed.pendingStages.length > 0
   const before = {
     current,
     proposed,
     state: configured
       ? 'configured'
-      : proposed.stages.length === 0
-        ? 'no-courses'
+      : proposed.pendingStages.length === proposed.stages.length
+        ? 'missing-planned'
         : partial
           ? 'missing-partial'
           : 'missing-complete',
@@ -65,14 +65,6 @@ export async function runAdultProductionSeed(
       before,
       outcome: 'preserved-existing' as const,
     }
-  if (proposed.stages.length === 0)
-    return {
-      schemaVersion: 1,
-      domain: 'adult-journey',
-      ...options,
-      before,
-      outcome: 'no-courses' as const,
-    }
   if (partial && !options.allowPartial)
     return {
       schemaVersion: 1,
@@ -92,7 +84,7 @@ export async function runAdultProductionSeed(
   const after = await ports.service.policy()
   const outcome =
     applied.status === 'applied'
-      ? applied.partial
+      ? applied.pendingStages > 0
         ? 'applied-partial'
         : 'applied-complete'
       : applied.reason === 'already-configured'
@@ -104,5 +96,5 @@ export async function runAdultProductionSeed(
 export function adultProductionSeedFailed(
   report: Awaited<ReturnType<typeof runAdultProductionSeed>>,
 ) {
-  return ['failed', 'no-courses', 'partial-needs-explicit-apply'].includes(report.outcome)
+  return ['failed', 'partial-needs-explicit-apply'].includes(report.outcome)
 }

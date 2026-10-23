@@ -68,7 +68,7 @@ test('production journey parser refuses force/reseed and accidental apply; defau
 
 test('status/plan distinguish absent, partial and complete without writing policy or student state', async () => {
   for (const [count, expected] of [
-    [0, 'no-courses'],
+    [0, 'missing-planned'],
     [2, 'missing-partial'],
     [7, 'missing-complete'],
   ] as const) {
@@ -84,7 +84,7 @@ test('status/plan distinguish absent, partial and complete without writing polic
   }
 })
 
-test('no courses and an unapproved partial plan fail explicitly without writes', async () => {
+test('planned and partially bound stages require explicit apply without overwriting', async () => {
   for (const count of [0, 2]) {
     const f = fixture(count)
     const report = await runAdultProductionSeed({ mode: 'apply', allowPartial: false }, f.ports)
@@ -97,7 +97,7 @@ test('explicit partial apply uses canonical seed-once, keeps milestone and never
   const f = fixture(2)
   const report = await runAdultProductionSeed({ mode: 'apply', allowPartial: true }, f.ports)
   expect(report.outcome).toBe('applied-partial')
-  expect(f.repo.record?.policy.stages).toHaveLength(2)
+  expect(f.repo.record?.policy.stages).toHaveLength(7)
   expect(f.repo.record?.policy.stages[0]?.requirements[0]?.milestone).toBe('showcase')
   const before = JSON.stringify(f.repo.record)
   expect(
@@ -137,4 +137,14 @@ test('invalid seed result has a failing exit contract without leaking driver err
   expect(adultProductionSeedFailed(report)).toBe(true)
   expect(JSON.stringify(report)).not.toContain('secret')
   expect(f.repo.record).toBeNull()
+})
+
+test('explicit planned apply without courses creates seven locked stages without granting new tools', async () => {
+  const f = fixture(0)
+  const report = await runAdultProductionSeed({ mode: 'apply', allowPartial: true }, f.ports)
+  expect(report.outcome).toBe('applied-partial')
+  expect(f.repo.record?.policy.stages).toHaveLength(7)
+  const view = await f.service.get('new-learner')
+  expect(view.capabilities).toEqual([])
+  expect(view.stages.some((stage) => stage.completed || stage.available)).toBe(false)
 })

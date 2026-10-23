@@ -1,5 +1,6 @@
 import { expect, test } from 'bun:test'
 import type { AdultJourneyView } from '@sistemazero/core/journey'
+import { buildAdultJourneySeed } from '../../src/application/adult-journey/adult-journey-seed'
 import { buildApp, grantLifetime, seedSampleCourse } from '../helpers'
 
 const userId = '00000002-1111-4111-8111-111111111111'
@@ -39,6 +40,32 @@ function policy(courseId: string, capabilities = ['studio']) {
     ],
   }
 }
+
+test('Admin cadastra etapas planejadas pela API e aluno não recebe ferramentas de etapas vazias', async () => {
+  const ctx = buildApp({ requireAdmin: true, internalToken: 'planned-journey-internal-token' })
+  const planned = buildAdultJourneySeed([]).policy
+  const saved = await request(
+    ctx,
+    '/admin/journey/adult',
+    'PUT',
+    { expectedVersion: 0, policy: planned },
+    {
+      'x-internal-token': 'planned-journey-internal-token',
+      'x-auth-user-role': 'admin',
+    },
+  )
+  expect(saved.status).toBe(200)
+  const response = await request(ctx, '/journey/adult', 'GET', undefined, {
+    'x-internal-token': 'planned-journey-internal-token',
+  })
+  expect(response.status).toBe(200)
+  const view = (await response.json()) as AdultJourneyView
+  expect(view.stages).toHaveLength(7)
+  expect(view.stages.every((stage) => !stage.completed && !stage.available)).toBe(true)
+  expect(view.capabilities).toEqual([])
+  await expect(ctx.adultJourney.assert(userId, 'studio')).rejects.toThrow('Conclua a etapa')
+  expect((await ctx.adultJourney.get(userId, true)).capabilities).toContain('pro')
+})
 
 test('configuração exige Admin e origem interna; perfil Kids não acessa jornada adulta', async () => {
   const ctx = buildApp({ requireAdmin: true, internalToken: 'internal-journey-test-token' })

@@ -21,7 +21,8 @@ const Stage = z.strictObject({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     .max(64),
   title: z.string().trim().min(1).max(120),
-  requirements: z.array(Requirement).min(1).max(200),
+  // Sem curso vinculado, a etapa é um planejamento e permanece bloqueada.
+  requirements: z.array(Requirement).max(200),
   capabilities: z.array(z.enum(ADULT_CREATOR_CAPABILITIES)).max(7),
 })
 
@@ -143,8 +144,9 @@ export function projectAdultJourney(
         )
       })
       .map((requirement) => ({ ...requirement }))
-    const available = belowFloor || previousComplete
-    const reallyCompleted = previousReallyComplete && realMissing.length === 0
+    const ready = stage.requirements.length > 0
+    const available = ready && (belowFloor || previousComplete)
+    const reallyCompleted = ready && previousReallyComplete && realMissing.length === 0
     if (reallyCompleted) for (const capability of stage.capabilities) earned.add(capability)
     previousReallyComplete = reallyCompleted
     const completed = belowFloor || (available && realMissing.length === 0)

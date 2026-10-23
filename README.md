@@ -180,7 +180,7 @@ Aceita subconjunto (`bun run dev:up auth payments`). Só para ambiente local.
 | `bun run dev:gateway` / `dev:payments` / `dev:auth` / `dev:catalog` / `dev:members` / `dev:messaging` / `dev:funnel` / `dev:admin` / `dev:community` | sobe cada serviço |
 | `bun run test:gateway` / `test:payments` / `test:auth` / `test:catalog` / `test:members` / `test:messaging` / `test:funnel` / `test:community` | testes por serviço |
 | `bun run build:admin` / `build:community` / `build:funnel` · `typecheck:admin` / `typecheck:community` | build/typecheck dos frontends |
-| `bun run db:auth:migrate` / `db:funnel:migrate` / `db:catalog:migrate` / `db:members:migrate` / `db:messaging:migrate` / `db:catalog:seed` / `db:members:seed` | migrations + seed (atalhos) |
+| `bun run db:auth:migrate` / `db:funnel:migrate` / `db:catalog:migrate` / `db:members:migrate` / `db:messaging:migrate` / `db:catalog:seed` | migrations + seed do catálogo (atalhos) |
 | `bun run check` / `check:fix` | Biome (lint + format) no monorepo |
 
 > Typecheck/testes por pacote: `bun run --filter <nome> typecheck` / `test`
