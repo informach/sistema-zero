@@ -421,12 +421,22 @@ src/
 Uma CONTA do responsável tem **N perfis de crianças** (tabela `auth.profiles`,
 migration `0006`): `id` (vira o `x-auth-user-id` EFETIVO na sessão de perfil — PR2),
 `account_user_id`, `name`, `avatar_url` (http(s), fora das claims), `whatsapp`
-(opcional), `birth_date` (data de nascimento `YYYY-MM-DD`, opcional — controle de
-idade, migration `0008`; `mode:'string'` evita shift UTC), `public_profile_enabled`
+(opcional), `birth_date` (data de nascimento `YYYY-MM-DD`, controle de idade, migration `0008`;
+`mode:'string'` evita shift UTC; a coluna segue NULLable por causa dos perfis antigos, mas todo
+perfil NOVO nasce com ela, ver abaixo), `public_profile_enabled`
 (bool, **default `false`/OFF** — opt-in dos pais p/ o perfil público da criança no
 hub/kids: nome clicável + página pública; migration `0009`), `status`
 (`active|archived` — NUNCA DELETE físico, arquivar preserva o histórico keyado no id),
 `sort_order`.
+- **Data de nascimento OBRIGATÓRIA** (23/10/2026, decisão da dona): o `CreateProfileBody` exige
+  `birthDate` (string `AAAA-MM-DD`, sem `null`) e o agregado recusa criar sem ela
+  (`BIRTH_DATE_REQUIRED_MESSAGE`, "Informe a data de nascimento da criança", 400 de validação). Na
+  edição a data pode ser informada ou corrigida, nunca apagada: o `UpdateProfileBody` não aceita
+  `null` e o `setBirthDate(null)` num perfil com data é recusado. Perfil ANTIGO sem data continua
+  válido (o `restore` não valida; reenviar "sem data" num perfil que nunca teve é no-op) e a área dos
+  pais pede a data. Única exceção: o backfill legado do perfil-padrão
+  (`scripts/backfill-default-profiles.ts`) passa `legacyDefaultProfile: true`, porque a migração não
+  sabe o nascimento; nenhuma rota HTTP passa isso. O member-shell espelha a regra no BFF.
 - **Data de nascimento é EDITÁVEL SÓ PELOS PAIS** (06/2026): tem caminho próprio no
   agregado (`setBirthDate`, fora do `updateDetails`) e a rota `PATCH /:id` RECUSA (403)
   qualquer `birthDate` numa **sessão de perfil** (a criança) — detectada pelo

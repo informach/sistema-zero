@@ -403,6 +403,7 @@ describe.skipIf(!target)('Auth profile admission / real migrations and stale wri
     await accounts.create(account)
     const candidates = ['Alice', 'Bianca'].map((name) => {
       const profile = ProfileAggregate.create({
+        birthDate: '2016-05-10',
         id: randomUUID(),
         accountUserId: account.id,
         name,
@@ -592,12 +593,14 @@ describe.skipIf(!target)('Auth profile admission / real migrations and stale wri
     const cohort = new DrizzleProfileCohortRepository(conn.db)
     const start = await cohort.readPage({ kind: 'start', limit: 1 })
     const above = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: 'ffffffff-ffff-4fff-bfff-ffffffffffff',
       accountUserId: f.account.id,
       name: 'Depois do limite',
       now,
     })
     const behind = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: '00000000-0000-4000-8000-000000000000',
       accountUserId: f.account.id,
       name: 'Antes do cursor',

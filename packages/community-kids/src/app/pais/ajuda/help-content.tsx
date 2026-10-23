@@ -7,7 +7,7 @@ import { ParentPageTitle, ParentSection } from '../_components/parent-ui'
 const STEPS = [
   {
     title: 'Abra a criança em Família',
-    text: 'Se ela ainda não tem perfil, use Adicionar criança. A data de nascimento é opcional.',
+    text: 'Se ela ainda não tem perfil, use Adicionar criança e informe o nome e a data de nascimento.',
   },
   {
     title: 'Clique em Acesso nos aparelhos e em Autorizar aparelho',

@@ -61,3 +61,37 @@ describe('idade do perfil Kids', () => {
     expect(profile.name).toBe('Sofia Silva')
   })
 })
+
+describe('data de nascimento obrigatória (23/10/2026)', () => {
+  const base = () => ({ id: randomUUID(), accountUserId: randomUUID(), name: 'Sofia', now: NOW })
+
+  test('perfil novo sem data é recusado, com a mensagem que os pais leem', () => {
+    expect(() => ProfileAggregate.create({ ...base() })).toThrow(
+      'Informe a data de nascimento da criança',
+    )
+    expect(() => ProfileAggregate.create({ ...base(), birthDate: null })).toThrow(
+      'Informe a data de nascimento da criança',
+    )
+    expect(() => ProfileAggregate.create({ ...base(), birthDate: '   ' })).toThrow(
+      'Informe a data de nascimento da criança',
+    )
+  })
+
+  test('a data informada pode ser corrigida, mas não apagada', () => {
+    const profile = createProfile('2016-05-10')
+    profile.setBirthDate('2016-06-01', NOW)
+    expect(profile.birthDate).toBe('2016-06-01')
+    expect(() => profile.setBirthDate(null, NOW)).toThrow('Informe a data de nascimento da criança')
+    expect(profile.birthDate).toBe('2016-06-01')
+  })
+
+  test('só o perfil-padrão legado nasce sem data, e a família informa depois', () => {
+    const legacy = ProfileAggregate.create({ ...base(), allowMissingBirthDate: true })
+    expect(legacy.birthDate).toBeNull()
+    // Reenviar "sem data" num perfil que nunca teve data não muda nada.
+    legacy.setBirthDate(null, NOW)
+    expect(legacy.birthDate).toBeNull()
+    legacy.setBirthDate('2015-01-20', NOW)
+    expect(legacy.birthDate).toBe('2015-01-20')
+  })
+})

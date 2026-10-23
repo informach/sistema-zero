@@ -386,12 +386,12 @@ describe('a página da criança', () => {
     )
   })
 
-  test('sem data de nascimento, um convite opcional leva ao formulário', () => {
+  test('perfil antigo sem data de nascimento: o aviso pede a data obrigatória e leva ao formulário', () => {
     install()
     renderChild(true)
     expect(
       screen.getByText(
-        'Informe a data de nascimento para a plataforma avisar você quando André completar 18 anos.',
+        'Falta a data de nascimento de André. Ela é obrigatória: mostra a idade para a equipe e faz a plataforma avisar você quando André completar 18 anos.',
       ),
     ).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Informar a data' }).getAttribute('href')).toBe(

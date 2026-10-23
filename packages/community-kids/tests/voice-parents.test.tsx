@@ -60,16 +60,29 @@ describe('formulário do perfil: a fala da criança', () => {
     expect(container.textContent).toContain('nunca na internet aberta')
 
     fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
+      target: { value: '2016-05-10' },
+    })
     salvar(container)
     expect(onSave).toHaveBeenLastCalledWith(
-      { name: 'Sofia', birthDate: null, publicProfileEnabled: false, voiceInputEnabled: false },
+      {
+        name: 'Sofia',
+        birthDate: '2016-05-10',
+        publicProfileEnabled: false,
+        voiceInputEnabled: false,
+      },
       undefined,
     )
 
     fireEvent.click(caixa)
     salvar(container)
     expect(onSave).toHaveBeenLastCalledWith(
-      { name: 'Sofia', birthDate: null, publicProfileEnabled: false, voiceInputEnabled: true },
+      {
+        name: 'Sofia',
+        birthDate: '2016-05-10',
+        publicProfileEnabled: false,
+        voiceInputEnabled: true,
+      },
       undefined,
     )
   })
@@ -87,9 +100,12 @@ describe('formulário do perfil: a fala da criança', () => {
     )
     expect(screen.queryByRole('checkbox', { name: /Falar em vez de escrever/ })).toBeNull()
     fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
+      target: { value: '2016-05-10' },
+    })
     salvar(container)
     expect(onSave).toHaveBeenLastCalledWith(
-      { name: 'Sofia', birthDate: null, publicProfileEnabled: false },
+      { name: 'Sofia', birthDate: '2016-05-10', publicProfileEnabled: false },
       undefined,
     )
   })
@@ -203,6 +219,9 @@ describe('criar a criança com a fala marcada e login antigo', () => {
 
     const { container } = render(<ProfileEditor voiceAvailable />)
     fireEvent.change(screen.getByLabelText('Nome do perfil'), { target: { value: 'Sofia' } })
+    fireEvent.change(screen.getByLabelText('Data de nascimento da criança'), {
+      target: { value: '2016-05-10' },
+    })
     fireEvent.click(screen.getByRole('checkbox', { name: /Falar em vez de escrever/ }))
     salvar(container)
 

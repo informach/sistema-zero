@@ -242,7 +242,9 @@ const PROFILE_AVATAR = t.Union([t.String({ maxLength: 2048 }), t.Null()])
 const PROFILE_WHATSAPP = t.Union([t.String({ maxLength: 20 }), t.Null()])
 // Data de nascimento (AAAA-MM-DD; sanidade/faixa de idade são do agregado). Só os
 // pais editam — a rota barra a sessão de perfil da criança (área dos pais).
-const PROFILE_BIRTH_DATE = t.Union([t.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$' }), t.Null()])
+// Obrigatória na criação e impossível de apagar na edição (23/10/2026): só string. A sanidade
+// (data real, não futura, menos de 18 anos) é do agregado.
+const PROFILE_BIRTH_DATE = t.String({ pattern: '^\\d{4}-\\d{2}-\\d{2}$' })
 
 /** Params de `/auth/profiles/:id` (uuid — 400 na borda, não 500 no banco). */
 export const ProfileIdParams = t.Object({ id: t.String({ pattern: UUID_PATTERN }) })
@@ -253,7 +255,8 @@ export const CreateProfileBody = t.Object({
   name: PROFILE_NAME,
   avatarUrl: t.Optional(PROFILE_AVATAR),
   whatsapp: t.Optional(PROFILE_WHATSAPP),
-  birthDate: t.Optional(PROFILE_BIRTH_DATE),
+  // Obrigatória desde 23/10/2026 (decisão da dona): o perfil da criança nasce com a data.
+  birthDate: PROFILE_BIRTH_DATE,
   // O pai decide o perfil público já na CRIAÇÃO (tutorial de 1º acesso, 08/2026).
   // A rota de criar RECUSA sessão de perfil, então o guard "só os pais" vale por
   // construção — diferente do PATCH, que precisa barrar a criança explicitamente.

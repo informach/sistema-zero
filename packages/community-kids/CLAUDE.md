@@ -1919,9 +1919,16 @@ dormindo + título (o nome do produto) + pílula **"Parte da Comunidade"** + pr�
   Ele sai da sua conta e libera a vaga do plano, e {nome} deixa de entrar com ele. O progresso e os
   projetos ficam guardados, mas não aparecem mais na plataforma." (sem "criança": serve ao perfil de
   quem fez 18). O botão do formulário de edição também diz "Arquivar perfil".
-- **Sem data de nascimento:** a página da criança mostra, discreto e opcional, "Informe a data de
-  nascimento para a plataforma avisar você quando {nome} completar 18 anos." com "Informar a data"
-  (o formulário de edição). O campo segue opcional. Se o perfil já é de quem tem 18 anos ou mais, a
+- **Data de nascimento obrigatória (23/10/2026, decisão da dona):** o formulário do perfil
+  (`ProfileForm`, `components/kids/profile-management.tsx`) tem o campo "Data de nascimento da
+  criança" com `required`, não salva sem ela ("Informe a data de nascimento da criança.", só depois
+  da primeira tentativa de salvar) e explica o porquê embaixo (a idade para a equipe e o aviso dos 18
+  anos; nunca aparece para outras crianças). O balão do tutorial dos pais, o guia de boas-vindas
+  (`lib/guide.ts`, "coloque o nome e a data de nascimento dela") e a Ajuda (`pais/ajuda`) pedem a
+  data; nada diz "opcional". O Auth e o BFF também recusam criar sem data ou apagá-la.
+- **Perfil antigo sem data de nascimento:** a página da criança mostra o aviso "Falta a data de
+  nascimento de {nome}. Ela é obrigatória: …" com "Informar a data" (o formulário de edição, que só
+  salva com a data). O perfil continua funcionando até a data ser informada. Se o perfil já é de quem tem 18 anos ou mais, a
   data não entra (`PROFILE_AGE_RESTRICTED`, a regra do Auth para qualquer data nova de 18+): na
   EDIÇÃO a recusa diz "A plataforma só aceita datas de quem tem menos de 18 anos. O perfil continua
   funcionando." (`profileAgeMessage(true)`); na criação segue "Esta comunidade é para crianças

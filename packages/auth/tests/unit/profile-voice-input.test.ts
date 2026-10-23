@@ -27,7 +27,13 @@ const PARENT: VoiceInputActor = { kind: 'parent' }
 const SUPPORT: VoiceInputActor = { kind: 'support', impersonatorId: SUPPORT_ID }
 
 function newProfile(now: Date = T0): ProfileAggregate {
-  return ProfileAggregate.create({ id: randomUUID(), accountUserId: ACCOUNT, name: 'Sofia', now })
+  return ProfileAggregate.create({
+    birthDate: '2016-05-10',
+    id: randomUUID(),
+    accountUserId: ACCOUNT,
+    name: 'Sofia',
+    now,
+  })
 }
 
 describe('fala da criança: agregado', () => {
@@ -160,6 +166,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, allowance, create } = services()
     await expect(
       create.execute({
+        birthDate: '2016-05-10',
         requestId: randomUUID(),
         accountUserId: ACCOUNT,
         name: 'Sofia',
@@ -176,6 +183,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, create } = services()
     await expect(
       create.execute({
+        birthDate: '2016-05-10',
         requestId: randomUUID(),
         accountUserId: ACCOUNT,
         name: 'Sofia',
@@ -191,6 +199,7 @@ describe('fala da criança: serviços de perfil', () => {
     const { profiles, create } = services()
     for (const voiceInputEnabled of [false, undefined]) {
       const view = await create.execute({
+        birthDate: '2016-05-10',
         requestId: randomUUID(),
         accountUserId: ACCOUNT,
         name: 'Sofia',
@@ -207,6 +216,7 @@ describe('fala da criança: serviços de perfil', () => {
   test('criar com a fala ligada e login recente grava o consentimento e a 1ª linha da trilha', async () => {
     const { profiles, create } = services()
     const view = await create.execute({
+      birthDate: '2016-05-10',
       requestId: randomUUID(),
       accountUserId: ACCOUNT,
       name: 'Sofia',

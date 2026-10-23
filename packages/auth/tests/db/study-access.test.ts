@@ -81,8 +81,14 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
       role: 'admin',
     })
     await users.create(account)
-    andre = ProfileAggregate.create({ id: randomUUID(), accountUserId: account.id, name: 'André' })
+    andre = ProfileAggregate.create({
+      birthDate: '2016-05-10',
+      id: randomUUID(),
+      accountUserId: account.id,
+      name: 'André',
+    })
     debora = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: account.id,
       name: 'Débora',
@@ -447,6 +453,7 @@ describe.skipIf(!databaseUrl)('Autorizações por aparelho no PostgreSQL real', 
     })
     await users.create(other)
     const primo = ProfileAggregate.create({
+      birthDate: '2016-05-10',
       id: randomUUID(),
       accountUserId: other.id,
       name: 'Primo',

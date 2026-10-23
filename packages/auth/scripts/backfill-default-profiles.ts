@@ -96,6 +96,9 @@ try {
           accountUserId: candidate.id,
           name: candidate.name,
           avatarUrl: candidate.avatar_url,
+          // A migração não sabe o nascimento: o perfil-padrão nasce sem data, e a área dos pais
+          // pede a data depois (obrigatória desde 23/10/2026 para os perfis novos).
+          legacyDefaultProfile: true,
         })
         if (profile.admissionState === 'ready') ready++
         else pending++

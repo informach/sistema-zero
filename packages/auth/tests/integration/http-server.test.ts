@@ -2152,9 +2152,13 @@ describe('Auth — perfis (estilo Netflix)', () => {
   test('admission: criação exige requestId estável e ausência não grava perfil', async () => {
     const { app, allowance, profilesRepo } = buildProfilesApp()
     allowance.maxProfiles = 2
-    expect((await app.handle(req('POST', '/auth/profiles', gw(), { name: 'Sofia' }))).status).toBe(
-      400,
-    )
+    expect(
+      (
+        await app.handle(
+          req('POST', '/auth/profiles', gw(), { birthDate: '2016-05-10', name: 'Sofia' }),
+        )
+      ).status,
+    ).toBe(400)
     expect(profilesRepo.byId.size).toBe(0)
   })
 
@@ -2163,6 +2167,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     allowance.maxProfiles = 2
     const response = await app.handle(
       req('POST', '/auth/profiles', gw(), {
+        birthDate: '2016-05-10',
         requestId: randomUUID(),
         name: 'Sofia',
         publicProfileEnabled: true,
@@ -2218,7 +2223,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 0
     const res = await app.handle(
-      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+      req('POST', '/auth/profiles', gw(), {
+        birthDate: '2016-05-10',
+        requestId: randomUUID(),
+        name: 'Sofia',
+      }),
     )
     expect(res.status).toBe(409)
     expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
@@ -2237,7 +2246,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
         expect(
           (
             await app.handle(
-              req('POST', '/auth/profiles', headers, { requestId: randomUUID(), name }),
+              req('POST', '/auth/profiles', headers, {
+                birthDate: '2016-05-10',
+                requestId: randomUUID(),
+                name,
+              }),
             )
           ).status,
         ).toBe(201)
@@ -2258,6 +2271,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     const on = (await (
       await app.handle(
         req('POST', '/auth/profiles', gw(), {
+          birthDate: '2016-05-10',
           requestId: randomUUID(),
           name: 'Sofia',
           publicProfileEnabled: true,
@@ -2268,7 +2282,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     // Ausente → nasce DESLIGADO (o default seguro do agregado, opt-in de verdade).
     const off = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Théo' }),
+        req('POST', '/auth/profiles', gw(), {
+          birthDate: '2016-05-10',
+          requestId: randomUUID(),
+          name: 'Théo',
+        }),
       )
     ).json()) as { profile: Profile }
     expect(off.profile.publicProfileEnabled).toBe(false)
@@ -2278,15 +2296,27 @@ describe('Auth — perfis (estilo Netflix)', () => {
     const { app, allowance } = buildProfilesApp()
     allowance.maxProfiles = 2
     const a = await app.handle(
-      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+      req('POST', '/auth/profiles', gw(), {
+        birthDate: '2016-05-10',
+        requestId: randomUUID(),
+        name: 'Sofia',
+      }),
     )
     expect(a.status).toBe(201)
     const b = await app.handle(
-      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Théo' }),
+      req('POST', '/auth/profiles', gw(), {
+        birthDate: '2016-05-10',
+        requestId: randomUUID(),
+        name: 'Théo',
+      }),
     )
     expect(b.status).toBe(201)
     const c = await app.handle(
-      req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Extra' }),
+      req('POST', '/auth/profiles', gw(), {
+        birthDate: '2016-05-10',
+        requestId: randomUUID(),
+        name: 'Extra',
+      }),
     )
     expect(c.status).toBe(409)
 
@@ -2301,7 +2331,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     allowance.maxProfiles = 1
     const created = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+        req('POST', '/auth/profiles', gw(), {
+          birthDate: '2016-05-10',
+          requestId: randomUUID(),
+          name: 'Sofia',
+        }),
       )
     ).json()) as { profile: Profile }
     const id = created.profile.id
@@ -2319,7 +2353,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     expect(
       (
         await app.handle(
-          req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Outro' }),
+          req('POST', '/auth/profiles', gw(), {
+            birthDate: '2016-05-10',
+            requestId: randomUUID(),
+            name: 'Outro',
+          }),
         )
       ).status,
     ).toBe(409)
@@ -2332,7 +2370,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     expect(
       (
         await app.handle(
-          req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Novo' }),
+          req('POST', '/auth/profiles', gw(), {
+            birthDate: '2016-05-10',
+            requestId: randomUUID(),
+            name: 'Novo',
+          }),
         )
       ).status,
     ).toBe(201)
@@ -2343,7 +2385,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     allowance.maxProfiles = 1
     const created = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(ACCOUNT), { requestId: randomUUID(), name: 'Sofia' }),
+        req('POST', '/auth/profiles', gw(ACCOUNT), {
+          birthDate: '2016-05-10',
+          requestId: randomUUID(),
+          name: 'Sofia',
+        }),
       )
     ).json()) as { profile: Profile }
     const id = created.profile.id
@@ -2363,6 +2409,7 @@ describe('Auth — perfis (estilo Netflix)', () => {
     allowance.maxProfiles = 2
     const res = await app.handle(
       req('POST', '/auth/profiles', gw(), {
+        birthDate: '2016-05-10',
         requestId: randomUUID(),
         name: 'Sofia',
         avatarUrl: 'javascript:alert(1)',
@@ -2451,7 +2498,11 @@ describe('Auth — perfis (estilo Netflix)', () => {
     allowance.maxProfiles = 1
     const created = (await (
       await app.handle(
-        req('POST', '/auth/profiles', gw(), { requestId: randomUUID(), name: 'Sofia' }),
+        req('POST', '/auth/profiles', gw(), {
+          birthDate: '2016-05-10',
+          requestId: randomUUID(),
+          name: 'Sofia',
+        }),
       )
     ).json()) as { profile: Profile }
     const id = created.profile.id
@@ -2549,7 +2600,12 @@ describe('Auth — sessão de perfil (PR2)', () => {
     }
     const accountId = reg.user.id
     built.profilesRepo.seedReady(
-      ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
+      ProfileAggregate.create({
+        birthDate: '2016-05-10',
+        id: PROFILE_ID,
+        accountUserId: accountId,
+        name: 'Sofia',
+      }),
     )
     return { ...built, accountId }
   }
@@ -2578,7 +2634,11 @@ describe('Auth — sessão de perfil (PR2)', () => {
     expect(
       (
         await app.handle(
-          req('POST', '/auth/profiles', ph, { requestId: randomUUID(), name: 'Outro' }),
+          req('POST', '/auth/profiles', ph, {
+            birthDate: '2016-05-10',
+            requestId: randomUUID(),
+            name: 'Outro',
+          }),
         )
       ).status,
     ).toBe(403)
@@ -2586,7 +2646,12 @@ describe('Auth — sessão de perfil (PR2)', () => {
     // Editar o perfil de um IRMÃO (outro id) a partir da sessão de perfil → 403.
     const SIBLING = '55555555-5555-4555-8555-555555555555'
     profilesRepo.seedReady(
-      ProfileAggregate.create({ id: SIBLING, accountUserId: accountId, name: 'Irmão' }),
+      ProfileAggregate.create({
+        birthDate: '2016-05-10',
+        id: SIBLING,
+        accountUserId: accountId,
+        name: 'Irmão',
+      }),
     )
     expect(
       (await app.handle(req('PATCH', `/auth/profiles/${SIBLING}`, ph, { name: 'Hackeado' })))
@@ -3077,7 +3142,12 @@ describe('Kids: fala da criança (voz → texto), consentimento dos pais por cri
     }
     const accountId = reg.user.id
     built.profilesRepo.seedReady(
-      ProfileAggregate.create({ id: PROFILE_ID, accountUserId: accountId, name: 'Sofia' }),
+      ProfileAggregate.create({
+        birthDate: '2016-05-10',
+        id: PROFILE_ID,
+        accountUserId: accountId,
+        name: 'Sofia',
+      }),
     )
     const patchProfile = (headers: Record<string, string>, body: unknown) =>
       built.app.handle(req('PATCH', `/auth/profiles/${PROFILE_ID}`, headers, body))
@@ -3222,7 +3292,13 @@ describe('Kids: fala da criança (voz → texto), consentimento dos pais por cri
   test('criar já com a fala ligada pede login recente e nunca vem do suporte', async () => {
     const { app, accountId, profilesRepo } = await setup()
     const create = (headers: Record<string, string>, body: Record<string, unknown>) =>
-      app.handle(req('POST', '/auth/profiles', headers, { requestId: randomUUID(), ...body }))
+      app.handle(
+        req('POST', '/auth/profiles', headers, {
+          birthDate: '2016-05-10',
+          requestId: randomUUID(),
+          ...body,
+        }),
+      )
     const before = profilesRepo.byId.size
 
     const stale = await create(gwParent(accountId, nowSeconds() - 16 * 60), {

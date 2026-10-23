@@ -76,7 +76,8 @@ export function ProfileTile({
 /** O que o formulário do perfil devolve ao salvar. */
 export interface ProfileFormValues {
   name: string
-  birthDate: string | null
+  /** Obrigatória desde 23/10/2026: o formulário não salva sem ela (e o auth também recusa). */
+  birthDate: string
   publicProfileEnabled: boolean
   /** Só vem quando a fala está disponível no servidor (`voiceAvailable`). */
   voiceInputEnabled?: boolean
@@ -129,6 +130,10 @@ export function ProfileForm({
   const birthDateChanged = birthDate !== (profile?.birthDate ?? '')
   const ageRestricted =
     birthDate.length > 0 && birthDateChanged && isProfileAgeRestricted(birthDate, today)
+  // A data é obrigatória (23/10/2026). O aviso só aparece depois da primeira tentativa de salvar,
+  // para o formulário não abrir já com erro.
+  const [triedSave, setTriedSave] = useState(false)
+  const birthDateMissing = birthDate.length === 0
 
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6">
@@ -136,17 +141,17 @@ export function ProfileForm({
         <GuideBalloon arrow="none">
           {voiceAvailable ? (
             <>
-              Coloque o nome da criança. A data de nascimento é opcional. Aqui você também faz duas
-              escolhas: se o perfil aparece para as outras crianças (só dentro da plataforma) e se
-              ela pode falar em vez de escrever quando pedir ajuda. Ligar a fala facilita muito para
-              quem ainda escreve devagar. Depois de salvar, a página dela abre para você autorizar o
+              Coloque o nome e a data de nascimento da criança. Aqui você também faz duas escolhas:
+              se o perfil aparece para as outras crianças (só dentro da plataforma) e se ela pode
+              falar em vez de escrever quando pedir ajuda. Ligar a fala facilita muito para quem
+              ainda escreve devagar. Depois de salvar, a página dela abre para você autorizar o
               aparelho.
             </>
           ) : (
             <>
-              Coloque o nome da criança. A data de nascimento é opcional, e é aqui que você decide
-              se o perfil aparece para outras crianças da plataforma. Depois de salvar, a página
-              dela abre para você autorizar o aparelho.
+              Coloque o nome e a data de nascimento da criança. É aqui também que você decide se o
+              perfil aparece para outras crianças da plataforma. Depois de salvar, a página dela
+              abre para você autorizar o aparelho.
             </>
           )}
         </GuideBalloon>
@@ -160,11 +165,12 @@ export function ProfileForm({
           className="flex flex-col gap-6"
           onSubmit={(event) => {
             event.preventDefault()
-            if (busy || trimmedName.length < 3 || ageRestricted) return
+            setTriedSave(true)
+            if (busy || trimmedName.length < 3 || birthDateMissing || ageRestricted) return
             onSave(
               {
                 name: trimmedName,
-                birthDate: birthDate || null,
+                birthDate,
                 publicProfileEnabled,
                 ...(voiceAvailable ? { voiceInputEnabled } : {}),
               },
@@ -189,22 +195,31 @@ export function ProfileForm({
           </Field>
 
           <Field
-            label="Data de nascimento da criança (opcional)"
+            label="Data de nascimento da criança"
             htmlFor="profileBirthDate"
-            error={ageRestricted ? profileAgeMessage(isEdit) : undefined}
+            error={
+              ageRestricted
+                ? profileAgeMessage(isEdit)
+                : triedSave && birthDateMissing
+                  ? 'Informe a data de nascimento da criança.'
+                  : undefined
+            }
           >
             <Input
               id="profileBirthDate"
               name="birthDate"
               type="date"
               autoComplete="off"
+              required
+              aria-required="true"
               value={birthDate}
               max={today}
               onChange={(e) => setBirthDate(e.target.value)}
             />
             <p className="mt-1 text-muted-foreground text-xs">
-              Só os responsáveis editam. Para conhecer a comunidade de adultos, fale com a gente no
-              Instagram{' '}
+              A data mostra a idade da criança para a equipe e faz a plataforma avisar você quando
+              ela completar 18 anos. Ela nunca aparece para outras crianças, e só os responsáveis
+              editam. Para conhecer a comunidade de adultos, fale com a gente no Instagram{' '}
               <a
                 href={ADULT_COMMUNITY_INSTAGRAM_URL}
                 target="_blank"
