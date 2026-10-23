@@ -26,12 +26,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // onde TUDO dá 403 — sem feedback (achado do review).
   if (!isAdminRole(user.role) || user.status !== 'active') {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
-        <ShieldAlert className="size-10 text-destructive" />
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold">Acesso negado</h1>
-          <p className="text-sm text-muted-foreground">
-            Sua conta ({user.email}) não tem acesso ao painel.
+      <main className="flex min-h-screen flex-col items-center justify-center gap-5 bg-menu p-6 text-center text-menu-text">
+        <ShieldAlert className="size-10 text-sun" aria-hidden />
+        <div className="max-w-md space-y-2">
+          <h1 className="font-display text-2xl font-bold text-white">
+            Este admin é só para a equipe
+          </h1>
+          <p className="text-[15px]">
+            A conta {user.email} não tem acesso aqui. Se você é responsável por uma criança, a
+            Comunidade dos Criadores fica em outro endereço.
           </p>
         </div>
         <LogoutButton />
@@ -50,7 +53,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="flex min-h-screen flex-col bg-background md:flex-row">
         <AdminSidebar user={user} apps={apps} />
         <main className="min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6">{children}</div>
+          <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-10 md:py-10">{children}</div>
         </main>
       </div>
     </PlatformProvider>

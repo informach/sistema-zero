@@ -1,27 +1,28 @@
 import {
   BookOpen,
   CalendarDays,
+  Contact,
   CreditCard,
   Gift,
-  GraduationCap,
   Headset,
-  Home,
   Inbox,
   LayoutDashboard,
   LifeBuoy,
   type LucideIcon,
-  Mail,
-  Medal,
+  MessageSquareText,
   MessagesSquare,
   Package,
+  Radio,
   ReceiptText,
+  Route,
   ScrollText,
   ShieldCheck,
   Sparkles,
-  TrendingUp,
+  Sun,
   Trophy,
   Users,
 } from 'lucide-react'
+import type { Platform } from '@/lib/platform'
 
 export interface NavItem {
   label: string
@@ -29,75 +30,108 @@ export interface NavItem {
   icon: LucideIcon
   /** Prefixo p/ marcar ativo e resolver a seção (default = href). */
   match?: string
+  /**
+   * Outros prefixos que também pertencem ao item. A Jornada tem duas telas (Kids e Adultos) e
+   * um item só no menu: as duas acendem a Jornada.
+   */
+  alsoMatch?: readonly string[]
+  /** Destino por comunidade: o item leva à tela da comunidade escolhida na lente. */
+  platformHref?: Readonly<Record<Platform, string>>
   soon?: boolean
   /** Quando definido, limita a visibilidade/acesso a estes papéis. */
   roles?: readonly string[]
   /**
-   * Chip de CONTAGEM na sidebar (pendências do professor) — dado puro; quem resolve
+   * Chip de CONTAGEM na sidebar (o que espera a equipe) — dado puro; quem resolve
    * o número é o `professor-counts-store` (a sidebar só liga chave → count).
    */
   badgeKey?: 'entregas' | 'recados' | 'moderacao'
 }
 
 export interface NavGroup {
-  id: 'professor' | 'gestao' | 'config'
+  id: 'turma' | 'conteudo' | 'negocio'
   label: string
   /**
    * Quando definido, limita o GRUPO inteiro a estes papéis. Hoje todos os grupos
-   * são abertos (comportamento idêntico ao menu plano anterior); ligar o futuro
-   * papel `professor` = incluí-lo em ADMIN_ROLES + preencher `roles` em
-   * gestao/config — a sidebar e o `canAccessSection` já obedecem.
+   * são abertos; ligar o futuro papel `professor` = incluí-lo em ADMIN_ROLES +
+   * preencher `roles` em conteudo/negocio — a sidebar e o `canAccessSection` já obedecem.
    */
   roles?: readonly string[]
   items: NavItem[]
 }
 
 /**
- * Fonte única da navegação do painel, em 3 áreas por NATUREZA do trabalho:
- * dia a dia do professor · administração recorrente · configuração feita
- * raramente. O agrupamento é do MENU — as rotas existentes não mudaram de URL
- * (só as páginas novas nascem sob /admin/professor). A ambiguidade
- * /admin/membros (Alunos) × /admin/membros/cursos (autoria) × /admin/membros/
- * analises resolve por longest-prefix (`activeHref`/`sectionForPath`).
+ * Fonte única da navegação do painel ("A sala da equipe", proposta de 23/10/2026), em três
+ * áreas nomeadas pelo que a pessoa faz: Turma (cuidar de quem aprende, todo dia), Conteúdo
+ * (preparar o que se aprende) e Negócio (manter a casa de pé). Os nomes são os das
+ * comunidades: Projetos, Recados, Clube dos Criadores. As rotas não mudaram de URL; Ranking e
+ * Análises viraram abas de Alunos e as duas Jornadas viraram um item que segue a lente. A
+ * ambiguidade /admin/membros (Alunos) × /admin/membros/cursos (Cursos) resolve por
+ * longest-prefix (`activeHref`/`sectionForPath`).
  */
 export const NAV_GROUPS: NavGroup[] = [
   {
-    id: 'professor',
-    label: 'Sala do Professor',
+    id: 'turma',
+    label: 'Turma',
     items: [
-      // 1º item do grupo = destino do `homeForRole` (a Home do professor É a home do painel).
-      { label: 'Início', href: '/admin/professor', icon: Home },
-      { label: 'Ao vivo', href: '/admin/professor/ao-vivo', icon: CalendarDays },
+      // 1º item do grupo = destino do `homeForRole` e a entrada de todo mundo (Hoje).
+      { label: 'Hoje', href: '/admin/professor', icon: Sun },
+      { label: 'Encontros', href: '/admin/professor/ao-vivo', icon: Radio },
       {
-        label: 'Entregas',
+        label: 'Projetos',
         href: '/admin/professor/entregas',
         icon: Inbox,
         badgeKey: 'entregas',
       },
-      { label: 'Recados', href: '/admin/professor/recados', icon: Mail, badgeKey: 'recados' },
-      { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
-      { label: 'Jornada adulta', href: '/admin/professor/jornada-adulta', icon: GraduationCap },
-      { label: 'Jornada Kids', href: '/admin/professor/jornada-kids', icon: GraduationCap },
+      {
+        label: 'Recados',
+        href: '/admin/professor/recados',
+        icon: MessagesSquare,
+        badgeKey: 'recados',
+      },
       {
         label: 'Moderação',
         href: '/admin/comunidade/moderacao',
         icon: ShieldCheck,
         badgeKey: 'moderacao',
       },
-      { label: 'Alunos', href: '/admin/membros', icon: GraduationCap },
-      { label: 'Ranking', href: '/admin/membros/ranking', icon: Medal },
-      { label: 'Análises', href: '/admin/membros/analises', icon: TrendingUp },
+      // Lista, Ranking e Análises são abas da mesma área (o `match` cobre as três).
+      { label: 'Alunos', href: '/admin/membros', icon: Users },
     ],
   },
   {
-    id: 'gestao',
-    label: 'Gestão',
+    id: 'conteudo',
+    label: 'Conteúdo',
     items: [
-      { label: 'Painel', href: '/admin', icon: LayoutDashboard },
-      { label: 'Usuários', href: '/admin/usuarios', icon: Users },
-      { label: 'Convites e campanhas', href: '/admin/embaixadores', icon: Gift },
+      { label: 'Cursos', href: '/admin/membros/cursos', icon: BookOpen },
+      { label: 'Oficinas', href: '/admin/oficinas', icon: CalendarDays },
       {
-        label: 'Pagamentos',
+        label: 'Jornada',
+        href: '/admin/professor/jornada-kids',
+        icon: Route,
+        alsoMatch: ['/admin/professor/jornada-adulta'],
+        platformHref: {
+          kids: '/admin/professor/jornada-kids',
+          adult: '/admin/professor/jornada-adulta',
+        },
+      },
+      { label: 'Desafio do mês', href: '/admin/professor/desafio', icon: Trophy },
+      { label: 'Como fazer', href: '/admin/como-fazer', icon: LifeBuoy },
+      {
+        label: 'Clube e Comunidade',
+        href: '/admin/comunidade/servidores',
+        icon: MessageSquareText,
+        match: '/admin/comunidade',
+      },
+    ],
+  },
+  {
+    id: 'negocio',
+    label: 'Negócio',
+    items: [
+      { label: 'Visão geral', href: '/admin', icon: LayoutDashboard },
+      { label: 'Contas', href: '/admin/usuarios', icon: Contact },
+      {
+        label: 'Vendas',
         href: '/admin/pagamentos/transacoes',
         icon: CreditCard,
         match: '/admin/pagamentos',
@@ -109,26 +143,10 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Package,
         match: '/admin/catalogo',
       },
-      { label: 'Uso de IA', href: '/admin/ia', icon: Sparkles },
+      { label: 'Campanhas', href: '/admin/embaixadores', icon: Gift },
+      { label: 'Zappy e Pensa', href: '/admin/ia', icon: Sparkles },
       // Somente leitura: o trabalho acontece no app de atendimento (outra aba).
       { label: 'Atendimento', href: '/admin/atendimento', icon: Headset },
-    ],
-  },
-  {
-    id: 'config',
-    label: 'Configuração',
-    items: [
-      { label: 'Oficinas ao vivo', href: '/admin/oficinas', icon: CalendarDays },
-      { label: 'Cursos', href: '/admin/membros/cursos', icon: BookOpen },
-      // A biblioteca de ajuda do Kids ("Como fazer", 26/09/2026): conteúdo GLOBAL, sem o
-      // seletor de plataforma (só existe no kids), no lugar da autoria.
-      { label: 'Como fazer', href: '/admin/como-fazer', icon: LifeBuoy },
-      {
-        label: 'Comunidade',
-        href: '/admin/comunidade/servidores',
-        icon: MessagesSquare,
-        match: '/admin/comunidade',
-      },
       {
         label: 'Auditoria',
         href: '/admin/auditoria',
@@ -137,6 +155,18 @@ export const NAV_GROUPS: NavGroup[] = [
       },
     ],
   },
+]
+
+/** Destino do item para a comunidade da lente (a Jornada muda de tela; os outros, não). */
+export function hrefForPlatform(item: NavItem, platform: Platform): string {
+  return item.platformHref?.[platform] ?? item.href
+}
+
+/** As abas de Alunos (a lista, o ranking por XP e as análises de conclusão). */
+export const ALUNOS_TABS = [
+  { label: 'Lista', href: '/admin/membros' },
+  { label: 'Ranking', href: '/admin/membros/ranking' },
+  { label: 'Análises', href: '/admin/membros/analises' },
 ]
 
 export const CATALOG_TABS = [
@@ -161,8 +191,8 @@ export function visibleGroups(role: string): NavGroup[] {
     .filter((group) => group.items.length > 0)
 }
 
-function matchPrefix(item: NavItem): string {
-  return item.match ?? item.href
+function matchPrefixes(item: NavItem): readonly string[] {
+  return [item.match ?? item.href, ...(item.alsoMatch ?? [])]
 }
 
 /** `/admin` só casa exato (é prefixo de tudo); os demais casam por segmento. */
@@ -178,17 +208,18 @@ interface ResolvedNav {
 
 /**
  * Item dono do path por LONGEST-PREFIX: /admin/membros/cursos/x pertence a
- * "Cursos" (config), não a "Alunos" (professor) — o prefixo mais longo vence.
+ * "Cursos" (conteudo), não a "Alunos" (turma): o prefixo mais longo vence.
  */
 function resolveNav(pathname: string): ResolvedNav | null {
   let best: ResolvedNav | null = null
   let bestLength = -1
   for (const group of NAV_GROUPS) {
     for (const item of group.items) {
-      const prefix = matchPrefix(item)
-      if (prefixMatches(pathname, prefix) && prefix.length > bestLength) {
-        best = { group, item }
-        bestLength = prefix.length
+      for (const prefix of matchPrefixes(item)) {
+        if (prefixMatches(pathname, prefix) && prefix.length > bestLength) {
+          best = { group, item }
+          bestLength = prefix.length
+        }
       }
     }
   }
@@ -209,7 +240,7 @@ export function sectionForPath(pathname: string): NavGroup['id'] | null {
  * O papel pode acessar o path? Combina `roles` do grupo e do item donos do
  * path; path fora da nav é liberado (o gate binário do layout continua valendo).
  * Hoje só Auditoria restringe — o gate por seção liga quando o papel
- * `professor` nascer (preencher `roles` nos grupos gestao/config).
+ * `professor` nascer (preencher `roles` nos grupos conteudo/negocio).
  */
 export function canAccessSection(role: string, pathname: string): boolean {
   const resolved = resolveNav(pathname)
@@ -236,7 +267,7 @@ export function homeForRole(role: string): string {
 /**
  * Rotas ESCOPADAS pelo seletor global de plataforma (Kids × Adultos): telas de
  * ensino/comunidade filtram pela plataforma ativa. `/admin/membros` cobre
- * alunos, ficha, criança, análises e cursos (autoria); Gestão inteira,
+ * alunos, ficha, criança, análises e cursos (autoria); Negócio inteiro,
  * servidores da comunidade e auditoria são GLOBAIS (a legenda do switcher
  * avisa). Mesma régua de prefixo por segmento do `prefixMatches`.
  */
@@ -246,6 +277,9 @@ const PLATFORM_SCOPED_PREFIXES = [
   '/admin/membros',
   // Oficinas ao vivo: as turmas dos cursos ao vivo DA plataforma ativa (14/10/2026).
   '/admin/oficinas',
+  // Como fazer: cada comunidade tem a sua biblioteca (`audience=` na API); a tela já seguia a
+  // lente, e a legenda dizia o contrário (23/10/2026).
+  '/admin/como-fazer',
 ] as const
 
 export function pathIsPlatformScoped(pathname: string): boolean {

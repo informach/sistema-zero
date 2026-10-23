@@ -1,4 +1,5 @@
 import type * as React from 'react'
+import { CommunityChip } from './community-chip'
 
 /**
  * Cabeçalho de página: título + descrição + ação opcional.
@@ -18,21 +19,32 @@ export function AdminHeader({
   description,
   action,
   acoesAbaixo = false,
+  community = true,
 }: {
   title: string
   description?: string
   action?: React.ReactNode
   acoesAbaixo?: boolean
+  /**
+   * O selo da comunidade ao lado do título (a sala da equipe, 23/10/2026). Desligue só onde a
+   * tela já diz a comunidade de outro jeito (o editor de um curso mostra a do próprio curso).
+   */
+  community?: boolean
 }) {
   const identidade = (
-    <div className="min-w-0 space-y-1">
-      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+    <div className="min-w-0 space-y-1.5">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+        <h1 className="min-w-0 break-words font-display text-[28px] font-bold leading-tight md:text-[32px]">
+          {title}
+        </h1>
+        {community ? <CommunityChip /> : null}
+      </div>
       {/* ⚠ `break-words` junto do `min-w-0` (full review de 18/09/2026): sozinho, o `min-w-0`
           só muda ONDE o estouro aparece — uma descrição de token ÚNICO (o slug da aula, o e-mail
           na ficha do aluno) deixava de empurrar a linha e passava a vazar por cima do bloco de
           ações. Com a quebra, ela desce de linha como qualquer frase. */}
       {description ? (
-        <p className="break-words text-sm text-muted-foreground">{description}</p>
+        <p className="max-w-3xl break-words text-[15px] text-muted-foreground">{description}</p>
       ) : null}
     </div>
   )

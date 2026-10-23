@@ -45,6 +45,7 @@ import { mapPool } from '@/lib/pool'
 import {
   type Paginated,
   PRIVILEGED_ROLES,
+  ROLE_LABELS,
   USER_ROLES,
   USER_STATUSES,
   type UserView,
@@ -53,13 +54,6 @@ import {
 const LIMIT = 20
 /** Mínimo de senha (client hint; o auth valida de verdade — PASSWORD_MIN_LENGTH). */
 const PASSWORD_MIN = 10
-
-const ROLE_LABELS: Record<string, string> = {
-  superadmin: 'Superadmin',
-  admin: 'Admin',
-  staff: 'Equipe',
-  customer: 'Cliente',
-}
 
 function roleVariant(role: string): 'default' | 'outline' | 'muted' {
   if (PRIVILEGED_ROLES.includes(role)) return 'default'

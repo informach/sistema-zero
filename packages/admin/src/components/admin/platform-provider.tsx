@@ -24,6 +24,11 @@ export function PlatformProvider({
   return <PlatformContext.Provider value={platform}>{children}</PlatformContext.Provider>
 }
 
+/** Como `usePlatform`, mas devolve `null` fora do provider (peças que também rodam soltas). */
+export function usePlatformOptional(): Platform | null {
+  return useContext(PlatformContext)
+}
+
 export function usePlatform(): Platform {
   const platform = useContext(PlatformContext)
   if (platform === null) throw new Error('usePlatform precisa estar dentro de PlatformProvider')

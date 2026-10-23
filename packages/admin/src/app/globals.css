@@ -58,6 +58,19 @@
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
+  --font-display: var(--font-display);
+  --color-menu: var(--menu);
+  --color-menu-2: var(--menu-2);
+  --color-menu-text: var(--menu-text);
+  --color-menu-icon: var(--menu-icon);
+  --color-lens-kids: var(--lens-kids);
+  --color-lens-kids-ink: var(--lens-kids-ink);
+  --color-lens-adult: var(--lens-adult);
+  --color-lens-adult-ink: var(--lens-adult-ink);
+  --color-lens-adult-tint: var(--lens-adult-tint);
+  --color-sun: var(--sun);
+  --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -72,12 +85,28 @@
 }
 
 /* ============================================================
-   SISTEMA ZERO — LIGHT MODE (cyan-first, off-white quente)
+   A SALA DA EQUIPE (proposta de 23/10/2026)
+   O chassi console continua sendo a fonte dos três painéis; só o admin veste a sala da equipe
+   por cima: o chão um tom mais claro, o menu na noite da Comunidade dos Criadores, a lente das
+   comunidades (o amarelo do Zappy para o Kids e o verde-água para os Adultos) e o degrau dos
+   botões. O atendimento e o marketing seguem iguais.
    ============================================================ */
-
-/* ============================================================
-   SISTEMA ZERO — DARK MODE (#0D1117, neon lime/cyan)
-   ============================================================ */
+:root {
+  --background: #eef2fb;
+  --primary-step: #1343b8;
+  --menu: #121a30;
+  --menu-2: #1b2540;
+  --menu-text: #cbd4e8;
+  --menu-icon: #8e9bba;
+  --lens-kids: #ffc02e;
+  --lens-kids-ink: #0f1a33;
+  --lens-adult: #2ba3ac;
+  --lens-adult-ink: #06272a;
+  --lens-adult-tint: #d7eef0;
+  --sun: #ffc02e;
+  --warning: #7a4100;
+  --warning-tint: #fff3c4;
+}
 
 @layer base {
   * {
@@ -85,8 +114,10 @@
   }
   body {
     --font-sans:
-      var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display:
+      var(--font-bricolage), var(--font-atkinson), ui-sans-serif, system-ui, sans-serif;
     --font-mono:
       var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
       "Liberation Mono", "Courier New", monospace;
@@ -117,11 +148,35 @@ a.bg-primary.text-primary-foreground {
   background-color: var(--primary);
   color: var(--primary-foreground);
   border-radius: 9999px;
-  transition: background-color 0.15s ease;
+  /* O degrau da Comunidade dos Criadores, mais baixo (3 px): o botão parece tocável sem
+     parecer brinquedo, e afunda quando é apertado. */
+  box-shadow: 0 3px 0 var(--primary-step);
+  font-weight: 700;
+  transition:
+    background-color 0.15s ease,
+    transform 0.08s ease,
+    box-shadow 0.08s ease;
 }
 button.bg-primary.text-primary-foreground:hover:not(:disabled),
 a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   background-color: var(--primary-hover);
+}
+button.bg-primary.text-primary-foreground:active:not(:disabled),
+a.bg-primary.text-primary-foreground:active:not([aria-disabled="true"]) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--primary-step);
+}
+@media (prefers-reduced-motion: reduce) {
+  button.bg-primary.text-primary-foreground,
+  a.bg-primary.text-primary-foreground {
+    transition: background-color 0.15s ease;
+  }
+}
+
+/* Títulos na Bricolage Grotesque (a mesma dos títulos da comunidade adulta). */
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.015em;
 }
 
 /* Modal — backdrop + entrada */

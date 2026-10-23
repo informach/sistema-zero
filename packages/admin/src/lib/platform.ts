@@ -11,11 +11,23 @@ export type Platform = (typeof PLATFORMS)[number]
 export const DEFAULT_PLATFORM: Platform = 'kids'
 export const PLATFORM_COOKIE = 'sz_admin_platform'
 
-/** Rótulos do alternador (plataformas, não audiência de curso — "Adultos" no plural). */
+/** Rótulos da lente (plataformas, não audiência de curso — "Adultos" no plural). */
 export const PLATFORM_LABELS: Record<Platform, string> = {
   kids: 'Kids',
   adult: 'Adultos',
 }
+
+/**
+ * O nome de cada comunidade, como as famílias leem na tela: o selo do cabeçalho das telas que
+ * seguem a lente diz de qual comunidade elas falam.
+ */
+export const COMMUNITY_NAMES: Record<Platform, string> = {
+  kids: 'Comunidade dos Criadores',
+  adult: 'Comunidade Sistema Zero',
+}
+
+/** O selo das telas que mostram as duas comunidades (Negócio, Clube e Comunidade, Auditoria). */
+export const BOTH_COMMUNITIES_LABEL = 'Kids e Adultos juntos'
 
 function isPlatform(value: unknown): value is Platform {
   return typeof value === 'string' && (PLATFORMS as readonly string[]).includes(value)
