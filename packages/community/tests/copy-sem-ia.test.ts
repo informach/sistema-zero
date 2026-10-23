@@ -43,12 +43,6 @@ const PERMITIDOS: readonly { arquivo: string; trecho: string; motivo: string }[]
     motivo: 'transparência: o que o Zappy e o Pensa são, e que não são uma pessoa',
   },
   {
-    arquivo: 'community/src/components/community/courses/continuity-card.tsx',
-    trecho:
-      'Você já tem o No Comando da IA. Com a Comunidade, os cursos adultos abrem nesta mesma conta, e as ferramentas do Estúdio abrem conforme você avança nas etapas.',
-    motivo: 'nome do curso "No Comando da IA", que é produto',
-  },
-  {
     arquivo: 'member-shell/src/components/customer-helpdesk-content.tsx',
     trecho: 'Assistente de IA',
     motivo: 'transparência no atendimento: o autor da resposta automática, ao lado da equipe',
