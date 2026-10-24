@@ -20,6 +20,7 @@ import type { PgzeroAudioCommand } from './pgzero/protocol'
 import type { PgzeroRenderer } from './pgzero/renderer'
 import { installPythonPlayerBridge } from './playerBridge'
 import { createProtectedPythonWorker } from './protectedWorker'
+import type { RaylibRenderer } from './raylib/renderer'
 import type { TurtleRenderer } from './turtle/renderer'
 import { readPythonWireSnapshot } from './wireSnapshot'
 import { isPythonRequestId } from './workerEvents'
@@ -62,7 +63,7 @@ async function initialize(event: MessageEvent<unknown>) {
   let closed = false
   let supervisor: ReturnType<typeof createPythonWorkerSupervisor> | undefined
   let bootstrap: ReturnType<typeof createProtectedPythonWorker> | undefined
-  let renderer: TurtleRenderer | PgzeroRenderer | undefined
+  let renderer: TurtleRenderer | PgzeroRenderer | RaylibRenderer | undefined
   let rendererReady = false
   let workerReady = false
   let prepared = false
@@ -330,6 +331,23 @@ async function initialize(event: MessageEvent<unknown>) {
         .then((module: typeof import('./pgzero/renderer')) => {
           if (closed) return
           renderer = module.createPgzeroRenderer(document.body, {
+            onAudio: pgzeroAudio,
+            takeEndedVoices: (limit) => audio.takeEnded(limit),
+            onTitle: (title) => {
+              if (document.title !== title) document.title = title
+            },
+          })
+          ready()
+        })
+        .catch(rendererFailed)
+    else if (canvas === 'python-raylib-2d' || canvas === 'python-raylib-3d')
+      void import(
+        /* @vite-ignore */
+        new URL('./raylib-renderer.mjs', import.meta.url).href
+      )
+        .then((module: typeof import('./raylib/renderer')) => {
+          if (closed) return
+          renderer = module.createRaylibRenderer(document.body, {
             onAudio: pgzeroAudio,
             takeEndedVoices: (limit) => audio.takeEnded(limit),
             onTitle: (title) => {

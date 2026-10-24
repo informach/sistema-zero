@@ -19,6 +19,8 @@ const MIME_EXTENSIONS: Readonly<Record<string, string>> = {
   'application/octet-stream': 'bin',
   'image/vnd.radiance': 'hdr',
   'image/x-hdr': 'hdr',
+  'font/ttf': 'ttf',
+  'font/otf': 'otf',
 }
 
 /**

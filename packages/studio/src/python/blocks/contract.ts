@@ -18,7 +18,12 @@ export const PYTHON_CATEGORIES = [
 ] as const
 export type PythonCategory = (typeof PYTHON_CATEGORIES)[number]
 /** Owners of block codecs: the core language or one official Python extension. */
-export type PythonBlockOwner = 'programming' | 'python-turtle' | 'python-pgzero'
+export type PythonBlockOwner =
+  | 'programming'
+  | 'python-turtle'
+  | 'python-pgzero'
+  | 'python-raylib-2d'
+  | 'python-raylib-3d'
 export type PythonBlockRole =
   | 'value'
   | 'statement'

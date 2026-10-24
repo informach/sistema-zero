@@ -7,6 +7,7 @@ import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtim
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
 import { audioFixtures, portableAudioAsset } from './audioFixtures'
 import { PGZERO_EXTENSION, PGZERO_FIXTURE_ASSETS, pgzeroFixtures } from './pgzeroFixtures'
+import { RAYLIB_2D_EXTENSION, RAYLIB_FIXTURE_ASSETS, raylibFixtures } from './raylibFixtures'
 import { TURTLE_EXTENSION, turtleFixtures } from './turtleFixtures'
 
 /** Behavioral fixtures, never a production runtime catalog or author template. */
@@ -14,6 +15,7 @@ const cases: Record<string, string> = {
   ...audioFixtures,
   ...turtleFixtures,
   ...pgzeroFixtures,
+  ...raylibFixtures,
   turtleF1: turtleF1Source('red'),
   osSystem: `import os
 print('os-system result', os.system('aplay start_up.wav > /dev/null 2>&1 &'))
@@ -184,6 +186,10 @@ export async function runtimeFixtureProject(
         kind: 'file',
         content: "AUTHOR = 'author audio preserved'\n",
       }
+  }
+  if (name in raylibFixtures) {
+    project.installedExtensions = [{ ...RAYLIB_2D_EXTENSION, installedAt: project.createdAt }]
+    project.assets = [...RAYLIB_FIXTURE_ASSETS]
   }
   if (name in pgzeroFixtures) {
     project.installedExtensions = [{ ...PGZERO_EXTENSION, installedAt: project.createdAt }]

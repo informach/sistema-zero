@@ -13,7 +13,41 @@ interface PaletteGroup {
 
 /** Framework-free palette layout shared by the toolbox, Blockly colours and search. */
 export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGroup>> = {
-  // Extensions come first: in a Turtle or Pygame Zero project they are the main subject.
+  // Extensions come first: in a Turtle, Pygame Zero or Raylib project they are the main subject.
+  'python-raylib-2d': {
+    label: '🟦 Raylib 2D',
+    colour: '#2563eb',
+    categories: [
+      ['Janela e laço', '🪟'],
+      ['Formas', '🎨'],
+      ['Imagens e texturas', '🖼️'],
+      ['Texto', '🔤'],
+      ['Teclado e mouse', '⌨️'],
+      ['Colisões', '💥'],
+      ['Vetores e retângulos', '📐'],
+      ['Câmera 2D', '🎥'],
+      ['Sons e música', '🔊'],
+      ['Cores e sorteio', '🎲'],
+      ['Avançado', '🧪'],
+    ],
+  },
+  'python-raylib-3d': {
+    label: '🧊 Raylib 3D',
+    colour: '#0891b2',
+    categories: [
+      ['Janela e laço', '🪟'],
+      ['Formas', '🎨'],
+      ['Imagens e texturas', '🖼️'],
+      ['Texto', '🔤'],
+      ['Teclado e mouse', '⌨️'],
+      ['Colisões', '💥'],
+      ['Vetores e retângulos', '📐'],
+      ['Câmera 2D', '🎥'],
+      ['Sons e música', '🔊'],
+      ['Cores e sorteio', '🎲'],
+      ['Avançado', '🧪'],
+    ],
+  },
   'python-pgzero': {
     label: '🎮 Pygame Zero',
     colour: '#ec4899',
@@ -70,6 +104,8 @@ export const PYTHON_PALETTE_GROUPS: Readonly<Record<PythonBlockOwner, PaletteGro
   },
 }
 export const PYTHON_PALETTE_GROUP_ORDER: readonly PythonBlockOwner[] = [
+  'python-raylib-2d',
+  'python-raylib-3d',
   'python-pgzero',
   'python-turtle',
   'programming',

@@ -43,6 +43,7 @@ console.log(JSON.stringify({ initial, javascript, metadata, selected: loaded() }
     'examples/pythonCatalog.ts',
     // Grouping by extension reads only the extensions' id/version contracts.
     'runtime/python/pgzero/contract.ts',
+    'runtime/python/raylib/contract.ts',
     'runtime/python/turtle/contract.ts',
   ].sort()
   expect(result.metadata).toEqual(metadata)

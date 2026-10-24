@@ -1,0 +1,50 @@
+# Cena-gabarito 2D: roda igual no raylib do computador e no Estúdio.
+from pyray import *
+
+init_window(400, 300, 'gabarito')
+camera = Camera2D(Vector2(200, 150), Vector2(200, 150), 15, 1.2)
+alvo = load_render_texture(80, 60)
+quadros = 0
+while not window_should_close():
+    quadros += 1
+    begin_texture_mode(alvo)
+    clear_background((0, 0, 0, 0))
+    draw_circle(40, 30, 20, ORANGE)
+    draw_text('RT', 5, 5, 10, BLACK)
+    end_texture_mode()
+    begin_drawing()
+    clear_background(RAYWHITE)
+    draw_rectangle(10, 10, 60, 40, RED)
+    draw_rectangle_lines(80, 10, 60, 40, DARKBLUE)
+    draw_rectangle_lines_ex(Rectangle(150, 10, 60, 40), 5, GREEN)
+    draw_rectangle_rounded(Rectangle(220, 10, 80, 40), 0.5, 6, PURPLE)
+    draw_rectangle_rounded_lines_ex(Rectangle(310, 10, 70, 40), 0.4, 4, 3, MAROON)
+    draw_rectangle_gradient_v(10, 60, 60, 40, YELLOW, BLUE)
+    draw_rectangle_pro(Rectangle(110, 80, 40, 20), Vector2(20, 10), 30, LIME)
+    draw_circle(180, 80, 18, SKYBLUE)
+    draw_circle_lines(220, 80, 18, BLACK)
+    draw_circle_sector(Vector2(260, 80), 18, 0, 270, 10, GOLD)
+    draw_ring(Vector2(310, 80), 8, 18, 0, 360, 24, PINK)
+    draw_ellipse(360, 80, 25, 12, BROWN)
+    draw_triangle(Vector2(20, 150), Vector2(10, 180), Vector2(50, 180), VIOLET)
+    # Horário: o rlgl descarta a face de trás, então NÃO aparece no raylib de verdade.
+    draw_triangle(Vector2(20, 260), Vector2(60, 290), Vector2(20, 290), RED)
+    draw_circle_sector(Vector2(100, 272), 16, 270, 0, 10, GOLD)
+    draw_triangle_lines(Vector2(70, 150), Vector2(60, 180), Vector2(100, 180), DARKGREEN)
+    draw_poly(Vector2(130, 165), 6, 18, 15, DARKPURPLE)
+    draw_poly_lines_ex(Vector2(180, 165), 5, 18, 0, 4, ORANGE)
+    draw_line(200, 140, 260, 190, RED)
+    draw_line_ex(Vector2(270, 140), Vector2(330, 190), 6, BLUE)
+    draw_line_bezier(Vector2(340, 140), Vector2(390, 190), 3, DARKGRAY)
+    draw_circle_gradient(Vector2(30, 230), 22, WHITE, DARKBLUE)
+    draw_text('Raylib 2D: ação!', 60, 215, 20, BLACK)
+    draw_texture_rec(alvo.texture, Rectangle(0, 0, 80, -60), Vector2(300, 200), WHITE)
+    begin_mode_2d(camera)
+    draw_rectangle(185, 250, 30, 30, fade(RED, 0.5))
+    end_mode_2d()
+    draw_pixel(395, 295, BLACK)
+    end_drawing()
+    if quadros == 3:
+        take_screenshot('shapes2d.png')
+        break
+close_window()

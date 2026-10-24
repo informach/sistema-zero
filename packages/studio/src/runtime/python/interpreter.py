@@ -149,6 +149,29 @@ class _StudioExecution:
         runner.prepare_mod(self._main)
         self._after_main = lambda: runner.run_mod(self._main)
 
+    def install_raylib(self, directory, exchange, decode, mode):
+        # pyray/raylib like `pip install raylib` on the desktop: the program draws in its own
+        # loop and each end_drawing() is one exchange with the browser. One module serves the
+        # two extensions; `mode` ("2d" or "3d") says which one the project installed.
+        # Author modules keep precedence (sys.path[0] is the project).
+        if self._main is None or '_szraylib' in sys.modules:
+            raise RuntimeError('O Raylib não pode ser preparado nesta execução.')
+        if mode not in ('2d', '3d'):
+            raise RuntimeError('Extensão Raylib desconhecida.')
+        sys.path.insert(1, directory)
+        import _szraylib
+
+        def transport(header, payload):
+            reply = run_sync(exchange(header, to_js(payload)))
+            if isinstance(reply, str):
+                return reply, None
+            return str(reply[0]), reply[1].to_bytes()
+
+        def decoder(path):
+            return run_sync(decode(path)).to_bytes()
+
+        _szraylib.configure(transport, decoder, str(Path.cwd()), mode)
+
     def install_audio(self, directory, exchange):
         # Author modules keep precedence. This adds media, not an unofficial turtle method.
         if self._main is None or '_sz_audio_runtime' in sys.modules:

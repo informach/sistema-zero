@@ -19,6 +19,8 @@ import bridgeSource from './interpreter.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
+import { RAYLIB_2D_EXTENSION } from './raylib/contract'
+import { loadRaylibModuleSources } from './raylib/moduleSources'
 import { loadTurtleModuleSources } from './turtle/moduleSources'
 
 import { PYODIDE_VERSION, PYTHON_VERSION } from './versions'
@@ -38,6 +40,7 @@ interface ExecutionBridge {
   evaluate: PythonCallable
   install_turtle: PythonCallable
   install_pgzero: PythonCallable
+  install_raylib: PythonCallable
   install_audio: PythonCallable
   install_activity: PythonCallable
   grade_activity: PythonCallable
@@ -100,17 +103,44 @@ async function loadPgzeroResources(base: URL, scope: AbortController) {
   scope.signal.throwIfAborted()
   return { protocol, sources }
 }
+async function loadRaylibResources(base: URL, scope: AbortController) {
+  const [protocol, sources]: [
+    typeof import('./raylib/protocol'),
+    ReadonlyMap<string, Uint8Array<ArrayBuffer>>,
+  ] = await awaitWithSignal(
+    () =>
+      Promise.all([
+        import(/* @vite-ignore */ new URL('raylib-protocol.mjs', base).href),
+        loadRaylibModuleSources(base, scope.signal),
+      ]).catch((error: unknown) => {
+        scope.abort(error)
+        throw error
+      }),
+    scope.signal,
+  )
+  scope.signal.throwIfAborted()
+  return { protocol, sources }
+}
 type ExtensionResources =
   | { kind: 'python-turtle'; value: Awaited<ReturnType<typeof loadTurtleResources>> }
   | { kind: 'python-pgzero'; value: Awaited<ReturnType<typeof loadPgzeroResources>> }
+  | {
+      kind: 'python-raylib-2d' | 'python-raylib-3d'
+      value: Awaited<ReturnType<typeof loadRaylibResources>>
+    }
 function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
-  return kind === 'python-turtle'
-    ? loadTurtleResources(base, scope).then(
+  switch (kind) {
+    case 'python-turtle':
+      return loadTurtleResources(base, scope).then(
         (value): ExtensionResources => ({ kind: 'python-turtle', value }),
       )
-    : loadPgzeroResources(base, scope).then(
+    case 'python-pgzero':
+      return loadPgzeroResources(base, scope).then(
         (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
       )
+    default:
+      return loadRaylibResources(base, scope).then((value): ExtensionResources => ({ kind, value }))
+  }
 }
 
 /** Pixels of a project image for Pygame Zero's get_at, decoded inside the worker. */
@@ -232,6 +262,7 @@ export async function createPythonInterpreter(options: {
   const evaluate = bridge.evaluate
   const installTurtle = bridge.install_turtle
   const installPgzero = bridge.install_pgzero
+  const installRaylib = bridge.install_raylib
   const installAudio = bridge.install_audio
   const installActivity = bridge.install_activity
   const gradeActivity = bridge.grade_activity
@@ -338,7 +369,7 @@ export async function createPythonInterpreter(options: {
             }
             return options.graphics!(JSON.stringify(request), images)
           })
-        } else {
+        } else if (resources.kind === 'python-pgzero') {
           const { protocol, sources } = resources.value
           const {
             readPgzeroFrameHeader,
@@ -422,6 +453,77 @@ export async function createPythonInterpreter(options: {
               return decodeProjectImage(new Uint8Array(runtime.FS.readFile(path)), path)
             },
           )
+        } else {
+          const { protocol, sources } = resources.value
+          const { readRaylibFrameHeader, RAYLIB_LIMITS, RAYLIB_FONT_ATTACHMENT_BASE } = protocol
+          const directory = `/studio/extensions/python-raylib-${RAYLIB_2D_EXTENSION.version}`
+          for (const filename of sources.keys())
+            runtime.FS.mkdirTree(`${directory}/${filename.slice(0, filename.lastIndexOf('/'))}`)
+          for (const [filename, bytes] of sources)
+            runtime.FS.writeFile(`${directory}/${filename}`, bytes)
+          const inProject = (path: string) =>
+            path.startsWith(`${PROJECT_ROOT}/`) && !path.split('/').includes('..')
+          const projectFile = (relative: string) => {
+            const path = `${PROJECT_ROOT}/${relative}`
+            if (!inProject(path)) throw new Error('O arquivo precisa estar dentro do projeto.')
+            return runtime.FS.readFile(path)
+          }
+          installRaylib(
+            directory,
+            (raw: unknown, payload: unknown) => {
+              const header = readRaylibFrameHeader(raw)
+              if (
+                !(payload instanceof Uint8Array) ||
+                !(payload.buffer instanceof ArrayBuffer) ||
+                payload.byteLength > RAYLIB_LIMITS.listBytes + RAYLIB_LIMITS.frameAttachmentBytes
+              )
+                throw new Error('Quadro do Raylib acima do limite.')
+              // Python hands over a Uint8Array copy (to_js): its buffer is transferred as is.
+              const attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = [
+                {
+                  id: 0,
+                  bytes:
+                    payload.byteOffset === 0 && payload.byteLength === payload.buffer.byteLength
+                      ? (payload as Uint8Array<ArrayBuffer>)
+                      : new Uint8Array(payload),
+                },
+              ]
+              let total = payload.byteLength
+              for (const entry of header.textures) {
+                if (entry[1] !== 'f') continue
+                const source = projectFile(entry[2])
+                total += source.byteLength
+                if (
+                  source.byteLength > RAYLIB_LIMITS.fileBytes ||
+                  total > RAYLIB_LIMITS.frameAttachmentBytes * 2
+                )
+                  throw new Error('As imagens do jogo passaram do limite de bytes.')
+                attachments.push({ id: entry[0], bytes: new Uint8Array(source) })
+              }
+              for (const entry of header.fonts) {
+                const source = projectFile(entry[1])
+                total += source.byteLength
+                if (
+                  source.byteLength > 8 * 1024 * 1024 ||
+                  total > RAYLIB_LIMITS.frameAttachmentBytes * 2
+                )
+                  throw new Error('A fonte é grande demais.')
+                attachments.push({
+                  id: RAYLIB_FONT_ATTACHMENT_BASE + entry[0],
+                  bytes: new Uint8Array(source),
+                })
+              }
+              return options.graphics!(raw as string, attachments).then((reply) =>
+                typeof reply === 'string' ? reply : [reply.text, reply.bytes],
+              )
+            },
+            (path: unknown) => {
+              if (typeof path !== 'string' || !inProject(path))
+                throw new Error('A imagem precisa estar dentro do projeto.')
+              return decodeProjectImage(new Uint8Array(runtime.FS.readFile(path)), path)
+            },
+            resources.kind === 'python-raylib-3d' ? '3d' : '2d',
+          )
         }
       }
       prepared = true
@@ -467,6 +569,7 @@ export async function createPythonInterpreter(options: {
       execute.destroy()
       evaluate.destroy()
       installTurtle.destroy()
+      installRaylib.destroy()
       installPgzero.destroy()
       installAudio.destroy()
       installActivity.destroy()

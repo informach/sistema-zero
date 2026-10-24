@@ -1,12 +1,16 @@
 import { PYTHON_PROGRAMMING_CODECS } from './blocks/catalog'
 import { describePythonCatalog } from './blocks/selection'
 import { PYTHON_PGZERO_CODECS } from './extensions/pgzero/catalog'
+import { PYTHON_RAYLIB_2D_CODECS } from './extensions/raylib2d/catalog'
+import { PYTHON_RAYLIB_3D_CODECS } from './extensions/raylib3d/catalog'
 import { PYTHON_TURTLE_CODECS } from './extensions/turtle/catalog'
 
 /** Course metadata only. Release approval and each learner's grants remain separate gates. */
 const CATALOG = describePythonCatalog([
   ...PYTHON_TURTLE_CODECS,
   ...PYTHON_PGZERO_CODECS,
+  ...PYTHON_RAYLIB_2D_CODECS,
+  ...PYTHON_RAYLIB_3D_CODECS,
   ...PYTHON_PROGRAMMING_CODECS,
 ])
 /** What an author can pick: hidden codecs are the other shape of a visible block. */

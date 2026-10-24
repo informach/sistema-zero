@@ -30,7 +30,9 @@ export function isStudioPythonAssetPath(path: unknown): path is string {
     typeof path === 'string' &&
     isStudioPortablePath(path) &&
     !path.split('/').some((part) => part.startsWith('.')) &&
-    /\.(?:png|jpe?g|webp|gif|svg|avif|bmp|mp3|ogg|oga|wav|webm|m4a|mp4|flac|glb|hdr)$/i.test(path)
+    /\.(?:png|jpe?g|webp|gif|svg|avif|bmp|mp3|ogg|oga|wav|webm|m4a|mp4|flac|glb|hdr|ttf|otf)$/i.test(
+      path,
+    )
   )
 }
 

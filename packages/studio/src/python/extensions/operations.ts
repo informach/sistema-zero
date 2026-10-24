@@ -19,13 +19,15 @@ export function pythonExtensionInstallIssue(
     )
   )
     return 'Esta extensão Python ainda não está disponível.'
-  if (
-    PYTHON_CANVAS_EXTENSION_IDS.includes(extension.id) &&
-    project.installedExtensions.some(
-      (item) => item.id !== extension.id && PYTHON_CANVAS_EXTENSION_IDS.includes(item.id),
-    )
-  )
-    return 'Turtle e Pygame Zero usam a mesma tela: remova a outra extensão antes de instalar esta.'
+  const canvasRival = PYTHON_CANVAS_EXTENSION_IDS.includes(extension.id)
+    ? project.installedExtensions.find(
+        (item) => item.id !== extension.id && PYTHON_CANVAS_EXTENSION_IDS.includes(item.id),
+      )
+    : undefined
+  if (canvasRival) {
+    const name = (id: string) => PYTHON_EXTENSIONS.find((item) => item.id === id)?.name ?? id
+    return `${name(canvasRival.id)} e ${name(extension.id)} usam a mesma tela: remova ${name(canvasRival.id)} antes de instalar ${name(extension.id)}.`
+  }
   if (!environment) return 'O ambiente Python ainda não está disponível nesta página.'
   if (allowedIds && !allowedIds.includes(extension.id))
     return 'Esta ferramenta não está liberada nesta tarefa.'

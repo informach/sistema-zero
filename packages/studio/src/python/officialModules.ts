@@ -1,8 +1,19 @@
 import type { PythonProjectDocument } from '../core/editableProject'
 import { PGZERO_EXTENSION } from '../runtime/python/pgzero/contract'
+import { RAYLIB_EXTENSION_IDS } from '../runtime/python/raylib/contract'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 
-const modules = ['random', 'math', 'time', 'turtle', 'pgzero', 'pgzrun', 'sz_audio'] as const
+const modules = [
+  'random',
+  'math',
+  'time',
+  'turtle',
+  'pgzero',
+  'pgzrun',
+  'pyray',
+  'raylib',
+  'sz_audio',
+] as const
 const shadowableModules = ['random', 'math', 'turtle', 'sz_audio'] as const
 export type PythonOfficialModule = (typeof modules)[number]
 
@@ -52,7 +63,11 @@ export function pythonOfficialModules(project: PythonProjectDocument) {
         (module !== 'turtle' ||
           project.installedExtensions.some((extension) => extension.id === TURTLE_EXTENSION.id)) &&
         ((module !== 'pgzero' && module !== 'pgzrun') ||
-          project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)),
+          project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)) &&
+        ((module !== 'pyray' && module !== 'raylib') ||
+          project.installedExtensions.some((extension) =>
+            (RAYLIB_EXTENSION_IDS as readonly string[]).includes(extension.id),
+          )),
     ),
   )
 }
