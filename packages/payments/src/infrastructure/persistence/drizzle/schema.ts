@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import {
   bigint,
   boolean,
+  check,
   index,
   integer,
   jsonb,
@@ -73,6 +74,18 @@ export const subscriptionStatusEnum = paymentsSchema.enum('subscription_status',
   'ACTIVE',
   'CANCELED',
   'EXPIRED',
+])
+export const subscriptionOperationKindEnum = paymentsSchema.enum('subscription_operation_kind', [
+  'CARD_UPDATE',
+  'RETRY',
+  'CANCEL',
+])
+export const subscriptionOperationStateEnum = paymentsSchema.enum('subscription_operation_state', [
+  'READY',
+  'EXECUTING',
+  'UNKNOWN',
+  'SUCCEEDED',
+  'REJECTED',
 ])
 export const outboxStatusEnum = paymentsSchema.enum('outbox_status', [
   'PENDING',
@@ -349,11 +362,51 @@ export const webhookDeliveries = paymentsSchema.table(
   ],
 )
 
+/** Intenções financeiras: persiste autoridade e resultado, nunca o token do cartão. */
+export const subscriptionOperations = paymentsSchema.table(
+  'subscription_operations',
+  {
+    id: uuid('id').primaryKey(),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => subscriptions.id),
+    consumerId: text('consumer_id').notNull(),
+    providerSubscriptionId: text('provider_subscription_id').notNull(),
+    kind: subscriptionOperationKindEnum('kind').notNull(),
+    state: subscriptionOperationStateEnum('state').notNull(),
+    providerPaymentId: text('provider_payment_id'),
+    amountInCents: bigint('amount_in_cents', { mode: 'bigint' }),
+    currency: text('currency').notNull().default('BRL'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    result: text('result'),
+  },
+  (table) => [
+    uniqueIndex('subscription_operations_active_uq')
+      .on(table.subscriptionId)
+      .where(sql`${table.state} in ('READY', 'EXECUTING', 'UNKNOWN')`),
+    index('subscription_operations_subscription_idx').on(table.subscriptionId, table.createdAt),
+    index('subscription_operations_pending_idx').on(table.state, table.startedAt),
+    check(
+      'subscription_operations_amount_check',
+      sql`(
+      (${table.kind} = 'RETRY' and ${table.providerPaymentId} is not null and ${table.amountInCents} is not null and ${table.amountInCents} > 0)
+    or (${table.kind} <> 'RETRY' and ${table.providerPaymentId} is null and ${table.amountInCents} is null)
+  )`,
+    ),
+    check('subscription_operations_currency_check', sql`${table.currency} = 'BRL'`),
+    check('subscription_operations_deadline_check', sql`${table.expiresAt} > ${table.createdAt}`),
+  ],
+)
+
 export const schema = {
   consumers,
   payments,
   subscriptions,
   subscriptionPlans,
+  subscriptionOperations,
   idempotencyKeys,
   outbox,
   webhookEvents,
