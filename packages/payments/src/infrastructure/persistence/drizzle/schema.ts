@@ -501,6 +501,45 @@ export const subscriptionRecoveryCases = paymentsSchema.table(
   ],
 )
 
+export const subscriptionRecoveryPolicy = paymentsSchema.table(
+  'subscription_recovery_policy',
+  {
+    id: integer('id').primaryKey(),
+    version: integer('version').notNull(),
+    windowDays: integer('window_days').notNull(),
+    reminderDays: jsonb('reminder_days').$type<readonly number[]>().notNull(),
+    enabled: boolean('enabled').notNull().default(false),
+    activatedAt: timestamp('activated_at', { withTimezone: true }),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+    updatedBy: text('updated_by').notNull(),
+  },
+  (table) => [
+    check('subscription_recovery_policy_singleton', sql`${table.id} = 1`),
+    check('subscription_recovery_policy_version', sql`${table.version} > 0`),
+    check('subscription_recovery_policy_window', sql`${table.windowDays} between 1 and 30`),
+    check(
+      'subscription_recovery_policy_reminders',
+      sql`jsonb_typeof(${table.reminderDays}) = 'array'`,
+    ),
+    check(
+      'subscription_recovery_policy_activation',
+      sql`not ${table.enabled} or ${table.activatedAt} is not null`,
+    ),
+  ],
+)
+
+export const subscriptionRecoveryPolicyAudit = paymentsSchema.table(
+  'subscription_recovery_policy_audit',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    version: integer('version').notNull(),
+    actorId: text('actor_id').notNull(),
+    snapshot: jsonb('snapshot').$type<Record<string, unknown>>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
+  },
+  (table) => [uniqueIndex('subscription_recovery_policy_audit_version_uq').on(table.version)],
+)
+
 export const schema = {
   consumers,
   payments,
@@ -508,6 +547,8 @@ export const schema = {
   subscriptionPlans,
   subscriptionOperations,
   subscriptionRecoveryCases,
+  subscriptionRecoveryPolicy,
+  subscriptionRecoveryPolicyAudit,
   idempotencyKeys,
   outbox,
   webhookEvents,

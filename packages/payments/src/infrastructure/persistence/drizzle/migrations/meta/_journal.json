@@ -78,6 +78,13 @@
       "when": 1792806475845,
       "tag": "0010_subscription_recovery_cases",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1792807155011,
+      "tag": "0011_subscription_recovery_policy",
+      "breakpoints": true
     }
   ]
 }
