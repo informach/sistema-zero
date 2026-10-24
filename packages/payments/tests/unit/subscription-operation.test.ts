@@ -22,12 +22,41 @@ describe('Intenção financeira de assinatura', () => {
     const operation = createSubscriptionOperation({
       ...input,
       kind: 'RETRY',
+      retryTerms: {
+        period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+        nextExecution: '2026-11-16',
+      },
       providerPaymentId: 'charge-qa',
       amountInCents: 9700n,
     })
     expect(operation.providerPaymentId).toBe('charge-qa')
     expect(operation.amountInCents).toBe(9700n)
     expect(operation.currency).toBe('BRL')
+    expect(operation.retryTerms?.nextExecution).toBe('2026-11-16')
+  })
+
+  test('regularização exige período e próxima cobrança válidos, com cópia defensiva', () => {
+    const terms = {
+      period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+      nextExecution: '2026-11-16',
+    }
+    const base = {
+      ...input,
+      kind: 'RETRY' as const,
+      providerPaymentId: 'charge-qa',
+      amountInCents: 9700n,
+    }
+    expect(() => createSubscriptionOperation(base)).toThrow()
+    for (const date of ['2026-02-30', '2026-13-01', 'wrong'])
+      expect(() =>
+        createSubscriptionOperation({ ...base, retryTerms: { ...terms, nextExecution: date } }),
+      ).toThrow()
+    const operation = createSubscriptionOperation({ ...base, retryTerms: terms })
+    terms.period.endsAt = '2030-11-16T12:00:00.000Z'
+    expect(operation.retryTerms?.period.endsAt).toBe('2026-11-16T12:00:00.000Z')
+    expect(() =>
+      createSubscriptionOperation({ ...input, kind: 'CARD_UPDATE', retryTerms: terms }),
+    ).toThrow()
   })
 
   test('regularização sem cobrança ou valor positivo é recusada', () => {
@@ -36,6 +65,10 @@ describe('Intenção financeira de assinatura', () => {
       createSubscriptionOperation({
         ...input,
         kind: 'RETRY',
+        retryTerms: {
+          period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+          nextExecution: '2026-11-16',
+        },
         providerPaymentId: 'charge-qa',
         amountInCents: 0n,
       }),

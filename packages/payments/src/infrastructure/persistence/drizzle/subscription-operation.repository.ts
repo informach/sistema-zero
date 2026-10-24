@@ -4,6 +4,7 @@ import type {
   SubscriptionOperation,
   SubscriptionOperationRepository,
 } from '../../../domain/subscription/subscription-operation'
+import { readRetryTerms } from '../../../domain/subscription/subscription-operation'
 import { ConcurrencyConflictError } from './concurrency.error'
 import type { Database } from './db'
 import { subscriptionOperations, subscriptions } from './schema'
@@ -193,5 +194,9 @@ export class DrizzleSubscriptionOperationRepository implements SubscriptionOpera
 
 function restore(row: typeof subscriptionOperations.$inferSelect): SubscriptionOperation {
   if (row.currency !== 'BRL') throw new Error('Moeda inválida na intenção de assinatura')
-  return { ...row, currency: row.currency }
+  return {
+    ...row,
+    currency: row.currency,
+    retryTerms: row.retryTerms ? readRetryTerms(row.retryTerms) : null,
+  }
 }

@@ -147,6 +147,10 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
       consumerId: 'qa-owner',
       providerSubscriptionId: 'provider-qa',
       kind: 'RETRY',
+      retryTerms: {
+        period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+        nextExecution: '2026-11-16',
+      },
       providerPaymentId: 'qa-failed-renewal',
       amountInCents: 9700n,
       now,

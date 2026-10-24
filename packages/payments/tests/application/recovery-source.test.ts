@@ -88,6 +88,10 @@ test('intenção de débito preparada, executando ou incerta impede concluir aus
     consumerId: item.consumerId,
     providerSubscriptionId: item.providerSubscriptionId,
     kind: 'RETRY',
+    retryTerms: {
+      period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+      nextExecution: '2026-11-16',
+    },
     providerPaymentId: item.providerPaymentId,
     amountInCents: item.amountInCents,
     now: item.openedAt,

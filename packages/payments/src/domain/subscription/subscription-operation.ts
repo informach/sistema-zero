@@ -1,4 +1,24 @@
+import { type BillingPeriod, readBillingPeriod } from '@sistemazero/core/billing'
 import { ValidationError } from '../shared/errors'
+
+export interface SubscriptionRetryTerms {
+  period: BillingPeriod
+  nextExecution: string
+}
+
+export function readRetryTerms(value: SubscriptionRetryTerms): SubscriptionRetryTerms {
+  const period = readBillingPeriod(value.period)
+  const date = value.nextExecution
+  const timestamp = typeof date === 'string' ? new Date(`${date}T00:00:00Z`) : new Date(Number.NaN)
+  if (
+    typeof date !== 'string' ||
+    !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+    !Number.isFinite(timestamp.getTime()) ||
+    timestamp.toISOString().slice(0, 10) !== date
+  )
+    throw new ValidationError('Próxima cobrança inválida')
+  return { period, nextExecution: date }
+}
 
 export type SubscriptionOperationKind = 'CARD_UPDATE' | 'RETRY' | 'CANCEL'
 export type SubscriptionOperationState =
@@ -18,6 +38,7 @@ export interface SubscriptionOperation {
   state: SubscriptionOperationState
   providerPaymentId: string | null
   amountInCents: bigint | null
+  retryTerms: SubscriptionRetryTerms | null
   currency: 'BRL'
   createdAt: Date
   expiresAt: Date
@@ -36,6 +57,7 @@ export function createSubscriptionOperation(input: {
   kind: SubscriptionOperationKind
   providerPaymentId?: string
   amountInCents?: bigint
+  retryTerms?: SubscriptionRetryTerms
   now: Date
 }): SubscriptionOperation {
   if (
@@ -48,13 +70,18 @@ export function createSubscriptionOperation(input: {
   }
   if (
     input.kind === 'RETRY' &&
-    (!input.providerPaymentId || !input.amountInCents || input.amountInCents < 1n)
+    (!input.providerPaymentId ||
+      !input.amountInCents ||
+      input.amountInCents < 1n ||
+      !input.retryTerms)
   ) {
-    throw new ValidationError('Regularização exige cobrança e valor confirmados')
+    throw new ValidationError('Regularização exige cobrança, valor e período confirmados')
   }
   if (
     input.kind !== 'RETRY' &&
-    (input.providerPaymentId !== undefined || input.amountInCents !== undefined)
+    (input.providerPaymentId !== undefined ||
+      input.amountInCents !== undefined ||
+      input.retryTerms !== undefined)
   ) {
     throw new ValidationError('Operação sem débito não recebe cobrança ou valor')
   }
@@ -67,6 +94,7 @@ export function createSubscriptionOperation(input: {
     state: 'READY',
     providerPaymentId: input.providerPaymentId ?? null,
     amountInCents: input.amountInCents ?? null,
+    retryTerms: input.retryTerms ? readRetryTerms(input.retryTerms) : null,
     currency: 'BRL',
     createdAt: new Date(input.now),
     expiresAt: new Date(input.now.getTime() + 10 * 60_000),

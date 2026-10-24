@@ -404,6 +404,10 @@ export const subscriptionOperations = paymentsSchema.table(
     state: subscriptionOperationStateEnum('state').notNull(),
     providerPaymentId: text('provider_payment_id'),
     amountInCents: bigint('amount_in_cents', { mode: 'bigint' }),
+    retryTerms:
+      jsonb('retry_terms').$type<
+        import('../../../domain/subscription/subscription-operation').SubscriptionRetryTerms
+      >(),
     currency: text('currency').notNull().default('BRL'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
@@ -427,6 +431,10 @@ export const subscriptionOperations = paymentsSchema.table(
   )`,
     ),
     check('subscription_operations_currency_check', sql`${table.currency} = 'BRL'`),
+    check(
+      'subscription_operations_retry_terms_check',
+      sql`(${table.kind} = 'RETRY' and ${table.retryTerms} is not null and jsonb_typeof(${table.retryTerms}) = 'object') or (${table.kind} <> 'RETRY' and ${table.retryTerms} is null)`,
+    ),
     check('subscription_operations_deadline_check', sql`${table.expiresAt} > ${table.createdAt}`),
     check(
       'subscription_operations_execution_check',

@@ -127,6 +127,13 @@
       "when": 1792841681579,
       "tag": "0017_preserve_subscription_failure",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1792842404851,
+      "tag": "0018_subscription_retry_terms",
+      "breakpoints": true
     }
   ]
 }
