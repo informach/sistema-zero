@@ -7,6 +7,22 @@ export const PYTHON_AUDIO_LIMITS = SZ_AUDIO_MODULE_DESCRIPTOR.audio.policy
 export type PythonAudioRequest =
   | { version: 1; op: 'play'; id: number; path: string; loop: boolean; volume: number }
   | { version: 1; op: 'stop'; id: number | null }
+  | { version: 1; op: 'volume'; id: number; volume: number }
+  /** Nothing to do: only collects the sounds that ended (Pygame Zero waits for them). */
+  | { version: 1; op: 'poll' }
+
+/** WAV for sz_audio and sound effects; MP3/OGG for Pygame Zero's music folder. */
+export const PYTHON_AUDIO_EXTENSIONS = ['.wav', '.ogg', '.oga', '.mp3'] as const
+export function pythonAudioMediaType(path: string) {
+  const lower = path.toLowerCase()
+  return lower.endsWith('.wav')
+    ? 'audio/wav'
+    : lower.endsWith('.mp3')
+      ? 'audio/mpeg'
+      : lower.endsWith('.ogg') || lower.endsWith('.oga')
+        ? 'audio/ogg'
+        : undefined
+}
 
 const identifier = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value > 0
@@ -32,6 +48,22 @@ export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
   if (!value || typeof value !== 'object' || Array.isArray(value)) invalid()
   const request = value as Record<string, unknown>
   if (request.version !== 1) invalid()
+  if (request.op === 'poll') {
+    if (Object.keys(request).some((key) => !['version', 'op'].includes(key))) invalid()
+    return { version: 1, op: 'poll' }
+  }
+  if (request.op === 'volume') {
+    if (
+      Object.keys(request).some((key) => !['version', 'op', 'id', 'volume'].includes(key)) ||
+      !identifier(request.id) ||
+      typeof request.volume !== 'number' ||
+      !Number.isFinite(request.volume) ||
+      request.volume < 0 ||
+      request.volume > 1
+    )
+      invalid()
+    return { version: 1, op: 'volume', id: request.id, volume: request.volume }
+  }
   if (request.op === 'stop') {
     if (
       Object.keys(request).some((key) => !['version', 'op', 'id'].includes(key)) ||
@@ -48,7 +80,7 @@ export function readPythonAudioRequest(raw: unknown): PythonAudioRequest {
     !identifier(request.id) ||
     typeof request.path !== 'string' ||
     !isStudioPythonAssetPath(request.path) ||
-    !request.path.toLowerCase().endsWith('.wav') ||
+    !pythonAudioMediaType(request.path) ||
     typeof request.loop !== 'boolean' ||
     typeof request.volume !== 'number' ||
     !Number.isFinite(request.volume) ||

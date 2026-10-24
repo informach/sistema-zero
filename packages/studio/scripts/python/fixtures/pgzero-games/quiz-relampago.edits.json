@@ -1,0 +1,50 @@
+[
+  {
+    "label": "width",
+    "path": {
+      "body": 1,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "720",
+    "after": "730"
+  },
+  {
+    "label": "height",
+    "path": {
+      "body": 2,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_integer",
+    "field": "NUMBER",
+    "before": "480",
+    "after": "490"
+  },
+  {
+    "label": "title",
+    "path": {
+      "body": 3,
+      "inputs": [
+        {
+          "name": "value",
+          "index": 0
+        }
+      ]
+    },
+    "codecId": "sz_py_text",
+    "field": "TEXT",
+    "before": "Quiz Relâmpago",
+    "after": "Quiz Relâmpago!"
+  }
+]

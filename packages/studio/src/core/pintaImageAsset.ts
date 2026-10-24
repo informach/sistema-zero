@@ -2,7 +2,7 @@ import {
   type PintaImageDerivation,
   PintaImageDerivationSchema,
 } from '@sistemazero/core/studio/pinta-image'
-import { decodeProjectAsset, digestAssetBytes } from './assetBinary'
+import { decodeProjectAsset, digestAssetBytes, isSvgDataUrl } from './assetBinary'
 import type { ProjectAsset } from './projectAssets'
 
 type ImageBinding = {
@@ -20,6 +20,29 @@ type ImageBinding = {
   tilemap?: unknown
 }
 
+/** The captured bytes keep the format the recipe asked for, and so does the Python file. */
+const OUTPUT_DATA_URL: Readonly<
+  Record<PintaImageDerivation['output']['mime'], (dataUrl: string) => boolean>
+> = {
+  'image/png': (dataUrl) => dataUrl.startsWith('data:image/png;base64,'),
+  'image/svg+xml': isSvgDataUrl,
+}
+const OUTPUT_EXTENSION: Readonly<Record<PintaImageDerivation['output']['mime'], RegExp>> = {
+  'image/png': /\.png$/i,
+  'image/svg+xml': /\.svg$/i,
+}
+
+/** Integer root size, exactly as Pinta writes it (`<svg ... width="W" height="H" viewBox=...>`). */
+function svgRootSize(bytes: Uint8Array): { width: number; height: number } | null {
+  const head = new TextDecoder().decode(bytes.subarray(0, 65536))
+  const root = /^<svg\b[^>]*>/.exec(head)?.[0]
+  const width = root && /\swidth="(\d+)"/.exec(root)?.[1]
+  const height = root && /\sheight="(\d+)"/.exec(root)?.[1]
+  return width && height && /\sviewBox="/.test(root)
+    ? { width: Number(width), height: Number(height) }
+    : null
+}
+
 /** Recipe is durable content: invalid or incompatible metadata must never be silently stripped. */
 export function readPintaImageAssetMetadata(asset: ImageBinding): PintaImageDerivation | undefined {
   if (asset.pintaImage === undefined) return undefined
@@ -30,11 +53,12 @@ export function readPintaImageAssetMetadata(asset: ImageBinding): PintaImageDeri
     asset.libOrigin !== 'pinta' ||
     asset.libId !== `personal:${metadata.recipe.drawingId}` ||
     typeof asset.dataUrl !== 'string' ||
-    !asset.dataUrl.startsWith('data:image/png;base64,') ||
+    !OUTPUT_DATA_URL[metadata.output.mime](asset.dataUrl) ||
     asset.width !== metadata.output.width ||
     asset.height !== metadata.output.height ||
     (asset.proPath !== undefined &&
-      (typeof asset.proPath !== 'string' || !/\.png$/i.test(asset.proPath))) ||
+      (typeof asset.proPath !== 'string' ||
+        !OUTPUT_EXTENSION[metadata.output.mime].test(asset.proPath))) ||
     asset.sprite !== undefined ||
     asset.tileset !== undefined ||
     asset.tilemap !== undefined
@@ -54,6 +78,20 @@ export function assertPintaImageAssetBytes(
   const metadata = readPintaImageAssetMetadata(asset)
   if (!metadata) return
   const output = metadata.output
+  if (output.mime === 'image/svg+xml') {
+    const size = svgRootSize(bytes)
+    if (
+      !size ||
+      size.width !== output.width ||
+      size.height !== output.height ||
+      bytes.byteLength !== output.bytes ||
+      sha256 !== output.sha256
+    )
+      throw new Error(
+        'Os bytes do desenho vetorial não correspondem à receita do Pinta. O original foi preservado.',
+      )
+    return
+  }
   if (
     bytes.byteLength < 33 ||
     ![137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value)

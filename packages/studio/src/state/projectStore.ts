@@ -45,6 +45,16 @@ import {
   type PythonProjectDocument,
   type PythonProProjectDocument,
 } from '../core/editableProject'
+import {
+  type PgzeroAudioRole,
+  pgzeroMediaPath,
+  pgzeroNameForPath,
+  pgzeroRelocatedAssets,
+  pgzeroRenamedAsset,
+  pgzeroSvgAssetSize,
+  projectUsesPgzero,
+  pythonProjectOccupiedPaths,
+} from '../core/pgzeroMediaPaths'
 import { readPintaImageAssetMetadata } from '../core/pintaImageAsset'
 import { parseProAssistance } from '../core/proAssistance'
 import {
@@ -327,6 +337,8 @@ export interface NewAssetInput {
   pintaImage?: unknown
   /** Attribution travels with the bytes through native/web export and publication. */
   license?: ProjectAsset['license']
+  /** Pygame Zero only: the child chose a short sound (`sounds/`) or a song (`music/`). */
+  pgzeroAudio?: PgzeroAudioRole
   /** Metadados do Pinta (animações/tiles/mapa) — saneados no store antes de guardar. */
   sprite?: unknown
   tileset?: unknown
@@ -1085,8 +1097,15 @@ export function createProjectStore(
         if (get().project !== expected) return 'O projeto mudou. Tente novamente.'
         if (get().editingAccess !== 'author') return 'Este projeto está em observação.'
         const { refinePythonProjectDocument } = await import('./pythonProjectValidation')
+        // Pygame Zero searches images/, sounds/ and music/: materials added before it move there.
+        const relocated =
+          !projectUsesPgzero(expected) && projectUsesPgzero({ installedExtensions: extensions })
+            ? pgzeroRelocatedAssets(expected)
+            : undefined
+        if (relocated && 'error' in relocated) return relocated.error
         const project = await refinePythonProjectDocument({
           ...expected,
+          ...relocated,
           installedExtensions: extensions,
           ...(expected.kind === 'classic'
             ? {
@@ -1326,7 +1345,32 @@ export function createProjectStore(
             mime === 'audio/flac' || mime === 'audio/x-flac'
               ? 'flac'
               : projectAssetFileExtension(mime, kind)
-          asset.proPath = `assets/${name}.${extension}`
+          if (projectUsesPgzero(p)) {
+            // Pygame Zero finds media by name in the folders next to the main file.
+            const placed = pgzeroMediaPath({
+              entrypoint: p.python.entrypoint,
+              name,
+              kind,
+              extension,
+              role: kind === 'audio' ? input.pgzeroAudio : undefined,
+              occupied: pythonProjectOccupiedPaths(p),
+            })
+            if ('error' in placed) return placed.error
+            asset.proPath = placed.path
+            // The panel name reads like the code name (`acerto_2` beside an `acerto`).
+            asset.name = pgzeroNameForPath(placed.path, name, assets, asset.id)
+            if (extension === 'svg') {
+              const size = pgzeroSvgAssetSize(input.dataUrl)
+              if ('error' in size) return size.error
+              asset.width = size.width
+              asset.height = size.height
+            }
+          } else {
+            // Turtle reads PNG/GIF only: a vector recipe never belongs to it.
+            if (pintaImage?.output.mime === 'image/svg+xml')
+              return 'O Turtle abre só imagens PNG ou GIF. Traga este desenho do Pinta como PNG.'
+            asset.proPath = `assets/${name}.${extension}`
+          }
           if (!isStudioPythonAssetPath(asset.proPath))
             return 'Este formato de imagem ou som ainda não é compatível com o projeto Python.'
           return commitPython({ ...p, assets: [...assets, asset] })
@@ -1431,6 +1475,12 @@ export function createProjectStore(
         } else if (!isValidAssetDataUrl(image.dataUrl, 'image', undefined, dataLimits)) {
           return 'Imagem inválida ou grande demais.'
         }
+        // A redrawn SVG in a Pygame Zero folder must still be one Pygame Zero can size.
+        const svgSize =
+          isPythonProject(p) && projectUsesPgzero(p) && /\.svg$/i.test(target.proPath ?? '')
+            ? pgzeroSvgAssetSize(image.dataUrl)
+            : undefined
+        if (svgSize && 'error' in svgSize) return svgSize.error
         // Orçamento do projeto contando o asset NOVO no lugar do velho (o
         // `addAsset` só checa o teto na entrada; um desenho reeditado pode ter
         // ficado bem maior).
@@ -1518,6 +1568,18 @@ export function createProjectStore(
           return 'Já existe uma imagem com esse nome.'
         }
         if (target.name === name) return null
+        if (isPythonProject(p) && projectUsesPgzero(p)) {
+          // Pygame Zero finds the file by name: the file follows the new name.
+          const renamed = pgzeroRenamedAsset(p, target, name)
+          if ('error' in renamed) return renamed.error
+          const cover =
+            p.coverAssetName === target.name ? { coverAssetName: renamed.asset.name } : {}
+          return commitPython({
+            ...p,
+            ...cover,
+            assets: p.assets.map((a) => (a.id === id ? renamed.asset : a)),
+          })
+        }
         const next = p.assets.map((a) => (a.id === id ? { ...a, name } : a))
         // A capa escolhida segue o nome novo.
         const cover = p.coverAssetName === target.name ? { coverAssetName: name } : {}

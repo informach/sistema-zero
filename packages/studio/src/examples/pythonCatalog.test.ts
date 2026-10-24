@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { readFile } from 'node:fs/promises'
 import { readPythonAudioWav } from '../runtime/python/audio/wav'
+import { PGZERO_GAMES } from './python/pgzeroGames.manifest'
 import { VISUAL_REFERENCE_GAMES } from './python/visualReferenceGames.manifest'
 import { PYTHON_EXAMPLE_SUMMARIES } from './pythonCatalog'
 
@@ -14,7 +15,9 @@ const qualifiedSources = {
 }
 
 test('the original race advertises Pro and the exact Turtle extension without embedding a runtime', () => {
-  expect(PYTHON_EXAMPLE_SUMMARIES).toHaveLength(2 + VISUAL_REFERENCE_GAMES.length * 2)
+  expect(PYTHON_EXAMPLE_SUMMARIES).toHaveLength(
+    2 + VISUAL_REFERENCE_GAMES.length * 2 + PGZERO_GAMES.length * 2,
+  )
   const entry = PYTHON_EXAMPLE_SUMMARIES[0]!
   expect(entry).toMatchObject({
     programmingLanguage: 'python',

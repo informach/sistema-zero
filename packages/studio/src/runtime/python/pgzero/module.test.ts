@@ -1,0 +1,25 @@
+import { expect, test } from 'bun:test'
+import { spawnSync } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
+
+const tests = fileURLToPath(new URL('./__tests__/module_test.py', import.meta.url))
+const pkg = fileURLToPath(new URL('./py', import.meta.url))
+
+/** The module is plain Python: its limits, paths, audio and loop run in any CPython 3.12+. */
+function python() {
+  for (const command of ['python3', 'python']) {
+    const probe = spawnSync(command, ['-c', 'import sys; print(sys.version_info >= (3, 12))'], {
+      encoding: 'utf8',
+    })
+    if (probe.status === 0 && probe.stdout.trim() === 'True') return command
+  }
+  // Never a silent skip: the Pygame Zero module would go untested.
+  throw new Error('Os testes do módulo Pygame Zero precisam de Python 3.12 ou mais novo.')
+}
+
+test('the Pygame Zero module keeps its limits, paths, audio and loop (CPython)', () => {
+  const run = spawnSync(python(), ['-I', '-B', tests, pkg], { encoding: 'utf8', timeout: 60_000 })
+  if (run.status !== 0) console.error(run.stdout, run.stderr)
+  expect(run.status).toBe(0)
+  expect(run.stderr).toMatch(/Ran \d+ tests/)
+}, 70_000)

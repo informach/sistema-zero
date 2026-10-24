@@ -29,6 +29,12 @@ test('graphics bounds reject shared memory, duplicate images and excessive paylo
     images: [{ id: 1, bytes: new Uint8Array(4) }],
   }
   expect(readPythonWorkerEvent(event)).toEqual(event)
+  // Pygame Zero's draw list travels as attachment 0.
+  const list = { ...event, images: [{ id: 0, bytes: new Uint8Array(8) }] }
+  expect(readPythonWorkerEvent(list)).toEqual(list)
+  expect(
+    readPythonWorkerEvent({ ...event, images: [{ id: -1, bytes: new Uint8Array(8) }] }),
+  ).toBeUndefined()
   expect(readPythonWorkerEvent({ ...event, request: 'x'.repeat(2_000_001) })).toBeUndefined()
   expect(
     readPythonWorkerEvent({ ...event, images: [...event.images, ...event.images] }),

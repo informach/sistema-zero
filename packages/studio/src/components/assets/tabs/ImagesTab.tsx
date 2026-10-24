@@ -48,6 +48,7 @@ export function ImagesTab({
   onConfigureTiles,
   onRename,
   onDelete,
+  codeNameOf,
   editTargetOf,
   onOpenInOrigin,
   isOriginUnknown,
@@ -120,6 +121,7 @@ export function ImagesTab({
                       asset={asset}
                       what="a imagem"
                       onRename={onRename}
+                      codeName={codeNameOf?.(asset)}
                       className="w-full"
                     />
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">

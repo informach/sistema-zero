@@ -40,12 +40,14 @@ const body = (
   field: string,
   label: string,
   role: PythonBlockRole = 'statement',
+  optional = false,
 ): StructuralSlot => ({
   field,
   label,
   kind: 'body',
   role,
   empty: field === 'body' && role === 'statement' ? 'pass' : undefined,
+  ...(optional ? { optional: true } : {}),
 })
 const word = (field: string, label: string, optional = false): StructuralSlot => ({
   field,
@@ -56,19 +58,6 @@ const word = (field: string, label: string, optional = false): StructuralSlot =>
 })
 
 const structures: PythonBlockCodec[] = [
-  structuralCodec({
-    ...metadata(
-      'if',
-      'se',
-      'Lógica e decisões',
-      1,
-      'statement',
-      'if / elif / else',
-      'Executa os comandos conforme a condição. Um se dentro do senão corresponde a elif.',
-    ),
-    defaultNode: () => node('If', { test: boolean(), body: [pass()], orelse: [] }),
-    slots: [value('test', 'condição'), body('body', 'então'), body('orelse', 'senão')],
-  }),
   structuralCodec({
     ...metadata(
       'while',
@@ -83,7 +72,7 @@ const structures: PythonBlockCodec[] = [
     slots: [
       value('test', 'condição'),
       body('body', 'repetir'),
-      body('orelse', 'ao terminar sem sair'),
+      body('orelse', 'se não sair com pare', 'statement', true),
     ],
   }),
   (() => {
@@ -109,7 +98,7 @@ const structures: PythonBlockCodec[] = [
         value('target', 'guardar item em'),
         value('iter', 'percorrer'),
         body('body', 'repetir'),
-        body('orelse', 'ao terminar sem sair'),
+        body('orelse', 'se não sair com pare', 'statement', true),
       ],
     })
     return {
@@ -165,12 +154,12 @@ const structures: PythonBlockCodec[] = [
   structuralCodec({
     ...metadata(
       'attribute',
-      'atributo do objeto',
+      'propriedade',
       'Classes e objetos',
-      3,
+      2,
       'value',
       'object.attribute',
-      'Lê um atributo ou um método do objeto.',
+      'Uma propriedade de um objeto, como x de um ator ou pontos de self. Também serve para mudar a propriedade em "guardar".',
     ),
     defaultNode: () => attribute(name('self'), 'pontos'),
     slots: [value('value', 'objeto'), word('attr', 'atributo')],
@@ -285,8 +274,8 @@ const structures: PythonBlockCodec[] = [
     slots: [
       body('body', 'tentar'),
       list('handlers', 'tratar', 'handler'),
-      body('orelse', 'se deu certo'),
-      body('finalbody', 'por fim'),
+      body('orelse', 'se deu certo', 'statement', true),
+      body('finalbody', 'no fim, sempre', 'statement', true),
     ],
   }),
   structuralCodec({

@@ -2,8 +2,12 @@ import { awaitWithSignal } from '@sistemazero/core/http'
 import { digestAssetBytes } from '../../../core/assetBinary'
 import type { StudioHostAudioPreference } from '../../types'
 import type { PythonExecutionSnapshot } from '../protocol'
-import { PYTHON_AUDIO_LIMITS, readPythonAudioRequest } from './contract'
+import { PYTHON_AUDIO_LIMITS, pythonAudioMediaType, readPythonAudioRequest } from './contract'
 import { readPythonAudioWav } from './wav'
+
+/** Ended voices kept until a reply carries them, and how many one reply carries (2 KiB). */
+const ENDED_RETAINED = 256
+const ENDED_PER_REPLY = 64
 
 interface Voice {
   cancelled: AbortController
@@ -24,6 +28,13 @@ export function createPythonAudioService(options: {
   const resources = new Map<string, Promise<string>>()
   const urls = new Set<string>()
   const voices = new Map<number, Voice>()
+  // Voices that ended by themselves or could not play, reported with the next replies so
+  // Pygame Zero can run on_music_end and repeat Sound.play(loops=N).
+  const ended: number[] = []
+  const report = (id: number) => {
+    ended.push(id)
+    if (ended.length > ENDED_RETAINED) ended.splice(0, ended.length - ENDED_RETAINED)
+  }
   const lifetime = new AbortController()
   const signal = AbortSignal.any([options.signal, lifetime.signal])
   let windowStart = performance.now()
@@ -77,9 +88,13 @@ export function createPythonAudioService(options: {
     if (existing) return existing
     const file = files.get(path)
     if (file?.kind !== 'asset') throw new Error('O som precisa ser um material deste projeto.')
-    readPythonAudioWav(file.bytes)
+    const type = pythonAudioMediaType(path)
+    if (!type) throw new Error('Formato de som não suportado.')
+    if (type === 'audio/wav') readPythonAudioWav(file.bytes)
+    else if (file.bytes.byteLength > PYTHON_AUDIO_LIMITS.fileBytes)
+      throw new Error('O arquivo de som é grande demais.')
     // Blob captures exact bytes before the first await, independently of later caller mutations.
-    const blob = new Blob([file.bytes], { type: 'audio/wav' })
+    const blob = new Blob([file.bytes], { type })
     const pending = (async () => {
       const captured = new Uint8Array(await blob.arrayBuffer())
       if ((await digestAssetBytes(captured)) !== file.sha256)
@@ -115,22 +130,26 @@ export function createPythonAudioService(options: {
       const failure = new Promise<never>((_resolve, reject) => {
         rejectLoad = reject
       })
-      const ended = () => stop(request.id, voice)
+      const finished = () => {
+        stop(request.id, voice)
+        report(request.id)
+      }
       const failed = () => {
         const error = new Error(`Não foi possível reproduzir o som ${request.path}.`)
         rejectLoad(error)
         if (started) {
           stop(request.id, voice)
+          report(request.id)
           if (!disposed) options.onError(error)
         }
       }
-      audio.addEventListener('ended', ended, { once: true })
+      audio.addEventListener('ended', finished, { once: true })
       audio.addEventListener('error', failed, { once: true })
       let released = false
       voice.release = () => {
         if (released) return
         released = true
-        audio.removeEventListener('ended', ended)
+        audio.removeEventListener('ended', finished)
         audio.removeEventListener('error', failed)
         audio.pause()
         audio.removeAttribute('src')
@@ -144,11 +163,18 @@ export function createPythonAudioService(options: {
       voiceSignal.throwIfAborted()
       started = true
     } catch (error) {
+      // A sound that could not play has ended for the program too (a stopped one has not).
+      const cancelled = voiceSignal.aborted
       stop(request.id, voice)
+      if (!cancelled) report(request.id)
       if (error instanceof DOMException && error.name === 'NotAllowedError')
         throw new Error('Clique em Jogar ou Executar para permitir o som e tente novamente.')
       throw error
     }
+  }
+
+  function takeEnded() {
+    return ended.length ? { ended: ended.splice(0, ENDED_PER_REPLY) } : {}
   }
 
   return {
@@ -163,20 +189,26 @@ export function createPythonAudioService(options: {
         }
         if (++commands > PYTHON_AUDIO_LIMITS.commandsPerSecond)
           throw new Error('O programa excedeu o limite de comandos de áudio.')
-        if (request.op === 'play') await play(request)
-        else if (request.id === null) {
+        if (request.op === 'poll') {
+          // Collects the ended voices below.
+        } else if (request.op === 'play') await play(request)
+        else if (request.op === 'volume') {
+          const audio = voices.get(request.id)?.audio
+          if (audio) audio.volume = request.volume
+        } else if (request.id === null) {
           for (const [id, voice] of voices) stop(id, voice)
         } else {
           const voice = voices.get(request.id)
           if (voice) stop(request.id, voice)
         }
         signal.throwIfAborted()
-        return JSON.stringify({ version: 1, ok: true })
+        return JSON.stringify({ version: 1, ok: true, ...takeEnded() })
       } catch (error) {
         return JSON.stringify({
           version: 1,
           ok: false,
           error: error instanceof Error ? error.message.slice(0, 1000) : 'Falha do áudio Python.',
+          ...takeEnded(),
         })
       }
     },

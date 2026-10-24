@@ -51,8 +51,8 @@ export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefin
       for (const entry of raw.images) {
         if (
           !record(entry) ||
+          // Id 0 is legal: Pygame Zero sends its draw list as attachment 0.
           !count(entry.id) ||
-          !entry.id ||
           ids.has(entry.id) ||
           !(entry.bytes instanceof Uint8Array) ||
           !(entry.bytes.buffer instanceof ArrayBuffer) ||

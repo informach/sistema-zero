@@ -1,9 +1,15 @@
 import './configureProtectedSchemas'
 
 import { StudioPythonActivitySchema } from '@sistemazero/core/studio/python-activity'
+import { isPythonCanvasExtension, type PythonCanvasExtension } from './canvasExtension'
 import { createPythonConsoleBuffer } from './consoleBuffer'
 import { createPythonInterpreter, PYODIDE_VERSION, PYTHON_VERSION } from './interpreter'
-import { PYTHON_CONSOLE_LIMITS, type PythonWorkerEvent } from './protocol'
+import {
+  PYTHON_CONSOLE_LIMITS,
+  PYTHON_GRAPHICS_REPLY_LIMITS,
+  type PythonGraphicsReply,
+  type PythonWorkerEvent,
+} from './protocol'
 import { readPythonWireSnapshot } from './wireSnapshot'
 
 const post = globalThis.postMessage.bind(globalThis)
@@ -15,7 +21,7 @@ let phase: 'booting' | 'booted' | 'preparing' | 'prepared' | 'running' | 'comple
 let pendingInput: { id: string; resolve(value: string): void } | undefined
 let inputSequence = 0
 let graphicsSequence = 0
-let pendingGraphics: { id: string; resolve(value: string): void } | undefined
+let pendingGraphics: { id: string; resolve(value: PythonGraphicsReply): void } | undefined
 let audioSequence = 0
 let pendingAudio: { id: string; resolve(value: string): void } | undefined
 let activityRequest: string | undefined
@@ -49,19 +55,21 @@ function failure(error: unknown) {
 let bootStarted = false
 
 /** Module evaluation is inert; the private bootstrap configures its reader before starting once. */
-export async function startPythonWorker(options: { turtle?: boolean }) {
+export async function startPythonWorker(options: { canvas?: PythonCanvasExtension | null }) {
   if (bootStarted) throw new Error('O worker Python já foi iniciado.')
   bootStarted = true
   if (
     !options ||
     typeof options !== 'object' ||
-    Reflect.ownKeys(options).some((key) => key !== 'turtle') ||
-    (options.turtle !== undefined && typeof options.turtle !== 'boolean')
+    Reflect.ownKeys(options).some((key) => key !== 'canvas') ||
+    (options.canvas !== undefined &&
+      options.canvas !== null &&
+      !isPythonCanvasExtension(options.canvas))
   )
     throw new Error('Configuração inicial do worker Python inválida.')
   try {
     const interpreter = await createPythonInterpreter({
-      startupTurtle: options.turtle,
+      startupCanvas: options.canvas,
       onBootLine(stream, text) {
         output.append(stream, `${text}\n`)
         scheduleOutput()
@@ -83,7 +91,7 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
       },
       graphics(request, images) {
         if (phase !== 'running' || pendingGraphics || pendingAudio || pendingInput)
-          return Promise.reject(new Error('Atualização Turtle fora de ordem.'))
+          return Promise.reject(new Error('Atualização gráfica fora de ordem.'))
         return new Promise((resolve) => {
           const id = `graphics-${++graphicsSequence}`
           pendingGraphics = { id, resolve }
@@ -138,12 +146,24 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
             message.requestId !== pendingGraphics.id ||
             !('response' in message) ||
             typeof message.response !== 'string' ||
-            message.response.length > 128_000
+            message.response.length > PYTHON_GRAPHICS_REPLY_LIMITS.textChars
           )
-            throw new Error('Resposta Turtle fora de ordem.')
+            throw new Error('Resposta gráfica fora de ordem.')
+          const bytes = 'bytes' in message ? message.bytes : undefined
+          if (
+            bytes !== undefined &&
+            (!(bytes instanceof Uint8Array) ||
+              !(bytes.buffer instanceof ArrayBuffer) ||
+              bytes.byteLength > PYTHON_GRAPHICS_REPLY_LIMITS.bytes)
+          )
+            throw new Error('Resposta gráfica fora de ordem.')
           const pending = pendingGraphics
           pendingGraphics = undefined
-          pending.resolve(message.response)
+          pending.resolve(
+            bytes === undefined
+              ? message.response
+              : { text: message.response, bytes: bytes as Uint8Array<ArrayBuffer> },
+          )
           return
         }
         if (message.type === 'input') {

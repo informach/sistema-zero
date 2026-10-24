@@ -994,6 +994,84 @@ describe('C3 recipe sync', () => {
     expect(await getPersonalAsset('d1')).toEqual(canonical)
   })
 
+  it('Pygame Zero: an SVG recipe is reapplied as SVG when the drawing changes, open and closed, at the same images/ path', async () => {
+    const svgOf = (color: string) =>
+      `<svg xmlns="http://www.w3.org/2000/svg" width="2" height="2" viewBox="0 0 1 1"><rect width="1" height="1" fill="${color}"/></svg>`
+    const svgDataUrl = (svg: string) =>
+      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
+    const derivationOf = (svg: string, base: PintaImageDerivation): PintaImageDerivation => {
+      const bytes = Buffer.from(svg)
+      return {
+        ...base,
+        recipe: { ...base.recipe, output: 'svg' },
+        output: {
+          mime: 'image/svg+xml',
+          width: 2,
+          height: 2,
+          bytes: bytes.length,
+          sha256: createHash('sha256').update(bytes).digest('hex'),
+        },
+      }
+    }
+    const png = derivedPintaAsset()
+    if (!png.pintaImage) throw new Error('Fixture must carry a recipe')
+    const before = svgOf('#ff0000')
+    const vector: ProjectAsset = {
+      ...png,
+      dataUrl: svgDataUrl(before),
+      width: 2,
+      height: 2,
+      proPath: 'images/heroi.svg',
+      pintaImage: derivationOf(before, png.pintaImage),
+    }
+    const pgzero = [{ id: 'python-pgzero', version: '1.0.0', installedAt: 1 }]
+    const closed = await refinePythonProjectDocument({
+      ...documentFixture('python', 'classic'),
+      id: 'python-closed-pgzero',
+      installedExtensions: pgzero,
+      assets: [vector],
+    })
+    await persistProject(closed)
+    const open = await refinePythonProjectDocument({
+      ...documentFixture('python', 'classic'),
+      installedExtensions: pgzero,
+      assets: [vector],
+    })
+    useProjectStore.setState({ project: open, isDirty: false, saveError: null })
+    await savePersonalAsset({ id: 'd1', name: 'heroi', origin: 'pinta', dataUrl: PNG_NOVO })
+    const after = svgOf('#0000ff')
+    const resolver = imageResolver()
+    resolver.adapter.previewImage = async (recipe, _limits, options) => {
+      resolver.recipes.push(structuredClone(recipe))
+      if (!vector.pintaImage) throw new Error('Fixture must carry a recipe')
+      return {
+        dataUrl: svgDataUrl(after),
+        derivation: {
+          ...derivationOf(after, vector.pintaImage),
+          recipe,
+          provenance: structuredClone(options?.expectedProvenance ?? vector.pintaImage.provenance),
+        },
+      }
+    }
+    const result = await syncDrawingsIntoProjects(useProjectStore, {
+      pintaLibrary: resolver.adapter,
+    })
+    expect(result.failures).toEqual([])
+    expect(result.updatedInOpenProject).toBe(1)
+    expect(result.updatedInOtherProjects).toBe(1)
+    // The SAME recipe went back to Pinta: it still asks for SVG.
+    expect(resolver.recipes.every((recipe) => recipe.output === 'svg')).toBe(true)
+    for (const synced of [
+      useProjectStore.getState().project?.assets?.[0],
+      (await loadProjectAssetsById(closed.id))[0],
+    ]) {
+      expect(synced?.dataUrl).toBe(svgDataUrl(after))
+      expect(synced?.proPath).toBe('images/heroi.svg')
+      expect(synced?.pintaImage?.output.mime).toBe('image/svg+xml')
+      expect(synced?.pintaImage?.provenance.sourceSha256).toBe('b'.repeat(64))
+    }
+  })
+
   it('detects a dependency change with unchanged source and personal marker, without loading JS asset partitions or rasterizing unchanged recipes', async () => {
     const asset = derivedPintaAsset()
     if (!asset.pintaImage) throw new Error('Fixture must carry a recipe')

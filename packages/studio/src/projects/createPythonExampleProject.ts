@@ -73,6 +73,10 @@ async function assertExamplePalette(
     allowCategories: curation?.allowCategories,
   })
   const available = new Set(palette.entries.map(({ id }) => id))
+  // A hidden codec is the other shape of a visible concept (a value call used as a statement,
+  // a bare expression): it never sits in a palette, yet decoding needs it approved.
+  for (const entry of authoring.catalog)
+    if (entry.hidden && authoring.approvedBlockIds.has(entry.id)) available.add(entry.id)
   const allowedModes = curation?.allowedModes
   if (
     requiredBlocks.some((id) => !available.has(id)) ||

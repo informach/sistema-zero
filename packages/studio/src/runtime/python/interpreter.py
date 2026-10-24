@@ -9,7 +9,7 @@ from importlib.machinery import SourceFileLoader
 from pathlib import Path
 
 from pyodide.code import eval_code_async
-from pyodide.ffi import run_sync
+from pyodide.ffi import run_sync, to_js
 
 
 def _bounded_text(value, limit):
@@ -67,11 +67,26 @@ class _ConsoleInput(io.TextIOBase):
         return "".join(parts)
 
 
+class _NoPygameFinder:
+    """pygame itself does not run in the browser; say what to use instead."""
+
+    def find_spec(self, name, path=None, target=None):
+        if name == 'pygame' or name.startswith('pygame.'):
+            raise ModuleNotFoundError(
+                "No Estúdio, o Pygame Zero já está pronto sem 'import pygame': use screen, "
+                "Actor, Rect, images e sounds direto. Para ler a cor de um ponto de uma imagem, "
+                "use images.nome.get_at((x, y)).",
+                name=name,
+            )
+        return None
+
+
 class _StudioExecution:
     def __init__(self):
         self._main = None
         self._entrypoint = None
         self._grader = None
+        self._after_main = None
 
     def prepare(self, root, entrypoint, request_line):
         if self._main is not None:
@@ -107,6 +122,33 @@ class _StudioExecution:
         backend.configure(graphics, str(Path.cwd()),
                           self._grader.checkpoint if self._grader is not None else None)
 
+    def install_pgzero(self, directory, exchange, decode):
+        # Pygame Zero runs like `pgzrun main.py`: the program's top level runs first with the
+        # built-in names already present, then the game loop starts. `import pgzrun` and
+        # `pgzrun.go()` stay valid (runner mode). Author modules keep precedence.
+        if self._main is None or 'pgzero' in sys.modules:
+            raise RuntimeError('O Pygame Zero não pode ser preparado nesta execução.')
+        sys.path.insert(1, directory)
+        sys.meta_path.insert(0, _NoPygameFinder())
+        sys._pgzrun = True
+        from pgzero import _sz, runner
+
+        def transport(header, payload):
+            # A Uint8Array copy crosses the boundary: no PyProxy for the browser to keep or free.
+            # The reply is the text, or [text, pixels] when the browser sends bytes back.
+            reply = run_sync(exchange(header, to_js(payload)))
+            if isinstance(reply, str):
+                return reply, None
+            return str(reply[0]), reply[1].to_bytes()
+
+        def decoder(path):
+            # One copy into Python memory (to_bytes), not two.
+            return run_sync(decode(path)).to_bytes()
+
+        _sz.configure(transport, decoder, str(Path.cwd()))
+        runner.prepare_mod(self._main)
+        self._after_main = lambda: runner.run_mod(self._main)
+
     def install_audio(self, directory, exchange):
         # Author modules keep precedence. This adds media, not an unofficial turtle method.
         if self._main is None or '_sz_audio_runtime' in sys.modules:
@@ -134,6 +176,8 @@ class _StudioExecution:
         try:
             source = Path(self._entrypoint).read_bytes()
             exec(compile(source, self._entrypoint, "exec", dont_inherit=True), self._main.__dict__)
+            if self._after_main is not None:
+                self._after_main()
             result = {"ok": True, "text": ""}
         except SystemExit as error:
             if error.code is None or isinstance(error.code, int) and int.__eq__(error.code, 0):

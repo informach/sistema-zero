@@ -70,3 +70,39 @@ test('PNG binary bytes and encoded character limits are independent; malformed/r
   forged.derivation.output.bytes += 1
   expect(() => assertPintaImageFits(forged, limits)).toThrow()
 })
+
+test('an SVG preview (Pygame Zero) must say its output size in the root and keep its exact bytes', () => {
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="24" viewBox="0 0 16 12"><rect width="16" height="12"/></svg>'
+  const svgPreview = () => {
+    const base = preview()
+    return {
+      dataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+      derivation: {
+        ...base.derivation,
+        recipe: { ...base.derivation.recipe, output: 'svg' as const },
+        output: {
+          ...base.derivation.output,
+          mime: 'image/svg+xml' as const,
+          width: 32,
+          height: 24,
+          bytes: Buffer.byteLength(svg),
+        },
+      },
+    }
+  }
+  const limits = pintaImageTargetLimits([])
+  expect(() => assertPintaImageFits(svgPreview(), limits)).not.toThrow()
+  // Over the destination budget: refused with a clear message, never turned into a PNG.
+  expect(() => assertPintaImageFits(svgPreview(), { ...limits, imageBytes: 10 })).toThrow(
+    'O desenho vetorial ultrapassa o espaço disponível no projeto.',
+  )
+  const resized = svgPreview()
+  resized.derivation.output.width = 16
+  expect(() => assertPintaImageFits(resized, limits)).toThrow()
+  // A PNG data URL cannot pass as the SVG the recipe asked for (and vice versa).
+  expect(() => assertPintaImageFits({ ...svgPreview(), dataUrl }, limits)).toThrow()
+  expect(() =>
+    assertPintaImageFits({ ...preview(), dataUrl: svgPreview().dataUrl }, limits),
+  ).toThrow()
+})

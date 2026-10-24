@@ -13,6 +13,9 @@ const MIME_EXTENSIONS: Readonly<Record<string, string>> = {
   'audio/ogg': 'ogg',
   'audio/wav': 'wav',
   'audio/x-wav': 'wav',
+  'audio/wave': 'wav',
+  'audio/vnd.wave': 'wav',
+  'audio/vnd.wav': 'wav',
   'audio/webm': 'webm',
   'audio/mp4': 'm4a',
   'model/gltf-binary': 'glb',
@@ -29,6 +32,14 @@ export function projectAssetFileExtension(
   if (kind === 'model3d') return 'glb'
   if (kind === 'environment3d') return 'hdr'
   return MIME_EXTENSIONS[mime] ?? fallback
+}
+
+/**
+ * An SVG `data:` URL exactly as `decodeProjectAsset` reads it. A prefix test would also take
+ * `data:image/svg+xmlX,…`, whose MIME maps to no extension.
+ */
+export function isSvgDataUrl(value: string): boolean {
+  return /^data:image\/svg\+xml(?:;charset=(?:utf-8|us-ascii))?(?:;base64)?,/i.test(value)
 }
 
 export function decodeProjectAsset(dataUrl: string): {

@@ -211,7 +211,7 @@ test('Turtle installation cannot grant itself; earned block owners gate discover
     ...original.configuration.catalog.releases[0]!.manifest,
     extensions: [{ id: 'python-turtle', versions: ['1.0.0'] }],
   })
-  const turtle = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+  const turtle = pythonCourseBlockClosure(['sz_py_turtle_turtle_forward'])
   const f = await setup('classic', release, undefined, ['sz_py_pass', ...turtle])
   f.request.subject.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
   expect((await f.service.options(f.actor)).pythonGrantedExtensionIds).toEqual([])
@@ -366,7 +366,7 @@ test('a Pro code-only profile retains earned extension owners without a Classic 
   })
   const f = await setup('pro', release, undefined, [])
   f.state.capabilities = ['studio', 'pro']
-  f.state.blocks = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+  f.state.blocks = pythonCourseBlockClosure(['sz_py_turtle_turtle_forward'])
   f.request.subject.installedExtensions = [{ id: 'python-turtle', version: '1.0.0' }]
   const options = await f.service.options(f.actor)
   expect(options.pythonGrantedExtensionIds).toEqual(['python-turtle'])

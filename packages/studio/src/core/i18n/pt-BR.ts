@@ -287,6 +287,8 @@ export const ptBR: Record<string, string> = {
     'Este quadro é uma imagem parada. A posição escolhida acompanha a ordem dos quadros no Pinta.',
   'pintaImport.image.fullMap':
     'O mapa inteiro vira uma imagem, com todas as camadas visíveis, incluindo a camada da frente.',
+  'pintaImport.image.vector':
+    'Este desenho entra como vetor (SVG): fica nítido em qualquer tamanho e o Pygame Zero o mostra no tamanho escolhido.',
   'pintaImport.image.preparing': 'Preparando a imagem…',
   'pintaImport.image.preview': 'Prévia da imagem escolhida',
   'pintaImport.image.add': 'Adicionar imagem',

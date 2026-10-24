@@ -872,6 +872,114 @@ describe('Python image selection through the real modal and project store', () =
     })
   }
 
+  for (const destination of ['python-pgzero', 'python-turtle', 'none'] as const) {
+    it(`${destination}: the destination decides the format of a vector and of a pixel drawing`, async () => {
+      const raw = documentFixture('python', 'classic')
+      raw.assets = []
+      if (destination !== 'none')
+        raw.installedExtensions = [{ id: destination, version: '1.0.0', installedAt: 1 }]
+      useProjectStore.setState({
+        project: await refinePythonProjectDocument(raw),
+        editingAccess: 'author',
+        isDirty: false,
+      })
+      const svgText =
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1" viewBox="0 0 1 1"><rect width="1" height="1"/></svg>'
+      const svgBytes = Buffer.from(svgText)
+      const image = (recipe: PintaImageRecipe) => {
+        const png = portableImage(recipe)
+        return recipe.output === 'svg'
+          ? {
+              dataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgText)}`,
+              derivation: {
+                ...png.derivation,
+                output: {
+                  mime: 'image/svg+xml' as const,
+                  width: 1,
+                  height: 1,
+                  bytes: svgBytes.length,
+                  sha256: createHash('sha256').update(svgBytes).digest('hex'),
+                },
+              },
+            }
+          : png
+      }
+      const previews: PintaImageRecipe[] = []
+      const adapter = pythonAdapter({
+        list: async () => [
+          {
+            ...DRAWINGS[1]!,
+            imageSelection: { kind: 'background', width: 1, height: 1, vector: true },
+          },
+          {
+            ...DRAWINGS[0]!,
+            imageSelection: {
+              kind: 'frame',
+              width: 1,
+              height: 1,
+              animations: [{ id: 'andar', name: 'andar', frameCount: 1 }],
+            },
+          },
+        ],
+        previewImage: async (recipe) => {
+          previews.push(structuredClone(recipe))
+          return image(recipe)
+        },
+        import: async (id, options) => {
+          if (!options?.image) throw new Error('Explicit recipe required')
+          const result = image(options.image.recipe)
+          return {
+            ok: true,
+            asset: {
+              id,
+              name: id === 'd2' ? 'ceu-azul' : 'dragao-pintado',
+              dataUrl: result.dataUrl,
+              pintaImage: result.derivation,
+              width: 1,
+              height: 1,
+            },
+          }
+        },
+      })
+      render(
+        <StudioPintaLibraryProvider value={adapter}>
+          <PintaImportDialog onClose={() => {}} />
+        </StudioPintaLibraryProvider>,
+      )
+      for (const index of [0, 1]) {
+        // An added drawing's card says "Escolher outra imagem"; the order stays the gallery's.
+        const choose = await screen.findAllByRole('button', { name: /^Escolher (outra )?imagem$/ })
+        expect(choose).toHaveLength(2)
+        fireEvent.click(choose[index]!)
+        await screen.findByAltText('Prévia da imagem escolhida')
+        // Only the vector drawing in a Pygame Zero project announces the SVG.
+        expect(screen.queryByText(/entra como vetor \(SVG\)/) !== null).toBe(
+          destination === 'python-pgzero' && index === 0,
+        )
+        await waitFor(() => expect(buttonDisabled('Adicionar imagem')).toBe(false))
+        fireEvent.click(screen.getByRole('button', { name: 'Adicionar imagem' }))
+        await waitFor(() =>
+          expect(useProjectStore.getState().project?.assets).toHaveLength(index + 1),
+        )
+        fireEvent.click(screen.getByRole('button', { name: 'Voltar' }))
+      }
+      const assets = useProjectStore.getState().project?.assets ?? []
+      expect(previews.map((recipe) => recipe.output)).toEqual(
+        destination === 'python-pgzero' ? ['svg', undefined] : [undefined, undefined],
+      )
+      expect(assets.map((asset) => asset.proPath)).toEqual(
+        destination === 'python-pgzero'
+          ? ['images/ceu_azul.svg', 'images/dragao_pintado.png']
+          : ['assets/ceu-azul.png', 'assets/dragao-pintado.png'],
+      )
+      expect(assets.map((asset) => asset.pintaImage?.output.mime)).toEqual(
+        destination === 'python-pgzero'
+          ? ['image/svg+xml', 'image/png']
+          : ['image/png', 'image/png'],
+      )
+    })
+  }
+
   it('a changed frame revokes its pending preview; the late image never replaces the current choice', async () => {
     await seedPythonProject()
     const first = Promise.withResolvers<ReturnType<typeof portableImage>>()

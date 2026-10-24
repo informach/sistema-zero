@@ -160,3 +160,49 @@ describe('Pinta recipe is durable project content, never a request to regenerate
     expect(second.metadataSha256).not.toBe(first.metadataSha256)
   })
 })
+
+describe('an SVG recipe (Pygame Zero) is durable content too', () => {
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 16 16"><rect width="16" height="16"/></svg>'
+  const svgBytes = new Uint8Array(Buffer.from(svg))
+  function svgAsset(): ProjectAsset & { pintaImage: PintaImageDerivation } {
+    const base = asset()
+    return {
+      ...base,
+      dataUrl: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+      width: 32,
+      height: 32,
+      proPath: 'images/heroi.svg',
+      pintaImage: {
+        ...base.pintaImage,
+        recipe: { ...base.pintaImage.recipe, output: 'svg' },
+        output: {
+          mime: 'image/svg+xml',
+          width: 32,
+          height: 32,
+          bytes: svgBytes.length,
+          sha256: createHash('sha256').update(svgBytes).digest('hex'),
+        },
+      },
+    }
+  }
+  test('reads back unchanged and materializes its exact bytes at images/<name>.svg', async () => {
+    const source = svgAsset()
+    expect(sanitizePythonProjectAssets([source])).toEqual([source])
+    const built = await buildPythonAssetBundle([source])
+    expect(built.files.get('images/heroi.svg')).toEqual(svgBytes)
+    expect(built.manifest.assets[0]).toMatchObject({
+      mime: 'image/svg+xml',
+      path: 'images/heroi.svg',
+    })
+  })
+  test('format, file extension, root size and bytes must all agree with the recipe', async () => {
+    expect(() =>
+      sanitizePythonProjectAssets([{ ...svgAsset(), proPath: 'images/heroi.png' }]),
+    ).toThrow()
+    expect(() => sanitizePythonProjectAssets([{ ...svgAsset(), dataUrl }])).toThrow()
+    const resized = svgAsset()
+    resized.dataUrl = resized.dataUrl.replace('width%3D%2232%22', 'width%3D%2216%22')
+    await expect(buildPythonAssetBundle([resized])).rejects.toThrow('desenho vetorial')
+  })
+})

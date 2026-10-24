@@ -79,6 +79,8 @@
     "check:python-text-sources": "bun scripts/gen-python-text-sources.ts --check",
     "gen:python-visual-examples": "bun scripts/generate-visual-reference-games.ts && bun scripts/python/generate-visual-example-block-metadata.ts",
     "check:python-visual-examples": "bun scripts/generate-visual-reference-games.ts --check && bun scripts/python/generate-visual-example-block-metadata.ts --check",
+    "gen:pgzero-games": "bun --no-env-file scripts/generate-pgzero-games.ts",
+    "check:pgzero-games": "bun --no-env-file scripts/generate-pgzero-games.ts --check",
     "gen:server-examples": "bun scripts/gen-server-examples.ts",
     "gen:snow-descent": "bun scripts/gen-snow-descent.ts",
     "check:snow-descent": "bun scripts/gen-snow-descent.ts --check",

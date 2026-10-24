@@ -1,5 +1,6 @@
 import type { PythonNode, PythonSourceRange } from '../language/types'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
+import { pythonCodecIndex } from './codecIndex'
 import type {
   PythonBlockCodec,
   PythonBlockField,
@@ -7,6 +8,7 @@ import type {
   PythonBlockShape,
 } from './contract'
 import { isNode, nodes } from './nodes'
+import { pythonResolverOptionsOf } from './resolverOptions'
 import { pythonBindingResolver } from './scope'
 
 export interface PythonVisualOrigin {
@@ -46,17 +48,34 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<str
   const found = new Set<string>()
   for (const codec of codecs) {
     if (!codec.binding && !codec.bindingFor) continue
-    if (codec.binding) found.add(codec.binding.root)
+    // A bare Python built-in (open, range) is not an attribute of anything the child can
+    // reassign with `x.open = ...`; only `builtins.open = ...` could, and the resolver
+    // treats every write to the builtins module as a replacement.
+    const bareBuiltin = codec.binding && !codec.binding.module && !codec.binding.builtin
+    if (codec.binding && !bareBuiltin) found.add(codec.binding.root)
     if (codec.binding?.member) found.add(codec.binding.member)
-    const template = codec.defaultNode()
-    let path: PythonNode | undefined =
-      template.kind === 'Call' && isNode(template.fields.func) ? template.fields.func : template
+    let template = codec.defaultNode()
+    if (template.kind === 'Expr' && isNode(template.fields.value)) template = template.fields.value
+    // A method of a built-in type (lista.clear, arquivo.write) cannot be replaced by an
+    // attribute store either: the receiver is a list or a file, never an official object.
+    const receiverBinding = codec.bindingFor?.(codec.defaultNode())
+    if (receiverBinding && !receiverBinding.root && !receiverBinding.builtin) continue
+    // Only callables are guarded: writing a data property (actor.x) is ordinary use.
+    if (template.kind !== 'Call') continue
+    let path: PythonNode | undefined = isNode(template.fields.func)
+      ? template.fields.func
+      : undefined
     while (path?.kind === 'Attribute') {
       if (typeof path.fields.attr === 'string') found.add(path.fields.attr)
       path = isNode(path.fields.value) ? path.fields.value : undefined
     }
     // A method template's receiver is only a sample variable, not an API name.
-    if (!codec.bindingFor && path?.kind === 'Name' && typeof path.fields.id === 'string')
+    if (
+      !codec.bindingFor &&
+      !bareBuiltin &&
+      path?.kind === 'Name' &&
+      typeof path.fields.id === 'string'
+    )
       found.add(path.fields.id)
   }
   names = found
@@ -71,27 +90,39 @@ export function pythonASTToVisual(
   if (tree.kind !== 'Module' || !nodes(tree.fields.body) || !nodes(tree.fields.type_ignores))
     throw new Error('O programa Python precisa de um módulo completo.')
   const codecs = options.codecs ?? PYTHON_PROGRAMMING_CODECS
-  const resolves = pythonBindingResolver(tree, options.officialModules, guardedAttributes(codecs))
+  const resolves = pythonBindingResolver(
+    tree,
+    options.officialModules,
+    guardedAttributes(codecs),
+    pythonResolverOptionsOf(codecs),
+  )
+  const context = { isModule: resolves.isModule }
+  const index = pythonCodecIndex(codecs)
   let count = 0
   function project(value: PythonNode, role: PythonBlockRole, depth = 0): PythonVisualNode {
     if (++count > 20_000 || depth > 80) throw new Error('O programa excede o limite visual.')
     const origin = { nodeId: value.id, range: value.range }
-    for (const codec of codecs) {
+    for (const codec of index.candidates(value)) {
       const compatibleRole = codec.role === role || (role === 'format' && codec.id === 'sz_py_text')
       if (!compatibleRole) continue
       const binding = codec.bindingFor ? codec.bindingFor(value) : codec.binding
       if ((codec.bindingFor && !binding) || !resolves(value, binding)) continue
       if (codec.receiverKinds) {
-        const func = value.fields.func
+        // A command is an Expr statement around the call; the receiver is on the call.
+        const callNode =
+          value.kind === 'Expr' && isNode(value.fields.value) ? value.fields.value : value
+        const func = callNode.fields.func
         const receiver = isNode(func) && func.kind === 'Attribute' ? func.fields.value : undefined
         const kind = isNode(receiver)
           ? receiver.kind === 'Constant' && typeof receiver.fields.value === 'string'
             ? 'text'
-            : receiver.kind
+            : receiver.kind === 'Name'
+              ? resolves.receiverKind(receiver)
+              : receiver.kind
           : undefined
         if (!codec.receiverKinds.some((allowed) => allowed === kind)) continue
       }
-      const shape = codec.decode(value)
+      const shape = codec.decode(value, context)
       if (!shape) continue
       return {
         kind: 'block',

@@ -48,7 +48,7 @@ async function patchCourse(app: App, id: string, body: Record<string, unknown>) 
 describe('Members HTTP — currículo do Estúdio no curso', () => {
   test('Python and JavaScript retain their exact IDs through create, omitted PATCH and replacement', async () => {
     const { app } = buildApp()
-    const python = pythonCourseBlockClosure(['sz_py_turtle_module_forward'])
+    const python = pythonCourseBlockClosure(['sz_py_turtle_turtle_forward'])
     const studioUnlockBlocks = ['sz_g2d_create_ship', ...python]
     const created = await createCourse(app, { studioUnlockBlocks })
     expect(created.studioUnlockBlocks).toEqual(studioUnlockBlocks)
@@ -67,7 +67,7 @@ describe('Members HTTP — currículo do Estúdio no curso', () => {
 
   test.each([
     { ids: ['sz_py_unknown'] },
-    { ids: ['sz_py_turtle_module_forward'] },
+    { ids: ['sz_py_turtle_turtle_forward'] },
     { ids: ['sz_py_pass', 'sz_py_pass'] },
   ])('POST and PATCH refuse invalid or incomplete Python rewards without expanding or replacing them: %j', async ({
     ids,

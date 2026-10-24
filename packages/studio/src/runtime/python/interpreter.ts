@@ -14,9 +14,11 @@ import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-prov
 import activitySource from './activity-grader.py'
 import { createPythonActivityConsoleMatcher } from './activityConsole'
 import audioSource from './audio/sz_audio/__init__.py'
+import { type PythonCanvasExtension, pythonCanvasExtension } from './canvasExtension'
 import bridgeSource from './interpreter.py'
-import type { PythonConsoleStream, PythonExecutionSnapshot } from './protocol'
-import { hasTurtleExtension } from './turtle/contract'
+import { PGZERO_EXTENSION } from './pgzero/contract'
+import { loadPgzeroModuleSources } from './pgzero/moduleSources'
+import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
 import { loadTurtleModuleSources } from './turtle/moduleSources'
 
 import { PYODIDE_VERSION, PYTHON_VERSION } from './versions'
@@ -35,6 +37,7 @@ interface ExecutionBridge {
   execute: PythonCallable
   evaluate: PythonCallable
   install_turtle: PythonCallable
+  install_pgzero: PythonCallable
   install_audio: PythonCallable
   install_activity: PythonCallable
   grade_activity: PythonCallable
@@ -79,6 +82,67 @@ async function loadTurtleResources(base: URL, scope: AbortController) {
   return { protocol, sources }
 }
 
+async function loadPgzeroResources(base: URL, scope: AbortController) {
+  const [protocol, sources]: [
+    typeof import('./pgzero/protocol'),
+    ReadonlyMap<string, Uint8Array<ArrayBuffer>>,
+  ] = await awaitWithSignal(
+    () =>
+      Promise.all([
+        import(/* @vite-ignore */ new URL('pgzero-protocol.mjs', base).href),
+        loadPgzeroModuleSources(base, scope.signal),
+      ]).catch((error: unknown) => {
+        scope.abort(error)
+        throw error
+      }),
+    scope.signal,
+  )
+  scope.signal.throwIfAborted()
+  return { protocol, sources }
+}
+type ExtensionResources =
+  | { kind: 'python-turtle'; value: Awaited<ReturnType<typeof loadTurtleResources>> }
+  | { kind: 'python-pgzero'; value: Awaited<ReturnType<typeof loadPgzeroResources>> }
+function loadCanvasResources(kind: PythonCanvasExtension, base: URL, scope: AbortController) {
+  return kind === 'python-turtle'
+    ? loadTurtleResources(base, scope).then(
+        (value): ExtensionResources => ({ kind: 'python-turtle', value }),
+      )
+    : loadPgzeroResources(base, scope).then(
+        (value): ExtensionResources => ({ kind: 'python-pgzero', value }),
+      )
+}
+
+/** Pixels of a project image for Pygame Zero's get_at, decoded inside the worker. */
+async function decodeProjectImage(bytes: Uint8Array<ArrayBuffer>, path: string) {
+  if (bytes.byteLength > 16 * 1024 * 1024) throw new Error('A imagem é grande demais para ler.')
+  const type = /\.png$/i.test(path)
+    ? 'image/png'
+    : /\.gif$/i.test(path)
+      ? 'image/gif'
+      : /\.bmp$/i.test(path)
+        ? 'image/bmp'
+        : 'image/jpeg'
+  const bitmap = await createImageBitmap(new Blob([bytes], { type }), {
+    premultiplyAlpha: 'none',
+    colorSpaceConversion: 'none',
+    // pygame ignores EXIF rotation, and so does the renderer: the pixels must match its size.
+    imageOrientation: 'none',
+  })
+  try {
+    if (bitmap.width * bitmap.height > 16 * 1024 * 1024)
+      throw new Error('A imagem é grande demais para ler os pixels.')
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+    const context = canvas.getContext('2d', { willReadFrequently: true })
+    if (!context) throw new Error('Não foi possível ler os pixels da imagem.')
+    context.drawImage(bitmap, 0, 0)
+    const data = context.getImageData(0, 0, bitmap.width, bitmap.height).data
+    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength)
+  } finally {
+    bitmap.close()
+  }
+}
+
 export interface PythonEvaluationResult {
   ok: boolean
   text: string
@@ -107,7 +171,7 @@ function readResult(raw: unknown): PythonEvaluationResult {
 /** Runs only inside a disposable, protected worker. CSP remains the security boundary. */
 export async function createPythonInterpreter(options: {
   /** Captured by the trusted frame; absence preserves the explicit lazy internal path. */
-  startupTurtle?: boolean
+  startupCanvas?: PythonCanvasExtension | null
   onBootLine(stream: PythonConsoleStream, text: string): void
   write(stream: PythonConsoleStream, bytes: Uint8Array): number
   requestLine(): Promise<string>
@@ -116,7 +180,7 @@ export async function createPythonInterpreter(options: {
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
-  ): Promise<string>
+  ): Promise<PythonGraphicsReply>
   audio?(request: string): Promise<string>
 }) {
   const base = new URL('./', import.meta.url)
@@ -137,9 +201,11 @@ export async function createPythonInterpreter(options: {
       stderr: (text) => options.onBootLine('stderr', text),
     })
   }
-  const [runtime, prefetchedTurtle] = await Promise.all([
+  const [runtime, prefetchedCanvas] = await Promise.all([
     initialize(),
-    options.startupTurtle === true ? loadTurtleResources(base, resourceScope) : undefined,
+    options.startupCanvas
+      ? loadCanvasResources(options.startupCanvas, base, resourceScope)
+      : undefined,
   ]).catch((error: unknown) => {
     resourceScope.abort(error)
     throw error
@@ -165,6 +231,7 @@ export async function createPythonInterpreter(options: {
   const execute = bridge.execute
   const evaluate = bridge.evaluate
   const installTurtle = bridge.install_turtle
+  const installPgzero = bridge.install_pgzero
   const installAudio = bridge.install_audio
   const installActivity = bridge.install_activity
   const gradeActivity = bridge.grade_activity
@@ -178,9 +245,9 @@ export async function createPythonInterpreter(options: {
       rawActivity?: StudioPythonActivity,
     ): Promise<void> {
       if (disposed || prepared) throw new Error('O interpretador não pode receber outro snapshot.')
-      const turtle = hasTurtleExtension(snapshot.configuration.extensions)
-      if (options.startupTurtle !== undefined && options.startupTurtle !== turtle)
-        throw new Error('A extensão Turtle difere da configuração inicial desta execução.')
+      const canvas = pythonCanvasExtension(snapshot.configuration.extensions) ?? null
+      if (options.startupCanvas !== undefined && (options.startupCanvas ?? null) !== canvas)
+        throw new Error('A extensão de tela difere da configuração inicial desta execução.')
       const activity =
         rawActivity === undefined ? undefined : StudioPythonActivitySchema.parse(rawActivity)
       if (activity) assertStudioPythonActivityScope(activity, snapshot.configuration)
@@ -188,9 +255,7 @@ export async function createPythonInterpreter(options: {
         throw new Error('O projeto pede outra versão de Python.')
       if (
         snapshot.configuration.python.dependencyLock.packages.length ||
-        (snapshot.configuration.extensions.length &&
-          (snapshot.configuration.extensions.length !== 1 ||
-            !hasTurtleExtension(snapshot.configuration.extensions)))
+        snapshot.configuration.extensions.length > (canvas ? 1 : 0)
       )
         throw new Error(
           'Os pacotes ou extensões deste projeto ainda não estão disponíveis neste executor.',
@@ -243,32 +308,121 @@ export async function createPythonInterpreter(options: {
           (id: string) => activityConsole!.matches(id),
         )
       }
-      if (turtle) {
-        if (!options.graphics) throw new Error('O renderer Turtle não está disponível.')
-        const { protocol, sources } =
-          prefetchedTurtle ?? (await loadTurtleResources(base, resourceScope))
+      if (canvas) {
+        if (!options.graphics) throw new Error('A tela gráfica do Python não está disponível.')
+        const resources =
+          prefetchedCanvas?.kind === canvas
+            ? prefetchedCanvas
+            : await loadCanvasResources(canvas, base, resourceScope)
         resourceScope.signal.throwIfAborted()
-        const { readTurtleGraphicsRequest, TURTLE_GRAPHICS_LIMITS } = protocol
-        const directory = '/studio/extensions/python-turtle-1.0.0'
-        runtime.FS.mkdirTree(directory)
-        for (const [filename, bytes] of sources)
-          runtime.FS.writeFile(`${directory}/${filename}`, bytes)
-        installTurtle(directory, (raw: unknown) => {
-          const request = readTurtleGraphicsRequest(raw)
-          const images: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
-          let bytes = 0
-          for (const operation of request.operations) {
-            if (operation.op !== 'image') continue
-            if (!operation.path.startsWith(`${PROJECT_ROOT}/`) || operation.path.includes('/../'))
-              throw new Error('A imagem Turtle precisa estar dentro do projeto.')
-            const source = runtime.FS.readFile(operation.path)
-            bytes += source.byteLength
-            if (source.byteLength > TURTLE_GRAPHICS_LIMITS.imageBytes || bytes > 32 * 1024 * 1024)
-              throw new Error('As imagens Turtle excedem o limite de bytes.')
-            images.push({ id: operation.id, bytes: new Uint8Array(source) })
-          }
-          return options.graphics!(JSON.stringify(request), images)
-        })
+        if (resources.kind === 'python-turtle') {
+          const { protocol, sources } = resources.value
+          const { readTurtleGraphicsRequest, TURTLE_GRAPHICS_LIMITS } = protocol
+          const directory = '/studio/extensions/python-turtle-1.0.0'
+          runtime.FS.mkdirTree(directory)
+          for (const [filename, bytes] of sources)
+            runtime.FS.writeFile(`${directory}/${filename}`, bytes)
+          installTurtle(directory, (raw: unknown) => {
+            const request = readTurtleGraphicsRequest(raw)
+            const images: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
+            let bytes = 0
+            for (const operation of request.operations) {
+              if (operation.op !== 'image') continue
+              if (!operation.path.startsWith(`${PROJECT_ROOT}/`) || operation.path.includes('/../'))
+                throw new Error('A imagem Turtle precisa estar dentro do projeto.')
+              const source = runtime.FS.readFile(operation.path)
+              bytes += source.byteLength
+              if (source.byteLength > TURTLE_GRAPHICS_LIMITS.imageBytes || bytes > 32 * 1024 * 1024)
+                throw new Error('As imagens Turtle excedem o limite de bytes.')
+              images.push({ id: operation.id, bytes: new Uint8Array(source) })
+            }
+            return options.graphics!(JSON.stringify(request), images)
+          })
+        } else {
+          const { protocol, sources } = resources.value
+          const {
+            readPgzeroFrameHeader,
+            PGZERO_LIMITS,
+            PGZERO_LIST_ATTACHMENT,
+            PGZERO_FONT_ATTACHMENT_BASE,
+            PGZERO_DEFAULT_FONT_ATTACHMENT,
+          } = protocol
+          const directory = `/studio/extensions/${PGZERO_EXTENSION.id}-${PGZERO_EXTENSION.version}`
+          runtime.FS.mkdirTree(`${directory}/pgzero`)
+          for (const [filename, bytes] of sources)
+            runtime.FS.writeFile(`${directory}/${filename}`, bytes)
+          const inProject = (path: string) =>
+            path.startsWith(`${PROJECT_ROOT}/`) && !path.split('/').includes('..')
+          let sentFont = false
+          installPgzero(
+            directory,
+            (raw: unknown, payload: unknown) => {
+              const header = readPgzeroFrameHeader(raw)
+              const attachments: { id: number; bytes: Uint8Array<ArrayBuffer> }[] = []
+              // Python hands over a Uint8Array copy (to_js), never a proxy to free here. That
+              // copy owns its buffer, which is transferred as is: no third copy of the list.
+              if (!header.keep) {
+                if (
+                  !(payload instanceof Uint8Array) ||
+                  !(payload.buffer instanceof ArrayBuffer) ||
+                  payload.byteLength > PGZERO_LIMITS.listBytes
+                )
+                  throw new Error('Quadro do Pygame Zero acima do limite.')
+                attachments.push({
+                  id: PGZERO_LIST_ATTACHMENT,
+                  bytes:
+                    payload.byteOffset === 0 && payload.byteLength === payload.buffer.byteLength
+                      ? (payload as Uint8Array<ArrayBuffer>)
+                      : new Uint8Array(payload),
+                })
+              }
+              if (!sentFont) {
+                sentFont = true
+                attachments.push({
+                  id: PGZERO_DEFAULT_FONT_ATTACHMENT,
+                  bytes: new Uint8Array(runtime.FS.readFile(`${directory}/freesansbold.ttf`)),
+                })
+              }
+              // The draw list, images and fonts of one frame share one budget (Python keeps it).
+              let total = header.keep ? 0 : (payload as Uint8Array).byteLength
+              for (const [id, path] of header.images) {
+                if (!inProject(path)) throw new Error('A imagem precisa estar dentro do projeto.')
+                const source = runtime.FS.readFile(path)
+                total += source.byteLength
+                // _sz.present keeps each frame within this budget; more is a broken module.
+                if (
+                  source.byteLength > PGZERO_LIMITS.imageBytes ||
+                  total > PGZERO_LIMITS.frameAttachmentBytes
+                )
+                  throw new Error('As imagens do jogo passaram do limite de bytes.')
+                attachments.push({ id, bytes: new Uint8Array(source) })
+              }
+              for (const [id, path] of header.fonts) {
+                if (!inProject(path)) throw new Error('A fonte precisa estar dentro do projeto.')
+                const source = runtime.FS.readFile(path)
+                total += source.byteLength
+                if (
+                  source.byteLength > PGZERO_LIMITS.fontBytes ||
+                  total > PGZERO_LIMITS.frameAttachmentBytes
+                )
+                  throw new Error('A fonte é grande demais.')
+                attachments.push({
+                  id: PGZERO_FONT_ATTACHMENT_BASE + id,
+                  bytes: new Uint8Array(source),
+                })
+              }
+              // A reply with bytes (pixels) reaches Python as [text, bytes].
+              return options.graphics!(raw as string, attachments).then((reply) =>
+                typeof reply === 'string' ? reply : [reply.text, reply.bytes],
+              )
+            },
+            (path: unknown) => {
+              if (typeof path !== 'string' || !inProject(path))
+                throw new Error('A imagem precisa estar dentro do projeto.')
+              return decodeProjectImage(new Uint8Array(runtime.FS.readFile(path)), path)
+            },
+          )
+        }
       }
       prepared = true
     },
@@ -313,6 +467,7 @@ export async function createPythonInterpreter(options: {
       execute.destroy()
       evaluate.destroy()
       installTurtle.destroy()
+      installPgzero.destroy()
       installAudio.destroy()
       installActivity.destroy()
       gradeActivity.destroy()
