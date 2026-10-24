@@ -19,6 +19,7 @@ import { GetPaymentsStatsService } from '../../src/application/payments-stats/ge
 import { GetSubscriptionStatsService } from '../../src/application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
+import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
 import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
@@ -211,6 +212,20 @@ function buildApp(opts: BuildOpts = {}) {
       silentLogger,
     ),
     getSubscription: new GetSubscriptionService(subscriptionRepo),
+    retrySubscriptionCharge: new RetrySubscriptionChargeService(
+      subscriptionsMyRead,
+      subscriptionRepo,
+      repo,
+      subscriptionOperations,
+      gateway,
+      new HandleSubscriptionNotificationService(
+        subscriptionRepo,
+        repo,
+        gateway,
+        new InMemoryWebhookInbox(),
+        silentLogger,
+      ),
+    ),
     updateSubscriptionCard: new UpdateSubscriptionCardService(
       subscriptionsMyRead,
       subscriptionRepo,
@@ -1670,6 +1685,58 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     expect(error).not.toContain('raw-qa-marker')
     expect(error).not.toContain('cvv-qa-marker')
     expect(error).not.toContain('qa-token-transient')
+  })
+
+  test('regularização recusa criança, suporte, conta alheia e consentimento ausente', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const intentId = crypto.randomUUID()
+    const path = `http://localhost/payments/my/subscriptions/${id}/retry-intents`
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' }
+    const create = JSON.stringify({ paymentId: crypto.randomUUID() })
+    const execute = JSON.stringify({
+      paymentToken: 'transient-qa',
+      card: { brand: 'visa', last4: '1234' },
+      consent: true,
+    })
+    for (const deniedHeader of ['x-auth-account-id', 'x-auth-impersonator-id']) {
+      for (const [url, method, body] of [
+        [path, 'GET', undefined],
+        [path, 'POST', create],
+        [`${path}/${intentId}`, 'GET', undefined],
+        [`${path}/${intentId}`, 'POST', execute],
+      ] as const) {
+        const response = await app.handle(
+          new Request(url, { method, headers: { ...headers, [deniedHeader]: 'qa-other' }, body }),
+        )
+        expect(response.status).toBe(403)
+      }
+    }
+    expect((await app.handle(new Request(path))).status).toBe(401)
+    expect(
+      (
+        await app.handle(
+          new Request(path, { headers: { ...headers, 'x-auth-user-email': 'other@example.test' } }),
+        )
+      ).status,
+    ).toBe(404)
+    for (const body of [
+      { paymentToken: 'transient-qa', card: { brand: 'visa', last4: '1234' } },
+      { paymentToken: 'transient-qa', card: { brand: 'visa', last4: '1234' }, consent: false },
+      {
+        paymentToken: 'transient-qa',
+        card: { brand: 'visa', last4: '1234', number: 'raw-qa', cvv: 'cvv-qa' },
+        consent: true,
+      },
+    ]) {
+      const response = await app.handle(
+        new Request(`${path}/${intentId}`, { method: 'POST', headers, body: JSON.stringify(body) }),
+      )
+      expect(response.status).toBe(400)
+      const text = await response.text()
+      for (const marker of ['transient-qa', 'raw-qa', 'cvv-qa']) expect(text).not.toContain(marker)
+    }
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
   })
 
   test('cartão recusa perfil infantil e sessão de suporte em todas as operações', async () => {

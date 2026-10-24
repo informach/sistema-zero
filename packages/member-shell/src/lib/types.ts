@@ -1530,6 +1530,7 @@ export interface LessonDetailView {
 
 // ── Payments ("minhas compras" — PaymentView PÚBLICA, sem dados sensíveis) ──
 export interface PaymentView {
+  subscriptionId?: string | null
   id: string
   consumerId: string
   status: string
@@ -1591,6 +1592,8 @@ export type {
   SubscriptionCardConfigView,
   SubscriptionCardContextView,
   SubscriptionCardIntentView,
+  SubscriptionRetryContextView,
+  SubscriptionRetryIntentView,
 } from './subscription-card'
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {

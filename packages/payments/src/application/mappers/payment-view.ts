@@ -5,6 +5,7 @@ import type { PaymentMethodType } from '../../domain/value-objects/payment-metho
 
 /** Representação de leitura de um pagamento, exposta na API (sem dados sensíveis). */
 export interface PaymentView {
+  subscriptionId?: string | null
   cycleAccess?: SubscriptionCycleAccess
   id: string
   consumerId: string
@@ -51,6 +52,7 @@ export function toPaymentView(payment: PaymentAggregate): PaymentView {
   }
 
   const qr = payment.pixQrCode
+  if (payment.subscriptionId) view.subscriptionId = payment.subscriptionId
   if (payment.cycleAccess) view.cycleAccess = payment.cycleAccess
   if (payment.method.type === 'PIX' && payment.txid && qr) {
     view.pix = {

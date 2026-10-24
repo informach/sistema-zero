@@ -19,6 +19,7 @@ import type { GetPaymentsStatsService } from '../../application/payments-stats/g
 import type { GetSubscriptionStatsService } from '../../application/payments-stats/get-subscription-stats.service'
 import type { ProcessPaymentService } from '../../application/process-payment/process-payment.service'
 import type { RefundPaymentService } from '../../application/refund-payment/refund-payment.service'
+import type { RetrySubscriptionChargeService } from '../../application/subscription-card/retry-subscription-charge.service'
 import type { UpdateSubscriptionCardService } from '../../application/subscription-card/update-subscription-card.service'
 import type { RecoveryPolicyService } from '../../application/subscription-recovery/recovery-policy.service'
 import type { ConsumerRepository } from '../../domain/ports/consumer-repository.port'
@@ -53,6 +54,7 @@ export interface HttpDeps {
   getSubscription: GetSubscriptionService
   cancelSubscription: CancelSubscriptionService
   recoveryPolicy: RecoveryPolicyService
+  retrySubscriptionCharge: RetrySubscriptionChargeService
   updateSubscriptionCard: UpdateSubscriptionCardService
   handleWebhook: HandleProviderWebhookService
   handleBoletoNotification: HandleBoletoNotificationService
@@ -136,7 +138,12 @@ export function createServer(deps: HttpDeps) {
       return undefined
     })
     .onError({ as: 'global' }, ({ code, error, set, request }) => {
-      if (code === 'VALIDATION' && new URL(request.url).pathname.includes('/card-intents')) {
+      if (
+        code === 'VALIDATION' &&
+        ['/card-intents', '/retry-intents'].some((path) =>
+          new URL(request.url).pathname.includes(path),
+        )
+      ) {
         set.status = 400
         return {
           error: {
@@ -219,6 +226,7 @@ export function createServer(deps: HttpDeps) {
         listMySubscriptions: deps.listMySubscriptions,
         cancelSubscription: deps.cancelSubscription,
         updateSubscriptionCard: deps.updateSubscriptionCard,
+        retrySubscriptionCharge: deps.retrySubscriptionCharge,
         cardConfig: {
           accountIdentifier: deps.env.EFI_ACCOUNT_IDENTIFIER,
           environment: deps.env.EFI_SANDBOX ? 'sandbox' : 'production',

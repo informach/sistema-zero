@@ -34,3 +34,27 @@ Este commit entrega o motor e a migration gerada 0018. Ainda faltam conexão HTT
 interface com consentimento e termos, resolução auditada de UNKNOWN, testes sandbox e
 qualificação dos dois públicos. Nenhuma cobrança real, mensagem, alteração de cartão ou
 assinatura foi executada. Não é conclusão do plano financeiro nem deploy de produção.
+
+## Integração HTTP e interface (lote seguinte)
+
+O motor está conectado ao composition-root e às rotas `/payments/my/subscriptions/:id/retry-intents`.
+O BFF comum e os shims dos dois apps preservam ownership, sessão própria do titular,
+validação estrita e consentimento `true`. Kids exige conta do responsável na borda local.
+Leitura pública de pagamento passa a expor `subscriptionId` canônico quando presente.
+
+A janela comum reutiliza tokenização e limpeza da troca preventiva. Abrir só consulta;
+`Conferir cobrança` prepara termos; checkbox e botão confirmam o valor explicitamente.
+Intenção expirada não ganha termos novos silenciosamente. Estado UNKNOWN só permite GET,
+inclusive ao reabrir; PAN/CPF/CVV não entram no corpo enviado ao BFF.
+
+Evidência do lote: Payments 508/0, 1494 asserções, PostgreSQL r8 e tipagem limpa;
+BFF/impersonação/política Kids + wrapper DOM 16/0, 81 asserções externas (não somar
+novamente os casos internos); fixture DOM inclui quatro cenários novos de regularização;
+tipagem focada do componente/fixture limpa com TypeScript do workspace e heap768.
+Biome nos arquivos alterados e diff check exigidos antes do commit. Navegador real,
+compilação completa dos hosts e sandbox Efí ainda pendentes; CI novo deve qualificar
+esta composição, não herdar o resultado do commit anterior.
+
+Ainda pendentes: fila administrativa e ações de exceção auditadas, conciliação explícita
+de UNKNOWN, tratamento individual do legado, troca do dunning antigo, ativação dos
+consumidores/templates/variáveis, full review financeiro e release completo.

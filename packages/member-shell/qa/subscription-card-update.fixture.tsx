@@ -19,7 +19,7 @@ mock.module('@sistemazero/ui/efi-card-token', () => ({
   tokenizeEfiCard: tokenization,
 }))
 const { createRoot } = await import('react-dom/client')
-const { SubscriptionCardUpdate } = await import(
+const { SubscriptionCardUpdate, SubscriptionChargeRetry } = await import(
   '../src/components/billing/subscription-card-update'
 )
 const nativeFetch = globalThis.fetch
@@ -31,6 +31,16 @@ const intent = {
   expiresAt: new Date(Date.now() + 600_000).toISOString(),
   chargesNow: false,
   result: null,
+}
+const retryIntent = {
+  ...intent,
+  chargesNow: true,
+  amountInCents: '9700',
+  currency: 'BRL',
+  terms: {
+    period: { startsAt: '2026-10-16T12:00:00.000Z', endsAt: '2026-11-16T12:00:00.000Z' },
+    nextExecution: '2026-11-16',
+  },
 }
 let unmount: (() => Promise<void>) | undefined
 afterEach(async () => {
@@ -55,9 +65,11 @@ function button(label: string) {
 }
 async function mount(
   currentIntent: unknown = null,
-  execution: () => Promise<Response> = async () => Response.json({ ...intent, state: 'SUCCEEDED' }),
+  execution?: () => Promise<Response>,
   availability = { canUpdate: true, tokenization: true },
+  retry = false,
 ) {
+  const displayIntent = retry ? retryIntent : intent
   const calls: Array<{ path: string; method: string; body: unknown }> = []
   globalThis.fetch = Object.assign(
     async (input: string | URL | Request, init?: RequestInit) => {
@@ -70,12 +82,16 @@ async function mount(
           accountIdentifier: availability.tokenization ? 'qa-public-account' : null,
           environment: 'sandbox',
         })
-      if (path.endsWith('/card-intents'))
+      if (path.endsWith('/card-intents') || path.endsWith('/retry-intents'))
         return Response.json(
-          method === 'GET' ? { intent: currentIntent, canUpdate: availability.canUpdate } : intent,
+          method === 'GET'
+            ? retry
+              ? { intent: currentIntent, canRegularize: availability.canUpdate }
+              : { intent: currentIntent, canUpdate: availability.canUpdate }
+            : displayIntent,
         )
-      if (method === 'GET') return Response.json({ ...intent, state: 'UNKNOWN' })
-      return execution()
+      if (method === 'GET') return Response.json({ ...displayIntent, state: 'UNKNOWN' })
+      return execution ? execution() : Response.json({ ...displayIntent, state: 'SUCCEEDED' })
     },
     { preconnect: nativeFetch.preconnect },
   )
@@ -89,22 +105,37 @@ async function mount(
   }
   await act(async () =>
     root.render(
-      <SubscriptionCardUpdate
-        subscriptionId={subscriptionId}
-        onUpdated={() => {
-          updated++
-        }}
-      />,
+      retry ? (
+        <SubscriptionChargeRetry
+          subscriptionId={subscriptionId}
+          paymentId="qa-payment"
+          onUpdated={() => {
+            updated++
+          }}
+        />
+      ) : (
+        <SubscriptionCardUpdate
+          subscriptionId={subscriptionId}
+          onUpdated={() => {
+            updated++
+          }}
+        />
+      ),
     ),
   )
   expect(calls).toHaveLength(0)
-  await act(async () => button('Alterar cartão').click())
+  await act(async () => button(retry ? 'Conferir regularização' : 'Alterar cartão').click())
   await until(() => !host.textContent?.includes('Consultando assinatura'))
+  if (retry && !currentIntent && availability.canUpdate && availability.tokenization) {
+    expect(calls.every((call) => call.method === 'GET')).toBe(true)
+    await act(async () => button('Conferir cobrança').click())
+    await until(() => !host.textContent?.includes('Conferindo valor e período'))
+  }
   return { calls, updated: () => updated }
 }
-async function fillAndSubmit() {
+async function fillAndSubmit(confirm = false) {
   const values = ['4242424242424242', 'Titular QA', '52998224725', '12', '2030', '123']
-  const inputs = [...document.querySelectorAll('input')]
+  const inputs = [...document.querySelectorAll<HTMLInputElement>('input:not([type=checkbox])')]
   expect(inputs).toHaveLength(values.length)
   for (let index = 0; index < values.length; index++) {
     const input = inputs[index]!
@@ -115,6 +146,8 @@ async function fillAndSubmit() {
       input.dispatchEvent(new window.Event('change', { bubbles: true }))
     })
   }
+  if (confirm)
+    await act(async () => document.querySelector<HTMLInputElement>('input[type=checkbox]')!.click())
   await act(async () =>
     document
       .querySelector('form')!
@@ -193,4 +226,69 @@ test('fechar durante tokenização descarta o resultado sem POST de execução',
   expect(view.calls.filter((call) => call.method === 'POST')).toHaveLength(1)
   expect(view.updated()).toBe(0)
   expect(document.querySelector('input')).toBeNull()
+})
+
+test('regularização mostra termos e exige consentimento antes de tokenizar e cobrar', async () => {
+  const view = await mount(null, undefined, undefined, true)
+  expect(document.body.textContent).toContain('97,00')
+  expect(document.body.textContent).toContain('16/10/2026')
+  expect(document.body.textContent).toContain('16/11/2026')
+  expect(button('Atualizar cartão e pagar').disabled).toBe(true)
+  await fillAndSubmit()
+  expect(tokenization).not.toHaveBeenCalled()
+  expect(view.calls.filter((call) => call.method === 'POST')).toHaveLength(1)
+  await fillAndSubmit(true)
+  await until(() => view.updated() === 1)
+  const writes = view.calls.filter((call) => call.method === 'POST')
+  expect(writes).toHaveLength(2)
+  expect(writes[0]?.body).toEqual({ paymentId: 'qa-payment' })
+  expect(writes[1]?.body).toEqual({
+    paymentToken: 'qa-token-only',
+    card: { brand: 'visa', last4: '4242' },
+    consent: true,
+  })
+  expect(JSON.stringify(writes)).not.toContain('4242424242424242')
+  expect(JSON.stringify(writes)).not.toContain('52998224725')
+  expect(document.body.textContent).toContain('Pagamento confirmado')
+  expect(document.querySelector('input')).toBeNull()
+})
+
+test('regularização incerta ao reabrir consulta sem recriar intenção ou débito', async () => {
+  const view = await mount({ ...retryIntent, state: 'UNKNOWN' }, undefined, undefined, true)
+  expect(document.querySelector('form')).toBeNull()
+  await act(async () => button('Conferir solicitação').click())
+  expect(view.calls.every((call) => call.method === 'GET')).toBe(true)
+  expect(tokenization).not.toHaveBeenCalled()
+})
+
+test('termos vencidos não são renovados silenciosamente após consentimento', async () => {
+  const view = await mount(
+    { ...retryIntent, expiresAt: new Date(Date.now() - 1).toISOString() },
+    undefined,
+    undefined,
+    true,
+  )
+  await fillAndSubmit(true)
+  expect(tokenization).not.toHaveBeenCalled()
+  expect(view.calls.every((call) => call.method === 'GET')).toBe(true)
+  expect(document.querySelector('form')).toBeNull()
+  expect(document.body.textContent).toContain('pode ter vencido')
+})
+
+test('regularização com resposta perdida só consulta e não repete o débito', async () => {
+  const view = await mount(
+    null,
+    async () => {
+      throw new Error('QA lost response')
+    },
+    undefined,
+    true,
+  )
+  await fillAndSubmit(true)
+  await until(() => Boolean(document.body.textContent?.includes('em conferência')))
+  expect(view.calls.filter((call) => call.method === 'POST')).toHaveLength(2)
+  expect(
+    view.calls.filter((call) => call.path.endsWith(intent.id) && call.method === 'GET'),
+  ).toHaveLength(1)
+  expect(view.updated()).toBe(0)
 })

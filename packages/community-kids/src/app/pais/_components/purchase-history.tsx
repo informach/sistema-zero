@@ -1,6 +1,9 @@
 'use client'
 
-import { SubscriptionCardUpdate } from '@sistemazero/member-shell/components/billing/subscription-card-update'
+import {
+  SubscriptionCardUpdate,
+  SubscriptionChargeRetry,
+} from '@sistemazero/member-shell/components/billing/subscription-card-update'
 
 import {
   comebackSubscriptionId,
@@ -119,6 +122,16 @@ export function PurchaseHistory() {
                   {PAYMENT_STATUS_LABELS[payment.status] ?? payment.status}
                 </span>
               </span>
+              {payment.status === 'FAILED' &&
+              payment.method === 'CREDIT_CARD' &&
+              payment.subscriptionId ? (
+                <SubscriptionChargeRetry
+                  subscriptionId={payment.subscriptionId}
+                  paymentId={payment.id}
+                  onUpdated={() => void load(0)}
+                  className="basis-full sm:basis-auto"
+                />
+              ) : null}
             </li>
           ))}
         </ul>

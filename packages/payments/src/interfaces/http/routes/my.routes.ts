@@ -5,6 +5,7 @@ import type { CancelSubscriptionService } from '../../../application/cancel-subs
 import type { GetMyPaymentService } from '../../../application/get-my-payment/get-my-payment.service'
 import type { ListMyPaymentsService } from '../../../application/list-my-payments/list-my-payments.service'
 import type { ListMySubscriptionsService } from '../../../application/list-my-subscriptions/list-my-subscriptions.service'
+import type { RetrySubscriptionChargeService } from '../../../application/subscription-card/retry-subscription-charge.service'
 import type { UpdateSubscriptionCardService } from '../../../application/subscription-card/update-subscription-card.service'
 import { AdminIdParam, MyPaymentsQuery } from '../dtos'
 import { requireBuyer } from '../my-auth'
@@ -19,6 +20,8 @@ const CardExecutionBody = z.strictObject({
     last4: z.string().regex(/^\d{4}$/),
   }),
 })
+const RetryIntentBody = z.strictObject({ paymentId: z.uuid() })
+const RetryExecutionBody = CardExecutionBody.extend({ consent: z.literal(true) })
 
 export interface MyRoutesDeps {
   listMyPayments: ListMyPaymentsService
@@ -26,6 +29,7 @@ export interface MyRoutesDeps {
   listMySubscriptions: ListMySubscriptionsService
   cancelSubscription: CancelSubscriptionService
   updateSubscriptionCard: UpdateSubscriptionCardService
+  retrySubscriptionCharge: RetrySubscriptionChargeService
   cardConfig: { accountIdentifier?: string; environment: 'sandbox' | 'production' }
   /**
    * Token interno do gateway (`x-internal-token`) — prova de que o e-mail do
@@ -125,6 +129,49 @@ export function myRoutes(deps: MyRoutesDeps) {
           // Standard Schema preserva a rejeição de extras; a normalização TypeBox
           // da aplicação não deve descartar silenciosamente PAN/CVV recebidos.
           body: CardExecutionBody,
+        },
+      )
+      .get(
+        '/subscriptions/:id/retry-intents',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.getActiveIntent(email, params.id)
+        },
+        { params: AdminIdParam },
+      )
+      .post(
+        '/subscriptions/:id/retry-intents',
+        async ({ params, headers, body }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.createIntent(email, params.id, body.paymentId)
+        },
+        { params: AdminIdParam, body: RetryIntentBody },
+      )
+      .get(
+        '/subscriptions/:id/retry-intents/:intentId',
+        async ({ params, headers }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.getIntent(email, params.id, params.intentId)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+        },
+      )
+      .post(
+        '/subscriptions/:id/retry-intents/:intentId',
+        async ({ params, headers, body }) => {
+          const { email } = subscriptionBuyer(headers)
+          return deps.retrySubscriptionCharge.execute(email, params.id, params.intentId, body)
+        },
+        {
+          params: t.Object({
+            id: t.String({ format: 'uuid' }),
+            intentId: t.String({ format: 'uuid' }),
+          }),
+          body: RetryExecutionBody,
         },
       )
       .delete(

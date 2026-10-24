@@ -1,6 +1,9 @@
 'use client'
 
-import { SubscriptionCardUpdate } from '@sistemazero/member-shell/components/billing/subscription-card-update'
+import {
+  SubscriptionCardUpdate,
+  SubscriptionChargeRetry,
+} from '@sistemazero/member-shell/components/billing/subscription-card-update'
 
 import { comunidadeAdultoContinuarUrl } from '@sistemazero/member-shell/lib/adult-links'
 import { Button } from '@sistemazero/ui/button'
@@ -332,6 +335,17 @@ export function PurchasesClient() {
                       <span>{formatDay(payment.paidAt ?? payment.createdAt)}</span>
                     </span>
                   </button>
+                  {payment.status === 'FAILED' &&
+                  payment.method === 'CREDIT_CARD' &&
+                  payment.subscriptionId ? (
+                    <div className="px-4 pb-4">
+                      <SubscriptionChargeRetry
+                        subscriptionId={payment.subscriptionId}
+                        paymentId={payment.id}
+                        onUpdated={() => void load(offset)}
+                      />
+                    </div>
+                  ) : null}
                 </li>
               ))}
             </ul>

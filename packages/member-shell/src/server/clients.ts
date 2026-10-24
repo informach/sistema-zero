@@ -81,6 +81,8 @@ import type {
   StudioUnlocksView,
   SubscriptionCardConfigView,
   SubscriptionCardIntentView,
+  SubscriptionRetryContextView,
+  SubscriptionRetryIntentView,
   TeacherThreadSummaryView,
   TeacherThreadView,
   UserView,
@@ -1974,6 +1976,35 @@ export function createPaymentsClient(gw: GatewayModule) {
     ): Promise<GatewayResponse<SubscriptionCardIntentView>> {
       return gw.gatewayFetch(
         `/payments/my/subscriptions/${enc(id)}/card-intents/${enc(intentId)}`,
+        { method: 'POST', body: input },
+      )
+    },
+
+    getActiveRetryIntent(id: string): Promise<GatewayResponse<SubscriptionRetryContextView>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/retry-intents`)
+    },
+    createRetryIntent(
+      id: string,
+      paymentId: string,
+    ): Promise<GatewayResponse<SubscriptionRetryIntentView>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/retry-intents`, {
+        method: 'POST',
+        body: { paymentId },
+      })
+    },
+    getRetryIntent(
+      id: string,
+      intentId: string,
+    ): Promise<GatewayResponse<SubscriptionRetryIntentView>> {
+      return gw.gatewayFetch(`/payments/my/subscriptions/${enc(id)}/retry-intents/${enc(intentId)}`)
+    },
+    paySubscriptionCharge(
+      id: string,
+      intentId: string,
+      input: { paymentToken: string; card: { brand: string; last4: string }; consent: true },
+    ): Promise<GatewayResponse<SubscriptionRetryIntentView>> {
+      return gw.gatewayFetch(
+        `/payments/my/subscriptions/${enc(id)}/retry-intents/${enc(intentId)}`,
         { method: 'POST', body: input },
       )
     },

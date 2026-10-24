@@ -18,3 +18,19 @@ export interface SubscriptionCardContextView {
   intent: SubscriptionCardIntentView | null
   canUpdate: boolean
 }
+
+export interface SubscriptionRetryIntentView {
+  id: string
+  subscriptionId: string
+  state: SubscriptionCardIntentView['state']
+  expiresAt: string
+  chargesNow: true
+  amountInCents: string
+  currency: 'BRL'
+  terms: { period: { startsAt: string; endsAt: string }; nextExecution: string }
+  result: string | null
+}
+export interface SubscriptionRetryContextView {
+  intent: SubscriptionRetryIntentView | null
+  canRegularize: boolean
+}

@@ -103,6 +103,25 @@ export class RetrySubscriptionChargeService {
     return view(await this.intent(subscriptionId, id))
   }
 
+  async getActiveIntent(
+    email: string,
+    subscriptionId: string,
+  ): Promise<{
+    intent: RetrySubscriptionIntentView | null
+    canRegularize: boolean
+  }> {
+    const subscription = await this.owned(email, subscriptionId)
+    const active = await this.operations.findActiveForSubscription(subscriptionId, this.clock())
+    if (active && active.kind !== 'RETRY') throw new SubscriptionOperationInProgressError()
+    return {
+      intent: active ? view(active) : null,
+      canRegularize:
+        subscription.status === 'ACTIVE' &&
+        !subscription.cancelRequestedAt &&
+        subscription.cyclesCompleted > 0,
+    }
+  }
+
   async execute(
     email: string,
     subscriptionId: string,

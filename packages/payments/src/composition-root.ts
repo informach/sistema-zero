@@ -19,6 +19,7 @@ import { GetPaymentsStatsService } from './application/payments-stats/get-paymen
 import { GetSubscriptionStatsService } from './application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from './application/process-payment/process-payment.service'
 import { RefundPaymentService } from './application/refund-payment/refund-payment.service'
+import { RetrySubscriptionChargeService } from './application/subscription-card/retry-subscription-charge.service'
 import { UpdateSubscriptionCardService } from './application/subscription-card/update-subscription-card.service'
 import { RecoveryAdmissionService } from './application/subscription-recovery/recovery-admission.service'
 import { RecoveryCoordinatorService } from './application/subscription-recovery/recovery-coordinator.service'
@@ -322,6 +323,14 @@ export function createApplication(env: Env): Application {
     webhookInbox,
     logger,
   )
+  const retrySubscriptionCharge = new RetrySubscriptionChargeService(
+    subscriptionsMyRead,
+    subscriptions,
+    payments,
+    subscriptionOperations,
+    gateway,
+    handleSubscriptionNotification,
+  )
   const recoveryCaseWorker = recoveryNotices
     ? new RecoveryCaseWorker(
         recoveryPolicies,
@@ -420,6 +429,7 @@ export function createApplication(env: Env): Application {
     getSubscription,
     cancelSubscription,
     updateSubscriptionCard,
+    retrySubscriptionCharge,
     handleWebhook,
     handleBoletoNotification,
     getMetrics: () => metrics.getMetrics(),
