@@ -147,14 +147,7 @@ const literals: PythonBlockCodec[] = [
     encode: none,
   },
   {
-    ...base(
-      'variable',
-      'valor da variável',
-      'Variáveis',
-      1,
-      'name',
-      'Lê uma variável no escopo atual.',
-    ),
+    ...base('variable', 'variável', 'Variáveis', 1, 'name', 'Lê uma variável no escopo atual.'),
     role: 'value',
     defaultNode: name,
     decode(value) {
@@ -162,7 +155,7 @@ const literals: PythonBlockCodec[] = [
         typeof value.fields.id === 'string' &&
         ['Load', 'Store', 'Del'].includes(contextOf(value) ?? '')
         ? {
-            fields: [{ name: 'NAME', label: 'variável', value: value.fields.id }],
+            fields: [{ name: 'NAME', label: '', value: value.fields.id }],
             inputs: [],
             extra: { context: contextOf(value)! },
           }
@@ -303,13 +296,14 @@ const statements: PythonBlockCodec[] = [
   {
     ...base(
       'expression',
-      'executar',
+      'calcular sem guardar',
       'Funções',
-      1,
+      3,
       'expression',
-      'Executa uma chamada ou expressão, sem guardar seu resultado.',
+      'Calcula um valor e não guarda o resultado.',
     ),
     role: 'statement',
+    hidden: true,
     defaultNode: () => node('Expr', { value: name('valor') }),
     decode(value) {
       return value.kind === 'Expr' && isNode(value.fields.value)

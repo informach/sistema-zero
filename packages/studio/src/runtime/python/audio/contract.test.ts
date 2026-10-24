@@ -26,7 +26,20 @@ describe('Python portable audio wire boundary', () => {
       })
   })
 
-  test('rejects URLs, traversal, non-WAV paths and executable options', () => {
+  test('accepts WAV, MP3 and OGG (Pygame Zero music) and the volume command', () => {
+    for (const path of ['music/tema.mp3', 'music/tema.ogg', 'music/tema.oga', 'sounds/pulo.wav'])
+      expect(read(JSON.stringify({ ...play, path })).op).toBe('play')
+    expect(read(JSON.stringify({ version: 1, op: 'volume', id: 3, volume: 0.5 }))).toEqual({
+      version: 1,
+      op: 'volume',
+      id: 3,
+      volume: 0.5,
+    })
+    for (const volume of [-0.1, 1.5, null])
+      expect(() => read(JSON.stringify({ version: 1, op: 'volume', id: 3, volume }))).toThrow()
+  })
+
+  test('rejects URLs, traversal, unknown audio formats and executable options', () => {
     for (const path of [
       '../eat.wav',
       'assets/../eat.wav',
@@ -39,7 +52,7 @@ describe('Python portable audio wire boundary', () => {
       'main.py',
       'assets/início.wav',
       '.private/eat.wav',
-      'eat.mp3',
+      'eat.flac',
       'eat.wav/child',
     ])
       expect(() => read(JSON.stringify({ ...play, path }))).toThrow()

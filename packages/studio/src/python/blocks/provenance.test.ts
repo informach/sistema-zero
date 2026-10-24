@@ -92,7 +92,8 @@ test('required empty suites emit pass and bind only visible blocks without enabl
       const tree = moduleNode([codec.defaultNode()])
       const roots = pythonVisualToWorkspace(pythonASTToVisual(tree), workspace)
       const block = workspace.getBlockById(roots[0]!)!
-      block.getInputTargetBlock('body')!.dispose(false)
+      // A required suite holding only `pass` is shown empty; there may be no child to remove.
+      block.getInputTargetBlock('body')?.dispose(false)
       const projection = pythonWorkspaceToVisual(workspace, roots)
       const actual = identities(pythonVisualToAST(projection), 100)
       expect(bindPythonVisualOrigins(projection, actual).size).toBe(

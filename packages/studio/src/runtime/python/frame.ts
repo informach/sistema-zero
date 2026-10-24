@@ -6,6 +6,7 @@ import {
   StudioPythonActivitySchema,
 } from '@sistemazero/core/studio/python-activity'
 import type { StudioRuntimeImage } from '../types'
+import { pythonCanvasExtension } from './canvasExtension'
 import {
   isPythonChallenge,
   PYTHON_FRAME_PROTOCOL,
@@ -14,9 +15,10 @@ import {
   readPythonExecutionIdentity,
   samePythonExecutionIdentity,
 } from './frameProtocol'
+import type { PgzeroAudioCommand } from './pgzero/protocol'
+import type { PgzeroRenderer } from './pgzero/renderer'
 import { installPythonPlayerBridge } from './playerBridge'
 import { createProtectedPythonWorker } from './protectedWorker'
-import { hasTurtleExtension } from './turtle/contract'
 import type { TurtleRenderer } from './turtle/renderer'
 import { readPythonWireSnapshot } from './wireSnapshot'
 import { isPythonRequestId } from './workerEvents'
@@ -59,7 +61,7 @@ async function initialize(event: MessageEvent<unknown>) {
   let closed = false
   let supervisor: ReturnType<typeof createPythonWorkerSupervisor> | undefined
   let bootstrap: ReturnType<typeof createProtectedPythonWorker> | undefined
-  let renderer: TurtleRenderer | undefined
+  let renderer: TurtleRenderer | PgzeroRenderer | undefined
   let rendererReady = false
   let workerReady = false
   let prepared = false
@@ -69,6 +71,56 @@ async function initialize(event: MessageEvent<unknown>) {
   let pendingAudio:
     | { id: string; resolve(value: string): void; reject(reason: unknown): void }
     | undefined
+  // sz_audio (one request at a time from Python) and Pygame Zero (commands that travel with
+  // each frame) share the host's media channel through one ordered queue.
+  const audioQueue: {
+    request: string
+    resolve(value: string): void
+    reject(reason: unknown): void
+  }[] = []
+  function pumpAudio() {
+    if (pendingAudio || closed || !prepared) return
+    const next = audioQueue.shift()
+    if (!next) return
+    const id = `audio-${++audioSequence}`
+    pendingAudio = {
+      id,
+      resolve(value) {
+        next.resolve(value)
+        queueMicrotask(pumpAudio)
+      },
+      reject(reason) {
+        next.reject(reason)
+        queueMicrotask(pumpAudio)
+      },
+    }
+    send({ type: 'audio-request', requestId: id, request: next.request })
+  }
+  function queueAudio(request: string) {
+    return new Promise<string>((resolve, reject) => {
+      audioQueue.push({ request, resolve, reject })
+      pumpAudio()
+    })
+  }
+  function pgzeroAudio(commands: readonly PgzeroAudioCommand[]) {
+    for (const command of commands) {
+      const request =
+        command[0] === 'play'
+          ? {
+              version: 1,
+              op: 'play',
+              id: command[1],
+              path: command[2],
+              loop: command[3],
+              volume: command[4],
+            }
+          : command[0] === 'stop'
+            ? { version: 1, op: 'stop', id: command[1] }
+            : { version: 1, op: 'volume', id: command[1], volume: command[2] }
+      // Fire and forget: a sound that cannot play never stops the game.
+      void queueAudio(JSON.stringify(request)).catch(() => {})
+    }
+  }
   const playerBridge = new AbortController()
   function send(
     message:
@@ -99,6 +151,8 @@ async function initialize(event: MessageEvent<unknown>) {
     closed = true
     pendingAudio?.reject(new DOMException('Execução encerrada.', 'AbortError'))
     pendingAudio = undefined
+    for (const waiting of audioQueue.splice(0))
+      waiting.reject(new DOMException('Execução encerrada.', 'AbortError'))
     playerBridge.abort()
     supervisor?.stop()
     if (!supervisor) bootstrap?.worker.terminate()
@@ -200,7 +254,8 @@ async function initialize(event: MessageEvent<unknown>) {
         activityControlsApplied = true
         const controls = activity.recipe
         if (controls && (controls.keys.length || controls.clicks.length)) {
-          if (!renderer) throw new Error('Os controles desta tarefa exigem Turtle.')
+          if (!renderer || !('prepareActivityControls' in renderer))
+            throw new Error('Os controles desta tarefa exigem Turtle.')
           await renderer.prepareActivityControls()
           if (closed) return
           renderer.dispatchActivityControls(controls)
@@ -218,7 +273,7 @@ async function initialize(event: MessageEvent<unknown>) {
           throw new Error('Aplique os controles da tarefa antes da observação.')
         // FIFO: the flag reaches the worker before the resumed graphics response.
         supervisor.checkActivity(command.requestId)
-        renderer?.requestCheckpoint()
+        if (renderer && 'requestCheckpoint' in renderer) renderer.requestCheckpoint()
       } else if (
         command.type === 'evaluate' &&
         'requestId' in command &&
@@ -271,33 +326,51 @@ async function initialize(event: MessageEvent<unknown>) {
       snapshot.configuration.runtime.manifestSha256 !== identity.runtimeManifestSha256
     )
       throw new Error('O snapshot pertence a outra execução.')
-    const turtle = hasTurtleExtension(snapshot.configuration.extensions)
-    rendererReady = !turtle
-    if (turtle) {
+    const canvas = pythonCanvasExtension(snapshot.configuration.extensions)
+    rendererReady = !canvas
+    const ready = () => {
+      document.documentElement.style.height = '100%'
+      document.body.style.cssText =
+        'margin:0;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000'
+      rendererReady = true
+      announcePrepared()
+    }
+    const rendererFailed = (error: unknown) =>
+      fail(
+        error instanceof Error
+          ? error.message.slice(0, 4000)
+          : 'Não foi possível preparar o ambiente gráfico Python.',
+      )
+    if (canvas === 'python-turtle')
       void import(
         /* @vite-ignore */
         new URL('./turtle-renderer.mjs', import.meta.url).href
       )
         .then((module: typeof import('./turtle/renderer')) => {
           if (closed) return
-          document.documentElement.style.height = '100%'
-          document.body.style.cssText =
-            'margin:0;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden'
           renderer = module.createTurtleRenderer(document.body, {
             activityPresentation: !!activity,
           })
-          rendererReady = true
-          announcePrepared()
+          ready()
         })
-        .catch((error: unknown) =>
-          fail(
-            error instanceof Error
-              ? error.message.slice(0, 4000)
-              : 'Não foi possível preparar o ambiente gráfico Python.',
-          ),
-        )
-    }
-    bootstrap = createProtectedPythonWorker('execution', resources, turtle)
+        .catch(rendererFailed)
+    else if (canvas === 'python-pgzero')
+      void import(
+        /* @vite-ignore */
+        new URL('./pgzero-renderer.mjs', import.meta.url).href
+      )
+        .then((module: typeof import('./pgzero/renderer')) => {
+          if (closed) return
+          renderer = module.createPgzeroRenderer(document.body, {
+            onAudio: pgzeroAudio,
+            onTitle: (title) => {
+              if (document.title !== title) document.title = title
+            },
+          })
+          ready()
+        })
+        .catch(rendererFailed)
+    bootstrap = createProtectedPythonWorker('execution', resources, canvas ?? null)
     supervisor = createPythonWorkerSupervisor({
       worker: bootstrap.worker,
       snapshot,
@@ -329,15 +402,11 @@ async function initialize(event: MessageEvent<unknown>) {
         pendingAudio = undefined
       },
       audio(request) {
-        if (!prepared || closed || pendingAudio)
+        if (!prepared || closed)
           return Promise.reject(new Error('O canal de áudio não está disponível.'))
-        return new Promise((resolve, reject) => {
-          const id = `audio-${++audioSequence}`
-          pendingAudio = { id, resolve, reject }
-          send({ type: 'audio-request', requestId: id, request })
-        })
+        return queueAudio(request)
       },
-      ...(turtle
+      ...(canvas
         ? {
             graphics: (
               request: string,

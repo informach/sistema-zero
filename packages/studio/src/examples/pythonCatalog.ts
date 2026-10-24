@@ -5,6 +5,7 @@ import type { ProjectAsset } from '../core/projectAssets'
 import type { StudioProjectFactoryContext } from '../core/projectFactory'
 import type { PythonProjectDocument } from '../core/pythonProject'
 import type { ExtensionExampleDifficulty } from '../extensions/types'
+import { PYTHON_EXTENSIONS } from '../python/extensions/catalog'
 import { mazeLightsExample } from './python/mazeLights'
 import { turtleRaceExample } from './python/turtleRace'
 import { VISUAL_REFERENCE_GAME_EXAMPLES } from './python/visualReferenceGames'
@@ -60,3 +61,30 @@ export const PYTHON_EXAMPLE_SUMMARIES: readonly PythonExampleEntry[] = Object.fr
   mazeLightsExample,
   ...VISUAL_REFERENCE_GAME_EXAMPLES,
 ])
+
+export interface PythonExampleGroup {
+  extensionId: string
+  label: string
+  entries: PythonExampleEntry[]
+}
+
+/**
+ * Groups the gallery by extension, like the JavaScript gallery: one group per Python
+ * extension in catalog order, then plain Python. A canvas extension owns a project, so
+ * an example sits in the group of the first extension it installs.
+ */
+export function groupPythonExamples(entries: readonly PythonExampleEntry[]): PythonExampleGroup[] {
+  const groups: PythonExampleGroup[] = PYTHON_EXTENSIONS.map((extension) => ({
+    extensionId: extension.id,
+    label: `${extension.emoji} ${extension.name}`,
+    entries: [],
+  }))
+  const plain: PythonExampleGroup = { extensionId: 'python', label: '🐍 Python', entries: [] }
+  for (const entry of entries) {
+    const owner = groups.find((group) =>
+      entry.extensions.some((extension) => extension.id === group.extensionId),
+    )
+    ;(owner ?? plain).entries.push(entry)
+  }
+  return [...groups, plain].filter((group) => group.entries.length > 0)
+}

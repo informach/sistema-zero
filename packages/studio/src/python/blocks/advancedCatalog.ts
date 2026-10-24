@@ -18,16 +18,16 @@ const input = (shape: PythonBlockShape, key: string) => {
   return value.nodes[0]!
 }
 const comparisons = [
-  ['igual', 'Eq'],
-  ['diferente', 'NotEq'],
-  ['menor', 'Lt'],
-  ['até', 'LtE'],
-  ['maior', 'Gt'],
-  ['pelo menos', 'GtE'],
+  ['=', 'Eq'],
+  ['≠', 'NotEq'],
+  ['<', 'Lt'],
+  ['≤', 'LtE'],
+  ['>', 'Gt'],
+  ['≥', 'GtE'],
   ['está em', 'In'],
   ['não está em', 'NotIn'],
-  ['é o mesmo objeto', 'Is'],
-  ['não é o mesmo objeto', 'IsNot'],
+  ['é', 'Is'],
+  ['não é', 'IsNot'],
 ] as const
 const arithmetic = ['Add', 'Sub', 'Mult', 'Div', 'FloorDiv', 'Mod', 'Pow']
 const argumentsNode = () =>

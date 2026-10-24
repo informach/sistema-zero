@@ -11,6 +11,7 @@ import {
 import { createStudioRuntimeRelease } from '../../packages/core/src/studio/runtime-catalog'
 import { buildPythonRuntimeDistribution } from '../../packages/studio/scripts/build-python-runtime'
 import { pythonFrameContentSecurityPolicy } from '../../packages/studio/src/runtime/python/framePolicy'
+import { PGZERO_EXTENSION } from '../../packages/studio/src/runtime/python/pgzero/contract'
 import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtime/python/snapshot'
 import {
   createPythonDistributionServer,
@@ -108,7 +109,10 @@ async function prepareRelease() {
     // public-play and Zappy proofs exercise publication and assistance, which now require
     // the release to declare them.
     capabilities: ['edit', 'export-source', 'execute', 'python-repl', 'publish', 'assist'],
-    extensions: [{ id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] }],
+    extensions: [
+      { id: TURTLE_EXTENSION.id, versions: [TURTLE_EXTENSION.version] },
+      { id: PGZERO_EXTENSION.id, versions: [PGZERO_EXTENSION.version] },
+    ],
     sourceTargets: ['browser', 'desktop'],
     requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
     artifacts: distribution.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),

@@ -1,6 +1,7 @@
 import type { StudioPythonRuntimeFeature } from '@sistemazero/core/studio/python-runtime-features'
 import type { PythonNode } from '../language/types'
 
+/** Programming categories, in teaching order. The palette shows them in exactly this order. */
 export const PYTHON_CATEGORIES = [
   'Variáveis',
   'Entrada e saída',
@@ -10,11 +11,14 @@ export const PYTHON_CATEGORIES = [
   'Textos',
   'Listas e coleções',
   'Funções',
+  'Som',
   'Módulos',
   'Classes e objetos',
   'Tratamento de erros',
 ] as const
 export type PythonCategory = (typeof PYTHON_CATEGORIES)[number]
+/** Owners of block codecs: the core language or one official Python extension. */
+export type PythonBlockOwner = 'programming' | 'python-turtle' | 'python-pgzero'
 export type PythonBlockRole =
   | 'value'
   | 'statement'
@@ -45,7 +49,7 @@ export interface PythonBlockShape {
 }
 export interface PythonBlockCodec {
   id: string
-  owner: 'programming' | 'python-turtle'
+  owner: PythonBlockOwner
   title: string
   category: PythonCategory | string
   level: 1 | 2 | 3
@@ -57,12 +61,20 @@ export interface PythonBlockCodec {
   requiredRuntimeFeatures?: readonly StudioPythonRuntimeFeature[]
   /** Extension-owned first palette; does not bypass host approval or installation. */
   starter?: boolean
+  /** Hidden codecs decode existing code but are not offered in the palette. */
+  hidden?: boolean
   /** A specialized label is valid only when this root resolves to the official binding. */
   binding?: PythonBlockBinding
   /** Alias-aware extensions may derive the required binding from the actual call. */
   bindingFor?(node: PythonNode): PythonBlockBinding | undefined
   /** Method specialization needs a proven built-in receiver, not just a matching name. */
   receiverKinds?: readonly ('text' | 'List' | 'Tuple' | 'Dict' | 'Set')[]
+  /**
+   * Projection index. Syntax kinds this codec can decode (default: the default node's kind),
+   * and, for calls/command statements and definitions, the callee or definition names it
+   * accepts. Codecs without names are tried for every node of their kinds.
+   */
+  match?: { kinds?: readonly string[]; names?: readonly string[] }
   controls?: readonly {
     key: string
     label: string
@@ -72,14 +84,29 @@ export interface PythonBlockCodec {
   }[]
   reshape?(shape: PythonBlockShape, key: string, value: number | boolean): PythonBlockShape
   defaultNode(): PythonNode
-  /** Returns undefined when any syntax would be lost by the visual representation. */
-  decode(node: PythonNode): PythonBlockShape | undefined
+  /**
+   * Returns undefined when any syntax would be lost by the visual representation. The context
+   * only refines presentation (e.g. module vs object receiver); encoding is always exact.
+   */
+  decode(node: PythonNode, context?: PythonDecodeContext): PythonBlockShape | undefined
   encode(shape: PythonBlockShape): PythonNode
+}
+
+export interface PythonDecodeContext {
+  /** True when this Name refers to the given imported module (e.g. `t` after import turtle as t). */
+  isModule?(nameNode: PythonNode, module: string): boolean
 }
 
 export interface PythonBlockBinding {
   root: string
   module?: string
   member?: string
-  instance?: 'Turtle' | 'Screen' | 'Shape'
+  /** Object created by an official constructor, e.g. turtle.Turtle() or Actor('alien'). */
+  instance?: string
+  /** Name provided without import by an installed extension (Pygame Zero's screen, Actor…). */
+  builtin?: string
+  /** Module-level function an installed extension calls by name (Pygame Zero's draw…). */
+  handler?: string
+  /** The root may be the module itself (procedural form) or an `instance` object. */
+  moduleOrInstance?: boolean
 }

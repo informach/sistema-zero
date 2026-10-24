@@ -6,12 +6,14 @@ import { turtleF1Source } from '../../packages/studio/e2e-python-editor/fixtures
 import { preparePythonExecutionSnapshot } from '../../packages/studio/src/runtime/python/snapshot'
 import { documentFixture } from '../../packages/studio/src/state/fixtures/projectDocuments'
 import { audioFixtures, portableAudioAsset } from './audioFixtures'
+import { PGZERO_EXTENSION, PGZERO_FIXTURE_ASSETS, pgzeroFixtures } from './pgzeroFixtures'
 import { TURTLE_EXTENSION, turtleFixtures } from './turtleFixtures'
 
 /** Behavioral fixtures, never a production runtime catalog or author template. */
 const cases: Record<string, string> = {
   ...audioFixtures,
   ...turtleFixtures,
+  ...pgzeroFixtures,
   turtleF1: turtleF1Source('red'),
   osSystem: `import os
 print('os-system result', os.system('aplay start_up.wav > /dev/null 2>&1 &'))
@@ -180,6 +182,10 @@ export async function runtimeFixtureProject(
         kind: 'file',
         content: "AUTHOR = 'author audio preserved'\n",
       }
+  }
+  if (name in pgzeroFixtures) {
+    project.installedExtensions = [{ ...PGZERO_EXTENSION, installedAt: project.createdAt }]
+    project.assets = [...PGZERO_FIXTURE_ASSETS]
   }
   if (name in turtleFixtures || name === 'turtleF1') {
     project.installedExtensions = [{ ...TURTLE_EXTENSION, installedAt: project.createdAt }]

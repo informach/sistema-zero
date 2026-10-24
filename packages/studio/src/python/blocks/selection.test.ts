@@ -1,5 +1,10 @@
 import { expect, test } from 'bun:test'
-import { describePythonCatalog, searchPythonPalette, selectPythonPalette } from './selection'
+import {
+  describePythonCatalog,
+  PYTHON_STARTER_BLOCK_IDS,
+  searchPythonPalette,
+  selectPythonPalette,
+} from './selection'
 
 const catalog = describePythonCatalog()
 const approvedBlockIds = new Set(catalog.map((entry) => entry.id))
@@ -28,8 +33,9 @@ test('category curation expands the level but never overrides an explicit block 
 
 test('the starter palette has a bounded real dependency closure, with no empty category or Turtle', () => {
   const selection = selectPythonPalette({ level: 1, installedExtensions, approvedBlockIds })
-  expect(selection.entries.length).toBeLessThanOrEqual(25)
-  expect(selection.explicitIds).toHaveLength(10)
+  // The first palette covers variables, decisions, loops, functions, lists and sound.
+  expect(selection.entries.length).toBeLessThanOrEqual(36)
+  expect(selection.explicitIds).toHaveLength(PYTHON_STARTER_BLOCK_IDS.length)
   expect(selection.entries.every((entry) => entry.owner === 'programming')).toBe(true)
   expect(selection.entries.some((entry) => entry.id === 'sz_py_variable')).toBe(true)
   expect(selection.entries.some((entry) => entry.id === 'sz_py_text')).toBe(true)

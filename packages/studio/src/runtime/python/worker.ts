@@ -1,6 +1,7 @@
 import './configureProtectedSchemas'
 
 import { StudioPythonActivitySchema } from '@sistemazero/core/studio/python-activity'
+import { isPythonCanvasExtension, type PythonCanvasExtension } from './canvasExtension'
 import { createPythonConsoleBuffer } from './consoleBuffer'
 import { createPythonInterpreter, PYODIDE_VERSION, PYTHON_VERSION } from './interpreter'
 import { PYTHON_CONSOLE_LIMITS, type PythonWorkerEvent } from './protocol'
@@ -49,19 +50,21 @@ function failure(error: unknown) {
 let bootStarted = false
 
 /** Module evaluation is inert; the private bootstrap configures its reader before starting once. */
-export async function startPythonWorker(options: { turtle?: boolean }) {
+export async function startPythonWorker(options: { canvas?: PythonCanvasExtension | null }) {
   if (bootStarted) throw new Error('O worker Python já foi iniciado.')
   bootStarted = true
   if (
     !options ||
     typeof options !== 'object' ||
-    Reflect.ownKeys(options).some((key) => key !== 'turtle') ||
-    (options.turtle !== undefined && typeof options.turtle !== 'boolean')
+    Reflect.ownKeys(options).some((key) => key !== 'canvas') ||
+    (options.canvas !== undefined &&
+      options.canvas !== null &&
+      !isPythonCanvasExtension(options.canvas))
   )
     throw new Error('Configuração inicial do worker Python inválida.')
   try {
     const interpreter = await createPythonInterpreter({
-      startupTurtle: options.turtle,
+      startupCanvas: options.canvas,
       onBootLine(stream, text) {
         output.append(stream, `${text}\n`)
         scheduleOutput()
@@ -83,7 +86,7 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
       },
       graphics(request, images) {
         if (phase !== 'running' || pendingGraphics || pendingAudio || pendingInput)
-          return Promise.reject(new Error('Atualização Turtle fora de ordem.'))
+          return Promise.reject(new Error('Atualização gráfica fora de ordem.'))
         return new Promise((resolve) => {
           const id = `graphics-${++graphicsSequence}`
           pendingGraphics = { id, resolve }
@@ -140,7 +143,7 @@ export async function startPythonWorker(options: { turtle?: boolean }) {
             typeof message.response !== 'string' ||
             message.response.length > 128_000
           )
-            throw new Error('Resposta Turtle fora de ordem.')
+            throw new Error('Resposta gráfica fora de ordem.')
           const pending = pendingGraphics
           pendingGraphics = undefined
           pending.resolve(message.response)

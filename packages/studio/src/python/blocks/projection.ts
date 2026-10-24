@@ -1,5 +1,6 @@
 import type { PythonNode, PythonSourceRange } from '../language/types'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
+import { pythonCodecIndex } from './codecIndex'
 import type {
   PythonBlockCodec,
   PythonBlockField,
@@ -7,6 +8,7 @@ import type {
   PythonBlockShape,
 } from './contract'
 import { isNode, nodes } from './nodes'
+import { pythonResolverOptionsOf } from './resolverOptions'
 import { pythonBindingResolver } from './scope'
 
 export interface PythonVisualOrigin {
@@ -48,9 +50,13 @@ function guardedAttributes(codecs: readonly PythonBlockCodec[]): ReadonlySet<str
     if (!codec.binding && !codec.bindingFor) continue
     if (codec.binding) found.add(codec.binding.root)
     if (codec.binding?.member) found.add(codec.binding.member)
-    const template = codec.defaultNode()
-    let path: PythonNode | undefined =
-      template.kind === 'Call' && isNode(template.fields.func) ? template.fields.func : template
+    let template = codec.defaultNode()
+    if (template.kind === 'Expr' && isNode(template.fields.value)) template = template.fields.value
+    // Only callables are guarded: writing a data property (actor.x) is ordinary use.
+    if (template.kind !== 'Call') continue
+    let path: PythonNode | undefined = isNode(template.fields.func)
+      ? template.fields.func
+      : undefined
     while (path?.kind === 'Attribute') {
       if (typeof path.fields.attr === 'string') found.add(path.fields.attr)
       path = isNode(path.fields.value) ? path.fields.value : undefined
@@ -71,12 +77,19 @@ export function pythonASTToVisual(
   if (tree.kind !== 'Module' || !nodes(tree.fields.body) || !nodes(tree.fields.type_ignores))
     throw new Error('O programa Python precisa de um módulo completo.')
   const codecs = options.codecs ?? PYTHON_PROGRAMMING_CODECS
-  const resolves = pythonBindingResolver(tree, options.officialModules, guardedAttributes(codecs))
+  const resolves = pythonBindingResolver(
+    tree,
+    options.officialModules,
+    guardedAttributes(codecs),
+    pythonResolverOptionsOf(codecs),
+  )
+  const context = { isModule: resolves.isModule }
+  const index = pythonCodecIndex(codecs)
   let count = 0
   function project(value: PythonNode, role: PythonBlockRole, depth = 0): PythonVisualNode {
     if (++count > 20_000 || depth > 80) throw new Error('O programa excede o limite visual.')
     const origin = { nodeId: value.id, range: value.range }
-    for (const codec of codecs) {
+    for (const codec of index.candidates(value)) {
       const compatibleRole = codec.role === role || (role === 'format' && codec.id === 'sz_py_text')
       if (!compatibleRole) continue
       const binding = codec.bindingFor ? codec.bindingFor(value) : codec.binding
@@ -87,11 +100,13 @@ export function pythonASTToVisual(
         const kind = isNode(receiver)
           ? receiver.kind === 'Constant' && typeof receiver.fields.value === 'string'
             ? 'text'
-            : receiver.kind
+            : receiver.kind === 'Name'
+              ? resolves.receiverKind(receiver)
+              : receiver.kind
           : undefined
         if (!codec.receiverKinds.some((allowed) => allowed === kind)) continue
       }
-      const shape = codec.decode(value)
+      const shape = codec.decode(value, context)
       if (!shape) continue
       return {
         kind: 'block',

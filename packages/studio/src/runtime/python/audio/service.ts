@@ -2,7 +2,7 @@ import { awaitWithSignal } from '@sistemazero/core/http'
 import { digestAssetBytes } from '../../../core/assetBinary'
 import type { StudioHostAudioPreference } from '../../types'
 import type { PythonExecutionSnapshot } from '../protocol'
-import { PYTHON_AUDIO_LIMITS, readPythonAudioRequest } from './contract'
+import { PYTHON_AUDIO_LIMITS, pythonAudioMediaType, readPythonAudioRequest } from './contract'
 import { readPythonAudioWav } from './wav'
 
 interface Voice {
@@ -77,9 +77,13 @@ export function createPythonAudioService(options: {
     if (existing) return existing
     const file = files.get(path)
     if (file?.kind !== 'asset') throw new Error('O som precisa ser um material deste projeto.')
-    readPythonAudioWav(file.bytes)
+    const type = pythonAudioMediaType(path)
+    if (!type) throw new Error('Formato de som não suportado.')
+    if (type === 'audio/wav') readPythonAudioWav(file.bytes)
+    else if (file.bytes.byteLength > PYTHON_AUDIO_LIMITS.fileBytes)
+      throw new Error('O arquivo de som é grande demais.')
     // Blob captures exact bytes before the first await, independently of later caller mutations.
-    const blob = new Blob([file.bytes], { type: 'audio/wav' })
+    const blob = new Blob([file.bytes], { type })
     const pending = (async () => {
       const captured = new Uint8Array(await blob.arrayBuffer())
       if ((await digestAssetBytes(captured)) !== file.sha256)
@@ -164,7 +168,10 @@ export function createPythonAudioService(options: {
         if (++commands > PYTHON_AUDIO_LIMITS.commandsPerSecond)
           throw new Error('O programa excedeu o limite de comandos de áudio.')
         if (request.op === 'play') await play(request)
-        else if (request.id === null) {
+        else if (request.op === 'volume') {
+          const audio = voices.get(request.id)?.audio
+          if (audio) audio.volume = request.volume
+        } else if (request.id === null) {
           for (const [id, voice] of voices) stop(id, voice)
         } else {
           const voice = voices.get(request.id)

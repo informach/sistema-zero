@@ -1,20 +1,28 @@
 import type { PythonProjectDocument } from '../core/editableProject'
+import { PGZERO_EXTENSION } from '../runtime/python/pgzero/contract'
 import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 
-const modules = ['random', 'math', 'turtle'] as const
-const shadowableModules = [...modules, 'sz_audio'] as const
+const modules = ['random', 'math', 'time', 'turtle', 'pgzero', 'pgzrun', 'sz_audio'] as const
+const shadowableModules = ['random', 'math', 'turtle', 'sz_audio'] as const
 export type PythonOfficialModule = (typeof modules)[number]
 
 /** Metadata only; shared by assistance and authoring without loading the visual codecs. */
 export function pythonShadowedModules(
   project: PythonProjectDocument,
 ): (typeof shadowableModules)[number][] {
+  return shadowedAmong(project, shadowableModules)
+}
+
+function shadowedAmong<T extends string>(
+  project: PythonProjectDocument,
+  candidates: readonly T[],
+): T[] {
   const files = Object.keys(project.kind === 'classic' ? project.files : project.tree)
   const entryDirectory = project.python.entrypoint.slice(
     0,
     project.python.entrypoint.lastIndexOf('/') + 1,
   )
-  return shadowableModules.filter((module) => {
+  return candidates.filter((module) => {
     if (module === 'sz_audio') {
       // A namespace directory does not hide the later regular provided package.
       // .pyi is author-owned analysis metadata, not a claim that CPython executes it.
@@ -36,13 +44,15 @@ export function pythonShadowedModules(
 
 /** A project module wins over the bundled module; never label that call as the official API. */
 export function pythonOfficialModules(project: PythonProjectDocument) {
-  const shadowed = new Set(pythonShadowedModules(project))
+  const shadowed = new Set<string>(shadowedAmong(project, modules))
   return new Set(
     modules.filter(
       (module) =>
         !shadowed.has(module) &&
         (module !== 'turtle' ||
-          project.installedExtensions.some((extension) => extension.id === TURTLE_EXTENSION.id)),
+          project.installedExtensions.some((extension) => extension.id === TURTLE_EXTENSION.id)) &&
+        ((module !== 'pgzero' && module !== 'pgzrun') ||
+          project.installedExtensions.some((extension) => extension.id === PGZERO_EXTENSION.id)),
     ),
   )
 }

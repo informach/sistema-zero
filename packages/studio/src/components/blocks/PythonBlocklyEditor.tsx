@@ -11,6 +11,12 @@ import {
 import { commitPythonWorkspaceGesture } from '../../python/blocks/commitWorkspace'
 import type { PythonBlockCodec } from '../../python/blocks/contract'
 import { nodes } from '../../python/blocks/nodes'
+import { pythonPaletteBlockState } from '../../python/blocks/paletteBlocks'
+import {
+  PYTHON_PALETTE_GROUPS,
+  pythonCategoryColour,
+  pythonCategoryLabel,
+} from '../../python/blocks/paletteGroups'
 import { type PythonBlockProjection, pythonASTToVisual } from '../../python/blocks/projection'
 import {
   bindPythonVisualOrigins,
@@ -73,12 +79,14 @@ export interface PythonBlocklyEditorProps {
 function toolbox(
   palette: PythonPaletteSelection,
   query: string,
+  codecs: readonly PythonBlockCodec[],
 ): Blockly.utils.toolbox.ToolboxDefinition {
+  const registry = new Map(codecs.map((codec) => [codec.id, codec]))
   const groups = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
   const categories = new Map<string, Blockly.utils.toolbox.StaticCategoryInfo>()
   for (const entry of searchPythonPalette(palette, query)) {
     const groupName = entry.path[0]!
-    const name = entry.path.slice(1).join(' › ')
+    const category = entry.path[1]!
     let group = groups.get(groupName)
     if (!group) {
       group = {
@@ -86,7 +94,7 @@ function toolbox(
         name: groupName,
         contents: [],
         id: undefined,
-        colour: entry.owner === 'python-turtle' ? '140' : '210',
+        colour: PYTHON_PALETTE_GROUPS[entry.owner].colour,
         categorystyle: undefined,
         cssconfig: undefined,
         hidden: undefined,
@@ -94,22 +102,27 @@ function toolbox(
       groups.set(groupName, group)
     }
     const key = entry.path.join(' › ')
-    let category = categories.get(key)
-    if (!category) {
-      category = {
+    let target = categories.get(key)
+    if (!target) {
+      target = {
         kind: 'category',
-        name,
-        colour: entry.owner === 'python-turtle' ? '140' : '210',
+        name: pythonCategoryLabel(entry.owner, category),
+        colour: pythonCategoryColour(entry.owner, category),
         contents: [],
         id: undefined,
         categorystyle: undefined,
         cssconfig: undefined,
         hidden: undefined,
       }
-      categories.set(key, category)
-      group.contents.push(category)
+      categories.set(key, target)
+      group.contents.push(target)
     }
-    category.contents.push({ kind: 'block', type: entry.id })
+    const codec = registry.get(entry.id)
+    target.contents.push(
+      codec
+        ? (pythonPaletteBlockState(codec, codecs) as Blockly.utils.toolbox.BlockInfo)
+        : { kind: 'block', type: entry.id },
+    )
   }
   // Blockly decides category mode from the entries, even for categoryToolbox.
   // Keep that mode when search/curation leaves no insertable blocks.
@@ -126,6 +139,9 @@ function toolbox(
     })
   return { kind: 'categoryToolbox', contents: [...groups.values()] }
 }
+
+const COMMIT_DEBOUNCE_MS = 350
+const COMMIT_MAX_WAIT_MS = 2000
 
 /** Python owns its parser/workspace; no JavaScript generator participates in this surface. */
 export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
@@ -156,7 +172,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     phase: 'loading',
     message: 'Preparando os blocos Python…',
   })
-  const tools = useMemo(() => toolbox(props.palette, query), [props.palette, query])
+  const tools = useMemo(
+    () => toolbox(props.palette, query, props.codecs),
+    [props.palette, query, props.codecs],
+  )
   const currentTools = useRef(tools)
   currentTools.current = tools
   const surface = useRef<{
@@ -439,10 +458,37 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         const range = block ? origins.get(block.id)?.range : undefined
         if (range) callbacks.current.onSelectRange?.(range)
       }
-      if (!event.isUiEvent) flush()
+      if (!event.isUiEvent) scheduleCommit()
+    }
+    // One commit per gesture: typing in a field or dragging a stack fires many events, and each
+    // commit re-parses the whole file. Explicit saves, mode changes and page exit still flush now
+    // through the pending-edits registry.
+    let commitTimer: ReturnType<typeof setTimeout> | undefined
+    let firstPendingAt = 0
+    function scheduleCommit() {
+      const now = performance.now()
+      if (commitTimer === undefined) firstPendingAt = now
+      clearTimeout(commitTimer)
+      const run = () => {
+        if (workspace.isDragging() && performance.now() - firstPendingAt < COMMIT_MAX_WAIT_MS) {
+          commitTimer = setTimeout(run, COMMIT_DEBOUNCE_MS)
+          return
+        }
+        commitTimer = undefined
+        flush()
+      }
+      commitTimer =
+        now - firstPendingAt >= COMMIT_MAX_WAIT_MS
+          ? setTimeout(run, 0)
+          : setTimeout(run, COMMIT_DEBOUNCE_MS)
+    }
+    const flushNow = () => {
+      clearTimeout(commitTimer)
+      commitTimer = undefined
+      flush()
     }
     workspace.addChangeListener(changed)
-    const unregisterFlush = pending?.register(flush)
+    const unregisterFlush = pending?.register(flushNow)
     const adapter = createBlocklyHistory(workspace)
     const unregisterHistory = history?.register('blocks', adapter)
     const activate = () => history?.markActive('blocks')
@@ -582,6 +628,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     void refresh()
     return () => {
       flush()
+      clearTimeout(commitTimer)
       disposed = true
       generation++
       clearTimeout(timer)
