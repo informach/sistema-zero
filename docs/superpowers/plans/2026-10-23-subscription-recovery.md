@@ -119,6 +119,26 @@ e continua registrado como falho; não houve repetição cega. Relatório em
 
 ## Restrições comuns a todos os lotes
 
+### Próxima cobrança e período exibidos — lote de leitura
+
+Implementado e validado localmente: migration gerada 0021, 543 testes Payments,
+projeção advisory sem novas chamadas no browser e provas de atraso/coerência.
+Detalhes em `docs/qa/2026-10-24-subscription-billing-calendar.md`. Ainda não ativado.
+
+Remover a derivação por `lastChargeAt + meses`: esse timestamp registra recebimento,
+inclusive tardio. Manter o contrato financeiro de `lastChargeAt` intacto. Projetar
+a data civil `nextExecution` da consulta já feita pelo backstop de assinaturas,
+sem chamadas à operadora na página da conta. Persistir observação nullable em coluna
+própria, com fencing de origem/instante; vencer a projeção após 24h e não inventar
+data quando faltar prova. Falha nessa projeção deve ser registrada e não pode
+impedir a conciliação canônica de dinheiro já recebido.
+
+Ler o período pago dos recibos VERIFIED_PERIOD persistidos, em lote e escopado às
+assinaturas do titular. Usar esse período no aviso de assinatura cancelada; sem
+fallback para paidAt. Testar atraso, fim de mês/ano bissexto, calendário de Brasília,
+leitura vencida, observações fora de ordem e ausência de dados. Gerar migration
+pelo Drizzle e aplicar somente na base QA nova antes da ativação financeira.
+
 - Payments coordena dinheiro/assinatura; Members controla acesso; Messaging entrega.
 - Kids fala com responsável e exige seu portão; Adultos fala com o titular.
 - Não estender acesso por tentativa; não cobrar meses recusados em bloco.

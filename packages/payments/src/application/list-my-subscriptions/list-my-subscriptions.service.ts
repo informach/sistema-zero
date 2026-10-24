@@ -1,4 +1,8 @@
 import type { SubscriptionMyReadRepository } from '../../domain/ports/subscription-my-read.port'
+import {
+  emptySubscriptionBilling,
+  type SubscriptionBillingRepository,
+} from '../../domain/subscription/subscription-billing'
 import type { SubscriptionOperationRepository } from '../../domain/subscription/subscription-operation'
 import {
   type MySubscriptionView,
@@ -11,6 +15,7 @@ export class ListMySubscriptionsService {
   constructor(
     private readonly subscriptions: SubscriptionMyReadRepository,
     private readonly operations: SubscriptionOperationRepository,
+    private readonly billing: SubscriptionBillingRepository,
     private readonly clock: () => Date = () => new Date(),
   ) {}
 
@@ -21,10 +26,15 @@ export class ListMySubscriptionsService {
       this.clock(),
     )
     const pending = new Map(operations.map((operation) => [operation.subscriptionId, operation]))
+    const billing = await this.billing.readForSubscriptions(
+      items.map((item) => item.id),
+      this.clock(),
+    )
     return {
       items: items.map((subscription) => ({
         ...toMySubscriptionView(subscription),
         pendingOperation: pendingOperationView(pending.get(subscription.id) ?? null),
+        billing: billing.get(subscription.id) ?? emptySubscriptionBilling(),
       })),
     }
   }

@@ -56,6 +56,7 @@ import { DrizzleRecoveryPolicyRepository } from './infrastructure/persistence/dr
 import { DrizzleRecoveryReviewRepository } from './infrastructure/persistence/drizzle/recovery-review.repository'
 import { DrizzleSubscriptionRepository } from './infrastructure/persistence/drizzle/subscription.repository'
 import { DrizzleSubscriptionAdminReadRepository } from './infrastructure/persistence/drizzle/subscription-admin-read.repository'
+import { DrizzleSubscriptionBillingRepository } from './infrastructure/persistence/drizzle/subscription-billing.repository'
 import { DrizzleSubscriptionMyReadRepository } from './infrastructure/persistence/drizzle/subscription-my-read.repository'
 import { DrizzleSubscriptionOperationRepository } from './infrastructure/persistence/drizzle/subscription-operation.repository'
 import { DrizzleSubscriptionPlanRegistry } from './infrastructure/persistence/drizzle/subscription-plan-registry.repository'
@@ -250,6 +251,7 @@ export function createApplication(env: Env): Application {
   // assinante (executeForEmail — "minhas assinaturas").
   const subscriptionsMyRead = new DrizzleSubscriptionMyReadRepository(db)
   const subscriptionOperations = new DrizzleSubscriptionOperationRepository(db)
+  const subscriptionBilling = new DrizzleSubscriptionBillingRepository(db)
   const recoveryCases = new DrizzleSubscriptionRecoveryRepository(db)
   const recoveryAdmissions = new DrizzleRecoveryAdmissionRepository(db)
   const recoverySource = new RecoverySourceService(
@@ -372,6 +374,7 @@ export function createApplication(env: Env): Application {
     gateway,
     handleSubscriptionNotification,
     logger,
+    subscriptionBilling,
     {
       intervalMs: env.SUBSCRIPTION_RECONCILE_INTERVAL_MS,
       batchSize: env.SUBSCRIPTION_RECONCILE_BATCH_SIZE,
@@ -398,6 +401,7 @@ export function createApplication(env: Env): Application {
   const listMySubscriptions = new ListMySubscriptionsService(
     subscriptionsMyRead,
     subscriptionOperations,
+    subscriptionBilling,
   )
 
   // Readiness (`/readyz`, healthcheck do Railway): a réplica só é promovida

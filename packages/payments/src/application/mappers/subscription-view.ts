@@ -1,5 +1,9 @@
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import type { SubscriptionStatus } from '../../domain/subscription/subscription.status'
+import {
+  emptySubscriptionBilling,
+  type SubscriptionBillingView,
+} from '../../domain/subscription/subscription-billing'
 import type { SubscriptionOperation } from '../../domain/subscription/subscription-operation'
 
 /** Purchaser-facing status only: no provider IDs, financial proof, actor or execution details. */
@@ -70,6 +74,7 @@ export interface MySubscriptionView {
   canceledAt: string | null
   createdAt: string
   pendingOperation: PendingSubscriptionOperationView | null
+  billing: SubscriptionBillingView
 }
 
 export function toMySubscriptionView(subscription: SubscriptionAggregate): MySubscriptionView {
@@ -88,6 +93,7 @@ export function toMySubscriptionView(subscription: SubscriptionAggregate): MySub
     canceledAt: subscription.canceledAt ? subscription.canceledAt.toISOString() : null,
     createdAt: subscription.createdAt.toISOString(),
     pendingOperation: null,
+    billing: emptySubscriptionBilling(),
   }
 }
 

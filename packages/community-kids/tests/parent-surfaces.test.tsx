@@ -77,6 +77,7 @@ const subscription: MySubscriptionView = {
   canceledAt: null,
   createdAt: '2026-06-01T12:00:00.000Z',
   pendingOperation: null,
+  billing: { nextExecution: null, scheduleObservedAt: null, paidPeriod: null },
 }
 
 function installFetch(handler: (path: string, method: string, init?: RequestInit) => Response) {
@@ -338,6 +339,13 @@ describe('os cartões da conta', () => {
               status: 'CANCELED',
               description: 'Comunidade dos Criadores',
               lastChargeAt: recent,
+              billing: {
+                ...subscription.billing,
+                paidPeriod: {
+                  startsAt: recent,
+                  endsAt: new Date(Date.now() + 86_400_000).toISOString(),
+                },
+              },
               canceledAt: recent,
               createdAt: '2026-06-01T12:00:00.000Z',
             },

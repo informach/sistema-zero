@@ -6,6 +6,7 @@ import {
   SubscriptionOperationNotice,
 } from '@sistemazero/member-shell/components/billing/subscription-card-update'
 import { useMySubscriptions } from '@sistemazero/member-shell/components/billing/use-my-subscriptions'
+import { paidSubscriptionPeriodRunning } from '@sistemazero/member-shell/lib/subscription-card'
 
 import {
   comebackSubscriptionId,
@@ -40,18 +41,6 @@ function formatDay(value: Date | string): string {
     year: 'numeric',
     timeZone: 'America/Sao_Paulo',
   })
-}
-
-/**
- * O período já pago de uma assinatura cancelada ainda não terminou: a última cobrança (ou a
- * criação) mais um intervalo. A data é derivada, como a da próxima cobrança (`nextChargeDate`).
- */
-function paidPeriodRunning(subscription: MySubscriptionView, now: Date): boolean {
-  if (subscription.status !== 'CANCELED') return false
-  const end = new Date(subscription.lastChargeAt ?? subscription.createdAt)
-  if (Number.isNaN(end.getTime())) return false
-  end.setMonth(end.getMonth() + subscription.intervalMonths)
-  return end > now
 }
 
 const DIALOG_ACTIONS =
@@ -238,7 +227,7 @@ export function ParentSubscriptions() {
               </span>
             </p>
             <SubscriptionOperationNotice operation={subscription.pendingOperation} />
-            {paidPeriodRunning(subscription, now) ? (
+            {paidSubscriptionPeriodRunning(subscription, now) ? (
               <p className="text-muted-foreground text-sm">
                 O acesso continua até o fim do período já pago.
               </p>

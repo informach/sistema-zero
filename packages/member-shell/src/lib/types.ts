@@ -12,7 +12,6 @@ import type {
   ZappySpeechOverride,
 } from '@sistemazero/core/learning/scene'
 import type { AmbassadorShareUrls } from '@sistemazero/core/referrals'
-import type { MySubscriptionView } from './subscription-card'
 
 // "Como fazer" (biblioteca de ajuda do Kids): as views nascem no core e valem nos dois lados.
 export type {
@@ -1579,25 +1578,13 @@ export type {
   SubscriptionRetryContextView,
   SubscriptionRetryIntentView,
 } from './subscription-card'
+export { nextChargeDate } from './subscription-card'
 
 export const SUBSCRIPTION_STATUS_LABELS: Record<string, string> = {
   PENDING: 'Pendente',
   ACTIVE: 'Ativa',
   CANCELED: 'Cancelada',
   EXPIRED: 'Encerrada',
-}
-
-/**
- * Próxima cobrança DERIVADA (a Efí não expõe a data): última cobrança (ou a
- * criação) + intervalo. `null` p/ assinatura não-ativa.
- */
-export function nextChargeDate(sub: MySubscriptionView): Date | null {
-  if (sub.status !== 'ACTIVE') return null
-  const base = new Date(sub.lastChargeAt ?? sub.createdAt)
-  if (Number.isNaN(base.getTime())) return null
-  const next = new Date(base)
-  next.setMonth(next.getMonth() + sub.intervalMonths)
-  return next
 }
 
 // ── Comunidade (fórum — @sistemazero/hub) ───────────────────────────────────

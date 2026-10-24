@@ -22,6 +22,7 @@ import type {
 import type { PaymentStatus } from '../../../domain/payment/payment.status'
 import type { PeriodConfirmationAudit } from '../../../domain/payment/period-confirmation'
 import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
+import type { SubscriptionScheduleObservation } from '../../../domain/subscription/subscription-billing'
 import type { RecoveryAdmissionReason } from '../../../domain/subscription-recovery/recovery-admission.port'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
 import type {
@@ -249,6 +250,8 @@ export const subscriptions = paymentsSchema.table(
     // Cursor operacional do backstop de renovação. Não pertence ao agregado:
     // reivindicar um scan não é uma mudança no contrato da assinatura.
     lastReconciledAt: timestamp('last_reconciled_at', { withTimezone: true }),
+    // Advisory provider calendar; deliberately outside aggregate saves and access authority.
+    billingSchedule: jsonb('billing_schedule').$type<SubscriptionScheduleObservation>(),
     description: text('description'),
     metadata: jsonb('metadata').$type<Record<string, unknown>>().notNull().default({}),
     cancelRequestedAt: timestamp('cancel_requested_at', { withTimezone: true }),

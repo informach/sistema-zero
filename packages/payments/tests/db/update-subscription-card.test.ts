@@ -14,6 +14,7 @@ import {
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
+import { DrizzleSubscriptionBillingRepository } from '../../src/infrastructure/persistence/drizzle/subscription-billing.repository'
 import { DrizzleSubscriptionMyReadRepository } from '../../src/infrastructure/persistence/drizzle/subscription-my-read.repository'
 import { DrizzleSubscriptionOperationRepository } from '../../src/infrastructure/persistence/drizzle/subscription-operation.repository'
 import { FakePixGateway, silentLogger } from '../fakes/in-memory'
@@ -272,6 +273,7 @@ describe.skipIf(!databaseUrl)('Atualização preventiva de cartão — aplicaç�
     const list = new ListMySubscriptionsService(
       new DrizzleSubscriptionMyReadRepository(connection.db),
       operations,
+      new DrizzleSubscriptionBillingRepository(connection.db),
       () => now,
     )
     const mine = (await list.execute(email)).items.find((item) => item.id === id)

@@ -18,6 +18,7 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzlePaymentRepository } from '../../src/infrastructure/persistence/drizzle/payment.repository'
 import { DrizzleSubscriptionRepository } from '../../src/infrastructure/persistence/drizzle/subscription.repository'
+import { DrizzleSubscriptionBillingRepository } from '../../src/infrastructure/persistence/drizzle/subscription-billing.repository'
 import { DrizzleSubscriptionMyReadRepository } from '../../src/infrastructure/persistence/drizzle/subscription-my-read.repository'
 import { DrizzleSubscriptionOperationRepository } from '../../src/infrastructure/persistence/drizzle/subscription-operation.repository'
 import { DrizzleWebhookInbox } from '../../src/infrastructure/persistence/drizzle/webhook-inbox.repository'
@@ -173,6 +174,7 @@ describe.skipIf(!url)('Pagamento explícito do ciclo — PostgreSQL real', () =>
     const list = new ListMySubscriptionsService(
       new DrizzleSubscriptionMyReadRepository(connection.db),
       operations,
+      new DrizzleSubscriptionBillingRepository(connection.db),
       () => now,
     )
     expect(

@@ -38,6 +38,7 @@ test('adulto distingue leitura indisponível, lista com pagamento incerto e atua
             canceledAt: null,
             cancelRequestedAt: null,
             pendingOperation: { kind: 'RETRY', state: 'UNKNOWN' },
+            billing: { nextExecution: null, scheduleObservedAt: null, paidPeriod: null },
           },
         ],
       })

@@ -48,6 +48,7 @@ import {
   silentLogger,
 } from '../fakes/in-memory'
 import { InMemoryRecoveryPolicyRepository } from '../fakes/recovery-policy-repository'
+import { InMemorySubscriptionBillingRepository } from '../fakes/subscription-billing-repository'
 import { InMemorySubscriptionOperationRepository } from '../fakes/subscription-operation-repository'
 
 interface BuildOpts {
@@ -309,6 +310,7 @@ function buildApp(opts: BuildOpts = {}) {
     listMySubscriptions: new ListMySubscriptionsService(
       subscriptionsMyRead,
       subscriptionOperations,
+      new InMemorySubscriptionBillingRepository(),
     ),
   })
 

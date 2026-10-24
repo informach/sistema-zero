@@ -3,6 +3,10 @@ import type { PaymentGateway } from '../../domain/ports/payment-gateway.port'
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
+import {
+  observeSubscriptionSchedule,
+  type SubscriptionBillingRepository,
+} from '../../domain/subscription/subscription-billing'
 import type { Logger } from '../logging/logger'
 
 export interface SubscriptionReconciliationWorkerOptions {
@@ -45,6 +49,7 @@ export class SubscriptionReconciliationWorker {
     private readonly gateway: PaymentGateway,
     private readonly cycles: HandleSubscriptionNotificationService,
     private readonly logger: Logger,
+    private readonly billing: Pick<SubscriptionBillingRepository, 'recordSchedule'>,
     private readonly options: SubscriptionReconciliationWorkerOptions,
   ) {}
 
@@ -109,7 +114,28 @@ export class SubscriptionReconciliationWorker {
     const providerId = subscription.providerSubscriptionId
     if (!providerId) return
     try {
-      const charges = await this.gateway.listSubscriptionCharges(providerId)
+      const observedAt = new Date()
+      const source = await this.gateway.getSubscription(providerId)
+      if (source.providerSubscriptionId !== providerId)
+        throw new Error('Subscription source mismatch')
+      const charges = source.charges
+      try {
+        const elapsed = Date.now() - observedAt.getTime()
+        if (elapsed < 0 || elapsed > 60_000) throw new Error('Stale schedule observation')
+        await this.billing.recordSchedule({
+          subscriptionId: subscription.id,
+          consumerId: subscription.consumerId,
+          provider: this.gateway.provider,
+          providerSubscriptionId: providerId,
+          intervalMonths: subscription.intervalMonths,
+          observation: observeSubscriptionSchedule(source, observedAt),
+        })
+      } catch {
+        // Advisory projection failure must never prevent ingestion of money already received.
+        this.logger.error('subscription.reconcile.schedule_projection_failed', {
+          subscriptionId: subscription.id,
+        })
+      }
       for (const charge of charges) {
         if (charge.status !== 'PAID') continue
         const known = await this.payments.findByProviderPaymentId(

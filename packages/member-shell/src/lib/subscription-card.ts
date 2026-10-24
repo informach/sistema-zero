@@ -16,6 +16,54 @@ export interface MySubscriptionView {
   canceledAt: string | null
   createdAt: string
   pendingOperation: PendingSubscriptionOperationView | null
+  billing: {
+    nextExecution: string | null
+    scheduleObservedAt: string | null
+    paidPeriod: { startsAt: string; endsAt: string } | null
+  }
+}
+
+/** Provider civil day, represented at UTC noon for day-only display in Brasília. Never paidAt + months. */
+export function nextChargeDate(sub: MySubscriptionView, now = new Date()): Date | null {
+  const day = sub.billing?.nextExecution
+  const observed = new Date(sub.billing?.scheduleObservedAt ?? Number.NaN)
+  const age = now.getTime() - observed.getTime()
+  if (
+    sub.status !== 'ACTIVE' ||
+    sub.cancelRequestedAt ||
+    !day ||
+    !Number.isFinite(age) ||
+    age < 0 ||
+    age >= 24 * 60 * 60_000
+  )
+    return null
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Sao_Paulo',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    })
+      .formatToParts(now)
+      .map((part) => [part.type, part.value]),
+  )
+  if (day < `${parts.year}-${parts.month}-${parts.day}`) return null
+  const date = new Date(`${day}T12:00:00.000Z`)
+  return Number.isFinite(date.getTime()) &&
+    /^\d{4}-\d{2}-\d{2}$/.test(day) &&
+    date.toISOString().slice(0, 10) === day
+    ? date
+    : null
+}
+
+/** Receipt of the original paid cycle; not authority for access or a new recovery window. */
+export function paidSubscriptionPeriodRunning(sub: MySubscriptionView, now: Date): boolean {
+  if (sub.status !== 'CANCELED' || !sub.billing?.paidPeriod) return false
+  const start = new Date(sub.billing.paidPeriod.startsAt)
+  const end = new Date(sub.billing.paidPeriod.endsAt)
+  return (
+    Number.isFinite(start.getTime()) && Number.isFinite(end.getTime()) && start <= now && now < end
+  )
 }
 
 export interface PendingSubscriptionOperationView {
