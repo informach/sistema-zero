@@ -11,6 +11,7 @@ import {
 import { meshComponentEdges } from '../scene/meshComponents'
 import { migrateLegacyModel } from '../scene/migrateLegacy'
 import { addScenePaintableInterior } from '../scene/paintableInterior'
+import { patchScenePieceAppearance } from '../scene/pieceAppearance'
 import { makeModel } from '../testing/fixtures'
 import { makeSceneWheelSelection } from '../testing/sceneWheelSelection'
 import { SceneComponentOverlay } from './SceneComponentOverlay'
@@ -46,6 +47,20 @@ test('a real inner face no longer receives the red missing-back overlay in Model
     const before = overlay.root.children[0]?.children[2]
     if (!(before instanceof Mesh)) throw new Error('Missing back overlay')
     expect(before.geometry.getAttribute('position').count).toBe(6)
+
+    const transparent = patchScenePieceAppearance(plane, node.id, {
+      baseColor: { kind: 'rgba', value: [0, 0, 0, 0] },
+    })
+    resource.update(transparent)
+    overlay.update(resource, original, { nodeId: node.id, mode: 'face', ids: [] })
+    expect(before.visible).toBe(false)
+    resource.update(plane)
+    overlay.update(resource, original, { nodeId: node.id, mode: 'face', ids: [] })
+    expect(before.visible).toBe(true)
+    resource.setXray(true)
+    overlay.update(resource, original, { nodeId: node.id, mode: 'face', ids: [] })
+    expect(before.visible).toBe(true)
+    resource.setXray(false)
 
     const interior = addScenePaintableInterior(plane, node.id)
     resource.update(interior)

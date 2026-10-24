@@ -1122,6 +1122,9 @@ export function SceneWorkshop({
                   ) : mode === 'paint' ? (
                     <ScenePaintPalette
                       paint={workshop.paint}
+                      pieceName={
+                        workshop.primary?.kind === 'mesh' ? workshop.primary.name : undefined
+                      }
                       palette={document}
                       applyPalette={(next) =>
                         workshop.run((source) => setScenePalette(source, next))

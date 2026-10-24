@@ -20,6 +20,9 @@ export class SceneMaterialResource {
   private disposed = false
   private xray = false
   private authoredTransparent = false
+  get authoredTransparency(): boolean {
+    return this.authoredTransparent
+  }
   // Fades after alphaTest: the cutout and authored opacity stay as painted.
   private readonly xrayAlpha = { value: 1 }
 

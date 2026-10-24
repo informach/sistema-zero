@@ -2649,6 +2649,12 @@
   background: var(--mld-pivot-bg, #f2eafc);
   color: var(--mld-pivot-text, #8b3fd9);
 }
+[data-molda-theme] .mld-pivot-controls .mld-component-help {
+  margin-right: 0;
+}
+[data-molda-theme] .mld-pivot-controls .mld-piece-coordinates [data-pivot-active="true"] {
+  margin-inline: 0;
+}
 [data-molda-theme] .mld-piece-coordinates [data-pivot-active="true"] legend {
   color: var(--mld-pivot-text);
 }

@@ -151,7 +151,25 @@ for (const theme of ['light', 'dark']) {
     await expect(page.getByText('Salvo', { exact: true })).toBeVisible()
     await page.reload()
     await page.getByRole('button', { name: `Modelo ${source.name}`, exact: true }).click()
-    expect((await snapshot(page)).nodes).toEqual(grouped.nodes)
+    const restored = await snapshot(page)
+    const canonical = readSceneDocument(grouped)
+    if (canonical.status !== 'valid') throw new Error('Invalid saved project')
+    const restoredDocument = readSceneDocument(restored)
+    if (restoredDocument.status !== 'valid') throw new Error('Invalid restored project')
+    // Reload may normalize an affine transform to equivalent TRS representation.
+    expect(restored.nodes.map(({ transform: _transform, ...node }) => node)).toEqual(
+      grouped.nodes.map(({ transform: _transform, ...node }) => node),
+    )
+    const beforeWorld = indexSceneDocument(canonical.document).scene.worldMatrices
+    const afterWorld = indexSceneDocument(restoredDocument.document).scene.worldMatrices
+    for (const [id, matrix] of beforeWorld) {
+      const restoredMatrix = afterWorld.get(id)
+      expect(restoredMatrix).toBeDefined()
+      matrix.forEach((value, axis) => {
+        expect(restoredMatrix![axis]).toBeCloseTo(value, 10)
+      })
+    }
+    expect(restored.geometries).toEqual(grouped.geometries)
     await page.setViewportSize({ width: 390, height: 844 })
     await page.getByRole('tab', { name: 'Peças', exact: true }).click()
     await expect(tools.getByRole('button', { name: 'Agrupar', exact: true })).toBeVisible()

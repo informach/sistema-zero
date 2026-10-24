@@ -236,6 +236,8 @@ export class SceneComponentOverlay {
         this.instances.set(instance.id, group)
         this.root.add(group)
       }
+      const back = group.children[2]
+      if (back instanceof Mesh) back.visible = !resource.authoredTransparencyFor(object)
       group.matrix.fromArray(instance.worldMatrix)
       group.matrixWorldNeedsUpdate = true
     }

@@ -2,6 +2,7 @@ import { COPY } from '../../../core/copy'
 import { patchSceneMaterial } from '../../../scene/appearanceCommands'
 import type { SceneMaterial } from '../../../scene/document'
 import { Button } from '../../ui/Button'
+import { SceneHelpButton } from './SceneHelpButton'
 import { SceneMaterialMaskSettings } from './SceneMaterialMaskSettings'
 import { SCENE_APPEARANCE_FIELD as field, type SceneAppearanceApply } from './sceneAppearanceForm'
 export function SceneMaterialSettings({
@@ -20,7 +21,9 @@ export function SceneMaterialSettings({
     <fieldset disabled={lockedMaterial} className="space-y-3">
       <legend className="text-sm font-bold">{copy.materialFinish}</legend>
       {/* Fosco, Brilhante e Metal moram no Modelar, na peça (`ScenePieceFinish`). */}
-      <p className="text-xs text-mld-muted">{copy.materialFinishHint}</p>
+      <SceneHelpButton title="Como funciona o acabamento">
+        <p>{copy.materialFinishHint}</p>
+      </SceneHelpButton>
       <form
         key={`${material.id}-${material.roughness}-${material.metalness}-${material.doubleSided}-${material.name}`}
         className="space-y-2"
@@ -111,7 +114,9 @@ export function SceneMaterialSettings({
             )}
           </select>
         </label>
-        <p className="text-xs text-mld-muted">{copy.materialBaseHint}</p>
+        <SceneHelpButton title="Como funciona a cor de base">
+          <p>{copy.materialBaseHint}</p>
+        </SceneHelpButton>
         <Button type="submit" className="w-full text-sm">
           {copy.materialApplyColor}
         </Button>

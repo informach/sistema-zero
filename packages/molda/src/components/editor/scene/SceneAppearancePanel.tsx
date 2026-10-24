@@ -15,6 +15,7 @@ import { requireScene } from '../../../scene/validation'
 import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
 import { SceneFlipbookTools } from './SceneFlipbookTools'
+import { SceneHelpButton } from './SceneHelpButton'
 import { SceneImageAtlasTools } from './SceneImageAtlasTools'
 import { SceneImageImport } from './SceneImageImport'
 import { SceneImageLayers } from './SceneImageLayers'
@@ -36,7 +37,7 @@ export function SceneAppearancePanel({
   useEffect(() => () => cancelTask(), [cancelTask])
   const [materialId, setMaterialId] = useState<string | null>(null)
   const [chosenKind, setImageKind] = useState<SceneMaterialImageKind>('color')
-  // O portão, dentro de "Materiais e camadas" (`paint.layers`): o material avançado e juntar as
+  // O portão, dentro de "Textura e camadas" (`paint.layers`): o material avançado e juntar as
   // pinturas são `paint.material`; relevo, brilho e metal, `paint.maps`; os quadros da pintura
   // que se mexe, `paint.flipbook`. Sem os mapas, pinta-se só a cor.
   const { can } = useMoldaToolAccess()
@@ -79,8 +80,39 @@ export function SceneAppearancePanel({
       return command(source)
     })
   }
+  function paintNewImage(next: MoldaSceneDocument) {
+    const imageId = next.materials.find((entry) => entry.id === material!.id)?.[
+      SCENE_MATERIAL_IMAGE_FIELDS[imageKind]
+    ]
+    const layerId = next.images.find((entry) => entry.id === imageId)?.layers.at(-1)?.id
+    if (imageId && layerId)
+      workshop.openPaint({
+        nodeId: primary!.id,
+        materialId: material!.id,
+        imageId,
+        layerId,
+        imageKind,
+      })
+  }
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <h3 className="text-sm font-bold">Pintura do modelo</h3>
+        <SceneHelpButton title="Como funciona a pintura do modelo">
+          <p>Ao pintar no modelo, você desenha numa imagem que acompanha a superfície da peça.</p>
+          <p>
+            A Folha de pintura mostra a mesma imagem aberta. Um traço feito em qualquer lado aparece
+            no outro.
+          </p>
+          <p>O material define a cor de base e o acabamento; a textura guarda o desenho.</p>
+          {(users.length > 1 || imageUsers.length > 1) && (
+            <p>{copy.materialShared(users.length, imageUsers.length)}</p>
+          )}
+        </SceneHelpButton>
+      </div>
+      <p className="text-sm text-mld-text-soft">
+        {image ? `Textura atual: ${image.name}` : 'Esta peça usa apenas a cor de base.'}
+      </p>
       {materialTools && (
         <SceneImageAtlasTools
           workshop={workshop}
@@ -89,28 +121,32 @@ export function SceneAppearancePanel({
         />
       )}
       {/* O aviso de trabalho em andamento (e o cancelar) fica na coluna da aba Pintar. */}
-      <label className="block space-y-1 text-sm">
-        <span>{copy.materialChoose}</span>
-        <select
-          name="sceneMaterial"
-          value={material.id}
-          className={field}
-          onChange={(e) => {
-            cancelTask()
-            workshop.flipbook.setImage(null)
-            setMaterialId(e.target.value)
-          }}
-        >
-          {ids.map((id, i) => (
-            <option key={id} value={id}>
-              {copy.materialEntry(usage.index.materials.get(id)!.name, i + 1)}
-            </option>
-          ))}
-        </select>
-      </label>
-      <p className="text-xs text-mld-muted">
-        {copy.materialShared(users.length, imageUsers.length)}
-      </p>
+      {ids.length > 1 && (
+        <label className="block space-y-1 text-sm">
+          <span>{copy.materialChoose}</span>
+          <select
+            name="sceneMaterial"
+            value={material.id}
+            className={field}
+            onChange={(e) => {
+              cancelTask()
+              workshop.flipbook.setImage(null)
+              setMaterialId(e.target.value)
+            }}
+          >
+            {ids.map((id, i) => (
+              <option key={id} value={id}>
+                {copy.materialEntry(usage.index.materials.get(id)!.name, i + 1)}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
+      {(users.length > 1 || imageUsers.length > 1) && (
+        <p role="status" className="text-xs text-mld-muted">
+          Esta pintura aparece em mais de uma peça.
+        </p>
+      )}
       {(lockedMaterial || lockedImage) && (
         <p role="status" className="text-xs text-mld-muted">
           {copy.materialLocked}
@@ -171,6 +207,7 @@ export function SceneAppearancePanel({
         imageKind={imageKind}
         disabled={lockedMaterial || imageTask.busy}
         apply={apply}
+        onCreated={imageKind === 'color' ? paintNewImage : undefined}
       />
       <SceneImageImport
         key={`import:${material.id}:${imageKind}`}
@@ -179,6 +216,7 @@ export function SceneAppearancePanel({
         imageKind={imageKind}
         disabled={lockedMaterial || imageTask.busy}
         apply={apply}
+        onImported={imageKind === 'color' ? paintNewImage : undefined}
       />
       {image && can('paint.flipbook') && (
         <SceneFlipbookTools

@@ -31,6 +31,7 @@ import {
 import { prepareSceneInk, sampleSceneInk, sceneInkRgba } from '../../../scene/paintInk'
 import { rotateScenePaintFace } from '../../../scene/paintRegionRotate'
 import { scenePaintFaceBounds, scenePaintFaceFillsBounds } from '../../../scene/paintSurfaceBounds'
+import { makeScenePaintBaseTransparent } from '../../../scene/paintTransparentBase'
 import { patchScenePieceAppearance } from '../../../scene/pieceAppearance'
 import { SceneValidationError } from '../../../scene/validation'
 import type { EditorStore } from '../../../state/editorStore'
@@ -797,6 +798,19 @@ export function useScenePaint(
     },
     setFilled,
     setEndColor,
+    makeBaseTransparent: () => {
+      if (!session || !data || drawing || imageTask.busy) return
+      cancel()
+      try {
+        const source = editor.getState().content
+        const result = makeScenePaintBaseTransparent(source, session.target)
+        if (result.document !== source) editor.getState().commit(result.document)
+        if (result.target !== session.target) setSession({ ...session, target: result.target })
+        setError(null)
+      } catch (error) {
+        reportError(error)
+      }
+    },
     convert: () => {
       if (session) {
         cancel()

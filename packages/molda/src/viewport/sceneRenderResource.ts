@@ -140,6 +140,7 @@ export class SceneRenderResource {
     polygonOffsetFactor: 1,
     polygonOffsetUnits: 1,
   })
+  private readonly hiddenBackMaterial = new MeshBasicMaterial({ visible: false })
   private readonly backs = new Map<Mesh, Mesh>()
   private readonly paints = new Map<string, PaintEntry>()
   private readonly frames = new Map<string, { source: SceneImageFlipbook; frame: number }>()
@@ -217,6 +218,16 @@ export class SceneRenderResource {
   instanceFor(object: Object3D): SceneInstance | null {
     const id = this.identity.get(object)
     return id ? (this.instances.get(id) ?? null) : null
+  }
+
+  /** Workshop guides must not fill the scene seen through authorial transparency. */
+  authoredTransparencyFor(object: Object3D): boolean {
+    const instance = this.instanceFor(object)
+    const geometry = instance && this.geometries.get(instance.geometryId)
+    if (!instance || !geometry) return false
+    return geometry.slots.some(
+      (id) => this.materials.get(id ?? instance.materialId)?.resource.authoredTransparency,
+    )
   }
 
   /** Authorial boundaries include coplanar cuts; render triangulation is never an edit edge. */
@@ -661,6 +672,7 @@ export class SceneRenderResource {
     this.meshes.clear()
     this.backs.clear()
     this.backMaterial.dispose()
+    this.hiddenBackMaterial.dispose()
     this.instances.clear()
     this.source = null
     this.index = null
@@ -679,9 +691,10 @@ export class SceneRenderResource {
   }
 
   private drawInstance(instance: SceneInstance, geometry: GeometryEntry, skin?: SceneSkinResource) {
-    const materials = geometry.slots.map(
-      (id) => this.materials.get(id ?? instance.materialId)!.resource.material,
+    const resources = geometry.slots.map(
+      (id) => this.materials.get(id ?? instance.materialId)!.resource,
     )
+    const materials = resources.map((resource) => resource.material)
     let mesh = this.meshes.get(instance.id)
     if (mesh && this.skinOwners.get(mesh) !== skin) {
       this.releaseMesh(instance.id, mesh)
@@ -716,6 +729,14 @@ export class SceneRenderResource {
         mesh.material = materials
     }
     mesh.name = instance.name
+    const back = this.backs.get(mesh)
+    if (back) {
+      const transparent = resources.map((resource) => resource.authoredTransparency)
+      back.visible = transparent.some((value) => !value)
+      back.material = transparent.some(Boolean)
+        ? transparent.map((value) => (value ? this.hiddenBackMaterial : this.backMaterial))
+        : this.backMaterial
+    }
     mesh.matrix.fromArray(instance.worldMatrix)
     mesh.matrixWorldNeedsUpdate = true
     mesh.visible = !instance.hidden
