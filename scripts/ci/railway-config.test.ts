@@ -85,9 +85,11 @@ function execution(savedPlan: ReturnType<typeof plan> & { claim?: boolean }, dri
   const path = join(directory, 'plan.json')
   writeFileSync(path, JSON.stringify(savedPlan))
   const calls: string[][] = []
+  const railwayEnvs: NodeJS.ProcessEnv[] = []
   // Somente a fronteira de processos é substituída. O script lê e valida o plano real.
-  const exec = (command: string, args: string[]) => {
+  const exec = (command: string, args: string[], options?: { env?: NodeJS.ProcessEnv }) => {
     calls.push([command, ...args])
+    if (command === 'railway') railwayEnvs.push({ ...options?.env })
     if (command === 'git' && args[0] === 'status') return ''
     if (command === 'git' && args[0] === 'rev-parse') return tree
     if (command === 'railway' && args[0] === 'link') return ''
@@ -100,10 +102,37 @@ function execution(savedPlan: ReturnType<typeof plan> & { claim?: boolean }, dri
     }
     throw new Error(`Comando inesperado: ${command} ${args.join(' ')}`)
   }
-  return { path, calls, exec }
+  return { path, calls, exec, railwayEnvs }
 }
 
 describe('execução do plano Railway', () => {
+  test('IaC usa o vínculo explícito e não os overrides do processo de deploy', () => {
+    const keys = ['RAILWAY_PROJECT_ID', 'RAILWAY_ENVIRONMENT_ID', 'RAILWAY_SERVICE_ID'] as const
+    const previous = keys.map((key) => [key, process.env[key]] as const)
+    try {
+      for (const key of keys) process.env[key] = 'inherited-runtime-context-qa'
+      const f = execution(plan())
+      runConfig('check', 'production', f.path, f.exec)
+      expect(f.calls[2]).toEqual([
+        'railway',
+        'link',
+        '--project',
+        '415d5a1c-5f75-432c-8445-b395d0977ce3',
+        '--environment',
+        railwayEnvironments.production,
+      ])
+      expect(f.railwayEnvs).toHaveLength(2)
+      for (const env of f.railwayEnvs) {
+        for (const key of keys) expect(env[key]).toBeUndefined()
+      }
+      expect(process.env.RAILWAY_ENVIRONMENT_ID).toBe('inherited-runtime-context-qa')
+    } finally {
+      for (const [key, value] of previous) {
+        if (value === undefined) delete process.env[key]
+        else process.env[key] = value
+      }
+    }
+  })
   test.each([false, true])('plano vazio com claim=%s só confere o estado remoto', (claim) => {
     const f = execution({ ...plan(), claim })
     runConfig('apply', 'production', f.path, f.exec)
