@@ -213,12 +213,16 @@ export interface CreateCardSubscriptionOutput {
 export interface ProviderSubscription {
   providerSubscriptionId: string
   status: ProviderSubscriptionStatus
+  charges: ProviderSubscriptionCharge[]
+  /** Data civil da próxima execução, quando informada e válida no provedor. */
+  nextExecution?: string
 }
 
 /** Uma cobrança do histórico da assinatura no provedor (ciclo). */
 export interface ProviderSubscriptionCharge {
   chargeId: string
   status: ProviderChargeStatus
+  createdAt?: Date
 }
 
 export interface RetrySubscriptionChargeInput {
