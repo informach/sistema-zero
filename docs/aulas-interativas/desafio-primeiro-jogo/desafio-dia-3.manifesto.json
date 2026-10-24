@@ -41,7 +41,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+        "text": "Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -53,7 +53,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+        "text": "Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -65,7 +65,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Se trocar o farol, use o mesmo modelo apagado e aceso. Teste a combinação e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+        "text": "A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Se trocar o farol, use o mesmo modelo apagado e aceso. Teste a combinação e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {

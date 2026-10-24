@@ -55,7 +55,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.",
-      "ancoraDepois": "A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar esta",
+      "ancoraDepois": "A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto.",
       "falaPrincipal": "O cacto passou pelo Dino. Por que a partida não terminou?",
       "falaPersonagem": "O cacto passou pelo Dino. Por que a partida não terminou?",
       "tags": ["[curious]"]

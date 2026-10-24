@@ -201,6 +201,8 @@ export async function runProductionRelease(input, ports) {
     throw new Error('Barreira canônica de produção ausente')
   ports.log({ stage: 'BACKEND_BARRIER_PASSED', publishedVersion: barrier.version })
   const apps = services.filter((name) => !['members', 'auth'].includes(name))
+  // Queue, build, healthcheck and retirement share this budget, as in staging.
+  // Keep the whole-wave deadline authoritative even after a long backend barrier.
   const appDeadline = Math.min(deadline, ports.now() + PRODUCTION_APPLICATION_TIMEOUT_MS)
   const deployments = []
   let dispatchFailure

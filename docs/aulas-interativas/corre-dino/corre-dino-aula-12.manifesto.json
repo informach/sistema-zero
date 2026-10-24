@@ -69,7 +69,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -81,7 +81,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -93,7 +93,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
       }
     },
     {
@@ -1296,7 +1296,7 @@
       "key": "lugar-diferente",
       "title": "Sorteie onde cada cacto nasce",
       "intent": "application",
-      "objective": "Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-lugar-diferente", "fala-lugar-diferente"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1394,7 +1394,7 @@
       "key": "velocidade-propria",
       "title": "Sorteie uma variação na velocidade",
       "intent": "application",
-      "objective": "Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-velocidade-propria", "fala-velocidade-propria"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1506,7 +1506,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

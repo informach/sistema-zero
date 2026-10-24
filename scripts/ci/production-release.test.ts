@@ -238,6 +238,49 @@ describe('one production owner and canonical V1 barrier', () => {
       (await runProductionRelease({ sha, services: 'community-kids', plan }, fixture.ports)).state,
     ).toBe('PRODUCTION_WAVE_PASSED')
   })
+  test.each([
+    21, 59,
+  ])('an acknowledged app may finish after %i minutes without a second POST', async (minutes) => {
+    const fixture = wave()
+    let clock = 0
+    fixture.ports.now = () => clock
+    const retire = fixture.ports.backend.waitRetired
+    Object.assign(fixture.ports.backend, {
+      async waitRetired(service: string, _id: string, deadline: number) {
+        clock += minutes * 60_000
+        if (clock >= deadline) throw new Error('app retirement timeout')
+        await retire(service)
+      },
+    })
+    const result = await runProductionRelease({ sha, services: 'admin', plan }, fixture.ports)
+    expect(result.state).toBe('PRODUCTION_WAVE_PASSED')
+    expect(fixture.order.filter((item) => item === 'POST-admin')).toHaveLength(1)
+    expect(fixture.order).toContain('REMOVED-old-admin')
+  })
+  test.each([
+    { buildMinutes: 60, preparationMinutes: 0 },
+    { buildMinutes: 56, preparationMinutes: 120 },
+  ])('app wait remains bounded by both the app and whole-wave deadlines %j', async ({
+    buildMinutes,
+    preparationMinutes,
+  }) => {
+    const fixture = wave()
+    let clock = 0
+    fixture.ports.now = () => clock
+    fixture.ports.checkConfiguration = async () => {
+      clock = preparationMinutes * 60_000
+    }
+    Object.assign(fixture.ports.backend, {
+      async waitRetired(_service: string, _id: string, deadline: number) {
+        clock += buildMinutes * 60_000
+        if (clock >= deadline) throw new Error('app retirement timeout')
+      },
+    })
+    await expect(
+      runProductionRelease({ sha, services: 'admin', plan }, fixture.ports),
+    ).rejects.toThrow('app retirement timeout')
+    expect(fixture.order.filter((item) => item === 'POST-admin')).toHaveLength(1)
+  })
   test('recorder initialization is opt-in and its POST still follows V1', async () => {
     const fixture = wave()
     const result = await runProductionRelease(

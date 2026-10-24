@@ -329,7 +329,7 @@ const dia1 = {
     video('video-d1-andar', 'Faça o personagem andar', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-andar',
-      'Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Hora de fazer o seu personagem andar! Faça as setas aparecerem e coloque o movimento dentro de A cada quadro do jogo. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d1-limite', 'Até onde ele pode ir?', 'desafio-dia-1.roteiro.md'),
     fala(
@@ -345,7 +345,7 @@ const dia1 = {
     video('video-d1-borda', 'Mantenha o personagem na tela', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-borda',
-      'Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
+      'Agora mantenha o personagem na tela! Coloque o limite logo abaixo do movimento, teste as quatro beiradas e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
     ),
     projeto('dia-1'),
   ],
@@ -418,17 +418,17 @@ const dia2 = {
     video('video-d2-recolher', 'Recolha a chave', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-recolher',
-      'Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d2-guardar', 'Guarde que a chave foi encontrada', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-guardar',
-      'Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora ensine o seu jogo a lembrar da chave! Crie temChave começando em falso e mude para verdadeiro no encontro com a chave. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d2-programar', 'Avise quem está jogando', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-programar',
-      'Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar esta parte. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
+      'Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
     ),
     projeto('dia-2'),
   ],
@@ -505,17 +505,17 @@ const dia3 = {
     video('video-d3-sem-chave', 'Avise quando faltar a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-sem-chave',
-      'Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-decisao', 'Acenda o farol com a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-decisao',
-      'Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-personalizar', 'Deixe o jogo com a sua cara', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-personalizar',
-      'A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Se trocar o farol, use o mesmo modelo apagado e aceso. Teste a combinação e clique em Verificar esta parte. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'A surpresa chegou! Que combinação você vai criar? Troque o que quiser: personagem, barco, chave, farol ou cenário. Se trocar o farol, use o mesmo modelo apagado e aceso. Teste a combinação e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-farol-mensagens', 'Escreva seus avisos', 'desafio-dia-3.roteiro.md'),
     fala(

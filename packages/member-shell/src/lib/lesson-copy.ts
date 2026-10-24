@@ -42,7 +42,7 @@ export interface LessonCopy {
    * `padrao` nos dois apps.
    */
   erroDoServidor: (erro: unknown, padrao: string) => string
-  /** "Verificar esta etapa" dos objetivos de projeto da seção. */
+  /** "Verificar projeto" dos objetivos de projeto da seção. */
   verificacao: {
     botao: string
     objetivos: string
@@ -314,8 +314,8 @@ export const COMMON_LESSON_COPY: LessonCopy = {
   itemPendente,
   erroDoServidor,
   verificacao: {
-    botao: 'Verificar esta parte',
-    objetivos: 'Objetivos desta parte',
+    botao: 'Verificar projeto',
+    objetivos: 'Objetivos do projeto',
     progresso: (cumpridos, total) => `${cumpridos} de ${total} cumpridos`,
     cumprido: 'Objetivo cumprido!',
     faltou: 'Ainda falta um objetivo. Veja a lista e tente de novo.',

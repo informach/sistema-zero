@@ -13,7 +13,7 @@ import { type ReactNode, useEffect } from 'react'
 
 /**
  * A atualização da aula sem derrubar a atividade (11/10/2026). Relato dela: com o Estúdio
- * AMPLIADO, "Verificar esta parte" recarregou a página inteira (build novo no servidor: o
+ * AMPLIADO, "Verificar projeto" recarregou a página inteira (build novo no servidor: o
  * `router.refresh()` do Next 16 vira recarregamento) e, numa segunda vez, "recarregou os
  * blocos" (o refresh re-semeava o editor). O que este arquivo trava:
  * 1. o agendador junta os pedidos e ESPERA a atividade ampliada fechar;
@@ -96,7 +96,7 @@ function comPlayer(refresh: () => void, filho: ReactNode) {
   return <LessonPlayerProvider value={value}>{filho}</LessonPlayerProvider>
 }
 
-describe('"Verificar esta parte"', () => {
+describe('"Verificar projeto"', () => {
   const originalFetch = globalThis.fetch
   afterEach(() => {
     globalThis.fetch = originalFetch
@@ -120,7 +120,7 @@ describe('"Verificar esta parte"', () => {
     }
     render(comPlayer(refresh, <SectionProjectCheck blockId="projeto" handleRef={handleRef} />))
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Verificar esta parte' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Verificar projeto' }))
     })
     expect(globalThis.fetch).toHaveBeenCalledTimes(1)
     return refresh

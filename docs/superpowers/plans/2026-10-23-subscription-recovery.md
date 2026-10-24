@@ -6,6 +6,35 @@ após sete dias sem regularização, com período pago e histórico preservados.
 **Estado:** implementação autorizada pelo usuário; lotes financeiros ainda não ativados.
 Este documento não autoriza cancelamentos ou cobranças manuais em clientes reais.
 
+## Prioridade concluída e retomada — 24/10, 14:47 UTC
+
+Por nova orientação da responsável, os lotes de gravação foram antecipados e já
+foram implantados: menu adulto, “Objetivos do projeto” / “Verificar projeto”, fontes
+dos cursos e derivados. Staging ativo em `b2d096fae`; produção em `93f7f9221`, PR
+#212. Os arquivos e as versões ativas foram conferidos; os manifestos publicados
+serão reimportados pela responsável, sem migração direta de textos nem mídia.
+Detalhes em `docs/qa/2026-10-24-recording-deploy-verification.md`.
+
+A frente financeira foi retomada do commit `ffb988ae5`, com o staging atual
+integrado, preservando as mudanças financeiras ainda não ativadas. Já existem
+admissão e coordenação duráveis D0/D3/D6/D7, avisos deduplicados e retiradas,
+cancelamento auditado/fenced, troca preventiva de cartão e pagamento explícito do
+ciclo original, fila Admin e confirmação auditada do período por fonte recente.
+As caixas abaixo continuam representando o aceite integrado, não ausência de código.
+
+Próximos pontos: operar resultados UNKNOWN com prova e auditoria sem repetir POST;
+revisar o caso histórico individual com aviso/prazo novos; fechar UX/contratos de
+regularização e projeção da próxima cobrança; retirar a coordenação antiga só no
+corte; configurar templates/ambientes, provar migrações e ensaiar os dois públicos.
+Depois, full review financeiro, correções, revisão final da composição e ativação.
+
+Por pedido expresso, as correções do acompanhamento serão publicadas junto da
+entrega financeira: orçamento de produção de 60 minutos (já presente nesta branch,
+agora conciliado com a revisão e controles adicionais de limite global) e polling
+de staging em lote com tratamento de limitação da API. O CI dos aplicativos passou;
+os acompanhamentos anteriores falharam por cota da API e prazo, e os deployments
+foram reconciliados sem duplicação. Não repetir os POST desses deployments.
+
 ## Complemento verificável — auditoria de cancelamento, 24/10
 
 Coordenação de avisos e oito templates versionados foram implementados no lote

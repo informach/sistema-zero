@@ -18,7 +18,7 @@ Num jogo pronto, alguém já decidiu tudo: o que o personagem faz, onde fica a c
 
 #### O que muda quando ele decide as regras
 
-O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. O tempo na tela continua, mas agora sai dele alguma coisa que ele fez e pode mostrar. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta. A cena que você quer ver, **ele chamando você: olha o que eu fiz**, é onde isso termina: um jogo pronto, feito por ele.
+O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. O tempo na tela continua, mas agora sai dele alguma coisa que ele fez e pode mostrar. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar projeto mostra o que já está certo e o que falta. A cena que você quer ver, **ele chamando você: olha o que eu fiz**, é onde isso termina: um jogo pronto, feito por ele.
 
 #### Onde isso acontece
 
@@ -32,7 +32,7 @@ O André, nosso filho, fez o Desafio do Primeiro Jogo e contou assim:
 
 #### O que você disse que precisa
 
-Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar esta parte mostra o que falta, e o vídeo fica do lado dos blocos.
+Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar projeto mostra o que falta, e o vídeo fica do lado dos blocos.
 
 Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 30 dias.
 
@@ -56,7 +56,7 @@ Num jogo pronto, alguém já decidiu tudo: o que o personagem faz, onde fica a c
 
 #### O que muda quando ele monta as regras
 
-O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. A ideia sai da conversa e vira uma regra que funciona. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta. A cena que você quer ver, **um amigo jogando um jogo que ele fez**, é onde isso termina: o jogo publicado, com um link que abre no celular.
+O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. A ideia sai da conversa e vira uma regra que funciona. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar projeto mostra o que já está certo e o que falta. A cena que você quer ver, **um amigo jogando um jogo que ele fez**, é onde isso termina: o jogo publicado, com um link que abre no celular.
 
 #### Onde isso acontece
 
@@ -70,7 +70,7 @@ O Rafael fez o Desafio do Primeiro Jogo e contou assim:
 
 #### O que você disse que precisa
 
-Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar esta parte mostra o que falta, e o vídeo fica do lado dos blocos.
+Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar projeto mostra o que falta, e o vídeo fica do lado dos blocos.
 
 Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 30 dias.
 
@@ -94,7 +94,7 @@ Num jogo pronto, alguém já decidiu tudo: o que o personagem faz, onde fica a c
 
 #### O que muda quando o personagem entra no jogo
 
-O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. No primeiro jogo, ele escolhe o personagem e o cenário entre os do jogo. Desenhar os próprios personagens fica para depois. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta. A cena que você quer ver, **ele escolhendo o personagem e o cenário do próprio jogo**, faz parte do fim: o jogo fica com a cara dele.
+O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. No primeiro jogo, ele escolhe o personagem e o cenário entre os do jogo. Desenhar os próprios personagens fica para depois. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar projeto mostra o que já está certo e o que falta. A cena que você quer ver, **ele escolhendo o personagem e o cenário do próprio jogo**, faz parte do fim: o jogo fica com a cara dele.
 
 #### Onde isso acontece
 
@@ -108,7 +108,7 @@ O Rafael fez o Desafio do Primeiro Jogo e contou assim:
 
 #### O que você disse que precisa
 
-Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar esta parte mostra o que falta, e o vídeo fica do lado dos blocos.
+Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar projeto mostra o que falta, e o vídeo fica do lado dos blocos.
 
 Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 30 dias.
 
@@ -132,7 +132,7 @@ Num jogo pronto, alguém já decidiu tudo: o que o personagem faz, onde fica a c
 
 #### O que muda quando ele monta um jogo por dentro
 
-O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. Cada bloco é uma decisão que ele vê funcionar, e ele entende por que o jogo faz o que faz. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar esta parte mostra o que já está certo e o que falta. A cena que você quer ver, **ele explicando como o jogo funciona por dentro**, vem de montar cada regra e testar.
+O primeiro jogo precisa ser pequeno de propósito, com começo, meio e fim. Ele monta as regras com blocos de encaixar, testa e vê na hora se o jogo faz o que ele imaginou. Cada bloco é uma decisão que ele vê funcionar, e ele entende por que o jogo faz o que faz. Quando trava, o vídeo está do lado dos blocos, e o botão Verificar projeto mostra o que já está certo e o que falta. A cena que você quer ver, **ele explicando como o jogo funciona por dentro**, vem de montar cada regra e testar.
 
 #### Onde isso acontece
 
@@ -146,7 +146,7 @@ O André, nosso filho, fez o Desafio do Primeiro Jogo e contou assim:
 
 #### O que você disse que precisa
 
-Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar esta parte mostra o que falta, e o vídeo fica do lado dos blocos.
+Você quer **ter ajuda quando ele travar**. Em cada parte da aula, o botão Verificar projeto mostra o que falta, e o vídeo fica do lado dos blocos.
 
 Na próxima página, você vê o jogo, as 3 etapas, como você acompanha pela Área dos pais e o que acontece depois dos 30 dias.
 

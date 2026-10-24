@@ -41,33 +41,33 @@ video-seta-e-velocidade-K1: Dedé substitui “E se a gente testar um passo meno
 
 ### Seção 2. Faça a nave responder às setas
 
-**Tarefa:** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-setas-e-rastro → fala-setas.
 
-**Recado na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento com velocidade 7 antes do desenho da nave, teste as duas setas e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-setas-e-rastro-K1: Dedé substitui “E qual velocidade eu uso?”. Antes: “Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.”. Depois: “Repare: o nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Mova nave com as setas, com velocidade positiva, antes de desenhá-la.
 
 ### Seção 3. Tire o rastro da nave
 
-**Tarefa:** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-limpeza → fala-limpeza.
 
-**Recado na página (não gravar):** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-limpeza-K1: Dedé substitui “Isso vai apagar a minha nave?”. Antes: “cada quadro, na primeira aula? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!”. Depois: “Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Limpe a tela antes de mover e desenhar a nave.
 
@@ -87,17 +87,17 @@ video-limite-da-tela-K1: Dedé substitui “E se a nave sair da tela?”. Antes:
 
 ### Seção 5. Mantenha a nave na tela
 
-**Tarefa:** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-nave → fala-borda.
 
-**Recado na página (não gravar):** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas bordas e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-limite-da-nave-K1: Dedé substitui “Esse nome heroi é o da minha nave?”. Antes: “dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.”. Depois: “Repare: o bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave. Agora teste:”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Mova nave antes de prendê-la à tela.
 - Mantenha nave dentro da tela antes de desenhá-la.
@@ -114,17 +114,17 @@ video-limite-da-nave-K1: Dedé substitui “Esse nome heroi é o da minha nave?�
 
 ### Seção 7. Coloque as estrelas atrás da nave
 
-**Tarefa:** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Tarefa:** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-fundo-estrelado → fala-fundo-estrelado.
 
-**Recado na página (não gravar):** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar esta parte. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
 video-fundo-estrelado-K1: Dedé substitui “Ué, cadê a nave?”. Antes: “A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.”. Depois: “Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você”.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Limpe antes de desenhar o céu estrelado.
 - Desenhe o fundo de estrelas em movimento a cada quadro.
@@ -141,13 +141,13 @@ video-fundo-estrelado-K1: Dedé substitui “Ué, cadê a nave?”. Antes: “A 
 
 ### Seção 9. Teste e envie sua nave
 
-**Tarefa:** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Tarefa:** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
 **Blocos na página:** video-teste-e-envio → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar a sua nave! Leve a nave até as duas bordas, confira a ordem dos blocos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
-**Conclui quando:** vídeo assistido e critérios conferidos em Verificar esta parte, com o envio confirmado em Enviar meu projeto → Enviar.
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 
 - Prepare a tela em Ao iniciar, com o mundo de 800 por 480 usado neste curso.
 - Crie uma única nave em Ao iniciar, com posição dentro da tela e tamanho positivo.

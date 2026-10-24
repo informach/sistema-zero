@@ -80,7 +80,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -92,7 +92,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -132,7 +132,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -144,7 +144,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -184,7 +184,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte."
+        "text": "Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
@@ -196,7 +196,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
       }
     },
     {
@@ -425,7 +425,7 @@
       "key": "motor-e-dino",
       "title": "Mostre o Dino a cada quadro",
       "intent": "application",
-      "objective": "Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora faça o seu Dino aparecer! Coloque A cada quadro do jogo em Enquanto estiver rodando e, dentro dele, Desenhar o sprite dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-motor-e-dino", "fala-motor-e-dino"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -463,7 +463,7 @@
       "key": "limpeza",
       "title": "Prepare uma imagem nova em cada quadro",
       "intent": "application",
-      "objective": "Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-limpeza", "fala-limpeza"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -504,7 +504,7 @@
       "key": "ordem-certa",
       "title": "Coloque a floresta atrás do Dino",
       "intent": "application",
-      "objective": "Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-ordem-certa", "fala-ordem-certa"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -575,7 +575,7 @@
       "key": "retirar-borda",
       "title": "Retire a borda provisória",
       "intent": "application",
-      "objective": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-retirar-borda", "fala-retirar-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -626,7 +626,7 @@
       "key": "descrever-jogo",
       "title": "Escreva a descrição do jogo",
       "intent": "application",
-      "objective": "Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar esta parte e, em seguida, em Próxima parte.",
+      "objective": "Agora conte como se joga o seu jogo! Escreva na descrição a frase Corra com o dino e pule os cactos apertando espaço, sem ponto no fim. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-descrever-jogo", "fala-descrever-jogo"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -656,7 +656,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar esta parte e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Confira o Dino na frente da floresta, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

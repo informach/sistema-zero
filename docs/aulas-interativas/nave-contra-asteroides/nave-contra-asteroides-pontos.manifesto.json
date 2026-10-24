@@ -55,7 +55,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula."
+        "text": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula."
       }
     },
     {
@@ -843,7 +843,7 @@
       "key": "placar",
       "title": "Some um ponto a cada acerto",
       "intent": "delivery",
-      "objective": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar esta parte e envie o seu projeto. Por último, clique em Concluir aula.",
+      "objective": "Agora faça o seu jogo contar os pontos! Crie pontos, some 1 no acerto e mostre o placar. Depois, teste, clique em Verificar projeto e envie o seu projeto. Por último, clique em Concluir aula.",
       "blockKeys": ["video-pontos-e-placar", "fala-placar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

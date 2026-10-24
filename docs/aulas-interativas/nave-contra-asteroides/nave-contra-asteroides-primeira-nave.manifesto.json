@@ -1765,7 +1765,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -1860,7 +1860,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte."
+        "text": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -1909,7 +1909,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula."
+        "text": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula."
       }
     },
     {
@@ -2025,7 +2025,7 @@
       "key": "montar-areas-e-tela",
       "title": "Prepare a tela do jogo",
       "intent": "application",
-      "objective": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-montar-areas-tela", "fala-montar-areas-e-tela"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -2100,7 +2100,7 @@
       "key": "criar-nave",
       "title": "Crie a nave nos bastidores",
       "intent": "application",
-      "objective": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar esta parte. Depois, clique em Próxima parte.",
+      "objective": "Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-criar-nave", "fala-criar-nave"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -2196,7 +2196,7 @@
       "key": "motor-e-nave",
       "title": "Mostre a nave a cada quadro",
       "intent": "delivery",
-      "objective": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar esta parte e envie o seu projeto. Depois, clique em Concluir aula.",
+      "objective": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
       "blockKeys": ["video-motor-e-nave", "fala-motor-e-nave", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

@@ -104,7 +104,7 @@
         "kind": "box",
         "tone": "test",
         "title": "Verificar e continuar",
-        "text": "Funcionou? Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.<br/>Seu jogo é salvo automaticamente. O envio fica no fim de <b>Mantenha o personagem na tela</b>."
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.<br/>Seu jogo é salvo automaticamente. O envio fica no fim de <b>Mantenha o personagem na tela</b>."
       }
     ]
   },
@@ -215,7 +215,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo (com o espaço do jogo estreito, ele aparece só como uma seta dando a volta): começa uma partida nova, e a chave volta ao chão. Se algo não funcionou no seu jogo, confira se ficou como no desenho: <b>Destruir o sprite chave</b> dentro do encontro entre personagem e chave. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo (com o espaço do jogo estreito, ele aparece só como uma seta dando a volta): começa uma partida nova, e a chave volta ao chão. Se algo não funcionou no seu jogo, confira se ficou como no desenho: <b>Destruir o sprite chave</b> dentro do encontro entre personagem e chave. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -247,7 +247,7 @@
       {
         "kind": "box",
         "title": "Verifique esta parte",
-        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.",
+        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.",
         "tone": "test"
       }
     ]
@@ -362,7 +362,7 @@
         "kind": "box",
         "tone": "test",
         "title": "Verificar e continuar",
-        "text": "Funcionou? Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.<br/>Seu jogo é salvo automaticamente. O envio fica no fim de <b>Escolha onde fica a chave</b>."
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.<br/>Seu jogo é salvo automaticamente. O envio fica no fim de <b>Escolha onde fica a chave</b>."
       }
     ]
   },
@@ -443,7 +443,7 @@
         "kind": "box",
         "tone": "test",
         "title": "Verificar e continuar",
-        "text": "Funcionou? Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Seu jogo é salvo automaticamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Seu jogo é salvo automaticamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -482,7 +482,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Clique em <b>Atualizar</b> e vá até a porta do farol sem a chave: ele continua apagado. Busque a chave e volte até a porta: o mesmo modelo acende e o barco chega. Se algo não funcionou no seu jogo, confira se ficou assim: cada imagem está no bloco do mesmo tipo, e o farol tem o mesmo modelo nos dois blocos, apagado em Ao iniciar e aceso dentro do então. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar esta parte</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e vá até a porta do farol sem a chave: ele continua apagado. Busque a chave e volte até a porta: o mesmo modelo acende e o barco chega. Se algo não funcionou no seu jogo, confira se ficou assim: cada imagem está no bloco do mesmo tipo, e o farol tem o mesmo modelo nos dois blocos, apagado em Ao iniciar e aceso dentro do então. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -747,7 +747,7 @@
       {
         "kind": "step",
         "title": "Para guardar e para enviar",
-        "text": "O Estúdio salva automaticamente enquanto você monta. <b>Guardado na sua conta</b> confirma que a cópia já está na sua conta.<br/><b>Verificar esta parte</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe no fim da aula. Depois aparece <b>Projeto enviado!</b><br/>Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
+        "text": "O Estúdio salva automaticamente enquanto você monta. <b>Guardado na sua conta</b> confirma que a cópia já está na sua conta.<br/><b>Verificar projeto</b> confere os blocos pedidos.<br/><b>Enviar meu projeto</b>, confirmado em <b>Enviar</b>, manda o jogo para a equipe no fim da aula. Depois aparece <b>Projeto enviado!</b><br/>Se você mudar alguma coisa depois de enviar, clique em <b>Enviar de novo</b> e confirme em <b>Reenviar</b>: a equipe recebe a versão nova."
       }
     ]
   }

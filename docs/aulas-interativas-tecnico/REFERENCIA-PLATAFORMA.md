@@ -229,7 +229,7 @@ parte é a seção). "Aventura" só descreve a história de um curso; "fase", s�
 |---|---|
 | Rodapé da aula | **Anterior** · **Preciso de ajuda** · **Próxima parte**; na última parte, **Concluir aula** |
 | Comemoração da aula (Kids) | **Aula concluída!** · **Próxima aula** · **Voltar ao curso** |
-| Objetivos do projeto no Estúdio da aula | **Objetivos desta parte** · **Verificar esta parte** · **Objetivo cumprido!** |
+| Objetivos do projeto no Estúdio da aula | **Objetivos do projeto** · **Verificar projeto** · **Objetivo cumprido!** |
 | Cartão do Estúdio da aula | **Seu projeto no Estúdio** · **Enviar meu projeto**, confirmado em **Enviar** (janela **Enviar o seu projeto?**, campo **Recado (opcional)**) · **Enviar de novo**, confirmado em **Reenviar** · depois do envio, **Projeto enviado!** e, quando a equipe confere, **A equipe já viu o seu projeto.** |
 | Pinta da aula | **Enviar meu desenho**, confirmado em **Enviar** (janela **Enviar o seu desenho?**) · **Enviar de novo** · **Desenho enviado!** · **A equipe já viu o seu desenho.** |
 | Entrega pela galeria | **Escolher no Pinta** ou **Escolher no Estúdio** · janela **Minhas criações do Pinta** (ou **do Estúdio**) · campo **Recado (opcional)** · **Enviar (1)** · **Recebido!** · **Enviar outra versão** |

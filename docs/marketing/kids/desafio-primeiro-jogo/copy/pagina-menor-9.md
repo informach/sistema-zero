@@ -94,7 +94,7 @@
 
 **sessao.passos[2].texto**: Ele diz o que quer. Você ajuda a encaixar.
 
-**sessao.passos[2].imagem.alt**: O botão Verificar esta parte, com o que já está cumprido e o que falta
+**sessao.passos[2].imagem.alt**: O botão Verificar projeto, com o que já está cumprido e o que falta
 
 **sessao.passos[3].texto**: Vocês testam e chamam a família para jogar.
 

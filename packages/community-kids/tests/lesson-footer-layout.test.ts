@@ -51,6 +51,7 @@ describe('rodapé da aula entre os menus abertos', () => {
     const adultPlayer = source(
       '../community/src/app/(app)/cursos/[slug]/aulas/[lessonId]/lesson-player-client.tsx',
     )
+    const adultOutline = source('../community/src/components/community/lesson-outline-content.tsx')
 
     expect(adultPlayer).toContain('id="adult-lesson-outline"')
     expect(adultPlayer).toContain('inert={!outlineOpen}')
@@ -60,8 +61,10 @@ describe('rodapé da aula entre os menus abertos', () => {
     expect(adultPlayer).toContain('<EdgePanelHandle')
     expect(adultPlayer).toContain('openOffset="var(--lesson-outline-width)"')
     expect(adultCss).toContain('--lesson-outline-width: min(20rem, 90vw)')
-    expect(adultPlayer).toContain('lg:max-h-none lg:min-h-0 lg:flex-1')
-    expect(adultPlayer).toContain('lg:rounded-none lg:border-0 lg:shadow-none')
+    expect(adultPlayer).toContain('<LessonOutlineContent')
+    expect(adultOutline).toContain('scrollbar-subtle min-h-0 flex-1 overflow-y-auto')
+    expect(adultOutline).not.toContain('max-h-[28rem]')
+    expect(adultOutline).toContain('lg:rounded-none lg:border-0 lg:shadow-none')
     expect(adultPlayer).toContain('transition-opacity duration-300 motion-reduce:transition-none')
     expect(adultPlayer).not.toContain("!outlineOpen && 'hidden'")
     expect(adultCss).toContain('.sz-app:has(.sz-aula-adulto) > main')

@@ -121,7 +121,7 @@ export const PAGINA_DESAFIO_MENOR9 = {
           src: 'comunidade-dos-criadores/passo-verificar.webp',
           width: 740,
           height: 340,
-          alt: 'O botão Verificar esta parte, com o que já está cumprido e o que falta',
+          alt: 'O botão Verificar projeto, com o que já está cumprido e o que falta',
         },
       },
       {

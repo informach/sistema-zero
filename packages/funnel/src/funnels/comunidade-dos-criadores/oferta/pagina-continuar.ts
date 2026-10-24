@@ -287,7 +287,7 @@ export const PAGINA_CONTINUAR = {
     {
       question: 'E se ele travar no próximo curso?',
       answer:
-        'Cada parte pode ser conferida no botão Verificar esta parte antes de seguir. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a equipe, e a resposta chega por escrito nos Recados.',
+        'Cada parte pode ser conferida no botão Verificar projeto antes de seguir. Se a dúvida continuar, o botão Preciso de ajuda manda a pergunta para a equipe, e a resposta chega por escrito nos Recados.',
     },
     {
       question: 'E se ele perder o interesse?',
