@@ -221,6 +221,13 @@ export interface ProviderSubscriptionCharge {
   status: ProviderChargeStatus
 }
 
+export interface RetrySubscriptionChargeInput {
+  providerPaymentId: string
+  paymentToken: string
+  customer: CardCustomer
+  billingAddress?: Address
+}
+
 export interface PaymentGateway {
   readonly provider: string
 
@@ -292,4 +299,10 @@ export interface PaymentGateway {
 
   /** Cancela a assinatura na Efí (interrompe as cobranças futuras). */
   cancelSubscription(providerSubscriptionId: string): Promise<void>
+
+  /** Altera apenas o cartão de ciclos futuros, sem cobrar agora. Token só em memória. */
+  updateSubscriptionCard(providerSubscriptionId: string, paymentToken: string): Promise<void>
+
+  /** Débito explícito da MESMA cobrança recusada + cartão futuro; não repetir em timeout. */
+  retrySubscriptionCharge(input: RetrySubscriptionChargeInput): Promise<void>
 }

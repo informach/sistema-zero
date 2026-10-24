@@ -187,4 +187,19 @@ export class EfiCobrancasClient {
   cancelSubscription(subscriptionId: number | string): Promise<any> {
     return this.request('PUT', `/subscription/${subscriptionId}/cancel`, { idempotent: true })
   }
+
+  /** Token efêmero: nem o PUT é repetido após resposta ambígua. Não altera plano/itens. */
+  updateSubscriptionCard(subscriptionId: string, paymentToken: string): Promise<unknown> {
+    return this.request('PUT', `/subscription/${encodeURIComponent(subscriptionId)}`, {
+      body: { payment_token: paymentToken },
+      idempotent: false,
+    })
+  }
+
+  retrySubscriptionCharge(chargeId: string, body: Record<string, unknown>): Promise<unknown> {
+    return this.request('POST', `/charge/${encodeURIComponent(chargeId)}/retry`, {
+      body,
+      idempotent: false,
+    })
+  }
 }
