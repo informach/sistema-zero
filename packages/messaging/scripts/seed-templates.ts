@@ -211,7 +211,7 @@ const adultGiftOrigin = (campaign: boolean) =>
 
 // ── Templates ─────────────────────────────────────────────────────────────────
 
-const seeds = [
+export const seeds = [
   ...subscriptionRecoveryTemplates({ emailLayout, p, ctaButton, fallbackLink }),
   ...(['kids-welcome', 'kids-new-access'] as const).flatMap((key) => {
     const first = key === 'kids-welcome'
@@ -1150,51 +1150,6 @@ const seeds = [
       '_Se você já renovou, pode ignorar esta mensagem._',
     ].join('\n'),
   },
-  // FALHA de cobrança de um ciclo de ASSINATURA (dunning, 07/2026) — enviado pelo
-  // FUNIL (consumer HMAC `funnel` via gateway) quando o `payment.failed` de um
-  // ciclo chega. CONTRATO de variáveis com o funil (server/dunning.ts): NÃO
-  // renomear sem mudar o chamador. `link` = página de compras/assinaturas do app.
-  {
-    key: 'subscription-charge-failed',
-    channel: 'email' as const,
-    name: 'Falha na cobrança da assinatura (e-mail)',
-    subject: 'Não conseguimos renovar sua assinatura, {{nome}}',
-    variables: ['nome', 'link'],
-    body: emailLayout({
-      preheader: 'A cobrança da sua assinatura não foi aprovada — atualize o pagamento.',
-      title: 'Ops! A cobrança não passou 😕',
-      content: [
-        p(
-          'Tentamos renovar a sua assinatura do <strong>Sistema Zero</strong>, mas a cobrança no cartão não foi aprovada (pode ser limite, vencimento ou bloqueio do banco).',
-        ),
-        p(
-          'Seu acesso continua ativo por alguns dias. Para não perder nada, verifique o cartão com o seu banco — uma nova tentativa de cobrança pode acontecer em breve.',
-        ),
-        ctaButton('Ver minha assinatura', '{{link}}'),
-        divider,
-        small(
-          'Se a cobrança não for aprovada até o fim do período já pago, o acesso é pausado automaticamente — e você pode reativar quando quiser.',
-        ),
-        fallbackLink('{{link}}'),
-      ].join('\n'),
-      footerNote: 'Você recebeu este e-mail porque tem uma assinatura ativa no Sistema Zero.',
-    }),
-  },
-  {
-    key: 'subscription-charge-failed',
-    channel: 'whatsapp' as const,
-    name: 'Falha na cobrança da assinatura (WhatsApp)',
-    variables: ['nome', 'link'],
-    body: [
-      'Olá, {{nome}}! 😕',
-      '',
-      'Tentamos renovar a sua assinatura do *Sistema Zero*, mas a cobrança no cartão não foi aprovada.',
-      '',
-      'Seu acesso continua ativo por alguns dias. Verifique o cartão com o seu banco — uma nova tentativa pode acontecer em breve.',
-      '',
-      'Acompanhe aqui: {{link}}',
-    ].join('\n'),
-  },
   // Lembrete de publicação MANUAL do app de marketing (F1, 07/2026) — enviado
   // pelo MARKETING (consumer HMAC `marketing` no gateway) na hora agendada de
   // uma publicação em modo lembrete. CONTRATO de variáveis com o marketing
@@ -1683,46 +1638,56 @@ const seeds = [
 
 // ── Upsert ────────────────────────────────────────────────────────────────────
 
-const env = loadEnv()
-const connection = createDbConnection(env.DATABASE_URL, { max: 2 })
-const templates = new DrizzleTemplateRepository(connection.db)
-const now = new Date()
+async function main() {
+  const env = loadEnv()
+  const connection = createDbConnection(env.DATABASE_URL, { max: 2 })
+  const templates = new DrizzleTemplateRepository(connection.db)
+  const now = new Date()
 
-for (const seed of seeds) {
-  const existing = await templates.findByChannelAndKey(seed.channel, seed.key)
-  if (existing) {
-    // Atualiza conteúdo; preserva `active` (não religa template desativado de propósito).
-    existing.update(
-      {
-        name: seed.name,
-        subject: seed.subject ?? null,
-        body: seed.body,
-        variables: seed.variables,
-      },
-      now,
-    )
-    await templates.update(existing)
-    console.log(`atualizado: ${seed.channel}/${seed.key}`)
-    continue
+  for (const seed of seeds) {
+    const existing = await templates.findByChannelAndKey(seed.channel, seed.key)
+    if (existing) {
+      // Atualiza conteúdo; preserva `active` (não religa template desativado de propósito).
+      existing.update(
+        {
+          name: seed.name,
+          subject: seed.subject ?? null,
+          body: seed.body,
+          variables: seed.variables,
+        },
+        now,
+      )
+      await templates.update(existing)
+      console.log(`atualizado: ${seed.channel}/${seed.key}`)
+      continue
+    }
+    await templates.create(Template.create({ id: crypto.randomUUID(), ...seed, now }))
+    console.log(`criado: ${seed.channel}/${seed.key}`)
   }
-  await templates.create(Template.create({ id: crypto.randomUUID(), ...seed, now }))
-  console.log(`criado: ${seed.channel}/${seed.key}`)
+
+  // ── Remetente default (create-if-missing — edições do admin nunca são sobrescritas) ──
+  // ⚠️ O endereço precisa estar VERIFICADO na SendGrid (autenticação do domínio
+  // sistemazero.com.br) — sem isso o envio falha com 403 "Sender Identity".
+  const senders = new DrizzleSenderRepository(connection.db)
+  const DEFAULT_SENDER = { fromEmail: 'contato@sistemazero.com.br', fromName: 'Helena e Júlio' }
+  const existingSender = await senders.findByEmail(DEFAULT_SENDER.fromEmail)
+  if (existingSender) {
+    console.log(`remetente já existe: ${DEFAULT_SENDER.fromEmail}`)
+  } else {
+    await senders.create(
+      EmailSender.create({ id: crypto.randomUUID(), ...DEFAULT_SENDER, isDefault: true, now }),
+      { clearOtherDefaults: true },
+    )
+    console.log(
+      `remetente default criado: ${DEFAULT_SENDER.fromName} <${DEFAULT_SENDER.fromEmail}>`,
+    )
+  }
+
+  await connection.close()
 }
 
-// ── Remetente default (create-if-missing — edições do admin nunca são sobrescritas) ──
-// ⚠️ O endereço precisa estar VERIFICADO na SendGrid (autenticação do domínio
-// sistemazero.com.br) — sem isso o envio falha com 403 "Sender Identity".
-const senders = new DrizzleSenderRepository(connection.db)
-const DEFAULT_SENDER = { fromEmail: 'contato@sistemazero.com.br', fromName: 'Helena e Júlio' }
-const existingSender = await senders.findByEmail(DEFAULT_SENDER.fromEmail)
-if (existingSender) {
-  console.log(`remetente já existe: ${DEFAULT_SENDER.fromEmail}`)
-} else {
-  await senders.create(
-    EmailSender.create({ id: crypto.randomUUID(), ...DEFAULT_SENDER, isDefault: true, now }),
-    { clearOtherDefaults: true },
-  )
-  console.log(`remetente default criado: ${DEFAULT_SENDER.fromName} <${DEFAULT_SENDER.fromEmail}>`)
-}
-
-await connection.close()
+if (import.meta.main)
+  main().catch(() => {
+    console.error('Não foi possível concluir o seed de templates.')
+    process.exitCode = 1
+  })

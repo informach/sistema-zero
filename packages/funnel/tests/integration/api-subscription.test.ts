@@ -3,7 +3,6 @@ import type { Env } from '../../src/lib/env'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { clearOfferCache } from '../../src/server/catalog'
 import { startCard, startPix, startSubscription } from '../../src/server/checkout'
-import { makeSendChargeFailed } from '../../src/server/dunning'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeExtendMembersForCycle, makeGrantMembers } from '../../src/server/members-grant'
 import { makeResolveOffer } from '../../src/server/offer'
@@ -522,10 +521,6 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
       fulfill: makeFulfill({ repo: fake.repo, gateway: gw.gateway }),
       grantMembers: makeGrantMembers(grantDeps),
       extendMembersForCycle: makeExtendMembersForCycle(grantDeps),
-      sendChargeFailed: makeSendChargeFailed({
-        gateway: gw.gateway,
-        communityUrl: 'https://app.example',
-      }),
     }
   }
 
@@ -778,7 +773,7 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
     expect(grant.subscription?.subscriptionId).toBe('sub-1')
   })
 
-  test('payment.failed com subscriptionId → dunning idempotente por cobrança', async () => {
+  test('payment.failed é reconhecido sem avisos duplicados ou extensão de acesso pelo Funil', async () => {
     const fake = createFakeRepo()
     const gw = createFakeGateway()
     await paidSubscriber(fake)
@@ -793,12 +788,8 @@ describe('webhook: renovação de ciclo + falha de cobrança', () => {
     expect(res.status).toBe(200)
     expect(fake.processed.has('d-1')).toBe(true)
 
-    const email = gw.calls.messages.find((m) => m.input.channel === 'email')
-    expect(email?.input.templateKey).toBe('subscription-charge-failed')
-    expect(email?.idempotencyKey).toBe('dunning-pay-cycle-3')
-    // WhatsApp também sai (telefone BR válido no lead).
-    const wa = gw.calls.messages.find((m) => m.input.channel === 'whatsapp')
-    expect(wa?.idempotencyKey).toBe('dunning-wa-pay-cycle-3')
+    expect(gw.calls.messages).toHaveLength(0)
+    expect(gw.calls.grant).toHaveLength(0)
   })
 
   test('payment.failed de assinatura desconhecida → 200 (nada a fazer), entrega marcada', async () => {

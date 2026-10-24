@@ -33,8 +33,6 @@ export interface WebhookDeps {
     paidAtIso?: string,
     billingPeriod?: BillingPeriod,
   ) => Promise<void>
-  /** Aviso de FALHA de cobrança de ciclo (dunning) — best-effort, NUNCA lança. */
-  sendChargeFailed?: (lead: Lead, failedPaymentId: string) => Promise<void>
   log?: (msg: string, meta?: Record<string, unknown>) => void
 }
 
@@ -79,14 +77,9 @@ export async function handlePaymentWebhook(request: Request, deps: WebhookDeps):
     return json({ ok: true, deduped: true })
   }
 
-  // FALHA de cobrança de CICLO de assinatura (dunning): avisa o assinante p/
-  // atualizar o pagamento na carência. Best-effort — o acesso expira sozinho no
-  // fim do ciclo + carência se nada for feito (ninguém estende a matrícula).
+  // Payments owns renewal recovery and its notice clock. Acknowledge failure
+  // deliveries without another sender or changes to the already paid access.
   if (eventName === 'payment.failed' && subscriptionId) {
-    const lead = await deps.repo.findLeadBySubscription(subscriptionId)
-    if (lead && deps.sendChargeFailed && typeof paymentId === 'string' && paymentId) {
-      await deps.sendChargeFailed(lead, paymentId)
-    }
     if (deliveryId) await deps.repo.markWebhookProcessed(deliveryId, paymentId)
     return json({ ok: true })
   }

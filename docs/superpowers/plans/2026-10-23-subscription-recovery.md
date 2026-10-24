@@ -119,6 +119,21 @@ e continua registrado como falho; não houve repetição cega. Relatório em
 
 ## Restrições comuns a todos os lotes
 
+### Corte e ambiente — checkpoint 24/10, 18:21 UTC
+
+Preparados: retirada do remetente antigo do Funil, seed restrito dos oito modelos,
+prontidão de modelos/remetente/fila antiga e download Windows limitado em etapa
+separada. Messaging 176/843 sem falhas/skips e tipos completos; Funil 596 sem
+falhas, dois testes opcionais de analytics não executados, tipos Astro sem erros.
+Variáveis novas configuradas e referências conferidas nos dois ambientes, com
+skipDeploys; nenhuma política ou cliente real acionado. Roteiro operacional e
+limites em `docs/qa/2026-10-24-subscription-cutover-preparation.md`.
+
+Faltam full review integrado, CI do SHA final, integração/deploy staging com
+migrations e aposentadoria de réplicas antigas, seed real e ensaio sandbox/UI
+Kids/Adultos; depois promoção e ativação controlada em produção. A publicação dos
+textos/menu para gravação já foi concluída e não depende deste corte financeiro.
+
 ### Próxima cobrança e período exibidos — lote de leitura
 
 Implementado e validado localmente: migration gerada 0021, 543 testes Payments,
