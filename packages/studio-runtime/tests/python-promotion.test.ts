@@ -135,7 +135,7 @@ test('promotion selects APIs from an explicit current-format implementation feat
     const f = await fixture('staging', features)
     const plan = await preparePythonPromotion(f.input)
     const blockIds = plan.configuration.members.releases[0]!.blockIds
-    for (const id of ['sz_py_turtle_module_Shape', 'sz_py_turtle_shape_addcomponent'])
+    for (const id of ['sz_py_turtle_new_shape', 'sz_py_turtle_shape_addcomponent'])
       expect(blockIds.includes(id)).toBe(
         features.some((feature) => feature === 'turtle-compound-shapes'),
       )
@@ -149,7 +149,8 @@ test('repeating the current deployment preserves its exact approved policy and p
   const f = await fixture()
   const previous = await preparePythonPromotion(f.input)
   const policy = previous.configuration.members.releases[0]!
-  expect(policy.blockIds.filter((id) => id.startsWith('sz_py_turtle_'))).toHaveLength(180)
+  // One block per Turtle concept since the 2026-10 palette review (aliases and spellings share it).
+  expect(policy.blockIds.filter((id) => id.startsWith('sz_py_turtle_'))).toHaveLength(84)
   const baseline = structuredClone(previous.configuration)
   const next = await preparePythonPromotion({ ...f.input, baseline })
   expect(next.configuration.members.releases).toEqual(baseline.members.releases)

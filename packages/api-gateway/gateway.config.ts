@@ -106,6 +106,11 @@ const FUNNEL_ALLOWED_CIDRS = (process.env.FUNNEL_ALLOWED_CIDRS ?? '0.0.0.0/0,::/
 // O auth como consumer HMAC de borda (para chamar /messaging/send — e-mail de
 // reset de senha). Espelha o funnel. DEVE bater com o AUTH_HMAC_SECRET do auth.
 const AUTH_HMAC_SECRET = process.env.AUTH_HMAC_SECRET ?? ''
+const PAYMENTS_HMAC_SECRET = process.env.PAYMENTS_HMAC_SECRET ?? ''
+const PAYMENTS_ALLOWED_CIDRS = (process.env.PAYMENTS_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
+  .split(',')
+  .map((c) => c.trim())
+  .filter(Boolean)
 const AUTH_ALLOWED_CIDRS = (process.env.AUTH_ALLOWED_CIDRS ?? '0.0.0.0/0,::/0')
   .split(',')
   .map((c) => c.trim())
@@ -254,6 +259,22 @@ const config: GatewayConfigInput = {
   // precisa liberar origem; mantenha restritivo se algum dia expor ao browser.
   cors: { origins: ['*'], credentials: false },
   consumers: [
+    // Credencial própria do Payments: não concede operações de outros serviços.
+    ...(PAYMENTS_HMAC_SECRET
+      ? [
+          {
+            id: 'payments',
+            hmacSecret: PAYMENTS_HMAC_SECRET,
+            allowedCidrs: PAYMENTS_ALLOWED_CIDRS,
+            allowedRouteIds: [
+              'messaging-send',
+              'messaging-message-get',
+              'messaging-message-suppress',
+              'messaging-intent-suppress',
+            ],
+          },
+        ]
+      : []),
     // O funil como cliente HMAC de borda do gateway. Segredo via FUNNEL_HMAC_SECRET.
     {
       id: 'funnel',
@@ -586,6 +607,28 @@ const config: GatewayConfigInput = {
       audit: {},
     },
     // ── Minhas compras (app community — self-service do COMPRADOR) ──────────
+    {
+      id: 'payments-admin-recovery-policy-read',
+      methods: ['GET'],
+      pathPattern: '/payments/admin/subscription-recovery/policy',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-admin-recovery-policy-write',
+      methods: ['PUT'],
+      pathPattern: '/payments/admin/subscription-recovery/policy',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: 1024,
+      audit: {},
+    },
     // JWT obrigatório (qualquer conta ativa, inclusive `customer` — sem `roles`).
     // O gateway injeta X-Auth-User-* (inclui o e-mail) e o payments filtra as
     // compras por `customer->>'email'` = e-mail das claims. O literal `my` vence
@@ -632,6 +675,60 @@ const config: GatewayConfigInput = {
       authorize: { statuses: ['active'] },
       transforms: paymentsInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    {
+      id: 'payments-my-card-config',
+      methods: ['GET'],
+      pathPattern: '/payments/my/card-config',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-my-card-intent-read',
+      methods: ['GET'],
+      pathPattern: '/payments/my/subscriptions/:id/card-intents',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-my-card-intent-create',
+      methods: ['POST'],
+      pathPattern: '/payments/my/subscriptions/:id/card-intents',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      maxBodyBytes: 1024,
+      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
+      audit: {},
+    },
+    {
+      id: 'payments-my-card-intent-status',
+      methods: ['GET'],
+      pathPattern: '/payments/my/subscriptions/:id/card-intents/:intentId',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'payments-my-card-update',
+      methods: ['POST'],
+      pathPattern: '/payments/my/subscriptions/:id/card-intents/:intentId',
+      service: 'payments',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: paymentsInternalTransforms,
+      maxBodyBytes: 1024,
+      rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
       audit: {},
     },
     // payments → gateway → funil. O gateway valida a assinatura do webhook
@@ -3773,6 +3870,26 @@ const config: GatewayConfigInput = {
       service: 'messaging',
       auth: { required: true, mode: 'any', strategies: ['hmac'] },
       transforms: messagingInternalTransforms,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-message-suppress',
+      methods: ['POST'],
+      pathPattern: '/messaging/messages/:id/suppress',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: messagingInternalTransforms,
+      maxBodyBytes: 1024,
+      rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
+    },
+    {
+      id: 'messaging-intent-suppress',
+      methods: ['POST'],
+      pathPattern: '/messaging/intents/suppress',
+      service: 'messaging',
+      auth: { required: true, mode: 'any', strategies: ['hmac'] },
+      transforms: messagingInternalTransforms,
+      maxBodyBytes: 65_536,
       rateLimit: { max: 600, windowMs: 60_000, by: 'principal' },
     },
     // Admin (painel): JWT + RBAC. `/messaging/admin/*` distinto das rotas S2S acima.

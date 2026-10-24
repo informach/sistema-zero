@@ -1,8 +1,10 @@
 import type { PythonNode, PythonValue } from '../language/types'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import type { PythonBlockCodec } from './contract'
-import { isNode, nodes, pythonSemanticTree } from './nodes'
+import { isNode, nodes } from './nodes'
 import { type PythonBlockProjection, type PythonVisualNode, pythonVisualToAST } from './projection'
+import { pythonDecodeContextFromExtra } from './resolverOptions'
+import { samePythonValue } from './semantic'
 
 export type PythonWorkspaceOrigins = ReadonlyMap<string, PythonNode>
 
@@ -36,8 +38,7 @@ export function bindPythonVisualOrigins(
   if (
     actual.kind !== 'Module' ||
     !nodes(actual.fields.body) ||
-    JSON.stringify(pythonSemanticTree(candidate.fields.body!)) !==
-      JSON.stringify(pythonSemanticTree(actual.fields.body))
+    !samePythonValue(candidate.fields.body, actual.fields.body)
   )
     throw new Error('Os blocos não correspondem ao código validado.')
   const registry = new Map(codecs.map((codec) => [codec.id, codec]))
@@ -48,7 +49,9 @@ export function bindPythonVisualOrigins(
       throw new Error('A identidade dos blocos Python precisa ser atualizada.')
     origins.set(visual.blockId, parsed)
     if (visual.kind === 'source') return
-    const shape = registry.get(visual.codecId)?.decode(parsed)
+    const shape = registry
+      .get(visual.codecId)
+      ?.decode(parsed, pythonDecodeContextFromExtra(visual.extra))
     if (!shape || shape.inputs.length !== visual.inputs.length)
       throw new Error('A estrutura dos blocos Python mudou.')
     for (const input of visual.inputs) {

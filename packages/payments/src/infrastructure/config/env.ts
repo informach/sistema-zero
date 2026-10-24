@@ -15,6 +15,18 @@ const optionalBool = (def: boolean) =>
     })
     .transform((v) => (v === undefined ? def : v.toLowerCase() === 'true' || v === '1'))
 
+const billingUrl = z.url().refine((value) => {
+  const url = new URL(value)
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+  return (
+    (url.protocol === 'https:' || (local && url.protocol === 'http:')) &&
+    !url.username &&
+    !url.password &&
+    !url.search &&
+    !url.hash
+  )
+}, 'Use uma página HTTPS de cobrança, sem credenciais ou parâmetros; HTTP é permitido apenas em localhost')
+
 const EnvSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -50,10 +62,17 @@ const EnvSchema = z
       .optional(),
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
+    // Dedicated outbound Messaging capability; distinct from incoming consumer secrets.
+    GATEWAY_URL: z.url().optional(),
+    PAYMENTS_HMAC_SECRET: z.string().min(16).optional(),
+    RECOVERY_KIDS_BILLING_URL: billingUrl.optional(),
+    RECOVERY_ADULT_BILLING_URL: billingUrl.optional(),
 
     EFI_CLIENT_ID: z.string().min(1, 'EFI_CLIENT_ID é obrigatória'),
     EFI_CLIENT_SECRET: z.string().min(1, 'EFI_CLIENT_SECRET é obrigatória'),
     EFI_SANDBOX: optionalBool(true),
+    // Identificador PÚBLICO da conta Efí para tokenização no navegador. Não é client_secret.
+    EFI_ACCOUNT_IDENTIFIER: z.string().trim().min(1).max(128).optional(),
     // Certificado P12 da Efí: por caminho de arquivo OU por conteúdo em base64
     // (preferível em PaaS como Railway, que não têm upload de arquivo persistente).
     EFI_CERTIFICATE_PATH: z.string().optional(),
@@ -158,6 +177,10 @@ const EnvSchema = z
     WEBHOOK_DELIVERY_MAX_ATTEMPTS: z.coerce.number().int().positive().default(8),
     // Entregas em paralelo por ciclo (lote cabe no lease → evita re-entrega).
     WEBHOOK_DELIVERY_CONCURRENCY: z.coerce.number().int().positive().default(5),
+  })
+  .refine((e) => Boolean(e.GATEWAY_URL) === Boolean(e.PAYMENTS_HMAC_SECRET), {
+    message: 'GATEWAY_URL e PAYMENTS_HMAC_SECRET devem ser configurados juntos',
+    path: ['PAYMENTS_HMAC_SECRET'],
   })
   .refine((e) => Boolean(e.EFI_CERTIFICATE_PATH?.trim() || e.EFI_CERTIFICATE_BASE64?.trim()), {
     message: 'Defina EFI_CERTIFICATE_PATH ou EFI_CERTIFICATE_BASE64 (certificado P12 da Efí)',

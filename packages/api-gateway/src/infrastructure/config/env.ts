@@ -242,6 +242,10 @@ const EnvSchema = z
     AUTH_HMAC_SECRET: optionalSecret,
     AUTH_ALLOWED_CIDRS: z.string().optional(),
 
+    // Payments: comunicação de recuperação de assinaturas, com capacidades limitadas.
+    PAYMENTS_HMAC_SECRET: optionalSecret,
+    PAYMENTS_ALLOWED_CIDRS: z.string().optional(),
+
     // Consumer HMAC do BFF compartilhado das comunidades (persistência do Zappy).
     MEMBER_SHELL_HMAC_SECRET: optionalSecret,
     MEMBER_SHELL_ALLOWED_CIDRS: z.string().optional(),

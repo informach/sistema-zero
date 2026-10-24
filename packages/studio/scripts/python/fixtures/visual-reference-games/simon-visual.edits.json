@@ -9,11 +9,7 @@
           "index": 10
         },
         {
-          "name": "VALUE",
-          "index": 0
-        },
-        {
-          "name": "args:1",
+          "name": "y",
           "index": 0
         }
       ]

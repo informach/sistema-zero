@@ -4,16 +4,18 @@ import {
   StudioPythonActivitySchema,
 } from '@sistemazero/core/studio/python-activity'
 import { documentFixture } from '../../state/fixtures/projectDocuments'
-import type { PythonWorkerCommand } from './protocol'
+import type { PythonGraphicsReply, PythonWorkerCommand } from './protocol'
 import { preparePythonProExecutionSnapshot } from './snapshot'
 import { createPythonWorkerSupervisor } from './workerSupervisor'
 
 /** A transport double: real CPython and browser CSP are covered by runtime E2E. */
 class Transport extends EventTarget {
   commands: PythonWorkerCommand[] = []
+  transfers: Transferable[][] = []
   terminated = 0
-  postMessage(command: PythonWorkerCommand) {
+  postMessage(command: PythonWorkerCommand, options?: { transfer?: Transferable[] }) {
     this.commands.push(command)
+    this.transfers.push(options?.transfer ?? [])
   }
   terminate() {
     this.terminated++
@@ -31,7 +33,7 @@ async function session(
   graphics?: (
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
-  ) => Promise<string>,
+  ) => Promise<PythonGraphicsReply>,
   onActivityResult?: (requestId: string, feedback: StudioPythonActivityFeedback) => void,
   audio?: (request: string) => Promise<string>,
 ) {
@@ -293,6 +295,62 @@ test('a forged result cannot select another operation or send persistence comman
     expect(value.transport.terminated).toBe(1)
   }
 })
+async function answered(value: Awaited<ReturnType<typeof session>>, requestId: string) {
+  value.transport.emit({ type: 'graphics', requestId, request: '{}', images: [] })
+  for (let tick = 0; tick < 10; tick++) await Promise.resolve()
+  return value.transport.commands.at(-1)
+}
+
+test('a game exchanging frames is not counted against the message quota, up to its own ceiling', async () => {
+  const value = await session(undefined, () => Promise.resolve('{}'))
+  value.boot()
+  value.supervisor.run()
+  // Ten seconds of a 60 fps game would be 600 frames; well over 256 within one second here.
+  for (let frame = 0; frame < 600; frame++)
+    expect(await answered(value, `graphics-${frame}`)).toMatchObject({ type: 'graphics-response' })
+  expect(value.supervisor.phase).toBe('running')
+  // Other messages keep their own budget in the same second.
+  for (let i = 0; i < 200; i++) value.transport.emit({ type: 'console', batches: [] })
+  expect(value.supervisor.phase).toBe('running')
+
+  const flood = await session(undefined, () => Promise.resolve('{}'))
+  flood.boot()
+  flood.supervisor.run()
+  for (let frame = 0; frame < 2100 && flood.supervisor.phase === 'running'; frame++)
+    await answered(flood, `graphics-${frame}`)
+  expect(flood.events.at(-1)).toMatchObject({ type: 'failed', code: 'quota-exceeded' })
+})
+
+test('pixels come back to the worker as a transferred buffer, within bounds', async () => {
+  const pixels = new Uint8Array(4 * 4 * 4).fill(7)
+  const value = await session(undefined, () => Promise.resolve({ text: '{}', bytes: pixels }))
+  value.boot()
+  value.supervisor.run()
+  const response = await answered(value, 'graphics-1')
+  expect(response).toMatchObject({ type: 'graphics-response', response: '{}' })
+  expect((response as { bytes: Uint8Array }).bytes).toBe(pixels)
+  expect(value.transport.transfers.at(-1)).toEqual([pixels.buffer])
+
+  // A view on a bigger buffer is copied, so nothing else of the frame is transferred.
+  const big = new Uint8Array(64)
+  const view = await session(undefined, () =>
+    Promise.resolve({ text: '{}', bytes: big.subarray(8, 24) as Uint8Array<ArrayBuffer> }),
+  )
+  view.boot()
+  view.supervisor.run()
+  const copied = (await answered(view, 'graphics-1')) as { bytes: Uint8Array }
+  expect(copied.bytes.byteLength).toBe(16)
+  expect(copied.bytes.buffer).not.toBe(big.buffer)
+
+  const invalid = await session(undefined, () =>
+    Promise.resolve({ text: '{}', bytes: 'pixels' as unknown as Uint8Array<ArrayBuffer> }),
+  )
+  invalid.boot()
+  invalid.supervisor.run()
+  await answered(invalid, 'graphics-1')
+  expect(invalid.supervisor.phase).toBe('failed')
+})
+
 test('an uncooperative message flood or output flood is terminated', async () => {
   for (const batches of [
     [],

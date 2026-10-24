@@ -1,4 +1,6 @@
+import { ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
 import { Elysia } from 'elysia'
+import { z } from 'zod'
 import type { CancelSubscriptionService } from '../../../application/cancel-subscription/cancel-subscription.service'
 import type { GetAdminPaymentService } from '../../../application/get-admin-payment/get-admin-payment.service'
 import type { GetAdminSubscriptionService } from '../../../application/get-admin-subscription/get-admin-subscription.service'
@@ -9,6 +11,12 @@ import type { GetDailyPaymentsStatsService } from '../../../application/payments
 import type { GetPaymentsStatsService } from '../../../application/payments-stats/get-payments-stats.service'
 import type { GetSubscriptionStatsService } from '../../../application/payments-stats/get-subscription-stats.service'
 import type { RefundPaymentService } from '../../../application/refund-payment/refund-payment.service'
+import type { ConfirmSubscriptionPeriodService } from '../../../application/subscription-recovery/confirm-subscription-period.service'
+import type { ConfirmSubscriptionRetryService } from '../../../application/subscription-recovery/confirm-subscription-retry.service'
+import type { ListRecoveryReviewService } from '../../../application/subscription-recovery/list-recovery-review.service'
+import type { RecoveryPolicyService } from '../../../application/subscription-recovery/recovery-policy.service'
+import type { ResolveSupersededRecoveryService } from '../../../application/subscription-recovery/resolve-superseded-recovery.service'
+import type { ReviewHistoricalAdmissionService } from '../../../application/subscription-recovery/review-historical-admission.service'
 import { requireAdmin, requireAdminWrite } from '../admin-auth'
 import {
   AdminIdParam,
@@ -40,6 +48,12 @@ export interface AdminRoutesDeps {
   // Escrita admin
   refundPayment: RefundPaymentService
   cancelSubscription: CancelSubscriptionService
+  recoveryPolicy: RecoveryPolicyService
+  recoveryReview: ListRecoveryReviewService
+  confirmSubscriptionPeriod: ConfirmSubscriptionPeriodService
+  confirmSubscriptionRetry: ConfirmSubscriptionRetryService
+  reviewHistoricalAdmission: ReviewHistoricalAdmissionService
+  resolveSupersededRecovery: ResolveSupersededRecoveryService
 }
 
 /**
@@ -52,6 +66,116 @@ export interface AdminRoutesDeps {
 export function adminRoutes(deps: AdminRoutesDeps) {
   return (
     new Elysia({ prefix: '/payments/admin' })
+      .post(
+        '/subscription-recovery/cases/:id/resolve-subsequent-payment',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError(
+              'Use a própria conta administrativa para revisar o acompanhamento.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.resolveSupersededRecovery.execute({ caseId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({ expectedVersion: z.number().int().min(0), requestId: z.uuid() }),
+        },
+      )
+      .post(
+        '/subscription-recovery/payments/:id/admit',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError('Use a própria conta administrativa para revisar a entrada.')
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.reviewHistoricalAdmission.execute({ paymentId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({
+            expectedVersion: z.number().int().min(0),
+            audience: z.enum(['kids', 'adult']),
+            requestId: z.uuid(),
+          }),
+        },
+      )
+      .post(
+        '/subscription-recovery/operations/:id/confirm-payment',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError(
+              'Use a própria conta administrativa para conferir o pagamento.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.confirmSubscriptionRetry.execute({ operationId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({ expectedAttempt: z.number().int().min(1), requestId: z.uuid() }),
+        },
+      )
+      .get(
+        '/subscription-recovery/review',
+        ({ headers, query }) => {
+          requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+          return deps.recoveryReview.execute(query)
+        },
+        {
+          query: z.strictObject({
+            kind: z.enum(['CASE', 'ADMISSION', 'OPERATION', 'PERIOD']).optional(),
+            audience: z.enum(['kids', 'adult', 'unknown']).optional(),
+            subscriptionId: z.uuid().optional(),
+            q: z.string().max(120).optional(),
+            limit: z.coerce.number().int().min(1).max(100).default(25),
+            offset: z.coerce.number().int().min(0).max(100000).default(0),
+          }),
+        },
+      )
+      .post(
+        '/subscription-recovery/payments/:id/confirm-period',
+        ({ headers, params, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'] || headers['x-auth-account-id'])
+            throw new ForbiddenError('Use a própria conta administrativa para confirmar o período.')
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.confirmSubscriptionPeriod.execute({ paymentId: params.id, actorId, ...body })
+        },
+        {
+          params: AdminIdParam,
+          body: z.strictObject({ expectedVersion: z.number().int().min(0), requestId: z.uuid() }),
+        },
+      )
+      .get('/subscription-recovery/policy', ({ headers }) => {
+        requireAdmin(headers, deps.requireAdminEnabled, deps.internalToken)
+        return deps.recoveryPolicy.get()
+      })
+      .put(
+        '/subscription-recovery/policy',
+        ({ headers, body }) => {
+          requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
+          if (headers['x-auth-impersonator-id'])
+            throw new ForbiddenError(
+              'Entre com a própria conta da equipe para alterar esta configuração.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.recoveryPolicy.update(body, actorId)
+        },
+        {
+          body: z.strictObject({
+            expectedVersion: z.number().int().min(1),
+            windowDays: z.number().int().min(1).max(30),
+            reminderDays: z.array(z.number().int().min(1).max(29)).max(3),
+            enabled: z.boolean(),
+          }),
+        },
+      )
       .get(
         '/payments',
         async ({ query, headers }) => {
@@ -155,7 +279,13 @@ export function adminRoutes(deps: AdminRoutesDeps) {
         '/subscriptions/:id',
         async ({ params, headers }) => {
           requireAdminWrite(headers, deps.requireAdminEnabled, deps.internalToken)
-          return deps.cancelSubscription.executeAdmin(params.id)
+          if (headers['x-auth-impersonator-id'])
+            throw new ForbiddenError(
+              'Entre com a própria conta da equipe para cancelar a assinatura.',
+            )
+          const actorId = headers['x-auth-user-id']?.trim()
+          if (!actorId) throw new UnauthorizedError('Autenticação necessária')
+          return deps.cancelSubscription.executeAdmin(params.id, actorId)
         },
         { params: AdminIdParam },
       )

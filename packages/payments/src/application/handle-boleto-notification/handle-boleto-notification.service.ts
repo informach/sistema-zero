@@ -144,7 +144,7 @@ export class HandleBoletoNotificationService {
     } else if (charge.status === 'EXPIRED' && payment.status === 'PENDING') {
       payment.markExpired()
     } else if (charge.status === 'FAILED' && payment.status === 'PENDING') {
-      payment.markFailed('Cobrança cancelada/não paga no provedor')
+      payment.markFailed(charge.failureReason ?? 'Cobrança cancelada/não paga no provedor')
     } else {
       // Status não-terminal (ou pagamento já fora de PENDING): nada a fazer.
       this.logger.info('cobrancas.notification.no_op', {

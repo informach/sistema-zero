@@ -363,6 +363,12 @@ export const GrantWebhookBody = t.Object({
     t.Object({
       subscriptionId: t.String({ minLength: 1, maxLength: 100 }),
       intervalMonths: t.Union([t.Integer({ minimum: 1, maximum: 120 }), t.Null()]),
+      billingPeriod: t.Optional(
+        t.Object({
+          startsAt: t.String({ format: 'date-time', maxLength: 40 }),
+          endsAt: t.String({ format: 'date-time', maxLength: 40 }),
+        }),
+      ),
     }),
   ),
   accessPeriodMonths: t.Optional(t.Integer({ minimum: 1, maximum: 120 })),

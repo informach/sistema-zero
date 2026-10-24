@@ -1,0 +1,2 @@
+ALTER TABLE "payments"."subscriptions" ADD COLUMN "cancellation_next_attempt_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "subscriptions_cancellation_requests_idx" ON "payments"."subscriptions" USING btree ("cancellation_next_attempt_at","cancel_requested_at") WHERE "payments"."subscriptions"."cancel_requested_at" is not null and "payments"."subscriptions"."status" in ('ACTIVE', 'PENDING');

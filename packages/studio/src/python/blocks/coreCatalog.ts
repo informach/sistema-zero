@@ -47,6 +47,7 @@ const literals: PythonBlockCodec[] = [
       'Um texto Python. Pode conter acentos, emojis e quebras de linha.',
     ),
     role: 'value',
+    compact: 'quoted',
     defaultNode: () => text('Olá!'),
     decode(value) {
       return value.kind === 'Constant' &&
@@ -69,6 +70,7 @@ const literals: PythonBlockCodec[] = [
       'Um número inteiro, sem perder precisão em valores grandes.',
     ),
     role: 'value',
+    compact: 'plain',
     defaultNode: integer,
     decode(value) {
       const literal = value.fields.value
@@ -147,22 +149,16 @@ const literals: PythonBlockCodec[] = [
     encode: none,
   },
   {
-    ...base(
-      'variable',
-      'valor da variável',
-      'Variáveis',
-      1,
-      'name',
-      'Lê uma variável no escopo atual.',
-    ),
+    ...base('variable', 'variável', 'Variáveis', 1, 'name', 'Lê uma variável no escopo atual.'),
     role: 'value',
+    compact: 'plain',
     defaultNode: name,
     decode(value) {
       return value.kind === 'Name' &&
         typeof value.fields.id === 'string' &&
         ['Load', 'Store', 'Del'].includes(contextOf(value) ?? '')
         ? {
-            fields: [{ name: 'NAME', label: 'variável', value: value.fields.id }],
+            fields: [{ name: 'NAME', label: '', value: value.fields.id }],
             inputs: [],
             extra: { context: contextOf(value)! },
           }
@@ -261,7 +257,7 @@ const statements: PythonBlockCodec[] = [
   {
     ...base(
       'assign',
-      'guardar valor',
+      'guardar',
       'Variáveis',
       1,
       'target = value',
@@ -287,7 +283,7 @@ const statements: PythonBlockCodec[] = [
             fields: [],
             inputs: [
               { name: 'TARGET', label: 'em', role: 'value', nodes: [targets[0]] },
-              { name: 'VALUE', label: 'guardar', role: 'value', nodes: [value.fields.value] },
+              { name: 'VALUE', label: 'o valor', role: 'value', nodes: [value.fields.value] },
             ],
           }
         : undefined
@@ -303,13 +299,14 @@ const statements: PythonBlockCodec[] = [
   {
     ...base(
       'expression',
-      'executar',
+      'calcular sem guardar',
       'Funções',
-      1,
+      3,
       'expression',
-      'Executa uma chamada ou expressão, sem guardar seu resultado.',
+      'Calcula um valor e não guarda o resultado.',
     ),
     role: 'statement',
+    hidden: true,
     defaultNode: () => node('Expr', { value: name('valor') }),
     decode(value) {
       return value.kind === 'Expr' && isNode(value.fields.value)

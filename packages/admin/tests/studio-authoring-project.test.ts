@@ -90,8 +90,17 @@ test('metadata separates Programação and installed Turtle and never falls back
     },
   })
   const programming = await loadStudioAuthoringPalette(project, prepared)
-  expect(programming.blocks.length).toBe(PYTHON_PROGRAMMING_CODECS.length)
-  expect(programming.blocks.every((entry) => entry.category.startsWith('Programação / '))).toBe(
+  const visibleProgramming = PYTHON_PROGRAMMING_CODECS.filter((codec) => !codec.hidden)
+  const hiddenIds = new Set(
+    [...PYTHON_PROGRAMMING_CODECS, ...PYTHON_TURTLE_CODECS]
+      .filter((codec) => codec.hidden)
+      .map((codec) => codec.id),
+  )
+  expect(hiddenIds.size).toBeGreaterThan(0)
+  expect(programming.blocks.map((entry) => entry.type).sort()).toEqual(
+    visibleProgramming.map((codec) => codec.id).sort(),
+  )
+  expect(programming.blocks.every((entry) => entry.category.startsWith('🐍 Programação / '))).toBe(
     true,
   )
   const turtle = await loadStudioAuthoringPalette(
@@ -99,14 +108,17 @@ test('metadata separates Programação and installed Turtle and never falls back
     prepared,
   )
   const features = environment.catalog.releases[0]!.manifest.python!.features
-  const availableTurtle = PYTHON_TURTLE_CODECS.filter((codec) =>
-    (codec.requiredRuntimeFeatures ?? []).every((feature) => features.includes(feature)),
+  const availableTurtle = PYTHON_TURTLE_CODECS.filter(
+    (codec) =>
+      !codec.hidden &&
+      (codec.requiredRuntimeFeatures ?? []).every((feature) => features.includes(feature)),
   )
-  expect(turtle.blocks.length).toBe(PYTHON_PROGRAMMING_CODECS.length + availableTurtle.length)
+  expect(turtle.blocks.length).toBe(visibleProgramming.length + availableTurtle.length)
   expect(turtle.blocks.map((entry) => entry.type).sort()).toEqual(
-    [...PYTHON_PROGRAMMING_CODECS, ...availableTurtle].map((codec) => codec.id).sort(),
+    [...visibleProgramming, ...availableTurtle].map((codec) => codec.id).sort(),
   )
-  expect(turtle.blocks.some((entry) => entry.category.startsWith('Turtle / '))).toBe(true)
+  expect(turtle.blocks.some((entry) => hiddenIds.has(entry.type))).toBe(false)
+  expect(turtle.blocks.some((entry) => entry.category.startsWith('🐢 Turtle / '))).toBe(true)
   expect(
     turtle.categories.every((category) => ['Variáveis', 'Movimento'].includes(category.value)),
   ).toBe(true)

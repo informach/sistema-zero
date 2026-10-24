@@ -19,6 +19,15 @@ import { GetPaymentsStatsService } from '../../src/application/payments-stats/ge
 import { GetSubscriptionStatsService } from '../../src/application/payments-stats/get-subscription-stats.service'
 import { ProcessPaymentService } from '../../src/application/process-payment/process-payment.service'
 import { RefundPaymentService } from '../../src/application/refund-payment/refund-payment.service'
+import { RetrySubscriptionChargeService } from '../../src/application/subscription-card/retry-subscription-charge.service'
+import { UpdateSubscriptionCardService } from '../../src/application/subscription-card/update-subscription-card.service'
+import { ConfirmSubscriptionPeriodService } from '../../src/application/subscription-recovery/confirm-subscription-period.service'
+import { ConfirmSubscriptionRetryService } from '../../src/application/subscription-recovery/confirm-subscription-retry.service'
+import { ListRecoveryReviewService } from '../../src/application/subscription-recovery/list-recovery-review.service'
+import { RecoveryPolicyService } from '../../src/application/subscription-recovery/recovery-policy.service'
+import { RecoverySourceService } from '../../src/application/subscription-recovery/recovery-source.service'
+import { ResolveSupersededRecoveryService } from '../../src/application/subscription-recovery/resolve-superseded-recovery.service'
+import { ReviewHistoricalAdmissionService } from '../../src/application/subscription-recovery/review-historical-admission.service'
 import type { PaymentAdminReadRepository } from '../../src/domain/ports/payment-admin-read.port'
 import type { PaymentMyReadRepository } from '../../src/domain/ports/payment-my-read.port'
 import type { SubscriptionAdminReadRepository } from '../../src/domain/ports/subscription-admin-read.port'
@@ -41,8 +50,12 @@ import {
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemoryRecoveryPolicyRepository } from '../fakes/recovery-policy-repository'
+import { InMemorySubscriptionBillingRepository } from '../fakes/subscription-billing-repository'
+import { InMemorySubscriptionOperationRepository } from '../fakes/subscription-operation-repository'
 
 interface BuildOpts {
+  recoveryConfigurationReady?: boolean
   async?: boolean
   rateLimit?: number
   allowedCidrsA?: string[]
@@ -65,6 +78,8 @@ interface BuildOpts {
 function buildApp(opts: BuildOpts = {}) {
   const repo = new InMemoryPaymentRepository()
   const subscriptionRepo = new InMemorySubscriptionRepository()
+  const subscriptionOperations = new InMemorySubscriptionOperationRepository()
+  const recoveryPolicies = new InMemoryRecoveryPolicyRepository()
   const planRegistry = new InMemorySubscriptionPlanRegistry()
   const gateway = new FakePixGateway()
   const consumers = new InMemoryConsumerRepository()
@@ -170,6 +185,57 @@ function buildApp(opts: BuildOpts = {}) {
   }
 
   const app = createServer({
+    resolveSupersededRecovery: new ResolveSupersededRecoveryService(
+      { findById: async () => null },
+      {
+        findByCaseId: async () => null,
+        resolve: async () => {
+          throw new Error('Resolution requires PostgreSQL proof')
+        },
+      },
+      repo,
+      subscriptionRepo,
+      subscriptionOperations,
+      gateway,
+    ),
+    reviewHistoricalAdmission: new ReviewHistoricalAdmissionService(
+      repo,
+      subscriptionRepo,
+      recoveryPolicies,
+      { findByPaymentId: async () => null, findActiveForSubscription: async () => null },
+      {
+        findByPaymentId: async () => null,
+        create: async () => {
+          throw new Error('Reviewed admission requires PostgreSQL proof')
+        },
+      },
+      new RecoverySourceService(subscriptionRepo, repo, subscriptionOperations, gateway),
+    ),
+    confirmSubscriptionRetry: new ConfirmSubscriptionRetryService(
+      subscriptionOperations,
+      subscriptionRepo,
+      repo,
+      gateway,
+      new HandleSubscriptionNotificationService(
+        subscriptionRepo,
+        repo,
+        gateway,
+        new InMemoryWebhookInbox(),
+        silentLogger,
+      ),
+    ),
+    confirmSubscriptionPeriod: new ConfirmSubscriptionPeriodService(
+      repo,
+      subscriptionRepo,
+      gateway,
+    ),
+    recoveryReview: new ListRecoveryReviewService({
+      list: async (query) => ({ items: [], total: 0, limit: query.limit, offset: query.offset }),
+    }),
+    recoveryPolicy: new RecoveryPolicyService(
+      recoveryPolicies,
+      () => opts.recoveryConfigurationReady ?? false,
+    ),
     env,
     logger: silentLogger,
     consumers,
@@ -200,10 +266,31 @@ function buildApp(opts: BuildOpts = {}) {
       silentLogger,
     ),
     getSubscription: new GetSubscriptionService(subscriptionRepo),
+    retrySubscriptionCharge: new RetrySubscriptionChargeService(
+      subscriptionsMyRead,
+      subscriptionRepo,
+      repo,
+      subscriptionOperations,
+      gateway,
+      new HandleSubscriptionNotificationService(
+        subscriptionRepo,
+        repo,
+        gateway,
+        new InMemoryWebhookInbox(),
+        silentLogger,
+      ),
+    ),
+    updateSubscriptionCard: new UpdateSubscriptionCardService(
+      subscriptionsMyRead,
+      subscriptionRepo,
+      subscriptionOperations,
+      gateway,
+    ),
     cancelSubscription: new CancelSubscriptionService(
       subscriptionRepo,
       gateway,
       silentLogger,
+      subscriptionOperations,
       subscriptionsMyRead,
     ),
     handleWebhook: new HandleProviderWebhookService(
@@ -249,11 +336,175 @@ function buildApp(opts: BuildOpts = {}) {
     refundPayment: new RefundPaymentService(repo, gateway, silentLogger),
     listMyPayments: new ListMyPaymentsService(paymentsMyRead),
     getMyPayment: new GetMyPaymentService(paymentsMyRead),
-    listMySubscriptions: new ListMySubscriptionsService(subscriptionsMyRead),
+    listMySubscriptions: new ListMySubscriptionsService(
+      subscriptionsMyRead,
+      subscriptionOperations,
+      new InMemorySubscriptionBillingRepository(),
+    ),
   })
 
-  return { app, repo, subscriptionRepo, gateway }
+  return { app, repo, subscriptionRepo, gateway, recoveryPolicies }
 }
+
+describe('Admin: política de regularização autenticada e auditada', () => {
+  const path = 'http://localhost/payments/admin/subscription-recovery/policy'
+
+  test.each([
+    'period',
+    'payment',
+    'admission',
+    'resolution',
+  ] as const)('confirmação %s exige admin próprio e não aceita datas ou autor no corpo', async (kind) => {
+    const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-confirm-internal' })
+    const url =
+      kind === 'resolution'
+        ? `http://localhost/payments/admin/subscription-recovery/cases/${crypto.randomUUID()}/resolve-subsequent-payment`
+        : kind === 'admission'
+          ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/admit`
+          : kind === 'period'
+            ? `http://localhost/payments/admin/subscription-recovery/payments/${crypto.randomUUID()}/confirm-period`
+            : `http://localhost/payments/admin/subscription-recovery/operations/${crypto.randomUUID()}/confirm-payment`
+    const headers = {
+      'x-internal-token': 'qa-confirm-internal',
+      'x-auth-user-id': 'qa-admin',
+      'x-auth-user-role': 'admin',
+      'x-auth-user-status': 'active',
+      'content-type': 'application/json',
+    }
+    const body = {
+      ...(kind === 'payment' ? { expectedAttempt: 1 } : { expectedVersion: 0 }),
+      ...(kind === 'admission' ? { audience: 'kids' } : {}),
+      requestId: crypto.randomUUID(),
+    }
+    const post = (current: Record<string, string>, value: unknown = body) =>
+      app.handle(
+        new Request(url, { method: 'POST', headers: current, body: JSON.stringify(value) }),
+      )
+    expect((await post({ ...headers, 'x-auth-user-role': 'staff' })).status).toBe(403)
+    expect((await post({ ...headers, 'x-auth-impersonator-id': 'qa-other' })).status).toBe(403)
+    expect((await post({ ...headers, 'x-auth-account-id': 'qa-parent' })).status).toBe(403)
+    const { 'x-auth-user-id': _actor, ...withoutActor } = headers
+    expect((await post(withoutActor)).status).toBe(401)
+    for (const extra of [
+      { actorId: 'forged' },
+      { period: { startsAt: '2030-01-01', endsAt: '2031-01-01' } },
+    ])
+      expect((await post(headers, { ...body, ...extra })).status).toBe(400)
+    expect(gateway.listedSubscriptionIds).toHaveLength(0)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
+
+  test('fila permite leitura da equipe, valida filtros e recusa origem sem autenticação', async () => {
+    const { app, gateway } = buildApp({ requireAdmin: true, internalToken: 'qa-review-internal' })
+    const url = 'http://localhost/payments/admin/subscription-recovery/review'
+    const headers = {
+      'x-internal-token': 'qa-review-internal',
+      'x-auth-user-id': 'qa-staff',
+      'x-auth-user-role': 'staff',
+      'x-auth-user-status': 'active',
+    }
+    expect((await app.handle(new Request(url))).status).toBe(401)
+    const response = await app.handle(
+      new Request(`${url}?kind=PERIOD&audience=unknown&limit=1&offset=2`, { headers }),
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ items: [], total: 0, limit: 1, offset: 2 })
+    expect(
+      (
+        await app.handle(
+          new Request(url, { headers: { ...headers, 'x-auth-user-role': 'customer' } }),
+        )
+      ).status,
+    ).toBe(403)
+    for (const query of [
+      'limit=101',
+      'offset=-1',
+      'kind=wrong',
+      'audience=wrong',
+      `q=${'x'.repeat(121)}`,
+    ])
+      expect((await app.handle(new Request(`${url}?${query}`, { headers }))).status).toBe(400)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
+  })
+  const body = { expectedVersion: 1, windowDays: 7, reminderDays: [3, 6], enabled: false }
+  const staff = {
+    'x-auth-user-role': 'staff',
+    'x-auth-user-status': 'active',
+    'x-auth-user-id': 'qa-staff',
+  }
+  const admin = {
+    ...staff,
+    'x-auth-user-role': 'admin',
+    'x-auth-user-id': 'qa-admin',
+    'content-type': 'application/json',
+  }
+  const put = (headers: Record<string, string>, value: unknown = body) =>
+    new Request(path, { method: 'PUT', headers, body: JSON.stringify(value) })
+  test('equipe lê; só admin altera e o autor vem do transporte confiável', async () => {
+    const { app, recoveryPolicies } = buildApp({ requireAdmin: true })
+    await recoveryPolicies.initialize(new Date())
+    const read = await app.handle(new Request(path, { headers: staff }))
+    expect(read.status).toBe(200)
+    expect(await read.json()).toMatchObject({
+      configurationReady: false,
+      configuration: { version: 1, enabled: false, windowDays: 7 },
+    })
+    expect((await app.handle(put({ ...staff, 'content-type': 'application/json' }))).status).toBe(
+      403,
+    )
+    expect(
+      (await app.handle(put(admin, { ...body, actorId: 'forged-browser-actor' }))).status,
+    ).toBe(400)
+    const saved = await app.handle(put(admin))
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject({
+      configuration: { version: 2, updatedBy: 'qa-admin' },
+    })
+    const stale = await app.handle(put(admin))
+    expect(stale.status).toBe(409)
+    expect(await stale.json()).toEqual({
+      error: {
+        code: 'CONCURRENCY_CONFLICT',
+        message: 'Este registro mudou. Recarregue antes de tentar novamente.',
+      },
+    })
+  })
+  test('configuração incompleta não ativa; própria conta e prova interna são obrigatórias', async () => {
+    const { app, recoveryPolicies } = buildApp({
+      requireAdmin: true,
+      internalToken: 'qa-policy-internal-token',
+    })
+    await recoveryPolicies.initialize(new Date())
+    expect((await app.handle(put(admin))).status).toBe(401)
+    const trusted = { ...admin, 'x-internal-token': 'qa-policy-internal-token' }
+    expect((await app.handle(put({ ...trusted, 'x-auth-user-id': '' }))).status).toBe(401)
+    expect(
+      (await app.handle(put({ ...trusted, 'x-auth-impersonator-id': 'qa-support' }))).status,
+    ).toBe(403)
+    const denied = await app.handle(put(trusted, { ...body, enabled: true }))
+    expect(denied.status).toBe(409)
+    expect(await denied.json()).toMatchObject({
+      error: { code: 'RECOVERY_CONFIGURATION_UNAVAILABLE' },
+    })
+    expect((await recoveryPolicies.get())?.enabled).toBe(false)
+    expect((await recoveryPolicies.get())?.policy.version).toBe(1)
+  })
+  test('configuração pronta pode ativar; agenda incoerente é recusada sem escrita', async () => {
+    const { app, recoveryPolicies } = buildApp({
+      requireAdmin: true,
+      recoveryConfigurationReady: true,
+    })
+    await recoveryPolicies.initialize(new Date())
+    expect((await app.handle(put(admin, { ...body, reminderDays: [6, 3] }))).status).toBe(400)
+    const saved = await app.handle(put(admin, { ...body, enabled: true }))
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject({
+      configurationReady: true,
+      configuration: { version: 2, enabled: true, updatedBy: 'qa-admin' },
+    })
+  })
+})
 
 const now = () => Math.floor(Date.now() / 1000)
 function sig(secret: string, msg: string): string {
@@ -1090,7 +1341,7 @@ describe('HTTP server', () => {
 
 /** Headers `X-Auth-User-*` que o gateway injeta (anti-spoof) para as rotas admin. */
 function adminHeaders(role = 'admin', status = 'active'): Record<string, string> {
-  return { 'x-auth-user-role': role, 'x-auth-user-status': status }
+  return { 'x-auth-user-role': role, 'x-auth-user-status': status, 'x-auth-user-id': 'qa-admin' }
 }
 
 describe('Rotas admin (/payments/admin/*)', () => {
@@ -1341,10 +1592,24 @@ describe('Rotas admin (/payments/admin/*)', () => {
     const res = await app.handle(
       new Request(
         'http://localhost/payments/admin/subscriptions/00000000-0000-0000-0000-000000000000',
-        { method: 'DELETE' },
+        { method: 'DELETE', headers: adminHeaders() },
       ),
     )
     expect(res.status).toBe(404)
+  })
+
+  test('cancelamento administrativo exige autor e recusa conta impersonada antes de procurar assinatura', async () => {
+    const { app, gateway } = buildApp({ requireAdmin: true })
+    const path =
+      'http://localhost/payments/admin/subscriptions/00000000-0000-0000-0000-000000000000'
+    for (const [headers, expected] of [
+      [{ ...adminHeaders(), 'x-auth-user-id': '' }, 401],
+      [{ ...adminHeaders(), 'x-auth-impersonator-id': 'qa-support' }, 403],
+    ] as const) {
+      const response = await app.handle(new Request(path, { method: 'DELETE', headers }))
+      expect(response.status).toBe(expected)
+    }
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
   })
 })
 
@@ -1491,6 +1756,165 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     return subscriptionRepo.save(sub).then(() => sub.id)
   }
 
+  test('troca de cartão é autenticada e vinculada ao comprador; reentrega não cobra', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' }
+    const path = `http://localhost/payments/my/subscriptions/${id}/card-intents`
+    expect(
+      (
+        await app.handle(
+          new Request(path, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: '{}',
+          }),
+        )
+      ).status,
+    ).toBe(401)
+    const stranger = await app.handle(
+      new Request(path, {
+        method: 'POST',
+        headers: { ...headers, 'x-auth-user-email': 'another@example.test' },
+        body: '{}',
+      }),
+    )
+    expect(stranger.status).toBe(404)
+    const created = await app.handle(new Request(path, { method: 'POST', headers, body: '{}' }))
+    expect(created.status).toBe(200)
+    const intent = (await created.json()) as { id: string; chargesNow: boolean }
+    expect(intent.chargesNow).toBe(false)
+    const body = JSON.stringify({
+      paymentToken: 'qa-token-transient',
+      card: { brand: 'visa', last4: '1234' },
+    })
+    const first = await app.handle(
+      new Request(`${path}/${intent.id}`, { method: 'POST', headers, body }),
+    )
+    expect(first.status).toBe(200)
+    expect(((await first.json()) as { state: string }).state).toBe('SUCCEEDED')
+    const duplicate = await app.handle(
+      new Request(`${path}/${intent.id}`, { method: 'POST', headers, body }),
+    )
+    expect(duplicate.status).toBe(200)
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(1)
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
+
+  test('DTO de cartão recusa dados crus e não os devolve no erro', async () => {
+    const { app, subscriptionRepo } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const response = await app.handle(
+      new Request(
+        `http://localhost/payments/my/subscriptions/${id}/card-intents/${crypto.randomUUID()}`,
+        {
+          method: 'POST',
+          headers: { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' },
+          body: JSON.stringify({
+            paymentToken: 'qa-token-transient',
+            card: { brand: 'visa', last4: '1234', number: 'raw-qa-marker', cvv: 'cvv-qa-marker' },
+          }),
+        },
+      ),
+    )
+    expect(response.status).toBe(400)
+    const error = await response.text()
+    expect(error).not.toContain('raw-qa-marker')
+    expect(error).not.toContain('cvv-qa-marker')
+    expect(error).not.toContain('qa-token-transient')
+  })
+
+  test('regularização recusa criança, suporte, conta alheia e consentimento ausente', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const intentId = crypto.randomUUID()
+    const path = `http://localhost/payments/my/subscriptions/${id}/retry-intents`
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' }
+    const create = JSON.stringify({ paymentId: crypto.randomUUID() })
+    const execute = JSON.stringify({
+      paymentToken: 'transient-qa',
+      card: { brand: 'visa', last4: '1234' },
+      consent: true,
+    })
+    for (const deniedHeader of ['x-auth-account-id', 'x-auth-impersonator-id']) {
+      for (const [url, method, body] of [
+        [path, 'GET', undefined],
+        [path, 'POST', create],
+        [`${path}/${intentId}`, 'GET', undefined],
+        [`${path}/${intentId}`, 'POST', execute],
+      ] as const) {
+        const response = await app.handle(
+          new Request(url, { method, headers: { ...headers, [deniedHeader]: 'qa-other' }, body }),
+        )
+        expect(response.status).toBe(403)
+      }
+    }
+    expect((await app.handle(new Request(path))).status).toBe(401)
+    expect(
+      (
+        await app.handle(
+          new Request(path, { headers: { ...headers, 'x-auth-user-email': 'other@example.test' } }),
+        )
+      ).status,
+    ).toBe(404)
+    for (const body of [
+      { paymentToken: 'transient-qa', card: { brand: 'visa', last4: '1234' } },
+      { paymentToken: 'transient-qa', card: { brand: 'visa', last4: '1234' }, consent: false },
+      {
+        paymentToken: 'transient-qa',
+        card: { brand: 'visa', last4: '1234', number: 'raw-qa', cvv: 'cvv-qa' },
+        consent: true,
+      },
+    ]) {
+      const response = await app.handle(
+        new Request(`${path}/${intentId}`, { method: 'POST', headers, body: JSON.stringify(body) }),
+      )
+      expect(response.status).toBe(400)
+      const text = await response.text()
+      for (const marker of ['transient-qa', 'raw-qa', 'cvv-qa']) expect(text).not.toContain(marker)
+    }
+    expect(gateway.retriedSubscriptionChargeIds).toHaveLength(0)
+  })
+
+  test('cartão recusa perfil infantil e sessão de suporte em todas as operações', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'content-type': 'application/json' }
+    const path = `http://localhost/payments/my/subscriptions/${id}/card-intents`
+    const created = await app.handle(new Request(path, { method: 'POST', headers, body: '{}' }))
+    const intent = (await created.json()) as { id: string }
+    for (const deniedHeader of ['x-auth-account-id', 'x-auth-impersonator-id']) {
+      for (const [url, method, body] of [
+        ['http://localhost/payments/my/card-config', 'GET', undefined],
+        [path, 'GET', undefined],
+        [path, 'POST', '{}'],
+        [`${path}/${intent.id}`, 'GET', undefined],
+        [
+          `${path}/${intent.id}`,
+          'POST',
+          JSON.stringify({ paymentToken: 'qa-token', card: { brand: 'visa', last4: '1234' } }),
+        ],
+      ] as const) {
+        const response = await app.handle(
+          new Request(url, {
+            method,
+            headers: { ...headers, [deniedHeader]: 'other-actor-qa' },
+            body,
+          }),
+        )
+        expect(response.status).toBe(403)
+      }
+    }
+    const active = await app.handle(new Request(path, { headers }))
+    expect(active.status).toBe(200)
+    expect(((await active.json()) as { intent: { id: string } }).intent.id).toBe(intent.id)
+    const stranger = await app.handle(
+      new Request(path, { headers: { ...headers, 'x-auth-user-email': 'other@example.test' } }),
+    )
+    expect(stranger.status).toBe(404)
+    expect(gateway.updatedCardSubscriptionIds).toHaveLength(0)
+  })
+
   test('literal /my/subscriptions VENCE o param /my/:id (não vira 400 de uuid)', async () => {
     const { app } = buildApp()
     const res = await app.handle(
@@ -1527,7 +1951,7 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     const { app, subscriptionRepo } = buildApp()
     const mine = await seedSubscription(subscriptionRepo, 'ana@example.com')
     const others = await seedSubscription(subscriptionRepo, 'outra@example.com')
-    const headers = { 'x-auth-user-email': 'ana@example.com' }
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'x-auth-user-id': 'qa-customer' }
 
     const forbidden = await app.handle(
       new Request(`http://localhost/payments/my/subscriptions/${others}`, {
@@ -1547,6 +1971,11 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     expect(ok.status).toBe(200)
     expect(((await ok.json()) as { status: string }).status).toBe('CANCELED')
     expect((await subscriptionRepo.findById(mine))?.status).toBe('CANCELED')
+    expect((await subscriptionRepo.findById(mine))?.cancellationRecord).toMatchObject({
+      origin: 'CUSTOMER',
+      actorId: 'qa-customer',
+      endedStatus: 'CANCELED',
+    })
 
     // Idempotente: re-cancelar devolve a view cancelada (sem erro).
     const again = await app.handle(
@@ -1562,6 +1991,31 @@ describe('Minhas assinaturas (/payments/my/subscriptions — self-service do ass
     const { app } = buildApp()
     const res = await app.handle(new Request('http://localhost/payments/my/subscriptions'))
     expect(res.status).toBe(401)
+  })
+
+  test('cancelamento exige autor próprio e recusa perfil de criança ou sessão de suporte', async () => {
+    const { app, subscriptionRepo, gateway } = buildApp()
+    const id = await seedSubscription(subscriptionRepo, 'ana@example.com')
+    const path = `http://localhost/payments/my/subscriptions/${id}`
+    const headers = { 'x-auth-user-email': 'ana@example.com', 'x-auth-user-id': 'qa-customer' }
+    for (const deniedHeader of ['x-auth-account-id', 'x-auth-impersonator-id']) {
+      const response = await app.handle(
+        new Request(path, {
+          method: 'DELETE',
+          headers: { ...headers, [deniedHeader]: 'qa-other-context' },
+        }),
+      )
+      expect(response.status).toBe(403)
+    }
+    const noActor = await app.handle(
+      new Request(path, {
+        method: 'DELETE',
+        headers: { 'x-auth-user-email': 'ana@example.com' },
+      }),
+    )
+    expect(noActor.status).toBe(401)
+    expect((await subscriptionRepo.findById(id))?.cancelRequestedAt).toBeNull()
+    expect(gateway.canceledSubscriptionIds).toHaveLength(0)
   })
 })
 

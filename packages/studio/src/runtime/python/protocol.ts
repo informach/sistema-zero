@@ -51,8 +51,22 @@ export type PythonWorkerCommand =
   | { type: 'run'; requestId: string }
   | { type: 'evaluate'; requestId: string; source: string }
   | { type: 'input'; requestId: string; response: { kind: 'line'; text: string } | { kind: 'eof' } }
-  | { type: 'graphics-response'; requestId: string; response: string }
+  | {
+      type: 'graphics-response'
+      requestId: string
+      response: string
+      /** Pixels of a Pygame Zero vector image (`images.x.get_at` on an SVG), transferred. */
+      bytes?: Uint8Array<ArrayBuffer>
+    }
   | { type: 'audio-response'; requestId: string; response: string }
+
+/** A graphics reply: text, or text with bytes (the pixels of a Pygame Zero vector image). */
+export type PythonGraphicsReply = string | { text: string; bytes: Uint8Array<ArrayBuffer> }
+export const PYTHON_GRAPHICS_REPLY_LIMITS = Object.freeze({
+  textChars: 128_000,
+  /** A 4096 × 4096 RGBA image. */
+  bytes: 64 * 1024 * 1024,
+})
 
 /** Worker output is always untrusted at the supervisor boundary, including these events. */
 export type PythonWorkerEvent =

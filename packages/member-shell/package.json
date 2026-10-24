@@ -13,6 +13,7 @@
     "./lib/*": "./src/lib/*.ts",
     "./components/ebook/*": "./src/components/ebook/*.tsx",
     "./components/*": "./src/components/*.tsx",
+    "./components/billing/use-my-subscriptions": "./src/components/billing/use-my-subscriptions.ts",
     "./routes": "./src/routes/index.ts",
     "./routes/live": "./src/routes/live.ts",
     "./routes/live-pro-runtime": "./src/routes/live-pro-runtime.ts",

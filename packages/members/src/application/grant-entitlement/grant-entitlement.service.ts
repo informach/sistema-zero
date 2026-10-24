@@ -1,4 +1,6 @@
+import { type BillingPeriod, readBillingPeriod } from '@sistemazero/core/billing'
 import type { Logger } from '@sistemazero/core/logging'
+import { addUtcCalendarMonths } from '@sistemazero/core/time'
 import { EntitlementAggregate } from '../../domain/entitlement/entitlement.aggregate'
 import { InvalidPurchasedAccessPolicyError } from '../../domain/entitlement/entitlement.errors'
 import type {
@@ -29,7 +31,11 @@ export interface GrantEntitlementCommand {
   /** Id do pagamento (compra única) ou da cobrança do ciclo. */
   paymentId: string
   grantedAt: Date
-  subscription?: { subscriptionId: string; intervalMonths: number | null } | null
+  subscription?: {
+    subscriptionId: string
+    intervalMonths: number | null
+    billingPeriod?: BillingPeriod
+  } | null
   /** Meses de acesso de uma compra única POR PERÍODO (ignorado com `subscription`). */
   accessPeriodMonths?: number | null
   /** Contrato imutável aceito na compra; ausente somente em eventos legados. */
@@ -65,6 +71,7 @@ export class GrantEntitlementService {
     // Valida a coerência ANTES de catálogo ou persistência. Uma política presente
     // nunca é reinterpretada por campos legados divergentes.
     const accessPolicy = resolvePurchasedAccessPolicy(cmd)
+    const billingPeriod = cmd.subscription ? confirmedBillingPeriod(cmd.subscription) : null
     const offer = await this.deps.catalog.resolveOfferEntitlements(cmd.offerRef)
     if (!offer) {
       this.deps.logger?.warn('grant.offer_not_found', {
@@ -94,7 +101,7 @@ export class GrantEntitlementService {
         const subscription = cmd.subscription
         // Defesa em profundidade: `resolvePurchasedAccessPolicy` já fecha este caso.
         if (!subscription) throw new InvalidPurchasedAccessPolicyError()
-        applied = await this.grantSubscription(cmd, item, snapshot, subscription)
+        applied = await this.grantSubscription(cmd, item, snapshot, subscription, billingPeriod)
       } else {
         applied = await this.grantOneTime(cmd, item, snapshot, accessPolicy)
       }
@@ -186,10 +193,12 @@ export class GrantEntitlementService {
     item: ResolvedOfferItem,
     snapshot: EntitlementSnapshot,
     sub: Subscription,
+    period: BillingPeriod | null,
   ): Promise<boolean> {
     const idempotencyKey = `subscription:${sub.subscriptionId}:${item.productId}`
-    const expiresAt =
-      sub.intervalMonths && sub.intervalMonths > 0
+    const expiresAt = period
+      ? new Date(Date.parse(period.endsAt) + this.deps.graceDays * 86_400_000)
+      : sub.intervalMonths && sub.intervalMonths > 0
         ? computeSubscriptionExpiry(cmd.grantedAt, sub.intervalMonths, this.deps.graceDays)
         : null
 
@@ -303,7 +312,27 @@ function permanentMuralVisitorGrant(
 /** Tentativas de extensão sob conflito otimista antes de desistir (→ re-entrega). */
 const EXTEND_MAX_ATTEMPTS = 3
 
-type Subscription = { subscriptionId: string; intervalMonths: number | null }
+type Subscription = {
+  subscriptionId: string
+  intervalMonths: number | null
+  billingPeriod?: BillingPeriod
+}
+
+function confirmedBillingPeriod(subscription: Subscription): BillingPeriod | null {
+  if (!subscription.billingPeriod) return null
+  try {
+    const period = readBillingPeriod(subscription.billingPeriod)
+    if (
+      subscription.intervalMonths &&
+      addUtcCalendarMonths(new Date(period.startsAt), subscription.intervalMonths).toISOString() !==
+        period.endsAt
+    )
+      throw new Error('Intervalo divergente')
+    return period
+  } catch {
+    throw new InvalidPurchasedAccessPolicyError('Período confirmado incoerente com a assinatura')
+  }
+}
 
 /** Resolve e valida a precedência do contrato comercial antes de qualquer efeito. */
 export function resolvePurchasedAccessPolicy(
@@ -379,25 +408,4 @@ export function computeSubscriptionExpiry(
   const d = addUtcCalendarMonths(grantedAt, intervalMonths)
   d.setUTCDate(d.getUTCDate() + graceDays)
   return d
-}
-
-function addUtcCalendarMonths(grantedAt: Date, intervalMonths: number): Date {
-  const totalMonths = grantedAt.getUTCFullYear() * 12 + grantedAt.getUTCMonth() + intervalMonths
-  const targetMonth = totalMonths % 12
-  const targetYear = (totalMonths - targetMonth) / 12
-
-  const targetMonthDays = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate()
-  const targetDay = Math.min(grantedAt.getUTCDate(), targetMonthDays)
-
-  return new Date(
-    Date.UTC(
-      targetYear,
-      targetMonth,
-      targetDay,
-      grantedAt.getUTCHours(),
-      grantedAt.getUTCMinutes(),
-      grantedAt.getUTCSeconds(),
-      grantedAt.getUTCMilliseconds(),
-    ),
-  )
 }

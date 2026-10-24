@@ -33,7 +33,7 @@ test('a split stack retains its original position before a later independent sta
     first.nextConnection!.connect(second.previousConnection!)
     expect(orderPythonWorkspaceRoots(workspace, origins, previous)).toEqual([first.id, third.id])
     const wrapper = workspace.newBlock('sz_py_if')
-    wrapper.getInput('body')!.connection!.connect(first.previousConnection!)
+    wrapper.getInput('body:0')!.connection!.connect(first.previousConnection!)
     expect(orderPythonWorkspaceRoots(workspace, origins, previous)).toEqual([wrapper.id, third.id])
   } finally {
     workspace.dispose()

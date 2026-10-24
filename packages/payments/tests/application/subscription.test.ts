@@ -18,6 +18,7 @@ import {
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemorySubscriptionOperationRepository } from '../fakes/subscription-operation-repository'
 
 const customer = {
   name: 'João da Silva',
@@ -232,7 +233,12 @@ describe('CancelSubscriptionService', () => {
   })
 
   test('cancela na Efí e marca CANCELED; escopado por consumidor', async () => {
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     const view = await cancel.execute('sys-a', subId)
 
     expect(view.status).toBe('CANCELED')
@@ -242,12 +248,58 @@ describe('CancelSubscriptionService', () => {
   })
 
   test('assinatura de outro consumidor → 404 (SubscriptionNotFound)', async () => {
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     await expect(cancel.execute('sys-b', subId)).rejects.toThrow()
   })
 
+  test('não anuncia cancelamento se a Efí ainda retorna ACTIVE; conserva pedido durável', async () => {
+    gateway.cancelSubscription = async () => {}
+    gateway.subscriptionStatus = 'ACTIVE'
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
+    await expect(cancel.execute('sys-a', subId)).rejects.toThrow('confirmando')
+    const current = await subscriptions.findById(subId)
+    expect(current?.status).toBe('ACTIVE')
+    expect(current?.cancelRequestedAt).toBeInstanceOf(Date)
+    expect(current?.canceledAt).toBeNull()
+    expect(
+      subscriptions.outbox.filter((event) => event.eventName === 'subscription.canceled'),
+    ).toHaveLength(0)
+  })
+
+  test('resposta do PUT perdida mas GET confirma cancelamento: conclui sem falso erro financeiro', async () => {
+    gateway.cancelSubscription = async () => {
+      gateway.subscriptionStatus = 'CANCELED'
+      throw new Error('Resposta perdida')
+    }
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
+    expect((await cancel.execute('sys-a', subId)).status).toBe('CANCELED')
+    expect(
+      subscriptions.outbox.filter((event) => event.eventName === 'subscription.canceled'),
+    ).toHaveLength(1)
+  })
+
   test('cancelar uma já cancelada é idempotente (não chama a Efí de novo)', async () => {
-    const cancel = new CancelSubscriptionService(subscriptions, gateway, silentLogger)
+    const cancel = new CancelSubscriptionService(
+      subscriptions,
+      gateway,
+      silentLogger,
+      new InMemorySubscriptionOperationRepository(),
+    )
     await cancel.execute('sys-a', subId)
     await cancel.execute('sys-a', subId)
     expect(gateway.canceledSubscriptionIds.filter((id) => id === providerSubId)).toHaveLength(1)
@@ -355,6 +407,53 @@ describe('HandleSubscriptionNotificationService (ciclos)', () => {
     expect(failed).toBeDefined()
     expect(failed!.payload.subscriptionId).toBe(subId)
     // Um ciclo falho NÃO cancela a assinatura (a Efí pode retentar).
+    expect((await subscriptions.findById(subId))?.status).not.toBe('CANCELED')
+  })
+
+  test('recusa seguida de confirmação real liquida o mesmo ciclo uma única vez', async () => {
+    gateway.setCycleChargeAmount('recovered-cycle', 1000n)
+    gateway.cardStatus = 'FAILED'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'recovered-cycle' })
+    const failed = await payments.findByProviderPaymentId('EFI', 'recovered-cycle')
+    gateway.cardStatus = 'PAID'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'recovered-cycle' })
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'recovered-cycle' })
+    const recovered = await payments.findByProviderPaymentId('EFI', 'recovered-cycle')
+    expect(recovered?.id).toBe(failed?.id)
+    expect(recovered?.status).toBe('PAID')
+    expect(payments.outbox.filter((e) => e.eventName === 'payment.paid')).toHaveLength(1)
+    expect((await subscriptions.findById(subId))?.cyclesCompleted).toBe(1)
+  })
+
+  test('recusa não é regularizada quando o valor confirmado diverge', async () => {
+    gateway.setCycleChargeAmount('mismatched-cycle', 1000n)
+    gateway.cardStatus = 'FAILED'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'mismatched-cycle' })
+    gateway.cardStatus = 'PAID'
+    gateway.setCycleChargeAmount('mismatched-cycle', 500n)
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'mismatched-cycle' })
+    expect((await payments.findByProviderPaymentId('EFI', 'mismatched-cycle'))?.status).toBe(
+      'FAILED',
+    )
+    expect(payments.outbox.filter((e) => e.eventName === 'payment.paid')).toHaveLength(0)
+  })
+
+  test.each([
+    false,
+    true,
+  ])('motivo da operadora acompanha ciclo recusado e seu evento, com linha pendente prévia: %s', async (pending) => {
+    gateway.setCycleChargeAmount('cycle-failure', 1000n)
+    if (pending) {
+      gateway.cardStatus = 'PENDING'
+      await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'cycle-failure' })
+    }
+    gateway.cardStatus = 'FAILED'
+    gateway.cardFailureReason = 'Falha no pagamento - 54 - Cartão vencido.'
+    await handler.handleCycle({ subscriptionId: providerSubId, chargeId: 'cycle-failure' })
+    const cycle = await payments.findByProviderPaymentId('EFI', 'cycle-failure')
+    expect(cycle?.toSnapshot().failureReason).toBe(gateway.cardFailureReason)
+    const event = payments.outbox.find((e) => e.eventName === 'payment.failed')
+    expect(event?.payload.reason).toBe(gateway.cardFailureReason)
     expect((await subscriptions.findById(subId))?.status).not.toBe('CANCELED')
   })
 })

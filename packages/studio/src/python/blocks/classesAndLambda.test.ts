@@ -158,5 +158,7 @@ test('a lambda parameter that shadows turtle keeps the generic call', () => {
     { codecs: PYTHON_PROGRAMMING_CODECS, officialModules: new Set(['turtle']) },
   )
   expect(opaque(projection.body)).toBe(0)
-  expect(codecIds(projection.body)).toContain('sz_py_call')
+  // The shadowing parameter is an ordinary object: a generic method call, never the Turtle block.
+  expect(codecIds(projection.body)).toContain('sz_py_method_value')
+  expect(codecIds(projection.body).some((id) => id.startsWith('sz_py_turtle_'))).toBe(false)
 })

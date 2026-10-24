@@ -56,6 +56,17 @@ export function createHmacStrategy(opts: HmacStrategyOptions): AuthStrategy {
       if (!result.valid) {
         return { ok: false, status: 401, code: 'UNAUTHORIZED', message: 'Assinatura HMAC inválida' }
       }
+      if (
+        consumer.allowedRouteIds !== undefined &&
+        (!ctx.route || !consumer.allowedRouteIds.includes(ctx.route.route.id))
+      ) {
+        return {
+          ok: false,
+          status: 403,
+          code: 'HMAC_ROUTE_FORBIDDEN',
+          message: 'Rota não autorizada para este consumidor',
+        }
+      }
       return { ok: true, principal: { kind: 'hmac', subject: consumer.id } }
     },
   }

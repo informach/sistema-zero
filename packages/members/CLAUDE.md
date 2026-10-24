@@ -3046,3 +3046,13 @@ mostra na revisão.
 ## Composição administrativa da jornada Kids (19/10/2026)
 
 composition-root compõe KidsJourneyConfigurationService sobre o mesmo DrizzleKidsJourneyRepository dos leitores/admissão; server monta kidsJourneyRoutes. GET nunca cria seed nem converte initializing em published. As sete rotas exatas usam token interno e guard canônico de equipe ativa; preparação/advance/publicação exigem conta própria admin/superadmin sem perfil/contexto/impersonação. Gateway e BFF têm allowlists concretas. A persistência conserva CAS, baseline, cursor e auditoria próprios; a composição não implementa motor paralelo nem altera licença, matrícula ou paleta curricular. Focados do servidor composto e regressão Adult passaram; tipos e integração gateway→Members/SQL operacional seguem nos recibos do lote, sem presumir deploy.
+
+## Renovação paga com atraso (24/10/2026)
+
+O grant S2S aceita `subscription.billingPeriod` com início/fim ISO canônicos. Valida o
+período e sua coerência com `intervalMonths` antes de consultar catálogo ou persistir.
+A validade usa o fim confirmado mais a carência existente; `grantedAt` mantém o instante
+financeiro. Extensão nunca reduz validade já maior nem ressuscita acesso revogado.
+Sem esse campo, o contrato anterior continua para compras e eventos históricos.
+Na liberação, Members e Funnel precisam aceitar esse contrato ANTES do Payments emitir
+`cycleAccess` ou `payment.subscription_period_confirmed`.

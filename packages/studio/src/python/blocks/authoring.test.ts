@@ -44,7 +44,7 @@ test('compound blocks require the selected release feature even when every block
     { runtime: project.runtime, installedExtensions },
     environment,
   )
-  for (const id of ['sz_py_turtle_module_Shape', 'sz_py_turtle_shape_addcomponent']) {
+  for (const id of ['sz_py_turtle_new_shape', 'sz_py_turtle_shape_addcomponent']) {
     expect(supported.codecs.some((codec) => codec.id === id)).toBe(true)
     expect(supported.catalog.some((entry) => entry.id === id)).toBe(true)
     expect(withoutCapability.codecs.some((codec) => codec.id === id)).toBe(false)
@@ -71,14 +71,14 @@ test('the actual authoring loader prefers official Turtle labels and retains gen
     })
   const official = projectTree([importing, moving]).body[1]
   if (official?.kind !== 'block') throw new Error('Expected a visual statement')
-  expect(official.inputs[0]?.nodes[0]).toMatchObject({ codecId: 'sz_py_turtle_module_forward' })
+  expect(official).toMatchObject({ codecId: 'sz_py_turtle_turtle_forward' })
   const rebound = projectTree([
     importing,
     node('Assign', { targets: [name('turtle', 'Store')], value: integer('1'), type_comment: null }),
     moving,
   ]).body[2]
   if (rebound?.kind !== 'block') throw new Error('Expected a visual statement')
-  expect(rebound.inputs[0]?.nodes[0]).toMatchObject({ codecId: 'sz_py_call' })
+  expect(rebound).toMatchObject({ codecId: 'sz_py_method' })
 })
 
 test('authoring approval belongs to the exact host release, not the project', async () => {
@@ -127,13 +127,27 @@ test('local modules and packages suppress official labels in classic and Pro', a
   const { project } = await pythonEnvironmentFixture('classic')
   if (project.kind !== 'classic') throw new Error('fixture')
   const installed = { ...project, installedExtensions: [{ ...TURTLE_EXTENSION, installedAt: 1 }] }
-  expect([...pythonOfficialModules(installed)]).toEqual(['random', 'math', 'turtle'])
+  expect([...pythonOfficialModules(installed)]).toEqual([
+    'random',
+    'math',
+    'time',
+    'turtle',
+    'sz_audio',
+  ])
   expect([
     ...pythonOfficialModules({
       ...installed,
       files: { ...installed.files, 'turtle.py': '', 'random/__init__.py': '' },
     }),
-  ]).toEqual(['math'])
+  ]).toEqual(['math', 'time', 'sz_audio'])
+  // Pygame Zero's names are official only with its extension installed.
+  expect(
+    pythonOfficialModules({
+      ...project,
+      installedExtensions: [{ id: 'python-pgzero', version: '1.0.0', installedAt: 1 }],
+    }).has('pgzero'),
+  ).toBe(true)
+  expect(pythonOfficialModules(installed).has('pgzero')).toBe(false)
   const { project: pro } = await pythonEnvironmentFixture('pro')
   if (pro.kind !== 'pro') throw new Error('fixture')
   expect(

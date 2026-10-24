@@ -10,6 +10,68 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('política de regularização tem leitura staff e escrita admin, limitada e auditada', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(
+      registry.resolve('GET', '/payments/admin/subscription-recovery/policy', 'v1')?.route,
+    ).toMatchObject({
+      id: 'payments-admin-recovery-policy-read',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(
+      registry.resolve('PUT', '/payments/admin/subscription-recovery/policy', 'v1')?.route,
+    ).toMatchObject({
+      id: 'payments-admin-recovery-policy-write',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      maxBodyBytes: 1024,
+      audit: {},
+    })
+    expect(
+      registry.resolve('POST', '/payments/admin/subscription-recovery/policy', 'v1'),
+    ).toBeUndefined()
+  })
+  test('retirada de mensagem exige consumidor HMAC e rota própria limitada', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(registry.resolve('POST', '/messaging/messages/id/suppress', 'v1')?.route).toMatchObject({
+      id: 'messaging-message-suppress',
+      service: 'messaging',
+      maxBodyBytes: 1024,
+      auth: { required: true, strategies: ['hmac'] },
+    })
+    expect(registry.resolve('DELETE', '/messaging/messages/id/suppress', 'v1')).toBeUndefined()
+  })
+  test('alteração de cartão usa rotas próprias autenticadas e limites de escrita', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    for (const [method, path, id] of [
+      ['GET', '/payments/my/card-config', 'payments-my-card-config'],
+      ['GET', '/payments/my/subscriptions/sub/card-intents', 'payments-my-card-intent-read'],
+      ['POST', '/payments/my/subscriptions/sub/card-intents', 'payments-my-card-intent-create'],
+      [
+        'GET',
+        '/payments/my/subscriptions/sub/card-intents/intent',
+        'payments-my-card-intent-status',
+      ],
+      ['POST', '/payments/my/subscriptions/sub/card-intents/intent', 'payments-my-card-update'],
+    ]) {
+      const route = registry.resolve(method!, path!, 'v1')?.route
+      expect(route).toMatchObject({
+        id,
+        service: 'payments',
+        auth: { required: true, strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+      })
+      if (method === 'POST') expect(route).toMatchObject({ maxBodyBytes: 1024, audit: {} })
+      expect(registry.resolve('PUT', path!, 'v1')).toBeUndefined()
+    }
+  })
   test('jornada adulta tem leitura autenticada e configuração restrita à equipe', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),
@@ -622,7 +684,7 @@ describe('loadGatewayConfig', () => {
 // invariantes que valem só sobre as rotas REAIS ficavam sem rede. O subprocesso prova
 // o carregamento com credenciais de fixture; as demais asserções conferem as rotas exportadas.
 describe('gateway.config.ts (configuração real)', () => {
-  async function bootRealConfig(bodyLimit?: string) {
+  async function bootRealConfig(bodyLimit?: string, paymentsSecret?: string) {
     const child = Bun.spawn(
       [
         process.execPath,
@@ -631,7 +693,8 @@ describe('gateway.config.ts (configuração real)', () => {
          import { loadGatewayConfig } from './src/infrastructure/config/load-gateway-config';
          const config = await loadGatewayConfig(loadEnv(process.env));
          console.log(JSON.stringify({routes: config.routes.length,
-           builderLimit: config.routes.find(r => r.id === 'members-internal-studio-builder')?.maxBodyBytes}));`,
+           builderLimit: config.routes.find(r => r.id === 'members-internal-studio-builder')?.maxBodyBytes,
+           paymentsRoutes: config.consumers.find(c => c.id === 'payments')?.allowedRouteIds}));`,
       ],
       {
         cwd: fileURLToPath(new URL('../..', import.meta.url)),
@@ -643,6 +706,7 @@ describe('gateway.config.ts (configuração real)', () => {
           FUNNEL_HMAC_SECRET: 'funnel-test-secret-with-32-characters',
           FUNNEL_INTERNAL_TOKEN: 'funnel-test-token-with-32-characters',
           ...(bodyLimit ? { MAX_REQUEST_BODY_BYTES: bodyLimit } : {}),
+          ...(paymentsSecret ? { PAYMENTS_HMAC_SECRET: paymentsSecret } : {}),
         },
         stdout: 'pipe',
         stderr: 'pipe',
@@ -670,6 +734,20 @@ describe('gateway.config.ts (configuração real)', () => {
     const result = await bootRealConfig('2097152')
     expect(result.code).not.toBe(0)
     expect(result.stderr).toMatch(/members-internal-studio-builder.*MAX_REQUEST_BODY_BYTES/)
+  })
+
+  test('Payments só é cadastrado com segredo próprio e recebe quatro capacidades de comunicação', async () => {
+    const result = await bootRealConfig(undefined, 'qa-payments-secret-with-32-characters')
+    expect(result.code).toBe(0)
+    expect(result.stderr).toBe('')
+    expect(JSON.parse(result.stdout).paymentsRoutes).toEqual([
+      'messaging-send',
+      'messaging-message-get',
+      'messaging-message-suppress',
+      'messaging-intent-suppress',
+    ])
+    const ids = new Set(realConfig.routes.map((route) => route.id))
+    for (const id of JSON.parse(result.stdout).paymentsRoutes) expect(ids.has(id)).toBe(true)
   })
 
   test('consulta do curso-presente é exclusiva do referrals e re-assinada para members', () => {

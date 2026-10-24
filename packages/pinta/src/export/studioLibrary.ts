@@ -54,7 +54,8 @@ export async function inspectImageForStudio(
   return inspectPintaImageForStudio(drawingId, { namespace, signal })
 }
 
-/** Loaded only when a host explicitly requests a portable PNG; legacy JS exports stay unchanged. */
+/** Loaded only when a host explicitly requests a portable image (PNG, or SVG when the recipe
+ * asks for it); legacy JS exports stay unchanged. */
 export async function exportImageForStudio(
   recipe: PintaImageRecipe,
   limits: PintaImageTargetLimits,
@@ -286,6 +287,8 @@ function imageSelectionSummary(
   asset: PintaAsset,
   findAsset: (id: string) => PintaAsset | null,
 ): PintaImageSelectionSummary {
+  // Only true is reported, so pixel facts keep the exact shape they always had.
+  const vector = { vector: true } as const
   switch (asset.kind) {
     case 'pixel-sprite':
     case 'vector-sprite':
@@ -298,6 +301,7 @@ function imageSelectionSummary(
           name,
           frameCount: frames.length,
         })),
+        ...(asset.kind === 'vector-sprite' ? vector : {}),
       }
     case 'pixel-background': {
       // Gallery records are sanitized: the first cel owns every layer's size,
@@ -307,7 +311,7 @@ function imageSelectionSummary(
       return { kind: 'background', width: first.width, height: first.height }
     }
     case 'vector-background':
-      return { kind: 'background', width: asset.width, height: asset.height }
+      return { kind: 'background', width: asset.width, height: asset.height, ...vector }
     case 'tileset':
     case 'vector-tileset':
       return {
@@ -315,6 +319,7 @@ function imageSelectionSummary(
         width: asset.tileSize,
         height: asset.tileSize,
         tileCount: asset.tiles.length,
+        ...(asset.kind === 'vector-tileset' ? vector : {}),
       }
     case 'tilemap': {
       const tileset = findAsset(asset.tilesetId)
@@ -324,6 +329,8 @@ function imageSelectionSummary(
         kind: 'tilemap',
         width: asset.cols * tileset.tileSize,
         height: asset.rows * tileset.tileSize,
+        // A map is vector only through a vector tileset (its portable SVG path).
+        ...(tileset.kind === 'vector-tileset' ? vector : {}),
       }
     }
   }

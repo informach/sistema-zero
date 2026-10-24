@@ -52,6 +52,8 @@ export interface ProviderCharge {
   status: ProviderChargeStatus
   paidAt?: Date
   amountInCents: bigint
+  /** Motivo sanitizado para diagnóstico; não determina estado ou autorização financeira. */
+  failureReason?: string
 }
 
 /** Estorno de Pix (devolução): resolve o e2eId a partir do txid e devolve o valor. */
@@ -211,12 +213,23 @@ export interface CreateCardSubscriptionOutput {
 export interface ProviderSubscription {
   providerSubscriptionId: string
   status: ProviderSubscriptionStatus
+  charges: ProviderSubscriptionCharge[]
+  /** Data civil da próxima execução, quando informada e válida no provedor. */
+  nextExecution?: string
 }
 
 /** Uma cobrança do histórico da assinatura no provedor (ciclo). */
 export interface ProviderSubscriptionCharge {
   chargeId: string
   status: ProviderChargeStatus
+  createdAt?: Date
+}
+
+export interface RetrySubscriptionChargeInput {
+  providerPaymentId: string
+  paymentToken: string
+  customer: CardCustomer
+  billingAddress?: Address
 }
 
 export interface PaymentGateway {
@@ -290,4 +303,10 @@ export interface PaymentGateway {
 
   /** Cancela a assinatura na Efí (interrompe as cobranças futuras). */
   cancelSubscription(providerSubscriptionId: string): Promise<void>
+
+  /** Altera apenas o cartão de ciclos futuros, sem cobrar agora. Token só em memória. */
+  updateSubscriptionCard(providerSubscriptionId: string, paymentToken: string): Promise<void>
+
+  /** Débito explícito da MESMA cobrança recusada + cartão futuro; não repetir em timeout. */
+  retrySubscriptionCharge(input: RetrySubscriptionChargeInput): Promise<void>
 }

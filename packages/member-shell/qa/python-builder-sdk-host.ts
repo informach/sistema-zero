@@ -114,7 +114,7 @@ export async function runStudioPythonBuilderSdkProof(input: {
           runtime,
           status: 'active',
           proTemplateIds: ['python-blank'],
-          blockIds: ['sz_py_pass', ...pythonCourseBlockClosure(['sz_py_turtle_module_forward'])],
+          blockIds: ['sz_py_pass', ...pythonCourseBlockClosure(['sz_py_turtle_turtle_forward'])],
           categoryIds: ['python-basics'],
         },
       ],

@@ -19,7 +19,7 @@ test('course metadata uses actual unique Python codec IDs without language equiv
   expect(pythonCourseExtensionsForBlocks(['controls_if', 'sz_py_print', 'sz_py_unknown'])).toEqual(
     [],
   )
-  expect(pythonCourseExtensionsForBlocks(['sz_py_turtle_module_forward'])).toEqual([
+  expect(pythonCourseExtensionsForBlocks(['sz_py_turtle_turtle_forward'])).toEqual([
     'python-turtle',
   ])
 })

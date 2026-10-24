@@ -1,0 +1,984 @@
+import type { ExampleExperience } from '../../core/example'
+import type { ExtensionExampleDifficulty } from '../../extensions/types'
+import type { VisualReferenceSound } from './visualReferenceGames.manifest'
+
+/** Background music: synthesized from a score, stored as OGG in music/ (Pygame Zero reads mp3/ogg). */
+export interface PgzeroMusic {
+  path: string
+  notes: readonly number[]
+  noteMilliseconds: number
+}
+
+export interface PgzeroGame {
+  /** Folder in src/examples/python/pgzero and the `python:<key>:blocks|code` gallery identity. */
+  key: string
+  /** camelCase prefix of the generated files. */
+  stem: string
+  name: string
+  emoji: string
+  description: string
+  genre: string
+  concepts: readonly string[]
+  difficulty: ExtensionExampleDifficulty
+  experience: ExampleExperience
+  /** Which book chapter inspired the mechanics (documented in the game's NOTICE.md). */
+  inspiration: string
+  /** The book of the recipe: DK's Coding Games in Python (default) or Wireframe's cookbook. */
+  book?: 'wireframe'
+  howToPlay: string
+  /** Small changes a child can try, in the README. */
+  ideas: readonly string[]
+  /** Sound effects, written to sounds/<path>. */
+  sounds: readonly VisualReferenceSound[]
+  music: readonly PgzeroMusic[]
+  /** Qualification receipt in docs/continuity/2026-10-24-python-pgzero-games-evidence. */
+  receipt: string
+}
+
+/**
+ * The Pygame Zero examples of the gallery: the nine games of DK's Coding Games in Python and its
+ * warm-up, then the recipes of Wireframe's "Source Code" series (book: 'wireframe'). Each one is an original implementation of the mechanics with original art
+ * (scripts/python/pgzero-art.ts) and sounds; nothing from the book is copied.
+ */
+export const PGZERO_GAMES = [
+  {
+    key: 'ola-pgzero',
+    stem: 'olaPgzero',
+    name: 'Olá, Pygame Zero',
+    emoji: '👋',
+    description: 'O primeiro programa: escreva na tela e pilote uma nave com as setas.',
+    genre: 'Primeiros passos',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Ator', 'Teclado', 'Texto'],
+    difficulty: 'beginner',
+    experience: 'game',
+    inspiration: 'hello.py',
+    howToPlay: 'Use as setas do teclado para pilotar a nave pela tela.',
+    ideas: [
+      'Troque o texto de boas-vindas.',
+      'Mude a cor do fundo em `screen.fill`.',
+      'Deixe a nave mais rápida trocando o 4 por outro número.',
+    ],
+    sounds: [],
+    music: [],
+    receipt: 'ola-pgzero-r5.json.snapshot',
+  },
+  {
+    key: 'acerte-a-maca',
+    stem: 'acerteAMaca',
+    name: 'Acerte a Maçã',
+    emoji: '🍎',
+    description: 'Clique na maçã antes que ela mude de lugar. Errou o clique? Fim de jogo.',
+    genre: 'Mira',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mouse', 'Sorteio', 'Som'],
+    difficulty: 'beginner',
+    experience: 'game',
+    inspiration: 'Shoot the Fruit',
+    howToPlay:
+      'Clique na maçã para ganhar um ponto. Se clicar fora dela, o jogo termina; clique de novo para recomeçar.',
+    ideas: [
+      'Diminua a área onde a maçã aparece.',
+      'Mostre uma mensagem diferente quando bater o recorde.',
+      'Troque a maçã por outro desenho do Pinta.',
+    ],
+    sounds: [
+      { path: 'acerto.wav', notes: [880, 1175], noteMilliseconds: 60 },
+      { path: 'erro.wav', notes: [330, 220], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'acerte-a-maca-r5.json.snapshot',
+  },
+  {
+    key: 'raposa-moedas',
+    stem: 'raposaMoedas',
+    name: 'Raposa Caça-Moedas',
+    emoji: '🦊',
+    description: 'Leve a raposa até as moedas e pegue o máximo que puder em 30 segundos.',
+    genre: 'Coleta',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Colisão', 'Relógio', 'Som'],
+    difficulty: 'beginner',
+    experience: 'game',
+    inspiration: 'Coin Collector',
+    howToPlay: 'Use as setas para levar a raposa até a moeda. Você tem 30 segundos.',
+    ideas: [
+      'Mude o tempo do jogo.',
+      'Faça a raposa andar mais rápido.',
+      'Coloque duas moedas na tela.',
+    ],
+    sounds: [
+      { path: 'moeda.wav', notes: [988, 1319], noteMilliseconds: 50 },
+      { path: 'fim.wav', notes: [523, 392, 262], noteMilliseconds: 150 },
+    ],
+    music: [],
+    receipt: 'raposa-moedas-r5.json.snapshot',
+  },
+  {
+    key: 'ligue-os-pontos',
+    stem: 'ligueOsPontos',
+    name: 'Ligue os Pontos',
+    emoji: '✏️',
+    description: 'Clique nos pontos na ordem dos números e desenhe uma figura misteriosa.',
+    genre: 'Quebra-cabeça',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas', 'Repetição', 'Linhas'],
+    difficulty: 'beginner',
+    experience: 'game',
+    inspiration: 'Follow the Numbers',
+    howToPlay:
+      'Clique no ponto 1, depois no 2, e assim por diante. Errou a ordem? As linhas somem e você recomeça. Ao terminar, aperte espaço.',
+    ideas: [
+      'Mude a quantidade de pontos.',
+      'Troque a cor das linhas.',
+      'Conte quantos erros a pessoa cometeu.',
+    ],
+    sounds: [
+      { path: 'ponto.wav', notes: [784], noteMilliseconds: 60 },
+      { path: 'erro.wav', notes: [262, 196], noteMilliseconds: 100 },
+      { path: 'fim.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 110 },
+    ],
+    music: [],
+    receipt: 'ligue-os-pontos-r5.json.snapshot',
+  },
+  {
+    key: 'estrela-vermelha',
+    stem: 'estrelaVermelha',
+    name: 'Estrela Vermelha',
+    emoji: '⭐',
+    description: 'Ache a estrela vermelha entre as outras antes que elas caiam. Pixel art.',
+    genre: 'Reflexo',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Animação', 'Listas', 'Pixel art'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Red Alert',
+    howToPlay:
+      'Clique na estrela vermelha antes que as estrelas cheguem ao chão. A cada fase aparecem mais estrelas e elas caem mais rápido.',
+    ideas: [
+      'Mude a quantidade de fases.',
+      'Troque a cor da estrela certa.',
+      'Desenhe uma estrela nova no Pinta, em pixel art.',
+    ],
+    sounds: [
+      { path: 'acerto.wav', notes: [660, 880, 1320], noteMilliseconds: 50 },
+      { path: 'erro.wav', notes: [300, 200], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'estrela-vermelha-r5.json.snapshot',
+  },
+  {
+    key: 'quiz-relampago',
+    stem: 'quizRelampago',
+    name: 'Quiz Relâmpago',
+    emoji: '❓',
+    description: 'Responda antes de o tempo acabar. Dá para trocar as perguntas.',
+    genre: 'Quiz',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas', 'Retângulos', 'Relógio'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Big Quiz',
+    howToPlay: 'Leia a pergunta e clique na resposta certa antes que o contador chegue a zero.',
+    ideas: [
+      'Escreva suas próprias perguntas na lista.',
+      'Dê mais tempo para cada pergunta.',
+      'Mostre a resposta certa quando a pessoa errar.',
+    ],
+    sounds: [
+      { path: 'acerto.wav', notes: [660, 880], noteMilliseconds: 70 },
+      { path: 'erro.wav', notes: [220, 165], noteMilliseconds: 140 },
+    ],
+    music: [],
+    receipt: 'quiz-relampago-r5.json.snapshot',
+  },
+  {
+    key: 'voo-de-balao',
+    stem: 'vooDeBalao',
+    name: 'Voo de Balão',
+    emoji: '🎈',
+    description:
+      'Clique para subir o balão e desvie de pássaros, casas e árvores. Guarda o recorde.',
+    genre: 'Desvio',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Funções', 'Arquivos', 'Animação'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Balloon Flight',
+    howToPlay:
+      'Clique e segure para o balão subir; solte para ele descer. Desvie dos pássaros, das casas e das árvores. O recorde fica no arquivo recorde.txt.',
+    ideas: [
+      'Mude a velocidade dos obstáculos.',
+      'Faça o balão subir mais devagar.',
+      'Guarde também o nome de quem fez o recorde.',
+    ],
+    sounds: [{ path: 'fim.wav', notes: [440, 330, 220], noteMilliseconds: 140 }],
+    music: [],
+    receipt: 'voo-de-balao-r5.json.snapshot',
+  },
+  {
+    key: 'desafio-da-danca',
+    stem: 'desafioDaDanca',
+    name: 'Desafio da Dança',
+    emoji: '🕺',
+    description:
+      'Observe os passos do robô e repita com as setas. A sequência cresce a cada rodada.',
+    genre: 'Memória',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Música', 'Relógio', 'Listas'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Dance Challenge',
+    howToPlay:
+      'Observe os passos do robô. Quando aparecer "Sua vez", repita a sequência com as setas. Cada rodada acrescenta um passo.',
+    ideas: [
+      'Mude o tempo entre os passos.',
+      'Troque a música por outra feita por você.',
+      'Mostre quantas rodadas a pessoa venceu.',
+    ],
+    sounds: [],
+    music: [
+      {
+        path: 'ritmo.ogg',
+        notes: [
+          262, 330, 392, 330, 294, 349, 440, 349, 330, 392, 494, 392, 294, 349, 440, 392, 262, 330,
+          392, 523, 494, 392, 330, 294, 262, 294, 330, 392, 349, 330, 294, 262,
+        ],
+        noteMilliseconds: 250,
+      },
+    ],
+    receipt: 'desafio-da-danca-r5.json.snapshot',
+  },
+  {
+    key: 'jardim-feliz',
+    stem: 'jardimFeliz',
+    name: 'Jardim Feliz',
+    emoji: '🌻',
+    description: 'Ajude a vaca a regar as flores antes que murchem e fuja das flores-monstro.',
+    genre: 'Cuidado',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas', 'Tempo', 'Colisão'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Happy Garden',
+    howToPlay:
+      'Use as setas para andar com a vaca e aperte espaço perto de uma flor para regá-la. Flores que ficam murchas por muito tempo encerram o jogo, e as flores-monstro também.',
+    ideas: [
+      'Faça as flores murcharem mais devagar.',
+      'Mude quando as flores-monstro aparecem.',
+      'Dê um ponto para cada flor regada.',
+    ],
+    sounds: [
+      { path: 'agua.wav', notes: [1200, 900, 1500], noteMilliseconds: 40, noise: true },
+      { path: 'fim.wav', notes: [392, 330, 262], noteMilliseconds: 150 },
+    ],
+    music: [],
+    receipt: 'jardim-feliz-r6.json.snapshot',
+  },
+  {
+    key: 'dragoes-dorminhocos',
+    stem: 'dragoesDorminhocos',
+    name: 'Dragões Dorminhocos',
+    emoji: '🐉',
+    description: 'Pegue os ovos enquanto os dragões dormem. Se acordarem, cuidado! Pixel art.',
+    genre: 'Estratégia',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas', 'Estados', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Sleeping Dragons',
+    howToPlay:
+      'Use as setas para chegar aos ovos quando o dragão estiver dormindo. Se ele acordar com você no ninho, você perde uma vida.',
+    ideas: [
+      'Mude quanto tempo cada dragão dorme.',
+      'Dê mais vidas ao herói.',
+      'Faça um ninho valer mais ovos.',
+    ],
+    sounds: [
+      { path: 'ovo.wav', notes: [784, 988], noteMilliseconds: 60 },
+      { path: 'dano.wav', notes: [200, 150], noteMilliseconds: 120, noise: true },
+    ],
+    music: [],
+    receipt: 'dragoes-dorminhocos-r5.json.snapshot',
+  },
+  {
+    key: 'barris-na-rampa',
+    stem: 'barrisNaRampa',
+    name: 'Barris na Rampa',
+    emoji: '🛢️',
+    description: 'Suba as vigas e as escadas até o topo, pulando os barris que rolam rampa abaixo.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa de cores', 'Gravidade', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Donkey Kong',
+    book: 'wireframe',
+    howToPlay:
+      'Ande com as setas, suba e desça as escadas com cima e baixo e pule com espaço. Para passar um barril, pule correndo na direção dele. Antes de subir, olhe se não vem barril lá em cima. Chegue à bandeira no alto.',
+    ideas: [
+      'Mude a força do pulo (o -9) e veja se ainda dá para passar os barris.',
+      'Faça os barris saírem mais depressa.',
+      'Dê mais vidas ao herói.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [523, 784], noteMilliseconds: 50 },
+      { path: 'batida.wav', notes: [180, 120], noteMilliseconds: 120, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'barris-na-rampa-r4.json.snapshot',
+  },
+  {
+    key: 'salto-nas-plataformas',
+    stem: 'saltoNasPlataformas',
+    name: 'Salto nas Plataformas',
+    emoji: '🦖',
+    description:
+      'O Dino pula de plataforma em plataforma pegando as estrelas, com gravidade e colisão.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Gravidade', 'Colisão', 'Retângulos'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Super Mario',
+    book: 'wireframe',
+    howToPlay: 'Ande com as setas e pule com espaço. Pegue todas as estrelas das plataformas.',
+    ideas: [
+      'Mude a força do pulo e a gravidade e veja como o Dino salta.',
+      'Crie uma plataforma nova na lista `plataformas`.',
+      'Conte o tempo que você leva para pegar todas as estrelas.',
+    ],
+    sounds: [
+      { path: 'estrela.wav', notes: [988, 1319], noteMilliseconds: 50 },
+      { path: 'pulo.wav', notes: [440, 660], noteMilliseconds: 50 },
+    ],
+    music: [],
+    receipt: 'salto-nas-plataformas-r4.json.snapshot',
+  },
+  {
+    key: 'piramide-de-cubos',
+    stem: 'piramideDeCubos',
+    name: 'Pirâmide de Cubos',
+    emoji: '🧊',
+    description:
+      'Pule de cubo em cubo pintando a pirâmide inteira, sem cair dela e fugindo da bolinha.',
+    genre: 'Quebra-cabeça de ação',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas de listas', 'Animação', 'Vetor'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Q*bert',
+    book: 'wireframe',
+    howToPlay:
+      'As setas pulam na diagonal: esquerda e baixo descem a pirâmide, direita e cima sobem. Pinte os 28 cubos. Cuidado com a beirada e com a bolinha vermelha.',
+    ideas: [
+      'Aumente a pirâmide mudando ANDARES (e o 28 da vitória).',
+      'Faça a bolinha aparecer mais vezes.',
+      'Troque as cores dos cubos no Pinta.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [392, 523], noteMilliseconds: 40 },
+      { path: 'pinta.wav', notes: [784, 988], noteMilliseconds: 40 },
+      { path: 'queda.wav', notes: [523, 392, 262, 196], noteMilliseconds: 90 },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'piramide-de-cubos-r4.json.snapshot',
+  },
+  {
+    key: 'cipo-sobre-o-poco',
+    stem: 'cipoSobreOPoco',
+    name: 'Cipó sobre o Poço',
+    emoji: '🌿',
+    description: 'Agarre o cipó que balança, atravesse o poço e pegue o tesouro do outro lado.',
+    genre: 'Aventura',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Ângulos', 'Matemática', 'Camadas'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Pitfall!',
+    book: 'wireframe',
+    howToPlay:
+      'Ande com as setas e pule com espaço. Pule na ponta do cipó quando ele chegar perto, espere o balanço e aperte espaço para soltar do outro lado. Pule o tronco que rola.',
+    ideas: [
+      'Mude o COMPRIMENTO do cipó e veja até onde ele alcança.',
+      'Faça o tronco rolar mais rápido.',
+      'Coloque um segundo poço no caminho.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [440, 660], noteMilliseconds: 50 },
+      { path: 'agarra.wav', notes: [330, 440], noteMilliseconds: 40 },
+      { path: 'queda.wav', notes: [392, 262, 196], noteMilliseconds: 110 },
+      { path: 'tesouro.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'cipo-sobre-o-poco-r4.json.snapshot',
+  },
+  {
+    key: 'mina-que-desmorona',
+    stem: 'minaQueDesmorona',
+    name: 'Mina que Desmorona',
+    emoji: '⛏️',
+    description:
+      'Junte as três chaves da mina antes que o chão frágil desmorone e saia pela porta.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa em texto', 'Gravidade', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Manic Miner',
+    book: 'wireframe',
+    howToPlay:
+      'Ande com as setas e pule com espaço. O chão amarelo afunda quando você para nele. Pegue as três chaves, fuja do robô e volte para a porta.',
+    ideas: [
+      'Desenhe outra caverna trocando os # e ~ do MAPA.',
+      'Faça o chão frágil durar mais.',
+      'Coloque um segundo robô patrulhando.',
+    ],
+    sounds: [
+      { path: 'pulo.wav', notes: [523, 698], noteMilliseconds: 40 },
+      { path: 'chave.wav', notes: [988, 1319, 1568], noteMilliseconds: 60 },
+      { path: 'desmorona.wav', notes: [200, 140], noteMilliseconds: 90, noise: true },
+      { path: 'dano.wav', notes: [220, 160], noteMilliseconds: 120, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'mina-que-desmorona-r4.json.snapshot',
+  },
+  {
+    key: 'escudos-contra-invasores',
+    stem: 'escudosContraInvasores',
+    name: 'Escudos contra Invasores',
+    emoji: '🛡️',
+    description: 'Defenda a Terra atrás de escudos que se desfazem pedaço por pedaço a cada tiro.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Grades', 'Listas de listas', 'Pixel art'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Space Invaders',
+    book: 'wireframe',
+    howToPlay:
+      'Mova o canhão com as setas e atire com espaço (um tiro de cada vez). Os escudos protegem, mas se desfazem: dá até para abrir um buraco atirando por baixo.',
+    ideas: [
+      'Mude o desenho dos escudos na lista FORMA.',
+      'Faça a explosão arrancar mais pedaços.',
+      'Acrescente uma quarta fila de invasores.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'acerto.wav', notes: [330, 220], noteMilliseconds: 60, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'escudos-contra-invasores-r4.json.snapshot',
+  },
+  {
+    key: 'mergulho-alienigena',
+    stem: 'mergulhoAlienigena',
+    name: 'Mergulho Alienígena',
+    emoji: '🛸',
+    description:
+      'A esquadra balança no céu e, de repente, um alien sai da fila e mergulha em curva.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Estados', 'Ângulos', 'Céu que rola'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Galaxian',
+    book: 'wireframe',
+    howToPlay:
+      'Mova a nave com as setas e atire com espaço. Acerte os aliens na fila ou no meio do mergulho e desvie das bombas.',
+    ideas: [
+      'Faça os aliens mergulharem mais vezes.',
+      'Mude a curva do mergulho trocando os números do ângulo.',
+      'Dê mais pontos para quem acerta um alien mergulhando.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [988, 740], noteMilliseconds: 30 },
+      { path: 'mergulho.wav', notes: [1047, 784, 523], noteMilliseconds: 70 },
+      { path: 'acerto.wav', notes: [330, 220], noteMilliseconds: 60, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'mergulho-alienigena-r4.json.snapshot',
+  },
+  {
+    key: 'nave-mae',
+    stem: 'naveMae',
+    name: 'Nave-Mãe',
+    emoji: '👾',
+    description:
+      'Fure a barra que gira e os escudos da Nave-Mãe para acertar o piloto antes que ela desça.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mouse', 'Resto da divisão', 'Retângulos'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Phoenix',
+    book: 'wireframe',
+    howToPlay:
+      'Mova a nave com o mouse e clique para atirar. Cada bloco aguenta quatro tiros. Abra caminho até o piloto no meio da Nave-Mãe.',
+    ideas: [
+      'Faça a barra girar mais depressa.',
+      'Acrescente uma quarta fileira de escudos em FILEIRAS.',
+      'Faça a Nave-Mãe descer mais rápido.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'nave-mae-r4.json.snapshot',
+  },
+  {
+    key: 'rastro-de-ajudantes',
+    stem: 'rastroDeAjudantes',
+    name: 'Rastro de Ajudantes',
+    emoji: '🛰️',
+    description: 'Bolinhas ajudantes seguem o caminho da nave e atiram junto com ela.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas', 'Histórico de posições', 'Seno'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Gradius',
+    book: 'wireframe',
+    howToPlay:
+      'Mova a nave com as setas e atire com espaço. Pegue as cápsulas vermelhas para ganhar mais ajudantes (até quatro). Os ajudantes seguem o caminho por onde a nave passou.',
+    ideas: [
+      'Mude DISTANCIA para os ajudantes ficarem mais longe um do outro.',
+      'Faça os drones ondularem mais alto.',
+      'Comece o jogo com dois ajudantes.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'acerto.wav', notes: [330, 220], noteMilliseconds: 60, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'capsula.wav', notes: [523, 659, 784], noteMilliseconds: 60 },
+    ],
+    music: [],
+    receipt: 'rastro-de-ajudantes-r3.json.snapshot',
+  },
+  {
+    key: 'helicoptero-bombardeiro',
+    stem: 'helicopteroBombardeiro',
+    name: 'Helicóptero Bombardeiro',
+    emoji: '🚁',
+    description: 'Sobre o chão que passa, solte a bomba que se abre numa roda e acerte os tanques.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Ângulos', 'Cenário que rola', 'Mira'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Tiger-Heli',
+    book: 'wireframe',
+    howToPlay:
+      'Mova o helicóptero com as setas. Aperte espaço para soltar a bomba: ela se abre em doze pedaços e explode. Fuja das balas dos tanques.',
+    ideas: [
+      'Mude PEDACOS para a bomba se abrir em mais pedaços.',
+      'Faça a bomba demorar mais para explodir.',
+      'Ponha mais tanques no chão.',
+    ],
+    sounds: [
+      { path: 'bomba.wav', notes: [392, 330, 262], noteMilliseconds: 60 },
+      { path: 'explode.wav', notes: [160, 110], noteMilliseconds: 160, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+    ],
+    music: [],
+    receipt: 'helicoptero-bombardeiro-r3.json.snapshot',
+  },
+  {
+    key: 'cauda-espacial',
+    stem: 'caudaEspacial',
+    name: 'Cauda Espacial',
+    emoji: '🐙',
+    description:
+      'Um monstro com uma cauda feita de gomos que chicoteia: acerte o olho quando ele abrir.',
+    genre: 'Chefão',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Seno e cosseno', 'Corrente de atores', 'Tempo'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'R-Type',
+    book: 'wireframe',
+    howToPlay:
+      'Mova a nave com as setas e atire com espaço. Só o tiro no olho aberto machuca o monstro, e ele sobe e desce: mire um pouco à frente. Cuidado com a cauda!',
+    ideas: [
+      'Mude BALANCO e RAPIDEZ para a cauda chicotear diferente.',
+      'Ponha mais GOMOS na cauda.',
+      'Deixe o olho aberto por menos tempo.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'acerto.wav', notes: [330, 220], noteMilliseconds: 60, noise: true },
+      { path: 'bloqueio.wav', notes: [220, 220], noteMilliseconds: 50 },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'vitoria.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'cauda-espacial-r3.json.snapshot',
+  },
+  {
+    key: 'mochila-a-jato',
+    stem: 'mochilaAJato',
+    name: 'Mochila a Jato',
+    emoji: '🚀',
+    description:
+      'Voe com a mochila a jato, monte o foguete peça por peça, encha o tanque e decole.',
+    genre: 'Plataforma',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Gravidade', 'Empurrão', 'Relógio'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Jetpac',
+    book: 'wireframe',
+    howToPlay:
+      'Setas para os lados andam, a seta para cima liga o jato. Leve as peças do foguete até a base, depois as três latas de combustível, e entre no foguete. Espaço atira o laser nos meteoros.',
+    ideas: [
+      'Mude GRAVIDADE e EMPURRAO e sinta a diferença no voo.',
+      'Faça os meteoros aparecerem mais vezes.',
+      'Mostre o melhor tempo de decolagem.',
+    ],
+    sounds: [
+      { path: 'pega.wav', notes: [659, 880], noteMilliseconds: 50 },
+      { path: 'encaixa.wav', notes: [392, 523, 659], noteMilliseconds: 60 },
+      { path: 'laser.wav', notes: [1319, 988], noteMilliseconds: 30 },
+      { path: 'estouro.wav', notes: [262, 196], noteMilliseconds: 70, noise: true },
+      { path: 'dano.wav', notes: [200, 130], noteMilliseconds: 140, noise: true },
+      { path: 'decola.wav', notes: [262, 330, 392, 523, 659, 784], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'mochila-a-jato-r3.json.snapshot',
+  },
+  {
+    key: 'propulsor-no-espaco',
+    stem: 'propulsorNoEspaco',
+    name: 'Propulsor no Espaço',
+    emoji: '☄️',
+    description:
+      'A nave gira, acelera para onde o bico aponta e desliza no espaço; as pedras se partem.',
+    genre: 'Tiro',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Ângulos', 'Inércia', 'Seno e cosseno'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Asteroids',
+    book: 'wireframe',
+    howToPlay:
+      'As setas para os lados giram a nave, a seta para cima liga o motor e espaço atira. A nave continua deslizando: freie apontando para o outro lado.',
+    ideas: [
+      'Mude EMPURRAO e ATRITO para a nave ficar mais pesada ou mais leve.',
+      'Faça as pedras se partirem em três.',
+      'Dê uma vida a mais a cada 1000 pontos.',
+    ],
+    sounds: [
+      { path: 'tiro.wav', notes: [880, 660], noteMilliseconds: 30 },
+      { path: 'quebra.wav', notes: [196, 147], noteMilliseconds: 80, noise: true },
+      { path: 'batida.wav', notes: [130, 98], noteMilliseconds: 160, noise: true },
+    ],
+    music: [],
+    receipt: 'propulsor-no-espaco-r3.json.snapshot',
+  },
+  {
+    key: 'encanamento-apressado',
+    stem: 'encanamentoApressado',
+    name: 'Encanamento Apressado',
+    emoji: '🚰',
+    description: 'Monte o caminho de canos antes que a água chegue: se achar um cano aberto, vaza.',
+    genre: 'Quebra-cabeça',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Dicionários', 'Grade', 'Mouse'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Pipe Mania',
+    book: 'wireframe',
+    howToPlay:
+      'Clique numa casa vazia para pôr a próxima peça da fila. Depois da contagem, a água sai do começo e segue pelos canos. Leve a água por 12 canos para vencer.',
+    ideas: [
+      'Mude META para precisar de mais canos.',
+      'Deixe a água mais rápida.',
+      'Dê pontos a mais quando a água passa duas vezes pela cruz.',
+    ],
+    sounds: [
+      { path: 'encaixe.wav', notes: [523, 659], noteMilliseconds: 40 },
+      { path: 'nao.wav', notes: [220, 196], noteMilliseconds: 60 },
+      { path: 'vazou.wav', notes: [392, 294, 220], noteMilliseconds: 120, noise: true },
+      { path: 'venceu.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 120 },
+    ],
+    music: [],
+    receipt: 'encanamento-apressado-r3.json.snapshot',
+  },
+  {
+    key: 'troca-de-joias',
+    stem: 'trocaDeJoias',
+    name: 'Troca de Joias',
+    emoji: '💎',
+    description:
+      'Troque duas joias vizinhas para formar três iguais em fila e veja a cascata acontecer.',
+    genre: 'Quebra-cabeça',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas de listas', 'Gravidade da grade', 'Relógio'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Columns',
+    book: 'wireframe',
+    howToPlay:
+      'As setas movem a moldura de duas joias e espaço troca as duas. A troca só vale se formar três iguais em fila. Você tem 20 jogadas.',
+    ideas: [
+      'Mude CORES para ter mais ou menos tipos de joia.',
+      'Dê pontos em dobro para quatro iguais.',
+      'Mude o número de jogadas.',
+    ],
+    sounds: [
+      { path: 'trio.wav', notes: [784, 988, 1175], noteMilliseconds: 50 },
+      { path: 'erro.wav', notes: [220, 196], noteMilliseconds: 70 },
+    ],
+    music: [],
+    receipt: 'troca-de-joias-r3.json.snapshot',
+  },
+  {
+    key: 'bichinhos-em-fila',
+    stem: 'bichinhosEmFila',
+    name: 'Bichinhos em Fila',
+    emoji: '🐛',
+    description:
+      'Os bichinhos andam sem parar; clique num deles para virar bloqueio e salvar os outros.',
+    genre: 'Quebra-cabeça',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa de imagem', 'Estados', 'Mouse'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Lemmings',
+    book: 'wireframe',
+    howToPlay:
+      'Os bichinhos saem da porta e andam para a frente. Clique num bichinho para ele parar e mandar os outros de volta (você tem três bloqueios). Leve pelo menos seis até a casinha.',
+    ideas: [
+      'Mude QUEDA_MAXIMA e veja de que altura eles aguentam cair.',
+      'Desenhe outra fase no Pinta (o transparente é ar).',
+      'Solte bichinhos mais depressa.',
+    ],
+    sounds: [
+      { path: 'bloqueio.wav', notes: [440, 440], noteMilliseconds: 40 },
+      { path: 'salvo.wav', notes: [784, 1047], noteMilliseconds: 60 },
+      { path: 'ai.wav', notes: [330, 196], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'bichinhos-em-fila-r3.json.snapshot',
+  },
+  {
+    key: 'cavando-por-gemas',
+    stem: 'cavandoPorGemas',
+    name: 'Cavando por Gemas',
+    emoji: '⛏️',
+    description:
+      'Cave a terra da caverna atrás de gemas, mas cuidado com as pedras que despencam quando você tira o apoio delas.',
+    genre: 'Quebra-cabeça',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas de listas', 'Gravidade da grade', 'Relógio'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Boulder Dash',
+    book: 'wireframe',
+    howToPlay:
+      'As setas cavam uma casa de cada vez. Pegue as dez gemas para abrir a porta e saia antes de o tempo acabar. Pedra parada em cima de você não machuca, mas pedra caindo amassa. Dá para empurrar uma pedra de lado se o outro lado estiver vazio.',
+    ideas: [
+      'Desenhe outra caverna em CAVERNA (cada letra vira uma coisa).',
+      'Mude TEMPO_TOTAL para ter mais ou menos tempo.',
+      'Faça a gema também cair, como a pedra.',
+    ],
+    sounds: [
+      { path: 'gema.wav', notes: [988, 1319], noteMilliseconds: 50 },
+      { path: 'abriu.wav', notes: [523, 659, 784, 1047], noteMilliseconds: 70 },
+      { path: 'amassou.wav', notes: [196, 147, 110], noteMilliseconds: 90 },
+      { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'cavando-por-gemas-r2.json.snapshot',
+  },
+  {
+    key: 'editor-de-cavernas',
+    stem: 'editorDeCavernas',
+    name: 'Editor de Cavernas',
+    emoji: '🗺️',
+    description:
+      'Desenhe sua própria caverna com pedras, gemas e paredes, guarde num arquivo e teste se dá para vencer.',
+    genre: 'Criação de fases',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Listas de listas', 'Mouse', 'Arquivos'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Boulder Dash',
+    book: 'wireframe',
+    howToPlay:
+      'Clique numa peça do painel e depois no mapa (arrastar pinta várias casas). Guardar escreve a caverna no arquivo caverna.txt e Carregar traz ela de volta. Espaço testa a caverna com as setas e espaço de novo volta para o editor.',
+    ideas: [
+      'Invente uma peça nova, como um bloco de fogo, e diga o que ela faz em mover_minerador.',
+      'Abra o caverna.txt e veja a caverna escrita com letras.',
+      'Faça uma caverna que só dá para vencer cavando na ordem certa, sem ser amassado.',
+    ],
+    sounds: [
+      { path: 'gema.wav', notes: [988, 1319], noteMilliseconds: 50 },
+      { path: 'guardou.wav', notes: [659, 880], noteMilliseconds: 60 },
+      { path: 'amassou.wav', notes: [196, 147, 110], noteMilliseconds: 90 },
+      { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'editor-de-cavernas-r2.json.snapshot',
+  },
+  {
+    key: 'corrida-vista-de-cima',
+    stem: 'corridaVistaDeCima',
+    name: 'Corrida Vista de Cima',
+    emoji: '🏎️',
+    description:
+      'Corra três voltas contra três carros do computador que se guiam pela cor de um mapa escondido.',
+    genre: 'Corrida',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa de imagem', 'Ângulos', 'Seno e cosseno'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Super Sprint',
+    book: 'wireframe',
+    howToPlay:
+      'Seta para cima acelera, para baixo freia e dá ré, e as setas dos lados viram o carro. Espere a contagem e complete as três voltas. Bater na grama faz o carro voltar um pouco.',
+    ideas: [
+      'Mude VELOCIDADE_MAXIMA e veja se ainda dá para fazer a curva.',
+      'Deixe os carros do computador mais rápidos em guiar_o_computador.',
+      'Mude VOLTAS para uma corrida mais longa.',
+    ],
+    sounds: [
+      { path: 'bip.wav', notes: [660], noteMilliseconds: 120 },
+      { path: 'largada.wav', notes: [988], noteMilliseconds: 300 },
+      { path: 'chegada.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'corrida-vista-de-cima-r2.json.snapshot',
+  },
+  {
+    key: 'sinuca',
+    stem: 'sinuca',
+    name: 'Sinuca',
+    emoji: '🎱',
+    description:
+      'Mire com a linha de pontinhos, escolha a força e encaçape as seis bolas coloridas em até 15 tacadas.',
+    genre: 'Esporte',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Classes', 'Física', 'Seno e cosseno'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Side Pocket',
+    book: 'wireframe',
+    howToPlay:
+      'As setas dos lados giram a mira e as de cima e de baixo mudam a força. Espaço dá a tacada. A linha de pontinhos mostra para onde a branca vai. Se a branca cair, ela volta para o lugar dela.',
+    ideas: [
+      'Mude ATRITO para a mesa ficar mais lisa ou mais áspera.',
+      'Dê mais ou menos tacadas em TACADAS.',
+      'Arrume as bolas de outro jeito em arrumar_mesa.',
+    ],
+    sounds: [
+      { path: 'tacada.wav', notes: [330], noteMilliseconds: 50 },
+      { path: 'toque.wav', notes: [1047], noteMilliseconds: 30 },
+      { path: 'cacapa.wav', notes: [392, 523, 659], noteMilliseconds: 60 },
+      { path: 'erro.wav', notes: [220, 165], noteMilliseconds: 90 },
+      { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'sinuca-r2.json.snapshot',
+  },
+  {
+    key: 'fliperama',
+    stem: 'fliperama',
+    name: 'Fliperama',
+    emoji: '🪩',
+    description:
+      'Lance a bola, faça ela bater nos batedores e use os flíperes para ela não cair pelo meio.',
+    genre: 'Fliperama',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa de imagem', 'Física', 'Seno e cosseno'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Pinball',
+    book: 'wireframe',
+    howToPlay:
+      'Espaço solta a mola e lança a bola. A seta para a esquerda vira o flíper da esquerda e a da direita, o da direita. Cada batida num batedor vale 100 pontos. Você tem três bolas.',
+    ideas: [
+      'Mude GRAVIDADE para a mesa ficar mais ou menos inclinada.',
+      'Desenhe mais um batedor no mapa (vermelho) e na mesa.',
+      'Faça o batedor valer mais pontos.',
+    ],
+    sounds: [
+      { path: 'lancar.wav', notes: [196, 392], noteMilliseconds: 60 },
+      { path: 'batedor.wav', notes: [880, 1175], noteMilliseconds: 40 },
+      { path: 'flipper.wav', notes: [262], noteMilliseconds: 30 },
+      { path: 'perdeu.wav', notes: [330, 262, 196], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'fliperama-r2.json.snapshot',
+  },
+  {
+    key: 'minigolfe-maluco',
+    stem: 'minigolfeMaluco',
+    name: 'Minigolfe Maluco',
+    emoji: '⛳',
+    description:
+      'Três buracos de minigolfe com paredes no caminho e um lago no meio: faça cada um com o mínimo de tacadas.',
+    genre: 'Esporte',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Mapa de imagem', 'Ângulos', 'Seno e cosseno'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Crazy Golf',
+    book: 'wireframe',
+    howToPlay:
+      'As setas dos lados giram a seta da mira e as de cima e de baixo mudam a força. Espaço (ou Enter) dá a tacada. A bola volta nas paredes; se cair no lago, volta para onde estava e você ganha uma tacada a mais.',
+    ideas: [
+      'Mude ATRITO para a grama ficar mais rápida ou mais lenta.',
+      'Mude o lugar de onde cada buraco começa em INICIOS.',
+      'Mude o par de cada buraco em PARES.',
+    ],
+    sounds: [
+      { path: 'tacada.wav', notes: [523], noteMilliseconds: 40 },
+      { path: 'toque.wav', notes: [880], noteMilliseconds: 25 },
+      { path: 'agua.wav', notes: [330, 247, 196], noteMilliseconds: 80 },
+      { path: 'buraco.wav', notes: [659, 784, 1047], noteMilliseconds: 70 },
+      { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'minigolfe-maluco-r2.json.snapshot',
+  },
+  {
+    key: 'tiro-ao-prato',
+    stem: 'tiroAoPrato',
+    name: 'Tiro ao Prato',
+    emoji: '🎯',
+    description:
+      'Os pratos voam de um lado para o outro e as miras seguem cada um: atire na hora em que o prato passa dentro da mira.',
+    genre: 'Mira',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Animação', 'Listas', 'Sorteio'],
+    difficulty: 'intermediate',
+    experience: 'game',
+    inspiration: 'Hyper Sports',
+    book: 'wireframe',
+    howToPlay:
+      'A seta para a esquerda atira na mira da esquerda (nos pratos que vêm da esquerda) e a seta para a direita, na mira da direita. Cada prato quebrado vale 1000 pontos. A rodada tem 20 pratos.',
+    ideas: [
+      'Mude PRATOS_POR_RODADA para uma rodada mais longa.',
+      'Faça os pratos voarem mais depressa (o duration do animate).',
+      'Dê pontos em dobro para quem quebrar dois pratos seguidos.',
+    ],
+    sounds: [
+      { path: 'lancar.wav', notes: [392, 523], noteMilliseconds: 40 },
+      { path: 'tiro.wav', notes: [147], noteMilliseconds: 60 },
+      { path: 'quebrou.wav', notes: [1175, 1568], noteMilliseconds: 40 },
+      { path: 'fim.wav', notes: [784, 659, 784, 1047], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'tiro-ao-prato-r2.json.snapshot',
+  },
+  {
+    key: 'rali-com-minimapa',
+    stem: 'raliComMinimapa',
+    name: 'Rali com Minimapa',
+    emoji: '🚩',
+    description:
+      'Dirija por um labirinto maior que a tela atrás de oito bandeiras, olhando o minimapa e fugindo dos carros vermelhos.',
+    genre: 'Corrida',
+    concepts: ['Blocos', 'Ponte', 'Código', 'Câmera', 'Listas de textos', 'Perseguição'],
+    difficulty: 'advanced',
+    experience: 'game',
+    inspiration: 'Rally-X',
+    book: 'wireframe',
+    howToPlay:
+      'As setas dizem para onde virar na próxima esquina (dá para dar meia-volta a qualquer hora). Pegue as oito bandeiras antes de o combustível acabar; cada bandeira dá um pouco de combustível. Encostar num carro vermelho custa uma vida.',
+    ideas: [
+      'Mude VELOCIDADE_DOS_VERMELHOS para eles correrem mais.',
+      'Redesenhe o LABIRINTO (cada # vira um quarteirão).',
+      'Ponha mais bandeiras em BANDEIRAS.',
+    ],
+    sounds: [
+      { path: 'bandeira.wav', notes: [880, 1175], noteMilliseconds: 50 },
+      { path: 'batida.wav', notes: [196, 131], noteMilliseconds: 110 },
+      { path: 'vitoria.wav', notes: [784, 988, 1175, 1568], noteMilliseconds: 90 },
+    ],
+    music: [],
+    receipt: 'rali-com-minimapa-r2.json.snapshot',
+  },
+] as const satisfies readonly PgzeroGame[]
+
+export type PgzeroGameKey = (typeof PGZERO_GAMES)[number]['key']
+
+/** Text files of every example, besides its media. */
+export const PGZERO_GAME_FILES = ['main.py', 'README.md', 'NOTICE.md', 'LICENSE'] as const

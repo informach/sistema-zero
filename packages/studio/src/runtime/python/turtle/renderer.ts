@@ -120,10 +120,22 @@ export function createTurtleRenderer(
     )
       inputs[inputs.length - 1] = event
     else if (inputs.length < LIMITS.inputEvents) inputs.push(event)
-    else {
-      inputs.length = 0
-      inputError = new Error('A fila de entrada Turtle excedeu o limite.')
-      listeners.abort()
+    else if (event.type === 'keypress' || event.type === 'drag') {
+      // A held key or a moving mouse while Python is busy: drop the extra repeats instead of
+      // ending the program. Presses already queued still reach the callbacks in order.
+    } else {
+      // Releases and clicks must not be lost: make room by dropping the oldest repeat.
+      const replaceable = inputs.findIndex(
+        (item) => item.type === 'keypress' || item.type === 'drag',
+      )
+      if (replaceable >= 0) {
+        inputs.splice(replaceable, 1)
+        inputs.push(event)
+      } else {
+        inputs.length = 0
+        inputError = new Error('A fila de entrada Turtle excedeu o limite.')
+        listeners.abort()
+      }
     }
     wake()
   }
@@ -263,7 +275,16 @@ export function createTurtleRenderer(
           if (event.key.length > 80 || closed || disposed) return
           // Browser navigation shortcuts remain available; game keys stay in the canvas.
           if (event.ctrlKey || event.metaKey || event.altKey) return
-          queue({ type, key: KEY_NAMES[event.key] ?? event.key })
+          const key = KEY_NAMES[event.key] ?? event.key
+          // Auto-repeat of a key whose press is still waiting adds nothing for Python.
+          if (
+            event.repeat &&
+            inputs.some((item) => item.type === type && 'key' in item && item.key === key)
+          ) {
+            if (event.key !== 'Tab') event.preventDefault()
+            return
+          }
+          queue({ type, key })
           if (event.key !== 'Tab') event.preventDefault()
         },
         settings,

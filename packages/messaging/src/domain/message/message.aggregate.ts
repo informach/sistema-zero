@@ -108,6 +108,29 @@ export class Message extends AggregateRoot<string> {
   }
 
   static create(input: CreateMessageInput): Message {
+    return Message.build(input, false)
+  }
+
+  /** An idempotency tombstone. It can never be claimed for delivery. */
+  static withdrawnIntent(
+    input: Omit<CreateMessageInput, 'renderedSubject' | 'renderedBody' | 'templateId'> & {
+      consumerId: string
+      idempotencyKey: string
+    },
+  ): Message {
+    if (!input.consumerId.trim() || !input.idempotencyKey.trim())
+      throw new ValidationError('Retirada exige consumidor e intenção identificados')
+    return Message.build(
+      {
+        ...input,
+        renderedSubject: 'Solicitação retirada',
+        renderedBody: 'Solicitação retirada antes de entrar na fila de envio.',
+      },
+      true,
+    )
+  }
+
+  private static build(input: CreateMessageInput, withdrawn: boolean): Message {
     const name = input.recipient.name?.trim()
     if (!name) throw new ValidationError('Nome do destinatário é obrigatório')
 
@@ -156,8 +179,11 @@ export class Message extends AggregateRoot<string> {
     }
 
     const scheduledAt = input.scheduledAt ?? input.now
-    const status: MessageStatus =
-      scheduledAt.getTime() > input.now.getTime() ? 'SCHEDULED' : 'QUEUED'
+    const status: MessageStatus = withdrawn
+      ? 'SUPPRESSED'
+      : scheduledAt.getTime() > input.now.getTime()
+        ? 'SCHEDULED'
+        : 'QUEUED'
 
     const message = new Message(input.id, {
       channel: input.channel,
@@ -173,7 +199,7 @@ export class Message extends AggregateRoot<string> {
       priority: input.priority ?? 0,
       status,
       providerMessageId: null,
-      failureReason: null,
+      failureReason: withdrawn ? 'REQUEST_NO_LONGER_NEEDED' : null,
       failureCode: null,
       scheduledAt,
       nextAttemptAt: scheduledAt,
@@ -186,8 +212,22 @@ export class Message extends AggregateRoot<string> {
       sentAt: null,
       deliveredAt: null,
       readAt: null,
-      terminalAt: null,
+      terminalAt: withdrawn ? input.now : null,
     })
+    if (withdrawn) {
+      message.addEvent(
+        new MessageSuppressedEvent(
+          {
+            messageId: message.id,
+            channel: message.props.channel,
+            templateKey: message.props.templateKey,
+            reason: 'REQUEST_NO_LONGER_NEEDED',
+          },
+          input.now,
+        ),
+      )
+      return message
+    }
     message.addEvent(
       new MessageQueuedEvent(
         {
@@ -300,6 +340,14 @@ export class Message extends AggregateRoot<string> {
         now,
       ),
     )
+  }
+
+  /** Retirada pelo consumidor antes do claim; não suprime o destinatário globalmente. */
+  withdrawQueued(now: Date): boolean {
+    if (!Number.isFinite(now.getTime())) throw new ValidationError('Relógio inválido')
+    if (this.props.status !== 'QUEUED' && this.props.status !== 'SCHEDULED') return false
+    this.suppress({ reason: 'REQUEST_NO_LONGER_NEEDED', now })
+    return true
   }
 
   /** Destinatário em supressão → não envia. */

@@ -256,7 +256,7 @@ test('same environment refreshes curation and grants without replacing the sourc
   const source = await view.findByRole('textbox', { name: 'Fonte da instância' })
   if (!(source instanceof HTMLTextAreaElement)) throw new Error('Expected a source buffer')
   fireEvent.change(source, { target: { value: 'buffer ainda não salvo' } })
-  expect(blocks.getAttribute('data-blocks')).toContain('sz_py_turtle_module_forward')
+  expect(blocks.getAttribute('data-blocks')).toContain('sz_py_turtle_turtle_forward')
   expect(blocks.getAttribute('data-blocks')).toContain('sz_py_integer')
   const stored = stores.project.getState().project
   await act(async () =>
@@ -271,13 +271,13 @@ test('same environment refreshes curation and grants without replacing the sourc
     current.update({
       ...initial,
       grantedExtensionIds: [],
-      curation: { pythonLevel: 3, allowBlocks: ['sz_py_turtle_module_forward'] },
+      curation: { pythonLevel: 3, allowBlocks: ['sz_py_turtle_turtle_forward'] },
     }),
   )
   expect(blocks.getAttribute('data-blocks')).toBe('')
   expect(view.getByTestId('qualified-blocks')).toBe(blocks)
   // Codecs remain loaded for saved installed blocks; only the offer changes.
-  expect(loaded.codecs.some((codec) => codec.id === 'sz_py_turtle_module_forward')).toBe(true)
+  expect(loaded.codecs.some((codec) => codec.id === 'sz_py_turtle_turtle_forward')).toBe(true)
   expect(stores.project.getState().project).toBe(stored)
   expect(project.installedExtensions).toEqual([{ ...TURTLE_EXTENSION, installedAt: 1 }])
   await act(async () =>

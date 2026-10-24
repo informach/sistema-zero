@@ -8,6 +8,112 @@ import {
   parseNotification,
 } from '../../src/infrastructure/gateways/efi/efi-cobrancas.mapper'
 
+describe('motivo de recusa do cartão na Efí', () => {
+  const reason = 'Falha no pagamento - 54 - Cartão vencido ou data de expiração inválida.'
+
+  test('conserva o motivo do histórico sem confundir a falha com cancelamento da assinatura', () => {
+    const charge = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 123,
+          status: 'unpaid',
+          total: 9700,
+          payment: { message: null },
+          history: [{ message: 'Cobrança criada' }, { message: reason }],
+        },
+      },
+      '123',
+    )
+    expect(charge.failureReason).toBe(reason)
+    expect(charge.status).toBe('FAILED')
+  })
+
+  test('pagamento confirmado não reutiliza a recusa de uma tentativa anterior', () => {
+    const charge = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 123,
+          status: 'paid',
+          total: 9700,
+          history: [{ message: reason }, { message: 'Pagamento aprovado' }],
+        },
+      },
+      '123',
+    )
+    expect(charge.failureReason).toBeUndefined()
+  })
+
+  test('histórico sem motivo conhecido não transforma uma anotação em diagnóstico', () => {
+    const charge = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 123,
+          status: 'unpaid',
+          total: 9700,
+          history: [{ message: 'Cliente pediu para conversar com a equipe' }],
+        },
+      },
+      '123',
+    )
+    expect(charge.failureReason).toBeUndefined()
+  })
+
+  test('não propaga dados de cliente ou do titular junto ao texto da operadora', () => {
+    const charge = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 123,
+          status: 'unpaid',
+          total: 9700,
+          customer: { name: 'Pessoa Exemplo', email: 'pessoa@example.test', cpf: '52998224725' },
+          history: [{ message: `${reason} Pessoa Exemplo pessoa@example.test 52998224725` }],
+        },
+      },
+      '123',
+    )
+    expect(charge.failureReason).toContain('Cartão vencido')
+    expect(charge.failureReason).not.toContain('Pessoa Exemplo')
+    expect(charge.failureReason).not.toContain('pessoa@example.test')
+    expect(charge.failureReason).not.toContain('52998224725')
+  })
+
+  test.each([
+    'payment_token=token-qa',
+    'CVV=000',
+    'x'.repeat(2049),
+  ])('descarta diagnóstico inseguro ou sem limite: %s', (message) => {
+    const charge = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 123,
+          status: 'unpaid',
+          total: 9700,
+          payment: { message },
+        },
+      },
+      '123',
+    )
+    expect(charge.failureReason).toBeUndefined()
+    expect(charge.status).toBe('FAILED')
+  })
+
+  test('normaliza mensagem estruturada sem copiar o objeto de pagamento', () => {
+    const charge = parseCardDetailCharge(
+      {
+        data: {
+          charge_id: 123,
+          status: 'unpaid',
+          total: 9700,
+          payment: { message: { message: `${reason}\nConsulte o emissor.` }, ignored: 'dado-qa' },
+        },
+      },
+      '123',
+    )
+    expect(charge.failureReason).toBe(`${reason} Consulte o emissor.`)
+    expect(charge.failureReason).not.toContain('dado-qa')
+  })
+})
+
 describe('efi.mapper (Pix) — crítico para dinheiro/status', () => {
   test('mapCobStatus mapeia o vocabulário BACEN', () => {
     expect(mapCobStatus('CONCLUIDA')).toBe('PAID')

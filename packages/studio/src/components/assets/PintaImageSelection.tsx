@@ -10,14 +10,14 @@ import { Button } from '#ui'
 import { assertPintaImageFits, pintaImageTargetLimits } from '../../asset-library/pintaImageTarget'
 import { isPythonProject } from '../../core/editableProject'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
-import { useProjectStoreApi } from '../../state/projectStore'
+import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
 import type {
   StudioPintaDrawingSummary,
   StudioPintaImagePreview,
   StudioPintaLibraryAdapter,
 } from '../../studio/pinta-library'
-import { projectPintaImageFromRecipe } from './addCreationToProject'
+import { pintaImageOutputFor, projectPintaImageFromRecipe } from './addCreationToProject'
 
 type Preview =
   | { phase: 'loading' }
@@ -61,6 +61,8 @@ export default function PintaImageSelection({
   )
   const [scale, setScale] = useState(initial?.scale ?? 1)
   const [preview, setPreview] = useState<Preview>({ phase: 'loading' })
+  // The destination decides the format (a primitive, so the selector never re-renders by identity).
+  const output = useProjectStore((state) => pintaImageOutputFor(state.project, facts, initial))
   const recipe = useMemo<PintaImageRecipe | null>(() => {
     if (!facts || facts.kind === 'unavailable') return null
     if (facts.kind === 'frame') {
@@ -73,6 +75,7 @@ export default function PintaImageSelection({
       algorithm: 'pinta-image-1',
       drawingId: drawing.id,
       scale,
+      ...(output ? { output } : {}),
       selection:
         facts.kind === 'frame'
           ? { kind: 'frame', animationId, frameIndex: position }
@@ -80,7 +83,7 @@ export default function PintaImageSelection({
             ? { kind: 'tile', tileIndex: position }
             : { kind: facts.kind },
     })
-  }, [facts, drawing.id, animationId, position, scale])
+  }, [facts, drawing.id, animationId, position, scale, output])
   const recipeKey = recipe ? pintaImageRecipeKey(recipe) : null
   const revokePreview = () => {
     owner.preview?.abort()
@@ -237,6 +240,9 @@ export default function PintaImageSelection({
       ) : null}
       {facts?.kind === 'tilemap' ? (
         <p className="text-sm text-sz-fg-soft">{t('pintaImport.image.fullMap')}</p>
+      ) : null}
+      {output === 'svg' ? (
+        <p className="text-sm text-sz-fg-soft">{t('pintaImport.image.vector')}</p>
       ) : null}
       {preview.phase === 'loading' ? <p role="status">{t('pintaImport.image.preparing')}</p> : null}
       {preview.phase === 'error' ? (

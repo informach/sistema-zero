@@ -28,7 +28,7 @@ export function requireOwnAdultAccount<Ctx>(handler: RouteHandler<Ctx>): RouteHa
         {
           error: {
             code: 'IMPERSONATION_FORBIDDEN',
-            message: 'O cadastro de embaixador não abre numa sessão de suporte.',
+            message: 'Esta ação exige entrar com a própria conta, sem sessão de suporte.',
           },
         },
         { status: 403 },

@@ -13,6 +13,7 @@ import {
   InMemoryWebhookInbox,
   silentLogger,
 } from '../fakes/in-memory'
+import { InMemorySubscriptionBillingRepository } from '../fakes/subscription-billing-repository'
 
 const customer = {
   name: 'João da Silva',
@@ -92,12 +93,52 @@ describe('SubscriptionReconciliationWorker', () => {
     )
   })
 
-  const newWorker = (logger: Logger = silentLogger) =>
-    new SubscriptionReconciliationWorker(subscriptions, payments, gateway, cycles, logger, {
-      intervalMs: 1000,
-      batchSize: 10,
-      concurrency: 2,
-    })
+  const newWorker = (
+    logger: Logger = silentLogger,
+    billing = new InMemorySubscriptionBillingRepository(),
+  ) =>
+    new SubscriptionReconciliationWorker(
+      subscriptions,
+      payments,
+      gateway,
+      cycles,
+      logger,
+      billing,
+      {
+        intervalMs: 1000,
+        batchSize: 10,
+        concurrency: 2,
+      },
+    )
+
+  test('projeta o calendário da mesma consulta de origem sem nova ida ao provedor', async () => {
+    gateway.subscriptionNextExecution = '2026-11-16'
+    const billing = new InMemorySubscriptionBillingRepository()
+    await newWorker(silentLogger, billing).tick()
+    expect(billing.observations.size).toBe(1)
+    expect([...billing.observations.values()][0]?.nextExecution).toBe('2026-11-16')
+    expect(gateway.listedSubscriptionIds).toHaveLength(1)
+  })
+
+  test('falha de projeção do calendário não bloqueia dinheiro já recebido', async () => {
+    class FailingProjection extends InMemorySubscriptionBillingRepository {
+      override async recordSchedule() {
+        throw new Error('QA projection unavailable')
+      }
+    }
+    gateway.setCycleChargeAmount('qa-paid', 9700n)
+    gateway.setSubscriptionCharges(providerSubscriptionId, [
+      { chargeId: 'qa-paid', status: 'PAID' },
+    ])
+    const { logger, logs } = spyLogger()
+    await newWorker(logger, new FailingProjection()).tick()
+    expect((await payments.findByProviderPaymentId(gateway.provider, 'qa-paid'))?.status).toBe(
+      'PAID',
+    )
+    expect(
+      logs.some((item) => item.msg === 'subscription.reconcile.schedule_projection_failed'),
+    ).toBe(true)
+  })
 
   test('⭐ registra o ciclo PAGO que nunca virou linha (o furo do incidente)', async () => {
     // A Efí conhece uma 2ª cobrança paga; nós não temos linha dela — é exatamente
@@ -119,6 +160,25 @@ describe('SubscriptionReconciliationWorker', () => {
     expect(
       logs.some((l) => l.level === 'error' && l.msg === 'subscription.reconcile.cycle_recovered'),
     ).toBe(true)
+  })
+
+  test('recupera pagamento confirmado de ciclo local recusado, mesmo sem webhook novo', async () => {
+    const chargeId = 'declined-then-paid'
+    gateway.setCycleChargeAmount(chargeId, 9700n)
+    gateway.cardStatus = 'FAILED'
+    await cycles.handleCycle({ subscriptionId: providerSubscriptionId, chargeId })
+    const original = await payments.findByProviderPaymentId('EFI', chargeId)
+    gateway.cardStatus = 'PAID'
+    gateway.setSubscriptionCharges(providerSubscriptionId, [{ chargeId, status: 'PAID' }])
+    await newWorker().tick()
+    const recovered = await payments.findByProviderPaymentId('EFI', chargeId)
+    expect(recovered?.id).toBe(original?.id)
+    expect(recovered?.status).toBe('PAID')
+    expect(
+      payments.outbox.filter(
+        (event) => event.eventName === 'payment.paid' && event.aggregateId === original?.id,
+      ),
+    ).toHaveLength(1)
   })
 
   test('a 2ª varredura não duplica nada (dedupe do inbox + linha já existente)', async () => {
@@ -233,6 +293,7 @@ describe('SubscriptionReconciliationWorker', () => {
       gateway,
       cycles,
       silentLogger,
+      new InMemorySubscriptionBillingRepository(),
       { intervalMs: 1000, batchSize: 2, concurrency: 2 },
     )
 
@@ -259,6 +320,7 @@ describe('SubscriptionReconciliationWorker', () => {
       blockingGateway,
       cycles,
       silentLogger,
+      new InMemorySubscriptionBillingRepository(),
       { intervalMs: 1000, batchSize: 10, concurrency: 1 },
     )
 

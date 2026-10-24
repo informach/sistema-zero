@@ -691,3 +691,10 @@ POST genérico de aprendizagem.
 - [ ] Nada de framework nem de import de pacote de serviço/app entrou aqui.
 - [ ] Subpath novo? Adicionou ao `exports` do `package.json`.
 - [ ] Mudou contrato público? Ciente de que redeploya os consumidores (é dependência de todos).
+
+## Período confirmado de renovação (24/10/2026)
+
+`@sistemazero/core/billing` valida períodos ISO canônicos e a evidência
+`VERIFIED_PERIOD | REVIEW_REQUIRED`, sem dependência de framework. Período desconhecido
+não vira concessão. `core/time.addUtcCalendarMonths` preserva a regra de calendário do
+Members. A data financeira `paidAt` não substitui o início original de cobrança atrasada.

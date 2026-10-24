@@ -1,3 +1,5 @@
+import { isPythonCanvasExtension, type PythonCanvasExtension } from './canvasExtension'
+
 interface TrustedBootstrapPolicy {
   createScriptURL(value: string): string
 }
@@ -12,12 +14,14 @@ interface TrustedBootstrapAPI {
 export function createProtectedPythonWorker(
   purpose: 'execution' | 'analysis',
   resources: MessagePort,
-  startupTurtle?: boolean,
+  startupCanvas?: PythonCanvasExtension | null,
 ) {
   if (
     !['execution', 'analysis'].includes(purpose) ||
-    (startupTurtle !== undefined && typeof startupTurtle !== 'boolean') ||
-    (purpose === 'analysis' && startupTurtle !== undefined)
+    (startupCanvas !== undefined &&
+      startupCanvas !== null &&
+      !isPythonCanvasExtension(startupCanvas)) ||
+    (purpose === 'analysis' && startupCanvas !== undefined)
   )
     throw new Error('Configuração inicial do worker Python inválida.')
   const api = (globalThis as unknown as { trustedTypes?: TrustedBootstrapAPI }).trustedTypes
@@ -39,10 +43,10 @@ addEventListener('message', async function initialize(event) {
   try {
     const value = event.data;
     if (!value || typeof value !== 'object' || Reflect.ownKeys(value).length !== 3 ||
-        Reflect.ownKeys(value).some(key => !['type', 'protocol', 'turtle'].includes(key)) ||
+        Reflect.ownKeys(value).some(key => !['type', 'protocol', 'canvas'].includes(key)) ||
         value.type !== 'python-boot-resource-init' || value.protocol !== 1 ||
-        (value.turtle !== undefined && typeof value.turtle !== 'boolean') ||
-        (${JSON.stringify(purpose)} === 'analysis' && value.turtle !== undefined) || event.ports.length !== 1)
+        (value.canvas !== undefined && value.canvas !== null && value.canvas !== 'python-turtle' && value.canvas !== 'python-pgzero') ||
+        (${JSON.stringify(purpose)} === 'analysis' && value.canvas !== undefined) || event.ports.length !== 1)
       throw new Error('Configuração privada de boot Python inválida.');
     ${
       purpose === 'execution'
@@ -53,7 +57,7 @@ addEventListener('message', async function initialize(event) {
       import(${JSON.stringify(readerURL)}), import(${JSON.stringify(workerURL)})
     ]).then(([reader, entry]) => {
       reader.configurePythonBootReader(event.ports[0], ${JSON.stringify(directory)});
-      return entry.startPythonWorker({ turtle: value.turtle });
+      return entry.startPythonWorker({ canvas: value.canvas });
     });
     await Promise.all([modules, initialized]);`
         : `const { configurePythonBootReader } = await import(${JSON.stringify(readerURL)});
@@ -86,7 +90,7 @@ addEventListener('message', async function initialize(event) {
     })
     try {
       worker.postMessage(
-        { type: 'python-boot-resource-init', protocol: 1, turtle: startupTurtle },
+        { type: 'python-boot-resource-init', protocol: 1, canvas: startupCanvas },
         [resources],
       )
     } catch (error) {

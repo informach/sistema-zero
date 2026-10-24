@@ -1,5 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
-import { apiGet, apiPost } from '../lib/api-fetch'
 import {
   brandLabel,
   type CardBrand,
@@ -10,7 +8,10 @@ import {
   maskCardNumber,
   normalizeBrand,
   onlyDigits,
-} from '../lib/card-utils'
+} from '@sistemazero/ui/credit-card'
+import { loadEfi, tokenizeEfiCard } from '@sistemazero/ui/efi-card-token'
+import { useEffect, useRef, useState } from 'react'
+import { apiGet, apiPost } from '../lib/api-fetch'
 import {
   type AddressFormInput,
   AddressSchema,
@@ -55,10 +56,6 @@ interface StatusResp {
 
 function brl(cents: number): string {
   return (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
-
-async function loadEfi() {
-  return (await import('payment-token-efi')).default
 }
 
 // O CPF do titular vem dos "Dados pessoais" compartilhados do checkout (prop
@@ -199,9 +196,9 @@ export default function CardCheckout({
         setInstallmentsList(null)
         setInstallments(1)
       }
-    } catch (e) {
+    } catch {
       // Falha na detecção não trava o pagamento; o submit re-verifica a bandeira.
-      console.error('[checkout/cartão] detecção de bandeira falhou:', e)
+      console.error('[checkout/cartão] detecção de bandeira indisponível.')
       if (reqIdRef.current === myId) {
         setBrand(null)
         setInstallmentsList(null)
@@ -247,10 +244,10 @@ export default function CardCheckout({
         setInstallmentsList(list)
         // Mantém a parcela escolhida se ainda existir na lista nova; senão, 1x.
         setInstallments((cur) => (list?.some((i) => i.installment === cur) ? cur : 1))
-      } catch (e) {
+      } catch {
         // Falha na consulta de parcelas NÃO trava o pagamento — cai no fallback 1x.
         // Loga p/ diagnóstico (a Efí devolve {code, error, error_description} — sem dado sensível).
-        console.error('[checkout/cartão] consulta de parcelas falhou:', e)
+        console.error('[checkout/cartão] consulta de parcelas indisponível.')
         if (!ignore) {
           setInstallmentsList(null)
           setInstallments(1)
@@ -373,9 +370,9 @@ export default function CardCheckout({
         return
       }
       const cpfDigits = contact.cpf.replace(/\D/g, '')
-      const tok = await EfiPay.CreditCard.setAccount(EFI_ACCOUNT)
-        .setEnvironment(EFI_ENV)
-        .setCreditCardData({
+      const tok = await tokenizeEfiCard(
+        { accountIdentifier: EFI_ACCOUNT, environment: EFI_ENV },
+        {
           brand: cardBrand,
           number: digits,
           cvv: parsed.data.cvv,
@@ -385,13 +382,8 @@ export default function CardCheckout({
           holderDocument: cpfDigits,
           // Assinatura: a Efí guarda o cartão p/ cobrar os ciclos (reuse).
           reuse: isSubscription,
-        })
-        .getPaymentToken()
-
-      if (!('payment_token' in tok)) {
-        setErro('Não foi possível validar o cartão. Confira os dados e tente novamente.')
-        return
-      }
+        },
+      )
 
       if (isSubscription && subExtras) {
         const r = await apiPost<SubscriptionResp>('/api/checkout/subscription', {
@@ -441,10 +433,9 @@ export default function CardCheckout({
         return
       }
       setPaymentId(r.paymentId) // PENDING → poll curto
-    } catch (e) {
-      // Loga o erro real p/ diagnóstico (tokenização da Efí lança {code, error,
-      // error_description}; o apiPost lança em não-2xx) — sem dado sensível.
-      console.error('[checkout/cartão] pagamento falhou:', e)
+    } catch {
+      // Não logar o erro cru do SDK: ele pode repetir dados digitados no cartão.
+      console.error('[checkout/cartão] pagamento falhou; consulte o status da solicitação.')
       setErro('Não foi possível processar o cartão. Confira os dados e tente novamente.')
     } finally {
       setProcessing(false)

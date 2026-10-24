@@ -1,4 +1,3 @@
-import { staffCanonical } from '@sistemazero/core/staff'
 import type { Message } from '../../domain/message/message.aggregate'
 import { Message as MessageAggregate } from '../../domain/message/message.aggregate'
 import {
@@ -11,11 +10,11 @@ import type { SenderRepository } from '../../domain/ports/sender-repository.port
 import type { SuppressionRepository } from '../../domain/ports/suppression-repository.port'
 import type { TemplateRepository } from '../../domain/ports/template-repository.port'
 import { NoSenderAvailableError, SenderNotFoundError } from '../../domain/sender/sender.errors'
-import { normalizeAddress } from '../../domain/services/address'
 import { renderTemplate } from '../../domain/services/render-template'
 import type { Channel } from '../../domain/shared/channel'
 import { TemplateNotFoundError } from '../../domain/template/template.errors'
 import { type MessageView, toMessageView } from '../mappers/message-view'
+import { assertSameMessageIntent } from './message-intent'
 
 export interface SendMessageInput {
   channel: Channel
@@ -111,35 +110,7 @@ export class SendMessageService {
 
   /** E-mail precisa de um remetente; WhatsApp não. */
   private existing(message: Message, input: SendMessageInput): MessageView {
-    const state = message.state
-    const recipient = {
-      name: input.recipient.name.trim(),
-      email: input.recipient.email?.trim()
-        ? normalizeAddress('email', input.recipient.email)
-        : null,
-      phone: input.recipient.phone?.trim()
-        ? normalizeAddress('whatsapp', input.recipient.phone)
-        : null,
-    }
-    const attachments = (input.attachments ?? []).map((item) => ({
-      filename: item.filename.trim(),
-      url: item.url.trim(),
-      contentType: item.contentType?.trim() || null,
-    }))
-    if (
-      state.channel !== input.channel ||
-      state.templateKey !== input.templateKey ||
-      staffCanonical(state.recipient) !== staffCanonical(recipient) ||
-      staffCanonical(state.variables) !== staffCanonical(input.variables ?? {}) ||
-      staffCanonical(state.attachments) !== staffCanonical(attachments) ||
-      (input.senderId != null && state.senderId !== input.senderId) ||
-      (input.priority !== undefined && state.priority !== input.priority) ||
-      (input.scheduledAt !== undefined &&
-        state.scheduledAt.getTime() !== input.scheduledAt.getTime())
-    )
-      throw new IdempotencyConflictError(
-        'A intenção já existe com conteúdo ou destinatário diferente',
-      )
+    assertSameMessageIntent(message, input)
     return toMessageView(message)
   }
 

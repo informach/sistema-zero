@@ -76,6 +76,8 @@ const subscription: MySubscriptionView = {
   description: 'Plano da família',
   canceledAt: null,
   createdAt: '2026-06-01T12:00:00.000Z',
+  pendingOperation: null,
+  billing: { nextExecution: null, scheduleObservedAt: null, paidPeriod: null },
 }
 
 function installFetch(handler: (path: string, method: string, init?: RequestInit) => Response) {
@@ -213,6 +215,23 @@ describe('os cartões da conta', () => {
     expect(conta).toContain('<AiTransparencyNotice />')
   })
 
+  test('assinatura mostra pagamento incerto sem depender do histórico e falha de leitura permite atualizar', async () => {
+    let read = 0
+    const calls = installFetch((path) => {
+      if (path !== '/api/payments/my/subscriptions') throw new Error('Unexpected QA request')
+      if (++read === 1) return Response.json({ error: { code: 'QA_UNAVAILABLE' } }, { status: 503 })
+      return Response.json({
+        items: [{ ...subscription, pendingOperation: { kind: 'RETRY', state: 'UNKNOWN' } }],
+      })
+    })
+    render(<ParentSubscriptions />)
+    expect(await screen.findByRole('alert')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Atualizar assinaturas' }))
+    expect(await screen.findByText(/Não repita a cobrança/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Conferir regularização' })).toBeNull()
+    expect(calls.map((call) => call.method)).toEqual(['GET', 'GET'])
+  })
+
   test('pagina as compras e cancela a assinatura com confirmação', async () => {
     let canceled = false
     const calls = installFetch((path, method) => {
@@ -320,6 +339,13 @@ describe('os cartões da conta', () => {
               status: 'CANCELED',
               description: 'Comunidade dos Criadores',
               lastChargeAt: recent,
+              billing: {
+                ...subscription.billing,
+                paidPeriod: {
+                  startsAt: recent,
+                  endsAt: new Date(Date.now() + 86_400_000).toISOString(),
+                },
+              },
               canceledAt: recent,
               createdAt: '2026-06-01T12:00:00.000Z',
             },

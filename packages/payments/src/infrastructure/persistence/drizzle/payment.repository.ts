@@ -24,7 +24,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
 
   async save(payment: PaymentAggregate): Promise<void> {
     const snap = payment.toSnapshot()
-    const events = payment.pullEvents()
+    const events = [...payment.events]
     const values = snapshotToRow(snap)
 
     await this.db.transaction(async (tx) => {
@@ -52,6 +52,10 @@ export class DrizzlePaymentRepository implements PaymentRepository {
             description: values.description,
             metadata: values.metadata,
             failureReason: values.failureReason,
+            cycleAccess: values.cycleAccess,
+            periodConfirmation: values.periodConfirmation,
+            priorFailureReason: values.priorFailureReason,
+            priorFailedAt: values.priorFailedAt,
             updatedAt: values.updatedAt,
             paidAt: values.paidAt,
             expiresAt: values.expiresAt,
@@ -75,6 +79,7 @@ export class DrizzlePaymentRepository implements PaymentRepository {
         await tx.execute(sql`select pg_notify(${PG_CHANNELS.outbox}, '')`)
       }
     })
+    payment.pullEvents()
   }
 
   async findById(id: string): Promise<PaymentAggregate | null> {
@@ -196,6 +201,10 @@ export function snapshotToRow(snap: PaymentSnapshot): typeof payments.$inferInse
     description: snap.description,
     metadata: snap.metadata,
     failureReason: snap.failureReason,
+    cycleAccess: snap.cycleAccess,
+    periodConfirmation: snap.periodConfirmation,
+    priorFailureReason: snap.priorFailureReason,
+    priorFailedAt: snap.priorFailedAt,
     subscriptionId: snap.subscriptionId,
     createdAt: snap.createdAt,
     updatedAt: snap.updatedAt,
@@ -225,6 +234,10 @@ export function rowToSnapshot(row: PaymentRow): PaymentSnapshot {
     description: row.description,
     metadata: row.metadata,
     failureReason: row.failureReason,
+    cycleAccess: row.cycleAccess,
+    periodConfirmation: row.periodConfirmation,
+    priorFailureReason: row.priorFailureReason,
+    priorFailedAt: row.priorFailedAt,
     subscriptionId: row.subscriptionId ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

@@ -1,3 +1,4 @@
+import type { BillingPeriod } from '@sistemazero/core/billing'
 import type { FunnelRepo, Lead } from '../db/repo'
 import type { GatewayClient, GrantMembersInput } from '../lib/gateway-client'
 import { parsePurchasedOfferSnapshot } from './purchased-offer-snapshot'
@@ -82,11 +83,14 @@ async function buildGrantInput(
  * antes do marcador — inócuo, o members deduplica); o marcador corta as
  * repetições seguintes. Falha NÃO marca → o retry (reentrega/poll) continua.
  */
-export function makeGrantMembers(deps: GrantMembersDeps): (lead: Lead) => Promise<void> {
-  return async (lead: Lead) => {
+export function makeGrantMembers(
+  deps: GrantMembersDeps,
+): (lead: Lead, billingPeriod?: BillingPeriod) => Promise<void> {
+  return async (lead: Lead, billingPeriod) => {
     if (!lead.buyerUserId || !lead.paymentId) return
     if (lead.membersGrantedAt) return
     const input = await buildGrantInput(deps, lead, lead.paymentId)
+    if (billingPeriod && input.subscription) input.subscription.billingPeriod = billingPeriod
     const { status } = await deps.gateway.grantMembersAccess(input)
     if (status !== 200 && status !== 201) {
       deps.log?.('grant.failed', { leadId: lead.id, status })
@@ -106,12 +110,18 @@ export function makeGrantMembers(deps: GrantMembersDeps): (lead: Lead) => Promis
  */
 export function makeExtendMembersForCycle(
   deps: GrantMembersDeps,
-): (lead: Lead, cyclePaymentId: string, cyclePaidAtIso?: string) => Promise<void> {
-  return async (lead, cyclePaymentId, cyclePaidAtIso) => {
+): (
+  lead: Lead,
+  cyclePaymentId: string,
+  cyclePaidAtIso?: string,
+  billingPeriod?: BillingPeriod,
+) => Promise<void> {
+  return async (lead, cyclePaymentId, cyclePaidAtIso, billingPeriod) => {
     if (!lead.buyerUserId || !lead.subscriptionId) return
     // O `paidAt` é o do CICLO (payload do webhook; ausente → o members usa "agora")
     // — o do lead é a compra ORIGINAL e não moveria a validade da renovação.
     const input = await buildGrantInput(deps, lead, cyclePaymentId, cyclePaidAtIso ?? null)
+    if (billingPeriod && input.subscription) input.subscription.billingPeriod = billingPeriod
     const { status } = await deps.gateway.grantMembersAccess(input)
     if (status !== 200 && status !== 201) {
       deps.log?.('grant.cycle_failed', { leadId: lead.id, status, paymentId: cyclePaymentId })

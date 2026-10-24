@@ -4,6 +4,7 @@ Geometry remains in Python. The transport exchanges bounded JSON data with the
 trusted frame. It is configured by the runtime, never imported by learner code.
 """
 import heapq
+from collections import deque
 import json
 import math
 import re
@@ -97,9 +98,9 @@ class TurtleScreenBase:
         self._next_image = 0
         self._bindings = {}
         self._timers = []
-        self._idle_timers = []
+        self._idle_timers = deque()
         self._timer_sequence = 0
-        self._incoming = []
+        self._incoming = deque()
         self._activity_update_depth = 0
         self._just_waited = False
         self._closed = False
@@ -293,7 +294,7 @@ class TurtleScreenBase:
         else:
             self._flush({'type': 'present'})
         while self._incoming and not self._closed:
-            event = self._incoming.pop(0)
+            event = self._incoming.popleft()
             if event['type'] in ('keypress', 'keyrelease'):
                 keys = [('screen', event['type'], event['key'])]
                 # Tk chooses the most specific binding; generic is a fallback.
@@ -317,7 +318,7 @@ class TurtleScreenBase:
             elif self._idle_timers:
                 generation = self._timer_sequence
                 while self._idle_timers and self._idle_timers[0][0] <= generation and not self._closed:
-                    _, callback = self._idle_timers.pop(0)
+                    _, callback = self._idle_timers.popleft()
                     self._dispatch(callback)
                 continue
             else:

@@ -3,6 +3,7 @@ import { buildPythonAssetBundle } from '../core/pythonAssets'
 import { assertPythonVisualDraftSettled } from '../python/blocks/workspaceDraft'
 import { pythonFilesToTree, refinePythonProjectDocument } from '../state/pythonProjectValidation'
 import type { ExportFileMap } from './fileMap'
+import { browserSvgRasterizer, hasPgzeroExtension, type SvgRasterizer } from './pgzeroDesktop'
 import { buildPythonSourceMetadata } from './pythonSourceMetadata'
 import type { SourceFilesResult } from './sourceExport'
 import { captureSourceExportCatalog } from './sourceRuntimeCatalog'
@@ -11,6 +12,7 @@ import { captureSourceExportCatalog } from './sourceRuntimeCatalog'
 export async function buildPythonSourceFiles(
   raw: unknown,
   catalog?: StudioRuntimeCatalog | null,
+  options: { rasterizeSvg?: SvgRasterizer } = {},
 ): Promise<SourceFilesResult> {
   const runtimeCatalog = captureSourceExportCatalog(catalog)
   const project = await refinePythonProjectDocument(raw)
@@ -30,6 +32,18 @@ export async function buildPythonSourceFiles(
     directories,
   })
   for (const [path, bytes] of bundle.files) files[path] = bytes
+  let pgzero = null
+  if (hasPgzeroExtension(project)) {
+    const { buildPgzeroDesktopFiles } = await import('./pgzeroDesktop')
+    pgzero = await buildPgzeroDesktopFiles({
+      assets: bundle.manifest.assets,
+      bundle: bundle.files,
+      occupied: Object.keys(files),
+      directories,
+      rasterize: options.rasterizeSvg ?? browserSvgRasterizer,
+    })
+    Object.assign(files, pgzero.files)
+  }
   const metadata = await buildPythonSourceMetadata({
     project,
     sourceFiles,
@@ -37,6 +51,7 @@ export async function buildPythonSourceFiles(
     assets: bundle.manifest,
     occupiedFiles: Object.keys(files),
     runtimeCatalog,
+    pgzero,
   })
   Object.assign(files, metadata.files)
   for (const path of directories) files[`${path}/`] = new Uint8Array()

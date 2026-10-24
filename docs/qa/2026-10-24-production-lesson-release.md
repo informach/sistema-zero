@@ -1,0 +1,13 @@
+# Production lesson-layout release: actual provider result
+
+Promoted source: `6067b14e78dbc0db788d986e78407ed6185bf562`, from PR 211, with the same tree approved by PR CI 40049964562 and IaC plan 40049964535. This release does **not** contain the subscription-recovery branch or the later project-objective naming/adult-outline lots.
+
+Canonical production attempt [40053371140](https://github.com/informach/sistema-zero/actions/runs/40053371140) passed the source, configuration and canonical backend barriers. It expired its independent twenty-minute application deadline while Kids was still BUILDING. The workflow remains failed; no result has been relabeled. The acknowledged Kids deployment was allowed to finish, with no duplicate dispatch.
+
+Fresh readonly provider observation, 24 October at 08:59:44 UTC: Members, Auth, Catalog, Funnel, Admin, Community and Community Kids each had exactly one successful active deployment of the promoted source. Pending-deployment pagination was complete and the pending set empty. The previous Kids deployment `6d258fff-64df-4f0e-a5bc-60685457b664` was queried separately at 09:01:10 UTC: REMOVED, stopped=true, correct project/environment/service. The other selected deployments had completed the canonical retirement checks before the timeout.
+
+Fresh public health checks at 09:00:13 UTC returned HTTP 200 / healthy for Admin, Community and Kids. The authenticated production Admin read showed adult journey version 1 with seven planned stages, each with no course requirements yet, as approved. No published adult course was fabricated to unlock a stage.
+
+Real Chrome observation on production Cadê Todo Mundo, lesson 1: the Studio part rendered the compact objectives strip and visible verification button; details opened and closed. At a 390 px emulated viewport there was no horizontal overflow, columns stacked with a measured 24 px gap, one Zappy listening button and no old Ver exemplo/Criar tabs. Expanded Studio used its existing fixed full-viewport, vertically scrollable container and retained verification. No project edits, objective verification, project submission or lesson-completion action was performed. Existing test-profile part navigation and view toggles were used. The old objective/button wording is expected in this source; the authorized naming change remains a later lot.
+
+This is closure of the provider rollout and focused deployed UI proof, not a claim of universal product/Python acceptance or completion of the new financial feature. The application-budget correction for future attempts is tracked separately; it does not retroactively turn the expired workflow green.
