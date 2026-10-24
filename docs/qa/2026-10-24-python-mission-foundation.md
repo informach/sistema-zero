@@ -30,6 +30,14 @@ pendência de execução autoritativa Python.
 - TypeScript 5.9.3 focado no contrato/teste, heap 768 MiB: exit 0.
 - Biome nos três arquivos TS e `git diff --check`: exit 0.
 
+Complemento: `missionObserver.test.ts` executa as fixtures nativas em processo
+CPython com prazo de 10 s e só então envia suas observações ao julgador TypeScript.
+A função certa passa, a errada falha e a variável de um ramo morto permanece zero.
+Seleção ampliada: 34 testes Bun/179 asserções/zero falhas, incluindo os dois wrappers
+nativos; os sete casos internos Python não são somados novamente. Tipagem focada
+dos dois entrypoints TS passou com heap 768 MiB. A descoberta de CPython é obrigatória:
+ausência não vira skip silencioso. `-I -B` evita influência de ambiente/cache Python.
+
 Os testes Core fornecem fixtures de observação: não são execução do programa.
 Os testes CPython rodam fontes locais conhecidas, sem código de usuários: não
 qualificam Pyodide, CSP, worker, sandbox, gráficos, desempenho ou isolamento.

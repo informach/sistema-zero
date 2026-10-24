@@ -3,6 +3,7 @@ import asyncio
 import json
 from pathlib import Path
 import runpy
+import sys
 import unittest
 
 OBSERVER = runpy.run_path(str(Path(__file__).resolve().parents[2] /
@@ -72,4 +73,11 @@ class MissionObserverTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    if sys.argv[1:] == ['--observations']:
+        print(json.dumps({
+            'good': OBSERVER(namespace('def somar(a, b):\n    return a + b')).function_returns(probe()),
+            'wrong': OBSERVER(namespace('def somar(a, b):\n    return a - b')).function_returns(probe()),
+            'deadBranch': OBSERVER(namespace('pontos = 0\nif False:\n    pontos = 10')).read_value('pontos'),
+        }, ensure_ascii=False))
+    else:
+        unittest.main()
