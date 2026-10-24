@@ -582,6 +582,28 @@ describe('Materiais do jogo — Pygame Zero lê sounds/ e music/', () => {
     expect(useProjectStore.getState().project?.assets).toHaveLength(2)
   })
 
+  it('um lote reserva o nome que o projeto guardou, não o do arquivo', async () => {
+    await seedPgzero('python-pgzero')
+    abrir('Sons')
+    fireEvent.click(screen.getByRole('button', { name: '🔊 Enviar som curto' }))
+    const input = document.querySelector('input[name="project-audio-files"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('Audio input required')
+    // `class` is a Python keyword: the file becomes sounds/class_2.wav and the material
+    // `class-2`, which is exactly the name the second file asks for.
+    fireEvent.change(input, {
+      target: {
+        files: [
+          new File(['RIFF'], 'class.wav', { type: 'audio/wav' }),
+          new File(['RIFF'], 'class-2.wav', { type: 'audio/wav' }),
+        ],
+      },
+    })
+    await waitFor(() => expect(useProjectStore.getState().project?.assets).toHaveLength(2))
+    const names = useProjectStore.getState().project?.assets?.map((asset) => asset.name) ?? []
+    expect(new Set(names).size).toBe(2)
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
   it('cada material mostra o nome que o código usa, e renomear leva o arquivo junto', async () => {
     await seedPgzero('python-pgzero')
     abrir('Sons')

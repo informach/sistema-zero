@@ -164,7 +164,11 @@ test('argument resizing preserves connections and participates in Blockly undo a
     block.setPythonOption('args:count', 2)
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
     expect(block.getInput('args:1')).not.toBeNull()
-    expect(() => pythonWorkspaceToVisual(workspace, roots)).toThrow('Preencha')
+    // The new socket starts with the documented default as a shadow, as in the palette.
+    const added = block.getInputTargetBlock('args:1')
+    expect(added?.isShadow()).toBe(true)
+    expect(added?.getFieldValue('TEXT')).toBe('Olá!')
+    expect(() => pythonWorkspaceToVisual(workspace, roots)).not.toThrow()
     await new Promise((resolve) => setTimeout(resolve, 10))
     workspace.undo(false)
     expect(block.getInput('args:1')).toBeNull()
@@ -172,6 +176,9 @@ test('argument resizing preserves connections and participates in Blockly undo a
     workspace.undo(true)
     expect(block.getInput('args:1')).not.toBeNull()
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
+    // Removing the socket that holds only the default shadow is allowed; a placed block is not.
+    block.setPythonOption('args:count', 1)
+    expect(block.getInput('args:1')).toBeNull()
     expect(() => block.setPythonOption('args:count', 0)).toThrow('Desconecte')
     expect(block.getInputTargetBlock('args:0')?.id).toBe(connected.id)
   } finally {

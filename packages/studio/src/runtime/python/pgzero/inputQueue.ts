@@ -1,4 +1,4 @@
-import { PGZERO_KEY_CODES, PGZERO_LETTER_BASE } from './keyCodes.generated'
+import { PGZERO_KEY_CODES, PGZERO_KEY_MODS, PGZERO_LETTER_BASE } from './keyCodes.generated'
 import { PGZERO_LIMITS, type PgzeroInputEvent } from './protocol'
 
 /** The parts of a KeyboardEvent the game reads. */
@@ -9,11 +9,31 @@ export interface PgzeroKeyboardEvent {
   metaKey: boolean
 }
 
+/** Modifier keys: their key-up arrives even while ⌘ is held, and alone they do nothing. */
+const MODIFIER_CODES = new Set([
+  'ShiftLeft',
+  'ShiftRight',
+  'ControlLeft',
+  'ControlRight',
+  'AltLeft',
+  'AltRight',
+  'MetaLeft',
+  'MetaRight',
+  'CapsLock',
+])
+/**
+ * Keys that make browser shortcuts with Ctrl or the system key (reload, close, copy, zoom, tabs,
+ * history). Everything else is the game's even with them held: Ctrl+arrows or Ctrl+Space must
+ * not scroll the page under a game that fires with Ctrl.
+ */
+const SHORTCUT_CODES =
+  /^(Key[A-Z]|Digit\d|F\d{1,2}|Tab|Minus|Equal|BracketLeft|BracketRight|Comma|Period|Backquote|Numpad(Add|Subtract|0))$/
+
 /**
  * The pygame key of a browser key, and whether the page should keep the key for itself.
  * Every key is reported, Ctrl and the system key included (classic games fire with Ctrl), and
  * combinations keep their modifier like on the desktop. With Ctrl or the system key held the
- * browser still gets the key, so its shortcuts (reload, close, copy) keep working.
+ * browser still gets its shortcut keys, so reload, close and copy keep working.
  */
 export function readPgzeroKey(event: PgzeroKeyboardEvent) {
   // Letters follow the layout, like pygame; everything else by physical key.
@@ -21,11 +41,18 @@ export function readPgzeroKey(event: PgzeroKeyboardEvent) {
     /^[a-z]$/i.test(event.key) && event.code.startsWith('Key')
       ? PGZERO_LETTER_BASE + event.key.toLowerCase().charCodeAt(0) - 97
       : PGZERO_KEY_CODES[event.code]
-  return {
-    key,
-    preventDefault: key !== undefined && event.key !== 'Tab' && !event.ctrlKey && !event.metaKey,
-  }
+  const shortcut =
+    (event.ctrlKey || event.metaKey) &&
+    (SHORTCUT_CODES.test(event.code) || MODIFIER_CODES.has(event.code))
+  return { key, preventDefault: key !== undefined && event.key !== 'Tab' && !shortcut }
 }
+
+/** The pygame mouse buttons in a pygame button mask (left 1, middle 2, right 4). */
+const MASK_BUTTONS = [
+  [1, 1],
+  [2, 2],
+  [4, 3],
+] as const
 
 const isRelease = (event: PgzeroInputEvent) => event[0] === 'ku' || event[0] === 'mu'
 const isPress = (event: PgzeroInputEvent) => event[0] === 'kd' || event[0] === 'md'
@@ -78,6 +105,12 @@ export function createPgzeroInputQueue(limit: number = PGZERO_LIMITS.events) {
   return {
     keyDown(code: string, key: number, mod: number, unicode: string, repeat: boolean) {
       if (repeat || keys.has(code) || [...keys.values()].includes(key)) return
+      // macOS never sends the key-up of a key pressed with ⌘ held: the key would stay down
+      // and every later press of it would be ignored. Such a press is a press and a release.
+      if (mod & PGZERO_KEY_MODS.meta && !MODIFIER_CODES.has(code)) {
+        if (push(['kd', key, mod, unicode])) push(['ku', key, mod])
+        return
+      }
       if (push(['kd', key, mod, unicode])) keys.set(code, key)
     },
     keyUp(code: string, mod: number) {
@@ -98,6 +131,21 @@ export function createPgzeroInputQueue(limit: number = PGZERO_LIMITS.events) {
     buttonUp(x: number, y: number, button: number) {
       if (!buttons.delete(button)) return
       push(['mu', x, y, button])
+    },
+    /**
+     * The buttons held now, as a pygame mask. A second button pressed (or one of two released)
+     * reaches the page only as a pointer move with new buttons, never as a press or release:
+     * every pointer event brings the held buttons up to date.
+     */
+    syncButtons(x: number, y: number, mask: number) {
+      for (const [bit, button] of MASK_BUTTONS)
+        if (!(mask & bit) && buttons.has(button)) this.buttonUp(x, y, button)
+      for (const [bit, button] of MASK_BUTTONS)
+        if (mask & bit && !buttons.has(button)) this.buttonDown(x, y, button)
+    },
+    /** The pointer was taken away (cancelled, capture lost, focus lost): release every button. */
+    releaseButtons(x: number, y: number) {
+      this.syncButtons(x, y, 0)
     },
     /** A wheel step: pygame reports it as a press and release of button 4 or 5. */
     wheel(x: number, y: number, button: 4 | 5) {

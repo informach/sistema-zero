@@ -51,7 +51,7 @@ export const VISUAL_REFERENCE_GAMES = [
       { path: 'power.wav', notes: [392, 523, 659], noteMilliseconds: 90 },
       { path: 'collision.wav', notes: [330, 220, 110], noteMilliseconds: 110 },
     ],
-    receipt: 'pacman-visual-r8.json.snapshot',
+    receipt: 'pacman-visual-r10.json.snapshot',
   },
   {
     key: 'space-arena-visual',
@@ -76,7 +76,7 @@ export const VISUAL_REFERENCE_GAMES = [
       { path: 'powerup.wav', notes: [440, 554, 659, 880], noteMilliseconds: 70 },
       { path: 'thruster.wav', notes: [65, 66, 65, 64], noteMilliseconds: 75, noise: true },
     ],
-    receipt: 'space-arena-visual-r8.json.snapshot',
+    receipt: 'space-arena-visual-r10.json.snapshot',
   },
   {
     key: 'snake-visual',
@@ -95,7 +95,7 @@ export const VISUAL_REFERENCE_GAMES = [
       { path: 'comer.wav', notes: [784, 1047], noteMilliseconds: 45 },
       { path: 'bater.wav', notes: [294, 196, 131], noteMilliseconds: 120 },
     ],
-    receipt: 'snake-visual-r5.json.snapshot',
+    receipt: 'snake-visual-r7.json.snapshot',
   },
   {
     key: 'pong-visual',
@@ -131,7 +131,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 120,
       },
     ],
-    receipt: 'pong-visual-r4.json.snapshot',
+    receipt: 'pong-visual-r6.json.snapshot',
   },
   {
     key: 'tron-visual',
@@ -168,7 +168,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 120,
       },
     ],
-    receipt: 'tron-visual-r4.json.snapshot',
+    receipt: 'tron-visual-r6.json.snapshot',
   },
   {
     key: 'flappy-visual',
@@ -200,7 +200,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noise: true,
       },
     ],
-    receipt: 'flappy-visual-r4.json.snapshot',
+    receipt: 'flappy-visual-r6.json.snapshot',
   },
   {
     key: 'spinner-visual',
@@ -226,7 +226,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 15,
       },
     ],
-    receipt: 'spinner-visual-r4.json.snapshot',
+    receipt: 'spinner-visual-r6.json.snapshot',
   },
   {
     key: 'tictactoe-visual',
@@ -262,7 +262,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 120,
       },
     ],
-    receipt: 'tictactoe-visual-r4.json.snapshot',
+    receipt: 'tictactoe-visual-r6.json.snapshot',
   },
   {
     key: 'connect-four-visual',
@@ -298,7 +298,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 120,
       },
     ],
-    receipt: 'connect-four-visual-r4.json.snapshot',
+    receipt: 'connect-four-visual-r6.json.snapshot',
   },
   {
     key: 'tiles-visual',
@@ -334,7 +334,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 110,
       },
     ],
-    receipt: 'tiles-visual-r4.json.snapshot',
+    receipt: 'tiles-visual-r6.json.snapshot',
   },
   {
     key: 'memory-visual',
@@ -370,7 +370,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 100,
       },
     ],
-    receipt: 'memory-visual-r4.json.snapshot',
+    receipt: 'memory-visual-r6.json.snapshot',
   },
   {
     key: 'simon-visual',
@@ -420,7 +420,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 220,
       },
     ],
-    receipt: 'simon-visual-r4.json.snapshot',
+    receipt: 'simon-visual-r6.json.snapshot',
   },
   {
     key: 'bubbles-visual',
@@ -451,7 +451,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 150,
       },
     ],
-    receipt: 'bubbles-visual-r4.json.snapshot',
+    receipt: 'bubbles-visual-r6.json.snapshot',
   },
   {
     key: 'egg-catcher-visual',
@@ -488,7 +488,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 150,
       },
     ],
-    receipt: 'egg-catcher-visual-r4.json.snapshot',
+    receipt: 'egg-catcher-visual-r6.json.snapshot',
   },
   {
     key: 'monkey-visual',
@@ -524,7 +524,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 140,
       },
     ],
-    receipt: 'monkey-visual-r4.json.snapshot',
+    receipt: 'monkey-visual-r6.json.snapshot',
   },
   {
     key: 'cannon-visual',
@@ -556,7 +556,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 160,
       },
     ],
-    receipt: 'cannon-visual-r4.json.snapshot',
+    receipt: 'cannon-visual-r6.json.snapshot',
   },
   {
     key: 'life-visual',
@@ -601,7 +601,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 70,
       },
     ],
-    receipt: 'life-visual-r4.json.snapshot',
+    receipt: 'life-visual-r6.json.snapshot',
   },
   {
     key: 'starry-visual',
@@ -637,7 +637,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 70,
       },
     ],
-    receipt: 'starry-visual-r4.json.snapshot',
+    receipt: 'starry-visual-r6.json.snapshot',
   },
   {
     key: 'fortune-visual',
@@ -668,7 +668,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 120,
       },
     ],
-    receipt: 'fortune-visual-r4.json.snapshot',
+    receipt: 'fortune-visual-r6.json.snapshot',
   },
   {
     key: 'turtle-bet-visual',
@@ -699,7 +699,7 @@ export const VISUAL_REFERENCE_GAMES = [
         noteMilliseconds: 90,
       },
     ],
-    receipt: 'turtle-bet-visual-r4.json.snapshot',
+    receipt: 'turtle-bet-visual-r6.json.snapshot',
   },
 ] as const satisfies readonly VisualReferenceGame[]
 

@@ -22,13 +22,15 @@ giro = 0
 quadros = 0
 vidas = 3
 venceu = False
+chegou = False
 ceu_y = 0
 
 
 def novo_jogo():
-    global vidas, venceu, giro
+    global vidas, venceu, giro, chegou
     vidas = 3
     venceu = False
+    chegou = False
     giro = 0
     mae.pos = (300, 110)
     nave.pos = (300, 720)
@@ -102,14 +104,25 @@ def draw():
     screen.draw.text('Vidas: ' + str(vidas), topleft=(12, 8), fontsize=30, color='white')
     if venceu:
         screen.draw.text('Você venceu a Nave-Mãe!', center=(WIDTH / 2, 590), fontsize=48, color='yellow', owidth=2, ocolor='black')
-    if vidas == 0:
+    if vidas == 0 and chegou:
         screen.draw.text('A Nave-Mãe chegou!', center=(WIDTH / 2, 590), fontsize=52, color='orange', owidth=2, ocolor='black')
+    elif vidas == 0:
+        screen.draw.text('As bombas venceram!', center=(WIDTH / 2, 590), fontsize=52, color='orange', owidth=2, ocolor='black')
     if venceu or vidas == 0:
         screen.draw.text('Clique para jogar de novo', center=(WIDTH / 2, 640), fontsize=32, color='white')
 
 
+def parte_de_baixo():
+    # O ponto mais baixo da Nave-Mãe: o fundo dela ou o escudo inteiro mais baixo.
+    baixo = mae.bottom
+    for numero in range(len(escudos)):
+        if escudos[numero] < 4:
+            baixo = max(baixo, bloco_do_escudo(numero).bottom)
+    return baixo
+
+
 def update():
-    global giro, quadros, vidas, venceu, ceu_y
+    global giro, quadros, vidas, venceu, ceu_y, chegou
     quadros = quadros + 1
     ceu_y = (ceu_y + 0.4) % HEIGHT
     if venceu or vidas == 0:
@@ -130,12 +143,13 @@ def update():
         bomba.y = bomba.y + 4
         if bomba.top > HEIGHT:
             bombas.remove(bomba)
-        elif bomba.colliderect(nave):
+        elif bomba.colliderect(nave) and vidas > 0:
             bombas.remove(bomba)
             vidas = vidas - 1
             sounds.dano.play()
-    if mae.bottom > nave.top:
+    if parte_de_baixo() > nave.top:
         vidas = 0
+        chegou = True
         sounds.dano.play()
 
 

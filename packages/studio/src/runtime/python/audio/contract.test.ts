@@ -74,4 +74,33 @@ describe('Python portable audio wire boundary', () => {
       read(JSON.stringify({ version: 1, op: 'stop', id: null, path: 'bgm.wav' })),
     ).toThrow()
   })
+
+  test('music, loops=N, batched voices and pause/resume travel; malformed shapes do not', () => {
+    expect(read(JSON.stringify({ ...play, music: true, repeat: 3 }))).toEqual({
+      ...play,
+      music: true,
+      repeat: 3,
+    })
+    for (const repeat of [0, -1, 1.5, 1001, '2'])
+      expect(() => read(JSON.stringify({ ...play, repeat }))).toThrow()
+    expect(() => read(JSON.stringify({ ...play, loop: true, repeat: 2 }))).toThrow()
+    expect(() => read(JSON.stringify({ ...play, music: false }))).toThrow()
+    expect(read(JSON.stringify({ version: 1, op: 'stop', ids: [1, 2] }))).toEqual({
+      version: 1,
+      op: 'stop',
+      ids: [1, 2],
+    })
+    expect(read(JSON.stringify({ version: 1, op: 'volume', ids: [4], volume: 0 }))).toEqual({
+      version: 1,
+      op: 'volume',
+      ids: [4],
+      volume: 0,
+    })
+    for (const ids of [[], [0], Array.from({ length: 65 }, (_, i) => i + 1), 'x'])
+      expect(() => read(JSON.stringify({ version: 1, op: 'stop', ids }))).toThrow()
+    for (const op of ['pause', 'resume'] as const) {
+      expect(read(JSON.stringify({ version: 1, op, id: 2 }))).toEqual({ version: 1, op, id: 2 })
+      expect(() => read(JSON.stringify({ version: 1, op, id: null }))).toThrow()
+    }
+  })
 })

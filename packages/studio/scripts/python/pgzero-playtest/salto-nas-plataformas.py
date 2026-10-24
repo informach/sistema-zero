@@ -28,5 +28,4 @@ def play(t):
     andar(460)
     pular(260)
     t.check('pega todas as estrelas', not t.get('estrelas'), f"pontos={t.get('pontos')}")
-    t.check('a mensagem de vitória aparece (lista vazia)', len(t.get('estrelas')) == 0)
     t.shot('1-todas')

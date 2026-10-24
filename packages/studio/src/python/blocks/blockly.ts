@@ -9,6 +9,7 @@ import type {
   PythonBlockRole,
   PythonBlockShape,
 } from './contract'
+import { pythonShadowState } from './paletteBlocks'
 import { pythonCategoryColour } from './paletteGroups'
 import { pythonPlaceholderNode as placeholder } from './placeholders'
 import type { PythonBlockProjection, PythonVisualNode, PythonVisualOrigin } from './projection'
@@ -181,7 +182,8 @@ function applyLayout(block: PythonBlocklyBlock, state: VisualState, codec: Pytho
   const removed = block.inputList.filter(
     (input) => input.name !== 'HEADER' && !desired.has(input.name),
   )
-  if (removed.some((input) => input.connection?.targetBlock()))
+  // A default shadow goes away with its input; only a block the child placed holds it.
+  if (removed.some((input) => input.connection?.targetBlock()?.isShadow() === false))
     throw new Error('Desconecte o valor antes de remover esta entrada.')
   for (const input of state.layout.inputs) {
     const existing = block.getInput(input.name)
@@ -277,7 +279,18 @@ export function registerPythonBlocks(
           { version: 1, layout: layoutOf(next), origin: state.origin },
           codec,
         )
-        withMutation(this, () => applyLayout(this, validated, codec))
+        withMutation(this, () => {
+          applyLayout(this, validated, codec)
+          // A new socket starts with its documented default, as in the palette: the block
+          // keeps running and the child changes only what she wants.
+          for (const input of next.inputs) {
+            if (input.role === 'statement' || input.nodes.length !== 1) continue
+            const connection = this.getInput(input.name)?.connection
+            if (!connection || connection.targetBlock()) continue
+            const shadow = pythonShadowState(input.nodes[0]!, input.role, codecs)
+            if (shadow) connection.setShadowState(shadow)
+          }
+        })
         this.setWarningText(null, 'python-layout')
       },
       customContextMenu(

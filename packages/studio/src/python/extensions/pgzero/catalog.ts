@@ -459,6 +459,7 @@ const keyboardIndexCodec: PythonBlockCodec = {
   help: 'Verdadeiro enquanto a tecla escolhida estiver apertada (o mesmo que keyboard.x, escrito com keys).',
   match: { kinds: ['Subscript'] },
   binding: { root: 'keyboard', builtin: PROVIDER },
+  alsoBound: [{ root: 'keys', builtin: PROVIDER }],
   defaultNode: () =>
     node('Subscript', {
       value: name('keyboard'),

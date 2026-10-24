@@ -151,43 +151,36 @@ class Sound:
         # The Studio's media service names files from the project root.
         self._path = _sz.project_path(path)
         self._volume = 1.0
-        # voice → plays still to come after this one (-1: repeats until stop()).
+        # voice → True when it repeats until stop() (it never ends by itself).
         self._voices = {}
         self._length = _wav_length(path)
 
     def play(self, loops=0, maxtime=0, fade_ms=0):
         """Play the sound. loops=N plays it N more times; loops=-1 repeats it until stop()."""
-        self._start(-1 if loops < 0 else int(loops))
-        return None
-
-    def _start(self, remaining):
-        voice = _sz.audio_play(self._path, remaining < 0, self._volume)
+        repeat = -1 if loops < 0 else int(loops)
+        # The browser repeats it at once, without a gap between the plays.
+        voice = _sz.audio_play(self._path, repeat, self._volume)
         if voice is None:
-            return  # Like pygame with every channel busy: the sound is not played.
-        self._voices[voice] = remaining
-        _sz.on_audio_end(voice, lambda: self._ended(voice), wait=remaining > 0)
+            return None  # Like pygame with every channel busy: the sound is not played.
+        self._voices[voice] = repeat < 0
+        # A sound that ends by itself is watched, so get_num_channels() drops it when it ends.
+        _sz.on_audio_end(voice, lambda: self._voices.pop(voice, None), wait=repeat >= 0)
         if len(self._voices) > _MAX_VOICES:
-            for old, left in list(self._voices.items()):
-                if left >= 0:
+            for old, forever in list(self._voices.items()):
+                if not forever:
                     del self._voices[old]
                     break
-
-    def _ended(self, voice):
-        remaining = self._voices.pop(voice, 0)
-        if remaining > 0:
-            self._start(remaining - 1)
+        return None
 
     def stop(self):
-        for voice in self._voices:
-            _sz.audio_stop(voice)
+        _sz.audio_stop_many(list(self._voices))
         self._voices = {}
 
     fadeout = lambda self, ms=0: self.stop()  # noqa: E731
 
     def set_volume(self, value):
         self._volume = min(1.0, max(0.0, float(value)))
-        for voice in self._voices:
-            _sz.audio_volume(voice, self._volume)
+        _sz.audio_volume_many(list(self._voices), self._volume)
 
     def get_volume(self):
         return self._volume

@@ -440,7 +440,10 @@ export function pythonApiCallCodec(spec: PythonApiSpec): PythonBlockCodec {
       !(isName(object) && callee.module && object.fields.id === callee.module)
     )
       return {
-        root: '',
+        // A variable receiver is still checked against what the program says it holds.
+        root: isName(object) ? (object.fields.id as string) : '',
+        ...(isName(object) ? { anyReceiver: true } : {}),
+        ...(isName(object) && instance?.module ? { module: instance.module } : {}),
         ...(instance?.builtin ? { builtin: instance.builtin } : {}),
         ...(callee.module ? { builtin: callee.module } : {}),
       }

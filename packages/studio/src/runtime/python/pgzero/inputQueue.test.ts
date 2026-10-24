@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { createPgzeroInputQueue, readPgzeroKey } from './inputQueue'
-import { PGZERO_KEY_CODES } from './keyCodes.generated'
+import { PGZERO_KEY_CODES, PGZERO_KEY_MODS } from './keyCodes.generated'
 
 const K_a = 97
 const K_q = 113
@@ -27,6 +27,22 @@ describe('reading a key', () => {
     expect(readPgzeroKey(key('KeyW', 'w', { meta: true })).preventDefault).toBe(false)
     expect(readPgzeroKey(key('ArrowLeft', 'ArrowLeft')).preventDefault).toBe(true)
     expect(readPgzeroKey(key('Tab', 'Tab')).preventDefault).toBe(false)
+  })
+
+  test('with Ctrl or the system key held, only shortcut keys go to the browser', () => {
+    for (const code of ['KeyC', 'Digit1', 'F5', 'Minus', 'Equal', 'BracketLeft', 'Tab'])
+      for (const modifiers of [{ ctrl: true }, { meta: true }])
+        expect(readPgzeroKey(key(code, code, modifiers)).preventDefault).toBe(false)
+    expect(readPgzeroKey(key('ControlLeft', 'Control', { ctrl: true })).preventDefault).toBe(false)
+    // A game that fires with Ctrl keeps its arrows and space: the page must not scroll.
+    for (const [code, value] of [
+      ['ArrowLeft', 'ArrowLeft'],
+      ['ArrowDown', 'ArrowDown'],
+      ['Space', ' '],
+      ['PageDown', 'PageDown'],
+    ] as const)
+      for (const modifiers of [{ ctrl: true }, { meta: true }])
+        expect(readPgzeroKey(key(code, value, modifiers)).preventDefault).toBe(true)
   })
 
   test('letters follow the keyboard layout', () => {
@@ -105,5 +121,62 @@ describe('the input queue', () => {
     queue.keyDown('ArrowLeft', LEFT, 0, '', true)
     queue.keyDown('ArrowLeft', LEFT, 0, '', false)
     expect(queue.take()).toEqual([['kd', LEFT, 0, '']])
+  })
+
+  test('a key pressed with the system key held is a press and a release (macOS sends no key-up)', () => {
+    const queue = createPgzeroInputQueue()
+    const S = 115
+    const META = PGZERO_KEY_CODES.MetaLeft!
+    const mod = PGZERO_KEY_MODS.meta
+    queue.keyDown('MetaLeft', META, mod, '', false)
+    queue.keyDown('KeyS', S, mod, 's', false)
+    // No key-up for S ever arrives; then the system key is released.
+    queue.keyUp('MetaLeft', 0)
+    queue.keyDown('KeyS', S, 0, 's', false)
+    queue.keyUp('KeyS', 0)
+    expect(queue.take()).toEqual([
+      ['kd', META, mod, ''],
+      ['kd', S, mod, 's'],
+      ['ku', S, mod],
+      ['ku', META, 0],
+      ['kd', S, 0, 's'],
+      ['ku', S, 0],
+    ])
+  })
+})
+
+describe('mouse buttons', () => {
+  test('a second button pressed and the first released while it is held leave nothing down', () => {
+    const queue = createPgzeroInputQueue()
+    // E down, D down, E up, D up: the browser sends pointerdown, two pointer moves, pointerup.
+    queue.syncButtons(5, 5, 1)
+    queue.syncButtons(5, 5, 1 | 4)
+    queue.syncButtons(6, 5, 4)
+    queue.syncButtons(6, 5, 0)
+    expect(queue.take()).toEqual([
+      ['md', 5, 5, 1],
+      ['md', 5, 5, 3],
+      ['mu', 6, 5, 1],
+      ['mu', 6, 5, 3],
+    ])
+    // Both can be pressed again.
+    queue.syncButtons(1, 1, 1 | 2)
+    expect(queue.take()).toEqual([
+      ['md', 1, 1, 1],
+      ['md', 1, 1, 2],
+    ])
+  })
+
+  test('a cancelled pointer releases every held button', () => {
+    const queue = createPgzeroInputQueue()
+    queue.syncButtons(2, 3, 1 | 4)
+    queue.take()
+    queue.releaseButtons(2, 3)
+    expect(queue.take()).toEqual([
+      ['mu', 2, 3, 1],
+      ['mu', 2, 3, 3],
+    ])
+    queue.releaseButtons(2, 3)
+    expect(queue.take()).toEqual([])
   })
 })

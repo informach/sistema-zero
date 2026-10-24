@@ -31,7 +31,8 @@ function host() {
     },
   }
 }
-const play = (voice: number): PgzeroAudioCommand => ['play', voice, 'sounds/bip.wav', false, 1]
+const play = (voice: number): PgzeroAudioCommand => ['play', voice, 'sounds/bip.wav', 0, 1, false]
+const music = (voice: number): PgzeroAudioCommand => ['play', voice, 'music/tema.ogg', -1, 1, true]
 
 describe('the frame audio queue', () => {
   test('a play that waited too long is dropped and reported as ended', async () => {
@@ -55,6 +56,69 @@ describe('the frame audio queue', () => {
     // One is with the host; the queue keeps at most the newest QUEUED_PLAYS waiting.
     expect(sent.length).toBe(1)
     expect(queue.takeEnded(64)).toEqual([2, 3, 4, 5])
+  })
+
+  test('the music and repeating sounds are never dropped, however long they wait', async () => {
+    const { queue, sent, settle, advance } = host()
+    const once: PgzeroAudioCommand = ['play', 3, 'music/fim.ogg', 0, 1, true]
+    const loops: PgzeroAudioCommand = ['play', 4, 'sounds/motor.wav', 2, 1, false]
+    const forever: PgzeroAudioCommand = ['play', 5, 'sounds/vento.wav', -1, 1, false]
+    queue.pgzero([play(1), music(2), once, loops, forever, play(6)], false)
+    advance(PGZERO_AUDIO_STALE_MS * 4)
+    for (let step = 0; step < 5; step++) {
+      sent.at(-1)!.reply()
+      await settle()
+    }
+    // Only the late sound effect (6) gave way; the music and the loops all reached the host.
+    expect(sent.map((item) => item.request.id)).toEqual([1, 2, 3, 4, 5])
+    expect(queue.takeEnded(64)).toEqual([6])
+    expect(sent[1]!.request).toEqual({
+      version: 1,
+      op: 'play',
+      id: 2,
+      path: 'music/tema.ogg',
+      loop: true,
+      volume: 1,
+      music: true,
+    })
+    expect(sent[3]!.request.repeat).toBe(2)
+    expect(sent[3]!.request.loop).toBe(false)
+  })
+
+  test('a crowded backlog drops sound effects only, never the music', () => {
+    const { queue, sent } = host()
+    queue.pgzero([play(1), music(2)], false)
+    queue.pgzero(
+      Array.from({ length: PGZERO_AUDIO_QUEUED_PLAYS + 3 }, (_, index) => play(index + 10)),
+      false,
+    )
+    const ended = queue.takeEnded(64)
+    expect(ended).not.toContain(2)
+    expect(ended).toEqual([10, 11, 12])
+    expect(sent.length).toBe(1)
+  })
+
+  test('a play that never reaches the host (the channel fails) is reported as ended', async () => {
+    const queue = createPgzeroAudioQueue({
+      now: () => 0,
+      send: () => Promise.reject(new Error('canal fechado')),
+    })
+    queue.pgzero([music(9)], false)
+    await new Promise((resolve) => setTimeout(resolve, 0))
+    expect(queue.takeEnded(64)).toEqual([9])
+  })
+
+  test('stop and volume of several voices travel as one request each', () => {
+    const { queue, sent } = host()
+    queue.pgzero(
+      [
+        ['stop', [1, 2, 3]],
+        ['volume', [4, 5], 0.5],
+        ['pause', 7],
+      ],
+      false,
+    )
+    expect(sent[0]!.request).toEqual({ version: 1, op: 'stop', ids: [1, 2, 3] })
   })
 
   test('stop and volume are never dropped', async () => {

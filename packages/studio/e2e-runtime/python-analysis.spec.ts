@@ -6,8 +6,8 @@ test('rendered Python blocks expose Portuguese controls and preserve the connect
 }, testInfo) => {
   await page.evaluate(() => globalThis.analysisProbe.showBlocks())
   await expect(page.locator('#python-blocks-proof svg.blocklySvg')).toBeVisible()
-  await page.getByText('mostrar no console', { exact: true }).click({ button: 'right' })
-  await page.getByText('Adicionar argumento', { exact: true }).click()
+  await page.getByText('mostrar', { exact: true }).click({ button: 'right' })
+  await page.getByText('Adicionar valor', { exact: true }).click()
   await expect
     .poll(() => page.evaluate(() => globalThis.analysisProbe.blockState()))
     .toEqual({ count: 2, original: 'Olá, turma!', connections: 2, blocks: 3 })
@@ -85,6 +85,8 @@ test('syntax failure preserves source and session; following revision still pars
 test('Python source roundtrips through real Blockly, saved connections and CPython generation', async ({
   page,
 }, testInfo) => {
+  // `global` and `nonlocal` redirect only the declared name: the replaced print and sqrt stay
+  // generic calls (checked in blockFoundation.test.ts) and the rest of the file keeps its blocks.
   const cases = await page.evaluate(() => globalThis.analysisProbe.blocks())
   expect(cases).toHaveLength(21)
   expect(cases.every((item) => item.blocks > 0)).toBe(true)
@@ -93,14 +95,7 @@ test('Python source roundtrips through real Blockly, saved connections and CPyth
       .filter((item) => item.opaque > 0)
       .map((item) => item.id)
       .sort(),
-  ).toEqual([
-    'opaque',
-    'shadow_global',
-    'shadow_match',
-    'shadow_nonlocal',
-    'shadow_walrus',
-    'starred',
-  ])
+  ).toEqual(['opaque', 'shadow_match', 'shadow_walrus', 'starred'])
   await testInfo.attach('blockly-python-roundtrip', {
     body: JSON.stringify(cases),
     contentType: 'application/json',

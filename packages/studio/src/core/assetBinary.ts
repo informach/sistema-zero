@@ -13,15 +13,29 @@ const MIME_EXTENSIONS: Readonly<Record<string, string>> = {
   'audio/ogg': 'ogg',
   'audio/wav': 'wav',
   'audio/x-wav': 'wav',
-  'audio/wave': 'wav',
-  'audio/vnd.wave': 'wav',
-  'audio/vnd.wav': 'wav',
   'audio/webm': 'webm',
   'audio/mp4': 'm4a',
   'model/gltf-binary': 'glb',
   'application/octet-stream': 'bin',
   'image/vnd.radiance': 'hdr',
   'image/x-hdr': 'hdr',
+}
+
+/**
+ * Other names browsers give WAV files. Python projects (whose sounds are opened by name) use
+ * them; the JavaScript materializer keeps its historical fallback names unchanged.
+ */
+const PYTHON_MIME_EXTENSIONS: Readonly<Record<string, string>> = {
+  'audio/flac': 'flac',
+  'audio/x-flac': 'flac',
+  'audio/wave': 'wav',
+  'audio/vnd.wave': 'wav',
+  'audio/vnd.wav': 'wav',
+}
+
+/** The file extension of a material in a Python project. */
+export function pythonAssetFileExtension(mime: string, kind?: ProjectAsset['kind']): string {
+  return PYTHON_MIME_EXTENSIONS[mime] ?? projectAssetFileExtension(mime, kind)
 }
 
 export function projectAssetFileExtension(

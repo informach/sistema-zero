@@ -2,7 +2,12 @@ import { awaitWithSignal } from '@sistemazero/core/http'
 import { digestAssetBytes } from '../../../core/assetBinary'
 import type { StudioHostAudioPreference } from '../../types'
 import type { PythonExecutionSnapshot } from '../protocol'
-import { PYTHON_AUDIO_LIMITS, pythonAudioMediaType, readPythonAudioRequest } from './contract'
+import {
+  PYTHON_AUDIO_LIMITS,
+  PYTHON_MUSIC_VOICES,
+  pythonAudioMediaType,
+  readPythonAudioRequest,
+} from './contract'
 import { readPythonAudioWav } from './wav'
 
 /** Ended voices kept until a reply carries them, and how many one reply carries (2 KiB). */
@@ -11,7 +16,10 @@ const ENDED_PER_REPLY = 64
 
 interface Voice {
   cancelled: AbortController
+  music: boolean
   audio?: HTMLAudioElement
+  /** music.pause(): kept paused until resume, so the track does not end meanwhile. */
+  paused?: boolean
   release?(): void
 }
 
@@ -108,11 +116,26 @@ export function createPythonAudioService(options: {
     return pending
   }
 
-  async function play(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
-    if (voices.has(request.id)) throw new Error('Esse identificador de som já está em uso.')
-    if (voices.size >= PYTHON_AUDIO_LIMITS.voices)
+  function admit(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
+    // The music has its own channel, as in pygame: a busy game never silences it.
+    const music = request.music === true
+    let same = 0
+    for (const voice of voices.values()) if (voice.music === music) same++
+    if (same >= (music ? PYTHON_MUSIC_VOICES : PYTHON_AUDIO_LIMITS.voices))
       throw new Error('O programa atingiu o limite de sons simultâneos.')
-    const voice: Voice = { cancelled: new AbortController() }
+  }
+
+  async function play(request: Extract<ReturnType<typeof readPythonAudioRequest>, { op: 'play' }>) {
+    // A repeated id is the live voice's own: reporting it would end that voice for the program.
+    if (voices.has(request.id)) throw new Error('Esse identificador de som já está em uso.')
+    try {
+      admit(request)
+    } catch (error) {
+      // A refused play has ended for the program too: Pygame Zero stops waiting for it.
+      report(request.id)
+      throw error
+    }
+    const voice: Voice = { cancelled: new AbortController(), music: request.music === true }
     voices.set(request.id, voice)
     const voiceSignal = AbortSignal.any([signal, voice.cancelled.signal])
     try {
@@ -130,11 +153,19 @@ export function createPythonAudioService(options: {
       const failure = new Promise<never>((_resolve, reject) => {
         rejectLoad = reject
       })
+      // Sound.play(loops=N): the same element plays again at once, without a gap.
+      let repeats = request.repeat ?? 0
       const finished = () => {
+        if (repeats > 0 && !voiceSignal.aborted) {
+          repeats--
+          audio.currentTime = 0
+          audio.play().catch(failed)
+          return
+        }
         stop(request.id, voice)
         report(request.id)
       }
-      const failed = () => {
+      function failed() {
         const error = new Error(`Não foi possível reproduzir o som ${request.path}.`)
         rejectLoad(error)
         if (started) {
@@ -143,7 +174,7 @@ export function createPythonAudioService(options: {
           if (!disposed) options.onError(error)
         }
       }
-      audio.addEventListener('ended', finished, { once: true })
+      audio.addEventListener('ended', finished)
       audio.addEventListener('error', failed, { once: true })
       let released = false
       voice.release = () => {
@@ -162,6 +193,8 @@ export function createPythonAudioService(options: {
       )
       voiceSignal.throwIfAborted()
       started = true
+      // Paused while it was still loading: it starts paused.
+      if (voice.paused) audio.pause()
     } catch (error) {
       // A sound that could not play has ended for the program too (a stopped one has not).
       const cancelled = voiceSignal.aborted
@@ -187,14 +220,30 @@ export function createPythonAudioService(options: {
           windowStart = now
           commands = 0
         }
-        if (++commands > PYTHON_AUDIO_LIMITS.commandsPerSecond)
+        if (++commands > PYTHON_AUDIO_LIMITS.commandsPerSecond) {
+          if (request.op === 'play') report(request.id)
           throw new Error('O programa excedeu o limite de comandos de áudio.')
+        }
         if (request.op === 'poll') {
           // Collects the ended voices below.
         } else if (request.op === 'play') await play(request)
         else if (request.op === 'volume') {
-          const audio = voices.get(request.id)?.audio
-          if (audio) audio.volume = request.volume
+          for (const id of 'ids' in request ? request.ids : [request.id]) {
+            const audio = voices.get(id)?.audio
+            if (audio) audio.volume = request.volume
+          }
+        } else if (request.op === 'pause' || request.op === 'resume') {
+          const voice = voices.get(request.id)
+          if (voice) {
+            voice.paused = request.op === 'pause'
+            if (voice.paused) voice.audio?.pause()
+            else voice.audio?.play().catch(() => {})
+          }
+        } else if ('ids' in request) {
+          for (const id of request.ids) {
+            const voice = voices.get(id)
+            if (voice) stop(id, voice)
+          }
         } else if (request.id === null) {
           for (const [id, voice] of voices) stop(id, voice)
         } else {

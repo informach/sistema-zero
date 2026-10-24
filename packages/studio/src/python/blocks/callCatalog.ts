@@ -539,9 +539,9 @@ const specs: Spec[] = [
     level: 2,
     role: 'value',
     callee: method(['pop'], { ...LIST, kinds: ['List', 'Dict'] }),
-    api: 'lista.pop(posição)',
-    help: 'Tira um item e devolve ele. Sem posição, tira o último; com 0, o primeiro.',
-    params: [optional('index', 'a posição', n(0), 'pos')],
+    api: 'lista.pop(posição) / dicionario.pop(chave)',
+    help: 'Tira um item e devolve ele. Numa lista, sem posição tira o último e com 0 o primeiro; num dicionário, diga a chave.',
+    params: [optional('index', 'a posição ou chave', n(0), 'pos')],
   },
   {
     id: 'list_sort',
@@ -754,9 +754,9 @@ const popStatement = programming({
   level: 2,
   role: 'statement',
   callee: method(['pop'], { ...LIST, kinds: ['List', 'Dict'] }),
-  api: 'lista.pop(posição)',
-  help: 'Tira um item da lista sem guardar.',
-  params: [optional('index', 'a posição', n(0), 'pos')],
+  api: 'lista.pop(posição) / dicionario.pop(chave)',
+  help: 'Tira um item da lista (pela posição) ou do dicionário (pela chave) sem guardar.',
+  params: [optional('index', 'a posição ou chave', n(0), 'pos')],
   hidden: true,
 })
 const audioPlayValue = programming({

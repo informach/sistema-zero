@@ -652,9 +652,21 @@ _waiting = set()
 posted = []
 
 
+# Voices one stop or volume command may name (the browser refuses longer lists).
+MAX_AUDIO_BATCH = 64
+# Sound.play(loops=N): the extra plays one command may ask for.
+MAX_AUDIO_REPEATS = 1000
+
+
+def _names(command, voice):
+    """Whether a command of this frame is about the voice (one id or a list of them)."""
+    target = command[1]
+    return target == voice or (isinstance(target, list) and voice in target)
+
+
 def _commands(kind, voice):
     return [index for index, command in enumerate(frame.audio)
-            if command[0] == kind and (voice is None or command[1] == voice)]
+            if command[0] == kind and (voice is None or _names(command, voice))]
 
 
 def _check_audio():
@@ -664,14 +676,19 @@ def _check_audio():
         )
 
 
-def audio_play(path, loop, volume):
-    """Start a sound; returns its voice, or None when this frame already plays too many."""
+def audio_play(path, repeat, volume, music=False):
+    """Start a sound; returns its voice, or None when this frame already plays too many.
+
+    ``repeat`` is how many more times it plays at once after the first (-1: until stopped).
+    The music has its own channel, as in pygame: a crowd of sound effects never refuses it.
+    """
     global _voice
-    if len(_commands('play', None)) >= MAX_PLAYS_PER_FRAME:
+    if not music and len(_commands('play', None)) >= MAX_PLAYS_PER_FRAME:
         return None
     _check_audio()
     _voice += 1
-    frame.audio.append(['play', _voice, path, bool(loop), float(volume)])
+    repeat = -1 if repeat < 0 else min(int(repeat), MAX_AUDIO_REPEATS)
+    frame.audio.append(['play', _voice, path, repeat, float(volume), bool(music)])
     return _voice
 
 
@@ -682,6 +699,31 @@ def on_audio_end(voice, callback, wait=False):
         _waiting.add(voice)
 
 
+def _forget(voices, kinds=('volume', 'pause', 'resume')):
+    """Drop this frame's commands of these kinds about the voices (lists lose those ids)."""
+    kept = []
+    for command in frame.audio:
+        if command[0] in kinds:
+            target = command[1]
+            if isinstance(target, list):
+                target = [voice for voice in target if voice not in voices]
+                if not target:
+                    continue
+                command[1] = target[0] if len(target) == 1 else target
+            elif target in voices:
+                continue
+        kept.append(command)
+    frame.audio[:] = kept
+
+
+def _append_batch(kind, voices, *rest):
+    """One command per MAX_AUDIO_BATCH voices: stopping many sounds never floods the frame."""
+    for start in range(0, len(voices), MAX_AUDIO_BATCH):
+        chunk = voices[start:start + MAX_AUDIO_BATCH]
+        _check_audio()
+        frame.audio.append([kind, chunk[0] if len(chunk) == 1 else chunk, *rest])
+
+
 def audio_stop(voice=None):
     if voice is None:
         frame.audio[:] = [command for command in frame.audio if command[0] == 'play']
@@ -689,30 +731,66 @@ def audio_stop(voice=None):
         _waiting.clear()
         frame.audio.append(['stop', None])
         return
-    _on_end.pop(voice, None)
-    _waiting.discard(voice)
-    plays = _commands('play', voice)
-    if plays:
-        # It never reached the browser: nothing to stop.
-        del frame.audio[plays[0]]
-        frame.audio[:] = [command for command in frame.audio if command[1] != voice]
+    audio_stop_many([voice])
+
+
+def audio_stop_many(voices):
+    """Stop several voices with as few commands as possible."""
+    remaining = []
+    for voice in voices:
+        _on_end.pop(voice, None)
+        _waiting.discard(voice)
+        plays = _commands('play', voice)
+        if plays:
+            # It never reached the browser: nothing to stop.
+            del frame.audio[plays[0]]
+            _forget({voice})
+            continue
+        if not _commands('stop', voice) and voice not in remaining:
+            remaining.append(voice)
+    if not remaining or any(command[0] == 'stop' and command[1] is None
+                            for command in frame.audio):
         return
-    if _commands('stop', voice) or _commands('stop', None):
-        return
-    frame.audio[:] = [command for command in frame.audio
-                      if not (command[0] == 'volume' and command[1] == voice)]
-    _check_audio()
-    frame.audio.append(['stop', voice])
+    _forget(set(remaining))
+    _append_batch('stop', remaining)
 
 
 def audio_volume(voice, volume):
+    audio_volume_many([voice], volume)
+
+
+def audio_volume_many(voices, volume):
+    """Set the volume of several voices with as few commands as possible."""
     volume = float(volume)
-    for command in frame.audio:
-        if command[1] == voice and command[0] in ('play', 'volume'):
-            command[-1] = volume
-            return
+    remaining = []
+    for voice in voices:
+        plays = _commands('play', voice)
+        if plays:
+            # Not sent yet: it starts at the new volume.
+            frame.audio[plays[0]][4] = volume
+        elif voice not in remaining:
+            remaining.append(voice)
+    if not remaining:
+        return
+    _forget(set(remaining), ('volume',))
+    _append_batch('volume', remaining, volume)
+
+
+def audio_pause(voice):
+    """Pause a voice where it is (music.pause): it keeps its place and does not end."""
+    _toggle('pause', voice)
+
+
+def audio_resume(voice):
+    _toggle('resume', voice)
+
+
+def _toggle(kind, voice):
+    # Only the last pause or resume of this frame matters.
+    frame.audio[:] = [command for command in frame.audio
+                      if not (command[0] in ('pause', 'resume') and command[1] == voice)]
     _check_audio()
-    frame.audio.append(['volume', voice, volume])
+    frame.audio.append([kind, voice])
 
 
 def audio_ended(voices):

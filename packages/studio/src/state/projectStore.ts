@@ -38,7 +38,7 @@ import type { SZIRInput } from '#ir'
 import { findExtension } from '#official-extensions'
 import { reconcileDrawingsFromRestoredProject } from '../asset-library/personalSync'
 import { createProProject as createProProjectFromTemplate } from '../components/code/pro-templates'
-import { projectAssetFileExtension } from '../core/assetBinary'
+import { pythonAssetFileExtension } from '../core/assetBinary'
 import {
   isPythonProject,
   type EditableStudioProject as Project,
@@ -1341,10 +1341,7 @@ export function createProjectStore(
         }
         if (isPythonProject(p)) {
           const mime = input.dataUrl.slice(5).split(/[;,]/, 1)[0]!.toLowerCase()
-          const extension =
-            mime === 'audio/flac' || mime === 'audio/x-flac'
-              ? 'flac'
-              : projectAssetFileExtension(mime, kind)
+          const extension = pythonAssetFileExtension(mime, kind)
           if (projectUsesPgzero(p)) {
             // Pygame Zero finds media by name in the folders next to the main file.
             const placed = pgzeroMediaPath({

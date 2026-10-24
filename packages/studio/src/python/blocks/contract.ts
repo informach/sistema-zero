@@ -76,6 +76,8 @@ export interface PythonBlockCodec {
   binding?: PythonBlockBinding
   /** Alias-aware extensions may derive the required binding from the actual call. */
   bindingFor?(node: PythonNode): PythonBlockBinding | undefined
+  /** Other names the block also reads (`keys` in `keyboard[keys.SPACE]`): all must resolve. */
+  alsoBound?: readonly PythonBlockBinding[]
   /** Method specialization needs a proven built-in receiver, not just a matching name. */
   receiverKinds?: readonly PythonReceiverKind[]
   /**
@@ -118,4 +120,9 @@ export interface PythonBlockBinding {
   handler?: string
   /** The root may be the module itself (procedural form) or an `instance` object. */
   moduleOrInstance?: boolean
+  /**
+   * A distinctive method on a variable: any receiver counts unless the program proves it is
+   * something else (assigned from another constructor, or an object of another provider).
+   */
+  anyReceiver?: boolean
 }

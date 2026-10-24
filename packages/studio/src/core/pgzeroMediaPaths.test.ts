@@ -4,7 +4,7 @@ import { TURTLE_EXTENSION } from '../runtime/python/turtle/contract'
 import { documentFixture } from '../state/fixtures/projectDocuments'
 import { createProjectStore } from '../state/projectStore'
 import { refinePythonProjectDocument } from '../state/pythonProjectValidation'
-import { isSvgDataUrl, projectAssetFileExtension } from './assetBinary'
+import { isSvgDataUrl, projectAssetFileExtension, pythonAssetFileExtension } from './assetBinary'
 import {
   PGZERO_EXTENSION_ID,
   pgzeroCodeName,
@@ -232,6 +232,39 @@ for (const kind of ['classic', 'pro'] as const) {
     expect(state().project).toBe(before)
   })
 
+  test(`${kind} installing Pygame Zero applies the SVG size rule to the SVGs already there`, async () => {
+    const store = await pythonStore(kind)
+    const state = () => store.getState()
+    expect(
+      state().addAsset({ name: 'cheio', dataUrl: svgOf('width="100%"'), width: 300, height: 150 }),
+    ).toBeNull()
+    expect(
+      state().addAsset({
+        name: 'caixa',
+        dataUrl: svgOf('viewBox="0 0 40 20"'),
+        width: 300,
+        height: 150,
+      }),
+    ).toBeNull()
+    const before = state().project
+    const refused = await state().applyPythonExtensions(state().project as never, [
+      { ...PGZERO_EXTENSION, installedAt: 2 },
+    ])
+    expect(refused).toContain('cheio (SVG sem tamanho)')
+    expect(refused).not.toContain('caixa')
+    expect(state().project).toBe(before)
+    state().removeAsset(state().project!.assets!.find((asset) => asset.name === 'cheio')!.id)
+    expect(
+      await state().applyPythonExtensions(state().project as never, [
+        { ...PGZERO_EXTENSION, installedAt: 2 },
+      ]),
+    ).toBeNull()
+    const caixa = state().project!.assets!.find((asset) => asset.name === 'caixa')!
+    // The size Pygame Zero reads, not the browser's 300x150.
+    const base = kind === 'pro' ? 'src/' : ''
+    expect([caixa.width, caixa.height, caixa.proPath]).toEqual([40, 20, `${base}images/caixa.svg`])
+  })
+
   test(`${kind} Pygame Zero refuses an SVG it cannot size and keeps the size it reads`, async () => {
     const store = await pythonStore(kind, PGZERO_EXTENSION)
     const state = () => store.getState()
@@ -266,7 +299,10 @@ test('a material named like a loader member gets _2 (`images.load` is the loader
 
 test('every WAV MIME a browser reports maps to .wav; an SVG data URL matches exactly', () => {
   for (const mime of ['audio/wav', 'audio/x-wav', 'audio/wave', 'audio/vnd.wave', 'audio/vnd.wav'])
-    expect(projectAssetFileExtension(mime, 'audio')).toBe('wav')
+    expect(pythonAssetFileExtension(mime, 'audio')).toBe('wav')
+  // The JavaScript materializer keeps its historical names: the new aliases are Python-only.
+  for (const mime of ['audio/wave', 'audio/vnd.wave', 'audio/vnd.wav'])
+    expect(projectAssetFileExtension(mime, 'audio')).toBe('bin')
   expect(isSvgDataUrl('data:image/svg+xml;charset=utf-8,%3Csvg')).toBe(true)
   expect(isSvgDataUrl('data:image/svg+xml;base64,PHN2Zw==')).toBe(true)
   expect(isSvgDataUrl('data:image/svg+xml,%3Csvg')).toBe(true)

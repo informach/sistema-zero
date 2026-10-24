@@ -44,47 +44,63 @@ export function pythonPaletteBlockState(
   }
   const known = byId.get(codec.id)
   if (known) return known
-  function decoded(value: PythonNode, role: PythonBlockRole) {
-    for (const candidate of codecs) {
-      if (candidate.hidden) continue
-      if (!(candidate.role === role || (role === 'format' && candidate.id === 'sz_py_text')))
-        continue
-      // The same rule as the catalog dependencies (selection.ts): a method block only for
-      // the receiver its own example uses.
-      if (
-        candidate.bindingFor &&
-        JSON.stringify(candidate.bindingFor(value)) !==
-          JSON.stringify(candidate.bindingFor(candidate.defaultNode()))
-      )
-        continue
-      const shape = candidate.decode(value)
-      if (shape) return { codec: candidate, shape }
-    }
-  }
-  function inputsOf(shape: PythonBlockShape, depth: number) {
-    const inputs: Record<string, { shadow: ShadowState }> = {}
-    for (const input of shape.inputs) {
-      if (input.role === 'statement' || input.nodes.length !== 1 || depth > 6) continue
-      const child = decoded(input.nodes[0]!, input.role)
-      if (child) inputs[input.name] = { shadow: stateOf(child.codec, child.shape, depth + 1) }
-    }
-    return inputs
-  }
-  function stateOf(owner: PythonBlockCodec, shape: PythonBlockShape, depth: number): ShadowState {
-    const inputs = inputsOf(shape, depth)
-    return {
-      type: owner.id,
-      extraState: layout(shape),
-      ...(shape.fields.length
-        ? { fields: Object.fromEntries(shape.fields.map((field) => [field.name, field.value])) }
-        : {}),
-      ...(Object.keys(inputs).length ? { inputs } : {}),
-    }
-  }
   const shape = codec.decode(codec.defaultNode())
   const info: PythonPaletteBlockInfo = shape
-    ? { kind: 'block', ...stateOf(codec, shape, 0) }
+    ? { kind: 'block', ...shadowOf(codec, shape, codecs, 0) }
     : { kind: 'block', type: codec.id }
   byId.set(codec.id, info)
   return info
+}
+
+/**
+ * The shadow block for a default value (the same one the palette uses), or undefined when no
+ * visible block shows it. A socket added with "Adicionar ..." starts filled with it.
+ */
+export function pythonShadowState(
+  value: PythonNode,
+  role: PythonBlockRole,
+  codecs: readonly PythonBlockCodec[],
+): ShadowState | undefined {
+  const child = decoded(value, role, codecs)
+  return child && shadowOf(child.codec, child.shape, codecs, 1)
+}
+
+function decoded(value: PythonNode, role: PythonBlockRole, codecs: readonly PythonBlockCodec[]) {
+  for (const candidate of codecs) {
+    if (candidate.hidden) continue
+    if (!(candidate.role === role || (role === 'format' && candidate.id === 'sz_py_text'))) continue
+    // The same rule as the catalog dependencies (selection.ts): a method block only for
+    // the receiver its own example uses.
+    if (
+      candidate.bindingFor &&
+      JSON.stringify(candidate.bindingFor(value)) !==
+        JSON.stringify(candidate.bindingFor(candidate.defaultNode()))
+    )
+      continue
+    const shape = candidate.decode(value)
+    if (shape) return { codec: candidate, shape }
+  }
+}
+
+function shadowOf(
+  owner: PythonBlockCodec,
+  shape: PythonBlockShape,
+  codecs: readonly PythonBlockCodec[],
+  depth: number,
+): ShadowState {
+  const inputs: Record<string, { shadow: ShadowState }> = {}
+  for (const input of shape.inputs) {
+    if (input.role === 'statement' || input.nodes.length !== 1 || depth > 6) continue
+    const child = decoded(input.nodes[0]!, input.role, codecs)
+    if (child)
+      inputs[input.name] = { shadow: shadowOf(child.codec, child.shape, codecs, depth + 1) }
+  }
+  return {
+    type: owner.id,
+    extraState: layout(shape),
+    ...(shape.fields.length
+      ? { fields: Object.fromEntries(shape.fields.map((field) => [field.name, field.value])) }
+      : {}),
+    ...(Object.keys(inputs).length ? { inputs } : {}),
+  }
 }

@@ -79,6 +79,22 @@ const EXAMPLES = [
   'escudos-contra-invasores',
   'mergulho-alienigena',
   'nave-mae',
+  'rastro-de-ajudantes',
+  'helicoptero-bombardeiro',
+  'cauda-espacial',
+  'mochila-a-jato',
+  'propulsor-no-espaco',
+  'encanamento-apressado',
+  'troca-de-joias',
+  'bichinhos-em-fila',
+  'cavando-por-gemas',
+  'editor-de-cavernas',
+  'corrida-vista-de-cima',
+  'sinuca',
+  'fliperama',
+  'minigolfe-maluco',
+  'tiro-ao-prato',
+  'rali-com-minimapa',
 ]
 
 for (const key of EXAMPLES)

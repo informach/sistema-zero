@@ -65,3 +65,11 @@ def play(t):
     t.tap('SPACE')
     t.step(3)
     t.check('espaço recomeça com as três chaves de volta', len(t.get('chaves')) == 3 and not t.get('venceu'))
+    # Em cima de dois blocos frágeis vizinhos, os dois afundam juntos (o mineiro não atravessa nenhum).
+    tipos = t.get('tipos')
+    blocos = t.get('blocos')
+    vizinhos = [n for n, b in enumerate(blocos) if tipos[n] == '~' and b.top == 200 and b.left in (340, 370)]
+    m.midbottom = (370, 200)
+    t.step(260)
+    t.check('dois blocos frágeis embaixo dos pés afundam juntos', all(tipos[n] == 'x' for n in vizinhos) and len(vizinhos) == 2,
+            f'{[tipos[n] for n in vizinhos]} y={m.bottom}')

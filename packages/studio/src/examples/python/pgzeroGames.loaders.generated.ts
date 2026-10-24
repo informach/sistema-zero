@@ -242,4 +242,219 @@ export const PGZERO_GAME_LOADERS = {
       assets: pgzeroGameAssets('nave-mae', NAVE_MAE_MEDIA),
     }
   },
+  'rastro-de-ajudantes': async () => {
+    const [{ RASTRO_DE_AJUDANTES_SOURCES }, { RASTRO_DE_AJUDANTES_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./rastroDeAjudantes.sources.generated'),
+        import('./rastroDeAjudantes.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: RASTRO_DE_AJUDANTES_SOURCES,
+      assets: pgzeroGameAssets('rastro-de-ajudantes', RASTRO_DE_AJUDANTES_MEDIA),
+    }
+  },
+  'helicoptero-bombardeiro': async () => {
+    const [
+      { HELICOPTERO_BOMBARDEIRO_SOURCES },
+      { HELICOPTERO_BOMBARDEIRO_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./helicopteroBombardeiro.sources.generated'),
+      import('./helicopteroBombardeiro.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: HELICOPTERO_BOMBARDEIRO_SOURCES,
+      assets: pgzeroGameAssets('helicoptero-bombardeiro', HELICOPTERO_BOMBARDEIRO_MEDIA),
+    }
+  },
+  'cauda-espacial': async () => {
+    const [{ CAUDA_ESPACIAL_SOURCES }, { CAUDA_ESPACIAL_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./caudaEspacial.sources.generated'),
+        import('./caudaEspacial.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CAUDA_ESPACIAL_SOURCES,
+      assets: pgzeroGameAssets('cauda-espacial', CAUDA_ESPACIAL_MEDIA),
+    }
+  },
+  'mochila-a-jato': async () => {
+    const [{ MOCHILA_A_JATO_SOURCES }, { MOCHILA_A_JATO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./mochilaAJato.sources.generated'),
+        import('./mochilaAJato.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MOCHILA_A_JATO_SOURCES,
+      assets: pgzeroGameAssets('mochila-a-jato', MOCHILA_A_JATO_MEDIA),
+    }
+  },
+  'propulsor-no-espaco': async () => {
+    const [{ PROPULSOR_NO_ESPACO_SOURCES }, { PROPULSOR_NO_ESPACO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./propulsorNoEspaco.sources.generated'),
+        import('./propulsorNoEspaco.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: PROPULSOR_NO_ESPACO_SOURCES,
+      assets: pgzeroGameAssets('propulsor-no-espaco', PROPULSOR_NO_ESPACO_MEDIA),
+    }
+  },
+  'encanamento-apressado': async () => {
+    const [
+      { ENCANAMENTO_APRESSADO_SOURCES },
+      { ENCANAMENTO_APRESSADO_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./encanamentoApressado.sources.generated'),
+      import('./encanamentoApressado.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: ENCANAMENTO_APRESSADO_SOURCES,
+      assets: pgzeroGameAssets('encanamento-apressado', ENCANAMENTO_APRESSADO_MEDIA),
+    }
+  },
+  'troca-de-joias': async () => {
+    const [{ TROCA_DE_JOIAS_SOURCES }, { TROCA_DE_JOIAS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./trocaDeJoias.sources.generated'),
+        import('./trocaDeJoias.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: TROCA_DE_JOIAS_SOURCES,
+      assets: pgzeroGameAssets('troca-de-joias', TROCA_DE_JOIAS_MEDIA),
+    }
+  },
+  'bichinhos-em-fila': async () => {
+    const [{ BICHINHOS_EM_FILA_SOURCES }, { BICHINHOS_EM_FILA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./bichinhosEmFila.sources.generated'),
+        import('./bichinhosEmFila.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: BICHINHOS_EM_FILA_SOURCES,
+      assets: pgzeroGameAssets('bichinhos-em-fila', BICHINHOS_EM_FILA_MEDIA),
+    }
+  },
+  'cavando-por-gemas': async () => {
+    const [{ CAVANDO_POR_GEMAS_SOURCES }, { CAVANDO_POR_GEMAS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./cavandoPorGemas.sources.generated'),
+        import('./cavandoPorGemas.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: CAVANDO_POR_GEMAS_SOURCES,
+      assets: pgzeroGameAssets('cavando-por-gemas', CAVANDO_POR_GEMAS_MEDIA),
+    }
+  },
+  'editor-de-cavernas': async () => {
+    const [{ EDITOR_DE_CAVERNAS_SOURCES }, { EDITOR_DE_CAVERNAS_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./editorDeCavernas.sources.generated'),
+        import('./editorDeCavernas.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: EDITOR_DE_CAVERNAS_SOURCES,
+      assets: pgzeroGameAssets('editor-de-cavernas', EDITOR_DE_CAVERNAS_MEDIA),
+    }
+  },
+  'corrida-vista-de-cima': async () => {
+    const [
+      { CORRIDA_VISTA_DE_CIMA_SOURCES },
+      { CORRIDA_VISTA_DE_CIMA_MEDIA },
+      { pgzeroGameAssets },
+    ] = await Promise.all([
+      import('./corridaVistaDeCima.sources.generated'),
+      import('./corridaVistaDeCima.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: CORRIDA_VISTA_DE_CIMA_SOURCES,
+      assets: pgzeroGameAssets('corrida-vista-de-cima', CORRIDA_VISTA_DE_CIMA_MEDIA),
+    }
+  },
+  sinuca: async () => {
+    const [{ SINUCA_SOURCES }, { SINUCA_MEDIA }, { pgzeroGameAssets }] = await Promise.all([
+      import('./sinuca.sources.generated'),
+      import('./sinuca.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: SINUCA_SOURCES,
+      assets: pgzeroGameAssets('sinuca', SINUCA_MEDIA),
+    }
+  },
+  fliperama: async () => {
+    const [{ FLIPERAMA_SOURCES }, { FLIPERAMA_MEDIA }, { pgzeroGameAssets }] = await Promise.all([
+      import('./fliperama.sources.generated'),
+      import('./fliperama.media.generated'),
+      import('./pgzeroGameAssets'),
+    ])
+    return {
+      entrypoint: 'main.py',
+      files: FLIPERAMA_SOURCES,
+      assets: pgzeroGameAssets('fliperama', FLIPERAMA_MEDIA),
+    }
+  },
+  'minigolfe-maluco': async () => {
+    const [{ MINIGOLFE_MALUCO_SOURCES }, { MINIGOLFE_MALUCO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./minigolfeMaluco.sources.generated'),
+        import('./minigolfeMaluco.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: MINIGOLFE_MALUCO_SOURCES,
+      assets: pgzeroGameAssets('minigolfe-maluco', MINIGOLFE_MALUCO_MEDIA),
+    }
+  },
+  'tiro-ao-prato': async () => {
+    const [{ TIRO_AO_PRATO_SOURCES }, { TIRO_AO_PRATO_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./tiroAoPrato.sources.generated'),
+        import('./tiroAoPrato.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: TIRO_AO_PRATO_SOURCES,
+      assets: pgzeroGameAssets('tiro-ao-prato', TIRO_AO_PRATO_MEDIA),
+    }
+  },
+  'rali-com-minimapa': async () => {
+    const [{ RALI_COM_MINIMAPA_SOURCES }, { RALI_COM_MINIMAPA_MEDIA }, { pgzeroGameAssets }] =
+      await Promise.all([
+        import('./raliComMinimapa.sources.generated'),
+        import('./raliComMinimapa.media.generated'),
+        import('./pgzeroGameAssets'),
+      ])
+    return {
+      entrypoint: 'main.py',
+      files: RALI_COM_MINIMAPA_SOURCES,
+      assets: pgzeroGameAssets('rali-com-minimapa', RALI_COM_MINIMAPA_MEDIA),
+    }
+  },
 } satisfies Record<PgzeroGameKey, () => Promise<unknown>>

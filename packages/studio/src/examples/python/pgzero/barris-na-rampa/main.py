@@ -140,6 +140,19 @@ def draw():
         screen.draw.text('Fim de jogo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=72, color='yellow', owidth=2, ocolor='black')
     if venceu:
         screen.draw.text('Você chegou ao topo!', center=(WIDTH / 2, HEIGHT / 2), fontsize=64, color='yellow', owidth=2, ocolor='black')
+    if fim_de_jogo or venceu:
+        screen.draw.text('Espaço joga de novo', center=(WIDTH / 2, HEIGHT / 2 + 56), fontsize=36, color='white', owidth=1.5, ocolor='black')
+
+
+def on_key_down(key):
+    global vidas, pontos, fim_de_jogo, venceu, espera
+    if key == keys.SPACE and (fim_de_jogo or venceu):
+        vidas = 3
+        pontos = 0
+        fim_de_jogo = False
+        venceu = False
+        espera = 0
+        recomecar_heroi()
 
 
 pgzrun.go()

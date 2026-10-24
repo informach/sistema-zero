@@ -53,6 +53,14 @@ interface TextSurface {
   height: number
   /** Size before rotation (ptext's _unrotated_size), for anchor maths. */
   unrotated: readonly [number, number]
+  /**
+   * Where the drawn part starts in the unrotated text. A text bigger than a canvas can be is
+   * drawn only around its anchor (the part that can reach the screen); it keeps its full size
+   * for anchoring, like the pygame surface.
+   */
+  offset: readonly [number, number]
+  /** Size of the drawn part before rotation. */
+  part: readonly [number, number]
 }
 
 const css = (color: readonly number[] | undefined, fallback: string, alpha = true) =>
@@ -157,7 +165,6 @@ export function createPgzeroRenderer(
     const top = bounds.top + (bounds.height - height * fit) / 2
     return [Math.floor((event.clientX - left) / fit), Math.floor((event.clientY - top) / fit)]
   }
-  const BUTTONS = [1, 2, 3] as const
   function buttonsMask(event: PointerEvent | MouseEvent) {
     // pygame: (left, middle, right); DOM: left=1, right=2, middle=4.
     return (event.buttons & 1 ? 1 : 0) | (event.buttons & 4 ? 2 : 0) | (event.buttons & 2 ? 4 : 0)
@@ -192,9 +199,12 @@ export function createPgzeroRenderer(
       },
       settings,
     )
-    // SDL reports a key-up for every held key when the window loses focus.
+    // SDL reports a key-up for every held key when the window loses focus; a button whose
+    // release happens outside the page is released too.
     const release = () => {
-      if (!disposed) input.releaseKeys()
+      if (disposed) return
+      input.releaseKeys()
+      input.releaseButtons(...(lastMouse ?? [0, 0]))
     }
     target.addEventListener('blur', release, settings)
     element.ownerDocument.addEventListener(
@@ -208,12 +218,11 @@ export function createPgzeroRenderer(
       'pointerdown',
       (event) => {
         const pos = position(event)
-        const button = BUTTONS[event.button === 1 ? 1 : event.button === 2 ? 2 : 0]
         if (!pos || event.button > 2) return
         element.focus({ preventScroll: true })
         element.setPointerCapture?.(event.pointerId)
         lastMouse = pos
-        if (!disposed) input.buttonDown(pos[0], pos[1], button)
+        if (!disposed) input.syncButtons(pos[0], pos[1], buttonsMask(event))
         event.preventDefault()
       },
       settings,
@@ -222,12 +231,23 @@ export function createPgzeroRenderer(
       'pointerup',
       (event) => {
         const pos = position(event)
-        const button = BUTTONS[event.button === 1 ? 1 : event.button === 2 ? 2 : 0]
-        if (!pos || event.button > 2 || disposed) return
-        input.buttonUp(pos[0], pos[1], button)
+        if (!pos || disposed) return
+        input.syncButtons(pos[0], pos[1], buttonsMask(event))
       },
       settings,
     )
+    // The browser took the pointer (a touch became a scroll, capture lost): its release would
+    // never arrive, so nothing stays held. After a normal release there is nothing left to do.
+    for (const type of ['pointercancel', 'lostpointercapture'] as const)
+      element.addEventListener(
+        type,
+        (event) => {
+          if (disposed) return
+          const pos = position(event) ?? lastMouse ?? [0, 0]
+          input.releaseButtons(pos[0], pos[1])
+        },
+        settings,
+      )
     element.addEventListener(
       'pointermove',
       (event) => {
@@ -235,6 +255,8 @@ export function createPgzeroRenderer(
         if (!pos || disposed) return
         const previous = lastMouse ?? pos
         lastMouse = pos
+        // A second button pressed or released arrives here, not as pointerdown/pointerup.
+        input.syncButtons(pos[0], pos[1], buttonsMask(event))
         input.motion(pos[0], pos[1], pos[0] - previous[0], pos[1] - previous[1], buttonsMask(event))
       },
       settings,
@@ -337,6 +359,7 @@ export function createPgzeroRenderer(
   function makeCanvas(w: number, h: number) {
     w = Math.max(1, Math.ceil(w))
     h = Math.max(1, Math.ceil(h))
+    // textSurface never asks for more; this is the last guard of the page's memory.
     if (
       w > PGZERO_LIMITS.textWidth ||
       h > PGZERO_LIMITS.textWidth ||
@@ -350,8 +373,16 @@ export function createPgzeroRenderer(
     if (!ctx) throw new Error('Não há memória para desenhar este texto.')
     return { surface, ctx }
   }
-  /** The text image ptext.getsurf would produce. */
-  function textSurface(key: string, value: string, style: PgzeroTextStyle): TextSurface {
+  /**
+   * The text image ptext.getsurf would produce. `anchor` (0..1 on each axis) says which part to
+   * keep when the text is bigger than a canvas can be: the part around the anchor point.
+   */
+  function textSurface(
+    key: string,
+    value: string,
+    style: PgzeroTextStyle,
+    anchor: readonly [number, number],
+  ): TextSurface {
     const cached = textCache.get(key)
     if (cached) {
       textCache.delete(key)
@@ -377,25 +408,38 @@ export function createPgzeroRenderer(
     const ys = lines.map((_, index) => Math.round(index * step))
     const h0 = (ys.at(-1) ?? 0) + lineHeight
     const align = style.align ?? 0
+    // Python checked the outline and shadow for the letter size it asked for; textbox picks its
+    // own (up to 256), so here they are held at the limit instead of failing a valid program.
     const outline =
-      style.owidth !== undefined ? Math.ceil(style.owidth * size * OUTLINE_UNIT) : undefined
-    const shadow = style.shadow?.map((part) => Math.ceil(part * size * SHADOW_UNIT))
-    // textbox picks its own letter size, so the outline and shadow are checked here as well.
-    if (
-      (outline ?? 0) > PGZERO_LIMITS.outlinePixels ||
-      shadow?.some((part) => Math.abs(part) > PGZERO_LIMITS.shadowPixels)
-    )
-      throw new Error('O contorno ou a sombra do texto ficou grande demais. Use números menores.')
+      style.owidth !== undefined
+        ? Math.min(PGZERO_LIMITS.outlinePixels, Math.ceil(style.owidth * size * OUTLINE_UNIT))
+        : undefined
+    const shadow = style.shadow?.map((part) => {
+      const pixels = Math.ceil(part * size * SHADOW_UNIT)
+      return Math.max(-PGZERO_LIMITS.shadowPixels, Math.min(PGZERO_LIMITS.shadowPixels, pixels))
+    })
     const pad = outline ?? 0
     const sx = shadow?.[0] ?? 0
     const sy = shadow?.[1] ?? 0
-    const w = w0 + 2 * pad + Math.abs(sx)
-    const h = h0 + 2 * pad + Math.abs(sy)
-    const { surface, ctx } = makeCanvas(w, h)
+    const w = Math.max(1, Math.ceil(w0 + 2 * pad + Math.abs(sx)))
+    const h = Math.max(1, Math.ceil(h0 + 2 * pad + Math.abs(sy)))
+    const alpha = style.alpha ?? 1
+    const angle = (((style.angle ?? 0) % 360) + 360) % 360
+    // A canvas has a size limit (a very long line can be wider): only the part around the
+    // anchor is drawn. A turned part must still fit once turned.
+    const turned = alpha < 1 || angle !== 0
+    const side = turned ? Math.floor(PGZERO_LIMITS.textWidth / Math.SQRT2) : PGZERO_LIMITS.textWidth
+    const pixels = turned ? PGZERO_LIMITS.textPixels / 2 : PGZERO_LIMITS.textPixels
+    const pw = Math.min(w, side)
+    const ph = Math.min(h, side, Math.max(1, Math.floor(pixels / pw)))
+    const ox = Math.round(anchor[0] * (w - pw))
+    const oy = Math.round(anchor[1] * (h - ph))
+    const { surface, ctx } = makeCanvas(pw, ph)
     if (style.background) {
       ctx.fillStyle = css(style.background, 'transparent')
-      ctx.fillRect(0, 0, w, h)
+      ctx.fillRect(0, 0, pw, ph)
     }
+    ctx.translate(-ox, -oy)
     ctx.font = fontFor(style, size)
     ctx.textBaseline = 'alphabetic'
     const paintLines = (fill: string | CanvasGradient, dx: number, dy: number) => {
@@ -426,19 +470,20 @@ export function createPgzeroRenderer(
       fill = gradient
     }
     paintLines(fill, base.x, base.y)
-    let result: TextSurface = { canvas: surface, width: w, height: h, unrotated: [w, h] }
-    const alpha = style.alpha ?? 1
-    const angle = (((style.angle ?? 0) % 360) + 360) % 360
-    if (alpha < 1 || angle) {
+    const unrotated = [w, h] as const
+    const offset = [ox, oy] as const
+    const part = [pw, ph] as const
+    let result: TextSurface = { canvas: surface, width: pw, height: ph, unrotated, offset, part }
+    if (turned) {
       const radians = (angle * Math.PI) / 180
-      const rw = Math.ceil(Math.abs(w * Math.cos(radians)) + Math.abs(h * Math.sin(radians)))
-      const rh = Math.ceil(Math.abs(w * Math.sin(radians)) + Math.abs(h * Math.cos(radians)))
-      const turned = makeCanvas(rw, rh)
-      turned.ctx.globalAlpha = Math.max(0, alpha)
-      turned.ctx.translate(rw / 2, rh / 2)
-      turned.ctx.rotate(-radians)
-      turned.ctx.drawImage(surface, -w / 2, -h / 2)
-      result = { canvas: turned.surface, width: rw, height: rh, unrotated: [w, h] }
+      const rw = Math.ceil(Math.abs(pw * Math.cos(radians)) + Math.abs(ph * Math.sin(radians)))
+      const rh = Math.ceil(Math.abs(pw * Math.sin(radians)) + Math.abs(ph * Math.cos(radians)))
+      const rotated = makeCanvas(rw, rh)
+      rotated.ctx.globalAlpha = Math.max(0, alpha)
+      rotated.ctx.translate(rw / 2, rh / 2)
+      rotated.ctx.rotate(-radians)
+      rotated.ctx.drawImage(surface, -pw / 2, -ph / 2)
+      result = { canvas: rotated.surface, width: rw, height: rh, unrotated, offset, part }
     }
     textCache.set(key, result)
     textCachePixels += result.width * result.height
@@ -454,26 +499,30 @@ export function createPgzeroRenderer(
     const value = strings.get(record[at]!)
     const style = styles.get(record[at + 1]!)
     if (value === undefined || !style) throw new Error('Texto do Pygame Zero ausente.')
-    // The ids name a text and a style until their tables are renewed (the cache is cleared then).
-    const key = `${record[at]}:${record[at + 1]}`
     let x = record[at + 2]!
     let y = record[at + 3]!
     const hanchor = record[at + 4]!
     const vanchor = record[at + 5]!
-    const surface = textSurface(key, value, style)
+    // The ids name a text and a style until their tables are renewed (the cache is cleared then).
+    // The anchor only matters to a text too big to draw whole, but it decides the part drawn.
+    const key = `${record[at]}:${record[at + 1]}:${hanchor}:${vanchor}`
+    const surface = textSurface(key, value, style, [hanchor, vanchor])
+    const [w0, h0] = surface.unrotated
+    const [ox, oy] = surface.offset
+    const [pw, ph] = surface.part
     const angle = (((style.angle ?? 0) % 360) + 360) % 360
     if (angle) {
-      const [w0, h0] = surface.unrotated
       const radians = (angle * Math.PI) / 180
       const s = Math.sin(radians)
       const c = Math.cos(radians)
-      const dx = (0.5 - hanchor) * w0
-      const dy = (0.5 - vanchor) * h0
+      // From the anchor to the centre of the drawn part, in the unrotated text, then turned.
+      const dx = (0.5 - hanchor) * w0 + ox + pw / 2 - w0 / 2
+      const dy = (0.5 - vanchor) * h0 + oy + ph / 2 - h0 / 2
       x += dx * c + dy * s - 0.5 * surface.width
       y += -dx * s + dy * c - 0.5 * surface.height
     } else {
-      x -= hanchor * surface.width
-      y -= vanchor * surface.height
+      x += ox - hanchor * w0
+      y += oy - vanchor * h0
     }
     ctx.drawImage(surface.canvas, Math.round(x), Math.round(y))
   }
