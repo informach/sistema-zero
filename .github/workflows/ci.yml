@@ -393,12 +393,17 @@ jobs:
         run: |
           & "$env:SystemRoot/System32/WindowsPowerShell/v1.0/powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File packages/agent-runtime/src/process/windows-job.ps1 -OutputFile "$env:RUNNER_TEMP/sistemazero-job-proof.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Instalar Chromium para os testes nativos
+        timeout-minutes: 5
+        working-directory: packages/agent-runtime
+        env:
+          PLAYWRIGHT_DOWNLOAD_CONNECTION_TIMEOUT: '45000'
+        run: |
+          node ../agent-integrations/node_modules/playwright-core/cli.js install chromium
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Testar runtime nativo
         working-directory: packages/agent-runtime
-        run: |
-          bun ../agent-integrations/node_modules/playwright-core/cli.js install chromium
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          bun test
+        run: bun test
       - name: Testar desktop e mídia empacotada
         working-directory: packages/marketing-desktop
         run: bun test
