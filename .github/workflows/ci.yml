@@ -142,6 +142,30 @@ jobs:
           bun test ./packages/studio/scripts/python/prepare-stdlib.test.ts
           bun test ./packages/studio/scripts/python/provided-modules.test.ts
 
+      - name: Provar objetivos Python com programas reais no sandbox sem rede
+        timeout-minutes: 8
+        env:
+          STUDIO_PYTHON_TEST_CACHE: ${{ github.workspace }}/.cache/studio-python-runtime
+        run: |
+          bun packages/studio-runtime/tests/python-mission-smoke.ts
+          bun packages/studio-runtime/tests/python-playtest-smoke.ts --docker --health
+
+      - name: Preservar evidências dos objetivos Python
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-project-mission-evidence
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            .cache/studio-python-runtime/playtest-docker/**/native-output.json
+            .cache/studio-python-runtime/playtest-docker/**/python-playtest-result.json
+            .cache/studio-python-runtime/playtest-docker/**/cleanup.json
+            .cache/studio-python-runtime/mission-docker/**/process.json
+            .cache/studio-python-runtime/mission-docker/**/judge.json
+            .cache/studio-python-runtime/mission-docker/**/python-mission-options.json
+            .cache/studio-python-runtime/mission-docker/**/python-mission-result.json
+
       - name: Preparar testes de mídia das oficinas
         working-directory: packages/live-recorder
         run: |

@@ -28,6 +28,10 @@ import {
 
 type Behavior = Extract<SectionExecutionRule, { type: 'behavior' }>
 type FunctionReturns = Extract<SectionExecutionRule, { type: 'functionReturns' }>
+export type PythonExecutionEditorEnvironment = {
+  language: 'python'
+  graphics: import('@sistemazero/core/learning').PythonProjectCheckGraphics
+}
 
 /**
  * O editor dos objetivos que RODAM o jogo (etapa 3, 18/10/2026): "O jogo faz algo" (passos +
@@ -39,6 +43,7 @@ export function ExecutionRuleEditor({
   isPro,
   isKit,
   kitFields,
+  environment,
   onChange,
 }: {
   rule: SectionExecutionRule
@@ -48,10 +53,19 @@ export function ExecutionRuleEditor({
   isKit: boolean
   /** O que o kit mostra no estado (a vida só existe em alguns). */
   kitFields?: readonly ExecutionGameField[]
+  environment?: PythonExecutionEditorEnvironment
   onChange: (rule: SectionExecutionRule) => void
 }) {
   if (rule.type === 'functionReturns')
-    return <FunctionEditor rule={rule} index={index} isPro={isPro} onChange={onChange} />
+    return (
+      <FunctionEditor
+        rule={rule}
+        index={index}
+        isPro={isPro}
+        environment={environment}
+        onChange={onChange}
+      />
+    )
   if (rule.type === 'behavior')
     return (
       <BehaviorEditor
@@ -60,6 +74,7 @@ export function ExecutionRuleEditor({
         isPro={isPro}
         isKit={isKit}
         kitFields={kitFields}
+        environment={environment}
         onChange={onChange}
       />
     )
@@ -70,14 +85,18 @@ export function StepsEditor({
   steps,
   index,
   singlePress = false,
+  environment,
   onChange,
 }: {
   steps: ExecutionStep[]
   index: number
   /** A posição relativa compara uma única tecla, com controle idle separado. */
   singlePress?: boolean
+  environment?: PythonExecutionEditorEnvironment
   onChange: (steps: ExecutionStep[]) => void
 }) {
+  const python = environment?.language === 'python'
+  const graphics = !python || environment.graphics !== 'none'
   const patch = (at: number, step: ExecutionStep) =>
     onChange(steps.map((s, i) => (i === at ? step : s)))
   return (
@@ -103,6 +122,11 @@ export function StepsEditor({
             }
             onChange={(e) => {
               const action = e.target.value
+              if (
+                (!graphics && action !== 'wait') ||
+                (python && ['sprite', 'outsideGroup', 'lastPoint'].includes(action))
+              )
+                return
               if (singlePress && action !== 'press' && action !== 'hold') return
               if (action === 'sprite') {
                 patch(at, {
@@ -136,23 +160,33 @@ export function StepsEditor({
               )
             }}
           >
-            <option value="press">Apertar uma tecla</option>
-            <option value="hold">Segurar uma tecla</option>
+            <option value="press" disabled={!graphics}>
+              Apertar uma tecla
+            </option>
+            <option value="hold" disabled={!graphics}>
+              Segurar uma tecla
+            </option>
             <option value="wait" disabled={singlePress}>
               Esperar
             </option>
-            <option value="click" disabled={singlePress}>
+            <option value="click" disabled={singlePress || !graphics}>
               Clicar na tela
             </option>
-            <option value="sprite" disabled={singlePress}>
-              Clicar no lugar de um personagem
-            </option>
-            <option value="lastPoint" disabled={singlePress}>
-              Repetir o último lugar clicado
-            </option>
-            <option value="outsideGroup" disabled={singlePress}>
-              Clicar fora de um grupo
-            </option>
+            {!python && (
+              <option value="sprite" disabled={singlePress}>
+                Clicar no lugar de um personagem
+              </option>
+            )}
+            {!python && (
+              <option value="lastPoint" disabled={singlePress}>
+                Repetir o último lugar clicado
+              </option>
+            )}
+            {!python && (
+              <option value="outsideGroup" disabled={singlePress}>
+                Clicar fora de um grupo
+              </option>
+            )}
           </Select>
           {step.action === 'clickTarget' && step.target.kind === 'sprite' && (
             <>
@@ -262,14 +296,21 @@ export function StepsEditor({
         variant="outline"
         size="sm"
         disabled={steps.length >= (singlePress ? 1 : EXECUTION_LIMITS.maxSteps)}
-        onClick={() => onChange([...steps, { action: 'press', key: 'Space' }])}
+        onClick={() =>
+          onChange([
+            ...steps,
+            graphics ? { action: 'press', key: 'Space' } : { action: 'wait', ms: 500 },
+          ])
+        }
       >
         Adicionar passo
       </Button>
       <p className="text-xs text-muted-foreground">
         {singlePress
           ? 'Este teste usa uma tecla. A observação sem tecla acontece antes desse passo.'
-          : `Até ${EXECUTION_LIMITS.maxSteps} passos e ${EXECUTION_LIMITS.maxTotalWaitMs / 1000} s de espera somada. O clique na tela usa coordenadas na prévia (1024 por 640). Os cliques em personagens e grupos usam o palco atual do Jogo 2D clássico JavaScript; repetir exige um clique anterior em personagem ou fora do grupo, e mantém aquele lugar.`}
+          : python
+            ? 'Passos em ordem. Cliques usam pixels da janela do programa; teclado e mouse exigem uma extensão gráfica.'
+            : `Até ${EXECUTION_LIMITS.maxSteps} passos e ${EXECUTION_LIMITS.maxTotalWaitMs / 1000} s de espera somada. O clique na tela usa coordenadas na prévia (1024 por 640). Os cliques em personagens e grupos usam o palco atual do Jogo 2D clássico JavaScript; repetir exige um clique anterior em personagem ou fora do grupo, e mantém aquele lugar.`}
       </p>
     </fieldset>
   )
@@ -281,6 +322,7 @@ function BehaviorEditor({
   isPro,
   isKit,
   kitFields,
+  environment,
   onChange,
 }: {
   rule: Behavior
@@ -288,20 +330,24 @@ function BehaviorEditor({
   isPro: boolean
   isKit: boolean
   kitFields?: readonly ExecutionGameField[]
+  environment?: PythonExecutionEditorEnvironment
   onChange: (rule: Behavior) => void
 }) {
+  const python = environment?.language === 'python'
   const kitHas = (field: ExecutionGameField) => isKit && (!kitFields || kitFields.includes(field))
   const { target, compare } = rule.expect
   const motion = target.kind === 'spritePosition'
+  const actorPositions =
+    !python || environment.graphics === 'turtle' || environment.graphics === 'pgzero'
   const hasOnePress = rule.steps.length === 1 && rule.steps[0]?.action === 'press'
   const relative = (value: ExecutionCompare) => value === 'increased' || value === 'decreased'
   const comparisons = EXECUTION_COMPARES.filter((value) =>
-    motion ? relative(value) : !relative(value),
+    motion ? relative(value) : python && target.kind === 'value' ? true : !relative(value),
   )
   const comparisonFits = comparisons.includes(compare)
   const withTarget = (next: ExecutionTarget) => {
     if (next.kind === 'spritePosition') {
-      if (!hasOnePress || isPro) return
+      if (!hasOnePress || (isPro && !python) || !actorPositions) return
       const { value: _value, ...expect } = rule.expect
       onChange({
         ...rule,
@@ -313,7 +359,11 @@ function BehaviorEditor({
     const { observation: _observation, ...rest } = rule
     onChange({
       ...rest,
-      expect: { ...rule.expect, target: next, compare: relative(compare) ? 'changed' : compare },
+      expect: {
+        ...rule.expect,
+        target: next,
+        compare: relative(compare) && !(python && next.kind === 'value') ? 'changed' : compare,
+      },
     })
   }
   const needsValue = !EXECUTION_COMPARES_WITHOUT_VALUE.includes(compare)
@@ -323,6 +373,7 @@ function BehaviorEditor({
         steps={rule.steps}
         index={index}
         singlePress={motion}
+        environment={environment}
         onChange={(steps) => onChange({ ...rule, steps })}
       />
       <fieldset className="space-y-2 text-sm">
@@ -346,26 +397,33 @@ function BehaviorEditor({
               )
             }}
           >
-            <option value="value" disabled={isPro}>
-              Uma variável do jogo
+            <option value="value" disabled={isPro && !python}>
+              {python ? 'Uma variável do programa' : 'Uma variável do jogo'}
             </option>
-            <option value="spritePosition" disabled={isPro || !hasOnePress}>
+            <option
+              value="spritePosition"
+              disabled={(isPro && !python) || !hasOnePress || !actorPositions}
+            >
               A posição de um personagem após uma tecla
             </option>
-            <option value="text">O texto da página</option>
+            {!python && <option value="text">O texto da página</option>}
             <option value="console">O que o jogo escreveu no console</option>
-            <option value="game:phase" disabled={!kitHas('phase')}>
-              A fase do kit Pro (jogando, venceu, perdeu)
-            </option>
-            <option value="game:score" disabled={!kitHas('score')}>
-              Os pontos do kit Pro
-            </option>
-            <option value="game:goal" disabled={!kitHas('goal')}>
-              A meta do kit Pro (do src/config.ts)
-            </option>
-            <option value="game:health" disabled={!kitHas('health')}>
-              A vida do kit Pro
-            </option>
+            {!python && (
+              <>
+                <option value="game:phase" disabled={!kitHas('phase')}>
+                  A fase do kit Pro (jogando, venceu, perdeu)
+                </option>
+                <option value="game:score" disabled={!kitHas('score')}>
+                  Os pontos do kit Pro
+                </option>
+                <option value="game:goal" disabled={!kitHas('goal')}>
+                  A meta do kit Pro (do src/config.ts)
+                </option>
+                <option value="game:health" disabled={!kitHas('health')}>
+                  A vida do kit Pro
+                </option>
+              </>
+            )}
           </Select>
           {target.kind === 'value' && (
             <Input
@@ -450,9 +508,15 @@ function BehaviorEditor({
         {!comparisonFits && (
           <p role="alert">Escolha uma comparação compatível com o que será observado.</p>
         )}
+        {python && (environment.graphics === 'raylib2d' || environment.graphics === 'raylib3d') && (
+          <p className="text-xs text-muted-foreground">
+            No Raylib, confira as variáveis que controlam o programa ou propriedades de vetores,
+            como posicao.x, posicao.y ou posicao.z.
+          </p>
+        )}
         <p className="text-xs text-muted-foreground">
           {motion
-            ? `Antes da tecla, o teste observa por ${rule.observation?.idleMs ?? 80} ms se o personagem está parado. Depois confere se a coordenada aumentou ou diminuiu, sem exigir uma velocidade exata. No Jogo 2D, y aumenta para baixo.`
+            ? `Antes da tecla, o teste observa por ${rule.observation?.idleMs ?? 80} ms se o personagem está parado. Depois confere se a coordenada aumentou ou diminuiu, sem exigir uma velocidade exata. ${environment?.graphics === 'turtle' ? 'No Turtle, y aumenta para cima.' : python ? 'No Pygame Zero, y aumenta para baixo.' : 'No Jogo 2D, y aumenta para baixo.'}`
             : '"Mudou" compara com o começo do jogo, antes dos passos. A variável é o nome que a criança usa nos blocos ou no código (e uma propriedade dela, como heroi.x).'}
         </p>
       </fieldset>
@@ -464,13 +528,16 @@ function FunctionEditor({
   rule,
   index,
   isPro,
+  environment,
   onChange,
 }: {
   rule: FunctionReturns
   index: number
   isPro: boolean
+  environment?: PythonExecutionEditorEnvironment
   onChange: (rule: FunctionReturns) => void
 }) {
+  const python = environment?.language === 'python'
   // O texto digitado fica aqui enquanto não vira um valor válido (a regra só guarda o válido).
   const [drafts, setDrafts] = useState<Record<string, string>>({})
   const field = (key: string, fallback: string) => drafts[key] ?? fallback
@@ -481,18 +548,20 @@ function FunctionEditor({
           <span className="block">Nome da função</span>
           <Input
             aria-label={`Função do objetivo ${index + 1}`}
-            placeholder="calcularPontos"
+            placeholder={python ? 'calcular_pontos' : 'calcularPontos'}
             maxLength={100}
             value={rule.name}
             onChange={(e) => onChange({ ...rule, name: e.target.value.trim() })}
           />
         </label>
-        {isPro && (
+        {(isPro || python) && (
           <label className="space-y-1">
-            <span className="block">Arquivo que exporta a função</span>
+            <span className="block">
+              {python ? 'Arquivo Python (opcional)' : 'Arquivo que exporta a função'}
+            </span>
             <Input
               aria-label={`Arquivo da função do objetivo ${index + 1}`}
-              placeholder="src/regras.ts"
+              placeholder={python ? 'regras.py — vazio usa o programa principal' : 'src/regras.ts'}
               maxLength={200}
               value={rule.module ?? ''}
               onChange={(e) => {
@@ -568,8 +637,9 @@ function FunctionEditor({
               </Button>
               {(argsBad || expectedBad) && (
                 <p role="alert" className="w-full text-xs text-destructive">
-                  Escreva os valores como no código: números (3), textos entre aspas ("oi"), listas
-                  ([1, 2]) ou verdadeiro/falso (true, false).
+                  {python
+                    ? 'Use JSON nos casos de teste: números (3), textos entre aspas ("oi"), listas ([1, 2]), true, false ou null. No programa Python, os equivalentes são True, False e None.'
+                    : 'Escreva os valores como no código: números (3), textos entre aspas ("oi"), listas ([1, 2]) ou verdadeiro/falso (true, false).'}
                 </p>
               )}
             </div>

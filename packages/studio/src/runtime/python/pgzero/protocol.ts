@@ -117,6 +117,7 @@ export interface PgzeroFrameHeader {
   audio: readonly PgzeroAudioCommand[]
   /** Python waits for sounds to end: the host should report them. */
   watch: boolean
+  actors: readonly (readonly [number, number, number])[]
   decode?: number
 }
 
@@ -244,6 +245,7 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
   }
   if (!object(value)) invalid()
   const { w, h, title, keep, images, fonts, strings, styles, audio, decode, watch } = value
+  const actors = value.actors ?? []
   if (
     !id(w, PGZERO_LIMITS.maxWidth) ||
     !id(h, PGZERO_LIMITS.maxHeight) ||
@@ -261,7 +263,9 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     styles.length > PGZERO_LIMITS.styles + 1 ||
     !Array.isArray(audio) ||
     audio.length > PGZERO_LIMITS.audioCommands ||
-    (watch !== undefined && typeof watch !== 'boolean')
+    (watch !== undefined && typeof watch !== 'boolean') ||
+    !Array.isArray(actors) ||
+    actors.length > 2048
   )
     invalid()
   return {
@@ -312,6 +316,18 @@ export function readPgzeroFrameHeader(raw: unknown): PgzeroFrameHeader {
     }),
     audio: audio.map(readAudio),
     watch: watch === true,
+    actors: actors.map((entry) => {
+      if (
+        !Array.isArray(entry) ||
+        entry.length !== 3 ||
+        !id(entry[0], Number.MAX_SAFE_INTEGER) ||
+        entry[0] <= 0 ||
+        !finite(entry[1]) ||
+        !finite(entry[2])
+      )
+        invalid()
+      return [entry[0], entry[1], entry[2]] as const
+    }),
     ...(decode === undefined ? {} : { decode: readDecode(decode, keep) }),
   }
 }

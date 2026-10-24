@@ -14,6 +14,54 @@ const initial = (): SectionExecutionRule => ({
   steps: [{ action: 'press', key: 'ArrowRight', holdMs: 80 }],
   expect: { target: { kind: 'value', path: 'pontos' }, compare: 'equals', value: 123 },
 })
+
+test.each([
+  'raylib2d',
+  'raylib3d',
+] as const)('Raylib %s authors real controls and coordinate variables without inventing an Actor API', async (graphics) => {
+  const container = document.createElement('div')
+  document.body.append(container)
+  const root = createRoot(container)
+  let value = initial()
+  const render = () =>
+    root.render(
+      <ExecutionRuleEditor
+        rule={value}
+        index={0}
+        isPro
+        isKit={false}
+        environment={{ language: 'python', graphics }}
+        onChange={(next) => {
+          value = next
+          render()
+        }}
+      />,
+    )
+  try {
+    await act(async () => render())
+    const target = field<HTMLSelectElement>(
+      container,
+      'select[aria-label="O que conferir no objetivo 1"]',
+    )
+    expect([...target.options].find((option) => option.value === 'value')?.disabled).toBe(false)
+    expect([...target.options].find((option) => option.value === 'spritePosition')?.disabled).toBe(
+      true,
+    )
+    expect(
+      [...target.options].some((option) => ['text', 'game:score'].includes(option.value)),
+    ).toBe(false)
+    const comparison = field<HTMLSelectElement>(
+      container,
+      'select[aria-label="Comparação do objetivo 1"]',
+    )
+    expect([...comparison.options].some((option) => option.value === 'decreased')).toBe(true)
+    expect(container.textContent).toContain('posicao.z')
+    expect(container.querySelector('option[value="press"]')?.hasAttribute('disabled')).toBe(false)
+  } finally {
+    await act(async () => root.unmount())
+    container.remove()
+  }
+})
 function field<T extends HTMLElement>(container: HTMLElement, selector: string): T {
   const element = container.querySelector<T>(selector)
   if (!element) throw new Error(`Missing field: ${selector}`)

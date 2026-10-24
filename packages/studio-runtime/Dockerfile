@@ -19,6 +19,7 @@ COPY runtime/check-click-target.mjs ./
 COPY runtime/execution-observation.generated.mjs ./
 COPY runtime/python-inspect.mjs ./
 COPY runtime/python-playtest.mjs runtime/python-playtest.generated.mjs ./
+COPY runtime/python-mission.mjs ./
 COPY runtime/python-browser-resources.mjs ./
 COPY runtime/portable-path.generated.mjs ./
 

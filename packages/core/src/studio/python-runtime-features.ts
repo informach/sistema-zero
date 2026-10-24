@@ -1,7 +1,11 @@
 import { z } from 'zod'
 
 /** Implemented APIs, distinct from per-user permissions and browser requirements. */
-export const STUDIO_PYTHON_RUNTIME_FEATURES = ['turtle-compound-shapes'] as const
+export const PYTHON_PROJECT_MISSION_FEATURE = 'project-missions-v1' as const
+export const STUDIO_PYTHON_RUNTIME_FEATURES = [
+  'turtle-compound-shapes',
+  PYTHON_PROJECT_MISSION_FEATURE,
+] as const
 export const StudioPythonRuntimeFeatureSchema = z.enum(STUDIO_PYTHON_RUNTIME_FEATURES)
 export type StudioPythonRuntimeFeature = z.infer<typeof StudioPythonRuntimeFeatureSchema>
 export const StudioPythonRuntimeFeaturesSchema = z

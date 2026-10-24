@@ -226,6 +226,10 @@ class Actor:
 
     def draw(self):
         game.screen.blit(self._surf, self.topleft)
+        if _sz._mission_checkpoint is not None:
+            if id(self) not in _sz.frame.actors and len(_sz.frame.actors) >= 2048:
+                raise RuntimeError('Muitos atores gráficos para observar.')
+            _sz.frame.actors[id(self)] = (id(self), self.x, self.y)
 
     def angle_to(self, target):
         """Return the angle from this actors position to target, in degrees."""

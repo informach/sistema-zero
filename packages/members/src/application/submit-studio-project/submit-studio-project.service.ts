@@ -31,7 +31,7 @@ import type { CourseRepository } from '../../domain/ports/course-repository.port
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
 import type { StudioLessonBindingRepository } from '../../domain/ports/studio-lesson-binding-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
-import { StudioPythonActivityUnavailableError } from '../../domain/studio/python-activity.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../../domain/studio/python-project-check.errors'
 import type { CheckAccessService } from '../access/check-access.service'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import type { SectionProgressionService } from '../learning/section-progression.service'
@@ -308,11 +308,11 @@ export class SubmitStudioProjectService {
       )
       if (gallery) {
         const authorize = gallery.authorize
-        if (!authorize) throw new StudioPythonActivityUnavailableError()
+        if (!authorize) throw new StudioPythonProjectCheckUnavailableError()
         await owned(() => authorize(signal), signal)
       } else {
         const bindings = this.bindings
-        if (!bindings) throw new StudioPythonActivityUnavailableError()
+        if (!bindings) throw new StudioPythonProjectCheckUnavailableError()
         const binding = await owned(
           () => bindings.find({ userId, accountId: accountId ?? userId }, blockId),
           signal,

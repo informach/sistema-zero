@@ -10,12 +10,20 @@ import {
   StudioPythonActivitySchema,
   verifyStudioPythonActivityFeedback,
 } from '@sistemazero/core/studio/python-activity'
+import {
+  PYTHON_MISSION_OBSERVATION_LIMITS,
+  readStudioPythonMissionProbe,
+  type StudioPythonMissionObservation,
+  type StudioPythonMissionProbe,
+  verifyStudioPythonMissionObservation,
+} from '@sistemazero/core/studio/python-mission-observation'
 import { SZ_AUDIO_MODULE_DESCRIPTOR } from '@sistemazero/core/studio/python-provided-modules-sz-audio'
 import activitySource from './activity-grader.py'
 import { createPythonActivityConsoleMatcher } from './activityConsole'
 import audioSource from './audio/sz_audio/__init__.py'
 import { type PythonCanvasExtension, pythonCanvasExtension } from './canvasExtension'
 import bridgeSource from './interpreter.py'
+import missionSource from './mission-observer.py'
 import { PGZERO_EXTENSION } from './pgzero/contract'
 import { loadPgzeroModuleSources } from './pgzero/moduleSources'
 import type { PythonConsoleStream, PythonExecutionSnapshot, PythonGraphicsReply } from './protocol'
@@ -41,6 +49,8 @@ interface ExecutionBridge {
   install_audio: PythonCallable
   install_activity: PythonCallable
   grade_activity: PythonCallable
+  install_mission: PythonCallable
+  observe_mission: PythonCallable
   destroy(): void
 }
 /** The pinned API subset used here; no private Pyodide fields or monkeypatches. */
@@ -177,6 +187,7 @@ export async function createPythonInterpreter(options: {
   requestLine(): Promise<string>
   activityRequested?(): boolean
   onActivityResult?(feedback: StudioPythonActivityFeedback): void
+  onMissionResult?(observation: StudioPythonMissionObservation): void
   graphics?(
     request: string,
     images: { id: number; bytes: Uint8Array<ArrayBuffer> }[],
@@ -235,6 +246,10 @@ export async function createPythonInterpreter(options: {
   const installAudio = bridge.install_audio
   const installActivity = bridge.install_activity
   const gradeActivity = bridge.grade_activity
+  const installMission = bridge.install_mission
+  const observeMission = bridge.observe_mission
+  let missionEnabled = false
+  let pendingMission: StudioPythonMissionProbe | undefined
   let prepared = false
   let running = false
   let started = false
@@ -243,6 +258,7 @@ export async function createPythonInterpreter(options: {
     async prepare(
       snapshot: PythonExecutionSnapshot,
       rawActivity?: StudioPythonActivity,
+      mission = false,
     ): Promise<void> {
       if (disposed || prepared) throw new Error('O interpretador não pode receber outro snapshot.')
       const canvas = pythonCanvasExtension(snapshot.configuration.extensions) ?? null
@@ -277,6 +293,26 @@ export async function createPythonInterpreter(options: {
         runtime.FS.writeFile(path, file.bytes)
       }
       prepare(PROJECT_ROOT, snapshot.configuration.python.entrypoint, options.requestLine)
+      if (mission) {
+        if (!options.onMissionResult) throw new Error('O canal da missão não está disponível.')
+        installMission(
+          missionSource,
+          () => (pendingMission ? JSON.stringify(pendingMission) : ''),
+          (raw: unknown) => {
+            if (
+              disposed ||
+              !pendingMission ||
+              typeof raw !== 'string' ||
+              raw.length > PYTHON_MISSION_OBSERVATION_LIMITS.jsonChars
+            )
+              throw new Error('Observação Python fora da execução atual.')
+            const result = verifyStudioPythonMissionObservation(JSON.parse(raw), pendingMission)
+            pendingMission = undefined
+            options.onMissionResult!(result)
+          },
+        )
+        missionEnabled = true
+      }
       if (options.audio) {
         const directory = `/studio/media/python-audio-${SZ_AUDIO_MODULE_DESCRIPTOR.version}`
         runtime.FS.mkdirTree(`${directory}/sz_audio`)
@@ -456,9 +492,29 @@ export async function createPythonInterpreter(options: {
         running = false
       }
     },
+    get hasPendingMission() {
+      return pendingMission !== undefined
+    },
+    requestMission(raw: unknown) {
+      if (disposed || !prepared || !started || !missionEnabled || pendingMission)
+        throw new Error('A missão não pode observar esta execução.')
+      pendingMission = readStudioPythonMissionProbe(raw)
+    },
+    async flushMission() {
+      if (disposed || !prepared || !started || !pendingMission || running)
+        throw new Error('O interpretador não pode observar a missão agora.')
+      running = true
+      try {
+        await observeMission.callPromising()
+        if (pendingMission) throw new Error('A missão não relatou a observação solicitada.')
+      } finally {
+        running = false
+      }
+    },
     dispose(): void {
       if (disposed) return
       disposed = true
+      pendingMission = undefined
       resourceScope.abort(new Error('Esta execução Python foi encerrada.'))
       // The supervisor terminates a busy worker; never reenter suspended Python
       // merely to run cleanup. This path is for cooperative, idle shutdown.
@@ -471,6 +527,8 @@ export async function createPythonInterpreter(options: {
       installAudio.destroy()
       installActivity.destroy()
       gradeActivity.destroy()
+      installMission.destroy()
+      observeMission.destroy()
       bridge.destroy()
     },
   }

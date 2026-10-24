@@ -110,7 +110,7 @@ import { AuthorizePublicRuntimeService } from './application/studio/authorize-pu
 import { AuthorizePythonAnalysisService } from './application/studio/authorize-python-analysis.service'
 import { FreeStudioAccessService } from './application/studio/free-studio-access.service'
 import { OpenLessonStudioService } from './application/studio/open-lesson-studio.service'
-import { PythonActivityInspectionService } from './application/studio/python-activity-inspection.service'
+import { PythonProjectCheckerService } from './application/studio/python-project-checker.service'
 import { StudioPythonBuilderPolicy } from './application/studio-pro/python-builder-policy'
 import { StudioBuilderService } from './application/studio-pro/studio-builder.service'
 import { createStudioBuilderCoordinator } from './application/studio-pro/studio-builder-coordinator'
@@ -750,7 +750,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const creationsRepo = new DrizzleCreationsRepository(db)
   const awardGamification = new AwardGamificationService(gamificationRepo, clock, logger)
   const studioBindings = new DrizzleStudioLessonBindingRepository(db)
-  const pythonActivityInspections = new PythonActivityInspectionService({
+  const pythonProjectChecker = new PythonProjectCheckerService({
     runtimeUrl: env.STUDIO_PYTHON_RUNTIME_URL,
     runtimeToken: env.STUDIO_PYTHON_RUNTIME_TOKEN,
     policy: studioRuntimePolicy,
@@ -769,7 +769,7 @@ export async function createApplication(env: Env): Promise<Application> {
     awardGamification,
     projectExecutor,
     async (courseId) => (await courses.findCourseById(courseId))?.audience ?? 'kids',
-    { inspections: pythonActivityInspections, bindings: studioBindings, live: liveWorkspace },
+    { checker: pythonProjectChecker, bindings: studioBindings, live: liveWorkspace },
   )
   const learning = new LearningService(
     learningRepository,

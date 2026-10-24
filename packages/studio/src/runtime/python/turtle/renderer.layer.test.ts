@@ -85,6 +85,36 @@ async function scene() {
   return { renderer, paint }
 }
 
+test('clearing a Turtle screen retires observed actors even when a drawing ID is reused', async () => {
+  const host = document.createElement('div')
+  const renderer = createTurtleRenderer(host, { activityPresentation: true })
+  try {
+    await renderer.exchange(
+      present([
+        { op: 'open' },
+        { op: 'create', id: 1, kind: 'line' },
+        line(1),
+        { op: 'actor', id: 10, x: 5, y: 6, items: [1], visible: true },
+      ]),
+      [],
+    )
+    expect(renderer.missionPose(10)?.x).toBe(5)
+    await renderer.exchange(
+      present([
+        { op: 'delete', id: 'all' },
+        { op: 'create', id: 1, kind: 'line' },
+        line(1),
+        { op: 'actor', id: 20, x: 9, y: 10, items: [1], visible: true },
+      ]),
+      [],
+    )
+    expect(renderer.missionPose(10)).toBeNull()
+    expect(renderer.missionPose(20)?.x).toBe(9)
+  } finally {
+    renderer.dispose()
+  }
+})
+
 test('unchanged items join the retained layer and later paints redraw only the rest', async () => {
   contexts.clear()
   const { renderer, paint } = await scene()

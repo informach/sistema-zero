@@ -1,4 +1,5 @@
 import { StudioPythonActivityFeedbackSchema } from '@sistemazero/core/studio/python-activity'
+import { readStudioPythonMissionObservation } from '@sistemazero/core/studio/python-mission-observation'
 import { readPythonAudioRequest } from './audio/contract'
 import { PYTHON_CONSOLE_LIMITS, type PythonConsoleBatch, type PythonWorkerEvent } from './protocol'
 
@@ -15,6 +16,18 @@ const count = (value: unknown): value is number =>
 export function readPythonWorkerEvent(raw: unknown): PythonWorkerEvent | undefined {
   if (!record(raw)) return
   switch (raw.type) {
+    case 'mission-result': {
+      if (!isPythonRequestId(raw.requestId)) return
+      try {
+        return {
+          type: 'mission-result',
+          requestId: raw.requestId,
+          observation: readStudioPythonMissionObservation(raw.observation),
+        }
+      } catch {
+        return
+      }
+    }
     case 'audio': {
       if (!isPythonRequestId(raw.requestId)) return
       try {

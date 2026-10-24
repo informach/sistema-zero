@@ -22,6 +22,7 @@ from collections import OrderedDict
 from ._colors import COLORS
 
 _transport = None
+_mission_checkpoint = None
 _decoder = None
 _root = '.'
 
@@ -68,16 +69,17 @@ class PgzeroRendererError(RuntimeError):
     """The browser could not show a frame (an image it cannot open, for example)."""
 
 
-def configure(transport, decoder, root):
+def configure(transport, decoder, root, *, checkpoint=None):
     """Called once by the runtime before the learner program runs.
 
     ``transport(header, payload)`` returns ``(text, pixels)``: the browser's reply and, for a
     pixel request, the RGBA bytes (otherwise None).
     """
-    global _transport, _decoder, _root
+    global _transport, _decoder, _root, _mission_checkpoint
     _transport = transport
     _decoder = decoder
     _root = root
+    _mission_checkpoint = checkpoint
 
 
 def project_path(path):
@@ -499,8 +501,10 @@ class _Frame:
         self.new_styles = []
         self.audio = []
         self.drawn = False
+        self.actors = {}
 
     def reset(self):
+        self.actors.clear()
         del self.ops[:]
         self.records = 0
         self.drawn = True
@@ -881,6 +885,7 @@ def present(width, height, title, keep):
         'styles': frame.new_styles,
         'audio': frame.audio,
         'watch': bool(_waiting),
+        'actors': list(frame.actors.values()) if _mission_checkpoint is not None and not keep else [],
     }
     reply, _ = _exchange(header, payload)
     _images.pending = _images.pending[len(images):]
@@ -890,4 +895,6 @@ def present(width, height, title, keep):
     frame.audio = []
     frame.drawn = False
     audio_ended(reply.get('ended', ()))
+    if _mission_checkpoint is not None:
+        _mission_checkpoint()
     return reply

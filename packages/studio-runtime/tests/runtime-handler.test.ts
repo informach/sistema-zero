@@ -368,6 +368,9 @@ test('default Python input handler uses approved config, private storage and sta
   context.env.PythonInspectionJobs = {
     getByName() {
       return {
+        async check() {
+          throw new Error('This scenario must not admit a Python mission')
+        },
         async inspect() {
           throw new Error('Input-only test must not start an inspection')
         },

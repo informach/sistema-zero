@@ -64,24 +64,61 @@ def _json_value(value):
 
 
 class _StudioMissionObserver:
-    def __init__(self, namespace, load_module=None, await_result=None):
+    def __init__(self, namespace, load_module=None, await_result=None,
+                 requested=None, publish=None, sprite_identity=None):
         self._namespace = namespace
         # The adapter resolves only a file in the immutable project snapshot.
         self._load_module = load_module
         self._await_result = await_result
+        self._requested = requested
+        self._publish = publish
+        self._sprite_identity = sprite_identity
+        self._observing = False
+
+    def observe(self, probe):
+        if probe['type'] == 'functionReturns':
+            return self.function_returns(probe)
+        if set(probe) != {'type', 'path'}:
+            raise ValueError('A sonda de valor possui campos não permitidos.')
+        if probe['type'] == 'value':
+            return {'type': 'value', 'observed': self.read_value(probe['path'])}
+        if probe['type'] == 'sprite':
+            try:
+                value = self._path_value(probe['path'])
+                object_id = self._sprite_identity(value) if self._sprite_identity else None
+                observed = {'found': True, 'objectId': object_id} if object_id else {'found': False}
+            except BaseException as error:
+                observed = {'found': False, 'error': _error(error)}
+            return {'type': 'sprite', 'observed': observed}
+        raise ValueError('Tipo de sonda Python inválido.')
+
+    def checkpoint(self):
+        if self._observing or self._requested is None or self._publish is None:
+            return
+        raw = self._requested()
+        if not raw:
+            return
+        self._observing = True
+        try:
+            self._publish(json.dumps(self.observe(json.loads(raw)), ensure_ascii=False, allow_nan=False))
+        finally:
+            self._observing = False
+
+    def _path_value(self, path):
+        parts = path.split('.')
+        if not 1 <= len(parts) <= 4 or any(not part.isidentifier() for part in parts):
+            raise ValueError('O caminho da observação é inválido.')
+        parts = [unicodedata.normalize('NFKC', part) for part in parts]
+        value = self._namespace[parts[0]]
+        for part in parts[1:]:
+            value = value[part] if type(value) is dict else getattr(value, part)
+        return value
 
     def read_value(self, path):
         try:
-            parts = path.split('.')
-            if not 1 <= len(parts) <= 4 or any(not part.isidentifier() for part in parts):
-                raise ValueError('O caminho da observação é inválido.')
-            parts = [unicodedata.normalize('NFKC', part) for part in parts]
-            if parts[0] not in self._namespace:
-                return {'found': False}
-            value = self._namespace[parts[0]]
-            for part in parts[1:]:
-                value = value[part] if type(value) is dict else getattr(value, part)
-            return {'found': True, 'value': _json_value(value)}
+            return {'found': True, 'value': _json_value(self._path_value(path))}
+        except (KeyError, AttributeError):
+            return {'found': False}
         except BaseException as error:
             return {'found': False, 'error': _error(error)}
 

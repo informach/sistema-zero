@@ -2136,6 +2136,11 @@ class RawTurtle(TPen, TNavigator):
                     screen._drawpoly(item, ((0, 0), (0, 0), (0, 0)), '', '')
             self._hidden_from_screen = True
 
+        if screen._mission_observation:
+            screen._observe_turtle(id(self), self._position,
+                                   titem if isinstance(titem, (list, tuple)) else [titem],
+                                   not self._hidden_from_screen)
+
     def stamp(self):
         """Stamp a copy of the turtleshape onto the canvas and return its id.
 

@@ -21,19 +21,21 @@ import {
   type SectionProgressView,
   type SectionProjectLiveContext,
   SectionProjectLiveContextSchema,
+  type SectionPythonProjectCheck,
   sectionCompletionIssues,
   sectionProgressView,
   sectionProjectChecksEnvironmentIssue,
-  sectionPythonProjectActivity,
   submissionFreshness,
   submissionUpToDateWorkspace,
   summarizeSectionObjectives,
 } from '@sistemazero/core/learning'
 import { lessonStudioProjectId } from '@sistemazero/core/studio/lesson-project-id'
+import type { StudioProjectCuration } from '@sistemazero/core/studio/project-capabilities'
 import { StudioProjectCurationSchema } from '@sistemazero/core/studio/project-capabilities'
 import { studioProjectContinuityIssue } from '@sistemazero/core/studio/project-continuity'
 import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-document'
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
+import type { StudioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { evaluateStudioSectionObjectives } from '@sistemazero/studio/server-project-checks'
 import type { CourseAudience, LessonWithContent } from '../../domain/course/course'
@@ -59,11 +61,11 @@ import type { QuizAttemptRepository } from '../../domain/ports/quiz-attempt-repo
 import type { StudioLessonBindingRepository } from '../../domain/ports/studio-lesson-binding-repository.port'
 import type { StudioSubmissionRepository } from '../../domain/ports/studio-submission-repository.port'
 import { stableJson } from '../../domain/shared/stable-json'
-import { StudioPythonActivityUnavailableError } from '../../domain/studio/python-activity.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../../domain/studio/python-project-check.errors'
 import type { AwardGamificationService } from '../gamification/award-gamification.service'
 import type { LiveWorkspaceService } from '../live/live-workspace.service'
 import type { GamificationDeltaView } from '../mappers/views'
-import type { PythonActivityInspectionService } from '../studio/python-activity-inspection.service'
+import type { PythonProjectCheckerService } from '../studio/python-project-checker.service'
 import type { PlatformActionService } from './platform-action.service'
 
 /**
@@ -104,7 +106,7 @@ export class SectionProgressionService {
     private readonly executor?: ProjectExecutionChecker,
     private readonly courseAudience?: (courseId: string) => Promise<CourseAudience>,
     private readonly python?: {
-      inspections: Pick<PythonActivityInspectionService, 'grade'>
+      checker: Pick<PythonProjectCheckerService, 'grade'>
       bindings: Pick<StudioLessonBindingRepository, 'find'>
       live?: Pick<LiveWorkspaceService, 'forSession'>
     },
@@ -152,6 +154,43 @@ export class SectionProgressionService {
    * "Testar agora" da autoria: os objetivos (estrutura e execução) contra um projeto, sem guardar
    * nada nem premiar. A equipe recebe o motivo de cada objetivo e as capturas da tela.
    */
+  async testPythonObjectives(input: {
+    checks: readonly SectionPythonProjectCheck[]
+    project: unknown
+    referenceProject?: unknown
+    userId: string
+    accountId: string
+    signal?: AbortSignal
+    authorize(signal: AbortSignal, subject: StudioRuntimeSubject): Promise<StudioProjectCuration>
+  }) {
+    if (!this.python) throw new StudioPythonProjectCheckUnavailableError()
+    let project = StudioProjectDocumentSchema.parse(copyStudioProjectJson(input.project))
+    if (project.programmingLanguage !== 'python')
+      throw new ValidationError('Escolha um projeto Python para estes objetivos.')
+    if (input.referenceProject !== undefined) {
+      const reference = StudioProjectDocumentSchema.parse(
+        copyStudioProjectJson(input.referenceProject),
+      )
+      const issue = studioProjectContinuityIssue(project, reference)
+      if (issue)
+        throw new ValidationError(
+          'O projeto de teste precisa usar o mesmo ambiente do projeto inicial.',
+        )
+      project = { ...project, id: reference.id }
+    }
+    const authorize = input.authorize
+    const captured = project,
+      subject = studioRuntimeSubject(project)
+    return this.python.checker.grade({
+      userId: input.userId,
+      accountId: input.accountId,
+      project: captured,
+      checks: input.checks,
+      signal: input.signal,
+      authorize: (signal) => authorize(signal, subject),
+    })
+  }
+
   async testObjectives(input: {
     checks: readonly {
       id: string
@@ -638,15 +677,9 @@ export class SectionProgressionService {
       serializedProject.length > MAX_STUDIO_PROJECT_CHARS
     )
       throw new ValidationError('Projeto inválido ou muito grande.')
-    const pythonProject =
-      typeof capturedProject === 'object' &&
-      capturedProject !== null &&
-      'programmingLanguage' in capturedProject &&
-      capturedProject.programmingLanguage === 'python'
-    // Python retains the 50s operation/45s inspection ceilings. Shared JavaScript
-    // execution is independently bounded; a retired caller cannot persist its result.
+    // One bounded project check; retirement always precedes accepting progress.
     const signal = AbortSignal.any([
-      AbortSignal.timeout(pythonProject ? 50_000 : 155_000),
+      AbortSignal.timeout(155_000),
       ...(context.signal ? [context.signal] : []),
     ])
     const owned = <Value>(operation: () => Promise<Value>) => awaitWithSignal(operation, signal)
@@ -691,7 +724,7 @@ export class SectionProgressionService {
       const dependencies = this.python
       const authorizeLesson = context.authorizeLesson
       if (!dependencies || !authorizeLesson || !workspaceId)
-        throw new StudioPythonActivityUnavailableError()
+        throw new StudioPythonProjectCheckUnavailableError()
       const parsed = StudioProjectDocumentSchema.safeParse(capturedProject)
       if (!parsed.success || parsed.data.programmingLanguage !== 'python')
         throw new ValidationError('Envie um projeto Python válido para estes objetivos.')
@@ -791,19 +824,18 @@ export class SectionProgressionService {
     }
     if (pythonChecks.length) {
       const result = await owned(() =>
-        this.python!.inspections.grade({
+        this.python!.checker.grade({
           userId: owner.userId,
           accountId: owner.accountId,
           project: capturedProject,
-          activity: sectionPythonProjectActivity(pythonChecks, section.objective),
-          clientResults: [],
+          checks: pythonChecks,
           signal,
           authorize: (authorizationSignal) => reauthorizePython!(authorizationSignal),
         }),
       )
       const byId = new Map(result.results.map((item) => [item.checkId, item.passed]))
       if (checks.some((check) => !byId.has(check.id)))
-        throw new StudioPythonActivityUnavailableError()
+        throw new StudioPythonProjectCheckUnavailableError()
       evaluation = summarizeSectionObjectives(
         checks.map((check) => ({
           checkId: check.id,

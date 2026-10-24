@@ -1,5 +1,9 @@
 import { StudioAuthoringCatalogSchema } from '@sistemazero/core/studio/authoring-catalog'
 import {
+  PYTHON_PROJECT_MISSION_FEATURE,
+  type StudioPythonRuntimeFeature,
+} from '@sistemazero/core/studio/python-runtime-features'
+import {
   createStudioRuntimeRelease,
   type StudioProjectCapability,
 } from '@sistemazero/core/studio/runtime-catalog'
@@ -20,6 +24,7 @@ export async function authoringFixture(
   language: 'javascript' | 'python',
   kind: 'classic' | 'pro',
   capabilities: readonly StudioProjectCapability[] = FIXTURE_RELEASE_CAPABILITIES,
+  features: readonly StudioPythonRuntimeFeature[] = [PYTHON_PROJECT_MISSION_FEATURE],
 ) {
   const release = await createStudioRuntimeRelease({
     manifestVersion: 1,
@@ -34,7 +39,9 @@ export async function authoringFixture(
     requiredBrowserFeatures: [],
     artifacts: [{ path: 'inert.txt', sha256: 'a'.repeat(64) }],
     ...(language === 'python'
-      ? { python: { version: '3.14.2', packages: [], providedModules: [], features: [] } }
+      ? {
+          python: { version: '3.14.2', packages: [], providedModules: [], features: [...features] },
+        }
       : {}),
   })
   const runtime = {

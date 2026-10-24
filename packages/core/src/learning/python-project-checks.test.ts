@@ -1,6 +1,11 @@
 import { expect, test } from 'bun:test'
 import { defaultLessonSection } from './index'
-import { isSectionPythonProjectCheck, sectionPythonProjectActivity } from './python-project-checks'
+import {
+  isSectionPythonProjectCheck,
+  pythonProjectCheckGraphics,
+  sectionProjectChecksEnvironmentIssue,
+  validateSectionPythonProjectChecks,
+} from './python-project-checks'
 import { isSectionCompletion, sectionCompletionIssues } from './section-progression'
 
 const check = {
@@ -38,6 +43,46 @@ const project = {
     },
   },
 }
+
+test('Raylib 2D/3D criteria use actual program variables and vectors with real controls', () => {
+  for (const [id, kind] of [
+    ['python-raylib-2d', 'raylib2d'],
+    ['python-raylib-3d', 'raylib3d'],
+  ] as const) {
+    const extensions = [{ id, version: '1.0.0', installedAt: 0 }]
+    expect(pythonProjectCheckGraphics(extensions)).toBe(kind)
+    const raylib = { ...project, installedExtensions: extensions }
+    const value = {
+      ...check,
+      id: 'move',
+      rule: {
+        type: 'behavior' as const,
+        steps: [{ action: 'press' as const, key: 'ArrowUp', holdMs: 100 }],
+        expect: {
+          target: { kind: 'value' as const, path: 'posicao.z' },
+          compare: 'decreased' as const,
+        },
+      },
+    }
+    expect(sectionProjectChecksEnvironmentIssue([value], raylib)).toBeNull()
+    const actor = {
+      ...value,
+      rule: {
+        ...value.rule,
+        observation: { type: 'idleBeforeAction' as const, idleMs: 80 },
+        expect: {
+          target: { kind: 'spritePosition' as const, path: 'heroi', axis: 'y' as const },
+          compare: 'increased' as const,
+        },
+      },
+    }
+    expect(sectionProjectChecksEnvironmentIssue([actor], raylib)).toContain('No Raylib')
+  }
+  expect(pythonProjectCheckGraphics([{ id: 'python-turtle' }, { id: 'python-raylib-3d' }])).toBe(
+    'none',
+  )
+  expect(pythonProjectCheckGraphics([{ id: 'constructor' }])).toBe('none')
+})
 
 test('publication binds section objectives to the initial language and profile, while legacy JS remains valid', () => {
   const completion = { version: 1 as const, blockIds: [], projectChecks: [check] }
@@ -105,7 +150,7 @@ test('publication binds section objectives to the initial language and profile, 
 test('Python section drafts preserve incomplete fields but cannot become an executable gate', () => {
   const unfinished = { ...check, label: '', rule: { ...check.rule, name: '', file: 'src/' } }
   expect(isSectionPythonProjectCheck(unfinished)).toBe(true)
-  expect(() => sectionPythonProjectActivity([unfinished], '')).toThrow()
+  expect(() => validateSectionPythonProjectChecks([unfinished])).toThrow()
   expect(
     isSectionPythonProjectCheck({ ...check, rule: { type: 'usesBlock', blockType: 'sz_js_log' } }),
   ).toBe(false)
@@ -115,24 +160,25 @@ test('Python section drafts preserve incomplete fields but cannot become an exec
   ).toBe(false)
 })
 
-test('section gates contain only structural rules with canonical Python names and full score required', () => {
-  const activity = sectionPythonProjectActivity(
-    [check, { ...check, id: 'unicode', rule: { type: 'declaresVariable', name: 'K' } }],
-    'Prepare o jogo',
-  )
-  expect(activity.passingScore).toBe(100)
-  expect(activity.profileId).toBe(check.profileId)
-  expect(activity.checks).toEqual([
-    { id: 'function', label: check.label, kind: 'structure', rule: check.rule },
-    {
-      id: 'unicode',
-      label: check.label,
-      kind: 'structure',
-      rule: { type: 'declaresVariable', name: 'K' },
+test('published Python objectives support actual execution and complementary structure, with one profile and unique IDs', () => {
+  const execution = {
+    ...check,
+    id: 'result',
+    rule: {
+      type: 'behavior' as const,
+      steps: [],
+      expect: { target: { kind: 'console' as const }, compare: 'contains' as const, value: 'Olá' },
     },
-  ])
+  }
+  expect(() => validateSectionPythonProjectChecks([check, execution])).not.toThrow()
   expect(() =>
-    sectionPythonProjectActivity([check, { ...check, id: 'other', profileId: 'other' }], ''),
+    validateSectionPythonProjectChecks([check, { ...check, id: 'other', profileId: 'other' }]),
   ).toThrow()
-  expect(() => sectionPythonProjectActivity([check, check], '')).toThrow()
+  expect(() => validateSectionPythonProjectChecks([check, check])).toThrow()
+  expect(() =>
+    validateSectionPythonProjectChecks([
+      { ...execution, rule: { type: 'functionReturns', name: '', cases: [] } },
+    ]),
+  ).toThrow()
+  expect(() => validateSectionPythonProjectChecks([{ ...check, stdin: ['input'] }])).toThrow()
 })

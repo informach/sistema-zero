@@ -1,0 +1,451 @@
+import assert from 'node:assert/strict'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import path from 'node:path'
+import {
+  judgePythonProjectExecution,
+  type PythonProjectExecutionObjective,
+  preparePythonProjectExecution,
+} from '@sistemazero/core/learning'
+import { studioPythonExecutionRevision } from '@sistemazero/core/studio/python-execution-content'
+import {
+  pythonMissionRecipe,
+  pythonMissionRequest,
+} from '@sistemazero/core/studio/python-mission-execution'
+import { verifyStudioPythonPlaytestReport } from '@sistemazero/core/studio/python-playtest'
+import { studioPythonLogicalFiles } from '@sistemazero/core/studio/python-runtime-distribution'
+import { pythonFrameContentSecurityPolicy } from '@sistemazero/core/studio/python-runtime-policy'
+import { createStudioRuntimeRelease } from '@sistemazero/core/studio/runtime-catalog'
+import { buildPythonRuntimeDistribution } from '../../studio/scripts/build-python-runtime'
+import { sha256 } from '../src/artifacts'
+
+// Real Chromium/Pyodide in the production image, with no external network. No expected
+// answer is written beside the program: the canonical judge remains in this process.
+const root = path.resolve(import.meta.dirname, '../../..')
+const cache =
+  process.env.STUDIO_PYTHON_TEST_CACHE ?? path.join(root, '.cache/studio-python-l0/missions')
+const imageTag = process.env.STUDIO_PYTHON_TEST_IMAGE ?? 'sistemazero-studio-runtime:verify'
+const pinImage = Bun.spawn(['docker', 'image', 'inspect', imageTag, '--format', '{{.Id}}'], {
+  windowsHide: true,
+  stdout: 'pipe',
+  stderr: 'pipe',
+})
+const [pinExit, pinOutput, pinError] = await Promise.all([
+  pinImage.exited,
+  new Response(pinImage.stdout).text(),
+  new Response(pinImage.stderr).text(),
+])
+assert.equal(pinExit, 0, pinError)
+const image = pinOutput.trim()
+assert.match(image, /^sha256:[a-f0-9]{64}$/)
+const imageCheck = Bun.spawn(
+  [
+    'docker',
+    'run',
+    '--rm',
+    '--network',
+    'none',
+    '--entrypoint',
+    'cat',
+    image,
+    '/opt/sz-runtime/validation-profile.json',
+  ],
+  { windowsHide: true, stdout: 'pipe', stderr: 'pipe' },
+)
+const [imageExit, imageProfile, imageError] = await Promise.all([
+  imageCheck.exited,
+  new Response(imageCheck.stdout).text(),
+  new Response(imageCheck.stderr).text(),
+])
+assert.equal(imageExit, 0, imageError)
+assert.deepEqual(
+  JSON.parse(imageProfile),
+  JSON.parse(
+    await readFile(
+      path.join(root, 'packages/studio-runtime/runtime/validation-profile.json'),
+      'utf8',
+    ),
+  ),
+  'Mission qualification requires the current production image',
+)
+const build = await buildPythonRuntimeDistribution({
+  vendorDirectory: path.join(cache, 'vendor'),
+  outputDirectory: path.join(cache, 'distributions'),
+})
+const release = await createStudioRuntimeRelease({
+  manifestVersion: 1,
+  profileId: 'python-missions-verify',
+  releaseId: 'verify-1',
+  programmingLanguage: 'python',
+  kinds: ['classic', 'pro'],
+  modes: ['blocks', 'bridge', 'code'],
+  capabilities: ['execute'],
+  extensions: [
+    { id: 'python-turtle', versions: ['1.0.0'] },
+    { id: 'python-pgzero', versions: ['1.0.0'] },
+  ],
+  sourceTargets: ['browser', 'desktop'],
+  requiredBrowserFeatures: ['wasm', 'worker', 'jspi', 'trusted-types'],
+  artifacts: build.manifest.files.map(({ path, sha256 }) => ({ path, sha256 })),
+  python: {
+    version: build.manifest.pythonVersion,
+    packages: [],
+    providedModules: build.manifest.providedModules,
+    features: build.manifest.features,
+  },
+})
+const consoleRule: Extract<PythonProjectExecutionObjective['rule'], { type: 'behavior' }> = {
+  type: 'behavior',
+  steps: [],
+  expect: { target: { kind: 'console' }, compare: 'contains', value: 'missao concluida' },
+}
+const motion: Extract<PythonProjectExecutionObjective['rule'], { type: 'behavior' }> = {
+  type: 'behavior',
+  steps: [{ action: 'press', key: 'ArrowUp', holdMs: 100 }],
+  observation: { type: 'idleBeforeAction', idleMs: 100 },
+  expect: { target: { kind: 'spritePosition', path: 'heroi', axis: 'y' }, compare: 'increased' },
+}
+const cases: {
+  name: string
+  source: string
+  objective: PythonProjectExecutionObjective
+  expected: boolean
+  extension?: string
+  asset?: boolean
+}[] = [
+  {
+    name: 'function-input',
+    source: 'def ler():\n    return int(input("N?"))\n',
+    objective: {
+      id: 'input-function',
+      stdin: ['7'],
+      rule: { type: 'functionReturns', name: 'ler', cases: [{ args: [], expected: 7 }] },
+    },
+    expected: true,
+  },
+  {
+    name: 'four-input-lines',
+    source: 'print("-".join([input() for _ in range(4)]))\n',
+    objective: {
+      id: 'input',
+      stdin: ['A', '', 'B', 'C'],
+      rule: {
+        type: 'behavior',
+        steps: [],
+        expect: { target: { kind: 'console' }, compare: 'contains', value: 'A--B-C' },
+      },
+    },
+    expected: true,
+  },
+  {
+    name: 'unused-input',
+    source: 'print("missao concluida")\n',
+    objective: { id: 'input', stdin: ['unused'], rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'extra-input',
+    source: 'input()\ninput()\nprint("missao concluida")\n',
+    objective: { id: 'input', stdin: ['one'], rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'stdout-limit',
+    source: 'print("x" * 20000)\nprint("missao concluida")\n',
+    objective: { id: 'output', rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'network-denied',
+    source:
+      'from js import fetch\nfrom pyodide.ffi import run_sync\nrun_sync(fetch("https://example.com/"))\nprint("missao concluida")\n',
+    objective: { id: 'network', rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'host-file-denied',
+    source: 'print(open("/workspace/mission/host-only.txt").read())\nprint("missao concluida")\n',
+    objective: { id: 'host-file', rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'console-correct',
+    source: 'print("missao concluida")\n',
+    objective: { id: 'console', rule: consoleRule },
+    expected: true,
+  },
+  {
+    name: 'console-wrong',
+    source: 'print("outro resultado")\n',
+    objective: { id: 'console', rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'dead-branch',
+    source: 'if False:\n    print("missao concluida")\n',
+    objective: { id: 'console', rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'input',
+    source: 'nome = input("Nome?")\nprint("missao " + nome)\n',
+    objective: { id: 'console', rule: consoleRule, stdin: ['concluida'] },
+    expected: true,
+  },
+  {
+    name: 'exception',
+    source: 'raise ValueError("erro do programa")\n',
+    objective: { id: 'console', rule: consoleRule },
+    expected: false,
+  },
+  {
+    name: 'function',
+    source: 'def dobro(n):\n    return n * 2\n',
+    objective: {
+      id: 'function',
+      rule: {
+        type: 'functionReturns',
+        name: 'dobro',
+        cases: [
+          { args: [3], expected: 6 },
+          { args: [-2], expected: -4 },
+        ],
+      },
+    },
+    expected: true,
+  },
+  {
+    name: 'function-wrong',
+    source: 'def dobro(n):\n    return n + 2\n',
+    objective: {
+      id: 'function',
+      rule: { type: 'functionReturns', name: 'dobro', cases: [{ args: [3], expected: 6 }] },
+    },
+    expected: false,
+  },
+  {
+    name: 'async-function',
+    source: 'async def dobro(n):\n    return n * 2\n',
+    objective: {
+      id: 'function',
+      rule: { type: 'functionReturns', name: 'dobro', cases: [{ args: [3], expected: 6 }] },
+    },
+    expected: true,
+  },
+  {
+    name: 'cpu-loop',
+    source: 'while True:\n    pass\n',
+    objective: {
+      id: 'value',
+      rule: {
+        type: 'behavior',
+        steps: [],
+        expect: { target: { kind: 'value', path: 'pontos' }, compare: 'equals', value: 10 },
+      },
+    },
+    expected: false,
+  },
+  ...[3, 9, -3, 0].map((speed) => ({
+    name: `turtle-${speed}`,
+    source: `import turtle\nscreen = turtle.Screen()\nscreen.setup(320, 240)\nheroi = turtle.Turtle()\nheroi.speed(0)\ndef subir():\n    heroi.sety(heroi.ycor() + ${speed})\nscreen.onkeypress(subir, "Up")\nscreen.listen()\nscreen.mainloop()\n`,
+    objective: { id: 'move', rule: motion },
+    expected: speed > 0,
+    extension: 'python-turtle',
+  })),
+  {
+    name: 'turtle-click-score',
+    source:
+      'pontos = 0\nimport turtle\nscreen = turtle.Screen()\nscreen.setup(320, 240)\nheroi = turtle.Turtle()\ndef clicar(x, y):\n    global pontos\n    pontos += 1\nscreen.onclick(clicar)\nscreen.mainloop()\n',
+    objective: {
+      id: 'score',
+      rule: {
+        type: 'behavior',
+        steps: [{ action: 'click', x: 160, y: 120 }],
+        expect: { target: { kind: 'value', path: 'pontos' }, compare: 'atLeast', value: 1 },
+      },
+    },
+    expected: true,
+    extension: 'python-turtle',
+  },
+  {
+    name: 'turtle-autonomous',
+    source:
+      'import turtle\nscreen = turtle.Screen()\nscreen.setup(320, 240)\nheroi = turtle.Turtle()\nheroi.speed(0)\ndef tick():\n    heroi.sety(heroi.ycor() + 3)\n    screen.ontimer(tick, 20)\ntick()\nscreen.mainloop()\n',
+    objective: { id: 'move', rule: motion },
+    expected: false,
+    extension: 'python-turtle',
+  },
+  ...[-3, 3, 0].map((speed) => ({
+    name: `pgzero-${speed}`,
+    source: `WIDTH = 320\nHEIGHT = 240\nheroi = Actor("hero", (100, 100))\ndef update(dt):\n    if keyboard.up:\n        heroi.y += ${speed}\ndef draw():\n    screen.clear()\n    heroi.draw()\n`,
+    objective: {
+      id: 'move',
+      rule: { ...motion, expect: { ...motion.expect, compare: 'decreased' as const } },
+    },
+    expected: speed < 0,
+    extension: 'python-pgzero',
+    asset: true,
+  })),
+]
+const selected = process.argv.find((arg) => arg.startsWith('--case='))?.slice(7)
+assert.ok(!selected || cases.some((item) => item.name === selected), 'Unknown smoke case')
+const evidence = path.join(cache, 'mission-docker', crypto.randomUUID())
+await mkdir(evidence, { recursive: true })
+for (const item of cases.filter((item) => !selected || item.name === selected)) {
+  const directory = path.join(evidence, item.name)
+  await mkdir(path.join(directory, 'runtime'), { recursive: true })
+  await mkdir(path.join(directory, 'project'), { recursive: true })
+  await writeFile(path.join(directory, 'host-only.txt'), 'SYNTHETIC_QA_MARKER_OUTSIDE_PROJECT')
+  // Share only immutable verified runtime bytes, mounted read-only. Each case
+  // still owns its project, container, browser context, worker and result files.
+  const bytes = new TextEncoder().encode(item.source)
+  const projectFiles = [
+    { path: 'main.py', kind: 'source', sha256: await sha256(bytes), byteLength: bytes.byteLength },
+  ]
+  if (item.asset) {
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGP4z8DwHwAFAAH/iZk9HQAAAABJRU5ErkJggg==',
+      'base64',
+    )
+    await mkdir(path.join(directory, 'project/images'), { recursive: true })
+    await writeFile(path.join(directory, 'project/images/hero.png'), png)
+    projectFiles.push({
+      path: 'images/hero.png',
+      kind: 'asset',
+      sha256: await sha256(png),
+      byteLength: png.byteLength,
+    })
+  }
+  const content = {
+    version: 1,
+    configuration: {
+      runtime: {
+        profileId: release.manifest.profileId,
+        releaseId: release.manifest.releaseId,
+        manifestSha256: release.manifestSha256,
+      },
+      extensions: item.extension ? [{ id: item.extension, version: '1.0.0' }] : [],
+      python: {
+        entrypoint: 'main.py',
+        dependencyLock: {
+          lockVersion: 1,
+          target: 'browser',
+          pythonVersion: build.manifest.pythonVersion,
+          runtimeManifestSha256: release.manifestSha256,
+          requirementsSha256: await sha256(new Uint8Array(0)),
+          packages: [],
+        },
+      },
+    },
+    directories: item.asset ? ['images'] : [],
+    files: projectFiles,
+  }
+  const snapshot = {
+    ...content,
+    projectId: `mission-${item.name}`,
+    revision: await studioPythonExecutionRevision(content),
+  }
+  const plan = await preparePythonProjectExecution(
+    {
+      projectId: snapshot.projectId,
+      revision: snapshot.revision,
+      runtimeManifestSha256: release.manifestSha256,
+      runId: crypto.randomUUID(),
+    },
+    [item.objective],
+  )
+  const mission = pythonMissionRequest(plan)
+  await writeFile(path.join(directory, 'project/main.py'), bytes)
+  await writeFile(
+    path.join(directory, 'python-mission-options.json'),
+    JSON.stringify({
+      version: 1,
+      runtimeManifestSha256: release.manifestSha256,
+      runtimeFiles: studioPythonLogicalFiles(build.manifest),
+      runtimeDeployment: { release, distribution: build.manifest },
+      runtimeContentSecurityPolicy: pythonFrameContentSecurityPolicy(
+        `https://studio-python-runtime.invalid/v1/runtimes/${release.manifestSha256}/`,
+      ),
+      payload: { version: 1, name: '', snapshot },
+      mission,
+    }),
+  )
+  const container = `sz-mission-${crypto.randomUUID().replaceAll('-', '')}`
+  const command = [
+    'docker',
+    'run',
+    '--rm',
+    '--name',
+    container,
+    '--network',
+    'none',
+    '--memory',
+    '1g',
+    '--cpus',
+    '1',
+    '--pids-limit',
+    '256',
+    '--read-only',
+    '--cap-drop',
+    'ALL',
+    '--security-opt',
+    'no-new-privileges',
+    '--tmpfs',
+    '/tmp:rw,nosuid,nodev,size=256m',
+    '--mount',
+    `type=bind,source=${directory},target=/workspace/mission`,
+    '--mount',
+    `type=bind,source=${build.directory},target=/workspace/mission/runtime,readonly`,
+    '--workdir',
+    '/workspace/mission',
+    '--entrypoint',
+    'node',
+    image,
+    '/opt/sz-runtime/python-mission.mjs',
+  ]
+  const child = Bun.spawn(command, { windowsHide: true, stdout: 'pipe', stderr: 'pipe' })
+  const timer = setTimeout(() => {
+    void Bun.spawn(['docker', 'stop', '--time', '1', container], {
+      windowsHide: true,
+      stdout: 'ignore',
+      stderr: 'ignore',
+    }).exited
+  }, 135_000)
+  try {
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    await writeFile(
+      path.join(directory, 'process.json'),
+      JSON.stringify({ command, exitCode, stdout, stderr }),
+    )
+    assert.equal(exitCode, 0, stdout + stderr)
+    const raw = JSON.parse(
+      await readFile(path.join(directory, 'python-mission-result.json'), 'utf8'),
+    )
+    const results = judgePythonProjectExecution(plan, raw.mission)
+    assert.equal(results[0]?.passed, item.expected, JSON.stringify(raw))
+    assert.equal(raw.executions.length, 1)
+    const report = await verifyStudioPythonPlaytestReport(
+      raw.executions[0].report,
+      snapshot,
+      pythonMissionRecipe(mission.probes[0]!),
+    )
+    assert.equal(report.stopped, true)
+    await writeFile(
+      path.join(directory, 'judge.json'),
+      JSON.stringify({ expected: item.expected, results }),
+    )
+    console.log(
+      JSON.stringify({ name: item.name, expected: item.expected, results, evidence: directory }),
+    )
+  } finally {
+    clearTimeout(timer)
+    await Bun.spawn(['docker', 'rm', '-f', container], {
+      windowsHide: true,
+      stdout: 'ignore',
+      stderr: 'ignore',
+    }).exited
+  }
+}

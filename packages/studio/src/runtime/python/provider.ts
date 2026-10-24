@@ -97,6 +97,7 @@ export function createPythonRuntimeProvider(options: {
         signal,
         hostAudio: input.hostAudio,
         ...(activity ? { activity } : {}),
+        ...(input.pythonMission ? { mission: true } : {}),
       })
     },
   }

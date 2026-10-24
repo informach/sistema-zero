@@ -1,3 +1,4 @@
+import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
 import {
   ZAPPY_KNOWLEDGE_BACKFILL_RATE_LIMIT_PER_MINUTE,
   ZAPPY_SOURCE_REQUEST_MAX_BYTES,
@@ -2851,6 +2852,18 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
       maxBodyBytes: 2 * 1024 * 1024,
+      timeoutMs: 160_000,
+    },
+    {
+      id: 'members-admin-python-project-checks-test',
+      methods: ['POST'],
+      pathPattern: '/members/admin/python-project-checks/test',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 30, windowMs: 60_000, by: 'principal' },
+      maxBodyBytes: SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
       timeoutMs: 160_000,
     },
     {

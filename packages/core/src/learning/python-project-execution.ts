@@ -15,7 +15,11 @@ import {
 } from './project-execution'
 
 export type PythonProjectExecutionRule = Exclude<SectionExecutionRule, { type: 'script' }>
-export type PythonProjectExecutionObjective = { id: string; rule: PythonProjectExecutionRule }
+export type PythonProjectExecutionObjective = {
+  id: string
+  rule: PythonProjectExecutionRule
+  stdin?: string[]
+}
 
 /** Python uses the canonical comparisons; DOM, JS validators and JS kit state do not apply. */
 export function isPythonProjectExecutionRule(raw: unknown): raw is PythonProjectExecutionRule {
@@ -103,11 +107,28 @@ const reportSchema = z.strictObject({
   identity: identitySchema,
   observations: z.array(observationSchema).min(1).max(EXECUTION_LIMITS.maxObjectives),
 })
+
+export {
+  identitySchema as PythonProjectExecutionIdentitySchema,
+  observed as PythonExecutionObservedValueSchema,
+  reportSchema as PythonProjectExecutionReportSchema,
+  sample as PythonExecutionMotionSampleSchema,
+}
+export const PythonFunctionExecutionObservationSchema = observationSchema.options[1]
 const objectivesSchema = z
   .array(
     z.strictObject({
       id: z.string().regex(/^[A-Za-z0-9_-]{1,100}$/),
       rule: z.custom<PythonProjectExecutionRule>(isPythonProjectExecutionRule),
+      stdin: z
+        .array(
+          z
+            .string()
+            .max(4096)
+            .regex(/^[^\r\n]*$/),
+        )
+        .max(4)
+        .optional(),
     }),
   )
   .min(1)
@@ -138,8 +159,10 @@ export async function preparePythonProjectExecution(
   const capturedIdentity = identitySchema.omit({ objectivesSha256: true }).parse(identity)
   if (
     new Set(captured.map((item) => item.id)).size !== captured.length ||
-    captured.reduce((sum, item) => sum + executionRuleBudgetMs(item.rule), 0) >
-      EXECUTION_LIMITS.maxSectionWaitMs
+    captured.reduce(
+      (sum, item) => sum + executionRuleBudgetMs(item.rule) + (item.stdin?.length ?? 0) * 1000,
+      0,
+    ) > EXECUTION_LIMITS.maxSectionWaitMs
   )
     throw new Error('Os objetivos de execução Python são inválidos ou excedem o orçamento.')
   const digest = await crypto.subtle.digest(
@@ -188,6 +211,17 @@ export function judgePythonProjectExecution(plan: PythonProjectExecutionPlan, ra
     const observation: ExecutionObservation | undefined = byId.get(id)
     if (!observation || observation.type !== rule.type)
       throw new Error('A execução omitiu ou trocou um objetivo.')
+    if (observation.errors?.length)
+      return { id, passed: false, detail: 'O programa relatou erro durante a execução.' }
+    if (
+      rule.type === 'behavior' &&
+      (observation.final?.found === false ||
+        (['increased', 'decreased'].includes(rule.expect.compare) &&
+          (observation.initial?.found === false ||
+            (observation.initial?.found && typeof observation.initial.value !== 'number') ||
+            (observation.final?.found && typeof observation.final.value !== 'number'))))
+    )
+      return { id, passed: false, detail: 'O programa não produziu o valor ou a posição esperada.' }
     const unavailable = executionObservationUnavailableReason(rule, observation)
     if (unavailable) throw new Error(unavailable)
     if (
@@ -198,9 +232,7 @@ export function judgePythonProjectExecution(plan: PythonProjectExecutionPlan, ra
       throw new Error('A execução omitiu ou acrescentou casos de teste.')
     return {
       id,
-      ...(observation.errors?.length
-        ? { passed: false, detail: 'O programa relatou erro durante a execução.' }
-        : judgeExecutionObservation(rule, observation)),
+      ...judgeExecutionObservation(rule, observation),
     }
   })
 }

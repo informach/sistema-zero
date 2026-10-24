@@ -10,6 +10,8 @@ const { createRequire } = require('node:module')
 
 /** The exact request sent by the manual SDK proof; importing it starts no services. */
 function createPythonSdkInspectionRequest(seed, reference) {
+  if (seed.mission)
+    return { version: 1, input: reference, structure: seed.structure, mission: seed.mission }
   return seed.validate
     ? {
         version: 1,
@@ -146,7 +148,11 @@ async function main() {
     console.error(JSON.stringify({ phase: 'sdk-inspection' }))
     const inspection = createPythonSdkInspectionRequest(seed, reference)
     const pendingInspection = send(
-      seed.validate ? '/v1/python/validate' : '/v1/python/inspect',
+      seed.mission
+        ? '/v1/python/check'
+        : seed.validate
+          ? '/v1/python/validate'
+          : '/v1/python/inspect',
       JSON.stringify(inspection),
     )
     void pendingInspection.catch(() => {})
@@ -233,6 +239,43 @@ async function main() {
       return
     }
     assert.equal(inspected.status, 200, JSON.stringify(outcome))
+    if (seed.mission) {
+      assert.equal(outcome.report.status, 'passed', JSON.stringify(outcome))
+      assert.deepEqual(outcome.report.mission.identity, seed.mission.identity)
+      assert.equal(outcome.report.executions.length, seed.mission.probes.length)
+      assert.ok(
+        outcome.report.executions.every(
+          (item) => item.report.stopped && item.report.status === 'passed',
+        ),
+      )
+      const response = await fetch(`${origin}/__proof/inspection/state`, {
+        headers: {
+          Authorization: `Bearer ${seed.proofToken}`,
+          'X-Proof-Python-Input': JSON.stringify(reference),
+        },
+        signal: AbortSignal.any([lifetime.signal, AbortSignal.timeout(5000)]),
+      })
+      assert.equal(response.status, 200)
+      const state = await response.json()
+      assert.equal(state.created, 1)
+      assert.equal(state.execStarted, 2)
+      assert.equal(state.execFinished, 2)
+      assert.equal(state.destroyStarted, 1)
+      assert.equal(state.destroyFinished, 1)
+      assert.equal(state.job.status, 'succeeded')
+      assert.equal(state.job.cleanupConfirmed, true)
+      assert.deepEqual(state.job.operation, { mode: 'check', mission: seed.mission })
+      console.log(
+        JSON.stringify({
+          verified: true,
+          missionValidated: true,
+          durationMs: Math.round(performance.now() - started),
+          report: outcome.report,
+          state,
+        }),
+      )
+      return
+    }
     if (seed.validate) {
       assert.equal(outcome.report.status, 'passed', JSON.stringify(outcome))
       assert.deepEqual(outcome.report.recipe, seed.recipe)
