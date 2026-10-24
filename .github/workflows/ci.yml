@@ -249,6 +249,25 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
+      # O passo geral não fornece TEST_DATABASE_URL: sem estas etapas, as provas
+      # financeiras de transação, concorrência e migrações seriam puladas.
+      - name: Criar bancos descartáveis de Payments e Messaging
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE payments_financial_ci"
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE messaging_recovery_ci_test"
+
+      - name: Testes DB payments (Postgres real)
+        working-directory: packages/payments
+        run: bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/payments_financial_ci
+
+      - name: Testes DB messaging (Postgres real)
+        working-directory: packages/messaging
+        run: bun test tests/db
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@127.0.0.1:55432/messaging_recovery_ci_test
+
       # ⚠️ A pasta INTEIRA, como no fiscal acima. Até 15/08 esta linha apontava para UM
       # arquivo, então os outros 10 — justamente os documentados como "o único teste que
       # alcança este SQL", porque o fake in-memory o reimplementa em JS — nunca rodaram no
